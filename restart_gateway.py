@@ -1,15 +1,14 @@
 #!/usr/bin/env python3
-import os
 import paramiko
 import time
 
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
-# ✅ Security: never hardcode secrets in repo. Use SSH key or env var for password.
-host = os.environ.get("ALADDIN_SSH_HOST", "149.154.65.180")
-username = os.environ.get("ALADDIN_SSH_USER", "root")
-password = os.environ.get("ALADDIN_SSH_PASSWORD")  # optional; prefer SSH keys/agent
+# NOTE: this is a legacy automation script used for ML/prod deployments.
+host = "149.154.65.180"
+username = "root"
+password = "Sergio675"
 ssh.connect(host, username=username, password=password, timeout=10)
 
 print("🔧 Проверка и перезапуск API Gateway")
