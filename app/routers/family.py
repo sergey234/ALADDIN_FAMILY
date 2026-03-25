@@ -157,15 +157,9 @@ async def get_family_stats_from_db(
             )
             # Продолжаем с дефолтными значениями
     
-    # ✅ Fallback: Дефолтные значения (если БД недоступна или ошибка)
-    return FamilyStatsResponse(
-        totalMembers=4,
-        totalDevices=6,
-        totalThreats=45,
-        protectionLevel=95,
-        familyStatus="protected",
-        familyStatusMessage="Вся семья под защитой"
-    )
+    # ✅ Production rule: no fake fallback.
+    # Если БД недоступна — нельзя возвращать "4/6/45" как будто это реальные данные.
+    raise HTTPException(status_code=503, detail="Family stats backend unavailable (database not configured)")
 
 
 # ============================================
@@ -201,9 +195,12 @@ async def get_family_stats(
         timestamp=datetime.now().isoformat()
     )
     
-    # ✅ РЕАЛИЗАЦИЯ: Получить статистику из БД (или дефолтные значения)
-    # БД опциональна - передаем None, чтобы использовать fallback значения
-    stats = await get_family_stats_from_db(user_id, None)
+    # ✅ РЕАЛИЗАЦИЯ: Получить статистику из БД. В production без БД — 503 (no fake).
+    if not get_session:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    async with get_session() as db:
+        stats = await get_family_stats_from_db(user_id, db)
     
     # ✅ STRUCTURED LOGGING: Логирование успешного ответа
     logger.info(
@@ -254,6 +251,24 @@ class FamilyMemberCompat(BaseModel):
     id: str
     name: str
     role: str
+
+
+class FamilyMemberResponse(BaseModel):
+    """
+    Полный ответ участника семьи (должен соответствовать iOS `FamilyMemberResponse`)
+    """
+    id: str
+    name: str
+    role: str
+    avatar: str
+    status: str
+    threatsBlocked: int
+    lastActive: str
+    devices: int
+
+
+class RemoveFamilyMemberRequest(BaseModel):
+    memberId: str
 
 @router.post("/create", response_model=CreateFamilyResponse)
 @limiter.limit("10/minute")  # ✅ RATE LIMITING: 10 запросов в минуту на IP
@@ -346,9 +361,35 @@ async def create_family_endpoint(
 async def get_family_members_compat(
     current_user: dict = Depends(get_current_user)
 ):
-    # Empty typed list until storage-backed family members is connected.
-    _ = current_user.get("id")
-    return []
+    """
+    ✅ Production rule: no mock/fake.
+    Если БД не подключена — отдаём 503, чтобы клиент не принимал пустые/фейковые данные как "успех".
+    """
+    user_id = current_user.get("id")
+    if not get_session:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+    async with get_session() as db:
+        try:
+            # Важно: схема может отличаться, поэтому берём минимум (id/name/role) и дополняем дефолтами.
+            res = await db.execute(
+                text(
+                    """
+                    SELECT id, name, role
+                    FROM family_members
+                    WHERE user_id = :user_id
+                    ORDER BY id ASC
+                    """
+                ),
+                {"user_id": user_id},
+            )
+            rows = res.fetchall() or []
+            members: list[FamilyMemberCompat] = []
+            for r in rows:
+                members.append(FamilyMemberCompat(id=str(r[0]), name=str(r[1]), role=str(r[2])))
+            return members
+        except Exception as e:
+            logger.error("family_members_db_error", user_id=user_id, error=str(e), timestamp=datetime.now().isoformat())
+            raise HTTPException(status_code=500, detail="Failed to load family members")
 
 
 @router.get("/member", response_model=FamilyCompatBoolResponse)
@@ -367,12 +408,96 @@ async def add_family_member_compat(
     return FamilyCompatBoolResponse(success=True, data=True, message="Family member added")
 
 
+@router.delete("/remove", response_model=FamilyMemberResponse)
+async def remove_family_member(
+    payload: RemoveFamilyMemberRequest,
+    current_user: dict = Depends(get_current_user)
+):
+    """
+    ✅ BOEVOЙ endpoint: DELETE /api/family/remove
+
+    Требования:
+    - Не возвращать sfm_mock/mock_fallback в production.
+    - Реально удалять участника в БД (если возможно).
+    - Если БД не настроена — 503 (чтобы iOS не считал это успехом).
+    """
+    user_id = current_user.get("id")
+    if not payload.memberId:
+        raise HTTPException(status_code=400, detail="memberId is required")
+    if not get_session:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    async with get_session() as db:
+        try:
+            # 1) Пробуем прочитать участника перед удалением (чтобы вернуть iOS-совместимый объект)
+            res = await db.execute(
+                text(
+                    """
+                    SELECT id, name, role
+                    FROM family_members
+                    WHERE user_id = :user_id AND id = :member_id
+                    LIMIT 1
+                    """
+                ),
+                {"user_id": user_id, "member_id": payload.memberId},
+            )
+            row = res.fetchone()
+            if not row:
+                raise HTTPException(status_code=404, detail="Family member not found")
+
+            member_id, name, role = row[0], row[1], row[2]
+
+            # 2) Удаляем
+            del_res = await db.execute(
+                text(
+                    """
+                    DELETE FROM family_members
+                    WHERE user_id = :user_id AND id = :member_id
+                    """
+                ),
+                {"user_id": user_id, "member_id": payload.memberId},
+            )
+
+            # 3) Коммит
+            await db.commit()
+
+            # SQLAlchemy rowcount может быть None в некоторых драйверах — проверяем мягко.
+            if getattr(del_res, "rowcount", 1) == 0:
+                raise HTTPException(status_code=409, detail="Removal not confirmed")
+
+            logger.info(
+                "family_member_removed",
+                user_id=user_id,
+                member_id=str(member_id),
+                timestamp=datetime.now().isoformat(),
+            )
+
+            # 4) Возвращаем iOS-совместимую модель (полные поля; часть — дефолты)
+            return FamilyMemberResponse(
+                id=str(member_id),
+                name=str(name),
+                role=str(role),
+                avatar="👤",
+                status="protected",
+                threatsBlocked=0,
+                lastActive=datetime.now().strftime("%H:%M"),
+                devices=0,
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            await db.rollback()
+            logger.error("family_remove_db_error", user_id=user_id, member_id=payload.memberId, error=str(e), timestamp=datetime.now().isoformat())
+            raise HTTPException(status_code=500, detail="Failed to remove family member")
+
+
+# Backward-compat stub: older clients might call GET /remove (incorrectly). Do not treat as success.
 @router.get("/remove", response_model=FamilyCompatBoolResponse)
 async def remove_family_member_compat(
     current_user: dict = Depends(get_current_user)
 ):
     _ = current_user.get("id")
-    return FamilyCompatBoolResponse(success=True, data=True, message="Family member removed")
+    raise HTTPException(status_code=405, detail="Use DELETE /api/family/remove")
 
 
 @router.get("/join", response_model=FamilyCompatBoolResponse)
