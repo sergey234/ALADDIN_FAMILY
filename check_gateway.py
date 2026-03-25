@@ -1,9 +1,14 @@
 #!/usr/bin/env python3
+import os
 import paramiko
 
 ssh = paramiko.SSHClient()
 ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
-ssh.connect("149.154.65.180", username="root", password="Sergio675", timeout=10)
+# ✅ Security: never hardcode secrets in repo. Use SSH key or env var for password.
+host = os.environ.get("ALADDIN_SSH_HOST", "149.154.65.180")
+username = os.environ.get("ALADDIN_SSH_USER", "root")
+password = os.environ.get("ALADDIN_SSH_PASSWORD")  # optional; prefer SSH keys/agent
+ssh.connect(host, username=username, password=password, timeout=10)
 
 # Проверка процесса
 stdin, stdout, stderr = ssh.exec_command("ps aux | grep '[u]vicorn.*8002'")
