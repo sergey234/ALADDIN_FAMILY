@@ -1313,7 +1313,7 @@ class NetworkManager: NSObject, ObservableObject {
                     #if DEBUG
                     print("⚠️ NetworkManager: Mock ответ от SFM - пропускаем декодирование")
                     #endif
-                    completion(.failure(NetworkError.decodingError(NSError(domain: "NetworkManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Mock response from SFM - profile not available"]))))
+                    completion(.failure(NetworkError.decodingError(NSError(domain: "NetworkManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Mock/fallback response from backend (source=\(source)) — operation not confirmed"]))))
                     return
                 }
                 

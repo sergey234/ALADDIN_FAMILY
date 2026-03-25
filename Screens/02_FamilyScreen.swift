@@ -13,6 +13,7 @@ struct FamilyScreen: View {
     // @State private var showAddMemberModal = false
     @State private var showParentalSettingsModal = false
     @State private var showInvitationGuideModal: Bool = false
+    @State private var removeMemberErrorMessage: String? = nil
     
     // UserDefaults ключи для участников семьи
     private let familyMembersKey = "family_members_list"
@@ -384,8 +385,9 @@ struct FamilyScreen: View {
         print("🗑️ [removeFamilyMember] Начало удаления: \(member.name) (ID: \(member.id))")
         print("🗑️ [removeFamilyMember] Текущее количество участников: \(familyMembers.count)")
         
-        // ✅ ИСПРАВЛЕНИЕ: Удаляем из локального списка СРАЗУ для мгновенного обновления UI
+        // ✅ Prod-safe: оптимистично обновляем UI, но обязаны откатить, если сервер не подтвердил.
         let memberToRemove = member
+        let backupMembers = familyMembers
         familyMembers.removeAll { $0.id == member.id }
         
         print("🗑️ [removeFamilyMember] Удалено из списка. Новое количество: \(familyMembers.count)")
@@ -411,6 +413,7 @@ struct FamilyScreen: View {
                 let _ = try await apiService.removeFamilyMember(memberId)
                 await MainActor.run {
                     print("✅ [removeFamilyMember] Успешно удален через API: \(memberToRemove.name)")
+                    removeMemberErrorMessage = nil
                     // Дополнительная проверка - убеждаемся что участник не вернулся
                     if familyMembers.contains(where: { $0.id == memberToRemove.id }) {
                         print("⚠️ [removeFamilyMember] Участник все еще в списке, удаляем повторно")
@@ -421,9 +424,12 @@ struct FamilyScreen: View {
             } catch {
                 await MainActor.run {
                     print("❌ [removeFamilyMember] Ошибка при удалении через API: \(error.localizedDescription)")
-                    print("⚠️ [removeFamilyMember] Участник уже удален из локального списка, не восстанавливаем")
-                    // ✅ ИСПРАВЛЕНИЕ: НЕ восстанавливаем участника при ошибке API
-                    // Пользователь уже видит что участник удален, не нужно его возвращать
+                    // ✅ Prod-safe: сервер не подтвердил удаление -> откатываем локальные изменения.
+                    familyMembers = backupMembers
+                    saveFamilyMembers()
+                    removeMemberErrorMessage = localizationManager.currentLanguage == .russian
+                        ? "Сервер не подтвердил удаление. Попробуйте позже."
+                        : "Server did not confirm removal. Please try again."
                     HapticFeedback.notification(.warning)
                 }
             }
@@ -818,6 +824,20 @@ struct FamilyScreen: View {
         .sheet(isPresented: $showParentalSettingsModal) {
             FamilyParentalControlSettingsModal(isPresented: $showParentalSettingsModal)
                 .environmentObject(localizationManager)
+        }
+        .overlay(alignment: .bottom) {
+            if let message = removeMemberErrorMessage, !message.isEmpty {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(Color.dangerRed.opacity(0.92))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .shadow(radius: 6)
+                    .padding(.bottom, 18)
+                    .onTapGesture { removeMemberErrorMessage = nil }
+            }
         }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("family_lang_\(localizationManager.currentLanguage.rawValue)")

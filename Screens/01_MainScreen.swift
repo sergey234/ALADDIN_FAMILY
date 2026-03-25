@@ -12,9 +12,6 @@ private let visualLogger = VisualLogger.shared
 private var isUpdatingExpirationTextGlobal: Bool = false
 private let expirationTextUpdateLock = NSLock()
 
-private var mainScreenTaskExecuted: Bool = false
-private let mainScreenTaskLock = NSLock()
-
 struct MainScreen: View {
     @State private var aiQuestion: String = ""
     @StateObject private var mainViewModel: MainViewModel
@@ -259,17 +256,8 @@ struct MainScreen: View {
             let startTime = Date()
             let logPrefix = "🔍 MainScreen.task"
             
-            // ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Глобальный флаг для предотвращения повторных вызовов
-            // @State не работает при пересоздании View, поэтому используем глобальный флаг
-            mainScreenTaskLock.lock()
-            guard !mainScreenTaskExecuted else {
-                mainScreenTaskLock.unlock()
-                let message = "\(logPrefix) Повторный вызов пропущен (глобальный флаг)"
-                print("⚠️ \(message)")
-                return
-            }
-            mainScreenTaskExecuted = true
-            mainScreenTaskLock.unlock()
+            // Важно: не используем глобальный флаг, иначе после добавления пользователей
+            // повторный вход на MainScreen может не вызвать mainViewModel.onAppear() и оставить 0/Free.
             
             // Сохраняем в UserDefaults для получения после краша
             var debugLog: [String] = []
@@ -324,6 +312,7 @@ struct MainScreen: View {
             // ✅ BUILD 100: Асинхронное обновление кеша expiration text для предотвращения рекурсии
             // Читаем значение один раз и передаем в функцию, чтобы избежать повторного чтения @AppStorage
             // ✅ ИСПРАВЛЕНИЕ: Убран избыточный Task { @MainActor in }, так как .task {} уже выполняется на MainActor
+            tariffManager.loadTariff()
             let currentExpiresAt = subscriptionExpiresAtIso
             await updateExpirationTextCache(from: currentExpiresAt)
             debugLog.append("✅ cachedExpirationText инициализирован")
