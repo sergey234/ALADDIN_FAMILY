@@ -201,8 +201,11 @@ async def get_family_stats(
     if not get_session:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
 
-    async with get_session() as db:
+    # get_session() — async generator (yield session), а не async context manager.
+    # Используем async for + break, чтобы гарантировать корректное закрытие сессии.
+    async for db in get_session():
         stats = await get_family_stats_from_db(user_id, db)
+        break
     
     # ✅ STRUCTURED LOGGING: Логирование успешного ответа
     logger.info(
@@ -370,7 +373,7 @@ async def get_family_members_compat(
     user_id = current_user.get("id")
     if not get_session:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
-    async with get_session() as db:
+    async for db in get_session():
         try:
             # Важно: схема может отличаться, поэтому берём минимум (id/name/role) и дополняем дефолтами.
             res = await db.execute(
@@ -429,7 +432,7 @@ async def remove_family_member(
     if not get_session:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
 
-    async with get_session() as db:
+    async for db in get_session():
         try:
             # 1) Пробуем прочитать участника перед удалением (чтобы вернуть iOS-совместимый объект)
             res = await db.execute(
