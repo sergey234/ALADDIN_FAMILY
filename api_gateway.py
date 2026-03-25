@@ -176,8 +176,18 @@ async def catch_all_api_proxy(request: Request, path: str, authorization: Option
         if not is_sensitive_endpoint:
             return False
 
+        # Some SFM adapters return non-plain dict objects (e.g. pydantic models).
+        # We normalize to dict so mock/fallback blocking always works.
         if not isinstance(sfm_result, dict):
-            return False
+            if hasattr(sfm_result, "dict") and callable(getattr(sfm_result, "dict")):
+                try:
+                    sfm_result = sfm_result.dict()
+                except:
+                    return False
+            elif hasattr(sfm_result, "__dict__"):
+                sfm_result = sfm_result.__dict__
+            else:
+                return False
 
         source = sfm_result.get("source")
         result_value = sfm_result.get("result")
