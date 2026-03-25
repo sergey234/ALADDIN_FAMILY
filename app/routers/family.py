@@ -169,7 +169,7 @@ async def get_family_stats_from_db(
 # ENDPOINT: GET /api/family/stats
 # ============================================
 
-@router.get("/stats", response_model=FamilyStatsResponse)
+@router.get("/stats__precision_disabled", response_model=FamilyStatsResponse)
 @limiter.limit("60/minute")  # ✅ RATE LIMITING: 60 запросов в минуту на IP
 async def get_family_stats(
     request: Request,
