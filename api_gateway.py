@@ -114,7 +114,9 @@ router_files = [
     "gamification_router", "subscription_sync_router", "parental_control_sync_router",
     "crash_detection_router", "ai_assistant_router", "metrics_router",
     "user_profile_sync_router", "app_settings_sync_router", "components_router",
-    "system_router", "offline_storage_sync_router", "other_functions_sync_router"
+    "system_router", "offline_storage_sync_router", "other_functions_sync_router",
+    # ✅ Family precision router (prevents routing through SFM proxy for family CRUD)
+    "family_router",
 ]
 
 for router_name in router_files:
@@ -158,11 +160,15 @@ async def catch_all_api_proxy(request: Request, path: str, authorization: Option
 
         This prevents `200 OK + source:\"sfm_mock\"` from reaching the iOS client.
         """
-        if req_method != "GET":
+        # Sensitive operations: must not silently succeed with mock/fallback.
+        # We block BOTH read and write flows for family + parental + gamification.
+        if req_method not in {"GET", "POST", "PUT", "PATCH", "DELETE"}:
             return False
 
         is_sensitive_endpoint = (
             api_path == "family/members"
+            or api_path == "family/remove"
+            or api_path == "family/stats"
             or api_path.startswith("parental-control/")
             or api_path.startswith("v1/parental-control/")
             or api_path.startswith("gamification/")
