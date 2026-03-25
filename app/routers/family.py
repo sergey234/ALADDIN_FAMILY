@@ -21,11 +21,13 @@ from security.family.family_registration import create_family
 # ✅ Авторизация с реальным user_id
 from app.auth.auth import get_current_user
 
-# ✅ ИСПОЛЬЗОВАНИЕ БД (опционально): Импорт get_session для подключения к БД
+# ✅ ИСПОЛЬЗОВАНИЕ БД: импортируем get_session из корректного модуля.
+# Важно: `app/database/__init__.py` пустой, поэтому `from app.database import get_session`
+# на сервере не находит символ и приводит к get_session=None.
 try:
-    from app.database import get_session
+    from app.database.database import get_session
 except ImportError:
-    get_session = None  # БД не обязательна - используем fallback значения
+    get_session = None  # Если БД реально не доступна/не смонтирована
 
 # ✅ RATE LIMITING: Импорт slowapi для защиты от злоупотреблений
 from slowapi import Limiter
