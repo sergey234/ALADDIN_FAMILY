@@ -9,6 +9,7 @@ API для получения статистики семьи
 """
 
 from fastapi import APIRouter, HTTPException, Request, Depends, status
+import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from typing import Optional
@@ -21,13 +22,13 @@ from security.family.family_registration import create_family
 # ✅ Авторизация с реальным user_id
 from app.auth.auth import get_current_user
 
-# ✅ ИСПОЛЬЗОВАНИЕ БД: импортируем get_session из корректного модуля.
-# Важно: `app/database/__init__.py` пустой, поэтому `from app.database import get_session`
-# на сервере не находит символ и приводит к get_session=None.
+# ✅ ИСПОЛЬЗОВАНИЕ БД:
+# get_session() указывает на sqlite/payments.db (там нет family_members).
+# family_members/stats/delete живут в PostgreSQL, доступной через get_db().
 try:
-    from app.database.database import get_session
+    from app.database.database import get_db as get_postgres_db
 except ImportError:
-    get_session = None  # Если БД реально не доступна/не смонтирована
+    get_postgres_db = None
 
 # ✅ RATE LIMITING: Импорт slowapi для защиты от злоупотреблений
 from slowapi import Limiter
@@ -197,15 +198,107 @@ async def get_family_stats(
         timestamp=datetime.now().isoformat()
     )
     
-    # ✅ РЕАЛИЗАЦИЯ: Получить статистику из БД. В production без БД — 503 (no fake).
-    if not get_session:
+    # ✅ РЕАЛИЗАЦИЯ: family схемы лежат в PostgreSQL.
+    if not get_postgres_db:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
 
-    # get_session() — async generator (yield session), а не async context manager.
-    # Используем async for + break, чтобы гарантировать корректное закрытие сессии.
-    async for db in get_session():
-        stats = await get_family_stats_from_db(user_id, db)
-        break
+    def load_stats_sync():
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            members_result = db.execute(
+                text(
+                    """
+                    SELECT COUNT(*) as count
+                    FROM family_members
+                    WHERE user_id = :user_id
+                    """
+                ),
+                {"user_id": user_id},
+            )
+            members_row = members_result.fetchone()
+            total_members = members_row[0] if members_row else 0
+
+            devices_result = db.execute(
+                text(
+                    """
+                    SELECT COUNT(*) as count
+                    FROM devices
+                    WHERE user_id = :user_id OR owner_id = :user_id
+                    """
+                ),
+                {"user_id": user_id},
+            )
+            devices_row = devices_result.fetchone()
+            total_devices = devices_row[0] if devices_row else 0
+
+            threats_result = db.execute(
+                text(
+                    """
+                    SELECT COUNT(*) as count
+                    FROM threats_blocked
+                    WHERE user_id = :user_id
+                      AND blocked_at >= datetime('now', '-30 days')
+                    """
+                ),
+                {"user_id": user_id},
+            )
+            threats_row = threats_result.fetchone()
+            total_threats = threats_row[0] if threats_row else 0
+
+            components_result = db.execute(
+                text(
+                    """
+                    SELECT
+                        COUNT(*) as total,
+                        SUM(CASE WHEN is_enabled = 1 THEN 1 ELSE 0 END) as enabled
+                    FROM component_status
+                    WHERE user_id = :user_id
+                    """
+                ),
+                {"user_id": user_id},
+            )
+            components_row = components_result.fetchone()
+            if components_row and components_row[0]:
+                total = components_row[0]
+                enabled = components_row[1] or 0
+                protection_level = int((enabled / total) * 100) if total else 0
+            else:
+                protection_level = 0
+
+            if protection_level >= 80 and total_threats == 0:
+                family_status = "protected"
+                family_status_message = "Вся семья под защитой"
+            elif protection_level >= 50:
+                family_status = "warning"
+                family_status_message = "Не все функции защиты активны"
+            else:
+                family_status = "danger"
+                family_status_message = "Требуется активация защиты"
+
+            return FamilyStatsResponse(
+                totalMembers=total_members,
+                totalDevices=total_devices,
+                totalThreats=total_threats,
+                protectionLevel=protection_level,
+                familyStatus=family_status,
+                familyStatusMessage=family_status_message,
+            )
+        finally:
+            gen.close()
+
+    try:
+        stats = await asyncio.to_thread(load_stats_sync)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.warning(
+            "family_stats_db_error",
+            user_id=user_id,
+            error=str(e),
+            timestamp=datetime.now().isoformat(),
+        )
+        raise HTTPException(status_code=503, detail="Family backend unavailable")
     
     # ✅ STRUCTURED LOGGING: Логирование успешного ответа
     logger.info(
@@ -371,12 +464,14 @@ async def get_family_members_compat(
     Если БД не подключена — отдаём 503, чтобы клиент не принимал пустые/фейковые данные как "успех".
     """
     user_id = current_user.get("id")
-    if not get_session:
+    if not get_postgres_db:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
-    async for db in get_session():
+
+    def load_members_sync():
+        gen = get_postgres_db()
+        db = next(gen)
         try:
-            # Важно: схема может отличаться, поэтому берём минимум (id/name/role) и дополняем дефолтами.
-            res = await db.execute(
+            res = db.execute(
                 text(
                     """
                     SELECT id, name, role
@@ -388,13 +483,20 @@ async def get_family_members_compat(
                 {"user_id": user_id},
             )
             rows = res.fetchall() or []
-            members: list[FamilyMemberCompat] = []
-            for r in rows:
-                members.append(FamilyMemberCompat(id=str(r[0]), name=str(r[1]), role=str(r[2])))
-            return members
-        except Exception as e:
-            logger.error("family_members_db_error", user_id=user_id, error=str(e), timestamp=datetime.now().isoformat())
-            raise HTTPException(status_code=500, detail="Failed to load family members")
+            return [
+                FamilyMemberCompat(id=str(r[0]), name=str(r[1]), role=str(r[2]))
+                for r in rows
+            ]
+        finally:
+            gen.close()
+
+    try:
+        return await asyncio.to_thread(load_members_sync)
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error("family_members_db_error", user_id=user_id, error=str(e), timestamp=datetime.now().isoformat())
+        raise HTTPException(status_code=500, detail="Failed to load family members")
 
 
 @router.get("/member", response_model=FamilyCompatBoolResponse)
@@ -429,18 +531,20 @@ async def remove_family_member(
     user_id = current_user.get("id")
     if not payload.memberId:
         raise HTTPException(status_code=400, detail="memberId is required")
-    if not get_session:
+    if not get_postgres_db:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
 
-    async for db in get_session():
+    def remove_member_sync():
+        gen = get_postgres_db()
+        db = next(gen)
         try:
-            # 1) Пробуем прочитать участника перед удалением (чтобы вернуть iOS-совместимый объект)
-            res = await db.execute(
+            # 1) Читаем участника перед удалением (чтобы вернуть объект iOS-совместимого формата)
+            res = db.execute(
                 text(
                     """
                     SELECT id, name, role
                     FROM family_members
-                    WHERE user_id = :user_id AND id = :member_id
+                    WHERE user_id = :user_id AND id::text = :member_id
                     LIMIT 1
                     """
                 ),
@@ -453,20 +557,20 @@ async def remove_family_member(
             member_id, name, role = row[0], row[1], row[2]
 
             # 2) Удаляем
-            del_res = await db.execute(
+            del_res = db.execute(
                 text(
                     """
                     DELETE FROM family_members
-                    WHERE user_id = :user_id AND id = :member_id
+                    WHERE user_id = :user_id AND id::text = :member_id
                     """
                 ),
                 {"user_id": user_id, "member_id": payload.memberId},
             )
 
             # 3) Коммит
-            await db.commit()
+            db.commit()
 
-            # SQLAlchemy rowcount может быть None в некоторых драйверах — проверяем мягко.
+            # rowcount может быть None — проверяем мягко
             if getattr(del_res, "rowcount", 1) == 0:
                 raise HTTPException(status_code=409, detail="Removal not confirmed")
 
@@ -477,7 +581,6 @@ async def remove_family_member(
                 timestamp=datetime.now().isoformat(),
             )
 
-            # 4) Возвращаем iOS-совместимую модель (полные поля; часть — дефолты)
             return FamilyMemberResponse(
                 id=str(member_id),
                 name=str(name),
@@ -491,9 +594,19 @@ async def remove_family_member(
         except HTTPException:
             raise
         except Exception as e:
-            await db.rollback()
-            logger.error("family_remove_db_error", user_id=user_id, member_id=payload.memberId, error=str(e), timestamp=datetime.now().isoformat())
+            db.rollback()
+            logger.error(
+                "family_remove_db_error",
+                user_id=user_id,
+                member_id=payload.memberId,
+                error=str(e),
+                timestamp=datetime.now().isoformat(),
+            )
             raise HTTPException(status_code=500, detail="Failed to remove family member")
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(remove_member_sync)
 
 
 # Backward-compat stub: older clients might call GET /remove (incorrectly). Do not treat as success.
