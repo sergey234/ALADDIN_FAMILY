@@ -16,7 +16,31 @@ enum FamilyProtectionStatus: String, Codable {
     case networkUnavailable
     
     init(apiValue: String?) {
-        self = FamilyProtectionStatus(rawValue: apiValue?.lowercased() ?? "") ?? .active
+        guard let raw = apiValue?.lowercased(), !raw.isEmpty else {
+            self = .attention
+            return
+        }
+
+        // Canonical iOS values
+        if let direct = FamilyProtectionStatus(rawValue: raw) {
+            self = direct
+            return
+        }
+
+        // Backend compatibility mapping
+        switch raw {
+        case "protected":
+            self = .active
+        case "warning":
+            self = .attention
+        case "danger":
+            self = .critical
+        case "offline":
+            self = .networkUnavailable
+        default:
+            // Safe fallback: never promote unknown state to "active".
+            self = .attention
+        }
     }
     
     var iconName: String {
@@ -247,8 +271,10 @@ class MainViewModel: ObservableObject {
                     self.threatsBlocked = stats.totalThreats
                     self.lastUpdateTime = Date()
                     self.errorMessage = nil // Авто-очистка баннера при успехе
-                    self.familyProtectionStatus = FamilyProtectionStatus(apiValue: stats.familyStatus)
+                    let mappedStatus = FamilyProtectionStatus(apiValue: stats.familyStatus)
+                    self.familyProtectionStatus = mappedStatus
                     self.familyProtectionStatusMessage = stats.familyStatusMessage
+                    VisualLogger.shared.log("ℹ️ FAMILY.STATUS raw=\(stats.familyStatus ?? "nil") mapped=\(mappedStatus.rawValue) source=api", level: .info, category: "MAIN.STATUS")
                     
                     print("✅ MainViewModel: Данные успешно обновлены из API")
                     NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
@@ -293,6 +319,7 @@ class MainViewModel: ObservableObject {
                                     // Temporary server/network failure is not a "critical disable" state.
                                     self.familyProtectionStatus = .networkUnavailable
                                     self.familyProtectionStatusMessage = LocalizationManager.shared.localized("family_status_network_unavailable_message")
+                                    VisualLogger.shared.log("⚠️ FAMILY.STATUS raw=error mapped=networkUnavailable source=error_token_path", level: .warning, category: "MAIN.STATUS")
                                     NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
                                 }
                             } else {
@@ -317,6 +344,7 @@ class MainViewModel: ObservableObject {
                                 // Temporary server/network failure is not a "critical disable" state.
                                 self.familyProtectionStatus = .networkUnavailable
                                 self.familyProtectionStatusMessage = LocalizationManager.shared.localized("family_status_network_unavailable_message")
+                                VisualLogger.shared.log("⚠️ FAMILY.STATUS raw=error mapped=networkUnavailable source=error_general_path", level: .warning, category: "MAIN.STATUS")
                                 print("❌ MainViewModel: Ошибка после \(maxAttempts) попыток: \(error.localizedDescription)")
                                 NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
                             }
