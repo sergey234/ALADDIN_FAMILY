@@ -67,6 +67,8 @@ class NetworkManager: NSObject, ObservableObject {
     private static func isContract401(detail: String?) -> Bool {
         guard let detail = detail?.lowercased() else { return false }
         return detail.contains("numeric user id") ||
+            detail.contains("invalid user_id") ||
+            detail.contains("invalid user id") ||
             detail.contains("profile not available") ||
             detail.contains("contract")
     }
