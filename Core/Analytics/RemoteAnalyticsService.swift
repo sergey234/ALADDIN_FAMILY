@@ -497,21 +497,36 @@ final class RemoteAnalyticsService: AnalyticsService {
     
     /// ✅ ВАРИАНТ 4: Получить статистику всех компонентов (параллельная загрузка)
     func fetchAllComponentsStats() async throws -> ComponentsAnalytics {
-        async let driving = fetchComponentStats(componentId: "driving")
-        async let darkWeb = fetchComponentStats(componentId: "darkweb")
-        async let identity = fetchComponentStats(componentId: "identity")
-        async let location = fetchComponentStats(componentId: "location")
-        async let cleanup = fetchComponentStats(componentId: "cleanup")
-        async let tracker = fetchComponentStats(componentId: "tracker")
-        async let ai = fetchComponentStats(componentId: "ai")
+        // Cap concurrency to reduce request storms and UI pressure on real devices.
+        let maxConcurrent = 3
+        let ids = ["driving", "darkweb", "identity", "location", "cleanup", "tracker", "ai"]
+        var results: [String: ComponentStats] = [:]
+        var index = 0
+
+        while index < ids.count {
+            let batch = Array(ids[index..<min(index + maxConcurrent, ids.count)])
+            try await withThrowingTaskGroup(of: (String, ComponentStats).self) { group in
+                for id in batch {
+                    group.addTask {
+                        let (stats, _) = try await self.fetchComponentStats(componentId: id)
+                        return (id, stats)
+                    }
+                }
+
+                for try await (id, stats) in group {
+                    results[id] = stats
+                }
+            }
+            index += maxConcurrent
+        }
         
-        let (drivingStats, _) = try await driving
-        let (darkWebStats, _) = try await darkWeb
-        let (identityStats, _) = try await identity
-        let (locationStats, _) = try await location
-        let (cleanupStats, _) = try await cleanup
-        let (trackerStats, _) = try await tracker
-        let (aiStats, _) = try await ai
+        let drivingStats = results["driving"] ?? ComponentStats(componentId: "driving", metrics: getEmptyMetrics(for: "driving"), dataSource: .empty)
+        let darkWebStats = results["darkweb"] ?? ComponentStats(componentId: "darkweb", metrics: getEmptyMetrics(for: "darkweb"), dataSource: .empty)
+        let identityStats = results["identity"] ?? ComponentStats(componentId: "identity", metrics: getEmptyMetrics(for: "identity"), dataSource: .empty)
+        let locationStats = results["location"] ?? ComponentStats(componentId: "location", metrics: getEmptyMetrics(for: "location"), dataSource: .empty)
+        let cleanupStats = results["cleanup"] ?? ComponentStats(componentId: "cleanup", metrics: getEmptyMetrics(for: "cleanup"), dataSource: .empty)
+        let trackerStats = results["tracker"] ?? ComponentStats(componentId: "tracker", metrics: getEmptyMetrics(for: "tracker"), dataSource: .empty)
+        let aiStats = results["ai"] ?? ComponentStats(componentId: "ai", metrics: getEmptyMetrics(for: "ai"), dataSource: .empty)
         
         return ComponentsAnalytics(
             drivingReports: drivingStats,

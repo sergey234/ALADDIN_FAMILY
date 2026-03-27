@@ -135,7 +135,9 @@ struct AnalyticsScreen: View {
             VisualLogger.shared.log("👀 AnalyticsScreen onAppear", level: .info, category: "ANALYTICS.UI")
             guard !didStartInitialLoad else { return }
             didStartInitialLoad = true
-            Task { await viewModel.load() }
+            Task { @MainActor in
+                viewModel.startLoad()
+            }
         }
         .onDisappear {
             VisualLogger.shared.log("👋 AnalyticsScreen onDisappear", level: .info, category: "ANALYTICS.UI")

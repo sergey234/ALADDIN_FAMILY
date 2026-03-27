@@ -955,8 +955,10 @@ class NetworkManager: NSObject, ObservableObject {
                 print("   - HTTP Status: \(httpResponse.statusCode)")
                 #endif
                 
-                // Логируем тело ответа для отладки
-                if let data = data, let responseString = String(data: data, encoding: .utf8) {
+                // Reduce hot-path log pressure: body is logged only for HTTP errors.
+                if httpResponse.statusCode >= 400,
+                   let data = data,
+                   let responseString = String(data: data, encoding: .utf8) {
                     logger.network("   - Response body: \(responseString.prefix(200))")
                 }
                 

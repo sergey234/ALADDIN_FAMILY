@@ -324,17 +324,12 @@ class APIService: ObservableObject {
             return
         }
         
-        // Используем generic метод с Dictionary для гибкого парсинга
-        networkManager.get(endpoint: endpoint) { (result: Result<[String: AnyCodable], Error>) in
+        // Typed decoding reduces overhead versus AnyCodable and makes parsing safer.
+        networkManager.get(endpoint: endpoint) { (result: Result<ComponentStatsDTO, Error>) in
             switch result {
-            case .success(let jsonDict):
-                // Преобразуем AnyCodable в обычный Dictionary
-                var plainDict: [String: Any] = [:]
-                for (key, value) in jsonDict {
-                    plainDict[key] = value.value
-                }
+            case .success(let dto):
                 // Преобразуем ответ в ComponentStats
-                let stats = self.parseComponentStats(componentId: componentId, json: plainDict)
+                let stats = self.parseComponentStats(componentId: componentId, dto: dto)
                 completion(.success(stats))
             case .failure(let error):
                 completion(.failure(error))
@@ -343,64 +338,64 @@ class APIService: ObservableObject {
     }
     
     /// Преобразует ответ API в ComponentStats
-    private func parseComponentStats(componentId: String, json: [String: Any]) -> ComponentStats {
+    private func parseComponentStats(componentId: String, dto: ComponentStatsDTO) -> ComponentStats {
         var metrics: [String: String] = [:]
         
         // Преобразуем данные в зависимости от типа компонента
         switch componentId {
         case "driving_reports_agent", "driving":
-            if let trips = json["trips"] as? Int {
+            if let trips = dto.trips ?? dto.total {
                 metrics["trips"] = "\(trips)"
             }
-            if let safety_score = json["safety_score"] as? Double {
+            if let safety_score = dto.safety_score {
                 metrics["safety_score"] = String(format: "%.1f", safety_score)
             }
-            if let new_events = json["new_events"] as? Int {
+            if let new_events = dto.new_events ?? dto.last_24h {
                 metrics["new_events"] = "\(new_events)"
             }
         case "dark_web_monitoring_agent", "darkweb":
-            if let leaks_found = (json["leaks_found"] as? Int) ?? (json["totalLeaks"] as? Int) {
+            if let leaks_found = dto.leaks_found ?? dto.totalLeaks ?? dto.total {
                 metrics["leaks_found"] = "\(leaks_found)"
             }
-            if let new_leaks = (json["new_leaks"] as? Int) ?? (json["newLeaks"] as? Int) {
+            if let new_leaks = dto.new_leaks ?? dto.newLeaks ?? dto.last_24h {
                 metrics["new_leaks"] = "\(new_leaks)"
             }
-            if let new_events = (json["new_events"] as? Int) ?? (json["newEvents"] as? Int) {
+            if let new_events = dto.new_events ?? dto.newEvents ?? dto.last_7d {
                 metrics["new_events"] = "\(new_events)"
             }
         case "russian_identity_theft_protection_agent", "identity":
-            if let attempts = (json["attempts"] as? Int) ?? (json["totalAttempts"] as? Int) {
+            if let attempts = dto.attempts ?? dto.totalAttempts ?? dto.total {
                 metrics["attempts"] = "\(attempts)"
             }
-            if let blocked = (json["blocked"] as? Int) ?? (json["blockedAttempts"] as? Int) {
+            if let blocked = dto.blocked ?? dto.blockedAttempts {
                 metrics["blocked"] = "\(blocked)"
             }
         case "location_bubble_agent", "location":
-            if let blocked = (json["blocked"] as? Int) ?? (json["blockedRequests"] as? Int) {
+            if let blocked = dto.blocked ?? dto.blockedRequests {
                 metrics["blocked"] = "\(blocked)"
             }
-            if let accuracy = json["accuracy"] as? String {
+            if let accuracy = dto.accuracy {
                 metrics["accuracy"] = accuracy
             }
         case "personal_data_cleanup_agent", "cleanup":
-            if let freed_space_gb = (json["freed_space_gb"] as? Double) ?? (json["totalFreed"] as? Double) {
+            if let freed_space_gb = dto.freed_space_gb ?? dto.totalFreed {
                 metrics["freed_space_gb"] = String(format: "%.1f", freed_space_gb)
             }
-            if let last_cleanup_hours_ago = json["last_cleanup_hours_ago"] as? Int {
+            if let last_cleanup_hours_ago = dto.last_cleanup_hours_ago {
                 metrics["last_cleanup_hours_ago"] = "\(last_cleanup_hours_ago)"
             }
         case "anti_tracker_agent", "tracker":
-            if let blocked_total = (json["blocked_total"] as? Int) ?? (json["totalBlocked"] as? Int) {
+            if let blocked_total = dto.blocked_total ?? dto.totalBlocked ?? dto.total {
                 metrics["blocked_total"] = "\(blocked_total)"
             }
-            if let blocked_this_week = (json["blocked_this_week"] as? Int) ?? (json["blockedThisWeek"] as? Int) {
+            if let blocked_this_week = dto.blocked_this_week ?? dto.blockedThisWeek ?? dto.last_7d {
                 metrics["blocked_this_week"] = "\(blocked_this_week)"
             }
         case "ai_categories_agent", "ai":
-            if let categorized = (json["categorized"] as? Int) ?? (json["totalCategorized"] as? Int) {
+            if let categorized = dto.categorized ?? dto.totalCategorized ?? dto.total {
                 metrics["categorized"] = "\(categorized)"
             }
-            if let blocked = (json["blocked"] as? Int) ?? (json["blockedContent"] as? Int) {
+            if let blocked = dto.blocked ?? dto.blockedContent {
                 metrics["blocked"] = "\(blocked)"
             }
         default:
@@ -408,6 +403,41 @@ class APIService: ObservableObject {
         }
         
         return ComponentStats(componentId: componentId, metrics: metrics, dataSource: .api)
+    }
+
+    private struct ComponentStatsDTO: Codable {
+        let trips: Int?
+        let safety_score: Double?
+        let new_events: Int?
+        let leaks_found: Int?
+        let new_leaks: Int?
+        let attempts: Int?
+        let blocked: Int?
+        let accuracy: String?
+        let freed_space_gb: Double?
+        let last_cleanup_hours_ago: Int?
+        let blocked_total: Int?
+        let blocked_this_week: Int?
+        let categorized: Int?
+        let totalLeaks: Int?
+        let newLeaks: Int?
+        let newEvents: Int?
+        let totalAttempts: Int?
+        let blockedAttempts: Int?
+        let blockedRequests: Int?
+        let totalFreed: Double?
+        let totalBlocked: Int?
+        let blockedThisWeek: Int?
+        let totalCategorized: Int?
+        let blockedContent: Int?
+        // reports_compat fallback fields
+        let total: Int?
+        let allowed: Int?
+        let last_24h: Int?
+        let last_7d: Int?
+        let last_30d: Int?
+        let source: String?
+        let timestamp: String?
     }
     
     // MARK: - AI Assistant API

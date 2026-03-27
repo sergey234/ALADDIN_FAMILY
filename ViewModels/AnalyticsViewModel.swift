@@ -28,6 +28,8 @@ class AnalyticsViewModel: ObservableObject {
     private var watchdogTask: Task<Void, Never>?
     private var lastLoadStartAt: Date?
     private var currentLoadId: String?
+    private var loadTask: Task<Void, Never>?
+    private var componentsTask: Task<Void, Never>?
     
     // Ключи для UserDefaults
     private let periodKey = "analytics_last_period"
@@ -59,7 +61,15 @@ class AnalyticsViewModel: ObservableObject {
     }
     
     @MainActor
-    func load() async {
+    func startLoad() {
+        loadTask?.cancel()
+        loadTask = Task { @MainActor [weak self] in
+            await self?.load()
+        }
+    }
+
+    @MainActor
+    private func load() async {
         let loadId = UUID().uuidString.prefix(8)
         currentLoadId = String(loadId)
         VisualLogger.shared.log("🚀 analytics_load_start id=\(loadId)", level: .info, category: "ANALYTICS.API")
@@ -221,30 +231,7 @@ class AnalyticsViewModel: ObservableObject {
             
             // ✅ ВАРИАНТ 4: Загружаем данные компонентов (если сервис поддерживает)
             // Ограничиваем время ожидания, чтобы не оставлять экран в вечном loading.
-            if let remoteService = service as? RemoteAnalyticsService {
-                do {
-                    VisualLogger.shared.log("📦 analytics_components_start id=\(loadId) count=7", level: .info, category: "ANALYTICS.API")
-                    #if DEBUG
-                    print("📊 AnalyticsViewModel: Начинаем загрузку компонентов...")
-                    #endif
-                    let components = try await withTimeout(seconds: 6) {
-                        try await remoteService.fetchAllComponentsStats()
-                    }
-                    componentsAnalytics = components
-                    componentsDataSource = .api // Если загрузилось успешно - данные из API
-                    VisualLogger.shared.log("✅ analytics_components_ok id=\(loadId)", level: .success, category: "ANALYTICS.API")
-                    #if DEBUG
-                    print("✅ AnalyticsViewModel: Компоненты загружены успешно")
-                    #endif
-                } catch {
-                    #if DEBUG
-                    print("⚠️ AnalyticsViewModel: Ошибка загрузки компонентов: \(error)")
-                    #endif
-                    // При ошибке компоненты остаются nil - UI покажет пустые данные
-                    componentsDataSource = .error
-                    VisualLogger.shared.log("⚠️ analytics_components_fail id=\(loadId) reason=\(error.localizedDescription)", level: .warning, category: "ANALYTICS.API")
-                }
-            }
+            startComponentsLoad(loadId: String(loadId))
 
             // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности загрузки
             PerformanceMonitor.shared.endScreenLoad("AnalyticsScreen")
@@ -315,6 +302,10 @@ class AnalyticsViewModel: ObservableObject {
 
     @MainActor
     func cancelAll(reason: String) {
+        loadTask?.cancel()
+        loadTask = nil
+        componentsTask?.cancel()
+        componentsTask = nil
         watchdogTask?.cancel()
         watchdogTask = nil
         if isLoading {
@@ -322,6 +313,36 @@ class AnalyticsViewModel: ObservableObject {
         }
         let loadId = currentLoadId ?? "none"
         VisualLogger.shared.log("🛑 analytics_cancel_all id=\(loadId) reason=\(reason)", level: .warning, category: "ANALYTICS.API")
+    }
+
+    @MainActor
+    private func startComponentsLoad(loadId: String) {
+        componentsTask?.cancel()
+        componentsTask = Task { [weak self] in
+            guard let self = self else { return }
+            guard let remoteService = self.service as? RemoteAnalyticsService else { return }
+
+            await MainActor.run {
+                VisualLogger.shared.log("📦 analytics_components_start id=\(loadId) count=7", level: .info, category: "ANALYTICS.API")
+            }
+
+            do {
+                let components = try await self.withTimeout(seconds: 6) {
+                    try await remoteService.fetchAllComponentsStats()
+                }
+                await MainActor.run {
+                    self.componentsAnalytics = components
+                    self.componentsDataSource = .api
+                    VisualLogger.shared.log("✅ analytics_components_ok id=\(loadId)", level: .success, category: "ANALYTICS.API")
+                }
+            } catch {
+                if Task.isCancelled { return }
+                await MainActor.run {
+                    self.componentsDataSource = .error
+                    VisualLogger.shared.log("⚠️ analytics_components_fail id=\(loadId) reason=\(error.localizedDescription)", level: .warning, category: "ANALYTICS.API")
+                }
+            }
+        }
     }
 
     private func withTimeout<T>(seconds: Double, operation: @escaping () async throws -> T) async throws -> T {
