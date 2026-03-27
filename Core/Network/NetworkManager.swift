@@ -1303,18 +1303,31 @@ class NetworkManager: NSObject, ObservableObject {
                 
                 // ✅ BUILD 123: Проверка mock ответов перед декодированием
                 if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                   let source = json["source"] as? String,
-                   source == "sfm_mock" || source == "mock" {
-                    // Это mock ответ - не декодируем в UserProfile
-                    let responseString = String(data: data, encoding: .utf8) ?? "Unable to convert to string"
-                    logger.error("⚠️ NetworkManager: Получен mock ответ от SFM для \(T.self)")
-                    logger.error("   - Response body: \(responseString.prefix(500))")
-                    logger.error("   - Source: \(source)")
-                    #if DEBUG
-                    print("⚠️ NetworkManager: Mock ответ от SFM - пропускаем декодирование")
-                    #endif
-                    completion(.failure(NetworkError.decodingError(NSError(domain: "NetworkManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Mock/fallback response from backend (source=\(source)) — operation not confirmed"]))))
-                    return
+                   let source = json["source"] as? String {
+                    let resultMarker = json["result"] as? String
+                    let isMockOrFallback =
+                        source == "sfm_mock" ||
+                        source == "sfm_fallback" ||
+                        source == "sfm_error" ||
+                        source == "mock" ||
+                        source == "mock_fallback" ||
+                        resultMarker == "mock_fallback"
+
+                    if isMockOrFallback {
+                        // Это mock/fallback - не декодируем в модель
+                        let responseString = String(data: data, encoding: .utf8) ?? "Unable to convert to string"
+                        logger.error("⚠️ NetworkManager: Получен mock ответ от SFM для \(T.self)")
+                        logger.error("   - Response body: \(responseString.prefix(500))")
+                        logger.error("   - Source: \(source)")
+                        if let resultMarker = resultMarker {
+                            logger.error("   - Result marker: \(resultMarker)")
+                        }
+                        #if DEBUG
+                        print("⚠️ NetworkManager: Mock ответ от SFM - пропускаем декодирование")
+                        #endif
+                        completion(.failure(NetworkError.decodingError(NSError(domain: "NetworkManager", code: -1, userInfo: [NSLocalizedDescriptionKey: "Mock/fallback response from backend (source=\(source)) — operation not confirmed"]))))
+                        return
+                    }
                 }
                 
                 // Декодирование
