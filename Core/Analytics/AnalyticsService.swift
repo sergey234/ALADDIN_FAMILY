@@ -97,7 +97,7 @@ struct DevicesAnalytics: Codable {
 
 // MARK: - Supporting Models
 
-struct ThreatTypeCount: Codable, Identifiable {
+struct ThreatTypeCount: Codable, Identifiable, Equatable {
     let id: UUID
     let type: String // код категории (web, file, network, app)
     let count: Int

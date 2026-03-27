@@ -184,8 +184,12 @@ class AnalyticsViewModel: ObservableObject {
             let (security, securitySource) = securityResult
             
             // Определяем общий источник данных
-            dataSource = summarySource == .api && securitySource == .api ? .api :
-                         summarySource == .cache || securitySource == .cache ? .cache : .empty
+            let resolvedDataSource: DataSource =
+                summarySource == .api && securitySource == .api ? .api :
+                summarySource == .cache || securitySource == .cache ? .cache : .empty
+            if dataSource != resolvedDataSource {
+                dataSource = resolvedDataSource
+            }
 
             #if DEBUG
             print("✅ AnalyticsViewModel: Данные загружены:")
@@ -201,7 +205,10 @@ class AnalyticsViewModel: ObservableObject {
 
             // ✅ ЗАДАЧА 64: Проверяем, используется ли офлайн режим
             // Если данные из кэша - включаем индикатор офлайн режима
-            isOfflineMode = (summarySource == .cache || securitySource == .cache)
+            let resolvedOfflineMode = (summarySource == .cache || securitySource == .cache)
+            if isOfflineMode != resolvedOfflineMode {
+                isOfflineMode = resolvedOfflineMode
+            }
 
             apply(summary: summary)
             apply(securityAnalytics: security)
@@ -238,7 +245,9 @@ class AnalyticsViewModel: ObservableObject {
             PerformanceMonitor.shared.endScreenLoad("AnalyticsScreen")
             
             // ✅ ВАРИАНТ 4: Если ошибка - устанавливаем dataSource = .error
-            dataSource = .error
+            if dataSource != .error {
+                dataSource = .error
+            }
             
             // ✅ ЭТАП 3: Обработка unauthorized
             let networkError = NetworkError.from(error)
@@ -246,7 +255,9 @@ class AnalyticsViewModel: ObservableObject {
                 let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
                 self.errorMessage = errorMessage
                 resetState()
-                isOfflineMode = false
+                if isOfflineMode {
+                    isOfflineMode = false
+                }
                 // Отправляем уведомление о необходимости логина
                 NotificationCenter.default.post(
                     name: NSNotification.Name("SessionExpired"),
@@ -262,7 +273,9 @@ class AnalyticsViewModel: ObservableObject {
                 let errorMsg = getErrorMessage(from: error)
                 errorMessage = errorMsg
                 resetState()
-                isOfflineMode = false
+                if isOfflineMode {
+                    isOfflineMode = false
+                }
                 VisualLogger.shared.log("❌ AnalyticsViewModel: api_fail -> empty (\(errorMsg))", level: .error, category: "ANALYTICS.API")
 
                 #if DEBUG
@@ -367,24 +380,26 @@ class AnalyticsViewModel: ObservableObject {
     // MARK: - Private helpers
     private func apply(summary: AnalyticsSummary) {
         logger.business("Applying analytics summary: \(summary.threatsDetected) threats detected")
-        threatsDetected = summary.threatsDetected
-        threatsBlocked = summary.threatsBlocked
-        itemsScanned = summary.itemsScanned
-        protectionLevel = summary.protectionLevel
+        if threatsDetected != summary.threatsDetected { threatsDetected = summary.threatsDetected }
+        if threatsBlocked != summary.threatsBlocked { threatsBlocked = summary.threatsBlocked }
+        if itemsScanned != summary.itemsScanned { itemsScanned = summary.itemsScanned }
+        if protectionLevel != summary.protectionLevel { protectionLevel = summary.protectionLevel }
     }
     
     private func apply(securityAnalytics: SecurityAnalytics) {
         logger.business("Applying security analytics data")
-        threatCategories = securityAnalytics.blockedThreats
+        if threatCategories != securityAnalytics.blockedThreats {
+            threatCategories = securityAnalytics.blockedThreats
+        }
     }
     
     @MainActor
     private func resetState() {
-        threatsDetected = 0
-        threatsBlocked = 0
-        itemsScanned = 0
-        protectionLevel = 0
-        threatCategories = []
+        if threatsDetected != 0 { threatsDetected = 0 }
+        if threatsBlocked != 0 { threatsBlocked = 0 }
+        if itemsScanned != 0 { itemsScanned = 0 }
+        if protectionLevel != 0 { protectionLevel = 0 }
+        if !threatCategories.isEmpty { threatCategories = [] }
     }
     
     // ✅ ВАРИАНТ 9: Загрузка кэшированных данных в офлайн режиме
