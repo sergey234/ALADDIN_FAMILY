@@ -30,6 +30,7 @@ class AnalyticsViewModel: ObservableObject {
     private var currentLoadId: String?
     private var loadTask: Task<Void, Never>?
     private var componentsTask: Task<Void, Never>?
+    private var lastSessionExpiredAt: Date?
     
     // Ключи для UserDefaults
     private let periodKey = "analytics_last_period"
@@ -254,12 +255,23 @@ class AnalyticsViewModel: ObservableObject {
                 if isOfflineMode {
                     isOfflineMode = false
                 }
-                // Отправляем уведомление о необходимости логина
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("SessionExpired"),
-                    object: nil,
-                    userInfo: ["message": errorMessage]
-                )
+                // Debounce SessionExpired to avoid global notification cascades.
+                let shouldPostSessionExpired: Bool
+                if let last = lastSessionExpiredAt {
+                    shouldPostSessionExpired = Date().timeIntervalSince(last) > 5
+                } else {
+                    shouldPostSessionExpired = true
+                }
+                if shouldPostSessionExpired {
+                    lastSessionExpiredAt = Date()
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("SessionExpired"),
+                        object: nil,
+                        userInfo: ["message": errorMessage]
+                    )
+                } else {
+                    VisualLogger.shared.log("⏭️ analytics_session_expired_debounced id=\(loadId)", level: .info, category: "ANALYTICS.API")
+                }
                 VisualLogger.shared.log("❌ analytics_load_fail id=\(loadId) reason=unauthorized", level: .error, category: "ANALYTICS.API")
                 #if DEBUG
                 print("⚠️ AnalyticsViewModel: Ошибка авторизации при загрузке аналитики")
