@@ -137,6 +137,12 @@ struct AnalyticsScreen: View {
             didStartInitialLoad = true
             Task { await viewModel.load() }
         }
+        .onDisappear {
+            VisualLogger.shared.log("👋 AnalyticsScreen onDisappear", level: .info, category: "ANALYTICS.UI")
+            Task { @MainActor in
+                viewModel.cancelAll(reason: "screen_disappear")
+            }
+        }
         .onChange(of: viewModel.isLoading) { isLoading in
             VisualLogger.shared.log("⏳ analytics_loading = \(isLoading)", level: .info, category: "ANALYTICS.UI")
         }

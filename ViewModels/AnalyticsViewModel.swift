@@ -27,6 +27,7 @@ class AnalyticsViewModel: ObservableObject {
     private let service: AnalyticsService
     private var watchdogTask: Task<Void, Never>?
     private var lastLoadStartAt: Date?
+    private var currentLoadId: String?
     
     // Ключи для UserDefaults
     private let periodKey = "analytics_last_period"
@@ -59,13 +60,17 @@ class AnalyticsViewModel: ObservableObject {
     
     @MainActor
     func load() async {
+        let loadId = UUID().uuidString.prefix(8)
+        currentLoadId = String(loadId)
+        VisualLogger.shared.log("🚀 analytics_load_start id=\(loadId)", level: .info, category: "ANALYTICS.API")
+
         // Guard against rapid re-entry bursts from multiple UI triggers.
         if let lastLoadStartAt = self.lastLoadStartAt, Date().timeIntervalSince(lastLoadStartAt) < 0.8 {
-            VisualLogger.shared.log("⏭️ Analytics load throttled (<0.8s)", level: .info, category: "ANALYTICS.API")
+            VisualLogger.shared.log("⏭️ analytics_load_skip_throttled id=\(loadId) (<0.8s)", level: .info, category: "ANALYTICS.API")
             return
         }
         if isLoading {
-            VisualLogger.shared.log("⏭️ Analytics load skipped: already loading", level: .info, category: "ANALYTICS.API")
+            VisualLogger.shared.log("⏭️ analytics_load_skip_already_loading id=\(loadId)", level: .info, category: "ANALYTICS.API")
             return
         }
         self.lastLoadStartAt = Date()
@@ -117,7 +122,7 @@ class AnalyticsViewModel: ObservableObject {
                     print("⚠️ AnalyticsViewModel: Токен не загрузился, показываем ошибку")
                     #endif
                     errorMessage = "Не удалось загрузить данные аналитики. Проверьте подключение к интернету."
-                    VisualLogger.shared.log("❌ AnalyticsViewModel: token_wait_timeout -> empty", level: .error, category: "ANALYTICS.API")
+                    VisualLogger.shared.log("❌ analytics_load_fail id=\(loadId) reason=token_wait_timeout", level: .error, category: "ANALYTICS.API")
                     isLoading = false
                     isOfflineMode = false
                     dataSource = .empty
@@ -132,7 +137,7 @@ class AnalyticsViewModel: ObservableObject {
                 print("⚠️ AnalyticsViewModel: Токен отсутствует, показываем ошибку")
                 #endif
                 errorMessage = "Не удалось загрузить данные аналитики. Проверьте подключение к интернету."
-                VisualLogger.shared.log("❌ AnalyticsViewModel: token_absent -> empty", level: .error, category: "ANALYTICS.API")
+                VisualLogger.shared.log("❌ analytics_load_fail id=\(loadId) reason=token_absent", level: .error, category: "ANALYTICS.API")
                 isLoading = false
                 isOfflineMode = false
                 dataSource = .empty
@@ -190,6 +195,7 @@ class AnalyticsViewModel: ObservableObject {
             if dataSource != resolvedDataSource {
                 dataSource = resolvedDataSource
             }
+            VisualLogger.shared.log("✅ analytics_load_base_ok id=\(loadId) source=\(resolvedDataSource)", level: .success, category: "ANALYTICS.API")
 
             #if DEBUG
             print("✅ AnalyticsViewModel: Данные загружены:")
@@ -217,6 +223,7 @@ class AnalyticsViewModel: ObservableObject {
             // Ограничиваем время ожидания, чтобы не оставлять экран в вечном loading.
             if let remoteService = service as? RemoteAnalyticsService {
                 do {
+                    VisualLogger.shared.log("📦 analytics_components_start id=\(loadId) count=7", level: .info, category: "ANALYTICS.API")
                     #if DEBUG
                     print("📊 AnalyticsViewModel: Начинаем загрузку компонентов...")
                     #endif
@@ -225,6 +232,7 @@ class AnalyticsViewModel: ObservableObject {
                     }
                     componentsAnalytics = components
                     componentsDataSource = .api // Если загрузилось успешно - данные из API
+                    VisualLogger.shared.log("✅ analytics_components_ok id=\(loadId)", level: .success, category: "ANALYTICS.API")
                     #if DEBUG
                     print("✅ AnalyticsViewModel: Компоненты загружены успешно")
                     #endif
@@ -234,6 +242,7 @@ class AnalyticsViewModel: ObservableObject {
                     #endif
                     // При ошибке компоненты остаются nil - UI покажет пустые данные
                     componentsDataSource = .error
+                    VisualLogger.shared.log("⚠️ analytics_components_fail id=\(loadId) reason=\(error.localizedDescription)", level: .warning, category: "ANALYTICS.API")
                 }
             }
 
@@ -264,7 +273,7 @@ class AnalyticsViewModel: ObservableObject {
                     object: nil,
                     userInfo: ["message": errorMessage]
                 )
-                VisualLogger.shared.log("❌ AnalyticsViewModel: unauthorized -> empty", level: .error, category: "ANALYTICS.API")
+                VisualLogger.shared.log("❌ analytics_load_fail id=\(loadId) reason=unauthorized", level: .error, category: "ANALYTICS.API")
                 #if DEBUG
                 print("⚠️ AnalyticsViewModel: Ошибка авторизации при загрузке аналитики")
                 #endif
@@ -276,7 +285,7 @@ class AnalyticsViewModel: ObservableObject {
                 if isOfflineMode {
                     isOfflineMode = false
                 }
-                VisualLogger.shared.log("❌ AnalyticsViewModel: api_fail -> empty (\(errorMsg))", level: .error, category: "ANALYTICS.API")
+                VisualLogger.shared.log("❌ analytics_load_fail id=\(loadId) reason=api_fail msg=\(errorMsg)", level: .error, category: "ANALYTICS.API")
 
                 #if DEBUG
                 print("❌ AnalyticsViewModel: Ошибка загрузки:")
@@ -289,18 +298,30 @@ class AnalyticsViewModel: ObservableObject {
                 #endif
             }
         }
-
+        VisualLogger.shared.log("🏁 analytics_load_finish id=\(loadId) loading=\(isLoading)", level: .info, category: "ANALYTICS.API")
     }
 
     @MainActor
     private func applyWatchdogTimeoutIfNeeded() {
         guard isLoading else { return }
+        let loadId = currentLoadId ?? "unknown"
         isLoading = false
         errorMessage = "Загрузка аналитики заняла слишком много времени. Попробуйте снова."
         if dataSource == .empty {
             dataSource = .error
         }
-        VisualLogger.shared.log("⏱️ Analytics watchdog timeout -> controlled stop", level: .warning, category: "ANALYTICS.API")
+        VisualLogger.shared.log("⏱️ analytics_watchdog_timeout id=\(loadId) -> controlled_stop", level: .warning, category: "ANALYTICS.API")
+    }
+
+    @MainActor
+    func cancelAll(reason: String) {
+        watchdogTask?.cancel()
+        watchdogTask = nil
+        if isLoading {
+            isLoading = false
+        }
+        let loadId = currentLoadId ?? "none"
+        VisualLogger.shared.log("🛑 analytics_cancel_all id=\(loadId) reason=\(reason)", level: .warning, category: "ANALYTICS.API")
     }
 
     private func withTimeout<T>(seconds: Double, operation: @escaping () async throws -> T) async throws -> T {
