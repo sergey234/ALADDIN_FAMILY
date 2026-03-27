@@ -56,17 +56,27 @@ def _resolve_user_id_from_claim(current_user: dict) -> int:
     if isinstance(raw_id, str) and raw_id.isdigit():
         return int(raw_id)
 
-    # Legacy compatibility path: token id may contain device_id.
-    if isinstance(raw_id, str) and raw_id and get_postgres_db:
+    # Legacy compatibility path:
+    # token might carry non-numeric id, while device identifier may be in `device_id` or `sub`.
+    candidate_device_ids = []
+    if isinstance(raw_id, str) and raw_id:
+        candidate_device_ids.append(raw_id)
+    for key in ("device_id", "sub"):
+        val = current_user.get(key)
+        if isinstance(val, str) and val and val not in candidate_device_ids:
+            candidate_device_ids.append(val)
+
+    if candidate_device_ids and get_postgres_db:
         gen = get_postgres_db()
         db = next(gen)
         try:
-            row = db.execute(
-                text("SELECT id FROM users WHERE device_id = :device_id ORDER BY id DESC LIMIT 1"),
-                {"device_id": raw_id},
-            ).fetchone()
-            if row and row[0] is not None:
-                return int(row[0])
+            for candidate in candidate_device_ids:
+                row = db.execute(
+                    text("SELECT id FROM users WHERE device_id = :device_id ORDER BY id DESC LIMIT 1"),
+                    {"device_id": candidate},
+                ).fetchone()
+                if row and row[0] is not None:
+                    return int(row[0])
         finally:
             gen.close()
 
