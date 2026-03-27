@@ -22,9 +22,6 @@ from security.family.family_registration import create_family
 # ✅ Авторизация с реальным user_id
 from app.auth.auth import get_current_user
 
-# ✅ ИСПОЛЬЗОВАНИЕ БД:
-# get_session() указывает на sqlite/payments.db (там нет family_members).
-# family_members/stats/delete живут в PostgreSQL, доступной через get_db().
 try:
     from app.database.database import get_db as get_postgres_db
 except ImportError:
@@ -169,7 +166,7 @@ async def get_family_stats_from_db(
 # ENDPOINT: GET /api/family/stats
 # ============================================
 
-@router.get("/stats__precision_disabled", response_model=FamilyStatsResponse)
+@router.get("/stats", response_model=FamilyStatsResponse)
 @limiter.limit("60/minute")  # ✅ RATE LIMITING: 60 запросов в минуту на IP
 async def get_family_stats(
     request: Request,
@@ -188,8 +185,12 @@ async def get_family_stats(
     - familyStatus: статус семьи ("protected", "warning", "danger")
     - familyStatusMessage: сообщение о статусе
     """
-    # ✅ Получить реальный user_id из токена
+    # ✅ Получить реальный user_id из токена (должен быть стабилен для FK в БД)
     user_id = current_user["id"]
+    if isinstance(user_id, str) and user_id.isdigit():
+        user_id = int(user_id)
+    if not isinstance(user_id, int):
+        raise HTTPException(status_code=401, detail="Invalid user_id in token")
     
     # ✅ STRUCTURED LOGGING: Логирование запроса статистики
     logger.info(
@@ -206,65 +207,45 @@ async def get_family_stats(
         gen = get_postgres_db()
         db = next(gen)
         try:
-            members_result = db.execute(
-                text(
-                    """
-                    SELECT COUNT(*) as count
-                    FROM family_members
-                    WHERE user_id = :user_id
-                    """
-                ),
+            # Determine family_id for this user
+            fam_row = db.execute(
+                text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
                 {"user_id": user_id},
-            )
-            members_row = members_result.fetchone()
-            total_members = members_row[0] if members_row else 0
+            ).fetchone()
+            if not fam_row:
+                # No family yet -> real empty stats
+                return FamilyStatsResponse(
+                    totalMembers=0,
+                    totalDevices=0,
+                    totalThreats=0,
+                    protectionLevel=0,
+                    familyStatus="danger",
+                    familyStatusMessage="Семья не создана",
+                )
 
-            devices_result = db.execute(
-                text(
-                    """
-                    SELECT COUNT(*) as count
-                    FROM devices
-                    WHERE user_id = :user_id OR owner_id = :user_id
-                    """
-                ),
-                {"user_id": user_id},
-            )
-            devices_row = devices_result.fetchone()
-            total_devices = devices_row[0] if devices_row else 0
+            family_id = fam_row[0]
 
-            threats_result = db.execute(
-                text(
-                    """
-                    SELECT COUNT(*) as count
-                    FROM threats_blocked
-                    WHERE user_id = :user_id
-                      AND blocked_at >= datetime('now', '-30 days')
-                    """
-                ),
-                {"user_id": user_id},
-            )
-            threats_row = threats_result.fetchone()
-            total_threats = threats_row[0] if threats_row else 0
-
-            components_result = db.execute(
+            # Aggregate from family_members table (source of truth)
+            agg = db.execute(
                 text(
                     """
                     SELECT
-                        COUNT(*) as total,
-                        SUM(CASE WHEN is_enabled = 1 THEN 1 ELSE 0 END) as enabled
-                    FROM component_status
-                    WHERE user_id = :user_id
+                        COUNT(*)::int AS members,
+                        COALESCE(SUM(devices), 0)::int AS devices,
+                        COALESCE(SUM(threats_blocked), 0)::int AS threats
+                    FROM family_members
+                    WHERE family_id = :family_id
                     """
                 ),
-                {"user_id": user_id},
-            )
-            components_row = components_result.fetchone()
-            if components_row and components_row[0]:
-                total = components_row[0]
-                enabled = components_row[1] or 0
-                protection_level = int((enabled / total) * 100) if total else 0
-            else:
-                protection_level = 0
+                {"family_id": family_id},
+            ).fetchone()
+
+            total_members = int(agg[0] or 0)
+            total_devices = int(agg[1] or 0)
+            total_threats = int(agg[2] or 0)
+
+            # Simple protection level heuristic until components are wired to real tables
+            protection_level = 95 if total_threats == 0 else 70
 
             if protection_level >= 80 and total_threats == 0:
                 family_status = "protected"
@@ -372,7 +353,8 @@ class RemoveFamilyMemberRequest(BaseModel):
 @limiter.limit("10/minute")  # ✅ RATE LIMITING: 10 запросов в минуту на IP
 async def create_family_endpoint(
     request: Request,
-    create_request: CreateFamilyRequest
+    create_request: CreateFamilyRequest,
+    current_user: dict = Depends(get_current_user),
 ):
     """
     Создание семьи БЕЗ персональных данных.
@@ -406,16 +388,74 @@ async def create_family_endpoint(
     )
     
     try:
-        # ✅ Вызов функции создания семьи (БЕЗ персональных данных)
+        # iOS UI currently sends symbolic values (toddler/school/teen/adult),
+        # while family_registration_system expects numeric ranges.
+        age_group_map = {
+            "toddler": "1-6",
+            "school": "7-12",
+            "teen": "13-17",
+            "adult": "24-55",
+        }
+        normalized_age_group = age_group_map.get(create_request.age_group, create_request.age_group)
+
+        # ✅ Вызов функции генерации family_id/MEM_*/short_code (БЕЗ персональных данных)
         result = create_family(
             role=create_request.role,
-            age_group=create_request.age_group,
+            age_group=normalized_age_group,
             personal_letter=create_request.personal_letter,
             device_type=create_request.device_type
         )
         
         # ✅ result - это Dict[str, str] с ключами: family_id, qr_code_data, short_code, creator_member_id, expires_at
         response = CreateFamilyResponse(**result)
+
+        # ✅ Persist to Postgres as source of truth
+        if not get_postgres_db:
+            raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+        user_id = current_user.get("id")
+        if isinstance(user_id, str) and user_id.isdigit():
+            user_id = int(user_id)
+        if not isinstance(user_id, int):
+            raise HTTPException(status_code=401, detail="Invalid user_id in token")
+
+        def persist_sync():
+            gen = get_postgres_db()
+            db = next(gen)
+            try:
+                db.execute(
+                    text(
+                        """
+                        INSERT INTO families (id, owner_user_id)
+                        VALUES (:family_id, :owner_user_id)
+                        ON CONFLICT (id) DO NOTHING
+                        """
+                    ),
+                    {"family_id": response.family_id, "owner_user_id": user_id},
+                )
+                # Creator becomes first family member
+                db.execute(
+                    text(
+                        """
+                        INSERT INTO family_members (id, family_id, user_id, name, role, status, last_active)
+                        VALUES (:id, :family_id, :user_id, :name, :role, 'protected', :last_active)
+                        ON CONFLICT (id) DO NOTHING
+                        """
+                    ),
+                    {
+                        "id": response.creator_member_id,
+                        "family_id": response.family_id,
+                        "user_id": user_id,
+                        "name": f"{create_request.role.upper()} {create_request.personal_letter.upper()}",
+                        "role": create_request.role,
+                        "last_active": datetime.now().strftime("%H:%M"),
+                    },
+                )
+                db.commit()
+            finally:
+                gen.close()
+
+        await asyncio.to_thread(persist_sync)
         
         # ✅ STRUCTURED LOGGING: Логирование успешного создания
         logger.info(
@@ -464,6 +504,10 @@ async def get_family_members_compat(
     Если БД не подключена — отдаём 503, чтобы клиент не принимал пустые/фейковые данные как "успех".
     """
     user_id = current_user.get("id")
+    if isinstance(user_id, str) and user_id.isdigit():
+        user_id = int(user_id)
+    if not isinstance(user_id, int):
+        raise HTTPException(status_code=401, detail="Invalid user_id in token")
     if not get_postgres_db:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
 
@@ -471,16 +515,17 @@ async def get_family_members_compat(
         gen = get_postgres_db()
         db = next(gen)
         try:
-            res = db.execute(
-                text(
-                    """
-                    SELECT id, name, role
-                    FROM family_members
-                    WHERE user_id = :user_id
-                    ORDER BY id ASC
-                    """
-                ),
+            fam_row = db.execute(
+                text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
                 {"user_id": user_id},
+            ).fetchone()
+            if not fam_row:
+                return []
+            family_id = fam_row[0]
+
+            res = db.execute(
+                text("SELECT id, name, role FROM family_members WHERE family_id = :family_id ORDER BY id ASC"),
+                {"family_id": family_id},
             )
             rows = res.fetchall() or []
             return [
@@ -529,6 +574,10 @@ async def remove_family_member(
     - Если БД не настроена — 503 (чтобы iOS не считал это успехом).
     """
     user_id = current_user.get("id")
+    if isinstance(user_id, str) and user_id.isdigit():
+        user_id = int(user_id)
+    if not isinstance(user_id, int):
+        raise HTTPException(status_code=401, detail="Invalid user_id in token")
     if not payload.memberId:
         raise HTTPException(status_code=400, detail="memberId is required")
     if not get_postgres_db:
@@ -538,33 +587,41 @@ async def remove_family_member(
         gen = get_postgres_db()
         db = next(gen)
         try:
+            fam_row = db.execute(
+                text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
+                {"user_id": user_id},
+            ).fetchone()
+            if not fam_row:
+                raise HTTPException(status_code=404, detail="Family not found")
+            family_id = fam_row[0]
+
             # 1) Читаем участника перед удалением (чтобы вернуть объект iOS-совместимого формата)
             res = db.execute(
                 text(
                     """
-                    SELECT id, name, role
+                    SELECT id, name, role, status, threats_blocked, last_active, devices
                     FROM family_members
-                    WHERE user_id = :user_id AND id::text = :member_id
+                    WHERE family_id = :family_id AND id = :member_id
                     LIMIT 1
                     """
                 ),
-                {"user_id": user_id, "member_id": payload.memberId},
+                {"family_id": family_id, "member_id": payload.memberId},
             )
             row = res.fetchone()
             if not row:
                 raise HTTPException(status_code=404, detail="Family member not found")
 
-            member_id, name, role = row[0], row[1], row[2]
+            member_id, name, role, status_val, threats_val, last_active, devices_val = row
 
             # 2) Удаляем
             del_res = db.execute(
                 text(
                     """
                     DELETE FROM family_members
-                    WHERE user_id = :user_id AND id::text = :member_id
+                    WHERE family_id = :family_id AND id = :member_id
                     """
                 ),
-                {"user_id": user_id, "member_id": payload.memberId},
+                {"family_id": family_id, "member_id": payload.memberId},
             )
 
             # 3) Коммит
@@ -586,10 +643,10 @@ async def remove_family_member(
                 name=str(name),
                 role=str(role),
                 avatar="👤",
-                status="protected",
-                threatsBlocked=0,
-                lastActive=datetime.now().strftime("%H:%M"),
-                devices=0,
+                status=str(status_val or "protected"),
+                threatsBlocked=int(threats_val or 0),
+                lastActive=str(last_active or ""),
+                devices=int(devices_val or 0),
             )
         except HTTPException:
             raise

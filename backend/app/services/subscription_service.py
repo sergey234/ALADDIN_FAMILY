@@ -6,6 +6,7 @@ Manages subscription lifecycle with PostgreSQL persistence
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from app.models.subscription import (
     SubscriptionPayload, SubscriptionLevel, TrialInfo,
     SubscriptionLimits, UsageCounters, DeviceRegisterRequest,
@@ -18,6 +19,31 @@ class SubscriptionService:
     """Main subscription management service with DB persistence"""
 
     @staticmethod
+    def _ensure_user_for_device(db: Session, device_id: str, device_type: Optional[str] = None) -> str:
+        """Ensure a real user row exists for a device and return stable user_id (as string for JWT payload compatibility)."""
+        # users table exists in prod; we keep this logic DB-driven (no mocks).
+        # If device is already registered, reuse same user id.
+        row = db.execute(
+            text("SELECT id FROM users WHERE device_id = :device_id LIMIT 1"),
+            {"device_id": device_id},
+        ).fetchone()
+        if row and row[0] is not None:
+            return str(row[0])
+
+        created = db.execute(
+            text(
+                """
+                INSERT INTO users (device_id, device_type, subscription_level, created_at)
+                VALUES (:device_id, :device_type, 'free', NOW())
+                RETURNING id
+                """
+            ),
+            {"device_id": device_id, "device_type": device_type},
+        ).fetchone()
+        db.commit()
+        return str(created[0])
+
+    @staticmethod
     def register_device(db: Session, request: DeviceRegisterRequest) -> SubscriptionPayload:
         """Register new device with free subscription in DB"""
         repo = SubscriptionRepository(db)
@@ -28,8 +54,10 @@ class SubscriptionService:
             return SubscriptionService._map_to_payload(existing)
 
         # Create free subscription data
+        real_user_id = SubscriptionService._ensure_user_for_device(db, request.device_id, getattr(request, "device_type", None))
+
         sub_data = {
-            "user_id": "anonymous",
+            "user_id": real_user_id,
             "device_id": request.device_id,
             "level": SubscriptionLevel.FREE.value,
             "status": "active",
@@ -79,8 +107,10 @@ class SubscriptionService:
         duration_days = getattr(request.trial_info, "duration_days", 14) or 14
         computed_trial_end = now + timedelta(days=duration_days)
 
+        real_user_id = SubscriptionService._ensure_user_for_device(db, request.device_id, getattr(request, "device_type", None))
+
         sub_data = {
-            "user_id": "anonymous",
+            "user_id": real_user_id,
             "device_id": request.device_id,
             "level": SubscriptionLevel.TRIAL.value,
             "status": "trial",
@@ -97,6 +127,33 @@ class SubscriptionService:
             db_sub = repo.create_subscription(sub_data)
 
         return SubscriptionService._map_to_payload(db_sub)
+
+    @staticmethod
+    def save_refresh_token(db: Session, device_id: str, refresh_token: str, expires_at: datetime) -> None:
+        """Persist refresh token for device auth flow compatibility."""
+        db.execute(
+            text(
+                """
+                CREATE TABLE IF NOT EXISTS device_refresh_tokens (
+                    id SERIAL PRIMARY KEY,
+                    device_id VARCHAR(255) NOT NULL,
+                    refresh_token TEXT NOT NULL,
+                    expires_at TIMESTAMP NOT NULL,
+                    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP
+                )
+                """
+            )
+        )
+        db.execute(
+            text(
+                """
+                INSERT INTO device_refresh_tokens (device_id, refresh_token, expires_at)
+                VALUES (:device_id, :refresh_token, :expires_at)
+                """
+            ),
+            {"device_id": device_id, "refresh_token": refresh_token, "expires_at": expires_at},
+        )
+        db.commit()
 
     @staticmethod
     def upgrade_subscription(db: Session, device_id: str, new_level: SubscriptionLevel) -> Optional[SubscriptionPayload]:

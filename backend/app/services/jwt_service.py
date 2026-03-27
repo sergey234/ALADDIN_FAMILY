@@ -38,8 +38,15 @@ class JWTService:
         exp_ts = int(expire.timestamp())
         iat_ts = int(datetime.utcnow().timestamp())
 
+        # For production-safe API auth flows we must provide stable user identity fields:
+        # - user_id/id for app.auth.get_current_user() priority resolution
+        # - sub kept for backwards compatibility
+        stable_user_id = subscription.user_id or subscription.device_id
+
         payload = {
-            "sub": subscription.user_id or subscription.device_id,
+            "sub": stable_user_id,
+            "user_id": stable_user_id,
+            "id": stable_user_id,
             "device_id": subscription.device_id,
             "subscription": {
                 "level": subscription.level.value,
@@ -196,3 +203,29 @@ class JWTService:
         if not decoded:
             return None
         return decoded["subscription"]
+
+    @staticmethod
+    def create_refresh_token(subscription: SubscriptionPayload) -> str:
+        """Create JWT refresh token (30 days).
+
+        Required for `/api/auth/register-device(-trial)` compatibility in `app/routers/subscription.py`.
+        """
+        expire = datetime.utcnow() + timedelta(days=30)
+        exp_ts = int(expire.timestamp())
+        iat_ts = int(datetime.utcnow().timestamp())
+
+        stable_user_id = subscription.user_id or subscription.device_id
+
+        payload = {
+            "sub": stable_user_id,
+            "user_id": stable_user_id,
+            "id": stable_user_id,
+            "device_id": subscription.device_id,
+            "type": "device_refresh",
+            "exp": exp_ts,
+            "iat": iat_ts,
+            "iss": "aladdin-backend",
+        }
+
+        token = jwt.encode(payload, SECRET_KEY, algorithm=ALGORITHM)
+        return token

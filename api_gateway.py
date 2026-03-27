@@ -88,19 +88,61 @@ def get_user_from_token(authorization: Optional[str]):
 
 @app.post("/api/auth/register-device")
 async def register_device(data: Dict[str, Any]):
-    device_id = data.get("deviceId", str(uuid.uuid4())[:8])
-    token = jwt.encode({"sub": device_id, "exp": datetime.utcnow() + timedelta(days=14)}, SECRET_KEY, algorithm=ALGORITHM)
-    logger.info(f"📱 Device registered: {device_id}")
-    return {
-        "token": token,
-        "deviceId": device_id,
-        "subscription": {
-            "level": "trial", 
-            "trialInfo": {"isActive": True, "daysRemaining": 14},
-            "components": ["all"],
-            "limits": {"ai_chats": 100, "scans": 100}
+    """
+    Production-safe device registration:
+    - Creates/ensures a real user row in Postgres (stable user_id)
+    - Returns real JWT with user_id/id/sub (no anonymous/mock)
+    Compatibility:
+    - Accepts both device_id and deviceId from clients
+    - Returns both device_id and deviceId
+    """
+    try:
+        from app.database.database import get_db
+        from app.services.subscription_service import SubscriptionService
+        from app.services.jwt_service import JWTService
+        from app.models.subscription import DeviceRegisterRequest
+    except Exception as e:
+        logger.error(f"❌ register-device backend unavailable: {e}")
+        raise HTTPException(status_code=503, detail="Auth backend unavailable")
+
+    device_id = data.get("device_id") or data.get("deviceId") or str(uuid.uuid4())[:8]
+    device_type = data.get("device_type") or data.get("deviceType") or "ios"
+
+    # get_db() is a generator for sync Session
+    gen = get_db()
+    db = next(gen)
+    try:
+        subscription = SubscriptionService.register_device(db, DeviceRegisterRequest(device_id=device_id, device_type=device_type))
+        token = JWTService.create_subscription_token(subscription)
+
+        # Compat subscription shape expected by legacy clients
+        trial_info = None
+        if getattr(subscription, "trial_info", None):
+            trial_info = {
+                "isActive": bool(subscription.trial_info.is_active),
+                "daysRemaining": int(subscription.trial_info.days_remaining),
+            }
+
+        return {
+            "token": token,
+            "device_id": device_id,
+            "deviceId": device_id,
+            "subscription": {
+                "level": subscription.level.value if hasattr(subscription.level, "value") else str(subscription.level),
+                "trialInfo": trial_info,
+                "limits": subscription.limits.dict() if getattr(subscription, "limits", None) else {},
+                "permissions": getattr(subscription, "permissions", {}) or {},
+                "user_id": getattr(subscription, "user_id", None),
+            },
         }
-    }
+    except Exception as e:
+        logger.error(f"❌ register-device failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Registration failed: {str(e)}")
+    finally:
+        try:
+            gen.close()
+        except Exception:
+            pass
 
 @app.post("/api/auth/login")
 async def login_device(data: Dict[str, Any]):
@@ -193,11 +235,46 @@ async def catch_all_api_proxy(request: Request, path: str, authorization: Option
         result_value = sfm_result.get("result")
 
         if source in {"sfm_mock", "sfm_fallback", "sfm_error"}:
+            logger.warning(
+                "Blocking SFM mock/fallback response",
+                req_method=req_method,
+                api_path=api_path,
+                source=source,
+                result=result_value,
+            )
             return True
 
         # Some SFM responses use plain string marker.
         if result_value == "mock_fallback":
+            logger.warning(
+                "Blocking SFM mock/fallback response",
+                req_method=req_method,
+                api_path=api_path,
+                source=source,
+                result=result_value,
+            )
             return True
+
+        # Defensive: some adapters may return non-standard structures.
+        # If serialized content still contains mock markers, block.
+        try:
+            serialized = json.dumps(sfm_result, default=str)
+            if (
+                "sfm_mock" in serialized
+                or "sfm_fallback" in serialized
+                or "sfm_error" in serialized
+                or "mock_fallback" in serialized
+            ):
+                logger.warning(
+                    "Blocking SFM mock/fallback response (serialized detection)",
+                    req_method=req_method,
+                    api_path=api_path,
+                    source=source,
+                    result=result_value,
+                )
+                return True
+        except Exception:
+            pass
 
         return False
     
