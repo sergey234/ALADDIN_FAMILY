@@ -13,6 +13,7 @@ enum FamilyProtectionStatus: String, Codable {
     case paused
     case attention
     case critical
+    case networkUnavailable
     
     init(apiValue: String?) {
         self = FamilyProtectionStatus(rawValue: apiValue?.lowercased() ?? "") ?? .active
@@ -24,6 +25,7 @@ enum FamilyProtectionStatus: String, Codable {
         case .paused: return "pause.circle.fill"
         case .attention: return "exclamationmark.triangle.fill"
         case .critical: return "xmark.octagon.fill"
+        case .networkUnavailable: return "wifi.exclamationmark"
         }
     }
     
@@ -33,6 +35,7 @@ enum FamilyProtectionStatus: String, Codable {
         case .paused: return Color(red: 0.6, green: 0.63, blue: 0.68) // #9AA0AE
         case .attention: return Color(red: 1.0, green: 0.62, blue: 0.18) // #FF9D2E
         case .critical: return Color(red: 1.0, green: 0.3, blue: 0.31) // #FF4D4F
+        case .networkUnavailable: return Color(red: 0.22, green: 0.54, blue: 0.96) // #3889F5
         }
     }
     
@@ -42,6 +45,7 @@ enum FamilyProtectionStatus: String, Codable {
         case .paused: return "family_status_paused"
         case .attention: return "family_status_attention"
         case .critical: return "family_status_critical"
+        case .networkUnavailable: return "family_status_network_unavailable"
         }
     }
     
@@ -51,6 +55,7 @@ enum FamilyProtectionStatus: String, Codable {
         case .paused: return "family_status_paused_message"
         case .attention: return "family_status_attention_message"
         case .critical: return "family_status_critical_message"
+        case .networkUnavailable: return "family_status_network_unavailable_message"
         }
     }
 }
@@ -280,6 +285,14 @@ class MainViewModel: ObservableObject {
                                     self.isLoading = false
                                     self.isLoadingDashboard = false
                                     self.errorMessage = "Не удалось загрузить данные. Проверьте подключение к интернету."
+                                    // Production-safe: при серверном фейле не оставляем старые “реальные” цифры.
+                                    self.familyMembers = 0
+                                    self.devicesProtected = 0
+                                    self.threatsBlocked = 0
+                                    self.lastUpdateTime = nil
+                                    // Temporary server/network failure is not a "critical disable" state.
+                                    self.familyProtectionStatus = .networkUnavailable
+                                    self.familyProtectionStatusMessage = LocalizationManager.shared.localized("family_status_network_unavailable_message")
                                     NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
                                 }
                             } else {
@@ -296,6 +309,14 @@ class MainViewModel: ObservableObject {
                                 self.isLoading = false
                                 self.isLoadingDashboard = false
                                 self.errorMessage = "Не удалось загрузить данные: \(error.localizedDescription)"
+                                // Production-safe: при серверном фейле не оставляем старые “реальные” цифры.
+                                self.familyMembers = 0
+                                self.devicesProtected = 0
+                                self.threatsBlocked = 0
+                                self.lastUpdateTime = nil
+                                // Temporary server/network failure is not a "critical disable" state.
+                                self.familyProtectionStatus = .networkUnavailable
+                                self.familyProtectionStatusMessage = LocalizationManager.shared.localized("family_status_network_unavailable_message")
                                 print("❌ MainViewModel: Ошибка после \(maxAttempts) попыток: \(error.localizedDescription)")
                                 NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
                             }

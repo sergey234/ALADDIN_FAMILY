@@ -95,8 +95,8 @@ class APIService: ObservableObject {
     // MARK: - Family Registration API
 
     func createFamily(request: CreateFamilyRequest, completion: @escaping (Result<CreateFamilyResponse, Error>) -> Void) {
-        // ✅ Публичный endpoint - не требует авторизации
-        networkManager.post(endpoint: AppConfig.Endpoint.createFamily, body: request, requiresAuth: false, completion: completion)
+        // Production: family creation must be authorized and bound to a real user_id.
+        networkManager.post(endpoint: AppConfig.Endpoint.createFamily, body: request, requiresAuth: true, completion: completion)
     }
 
     func joinFamily(request: JoinFamilyRequest, completion: @escaping (Result<APIResponse<FamilyResponse>, Error>) -> Void) {

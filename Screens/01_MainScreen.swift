@@ -783,6 +783,13 @@ struct MainScreen: View {
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Основной контент приложения")
+                // Production-safe: обновляем Family stats/тариф сразу после подтверждённого удаления участника
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("MainFamilyStatsForceRefresh"))) { _ in
+                    Task { @MainActor in
+                        mainViewModel.refreshStats()
+                        tariffManager.loadTariff()
+                    }
+                }
     }
 
     private var currentTariffDisplayName: String {
@@ -905,6 +912,7 @@ extension FamilyProtectionStatus {
         case .paused: return Color(red: 0.43, green: 0.45, blue: 0.52) // #6E7484
         case .attention: return Color(red: 0.88, green: 0.55, blue: 0.16) // #E08F29
         case .critical: return Color(red: 0.88, green: 0.26, blue: 0.27) // #E04345
+        case .networkUnavailable: return Color(red: 0.12, green: 0.43, blue: 0.84) // #1F6ED6
         }
     }
 }

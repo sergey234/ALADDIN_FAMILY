@@ -25,6 +25,8 @@ class AnalyticsViewModel: ObservableObject {
     @Published private(set) var componentsDataSource: DataSource = .empty
     
     private let service: AnalyticsService
+    private var watchdogTask: Task<Void, Never>?
+    private var lastLoadStartAt: Date?
     
     // Ключи для UserDefaults
     private let periodKey = "analytics_last_period"
@@ -57,10 +59,16 @@ class AnalyticsViewModel: ObservableObject {
     
     @MainActor
     func load() async {
+        // Guard against rapid re-entry bursts from multiple UI triggers.
+        if let lastLoadStartAt = self.lastLoadStartAt, Date().timeIntervalSince(lastLoadStartAt) < 0.8 {
+            VisualLogger.shared.log("⏭️ Analytics load throttled (<0.8s)", level: .info, category: "ANALYTICS.API")
+            return
+        }
         if isLoading {
             VisualLogger.shared.log("⏭️ Analytics load skipped: already loading", level: .info, category: "ANALYTICS.API")
             return
         }
+        self.lastLoadStartAt = Date()
         
         // ✅ ДИАГНОСТИКА: Проверка токена во всех хранилищах
         #if DEBUG
@@ -135,7 +143,16 @@ class AnalyticsViewModel: ObservableObject {
         }
         
         isLoading = true
-        defer { isLoading = false }
+        watchdogTask?.cancel()
+        watchdogTask = Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 15_000_000_000)
+            await self?.applyWatchdogTimeoutIfNeeded()
+        }
+        defer {
+            isLoading = false
+            watchdogTask?.cancel()
+            watchdogTask = nil
+        }
         errorMessage = nil
         isOfflineMode = false // ✅ ЗАДАЧА 64: Сбрасываем индикатор офлайн режима
 
@@ -260,6 +277,17 @@ class AnalyticsViewModel: ObservableObject {
             }
         }
 
+    }
+
+    @MainActor
+    private func applyWatchdogTimeoutIfNeeded() {
+        guard isLoading else { return }
+        isLoading = false
+        errorMessage = "Загрузка аналитики заняла слишком много времени. Попробуйте снова."
+        if dataSource == .empty {
+            dataSource = .error
+        }
+        VisualLogger.shared.log("⏱️ Analytics watchdog timeout -> controlled stop", level: .warning, category: "ANALYTICS.API")
     }
 
     private func withTimeout<T>(seconds: Double, operation: @escaping () async throws -> T) async throws -> T {

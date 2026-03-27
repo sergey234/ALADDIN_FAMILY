@@ -42,6 +42,36 @@ limiter = Limiter(key_func=get_remote_address)
 # ✅ STRUCTURED LOGGING: Инициализация logger
 logger = structlog.get_logger()
 
+def _resolve_user_id_from_claim(current_user: dict) -> int:
+    """Resolve stable integer user_id from JWT claims.
+
+    Supports:
+    - direct int id
+    - numeric string id
+    - legacy device-id tokens by mapping users.device_id -> users.id
+    """
+    raw_id = current_user.get("id")
+    if isinstance(raw_id, int):
+        return raw_id
+    if isinstance(raw_id, str) and raw_id.isdigit():
+        return int(raw_id)
+
+    # Legacy compatibility path: token id may contain device_id.
+    if isinstance(raw_id, str) and raw_id and get_postgres_db:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            row = db.execute(
+                text("SELECT id FROM users WHERE device_id = :device_id ORDER BY id DESC LIMIT 1"),
+                {"device_id": raw_id},
+            ).fetchone()
+            if row and row[0] is not None:
+                return int(row[0])
+        finally:
+            gen.close()
+
+    raise HTTPException(status_code=401, detail="Invalid user_id in token")
+
 
 # ============================================
 # МОДЕЛИ ОТВЕТОВ
@@ -186,11 +216,7 @@ async def get_family_stats(
     - familyStatusMessage: сообщение о статусе
     """
     # ✅ Получить реальный user_id из токена (должен быть стабилен для FK в БД)
-    user_id = current_user["id"]
-    if isinstance(user_id, str) and user_id.isdigit():
-        user_id = int(user_id)
-    if not isinstance(user_id, int):
-        raise HTTPException(status_code=401, detail="Invalid user_id in token")
+    user_id = _resolve_user_id_from_claim(current_user)
     
     # ✅ STRUCTURED LOGGING: Логирование запроса статистики
     logger.info(
@@ -413,11 +439,7 @@ async def create_family_endpoint(
         if not get_postgres_db:
             raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
 
-        user_id = current_user.get("id")
-        if isinstance(user_id, str) and user_id.isdigit():
-            user_id = int(user_id)
-        if not isinstance(user_id, int):
-            raise HTTPException(status_code=401, detail="Invalid user_id in token")
+        user_id = _resolve_user_id_from_claim(current_user)
 
         def persist_sync():
             gen = get_postgres_db()
@@ -503,11 +525,7 @@ async def get_family_members_compat(
     ✅ Production rule: no mock/fake.
     Если БД не подключена — отдаём 503, чтобы клиент не принимал пустые/фейковые данные как "успех".
     """
-    user_id = current_user.get("id")
-    if isinstance(user_id, str) and user_id.isdigit():
-        user_id = int(user_id)
-    if not isinstance(user_id, int):
-        raise HTTPException(status_code=401, detail="Invalid user_id in token")
+    user_id = _resolve_user_id_from_claim(current_user)
     if not get_postgres_db:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
 
@@ -573,11 +591,7 @@ async def remove_family_member(
     - Реально удалять участника в БД (если возможно).
     - Если БД не настроена — 503 (чтобы iOS не считал это успехом).
     """
-    user_id = current_user.get("id")
-    if isinstance(user_id, str) and user_id.isdigit():
-        user_id = int(user_id)
-    if not isinstance(user_id, int):
-        raise HTTPException(status_code=401, detail="Invalid user_id in token")
+    user_id = _resolve_user_id_from_claim(current_user)
     if not payload.memberId:
         raise HTTPException(status_code=400, detail="memberId is required")
     if not get_postgres_db:

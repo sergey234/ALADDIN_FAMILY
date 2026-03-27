@@ -19,6 +19,7 @@ struct AnalyticsScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var viewModel = AnalyticsScreen.makeViewModel()
     @State private var showAnalyticsSettings: Bool = false
+    @State private var didStartInitialLoad: Bool = false
     
     // MARK: - Component Reports Modals
     
@@ -87,7 +88,6 @@ struct AnalyticsScreen: View {
             }
         }
         .navigationBarHidden(true)
-        .task { await viewModel.load() }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("analytics_lang_\(localizationManager.currentLanguage.rawValue)")
         .sheet(isPresented: $showAnalyticsSettings) {
@@ -133,6 +133,9 @@ struct AnalyticsScreen: View {
         .withVisualLogger()
         .onAppear {
             VisualLogger.shared.log("👀 AnalyticsScreen onAppear", level: .info, category: "ANALYTICS.UI")
+            guard !didStartInitialLoad else { return }
+            didStartInitialLoad = true
+            Task { await viewModel.load() }
         }
         .onChange(of: viewModel.isLoading) { isLoading in
             VisualLogger.shared.log("⏳ analytics_loading = \(isLoading)", level: .info, category: "ANALYTICS.UI")

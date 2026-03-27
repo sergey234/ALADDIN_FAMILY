@@ -465,7 +465,14 @@ class FamilyRegistrationViewModel: ObservableObject {
                     }
                     }
                     
-                    self?.errorMessage = error.localizedDescription
+                    let networkError = NetworkError.from(error)
+                    switch networkError {
+                    case .unauthorized, .tokenExpired, .invalidToken, .reauthenticationRequired:
+                        self?.errorMessage = "Сессия истекла. Обновите вход и попробуйте снова."
+                        VisualLogger.shared.log("⚠️ FAMILY CREATE unauthorized/session-expired", level: .warning, category: "FAMILY")
+                    default:
+                        self?.errorMessage = error.localizedDescription
+                    }
                     self?.isLoading = false
                     self?.currentStep = .idle  // ✅ ИСПРАВЛЕНИЕ: Возвращаемся в idle при ошибке
                 }
