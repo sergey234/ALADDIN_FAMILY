@@ -15,13 +15,15 @@ FastAPI endpoints для получения статистики по разли
 """
 
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Dict, List, Optional, Any, Tuple
 
 from fastapi import APIRouter, HTTPException, Query, Depends
 from pydantic import BaseModel, Field
 import logging
 import sys
 import os
+from sqlalchemy.engine import Result
+from sqlalchemy import text
 
 # SFM Adapter import
 backend_path = "/opt/aladdin-backend"
@@ -73,6 +75,10 @@ class ReportCompatBoolResponse(BaseModel):
     data: bool
     message: Optional[str] = None
 
+class CursorListResponse(BaseModel):
+    items: List[Dict[str, Any]]
+    next_cursor: Optional[str] = None
+
 
 # =============================================================================
 # Helper функции
@@ -96,6 +102,32 @@ def _has_mock_marker(payload: Dict[str, Any]) -> bool:
     source = str(payload.get("source", "")).lower()
     result = str(payload.get("result", "")).lower()
     return source in {"sfm_mock", "sfm_fallback", "sfm_error", "mock"} or result == "mock_fallback"
+
+def _fetch_list_from_db(sql: str, params: Dict[str, Any]) -> Tuple[List[Dict[str, Any]], Optional[str]]:
+    """
+    Execute raw SQL (RO) and return items plus opaque next_cursor based on last row position.
+    """
+    try:
+        from app.database.database import engine  # type: ignore
+    except Exception as e:
+        logger.error(f"DB engine unavailable: {e}")
+        return [], None
+    items: List[Dict[str, Any]] = []
+    next_cursor: Optional[str] = None
+    with engine.connect() as conn:
+        res: Result = conn.execute(text(sql), params)
+        rows = res.mappings().all()
+        for row in rows:
+            items.append(dict(row))
+        if len(rows) == params.get("limit"):
+            # Build simple cursor from last primary/time column if present
+            last = rows[-1]
+            # prefer timestamp/id fields when present
+            for key in ("leak_date", "timestamp", "last_blocked_at", "cleanup_date", "id"):
+                if key in last and last[key] is not None:
+                    next_cursor = str(last[key])
+                    break
+    return items, next_cursor
 
 
 async def _call_sfm_function(func_name: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -179,12 +211,26 @@ async def get_dark_web_stats(
     Returns:
         Статистика мониторинга Dark Web
     """
-    params = {}
-    if user_id:
-        params["user_id"] = user_id
-    
-    result = await _call_sfm_function("get_darkweb_stats", params)
-    return ReportStatsResponse(**result)
+    try:
+        from app.database.database import engine  # type: ignore
+        with engine.connect() as conn:
+            row = conn.execute(text("""
+                SELECT
+                  COUNT(*)::int AS total,
+                  COALESCE(SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END),0)::int AS blocked,
+                  COALESCE(SUM(CASE WHEN status <> 'resolved' OR status IS NULL THEN 1 ELSE 0 END),0)::int AS allowed,
+                  COALESCE(SUM(CASE WHEN leak_date >= NOW() - INTERVAL '24 hours' THEN 1 ELSE 0 END),0)::int AS last_24h,
+                  COALESCE(SUM(CASE WHEN leak_date >= NOW() - INTERVAL '7 days' THEN 1 ELSE 0 END),0)::int AS last_7d,
+                  COALESCE(SUM(CASE WHEN leak_date >= NOW() - INTERVAL '30 days' THEN 1 ELSE 0 END),0)::int AS last_30d
+                FROM darkweb.darkweb_leaks
+            """)).mappings().first()
+        result = dict(row or {})
+        result["source"] = "api_db"
+        result["timestamp"] = datetime.now().isoformat()
+        return ReportStatsResponse(**result)
+    except Exception as e:
+        logger.error(f"DB stats error dark-web: {e}")
+        raise HTTPException(status_code=503, detail="Protection backend temporarily unavailable")
 
 
 # 3. GET /api/reports/identity-theft/stats - Статистика защиты от кражи личности
@@ -198,12 +244,26 @@ async def get_identity_theft_stats(
     Returns:
         Статистика защиты от кражи личности
     """
-    params = {}
-    if user_id:
-        params["user_id"] = user_id
-    
-    result = await _call_sfm_function("get_identity_theft_stats", params)
-    return ReportStatsResponse(**result)
+    try:
+        from app.database.database import engine  # type: ignore
+        with engine.connect() as conn:
+            row = conn.execute(text("""
+                SELECT
+                  COUNT(*)::int AS total,
+                  COALESCE(SUM(CASE WHEN action = 'blocked' THEN 1 ELSE 0 END),0)::int AS blocked,
+                  COALESCE(SUM(CASE WHEN action <> 'blocked' OR action IS NULL THEN 1 ELSE 0 END),0)::int AS allowed,
+                  COALESCE(SUM(CASE WHEN timestamp >= NOW() - INTERVAL '24 hours' THEN 1 ELSE 0 END),0)::int AS last_24h,
+                  COALESCE(SUM(CASE WHEN timestamp >= NOW() - INTERVAL '7 days' THEN 1 ELSE 0 END),0)::int AS last_7d,
+                  COALESCE(SUM(CASE WHEN timestamp >= NOW() - INTERVAL '30 days' THEN 1 ELSE 0 END),0)::int AS last_30d
+                FROM identity.identity_attempts
+            """)).mappings().first()
+        result = dict(row or {})
+        result["source"] = "api_db"
+        result["timestamp"] = datetime.now().isoformat()
+        return ReportStatsResponse(**result)
+    except Exception as e:
+        logger.error(f"DB stats error identity-theft: {e}")
+        raise HTTPException(status_code=503, detail="Protection backend temporarily unavailable")
 
 
 # 4. GET /api/reports/privacy/location/stats - Статистика геолокации
@@ -217,12 +277,26 @@ async def get_location_stats(
     Returns:
         Статистика геолокации
     """
-    params = {}
-    if user_id:
-        params["user_id"] = user_id
-    
-    result = await _call_sfm_function("get_location_stats", params)
-    return ReportStatsResponse(**result)
+    try:
+        from app.database.database import engine  # type: ignore
+        with engine.connect() as conn:
+            row = conn.execute(text("""
+                SELECT
+                  COUNT(*)::int AS total,
+                  COALESCE(SUM(CASE WHEN action = 'blocked' THEN 1 ELSE 0 END),0)::int AS blocked,
+                  COALESCE(SUM(CASE WHEN action <> 'blocked' OR action IS NULL THEN 1 ELSE 0 END),0)::int AS allowed,
+                  COALESCE(SUM(CASE WHEN timestamp >= NOW() - INTERVAL '24 hours' THEN 1 ELSE 0 END),0)::int AS last_24h,
+                  COALESCE(SUM(CASE WHEN timestamp >= NOW() - INTERVAL '7 days' THEN 1 ELSE 0 END),0)::int AS last_7d,
+                  COALESCE(SUM(CASE WHEN timestamp >= NOW() - INTERVAL '30 days' THEN 1 ELSE 0 END),0)::int AS last_30d
+                FROM location.location_requests
+            """)).mappings().first()
+        result = dict(row or {})
+        result["source"] = "api_db"
+        result["timestamp"] = datetime.now().isoformat()
+        return ReportStatsResponse(**result)
+    except Exception as e:
+        logger.error(f"DB stats error location: {e}")
+        raise HTTPException(status_code=503, detail="Protection backend temporarily unavailable")
 
 
 # 5. GET /api/reports/privacy/cleanup/stats - Статистика очистки данных
@@ -236,12 +310,26 @@ async def get_cleanup_stats(
     Returns:
         Статистика очистки данных
     """
-    params = {}
-    if user_id:
-        params["user_id"] = user_id
-    
-    result = await _call_sfm_function("get_data_cleanup_stats", params)
-    return ReportStatsResponse(**result)
+    try:
+        from app.database.database import engine  # type: ignore
+        with engine.connect() as conn:
+            row = conn.execute(text("""
+                SELECT
+                  COUNT(*)::int AS total,
+                  0::int AS blocked,
+                  COUNT(*)::int AS allowed,
+                  COALESCE(SUM(CASE WHEN cleanup_date >= NOW() - INTERVAL '24 hours' THEN 1 ELSE 0 END),0)::int AS last_24h,
+                  COALESCE(SUM(CASE WHEN cleanup_date >= NOW() - INTERVAL '7 days' THEN 1 ELSE 0 END),0)::int AS last_7d,
+                  COALESCE(SUM(CASE WHEN cleanup_date >= NOW() - INTERVAL '30 days' THEN 1 ELSE 0 END),0)::int AS last_30d
+                FROM cleanup.cleanup_records
+            """)).mappings().first()
+        result = dict(row or {})
+        result["source"] = "api_db"
+        result["timestamp"] = datetime.now().isoformat()
+        return ReportStatsResponse(**result)
+    except Exception as e:
+        logger.error(f"DB stats error cleanup: {e}")
+        raise HTTPException(status_code=503, detail="Protection backend temporarily unavailable")
 
 
 # 6. GET /api/reports/privacy/tracker/stats - Статистика анти-трекера
@@ -255,12 +343,26 @@ async def get_tracker_stats(
     Returns:
         Статистика анти-трекера
     """
-    params = {}
-    if user_id:
-        params["user_id"] = user_id
-    
-    result = await _call_sfm_function("get_anti_tracker_stats", params)
-    return ReportStatsResponse(**result)
+    try:
+        from app.database.database import engine  # type: ignore
+        with engine.connect() as conn:
+            row = conn.execute(text("""
+                SELECT
+                  COALESCE(SUM(blocked_count),0)::int AS total,
+                  COALESCE(SUM(blocked_count),0)::int AS blocked,
+                  0::int AS allowed,
+                  COALESCE(SUM(CASE WHEN last_blocked_at >= NOW() - INTERVAL '24 hours' THEN blocked_count ELSE 0 END),0)::int AS last_24h,
+                  COALESCE(SUM(CASE WHEN last_blocked_at >= NOW() - INTERVAL '7 days' THEN blocked_count ELSE 0 END),0)::int AS last_7d,
+                  COALESCE(SUM(CASE WHEN last_blocked_at >= NOW() - INTERVAL '30 days' THEN blocked_count ELSE 0 END),0)::int AS last_30d
+                FROM tracker.tracker_blocks
+            """)).mappings().first()
+        result = dict(row or {})
+        result["source"] = "api_db"
+        result["timestamp"] = datetime.now().isoformat()
+        return ReportStatsResponse(**result)
+    except Exception as e:
+        logger.error(f"DB stats error tracker: {e}")
+        raise HTTPException(status_code=503, detail="Protection backend temporarily unavailable")
 
 
 # 7. GET /api/reports/ai-categories/stats - Статистика AI категорий
@@ -307,8 +409,29 @@ async def reports_driving_export() -> ReportCompatBoolResponse:
 
 
 @router.get("/dark-web/leaks", response_model=List[Dict[str, Any]])
-async def reports_dark_web_leaks() -> List[Dict[str, Any]]:
+async def reports_dark_web_leaks_compat() -> List[Dict[str, Any]]:
+    # Backward-compat plain list (deprecated), prefer /dark-web/leaks/list
     return []
+
+@router.get("/dark-web/leaks/list", response_model=CursorListResponse)
+async def reports_dark_web_leaks(
+    limit: int = Query(5, ge=1, le=100),
+    cursor: Optional[str] = Query(None, description="Opaque cursor, usually last leak_date"),
+) -> CursorListResponse:
+    cond = "WHERE 1=1"
+    params: Dict[str, Any] = {"limit": limit}
+    if cursor:
+        cond += " AND leak_date < :cursor"
+        params["cursor"] = cursor
+    sql = f"""
+        SELECT id, data_type, leak_date, source, severity, status
+        FROM darkweb.darkweb_leaks
+        {cond}
+        ORDER BY leak_date DESC
+        LIMIT :limit
+    """
+    items, next_cursor = _fetch_list_from_db(sql, params)
+    return CursorListResponse(items=items, next_cursor=next_cursor)
 
 
 @router.get("/dark-web/resolve", response_model=ReportCompatBoolResponse)
@@ -347,8 +470,28 @@ async def reports_identity_theft_block() -> ReportCompatBoolResponse:
 
 
 @router.get("/identity-theft/attempts", response_model=List[Dict[str, Any]])
-async def reports_identity_theft_attempts() -> List[Dict[str, Any]]:
+async def reports_identity_theft_attempts_compat() -> List[Dict[str, Any]]:
     return []
+
+@router.get("/identity-theft/attempts/list", response_model=CursorListResponse)
+async def reports_identity_theft_attempts(
+    limit: int = Query(5, ge=1, le=100),
+    cursor: Optional[str] = Query(None, description="Opaque cursor, usually last timestamp"),
+) -> CursorListResponse:
+    cond = "WHERE 1=1"
+    params: Dict[str, Any] = {"limit": limit}
+    if cursor:
+        cond += " AND timestamp < :cursor"
+        params["cursor"] = cursor
+    sql = f"""
+        SELECT id, data_type, action, severity, timestamp, COALESCE(details, '{{}}')::jsonb AS details
+        FROM identity.identity_attempts
+        {cond}
+        ORDER BY timestamp DESC
+        LIMIT :limit
+    """
+    items, next_cursor = _fetch_list_from_db(sql, params)
+    return CursorListResponse(items=items, next_cursor=next_cursor)
 
 
 @router.get("/identity-theft/whitelist", response_model=List[Dict[str, Any]])
@@ -372,8 +515,28 @@ async def reports_privacy_location_bubble() -> ReportCompatBoolResponse:
 
 
 @router.get("/privacy/location/requests", response_model=List[Dict[str, Any]])
-async def reports_privacy_location_requests() -> List[Dict[str, Any]]:
+async def reports_privacy_location_requests_compat() -> List[Dict[str, Any]]:
     return []
+
+@router.get("/privacy/location/requests/list", response_model=CursorListResponse)
+async def reports_privacy_location_requests(
+    limit: int = Query(5, ge=1, le=100),
+    cursor: Optional[str] = Query(None, description="Opaque cursor, usually last timestamp"),
+) -> CursorListResponse:
+    cond = "WHERE 1=1"
+    params: Dict[str, Any] = {"limit": limit}
+    if cursor:
+        cond += " AND timestamp < :cursor"
+        params["cursor"] = cursor
+    sql = f"""
+        SELECT id, app_name, action, accuracy, timestamp
+        FROM location.location_requests
+        {cond}
+        ORDER BY timestamp DESC
+        LIMIT :limit
+    """
+    items, next_cursor = _fetch_list_from_db(sql, params)
+    return CursorListResponse(items=items, next_cursor=next_cursor)
 
 
 @router.get("/privacy/location/send", response_model=ReportCompatBoolResponse)
@@ -392,13 +555,53 @@ async def reports_privacy_cleanup_start() -> ReportCompatBoolResponse:
 
 
 @router.get("/privacy/cleanup/records", response_model=List[Dict[str, Any]])
-async def reports_privacy_cleanup_records() -> List[Dict[str, Any]]:
+async def reports_privacy_cleanup_records_compat() -> List[Dict[str, Any]]:
     return []
+
+@router.get("/privacy/cleanup/records/list", response_model=CursorListResponse)
+async def reports_privacy_cleanup_records(
+    limit: int = Query(5, ge=1, le=100),
+    cursor: Optional[str] = Query(None, description="Opaque cursor, usually last cleanup_date"),
+) -> CursorListResponse:
+    cond = "WHERE 1=1"
+    params: Dict[str, Any] = {"limit": limit}
+    if cursor:
+        cond += " AND cleanup_date < :cursor"
+        params["cursor"] = cursor
+    sql = f"""
+        SELECT id, cleanup_date, freed_space_bytes, COALESCE(categories_json, '{{}}')::jsonb AS categories_json
+        FROM cleanup.cleanup_records
+        {cond}
+        ORDER BY cleanup_date DESC
+        LIMIT :limit
+    """
+    items, next_cursor = _fetch_list_from_db(sql, params)
+    return CursorListResponse(items=items, next_cursor=next_cursor)
 
 
 @router.get("/privacy/tracker/top", response_model=List[Dict[str, Any]])
-async def reports_privacy_tracker_top() -> List[Dict[str, Any]]:
+async def reports_privacy_tracker_top_compat() -> List[Dict[str, Any]]:
     return []
+
+@router.get("/privacy/tracker/top/list", response_model=CursorListResponse)
+async def reports_privacy_tracker_top(
+    limit: int = Query(5, ge=1, le=100),
+    cursor: Optional[str] = Query(None, description="Opaque cursor, usually last last_blocked_at"),
+) -> CursorListResponse:
+    cond = "WHERE 1=1"
+    params: Dict[str, Any] = {"limit": limit}
+    if cursor:
+        cond += " AND last_blocked_at < :cursor"
+        params["cursor"] = cursor
+    sql = f"""
+        SELECT tracker_name, blocked_count, last_blocked_at
+        FROM tracker.tracker_blocks
+        {cond}
+        ORDER BY last_blocked_at DESC
+        LIMIT :limit
+    """
+    items, next_cursor = _fetch_list_from_db(sql, params)
+    return CursorListResponse(items=items, next_cursor=next_cursor)
 
 
 @router.get("/privacy/tracker/whitelist", response_model=List[Dict[str, Any]])

@@ -2,7 +2,7 @@
 ALADDIN Backend - FastAPI приложение
 Главный файл для запуска API сервера
 """
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, Response
 from fastapi.responses import JSONResponse
 import time
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,6 +11,12 @@ from app.routers import referral
 from app.routers import referral_test
 from app.routers import payments
 from app.database.database import Base, engine
+import asyncio
+import os
+from prometheus_client import Gauge, Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+import logging
+import re
+from sqlalchemy import text
 from security.api.routers.location_bubble_router import router as location_router
 from security.api.routers.identity_theft_protection_router import router as identity_router
 from security.api.routers.driving_reports_router import router as driving_router
@@ -412,11 +418,24 @@ class SfmMockTo503Middleware(BaseHTTPMiddleware):
 
             request_path = request.url.path
             is_target_endpoint = (
-                request_path in {"/api/user/profile", "/api/family/members"}
+                request_path in {
+                    "/api/user/profile",
+                    "/api/family/members",
+                    "/api/family/stats",
+                    "/api/family/remove",
+                }
                 or request_path.startswith("/api/parental-control/")
                 or request_path.startswith("/api/v1/parental-control/")
                 or request_path.startswith("/api/gamification/")
                 or request_path.startswith("/api/components/")
+                # ✅ Блокируем mock/fallback для аналитики и компонентных отчётов
+                or request_path.startswith("/api/analytics")
+                or request_path.startswith("/api/reports/")
+                or request_path.startswith("/api/darkweb")
+                or request_path.startswith("/api/identity")
+                or request_path.startswith("/api/location")
+                or request_path.startswith("/api/data/cleanup")
+                or request_path.startswith("/api/ai/categories")
             )
             if not is_target_endpoint:
                 return response
@@ -456,11 +475,153 @@ class SfmMockTo503Middleware(BaseHTTPMiddleware):
 
 app.add_middleware(SfmMockTo503Middleware)
 
+# --- PII masking for logs ---
+class PIIMaskingFilter(logging.Filter):
+    EMAIL_RE = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
+    PHONE_RE = re.compile(r"\+?\d{1,3}[-.\s]?\(?\d{2,4}\)?[-.\s]?\d{2,4}[-.\s]?\d{2,4}")
+    # Very generic hash-like (min length 16 hex) — avoid overmasking shorter ids
+    HASH_RE = re.compile(r"\b[0-9a-fA-F]{16,}\b")
+
+    def filter(self, record: logging.LogRecord) -> bool:
+        try:
+            msg = str(record.getMessage())
+            masked = self.EMAIL_RE.sub("[email_masked]", msg)
+            masked = self.PHONE_RE.sub("[phone_masked]", masked)
+            masked = self.HASH_RE.sub("[hash_masked]", masked)
+            # rewrite record message safely
+            record.msg = masked
+            record.args = ()
+        except Exception:
+            pass
+        return True
+
+# Attach filter to root logger (covers uvicorn/gunicorn app logs as well)
+logging.getLogger().addFilter(PIIMaskingFilter())
+
 # Создание таблиц при запуске (если их нет)
 @app.on_event("startup")
 async def startup_event():
     """Создание таблиц при запуске приложения"""
     Base.metadata.create_all(bind=engine)
+
+# --- Prometheus Freshness Exporter (pull) ---
+ENV_NAME = os.getenv("ALADDIN_ENV", "production")
+SERVICE_NAME = "gateway"
+APP_VERSION = "1.0.0"
+
+FRESHNESS_GAUGE = Gauge(
+    "aladdin_analytics_freshness_seconds",
+    "Seconds since last event per analytics domain",
+    labelnames=("domain", "env", "service", "version"),
+)
+
+HTTP_REQUESTS_TOTAL = Counter(
+    "http_requests_total",
+    "Total HTTP requests handled by gateway",
+    labelnames=("job", "route", "method", "code", "env", "version"),
+)
+
+HTTP_5XX_TOTAL = Counter(
+    "http_5xx_total",
+    "Total HTTP 5xx responses handled by gateway",
+    labelnames=("job", "route", "method", "env", "version"),
+)
+
+HTTP_REQUEST_DURATION_SECONDS = Histogram(
+    "http_request_duration_seconds",
+    "HTTP request latency in seconds",
+    labelnames=("job", "route", "method", "code", "env", "version"),
+    buckets=(0.05, 0.1, 0.2, 0.5, 1.0, 2.0, 5.0),
+)
+
+@app.middleware("http")
+async def observe_http_requests(request: Request, call_next):
+    start = time.perf_counter()
+    route = request.url.path
+    method = request.method
+    status_code = "500"
+    try:
+        response = await call_next(request)
+        status_code = str(response.status_code)
+        return response
+    except Exception:
+        status_code = "500"
+        raise
+    finally:
+        duration = max(time.perf_counter() - start, 0.0)
+        labels = {
+            "job": SERVICE_NAME,
+            "route": route,
+            "method": method,
+            "code": status_code,
+            "env": ENV_NAME,
+            "version": APP_VERSION,
+        }
+        HTTP_REQUESTS_TOTAL.labels(**labels).inc()
+        HTTP_REQUEST_DURATION_SECONDS.labels(**labels).observe(duration)
+        if status_code.startswith("5"):
+            HTTP_5XX_TOTAL.labels(
+                job=SERVICE_NAME,
+                route=route,
+                method=method,
+                env=ENV_NAME,
+                version=APP_VERSION,
+            ).inc()
+
+def _refresh_freshness_once() -> None:
+    try:
+        with engine.connect() as conn:
+            result = conn.execute(
+                text("SELECT domain, EXTRACT(EPOCH FROM (NOW() - last_event_at)) AS age_sec FROM analytics_freshness")
+            )
+            for row in result:
+                domain = str(row[0])
+                age_seconds = float(row[1]) if row[1] is not None else 999 * 24 * 3600
+                FRESHNESS_GAUGE.labels(
+                    domain=domain, env=ENV_NAME, service=SERVICE_NAME, version=APP_VERSION
+                ).set(age_seconds)
+    except Exception:
+        # ignore startup refresh errors
+        pass
+
+async def _refresh_freshness_metrics_periodically(poll_interval_seconds: int = 30) -> None:
+    """
+    Periodically reads analytics_freshness view and updates Prometheus gauge.
+    Safe to run even if DB temporarily unavailable.
+    """
+    while True:
+        try:
+            with engine.connect() as conn:
+                result = conn.execute(
+                    text("SELECT domain, EXTRACT(EPOCH FROM (NOW() - last_event_at)) AS age_sec FROM analytics_freshness")
+                )
+                for row in result:
+                    domain = str(row[0])
+                    age_seconds = float(row[1]) if row[1] is not None else 999 * 24 * 3600
+                    FRESHNESS_GAUGE.labels(
+                        domain=domain, env=ENV_NAME, service=SERVICE_NAME, version=APP_VERSION
+                    ).set(age_seconds)
+        except Exception:
+            # swallow, keep loop running
+            pass
+        await asyncio.sleep(poll_interval_seconds)
+
+@app.on_event("startup")
+async def _start_freshness_exporter_task() -> None:
+    try:
+        _refresh_freshness_once()
+        asyncio.create_task(_refresh_freshness_metrics_periodically(30))
+    except Exception:
+        pass
+
+@app.get("/metrics")
+async def prometheus_metrics() -> Response:
+    """Prometheus scrape endpoint."""
+    try:
+        payload = generate_latest()
+        return Response(content=payload, media_type=CONTENT_TYPE_LATEST)
+    except Exception:
+        return Response(content=b"", media_type=CONTENT_TYPE_LATEST)
 
 # Подключение роутеров
 # ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Добавлен роутер для авторизации

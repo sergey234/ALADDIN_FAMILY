@@ -1,0 +1,90 @@
+{
+  "title": "ALADDIN - Gateway & Analytics Observability",
+  "schemaVersion": 36,
+  "version": 1,
+  "tags": ["aladdin", "gateway", "analytics"],
+  "timezone": "browser",
+  "time": { "from": "now-6h", "to": "now" },
+  "templating": {
+    "list": [
+      {
+        "name": "env",
+        "label": "Environment",
+        "type": "query",
+        "datasource": null,
+        "query": "label_values(aladdin_analytics_freshness_seconds, env)",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true
+      },
+      {
+        "name": "version",
+        "label": "Version",
+        "type": "query",
+        "datasource": null,
+        "query": "label_values(aladdin_analytics_freshness_seconds, version)",
+        "refresh": 1,
+        "includeAll": true,
+        "multi": true
+      }
+    ]
+  },
+  "panels": [
+    {
+      "type": "stat",
+      "title": "RPS (gateway)",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"gateway\"}[$__interval]))",
+          "legendFormat": "rps"
+        }
+      ]
+    },
+    {
+      "type": "timeseries",
+      "title": "Latency p50/p95 (gateway)",
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.50, sum(rate(http_request_duration_seconds_bucket{job=\"gateway\"}[$__interval])) by (le))",
+          "legendFormat": "p50"
+        },
+        {
+          "expr": "histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"gateway\"}[$__interval])) by (le))",
+          "legendFormat": "p95"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    },
+    {
+      "type": "timeseries",
+      "title": "5xx rate (gateway)",
+      "targets": [
+        {
+          "expr": "sum(rate(http_requests_total{job=\"gateway\",code=~\"5..\"}[$__interval])) / clamp_min(sum(rate(http_requests_total{job=\"gateway\"}[$__interval])), 1)",
+          "legendFormat": "5xx share"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "percentunit" } }
+    },
+    {
+      "type": "timeseries",
+      "title": "Freshness by domain (seconds)",
+      "targets": [
+        {
+          "expr": "aladdin_analytics_freshness_seconds",
+          "legendFormat": "{{domain}}"
+        }
+      ],
+      "fieldConfig": { "defaults": { "unit": "s" } }
+    }
+  ],
+  "annotations": {
+    "list": [
+      {
+        "name": "Deploys",
+        "type": "dashboard",
+        "enable": true
+      }
+    ]
+  }
+}

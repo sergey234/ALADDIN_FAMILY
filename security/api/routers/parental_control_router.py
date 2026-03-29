@@ -169,8 +169,8 @@ def _resolve_target_user_id(
     child_id: Optional[str],
     current_user: dict,
     db: Session,
-) -> int:
-    """Resolve target user id for parental stats, supporting numeric ids and child UUID mapping."""
+) -> Optional[int]:
+    """Resolve target numeric user_id when possible (UUID-safe, no hard 401 on contract mismatch)."""
     if child_id and child_id.isdigit():
         return int(child_id)
 
@@ -201,10 +201,12 @@ def _resolve_target_user_id(
     if isinstance(raw_user_id, str) and raw_user_id.isdigit():
         return int(raw_user_id)
 
-    raise HTTPException(
-        status_code=401,
-        detail="User token does not contain numeric user id",
+    logger.warning(
+        "⚠️ Could not resolve numeric user_id for child_id=%s token_id=%s",
+        child_id,
+        current_user.get("id"),
     )
+    return None
 
 
 def _resolve_target_id_flexible(
@@ -283,6 +285,20 @@ async def get_parental_control_stats(
     target_user_id = _resolve_target_user_id(childId, current_user, db)
 
     try:
+        # UUID-only token / unmapped child: return safe empty stats instead of contract 401.
+        if target_user_id is None:
+            return ParentalControlStatsResponse(
+                content_blocked=ContentBlockedStats(),
+                screen_time=ScreenTimeStats(),
+                location=LocationStats(
+                    current_location="Неизвестно",
+                    last_update=datetime.utcnow().isoformat(),
+                    geofences_count=0,
+                    events_today=0,
+                ),
+                monitoring=MonitoringStats(),
+            )
+
         # 1. Получаем последнюю локацию
         loc_result = db.execute(
             text("""
@@ -681,41 +697,45 @@ async def get_daily_reports(
     Возвращает ежедневные аналитические сводки.
     """
     try:
-        target_user_id = int(childId) if childId and childId.isdigit() else current_user.get("id")
-    except (ValueError, TypeError):
-        target_user_id = current_user.get("id")
+        target_user_id = _resolve_target_user_id(childId, current_user, db)
+        if target_user_id is None:
+            logger.info("ℹ️ Daily reports: unresolved numeric user_id, returning empty list")
+            return []
 
-    result = db.execute(
-        text("SELECT id, user_id, type, content, created_at FROM parental_reports WHERE user_id = :user_id AND type = 'daily' ORDER BY created_at DESC LIMIT 7"),
-        {"user_id": target_user_id}
-    ).fetchall()
-    
-    reports = []
-    for row in result:
-        reports.append(ParentalReportItem(
-            id=row[0],
-            user_id=row[1],
-            type=row[2],
-            content=row[3],
-            created_at=row[4]
-        ))
-    
-    # Если отчетов нет, создаем "умный" мок для демонстрации Stage 4
-    if not reports:
-        reports.append(ParentalReportItem(
-            id=0,
-            user_id=target_user_id if target_user_id else 0,
-            type="daily",
-            content={
-                "summary": "Сегодня ребенок провел в школе 6 часов, из них 40 минут играл в Roblox на переменах.",
-                "school_time": "6ч 00мин",
-                "app_usage": {"Roblox": "40мин", "YouTube": "15мин"},
-                "events": ["Вход в школу (08:15)", "Выход из школы (14:05)"]
-            },
-            created_at=datetime.utcnow()
-        ))
-        
-    return reports
+        result = db.execute(
+            text(
+                """
+                SELECT id, user_id, type, content, created_at
+                FROM parental_reports
+                WHERE user_id = :user_id AND type = 'daily'
+                ORDER BY created_at DESC
+                LIMIT 7
+                """
+            ),
+            {"user_id": target_user_id},
+        ).fetchall()
+
+        reports: List[ParentalReportItem] = []
+        for row in result:
+            raw_content = row[3]
+            if not isinstance(raw_content, dict):
+                raw_content = {"raw": raw_content}
+            reports.append(
+                ParentalReportItem(
+                    id=int(row[0]),
+                    user_id=int(row[1]),
+                    type=str(row[2]),
+                    content=raw_content,
+                    created_at=row[4],
+                )
+            )
+
+        # Production-only behavior: no demo/mock fallback.
+        return reports
+    except Exception as e:
+        logger.error(f"❌ Error fetching daily reports: {str(e)}")
+        db.rollback()
+        return []
 
 @router.get("/reports/weekly", response_model=List[ParentalReportItem])
 async def get_weekly_reports(
@@ -728,40 +748,42 @@ async def get_weekly_reports(
     Возвращает недельную 'Карту достижений'.
     """
     try:
-        target_user_id = int(childId) if childId and childId.isdigit() else current_user.get("id")
-    except (ValueError, TypeError):
-        target_user_id = current_user.get("id")
+        target_user_id = _resolve_target_user_id(childId, current_user, db)
+        if target_user_id is None:
+            logger.info("ℹ️ Weekly reports: unresolved numeric user_id, returning empty list")
+            return []
 
-    result = db.execute(
-        text("SELECT id, user_id, type, content, created_at FROM parental_reports WHERE user_id = :user_id AND type = 'weekly' ORDER BY created_at DESC LIMIT 4"),
-        {"user_id": target_user_id}
-    ).fetchall()
-    
-    reports = []
-    for row in result:
-        reports.append(ParentalReportItem(
-            id=row[0],
-            user_id=row[1],
-            type=row[2],
-            content=row[3],
-            created_at=row[4]
-        ))
-        
-    if not reports:
-        reports.append(ParentalReportItem(
-            id=0,
-            user_id=target_user_id if target_user_id else 0,
-            type="weekly",
-            content={
-                "achievements": [
-                    {"icon": "✅", "text": "Без опасных сайтов всю неделю."},
-                    {"icon": "⚠️", "text": "Превышение лимита Игр в среду."},
-                    {"icon": "🏫", "text": "Посещаемость школы: 100%."}
-                ],
-                "total_screen_time": "18ч 20мин",
-                "blocked_count": 42
-            },
-            created_at=datetime.utcnow()
-        ))
-        
-    return reports
+        result = db.execute(
+            text(
+                """
+                SELECT id, user_id, type, content, created_at
+                FROM parental_reports
+                WHERE user_id = :user_id AND type = 'weekly'
+                ORDER BY created_at DESC
+                LIMIT 4
+                """
+            ),
+            {"user_id": target_user_id},
+        ).fetchall()
+
+        reports: List[ParentalReportItem] = []
+        for row in result:
+            raw_content = row[3]
+            if not isinstance(raw_content, dict):
+                raw_content = {"raw": raw_content}
+            reports.append(
+                ParentalReportItem(
+                    id=int(row[0]),
+                    user_id=int(row[1]),
+                    type=str(row[2]),
+                    content=raw_content,
+                    created_at=row[4],
+                )
+            )
+
+        # Production-only behavior: no demo/mock fallback.
+        return reports
+    except Exception as e:
+        logger.error(f"❌ Error fetching weekly reports: {str(e)}")
+        db.rollback()
+        return []

@@ -1,0 +1,67 @@
+groups:
+  - name: aladdin-analytics
+    rules:
+      - alert: AladdinNoFreshData
+        expr: aladdin_analytics_freshness_seconds{domain=~"darkweb|identity|tracker|location|cleanup"} > on() vector(0)
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No fresh data for {{ $labels.domain }}"
+          description: "Freshness exceeded domain threshold for {{ $labels.domain }}."
+      - alert: AladdinAPILatencyP95High
+        expr: histogram_quantile(0.95, sum(rate(http_request_duration_seconds_bucket{job=\"gateway\"}[5m])) by (le)) > 0.5
+        for: 10m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Gateway p95 latency high"
+          description: "p95 latency > 500ms for 10m."
+      - alert: Aladdin5xxRateSpike
+        expr: (sum(rate(http_requests_total{job=\"gateway\",code=~\"5..\"}[5m])) / clamp_min(sum(rate(http_requests_total{job=\"gateway\"}[5m])), 1)) > 0.01
+        for: 5m
+        labels:
+          severity: critical
+        annotations:
+          summary: "5xx rate >1%"
+          description: "5xx share over total requests exceeded 1% for 5m."
+
+# Domain-specific threshold mapping (recording rules)
+  - name: aladdin-analytics-thresholds
+    rules:
+      - record: aladdin_analytics_freshness_threshold_seconds
+        labels:
+          domain: "darkweb"
+        expr: 72 * 3600
+      - record: aladdin_analytics_freshness_threshold_seconds
+        labels:
+          domain: "identity"
+        expr: 24 * 3600
+      - record: aladdin_analytics_freshness_threshold_seconds
+        labels:
+          domain: "tracker"
+        expr: 12 * 3600
+      - record: aladdin_analytics_freshness_threshold_seconds
+        labels:
+          domain: "location"
+        expr: 6 * 3600
+      - record: aladdin_analytics_freshness_threshold_seconds
+        labels:
+          domain: "cleanup"
+        expr: 168 * 3600
+
+# Final alert using per-domain thresholds
+  - name: aladdin-analytics-freshness-final
+    rules:
+      - alert: AladdinNoFreshDataByDomain
+        expr: |
+          aladdin_analytics_freshness_seconds
+          > on(domain) group_left()
+            aladdin_analytics_freshness_threshold_seconds
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "No fresh data for {{ $labels.domain }}"
+          description: "Freshness {{ $value }}s exceeded threshold for domain."
+

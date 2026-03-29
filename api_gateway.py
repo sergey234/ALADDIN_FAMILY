@@ -17,14 +17,15 @@ from datetime import datetime, timedelta
 from typing import Dict, List, Optional, Any, Union
 
 import uvicorn
-from fastapi import FastAPI, HTTPException, Request, Depends, status, Header, Query, Path
+from fastapi import FastAPI, HTTPException, Request, Depends, status, Header, Query, Path, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 from jose import JWTError, jwt
-from prometheus_client import Counter, Histogram, generate_latest, CONTENT_TYPE_LATEST
+from prometheus_client import Counter, Histogram, Gauge, generate_latest, CONTENT_TYPE_LATEST
 from slowapi import Limiter
 from slowapi.util import get_remote_address
+import asyncio
 
 # --- Configuration ---
 SECRET_KEY = "aladdin-jwt-secret-key-2026-production-ready"
@@ -72,6 +73,85 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# --- Prometheus Metrics ---
+# Freshness gauge: seconds since last event per domain
+FRESHNESS_GAUGE = Gauge(
+    "aladdin_analytics_freshness_seconds",
+    "Seconds since last event per analytics domain",
+    labelnames=("domain", "env", "service", "version"),
+)
+
+ENV_NAME = os.getenv("ALADDIN_ENV", "production")
+SERVICE_NAME = "gateway"
+APP_VERSION = "3.1.0"
+
+# Background task to periodically update freshness metrics
+async def _refresh_freshness_metrics_periodically(poll_interval_seconds: int = 30) -> None:
+    """
+    Periodically reads analytics_freshness view and updates Prometheus gauge.
+    Uses RO connection if available. Fail-safe with logging.
+    """
+    # Lazy import to avoid hard dependency when DB is not available
+    get_db = None
+    try:
+        from app.database.database import get_db  # type: ignore
+    except Exception as e:
+        logger.warning(f"Freshness exporter: cannot import get_db, will skip DB reads. Error: {e}")
+
+    while True:
+        try:
+            if get_db is None:
+                # No DB access; skip update but keep the loop alive
+                await asyncio.sleep(poll_interval_seconds)
+                continue
+
+            gen = get_db()
+            db = next(gen)
+            try:
+                # Raw SQL to avoid ORM model dependency
+                result = db.execute(
+                    "SELECT domain, EXTRACT(EPOCH FROM (NOW() - last_event_at)) AS age_sec FROM analytics_freshness"
+                )
+                for row in result:
+                    domain = str(row[0])
+                    age_seconds = float(row[1]) if row[1] is not None else 999 * 24 * 3600
+                    FRESHNESS_GAUGE.labels(
+                        domain=domain, env=ENV_NAME, service=SERVICE_NAME, version=APP_VERSION
+                    ).set(age_seconds)
+            finally:
+                try:
+                    gen.close()
+                except Exception:
+                    pass
+        except Exception as e:
+            logger.error(f"Freshness exporter loop error: {e}", exc_info=True)
+        # Sleep regardless of success to avoid tight loop
+        await asyncio.sleep(poll_interval_seconds)
+
+
+@app.on_event("startup")
+async def _startup_tasks() -> None:
+    # Start background freshness exporter
+    try:
+        asyncio.create_task(_refresh_freshness_metrics_periodically(30))
+        logger.info("✅ Freshness exporter task started")
+    except Exception as e:
+        logger.error(f"❌ Failed to start freshness exporter: {e}")
+
+
+@app.get("/metrics")
+async def prometheus_metrics() -> Response:
+    """
+    Prometheus scrape endpoint.
+    """
+    try:
+        payload = generate_latest()
+        return Response(content=payload, media_type=CONTENT_TYPE_LATEST)
+    except Exception as e:
+        logger.error(f"Error generating Prometheus metrics: {e}", exc_info=True)
+        # Even if metrics fail, respond with empty payload to keep scraper healthy
+        return Response(content=b"", media_type=CONTENT_TYPE_LATEST)
 
 # --- JWT Utility ---
 def get_user_from_token(authorization: Optional[str]):
@@ -214,6 +294,15 @@ async def catch_all_api_proxy(request: Request, path: str, authorization: Option
             or api_path.startswith("parental-control/")
             or api_path.startswith("v1/parental-control/")
             or api_path.startswith("gamification/")
+            # ✅ Analytics and component reports must never return mock in production
+            or api_path.startswith("analytics")
+            or api_path.startswith("reports/")
+            or api_path.startswith("darkweb")
+            or api_path.startswith("identity")
+            or api_path.startswith("location")
+            or api_path.startswith("data/cleanup")
+            or api_path.startswith("ai/categories")
+            or api_path.startswith("components/")
         )
         if not is_sensitive_endpoint:
             return False
@@ -278,6 +367,130 @@ async def catch_all_api_proxy(request: Request, path: str, authorization: Option
 
         return False
     
+    def default_component_metrics(component_key: str) -> Dict[str, str]:
+        if component_key in ("driving_reports_agent", "driving"):
+            return {
+                "trips": "0", "safety_score": "0.0", "new_events": "0",
+                "trips_total": "0", "distance_km_total": "0.0", "duration_sec_total": "0.0",
+                "avg_safety_score": "0.0", "violations_total": "0", "positioning": ""
+            }
+        if component_key in ("dark_web_monitoring_agent", "darkweb"):
+            return {"leaks_found": "0", "new_leaks": "0", "new_events": "0"}
+        if component_key in ("russian_identity_theft_protection_agent", "identity"):
+            return {"attempts": "0", "blocked": "0"}
+        if component_key in ("location_bubble_agent", "location"):
+            return {"blocked": "0", "accuracy": "low"}
+        if component_key in ("personal_data_cleanup_agent", "cleanup"):
+            return {"freed_space_gb": "0.0", "last_cleanup_hours_ago": "0"}
+        if component_key in ("anti_tracker_agent", "tracker"):
+            return {"blocked_total": "0", "blocked_this_week": "0"}
+        if component_key in ("ai_categories_agent", "ai"):
+            return {"categorized": "0", "blocked": "0", "accuracy": "0.0"}
+        return {}
+    
+    def coerce_num(val: Any, default: str = "0") -> str:
+        try:
+            if val is None:
+                return default
+            if isinstance(val, (int, float)):
+                return str(val)
+            s = str(val).strip()
+            if s.endswith("%"):
+                s = s[:-1]
+            return s or default
+        except Exception:
+            return default
+    
+    def normalize_component_metrics(component_key: str, raw: Dict[str, Any]) -> Dict[str, str]:
+        # Start with defaults; overwrite when есть данные.
+        m = default_component_metrics(component_key)
+        # DRIVING
+        if component_key in ("driving_reports_agent", "driving"):
+            m["trips_total"] = coerce_num(raw.get("trips_total") or raw.get("trips") or raw.get("totalTrips"))
+            m["distance_km_total"] = coerce_num(raw.get("distance_km_total") or raw.get("distance_km") or raw.get("total_distance_km"))
+            m["duration_sec_total"] = coerce_num(raw.get("duration_sec_total") or raw.get("duration_sec") or raw.get("total_duration_sec"))
+            m["avg_safety_score"] = coerce_num(raw.get("avg_safety_score") or raw.get("safety_score") or raw.get("average_safety_score"), default="0.0")
+            m["violations_total"] = coerce_num(raw.get("violations_total") or raw.get("violations") or raw.get("violations_count"))
+            m["positioning"] = str(raw.get("positioning") or raw.get("positioning_system") or "")
+        # AI
+        elif component_key in ("ai_categories_agent", "ai"):
+            m["categorized"] = coerce_num(raw.get("categorized") or raw.get("total_categorized"))
+            m["blocked"] = coerce_num(raw.get("blocked") or raw.get("total_blocked"))
+            m["accuracy"] = coerce_num(raw.get("accuracy"), default="0.0")
+        # DARKWEB
+        elif component_key in ("dark_web_monitoring_agent", "darkweb"):
+            m["leaks_found"] = coerce_num(raw.get("leaks_found") or raw.get("total_leaks"))
+            m["new_leaks"] = coerce_num(raw.get("new_leaks") or raw.get("new"))
+            m["new_events"] = coerce_num(raw.get("new_events") or 0)
+        # IDENTITY
+        elif component_key in ("russian_identity_theft_protection_agent", "identity"):
+            m["attempts"] = coerce_num(raw.get("attempts") or raw.get("total_attempts"))
+            m["blocked"] = coerce_num(raw.get("blocked") or raw.get("blocked_attempts"))
+        # LOCATION
+        elif component_key in ("location_bubble_agent", "location"):
+            m["blocked"] = coerce_num(raw.get("blocked") or raw.get("blockedRequests"))
+            m["accuracy"] = str(raw.get("accuracy") or raw.get("currentAccuracy") or "low")
+        # CLEANUP
+        elif component_key in ("personal_data_cleanup_agent", "cleanup"):
+            if "freed_space_gb" in raw:
+                m["freed_space_gb"] = coerce_num(raw.get("freed_space_gb"), default="0.0")
+            elif "freed_space_bytes" in raw:
+                try:
+                    m["freed_space_gb"] = f"{float(raw.get('freed_space_bytes'))/1_000_000_000:.2f}"
+                except Exception:
+                    m["freed_space_gb"] = "0.0"
+            m["last_cleanup_hours_ago"] = coerce_num(raw.get("last_cleanup_hours_ago") or raw.get("hours_since_last_cleanup"))
+        # TRACKER
+        elif component_key in ("anti_tracker_agent", "tracker"):
+            m["blocked_total"] = coerce_num(raw.get("blocked_total") or raw.get("total_blocked"))
+            m["blocked_this_week"] = coerce_num(raw.get("blocked_this_week") or raw.get("week_blocked"))
+        return m
+    
+    def normalize_component_response_if_needed(api_path: str, result: Any) -> Any:
+        """
+        Для путей компонентов возвращаем единый DTO:
+        {
+          "componentId": "<id>",
+          "metrics": { ... нормализованные ключи ... }
+        }
+        """
+        component_key = None
+        if api_path.startswith("reports/driving") or "driving" in api_path:
+            component_key = "driving"
+        elif "darkweb" in api_path or api_path.startswith("darkweb"):
+            component_key = "darkweb"
+        elif "identity" in api_path:
+            component_key = "identity"
+        elif "location" in api_path:
+            component_key = "location"
+        elif "data/cleanup" in api_path or "cleanup" in api_path:
+            component_key = "cleanup"
+        elif "tracker" in api_path or "anti_tracker" in api_path:
+            component_key = "tracker"
+        elif "ai/categories" in api_path or "aicategories" in api_path or "ai" in api_path:
+            component_key = "ai"
+        
+        if not component_key:
+            return result
+        
+        # Нормализуем к словарю
+        raw = {}
+        if isinstance(result, dict):
+            raw = result
+        elif hasattr(result, "dict") and callable(getattr(result, "dict")):
+            try:
+                raw = result.dict()
+            except Exception:
+                raw = {}
+        elif hasattr(result, "__dict__"):
+            raw = result.__dict__
+        
+        metrics = normalize_component_metrics(component_key, raw)
+        return {
+            "componentId": component_key,
+            "metrics": metrics
+        }
+    
     if sfm_adapter:
         # 1) Try explicit function mapping for critical routes first.
         candidate_functions: List[str] = []
@@ -297,7 +510,9 @@ async def catch_all_api_proxy(request: Request, path: str, authorization: Option
                     status_code=503,
                     detail="Protection backend temporarily unavailable",
                 )
-            return result
+            # Для компонентных путей возвращаем нормализованный DTO
+            normalized = normalize_component_response_if_needed(path, result)
+            return normalized
         
     # Если ничего не помогло - отдаем "Production-Ready Mock" успех
     return {

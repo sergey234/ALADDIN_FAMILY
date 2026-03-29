@@ -29,16 +29,10 @@ def decode_token(token: str) -> Optional[Dict]:
     Returns:
         Dict с данными пользователя (user_id, email, etc.) или None
     """
-    # ✅ JWT-003: Детальное логирование попытки декодирования
-    token_preview = token[:20] + "..." + token[-20:] if len(token) > 40 else token
-    secret_preview = JWT_SECRET[:10] + "..." if len(JWT_SECRET) > 10 else JWT_SECRET
-    
-    logger.info(f"🔐 [JWT-003] decode_token: Попытка декодирования токена")
-    logger.info(f"   - Token preview: {token_preview}")
-    logger.info(f"   - Token length: {len(token)} символов")
-    logger.info(f"   - JWT_SECRET preview: {secret_preview}")
-    logger.info(f"   - JWT_SECRET length: {len(JWT_SECRET)} символов")
-    logger.info(f"   - Algorithm: {JWT_ALGORITHM}")
+    # Security hardening: never log token content or secret material.
+    logger.info("🔐 [JWT-003] decode_token: token decode attempt")
+    logger.info("   - token_length: %s", len(token))
+    logger.info("   - algorithm: %s", JWT_ALGORITHM)
     
     try:
         # ✅ JWT-010: Добавлен leeway для защиты от разницы времени между клиентом и сервером
@@ -62,24 +56,20 @@ def decode_token(token: str) -> Optional[Dict]:
         return payload
     except jwt.ExpiredSignatureError as e:
         # ✅ JWT-003: Детальное логирование ошибки истечения
-        logger.error(f"❌ [JWT-003] decode_token: Token expired")
-        logger.error(f"   - Error: {str(e)}")
-        logger.error(f"   - Token preview: {token_preview}")
+        logger.error("❌ [JWT-003] decode_token: Token expired")
+        logger.error("   - error: %s", str(e))
         return None
     except jwt.InvalidTokenError as e:
         # ✅ JWT-003: Детальное логирование ошибки невалидного токена
-        logger.error(f"❌ [JWT-003] decode_token: Invalid token")
-        logger.error(f"   - Error: {str(e)}")
-        logger.error(f"   - Error type: {type(e).__name__}")
-        logger.error(f"   - Token preview: {token_preview}")
-        logger.error(f"   - JWT_SECRET preview: {secret_preview}")
+        logger.error("❌ [JWT-003] decode_token: Invalid token")
+        logger.error("   - error: %s", str(e))
+        logger.error("   - error_type: %s", type(e).__name__)
         return None
     except Exception as e:
         # ✅ JWT-003: Логирование неожиданных ошибок
-        logger.error(f"❌ [JWT-003] decode_token: Unexpected error")
-        logger.error(f"   - Error: {str(e)}")
-        logger.error(f"   - Error type: {type(e).__name__}")
-        logger.error(f"   - Token preview: {token_preview}")
+        logger.error("❌ [JWT-003] decode_token: Unexpected error")
+        logger.error("   - error: %s", str(e))
+        logger.error("   - error_type: %s", type(e).__name__)
         return None
 
 
