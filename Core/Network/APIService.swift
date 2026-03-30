@@ -2097,9 +2097,30 @@ class APIService: ObservableObject {
     
     /// Запустить автоматическое сканирование темной сети
     func startDarkWebScan(completion: @escaping (Result<DarkWebScan, Error>) -> Void) {
-        // ВРЕМЕННО ОТКЛЮЧЕНО В ПРОДАКШЕНЕ: backend возвращает mock_fallback.
-        // Возвращаем контролируемую ошибку, чтобы UI показал честное «Сервис временно недоступен».
-        completion(.failure(NetworkError.serverUnavailable))
+        // Backend для /dark-web/scan/start отдаёт ReportCompatBoolResponse:
+        // { "success": true, "data": true, "message": "..." }.
+        // Мы декодим это как APIResponse<Bool>, а UI-процесс рассматривает успех как "запуск сессии".
+        networkManager.get(endpoint: AppConfig.Endpoint.darkWebScanStart, completion: { (result: Result<APIResponse<Bool>, Error>) in
+            switch result {
+            case .success(let apiResponse):
+                if apiResponse.success == true {
+                    // ViewModel в startScan игнорирует содержимое (map {_ in ()}),
+                    // но тип должен совпадать. Достаточно безопасного stub-значения.
+                    let scan = DarkWebScan(
+                        id: UUID().uuidString,
+                        scanDate: Date(),
+                        databasesScanned: 0,
+                        newLeaksFound: 0,
+                        status: .inProgress
+                    )
+                    completion(.success(scan))
+                } else {
+                    completion(.failure(NetworkError.serverUnavailable))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        })
     }
     
     // MARK: - Hybrid Dark Web Scan API
