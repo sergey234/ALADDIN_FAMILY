@@ -12,6 +12,7 @@ struct AICategoriesModal: View {
     
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var analyticsViewModel: AnalyticsViewModel
     @StateObject private var viewModel = AICategoriesViewModel()
     
     // Выбранный ребенок
@@ -79,7 +80,16 @@ struct AICategoriesModal: View {
         }
         .task {
             await loadChildren()
-            loadReports()
+            // Первичное применение данных из объединённой аналитики, без сетевых запросов
+            viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics, childId: selectedChildId.isEmpty ? nil : selectedChildId)
+        }
+        // Обновляем данные при изменении выбранного ребёнка
+        .onChange(of: selectedChildId) { _ in
+            viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics, childId: selectedChildId.isEmpty ? nil : selectedChildId)
+        }
+        // И при поступлении свежих компонентных данных из AnalyticsViewModel
+        .onReceive(analyticsViewModel.$componentsAnalytics) { components in
+            viewModel.applyFrom(components: components, childId: selectedChildId.isEmpty ? nil : selectedChildId)
         }
         .overlay(alignment: .center) {
             if viewModel.isLoading {
@@ -92,8 +102,30 @@ struct AICategoriesModal: View {
         }
         .overlay(alignment: .bottom) {
             if let error = viewModel.errorMessage {
-                errorBanner(message: error)
-                    .padding(.bottom, Spacing.l)
+                HStack {
+                    Text(error)
+                        .font(.footnote)
+                        .foregroundColor(.white)
+                    Spacer()
+                    Button(action: {
+                        // Retry перезапускает общий orchestrатор аналитики
+                        analyticsViewModel.startLoad()
+                    }) {
+                        Text(localizationManager.localized("common_retry"))
+                            .font(.caption)
+                            .foregroundColor(.primaryBlue)
+                            .padding(.horizontal, Spacing.s)
+                            .padding(.vertical, Spacing.xs)
+                            .background(Color.white.opacity(0.2))
+                            .clipShape(Capsule())
+                    }
+                }
+                .padding(.horizontal, Spacing.m)
+                .padding(.vertical, Spacing.s)
+                .background(Color.dangerRed.opacity(0.9))
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                .shadow(radius: 6)
+                .padding(.bottom, Spacing.l)
             }
         }
         // ✅ ИСПРАВЛЕНИЕ: Добавляем VisualLogView на модальное окно
@@ -388,10 +420,8 @@ struct AICategoriesModal: View {
     }
     
     private func loadReports() {
-        Task {
-            let childId = selectedChildId.isEmpty ? nil : selectedChildId
-            await viewModel.loadReports(childId: childId)
-        }
+        // Сетевая загрузка больше не требуется: используем данные из AnalyticsViewModel.componentsAnalytics
+        viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics, childId: selectedChildId.isEmpty ? nil : selectedChildId)
     }
 }
 

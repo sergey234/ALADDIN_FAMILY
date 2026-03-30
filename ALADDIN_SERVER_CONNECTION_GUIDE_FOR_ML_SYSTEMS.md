@@ -178,3 +178,121 @@ curl -s http://149.154.65.180:8002/api/health
 
 **ДАТА ОБНОВЛЕНИЯ:** 25 февраля 2026 г.
 **ВЕРСИЯ ДОКУМЕНТА:** 1.0
+
+---
+
+## 🧭 Пошаговый алгоритм подключения и аудита (реальный кейс, март 2026)
+
+Ниже — точные шаги, по которым была выполнена проверка прод‑сервера, доступов и первичных работ с БД/эндпоинтами. Следуйте им последовательно.
+
+### 1) Предварительные проверки снаружи (без SSH)
+1. Проверить health API шлюза:
+   ```bash
+   curl -s -S -m 8 http://149.154.65.180:8002/api/health
+   ```
+   Ожидаемо: 200 OK, простой JSON (например, `{"status":"ok"}`).
+2. Быстрый опрос ключевых публичных эндпоинтов (пример для аналитических доменов):
+   ```bash
+   BASE=http://149.154.65.180:8002
+   curl -s -S -m 10 "$BASE/api/reports/dark-web/stats"
+   curl -s -S -m 10 "$BASE/api/reports/identity-theft/stats"
+   curl -s -S -m 10 "$BASE/api/reports/privacy/tracker/stats"
+   curl -s -S -m 10 "$BASE/api/reports/privacy/location/stats"
+   curl -s -S -m 10 "$BASE/api/reports/privacy/cleanup/stats"
+   ```
+   Примечание: до включения боевых роутеров ответы могут приходить из слоя совместимости (compat) и содержать `source: "reports_compat"`.
+
+### 2) Подключение по SSH
+Есть два способа — по ключу (рекомендуется) и по паролю (допускается при наличии политики).
+
+- По ключу:
+  ```bash
+  ssh-keygen -R 149.154.65.180             # если ранее менялся host key
+  ssh -o IdentitiesOnly=yes -i ~/.ssh/aladdin_prod root@149.154.65.180
+  ```
+- По паролю (в этом кейсе использовался пароль root):
+  ```bash
+  ssh root@149.154.65.180
+  # ввести пароль пользователя root
+  ```
+Security‑замечание: пароль не хранить в репозитории/чатах; использовать менеджер секретов. Предпочтителен вход по ключу.
+
+### 3) Быстрый аудит сервера после входа
+1. Проверить ОС/порты:
+   ```bash
+   uname -a
+   ss -ltnp | head -n 50 || netstat -ltn | head -n 50
+   ```
+   Ожидаемо: 8002 (gunicorn/nginx), 5432 (postgres локально), 22 (ssh).
+2. Проверить директории бэкенда и роутеров:
+   ```bash
+   ls -la /opt/aladdin-backend || echo NO_BACKEND_DIR
+   ls -la /opt/aladdin-backend/app/routers || echo NO_ROUTERS_DIR
+   ```
+3. Найти compat/mock‑маркеры (должны быть заблокированы в прод‑ответах шлюзом):
+   ```bash
+   grep -R "sfm_mock\\|mock_fallback\\|reports_compat" -n /opt/aladdin-backend | head -n 80 || true
+   ```
+
+### 4) Проверка PostgreSQL и версии
+```bash
+sudo -u postgres psql -At -c '\l'
+sudo -u postgres psql -At -c 'select current_database();'
+sudo -u postgres psql -At -c 'show server_version;'
+```
+Ожидаемо: наличие БД `aladdin_db`, актуальная версия PostgreSQL 16.x (или ваша целевая).
+
+### 5) Применение миграций БД (DDL)
+Для запуска компонентной аналитики были созданы 5 схем и 15 таблиц (с индексацией) под домены:
+`darkweb`, `identity`, `tracker`, `location`, `cleanup`.
+
+Вариант А (через мигратор проекта, если используется): положить файлы `V001__*.sql`… и выполнить стандартную команду мигратора.
+
+Вариант Б (ручное применение через psql):
+1. Скопировать подготовленный DDL‑файл на сервер (пример через sftp/scp).
+2. Применить:
+   ```bash
+   sudo -u postgres psql -v ON_ERROR_STOP=1 -d aladdin_db -f /tmp/ddl_aladdin_YYYYMMDD.sql
+   ```
+3. Проверка, что всё создано:
+   ```bash
+   sudo -u postgres psql -d aladdin_db -c '\dn'
+   sudo -u postgres psql -d aladdin_db -c '\dt darkweb.*'
+   sudo -u postgres psql -d aladdin_db -c '\dt identity.*'
+   sudo -u postgres psql -d aladdin_db -c '\dt tracker.*'
+   sudo -u postgres psql -d aladdin_db -c '\dt location.*'
+   sudo -u postgres psql -d aladdin_db -c '\dt cleanup.*'
+   ```
+Acceptance этого шага: схемы и таблицы присутствуют; индексы созданы; ошибок в применении нет.
+
+### 6) Мини‑смоук API до переключения на боевые данные
+Пока ingest/роутеры не включены, шлюз может возвращать совместимые ответы (compat) с нулевыми метриками/пустыми массивами:
+```bash
+BASE=http://149.154.65.180:8002
+curl -s -S "$BASE/api/reports/dark-web/stats"
+curl -s -S "$BASE/api/reports/identity-theft/stats"
+curl -s -S "$BASE/api/reports/privacy/tracker/stats"
+curl -s -S "$BASE/api/reports/privacy/location/stats"
+curl -s -S "$BASE/api/reports/privacy/cleanup/stats"
+```
+Это ожидаемо до включения ingestion и боевых роутеров чтения из БД.
+
+### 7) Что делать дальше (последовательность включения реальных данных)
+1. Включить ingestion (очередь/consumer, idempotent upsert, агрегаты).
+2. Реализовать/включить боевые роутеры, читающие из PostgreSQL, отдающие совместимый JSON (или «сырой» под нормализацию gateway в DTO v1).
+3. Подключить их в gateway в режиме precision (никаких wildcard/SFM).
+4. Включить наблюдаемость: latency p95, error%, 5xx, freshness; алёрты «нет свежих данных > N ч.»
+5. Прогнать контрактные/ручные тесты: 200/204; без `sfm_mock/mock_fallback/reports_compat`.
+6. После 24–48 ч стабильности — разморозить Dark Web scan на iOS.
+
+### 8) Традиционные проблемы и быстрые решения
+- Permission denied по SSH: проверить ключ/пароль/брандмауэр; при смене ключа — `ssh-keygen -R 149.154.65.180`.
+- `psql: could not connect`: убедиться, что подключение идёт через `sudo -u postgres` на локальный инстанс или задать корректный `DATABASE_URL`.
+- Эндпоинты отдают `source: "reports_compat"`: включить ingest, переключить роутеры на чтение из БД и прописать precision‑маршруты в gateway.
+
+### 9) Безопасность и соответствие правилам
+- Не хранить пароли/ключи в репозитории; использовать секрет‑менеджер.
+- В проде запрещены mock/fallback‑ответы; gateway должен возвращать ошибку сервиса, а не «успех с mock».
+- PII данные — хранить зашифрованными; логи — без утечек PII; роли БД — RO для роутеров.
+
+Данный алгоритм отражает фактически выполненные действия и может служить чек‑листом для повторяемых процедур подключения/аудита.

@@ -2097,8 +2097,9 @@ class APIService: ObservableObject {
     
     /// Запустить автоматическое сканирование темной сети
     func startDarkWebScan(completion: @escaping (Result<DarkWebScan, Error>) -> Void) {
-        struct EmptyRequest: Codable {}
-        networkManager.post(endpoint: AppConfig.Endpoint.darkWebScanStart, body: EmptyRequest(), completion: completion)
+        // ВРЕМЕННО ОТКЛЮЧЕНО В ПРОДАКШЕНЕ: backend возвращает mock_fallback.
+        // Возвращаем контролируемую ошибку, чтобы UI показал честное «Сервис временно недоступен».
+        completion(.failure(NetworkError.serverUnavailable))
     }
     
     // MARK: - Hybrid Dark Web Scan API

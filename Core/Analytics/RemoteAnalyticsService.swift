@@ -460,9 +460,14 @@ final class RemoteAnalyticsService: AnalyticsService {
             apiService.getComponentStats(componentId: componentId) { result in
                 switch result {
                 case .success(let stats):
-                    // ✅ Реальные данные из API
-                    self.setCachedComponentStats(stats, for: cacheKey)
-                    continuation.resume(returning: (stats, .api))
+                    // ✅ Реальные данные из API (+ tolerant normalize для несовпадающих ключей)
+                    let normalized = ComponentStats(
+                        componentId: stats.componentId,
+                        metrics: self.normalizeMetrics(for: componentId, metrics: stats.metrics),
+                        dataSource: .api
+                    )
+                    self.setCachedComponentStats(normalized, for: cacheKey)
+                    continuation.resume(returning: (normalized, .api))
                     
                 case .failure(let error):
                     #if DEBUG
@@ -558,7 +563,13 @@ final class RemoteAnalyticsService: AnalyticsService {
     private func getEmptyMetrics(for componentId: String) -> [String: String] {
         switch componentId {
         case "driving_reports_agent", "driving":
-            return ["trips": "0", "safety_score": "0.0", "new_events": "0"]
+            return [
+                // базовые
+                "trips": "0", "safety_score": "0.0", "new_events": "0",
+                // total-ключи, которые читает UI-агрегатор
+                "trips_total": "0", "distance_km_total": "0.0", "duration_sec_total": "0.0",
+                "avg_safety_score": "0.0", "violations_total": "0"
+            ]
         case "dark_web_monitoring_agent", "darkweb":
             return ["leaks_found": "0", "new_leaks": "0", "new_events": "0"]
         case "russian_identity_theft_protection_agent", "identity":
@@ -570,9 +581,56 @@ final class RemoteAnalyticsService: AnalyticsService {
         case "anti_tracker_agent", "tracker":
             return ["blocked_total": "0", "blocked_this_week": "0"]
         case "ai_categories_agent", "ai":
-            return ["categorized": "0", "blocked": "0"]
+            return ["categorized": "0", "blocked": "0", "accuracy": "0.0"]
         default:
             return [:]
         }
+    }
+    
+    // MARK: - Tolerant/Compat normalization
+    /// Приводит метрики компонента к единому виду: добавляет алиасы и нормализует значения
+    private func normalizeMetrics(for componentId: String, metrics: [String: String]) -> [String: String] {
+        var m = metrics
+        func coerceNumber(_ value: String?) -> String {
+            guard var s = value else { return "0" }
+            s = s.trimmingCharacters(in: .whitespacesAndNewlines)
+            if s.hasSuffix("%") { s.removeLast() }
+            return s.isEmpty ? "0" : s
+        }
+        switch componentId {
+        case "driving_reports_agent", "driving":
+            // Проставляем алиасы под total-ключи, если приходят короткие
+            if m["trips_total"] == nil { m["trips_total"] = coerceNumber(m["trips"] ?? m["totalTrips"]) }
+            if m["distance_km_total"] == nil { m["distance_km_total"] = coerceNumber(m["distance_km"] ?? m["total_distance_km"]) }
+            if m["duration_sec_total"] == nil { m["duration_sec_total"] = coerceNumber(m["duration_sec"] ?? m["total_duration_sec"]) }
+            if m["avg_safety_score"] == nil { m["avg_safety_score"] = coerceNumber(m["safety_score"] ?? m["average_safety_score"]) }
+            if m["violations_total"] == nil { m["violations_total"] = coerceNumber(m["violations"] ?? m["violations_count"]) }
+            if m["positioning"] == nil { m["positioning"] = m["positioning_system"] ?? "" }
+        case "ai_categories_agent", "ai":
+            if m["categorized"] == nil { m["categorized"] = coerceNumber(m["total_categorized"]) }
+            if m["blocked"] == nil { m["blocked"] = coerceNumber(m["total_blocked"]) }
+            if let acc = m["accuracy"] { m["accuracy"] = coerceNumber(acc) }
+        case "dark_web_monitoring_agent", "darkweb":
+            if m["leaks_found"] == nil { m["leaks_found"] = coerceNumber(m["total_leaks"]) }
+            if m["new_leaks"] == nil { m["new_leaks"] = coerceNumber(m["new"]) }
+            if m["new_events"] == nil { m["new_events"] = "0" }
+        case "russian_identity_theft_protection_agent", "identity":
+            if m["attempts"] == nil { m["attempts"] = coerceNumber(m["total_attempts"]) }
+            if m["blocked"] == nil { m["blocked"] = coerceNumber(m["blocked_attempts"]) }
+        case "location_bubble_agent", "location":
+            if m["blocked"] == nil { m["blocked"] = coerceNumber(m["blockedRequests"]) }
+            if m["accuracy"] == nil { m["accuracy"] = m["currentAccuracy"] ?? "low" }
+        case "personal_data_cleanup_agent", "cleanup":
+            if m["freed_space_gb"] == nil, let bytes = m["freed_space_bytes"], let val = Double(bytes) {
+                m["freed_space_gb"] = String(format: "%.2f", val / 1_000_000_000.0)
+            }
+            if m["last_cleanup_hours_ago"] == nil { m["last_cleanup_hours_ago"] = coerceNumber(m["hours_since_last_cleanup"]) }
+        case "anti_tracker_agent", "tracker":
+            if m["blocked_total"] == nil { m["blocked_total"] = coerceNumber(m["total_blocked"]) }
+            if m["blocked_this_week"] == nil { m["blocked_this_week"] = coerceNumber(m["week_blocked"]) }
+        default:
+            break
+        }
+        return m
     }
 }

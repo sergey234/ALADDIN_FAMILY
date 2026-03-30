@@ -390,7 +390,7 @@ struct ParentalControlScreen: View {
                             loadParentalControlData(for: child.id)
                         }) {
                             VStack(spacing: Spacing.xs) {
-                                Text(child.avatar.isEmpty ? "👤" : child.avatar)
+                                Text(((child.avatar ?? "").isEmpty ? "👤" : (child.avatar ?? "")))
                                     .font(.system(size: 28))
                                 
                                 Text(child.name)

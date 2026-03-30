@@ -314,7 +314,7 @@ struct FamilyScreen: View {
                         
                         // Преобразуем статус из API в ProtectionStatus
                         let protectionStatus: FamilyMemberCard.ProtectionStatus
-                        switch member.status.lowercased() {
+                        switch (member.status ?? "protected").lowercased() {
                         case "protected":
                             protectionStatus = .protected
                         case "warning":
@@ -332,8 +332,8 @@ struct FamilyScreen: View {
                             role: role,
                             avatar: avatar,
                             status: protectionStatus,
-                            threatsBlocked: member.threatsBlocked,
-                            lastActive: member.lastActive
+                            threatsBlocked: member.threatsBlocked ?? 0,
+                            lastActive: member.lastActive ?? ""
                         )
                     }
                     
@@ -414,6 +414,8 @@ struct FamilyScreen: View {
                 await MainActor.run {
                     print("✅ [removeFamilyMember] Успешно удален через API: \(memberToRemove.name)")
                     removeMemberErrorMessage = nil
+                    // Production-safe: после реального удаления принудительно обновляем Family-блок на MainScreen
+                    NotificationCenter.default.post(name: NSNotification.Name("MainFamilyStatsForceRefresh"), object: nil)
                     // Дополнительная проверка - убеждаемся что участник не вернулся
                     if familyMembers.contains(where: { $0.id == memberToRemove.id }) {
                         print("⚠️ [removeFamilyMember] Участник все еще в списке, удаляем повторно")

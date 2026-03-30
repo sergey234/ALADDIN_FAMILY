@@ -162,9 +162,9 @@ class ParentalControlViewModel: ObservableObject {
                     id: member.id.uuidString,
                     name: member.name,
                     age: 10,
-                    avatar: member.avatar,
+                    avatar: member.avatar ?? "",
                     screenTimeToday: "...",
-                    threatsBlocked: member.threatsBlocked
+                    threatsBlocked: member.threatsBlocked ?? 0
                 )
             }
             self.selectedChild = children.first

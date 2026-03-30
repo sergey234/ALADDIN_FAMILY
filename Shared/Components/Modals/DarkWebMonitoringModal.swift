@@ -13,6 +13,7 @@ struct DarkWebMonitoringModal: View {
     
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var analyticsViewModel: AnalyticsViewModel
     @StateObject private var viewModel = DarkWebMonitoringViewModel()
     
     // Фильтры
@@ -92,7 +93,13 @@ struct DarkWebMonitoringModal: View {
             }
         }
         .task {
+            // Первичное применение агрегированных данных
+            viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics)
+            // Дополнительно дотягиваем подробности (утечки/сканы), если нужно
             await loadData()
+        }
+        .onReceive(analyticsViewModel.$componentsAnalytics) { components in
+            viewModel.applyFrom(components: components)
         }
         .overlay(alignment: .center) {
             if viewModel.isLoading {
@@ -430,27 +437,20 @@ struct DarkWebMonitoringModal: View {
                 
                 Spacer()
                 
-                // Кнопка запуска сканирования
-                Button(action: {
-                    Task {
-                        await viewModel.startScan()
-                    }
-                }) {
-                    HStack(spacing: Spacing.xs) {
-                        Image(systemName: "magnifyingglass")
-                            .font(.caption)
-                        Text(localizationManager.localized("dark_web_scan_start"))
-                            .font(.caption)
-                    }
-                    .foregroundColor(.white)
-                    .padding(.horizontal, Spacing.s)
-                    .padding(.vertical, Spacing.xs)
-                    .background(
-                        Capsule()
-                            .fill(Color.primaryBlue)
-                    )
+                // Кнопка запуска сканирования (временно недоступна в продакшене)
+                HStack(spacing: Spacing.xs) {
+                    Image(systemName: "clock")
+                        .font(.caption)
+                    Text(localizationManager.localized("common_coming_soon"))
+                        .font(.caption)
                 }
-                .disabled(viewModel.isScanning)
+                .foregroundColor(.white.opacity(0.7))
+                .padding(.horizontal, Spacing.s)
+                .padding(.vertical, Spacing.xs)
+                .background(
+                    Capsule()
+                        .fill(Color.gray.opacity(0.4))
+                )
             }
             
             if viewModel.scans.isEmpty {

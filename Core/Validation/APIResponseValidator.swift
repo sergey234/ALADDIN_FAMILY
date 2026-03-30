@@ -122,13 +122,15 @@ struct APIResponseValidator {
             throw ValidationError.emptyField(field: "role")
         }
 
-        // Проверяем числовые значения
-        guard response.threatsBlocked >= 0 else {
-            throw ValidationError.invalidValue(field: "threatsBlocked", value: response.threatsBlocked, reason: "должно быть >= 0")
+        // Проверяем числовые значения (с учётом опциональности)
+        let threatsBlocked = response.threatsBlocked ?? 0
+        guard threatsBlocked >= 0 else {
+            throw ValidationError.invalidValue(field: "threatsBlocked", value: threatsBlocked, reason: "должно быть >= 0")
         }
-
-        guard response.devices >= 0 else {
-            throw ValidationError.invalidValue(field: "devices", value: response.devices, reason: "должно быть >= 0")
+        
+        let devices = response.devices ?? 0
+        guard devices >= 0 else {
+            throw ValidationError.invalidValue(field: "devices", value: devices, reason: "должно быть >= 0")
         }
 
         // Проверяем допустимые значения enum
@@ -138,15 +140,17 @@ struct APIResponseValidator {
         }
 
         let validStatuses = ["protected", "warning", "danger", "offline"]
-        guard validStatuses.contains(response.status) else {
-            throw ValidationError.invalidValue(field: "status", value: response.status, reason: "должен быть одним из: \(validStatuses.joined(separator: ", "))")
+        if let status = response.status {
+            guard validStatuses.contains(status) else {
+                throw ValidationError.invalidValue(field: "status", value: status, reason: "должен быть одним из: \(validStatuses.joined(separator: ", "))")
+            }
         }
 
         // Проверяем формат lastActive (должна быть валидная дата)
-        if !response.lastActive.isEmpty {
+        if let lastActive = response.lastActive, !lastActive.isEmpty {
             let isoFormatter = ISO8601DateFormatter()
-            guard isoFormatter.date(from: response.lastActive) != nil else {
-                throw ValidationError.invalidFormat(field: "lastActive", value: response.lastActive, expectedFormat: "ISO 8601 date")
+            guard isoFormatter.date(from: lastActive) != nil else {
+                throw ValidationError.invalidFormat(field: "lastActive", value: lastActive, expectedFormat: "ISO 8601 date")
             }
         }
     }

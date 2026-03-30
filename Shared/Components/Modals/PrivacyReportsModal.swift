@@ -96,11 +96,15 @@ struct PrivacyReportsModal: View {
             }
         }
         .task {
+            VisualLogger.shared.log("🚀 PRIVACY(\(selectedTab.rawValue)) ui_load_start", level: .info, category: "ANALYTICS.COMPONENT.ui")
             await loadDataForSelectedTab()
+            VisualLogger.shared.log("✅ PRIVACY(\(selectedTab.rawValue)) ui_load_ok", level: .success, category: "ANALYTICS.COMPONENT.ui")
         }
         .onChange(of: selectedTab) { _ in
             Task {
+                VisualLogger.shared.log("🔀 PRIVACY tab_changed -> \(selectedTab.rawValue)", level: .info, category: "ANALYTICS.COMPONENT.ui")
                 await loadDataForSelectedTab()
+                VisualLogger.shared.log("✅ PRIVACY(\(selectedTab.rawValue)) ui_load_ok", level: .success, category: "ANALYTICS.COMPONENT.ui")
             }
         }
         .overlay(alignment: .center) {
@@ -114,8 +118,29 @@ struct PrivacyReportsModal: View {
         }
         .overlay(alignment: .bottom) {
             if let error = viewModel.errorMessage {
-                errorBanner(message: error)
-                    .padding(.bottom, Spacing.l)
+                HStack {
+                    Text(error)
+                        .font(.footnote)
+                        .foregroundColor(.white)
+                    Spacer()
+                    Button(action: {
+                        Task { await loadDataForSelectedTab() }
+                    }) {
+                        Text(localizationManager.localized("common_retry"))
+                            .font(.caption)
+                            .foregroundColor(.primaryBlue)
+                            .padding(.horizontal, Spacing.s)
+                            .padding(.vertical, Spacing.xs)
+                            .background(Color.white.opacity(0.2))
+                            .clipShape(Capsule())
+                    }
+                }
+                .padding(.horizontal, Spacing.m)
+                .padding(.vertical, Spacing.s)
+                .background(Color.dangerRed.opacity(0.9))
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                .shadow(radius: 6)
+                .padding(.bottom, Spacing.l)
             }
         }
         .confirmationDialog(
@@ -193,6 +218,7 @@ struct PrivacyReportsModal: View {
         } message: { trackerName in
             Text(String(format: localizationManager.localized("privacy_tracker_whitelist_confirm_message"), trackerName))
         }
+        .withVisualLogger()
     }
     
     // MARK: - Data Loading

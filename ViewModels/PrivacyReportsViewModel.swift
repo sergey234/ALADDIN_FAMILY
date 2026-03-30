@@ -77,6 +77,14 @@ class PrivacyReportsViewModel: ObservableObject {
         } catch {
             // Проверяем тип ошибки - показываем только реальные проблемы
             let networkError = NetworkError.from(error)
+            // Толерантный парсинг: при decodingError показываем «Нет данных», без красного баннера
+            if case .decodingError = networkError {
+                self.locationStats = nil
+                self.locationRequests = []
+                errorMessage = nil
+                VisualLogger.shared.log("ℹ️ PRIVACY(location) parse=fallback reason=decoding_error → showing empty data", level: .info, category: "ANALYTICS.COMPONENT.location")
+                return
+            }
             
             // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
             if case .unauthorized = networkError {
@@ -144,6 +152,14 @@ class PrivacyReportsViewModel: ObservableObject {
         } catch {
             // Проверяем тип ошибки - показываем только реальные проблемы
             let networkError = NetworkError.from(error)
+            // Толерантный парсинг: при decodingError показываем «Нет данных», без красного баннера
+            if case .decodingError = networkError {
+                self.cleanupStats = nil
+                self.cleanupRecords = []
+                errorMessage = nil
+                VisualLogger.shared.log("ℹ️ PRIVACY(cleanup) parse=fallback reason=decoding_error → showing empty data", level: .info, category: "ANALYTICS.COMPONENT.cleanup")
+                return
+            }
             
             // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
             if case .unauthorized = networkError {
@@ -211,6 +227,14 @@ class PrivacyReportsViewModel: ObservableObject {
         } catch {
             // Проверяем тип ошибки - показываем только реальные проблемы
             let networkError = NetworkError.from(error)
+            // Толерантный парсинг: при decodingError показываем «Нет данных», без красного баннера
+            if case .decodingError = networkError {
+                self.trackerStats = nil
+                self.topTrackers = []
+                errorMessage = nil
+                VisualLogger.shared.log("ℹ️ PRIVACY(tracker) parse=fallback reason=decoding_error → showing empty data", level: .info, category: "ANALYTICS.COMPONENT.tracker")
+                return
+            }
             
             // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
             if case .unauthorized = networkError {

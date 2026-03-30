@@ -785,10 +785,9 @@ struct MainScreen: View {
                 .accessibilityLabel("Основной контент приложения")
                 // Production-safe: обновляем Family stats/тариф сразу после подтверждённого удаления участника
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("MainFamilyStatsForceRefresh"))) { _ in
-                    Task { @MainActor in
-                        mainViewModel.refreshStats()
-                        tariffManager.loadTariff()
-                    }
+                    // Debounce через orchestrator ViewModel (коалесим внешние триггеры)
+                    mainViewModel.requestRefreshDebounced()
+                    tariffManager.loadTariff()
                 }
     }
 

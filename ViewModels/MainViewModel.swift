@@ -108,6 +108,34 @@ class MainViewModel: ObservableObject {
     private let apiService: APIService
     private let keychainManager: KeychainManager
     
+    // MARK: - Stabilization State (TTL + N-threshold)
+    /// Последний подтвержденный статус из успешного API-ответа
+    private var lastConfirmedStatus: FamilyProtectionStatus = .active
+    /// Время последнего успешного получения статуса
+    private var lastSuccessAt: Date? = nil
+    /// Количество подряд неуспешных попыток загрузки
+    private var consecutiveFailures: Int = 0
+    /// Минимальное время удержания подтвержденного статуса (сек)
+    private let statusTTLSec: TimeInterval = 15
+    /// Порог неуспехов для перехода в networkUnavailable
+    private let failuresThreshold: Int = 2
+    /// Debounce для внешних запросов обновления (мс)
+    private let refreshDebounceMs: Int = 700
+    private var refreshDebounceWorkItem: DispatchWorkItem?
+    
+    // MARK: - Public Orchestrator API
+    func requestRefreshDebounced() {
+        refreshDebounceWorkItem?.cancel()
+        let work = DispatchWorkItem { [weak self] in
+            DispatchQueue.main.async { [weak self] in
+                self?.loadDashboardData()
+            }
+        }
+        refreshDebounceWorkItem = work
+        let delay = DispatchTimeInterval.milliseconds(refreshDebounceMs)
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+    
     // ✅ ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЦИКЛОВ
     private var isLoadingDashboard = false
     private var lastOnAppearTime: Date?
@@ -271,10 +299,17 @@ class MainViewModel: ObservableObject {
                     self.threatsBlocked = stats.totalThreats
                     self.lastUpdateTime = Date()
                     self.errorMessage = nil // Авто-очистка баннера при успехе
+                    
+                    // Подтверждаем статус по успешному API
                     let mappedStatus = FamilyProtectionStatus(apiValue: stats.familyStatus)
+                    self.lastConfirmedStatus = mappedStatus
+                    self.lastSuccessAt = Date()
+                    self.consecutiveFailures = 0
+                    
+                    // Публикуем подтвержденный статус
                     self.familyProtectionStatus = mappedStatus
                     self.familyProtectionStatusMessage = stats.familyStatusMessage
-                    VisualLogger.shared.log("ℹ️ FAMILY.STATUS raw=\(stats.familyStatus ?? "nil") mapped=\(mappedStatus.rawValue) source=api", level: .info, category: "MAIN.STATUS")
+                    VisualLogger.shared.log("ℹ️ FAMILY.STATUS raw=\(stats.familyStatus ?? "nil") mapped=\(mappedStatus.rawValue) source=api ttl_left=0s fails=\(self.consecutiveFailures)", level: .info, category: "MAIN.STATUS")
                     
                     print("✅ MainViewModel: Данные успешно обновлены из API")
                     NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
@@ -284,6 +319,7 @@ class MainViewModel: ObservableObject {
                     print("❌ MainViewModel: Ошибка загрузки данных из API (попытка \(currentAttempt)/\(maxAttempts))")
                     print("   - Ошибка: \(error.localizedDescription)")
                     print("   - Текущие значения (fallback): члены=\(self.familyMembers), устройства=\(self.devicesProtected), угрозы=\(self.threatsBlocked)")
+                    let reason = self.classifyError(error)
                     
                     // Экспоненциальный бэк-офф: 0.5s, 1.0s, 2.0s
                     if currentAttempt < maxAttempts {
@@ -316,10 +352,17 @@ class MainViewModel: ObservableObject {
                                     self.devicesProtected = 0
                                     self.threatsBlocked = 0
                                     self.lastUpdateTime = nil
-                                    // Temporary server/network failure is not a "critical disable" state.
-                                    self.familyProtectionStatus = .networkUnavailable
-                                    self.familyProtectionStatusMessage = LocalizationManager.shared.localized("family_status_network_unavailable_message")
-                                    VisualLogger.shared.log("⚠️ FAMILY.STATUS raw=error mapped=networkUnavailable source=error_token_path", level: .warning, category: "MAIN.STATUS")
+                                    // TTL/N‑порог: увеличиваем счётчик фейлов и решаем, менять ли статус
+                                    self.consecutiveFailures += 1
+                                    let now = Date()
+                                    if self.consecutiveFailures >= self.failuresThreshold && self.isTTLElapsed(now: now) {
+                                        self.familyProtectionStatus = .networkUnavailable
+                                        self.familyProtectionStatusMessage = LocalizationManager.shared.localized("family_status_network_unavailable_message")
+                                    } else {
+                                        // Удерживаем последний подтвержденный статус
+                                        self.familyProtectionStatus = self.lastConfirmedStatus
+                                    }
+                                VisualLogger.shared.log("⚠️ FAMILY.STATUS raw=error mapped=\(self.familyProtectionStatus.rawValue) source=error_token_path reason=\(reason) ttl_left=\(self.ttlLeft(now: now))s fails=\(self.consecutiveFailures)", level: .warning, category: "MAIN.STATUS")
                                     NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
                                 }
                             } else {
@@ -341,10 +384,17 @@ class MainViewModel: ObservableObject {
                                 self.devicesProtected = 0
                                 self.threatsBlocked = 0
                                 self.lastUpdateTime = nil
-                                // Temporary server/network failure is not a "critical disable" state.
-                                self.familyProtectionStatus = .networkUnavailable
-                                self.familyProtectionStatusMessage = LocalizationManager.shared.localized("family_status_network_unavailable_message")
-                                VisualLogger.shared.log("⚠️ FAMILY.STATUS raw=error mapped=networkUnavailable source=error_general_path", level: .warning, category: "MAIN.STATUS")
+                                
+                                // TTL/N‑порог: увеличиваем счётчик фейлов и решаем, менять ли статус
+                                self.consecutiveFailures += 1
+                                let now = Date()
+                                if self.consecutiveFailures >= self.failuresThreshold && self.isTTLElapsed(now: now) {
+                                    self.familyProtectionStatus = .networkUnavailable
+                                    self.familyProtectionStatusMessage = LocalizationManager.shared.localized("family_status_network_unavailable_message")
+                                } else {
+                                    self.familyProtectionStatus = self.lastConfirmedStatus
+                                }
+                                VisualLogger.shared.log("⚠️ FAMILY.STATUS raw=error mapped=\(self.familyProtectionStatus.rawValue) source=error_general_path reason=\(reason) ttl_left=\(self.ttlLeft(now: now))s fails=\(self.consecutiveFailures)", level: .warning, category: "MAIN.STATUS")
                                 print("❌ MainViewModel: Ошибка после \(maxAttempts) попыток: \(error.localizedDescription)")
                                 NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
                             }
@@ -353,6 +403,28 @@ class MainViewModel: ObservableObject {
                 }
             }
         }
+    }
+    
+    // MARK: - TTL Helpers
+    private func isTTLElapsed(now: Date = Date()) -> Bool {
+        guard let last = lastSuccessAt else { return true }
+        return now.timeIntervalSince(last) >= statusTTLSec
+    }
+    
+    private func ttlLeft(now: Date = Date()) -> Int {
+        guard let last = lastSuccessAt else { return 0 }
+        let left = statusTTLSec - now.timeIntervalSince(last)
+        return max(0, Int(left.rounded()))
+    }
+    
+    // MARK: - Error Classification
+    private func classifyError(_ error: Error) -> String {
+        let text = error.localizedDescription.lowercased()
+        if text.contains("timed out") || text.contains("timeout") { return "timeout" }
+        if text.contains("ssl") || text.contains("tls") { return "tls" }
+        if text.contains("401") || text.contains("unauthorized") { return "401" }
+        if text.contains("500") || text.contains("503") { return "5xx" }
+        return "other"
     }
     
     /// Переключение защиты сети

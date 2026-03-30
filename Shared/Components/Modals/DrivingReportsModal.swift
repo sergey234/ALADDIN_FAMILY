@@ -14,6 +14,7 @@ struct DrivingReportsModal: View {
     
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var analyticsViewModel: AnalyticsViewModel
     @StateObject private var positioningService = PositioningSystemService.shared
     @StateObject private var viewModel = DrivingReportsViewModel()
     
@@ -115,21 +116,19 @@ struct DrivingReportsModal: View {
             }
         }
         .task {
-            // ✅ ИСПРАВЛЕНИЕ 2: Проверяем токен перед загрузкой
-            guard AppConfig.authToken != nil else {
-                #if DEBUG
-                print("⚠️ DrivingReportsModal: Токен отсутствует - требуется авторизация")
-                #endif
-                // Показываем сообщение об ошибке через ViewModel
-                viewModel.errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра отчетов."
-                return
-            }
-            
             await loadUsers()
             // ✅ ИСПРАВЛЕНИЕ 3: Синхронизация selectedUserId происходит в конце loadUsers()
             
-            let userId = selectedUserId.isEmpty ? nil : (selectedUserId == "current" ? nil : selectedUserId)
-            await viewModel.loadReports(userId: userId, period: selectedPeriod)
+            // Первичное применение данных из объединённой аналитики (без сетевых запросов)
+            viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics, period: selectedPeriod)
+        }
+        // Обновляем при смене периода
+        .onChange(of: selectedPeriod) { newValue in
+            viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics, period: newValue)
+        }
+        // И при поступлении свежих компонентных данных из AnalyticsViewModel
+        .onReceive(analyticsViewModel.$componentsAnalytics) { components in
+            viewModel.applyFrom(components: components, period: selectedPeriod)
         }
         .overlay(alignment: .center) {
             if viewModel.isLoading {
@@ -142,8 +141,30 @@ struct DrivingReportsModal: View {
         }
         .overlay(alignment: .bottom) {
             if let error = viewModel.errorMessage {
-                errorBanner(message: error)
-                    .padding(.bottom, Spacing.l)
+                HStack {
+                    Text(error)
+                        .font(.footnote)
+                        .foregroundColor(.white)
+                    Spacer()
+                    Button(action: {
+                        // Retry перезапускает общий orchestrator аналитики
+                        analyticsViewModel.startLoad()
+                    }) {
+                        Text(localizationManager.localized("common_retry"))
+                            .font(.caption)
+                            .foregroundColor(.primaryBlue)
+                            .padding(.horizontal, Spacing.s)
+                            .padding(.vertical, Spacing.xs)
+                            .background(Color.white.opacity(0.2))
+                            .clipShape(Capsule())
+                    }
+                }
+                .padding(.horizontal, Spacing.m)
+                .padding(.vertical, Spacing.s)
+                .background(Color.dangerRed.opacity(0.9))
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+                .shadow(radius: 6)
+                .padding(.bottom, Spacing.l)
             }
         }
         // ✅ ИСПРАВЛЕНИЕ: Добавляем VisualLogView на модальное окно
@@ -472,7 +493,7 @@ struct DrivingReportsModal: View {
                     id: member.id,
                     name: member.name,
                     role: member.role,
-                    avatar: member.avatar
+                    avatar: member.avatar ?? ""
                 )
             }
             
@@ -559,7 +580,7 @@ struct DrivingReportsModal: View {
                     id: member.id.uuidString,
                     name: member.name,
                     role: roleString,
-                    avatar: member.avatar
+                    avatar: member.avatar ?? ""
                 )
             }
             
@@ -586,10 +607,8 @@ struct DrivingReportsModal: View {
     }
     
     private func loadReports() {
-        Task { @MainActor in
-            let userId = selectedUserId.isEmpty ? nil : selectedUserId
-            await viewModel.loadReports(userId: userId, period: selectedPeriod)
-        }
+        // Сетевая загрузка больше не требуется: используем данные из AnalyticsViewModel.componentsAnalytics
+        viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics, period: selectedPeriod)
     }
 }
 

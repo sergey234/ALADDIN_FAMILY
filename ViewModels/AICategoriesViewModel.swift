@@ -32,6 +32,39 @@ class AICategoriesViewModel: ObservableObject {
     
     // MARK: - Public Methods
     
+    /// Применить данные из объединённой аналитики компонентов (без прямых сетевых запросов)
+    func applyFrom(components: ComponentsAnalytics?, childId: String?) {
+        guard let components = components else {
+            self.stats = nil
+            self.reports = []
+            return
+        }
+        // Достаём агрегированные метрики по компоненту AI
+        if let ai = components.getStats(for: "ai_categories_agent") {
+            let totalCategorized = ai.getIntMetric(key: "categorized")
+            let totalBlocked = ai.getIntMetric(key: "blocked")
+            let accuracy = ai.getDoubleMetric(key: "accuracy")
+            
+            // Карты категорий могут отсутствовать в метриках агрегатора — используем пустые
+            let byCategory: [String: Int] = [:]
+            let blockedByCategory: [String: Int] = [:]
+            
+            self.stats = AICategoriesStats(
+                totalCategorized: totalCategorized,
+                totalBlocked: totalBlocked,
+                accuracy: accuracy,
+                byCategory: byCategory,
+                blockedByCategory: blockedByCategory
+            )
+            // Агрегатор компонентов не отдаёт подробные отчёты — показываем пустой список (UI отрисует «Нет данных»)
+            self.reports = []
+            self.errorMessage = nil
+        } else {
+            self.stats = nil
+            self.reports = []
+        }
+    }
+    
     func loadChildren() async {
         do {
             // Загружаем список членов семьи и фильтруем детей
@@ -50,7 +83,7 @@ class AICategoriesViewModel: ObservableObject {
                         id: member.id,
                         name: member.name,
                         role: member.role,
-                        avatar: member.avatar
+                        avatar: member.avatar ?? ""
                     )
                 }
             
@@ -119,70 +152,10 @@ class AICategoriesViewModel: ObservableObject {
     }
     
     func loadReports(childId: String?) async {
-        // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед загрузкой
-        guard AppConfig.authToken != nil else {
-            errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
-            return
-        }
-        
-        isLoading = true
-        errorMessage = nil
-        defer { isLoading = false }
-        
-        do {
-            // Загружаем статистику и отчеты параллельно
-            async let statsTask: AICategoriesStats = withCheckedThrowingContinuation { continuation in
-                apiService.getAICategoriesStats(childId: childId) { result in
-                    continuation.resume(with: result)
-                }
-            }
-            
-            async let reportsTask: [AICategoryReport] = withCheckedThrowingContinuation { continuation in
-                apiService.getAICategoryReports(childId: childId) { result in
-                    continuation.resume(with: result)
-                }
-            }
-            
-            let (stats, reports) = try await (statsTask, reportsTask)
-            self.stats = stats
-            self.reports = reports
-            // Очищаем ошибку при успешной загрузке
-            errorMessage = nil
-        } catch {
-            // Проверяем тип ошибки - показываем только реальные проблемы
-            let networkError = NetworkError.from(error)
-            
-            // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
-            if case .unauthorized = networkError {
-                errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
-                self.stats = nil
-                self.reports = []
-                return
-            }
-            
-            // Не показываем ошибку для 404 (нет данных - это нормально)
-            if case .notFound = networkError {
-                // Просто используем пустые данные, не показываем ошибку
-                self.stats = nil
-                self.reports = []
-                errorMessage = nil
-                return
-            }
-            
-            // Показываем ошибку только для реальных проблем
-            if networkError.isCritical || !networkError.isRetryable {
-                let errorKey = "ai_categories_error_load_failed"
-                let errorFormat = localizationManager.localized(errorKey)
-                errorMessage = String(format: errorFormat, networkError.localizedDescription)
-            } else {
-                // Для временных ошибок тоже не показываем, просто используем пустые данные
-                errorMessage = nil
-            }
-            
-            // В случае ошибки используем пустые данные
-            self.stats = nil
-            self.reports = []
-        }
+        // Переведено на единый источник данных: AnalyticsViewModel.componentsAnalytics
+        // Эта функция теперь становится no-op и сохраняется для обратной совместимости вызовов из UI.
+        // Фактическое наполнение выполняется через applyFrom(components:childId:), вызываемую из модального окна.
+        return
     }
     
     // MARK: - Actions

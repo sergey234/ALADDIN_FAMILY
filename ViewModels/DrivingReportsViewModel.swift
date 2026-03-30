@@ -33,132 +33,41 @@ class DrivingReportsViewModel: ObservableObject {
     
     // MARK: - Public Methods
     
-    func loadReports(userId: String?, period: String) async {
-        isLoading = true
-        errorMessage = nil
-        defer { isLoading = false }
-        
-        // ✅ ИСПРАВЛЕНО: Умная проверка токена через TokenManager (как в AnalyticsViewModel)
-        // Проверяет SubscriptionManager.currentToken первым делом!
-        let tokenAvailability = TokenManager.shared.checkTokenAvailability()
-        
-        // Если токен загружается - ждем немного
-        if tokenAvailability.isAvailable {
-            // Токен доступен - продолжаем загрузку
-            #if DEBUG
-            VisualLogger.shared.log("✅ DrivingReportsViewModel: Токен доступен, начинаем загрузку отчетов", level: .success, category: "DRIVING_REPORTS")
-            print("✅ DrivingReportsViewModel: Токен доступен, начинаем загрузку отчетов")
-            #endif
-        } else {
-            // Токен не найден - проверяем, загружается ли он
-            if TokenManager.shared.isTokenLoading() {
-                // Токен загружается - ждем до 500ms
-                #if DEBUG
-                VisualLogger.shared.log("⏳ DrivingReportsViewModel: Токен загружается, ждем...", level: .info, category: "DRIVING_REPORTS")
-                print("⏳ DrivingReportsViewModel: Токен загружается, ждем...")
-                #endif
-                if let token = await TokenManager.shared.waitForTokenLoad(maxWaitTime: 0.5) {
-                    // Токен загрузился - продолжаем
-                    #if DEBUG
-                    VisualLogger.shared.log("✅ DrivingReportsViewModel: Токен загрузился, продолжаем загрузку отчетов", level: .success, category: "DRIVING_REPORTS")
-                    print("✅ DrivingReportsViewModel: Токен загрузился, продолжаем загрузку отчетов")
-                    #endif
-                } else {
-                    // Токен не загрузился - показываем ошибку (БЕЗ SessionExpired)
-                    #if DEBUG
-                    VisualLogger.shared.log("⚠️ DrivingReportsViewModel: Токен не загрузился, показываем ошибку", level: .warning, category: "DRIVING_REPORTS")
-                    print("⚠️ DrivingReportsViewModel: Токен не загрузился, показываем ошибку")
-                    #endif
-                    errorMessage = "Не удалось загрузить отчеты. Проверьте подключение к интернету."
-                    self.stats = nil
-                    self.reports = []
-                    return
-                }
-            } else {
-                // Токена нет нигде - показываем ошибку (БЕЗ SessionExpired)
-                // SessionExpired отправляется только при реальных 401 ошибках от API
-                #if DEBUG
-                VisualLogger.shared.log("⚠️ DrivingReportsViewModel: Токен отсутствует, показываем ошибку", level: .warning, category: "DRIVING_REPORTS")
-                print("⚠️ DrivingReportsViewModel: Токен отсутствует, показываем ошибку")
-                #endif
-                errorMessage = "Не удалось загрузить отчеты. Проверьте подключение к интернету."
-                self.stats = nil
-                self.reports = []
-                return
-            }
-        }
-        
-        do {
-            // Загружаем статистику и отчеты параллельно
-            async let statsTask: DrivingStats = withCheckedThrowingContinuation { continuation in
-                apiService.getDrivingStats(userId: userId, period: period) { result in
-                    continuation.resume(with: result)
-                }
-            }
-            
-            async let reportsTask: [DrivingReport] = withCheckedThrowingContinuation { continuation in
-                apiService.getDrivingReports(userId: userId, period: period) { result in
-                    continuation.resume(with: result)
-                }
-            }
-            
-            let (stats, reports) = try await (statsTask, reportsTask)
-            self.stats = stats
-            self.reports = reports
-            // Очищаем ошибку при успешной загрузке
-            errorMessage = nil
-        } catch {
-            // Проверяем тип ошибки - показываем только реальные проблемы
-            let networkError = NetworkError.from(error)
-            
-            // ✅ ИСПРАВЛЕНО: Обработка unauthorized - SessionExpired отправляется только при реальных 401 ошибках
-            if case .unauthorized(let message) = networkError {
-                // Реальная ошибка авторизации от API (401) - отправляем SessionExpired
-                let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
-                self.errorMessage = errorMessage
-                self.stats = nil
-                self.reports = []
-                // ✅ Отправляем SessionExpired только при реальных 401 ошибках от API
-                // ✅ BUILD 121: Логирование отправки SessionExpired
-                #if DEBUG
-                let stackTrace = Thread.callStackSymbols.prefix(5).joined(separator: "\n")
-                print("📤 DrivingReportsViewModel: Отправка SessionExpired notification")
-                print("   - Call stack:")
-                print(stackTrace)
-                VisualLogger.shared.log("📤 DrivingReportsViewModel: Отправка SessionExpired", level: .warning, category: "SESSION")
-                MasterLogger.shared.log(.warn, category: .business, message: "📤 DrivingReportsViewModel: Sending SessionExpired notification")
-                #endif
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("SessionExpired"),
-                    object: nil,
-                    userInfo: ["message": errorMessage]
-                )
-                return
-            }
-            
-            // Не показываем ошибку для 404 (нет данных - это нормально)
-            if case .notFound = networkError {
-                // Просто используем пустые данные, не показываем ошибку
-                self.stats = nil
-                self.reports = []
-                errorMessage = nil
-                return
-            }
-            
-            // Показываем ошибку только для реальных проблем (кроме unauthorized)
-            if networkError.isCritical || !networkError.isRetryable {
-                let errorKey = "driving_reports_error_load_failed"
-                let errorFormat = localizationManager.localized(errorKey)
-                errorMessage = String(format: errorFormat, networkError.localizedDescription)
-            } else {
-                // Для временных ошибок тоже не показываем, просто используем пустые данные
-                errorMessage = nil
-            }
-            
-            // В случае ошибки используем пустые данные
+    /// Применить данные из объединённой аналитики компонентов (без прямых сетевых запросов)
+    func applyFrom(components: ComponentsAnalytics?, period: String) {
+        // Достаём агрегированные метрики по компоненту Driving
+        guard let stats = components?.getStats(for: "driving_reports_agent") else {
             self.stats = nil
             self.reports = []
+            self.errorMessage = nil
+            return
         }
+        // Преобразуем агрегированные метрики к нашим UI-моделям
+        let totalTrips = stats.getIntMetric(key: "trips_total")
+        let totalDistanceKm = stats.getDoubleMetric(key: "distance_km_total")
+        let totalDurationSec = stats.getDoubleMetric(key: "duration_sec_total")
+        let avgSafety = stats.getDoubleMetric(key: "avg_safety_score")
+        let violations = stats.getIntMetric(key: "violations_total")
+        let positioning = stats.getMetric(key: "positioning") // может быть пустым
+        
+        self.stats = DrivingStats(
+            totalTrips: totalTrips,
+            totalDistance: totalDistanceKm,
+            totalDuration: totalDurationSec,
+            averageSafetyScore: avgSafety,
+            violationsCount: violations,
+            period: period,
+            positioningSystem: positioning.isEmpty ? nil : positioning
+        )
+        // Агрегатор компонентов не отдаёт детальные поездки — показываем пустой список (UI отрисует «Нет данных»)
+        self.reports = []
+        self.errorMessage = nil
+    }
+    
+    func loadReports(userId: String?, period: String) async {
+        // Переведено на единый источник данных: AnalyticsViewModel.componentsAnalytics
+        // Сетевая загрузка здесь больше не выполняется.
+        return
     }
     
     func exportReport(reportId: String, format: String) async throws -> Data {

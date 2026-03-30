@@ -292,11 +292,11 @@ struct FamilyMemberResponse: Codable, Identifiable {
     let id: String
     let name: String
     let role: String // "parent", "child", "teenager", "elderly"
-    let avatar: String
-    let status: String // "protected", "warning", "danger", "offline"
-    let threatsBlocked: Int
-    let lastActive: String
-    let devices: Int
+    let avatar: String?
+    let status: String? // "protected", "warning", "danger", "offline"
+    let threatsBlocked: Int?
+    let lastActive: String?
+    let devices: Int?
 }
 
 struct FamilyStatsResponse: Codable {

@@ -98,6 +98,7 @@ struct AnalyticsScreen: View {
         .sheet(isPresented: $showDrivingReportsModal) {
             DrivingReportsModal(isPresented: $showDrivingReportsModal)
                 .environmentObject(localizationManager)
+                .environmentObject(viewModel)
         }
         .sheet(isPresented: $showDarkWebMonitoringModal) {
             DarkWebMonitoringModal(isPresented: $showDarkWebMonitoringModal)
@@ -110,10 +111,12 @@ struct AnalyticsScreen: View {
         .sheet(isPresented: $showPrivacyReportsModal) {
             PrivacyReportsModal(isPresented: $showPrivacyReportsModal)
                 .environmentObject(localizationManager)
+                .environmentObject(viewModel)
         }
         .sheet(isPresented: $showAICategoriesModal) {
             AICategoriesModal(isPresented: $showAICategoriesModal)
                 .environmentObject(localizationManager)
+                .environmentObject(viewModel)
         }
         .overlay(alignment: .center) {
             if viewModel.isLoading {

@@ -62,11 +62,11 @@ class FamilyViewModel: ObservableObject {
                         FamilyMember(
                             name: member.name,
                             role: member.role,
-                            avatar: member.avatar,
-                            status: member.status,
-                            threatsBlocked: member.threatsBlocked,
-                            lastActive: member.lastActive,
-                            devices: member.devices
+                            avatar: member.avatar ?? "",
+                            status: member.status ?? "protected",
+                            threatsBlocked: member.threatsBlocked ?? 0,
+                            lastActive: member.lastActive ?? "",
+                            devices: member.devices ?? 0
                         )
                     }
                     self?.isLoading = false
