@@ -1,0 +1,43 @@
+component,method,endpoint,decision,must_write_db,writes_db_detected,decision_source,rationale
+AI Assistant,GET,/api/ai/assistant/capabilities,unknown,,,none,No decision yet.
+AI Categories,GET,/api/ai-categories/health,unknown,,,none,No decision yet.
+App Settings,GET,/api/settings/biometry,unknown,,,none,No decision yet.
+Components,GET,/api/components/config/{component_id},unknown,,,none,No decision yet.
+Crash Detection,GET,/api/crash-detection/health,unknown,,,none,No decision yet.
+Dark Web Monitoring,GET,/api/darkweb/breaches,unknown,,,none,No decision yet.
+Data Cleanup,GET,/api/data-cleanup/health,unknown,,,none,No decision yet.
+Elderly Interface,POST,/api/elderly/appointments/sync,unknown,true,false,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Gamification,GET,/api/gamification/achievements,unknown,,,none,No decision yet.
+Identity Theft Protection,GET,/api/identity-theft/alerts,unknown,,,none,No decision yet.
+IoT,GET,/api/iot/devices/{homeId},unknown,,,none,No decision yet.
+Location Bubble,GET,/api/location/bubble/health,unknown,,,none,No decision yet.
+Metrics,POST,/api/metrics/upload,must_not_write_db,false,false,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Notifications,GET,/api/notifications,unknown,,,none,No decision yet.
+Offline Storage,GET,/api/offline-storage/data,unknown,,,none,No decision yet.
+Other Functions,GET,/api/location/movement-history,unknown,,,none,No decision yet.
+Parental Control,GET,/api/parental-control/app-blocks,unknown,,,none,No decision yet.
+Parental Control Bypass,GET,/api/parental/bypass/stats,unknown,,,none,No decision yet.
+Parental Control Legacy,GET,/api/v1/parental-control/access-requests,unknown,,,none,No decision yet.
+Reports,GET,/api/reports/ai-categories/allow,unknown,,,none,No decision yet.
+Roadside Assistance,GET,/api/roadside-assistance/health,unknown,,,none,No decision yet.
+Subscription,GET,/api/subscription/auto-renewal,unknown,,,none,No decision yet.
+System Management,GET,/api/system/backup/status,unknown,,,none,No decision yet.
+User Profile,GET,/api/user/profile/history,unknown,,,none,No decision yet.
+analytics,GET,/api/analytics,unknown,,,none,No decision yet.
+anti-tracker,GET,/api/anti-tracker/health,unknown,,,none,No decision yet.
+auth,POST,/api/auth/login,unknown,,,none,No decision yet.
+components,GET,/api/components/bulk-update,unknown,,,none,No decision yet.
+crash-detection-compat,GET,/api/crash-detection/alert,unknown,,,none,No decision yet.
+driving-reports,GET,/api/driving-reports/health,unknown,,,none,No decision yet.
+family,GET,/api/family/add,unknown,,,none,No decision yet.
+misc-other-compat,GET,/api/devices,unknown,,,none,No decision yet.
+network-protection-compat,GET,/api/network-protection/config,unknown,,,none,No decision yet.
+notifications-compat,GET,/api/notifications/archive,unknown,,,none,No decision yet.
+other,GET,/api/health,unknown,,,none,No decision yet.
+parental-compat,GET,/api/parental/block,unknown,,,none,No decision yet.
+payments,GET,/api/payments/status/{payment_id},unknown,,,none,No decision yet.
+protection,GET,/api/protection/settings,unknown,,,none,No decision yet.
+referral,GET,/api/referral/code,unknown,,,none,No decision yet.
+referral-test,GET,/api/referral/test/discount/apply,unknown,,,none,No decision yet.
+subscription,GET,/api/subscription/status,unknown,,,none,No decision yet.
+subscription-compat,GET,/api/subscription/activate,unknown,,,none,No decision yet.

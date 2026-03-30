@@ -1,0 +1,179 @@
+# rel-02 DB coverage audit
+
+- endpoints in inventory: **381**
+- sql table references discovered: **253**
+
+## Endpoint families (from OpenAPI paths)
+- `reports`: 49
+- `parental-control`: 31
+- `gamification`: 26
+- `components`: 23
+- `subscription`: 18
+- `crash-detection`: 15
+- `location`: 14
+- `system`: 12
+- `driving-reports`: 11
+- `family`: 11
+- `identity-theft`: 11
+- `protection`: 11
+- `user`: 11
+- `ai`: 10
+- `settings`: 10
+- `anti-tracker`: 9
+- `data-cleanup`: 9
+- `ai-categories`: 8
+- `network-protection`: 8
+- `auth`: 7
+- `referral`: 7
+- `v1`: 7
+- `darkweb`: 6
+- `iot`: 6
+- `notifications`: 6
+- `parental`: 6
+- `payments`: 6
+- `offline-storage`: 5
+- `roadside-assistance`: 5
+- `elderly`: 4
+- `{path}`: 4
+- `analytics`: 3
+- `chat`: 3
+- `other`: 2
+- `malware`: 2
+- `activation`: 1
+- `devices`: 1
+- `health`: 1
+- `metrics`: 1
+- `test`: 1
+
+## Referenced DB tables (top)
+- `Compatibility` <- security/api/routers/gamification_router.py
+- `DB` <- app/security/api/routers/parental_control_router_updated.py, app/security/api/routers/roadside_assistance_router_updated.py, app/security/api/routers/subscription_sync_router_updated.py
+- `JWT` <- app/routers/family.py, security/api/routers/gamification_router.py
+- `PIL` <- app/security/ai_agents/online_predators_agent.py
+- `RSS` <- app/security/ai_agents/threat_intelligence_agent.py
+- `__future__` <- app/security/ai_agents/emergency_response_interface.py, app/security/ai_agents/fake_documents_agent.py, app/security/ai_agents/fake_news_detection_agent.py
+- `abc` <- app/security/ai_agents/emergency_interfaces.py, app/security/ai_agents/threat_monitoring_interface.py, app/security/managers/analytics_manager.py
+- `academic` <- app/security/ai_agents/threat_intelligence_agent.py
+- `activation_codes` <- app/routers/payments.py
+- `admin` <- app/security/vpn/tests/integration/test_vpn_integration.py, app/security/vpn/tests/unit/test_security_systems.py
+- `ai_category_reports` <- app/security/api/routers/ai_categories_router.py
+- `aiohttp` <- app/security/vpn/api/graphql_api.py, app/security/vpn/api/websocket_api.py
+- `aiohttp_cors` <- app/security/vpn/api/graphql_api.py, app/security/vpn/api/websocket_api.py
+- `all` <- app/security/ai_agents/mobile_security_agent.py, app/security/ai_agents/mobile_security_agent_enhanced.py
+- `analytics.business_analytics` <- app/security/vpn/test_business_analytics_functionality.py, app/security/vpn/test_final_integration.py
+- `analytics.ml_detector` <- app/security/vpn/test_final_integration.py
+- `analytics_metrics` <- app/security/api/routers/metrics_router_updated.py
+- `api.graphql_api` <- app/security/vpn/test_final_integration.py
+- `api.websocket_api` <- app/security/vpn/test_final_integration.py
+- `app.auth` <- app/routers/analytics_router.py, app/routers/auth_router.py, app/routers/components.py
+- `app.database` <- app/routers/analytics_router.py, app/routers/auth_router.py, app/routers/components.py
+- `app.referral_payment_functions` <- app/routers/payments.py
+- `app.security` <- app/security/api/routers/user_profile_sync_router.py, app/security/sfm_singleton.py
+- `app.utils` <- app/routers/components.py
+- `attempt` <- app/security/api/routers/identity_theft_protection_router.py
+- `audit_logging.audit_logger` <- app/security/vpn/check_vpn_sleep_mode.py, app/security/vpn/security_integration.py, app/security/vpn/test_security_systems.py
+- `auth` <- app/routers/auth_router.py
+- `auth.auth` <- app/security/api/routers/user_profile_sync_router.py
+- `auth.two_factor_auth` <- app/security/vpn/check_vpn_sleep_mode.py, app/security/vpn/security_integration.py, app/security/vpn/test_security_systems.py
+- `backup.backup_manager` <- app/security/vpn/test_final_integration.py
+- `blocked_files` <- app/security/bots/cloud_storage_security_bot.py
+- `blocked_ips` <- app/security/bots/network_security_bot.py
+- `blocked_urls` <- app/security/bots/browser_security_bot.py
+- `browser_sessions` <- app/security/bots/browser_security_bot.py
+- `bs4` <- app/security/ai_agents/cbr_data_collector.py, app/security/ai_agents/enhanced_data_collector.py, app/security/ai_agents/news_scraper.py
+- `bypass_attempts` <- app/security/bots/incognito_protection_bot.py
+- `category` <- app/security/api/routers/ai_categories_router.py
+- `children` <- security/api/routers/parental_control_router.py
+- `circuit_breaker` <- app/security/microservices/put_to_sleep_enhanced.py, app/security/microservices/safe_function_manager_integration.py
+- `cleanup.cleanup_records` <- app/security/api/routers/data_cleanup_router.py, security/api/routers/reports_router.py
+- `collections` <- app/security/active/intrusion_prevention.py, app/security/active/network_monitoring.py, app/security/advanced_monitoring_manager.py
+- `commercial` <- app/security/ai_agents/threat_intelligence_agent.py
+- `complete_api_sfm_mapping` <- app/routers/analytics_router.py, security/api/routers/reports_router.py
+- `completed` <- app/routers/components.py
+- `compliance.data_localization` <- app/security/vpn/test_compliance_152_fz.py
+- `compliance.integration` <- app/security/vpn/test_compliance_152_fz.py
+- `compliance.no_logs_policy` <- app/security/vpn/test_compliance_152_fz.py
+- `compliance.russia_compliance` <- app/security/vpn/test_compliance_152_fz.py
+- `component_configuration` <- app/routers/components.py
+- `component_status` <- app/routers/components.py, app/routers/family.py
+- `concurrent.futures` <- app/security/bots/components/encryption_manager.py, app/security/bots/components/performance_optimizer.py, app/security/managers/external_api_manager.py
+- `config.color_scheme` <- app/security/ai_agents/child_interface_manager.py, app/security/ai_agents/contextual_alert_system.py, app/security/ai_agents/parent_control_panel.py
+- `config.safe_config` <- app/security/safe_security_monitoring.py
+- `config.vpn_constants` <- app/security/vpn/tests/unit/test_architecture_components.py
+- `contextlib` <- app/security/ai_agents/threat_intelligence_agent.py, app/security/vpn/graceful/graceful_degradation.py, app/security/vpn/retry/retry_handler.py
+- `core.base` <- security/bots/enhanced_social_media_bot.py, security/bots/max_messenger_security_bot.py
+- `core.configuration` <- app/security/microservices/user_interface_manager.py
+- `core.database` <- app/security/microservices/user_interface_manager.py
+- `core.security_base` <- security/bots/enhanced_social_media_bot.py
+- `core.sfm` <- app/security/family/parent_child_elderly_web_interface.py
+- `core.system_manager` <- app/security/ai_agents/safe_quality_analyzer_enhanced.py, app/security/vpn/sleep_mode_all_components.py, app/security/vpn/sleep_mode_all_security_components.py
+- `crash_detection_alerts` <- app/security/api/routers/crash_detection_router_updated.py
+- `crash_detection_cache` <- app/security/api/routers/crash_detection_router.py, app/security/api/routers/crash_detection_router_optimized.py, app/security/api/routers/crash_detection_router_updated.py
+- `cryptography.fernet` <- app/security/bots/components/encryption_manager.py, app/security/secrets_manager.py
+- `cryptography.hazmat` <- app/security/bots/components/encryption_manager.py, app/security/zero_trust_manager.py
+- `dark_web_leaks` <- app/security/api/routers/dark_web_monitoring_router.py
+- `dark_web_scans` <- app/security/api/routers/dark_web_monitoring_router.py
+- `darkweb.darkweb_leaks` <- security/api/routers/reports_router.py
+- `database` <- app/routers/auth_router.py
+- `dataclasses` <- app/security/active/device_security.py, app/security/active/incident_response.py, app/security/active/intrusion_prevention.py
+- `datetime` <- app/routers/analytics_router.py, app/routers/auth_router.py, app/routers/components.py
+- `decimal` <- app/security/ai_agents/personalization_agent.py, app/security/managers/qr_payment_manager.py, app/security/managers/referral_manager.py
+- `device_threats` <- app/security/bots/device_security_bot.py
+- `devices` <- app/routers/family.py, app/security/bots/device_security_bot.py
+- `di.dependency_injection` <- app/security/vpn/tests/integration/test_vpn_integration.py, app/security/vpn/tests/unit/test_architecture_components.py
+- `domain` <- security/api/routers/reports_router.py
+- `driving_reports` <- app/security/api/routers/driving_reports_router.py
+- `e` <- app/security/active/malware_protection.py
+- `else` <- app/security/bots/device_security_bot.py
+- `email.mime` <- app/security/enhanced_alerting.py, app/security/vpn/auth/two_factor_auth.py
+- `enum` <- app/routers/components.py, app/security/access_control.py, app/security/access_control_manager.py
+- `exceptions.vpn_exceptions` <- app/security/vpn/retry/retry_handler.py, app/security/vpn/tests/unit/test_architecture_components.py, app/security/vpn/tests/unit/test_security_systems.py
+- `factories.vpn_factory` <- app/security/vpn/tests/unit/test_architecture_components.py
+- `families` <- app/routers/family.py
+- `family_links` <- security/api/routers/parental_control_router.py
+- `family_members` <- app/routers/family.py, security/api/routers/parental_control_router.py
+- `family_notification_manager` <- app/security/family/test_simple.py
+- `family_registration` <- app/security/family/test_simple.py
+- `fastapi` <- app/auth/auth.py, app/routers/analytics_router.py, app/routers/auth_router.py
+- `fastapi.middleware` <- app/security/family/parent_child_elderly_web_interface.py, app/security/microservices/api_gateway.py, app/security/microservices/api_gateway_new.py
+- `fastapi.responses` <- app/security/family/parent_child_elderly_web_interface.py, app/security/microservices/rate_limiter.py, app/security/microservices/user_interface_manager.py
+- `fastapi.security` <- app/auth/auth.py, app/routers/auth_router.py, security/api/routers/ai_assistant_router.py
+- `fastapi.templating` <- app/security/family/parent_child_elderly_web_interface.py
+- `fastapi.testclient` <- app/security/api/routers/tests/test_identity_theft_protection_router.py, security/api/routers/tests/test_identity_theft_protection_router.py
+- `features` <- app/security/vpn/test_performance_features.py
+- `file` <- app/security/antivirus/signatures/signature_updater.py, security/antivirus/signatures/signature_updater.py
+- `flask` <- app/security/ai_agents/fraud_detection_api.py, app/security/vpn/web/vpn_variant_1.py, app/security/vpn/web/vpn_variant_2.py
+- `flask_cors` <- app/security/ai_agents/fraud_detection_api.py, app/security/vpn/web/vpn_web_interface_improved.py, app/security/vpn/web/vpn_web_interface_premium.py
+- `flask_limiter` <- app/security/vpn/web/vpn_web_interface_improved.py, app/security/vpn/web/vpn_web_interface_premium.py
+- `flask_limiter.util` <- app/security/vpn/web/vpn_web_interface_improved.py, app/security/vpn/web/vpn_web_interface_premium.py
+- `flask_socketio` <- app/security/vpn/web/vpn_web_interface.py
+- `found` <- app/security/health_check_system.py
+- `fraud_records` <- app/security/ai_agents/russian_identity_theft_protection_agent.py, security/ai_agents/russian_identity_theft_protection_agent.py
+- `functionality` <- app/security/safe_function_manager.py
+- `functools` <- app/security/active/device_security.py, app/security/active/intrusion_prevention.py, app/security/active/malware_protection.py
+- `geofences` <- security/api/routers/parental_control_router.py
+- `government` <- app/security/ai_agents/threat_intelligence_agent.py
+- `graceful.graceful_degradation` <- app/security/vpn/tests/integration/test_vpn_integration.py, app/security/vpn/tests/unit/test_architecture_components.py
+- `high` <- app/security/ai_agents/mobile_security_agent.py, app/security/ai_agents/mobile_security_agent_enhanced.py
+- `iOS` <- app/routers/crash_detection_compat.py, app/routers/notifications_compat.py, app/routers/parental_compat.py
+- `identity.identity_attempts` <- app/security/api/routers/identity_theft_protection_router.py, security/api/routers/reports_router.py
+- `identity_theft_attempts` <- app/security/api/routers/identity_theft_protection_router.py
+- `incognito_detections` <- app/security/bots/incognito_protection_bot.py
+- `information_schema.tables` <- app/database/migrations/apply_family_migration.py, app/database/migrations/apply_migration.py, app/routers/auth_router.py
+- `integration.aladdin_vpn_integration` <- app/security/vpn/web/vpn_web_interface.py, app/security/vpn/web/vpn_web_server.py
+- `integrations.external_services` <- app/security/vpn/test_final_integration.py
+- `interfaces.vpn_protocols` <- app/security/vpn/di/dependency_injection.py, app/security/vpn/factories/vpn_factory.py, app/security/vpn/tests/unit/test_architecture_components.py
+- `io` <- app/security/managers/qr_payment_manager.py, app/security/threat_intelligence.py, app/security/vpn/tests/run_all_tests.py
+- `jose` <- security/api/routers/gamification_router.py
+- `last` <- security/api/routers/reports_router.py
+
+## Preliminary gaps to model in PostgreSQL
+- Build canonical mapping `endpoint -> table/view` for all critical components.
+- For families with no explicit SQL references, define storage model (tables/views/events).
+- Standardize schema naming for non-analytics domains (avoid mixed `public.*` and domain schemas without policy).
+- Add migration scripts for missing entities after canonical mapping finalization.
+
+## Required output for rel-02 completion
+- `db_domain_catalog.csv`: component/function -> schema.table -> R/W -> retention -> owner.
+- `Vxxx__create_missing_tables.sql`: missing DDL only.
+- `Vxxx__grants_roles.sql`: least-privilege grants for runtime users.

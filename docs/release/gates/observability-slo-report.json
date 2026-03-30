@@ -1,0 +1,32 @@
+{
+  "generated_at": "2026-03-30T17:03:29",
+  "p95_seconds": 0.047499999999999994,
+  "five_xx_share": 0.0,
+  "freshness_seconds": {
+    "cleanup": 855.720389,
+    "darkweb": 854.778628,
+    "identity": 861.548256,
+    "location": 859.00988,
+    "tracker": 856.827374
+  },
+  "freshness_thresholds_seconds": {
+    "darkweb": 259200,
+    "identity": 86400,
+    "tracker": 43200,
+    "location": 21600,
+    "cleanup": 604800
+  },
+  "rules_loaded": [
+    "aladdin-analytics-alerts",
+    "aladdin-analytics-thresholds"
+  ],
+  "alerts_active_count": 0,
+  "gateway_target_up": true,
+  "slo_checks": {
+    "p95_lt_0_5s": true,
+    "five_xx_lt_1pct": true,
+    "freshness_within_thresholds": true,
+    "no_active_alerts": true
+  },
+  "pass": true
+}

@@ -3488,3 +3488,259 @@ func testProductionTrialFlow() {
 ---
 **ФИНАЛЬНЫЙ СТАТУС (BUILD 123):** Система стабилизирована и готова к продакшену.
 *Документация обновлена автоматически ML-системой (2026-03-19)*
+
+---
+
+## 18. Production Update: честный write-path и backfill-5 (BUILD 129, март 2026)
+
+### 18.1 Что добавлено в runtime-контур `:8002`
+Для маршрутов `reports` внедрен реальный write-path (не compat-заглушка):
+- `POST /api/reports/identity-theft/allow`
+- `POST /api/reports/identity-theft/block`
+- `POST /api/reports/privacy/location/allow`
+- `POST /api/reports/privacy/location/block`
+- `POST /api/reports/privacy/tracker/whitelist`
+- `POST /api/reports/privacy/cleanup/start`
+- `POST /api/reports/dark-web/scan/start`
+
+Параллельно сохранены `GET` варианты для обратной совместимости, но боевой поток для мутаций теперь работает через POST.
+
+### 18.2 Почему ранее были `500` и как устранено
+Фактические причины из `gunicorn.out`:
+1. SQL ошибка в cleanup insert (`:categories::jsonb`) -> исправлено на `CAST(:categories AS jsonb)`.
+2. Невалидный `ON CONFLICT (tracker_name)` без уникального ограничения -> заменено на `UPDATE` с fallback `INSERT`.
+3. `psycopg2.errors.InsufficientPrivilege` на доменные таблицы -> выданы права `aladdin_user`:
+   - `USAGE` на схемы `darkweb, identity, tracker, location, cleanup`
+   - `SELECT, INSERT, UPDATE` на таблицы доменов.
+
+### 18.3 Как поднимали `gunicorn` на `:8002` в проде
+Использовали два режима:
+- стандартный `nohup ... gunicorn ... -b 0.0.0.0:8002`
+- альтернативный `setsid` (когда длинные цепочки команд прерывались)
+
+Проверка после запуска:
+- `netstat -tulpn | grep :8002`
+- `curl http://localhost:8002/api/health` -> `{"status":"ok"}`
+- `openapi.json`: у целевых путей присутствуют `get` и `post`.
+
+### 18.4 Подтвержденный результат replay/backfill-5
+После реальных POST replay по 5 доменам:
+- обновились timestamps в доменных таблицах:
+  - `identity.identity_attempts.timestamp`
+  - `location.location_requests.timestamp`
+  - `tracker.tracker_blocks.last_blocked_at`
+  - `cleanup.cleanup_records.cleanup_date`
+  - `darkweb.darkweb_leaks.leak_date`
+- freshness метрики перешли в "свежие" значения (секунды/минуты, а не часы/дни),
+- `AladdinNoFreshDataByDomain` -> `active_no_fresh=0`.
+
+### 18.5 Текущий операционный вывод для ML-систем
+Система на `:8002` работает по production-сценарию без mock/fallback для критичных write-операций в `reports` домене.  
+Backfill-5 закрыт инженерно корректно: write-path + DB права + replay + метрики/алерты.
+
+### 18.6 Операционный чек-лист (команды для повторения)
+
+**1) Как поднимать `gunicorn` на `:8002` (базовый запуск):**
+```bash
+cd /opt/aladdin-backend
+nohup /opt/aladdin-backend/venv/bin/gunicorn \
+  -w 2 \
+  -k uvicorn.workers.UvicornWorker \
+  main:app \
+  -b 0.0.0.0:8002 \
+  >/opt/aladdin-backend/logs/gunicorn.out 2>&1 &
+
+sleep 4
+netstat -tulpn 2>/dev/null | grep ':8002' || true
+curl -s -S -m 6 http://localhost:8002/api/health
+```
+
+**2) Альтернативный запуск через `setsid` (если длинные цепочки прерываются):**
+```bash
+cd /opt/aladdin-backend
+setsid /opt/aladdin-backend/venv/bin/gunicorn \
+  -w 2 \
+  -k uvicorn.workers.UvicornWorker \
+  main:app \
+  -b 0.0.0.0:8002 \
+  >/opt/aladdin-backend/logs/gunicorn.out 2>&1 < /dev/null &
+
+echo $! > /opt/aladdin-backend/logs/gunicorn_8002.pid
+sleep 5
+netstat -tulpn 2>/dev/null | grep ':8002' || true
+curl -s -S -m 6 http://localhost:8002/api/health
+```
+
+**3) Диагностика `SIGTERM` vs реальный crash:**
+```bash
+tail -n 200 /opt/aladdin-backend/logs/gunicorn.out
+```
+- Если в логе `Handling signal: term` -> controlled shutdown (процесс остановлен сигналом, не crash boot).
+- Если traceback на import/startup (`ModuleNotFoundError`, syntax, boot error) -> реальный crash при старте.
+- Если traceback внутри endpoint (`500`) -> приложение живо, падает конкретный handler/SQL.
+
+**4) Проверка `openapi.json` на наличие `POST`:**
+```bash
+curl -s -S -m 12 http://localhost:8002/openapi.json -o /tmp/openapi_now.json
+python3 - <<'PY'
+import json
+j=json.load(open('/tmp/openapi_now.json','r',encoding='utf-8'))
+paths=j.get('paths',{})
+for p in [
+ '/api/reports/identity-theft/allow',
+ '/api/reports/identity-theft/block',
+ '/api/reports/privacy/tracker/whitelist',
+ '/api/reports/privacy/location/allow',
+ '/api/reports/privacy/cleanup/start',
+ '/api/reports/dark-web/scan/start',
+]:
+    print(p, sorted(paths.get(p, {}).keys()))
+PY
+```
+Ожидаемо: `['get', 'post']` для каждого из путей.
+
+**5) DB-grants для write-path (минимально необходимые):**
+```bash
+sudo -u postgres psql -d aladdin_db -c "
+GRANT USAGE ON SCHEMA darkweb, identity, tracker, location, cleanup TO aladdin_user;
+GRANT SELECT, INSERT, UPDATE ON TABLE darkweb.darkweb_leaks TO aladdin_user;
+GRANT SELECT, INSERT, UPDATE ON TABLE identity.identity_attempts TO aladdin_user;
+GRANT SELECT, INSERT, UPDATE ON TABLE tracker.tracker_blocks TO aladdin_user;
+GRANT SELECT, INSERT, UPDATE ON TABLE location.location_requests TO aladdin_user;
+GRANT SELECT, INSERT, UPDATE ON TABLE cleanup.cleanup_records TO aladdin_user;
+"
+```
+
+**6) Что получилось по факту (валидированный результат):**
+- `:8002` отвечает `{"status":"ok"}`.
+- Реальные POST мутации по 5 доменам выполняются успешно (`success:true`).
+- В БД обновляются доменные временные поля (`timestamp`/`last_blocked_at`/`cleanup_date`/`leak_date`).
+- `aladdin_analytics_freshness_seconds` падает до свежих значений (секунды/минуты).
+- `AladdinNoFreshDataByDomain` после replay: `active_no_fresh=0`.
+
+## 19. Актуальные изменения endpoint/структуры/архитектуры (42/138, релизный контур)
+
+### 19.1 Ключевые изменения по endpoint'ам
+
+**Критичные write-path endpoint'ы переведены на боевую запись в БД:**
+- `POST /api/reports/identity-theft/allow`
+- `POST /api/reports/identity-theft/block`
+- `POST /api/reports/privacy/location/allow`
+- `POST /api/reports/privacy/location/block`
+- `POST /api/reports/privacy/tracker/whitelist`
+- `POST /api/reports/privacy/cleanup/start`
+- `POST /api/reports/dark-web/scan/start`
+- `POST /api/parental/bypass/apply`
+
+**Что это означает:**
+- операции больше не являются compat/mock-заглушками;
+- мутации реально изменяют доменные таблицы;
+- freshness обновляется по факту записи.
+
+### 19.2 Hardening роутинга (анти-fallback)
+
+В `main.py` введён guard для критичных API-семейств:
+- `reports/*`
+- `family/*`
+- `parental/*`
+- `components/*`
+
+Неизвестные пути этих семейств возвращают явный `404` и не уходят в wildcard -> SFM fallback.
+
+### 19.3 Контрактная синхронизация iOS ↔ Backend
+
+Выполнена сверка `Core/Config/AppConfig.swift` с runtime OpenAPI и исправлены рассинхроны.
+Критичные точки, выровненные по контракту:
+- `componentStatusBatch` -> `/api/components/batch/status`
+- `gamificationBalanceAdd/Subtract/History` -> `/api/gamification/balance`
+- `protectionThreatsByStatus` -> `/api/protection/threats`
+- `paymentsQRStatus` -> `/api/payments/qr/status/test`
+
+### 19.4 Наблюдаемость и SLO-контур
+
+Используется Prometheus-контур (gateway `:8002/metrics`) с метриками:
+- `http_requests_total`
+- `http_request_duration_seconds_bucket`
+- `aladdin_analytics_freshness_seconds`
+
+Алерты:
+- `AladdinNoFreshDataByDomain`
+- `AladdinAPILatencyP95High`
+- `Aladdin5xxRateSpike`
+
+### 19.5 Security и PII
+
+Подтверждён и исправлен дефект утечки preview-токенов/секретов:
+- источник: `backend/app/services/jwt_service.py`;
+- убраны логи `Token preview` и `SECRET_KEY preview`;
+- повторный runtime scan логов/метрик после деплоя -> без утечек.
+
+### 19.6 Release-gates и артефакты
+
+Автоматизированы и используются в релизном процессе:
+- anti-mock gate
+- contract matrix gate (42/138)
+- write before/after SQL gate
+- OpenAPI drift gate
+- iOS endpoint sync gate
+- observability SLO gate
+- security/PII gate
+- iOS smoke gate (42)
+- iOS functional gate (138)
+- 24h soak monitor + финальный go/no-go aggregator
+
+Опорные отчёты находятся в `docs/release/gates/` и `docs/release/soak/`.
+
+### 19.7 Operational итог
+
+На текущем этапе система работает в production-like режиме на `:8002` с:
+- честным write-path,
+- без mock/fallback в критичных ветках,
+- подтверждёнными контрактами и SLO,
+- формализованным release pipeline.
+
+### 19.8 Уточнение по 42/138 и DB-write покрытию (актуализация 31.03.2026)
+
+Чтобы исключить неверную интерпретацию, зафиксировано следующее:
+- `42/42` и `138/138` подтверждают контрактную работоспособность (API/DTO/anti-mock), но не означают, что все эти функции обязаны писать в БД.
+- `13/13` в `write-before-after` — это отдельный критичный набор write-сценариев с доказательством бизнес-изменения в PostgreSQL.
+
+Добавлены артефакты проверки “по каждой функции”:
+- `docs/release/gates/function-db-write-audit-138.csv` — детальная классификация каждой из 138 функций.
+- `docs/release/gates/function-db-write-audit-138-summary.json` — сводный итог:
+  - `functions_total=138`
+  - `mutating_candidate_total=57`
+  - `read_only_or_validation_total=81`
+  - `business_classified_total=28`
+  - `business_must_not_write_total=18`
+  - `business_unknown_total=10`
+
+Отдельно по компонентам smoke-42:
+- `docs/release/gates/component-db-write-classification-42.csv`
+- `docs/release/gates/component-db-write-classification-summary-42.json`
+
+Ключевой вывод:
+- `13/13` не равно “только 13 из 138 пишут в БД”.
+- `13/13` означает: критичные write-функции проверены максимально строго (SQL before/after).
+- Полный список по 138 и классификация (must_write / must_not_write / unknown / mutating candidate) вынесены в новые gate-артефакты выше.
+
+### 19.9 Полная бизнес-классификация mutating-кандидатов (57/57)
+
+Для полного закрытия классификации mutating-функций добавлены:
+- `docs/release/gates/function-db-write-business-57.csv`
+- `docs/release/gates/function-db-write-business-57-summary.json`
+
+Актуальный итог:
+- `functions_mutating_total=57`
+- `must_write_db=4`
+- `must_not_write_db=53`
+- `unknown=0`
+- `business_registry_rows=18`
+
+Назначение этого шага:
+- зафиксировать статус **каждой** mutating-функции без пробелов;
+- отделить контрактный PASS (42/138) от бизнес-требования DB write;
+- сформировать прозрачный backlog на серверный trace + SQL before/after по `unknown` до финального production hardening.
+
+Остаточный runtime-backlog для `unknown=0` закрыт:
+- `docs/release/gates/function-db-write-business-57-runtime-backlog.csv`

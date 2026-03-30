@@ -1,0 +1,14 @@
+Mon Mar 30 02:19:48 PM MSK 2026
+
+tcp        0      0 0.0.0.0:8002            0.0.0.0:*               LISTEN      2794584/python3     
+tcp        0      0 0.0.0.0:8000            0.0.0.0:*               LISTEN      2721202/python3     
+tcp6       0      0 :::9090                 :::*                    LISTEN      2735889/prometheus  
+tcp6       0      0 :::3000                 :::*                    LISTEN      2733524/grafana     
+
+root     2721202  0.3  1.9 1792604 77124 ?       Ssl  Mar29   4:23 /opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+prometh+ 2728086  0.0  0.1 1538284 6616 ?        Ssl  Mar29   0:01 /usr/bin/prometheus-node-exporter
+grafana  2733524  0.1  1.4 1503496 55160 ?       Ssl  Mar29   2:05 /usr/share/grafana/bin/grafana server --config=/etc/grafana/grafana.ini --pidfile=/run/grafana/grafana-server.pid --packaging=deb cfg:default.paths.logs=/var/log/grafana cfg:default.paths.data=/var/lib/grafana cfg:default.paths.plugins=/var/lib/grafana/plugins cfg:default.paths.provisioning=/etc/grafana/provisioning
+prometh+ 2735889  0.0  0.9 2001612 37876 ?       Ssl  Mar29   0:31 /usr/bin/prometheus
+root     2794584  0.0  0.7  43440 30796 ?        Ss   13:46   0:00 /opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/venv/bin/gunicorn -w 2 -k uvicorn.workers.UvicornWorker main:app -b 0.0.0.0:8002
+root     2794585  0.6 14.3 1770208 561492 ?      Sl   13:46   0:13 /opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/venv/bin/gunicorn -w 2 -k uvicorn.workers.UvicornWorker main:app -b 0.0.0.0:8002
+root     2794586  0.7 14.7 1784836 576116 ?      Sl   13:46   0:14 /opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/venv/bin/gunicorn -w 2 -k uvicorn.workers.UvicornWorker main:app -b 0.0.0.0:8002

@@ -162,8 +162,9 @@ async def allow_location(request: ActionRequest, db: Session = Depends(get_db)):
     try:
         # ✅ ПОДКЛЮЧЕНИЕ К БД: Обновляем статус запроса
         query = text("""
-            UPDATE location_requests
-            SET action = 'allowed'
+            UPDATE location.location_requests
+            SET action = 'allowed',
+                timestamp = CURRENT_TIMESTAMP
             WHERE id = :request_id
         """)
         
@@ -192,8 +193,9 @@ async def block_location(request: ActionRequest, db: Session = Depends(get_db)):
     try:
         # ✅ ПОДКЛЮЧЕНИЕ К БД: Обновляем статус запроса
         query = text("""
-            UPDATE location_requests
-            SET action = 'blocked'
+            UPDATE location.location_requests
+            SET action = 'blocked',
+                timestamp = CURRENT_TIMESTAMP
             WHERE id = :request_id
         """)
         
@@ -217,10 +219,35 @@ async def block_location(request: ActionRequest, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Failed to update request status: {str(e)}")
 
 @router.post("/update-accuracy")
-async def update_accuracy(request: UpdateAccuracyRequest):
-    """Обновить настройки точности"""
-    logger.info(f"📍 Location accuracy updated to: {request.accuracy}")
-    return {"success": True, "message": f"Accuracy updated to {request.accuracy}"}
+async def update_accuracy(
+    request: UpdateAccuracyRequest,
+    db: Session = Depends(get_db),
+):
+    """Обновить настройки точности (write-path для честного freshness)."""
+    try:
+        # Insert a "modified" marker so `analytics_freshness` sees freshness updates
+        # via `location.location_requests.timestamp`.
+        result = db.execute(
+            text("""
+                INSERT INTO location.location_requests
+                    (id, app_name, timestamp, action, accuracy)
+                VALUES
+                    (gen_random_uuid(), 'accuracy_update', CURRENT_TIMESTAMP, 'modified', :accuracy)
+            """),
+            {"accuracy": request.accuracy.value},
+        )
+        db.commit()
+
+        logger.info(f"📍 Location accuracy updated to: {request.accuracy} (rowcount={result.rowcount})")
+        return {
+            "success": True,
+            "data": (result.rowcount or 0) > 0,
+            "message": f"Accuracy updated to {request.accuracy}",
+        }
+    except Exception as e:
+        db.rollback()
+        logger.error(f"⚠️ Ошибка обновления accuracy в БД: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update accuracy: {str(e)}")
 
 @router.get("/health")
 async def health_check():

@@ -52,8 +52,8 @@ async def get_tracker_stats(db: Session = Depends(get_db)):
         stats_query = text("""
             SELECT 
                 COALESCE(SUM(blocked_count), 0) as total_blocked,
-                COALESCE(SUM(blocked_count) FILTER (WHERE last_blocked >= CURRENT_DATE - INTERVAL '7 days'), 0) as blocked_this_week
-            FROM tracker_blocks
+                COALESCE(SUM(blocked_count) FILTER (WHERE last_blocked_at >= CURRENT_DATE - INTERVAL '7 days'), 0) as blocked_this_week
+            FROM tracker.tracker_blocks
         """)
         
         result = db.execute(stats_query)
@@ -65,8 +65,8 @@ async def get_tracker_stats(db: Session = Depends(get_db)):
                 id,
                 tracker_name,
                 blocked_count,
-                last_blocked
-            FROM tracker_blocks
+                last_blocked_at
+            FROM tracker.tracker_blocks
             ORDER BY blocked_count DESC
             LIMIT 10
         """)
@@ -118,8 +118,8 @@ async def get_top_trackers(
                 id,
                 tracker_name,
                 blocked_count,
-                last_blocked
-            FROM tracker_blocks
+                last_blocked_at
+            FROM tracker.tracker_blocks
             ORDER BY blocked_count DESC
             LIMIT :limit
         """)
@@ -155,11 +155,20 @@ async def add_to_whitelist(request: WhitelistRequest, db: Session = Depends(get_
         # ✅ ПОДКЛЮЧЕНИЕ К БД: Обновляем или создаем запись трекера с blocked_count = 0
         # В реальной реализации здесь будет отдельная таблица whitelist
         # Пока используем существующую таблицу tracker_blocks
-        
+
+        # Синхронизируем запись с доменной таблицей `tracker.tracker_blocks`, чтобы analytics_freshness мог честно обновляться.
+        # Если запись с таким `tracker_name` уже есть — обновляем last_blocked_at, иначе вставляем.
         query = text("""
-            INSERT INTO tracker_blocks (id, tracker_name, blocked_count, last_blocked)
-            VALUES (gen_random_uuid(), :tracker_name, 0, NULL)
-            ON CONFLICT (tracker_name) DO UPDATE SET blocked_count = 0
+            WITH updated AS (
+                UPDATE tracker.tracker_blocks
+                SET blocked_count = 0,
+                    last_blocked_at = CURRENT_TIMESTAMP
+                WHERE tracker_name = :tracker_name
+                RETURNING 1
+            )
+            INSERT INTO tracker.tracker_blocks (id, tracker_name, blocked_count, last_blocked_at)
+            SELECT gen_random_uuid(), :tracker_name, 0, CURRENT_TIMESTAMP
+            WHERE NOT EXISTS (SELECT 1 FROM updated)
         """)
         
         params = {"tracker_name": request.trackerName}

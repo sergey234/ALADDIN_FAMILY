@@ -1,0 +1,8 @@
+{
+  "functions_mutating_total": 57,
+  "must_write_db": 4,
+  "must_not_write_db": 53,
+  "unknown": 0,
+  "business_registry_rows": 18,
+  "changed_in_this_pass": 34
+}

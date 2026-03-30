@@ -2115,7 +2115,7 @@ class APIService: ObservableObject {
                     )
                     completion(.success(scan))
                 } else {
-                    completion(.failure(NetworkError.serverUnavailable))
+        completion(.failure(NetworkError.serverUnavailable))
                 }
             case .failure(let error):
                 completion(.failure(error))

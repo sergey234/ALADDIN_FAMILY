@@ -1,0 +1,103 @@
+{
+  "base_url": "http://149.154.65.180:8002",
+  "generated_at": "2026-03-30T17:36:55",
+  "forbidden_markers": [
+    "sfm_mock",
+    "sfm_fallback",
+    "sfm_error",
+    "mock_fallback",
+    "reports_compat",
+    "\"source\":\"mock\""
+  ],
+  "results": [
+    {
+      "name": "darkweb_stats",
+      "path": "/api/reports/dark-web/stats",
+      "status_code": 200,
+      "expected_status": [
+        200
+      ],
+      "markers_found": [],
+      "pass": true,
+      "response_preview": "{\"total\":6,\"blocked\":0,\"allowed\":6,\"last_24h\":5,\"last_7d\":6,\"last_30d\":6,\"source\":\"api_db\",\"timestamp\":\"2026-03-30T16:36:55.687567\"}"
+    },
+    {
+      "name": "identity_stats",
+      "path": "/api/reports/identity-theft/stats",
+      "status_code": 200,
+      "expected_status": [
+        200
+      ],
+      "markers_found": [],
+      "pass": true,
+      "response_preview": "{\"total\":1,\"blocked\":1,\"allowed\":0,\"last_24h\":1,\"last_7d\":1,\"last_30d\":1,\"source\":\"api_db\",\"timestamp\":\"2026-03-30T16:36:55.742058\"}"
+    },
+    {
+      "name": "tracker_stats",
+      "path": "/api/reports/privacy/tracker/stats",
+      "status_code": 200,
+      "expected_status": [
+        200
+      ],
+      "markers_found": [],
+      "pass": true,
+      "response_preview": "{\"total\":0,\"blocked\":0,\"allowed\":0,\"last_24h\":0,\"last_7d\":0,\"last_30d\":0,\"source\":\"api_db\",\"timestamp\":\"2026-03-30T16:36:55.801544\"}"
+    },
+    {
+      "name": "location_stats",
+      "path": "/api/reports/privacy/location/stats",
+      "status_code": 200,
+      "expected_status": [
+        200
+      ],
+      "markers_found": [],
+      "pass": true,
+      "response_preview": "{\"total\":1,\"blocked\":1,\"allowed\":0,\"last_24h\":1,\"last_7d\":1,\"last_30d\":1,\"source\":\"api_db\",\"timestamp\":\"2026-03-30T16:36:55.857032\"}"
+    },
+    {
+      "name": "cleanup_stats",
+      "path": "/api/reports/privacy/cleanup/stats",
+      "status_code": 200,
+      "expected_status": [
+        200
+      ],
+      "markers_found": [],
+      "pass": true,
+      "response_preview": "{\"total\":7,\"blocked\":0,\"allowed\":7,\"last_24h\":6,\"last_7d\":7,\"last_30d\":7,\"source\":\"api_db\",\"timestamp\":\"2026-03-30T16:36:55.915237\"}"
+    },
+    {
+      "name": "driving_stats",
+      "path": "/api/reports/driving/stats",
+      "status_code": 200,
+      "expected_status": [
+        200
+      ],
+      "markers_found": [],
+      "pass": true,
+      "response_preview": "{\"total\":0,\"blocked\":0,\"allowed\":0,\"last_24h\":0,\"last_7d\":0,\"last_30d\":0,\"source\":\"api_db\",\"timestamp\":\"2026-03-30T16:36:55.977365\"}"
+    },
+    {
+      "name": "ai_categories_stats",
+      "path": "/api/reports/ai-categories/stats",
+      "status_code": 200,
+      "expected_status": [
+        200
+      ],
+      "markers_found": [],
+      "pass": true,
+      "response_preview": "{\"total\":0,\"blocked\":0,\"allowed\":0,\"last_24h\":0,\"last_7d\":0,\"last_30d\":0,\"source\":\"api_db\",\"timestamp\":\"2026-03-30T16:36:56.053121\"}"
+    },
+    {
+      "name": "reports_wildcard_unknown_blocked",
+      "path": "/api/reports/unknown-path-for-wildcard-check",
+      "status_code": 404,
+      "expected_status": [
+        404
+      ],
+      "markers_found": [],
+      "pass": true,
+      "response_preview": "{\"error\":\"Critical endpoint not found\",\"path\":\"/api/reports/unknown-path-for-wildcard-check\",\"method\":\"GET\",\"hint\":\"Use explicit router endpoint\"}"
+    }
+  ],
+  "pass": true
+}

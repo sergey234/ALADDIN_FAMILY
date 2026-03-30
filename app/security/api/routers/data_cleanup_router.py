@@ -42,6 +42,11 @@ class DataCleanupStats(BaseModel):
     cleanupsCount: int
     byCategory: Dict[str, int]
 
+
+class CleanupStartRequest(BaseModel):
+    # Клиент присылает только список категорий, размеры/оценки в агенте пока неизвестны.
+    categories: List[str] = Field(default_factory=list)
+
 # ═══════════════════════════════════════════════════════════════
 # API Endpoints
 # ═══════════════════════════════════════════════════════════════
@@ -50,13 +55,13 @@ class DataCleanupStats(BaseModel):
 async def get_cleanup_stats(db: Session = Depends(get_db)):
     """Получить статистику очистки данных из базы данных"""
     try:
-        # ✅ ПОДКЛЮЧЕНИЕ К БД: Получаем статистику из таблицы data_cleanup_records
+        # ✅ ПОДКЛЮЧЕНИЕ К БД: Получаем статистику из доменной таблицы cleanup.cleanup_records
         stats_query = text("""
             SELECT 
-                COALESCE(SUM(freed_space), 0) as total_freed,
+                COALESCE(SUM(freed_space_bytes), 0) as total_freed,
                 MAX(cleanup_date) as last_cleanup_date,
                 COUNT(*) as cleanups_count
-            FROM data_cleanup_records
+            FROM cleanup.cleanup_records
         """)
         
         result = db.execute(stats_query)
@@ -64,9 +69,9 @@ async def get_cleanup_stats(db: Session = Depends(get_db)):
         
         # Получаем статистику по категориям из JSONB поля
         categories_query = text("""
-            SELECT categories
-            FROM data_cleanup_records
-            WHERE categories IS NOT NULL
+            SELECT categories_json
+            FROM cleanup.cleanup_records
+            WHERE categories_json IS NOT NULL
         """)
         
         categories_result = db.execute(categories_query)
@@ -120,9 +125,9 @@ async def get_cleanup_records(
             SELECT 
                 id,
                 cleanup_date,
-                freed_space,
-                categories
-            FROM data_cleanup_records
+                freed_space_bytes,
+                categories_json
+            FROM cleanup.cleanup_records
             ORDER BY cleanup_date DESC
             LIMIT :limit
         """)
@@ -169,32 +174,27 @@ async def get_cleanup_records(
         return []
 
 @router.post("/start")
-async def start_cleanup(db: Session = Depends(get_db)):
+async def start_cleanup(request: CleanupStartRequest, db: Session = Depends(get_db)):
     """Запустить процесс очистки и сохранить в базе данных"""
     try:
         # ✅ ПОДКЛЮЧЕНИЕ К БД: Создаем новую запись об очистке
-        # В реальной реализации здесь будет реальная очистка данных
-        # Пока создаем запись с mock данными
-        
+        # Для freshness достаточно зафиксировать событие в доменной таблице.
         import uuid as uuid_lib
         cleanup_id = str(uuid_lib.uuid4())
-        
+
+        # Входные категории от клиента (names), размеры/оценки в агенте сейчас неизвестны.
+        # Фиксируем size=0, чтобы не генерировать “демо” числа.
+        categories_json = json.dumps([{"name": c, "size": 0} for c in request.categories])
+
         query = text("""
-            INSERT INTO data_cleanup_records (id, cleanup_date, freed_space, categories)
-            VALUES (:id, CURRENT_TIMESTAMP, :freed_space, :categories::jsonb)
+            INSERT INTO cleanup.cleanup_records (id, cleanup_date, freed_space_bytes, categories_json)
+            VALUES (:id, CURRENT_TIMESTAMP, :freed_space_bytes, :categories_json::jsonb)
         """)
-        
-        # Mock данные для демонстрации
-        mock_categories = json.dumps([
-            {"name": "cache", "size": 500000000},
-            {"name": "temp_files", "size": 400000000},
-            {"name": "logs", "size": 300000000}
-        ])
-        
+
         params = {
             "id": cleanup_id,
-            "freed_space": 1200000000,  # 1.2 GB
-            "categories": mock_categories
+            "freed_space_bytes": 0,
+            "categories_json": categories_json
         }
         
         db.execute(query, params)

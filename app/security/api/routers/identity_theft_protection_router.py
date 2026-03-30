@@ -184,8 +184,9 @@ async def allow_attempt(request: ActionRequest, db: Session = Depends(get_db)):
     try:
         # ✅ ПОДКЛЮЧЕНИЕ К БД: Обновляем статус попытки
         query = text("""
-            UPDATE identity_theft_attempts
-            SET action = 'allowed'
+            UPDATE identity.identity_attempts
+            SET action = 'allowed',
+                timestamp = CURRENT_TIMESTAMP
             WHERE id = :attempt_id
         """)
         
@@ -212,8 +213,9 @@ async def block_attempt(request: ActionRequest, db: Session = Depends(get_db)):
     try:
         # ✅ ПОДКЛЮЧЕНИЕ К БД: Обновляем статус попытки
         query = text("""
-            UPDATE identity_theft_attempts
-            SET action = 'blocked'
+            UPDATE identity.identity_attempts
+            SET action = 'blocked',
+                timestamp = CURRENT_TIMESTAMP
             WHERE id = :attempt_id
         """)
         

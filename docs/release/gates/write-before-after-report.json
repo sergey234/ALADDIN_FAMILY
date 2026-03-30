@@ -1,0 +1,167 @@
+{
+  "generated_at": "2026-03-31T00:44:31",
+  "base_url": "http://149.154.65.180:8002",
+  "checks": [
+    {
+      "name": "identity_allow",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Identity action allowed"
+      },
+      "before": "blocked|1774902955",
+      "after": "allowed|1774903475"
+    },
+    {
+      "name": "identity_block",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Identity action blocked"
+      },
+      "before": "allowed|1774903475",
+      "after": "blocked|1774903476"
+    },
+    {
+      "name": "location_allow",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Location request allowed"
+      },
+      "before": "blocked|1774902957",
+      "after": "allowed|1774903477"
+    },
+    {
+      "name": "location_block",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Location request blocked"
+      },
+      "before": "allowed|1774903477",
+      "after": "blocked|1774903478"
+    },
+    {
+      "name": "tracker_whitelist",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Tracker whitelisted"
+      },
+      "before": "0|-1|-1",
+      "after": "1|0|1774903479"
+    },
+    {
+      "name": "tracker_whitelist_idempotent",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Tracker whitelisted"
+      },
+      "before": "1|1774903479",
+      "after": "1|1774903480"
+    },
+    {
+      "name": "cleanup_start",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Privacy cleanup started"
+      },
+      "before": "9|1774902961",
+      "after": "10|1774903482"
+    },
+    {
+      "name": "darkweb_scan_start",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Dark web scan started"
+      },
+      "before": "8|1774902962",
+      "after": "9|1774903483"
+    },
+    {
+      "name": "darkweb_scan_fast",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Fast dark web scan completed"
+      },
+      "before": "9|1774903483",
+      "after": "10|1774903484"
+    },
+    {
+      "name": "darkweb_scan_secure",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Secure dark web scan completed"
+      },
+      "before": "10|1774903484",
+      "after": "11|1774903485"
+    },
+    {
+      "name": "parental_bypass_apply",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Bypass protection applied",
+        "error": null
+      },
+      "before": "",
+      "after": "1|0|1"
+    },
+    {
+      "name": "parental_bypass_apply_idempotent",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Bypass protection applied",
+        "error": null
+      },
+      "before": "1",
+      "after": "1"
+    },
+    {
+      "name": "location_update_accuracy",
+      "pass": true,
+      "http_status": 200,
+      "response": {
+        "success": true,
+        "data": true,
+        "message": "Location accuracy updated"
+      },
+      "before": "0|-1",
+      "after": "1|1774903488"
+    }
+  ],
+  "pass": true,
+  "passed": 13,
+  "failed": 0
+}

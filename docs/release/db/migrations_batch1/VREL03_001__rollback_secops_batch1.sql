@@ -1,0 +1,23 @@
+-- Rollback for batch-1 migration
+BEGIN;
+DROP TABLE IF EXISTS secops.events_components_config;
+DROP TABLE IF EXISTS secops.events_components_batch;
+DROP TABLE IF EXISTS secops.events_chat_offline_messages;
+DROP TABLE IF EXISTS secops.events_auth_register_device_trial;
+DROP TABLE IF EXISTS secops.events_auth_register_device;
+DROP TABLE IF EXISTS secops.events_auth_register;
+DROP TABLE IF EXISTS secops.events_auth_refresh;
+DROP TABLE IF EXISTS secops.events_auth_logout;
+DROP TABLE IF EXISTS secops.events_auth_login_by_recovery_code;
+DROP TABLE IF EXISTS secops.events_auth_login;
+DROP TABLE IF EXISTS secops.events_anti_tracker_unblock;
+DROP TABLE IF EXISTS secops.events_anti_tracker_settings;
+DROP TABLE IF EXISTS secops.events_anti_tracker_check;
+DROP TABLE IF EXISTS secops.events_anti_tracker_block;
+DROP TABLE IF EXISTS secops.events_ai_assistant;
+DROP TABLE IF EXISTS secops.events_ai_categories_check;
+DROP TABLE IF EXISTS secops.events_ai_categories_block;
+DROP TABLE IF EXISTS secops.events_ai_categories_allow;
+DROP TABLE IF EXISTS secops.events_ai_categories_age_restriction;
+DROP TABLE IF EXISTS secops.events_activation_retrieve;
+COMMIT;

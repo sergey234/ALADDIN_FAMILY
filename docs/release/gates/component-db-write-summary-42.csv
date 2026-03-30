@@ -1,0 +1,22 @@
+component,functions_total,must_write_db,must_not_write_db,unknown,business_confirmed
+AI Assistant,8,0,0,8,4
+AI Categories,8,0,4,4,4
+Components,14,1,0,13,0
+Crash Detection,12,0,5,7,8
+Dark Web Monitoring,6,0,3,3,3
+Data Cleanup,9,0,1,8,1
+Elderly Interface,4,0,0,4,0
+Gamification,16,0,0,16,0
+Other Functions,3,0,0,3,3
+analytics,3,0,0,3,0
+anti-tracker,9,0,4,5,4
+auth,5,0,0,5,0
+components,9,1,2,6,0
+crash-detection-compat,3,0,0,3,0
+driving-reports,11,0,0,11,0
+family,11,1,0,10,0
+misc-other-compat,1,0,0,1,0
+other,1,0,0,1,0
+payments,1,0,1,0,1
+subscription,2,0,0,2,0
+system-ai-compat,2,0,0,2,0

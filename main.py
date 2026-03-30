@@ -1052,6 +1052,20 @@ async def wildcard_handler(request: Request, path: str):
             },
         )
 
+    # Production safety: critical families must never fallback to wildcard -> SFM mock path.
+    # Unknown routes should fail explicitly instead of reaching wildcard SFM execution.
+    critical_prefixes = ("reports/", "family/", "parental/", "components/")
+    if normalized_path.startswith(critical_prefixes):
+        return JSONResponse(
+            status_code=404,
+            content={
+                "error": "Critical endpoint not found",
+                "path": f"/api/{normalized_path}",
+                "method": request.method,
+                "hint": "Use explicit router endpoint",
+            },
+        )
+
     # 1. Преобразуем путь в имя функции
     func_name = path_to_function_name(path, request.method)
     print(f"🔍 [WILDCARD] Имя функции: {func_name}")

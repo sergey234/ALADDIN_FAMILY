@@ -1,0 +1,26 @@
+{
+  "generated_at": "2026-03-30T17:17:00",
+  "service": "gateway:8002",
+  "runtime_log_scan": {
+    "pass": true,
+    "scanner": "tools/rel12_runtime_pii_scan.py",
+    "counts": {
+      "email_like": 0,
+      "bearer": 0,
+      "jwt_like": 0,
+      "secret_key_literal": 0,
+      "token_preview": 0,
+      "phone_like": 0
+    }
+  },
+  "metrics_scan": {
+    "pass": true,
+    "details": "No matches for email/phone/token/authorization/password/secret/jwt/recovery markers in /metrics output"
+  },
+  "code_audit": {
+    "masking_filter_present": true,
+    "jwt_preview_logging_removed": true,
+    "updated_file": "backend/app/services/jwt_service.py"
+  },
+  "pass": true
+}

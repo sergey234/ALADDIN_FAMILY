@@ -138,7 +138,7 @@ struct AppConfig {
         
         // Components (42 components API)
         static let componentStatus = "/api/components/status"
-        static let componentStatusBatch = "/api/components/status/batch"  // 🚀 Batch endpoint для оптимизации
+        static let componentStatusBatch = "/api/components/batch/status"  // 🚀 Batch endpoint для оптимизации
         static let componentEnable = "/api/components/enable"
         static let componentDisable = "/api/components/disable"
         // Конфигурация конкретного компонента: GET/POST /api/components/configuration/{component_id}
@@ -213,9 +213,10 @@ struct AppConfig {
         // ✅ ГЕЙМИФИКАЦИЯ: Gamification endpoints (30 endpoints)
         // Баланс единорогов (4 endpoints)
         static let gamificationBalance = "/api/gamification/balance"
-        static let gamificationBalanceAdd = "/api/gamification/balance/add"
-        static let gamificationBalanceSubtract = "/api/gamification/balance/subtract"
-        static let gamificationBalanceHistory = "/api/gamification/balance/history"
+        // OpenAPI exposes balance operations on base endpoint and /{userId}
+        static let gamificationBalanceAdd = "/api/gamification/balance"
+        static let gamificationBalanceSubtract = "/api/gamification/balance"
+        static let gamificationBalanceHistory = "/api/gamification/balance"
         
         // Награды (6 endpoints)
         static let gamificationRewards = "/api/gamification/rewards"
@@ -415,7 +416,7 @@ struct AppConfig {
         
         // Альтернативные пути (если будут созданы)
         static let protectionThreats = "/api/protection/threats"
-        static let protectionThreatsByStatus = "/api/protection/threats/{status}"
+        static let protectionThreatsByStatus = "/api/protection/threats"
         static let protectionQuarantineAction = "/api/protection/quarantine/action"
         
         // Referral
@@ -471,7 +472,7 @@ struct AppConfig {
         
         // Payments (2 endpoints)
         static let paymentsQRCreate = "/api/payments/qr/create"
-        static let paymentsQRStatus = "/api/payments/qr/status/{paymentId}"
+        static let paymentsQRStatus = "/api/payments/qr/status/test"
     }
     
     // MARK: - Feature Flags

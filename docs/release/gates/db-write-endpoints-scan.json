@@ -1,0 +1,685 @@
+{
+  "api_mutation_endpoints_total": 160,
+  "api_mutation_endpoints_db_write_detected": 21,
+  "api_mutation_endpoints_non_db_or_unknown": 139,
+  "core_api_mutation_endpoints_total": 77,
+  "core_api_mutation_endpoints_db_write_detected": 15,
+  "core_api_mutation_endpoints_non_db_or_unknown": 62,
+  "core_db_write_endpoints": [
+    {
+      "file": "app/routers/family.py",
+      "method": "DELETE",
+      "path": "/api/family/remove",
+      "func": "remove_family_member",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "app/routers/payments.py",
+      "method": "POST",
+      "path": "/api/payments/confirm",
+      "func": "confirm_payment",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "app/routers/payments.py",
+      "method": "POST",
+      "path": "/api/payments/create",
+      "func": "create_payment",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "app/routers/payments.py",
+      "method": "POST",
+      "path": "/api/payments/recover",
+      "func": "recover_payment_code",
+      "writes_db": true,
+      "reasons": [
+        "execute"
+      ]
+    },
+    {
+      "file": "app/security/api/routers/ai_categories_router.py",
+      "method": "POST",
+      "path": "/api/reports/ai-categories/allow",
+      "func": "allow_category",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "app/security/api/routers/ai_categories_router.py",
+      "method": "POST",
+      "path": "/api/reports/ai-categories/block",
+      "func": "block_category",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "app/security/api/routers/dark_web_monitoring_router.py",
+      "method": "POST",
+      "path": "/api/reports/dark-web/resolve",
+      "func": "resolve_leak",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "security/api/routers/reports_router.py",
+      "method": "POST",
+      "path": "/api/reports/dark-web/scan/start",
+      "func": "reports_dark_web_scan_start_post",
+      "writes_db": true,
+      "reasons": [
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "app/security/api/routers/identity_theft_protection_router.py",
+      "method": "POST",
+      "path": "/api/reports/identity-theft/allow",
+      "func": "allow_attempt",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "app/security/api/routers/identity_theft_protection_router.py",
+      "method": "POST",
+      "path": "/api/reports/identity-theft/block",
+      "func": "block_attempt",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "app/security/api/routers/data_cleanup_router.py",
+      "method": "POST",
+      "path": "/api/reports/privacy/cleanup/start",
+      "func": "start_cleanup",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "app/security/api/routers/location_bubble_router.py",
+      "method": "POST",
+      "path": "/api/reports/privacy/location/allow",
+      "func": "allow_location",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "app/security/api/routers/location_bubble_router.py",
+      "method": "POST",
+      "path": "/api/reports/privacy/location/block",
+      "func": "block_location",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "app/security/api/routers/anti_tracker_router.py",
+      "method": "POST",
+      "path": "/api/reports/privacy/tracker/whitelist",
+      "func": "add_to_whitelist",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    },
+    {
+      "file": "app/routers/subscription_events.py",
+      "method": "POST",
+      "path": "/api/subscription/events/batch",
+      "func": "ingest_subscription_events_batch",
+      "writes_db": true,
+      "reasons": [
+        "commit",
+        "execute",
+        "sql_mutation"
+      ]
+    }
+  ],
+  "core_non_db_or_unknown_endpoints": [
+    {
+      "file": "app/routers/payments.py",
+      "method": "POST",
+      "path": "/api/activation/retrieve",
+      "func": "retrieve_activation_code",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/ai_categories_router.py",
+      "method": "POST",
+      "path": "/api/ai-categories/age-restriction",
+      "func": "set_age_restriction",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/ai_categories_router.py",
+      "method": "POST",
+      "path": "/api/ai-categories/allow",
+      "func": "allow_sites",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/ai_categories_router.py",
+      "method": "POST",
+      "path": "/api/ai-categories/block",
+      "func": "block_sites",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/ai_categories_router.py",
+      "method": "POST",
+      "path": "/api/ai-categories/check",
+      "func": "check_access",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/anti_tracker_router.py",
+      "method": "POST",
+      "path": "/api/anti-tracker/block",
+      "func": "block_tracker",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/anti_tracker_router.py",
+      "method": "POST",
+      "path": "/api/anti-tracker/check",
+      "func": "check_request",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/anti_tracker_router.py",
+      "method": "POST",
+      "path": "/api/anti-tracker/settings",
+      "func": "update_settings",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/anti_tracker_router.py",
+      "method": "POST",
+      "path": "/api/anti-tracker/unblock",
+      "func": "unblock_tracker",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/routers/components.py",
+      "method": "POST",
+      "path": "/api/components/batch/status",
+      "func": "get_batch_component_status",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/routers/components.py",
+      "method": "POST",
+      "path": "/api/components/status/{component_id}",
+      "func": "update_component_status_compat",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/crash_detection_router.py",
+      "method": "POST",
+      "path": "/api/crash-detection/cancel-emergency-call",
+      "func": "cancel_emergency_call",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/crash_detection_router.py",
+      "method": "POST",
+      "path": "/api/crash-detection/emergency-call",
+      "func": "call_emergency",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/dark_web_monitoring_router.py",
+      "method": "POST",
+      "path": "/api/darkweb/check",
+      "func": "check_email_breach",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/dark_web_monitoring_router.py",
+      "method": "POST",
+      "path": "/api/darkweb/start-monitoring",
+      "func": "start_monitoring",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/dark_web_monitoring_router.py",
+      "method": "POST",
+      "path": "/api/darkweb/stop-monitoring",
+      "func": "stop_monitoring",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/data_cleanup_router.py",
+      "method": "POST",
+      "path": "/api/data-cleanup/periodic-scan",
+      "func": "trigger_periodic_scan",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/data_cleanup_router.py",
+      "method": "POST",
+      "path": "/api/data-cleanup/preferences",
+      "func": "update_user_preferences",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/data_cleanup_router.py",
+      "method": "POST",
+      "path": "/api/data-cleanup/remove",
+      "func": "remove_data_from_sites",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/data_cleanup_router.py",
+      "method": "POST",
+      "path": "/api/data-cleanup/scan",
+      "func": "scan_broker_sites",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/driving_reports_router.py",
+      "method": "POST",
+      "path": "/api/driving-reports/event",
+      "func": "record_event",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/driving_reports_router.py",
+      "method": "POST",
+      "path": "/api/driving-reports/generate",
+      "func": "generate_report",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/driving_reports_router.py",
+      "method": "POST",
+      "path": "/api/driving-reports/start",
+      "func": "start_monitoring",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/driving_reports_router.py",
+      "method": "POST",
+      "path": "/api/driving-reports/stop",
+      "func": "stop_monitoring",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/routers/family.py",
+      "method": "POST",
+      "path": "/api/family/create",
+      "func": "create_family_endpoint",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/achievements/claim",
+      "func": "claim_gamification_achievement_reward",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/achievements/unlock",
+      "func": "unlock_gamification_achievement",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/balance/add",
+      "func": "add_gamification_balance",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/balance/subtract",
+      "func": "subtract_gamification_balance",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/progress/reset",
+      "func": "reset_gamification_progress",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/progress/update",
+      "func": "update_gamification_progress",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/rewards/claim",
+      "func": "claim_gamification_reward",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/rewards/give",
+      "func": "give_gamification_reward",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/rewards/purchase",
+      "func": "purchase_gamification_reward",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/settings/notifications/update",
+      "func": "update_gamification_notification_settings",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/settings/update",
+      "func": "update_gamification_settings",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/tournaments/join",
+      "func": "join_gamification_tournament",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/gamification_router.py",
+      "method": "POST",
+      "path": "/api/gamification/tournaments/leave",
+      "func": "leave_gamification_tournament",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/identity_theft_protection_router.py",
+      "method": "POST",
+      "path": "/api/identity-theft/check",
+      "func": "check_fraud_database",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/identity_theft_protection_router.py",
+      "method": "POST",
+      "path": "/api/identity-theft/consent",
+      "func": "give_consent",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/identity_theft_protection_router.py",
+      "method": "POST",
+      "path": "/api/identity-theft/detect",
+      "func": "detect_identity_theft",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/identity_theft_protection_router.py",
+      "method": "POST",
+      "path": "/api/identity-theft/monitor-credit",
+      "func": "monitor_credit",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/identity_theft_protection_router.py",
+      "method": "POST",
+      "path": "/api/identity-theft/monitor-snils",
+      "func": "monitor_snils",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/identity_theft_protection_router.py",
+      "method": "POST",
+      "path": "/api/identity-theft/revoke-consent",
+      "func": "revoke_consent",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/identity_theft_protection_router.py",
+      "method": "POST",
+      "path": "/api/identity-theft/stop-monitoring",
+      "func": "stop_monitoring",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/iot_router.py",
+      "method": "POST",
+      "path": "/api/iot/device/{deviceId}/block",
+      "func": "block_iot_device",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/iot_router.py",
+      "method": "POST",
+      "path": "/api/iot/fix/{threatId}",
+      "func": "fix_iot_threat",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/iot_router.py",
+      "method": "POST",
+      "path": "/api/iot/scan/{homeId}",
+      "func": "start_iot_scan",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "security/api/routers/location_bubble_router.py",
+      "method": "POST",
+      "path": "/api/location/bubble/settings",
+      "func": "set_person_settings",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/routers/network_protection_compat.py",
+      "method": "PATCH",
+      "path": "/api/network-protection/settings",
+      "func": "patch_network_protection_settings",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/routers/protection.py",
+      "method": "POST",
+      "path": "/api/protection/disable",
+      "func": "disable_protection_category",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/routers/protection.py",
+      "method": "POST",
+      "path": "/api/protection/enable",
+      "func": "enable_protection_category",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/routers/protection.py",
+      "method": "POST",
+      "path": "/api/protection/settings",
+      "func": "update_protection_settings",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/routers/protection.py",
+      "method": "POST",
+      "path": "/api/protection/sync",
+      "func": "sync_protection_settings",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/routers/referral_test.py",
+      "method": "POST",
+      "path": "/api/referral/test/payment/confirm",
+      "func": "test_confirm_payment",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/routers/referral_test.py",
+      "method": "POST",
+      "path": "/api/referral/test/payment/create",
+      "func": "test_create_payment",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/dark_web_monitoring_router.py",
+      "method": "POST",
+      "path": "/api/reports/dark-web/scan/fast",
+      "func": "start_fast_scan",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/dark_web_monitoring_router.py",
+      "method": "POST",
+      "path": "/api/reports/dark-web/scan/secure",
+      "func": "start_secure_scan",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/identity_theft_protection_router.py",
+      "method": "POST",
+      "path": "/api/reports/identity-theft/whitelist",
+      "func": "add_to_whitelist",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/location_bubble_router.py",
+      "method": "POST",
+      "path": "/api/reports/privacy/location/update-accuracy",
+      "func": "update_accuracy",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/roadside_assistance_router_updated.py",
+      "method": "POST",
+      "path": "/api/roadside-assistance/call",
+      "func": "call_assistance",
+      "writes_db": false,
+      "reasons": []
+    },
+    {
+      "file": "app/security/api/routers/roadside_assistance_router_updated.py",
+      "method": "POST",
+      "path": "/api/roadside-assistance/cancel/{request_id}",
+      "func": "cancel_request",
+      "writes_db": false,
+      "reasons": []
+    }
+  ]
+}

@@ -1,0 +1,5 @@
+aladdin_analytics_freshness_seconds{domain="darkweb",env="production",service="gateway",version="1.0.0"} 3800.67428
+aladdin_analytics_freshness_seconds{domain="identity",env="production",service="gateway",version="1.0.0"} 4495.857176
+aladdin_analytics_freshness_seconds{domain="tracker",env="production",service="gateway",version="1.0.0"} 4495.819884
+aladdin_analytics_freshness_seconds{domain="location",env="production",service="gateway",version="1.0.0"} 4495.834691
+aladdin_analytics_freshness_seconds{domain="cleanup",env="production",service="gateway",version="1.0.0"} 4495.807814

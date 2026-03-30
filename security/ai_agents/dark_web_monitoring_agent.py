@@ -100,6 +100,10 @@ class DarkWebMonitoringAgent(SecurityBase, ThreatMonitoringInterface):
         """
         super().__init__(config)
 
+        # Some SecurityBase implementations do not keep config on the instance.
+        # Keep explicit assignment to avoid runtime AttributeError in production.
+        self.config = config if config is not None else {}
+
         # Инициализация логгера
         self.logger = logging.getLogger(self.__class__.__name__)
 

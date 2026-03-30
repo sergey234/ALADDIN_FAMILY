@@ -1,0 +1,52 @@
+{
+  "generated_at": "2026-03-31T00:52:37",
+  "gates": [
+    {
+      "gate": "rel-06",
+      "status": "PASS"
+    },
+    {
+      "gate": "rel-07",
+      "status": "PASS"
+    },
+    {
+      "gate": "rel-08",
+      "status": "PASS"
+    },
+    {
+      "gate": "rel-09",
+      "status": "PASS"
+    },
+    {
+      "gate": "rel-10-openapi-drift",
+      "status": "PASS"
+    },
+    {
+      "gate": "rel-10-ios-sync",
+      "status": "PASS"
+    },
+    {
+      "gate": "rel-11",
+      "status": "PASS"
+    },
+    {
+      "gate": "rel-12",
+      "status": "PASS"
+    },
+    {
+      "gate": "rel-13",
+      "status": "PASS"
+    },
+    {
+      "gate": "rel-14",
+      "status": "PASS"
+    },
+    {
+      "gate": "rel-15",
+      "status": "IN_PROGRESS"
+    }
+  ],
+  "decision": "NO_GO",
+  "blocking_items": [],
+  "note": "GO requires all gates PASS including rel-15 soak 24h."
+}

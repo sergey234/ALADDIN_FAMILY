@@ -1,0 +1,14 @@
+{
+  "samples_count": 26,
+  "hours_collected": 7.38,
+  "p95_max": 0.047672106722195066,
+  "five_xx_max": 0.0,
+  "max_firing_alerts": 1,
+  "latest_freshness": {
+    "cleanup": 328.399728,
+    "darkweb": 325.410718,
+    "identity": 334.369507,
+    "location": 322.429469,
+    "tracker": 329.814459
+  }
+}

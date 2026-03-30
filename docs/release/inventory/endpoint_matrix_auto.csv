@@ -1,0 +1,382 @@
+component,function,endpoint,method,auth,expected,dto,db_source,status
+unclassified,root__get,/,GET,unknown,Root,unknown,unknown,to_verify
+payments,retrieve_activation_code_api_activation_retrieve_post,/api/activation/retrieve,POST,unknown,Retrieve Activation Code,unknown,unknown,to_verify
+AI Categories,set_age_restriction_api_ai_categories_age_restriction_post,/api/ai-categories/age-restriction,POST,unknown,Установить ограничение по возрасту,unknown,unknown,to_verify
+AI Categories,allow_sites_api_ai_categories_allow_post,/api/ai-categories/allow,POST,unknown,Разрешить доступ к AI-сайтам,unknown,unknown,to_verify
+AI Categories,block_sites_api_ai_categories_block_post,/api/ai-categories/block,POST,unknown,Заблокировать AI-сайты,unknown,unknown,to_verify
+AI Categories,check_access_api_ai_categories_check_post,/api/ai-categories/check,POST,unknown,Проверить доступ к AI-сайту,unknown,unknown,to_verify
+AI Categories,health_check_api_ai_categories_health_get,/api/ai-categories/health,GET,unknown,Health check,unknown,unknown,to_verify
+AI Categories,get_access_history_api_ai_categories_history_get,/api/ai-categories/history,GET,unknown,Получить историю попыток доступа,unknown,unknown,to_verify
+AI Categories,get_sites_api_ai_categories_sites_get,/api/ai-categories/sites,GET,unknown,Получить список всех AI-сайтов,unknown,unknown,to_verify
+AI Categories,get_status_api_ai_categories_status_get,/api/ai-categories/status,GET,unknown,Получить статус всех AI-сайтов для пользователя,unknown,unknown,to_verify
+AI Assistant,ai_assistant_analyze_threat_api_ai_assistant_analyze_threat_post,/api/ai/assistant/analyze_threat,POST,unknown,Ai Assistant Analyze Threat,unknown,unknown,to_verify
+AI Assistant,ai_assistant_capabilities_api_ai_assistant_capabilities_get,/api/ai/assistant/capabilities,GET,unknown,Ai Assistant Capabilities,unknown,unknown,to_verify
+AI Assistant,ai_assistant_chat_api_ai_assistant_chat_post,/api/ai/assistant/chat,POST,unknown,Ai Assistant Chat,unknown,unknown,to_verify
+AI Assistant,ai_assistant_feedback_api_ai_assistant_feedback_post,/api/ai/assistant/feedback,POST,unknown,Ai Assistant Feedback,unknown,unknown,to_verify
+AI Assistant,ai_assistant_history_api_ai_assistant_history_get,/api/ai/assistant/history,GET,unknown,Ai Assistant History,unknown,unknown,to_verify
+AI Assistant,ai_assistant_recommendations_api_ai_assistant_recommendations_get,/api/ai/assistant/recommendations,GET,unknown,Ai Assistant Recommendations,unknown,unknown,to_verify
+AI Assistant,ai_assistant_report_incident_api_ai_assistant_report_incident_post,/api/ai/assistant/report_incident,POST,unknown,Ai Assistant Report Incident,unknown,unknown,to_verify
+AI Assistant,ai_assistant_security_tips_api_ai_assistant_security_tips_get,/api/ai/assistant/security_tips,GET,unknown,Ai Assistant Security Tips,unknown,unknown,to_verify
+system-ai-compat,ai_chat_compat_api_ai_chat_get,/api/ai/chat,GET,unknown,Ai Chat Compat,unknown,unknown,to_verify
+system-ai-compat,ai_message_compat_api_ai_message_get,/api/ai/message,GET,unknown,Ai Message Compat,unknown,unknown,to_verify
+analytics,get_analytics_api_analytics_get,/api/analytics,GET,unknown,Get Analytics,unknown,unknown,to_verify
+analytics,get_analytics_threats_api_analytics_threats_get,/api/analytics/threats,GET,unknown,Get Analytics Threats,unknown,unknown,to_verify
+analytics,get_analytics_top_threats_api_analytics_top_threats_get,/api/analytics/top-threats,GET,unknown,Get Analytics Top Threats,unknown,unknown,to_verify
+anti-tracker,block_tracker_api_anti_tracker_block_post,/api/anti-tracker/block,POST,unknown,Блокировка трекера,unknown,unknown,to_verify
+anti-tracker,check_request_api_anti_tracker_check_post,/api/anti-tracker/check,POST,unknown,Проверка URL на трекеры,unknown,unknown,to_verify
+anti-tracker,health_check_api_anti_tracker_health_get,/api/anti-tracker/health,GET,unknown,Health check,unknown,unknown,to_verify
+anti-tracker,get_settings_api_anti_tracker_settings_get,/api/anti-tracker/settings,GET,unknown,Получение настроек,unknown,unknown,to_verify
+anti-tracker,update_settings_api_anti_tracker_settings_post,/api/anti-tracker/settings,POST,unknown,Обновление настроек,unknown,unknown,to_verify
+anti-tracker,get_statistics_api_anti_tracker_stats_get,/api/anti-tracker/stats,GET,unknown,Статистика блокировок,unknown,unknown,to_verify
+anti-tracker,get_block_status_api_anti_tracker_status_get,/api/anti-tracker/status,GET,unknown,Статус блокировки домена,unknown,unknown,to_verify
+anti-tracker,get_tracker_lists_api_anti_tracker_trackers_get,/api/anti-tracker/trackers,GET,unknown,Список известных трекеров,unknown,unknown,to_verify
+anti-tracker,unblock_tracker_api_anti_tracker_unblock_post,/api/anti-tracker/unblock,POST,unknown,Разблокировка трекера,unknown,unknown,to_verify
+auth,login_api_auth_login_post,/api/auth/login,POST,unknown,Login,unknown,unknown,to_verify
+auth,login_by_recovery_code_api_auth_login_by_recovery_code_post,/api/auth/login-by-recovery-code,POST,unknown,Login By Recovery Code,unknown,unknown,to_verify
+auth,logout_api_auth_logout_post,/api/auth/logout,POST,unknown,Logout,unknown,unknown,to_verify
+auth,refresh_token_api_auth_refresh_post,/api/auth/refresh,POST,unknown,Refresh Token,unknown,unknown,to_verify
+auth,register_api_auth_register_post,/api/auth/register,POST,unknown,Register,unknown,unknown,to_verify
+subscription,register_device_api_auth_register_device_post,/api/auth/register-device,POST,unknown,Register Device,unknown,unknown,to_verify
+subscription,register_device_with_trial_api_auth_register_device_trial_post,/api/auth/register-device-trial,POST,unknown,Register Device With Trial,unknown,unknown,to_verify
+Other Functions,resolve_message_conflicts_api_chat_offline_messages_resolve_conflicts_post,/api/chat/offline-messages/resolve-conflicts,POST,unknown,Resolve Message Conflicts,unknown,unknown,to_verify
+Other Functions,send_offline_message_api_chat_offline_messages_send_post,/api/chat/offline-messages/send,POST,unknown,Send Offline Message,unknown,unknown,to_verify
+Other Functions,sync_offline_messages_api_chat_offline_messages_sync_post,/api/chat/offline-messages/sync,POST,unknown,Sync Offline Messages,unknown,unknown,to_verify
+components,get_batch_component_status_api_components_batch_status_post,/api/components/batch/status,POST,unknown,Get Batch Component Status,unknown,unknown,to_verify
+components,components_bulk_update_compat_api_components_bulk_update_get,/api/components/bulk-update,GET,unknown,Components Bulk Update Compat,unknown,unknown,to_verify
+components,components_config_compat_api_components_config_get,/api/components/config,GET,unknown,Components Config Compat,unknown,unknown,to_verify
+Components,update_component_config_api_components_config_update__component_id__post,/api/components/config/update/{component_id},POST,unknown,Update Component Config,unknown,unknown,to_verify
+Components,get_component_config_api_components_config__component_id__get,/api/components/config/{component_id},GET,unknown,Get Component Config,unknown,unknown,to_verify
+components,get_component_configuration_api_components_configuration__component_id__get,/api/components/configuration/{component_id},GET,unknown,Get Component Configuration,unknown,unknown,to_verify
+components,update_component_configuration_api_components_configuration__component_id__post,/api/components/configuration/{component_id},POST,unknown,Update Component Configuration,unknown,unknown,to_verify
+Components,get_component_dependencies_api_components_dependencies__component_id__get,/api/components/dependencies/{component_id},GET,unknown,Get Component Dependencies,unknown,unknown,to_verify
+components,disable_component_compat_api_components_disable_get,/api/components/disable,GET,unknown,Disable Component Compat,unknown,unknown,to_verify
+Components,disable_component_api_components_disable__component_id__post,/api/components/disable/{component_id},POST,unknown,Disable Component,unknown,unknown,to_verify
+components,enable_component_compat_api_components_enable_get,/api/components/enable,GET,unknown,Enable Component Compat,unknown,unknown,to_verify
+Components,enable_component_api_components_enable__component_id__post,/api/components/enable/{component_id},POST,unknown,Enable Component,unknown,unknown,to_verify
+Components,get_components_health_api_components_health_get,/api/components/health,GET,unknown,Get Components Health,unknown,unknown,to_verify
+Components,get_components_list_api_components_list_get,/api/components/list,GET,unknown,Get Components List,unknown,unknown,to_verify
+Components,get_component_logs_api_components_logs__component_id__get,/api/components/logs/{component_id},GET,unknown,Get Component Logs,unknown,unknown,to_verify
+Components,get_component_metrics_api_components_metrics__component_id__get,/api/components/metrics/{component_id},GET,unknown,Get Component Metrics,unknown,unknown,to_verify
+Components,restart_component_api_components_restart__component_id__post,/api/components/restart/{component_id},POST,unknown,Restart Component,unknown,unknown,to_verify
+components,get_components_status_compat_api_components_status_get,/api/components/status,GET,unknown,Get Components Status Compat,unknown,unknown,to_verify
+Components,get_all_components_status_api_components_status_all_get,/api/components/status/all,GET,unknown,Get All Components Status,unknown,unknown,to_verify
+Components,get_component_status_api_components_status__component_id__get,/api/components/status/{component_id},GET,unknown,Get Component Status,unknown,unknown,to_verify
+components,update_component_status_compat_api_components_status__component_id__post,/api/components/status/{component_id},POST,unknown,Update Component Status Compat,unknown,unknown,to_verify
+Components,test_component_api_components_test__component_id__post,/api/components/test/{component_id},POST,unknown,Test Component,unknown,unknown,to_verify
+Components,update_component_api_components_update__component_id__post,/api/components/update/{component_id},POST,unknown,Update Component,unknown,unknown,to_verify
+crash-detection-compat,crash_detection_alert_api_crash_detection_alert_get,/api/crash-detection/alert,GET,unknown,Crash Detection Alert,unknown,unknown,to_verify
+Crash Detection,cancel_emergency_call_api_crash_detection_cancel_emergency_call_post,/api/crash-detection/cancel-emergency-call,POST,unknown,Отмена вызова экстренной службы,unknown,unknown,to_verify
+Crash Detection,process_sensor_data_api_crash_detection_data_post,/api/crash-detection/data,POST,unknown,Отправка данных сенсоров,unknown,unknown,to_verify
+Crash Detection,call_emergency_api_crash_detection_emergency_call_post,/api/crash-detection/emergency-call,POST,unknown,Ручной вызов экстренной службы,unknown,unknown,to_verify
+Crash Detection,health_check_api_crash_detection_health_get,/api/crash-detection/health,GET,unknown,Health check,unknown,unknown,to_verify
+Crash Detection,get_crash_history_api_crash_detection_history_get,/api/crash-detection/history,GET,unknown,История аварий,unknown,unknown,to_verify
+Crash Detection,get_crash_notifications_api_crash_detection_notifications_get,/api/crash-detection/notifications,GET,unknown,Get Crash Notifications,unknown,unknown,to_verify
+Crash Detection,send_crash_notification_api_crash_detection_notifications_send_post,/api/crash-detection/notifications/send,POST,unknown,Send Crash Notification,unknown,unknown,to_verify
+Crash Detection,report_crash_api_crash_detection_report_post,/api/crash-detection/report,POST,unknown,Report Crash,unknown,unknown,to_verify
+crash-detection-compat,crash_detection_settings_update_api_crash_detection_settings_update_get,/api/crash-detection/settings/update,GET,unknown,Crash Detection Settings Update,unknown,unknown,to_verify
+crash-detection-compat,crash_detection_setup_api_crash_detection_setup_get,/api/crash-detection/setup,GET,unknown,Crash Detection Setup,unknown,unknown,to_verify
+Crash Detection,start_monitoring_api_crash_detection_start_post,/api/crash-detection/start,POST,unknown,Запуск мониторинга аварий,unknown,unknown,to_verify
+Crash Detection,get_status_api_crash_detection_status_get,/api/crash-detection/status,GET,unknown,Статус мониторинга,unknown,unknown,to_verify
+Crash Detection,stop_monitoring_api_crash_detection_stop_post,/api/crash-detection/stop,POST,unknown,Остановка мониторинга аварий,unknown,unknown,to_verify
+Crash Detection,sync_crash_detection_api_crash_detection_sync_post,/api/crash-detection/sync,POST,unknown,Sync Crash Detection,unknown,unknown,to_verify
+Dark Web Monitoring,get_breaches_api_darkweb_breaches_get,/api/darkweb/breaches,GET,unknown,Получение всех утечек,unknown,unknown,to_verify
+Dark Web Monitoring,check_email_breach_api_darkweb_check_post,/api/darkweb/check,POST,unknown,Проверка email на утечки,unknown,unknown,to_verify
+Dark Web Monitoring,health_check_api_darkweb_health_get,/api/darkweb/health,GET,unknown,Health check,unknown,unknown,to_verify
+Dark Web Monitoring,start_monitoring_api_darkweb_start_monitoring_post,/api/darkweb/start-monitoring,POST,unknown,Запуск мониторинга,unknown,unknown,to_verify
+Dark Web Monitoring,get_monitoring_status_api_darkweb_status_get,/api/darkweb/status,GET,unknown,Статус мониторинга,unknown,unknown,to_verify
+Dark Web Monitoring,stop_monitoring_api_darkweb_stop_monitoring_post,/api/darkweb/stop-monitoring,POST,unknown,Остановка мониторинга,unknown,unknown,to_verify
+Data Cleanup,health_check_api_data_cleanup_health_get,/api/data-cleanup/health,GET,unknown,Проверка работоспособности агента,unknown,unknown,to_verify
+Data Cleanup,trigger_periodic_scan_api_data_cleanup_periodic_scan_post,/api/data-cleanup/periodic-scan,POST,unknown,Запустить периодический поиск (если нужно),unknown,unknown,to_verify
+Data Cleanup,get_user_preferences_api_data_cleanup_preferences_get,/api/data-cleanup/preferences,GET,unknown,Получить настройки пользователя,unknown,unknown,to_verify
+Data Cleanup,update_user_preferences_api_data_cleanup_preferences_post,/api/data-cleanup/preferences,POST,unknown,Обновить настройки пользователя,unknown,unknown,to_verify
+Data Cleanup,remove_data_from_sites_api_data_cleanup_remove_post,/api/data-cleanup/remove,POST,unknown,Отправить запросы на удаление данных,unknown,unknown,to_verify
+Data Cleanup,get_cleanup_report_api_data_cleanup_report_get,/api/data-cleanup/report,GET,unknown,Получить отчет о процессе очистки,unknown,unknown,to_verify
+Data Cleanup,scan_broker_sites_api_data_cleanup_scan_post,/api/data-cleanup/scan,POST,unknown,Сканировать брокерские сайты на наличие данных,unknown,unknown,to_verify
+Data Cleanup,get_scan_status_api_data_cleanup_scan_status_get,/api/data-cleanup/scan-status,GET,unknown,Получить статус последнего поиска,unknown,unknown,to_verify
+Data Cleanup,get_removal_status_api_data_cleanup_status_get,/api/data-cleanup/status,GET,unknown,Получить статус удаления данных,unknown,unknown,to_verify
+misc-other-compat,devices_list_api_devices_get,/api/devices,GET,unknown,Devices List,unknown,unknown,to_verify
+driving-reports,record_event_api_driving_reports_event_post,/api/driving-reports/event,POST,unknown,Запись события вождения,unknown,unknown,to_verify
+driving-reports,generate_report_api_driving_reports_generate_post,/api/driving-reports/generate,POST,unknown,Генерация отчета о вождении,unknown,unknown,to_verify
+driving-reports,health_check_api_driving_reports_health_get,/api/driving-reports/health,GET,unknown,Health check,unknown,unknown,to_verify
+driving-reports,get_monthly_report_api_driving_reports_monthly__user_id__get,/api/driving-reports/monthly/{user_id},GET,unknown,Месячный отчет,unknown,unknown,to_verify
+driving-reports,get_recommendations_api_driving_reports_recommendations__user_id__get,/api/driving-reports/recommendations/{user_id},GET,unknown,Рекомендации по улучшению,unknown,unknown,to_verify
+driving-reports,get_report_api_driving_reports_report__report_id__get,/api/driving-reports/report/{report_id},GET,unknown,Получение отчета по ID,unknown,unknown,to_verify
+driving-reports,get_safety_score_api_driving_reports_safety_score__user_id__get,/api/driving-reports/safety-score/{user_id},GET,unknown,Оценка безопасности вождения,unknown,unknown,to_verify
+driving-reports,start_monitoring_api_driving_reports_start_post,/api/driving-reports/start,POST,unknown,Запуск мониторинга вождения,unknown,unknown,to_verify
+driving-reports,stop_monitoring_api_driving_reports_stop_post,/api/driving-reports/stop,POST,unknown,Остановка мониторинга вождения,unknown,unknown,to_verify
+driving-reports,get_violations_statistics_api_driving_reports_violations__user_id__get,/api/driving-reports/violations/{user_id},GET,unknown,Статистика нарушений,unknown,unknown,to_verify
+driving-reports,get_weekly_report_api_driving_reports_weekly__user_id__get,/api/driving-reports/weekly/{user_id},GET,unknown,Недельный отчет,unknown,unknown,to_verify
+Elderly Interface,sync_appointments_api_elderly_appointments_sync_post,/api/elderly/appointments/sync,POST,unknown,Sync Appointments,unknown,unknown,to_verify
+Elderly Interface,update_appointment_api_elderly_appointments_update_post,/api/elderly/appointments/update,POST,unknown,Update Appointment,unknown,unknown,to_verify
+Elderly Interface,sync_medications_api_elderly_medications_sync_post,/api/elderly/medications/sync,POST,unknown,Sync Medications,unknown,unknown,to_verify
+Elderly Interface,update_medication_api_elderly_medications_update_post,/api/elderly/medications/update,POST,unknown,Update Medication,unknown,unknown,to_verify
+family,add_family_member_compat_api_family_add_get,/api/family/add,GET,unknown,Add Family Member Compat,unknown,unknown,to_verify
+family,family_chat_messages_compat_api_family_chat_messages_get,/api/family/chat/messages,GET,unknown,Family Chat Messages Compat,unknown,unknown,to_verify
+family,family_chat_send_compat_api_family_chat_send_get,/api/family/chat/send,GET,unknown,Family Chat Send Compat,unknown,unknown,to_verify
+family,create_family_endpoint_api_family_create_post,/api/family/create,POST,unknown,Create Family Endpoint,unknown,unknown,to_verify
+family,join_family_compat_api_family_join_get,/api/family/join,GET,unknown,Join Family Compat,unknown,unknown,to_verify
+family,get_family_member_compat_api_family_member_get,/api/family/member,GET,unknown,Get Family Member Compat,unknown,unknown,to_verify
+family,get_family_members_compat_api_family_members_get,/api/family/members,GET,unknown,Get Family Members Compat,unknown,unknown,to_verify
+family,recover_family_compat_api_family_recover_get,/api/family/recover,GET,unknown,Recover Family Compat,unknown,unknown,to_verify
+family,remove_family_member_api_family_remove_delete,/api/family/remove,DELETE,unknown,Remove Family Member,unknown,unknown,to_verify
+family,remove_family_member_compat_api_family_remove_get,/api/family/remove,GET,unknown,Remove Family Member Compat,unknown,unknown,to_verify
+family,get_family_stats_api_family_stats_get,/api/family/stats,GET,unknown,Get Family Stats,unknown,unknown,to_verify
+Gamification,get_gamification_achievements_api_gamification_achievements_get,/api/gamification/achievements,GET,unknown,Get Gamification Achievements,unknown,unknown,to_verify
+Gamification,claim_gamification_achievement_api_gamification_achievements_claim_get,/api/gamification/achievements/claim,GET,unknown,Claim Gamification Achievement,unknown,unknown,to_verify
+Gamification,get_gamification_achievements_progress_api_gamification_achievements_progress_get,/api/gamification/achievements/progress,GET,unknown,Get Gamification Achievements Progress,unknown,unknown,to_verify
+Gamification,unlock_gamification_achievement_api_gamification_achievements_unlock_get,/api/gamification/achievements/unlock,GET,unknown,Unlock Gamification Achievement,unknown,unknown,to_verify
+Gamification,get_gamification_balance_current_api_gamification_balance_get,/api/gamification/balance,GET,unknown,Get Gamification Balance Current,unknown,unknown,to_verify
+Gamification,get_gamification_balance_api_gamification_balance__userId__get,/api/gamification/balance/{userId},GET,unknown,Get Gamification Balance,unknown,unknown,to_verify
+Gamification,get_gamification_progress_api_gamification_progress_get,/api/gamification/progress,GET,unknown,Get Gamification Progress,unknown,unknown,to_verify
+Gamification,get_gamification_progress_level_api_gamification_progress_level_get,/api/gamification/progress/level,GET,unknown,Get Gamification Progress Level,unknown,unknown,to_verify
+Gamification,reset_gamification_progress_api_gamification_progress_reset_get,/api/gamification/progress/reset,GET,unknown,Reset Gamification Progress,unknown,unknown,to_verify
+Gamification,get_gamification_progress_stats_api_gamification_progress_stats_get,/api/gamification/progress/stats,GET,unknown,Get Gamification Progress Stats,unknown,unknown,to_verify
+Gamification,update_gamification_progress_api_gamification_progress_update_get,/api/gamification/progress/update,GET,unknown,Update Gamification Progress,unknown,unknown,to_verify
+Gamification,get_gamification_rewards_api_gamification_rewards_get,/api/gamification/rewards,GET,unknown,Get Gamification Rewards,unknown,unknown,to_verify
+Gamification,claim_gamification_reward_api_gamification_rewards_claim_get,/api/gamification/rewards/claim,GET,unknown,Claim Gamification Reward,unknown,unknown,to_verify
+Gamification,give_gamification_reward_api_gamification_rewards_give_get,/api/gamification/rewards/give,GET,unknown,Give Gamification Reward,unknown,unknown,to_verify
+Gamification,get_gamification_rewards_history_api_gamification_rewards_history_get,/api/gamification/rewards/history,GET,unknown,Get Gamification Rewards History,unknown,unknown,to_verify
+Gamification,purchase_gamification_reward_api_gamification_rewards_purchase_get,/api/gamification/rewards/purchase,GET,unknown,Purchase Gamification Reward,unknown,unknown,to_verify
+Gamification,get_gamification_rewards_shop_api_gamification_rewards_shop_get,/api/gamification/rewards/shop,GET,unknown,Get Gamification Rewards Shop,unknown,unknown,to_verify
+Gamification,get_gamification_settings_api_gamification_settings_get,/api/gamification/settings,GET,unknown,Get Gamification Settings,unknown,unknown,to_verify
+Gamification,get_gamification_notifications_settings_api_gamification_settings_notifications_get,/api/gamification/settings/notifications,GET,unknown,Get Gamification Notifications Settings,unknown,unknown,to_verify
+Gamification,update_gamification_notifications_settings_api_gamification_settings_notifications_update_get,/api/gamification/settings/notifications/update,GET,unknown,Update Gamification Notifications Settings,unknown,unknown,to_verify
+Gamification,update_gamification_settings_api_gamification_settings_update_get,/api/gamification/settings/update,GET,unknown,Update Gamification Settings,unknown,unknown,to_verify
+Gamification,get_gamification_tournaments_api_gamification_tournaments_get,/api/gamification/tournaments,GET,unknown,Get Gamification Tournaments,unknown,unknown,to_verify
+Gamification,get_gamification_tournaments_history_api_gamification_tournaments_history_get,/api/gamification/tournaments/history,GET,unknown,Get Gamification Tournaments History,unknown,unknown,to_verify
+Gamification,join_gamification_tournament_api_gamification_tournaments_join_get,/api/gamification/tournaments/join,GET,unknown,Join Gamification Tournament,unknown,unknown,to_verify
+Gamification,get_gamification_tournaments_leaderboard_api_gamification_tournaments_leaderboard_get,/api/gamification/tournaments/leaderboard,GET,unknown,Get Gamification Tournaments Leaderboard,unknown,unknown,to_verify
+Gamification,leave_gamification_tournament_api_gamification_tournaments_leave_get,/api/gamification/tournaments/leave,GET,unknown,Leave Gamification Tournament,unknown,unknown,to_verify
+unclassified,health_api_health_get,/api/health,GET,unknown,Health,unknown,unknown,to_verify
+Identity Theft Protection,get_alerts_api_identity_theft_alerts_get,/api/identity-theft/alerts,GET,unknown,Получение алертов,unknown,unknown,to_verify
+Identity Theft Protection,check_fraud_database_api_identity_theft_check_post,/api/identity-theft/check,POST,unknown,Проверка в базе мошенников,unknown,unknown,to_verify
+Identity Theft Protection,give_consent_api_identity_theft_consent_post,/api/identity-theft/consent,POST,unknown,Предоставление согласия,unknown,unknown,to_verify
+Identity Theft Protection,get_credit_freeze_instructions_api_identity_theft_credit_freeze_instructions_get,/api/identity-theft/credit-freeze-instructions,GET,unknown,Инструкции по заморозке кредитной истории,unknown,unknown,to_verify
+Identity Theft Protection,detect_identity_theft_api_identity_theft_detect_post,/api/identity-theft/detect,POST,unknown,Обнаружение кражи личности,unknown,unknown,to_verify
+Identity Theft Protection,health_check_api_identity_theft_health_get,/api/identity-theft/health,GET,unknown,Health check,unknown,unknown,to_verify
+Identity Theft Protection,monitor_credit_api_identity_theft_monitor_credit_post,/api/identity-theft/monitor-credit,POST,unknown,Мониторинг кредитного отчета,unknown,unknown,to_verify
+Identity Theft Protection,monitor_snils_api_identity_theft_monitor_snils_post,/api/identity-theft/monitor-snils,POST,unknown,Мониторинг СНИЛС,unknown,unknown,to_verify
+Identity Theft Protection,revoke_consent_api_identity_theft_revoke_consent_post,/api/identity-theft/revoke-consent,POST,unknown,Отзыв согласия,unknown,unknown,to_verify
+Identity Theft Protection,get_monitoring_status_api_identity_theft_status_get,/api/identity-theft/status,GET,unknown,Статус мониторинга,unknown,unknown,to_verify
+Identity Theft Protection,stop_monitoring_api_identity_theft_stop_monitoring_post,/api/identity-theft/stop-monitoring,POST,unknown,Остановка мониторинга,unknown,unknown,to_verify
+IoT,block_iot_device_api_iot_device__deviceId__block_post,/api/iot/device/{deviceId}/block,POST,unknown,Block Iot Device,unknown,unknown,to_verify
+IoT,get_iot_devices_api_iot_devices__homeId__get,/api/iot/devices/{homeId},GET,unknown,Get Iot Devices,unknown,unknown,to_verify
+IoT,fix_iot_threat_api_iot_fix__threatId__post,/api/iot/fix/{threatId},POST,unknown,Fix Iot Threat,unknown,unknown,to_verify
+IoT,start_iot_scan_api_iot_scan__homeId__post,/api/iot/scan/{homeId},POST,unknown,Start Iot Scan,unknown,unknown,to_verify
+IoT,get_iot_status_api_iot_status__homeId__get,/api/iot/status/{homeId},GET,unknown,Get Iot Status,unknown,unknown,to_verify
+IoT,get_iot_threats_api_iot_threats__homeId__get,/api/iot/threats/{homeId},GET,unknown,Get Iot Threats,unknown,unknown,to_verify
+Location Bubble,get_bubble_location_api_location_bubble_post,/api/location/bubble,POST,unknown,Генерировать приблизительное местоположение (пузырь),unknown,unknown,to_verify
+Location Bubble,health_check_api_location_bubble_health_get,/api/location/bubble/health,GET,unknown,Health check,unknown,unknown,to_verify
+Location Bubble,get_generation_history_api_location_bubble_history_get,/api/location/bubble/history,GET,unknown,Получить историю генераций пузырей,unknown,unknown,to_verify
+Location Bubble,get_person_settings_api_location_bubble_settings_get,/api/location/bubble/settings,GET,unknown,Получить настройки пузыря для человека,unknown,unknown,to_verify
+Location Bubble,set_person_settings_api_location_bubble_settings_post,/api/location/bubble/settings,POST,unknown,Установить настройки пузыря для человека,unknown,unknown,to_verify
+Location Bubble,get_all_person_settings_api_location_bubble_settings_all_get,/api/location/bubble/settings/all,GET,unknown,Получить все настройки пузырей для пользователя,unknown,unknown,to_verify
+misc-other-compat,location_geofences_api_location_geofences_get,/api/location/geofences,GET,unknown,Location Geofences,unknown,unknown,to_verify
+Other Functions,sync_location_geofences_api_location_geofences_sync_post,/api/location/geofences/sync,POST,unknown,Sync Location Geofences,unknown,unknown,to_verify
+Other Functions,update_location_geofence_api_location_geofences_update_post,/api/location/geofences/update,POST,unknown,Update Location Geofence,unknown,unknown,to_verify
+Other Functions,delete_location_geofence_api_location_geofences__geofenceId__delete,/api/location/geofences/{geofenceId},DELETE,unknown,Delete Location Geofence,unknown,unknown,to_verify
+Other Functions,get_movement_history_api_location_movement_history_get,/api/location/movement-history,GET,unknown,Get Movement History,unknown,unknown,to_verify
+Other Functions,update_movement_history_api_location_movement_history_update_post,/api/location/movement-history/update,POST,unknown,Update Movement History,unknown,unknown,to_verify
+Other Functions,get_location_status_api_location_status_get,/api/location/status,GET,unknown,Get Location Status,unknown,unknown,to_verify
+Other Functions,update_location_status_api_location_status_update_post,/api/location/status/update,POST,unknown,Update Location Status,unknown,unknown,to_verify
+misc-other-compat,malware_quarantine_action_api_malware_quarantine_action_get,/api/malware/quarantine/action,GET,unknown,Malware Quarantine Action,unknown,unknown,to_verify
+misc-other-compat,malware_threats_api_malware_threats_get,/api/malware/threats,GET,unknown,Malware Threats,unknown,unknown,to_verify
+Metrics,upload_metrics_api_metrics_upload_post,/api/metrics/upload,POST,unknown,Upload Metrics,unknown,unknown,to_verify
+network-protection-compat,network_protection_config_api_network_protection_config_get,/api/network-protection/config,GET,unknown,Network Protection Config,unknown,unknown,to_verify
+network-protection-compat,network_protection_connect_api_network_protection_connect_get,/api/network-protection/connect,GET,unknown,Network Protection Connect,unknown,unknown,to_verify
+network-protection-compat,network_protection_disconnect_api_network_protection_disconnect_get,/api/network-protection/disconnect,GET,unknown,Network Protection Disconnect,unknown,unknown,to_verify
+network-protection-compat,network_protection_servers_api_network_protection_servers_get,/api/network-protection/servers,GET,unknown,Network Protection Servers,unknown,unknown,to_verify
+network-protection-compat,network_protection_settings_api_network_protection_settings_get,/api/network-protection/settings,GET,unknown,Network Protection Settings,unknown,unknown,to_verify
+network-protection-compat,patch_network_protection_settings_api_network_protection_settings_patch,/api/network-protection/settings,PATCH,unknown,Patch Network Protection Settings,unknown,unknown,to_verify
+network-protection-compat,network_protection_stats_api_network_protection_stats_get,/api/network-protection/stats,GET,unknown,Network Protection Stats,unknown,unknown,to_verify
+network-protection-compat,network_protection_status_api_network_protection_status_get,/api/network-protection/status,GET,unknown,Network Protection Status,unknown,unknown,to_verify
+Notifications,list_notifications_api_notifications_get,/api/notifications,GET,unknown,List Notifications,unknown,unknown,to_verify
+notifications-compat,notifications_archive_api_notifications_archive_get,/api/notifications/archive,GET,unknown,Notifications Archive,unknown,unknown,to_verify
+notifications-compat,notifications_bulk_mark_read_api_notifications_bulk_mark_read_get,/api/notifications/bulk-mark-read,GET,unknown,Notifications Bulk Mark Read,unknown,unknown,to_verify
+notifications-compat,notifications_categories_api_notifications_categories_get,/api/notifications/categories,GET,unknown,Notifications Categories,unknown,unknown,to_verify
+Notifications,mark_notification_read_api_notifications_read_post,/api/notifications/read,POST,unknown,Mark Notification Read,unknown,unknown,to_verify
+notifications-compat,notifications_stats_api_notifications_stats_get,/api/notifications/stats,GET,unknown,Notifications Stats,unknown,unknown,to_verify
+Offline Storage,get_offline_data_api_offline_storage_data_get,/api/offline-storage/data,GET,unknown,Get Offline Data,unknown,unknown,to_verify
+Offline Storage,update_offline_data_api_offline_storage_data_update_post,/api/offline-storage/data/update,POST,unknown,Update Offline Data,unknown,unknown,to_verify
+Offline Storage,delete_offline_data_api_offline_storage_data__dataId__delete,/api/offline-storage/data/{dataId},DELETE,unknown,Delete Offline Data,unknown,unknown,to_verify
+Offline Storage,resolve_offline_storage_conflicts_api_offline_storage_resolve_conflicts_post,/api/offline-storage/resolve-conflicts,POST,unknown,Resolve Offline Storage Conflicts,unknown,unknown,to_verify
+Offline Storage,sync_offline_storage_api_offline_storage_sync_post,/api/offline-storage/sync,POST,unknown,Sync Offline Storage,unknown,unknown,to_verify
+Parental Control,get_parental_app_blocks_api_parental_control_app_blocks_get,/api/parental-control/app-blocks,GET,unknown,Get Parental App Blocks,unknown,unknown,to_verify
+Parental Control,sync_app_blocks_api_parental_control_app_blocks_sync_post,/api/parental-control/app-blocks/sync,POST,unknown,Sync App Blocks,unknown,unknown,to_verify
+Parental Control,update_app_blocks_api_parental_control_app_blocks_update_post,/api/parental-control/app-blocks/update,POST,unknown,Update App Blocks,unknown,unknown,to_verify
+Parental Control,get_app_blocks_api_parental_control_app_blocks__childId__get,/api/parental-control/app-blocks/{childId},GET,unknown,Get App Blocks,unknown,unknown,to_verify
+Parental Control,get_dns_config_api_parental_control_dns_config_get,/api/parental-control/dns-config,GET,unknown,Get Dns Config,unknown,unknown,to_verify
+Parental Control,get_parental_geofences_api_parental_control_geofences_get,/api/parental-control/geofences,GET,unknown,Get Parental Geofences,unknown,unknown,to_verify
+Parental Control,add_geofence_api_parental_control_geofences_add_post,/api/parental-control/geofences/add,POST,unknown,Add Geofence,unknown,unknown,to_verify
+Parental Control,update_geofence_api_parental_control_geofences_update_post,/api/parental-control/geofences/update,POST,unknown,Update Geofence,unknown,unknown,to_verify
+Parental Control,get_geofences_api_parental_control_geofences__childId__get,/api/parental-control/geofences/{childId},GET,unknown,Get Geofences,unknown,unknown,to_verify
+Parental Control,delete_geofence_api_parental_control_geofences__geofenceId__delete,/api/parental-control/geofences/{geofenceId},DELETE,unknown,Delete Geofence,unknown,unknown,to_verify
+Parental Control,report_location_api_parental_control_location_report_post,/api/parental-control/location/report,POST,unknown,Report Location,unknown,unknown,to_verify
+Parental Control,get_daily_reports_api_parental_control_reports_daily_get,/api/parental-control/reports/daily,GET,unknown,Get Daily Reports,unknown,unknown,to_verify
+Parental Control,get_weekly_reports_api_parental_control_reports_weekly_get,/api/parental-control/reports/weekly,GET,unknown,Get Weekly Reports,unknown,unknown,to_verify
+Parental Control,get_parental_schedules_api_parental_control_schedules_get,/api/parental-control/schedules,GET,unknown,Get Parental Schedules,unknown,unknown,to_verify
+Parental Control,delete_schedule_api_parental_control_schedules_delete_post,/api/parental-control/schedules/delete,POST,unknown,Delete Schedule,unknown,unknown,to_verify
+Parental Control,get_schedules_history_api_parental_control_schedules_history_get,/api/parental-control/schedules/history,GET,unknown,Get Schedules History,unknown,unknown,to_verify
+Parental Control,update_schedule_api_parental_control_schedules_update_post,/api/parental-control/schedules/update,POST,unknown,Update Schedule,unknown,unknown,to_verify
+Parental Control,get_schedules_api_parental_control_schedules__childId__get,/api/parental-control/schedules/{childId},GET,unknown,Get Schedules,unknown,unknown,to_verify
+Parental Control,get_parental_settings_api_parental_control_settings_get,/api/parental-control/settings,GET,unknown,Get Parental Settings,unknown,unknown,to_verify
+Parental Control,get_parental_control_settings_conflicts_api_parental_control_settings_conflicts_get,/api/parental-control/settings/conflicts,GET,unknown,Get Parental Control Settings Conflicts,unknown,unknown,to_verify
+Parental Control,get_parental_control_settings_history_api_parental_control_settings_history_get,/api/parental-control/settings/history,GET,unknown,Get Parental Control Settings History,unknown,unknown,to_verify
+Parental Control,sync_parental_control_settings_api_parental_control_settings_sync_post,/api/parental-control/settings/sync,POST,unknown,Sync Parental Control Settings,unknown,unknown,to_verify
+Parental Control,update_parental_control_settings_api_parental_control_settings_update_post,/api/parental-control/settings/update,POST,unknown,Update Parental Control Settings,unknown,unknown,to_verify
+Parental Control,get_parental_control_settings_api_parental_control_settings__familyId__get,/api/parental-control/settings/{familyId},GET,unknown,Get Parental Control Settings,unknown,unknown,to_verify
+Parental Control,get_parental_control_stats_api_parental_control_stats_get,/api/parental-control/stats,GET,unknown,Get Parental Control Stats,unknown,unknown,to_verify
+Parental Control,get_parental_manager_status_api_parental_control_status_get,/api/parental-control/status,GET,unknown,Get Parental Manager Status,unknown,unknown,to_verify
+Parental Control,get_parental_time_limits_api_parental_control_time_limits_get,/api/parental-control/time-limits,GET,unknown,Get Parental Time Limits,unknown,unknown,to_verify
+Parental Control,get_time_limits_history_api_parental_control_time_limits_history_get,/api/parental-control/time-limits/history,GET,unknown,Get Time Limits History,unknown,unknown,to_verify
+Parental Control,reset_time_limits_api_parental_control_time_limits_reset_post,/api/parental-control/time-limits/reset,POST,unknown,Reset Time Limits,unknown,unknown,to_verify
+Parental Control,update_time_limits_api_parental_control_time_limits_update_post,/api/parental-control/time-limits/update,POST,unknown,Update Time Limits,unknown,unknown,to_verify
+Parental Control,get_time_limits_api_parental_control_time_limits__childId__get,/api/parental-control/time-limits/{childId},GET,unknown,Get Time Limits,unknown,unknown,to_verify
+parental-compat,parental_block_api_parental_block_get,/api/parental/block,GET,unknown,Parental Block,unknown,unknown,to_verify
+Parental Control Bypass,apply_bypass_protection_api_parental_bypass_apply_post,/api/parental/bypass/apply,POST,unknown,Apply Bypass Protection,unknown,unknown,to_verify
+Parental Control Bypass,get_bypass_stats_api_parental_bypass_stats_get,/api/parental/bypass/stats,GET,unknown,Get Bypass Stats,unknown,unknown,to_verify
+Parental Control Bypass,get_bypass_manager_status_api_parental_bypass_status_get,/api/parental/bypass/status,GET,unknown,Get Bypass Manager Status,unknown,unknown,to_verify
+parental-compat,parental_control_api_parental_control_get,/api/parental/control,GET,unknown,Parental Control,unknown,unknown,to_verify
+parental-compat,parental_limits_api_parental_limits_get,/api/parental/limits,GET,unknown,Parental Limits,unknown,unknown,to_verify
+payments,confirm_payment_api_payments_confirm_post,/api/payments/confirm,POST,unknown,Confirm Payment,unknown,unknown,to_verify
+payments,create_payment_api_payments_create_post,/api/payments/create,POST,unknown,Create Payment,unknown,unknown,to_verify
+payments,create_payment_qr_api_payments_qr_create_post,/api/payments/qr/create,POST,unknown,Create Payment Qr,unknown,unknown,to_verify
+misc-other-compat,payments_qr_status_test_api_payments_qr_status_test_get,/api/payments/qr/status/test,GET,unknown,Payments Qr Status Test,unknown,unknown,to_verify
+payments,recover_payment_code_api_payments_recover_post,/api/payments/recover,POST,unknown,Recover Payment Code,unknown,unknown,to_verify
+payments,check_payment_status_api_payments_status__payment_id__get,/api/payments/status/{payment_id},GET,unknown,Check Payment Status,unknown,unknown,to_verify
+protection,disable_protection_category_api_protection_disable_post,/api/protection/disable,POST,unknown,Disable Protection Category,unknown,unknown,to_verify
+protection,enable_protection_category_api_protection_enable_post,/api/protection/enable,POST,unknown,Enable Protection Category,unknown,unknown,to_verify
+misc-other-compat,protection_quarantine_action_api_protection_quarantine_action_get,/api/protection/quarantine/action,GET,unknown,Protection Quarantine Action,unknown,unknown,to_verify
+protection,get_protection_settings_api_protection_settings_get,/api/protection/settings,GET,unknown,Get Protection Settings,unknown,unknown,to_verify
+protection,update_protection_settings_api_protection_settings_post,/api/protection/settings,POST,unknown,Update Protection Settings,unknown,unknown,to_verify
+protection,get_protection_stats_api_protection_stats_get,/api/protection/stats,GET,unknown,Get Protection Stats,unknown,unknown,to_verify
+protection,get_protection_status_api_protection_status_get,/api/protection/status,GET,unknown,Get Protection Status,unknown,unknown,to_verify
+protection,sync_protection_settings_api_protection_sync_post,/api/protection/sync,POST,unknown,Sync Protection Settings,unknown,unknown,to_verify
+protection,get_threat_scenarios_api_protection_threat_scenarios_get,/api/protection/threat-scenarios,GET,unknown,Get Threat Scenarios,unknown,unknown,to_verify
+misc-other-compat,protection_threats_api_protection_threats_get,/api/protection/threats,GET,unknown,Protection Threats,unknown,unknown,to_verify
+misc-other-compat,protection_threats_test_api_protection_threats_test_get,/api/protection/threats/test,GET,unknown,Protection Threats Test,unknown,unknown,to_verify
+referral,get_referral_code_api_referral_code_get,/api/referral/code,GET,unknown,Get Referral Code,unknown,unknown,to_verify
+referral,get_referral_history_api_referral_history_get,/api/referral/history,GET,unknown,Get Referral History,unknown,unknown,to_verify
+referral,get_referral_rewards_api_referral_rewards_get,/api/referral/rewards,GET,unknown,Get Referral Rewards,unknown,unknown,to_verify
+referral,get_referral_stats_api_referral_stats_get,/api/referral/stats,GET,unknown,Get Referral Stats,unknown,unknown,to_verify
+referral-test,test_apply_discount_api_referral_test_discount_apply_get,/api/referral/test/discount/apply,GET,unknown,Test Apply Discount,unknown,unknown,to_verify
+referral-test,test_confirm_payment_api_referral_test_payment_confirm_post,/api/referral/test/payment/confirm,POST,unknown,Test Confirm Payment,unknown,unknown,to_verify
+referral-test,test_create_payment_api_referral_test_payment_create_post,/api/referral/test/payment/create,POST,unknown,Test Create Payment,unknown,unknown,to_verify
+Reports,reports_ai_categories_allow_api_reports_ai_categories_allow_get,/api/reports/ai-categories/allow,GET,unknown,Reports Ai Categories Allow,unknown,unknown,to_verify
+Reports,reports_ai_categories_block_api_reports_ai_categories_block_get,/api/reports/ai-categories/block,GET,unknown,Reports Ai Categories Block,unknown,unknown,to_verify
+Reports,reports_ai_categories_reports_api_reports_ai_categories_reports_get,/api/reports/ai-categories/reports,GET,unknown,Reports Ai Categories Reports,unknown,unknown,to_verify
+Reports,get_ai_categories_stats_api_reports_ai_categories_stats_get,/api/reports/ai-categories/stats,GET,unknown,Get Ai Categories Stats,unknown,unknown,to_verify
+Reports,reports_dark_web_leaks_compat_api_reports_dark_web_leaks_get,/api/reports/dark-web/leaks,GET,unknown,Reports Dark Web Leaks Compat,unknown,unknown,to_verify
+Reports,reports_dark_web_leaks_api_reports_dark_web_leaks_list_get,/api/reports/dark-web/leaks/list,GET,unknown,Reports Dark Web Leaks,unknown,unknown,to_verify
+Reports,reports_dark_web_resolve_api_reports_dark_web_resolve_get,/api/reports/dark-web/resolve,GET,unknown,Reports Dark Web Resolve,unknown,unknown,to_verify
+Reports,reports_dark_web_scan_fast_api_reports_dark_web_scan_fast_get,/api/reports/dark-web/scan/fast,GET,unknown,Reports Dark Web Scan Fast,unknown,unknown,to_verify
+Reports,reports_dark_web_scan_secure_api_reports_dark_web_scan_secure_get,/api/reports/dark-web/scan/secure,GET,unknown,Reports Dark Web Scan Secure,unknown,unknown,to_verify
+Reports,reports_dark_web_scan_start_api_reports_dark_web_scan_start_get,/api/reports/dark-web/scan/start,GET,unknown,Reports Dark Web Scan Start,unknown,unknown,to_verify
+Reports,reports_dark_web_scan_start_post_api_reports_dark_web_scan_start_post,/api/reports/dark-web/scan/start,POST,unknown,Reports Dark Web Scan Start Post,unknown,unknown,to_verify
+Reports,reports_dark_web_scans_api_reports_dark_web_scans_get,/api/reports/dark-web/scans,GET,unknown,Reports Dark Web Scans,unknown,unknown,to_verify
+Reports,get_dark_web_stats_api_reports_dark_web_stats_get,/api/reports/dark-web/stats,GET,unknown,Get Dark Web Stats,unknown,unknown,to_verify
+Reports,reports_driving_root_api_reports_driving_get,/api/reports/driving,GET,unknown,Reports Driving Root,unknown,unknown,to_verify
+Reports,reports_driving_behavior_api_reports_driving_behavior_get,/api/reports/driving/behavior,GET,unknown,Reports Driving Behavior,unknown,unknown,to_verify
+Reports,reports_driving_end_api_reports_driving_end_get,/api/reports/driving/end,GET,unknown,Reports Driving End,unknown,unknown,to_verify
+Reports,reports_driving_events_api_reports_driving_events_get,/api/reports/driving/events,GET,unknown,Reports Driving Events,unknown,unknown,to_verify
+Reports,reports_driving_export_api_reports_driving_export_get,/api/reports/driving/export,GET,unknown,Reports Driving Export,unknown,unknown,to_verify
+Reports,reports_driving_score_api_reports_driving_score_get,/api/reports/driving/score,GET,unknown,Reports Driving Score,unknown,unknown,to_verify
+Reports,reports_driving_start_api_reports_driving_start_get,/api/reports/driving/start,GET,unknown,Reports Driving Start,unknown,unknown,to_verify
+Reports,get_driving_reports_stats_api_reports_driving_stats_get,/api/reports/driving/stats,GET,unknown,Get Driving Reports Stats,unknown,unknown,to_verify
+Reports,reports_identity_theft_allow_api_reports_identity_theft_allow_get,/api/reports/identity-theft/allow,GET,unknown,Reports Identity Theft Allow,unknown,unknown,to_verify
+Reports,reports_identity_theft_allow_post_api_reports_identity_theft_allow_post,/api/reports/identity-theft/allow,POST,unknown,Reports Identity Theft Allow Post,unknown,unknown,to_verify
+Reports,reports_identity_theft_attempts_compat_api_reports_identity_theft_attempts_get,/api/reports/identity-theft/attempts,GET,unknown,Reports Identity Theft Attempts Compat,unknown,unknown,to_verify
+Reports,reports_identity_theft_attempts_api_reports_identity_theft_attempts_list_get,/api/reports/identity-theft/attempts/list,GET,unknown,Reports Identity Theft Attempts,unknown,unknown,to_verify
+Reports,reports_identity_theft_block_api_reports_identity_theft_block_get,/api/reports/identity-theft/block,GET,unknown,Reports Identity Theft Block,unknown,unknown,to_verify
+Reports,reports_identity_theft_block_post_api_reports_identity_theft_block_post,/api/reports/identity-theft/block,POST,unknown,Reports Identity Theft Block Post,unknown,unknown,to_verify
+Reports,get_identity_theft_stats_api_reports_identity_theft_stats_get,/api/reports/identity-theft/stats,GET,unknown,Get Identity Theft Stats,unknown,unknown,to_verify
+Reports,reports_identity_theft_whitelist_api_reports_identity_theft_whitelist_get,/api/reports/identity-theft/whitelist,GET,unknown,Reports Identity Theft Whitelist,unknown,unknown,to_verify
+Reports,reports_privacy_cleanup_records_compat_api_reports_privacy_cleanup_records_get,/api/reports/privacy/cleanup/records,GET,unknown,Reports Privacy Cleanup Records Compat,unknown,unknown,to_verify
+Reports,reports_privacy_cleanup_records_api_reports_privacy_cleanup_records_list_get,/api/reports/privacy/cleanup/records/list,GET,unknown,Reports Privacy Cleanup Records,unknown,unknown,to_verify
+Reports,reports_privacy_cleanup_start_api_reports_privacy_cleanup_start_get,/api/reports/privacy/cleanup/start,GET,unknown,Reports Privacy Cleanup Start,unknown,unknown,to_verify
+Reports,reports_privacy_cleanup_start_post_api_reports_privacy_cleanup_start_post,/api/reports/privacy/cleanup/start,POST,unknown,Reports Privacy Cleanup Start Post,unknown,unknown,to_verify
+Reports,get_cleanup_stats_api_reports_privacy_cleanup_stats_get,/api/reports/privacy/cleanup/stats,GET,unknown,Get Cleanup Stats,unknown,unknown,to_verify
+Reports,reports_privacy_location_allow_api_reports_privacy_location_allow_get,/api/reports/privacy/location/allow,GET,unknown,Reports Privacy Location Allow,unknown,unknown,to_verify
+Reports,reports_privacy_location_allow_post_api_reports_privacy_location_allow_post,/api/reports/privacy/location/allow,POST,unknown,Reports Privacy Location Allow Post,unknown,unknown,to_verify
+Reports,reports_privacy_location_block_api_reports_privacy_location_block_get,/api/reports/privacy/location/block,GET,unknown,Reports Privacy Location Block,unknown,unknown,to_verify
+Reports,reports_privacy_location_block_post_api_reports_privacy_location_block_post,/api/reports/privacy/location/block,POST,unknown,Reports Privacy Location Block Post,unknown,unknown,to_verify
+Reports,reports_privacy_location_bubble_api_reports_privacy_location_bubble_get,/api/reports/privacy/location/bubble,GET,unknown,Reports Privacy Location Bubble,unknown,unknown,to_verify
+Reports,reports_privacy_location_requests_compat_api_reports_privacy_location_requests_get,/api/reports/privacy/location/requests,GET,unknown,Reports Privacy Location Requests Compat,unknown,unknown,to_verify
+Reports,reports_privacy_location_requests_api_reports_privacy_location_requests_list_get,/api/reports/privacy/location/requests/list,GET,unknown,Reports Privacy Location Requests,unknown,unknown,to_verify
+Reports,reports_privacy_location_send_api_reports_privacy_location_send_get,/api/reports/privacy/location/send,GET,unknown,Reports Privacy Location Send,unknown,unknown,to_verify
+Reports,get_location_stats_api_reports_privacy_location_stats_get,/api/reports/privacy/location/stats,GET,unknown,Get Location Stats,unknown,unknown,to_verify
+Reports,reports_privacy_location_update_accuracy_api_reports_privacy_location_update_accuracy_get,/api/reports/privacy/location/update-accuracy,GET,unknown,Reports Privacy Location Update Accuracy,unknown,unknown,to_verify
+Reports,get_tracker_stats_api_reports_privacy_tracker_stats_get,/api/reports/privacy/tracker/stats,GET,unknown,Get Tracker Stats,unknown,unknown,to_verify
+Reports,reports_privacy_tracker_top_compat_api_reports_privacy_tracker_top_get,/api/reports/privacy/tracker/top,GET,unknown,Reports Privacy Tracker Top Compat,unknown,unknown,to_verify
+Reports,reports_privacy_tracker_top_api_reports_privacy_tracker_top_list_get,/api/reports/privacy/tracker/top/list,GET,unknown,Reports Privacy Tracker Top,unknown,unknown,to_verify
+Reports,reports_privacy_tracker_whitelist_api_reports_privacy_tracker_whitelist_get,/api/reports/privacy/tracker/whitelist,GET,unknown,Reports Privacy Tracker Whitelist,unknown,unknown,to_verify
+Reports,reports_privacy_tracker_whitelist_post_api_reports_privacy_tracker_whitelist_post,/api/reports/privacy/tracker/whitelist,POST,unknown,Reports Privacy Tracker Whitelist Post,unknown,unknown,to_verify
+Roadside Assistance,call_assistance_api_roadside_assistance_call_post,/api/roadside-assistance/call,POST,unknown,Вызов помощи на дороге,unknown,unknown,to_verify
+Roadside Assistance,cancel_request_api_roadside_assistance_cancel__request_id__post,/api/roadside-assistance/cancel/{request_id},POST,unknown,Отменить запрос на помощь,unknown,unknown,to_verify
+Roadside Assistance,health_check_api_roadside_assistance_health_get,/api/roadside-assistance/health,GET,unknown,Проверка работоспособности агента,unknown,unknown,to_verify
+Roadside Assistance,get_history_api_roadside_assistance_history_get,/api/roadside-assistance/history,GET,unknown,Получить историю запросов,unknown,unknown,to_verify
+Roadside Assistance,get_status_api_roadside_assistance_status__request_id__get,/api/roadside-assistance/status/{request_id},GET,unknown,Получить статус помощи,unknown,unknown,to_verify
+App Settings,get_biometry_settings_api_settings_biometry_get,/api/settings/biometry,GET,unknown,Get Biometry Settings,unknown,unknown,to_verify
+App Settings,update_biometry_settings_api_settings_biometry_update_post,/api/settings/biometry/update,POST,unknown,Update Biometry Settings,unknown,unknown,to_verify
+App Settings,get_language_settings_api_settings_language_get,/api/settings/language,GET,unknown,Get Language Settings,unknown,unknown,to_verify
+App Settings,update_language_settings_api_settings_language_update_post,/api/settings/language/update,POST,unknown,Update Language Settings,unknown,unknown,to_verify
+App Settings,get_notification_settings_api_settings_notifications_get,/api/settings/notifications,GET,unknown,Get Notification Settings,unknown,unknown,to_verify
+App Settings,update_notification_settings_api_settings_notifications_update_post,/api/settings/notifications/update,POST,unknown,Update Notification Settings,unknown,unknown,to_verify
+App Settings,sync_app_settings_api_settings_sync_post,/api/settings/sync,POST,unknown,Sync App Settings,unknown,unknown,to_verify
+App Settings,get_theme_settings_api_settings_theme_get,/api/settings/theme,GET,unknown,Get Theme Settings,unknown,unknown,to_verify
+App Settings,update_theme_settings_api_settings_theme_update_post,/api/settings/theme/update,POST,unknown,Update Theme Settings,unknown,unknown,to_verify
+App Settings,update_app_settings_api_settings_update_post,/api/settings/update,POST,unknown,Update App Settings,unknown,unknown,to_verify
+subscription-compat,subscription_activate_api_subscription_activate_get,/api/subscription/activate,GET,unknown,Subscription Activate,unknown,unknown,to_verify
+subscription-compat,subscription_activation_activate_api_subscription_activation_activate_get,/api/subscription/activation/activate,GET,unknown,Subscription Activation Activate,unknown,unknown,to_verify
+subscription-compat,subscription_activation_verify_api_subscription_activation_verify_get,/api/subscription/activation/verify,GET,unknown,Subscription Activation Verify,unknown,unknown,to_verify
+Subscription,get_auto_renewal_api_subscription_auto_renewal_get,/api/subscription/auto-renewal,GET,unknown,Get Auto Renewal,unknown,unknown,to_verify
+Subscription,update_auto_renewal_api_subscription_auto_renewal_update_post,/api/subscription/auto-renewal/update,POST,unknown,Update Auto Renewal,unknown,unknown,to_verify
+subscription,cancel_subscription_api_subscription_cancel_post,/api/subscription/cancel,POST,unknown,Cancel Subscription,unknown,unknown,to_verify
+subscription-events,alert_check_subscription_events_api_subscription_events_alert_check_get,/api/subscription/events/alert/check,GET,unknown,Alert Check Subscription Events,unknown,unknown,to_verify
+subscription-events,ingest_subscription_events_batch_api_subscription_events_batch_post,/api/subscription/events/batch,POST,unknown,Ingest Subscription Events Batch,unknown,unknown,to_verify
+subscription-events,get_recent_subscription_events_api_subscription_events_recent_get,/api/subscription/events/recent,GET,unknown,Get Recent Subscription Events,unknown,unknown,to_verify
+subscription-events,get_subscription_events_summary_api_subscription_events_stats_summary_get,/api/subscription/events/stats/summary,GET,unknown,Get Subscription Events Summary,unknown,unknown,to_verify
+Subscription,get_purchase_history_api_subscription_purchase_history_get,/api/subscription/purchase-history,GET,unknown,Get Purchase History,unknown,unknown,to_verify
+subscription,get_subscription_status_api_subscription_status_get,/api/subscription/status,GET,unknown,Get Subscription Status,unknown,unknown,to_verify
+Subscription,update_subscription_status_api_subscription_status_update_post,/api/subscription/status/update,POST,unknown,Update Subscription Status,unknown,unknown,to_verify
+subscription-compat,subscription_subscribe_api_subscription_subscribe_get,/api/subscription/subscribe,GET,unknown,Subscription Subscribe,unknown,unknown,to_verify
+Subscription,sync_subscription_api_subscription_sync_post,/api/subscription/sync,POST,unknown,Sync Subscription,unknown,unknown,to_verify
+subscription-compat,subscription_tariffs_api_subscription_tariffs_get,/api/subscription/tariffs,GET,unknown,Subscription Tariffs,unknown,unknown,to_verify
+Subscription,update_subscription_api_subscription_update_post,/api/subscription/update,POST,unknown,Update Subscription,unknown,unknown,to_verify
+subscription,validate_receipt_api_subscription_validate_receipt_post,/api/subscription/validate-receipt,POST,unknown,Validate Receipt,unknown,unknown,to_verify
+System Management,create_backup_api_system_backup_post,/api/system/backup,POST,unknown,Create Backup,unknown,unknown,to_verify
+System Management,get_backup_status_api_system_backup_status_get,/api/system/backup/status,GET,unknown,Get Backup Status,unknown,unknown,to_verify
+System Management,get_system_health_api_system_health_get,/api/system/health,GET,unknown,Get System Health,unknown,unknown,to_verify
+System Management,get_system_info_api_system_info_get,/api/system/info,GET,unknown,Get System Info,unknown,unknown,to_verify
+System Management,get_system_logs_api_system_logs_get,/api/system/logs,GET,unknown,Get System Logs,unknown,unknown,to_verify
+System Management,set_maintenance_mode_api_system_maintenance_post,/api/system/maintenance,POST,unknown,Set Maintenance Mode,unknown,unknown,to_verify
+System Management,get_system_metrics_api_system_metrics_get,/api/system/metrics,GET,unknown,Get System Metrics,unknown,unknown,to_verify
+System Management,get_system_resources_api_system_resources_get,/api/system/resources,GET,unknown,Get System Resources,unknown,unknown,to_verify
+System Management,restart_system_api_system_restart_post,/api/system/restart,POST,unknown,Restart System,unknown,unknown,to_verify
+system-ai-compat,system_status_compat_api_system_status_get,/api/system/status,GET,unknown,System Status Compat,unknown,unknown,to_verify
+System Management,get_system_uptime_api_system_uptime_get,/api/system/uptime,GET,unknown,Get System Uptime,unknown,unknown,to_verify
+System Management,get_system_version_api_system_version_get,/api/system/version,GET,unknown,Get System Version,unknown,unknown,to_verify
+misc-other-compat,api_test_api_test_get,/api/test,GET,unknown,Api Test,unknown,unknown,to_verify
+user,user_2fa_status_compat_api_user_2fa_status_get,/api/user/2fa/status,GET,unknown,User 2Fa Status Compat,unknown,unknown,to_verify
+user,user_2fa_update_compat_api_user_2fa_update_get,/api/user/2fa/update,GET,unknown,User 2Fa Update Compat,unknown,unknown,to_verify
+user,delete_user_compat_api_user_delete_get,/api/user/delete,GET,unknown,Delete User Compat,unknown,unknown,to_verify
+user,change_password_compat_api_user_password_get,/api/user/password,GET,unknown,Change Password Compat,unknown,unknown,to_verify
+user,get_user_profile_compat_api_user_profile_get,/api/user/profile,GET,unknown,Get User Profile Compat,unknown,unknown,to_verify
+User Profile,get_user_profile_history_api_user_profile_history_get,/api/user/profile/history,GET,unknown,Get User Profile History,unknown,unknown,to_verify
+User Profile,get_user_privacy_settings_api_user_profile_privacy_get,/api/user/profile/privacy,GET,unknown,Get User Privacy Settings,unknown,unknown,to_verify
+User Profile,update_user_privacy_settings_api_user_profile_privacy_update_post,/api/user/profile/privacy/update,POST,unknown,Update User Privacy Settings,unknown,unknown,to_verify
+User Profile,sync_user_profile_api_user_profile_sync_post,/api/user/profile/sync,POST,unknown,Sync User Profile,unknown,unknown,to_verify
+User Profile,update_user_profile_api_user_profile_update_post,/api/user/profile/update,POST,unknown,Update User Profile,unknown,unknown,to_verify
+user,update_user_compat_api_user_update_get,/api/user/update,GET,unknown,Update User Compat,unknown,unknown,to_verify
+Parental Control Legacy,get_legacy_access_requests_api_v1_parental_control_access_requests_get,/api/v1/parental-control/access-requests,GET,unknown,Get Legacy Access Requests,unknown,unknown,to_verify
+Parental Control Legacy,handle_legacy_access_request_api_v1_parental_control_access_requests_post,/api/v1/parental-control/access-requests,POST,unknown,Handle Legacy Access Request,unknown,unknown,to_verify
+Parental Control Legacy,get_legacy_parental_blocking_api_v1_parental_control_blocking_get,/api/v1/parental-control/blocking,GET,unknown,Get Legacy Parental Blocking,unknown,unknown,to_verify
+Parental Control Legacy,get_legacy_location_geofences_api_v1_parental_control_location_geofences_get,/api/v1/parental-control/location/geofences,GET,unknown,Get Legacy Location Geofences,unknown,unknown,to_verify
+Parental Control Legacy,track_legacy_location_api_v1_parental_control_location_track_post,/api/v1/parental-control/location/track,POST,unknown,Track Legacy Location,unknown,unknown,to_verify
+Parental Control Legacy,apply_legacy_parental_rules_api_v1_parental_control_rules_post,/api/v1/parental-control/rules,POST,unknown,Apply Legacy Parental Rules,unknown,unknown,to_verify
+Parental Control Legacy,get_legacy_stats_api_v1_parental_control_stats_get,/api/v1/parental-control/stats,GET,unknown,Get Legacy Stats,unknown,unknown,to_verify
+unclassified,wildcard_handler_api__path__get,/api/{path},DELETE,unknown,Wildcard Handler,unknown,unknown,to_verify
+unclassified,wildcard_handler_api__path__get,/api/{path},GET,unknown,Wildcard Handler,unknown,unknown,to_verify
+unclassified,wildcard_handler_api__path__get,/api/{path},POST,unknown,Wildcard Handler,unknown,unknown,to_verify
+unclassified,wildcard_handler_api__path__get,/api/{path},PUT,unknown,Wildcard Handler,unknown,unknown,to_verify
+unclassified,prometheus_metrics_metrics_get,/metrics,GET,unknown,Prometheus Metrics,unknown,unknown,to_verify

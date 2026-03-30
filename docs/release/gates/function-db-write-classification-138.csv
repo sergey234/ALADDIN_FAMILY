@@ -1,0 +1,139 @@
+component,function,method,endpoint,must_write_db,writes_db_detected,decision,decision_source,rationale
+AI Assistant,ai_assistant_analyze_threat_api_ai_assistant_analyze_threat_post,POST,/api/ai/assistant/analyze_threat,,false,unknown,business_registry,Handler delegates to `sfm_adapter` (or similar) for production-side processing; DB write behavior is opaque from this repo layer. Needs server-side trace/DB before-after validation.
+AI Assistant,ai_assistant_capabilities_api_ai_assistant_capabilities_get,GET,/api/ai/assistant/capabilities,,,unknown,none,No decision yet.
+AI Assistant,ai_assistant_chat_api_ai_assistant_chat_post,POST,/api/ai/assistant/chat,,false,unknown,business_registry,Handler delegates to `sfm_adapter` (or similar) for production-side processing; DB write behavior is opaque from this repo layer. Needs server-side trace/DB before-after validation.
+AI Assistant,ai_assistant_feedback_api_ai_assistant_feedback_post,POST,/api/ai/assistant/feedback,,false,unknown,business_registry,Handler delegates to `sfm_adapter` (or similar) for production-side processing; DB write behavior is opaque from this repo layer. Needs server-side trace/DB before-after validation.
+AI Assistant,ai_assistant_history_api_ai_assistant_history_get,GET,/api/ai/assistant/history,,,unknown,none,No decision yet.
+AI Assistant,ai_assistant_recommendations_api_ai_assistant_recommendations_get,GET,/api/ai/assistant/recommendations,,,unknown,none,No decision yet.
+AI Assistant,ai_assistant_report_incident_api_ai_assistant_report_incident_post,POST,/api/ai/assistant/report_incident,,false,unknown,business_registry,Handler delegates to `sfm_adapter` (or similar) for production-side processing; DB write behavior is opaque from this repo layer. Needs server-side trace/DB before-after validation.
+AI Assistant,ai_assistant_security_tips_api_ai_assistant_security_tips_get,GET,/api/ai/assistant/security_tips,,,unknown,none,No decision yet.
+AI Categories,allow_sites_api_ai_categories_allow_post,POST,/api/ai-categories/allow,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+AI Categories,block_sites_api_ai_categories_block_post,POST,/api/ai-categories/block,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+AI Categories,check_access_api_ai_categories_check_post,POST,/api/ai-categories/check,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+AI Categories,get_access_history_api_ai_categories_history_get,GET,/api/ai-categories/history,,,unknown,none,No decision yet.
+AI Categories,get_sites_api_ai_categories_sites_get,GET,/api/ai-categories/sites,,,unknown,none,No decision yet.
+AI Categories,get_status_api_ai_categories_status_get,GET,/api/ai-categories/status,,,unknown,none,No decision yet.
+AI Categories,health_check_api_ai_categories_health_get,GET,/api/ai-categories/health,,,unknown,none,No decision yet.
+AI Categories,set_age_restriction_api_ai_categories_age_restriction_post,POST,/api/ai-categories/age-restriction,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+Components,disable_component_api_components_disable__component_id__post,POST,/api/components/disable/{component_id},true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Components,enable_component_api_components_enable__component_id__post,POST,/api/components/enable/{component_id},true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Components,get_all_components_status_api_components_status_all_get,GET,/api/components/status/all,,,unknown,none,No decision yet.
+Components,get_component_config_api_components_config__component_id__get,GET,/api/components/config/{component_id},,,unknown,none,No decision yet.
+Components,get_component_dependencies_api_components_dependencies__component_id__get,GET,/api/components/dependencies/{component_id},,,unknown,none,No decision yet.
+Components,get_component_logs_api_components_logs__component_id__get,GET,/api/components/logs/{component_id},,,unknown,none,No decision yet.
+Components,get_component_metrics_api_components_metrics__component_id__get,GET,/api/components/metrics/{component_id},,,unknown,none,No decision yet.
+Components,get_component_status_api_components_status__component_id__get,GET,/api/components/status/{component_id},,,unknown,none,No decision yet.
+Components,get_components_health_api_components_health_get,GET,/api/components/health,,,unknown,none,No decision yet.
+Components,get_components_list_api_components_list_get,GET,/api/components/list,,,unknown,none,No decision yet.
+Components,restart_component_api_components_restart__component_id__post,POST,/api/components/restart/{component_id},true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Components,test_component_api_components_test__component_id__post,POST,/api/components/test/{component_id},true,true,must_write_db,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Components,update_component_api_components_update__component_id__post,POST,/api/components/update/{component_id},true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Components,update_component_config_api_components_config_update__component_id__post,POST,/api/components/config/update/{component_id},true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Crash Detection,call_emergency_api_crash_detection_emergency_call_post,POST,/api/crash-detection/emergency-call,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+Crash Detection,cancel_emergency_call_api_crash_detection_cancel_emergency_call_post,POST,/api/crash-detection/cancel-emergency-call,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+Crash Detection,get_crash_history_api_crash_detection_history_get,GET,/api/crash-detection/history,,,unknown,none,No decision yet.
+Crash Detection,get_crash_notifications_api_crash_detection_notifications_get,GET,/api/crash-detection/notifications,,,unknown,none,No decision yet.
+Crash Detection,get_status_api_crash_detection_status_get,GET,/api/crash-detection/status,,,unknown,none,No decision yet.
+Crash Detection,health_check_api_crash_detection_health_get,GET,/api/crash-detection/health,,,unknown,none,No decision yet.
+Crash Detection,process_sensor_data_api_crash_detection_data_post,POST,/api/crash-detection/data,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+Crash Detection,report_crash_api_crash_detection_report_post,POST,/api/crash-detection/report,,false,unknown,business_registry,Handler delegates to `sfm_adapter` (or similar) for production-side processing; DB write behavior is opaque from this repo layer. Needs server-side trace/DB before-after validation.
+Crash Detection,send_crash_notification_api_crash_detection_notifications_send_post,POST,/api/crash-detection/notifications/send,,false,unknown,business_registry,Handler delegates to `sfm_adapter` (or similar) for production-side processing; DB write behavior is opaque from this repo layer. Needs server-side trace/DB before-after validation.
+Crash Detection,start_monitoring_api_crash_detection_start_post,POST,/api/crash-detection/start,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+Crash Detection,stop_monitoring_api_crash_detection_stop_post,POST,/api/crash-detection/stop,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+Crash Detection,sync_crash_detection_api_crash_detection_sync_post,POST,/api/crash-detection/sync,,false,unknown,business_registry,Handler delegates to `sfm_adapter` (or similar) for production-side processing; DB write behavior is opaque from this repo layer. Needs server-side trace/DB before-after validation.
+Dark Web Monitoring,check_email_breach_api_darkweb_check_post,POST,/api/darkweb/check,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+Dark Web Monitoring,get_breaches_api_darkweb_breaches_get,GET,/api/darkweb/breaches,,,unknown,none,No decision yet.
+Dark Web Monitoring,get_monitoring_status_api_darkweb_status_get,GET,/api/darkweb/status,,,unknown,none,No decision yet.
+Dark Web Monitoring,health_check_api_darkweb_health_get,GET,/api/darkweb/health,,,unknown,none,No decision yet.
+Dark Web Monitoring,start_monitoring_api_darkweb_start_monitoring_post,POST,/api/darkweb/start-monitoring,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+Dark Web Monitoring,stop_monitoring_api_darkweb_stop_monitoring_post,POST,/api/darkweb/stop-monitoring,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+Data Cleanup,get_cleanup_report_api_data_cleanup_report_get,GET,/api/data-cleanup/report,,,unknown,none,No decision yet.
+Data Cleanup,get_removal_status_api_data_cleanup_status_get,GET,/api/data-cleanup/status,,,unknown,none,No decision yet.
+Data Cleanup,get_scan_status_api_data_cleanup_scan_status_get,GET,/api/data-cleanup/scan-status,,,unknown,none,No decision yet.
+Data Cleanup,get_user_preferences_api_data_cleanup_preferences_get,GET,/api/data-cleanup/preferences,,,unknown,none,No decision yet.
+Data Cleanup,health_check_api_data_cleanup_health_get,GET,/api/data-cleanup/health,,,unknown,none,No decision yet.
+Data Cleanup,remove_data_from_sites_api_data_cleanup_remove_post,POST,/api/data-cleanup/remove,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Data Cleanup,scan_broker_sites_api_data_cleanup_scan_post,POST,/api/data-cleanup/scan,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Data Cleanup,trigger_periodic_scan_api_data_cleanup_periodic_scan_post,POST,/api/data-cleanup/periodic-scan,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+Data Cleanup,update_user_preferences_api_data_cleanup_preferences_post,POST,/api/data-cleanup/preferences,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Elderly Interface,sync_appointments_api_elderly_appointments_sync_post,POST,/api/elderly/appointments/sync,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Elderly Interface,sync_medications_api_elderly_medications_sync_post,POST,/api/elderly/medications/sync,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Elderly Interface,update_appointment_api_elderly_appointments_update_post,POST,/api/elderly/appointments/update,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Elderly Interface,update_medication_api_elderly_medications_update_post,POST,/api/elderly/medications/update,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+Gamification,claim_gamification_achievement_api_gamification_achievements_claim_get,GET,/api/gamification/achievements/claim,,,unknown,none,No decision yet.
+Gamification,claim_gamification_reward_api_gamification_rewards_claim_get,GET,/api/gamification/rewards/claim,,,unknown,none,No decision yet.
+Gamification,get_gamification_achievements_api_gamification_achievements_get,GET,/api/gamification/achievements,,,unknown,none,No decision yet.
+Gamification,get_gamification_achievements_progress_api_gamification_achievements_progress_get,GET,/api/gamification/achievements/progress,,,unknown,none,No decision yet.
+Gamification,get_gamification_balance_api_gamification_balance__userId__get,GET,/api/gamification/balance/{userId},,,unknown,none,No decision yet.
+Gamification,get_gamification_balance_current_api_gamification_balance_get,GET,/api/gamification/balance,,,unknown,none,No decision yet.
+Gamification,get_gamification_progress_api_gamification_progress_get,GET,/api/gamification/progress,,,unknown,none,No decision yet.
+Gamification,get_gamification_progress_level_api_gamification_progress_level_get,GET,/api/gamification/progress/level,,,unknown,none,No decision yet.
+Gamification,get_gamification_progress_stats_api_gamification_progress_stats_get,GET,/api/gamification/progress/stats,,,unknown,none,No decision yet.
+Gamification,get_gamification_rewards_api_gamification_rewards_get,GET,/api/gamification/rewards,,,unknown,none,No decision yet.
+Gamification,get_gamification_rewards_history_api_gamification_rewards_history_get,GET,/api/gamification/rewards/history,,,unknown,none,No decision yet.
+Gamification,give_gamification_reward_api_gamification_rewards_give_get,GET,/api/gamification/rewards/give,,,unknown,none,No decision yet.
+Gamification,purchase_gamification_reward_api_gamification_rewards_purchase_get,GET,/api/gamification/rewards/purchase,,,unknown,none,No decision yet.
+Gamification,reset_gamification_progress_api_gamification_progress_reset_get,GET,/api/gamification/progress/reset,,,unknown,none,No decision yet.
+Gamification,unlock_gamification_achievement_api_gamification_achievements_unlock_get,GET,/api/gamification/achievements/unlock,,,unknown,none,No decision yet.
+Gamification,update_gamification_progress_api_gamification_progress_update_get,GET,/api/gamification/progress/update,,,unknown,none,No decision yet.
+Other Functions,resolve_message_conflicts_api_chat_offline_messages_resolve_conflicts_post,POST,/api/chat/offline-messages/resolve-conflicts,,false,unknown,business_registry,Handler delegates to `sfm_adapter` (or similar) for production-side processing; DB write behavior is opaque from this repo layer. Needs server-side trace/DB before-after validation.
+Other Functions,send_offline_message_api_chat_offline_messages_send_post,POST,/api/chat/offline-messages/send,,false,unknown,business_registry,Handler delegates to `sfm_adapter` (or similar) for production-side processing; DB write behavior is opaque from this repo layer. Needs server-side trace/DB before-after validation.
+Other Functions,sync_offline_messages_api_chat_offline_messages_sync_post,POST,/api/chat/offline-messages/sync,,false,unknown,business_registry,Handler delegates to `sfm_adapter` (or similar) for production-side processing; DB write behavior is opaque from this repo layer. Needs server-side trace/DB before-after validation.
+analytics,get_analytics_api_analytics_get,GET,/api/analytics,,,unknown,none,No decision yet.
+analytics,get_analytics_threats_api_analytics_threats_get,GET,/api/analytics/threats,,,unknown,none,No decision yet.
+analytics,get_analytics_top_threats_api_analytics_top_threats_get,GET,/api/analytics/top-threats,,,unknown,none,No decision yet.
+anti-tracker,block_tracker_api_anti_tracker_block_post,POST,/api/anti-tracker/block,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+anti-tracker,check_request_api_anti_tracker_check_post,POST,/api/anti-tracker/check,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+anti-tracker,get_block_status_api_anti_tracker_status_get,GET,/api/anti-tracker/status,,,unknown,none,No decision yet.
+anti-tracker,get_settings_api_anti_tracker_settings_get,GET,/api/anti-tracker/settings,,,unknown,none,No decision yet.
+anti-tracker,get_statistics_api_anti_tracker_stats_get,GET,/api/anti-tracker/stats,,,unknown,none,No decision yet.
+anti-tracker,get_tracker_lists_api_anti_tracker_trackers_get,GET,/api/anti-tracker/trackers,,,unknown,none,No decision yet.
+anti-tracker,health_check_api_anti_tracker_health_get,GET,/api/anti-tracker/health,,,unknown,none,No decision yet.
+anti-tracker,unblock_tracker_api_anti_tracker_unblock_post,POST,/api/anti-tracker/unblock,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+anti-tracker,update_settings_api_anti_tracker_settings_post,POST,/api/anti-tracker/settings,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+auth,login_api_auth_login_post,POST,/api/auth/login,,,unknown,none,No decision yet.
+auth,login_by_recovery_code_api_auth_login_by_recovery_code_post,POST,/api/auth/login-by-recovery-code,,,unknown,none,No decision yet.
+auth,logout_api_auth_logout_post,POST,/api/auth/logout,,,unknown,none,No decision yet.
+auth,refresh_token_api_auth_refresh_post,POST,/api/auth/refresh,,,unknown,none,No decision yet.
+auth,register_api_auth_register_post,POST,/api/auth/register,,,unknown,none,No decision yet.
+components,components_bulk_update_compat_api_components_bulk_update_get,GET,/api/components/bulk-update,,,unknown,none,No decision yet.
+components,components_config_compat_api_components_config_get,GET,/api/components/config,,,unknown,none,No decision yet.
+components,disable_component_compat_api_components_disable_get,GET,/api/components/disable,,,unknown,none,No decision yet.
+components,enable_component_compat_api_components_enable_get,GET,/api/components/enable,,,unknown,none,No decision yet.
+components,get_batch_component_status_api_components_batch_status_post,POST,/api/components/batch/status,false,false,must_not_write_db,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+components,get_component_configuration_api_components_configuration__component_id__get,GET,/api/components/configuration/{component_id},,,unknown,none,No decision yet.
+components,get_components_status_compat_api_components_status_get,GET,/api/components/status,,,unknown,none,No decision yet.
+components,update_component_configuration_api_components_configuration__component_id__post,POST,/api/components/configuration/{component_id},true,true,must_write_db,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+components,update_component_status_compat_api_components_status__component_id__post,POST,/api/components/status/{component_id},false,false,must_not_write_db,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+crash-detection-compat,crash_detection_alert_api_crash_detection_alert_get,GET,/api/crash-detection/alert,,,unknown,none,No decision yet.
+crash-detection-compat,crash_detection_settings_update_api_crash_detection_settings_update_get,GET,/api/crash-detection/settings/update,,,unknown,none,No decision yet.
+crash-detection-compat,crash_detection_setup_api_crash_detection_setup_get,GET,/api/crash-detection/setup,,,unknown,none,No decision yet.
+driving-reports,generate_report_api_driving_reports_generate_post,POST,/api/driving-reports/generate,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+driving-reports,get_monthly_report_api_driving_reports_monthly__user_id__get,GET,/api/driving-reports/monthly/{user_id},,,unknown,none,No decision yet.
+driving-reports,get_recommendations_api_driving_reports_recommendations__user_id__get,GET,/api/driving-reports/recommendations/{user_id},,,unknown,none,No decision yet.
+driving-reports,get_report_api_driving_reports_report__report_id__get,GET,/api/driving-reports/report/{report_id},,,unknown,none,No decision yet.
+driving-reports,get_safety_score_api_driving_reports_safety_score__user_id__get,GET,/api/driving-reports/safety-score/{user_id},,,unknown,none,No decision yet.
+driving-reports,get_violations_statistics_api_driving_reports_violations__user_id__get,GET,/api/driving-reports/violations/{user_id},,,unknown,none,No decision yet.
+driving-reports,get_weekly_report_api_driving_reports_weekly__user_id__get,GET,/api/driving-reports/weekly/{user_id},,,unknown,none,No decision yet.
+driving-reports,health_check_api_driving_reports_health_get,GET,/api/driving-reports/health,,,unknown,none,No decision yet.
+driving-reports,record_event_api_driving_reports_event_post,POST,/api/driving-reports/event,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+driving-reports,start_monitoring_api_driving_reports_start_post,POST,/api/driving-reports/start,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+driving-reports,stop_monitoring_api_driving_reports_stop_post,POST,/api/driving-reports/stop,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+family,add_family_member_compat_api_family_add_get,GET,/api/family/add,,,unknown,none,No decision yet.
+family,create_family_endpoint_api_family_create_post,POST,/api/family/create,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+family,family_chat_messages_compat_api_family_chat_messages_get,GET,/api/family/chat/messages,,,unknown,none,No decision yet.
+family,family_chat_send_compat_api_family_chat_send_get,GET,/api/family/chat/send,,,unknown,none,No decision yet.
+family,get_family_member_compat_api_family_member_get,GET,/api/family/member,,,unknown,none,No decision yet.
+family,get_family_members_compat_api_family_members_get,GET,/api/family/members,,,unknown,none,No decision yet.
+family,get_family_stats_api_family_stats_get,GET,/api/family/stats,,,unknown,none,No decision yet.
+family,join_family_compat_api_family_join_get,GET,/api/family/join,,,unknown,none,No decision yet.
+family,recover_family_compat_api_family_recover_get,GET,/api/family/recover,,,unknown,none,No decision yet.
+family,remove_family_member_api_family_remove_delete,DELETE,/api/family/remove,true,true,must_write_db,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+family,remove_family_member_compat_api_family_remove_get,GET,/api/family/remove,,,unknown,none,No decision yet.
+misc-other-compat,devices_list_api_devices_get,GET,/api/devices,,,unknown,none,No decision yet.
+other,root__get,GET,/,,,unknown,none,No decision yet.
+payments,retrieve_activation_code_api_activation_retrieve_post,POST,/api/activation/retrieve,false,false,must_not_write_db,business_registry,Current handler/agent implementation stores state in-memory (no db.execute/INSERT/UPDATE observed in this code path). DB persistence for ML freshness is expected via other domain write endpoints.
+subscription,register_device_api_auth_register_device_post,POST,/api/auth/register-device,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+subscription,register_device_with_trial_api_auth_register_device_trial_post,POST,/api/auth/register-device-trial,true,false,unknown,static_registry_fallback,"Derived from static registry fallback (heuristic), requires manual business confirmation."
+system-ai-compat,ai_chat_compat_api_ai_chat_get,GET,/api/ai/chat,,,unknown,none,No decision yet.
+system-ai-compat,ai_message_compat_api_ai_message_get,GET,/api/ai/message,,,unknown,none,No decision yet.

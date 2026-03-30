@@ -1,0 +1,266 @@
+endpoint_family,component,required_entity,required_access,priority,note
+/,other,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/activation/retrieve,payments,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/ai-categories/age-restriction,AI Categories,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/ai-categories/allow,AI Categories,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/ai-categories/block,AI Categories,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/ai-categories/check,AI Categories,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/ai-categories/health,AI Categories,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/ai-categories/history,AI Categories,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/ai-categories/sites,AI Categories,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/ai-categories/status,AI Categories,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/ai/assistant,AI Assistant,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/ai/assistant,AI Assistant,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/ai/chat,system-ai-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/ai/message,system-ai-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/analytics,analytics,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/analytics/threats,analytics,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/analytics/top-threats,analytics,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/anti-tracker/block,anti-tracker,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/anti-tracker/check,anti-tracker,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/anti-tracker/health,anti-tracker,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/anti-tracker/settings,anti-tracker,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/anti-tracker/settings,anti-tracker,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/anti-tracker/stats,anti-tracker,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/anti-tracker/status,anti-tracker,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/anti-tracker/trackers,anti-tracker,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/anti-tracker/unblock,anti-tracker,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/auth/login,auth,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/auth/login-by-recovery-code,auth,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/auth/logout,auth,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/auth/refresh,auth,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/auth/register,auth,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/auth/register-device,subscription,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/auth/register-device-trial,subscription,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/chat/offline-messages,Other Functions,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/components/batch,components,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/components/bulk-update,components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/config,components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/config,Components,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/components/config,Components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/configuration,components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/configuration,components,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/components/dependencies,Components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/disable,components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/disable,Components,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/components/enable,components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/enable,Components,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/components/health,Components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/list,Components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/logs,Components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/metrics,Components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/restart,Components,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/components/status,components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/status,Components,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/components/status,components,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/components/test,Components,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/components/update,Components,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/crash-detection/alert,crash-detection-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/crash-detection/cancel-emergency-call,Crash Detection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/crash-detection/data,Crash Detection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/crash-detection/emergency-call,Crash Detection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/crash-detection/health,Crash Detection,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/crash-detection/history,Crash Detection,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/crash-detection/notifications,Crash Detection,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/crash-detection/notifications,Crash Detection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/crash-detection/report,Crash Detection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/crash-detection/settings,crash-detection-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/crash-detection/setup,crash-detection-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/crash-detection/start,Crash Detection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/crash-detection/status,Crash Detection,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/crash-detection/stop,Crash Detection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/crash-detection/sync,Crash Detection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/darkweb/breaches,Dark Web Monitoring,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/darkweb/check,Dark Web Monitoring,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/darkweb/health,Dark Web Monitoring,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/darkweb/start-monitoring,Dark Web Monitoring,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/darkweb/status,Dark Web Monitoring,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/darkweb/stop-monitoring,Dark Web Monitoring,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/data-cleanup/health,Data Cleanup,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/data-cleanup/periodic-scan,Data Cleanup,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/data-cleanup/preferences,Data Cleanup,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/data-cleanup/preferences,Data Cleanup,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/data-cleanup/remove,Data Cleanup,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/data-cleanup/report,Data Cleanup,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/data-cleanup/scan,Data Cleanup,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/data-cleanup/scan-status,Data Cleanup,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/data-cleanup/status,Data Cleanup,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/devices,misc-other-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/driving-reports/event,driving-reports,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/driving-reports/generate,driving-reports,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/driving-reports/health,driving-reports,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/driving-reports/monthly,driving-reports,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/driving-reports/recommendations,driving-reports,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/driving-reports/report,driving-reports,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/driving-reports/safety-score,driving-reports,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/driving-reports/start,driving-reports,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/driving-reports/stop,driving-reports,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/driving-reports/violations,driving-reports,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/driving-reports/weekly,driving-reports,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/elderly/appointments,Elderly Interface,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/elderly/medications,Elderly Interface,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/family/add,family,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/family/chat,family,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/family/create,family,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/family/join,family,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/family/member,family,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/family/members,family,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/family/recover,family,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/family/remove,family,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/family/remove,family,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/family/stats,family,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/gamification/achievements,Gamification,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/gamification/balance,Gamification,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/gamification/progress,Gamification,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/gamification/rewards,Gamification,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/gamification/settings,Gamification,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/gamification/tournaments,Gamification,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/health,other,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/identity-theft/alerts,Identity Theft Protection,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/identity-theft/check,Identity Theft Protection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/identity-theft/consent,Identity Theft Protection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/identity-theft/credit-freeze-instructions,Identity Theft Protection,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/identity-theft/detect,Identity Theft Protection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/identity-theft/health,Identity Theft Protection,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/identity-theft/monitor-credit,Identity Theft Protection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/identity-theft/monitor-snils,Identity Theft Protection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/identity-theft/revoke-consent,Identity Theft Protection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/identity-theft/status,Identity Theft Protection,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/identity-theft/stop-monitoring,Identity Theft Protection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/iot/device,IoT,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/iot/devices,IoT,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/iot/fix,IoT,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/iot/scan,IoT,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/iot/status,IoT,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/iot/threats,IoT,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/location/bubble,Location Bubble,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/location/bubble,Location Bubble,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/location/geofences,misc-other-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/location/geofences,Other Functions,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/location/movement-history,Other Functions,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/location/movement-history,Other Functions,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/location/status,Other Functions,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/location/status,Other Functions,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/malware/quarantine,misc-other-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/malware/threats,misc-other-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/metrics/upload,Metrics,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/network-protection/config,network-protection-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/network-protection/connect,network-protection-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/network-protection/disconnect,network-protection-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/network-protection/servers,network-protection-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/network-protection/settings,network-protection-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/network-protection/settings,network-protection-compat,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/network-protection/stats,network-protection-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/network-protection/status,network-protection-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/notifications,Notifications,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/notifications/archive,notifications-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/notifications/bulk-mark-read,notifications-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/notifications/categories,notifications-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/notifications/read,Notifications,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/notifications/stats,notifications-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/offline-storage/data,Offline Storage,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/offline-storage/data,Offline Storage,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/offline-storage/resolve-conflicts,Offline Storage,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/offline-storage/sync,Offline Storage,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/parental-control/app-blocks,Parental Control,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/parental-control/app-blocks,Parental Control,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/parental-control/dns-config,Parental Control,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/parental-control/geofences,Parental Control,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/parental-control/geofences,Parental Control,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/parental-control/location,Parental Control,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/parental-control/reports,Parental Control,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/parental-control/schedules,Parental Control,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/parental-control/schedules,Parental Control,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/parental-control/settings,Parental Control,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/parental-control/settings,Parental Control,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/parental-control/stats,Parental Control,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/parental-control/status,Parental Control,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/parental-control/time-limits,Parental Control,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/parental-control/time-limits,Parental Control,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/parental/block,parental-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/parental/bypass,Parental Control Bypass,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/parental/bypass,Parental Control Bypass,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/parental/control,parental-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/parental/limits,parental-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/payments/confirm,payments,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/payments/create,payments,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/payments/qr,payments,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/payments/qr,misc-other-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/payments/recover,payments,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/payments/status,payments,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/protection/disable,protection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/protection/enable,protection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/protection/quarantine,misc-other-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/protection/settings,protection,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/protection/settings,protection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/protection/stats,protection,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/protection/status,protection,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/protection/sync,protection,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/protection/threat-scenarios,protection,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/protection/threats,misc-other-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/referral/code,referral,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/referral/history,referral,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/referral/rewards,referral,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/referral/stats,referral,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/referral/test,referral-test,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/referral/test,referral-test,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/reports/ai-categories,Reports,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/reports/dark-web,Reports,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/reports/driving,Reports,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/reports/identity-theft,Reports,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/reports/privacy,Reports,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/roadside-assistance/call,Roadside Assistance,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/roadside-assistance/cancel,Roadside Assistance,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/roadside-assistance/health,Roadside Assistance,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/roadside-assistance/history,Roadside Assistance,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/roadside-assistance/status,Roadside Assistance,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/settings/biometry,App Settings,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/settings/biometry,App Settings,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/settings/language,App Settings,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/settings/language,App Settings,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/settings/notifications,App Settings,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/settings/notifications,App Settings,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/settings/sync,App Settings,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/settings/theme,App Settings,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/settings/theme,App Settings,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/settings/update,App Settings,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/subscription/activate,subscription-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/subscription/activation,subscription-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/subscription/auto-renewal,Subscription,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/subscription/auto-renewal,Subscription,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/subscription/cancel,subscription,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/subscription/events,subscription-events,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/subscription/events,subscription-events,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/subscription/purchase-history,Subscription,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/subscription/status,subscription,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/subscription/status,Subscription,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/subscription/subscribe,subscription-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/subscription/sync,Subscription,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/subscription/tariffs,subscription-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/subscription/update,Subscription,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/subscription/validate-receipt,subscription,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/system/backup,System Management,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/system/backup,System Management,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/system/health,System Management,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/system/info,System Management,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/system/logs,System Management,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/system/maintenance,System Management,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/system/metrics,System Management,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/system/resources,System Management,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/system/restart,System Management,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/system/status,system-ai-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/system/uptime,System Management,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/system/version,System Management,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/test,misc-other-compat,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/user/2fa,user,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/user/delete,user,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/user/password,user,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/user/profile,user,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/user/profile,User Profile,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/user/profile,User Profile,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/user/update,user,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/v1/parental-control,Parental Control Legacy,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/api/v1/parental-control,Parental Control Legacy,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/{path},other,TBD_SCHEMA.TBD_TABLE,RW,high,Define canonical storage model and add migration
+/api/{path},other,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration
+/metrics,other,TBD_SCHEMA.TBD_TABLE,RO,medium,Define canonical storage model and add migration

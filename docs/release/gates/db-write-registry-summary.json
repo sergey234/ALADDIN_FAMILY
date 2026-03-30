@@ -1,0 +1,9 @@
+{
+  "total_api_mutation_endpoints": 160,
+  "should_write_true": 155,
+  "writes_detected_true": 21,
+  "gaps_total": 136,
+  "gaps_should_true_but_not_detected": 135,
+  "gaps_should_false_but_detected": 1,
+  "csv": "docs/release/gates/db-write-registry.csv"
+}

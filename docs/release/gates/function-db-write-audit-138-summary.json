@@ -1,0 +1,11 @@
+{
+  "functions_total": 138,
+  "contract_pass_total": 138,
+  "mutating_candidate_total": 57,
+  "read_only_or_validation_total": 81,
+  "sql_before_after_covered_total": 0,
+  "business_classified_total": 28,
+  "business_must_write_total": 0,
+  "business_must_not_write_total": 18,
+  "business_unknown_total": 10
+}

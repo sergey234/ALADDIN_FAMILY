@@ -1,0 +1,4 @@
+BEGIN;
+REVOKE DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLE public.ai_category_reports FROM aladdin_user;
+REVOKE DELETE, TRUNCATE, REFERENCES, TRIGGER ON TABLE public.parental_reports FROM aladdin_user;
+COMMIT;

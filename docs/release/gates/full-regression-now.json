@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-03-30T17:37:36",
+  "results": [
+    {
+      "name": "health_8002",
+      "exit_code": 0,
+      "duration_sec": 0.15,
+      "stdout_tail": "{\"status\":\"ok\"}",
+      "stderr_tail": "",
+      "pass": true
+    },
+    {
+      "name": "rel07_anti_mock",
+      "exit_code": 0,
+      "duration_sec": 0.97,
+      "stdout_tail": "anti-mock gate: PASS\nreport: docs/release/gates/anti-mock-report.json\n",
+      "stderr_tail": "",
+      "pass": true
+    },
+    {
+      "name": "rel08_contract_138",
+      "exit_code": 0,
+      "duration_sec": 9.73,
+      "stdout_tail": "contract-matrix: PASS\nchecked=138 passed=138 failed=0\nreport=docs/release/gates/endpoint-report.json\n",
+      "stderr_tail": "",
+      "pass": true
+    },
+    {
+      "name": "rel09_write_before_after",
+      "exit_code": 0,
+      "duration_sec": 11.76,
+      "stdout_tail": "write-before-after: PASS\npassed=10 failed=0\nreport=docs/release/gates/write-before-after-report.json\n",
+      "stderr_tail": "",
+      "pass": true
+    },
+    {
+      "name": "rel10_openapi_ios_sync",
+      "exit_code": 0,
+      "duration_sec": 0.74,
+      "stdout_tail": "openapi-drift: PASS\nios-openapi-sync: PASS\ndrift_report=docs/release/gates/openapi-drift-report.json\nsync_report=docs/release/gates/ios-endpoint-sync-report.json\n",
+      "stderr_tail": "",
+      "pass": true
+    },
+    {
+      "name": "rel12_runtime_pii_scan",
+      "exit_code": 0,
+      "duration_sec": 0.62,
+      "stdout_tail": "{\"pass\": true, \"counts\": {\"email_like\": 0, \"bearer\": 0, \"jwt_like\": 0, \"secret_key_literal\": 0, \"token_preview\": 0, \"phone_like\": 0}}\n",
+      "stderr_tail": "",
+      "pass": true
+    },
+    {
+      "name": "rel13_ios_smoke_42",
+      "exit_code": 0,
+      "duration_sec": 3.19,
+      "stdout_tail": "ios-smoke-42: PASS\nchecked=42 passed=42 failed=0\nreport=docs/release/gates/ios-smoke-42-report.json\n",
+      "stderr_tail": "",
+      "pass": true
+    },
+    {
+      "name": "rel14_ios_functional_138",
+      "exit_code": 0,
+      "duration_sec": 14.15,
+      "stdout_tail": "ios-functional-138: PASS\nchecked=137 passed=137 failed=0\nreport=docs/release/gates/ios-functional-138-report.json\n",
+      "stderr_tail": "",
+      "pass": true
+    },
+    {
+      "name": "rel16_aggregate",
+      "exit_code": 0,
+      "duration_sec": 0.11,
+      "stdout_tail": "decision=NO_GO\nreport=docs/release/release-gate-report.json\nmarkdown=docs/release/go-no-go.md\n",
+      "stderr_tail": "",
+      "pass": true
+    }
+  ],
+  "pass": true
+}

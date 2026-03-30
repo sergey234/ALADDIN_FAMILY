@@ -1,0 +1,10 @@
+{
+  "functions_total": 138,
+  "components_total": 21,
+  "must_write_db": 3,
+  "must_not_write_db": 20,
+  "unknown": 115,
+  "business_confirmed": 28,
+  "fallback_static": 24,
+  "unclassified": 86
+}

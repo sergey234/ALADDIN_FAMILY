@@ -1,0 +1,347 @@
+{
+  "generated_at": "2026-03-30T17:37:22",
+  "base_url": "http://149.154.65.180:8002",
+  "target_components": 42,
+  "checked_components": 42,
+  "passed": 42,
+  "failed": 0,
+  "pass": true,
+  "checks": [
+    {
+      "component": "AI Assistant",
+      "endpoint": "/api/ai/assistant/capabilities",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "AI Categories",
+      "endpoint": "/api/ai-categories/health",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "App Settings",
+      "endpoint": "/api/settings/biometry",
+      "method": "GET",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Components",
+      "endpoint": "/api/components/config/{component_id}",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Crash Detection",
+      "endpoint": "/api/crash-detection/health",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Dark Web Monitoring",
+      "endpoint": "/api/darkweb/breaches",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Data Cleanup",
+      "endpoint": "/api/data-cleanup/health",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Elderly Interface",
+      "endpoint": "/api/elderly/appointments/sync",
+      "method": "POST",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Gamification",
+      "endpoint": "/api/gamification/achievements",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Identity Theft Protection",
+      "endpoint": "/api/identity-theft/alerts",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "IoT",
+      "endpoint": "/api/iot/devices/{homeId}",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Location Bubble",
+      "endpoint": "/api/location/bubble/health",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Metrics",
+      "endpoint": "/api/metrics/upload",
+      "method": "POST",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Notifications",
+      "endpoint": "/api/notifications",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Offline Storage",
+      "endpoint": "/api/offline-storage/data",
+      "method": "GET",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Other Functions",
+      "endpoint": "/api/location/movement-history",
+      "method": "GET",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "endpoint": "/api/parental-control/app-blocks",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control Bypass",
+      "endpoint": "/api/parental/bypass/stats",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control Legacy",
+      "endpoint": "/api/v1/parental-control/access-requests",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "endpoint": "/api/reports/ai-categories/allow",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Roadside Assistance",
+      "endpoint": "/api/roadside-assistance/health",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Subscription",
+      "endpoint": "/api/subscription/auto-renewal",
+      "method": "GET",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "System Management",
+      "endpoint": "/api/system/backup/status",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "User Profile",
+      "endpoint": "/api/user/profile/history",
+      "method": "GET",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "analytics",
+      "endpoint": "/api/analytics",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "anti-tracker",
+      "endpoint": "/api/anti-tracker/health",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "auth",
+      "endpoint": "/api/auth/login",
+      "method": "POST",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "components",
+      "endpoint": "/api/components/bulk-update",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "crash-detection-compat",
+      "endpoint": "/api/crash-detection/alert",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "driving-reports",
+      "endpoint": "/api/driving-reports/health",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "family",
+      "endpoint": "/api/family/add",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "misc-other-compat",
+      "endpoint": "/api/devices",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "network-protection-compat",
+      "endpoint": "/api/network-protection/config",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "notifications-compat",
+      "endpoint": "/api/notifications/archive",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "other",
+      "endpoint": "/api/health",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "parental-compat",
+      "endpoint": "/api/parental/block",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "payments",
+      "endpoint": "/api/payments/status/{payment_id}",
+      "method": "GET",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "protection",
+      "endpoint": "/api/protection/settings",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "referral",
+      "endpoint": "/api/referral/code",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "referral-test",
+      "endpoint": "/api/referral/test/discount/apply",
+      "method": "GET",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription",
+      "endpoint": "/api/subscription/status",
+      "method": "GET",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription-compat",
+      "endpoint": "/api/subscription/activate",
+      "method": "GET",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    }
+  ]
+}

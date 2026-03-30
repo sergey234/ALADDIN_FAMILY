@@ -296,3 +296,115 @@ curl -s -S "$BASE/api/reports/privacy/cleanup/stats"
 - PII данные — хранить зашифрованными; логи — без утечек PII; роли БД — RO для роутеров.
 
 Данный алгоритм отражает фактически выполненные действия и может служить чек‑листом для повторяемых процедур подключения/аудита.
+
+---
+
+## 10) Практический runbook: как поднимали `gunicorn` на `:8002` в реальном кейсе (март 2026)
+
+Ниже — фактический рабочий сценарий, который применяли в production, когда стандартный перезапуск иногда прерывался.
+
+### 10.1 Проверка текущего состояния перед запуском
+```bash
+ssh root@149.154.65.180
+date
+netstat -tulpn 2>/dev/null | grep ':8002' || true
+curl -s -S -m 6 http://localhost:8002/api/health || true
+```
+
+Ожидаемо:
+- если сервис поднят, видим listener на `:8002` и `{"status":"ok"}`.
+- если нет listener — поднимаем вручную.
+
+### 10.2 Базовый запуск `gunicorn` на `:8002`
+```bash
+cd /opt/aladdin-backend
+nohup /opt/aladdin-backend/venv/bin/gunicorn \
+  -w 2 \
+  -k uvicorn.workers.UvicornWorker \
+  main:app \
+  -b 0.0.0.0:8002 \
+  >/opt/aladdin-backend/logs/gunicorn.out 2>&1 &
+
+sleep 4
+netstat -tulpn 2>/dev/null | grep ':8002' || true
+curl -s -S -m 6 http://localhost:8002/api/health || true
+```
+
+### 10.3 Альтернативный запуск (если цепочка прерывается): `setsid`
+Этот способ применяли, когда длинные команды перезапуска/kill иногда обрывались.
+
+```bash
+cd /opt/aladdin-backend
+setsid /opt/aladdin-backend/venv/bin/gunicorn \
+  -w 2 \
+  -k uvicorn.workers.UvicornWorker \
+  main:app \
+  -b 0.0.0.0:8002 \
+  >/opt/aladdin-backend/logs/gunicorn.out 2>&1 < /dev/null &
+
+echo $! > /opt/aladdin-backend/logs/gunicorn_8002.pid
+sleep 5
+netstat -tulpn 2>/dev/null | grep ':8002' || true
+curl -s -S -m 6 http://localhost:8002/api/health || true
+```
+
+### 10.4 Как диагностировать "падение" `:8002`
+В нашем кейсе процесс не "крашился", а завершался по сигналу `SIGTERM` во время управляющих команд.
+
+Проверки:
+```bash
+tail -n 120 /opt/aladdin-backend/logs/gunicorn.out
+ps aux | grep -E 'gunicorn|uvicorn' | grep -v grep
+systemctl status --no-pager aladdin-backend.service
+```
+
+Если в логах `Handling signal: term`, это controlled shutdown (не boot-crash).
+
+### 10.5 Проверка, что нужные маршруты реально подхватились
+После перезапуска обязательно проверяем OpenAPI:
+
+```bash
+curl -s -S -m 12 http://localhost:8002/openapi.json -o /tmp/openapi_now.json
+python3 - <<'PY'
+import json
+j=json.load(open('/tmp/openapi_now.json','r',encoding='utf-8'))
+paths=j.get('paths',{})
+for p in [
+ '/api/reports/identity-theft/allow',
+ '/api/reports/identity-theft/block',
+ '/api/reports/privacy/tracker/whitelist',
+ '/api/reports/privacy/location/allow',
+ '/api/reports/privacy/cleanup/start',
+ '/api/reports/dark-web/scan/start',
+]:
+    print(p, sorted(paths.get(p, {}).keys()))
+PY
+```
+
+Ожидаемо: для перечисленных путей есть `['get', 'post']`.
+
+### 10.6 Важно по PostgreSQL правам для write-path
+Если POST возвращает `500`, проверяйте `gunicorn.out`.  
+В нашем кейсе причины были:
+- `permission denied for table tracker_blocks`
+- `permission denied for table cleanup_records`
+
+Рабочий фикс:
+```bash
+sudo -u postgres psql -d aladdin_db -c "
+GRANT USAGE ON SCHEMA darkweb, identity, tracker, location, cleanup TO aladdin_user;
+GRANT SELECT, INSERT, UPDATE ON TABLE darkweb.darkweb_leaks TO aladdin_user;
+GRANT SELECT, INSERT, UPDATE ON TABLE identity.identity_attempts TO aladdin_user;
+GRANT SELECT, INSERT, UPDATE ON TABLE tracker.tracker_blocks TO aladdin_user;
+GRANT SELECT, INSERT, UPDATE ON TABLE location.location_requests TO aladdin_user;
+GRANT SELECT, INSERT, UPDATE ON TABLE cleanup.cleanup_records TO aladdin_user;
+"
+```
+
+### 10.7 Что получилось по факту (валидировано)
+- `:8002` стабильно поднимается и отвечает `api/health`.
+- write-endpoints работают через реальные POST-вызовы (без mock fallback).
+- `aladdin_analytics_freshness_seconds` обновляется по доменам после replay.
+- `AladdinNoFreshDataByDomain` перестал быть активным после replay по 5 доменам.
+
+Это эталонный runbook для других ML-систем: сначала сеть/процесс, затем OpenAPI-контракт, затем DB-права, затем replay и финальная проверка alerts.

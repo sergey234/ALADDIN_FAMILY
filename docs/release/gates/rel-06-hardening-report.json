@@ -1,0 +1,100 @@
+{
+  "pass": true,
+  "base_url": "http://localhost:8002",
+  "results": [
+    {
+      "name": "known_reports",
+      "path": "/api/reports/dark-web/stats",
+      "status": 200,
+      "expected": [
+        200
+      ],
+      "markers_found": [],
+      "pass": true,
+      "preview": "{\"total\":3,\"blocked\":0,\"allowed\":3,\"last_24h\":2,\"last_7d\":3,\"last_30d\":3,\"source\":\"api_db\",\"timestamp\":\"2026-03-30T15:17:34.963455\"}"
+    },
+    {
+      "name": "known_parental_protected",
+      "path": "/api/parental/bypass/stats",
+      "status": 403,
+      "expected": [
+        200,
+        401,
+        403
+      ],
+      "markers_found": [],
+      "pass": true,
+      "preview": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "name": "known_components_protected",
+      "path": "/api/components/status",
+      "status": 403,
+      "expected": [
+        200,
+        401,
+        403
+      ],
+      "markers_found": [],
+      "pass": true,
+      "preview": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "name": "known_family_protected",
+      "path": "/api/family/members",
+      "status": 403,
+      "expected": [
+        200,
+        401,
+        403
+      ],
+      "markers_found": [],
+      "pass": true,
+      "preview": "{\"detail\":\"Not authenticated\"}"
+    },
+    {
+      "name": "unknown_reports",
+      "path": "/api/reports/__unknown__",
+      "status": 404,
+      "expected": [
+        404
+      ],
+      "markers_found": [],
+      "pass": true,
+      "preview": "{\"error\":\"Critical endpoint not found\",\"path\":\"/api/reports/__unknown__\",\"method\":\"GET\",\"hint\":\"Use explicit router endpoint\"}"
+    },
+    {
+      "name": "unknown_parental",
+      "path": "/api/parental/__unknown__",
+      "status": 404,
+      "expected": [
+        404
+      ],
+      "markers_found": [],
+      "pass": true,
+      "preview": "{\"error\":\"Critical endpoint not found\",\"path\":\"/api/parental/__unknown__\",\"method\":\"GET\",\"hint\":\"Use explicit router endpoint\"}"
+    },
+    {
+      "name": "unknown_components",
+      "path": "/api/components/__unknown__",
+      "status": 404,
+      "expected": [
+        404
+      ],
+      "markers_found": [],
+      "pass": true,
+      "preview": "{\"error\":\"Critical endpoint not found\",\"path\":\"/api/components/__unknown__\",\"method\":\"GET\",\"hint\":\"Use explicit router endpoint\"}"
+    },
+    {
+      "name": "unknown_family",
+      "path": "/api/family/__unknown__",
+      "status": 404,
+      "expected": [
+        404
+      ],
+      "markers_found": [],
+      "pass": true,
+      "preview": "{\"error\":\"Critical endpoint not found\",\"path\":\"/api/family/__unknown__\",\"method\":\"GET\",\"hint\":\"Use explicit router endpoint\"}"
+    }
+  ]
+}

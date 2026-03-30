@@ -132,8 +132,12 @@ class DrivingReportsAgent(SecurityBase, ThreatMonitoringInterface):
         """
         super().__init__(config)
 
+        # SecurityBase variants in this codebase may not initialize logger/config.
+        self.config = config if config is not None else {}
+        self.logger = logging.getLogger(self.__class__.__name__)
+
         # Конфигурация
-        config_dict = config if config is not None else {}
+        config_dict = self.config
         self.speed_limit = config_dict.get("speed_limit", 60.0)  # Лимит скорости (км/ч)
         self.hard_braking_threshold = config_dict.get("hard_braking_threshold", 0.4)  # Порог резкого торможения (G)
         self.hard_acceleration_threshold = config_dict.get("hard_acceleration_threshold", 0.4)  # Порог резкого ускорения (G)

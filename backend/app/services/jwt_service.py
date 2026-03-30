@@ -77,15 +77,9 @@ class JWTService:
     @staticmethod
     def decode_token(token: str) -> Optional[Dict[str, Any]]:
         """Decode and validate JWT token"""
-        # ✅ JWT-003: Детальное логирование попытки декодирования
-        token_preview = token[:20] + "..." + token[-20:] if len(token) > 40 else token
-        secret_preview = SECRET_KEY[:10] + "..." if len(SECRET_KEY) > 10 else SECRET_KEY
-        
+        # ✅ JWT-003: Детальное логирование попытки декодирования (без вывода токена/секрета)
         logger.info(f"🔐 [JWT-003] JWTService.decode_token: Попытка декодирования токена")
-        logger.info(f"   - Token preview: {token_preview}")
         logger.info(f"   - Token length: {len(token)} символов")
-        logger.info(f"   - SECRET_KEY preview: {secret_preview}")
-        logger.info(f"   - SECRET_KEY length: {len(SECRET_KEY)} символов")
         logger.info(f"   - Algorithm: {ALGORITHM}")
         
         try:
@@ -151,22 +145,18 @@ class JWTService:
             # ✅ JWT-003: Детальное логирование ошибки истечения
             logger.error(f"❌ [JWT-003] JWTService.decode_token: Token expired")
             logger.error(f"   - Error: {str(e)}")
-            logger.error(f"   - Token preview: {token_preview}")
             return None
         except jwt.InvalidTokenError as e:
             # ✅ JWT-003: Детальное логирование ошибки невалидного токена
             logger.error(f"❌ [JWT-003] JWTService.decode_token: Invalid token")
             logger.error(f"   - Error: {str(e)}")
             logger.error(f"   - Error type: {type(e).__name__}")
-            logger.error(f"   - Token preview: {token_preview}")
-            logger.error(f"   - SECRET_KEY preview: {secret_preview}")
             return None
         except Exception as e:
             # ✅ JWT-003: Логирование неожиданных ошибок
             logger.error(f"❌ [JWT-003] JWTService.decode_token: Unexpected error")
             logger.error(f"   - Error: {str(e)}")
             logger.error(f"   - Error type: {type(e).__name__}")
-            logger.error(f"   - Token preview: {token_preview}")
             return None
 
     @staticmethod
