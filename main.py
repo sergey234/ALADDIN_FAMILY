@@ -118,7 +118,8 @@ except ImportError:
 try:
     from app.routers import subscription_events
     subscription_events_available = True
-except ImportError:
+except ImportError as e:
+    print(f"⚠️ subscription_events недоступен: {e}")
     subscription_events_available = False
 
 try:
@@ -277,13 +278,20 @@ except ImportError as e:
 # ✅ ЗАДАЧА 23: Импортируем System Router
 try:
     from security.api.routers.system_router import router as system_router
-    from security.api.routers.metrics_router import router as metrics_router
     system_router_available = True
-    metrics_router_available = True
 except ImportError as e:
     print(f"⚠️ system_router недоступен: {e}")
     system_router_available = False
     system_router = None
+
+# Импорт metrics_router должен быть независим от system_router,
+# иначе падение system импорта скрывает /api/metrics/* и даёт 404.
+try:
+    from security.api.routers.metrics_router import router as metrics_router
+    metrics_router_available = True
+except ImportError as e:
+    print(f"⚠️ metrics_router недоступен: {e}")
+    metrics_router_available = False
     metrics_router = None
 
 # ✅ ГЕЙМИФИКАЦИЯ: Импортируем Gamification Router
