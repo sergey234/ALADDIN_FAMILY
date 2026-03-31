@@ -103,7 +103,30 @@ struct ChildRewardsScreen: View {
     
     // Получаем userId для API вызовов
     private var userId: String {
-        UserDefaults.standard.string(forKey: "user_id") ?? "guest"
+        let defaults = UserDefaults.standard
+        if let id = defaults.string(forKey: "user_id")?.trimmingCharacters(in: .whitespacesAndNewlines), !id.isEmpty {
+            return id
+        }
+        if let memberId = defaults.string(forKey: "your_member_id")?.trimmingCharacters(in: .whitespacesAndNewlines), !memberId.isEmpty {
+            return memberId
+        }
+        if let childId = effectiveChildId?.trimmingCharacters(in: .whitespacesAndNewlines), !childId.isEmpty {
+            return childId
+        }
+        return "guest"
+    }
+
+    private var rewardsScopeChildId: String? {
+        effectiveChildId ?? UnicornRewardsStore.resolveActiveChildId()
+    }
+
+    private func mergedBalanceWithLocal(_ serverBalance: Int) -> Int {
+        let localBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
+        // Защита: не затираем реальный локальный баланс подозрительным нулем от guest/пустого контекста.
+        if serverBalance <= 0 && localBalance > 0 {
+            return localBalance
+        }
+        return max(serverBalance, 0)
     }
     
     // MARK: - Tabs
@@ -328,7 +351,7 @@ struct ChildRewardsScreen: View {
             RewardLocalizationMigration.performIfNeeded()
             
             // Синхронизируем баланс из UserDefaults (единый источник истины)
-            let currentBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+            let currentBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
             if currentBalance > 0 {
                 unicornBalance = currentBalance
                 storedUnicornBalance = currentBalance
@@ -337,8 +360,8 @@ struct ChildRewardsScreen: View {
             }
             
             // Восстанавливаем сохранённый прогресс из AppStorage
-            weeklyEarned = storedWeeklyEarned
-            weeklyPunished = storedWeeklyPunished
+            weeklyEarned = UnicornRewardsStore.readWeeklyEarned(for: rewardsScopeChildId)
+            weeklyPunished = UnicornRewardsStore.readWeeklyPunished(for: rewardsScopeChildId)
             goalProgress = storedGoalProgress
             goalTitle = storedGoalTitle
             goalCost = storedGoalCost
@@ -357,7 +380,7 @@ struct ChildRewardsScreen: View {
             loadShopRewards()
             cachedHistoryOperations = getHistoryOperations()
             // Обновляем баланс из UserDefaults
-            let newBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+            let newBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
             if unicornBalance != newBalance {
                 unicornBalance = newBalance
                 print("🔄 ChildRewardsScreen: Баланс обновлён через NotificationCenter: \(newBalance) 🦄")
@@ -380,7 +403,9 @@ struct ChildRewardsScreen: View {
             lastDashboardSignature = signature
             lastDashboardHandledAt = Date()
             VisualLogger.shared.log("✅ Dashboard received and rendered", level: .success, category: "CHILD_REWARDS.UI")
-            unicornBalance = data.balance
+            let safeBalance = mergedBalanceWithLocal(data.balance)
+            unicornBalance = safeBalance
+            storedUnicornBalance = safeBalance
             weeklyEarned = data.weeklyEarned
             weeklyPunished = data.weeklyPunished
             goalProgress = data.goalProgress
@@ -840,8 +865,10 @@ struct ChildRewardsScreen: View {
             switch result {
             case .success(let response):
                 VisualLogger.shared.log("✅ balance request ok = \(response.balance)", level: .success, category: "CHILD_REWARDS.API")
-                unicornBalance = response.balance
-                storedUnicornBalance = response.balance
+                let safeBalance = mergedBalanceWithLocal(response.balance)
+                unicornBalance = safeBalance
+                storedUnicornBalance = safeBalance
+                UnicornRewardsStore.writeBalance(safeBalance, for: rewardsScopeChildId)
             case .failure(let error):
                 // Используем кэшированное значение при ошибке
                 VisualLogger.shared.log("❌ balance request failed: \(error.localizedDescription)", level: .error, category: "CHILD_REWARDS.API")
@@ -1754,7 +1781,7 @@ struct ChildRewardsScreen: View {
                     // Обновляем баланс с сервера
                     unicornBalance = response.newBalance
                     storedUnicornBalance = response.newBalance
-                    UserDefaults.standard.set(unicornBalance, forKey: "child_unicorn_balance")
+                    UnicornRewardsStore.writeBalance(unicornBalance, for: rewardsScopeChildId)
                     
                     // Применяем награду в зависимости от типа
                     applyReward(pendingPurchaseTitle)
@@ -1779,7 +1806,7 @@ struct ChildRewardsScreen: View {
             // Fallback на локальную покупку, если награда не найдена
             unicornBalance -= pendingPurchasePrice
             storedUnicornBalance = unicornBalance
-            UserDefaults.standard.set(unicornBalance, forKey: "child_unicorn_balance")
+            UnicornRewardsStore.writeBalance(unicornBalance, for: rewardsScopeChildId)
             applyReward(pendingPurchaseTitle)
             NotificationCenter.default.post(name: .childRewardsDataDidChange, object: nil)
             HapticFeedback.notification(.success)
@@ -1834,13 +1861,13 @@ struct ChildRewardsScreen: View {
         let resolvedReason = history.reason.resolved(with: localizationManager)
         
         // Обновляем баланс в AppStorage (синхронизация)
-        let currentBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+        let currentBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
         let newBalance = currentBalance + amount
-        UserDefaults.standard.set(newBalance, forKey: "child_unicorn_balance")
+        UnicornRewardsStore.writeBalance(newBalance, for: rewardsScopeChildId)
         
         // Обновляем статистику за неделю
-        let currentWeekly = UserDefaults.standard.integer(forKey: "child_weekly_earned")
-        UserDefaults.standard.set(currentWeekly + amount, forKey: "child_weekly_earned")
+        let currentWeekly = UnicornRewardsStore.readWeeklyEarned(for: rewardsScopeChildId)
+        UnicornRewardsStore.writeWeeklyEarned(currentWeekly + amount, for: rewardsScopeChildId)
         
         // Явно отправляем уведомление для обновления других экранов
         NotificationCenter.default.post(name: .childRewardsDataDidChange, object: nil)
@@ -1870,13 +1897,13 @@ struct ChildRewardsScreen: View {
         let resolvedReason = history.reason.resolved(with: localizationManager)
         
         // Обновляем баланс в AppStorage (синхронизация)
-        let currentBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+        let currentBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
         let newBalance = max(0, currentBalance - amount) // Не может быть отрицательным
-        UserDefaults.standard.set(newBalance, forKey: "child_unicorn_balance")
+        UnicornRewardsStore.writeBalance(newBalance, for: rewardsScopeChildId)
         
         // Обновляем статистику за неделю
-        let currentWeekly = UserDefaults.standard.integer(forKey: "child_weekly_punished")
-        UserDefaults.standard.set(currentWeekly + amount, forKey: "child_weekly_punished")
+        let currentWeekly = UnicornRewardsStore.readWeeklyPunished(for: rewardsScopeChildId)
+        UnicornRewardsStore.writeWeeklyPunished(currentWeekly + amount, for: rewardsScopeChildId)
         
         // Явно отправляем уведомление для обновления других экранов
         NotificationCenter.default.post(name: .childRewardsDataDidChange, object: nil)

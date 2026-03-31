@@ -74,6 +74,12 @@ struct ParentalControlScreen: View {
     @AppStorage("child_weekly_earned") private var weeklyRewarded: Int = 0
     @AppStorage("child_weekly_punished") private var weeklyPunished: Int = 0
     @State private var actualBalance: Int = 0
+
+    private var rewardsScopeChildId: String? {
+        let trimmed = selectedChildId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty { return trimmed }
+        return UnicornRewardsStore.resolveActiveChildId()
+    }
     
     // MARK: - Card Metrics
     
@@ -218,7 +224,7 @@ struct ParentalControlScreen: View {
             }
             
             // Инициализация и синхронизация баланса
-            actualBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+            actualBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
             if actualBalance == 0 && unicornBalance > 0 {
                 actualBalance = unicornBalance
             }
@@ -234,7 +240,7 @@ struct ParentalControlScreen: View {
             await syncParentalControlData()
         }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
-            let newBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+            let newBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
             if newBalance != actualBalance {
                 actualBalance = newBalance
                 print("🔍 DEBUG: actualBalance обновлён до \(actualBalance)")
@@ -699,7 +705,7 @@ struct ParentalControlScreen: View {
                 // Преобразуем FamilyMemberData в FamilyMemberResponse
                 let convertedChildren = localChildren.map { member in
                     FamilyMemberResponse(
-                        id: member.id.uuidString,
+                        id: member.serverMemberId ?? member.id,
                         name: member.name,
                         role: member.role.rawValue, // Преобразуем enum в строку
                         avatar: member.avatar,
@@ -757,7 +763,7 @@ struct ParentalControlScreen: View {
                                 // Используем локальные данные
                                 let convertedChildren = localChildren.map { member in
                                     FamilyMemberResponse(
-                                        id: member.id.uuidString,
+                                        id: member.serverMemberId ?? member.id,
                                         name: member.name,
                                         role: member.role.rawValue,
                                         avatar: member.avatar,

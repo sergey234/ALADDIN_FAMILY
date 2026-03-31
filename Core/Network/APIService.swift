@@ -1,5 +1,6 @@
 import Foundation
 import Combine
+import UIKit
 
 // Импортируем модели компонентов
 // ComponentStats и ComponentsAnalytics определены в Core/Analytics/ComponentAnalyticsModels.swift
@@ -95,12 +96,113 @@ class APIService: ObservableObject {
     // MARK: - Family Registration API
 
     func createFamily(request: CreateFamilyRequest, completion: @escaping (Result<CreateFamilyResponse, Error>) -> Void) {
-        // Production: family creation must be authorized and bound to a real user_id.
-        networkManager.post(endpoint: AppConfig.Endpoint.createFamily, body: request, requiresAuth: true, completion: completion)
+        // Production flow is JWT-protected, but on real devices token can be missing/expired.
+        // Auto-bootstrap device JWT and retry once to avoid false 401 during first-time registration.
+        performCreateFamily(request: request, hasRetriedAfterTokenBootstrap: false, completion: completion)
     }
 
     func joinFamily(request: JoinFamilyRequest, completion: @escaping (Result<APIResponse<FamilyResponse>, Error>) -> Void) {
-        networkManager.post(endpoint: AppConfig.Endpoint.joinFamily, body: request, completion: completion)
+        performJoinFamily(request: request, hasRetriedAfterTokenBootstrap: false, completion: completion)
+    }
+
+    private func performCreateFamily(
+        request: CreateFamilyRequest,
+        hasRetriedAfterTokenBootstrap: Bool,
+        completion: @escaping (Result<CreateFamilyResponse, Error>) -> Void
+    ) {
+        networkManager.post(endpoint: AppConfig.Endpoint.createFamily, body: request, requiresAuth: true) { (result: Result<CreateFamilyResponse, Error>) in
+            switch result {
+            case .success:
+                completion(result)
+            case .failure(let error):
+                let networkError = NetworkError.from(error)
+                let shouldBootstrapToken: Bool
+                switch networkError {
+                case .unauthorized, .tokenExpired, .invalidToken, .reauthenticationRequired:
+                    shouldBootstrapToken = true
+                default:
+                    shouldBootstrapToken = self.isInvalidUserIdInTokenError(error)
+                }
+                guard !hasRetriedAfterTokenBootstrap, shouldBootstrapToken else {
+                    completion(.failure(error))
+                    return
+                }
+                self.bootstrapDeviceTokenIfNeeded(forceRefresh: true) { bootstrapResult in
+                    switch bootstrapResult {
+                    case .success:
+                        self.performCreateFamily(request: request, hasRetriedAfterTokenBootstrap: true, completion: completion)
+                    case .failure(let bootstrapError):
+                        completion(.failure(bootstrapError))
+                    }
+                }
+            }
+        }
+    }
+
+    private func performJoinFamily(
+        request: JoinFamilyRequest,
+        hasRetriedAfterTokenBootstrap: Bool,
+        completion: @escaping (Result<APIResponse<FamilyResponse>, Error>) -> Void
+    ) {
+        networkManager.post(endpoint: AppConfig.Endpoint.joinFamily, body: request, requiresAuth: true) { (result: Result<APIResponse<FamilyResponse>, Error>) in
+            switch result {
+            case .success:
+                completion(result)
+            case .failure(let error):
+                let networkError = NetworkError.from(error)
+                let shouldBootstrapToken: Bool
+                switch networkError {
+                case .unauthorized, .tokenExpired, .invalidToken, .reauthenticationRequired:
+                    shouldBootstrapToken = true
+                default:
+                    shouldBootstrapToken = self.isInvalidUserIdInTokenError(error)
+                }
+                guard !hasRetriedAfterTokenBootstrap, shouldBootstrapToken else {
+                    completion(.failure(error))
+                    return
+                }
+                self.bootstrapDeviceTokenIfNeeded(forceRefresh: true) { bootstrapResult in
+                    switch bootstrapResult {
+                    case .success:
+                        self.performJoinFamily(request: request, hasRetriedAfterTokenBootstrap: true, completion: completion)
+                    case .failure(let bootstrapError):
+                        completion(.failure(bootstrapError))
+                    }
+                }
+            }
+        }
+    }
+
+    private func bootstrapDeviceTokenIfNeeded(
+        forceRefresh: Bool = false,
+        completion: @escaping (Result<Void, Error>) -> Void
+    ) {
+        if !forceRefresh, let token = AppConfig.authToken, !token.isEmpty {
+            completion(.success(()))
+            return
+        }
+
+        let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        let deviceType = UIDevice.current.userInterfaceIdiom == .pad ? "tablet" : "smartphone"
+        let request = DeviceRegisterRequest(deviceId: deviceId, deviceType: deviceType)
+
+        registerDeviceAnonymously(request: request) { result in
+            switch result {
+            case .success(let response):
+                AppConfig.authToken = response.token
+                if let refreshToken = response.refreshToken, !refreshToken.isEmpty {
+                    KeychainManager.shared.save(refreshToken, forKey: .refreshToken)
+                }
+                completion(.success(()))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    private func isInvalidUserIdInTokenError(_ error: Error) -> Bool {
+        let message = error.localizedDescription.lowercased()
+        return message.contains("invalid user_id in token") || message.contains("invalid user id in token")
     }
 
     /// ✅ ДОБАВЛЕНО: Авторизация по recovery code (Попытка 2 - fallback)
@@ -154,7 +256,40 @@ class APIService: ObservableObject {
     // MARK: - Family API
     
     func getFamilyMembers(completion: @escaping (Result<[FamilyMemberResponse], Error>) -> Void) {
-        networkManager.get(endpoint: AppConfig.Endpoint.familyMembers, completion: completion)
+        performGetFamilyMembers(hasRetriedAfterTokenBootstrap: false, completion: completion)
+    }
+
+    private func performGetFamilyMembers(
+        hasRetriedAfterTokenBootstrap: Bool,
+        completion: @escaping (Result<[FamilyMemberResponse], Error>) -> Void
+    ) {
+        networkManager.get(endpoint: AppConfig.Endpoint.familyMembers) { (result: Result<[FamilyMemberResponse], Error>) in
+            switch result {
+            case .success:
+                completion(result)
+            case .failure(let error):
+                let networkError = NetworkError.from(error)
+                let shouldBootstrapToken: Bool
+                switch networkError {
+                case .unauthorized, .tokenExpired, .invalidToken, .reauthenticationRequired:
+                    shouldBootstrapToken = true
+                default:
+                    shouldBootstrapToken = self.isInvalidUserIdInTokenError(error)
+                }
+                guard !hasRetriedAfterTokenBootstrap, shouldBootstrapToken else {
+                    completion(.failure(error))
+                    return
+                }
+                self.bootstrapDeviceTokenIfNeeded(forceRefresh: true) { bootstrapResult in
+                    switch bootstrapResult {
+                    case .success:
+                        self.performGetFamilyMembers(hasRetriedAfterTokenBootstrap: true, completion: completion)
+                    case .failure(let bootstrapError):
+                        completion(.failure(bootstrapError))
+                    }
+                }
+            }
+        }
     }
     
     func addFamilyMember(name: String, role: String, completion: @escaping (Result<FamilyMemberResponse, Error>) -> Void) {
@@ -168,15 +303,22 @@ class APIService: ObservableObject {
     /**
      * Удаление участника семьи (async версия для CachedAPIService)
      */
-    func removeFamilyMember(_ memberId: String) async throws -> FamilyMemberResponse {
+    func removeFamilyMember(
+        _ memberId: String,
+        source: String = "ios_unknown",
+        reason: String? = nil
+    ) async throws -> FamilyMemberResponse {
         return try await withCheckedThrowingContinuation { continuation in
             // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
             var hasResumed = false
             
             struct RemoveMemberRequest: Codable {
                 let memberId: String
+                let source: String
+                let reason: String?
             }
-            networkManager.delete(endpoint: AppConfig.Endpoint.removeFamilyMember, body: RemoveMemberRequest(memberId: memberId)) { (result: Result<FamilyMemberResponse, Error>) in
+            let request = RemoveMemberRequest(memberId: memberId, source: source, reason: reason)
+            networkManager.delete(endpoint: AppConfig.Endpoint.removeFamilyMember, body: request) { (result: Result<FamilyMemberResponse, Error>) in
                 guard !hasResumed else {
                     logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in removeFamilyMember()!")
                     return
@@ -430,6 +572,12 @@ class APIService: ObservableObject {
         let blockedThisWeek: Int?
         let totalCategorized: Int?
         let blockedContent: Int?
+        let resolvedLeaks: Int?
+        let criticalLeaks: Int?
+        let critical: Int?
+        let suspiciousActivities: Int?
+        let suspicious: Int?
+        let lastScanDate: String?
         // reports_compat fallback fields
         let total: Int?
         let allowed: Int?
@@ -438,6 +586,11 @@ class APIService: ObservableObject {
         let last_30d: Int?
         let source: String?
         let timestamp: String?
+    }
+
+    private static func parseISO8601Date(_ value: String?) -> Date? {
+        guard let value = value, !value.isEmpty else { return nil }
+        return ISO8601DateFormatter().date(from: value)
     }
     
     // MARK: - AI Assistant API
@@ -460,8 +613,27 @@ class APIService: ObservableObject {
     }
 
     // Обратная связь
-    func sendAIFeedback(rating: Int, comment: String?, messageId: String?, completion: @escaping (Result<AIFeedbackResponse, Error>) -> Void) {
-        let request = AIFeedbackRequest(rating: rating, comment: comment, messageId: messageId)
+    func sendAIFeedback(
+        rating: Int,
+        comment: String?,
+        messageId: String?,
+        queryText: String? = nil,
+        resolvedBy: String? = nil,
+        faqId: String? = nil,
+        confidence: Double? = nil,
+        sessionId: String? = nil,
+        completion: @escaping (Result<AIFeedbackResponse, Error>) -> Void
+    ) {
+        let request = AIFeedbackRequest(
+            rating: rating,
+            comment: comment,
+            messageId: messageId,
+            queryText: queryText,
+            resolvedBy: resolvedBy,
+            faqId: faqId,
+            confidence: confidence,
+            sessionId: sessionId
+        )
         networkManager.post(endpoint: AppConfig.Endpoint.aiAssistantFeedback, body: request, completion: completion)
     }
 
@@ -2078,7 +2250,22 @@ class APIService: ObservableObject {
     
     /// Получить статистику Dark Web
     func getDarkWebStats(completion: @escaping (Result<DarkWebStats, Error>) -> Void) {
-        networkManager.get(endpoint: AppConfig.Endpoint.darkWebStats, completion: completion)
+        networkManager.get(endpoint: AppConfig.Endpoint.darkWebStats) { (result: Result<ComponentStatsDTO, Error>) in
+            switch result {
+            case .success(let dto):
+                let stats = DarkWebStats(
+                    totalLeaks: dto.totalLeaks ?? dto.leaks_found ?? dto.total ?? 0,
+                    newLeaks: dto.newLeaks ?? dto.new_leaks ?? dto.last_24h ?? 0,
+                    // В reports_compat поле blocked для dark-web соответствует "resolved".
+                    resolvedLeaks: dto.resolvedLeaks ?? dto.blocked ?? 0,
+                    criticalLeaks: dto.criticalLeaks ?? dto.critical ?? 0,
+                    lastScanDate: Self.parseISO8601Date(dto.lastScanDate ?? dto.timestamp)
+                )
+                completion(.success(stats))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
     
     /// Получить историю сканирований
@@ -2202,7 +2389,21 @@ class APIService: ObservableObject {
     
     /// Получить статистику защиты от кражи личности
     func getIdentityTheftStats(completion: @escaping (Result<IdentityTheftStats, Error>) -> Void) {
-        networkManager.get(endpoint: AppConfig.Endpoint.identityTheftStats, completion: completion)
+        networkManager.get(endpoint: AppConfig.Endpoint.identityTheftStats) { (result: Result<ComponentStatsDTO, Error>) in
+            switch result {
+            case .success(let dto):
+                let stats = IdentityTheftStats(
+                    totalAttempts: dto.totalAttempts ?? dto.attempts ?? dto.total ?? 0,
+                    blockedAttempts: dto.blockedAttempts ?? dto.blocked ?? 0,
+                    // Для совместимого формата отдельного suspicious нет, используем last_24h как "свежие инциденты".
+                    suspiciousActivities: dto.suspiciousActivities ?? dto.suspicious ?? dto.last_24h ?? 0,
+                    byDataType: [:]
+                )
+                completion(.success(stats))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
     
     /// Разрешить попытку кражи личности

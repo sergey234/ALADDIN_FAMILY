@@ -1420,7 +1420,7 @@ struct EditContactsModal: View {
             }
             
             return FamilyContact(
-                id: member.id,
+                id: UUID(uuidString: member.id) ?? UUID(),
                 name: member.name,
                 phone: "+7 (999) 000-00-00", // TODO: Добавить телефон в FamilyMemberData
                 relation: relationString

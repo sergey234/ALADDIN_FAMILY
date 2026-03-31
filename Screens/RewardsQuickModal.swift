@@ -8,6 +8,7 @@ struct RewardsQuickModal: View {
     
     @Environment(\.dismiss) private var dismiss
     @Binding var unicornBalance: Int
+    @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
     
     // Проверка роли пользователя
     private var isUserParent: Bool {
@@ -24,6 +25,12 @@ struct RewardsQuickModal: View {
         print("   - role = \(role.rawValue)")
         print("   - Результат: \(isParent)")
         return isParent
+    }
+
+    private var rewardsScopeChildId: String? {
+        let trimmed = selectedChildId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty { return trimmed }
+        return UnicornRewardsStore.resolveActiveChildId()
     }
     
     var body: some View {
@@ -158,9 +165,9 @@ struct RewardsQuickModal: View {
         generator.impactOccurred()
         
         // Обновляем баланс в UserDefaults (синхронизация)
-        let currentBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+        let currentBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
         let newBalance = currentBalance + 10
-        UserDefaults.standard.set(newBalance, forKey: "child_unicorn_balance")
+        UnicornRewardsStore.writeBalance(newBalance, for: rewardsScopeChildId)
         
         unicornBalance = newBalance
         dismiss()
@@ -177,9 +184,9 @@ struct RewardsQuickModal: View {
         generator.impactOccurred()
         
         // Обновляем баланс в UserDefaults (синхронизация)
-        let currentBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+        let currentBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
         let newBalance = max(0, currentBalance - 10)
-        UserDefaults.standard.set(newBalance, forKey: "child_unicorn_balance")
+        UnicornRewardsStore.writeBalance(newBalance, for: rewardsScopeChildId)
         
         unicornBalance = newBalance
         dismiss()

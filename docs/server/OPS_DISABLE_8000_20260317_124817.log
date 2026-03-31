@@ -1,0 +1,99 @@
+spawn ssh -o StrictHostKeyChecking=no root@149.154.65.180 bash -lc 
+  echo "==PRECHECK_PORTS==";
+  ss -plnt 2>/dev/null | grep -E ":(8000|8002)\\b" || true;
+  echo;
+  echo "==PRECHECK_HEALTH_LOCAL_8002==";
+  curl -sS -i http://127.0.0.1:8002/api/health | head -n 20;
+  echo;
+  echo "==PRECHECK_HEALTH_DOMAIN==";
+  curl -sS -i https://aladdin-ai.ru/api/health | head -n 20;
+  echo;
+  echo "==ACTION_STOP_DISABLE_8000_UNIT==";
+  systemctl stop aladdin-backend;
+  systemctl disable aladdin-backend;
+  echo "stopped+disabled aladdin-backend";
+  echo;
+  echo "==POSTCHECK_PORTS==";
+  ss -plnt 2>/dev/null | grep -E ":(8000|8002)\\b" || true;
+  echo;
+  echo "==POSTCHECK_HEALTH_LOCAL_8002==";
+  curl -sS -i http://127.0.0.1:8002/api/health | head -n 20;
+  echo;
+  echo "==POSTCHECK_HEALTH_DOMAIN==";
+  curl -sS -i https://aladdin-ai.ru/api/health | head -n 20;
+  echo;
+  echo "==STATUS_aladdin-backend==";
+  systemctl status aladdin-backend --no-pager -n 10 || true;
+
+root@149.154.65.180's password: 
+bash: -c: option requires an argument
+==PRECHECK_PORTS==
+LISTEN 0      2048                          0.0.0.0:8002       0.0.0.0:*    users:(("gunicorn",pid=1738294,fd=5),("gunicorn",pid=1738293,fd=5),("gunicorn",pid=1738292,fd=5),("gunicorn",pid=1738291,fd=5),("gunicorn",pid=1738286,fd=5))
+LISTEN 0      2048                          0.0.0.0:8000       0.0.0.0:*    users:(("uvicorn",pid=1738375,fd=15))                                                                                                                        
+
+==PRECHECK_HEALTH_LOCAL_8002==
+HTTP/1.1 200 OK
+date: Tue, 17 Mar 2026 08:48:17 GMT
+server: uvicorn
+content-length: 15
+content-type: application/json
+cache-control: no-cache, no-store, must-revalidate
+pragma: no-cache
+expires: 0
+
+{"status":"ok"}
+==PRECHECK_HEALTH_DOMAIN==
+HTTP/2 200 
+server: nginx
+date: Tue, 17 Mar 2026 08:48:17 GMT
+content-type: application/json
+content-length: 15
+cache-control: no-cache, no-store, must-revalidate
+pragma: no-cache
+expires: 0
+
+{"status":"ok"}
+==ACTION_STOP_DISABLE_8000_UNIT==
+Removed "/etc/systemd/system/multi-user.target.wants/aladdin-backend.service".
+stopped+disabled aladdin-backend
+
+==POSTCHECK_PORTS==
+LISTEN 0      2048                          0.0.0.0:8002       0.0.0.0:*    users:(("gunicorn",pid=1738294,fd=5),("gunicorn",pid=1738293,fd=5),("gunicorn",pid=1738292,fd=5),("gunicorn",pid=1738291,fd=5),("gunicorn",pid=1738286,fd=5))
+
+==POSTCHECK_HEALTH_LOCAL_8002==
+HTTP/1.1 200 OK
+date: Tue, 17 Mar 2026 08:48:18 GMT
+server: uvicorn
+content-length: 15
+content-type: application/json
+cache-control: no-cache, no-store, must-revalidate
+pragma: no-cache
+expires: 0
+
+{"status":"ok"}
+==POSTCHECK_HEALTH_DOMAIN==
+HTTP/2 200 
+server: nginx
+date: Tue, 17 Mar 2026 08:48:18 GMT
+content-type: application/json
+content-length: 15
+cache-control: no-cache, no-store, must-revalidate
+pragma: no-cache
+expires: 0
+
+{"status":"ok"}
+==STATUS_aladdin-backend==
+○ aladdin-backend.service - ALADDIN Backend API Service
+     Loaded: loaded (/etc/systemd/system/aladdin-backend.service; disabled; preset: enabled)
+     Active: inactive (dead)
+
+Mar 17 09:18:22 sergey21-02-84.fvds.ru uvicorn[1738375]: WARNING:  Invalid HTTP request received.
+Mar 17 10:24:58 sergey21-02-84.fvds.ru uvicorn[1738375]: WARNING:  Invalid HTTP request received.
+Mar 17 11:48:17 sergey21-02-84.fvds.ru systemd[1]: Stopping aladdin-backend.service - ALADDIN Backend API Service...
+Mar 17 11:48:17 sergey21-02-84.fvds.ru uvicorn[1738375]: INFO:     Shutting down
+Mar 17 11:48:18 sergey21-02-84.fvds.ru uvicorn[1738375]: INFO:     Waiting for application shutdown.
+Mar 17 11:48:18 sergey21-02-84.fvds.ru uvicorn[1738375]: INFO:     Application shutdown complete.
+Mar 17 11:48:18 sergey21-02-84.fvds.ru uvicorn[1738375]: INFO:     Finished server process [1738375]
+Mar 17 11:48:18 sergey21-02-84.fvds.ru systemd[1]: aladdin-backend.service: Deactivated successfully.
+Mar 17 11:48:18 sergey21-02-84.fvds.ru systemd[1]: Stopped aladdin-backend.service - ALADDIN Backend API Service.
+Mar 17 11:48:18 sergey21-02-84.fvds.ru systemd[1]: aladdin-backend.service: Consumed 5min 42.677s CPU time.

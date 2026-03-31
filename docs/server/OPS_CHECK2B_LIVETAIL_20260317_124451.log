@@ -1,0 +1,16 @@
+spawn ssh -o StrictHostKeyChecking=no root@149.154.65.180 bash -lc "echo ==LIVE_TAIL_START==; date -Is; timeout 90s journalctl -u aladdin-backend -f --no-pager; echo ==LIVE_TAIL_END==; date -Is"
+root@149.154.65.180's password: 
+==LIVE_TAIL_START==
+2026-03-17T11:44:52+03:00
+Mar 17 09:18:22 sergey21-02-84.fvds.ru uvicorn[1738375]: WARNING:  Invalid HTTP request received.
+Mar 17 09:18:22 sergey21-02-84.fvds.ru uvicorn[1738375]: WARNING:  Invalid HTTP request received.
+Mar 17 09:18:22 sergey21-02-84.fvds.ru uvicorn[1738375]: WARNING:  Unsupported upgrade request.
+Mar 17 09:18:22 sergey21-02-84.fvds.ru uvicorn[1738375]: WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+Mar 17 09:18:22 sergey21-02-84.fvds.ru uvicorn[1738375]: WARNING:  Invalid HTTP request received.
+Mar 17 09:18:22 sergey21-02-84.fvds.ru uvicorn[1738375]: WARNING:  Unsupported upgrade request.
+Mar 17 09:18:22 sergey21-02-84.fvds.ru uvicorn[1738375]: WARNING:  No supported WebSocket library detected. Please use "pip install 'uvicorn[standard]'", or install 'websockets' or 'wsproto' manually.
+Mar 17 09:18:22 sergey21-02-84.fvds.ru uvicorn[1738375]: WARNING:  Invalid HTTP request received.
+Mar 17 09:18:22 sergey21-02-84.fvds.ru uvicorn[1738375]: WARNING:  Invalid HTTP request received.
+Mar 17 10:24:58 sergey21-02-84.fvds.ru uvicorn[1738375]: WARNING:  Invalid HTTP request received.
+==LIVE_TAIL_END==
+2026-03-17T11:46:22+03:00

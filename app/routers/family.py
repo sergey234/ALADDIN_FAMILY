@@ -384,6 +384,8 @@ class FamilyMemberResponse(BaseModel):
 
 class RemoveFamilyMemberRequest(BaseModel):
     memberId: str
+    source: Optional[str] = None
+    reason: Optional[str] = None
 
 @router.post("/create", response_model=CreateFamilyResponse)
 @limiter.limit("10/minute")  # ✅ RATE LIMITING: 10 запросов в минуту на IP
@@ -619,7 +621,26 @@ async def remove_family_member(
                 raise HTTPException(status_code=404, detail="Family not found")
             family_id = fam_row[0]
 
-            # 1) Читаем участника перед удалением (чтобы вернуть объект iOS-совместимого формата)
+            # 1) Определяем инициатора действия (actor) внутри семьи.
+            actor_row = db.execute(
+                text(
+                    """
+                    SELECT id, role
+                    FROM family_members
+                    WHERE family_id = :family_id AND user_id = :user_id
+                    ORDER BY last_active DESC
+                    LIMIT 1
+                    """
+                ),
+                {"family_id": family_id, "user_id": user_id},
+            ).fetchone()
+            actor_member_id = str(actor_row[0]) if actor_row else None
+            actor_role = str(actor_row[1]).lower() if actor_row and actor_row[1] is not None else "unknown"
+
+            if actor_member_id and actor_member_id == str(payload.memberId):
+                raise HTTPException(status_code=400, detail="Self-removal is not allowed")
+
+            # 2) Читаем участника перед удалением (чтобы вернуть объект iOS-совместимого формата)
             res = db.execute(
                 text(
                     """
@@ -636,8 +657,24 @@ async def remove_family_member(
                 raise HTTPException(status_code=404, detail="Family member not found")
 
             member_id, name, role, status_val, threats_val, last_active, devices_val = row
+            target_role = str(role).lower() if role is not None else "unknown"
 
-            # 2) Удаляем
+            if target_role == "parent":
+                parent_count_row = db.execute(
+                    text(
+                        """
+                        SELECT COUNT(*)
+                        FROM family_members
+                        WHERE family_id = :family_id AND lower(role) = 'parent'
+                        """
+                    ),
+                    {"family_id": family_id},
+                ).fetchone()
+                parent_count = int(parent_count_row[0] or 0) if parent_count_row else 0
+                if parent_count <= 1:
+                    raise HTTPException(status_code=400, detail="Cannot remove the last parent")
+
+            # 3) Удаляем
             del_res = db.execute(
                 text(
                     """
@@ -648,7 +685,7 @@ async def remove_family_member(
                 {"family_id": family_id, "member_id": payload.memberId},
             )
 
-            # 3) Коммит
+            # 4) Коммит
             db.commit()
 
             # rowcount может быть None — проверяем мягко
@@ -658,7 +695,12 @@ async def remove_family_member(
             logger.info(
                 "family_member_removed",
                 user_id=user_id,
+                actor_member_id=actor_member_id,
+                actor_role=actor_role,
                 member_id=str(member_id),
+                removed_role=target_role,
+                source=payload.source or "unknown",
+                reason=payload.reason or "",
                 timestamp=datetime.now().isoformat(),
             )
 

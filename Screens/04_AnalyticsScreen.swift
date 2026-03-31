@@ -103,6 +103,7 @@ struct AnalyticsScreen: View {
         .sheet(isPresented: $showDarkWebMonitoringModal) {
             DarkWebMonitoringModal(isPresented: $showDarkWebMonitoringModal)
                 .environmentObject(localizationManager)
+                .environmentObject(viewModel)
         }
         .sheet(isPresented: $showIdentityTheftModal) {
             IdentityTheftModal(isPresented: $showIdentityTheftModal)

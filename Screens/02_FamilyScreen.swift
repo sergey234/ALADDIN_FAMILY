@@ -14,6 +14,9 @@ struct FamilyScreen: View {
     @State private var showParentalSettingsModal = false
     @State private var showInvitationGuideModal: Bool = false
     @State private var removeMemberErrorMessage: String? = nil
+    @State private var removeMemberSuccessMessage: String? = nil
+    @State private var pendingRemovalMember: FamilyMemberData? = nil
+    @State private var deletingMemberIds: Set<String> = []
     
     // UserDefaults ключи для участников семьи
     private let familyMembersKey = "family_members_list"
@@ -80,7 +83,7 @@ struct FamilyScreen: View {
     
     // Computed property для получения актуального баланса из UserDefaults
     private var currentUnicornBalance: Int {
-        UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+        UnicornRewardsStore.readBalance(for: UnicornRewardsStore.resolveActiveChildId())
     }
     
     // ✅ BUILD 96: Асинхронная загрузка для предотвращения рекурсии
@@ -328,6 +331,8 @@ struct FamilyScreen: View {
                         }
                         
                         return FamilyMemberData(
+                            id: member.id,
+                            serverMemberId: member.id,
                             name: member.name,
                             role: role,
                             avatar: avatar,
@@ -374,46 +379,85 @@ struct FamilyScreen: View {
     }
     
     // ✅ НОВАЯ ФУНКЦИЯ: Удаление участника семьи
-    func removeFamilyMember(_ member: FamilyMemberData) {
+    private func requestRemoveFamilyMember(_ member: FamilyMemberData) {
+        removeMemberErrorMessage = nil
+        removeMemberSuccessMessage = nil
+
+        guard isUserParent || isFamilyCreator else {
+            removeMemberErrorMessage = localizationManager.currentLanguage == .russian
+                ? "Только администратор может удалять участников."
+                : "Only administrators can remove members."
+            return
+        }
+
+        let myMemberId = UserDefaults.standard.string(forKey: "your_member_id")
+        if let myMemberId = myMemberId, !myMemberId.isEmpty, member.serverMemberId == myMemberId {
+            removeMemberErrorMessage = localizationManager.currentLanguage == .russian
+                ? "Нельзя удалить самого себя из семьи."
+                : "You cannot remove yourself from family."
+            return
+        }
+
+        if member.role == .parent {
+            let parentCount = familyMembers.filter { $0.role == .parent }.count
+            if parentCount <= 1 {
+                removeMemberErrorMessage = localizationManager.currentLanguage == .russian
+                    ? "Нельзя удалить последнего администратора."
+                    : "Cannot remove the last administrator."
+                return
+            }
+        }
+
+        pendingRemovalMember = member
+    }
+
+    private func removeFamilyMember(_ member: FamilyMemberData) {
         logger.business("Removing family member: \(member.name)")
         // Проверяем, что пользователь является администратором или родителем
         guard isUserParent || isFamilyCreator else {
             print("⚠️ Only parents or administrators can remove family members")
             return
         }
+        if deletingMemberIds.contains(member.id) {
+            return
+        }
+        deletingMemberIds.insert(member.id)
         
         print("🗑️ [removeFamilyMember] Начало удаления: \(member.name) (ID: \(member.id))")
         print("🗑️ [removeFamilyMember] Текущее количество участников: \(familyMembers.count)")
-        
-        // ✅ Prod-safe: оптимистично обновляем UI, но обязаны откатить, если сервер не подтвердил.
         let memberToRemove = member
-        let backupMembers = familyMembers
-        familyMembers.removeAll { $0.id == member.id }
-        
-        print("🗑️ [removeFamilyMember] Удалено из списка. Новое количество: \(familyMembers.count)")
-        
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сохраняем СРАЗУ после удаления
-        UserDefaults.standard.synchronize()
-        saveFamilyMembers()
-        UserDefaults.standard.synchronize()
-        
-        print("🗑️ [removeFamilyMember] Данные сохранены в UserDefaults")
-        
-        // Haptic feedback для подтверждения удаления
-        HapticFeedback.notification(.success)
         
         // Удаляем через API (асинхронно, не блокируем UI)
         Task {
             let apiService = APIService.shared
-            let memberId = memberToRemove.id.uuidString
-            
+            let memberId = await resolveServerMemberIdForRemoval(memberToRemove, apiService: apiService)
+            guard let memberId = memberId else {
+                await MainActor.run {
+                    removeMemberErrorMessage = localizationManager.currentLanguage == .russian
+                        ? "Не удалось определить ID участника на сервере. Обновите список семьи и повторите."
+                        : "Could not resolve server member ID. Refresh family list and try again."
+                    HapticFeedback.notification(.warning)
+                    deletingMemberIds.remove(memberToRemove.id)
+                }
+                return
+            }
             print("🗑️ [removeFamilyMember] Отправка запроса на удаление через API: \(memberId)")
             
             do {
-                let _ = try await apiService.removeFamilyMember(memberId)
+                let _ = try await apiService.removeFamilyMember(
+                    memberId,
+                    source: "ui_trash_button",
+                    reason: "admin_remove_member"
+                )
                 await MainActor.run {
                     print("✅ [removeFamilyMember] Успешно удален через API: \(memberToRemove.name)")
+                    familyMembers.removeAll { $0.id == memberToRemove.id }
+                    saveFamilyMembers()
+                    HapticFeedback.notification(.success)
                     removeMemberErrorMessage = nil
+                    removeMemberSuccessMessage = localizationManager.currentLanguage == .russian
+                        ? "Участник удален."
+                        : "Member removed."
                     // Production-safe: после реального удаления принудительно обновляем Family-блок на MainScreen
                     NotificationCenter.default.post(name: NSNotification.Name("MainFamilyStatsForceRefresh"), object: nil)
                     // Дополнительная проверка - убеждаемся что участник не вернулся
@@ -426,16 +470,54 @@ struct FamilyScreen: View {
             } catch {
                 await MainActor.run {
                     print("❌ [removeFamilyMember] Ошибка при удалении через API: \(error.localizedDescription)")
-                    // ✅ Prod-safe: сервер не подтвердил удаление -> откатываем локальные изменения.
-                    familyMembers = backupMembers
-                    saveFamilyMembers()
                     removeMemberErrorMessage = localizationManager.currentLanguage == .russian
                         ? "Сервер не подтвердил удаление. Попробуйте позже."
                         : "Server did not confirm removal. Please try again."
                     HapticFeedback.notification(.warning)
                 }
             }
+            await MainActor.run {
+                deletingMemberIds.remove(memberToRemove.id)
+            }
         }
+    }
+
+    private func resolveServerMemberIdForRemoval(_ member: FamilyMemberData, apiService: APIService) async -> String? {
+        let localCandidates = [member.serverMemberId, member.id]
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+        if let serverLike = localCandidates.first(where: { $0.hasPrefix("MEM_") }) {
+            return serverLike
+        }
+
+        do {
+            let serverMembers = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[FamilyMemberResponse], Error>) in
+                apiService.getFamilyMembers { result in
+                    continuation.resume(with: result)
+                }
+            }
+
+            let normalizedName = member.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            let desiredRoles = member.role == .teenager ? Set(["teenager", "teen"]) : Set([member.role.rawValue.lowercased()])
+
+            // 1) Прямое совпадение по локальным id-кандидатам
+            if let byCandidate = serverMembers.first(where: { localCandidates.contains($0.id) }) {
+                return byCandidate.id
+            }
+
+            // 2) Совпадение по имени + роли
+            if let byNameAndRole = serverMembers.first(where: { item in
+                let itemName = item.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+                let itemRole = item.role.lowercased()
+                return itemName == normalizedName && desiredRoles.contains(itemRole)
+            }) {
+                return byNameAndRole.id
+            }
+        } catch {
+            print("❌ [removeFamilyMember] Не удалось получить family members для резолва ID: \(error.localizedDescription)")
+        }
+
+        return nil
     }
     
     // Сохранение участников семьи в UserDefaults
@@ -697,17 +779,17 @@ struct FamilyScreen: View {
                                                 self.navigateToMemberScreen(role: member.role)
                                             },
                                             onDelete: {
-                                                // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #4: Видимая кнопка удаления
-                                                removeFamilyMember(member)
+                                                requestRemoveFamilyMember(member)
                                             },
-                                            showDeleteButton: isUserParent || isFamilyCreator  // Показываем только для администраторов/родителей
+                                            showDeleteButton: isUserParent || isFamilyCreator,  // Показываем только для администраторов/родителей
+                                            isDeleteDisabled: deletingMemberIds.contains(member.id)
                                         )
                                         .environmentObject(localizationManager)
                                         .contextMenu {
                                             // Показываем меню только для администраторов и родителей
                                             if isUserParent || isFamilyCreator {
                                                 Button(role: .destructive) {
-                                                    removeFamilyMember(member)
+                                                    requestRemoveFamilyMember(member)
                                                 } label: {
                                                     Label(localizationManager.localized("family_remove_member"), systemImage: "trash")
                                                 }
@@ -841,12 +923,60 @@ struct FamilyScreen: View {
                     .onTapGesture { removeMemberErrorMessage = nil }
             }
         }
+        .overlay(alignment: .bottom) {
+            if let message = removeMemberSuccessMessage, !message.isEmpty {
+                Text(message)
+                    .font(.footnote)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 10)
+                    .background(Color.green.opacity(0.92))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .shadow(radius: 6)
+                    .padding(.bottom, 62)
+                    .onTapGesture { removeMemberSuccessMessage = nil }
+            }
+        }
+        .confirmationDialog(
+            localizationManager.localized("family_remove_member"),
+            isPresented: Binding(
+                get: { pendingRemovalMember != nil },
+                set: { isPresented in
+                    if !isPresented { pendingRemovalMember = nil }
+                }
+            ),
+            titleVisibility: .visible
+        ) {
+            if let member = pendingRemovalMember {
+                Button(
+                    localizationManager.currentLanguage == .russian
+                        ? "Удалить \(member.name)"
+                        : "Remove \(member.name)",
+                    role: .destructive
+                ) {
+                    let target = member
+                    pendingRemovalMember = nil
+                    removeFamilyMember(target)
+                }
+            }
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {
+                pendingRemovalMember = nil
+            }
+        } message: {
+            if let member = pendingRemovalMember {
+                Text(
+                    localizationManager.currentLanguage == .russian
+                        ? "Подтвердите удаление участника \(member.name)."
+                        : "Confirm removing member \(member.name)."
+                )
+            }
+        }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("family_lang_\(localizationManager.currentLanguage.rawValue)")
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
             // ✅ ИСПРАВЛЕНИЕ: Обновляем только баланс, список участников не перезагружаем
             // чтобы не потерять добавленных участников и не запускать цикл повторных GET /family/members
-            unicornBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+            unicornBalance = UnicornRewardsStore.readBalance(for: UnicornRewardsStore.resolveActiveChildId())
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyMembersUpdated"))) { _ in
             // Явное событие обновления семейного списка после add/join flow.
@@ -5654,7 +5784,7 @@ struct FamilyParentalControlSettingsModal: View {
             .filter { member in
                 member.role == .child || member.role == .teenager
             }
-            .map { ChildOption(id: $0.id.uuidString, name: $0.name) }
+            .map { ChildOption(id: $0.serverMemberId ?? $0.id, name: $0.name) }
         
         print("✅ Загружено детей: \(children.count)")
         

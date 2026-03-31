@@ -31,7 +31,33 @@ struct UnicornPetView: View {
     
     // Получаем userId для API вызовов
     private var userId: String {
-        UserDefaults.standard.string(forKey: "user_id") ?? "guest"
+        let defaults = UserDefaults.standard
+        if let id = defaults.string(forKey: "user_id")?.trimmingCharacters(in: .whitespacesAndNewlines), !id.isEmpty {
+            return id
+        }
+        if let memberId = defaults.string(forKey: "your_member_id")?.trimmingCharacters(in: .whitespacesAndNewlines), !memberId.isEmpty {
+            return memberId
+        }
+        if let childId = defaults.string(forKey: "parental_selected_child_id")?.trimmingCharacters(in: .whitespacesAndNewlines), !childId.isEmpty {
+            return childId
+        }
+        return "guest"
+    }
+
+    private var rewardsScopeChildId: String? {
+        let defaults = UserDefaults.standard
+        if let childId = defaults.string(forKey: "parental_selected_child_id")?.trimmingCharacters(in: .whitespacesAndNewlines), !childId.isEmpty {
+            return childId
+        }
+        return UnicornRewardsStore.resolveActiveChildId()
+    }
+
+    private func mergedBalanceWithLocal(_ serverBalance: Int) -> Int {
+        let localBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
+        if serverBalance <= 0 && localBalance > 0 {
+            return localBalance
+        }
+        return max(serverBalance, 0)
     }
     
     var body: some View {
@@ -283,8 +309,10 @@ struct UnicornPetView: View {
             isLoadingBalance = false
             switch result {
             case .success(let response):
-                unicornBalance = response.balance
-                cachedBalance = response.balance
+                let safeBalance = mergedBalanceWithLocal(response.balance)
+                unicornBalance = safeBalance
+                cachedBalance = safeBalance
+                UnicornRewardsStore.writeBalance(safeBalance, for: rewardsScopeChildId)
                 balanceError = nil
             case .failure(let error):
                 balanceError = error.localizedDescription

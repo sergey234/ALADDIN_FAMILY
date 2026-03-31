@@ -1,0 +1,14 @@
+#!/usr/bin/expect -f
+set timeout 60
+set host "149.154.65.180"
+set user "root"
+set password "Sergio675"
+set local_file [lindex $argv 0]
+set remote_path [lindex $argv 1]
+
+spawn scp -o StrictHostKeyChecking=no $local_file $user@$host:$remote_path
+expect {
+    "(yes/no)?" {send "yes\r"; exp_continue}
+    -re ".*assword.*" {send "$password\r"}
+}
+expect eof

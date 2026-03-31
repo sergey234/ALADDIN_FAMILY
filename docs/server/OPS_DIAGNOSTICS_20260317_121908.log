@@ -1,0 +1,43 @@
+=== ✅ Collect diagnostics on root@149.154.65.180 ===
+spawn ssh -o StrictHostKeyChecking=no root@149.154.65.180 bash -lc 'set -e;  echo "== whoami/host =="; whoami; hostname;  echo; echo "== ports 8000/8002 =="; ss -tuln 2>/dev/null | grep -E ":(8000|8002)\\b" || true;  echo; echo "== processes (gunicorn/uvicorn) =="; ps aux | grep -E "gunicorn|uvicorn" | grep -v grep || true;  echo; echo "== nginx upstream (8000/8002) =="; (nginx -T 2>/dev/null | grep -nE "server_name\\s+aladdin-ai\\.ru|proxy_pass\\s+http://127\\.0\\.0\\.1:(8000|8002)" || true);  echo; echo "== project path =="; cd /opt/aladdin-backend; pwd;  echo; echo "== grep: identity-theft routes =="; grep -RIn "identity-theft" app backend --include=\\*.py 2>/dev/null | head -n 120 || true;  echo; echo "== grep: referral routes =="; grep -RIn "referral" app backend --include=\\*.py 2>/dev/null | head -n 120 || true;  echo; echo "== grep: RussianIdentityTheftProtectionAgent =="; grep -RIn "RussianIdentityTheftProtectionAgent" . --include=\\*.py 2>/dev/null || true;  echo; echo "== grep: agent.*config usage =="; grep -RIn "\\.config" app backend security --include=\\*.py 2>/dev/null | head -n 120 || true;  echo; echo "== grep: anonymous->int =="; grep -RIn "anonymous" app backend --include=\\*.py 2>/dev/null | head -n 120 || true;  echo; echo "== done =="'
+root@149.154.65.180's password: 
+== whoami/host ==
+root
+sergey21-02-84.fvds.ru
+
+== ports 8000/8002 ==
+tcp   LISTEN 0      2048                          0.0.0.0:8002       0.0.0.0:*          
+tcp   LISTEN 0      2048                          0.0.0.0:8000       0.0.0.0:*          
+
+== processes (gunicorn/uvicorn) ==
+root     1738276  0.0  0.1  40688  5504 ?        Ss   01:52   0:00 /opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8002 --workers 4 --log-level info
+root     1738286  0.1  0.2  43444  9288 ?        Ss   01:52   0:58 /opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/venv/bin/gunicorn --config gunicorn.conf.py --bind 0.0.0.0:8002 --log-level info --access-logfile /opt/aladdin-backend/logs/access.log --error-logfile /opt/aladdin-backend/logs/error.log main:app
+root     1738291  0.4  7.1 1987184 279248 ?      Sl   01:52   2:35 /opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/venv/bin/gunicorn --config gunicorn.conf.py --bind 0.0.0.0:8002 --log-level info --access-logfile /opt/aladdin-backend/logs/access.log --error-logfile /opt/aladdin-backend/logs/error.log main:app
+root     1738292  0.4  3.1 1913596 124764 ?      Sl   01:52   2:35 /opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/venv/bin/gunicorn --config gunicorn.conf.py --bind 0.0.0.0:8002 --log-level info --access-logfile /opt/aladdin-backend/logs/access.log --error-logfile /opt/aladdin-backend/logs/error.log main:app
+root     1738293  0.4  6.2 1987328 242876 ?      Sl   01:52   2:34 /opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/venv/bin/gunicorn --config gunicorn.conf.py --bind 0.0.0.0:8002 --log-level info --access-logfile /opt/aladdin-backend/logs/access.log --error-logfile /opt/aladdin-backend/logs/error.log main:app
+root     1738294  0.4  6.8 1987332 267104 ?      Sl   01:52   2:38 /opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/venv/bin/gunicorn --config gunicorn.conf.py --bind 0.0.0.0:8002 --log-level info --access-logfile /opt/aladdin-backend/logs/access.log --error-logfile /opt/aladdin-backend/logs/error.log main:app
+root     1738375  0.9  7.6 1788988 299996 ?      Ssl  01:53   5:36 /opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+
+== nginx upstream (8000/8002) ==
+236:    server_name aladdin-ai.ru;
+245:    server_name aladdin-ai.ru;
+253:        proxy_pass http://127.0.0.1:8002;
+284:    server_name aladdin-ai.ru www.aladdin-ai.ru;
+293:    server_name aladdin-ai.ru www.aladdin-ai.ru;
+
+== project path ==
+/opt/aladdin-backend
+
+== grep: identity-theft routes ==
+
+== grep: referral routes ==
+
+== grep: RussianIdentityTheftProtectionAgent ==
+
+== grep: agent.*config usage ==
+
+== grep: anonymous->int ==
+
+== done ==
+
+=== ✅ diagnostics finished ===

@@ -4229,7 +4229,7 @@ class LocalizationManager: ObservableObject {
             
             // ✅ ЗАДАЧА 3: Локализация AI Assistant feedback
             "ai_assistant_feedback_title": "Обратная связь",
-            "ai_assistant_feedback_description": "Расскажите, как улучшить AI помощника",
+            "ai_assistant_feedback_description": "Расскажите, как улучшить приложение ALADDIN!",
             "ai_assistant_feedback_rating": "Оценка",
             "ai_assistant_feedback_rating_excellent": "Отлично",
             "ai_assistant_feedback_rating_good": "Хорошо",
@@ -7374,7 +7374,7 @@ Settings
             
             // ✅ ЗАДАЧА 3: AI Assistant feedback localization (English)
             "ai_assistant_feedback_title": "Feedback",
-            "ai_assistant_feedback_description": "Tell us how to improve the AI assistant",
+            "ai_assistant_feedback_description": "Tell us how to improve the ALADDIN app!",
             "ai_assistant_feedback_rating": "Rating",
             "ai_assistant_feedback_rating_excellent": "Excellent",
             "ai_assistant_feedback_rating_good": "Good",

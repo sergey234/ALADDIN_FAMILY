@@ -1,0 +1,51 @@
+spawn ssh -o StrictHostKeyChecking=no root@149.154.65.180 bash -lc "echo ==PORT_OWNERS==; ss -plnt 2>/dev/null | grep -E \":(8000|8002)\" || true; echo; echo ==LSOF_8000==; lsof -nP -iTCP:8000 -sTCP:LISTEN 2>/dev/null || true; echo; echo ==LSOF_8002==; lsof -nP -iTCP:8002 -sTCP:LISTEN 2>/dev/null || true; echo; echo ==SYSTEMD_RELATED==; systemctl list-units --type=service --state=running | grep -iE \"aladdin|backend|api|gunicorn|uvicorn\" || true; echo; echo ==SYSTEMD_UNIT_FILES==; systemctl cat aladdin-backend 2>/dev/null || true; systemctl cat aladdin-api 2>/dev/null || true; echo; echo ==NGINX_PROXY_PASS==; nginx -T 2>/dev/null | grep -nE \"server_name\s+aladdin-ai\.ru|proxy_pass\s+http://127\.0\.0\.1:(8000|8002)\" || true"
+root@149.154.65.180's password: 
+==PORT_OWNERS==
+LISTEN 0      2048                          0.0.0.0:8002       0.0.0.0:*    users:(("gunicorn",pid=1738294,fd=5),("gunicorn",pid=1738293,fd=5),("gunicorn",pid=1738292,fd=5),("gunicorn",pid=1738291,fd=5),("gunicorn",pid=1738286,fd=5))
+LISTEN 0      2048                          0.0.0.0:8000       0.0.0.0:*    users:(("uvicorn",pid=1738375,fd=15))                                                                                                                        
+
+==LSOF_8000==
+COMMAND     PID USER   FD   TYPE    DEVICE SIZE/OFF NODE NAME
+uvicorn 1738375 root   15u  IPv4 340033917      0t0  TCP *:8000 (LISTEN)
+
+==LSOF_8002==
+COMMAND      PID USER   FD   TYPE    DEVICE SIZE/OFF NODE NAME
+gunicorn 1738286 root    5u  IPv4 340006447      0t0  TCP *:8002 (LISTEN)
+gunicorn 1738291 root    5u  IPv4 340006447      0t0  TCP *:8002 (LISTEN)
+gunicorn 1738292 root    5u  IPv4 340006447      0t0  TCP *:8002 (LISTEN)
+gunicorn 1738293 root    5u  IPv4 340006447      0t0  TCP *:8002 (LISTEN)
+gunicorn 1738294 root    5u  IPv4 340006447      0t0  TCP *:8002 (LISTEN)
+
+==SYSTEMD_RELATED==
+  aladdin-backend.service          loaded active running ALADDIN Backend API Service
+  aladdin-main-api-gateway.service loaded active running ALADDIN Main API Gateway Service (High Performance)
+  aladdin-production-api.service   loaded active running ALADDIN Production API Gateway
+  aladdin-sfm-core.service         loaded active running ALADDIN SFM HTTP API Service
+
+==SYSTEMD_UNIT_FILES==
+# /etc/systemd/system/aladdin-backend.service
+[Unit]
+Description=ALADDIN Backend API Service
+After=network.target postgresql.service
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/aladdin-backend
+Environment="PATH=/opt/aladdin-backend/venv/bin"
+ExecStart=/opt/aladdin-backend/venv/bin/uvicorn main:app --host 0.0.0.0 --port 8000
+Restart=always
+RestartSec=10
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target
+
+
+==NGINX_PROXY_PASS==
+236:    server_name aladdin-ai.ru;
+245:    server_name aladdin-ai.ru;
+253:        proxy_pass http://127.0.0.1:8002;
+284:    server_name aladdin-ai.ru www.aladdin-ai.ru;
+293:    server_name aladdin-ai.ru www.aladdin-ai.ru;

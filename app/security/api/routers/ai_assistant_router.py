@@ -21,6 +21,8 @@ from pydantic import BaseModel, Field
 import logging
 import sys
 import os
+import smtplib
+from email.message import EmailMessage
 
 # SFM Adapter import
 backend_path = "/opt/aladdin-backend"
@@ -39,6 +41,11 @@ logger = logging.getLogger(__name__)
 
 # Создаем FastAPI Router
 router = APIRouter(prefix="/api/ai/assistant", tags=["AI Assistant"])
+
+
+def _allow_mock_fallback() -> bool:
+    """Explicit non-prod switch. In production must stay disabled."""
+    return os.getenv("ALADDIN_ALLOW_AI_FALLBACK", "false").lower() in ("1", "true", "yes")
 
 
 # =============================================================================
@@ -73,6 +80,11 @@ class FeedbackRequest(BaseModel):
     rating: int = Field(..., description="Оценка (1-5)", ge=1, le=5)
     comment: Optional[str] = Field(None, description="Комментарий", max_length=1000)
     message_id: Optional[str] = Field(None, description="ID сообщения")
+    query_text: Optional[str] = Field(None, description="Исходный вопрос пользователя", max_length=2000)
+    resolved_by: Optional[str] = Field(None, description="Источник ответа: faq|ai|unknown", max_length=64)
+    faq_id: Optional[str] = Field(None, description="ID FAQ, если ответ был из базы FAQ", max_length=128)
+    confidence: Optional[float] = Field(None, description="Уверенность ответа (0-1)", ge=0, le=1)
+    session_id: Optional[str] = Field(None, description="ID сессии клиента", max_length=128)
 
 
 class FeedbackResponse(BaseModel):
@@ -158,6 +170,58 @@ def _get_fallback_response(context: str = "general") -> Dict[str, Any]:
     }
 
 
+def _send_feedback_email(payload: Dict[str, Any]) -> bool:
+    """Отправка email-уведомления о feedback. Не влияет на основной API flow."""
+    smtp_host = os.getenv("ALADDIN_FEEDBACK_SMTP_HOST", "").strip()
+    smtp_port = int(os.getenv("ALADDIN_FEEDBACK_SMTP_PORT", "587"))
+    smtp_user = os.getenv("ALADDIN_FEEDBACK_SMTP_USER", "").strip()
+    smtp_password = os.getenv("ALADDIN_FEEDBACK_SMTP_PASSWORD", "")
+    from_email = os.getenv("ALADDIN_FEEDBACK_FROM_EMAIL", "").strip() or smtp_user
+    to_email = os.getenv("ALADDIN_FEEDBACK_TO_EMAIL", "").strip()
+    use_tls = os.getenv("ALADDIN_FEEDBACK_SMTP_TLS", "true").lower() in ("1", "true", "yes")
+
+    # Если конфиг не задан, просто логируем и не ломаем основной ответ API.
+    if not smtp_host or not from_email or not to_email:
+        logger.info("Feedback email skipped: SMTP env is not configured")
+        return False
+
+    try:
+        msg = EmailMessage()
+        msg["Subject"] = f"[ALADDIN][AI Feedback] rating={payload.get('rating')} source={payload.get('resolved_by', 'unknown')}"
+        msg["From"] = from_email
+        msg["To"] = to_email
+        msg.set_content(
+            "\n".join(
+                [
+                    "ALADDIN AI Feedback",
+                    f"time: {datetime.utcnow().isoformat()}Z",
+                    f"rating: {payload.get('rating')}",
+                    f"resolved_by: {payload.get('resolved_by')}",
+                    f"faq_id: {payload.get('faq_id')}",
+                    f"confidence: {payload.get('confidence')}",
+                    f"session_id: {payload.get('session_id')}",
+                    f"message_id: {payload.get('message_id')}",
+                    "",
+                    f"query_text: {payload.get('query_text')}",
+                    "",
+                    f"comment: {payload.get('comment')}",
+                ]
+            )
+        )
+
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+            if use_tls:
+                server.starttls()
+            if smtp_user:
+                server.login(smtp_user, smtp_password)
+            server.send_message(msg)
+        logger.info("Feedback email sent successfully")
+        return True
+    except Exception as email_error:
+        logger.error(f"Feedback email send failed: {email_error}")
+        return False
+
+
 # =============================================================================
 # API Endpoints (8 штук)
 # =============================================================================
@@ -183,27 +247,31 @@ async def ai_assistant_chat(request: ChatMessageRequest) -> ChatMessageResponse:
                 "timestamp": request.timestamp.isoformat() if request.timestamp else datetime.now().isoformat()
             }
             success, result, message = sfm_adapter.execute_function("ai_assistant_chat", data)
-            
             if success:
+                response_text = result.get("response") or ""
+                if not response_text.strip():
+                    raise HTTPException(status_code=502, detail="AI backend returned empty response")
                 return ChatMessageResponse(
-                    response=result.get("response", _get_fallback_response(request.context)["response"]),
+                    response=response_text,
                     confidence=result.get("confidence", 0.95),
                     suggestions=result.get("suggestions", []),
                     follow_up_questions=result.get("follow_up_questions", []),
                     timestamp=datetime.now()
                 )
-            else:
-                logger.warning(f"SFM adapter error: {message}, using fallback")
-                fallback = _get_fallback_response(request.context)
-                return ChatMessageResponse(**fallback)
-        else:
-            # Fallback mock response
+            logger.error(f"ai_assistant_chat failed in sfm_adapter: {message}")
+            raise HTTPException(status_code=502, detail=f"AI backend failed: {message}")
+
+        if _allow_mock_fallback():
+            logger.warning("ALADDIN_ALLOW_AI_FALLBACK=true: using temporary fallback response")
             fallback = _get_fallback_response(request.context)
             return ChatMessageResponse(**fallback)
+
+        raise HTTPException(status_code=503, detail="AI backend is unavailable")
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise
         logger.error(f"Ошибка при обработке сообщения: {e}")
-        fallback = _get_fallback_response(request.context)
-        return ChatMessageResponse(**fallback)
+        raise HTTPException(status_code=500, detail="AI chat internal error")
 
 
 # 2. GET /api/ai/assistant/history - История разговоров
@@ -261,12 +329,20 @@ async def ai_assistant_feedback(request: FeedbackRequest) -> FeedbackResponse:
         Результат сохранения обратной связи
     """
     try:
+        payload = {
+            "rating": request.rating,
+            "comment": request.comment,
+            "message_id": request.message_id,
+            "query_text": request.query_text,
+            "resolved_by": request.resolved_by or "unknown",
+            "faq_id": request.faq_id,
+            "confidence": request.confidence,
+            "session_id": request.session_id,
+        }
+        _send_feedback_email(payload)
+
         if SFM_ADAPTER_AVAILABLE and sfm_adapter:
-            data = {
-                "rating": request.rating,
-                "comment": request.comment,
-                "message_id": request.message_id
-            }
+            data = payload
             success, result, message = sfm_adapter.execute_function("ai_assistant_feedback", data)
             
             if success:
@@ -275,18 +351,23 @@ async def ai_assistant_feedback(request: FeedbackRequest) -> FeedbackResponse:
                     average_rating=result.get("average_rating", 4.8),
                     total_feedbacks=result.get("total_feedbacks", 1250)
                 )
-            else:
-                logger.warning(f"SFM adapter error: {message}, using fallback")
-        
-        # Fallback mock response
-        return FeedbackResponse(
-            feedback_recorded=True,
-            average_rating=4.8,
-            total_feedbacks=1250
-        )
+            logger.error(f"ai_assistant_feedback failed in sfm_adapter: {message}")
+            raise HTTPException(status_code=502, detail=f"AI feedback backend failed: {message}")
+
+        if _allow_mock_fallback():
+            logger.warning("ALADDIN_ALLOW_AI_FALLBACK=true: using temporary feedback fallback")
+            return FeedbackResponse(
+                feedback_recorded=True,
+                average_rating=4.8,
+                total_feedbacks=1250
+            )
+
+        raise HTTPException(status_code=503, detail="AI feedback backend is unavailable")
     except Exception as e:
+        if isinstance(e, HTTPException):
+            raise
         logger.error(f"Ошибка при сохранении обратной связи: {e}")
-        return FeedbackResponse(feedback_recorded=False, average_rating=0.0, total_feedbacks=0)
+        raise HTTPException(status_code=500, detail="AI feedback internal error")
 
 
 # 4. GET /api/ai/assistant/capabilities - Возможности AI помощника

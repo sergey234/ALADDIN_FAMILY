@@ -1,0 +1,3 @@
+==CREATE BACKUP DIR /opt/aladdin-backend/backup_500fix_20260317_131645==
+spawn ssh -o StrictHostKeyChecking=no root@149.154.65.180 mkdir -p /opt/aladdin-backend/backup_500fix_20260317_131645
+root@149.154.65.180's password: 

@@ -19,3 +19,87 @@
 [2026-03-31 02:16:45] progress: samples=43, hours=8.80, now<due=True
 [2026-03-31 02:21:45] progress: samples=44, hours=8.88, now<due=True
 [2026-03-31 02:26:45] progress: samples=45, hours=8.96, now<due=True
+[2026-03-31 02:31:45] progress: samples=46, hours=9.05, now<due=True
+[2026-03-31 02:36:45] progress: samples=47, hours=9.13, now<due=True
+[2026-03-31 02:41:45] progress: samples=48, hours=9.21, now<due=True
+[2026-03-31 02:46:45] progress: samples=49, hours=9.30, now<due=True
+[2026-03-31 02:51:45] progress: samples=50, hours=9.38, now<due=True
+[2026-03-31 02:56:45] progress: samples=51, hours=9.46, now<due=True
+[2026-03-31 03:01:45] progress: samples=52, hours=9.55, now<due=True
+[2026-03-31 03:06:45] progress: samples=53, hours=9.63, now<due=True
+[2026-03-31 11:56:05] progress: samples=54, hours=16.72, now<due=True
+[2026-03-31 12:01:05] progress: samples=55, hours=18.54, now<due=True
+[2026-03-31 12:06:05] progress: samples=56, hours=18.62, now<due=True
+[2026-03-31 12:11:05] progress: samples=57, hours=18.70, now<due=True
+[2026-03-31 12:16:05] progress: samples=58, hours=18.79, now<due=True
+[2026-03-31 12:21:06] progress: samples=59, hours=18.87, now<due=True
+[2026-03-31 12:26:06] progress: samples=60, hours=18.95, now<due=True
+[2026-03-31 12:31:06] progress: samples=61, hours=19.04, now<due=True
+[2026-03-31 12:36:06] progress: samples=62, hours=19.12, now<due=True
+[2026-03-31 12:41:05] progress: samples=63, hours=19.20, now<due=True
+[2026-03-31 12:46:06] progress: samples=64, hours=19.29, now<due=True
+[2026-03-31 12:51:06] progress: samples=65, hours=19.37, now<due=True
+[2026-03-31 12:56:06] progress: samples=66, hours=19.45, now<due=True
+[2026-03-31 13:01:06] progress: samples=67, hours=19.54, now<due=True
+[2026-03-31 13:06:06] progress: samples=68, hours=19.62, now<due=True
+[2026-03-31 13:11:06] progress: samples=69, hours=19.70, now<due=True
+[2026-03-31 13:16:06] progress: samples=70, hours=19.79, now<due=True
+[2026-03-31 13:21:06] progress: samples=71, hours=19.87, now<due=True
+[2026-03-31 13:26:06] progress: samples=72, hours=19.95, now<due=True
+[2026-03-31 13:31:06] progress: samples=73, hours=20.04, now<due=True
+[2026-03-31 13:36:06] progress: samples=74, hours=20.12, now<due=True
+[2026-03-31 13:41:06] progress: samples=75, hours=20.20, now<due=True
+[2026-03-31 13:46:06] progress: samples=76, hours=20.29, now<due=True
+[2026-03-31 13:51:06] progress: samples=77, hours=20.37, now<due=True
+[2026-03-31 13:56:06] progress: samples=78, hours=20.45, now<due=True
+[2026-03-31 14:01:06] progress: samples=79, hours=20.54, now<due=True
+[2026-03-31 14:06:06] progress: samples=80, hours=20.62, now<due=True
+[2026-03-31 14:11:06] progress: samples=81, hours=20.71, now<due=True
+[2026-03-31 14:16:06] progress: samples=82, hours=20.79, now<due=True
+[2026-03-31 14:21:06] progress: samples=83, hours=20.87, now<due=True
+[2026-03-31 14:26:06] progress: samples=84, hours=20.96, now<due=True
+[2026-03-31 14:31:06] progress: samples=85, hours=21.04, now<due=True
+[2026-03-31 14:36:06] progress: samples=86, hours=21.12, now<due=True
+[2026-03-31 14:41:06] progress: samples=87, hours=21.21, now<due=True
+[2026-03-31 14:46:06] progress: samples=88, hours=21.29, now<due=True
+[2026-03-31 14:51:06] progress: samples=89, hours=21.37, now<due=True
+[2026-03-31 14:56:06] progress: samples=90, hours=21.46, now<due=True
+[2026-03-31 15:01:06] progress: samples=91, hours=21.54, now<due=True
+[2026-03-31 15:06:06] progress: samples=92, hours=21.62, now<due=True
+[2026-03-31 15:11:06] progress: samples=93, hours=21.71, now<due=True
+[2026-03-31 15:16:06] progress: samples=94, hours=21.79, now<due=True
+[2026-03-31 15:21:06] progress: samples=95, hours=21.87, now<due=True
+[2026-03-31 15:26:06] progress: samples=96, hours=21.96, now<due=True
+[2026-03-31 15:31:06] progress: samples=97, hours=22.04, now<due=True
+[2026-03-31 15:36:06] progress: samples=98, hours=22.12, now<due=True
+[2026-03-31 15:41:06] progress: samples=99, hours=22.21, now<due=True
+[2026-03-31 15:46:06] progress: samples=100, hours=22.29, now<due=True
+[2026-03-31 15:51:07] progress: samples=101, hours=22.37, now<due=True
+[2026-03-31 15:56:07] progress: samples=102, hours=22.46, now<due=True
+[2026-03-31 16:01:07] progress: samples=103, hours=22.54, now<due=True
+[2026-03-31 16:06:07] progress: samples=104, hours=22.62, now<due=True
+[2026-03-31 16:11:07] progress: samples=105, hours=22.71, now<due=True
+[2026-03-31 16:16:07] progress: samples=106, hours=22.79, now<due=True
+[2026-03-31 16:21:07] progress: samples=107, hours=22.87, now<due=True
+[2026-03-31 16:26:07] progress: samples=108, hours=22.96, now<due=True
+[2026-03-31 16:31:07] progress: samples=109, hours=23.04, now<due=True
+[2026-03-31 16:36:07] progress: samples=110, hours=23.12, now<due=True
+[2026-03-31 16:41:07] progress: samples=111, hours=23.21, now<due=True
+[2026-03-31 16:46:07] progress: samples=112, hours=23.29, now<due=True
+[2026-03-31 16:51:07] progress: samples=113, hours=23.38, now<due=True
+[2026-03-31 16:56:07] progress: samples=114, hours=23.46, now<due=True
+[2026-03-31 17:01:07] progress: samples=115, hours=23.54, now<due=True
+[2026-03-31 17:06:07] progress: samples=116, hours=23.63, now<due=True
+[2026-03-31 17:11:07] progress: samples=117, hours=23.71, now<due=True
+[2026-03-31 17:16:07] progress: samples=118, hours=23.79, now<due=True
+[2026-03-31 17:21:07] progress: samples=119, hours=23.88, now<due=True
+[2026-03-31 17:26:07] progress: samples=120, hours=23.96, now<due=True
+[2026-03-31 17:31:07] progress: samples=120, hours=23.96, now<due=False
+[2026-03-31 17:31:07] 24h window reached, waiting up to 10m for soak summary file
+[2026-03-31 17:31:07] found summary: docs/release/soak/soak-20260330_172810.summary.json
+[2026-03-31 17:31:07] running release_go_no_go_aggregator.py
+[2026-03-31 17:31:08] aggregator rc=0
+[2026-03-31 17:31:08] decision=NO_GO
+report=docs/release/release-gate-report.json
+markdown=docs/release/go-no-go.md
+[2026-03-31 17:31:08] autofinalize completed

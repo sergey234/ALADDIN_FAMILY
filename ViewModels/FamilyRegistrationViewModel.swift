@@ -494,11 +494,24 @@ class FamilyRegistrationViewModel: ObservableObject {
 
                     // Проверяем и сохраняем токены
                     if self?.isValidJWTToken(loginResponse.access_token) == true {
-                        if self?.saveTokens(accessToken: loginResponse.access_token, refreshToken: loginResponse.refresh_token) == true {
-                            print("✅ Попытка 2 завершена: токены сохранены")
+                        if self?.isFamilyCompatibleJWT(loginResponse.access_token) == true {
+                            if self?.saveTokens(accessToken: loginResponse.access_token, refreshToken: loginResponse.refresh_token) == true {
+                                print("✅ Попытка 2 завершена: токены сохранены")
+                            } else {
+                                print("⚠️ Попытка 2: ошибка сохранения токенов")
+                                // Продолжаем без токенов (демо режим)
+                            }
                         } else {
-                            print("⚠️ Попытка 2: ошибка сохранения токенов")
-                            // Продолжаем без токенов (демо режим)
+                            // Safety net: не сохраняем recovery JWT, если он может вызвать Invalid user_id in token.
+                            self?.bootstrapFamilyCompatibleToken { success in
+                                if success {
+                                    print("✅ Попытка 2 завершена: сохранен family-совместимый device token")
+                                } else if self?.saveTokens(accessToken: loginResponse.access_token, refreshToken: loginResponse.refresh_token) == true {
+                                    print("⚠️ Bootstrap не удался, сохранен recovery token как fallback")
+                                } else {
+                                    print("⚠️ Попытка 2: не удалось сохранить fallback token")
+                                }
+                            }
                         }
                     } else {
                         print("⚠️ Попытка 2: невалидные токены в ответе")
@@ -537,6 +550,63 @@ class FamilyRegistrationViewModel: ObservableObject {
             return false
         }
         return true
+    }
+
+    private func isFamilyCompatibleJWT(_ token: String) -> Bool {
+        guard
+            let payload = decodeJWTPayload(token),
+            let identityRaw = payload["user_id"] ?? payload["id"] ?? payload["sub"]
+        else {
+            return false
+        }
+        if let idInt = identityRaw as? Int {
+            return idInt > 0
+        }
+        if let idString = identityRaw as? String {
+            return Int(idString) != nil
+        }
+        return false
+    }
+
+    private func decodeJWTPayload(_ token: String) -> [String: Any]? {
+        let parts = token.split(separator: ".")
+        guard parts.count >= 2 else { return nil }
+        var base64 = String(parts[1])
+            .replacingOccurrences(of: "-", with: "+")
+            .replacingOccurrences(of: "_", with: "/")
+        let padding = 4 - (base64.count % 4)
+        if padding < 4 {
+            base64 += String(repeating: "=", count: padding)
+        }
+        guard
+            let data = Data(base64Encoded: base64),
+            let json = try? JSONSerialization.jsonObject(with: data),
+            let payload = json as? [String: Any]
+        else {
+            return nil
+        }
+        return payload
+    }
+
+    private func bootstrapFamilyCompatibleToken(completion: @escaping (Bool) -> Void) {
+        let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
+        let deviceType = UIDevice.current.userInterfaceIdiom == .pad ? "tablet" : "smartphone"
+        let request = DeviceRegisterRequest(deviceId: deviceId, deviceType: deviceType)
+
+        apiService.registerDeviceAnonymously(request: request) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self = self else {
+                    completion(false)
+                    return
+                }
+                switch result {
+                case .success(let response):
+                    completion(self.saveTokens(accessToken: response.token, refreshToken: response.refreshToken))
+                case .failure:
+                    completion(false)
+                }
+            }
+        }
     }
 
     /// ✅ ДОБАВЛЕНО: Безопасное логирование авторизации (без recovery code)

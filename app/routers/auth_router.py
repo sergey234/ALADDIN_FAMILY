@@ -461,11 +461,27 @@ async def login_by_recovery_code(
             # В будущем нужно проверить в БД
             pass
         
-        # ✅ Создать токены
+        # ✅ BUILD 139: Для family-контракта нужен валидный integer user_id.
+        # Пытаемся взять owner_user_id семьи; fallback — как раньше (family_id), чтобы не ломать старые сценарии.
+        owner_user_id = None
+        try:
+            owner_row = db.execute(
+                text("SELECT owner_user_id FROM families WHERE id = :family_id LIMIT 1"),
+                {"family_id": request.family_id},
+            ).fetchone()
+            if owner_row and owner_row[0] is not None:
+                owner_user_id = int(owner_row[0])
+        except Exception:
+            owner_user_id = None
+
+        resolved_subject = str(owner_user_id) if owner_user_id is not None else request.family_id
+
+        # ✅ Создать токены в унифицированном формате claim'ов
         token_data = {
             "family_id": request.family_id,
-            "id": request.family_id,  # Временно используем family_id как user_id
-            "sub": request.family_id  # Subject для JWT
+            "id": resolved_subject,
+            "user_id": resolved_subject,
+            "sub": resolved_subject,
         }
         access_token = create_access_token(token_data, expires_delta=timedelta(hours=24))
         refresh_token = create_refresh_token(token_data)

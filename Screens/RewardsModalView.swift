@@ -13,6 +13,7 @@ struct RewardsModalView: View {
     @Binding var unicornBalance: Int
     @Binding var weeklyRewarded: Int
     @Binding var weeklyPunished: Int
+    @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
     
     // Альтернативный способ закрытия (совместимо с iOS 14+)
     private func dismiss() {
@@ -26,6 +27,12 @@ struct RewardsModalView: View {
             return false
         }
         return role == .parent
+    }
+
+    private var rewardsScopeChildId: String? {
+        let trimmed = selectedChildId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmed.isEmpty { return trimmed }
+        return UnicornRewardsStore.resolveActiveChildId()
     }
     
     // Запросы на цели (из AppStorage)
@@ -169,9 +176,9 @@ struct RewardsModalView: View {
             loadEarningWays()
             loadPunishmentReasons()
             // Синхронизация баланса из UserDefaults с @Binding
-            let currentBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
-            let currentEarned = UserDefaults.standard.integer(forKey: "child_weekly_earned")
-            let currentPunished = UserDefaults.standard.integer(forKey: "child_weekly_punished")
+            let currentBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
+            let currentEarned = UnicornRewardsStore.readWeeklyEarned(for: rewardsScopeChildId)
+            let currentPunished = UnicornRewardsStore.readWeeklyPunished(for: rewardsScopeChildId)
             if unicornBalance != currentBalance {
                 unicornBalance = currentBalance
             }
@@ -1698,13 +1705,13 @@ struct RewardsModalView: View {
         addToHistory(isReward: true, texts: history, amount: amount)
         
         // Обновляем баланс в AppStorage (синхронизация с ChildRewardsScreen)
-        let currentBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+        let currentBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
         let newBalance = currentBalance + amount
-        UserDefaults.standard.set(newBalance, forKey: "child_unicorn_balance")
+        UnicornRewardsStore.writeBalance(newBalance, for: rewardsScopeChildId)
         
         // Обновляем статистику за неделю
-        let currentWeekly = UserDefaults.standard.integer(forKey: "child_weekly_earned")
-        UserDefaults.standard.set(currentWeekly + amount, forKey: "child_weekly_earned")
+        let currentWeekly = UnicornRewardsStore.readWeeklyEarned(for: rewardsScopeChildId)
+        UnicornRewardsStore.writeWeeklyEarned(currentWeekly + amount, for: rewardsScopeChildId)
         
         // Явно отправляем уведомление для обновления других экранов
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
@@ -1734,13 +1741,13 @@ struct RewardsModalView: View {
         addToHistory(isReward: false, texts: history, amount: amount)
         
         // Обновляем баланс в AppStorage (синхронизация с ChildRewardsScreen)
-        let currentBalance = UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+        let currentBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
         let newBalance = max(0, currentBalance - amount) // Не может быть отрицательным
-        UserDefaults.standard.set(newBalance, forKey: "child_unicorn_balance")
+        UnicornRewardsStore.writeBalance(newBalance, for: rewardsScopeChildId)
         
         // Обновляем статистику за неделю
-        let currentWeekly = UserDefaults.standard.integer(forKey: "child_weekly_punished")
-        UserDefaults.standard.set(currentWeekly + amount, forKey: "child_weekly_punished")
+        let currentWeekly = UnicornRewardsStore.readWeeklyPunished(for: rewardsScopeChildId)
+        UnicornRewardsStore.writeWeeklyPunished(currentWeekly + amount, for: rewardsScopeChildId)
         
         // Явно отправляем уведомление для обновления других экранов
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)

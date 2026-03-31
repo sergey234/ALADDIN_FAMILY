@@ -786,8 +786,13 @@ struct MainScreen: View {
                 // Production-safe: обновляем Family stats/тариф сразу после подтверждённого удаления участника
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("MainFamilyStatsForceRefresh"))) { _ in
                     // Debounce через orchestrator ViewModel (коалесим внешние триггеры)
+                    mainViewModel.refreshFamilyMembersCountFromStorage()
                     mainViewModel.requestRefreshDebounced()
                     tariffManager.loadTariff()
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyMembersUpdated"))) { _ in
+                    // Синхронизируем счетчик на главной с тем же storage, что и FamilyScreen.
+                    mainViewModel.refreshFamilyMembersCountFromStorage()
                 }
     }
 

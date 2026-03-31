@@ -1,0 +1,72 @@
+[
+  {
+    "local": "main.py",
+    "remote": "/opt/aladdin-backend/main.py",
+    "status": "MATCH",
+    "local_sha": "2b5d9615f32f662602adf39ac12937241c1bc27d2a6dfe4fefeed721e7a251f5",
+    "remote_sha": "2b5d9615f32f662602adf39ac12937241c1bc27d2a6dfe4fefeed721e7a251f5"
+  },
+  {
+    "local": "backend/app/services/jwt_service.py",
+    "remote": "/opt/aladdin-backend/backend/app/services/jwt_service.py",
+    "status": "DIFF",
+    "local_sha": "d959bbfb4a7cc10a1404d78b39c82af39d2dacdae8dc37945a318cac6fd2c47f",
+    "remote_sha": "05488da32dddb42c4977dde4db8ebd7d133b89b50176773070b23e9d4e16cc0c"
+  },
+  {
+    "local": "app/security/api/routers/anti_tracker_router.py",
+    "remote": "/opt/aladdin-backend/app/security/api/routers/anti_tracker_router.py",
+    "status": "MATCH",
+    "local_sha": "48d158410481ac5eb89ef4a1d4f6555a1ed4ae89562679e2414b722f7f27acb3",
+    "remote_sha": "48d158410481ac5eb89ef4a1d4f6555a1ed4ae89562679e2414b722f7f27acb3"
+  },
+  {
+    "local": "app/security/api/routers/dark_web_monitoring_router.py",
+    "remote": "/opt/aladdin-backend/app/security/api/routers/dark_web_monitoring_router.py",
+    "status": "DIFF",
+    "local_sha": "6dfed55c82c9f7868971873d0534d2bd00a351afd04bc7f9fa681ba8e54744bc",
+    "remote_sha": "3e01e9ad632af2980daf338eaec0a4ac9fcdb39915d8d9f7bcf5bf2d6661664d"
+  },
+  {
+    "local": "app/security/api/routers/data_cleanup_router.py",
+    "remote": "/opt/aladdin-backend/app/security/api/routers/data_cleanup_router.py",
+    "status": "MATCH",
+    "local_sha": "f200a3f2299a4edc3190048c042687e6899bda59df8845547a45e9412b56b98f",
+    "remote_sha": "f200a3f2299a4edc3190048c042687e6899bda59df8845547a45e9412b56b98f"
+  },
+  {
+    "local": "app/security/api/routers/identity_theft_protection_router.py",
+    "remote": "/opt/aladdin-backend/app/security/api/routers/identity_theft_protection_router.py",
+    "status": "MATCH",
+    "local_sha": "196ff50af806828c150ea6a37be1c954f599e8fd81b7fbfe52d141680fb6f905",
+    "remote_sha": "196ff50af806828c150ea6a37be1c954f599e8fd81b7fbfe52d141680fb6f905"
+  },
+  {
+    "local": "app/security/api/routers/location_bubble_router.py",
+    "remote": "/opt/aladdin-backend/app/security/api/routers/location_bubble_router.py",
+    "status": "DIFF",
+    "local_sha": "a42758d0535853aa73c867852d339daddaa956a90b5fd91887e8e4d20065a218",
+    "remote_sha": "f43bf805934ecbd37da7f9490891991d3cc4b6f7bfae32a4ef99b52a71a90a53"
+  },
+  {
+    "local": "security/api/routers/reports_router.py",
+    "remote": "/opt/aladdin-backend/security/api/routers/reports_router.py",
+    "status": "MATCH",
+    "local_sha": "e50c784e2d9aa4275dfb9b0a75e8536e6862fcb5483069e20840dfa5a716a5c7",
+    "remote_sha": "e50c784e2d9aa4275dfb9b0a75e8536e6862fcb5483069e20840dfa5a716a5c7"
+  },
+  {
+    "local": "security/ai_agents/dark_web_monitoring_agent.py",
+    "remote": "/opt/aladdin-backend/security/ai_agents/dark_web_monitoring_agent.py",
+    "status": "MATCH",
+    "local_sha": "3f6137dd4108e959f5d770997d364ff98fbacf517e86d789222aa86b935170b9",
+    "remote_sha": "3f6137dd4108e959f5d770997d364ff98fbacf517e86d789222aa86b935170b9"
+  },
+  {
+    "local": "security/ai_agents/driving_reports_agent.py",
+    "remote": "/opt/aladdin-backend/security/ai_agents/driving_reports_agent.py",
+    "status": "MATCH",
+    "local_sha": "72b9073f2ef20307edeacea0884a22329c3c4c37d001b998fc20d9ef39c42761",
+    "remote_sha": "72b9073f2ef20307edeacea0884a22329c3c4c37d001b998fc20d9ef39c42761"
+  }
+]

@@ -1,0 +1,28 @@
+#!/usr/bin/expect -f
+set host "149.154.65.180"
+set user "root"
+set password "Sergio675"
+set cmd [lindex $argv 0]
+
+send_user ">>> Connecting to $host...\n"
+spawn ssh -o StrictHostKeyChecking=no $user@$host $cmd
+set timeout 60
+expect {
+    -re ".*assword:.*" {
+        send_user ">>> Password prompt detected, sending password...\n"
+        send "$password\r"
+        exp_continue
+    }
+    "(yes/no)?" {
+        send_user ">>> Host key prompt detected, sending yes...\n"
+        send "yes\r"
+        exp_continue
+    }
+    timeout {
+        send_user ">>> ERROR: SSH Timeout reached!\n"
+        exit 1
+    }
+    eof {
+        send_user ">>> SSH Connection closed (EOF).\n"
+    }
+}

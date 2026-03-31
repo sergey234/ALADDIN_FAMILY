@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-31T12:01:13",
+  "generated_at": "2026-03-31T17:31:08",
   "gates": [
     {
       "gate": "rel-06",
@@ -43,19 +43,15 @@
     },
     {
       "gate": "rel-15",
-      "status": "IN_PROGRESS"
+      "status": "FAIL"
     }
   ],
   "decision": "NO_GO",
-  "override_decision": "CONDITIONAL_GO",
-  "override_reason": "RISK_ACCEPTED: accelerated release before full 24h soak completion",
-  "waiver": {
-    "rel_15_hours_collected": 18.62,
-    "required_hours": 24,
-    "health_status": "ok",
-    "critical_reports_mock_markers": "absent",
-    "follow_up_required": true
-  },
-  "blocking_items": [],
-  "note": "Formal GO still requires all gates PASS including rel-15 soak 24h; conditional release is risk-accepted waiver."
+  "blocking_items": [
+    {
+      "gate": "rel-15",
+      "status": "FAIL"
+    }
+  ],
+  "note": "GO requires all gates PASS including rel-15 soak 24h."
 }

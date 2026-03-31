@@ -133,7 +133,7 @@ class AICategoriesViewModel: ObservableObject {
                     }
                     
                     return UserSelectorView.UserOption(
-                        id: member.id.uuidString,
+                        id: member.serverMemberId ?? member.id,
                         name: member.name,
                         role: roleString,
                         avatar: member.avatar

@@ -1,5 +1,98 @@
 import SwiftUI
 
+struct UnifiedFAQItem: Identifiable {
+    let id: String
+    let icon: String
+    let question: String
+    let answer: String
+}
+
+private struct UnifiedFAQEntry {
+    let id: String
+    let icon: String
+    let questionKey: String
+    let answerKey: String
+    let keywords: [String]
+}
+
+enum UnifiedFAQCatalog {
+    private static let entries: [UnifiedFAQEntry] = [
+        UnifiedFAQEntry(id: "faq_what_protects", icon: "🛡️", questionKey: "faq_what_protects", answerKey: "faq_what_protects_answer", keywords: ["защищает", "система", "что умеет"]),
+        UnifiedFAQEntry(id: "faq_protect_children", icon: "👶", questionKey: "faq_protect_children", answerKey: "faq_protect_children_answer", keywords: ["детей", "ребенка", "родительский"]),
+        UnifiedFAQEntry(id: "faq_protect_elderly", icon: "👴", questionKey: "faq_protect_elderly", answerKey: "faq_protect_elderly_answer", keywords: ["пожилых", "бабуш", "дедуш"]),
+        UnifiedFAQEntry(id: "faq_data_safe", icon: "🔐", questionKey: "faq_data_safe", answerKey: "faq_data_safe_answer", keywords: ["данные", "безопасны", "шифрование"]),
+        UnifiedFAQEntry(id: "faq_viruses_trojans", icon: "🦠", questionKey: "faq_viruses_trojans", answerKey: "faq_viruses_trojans_answer", keywords: ["вирус", "троян"]),
+        UnifiedFAQEntry(id: "faq_ransomware", icon: "🔒", questionKey: "faq_ransomware", answerKey: "faq_ransomware_answer", keywords: ["шифровальщик", "ransomware"]),
+        UnifiedFAQEntry(id: "faq_spyware", icon: "🕵️", questionKey: "faq_spyware", answerKey: "faq_spyware_answer", keywords: ["шпион", "spyware"]),
+        UnifiedFAQEntry(id: "faq_phishing_sites", icon: "🌐", questionKey: "faq_phishing_sites", answerKey: "faq_phishing_sites_answer", keywords: ["фишинг", "поддельный сайт"]),
+        UnifiedFAQEntry(id: "faq_fake_apps", icon: "📱", questionKey: "faq_fake_apps", answerKey: "faq_fake_apps_answer", keywords: ["поддельные приложения"]),
+        UnifiedFAQEntry(id: "faq_malicious_links", icon: "🔗", questionKey: "faq_malicious_links", answerKey: "faq_malicious_links_answer", keywords: ["ссылка", "вредонос"]),
+        UnifiedFAQEntry(id: "faq_phone_scam", icon: "📞", questionKey: "faq_phone_scam", answerKey: "faq_phone_scam_answer", keywords: ["телефон", "мошенник", "звонок"]),
+        UnifiedFAQEntry(id: "faq_financial_scam", icon: "💳", questionKey: "faq_financial_scam", answerKey: "faq_financial_scam_answer", keywords: ["деньги", "финансов", "карта"]),
+        UnifiedFAQEntry(id: "faq_social_engineering", icon: "🎭", questionKey: "faq_social_engineering", answerKey: "faq_social_engineering_answer", keywords: ["социальная инженерия", "обман"]),
+        UnifiedFAQEntry(id: "faq_fake_banks", icon: "🏦", questionKey: "faq_fake_banks", answerKey: "faq_fake_banks_answer", keywords: ["банк", "поддельный банк"]),
+        UnifiedFAQEntry(id: "faq_phishing_emails", icon: "📧", questionKey: "faq_phishing_emails", answerKey: "faq_phishing_emails_answer", keywords: ["email", "почта", "письмо"]),
+        UnifiedFAQEntry(id: "faq_inappropriate_content", icon: "🚫", questionKey: "faq_inappropriate_content", answerKey: "faq_inappropriate_content_answer", keywords: ["неподходящий контент", "детям нельзя"]),
+        UnifiedFAQEntry(id: "faq_cyberbullying", icon: "😢", questionKey: "faq_cyberbullying", answerKey: "faq_cyberbullying_answer", keywords: ["кибербуллинг", "травля"]),
+        UnifiedFAQEntry(id: "faq_dangerous_contacts", icon: "👥", questionKey: "faq_dangerous_contacts", answerKey: "faq_dangerous_contacts_answer", keywords: ["опасные контакты", "незнакомцы"]),
+        UnifiedFAQEntry(id: "faq_gaming_addiction", icon: "🎮", questionKey: "faq_gaming_addiction", answerKey: "faq_gaming_addiction_answer", keywords: ["игровая зависимость", "играет много"]),
+        UnifiedFAQEntry(id: "faq_accidental_purchases", icon: "💸", questionKey: "faq_accidental_purchases", answerKey: "faq_accidental_purchases_answer", keywords: ["случайные покупки"]),
+        UnifiedFAQEntry(id: "faq_password_theft", icon: "🔑", questionKey: "faq_password_theft", answerKey: "faq_password_theft_answer", keywords: ["пароль", "кража пароля"]),
+        UnifiedFAQEntry(id: "faq_privacy_violation", icon: "👁️", questionKey: "faq_privacy_violation", answerKey: "faq_privacy_violation_answer", keywords: ["приватность", "нарушение"]),
+        UnifiedFAQEntry(id: "faq_deepfake", icon: "🎬", questionKey: "faq_deepfake", answerKey: "faq_deepfake_answer", keywords: ["дипфейк", "deepfake"]),
+        UnifiedFAQEntry(id: "faq_fake_voices", icon: "🎤", questionKey: "faq_fake_voices", answerKey: "faq_fake_voices_answer", keywords: ["поддельный голос"]),
+        UnifiedFAQEntry(id: "faq_fake_news", icon: "📰", questionKey: "faq_fake_news", answerKey: "faq_fake_news_answer", keywords: ["фейк", "фейковые новости"]),
+        UnifiedFAQEntry(id: "faq_dangerous_sites", icon: "⚠️", questionKey: "faq_dangerous_sites", answerKey: "faq_dangerous_sites_answer", keywords: ["опасный сайт"]),
+        UnifiedFAQEntry(id: "faq_suspicious_downloads", icon: "📥", questionKey: "faq_suspicious_downloads", answerKey: "faq_suspicious_downloads_answer", keywords: ["скачивание", "подозрительная загрузка"]),
+        UnifiedFAQEntry(id: "faq_unsafe_wifi", icon: "📡", questionKey: "faq_unsafe_wifi", answerKey: "faq_unsafe_wifi_answer", keywords: ["wi-fi", "wifi", "публичная сеть"]),
+        UnifiedFAQEntry(id: "faq_mitm_attacks", icon: "🕵️", questionKey: "faq_mitm_attacks", answerKey: "faq_mitm_attacks_answer", keywords: ["mitm", "человек посередине"]),
+        UnifiedFAQEntry(id: "faq_parental_control_setup", icon: "👨‍👩‍👧‍👦", questionKey: "faq_parental_control_setup", answerKey: "faq_parental_control_setup_answer", keywords: ["настроить семью", "родительский контроль"]),
+        UnifiedFAQEntry(id: "faq_cancel_subscription", icon: "💳", questionKey: "faq_cancel_subscription", answerKey: "faq_cancel_subscription_answer", keywords: ["подписка", "отменить подписку"])
+    ]
+
+    static func localizedItems(localize: (String) -> String) -> [UnifiedFAQItem] {
+        entries.map { entry in
+            UnifiedFAQItem(
+                id: entry.id,
+                icon: entry.icon,
+                question: localize(entry.questionKey),
+                answer: localize(entry.answerKey)
+            )
+        }
+    }
+
+    static func bestMatch(for query: String, localize: (String) -> String) -> UnifiedFAQItem? {
+        let normalizedQuery = query.lowercased()
+        guard !normalizedQuery.isEmpty else { return nil }
+
+        var bestScore = 0
+        var bestEntry: UnifiedFAQEntry?
+
+        for entry in entries {
+            var score = 0
+            for keyword in entry.keywords where normalizedQuery.contains(keyword) {
+                score += 3
+            }
+            let localizedQuestion = localize(entry.questionKey).lowercased()
+            if localizedQuestion.contains(normalizedQuery) || normalizedQuery.contains(localizedQuestion) {
+                score += 2
+            }
+            if score > bestScore {
+                bestScore = score
+                bestEntry = entry
+            }
+        }
+
+        guard let entry = bestEntry, bestScore >= 3 else { return nil }
+        return UnifiedFAQItem(
+            id: entry.id,
+            icon: entry.icon,
+            question: localize(entry.questionKey),
+            answer: localize(entry.answerKey)
+        )
+    }
+}
+
 /// 💬 Support Screen
 /// Экран поддержки - помощь и FAQ
 /// Источник дизайна: комбинация из разных wireframes
@@ -17,7 +110,7 @@ struct SupportScreen: View {
     private let apiService = APIService.shared
     
     struct FAQItem: Identifiable {
-        let id = UUID()
+        let id: String
         let icon: String
         let question: String
         let answer: String
@@ -29,132 +122,24 @@ struct SupportScreen: View {
     
     // Инициализация FAQ при появлении экрана
     private func initializeFAQItems() {
-        if faqItems.isEmpty {
-            faqItems = [
-        // ==========================================
-        // 📋 ОБЩИЕ ВОПРОСЫ
-        // ==========================================
-        
-        FAQItem(icon: "🛡️", question: localizationManager.localized("faq_what_protects"), answer: localizationManager.localized("faq_what_protects_answer")),
-        
-        FAQItem(icon: "👶", question: localizationManager.localized("faq_protect_children"), answer: localizationManager.localized("faq_protect_children_answer")),
-        
-        FAQItem(icon: "👴", question: localizationManager.localized("faq_protect_elderly"), answer: localizationManager.localized("faq_protect_elderly_answer")),
-        
-        FAQItem(icon: "🔐", question: localizationManager.localized("faq_data_safe"), answer: localizationManager.localized("faq_data_safe_answer")),
-        
-        // ==========================================
-        // 🛡️ КИБЕРУГРОЗЫ (6 вопросов)
-        // ==========================================
-        
-        FAQItem(icon: "🦠", question: localizationManager.localized("faq_viruses_trojans"), answer: localizationManager.localized("faq_viruses_trojans_answer")),
-        
-        FAQItem(icon: "🔒", question: localizationManager.localized("faq_ransomware"), answer: localizationManager.localized("faq_ransomware_answer")),
-        
-        FAQItem(icon: "🕵️", question: localizationManager.localized("faq_spyware"), answer: localizationManager.localized("faq_spyware_answer")),
-        
-        FAQItem(icon: "🌐", question: localizationManager.localized("faq_phishing_sites"), answer: localizationManager.localized("faq_phishing_sites_answer")),
-        
-        FAQItem(icon: "📱", question: localizationManager.localized("faq_fake_apps"), answer: localizationManager.localized("faq_fake_apps_answer")),
-        
-        FAQItem(icon: "🔗", question: localizationManager.localized("faq_malicious_links"), answer: localizationManager.localized("faq_malicious_links_answer")),
-        
-        // ==========================================
-        // 💰 МОШЕННИЧЕСТВО (5 вопросов)
-        // ==========================================
-        
-        FAQItem(icon: "📞", question: localizationManager.localized("faq_phone_scam"), answer: localizationManager.localized("faq_phone_scam_answer")),
-        
-        FAQItem(icon: "💳", question: localizationManager.localized("faq_financial_scam"), answer: localizationManager.localized("faq_financial_scam_answer")),
-        
-        FAQItem(icon: "🎭", question: localizationManager.localized("faq_social_engineering"), answer: localizationManager.localized("faq_social_engineering_answer")),
-        
-        FAQItem(icon: "🏦", question: localizationManager.localized("faq_fake_banks"), answer: localizationManager.localized("faq_fake_banks_answer")),
-        
-        FAQItem(icon: "📧", question: localizationManager.localized("faq_phishing_emails"), answer: localizationManager.localized("faq_phishing_emails_answer")),
-        
-        // ==========================================
-        // 👶 ДЕТСКИЕ УГРОЗЫ (5 вопросов)
-        // ==========================================
-        
-        FAQItem(icon: "🚫", question: localizationManager.localized("faq_inappropriate_content"), answer: localizationManager.localized("faq_inappropriate_content_answer")),
-        
-        FAQItem(icon: "😢", question: localizationManager.localized("faq_cyberbullying"), answer: localizationManager.localized("faq_cyberbullying_answer")),
-        
-        FAQItem(icon: "👥", question: localizationManager.localized("faq_dangerous_contacts"), answer: localizationManager.localized("faq_dangerous_contacts_answer")),
-        
-        FAQItem(icon: "🎮", question: localizationManager.localized("faq_gaming_addiction"), answer: localizationManager.localized("faq_gaming_addiction_answer")),
-        
-        FAQItem(icon: "💸", question: localizationManager.localized("faq_accidental_purchases"), answer: localizationManager.localized("faq_accidental_purchases_answer")),
-        
-        // ==========================================
-        // 🔒 УТЕЧКИ ДАННЫХ (2 вопроса)
-        // ==========================================
-        
-        FAQItem(icon: "🔑", question: localizationManager.localized("faq_password_theft"), answer: localizationManager.localized("faq_password_theft_answer")),
-        
-        FAQItem(icon: "👁️", question: localizationManager.localized("faq_privacy_violation"), answer: localizationManager.localized("faq_privacy_violation_answer")),
-        
-        // ==========================================
-        // 🎭 ПОДДЕЛКИ (3 вопроса)
-        // ==========================================
-        
-        FAQItem(icon: "🎬", question: localizationManager.localized("faq_deepfake"), answer: localizationManager.localized("faq_deepfake_answer")),
-        
-        FAQItem(icon: "🎤", question: localizationManager.localized("faq_fake_voices"), answer: localizationManager.localized("faq_fake_voices_answer")),
-        
-        FAQItem(icon: "📰", question: localizationManager.localized("faq_fake_news"), answer: localizationManager.localized("faq_fake_news_answer")),
-        
-        // ==========================================
-        // 🌐 ИНТЕРНЕТ-УГРОЗЫ (4 вопроса)
-        // ==========================================
-        
-        FAQItem(icon: "⚠️", question: localizationManager.localized("faq_dangerous_sites"), answer: localizationManager.localized("faq_dangerous_sites_answer")),
-        
-        FAQItem(icon: "📥", question: localizationManager.localized("faq_suspicious_downloads"), answer: localizationManager.localized("faq_suspicious_downloads_answer")),
-        
-        FAQItem(icon: "📡", question: localizationManager.localized("faq_unsafe_wifi"), answer: localizationManager.localized("faq_unsafe_wifi_answer")),
-        
-        FAQItem(icon: "🕵️", question: localizationManager.localized("faq_mitm_attacks"), answer: localizationManager.localized("faq_mitm_attacks_answer")),
-        
-        // ==========================================
-        // 📱 МОБИЛЬНЫЕ УГРОЗЫ (3 вопроса)
-        // ==========================================
-        
-        FAQItem(icon: "📱", question: localizationManager.localized("faq_malicious_apps"), answer: localizationManager.localized("faq_malicious_apps_answer")),
-        
-        FAQItem(icon: "💬", question: localizationManager.localized("faq_sms_scam"), answer: localizationManager.localized("faq_sms_scam_answer")),
-        
-        FAQItem(icon: "📍", question: localizationManager.localized("faq_location_threats"), answer: localizationManager.localized("faq_location_threats_answer")),
-        
-        // ==========================================
-        // 🏠 СЕМЕЙНЫЕ УГРОЗЫ (2 вопроса)
-        // ==========================================
-        
-        FAQItem(icon: "💔", question: localizationManager.localized("faq_domestic_violence"), answer: localizationManager.localized("faq_domestic_violence_answer")),
-        
-        FAQItem(icon: "😟", question: localizationManager.localized("faq_emotional_problems"), answer: localizationManager.localized("faq_emotional_problems_answer")),
-        
-        // ==========================================
-        // 🔐 ВОЕННАЯ ЗАЩИТА (3 вопроса)
-        // ==========================================
-        
-        FAQItem(icon: "🔐", question: localizationManager.localized("faq_aes256"), answer: localizationManager.localized("faq_aes256_answer")),
-        
-        FAQItem(icon: "👻", question: localizationManager.localized("faq_anonymity"), answer: localizationManager.localized("faq_anonymity_answer")),
-        
-        FAQItem(icon: "🏛️", question: localizationManager.localized("faq_critical_infrastructure"), answer: localizationManager.localized("faq_critical_infrastructure_answer")),
-        
-        // ==========================================
-        // 💻 ТЕХНИЧЕСКИЕ ВОПРОСЫ (3 вопроса)
-        // ==========================================
-        
-        FAQItem(icon: "💻", question: localizationManager.localized("faq_how_network_protection_works"), answer: localizationManager.localized("faq_how_network_protection_works_answer")),
-        
-        FAQItem(icon: "👨‍👩‍👧‍👦", question: localizationManager.localized("faq_parental_control_setup"), answer: localizationManager.localized("faq_parental_control_setup_answer")),
-        
-        FAQItem(icon: "💳", question: localizationManager.localized("faq_cancel_subscription"), answer: localizationManager.localized("faq_cancel_subscription_answer"))
-            ]
+        let expandedIds = Set(faqItems.filter(\.isExpanded).map(\.id))
+        faqItems = UnifiedFAQCatalog.localizedItems(localize: localizationManager.localized).map { item in
+            FAQItem(
+                id: item.id,
+                icon: item.icon,
+                question: item.question,
+                answer: item.answer,
+                isExpanded: expandedIds.contains(item.id)
+            )
+        }
+    }
+
+    private var filteredFAQIndices: [Int] {
+        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !query.isEmpty else { return Array(faqItems.indices) }
+        return faqItems.indices.filter { idx in
+            faqItems[idx].question.lowercased().contains(query) ||
+            faqItems[idx].answer.lowercased().contains(query)
         }
     }
     
@@ -477,8 +462,8 @@ struct SupportScreen: View {
                 .accessibilityAddTraits(.isHeader)
             
             VStack(spacing: 8) {
-                ForEach($faqItems) { $item in
-                    faqCard(item: $item)
+                ForEach(filteredFAQIndices, id: \.self) { idx in
+                    faqCard(item: $faqItems[idx])
                 }
             }
             .padding(.horizontal, 20)

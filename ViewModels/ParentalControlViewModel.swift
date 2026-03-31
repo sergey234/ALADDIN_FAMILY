@@ -159,7 +159,7 @@ class ParentalControlViewModel: ObservableObject {
            let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
             self.children = decoded.filter { $0.role == .child || $0.role == .teenager }.map { member in
                 Child(
-                    id: member.id.uuidString,
+                    id: member.id,
                     name: member.name,
                     age: 10,
                     avatar: member.avatar ?? "",

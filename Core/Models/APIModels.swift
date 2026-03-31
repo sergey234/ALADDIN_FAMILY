@@ -137,7 +137,8 @@ struct ParentalReportItem: Codable, Identifiable {
 // MARK: - Family Models
 
 struct FamilyMemberData: Identifiable, Codable {
-    var id = UUID()
+    var id: String = UUID().uuidString
+    var serverMemberId: String?
     var name: String
     var role: FamilyMemberCard.FamilyRole
     var avatar: String
@@ -361,6 +362,33 @@ struct ChatMessageResponse: Codable {
         case response, confidence, suggestions
         case followUpQuestions = "follow_up_questions"
         case timestamp
+        case message, answer, result, detail, error
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        var normalizedResponse = try? container.decode(String.self, forKey: .response)
+        if normalizedResponse == nil { normalizedResponse = try? container.decode(String.self, forKey: .message) }
+        if normalizedResponse == nil { normalizedResponse = try? container.decode(String.self, forKey: .answer) }
+        if normalizedResponse == nil { normalizedResponse = try? container.decode(String.self, forKey: .result) }
+        if normalizedResponse == nil { normalizedResponse = try? container.decode(String.self, forKey: .detail) }
+        if normalizedResponse == nil { normalizedResponse = try? container.decode(String.self, forKey: .error) }
+
+        let trimmed = normalizedResponse?.trimmingCharacters(in: CharacterSet.whitespacesAndNewlines) ?? ""
+        self.response = trimmed.isEmpty ? "Извините, сервис AI временно недоступен. Попробуйте позже." : trimmed
+        self.confidence = try? container.decode(Double.self, forKey: .confidence)
+        self.suggestions = try? container.decode([String].self, forKey: .suggestions)
+        self.followUpQuestions = try? container.decode([String].self, forKey: .followUpQuestions)
+        self.timestamp = try? container.decode(String.self, forKey: .timestamp)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(response, forKey: .response)
+        try container.encodeIfPresent(confidence, forKey: .confidence)
+        try container.encodeIfPresent(suggestions, forKey: .suggestions)
+        try container.encodeIfPresent(followUpQuestions, forKey: .followUpQuestions)
+        try container.encodeIfPresent(timestamp, forKey: .timestamp)
     }
 
     // ✅ ИСПРАВЛЕНИЕ BUILD 90: Статический форматтер для предотвращения рекурсии
@@ -394,6 +422,22 @@ struct AIFeedbackRequest: Codable {
     let rating: Int
     let comment: String?
     let messageId: String?
+    let queryText: String?
+    let resolvedBy: String?
+    let faqId: String?
+    let confidence: Double?
+    let sessionId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case rating
+        case comment
+        case messageId = "message_id"
+        case queryText = "query_text"
+        case resolvedBy = "resolved_by"
+        case faqId = "faq_id"
+        case confidence
+        case sessionId = "session_id"
+    }
 }
 
 struct AIFeedbackResponse: Codable {

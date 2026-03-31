@@ -577,7 +577,7 @@ struct DrivingReportsModal: View {
                 }
                 
                 return UserSelectorView.UserOption(
-                    id: member.id.uuidString,
+                    id: member.id,
                     name: member.name,
                     role: roleString,
                     avatar: member.avatar ?? ""
@@ -594,10 +594,10 @@ struct DrivingReportsModal: View {
             // Устанавливаем текущего пользователя (первый родитель или первый член)
             if currentUserId == "current" || currentUserId.isEmpty {
             if let currentUser = decoded.first(where: { $0.role == .parent }) {
-                currentUserId = currentUser.id.uuidString
+                currentUserId = currentUser.id
                 print("✅ DrivingReportsModal: Текущий пользователь из UserDefaults: \(currentUser.name)")
             } else if let firstMember = decoded.first {
-                currentUserId = firstMember.id.uuidString
+                currentUserId = firstMember.id
                 print("✅ DrivingReportsModal: Текущий пользователь из UserDefaults (первый): \(firstMember.name)")
                 }
             }

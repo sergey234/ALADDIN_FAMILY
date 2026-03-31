@@ -18,6 +18,7 @@ struct FamilyMemberCard: View {
     let action: () -> Void
     var onDelete: (() -> Void)? = nil  // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #4: Функция удаления
     var showDeleteButton: Bool = false  // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #4: Показывать ли кнопку удаления
+    var isDeleteDisabled: Bool = false
     
     // MARK: - Localized Role Label
     
@@ -104,7 +105,8 @@ struct FamilyMemberCard: View {
         lastActive: String = "",
         action: @escaping () -> Void,
         onDelete: (() -> Void)? = nil,
-        showDeleteButton: Bool = false
+        showDeleteButton: Bool = false,
+        isDeleteDisabled: Bool = false
     ) {
         self.name = name
         self.role = role
@@ -115,6 +117,7 @@ struct FamilyMemberCard: View {
         self.action = action
         self.onDelete = onDelete
         self.showDeleteButton = showDeleteButton
+        self.isDeleteDisabled = isDeleteDisabled
     }
     
     // MARK: - Body
@@ -146,6 +149,7 @@ struct FamilyMemberCard: View {
                     // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #4: Кнопка удаления (видимая и заметная)
                     if showDeleteButton, let onDelete = onDelete {
                         Button(action: {
+                            guard !isDeleteDisabled else { return }
                             // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Останавливаем распространение события
                             // чтобы не вызывался action() основной карточки
                             print("🗑️ [FamilyMemberCard] Кнопка удаления нажата для: \(name)")
@@ -164,8 +168,10 @@ struct FamilyMemberCard: View {
                                 .background(Color.red)
                                 .clipShape(Circle())
                                 .shadow(color: .red.opacity(0.3), radius: 4, x: 0, y: 2)
+                                .opacity(isDeleteDisabled ? 0.45 : 1.0)
                         }
                         .buttonStyle(PlainButtonStyle())
+                        .disabled(isDeleteDisabled)
                         .zIndex(10)  // Поверх других элементов
                         .onTapGesture {
                             // ✅ Дополнительная защита: предотвращаем всплытие события
@@ -204,6 +210,7 @@ struct FamilyMemberCard: View {
                     HStack {
                         Spacer()
                         Button(action: {
+                            guard !isDeleteDisabled else { return }
                             // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Останавливаем распространение события
                             print("🗑️ [FamilyMemberCard] Кнопка удаления нажата для: \(name)")
                             
@@ -221,8 +228,10 @@ struct FamilyMemberCard: View {
                                 .background(Color.red)
                                 .clipShape(Circle())
                                 .shadow(color: .red.opacity(0.3), radius: 4, x: 0, y: 2)
+                                .opacity(isDeleteDisabled ? 0.45 : 1.0)
                         }
                         .buttonStyle(PlainButtonStyle())
+                        .disabled(isDeleteDisabled)
                         .padding(.top, 8)
                         .padding(.trailing, 8)
                     }

@@ -346,7 +346,16 @@ struct AIAssistantScreen: View {
 
         // Отправляем как обратную связь
         logger.network("🤖 AI Assistant: Sending feedback to server")
-        apiService.sendAIFeedback(rating: 5, comment: message, messageId: nil) { [self] result in
+        apiService.sendAIFeedback(
+            rating: 5,
+            comment: message,
+            messageId: nil,
+            queryText: message,
+            resolvedBy: "ai_chat_feedback",
+            faqId: nil,
+            confidence: nil,
+            sessionId: currentFeedbackSessionId()
+        ) { [self] result in
             DispatchQueue.main.async {
                 isLoading = false
 
@@ -376,6 +385,15 @@ struct AIAssistantScreen: View {
                 }
             }
         }
+    }
+
+    private func currentFeedbackSessionId() -> String {
+        if let existing = UserDefaults.standard.string(forKey: "jwt_session_id"), !existing.isEmpty {
+            return existing
+        }
+        let generated = UUID().uuidString
+        UserDefaults.standard.set(generated, forKey: "jwt_session_id")
+        return generated
     }
 
     private func getPersonalizedFeedbackResponse(_ feedbackType: String, _ originalMessage: String) -> String {
@@ -500,6 +518,20 @@ struct AIAssistantScreen: View {
 
     private func sendRegularMessage(_ message: String, context: String) {
         logger.business("🤖 AI Assistant: Sending message to AI service (context: \(context))")
+
+        // Hybrid FAQ+AI: сначала пытаемся закрыть вопрос готовым FAQ-ответом.
+        if let faqMatch = UnifiedFAQCatalog.bestMatch(for: message, localize: localizationManager.localized) {
+            logger.business("📚 AI Assistant: FAQ match found id=\(faqMatch.id)")
+            isLoading = false
+            let faqResponse = ChatMessage(
+                text: "\(faqMatch.answer)\n\n📚 Источник: FAQ (\(faqMatch.id))",
+                isUser: false,
+                time: currentTime()
+            )
+            messages.append(faqResponse)
+            saveMessages()
+            return
+        }
 
         // Отправляем обычное сообщение AI
         logger.network("🤖 AI Assistant: Making API call to AI service")
@@ -1041,8 +1073,18 @@ struct AIFeedbackSheet: View {
 
     private func submitFeedback() {
         isSubmitting = true
+        let queryText = comment.isEmpty ? nil : comment
 
-        apiService.sendAIFeedback(rating: rating, comment: comment.isEmpty ? nil : comment, messageId: nil) { result in
+        apiService.sendAIFeedback(
+            rating: rating,
+            comment: comment.isEmpty ? nil : comment,
+            messageId: nil,
+            queryText: queryText,
+            resolvedBy: "feedback_sheet",
+            faqId: nil,
+            confidence: nil,
+            sessionId: currentFeedbackSessionId()
+        ) { result in
             DispatchQueue.main.async {
                 isSubmitting = false
 
@@ -1055,6 +1097,15 @@ struct AIFeedbackSheet: View {
                 }
             }
         }
+    }
+
+    private func currentFeedbackSessionId() -> String {
+        if let existing = UserDefaults.standard.string(forKey: "jwt_session_id"), !existing.isEmpty {
+            return existing
+        }
+        let generated = UUID().uuidString
+        UserDefaults.standard.set(generated, forKey: "jwt_session_id")
+        return generated
     }
 }
 

@@ -294,7 +294,10 @@ class MainViewModel: ObservableObject {
                     print("   - Угрозы: \(self.threatsBlocked) → \(stats.totalThreats)")
                     print("   - Статус: \(stats.familyStatus ?? "nil")")
                     
-                    self.familyMembers = stats.totalMembers
+                    // Единый источник количества членов семьи для UI: локальный family_members_list
+                    // (он синхронизируется с FamilyScreen/add/join/remove потоками).
+                    let storageCount = self.readFamilyMembersCountFromStorage()
+                    self.familyMembers = storageCount ?? stats.totalMembers
                     self.devicesProtected = stats.totalDevices
                     self.threatsBlocked = stats.totalThreats
                     self.lastUpdateTime = Date()
@@ -544,6 +547,7 @@ class MainViewModel: ObservableObject {
             return
         }
         lastOnAppearTime = Date()
+        refreshFamilyMembersCountFromStorage()
 
         // Проверяем, нужно ли обновлять данные
         let shouldRefresh: Bool
@@ -595,8 +599,22 @@ class MainViewModel: ObservableObject {
         print("Navigation to AI Assistant Screen")
         #endif
     }
+
+    func refreshFamilyMembersCountFromStorage() {
+        if let count = readFamilyMembersCountFromStorage() {
+            familyMembers = count
+        }
+    }
     
     // MARK: - Private Methods
+
+    private func readFamilyMembersCountFromStorage() -> Int? {
+        guard let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
+              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
+            return nil
+        }
+        return decoded.count
+    }
     
     private func connectNetworkProtection() {
         // ✅ BUILD 110: Удален лог

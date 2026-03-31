@@ -1,0 +1,30 @@
+{
+  "run_id": "20260330_172810",
+  "prometheus_url": "http://149.154.65.180:9090",
+  "started_at": 1774877290,
+  "ended_at": 1774963843,
+  "duration_sec": 86400,
+  "interval_sec": 300,
+  "samples_file": "docs/release/soak/soak-20260330_172810.samples.jsonl",
+  "summary": {
+    "samples_count": 120,
+    "p95_max": 0.04914174891000943,
+    "p95_avg": 0.04771088875077758,
+    "five_xx_max": 0.03175363339167921,
+    "max_firing_alerts": 2,
+    "latest_freshness_seconds": {
+      "cleanup": 51862.55865,
+      "darkweb": 60026.008034,
+      "identity": 60034.966823,
+      "location": 60023.026785,
+      "tracker": 60030.411775
+    },
+    "slo_checks": {
+      "p95_max_lt_0_5s": true,
+      "five_xx_max_lt_1pct": false,
+      "no_firing_alerts": false,
+      "freshness_within_thresholds": false
+    }
+  },
+  "pass": false
+}
