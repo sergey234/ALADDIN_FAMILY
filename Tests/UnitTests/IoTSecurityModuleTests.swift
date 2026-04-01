@@ -298,11 +298,13 @@ class MockAPIService: APIService {
         
         return mockIoTStatus ?? IoTStatusResponse(
             homeId: homeId,
-            devices: [],
-            threats: [],
-            recommendations: [],
-            protectionLevel: 0,
-            lastScan: nil
+            totalDevices: mockIoTDevices.count,
+            onlineDevices: mockIoTDevices.filter { $0.status == .online || $0.status == .safe }.count,
+            offlineDevices: mockIoTDevices.filter { $0.status == .offline }.count,
+            threatDevices: mockIoTThreats.count,
+            lastScan: "2026-04-01T00:00:00Z",
+            protectionLevel: 3,
+            status: "warning"
         )
     }
     

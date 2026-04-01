@@ -9,15 +9,24 @@ from datetime import datetime, timedelta
 from sqlalchemy.orm import Session
 from sqlalchemy import text
 import uuid
+import os
+import base64
+from io import BytesIO
 
 from app.database.database import get_db
 from app.referral_payment_functions import (
     process_referral_code_on_payment,
     process_referral_on_payment_confirmation,
-    apply_referral_discount
+    apply_referral_discount,
 )
 import secrets
 import string
+
+# QR generation (РФ-оплата через банковский QR)
+try:
+    import qrcode  # type: ignore
+except Exception:  # pragma: no cover - необязательная зависимость
+    qrcode = None  # type: ignore
 
 router = APIRouter(tags=["payments"])
 
@@ -66,6 +75,15 @@ class PaymentRecoveryRequest(BaseModel):
     """Запрос на восстановление кода активации"""
     userAlias: str
     pin: str
+
+
+class PaymentQRCreateRequest(PaymentCreateRequest):
+    """
+    Создание платежа + возврат QR (РФ: СБП/SberPay).
+
+    paymentMethod: ожидается "sbp" | "sberpay"
+    """
+    pass
 
 # ============================================
 # ENDPOINTS
@@ -141,6 +159,54 @@ async def create_payment(
     except Exception as e:
         db.rollback()
         raise HTTPException(status_code=500, detail=f"Ошибка создания платежа: {str(e)}")
+
+
+@router.post("/api/payments/qr/create")
+async def create_payment_qr(
+    payment_data: PaymentQRCreateRequest,
+    db: Session = Depends(get_db),
+):
+    """
+    РФ-оплата: создать платеж и вернуть QR для банковского перевода (СБП/SberPay).
+
+    Примечание: подтверждение оплаты НЕ происходит автоматически — оно должно приходить
+    через защищённый /api/payments/confirm.
+    """
+    # 1. Создаём payment как обычно, переиспользуя существующую бизнес-логику
+    base = await create_payment(payment_data, db)
+
+    # 2. Генерируем QR data (СБП/SberPay). Реквизиты берём из env (с дефолтами).
+    method = (payment_data.paymentMethod or "").lower().strip() or "sbp"
+    merchant_phone = os.getenv("PAYMENT_MERCHANT_PHONE", "+79277020379").strip()
+    description = f"ALADDIN subscription {payment_data.tariffId} ({payment_data.periodMonths}m)"
+
+    amount = float(payment_data.amount)
+    # NOTE: форматы URL могут отличаться у банков, но это базовый рабочий “deeplink” формат,
+    # который используется многими банковскими приложениями для QR-перевода.
+    if method == "sberpay":
+        qr_code_data = f"sberbank://transfer?phone={merchant_phone}&amount={amount}&comment={description}"
+        provider = "SberPay"
+    else:
+        qr_code_data = f"sbp://{merchant_phone}?sum={amount}&comment={description}"
+        provider = "SBP"
+
+    qr_image_b64: Optional[str] = None
+    if qrcode is not None:
+        img = qrcode.make(qr_code_data)
+        buf = BytesIO()
+        img.save(buf, format="PNG")
+        qr_image_b64 = base64.b64encode(buf.getvalue()).decode("utf-8")
+
+    return {
+        **base,
+        "qr": {
+            "provider": provider,
+            "qr_code_data": qr_code_data,
+            "qr_code_image_base64": qr_image_b64,
+            "instructions": "Отсканируйте QR‑код в приложении вашего банка (СБП/SberPay) и выполните перевод.",
+            "merchant_info": {"phone": merchant_phone},
+        },
+    }
 
 
 @router.get("/api/payments/status/{payment_id}")

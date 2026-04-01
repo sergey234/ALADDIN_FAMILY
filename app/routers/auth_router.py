@@ -3,7 +3,7 @@
 """
 from fastapi import APIRouter, HTTPException, Depends, status
 from fastapi.security import HTTPBearer
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 try:
     from pydantic import EmailStr
 except ImportError:
@@ -84,6 +84,14 @@ class RefreshTokenResponse(BaseModel):
     refresh_token: str
     expires_in: int
     token_type: str = "Bearer"
+
+
+class DeviceRegisterRequest(BaseModel):
+    """Anonymous device registration request (supports snake_case and camelCase)."""
+    device_id: str = Field(..., alias="deviceId")
+    device_type: str = Field("ios", alias="deviceType")
+
+    model_config = {"populate_by_name": True}
 
 # ============================================
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -326,6 +334,49 @@ async def register(login_data: LoginRequest, db: Session = Depends(get_db)):
         raise
     except Exception as e:
         print(f"Ошибка при регистрации: {e}")
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Внутренняя ошибка сервера: {str(e)}"
+        )
+
+
+@router.post("/auth/register-device", response_model=LoginResponse)
+async def register_device(request: DeviceRegisterRequest):
+    """
+    Anonymous device registration endpoint expected by mobile app and release gates.
+    Returns access/refresh tokens without mock/fallback envelopes.
+    """
+    try:
+        if not request.device_id:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail="device_id is required",
+            )
+
+        # Deterministic pseudo user id for device-only auth flow.
+        pseudo_user_id = int(hashlib.sha256(request.device_id.encode()).hexdigest()[:8], 16)
+        token_data = {
+            "user_id": pseudo_user_id,
+            "id": pseudo_user_id,
+            "sub": str(pseudo_user_id),
+            "device_id": request.device_id,
+            "device_type": request.device_type,
+            "type": "device_auth",
+        }
+
+        access_token = create_access_token(token_data, expires_delta=timedelta(hours=24))
+        refresh_token = create_refresh_token(token_data)
+
+        return LoginResponse(
+            access_token=access_token,
+            refresh_token=refresh_token,
+            expires_in=86400,
+            token_type="Bearer",
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Ошибка при регистрации устройства: {e}")
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Внутренняя ошибка сервера: {str(e)}"

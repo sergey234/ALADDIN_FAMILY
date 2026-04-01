@@ -258,6 +258,7 @@
 		A4AAA106 /* RemoteAnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA105 /* RemoteAnalyticsService.swift */; };
 		A4AAA108 /* ProfileImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA107 /* ProfileImageManager.swift */; };
 		A4AAA200 /* RewardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA201 /* RewardModels.swift */; };
+		B1000201 /* IoTSecurityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000200 /* IoTSecurityScreen.swift */; };
 		A4AAA202 /* ViewModels/ChildRewardsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA203 /* ViewModels/ChildRewardsViewModel.swift */; };
 		A4AAA210 /* AntivirusManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA211 /* AntivirusManager.swift */; };
 		A4AAA212 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA213 /* EmptyStateView.swift */; };
@@ -457,6 +458,7 @@
 		5E6F392F2F15AF7800CEC103 /* SecurityFeatureRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityFeatureRow.swift; path = Shared/Components/SecurityFeatureRow.swift; sourceTree = "<group>"; };
 		5E6F39312F15AF8400CEC103 /* SettingsAccordion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SettingsAccordion.swift; path = Shared/Components/SettingsAccordion.swift; sourceTree = "<group>"; };
 		5E6F39332F15AF9100CEC103 /* ComponentToggleCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentToggleCard.swift; path = Shared/Components/ComponentToggleCard.swift; sourceTree = "<group>"; };
+		B1000200 /* IoTSecurityScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IoTSecurityScreen.swift; path = IoTSecurityScreen.swift; sourceTree = "<group>"; };
 		5E6F39352F15AFC400CEC103 /* ComplianceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComplianceView.swift; path = Screens/Views/ComplianceView.swift; sourceTree = "<group>"; };
 		5E6F39372F15AFCF00CEC103 /* EmergencyContactsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EmergencyContactsView.swift; path = Screens/Views/EmergencyContactsView.swift; sourceTree = "<group>"; };
 		5E6F39392F15AFD800CEC103 /* EmergencyNotificationsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EmergencyNotificationsView.swift; path = Screens/Views/EmergencyNotificationsView.swift; sourceTree = "<group>"; };
@@ -741,6 +743,7 @@
 				5EC308E82EA6AB8C00C7D34B /* 14_OnboardingScreen.swift */,
 				5EC308F02EA6AB8C00C7D34B /* RewardsModalView.swift */,
 				5EC308E42EA6AB8B00C7D34B /* RewardsQuickModal.swift */,
+				B1000200 /* IoTSecurityScreen.swift */,
 				B1000170B1000170B1000170 /* AdvancedProtectionSettingsScreen.swift */,
 				A4AAA001 /* ThreatProtectionScreen.swift */,
 				5EC308FE2EA6AB8C00C7D34B /* UnicornPetView.swift */,
@@ -1252,6 +1255,7 @@
 				5E0798312F17DA1E00D20CF6 /* PrivacyReportsViewModel.swift in Sources */,
 				5E00582F2EC606BB00024F7E /* TariffCardView.swift in Sources */,
 				A1000001 /* ALADDINApp.swift in Sources */,
+				B1000201 /* IoTSecurityScreen.swift in Sources */,
 				5EA2F63C2EFB4B75000686C0 /* ContentBlockerManager.swift in Sources */,
 				5E0798192F17D26E00D20CF6 /* PrivacyReportsModal.swift in Sources */,
 				5EC3094B2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift in Sources */,
@@ -1567,7 +1571,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 132;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1599,7 +1603,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 132;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1755,7 +1759,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 132;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1787,7 +1791,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 132;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1818,7 +1822,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 132;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -1843,7 +1847,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 132;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -1866,7 +1870,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 132;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -1890,7 +1894,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 131;
+				CURRENT_PROJECT_VERSION = 132;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

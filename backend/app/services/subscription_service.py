@@ -7,12 +7,30 @@ from datetime import datetime, timedelta
 from typing import Optional, Dict, Any, List
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from app.models.subscription import (
-    SubscriptionPayload, SubscriptionLevel, TrialInfo,
-    SubscriptionLimits, UsageCounters, DeviceRegisterRequest,
-    TrialDeviceRegisterRequest
-)
-from app.repositories import SubscriptionRepository, SubscriptionDB
+
+# Двойной путь импорта: backend/* и gateway/*
+try:  # основной путь для backend/main.py
+    from app.models.subscription import (
+        SubscriptionPayload,
+        SubscriptionLevel,
+        TrialInfo,
+        SubscriptionLimits,
+        UsageCounters,
+        DeviceRegisterRequest,
+        TrialDeviceRegisterRequest,
+    )
+    from app.repositories import SubscriptionRepository, SubscriptionDB
+except ImportError:  # fallback для gateway (main.py в корне)
+    from backend.app.models.subscription import (  # type: ignore[import]
+        SubscriptionPayload,
+        SubscriptionLevel,
+        TrialInfo,
+        SubscriptionLimits,
+        UsageCounters,
+        DeviceRegisterRequest,
+        TrialDeviceRegisterRequest,
+    )
+    from backend.app.repositories import SubscriptionRepository, SubscriptionDB  # type: ignore[import]
 
 
 class SubscriptionService:

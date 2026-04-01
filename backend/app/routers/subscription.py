@@ -6,16 +6,44 @@ Handles all subscription-related endpoints with DB persistence
 from fastapi import APIRouter, HTTPException, Depends
 from datetime import datetime
 from sqlalchemy.orm import Session
-from app.models.subscription import (
-    DeviceRegisterRequest, TrialDeviceRegisterRequest,
-    UpgradeRequest, SubscriptionStatusResponse,
-    TrialActivationResponse, FeatureAccessRequest,
-    FeatureAccessResponse, UsageUpdateRequest,
-    JWTDeviceRegisterResponse, TrialInfo, SubscriptionLevel
-)
-from app.services.subscription_service import SubscriptionService
-from app.services.jwt_service import JWTService
-from app.database.database import get_db
+
+# Поддерживаем два контекста импорта:
+# - backend/* entrypoint (когда PYTHONPATH указывает на backend/ и app.* доступен напрямую)
+# - gateway entrypoint (когда импорт идёт через backend.app.* из корня проекта)
+try:  # основной путь для backend/main.py
+    from app.models.subscription import (
+        DeviceRegisterRequest,
+        TrialDeviceRegisterRequest,
+        UpgradeRequest,
+        SubscriptionStatusResponse,
+        TrialActivationResponse,
+        FeatureAccessRequest,
+        FeatureAccessResponse,
+        UsageUpdateRequest,
+        JWTDeviceRegisterResponse,
+        TrialInfo,
+        SubscriptionLevel,
+    )
+    from app.services.subscription_service import SubscriptionService
+    from app.services.jwt_service import JWTService
+    from app.database.database import get_db
+except ImportError:  # fallback для gateway (main.py в корне)
+    from backend.app.models.subscription import (  # type: ignore[import]
+        DeviceRegisterRequest,
+        TrialDeviceRegisterRequest,
+        UpgradeRequest,
+        SubscriptionStatusResponse,
+        TrialActivationResponse,
+        FeatureAccessRequest,
+        FeatureAccessResponse,
+        UsageUpdateRequest,
+        JWTDeviceRegisterResponse,
+        TrialInfo,
+        SubscriptionLevel,
+    )
+    from backend.app.services.subscription_service import SubscriptionService  # type: ignore[import]
+    from backend.app.services.jwt_service import JWTService  # type: ignore[import]
+    from backend.app.database.database import get_db  # type: ignore[import]
 
 router = APIRouter(prefix="/api", tags=["subscription"])
 

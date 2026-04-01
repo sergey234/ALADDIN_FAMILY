@@ -408,3 +408,31 @@ GRANT SELECT, INSERT, UPDATE ON TABLE cleanup.cleanup_records TO aladdin_user;
 - `AladdinNoFreshDataByDomain` перестал быть активным после replay по 5 доменам.
 
 Это эталонный runbook для других ML-систем: сначала сеть/процесс, затем OpenAPI-контракт, затем DB-права, затем replay и финальная проверка alerts.
+
+---
+
+## 11) Автоматизация: единый скрипт подключения и настройки сервера
+
+Для ускорения повторяемых действий добавлен сценарий:
+
+- Путь: `scripts/aladdin_server_connect_and_setup.sh`
+- Использование:
+
+```bash
+chmod +x scripts/aladdin_server_connect_and_setup.sh
+./scripts/aladdin_server_connect_and_setup.sh root 149.154.65.180 8002 /path/to/ssh_key
+```
+
+Что делает скрипт:
+- выполняет аудит сервера (порты/директории);
+- выравнивает `/opt/aladdin-backend` до `origin/master` c backup-веткой и `clean -fdX`;
+- создаёт/обновляет `venv` и устанавливает зависимости (`fastapi`, `gunicorn`, `psycopg2-binary`, `asyncpg`, `PyJWT`, и др.);
+- создаёт/включает systemd-юнит `aladdin-backend.service` на `:8002` c `DISABLE_SFM_MOCK=1` и `PYTHONPATH`;
+- перезапускает сервис и проверяет:
+  - `api/health` локально и снаружи,
+  - отсутствие mock‑маркеров на `/api/auth/register-device`,
+  - блокировку wildcard на критичных префиксах (`/api/auth/unknown` → 404),
+  - наличие `/api/auth/register-device` в OpenAPI,
+  - доступность `/api/reports/privacy/tracker/stats`.
+
+Скрипт служит быстрым «подключить и проверить», соответствуя правилам no‑mock и precision‑роутинга.

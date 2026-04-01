@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-30T17:37:22",
+  "generated_at": "2026-04-02T01:03:18",
   "base_url": "http://149.154.65.180:8002",
   "target_components": 42,
   "checked_components": 42,
@@ -19,7 +19,7 @@
       "component": "AI Categories",
       "endpoint": "/api/ai-categories/health",
       "method": "GET",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -43,7 +43,7 @@
       "component": "Crash Detection",
       "endpoint": "/api/crash-detection/health",
       "method": "GET",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -51,7 +51,7 @@
       "component": "Dark Web Monitoring",
       "endpoint": "/api/darkweb/breaches",
       "method": "GET",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -59,7 +59,7 @@
       "component": "Data Cleanup",
       "endpoint": "/api/data-cleanup/health",
       "method": "GET",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -75,7 +75,7 @@
       "component": "Gamification",
       "endpoint": "/api/gamification/achievements",
       "method": "GET",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -83,7 +83,7 @@
       "component": "Identity Theft Protection",
       "endpoint": "/api/identity-theft/alerts",
       "method": "GET",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -99,7 +99,7 @@
       "component": "Location Bubble",
       "endpoint": "/api/location/bubble/health",
       "method": "GET",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -171,7 +171,7 @@
       "component": "Roadside Assistance",
       "endpoint": "/api/roadside-assistance/health",
       "method": "GET",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -227,7 +227,7 @@
       "component": "components",
       "endpoint": "/api/components/bulk-update",
       "method": "GET",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },

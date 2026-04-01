@@ -618,12 +618,27 @@ struct ALADDINApp: App {
                             .environmentObject(navigationManager)
                             .environmentObject(localizationManager))
                     case .threatProtection:
-                        AnyView(ThreatProtectionScreen().id("threatProtection").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(
+                            ThreatProtectionScreen()
+                                .id("threatProtection")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                        )
                     case .threatProtectionSettings:
-                        AnyView(ThreatProtectionSettingsScreen().id("threatProtectionSettings").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(
+                            ThreatProtectionSettingsScreen()
+                                .id("threatProtectionSettings")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                        )
                     case .iotSecurity:
-                        // TODO: Создать IoTSecurityScreen или использовать существующий
-                        AnyView(ThreatProtectionScreen().id("iotSecurity").environmentObject(navigationManager).environmentObject(localizationManager))
+                        // Экран IoT‑защиты умного дома
+                        AnyView(
+                            IoTSecurityScreen()
+                                .id("iotSecurity")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                        )
                     case .advancedProtection:
                         AnyView(AdvancedProtectionSettingsScreen().id("advancedProtection").environmentObject(navigationManager).environmentObject(localizationManager))
                     default:

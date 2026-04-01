@@ -4,6 +4,7 @@ import SwiftUI
 /// ТОЛЬКО UI, НИКАКОЙ бизнес-логики
 struct IoTSecurityScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var iotModule = IoTSecurityModule()
     @State private var homeId: String = "home_default" // TODO: Получить из настроек
     
@@ -73,9 +74,11 @@ struct IoTSecurityScreen: View {
     // MARK: - Navigation Header
     
     private var navigationHeader: some View {
-        ALADDINNavigationBar(
-            title: "IoT ЗАЩИТА",
-            subtitle: "Умный дом",
+        // Заголовок берём из displayName текущего экрана (уже локализованный)
+        let title = navigationManager.currentScreen.displayName
+        return ALADDINNavigationBar(
+            title: title,
+            subtitle: nil,
             showBackButton: true,
             showProfileButton: false,
             showListButton: false,
@@ -307,7 +310,7 @@ struct DeviceRow: View {
             return "lightbulb.fill"
         case .door:
             return "lock.fill"
-        case .other:
+        default:
             return "appletv.fill"
         }
     }
@@ -484,32 +487,4 @@ struct RecommendationsSection: View {
         Color(white: 1.0, opacity: 0.9)
     }
 }
-
-// MARK: - Color Extensions
-
-extension Color {
-    static var textPrimary: Color {
-        Color.primary
-    }
-    
-    static var textSecondary: Color {
-        Color.secondary
-    }
-}
-
-// MARK: - Gradient Extension
-
-extension LinearGradient {
-    static var backgroundGradient: LinearGradient {
-        LinearGradient(
-            gradient: Gradient(colors: [
-                Color(red: 0.95, green: 0.95, blue: 0.97),
-                Color(red: 0.98, green: 0.98, blue: 1.0)
-            ]),
-            startPoint: .top,
-            endPoint: .bottom
-        )
-    }
-}
-
 

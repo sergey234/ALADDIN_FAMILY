@@ -414,6 +414,35 @@ async def get_tracker_stats(
         raise HTTPException(status_code=503, detail="Protection backend temporarily unavailable")
 
 
+# Legacy alias:
+# `release_gate_analytics.sh` (and some older clients) call `/api/reports/tracker/stats`
+# while the actual DB-backed implementation lives under `/api/reports/privacy/tracker/stats`.
+@router.get("/tracker/stats", response_model=ReportStatsResponse)
+async def get_tracker_stats_legacy(
+    user_id: Optional[str] = Query(None, description="ID пользователя")
+) -> ReportStatsResponse:
+    try:
+        from app.database.database import engine  # type: ignore
+        with engine.connect() as conn:
+            row = conn.execute(text("""
+                SELECT
+                  COALESCE(SUM(blocked_count),0)::int AS total,
+                  COALESCE(SUM(blocked_count),0)::int AS blocked,
+                  0::int AS allowed,
+                  COALESCE(SUM(CASE WHEN last_blocked_at >= NOW() - INTERVAL '24 hours' THEN blocked_count ELSE 0 END),0)::int AS last_24h,
+                  COALESCE(SUM(CASE WHEN last_blocked_at >= NOW() - INTERVAL '7 days' THEN blocked_count ELSE 0 END),0)::int AS last_7d,
+                  COALESCE(SUM(CASE WHEN last_blocked_at >= NOW() - INTERVAL '30 days' THEN blocked_count ELSE 0 END),0)::int AS last_30d
+                FROM tracker.tracker_blocks
+            """)).mappings().first()
+        result = dict(row or {})
+        result["source"] = "api_db"
+        result["timestamp"] = datetime.now().isoformat()
+        return ReportStatsResponse(**result)
+    except Exception as e:
+        logger.error(f"DB stats error tracker (legacy): {e}")
+        raise HTTPException(status_code=503, detail="Protection backend temporarily unavailable")
+
+
 # 7. GET /api/reports/ai-categories/stats - Статистика AI категорий
 @router.get("/ai-categories/stats", response_model=ReportStatsResponse)
 async def get_ai_categories_stats(

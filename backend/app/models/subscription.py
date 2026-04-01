@@ -123,13 +123,17 @@ class JWTToken(BaseModel):
 
 class DeviceRegisterRequest(BaseModel):
     """Device registration request"""
-    device_id: str
-    device_type: str = "ios"
+    device_id: str = Field(..., alias="deviceId")
+    device_type: str = Field("ios", alias="deviceType")
+
+    class Config:
+        # Allow population by both field names and aliases (camelCase from iOS)
+        allow_population_by_field_name = True
 
 
 class TrialDeviceRegisterRequest(DeviceRegisterRequest):
     """Trial device registration request"""
-    trial_info: TrialInfo
+    trial_info: TrialInfo = Field(..., alias="trialInfo")
 
 
 class UpgradeRequest(BaseModel):

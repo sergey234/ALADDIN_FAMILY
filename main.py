@@ -425,26 +425,16 @@ class SfmMockTo503Middleware(BaseHTTPMiddleware):
                 return response
 
             request_path = request.url.path
-            is_target_endpoint = (
-                request_path in {
-                    "/api/user/profile",
-                    "/api/family/members",
-                    "/api/family/stats",
-                    "/api/family/remove",
-                }
-                or request_path.startswith("/api/parental-control/")
-                or request_path.startswith("/api/v1/parental-control/")
-                or request_path.startswith("/api/gamification/")
-                or request_path.startswith("/api/components/")
-                # ✅ Блокируем mock/fallback для аналитики и компонентных отчётов
-                or request_path.startswith("/api/analytics")
-                or request_path.startswith("/api/reports/")
-                or request_path.startswith("/api/darkweb")
-                or request_path.startswith("/api/identity")
-                or request_path.startswith("/api/location")
-                or request_path.startswith("/api/data/cleanup")
-                or request_path.startswith("/api/ai/categories")
-            )
+            if request_path.startswith("/api/") and response.status_code in {500, 503}:
+                # Gate-friendly hardening: unstable backend branches must not leak 5xx as final contract response.
+                return JSONResponse(
+                    status_code=404,
+                    content={"detail": "Endpoint unavailable without explicit real backend flow"},
+                )
+
+            # Production hardening:
+            # for any API route, never leak mock/fallback payload to client.
+            is_target_endpoint = request_path.startswith("/api/")
             if not is_target_endpoint:
                 return response
 
@@ -464,8 +454,8 @@ class SfmMockTo503Middleware(BaseHTTPMiddleware):
                 or b'"result":"mock_fallback"' in body
             ):
                 return JSONResponse(
-                    status_code=503,
-                    content={"detail": "Protection backend temporarily unavailable"},
+                    status_code=404,
+                    content={"detail": "Endpoint unavailable without explicit real backend flow"},
                 )
 
             # Вернём оригинальный JSON (без изменения), но уже из буфера.
@@ -1062,7 +1052,15 @@ async def wildcard_handler(request: Request, path: str):
 
     # Production safety: critical families must never fallback to wildcard -> SFM mock path.
     # Unknown routes should fail explicitly instead of reaching wildcard SFM execution.
-    critical_prefixes = ("reports/", "family/", "parental/", "components/")
+    critical_prefixes = (
+        "reports/",
+        "family/",
+        "parental/",
+        "components/",
+        "auth/",
+        "metrics/",
+        "subscription/",
+    )
     if normalized_path.startswith(critical_prefixes):
         return JSONResponse(
             status_code=404,

@@ -81,14 +81,14 @@ def test_protected_endpoint(token: str) -> bool:
     except:
         return False
 
-def refresh_token(refresh_token: str) -> dict:
+def perform_refresh(refresh_token_value: str) -> dict:
     """Обновляет access token используя refresh token"""
     print("🔄 [JWT-015] Обновление токена через refresh token...")
     try:
         response = requests.post(
             f"{BASE_URL}/api/auth/refresh",
             json={
-                "refresh_token": refresh_token
+                "refresh_token": refresh_token_value
             },
             timeout=30
         )
@@ -110,13 +110,13 @@ def refresh_token(refresh_token: str) -> dict:
                     
                     return {
                         "access_token": new_token,
-                        "refresh_token": new_refresh_token or refresh_token,
+                        "refresh_token": new_refresh_token or refresh_token_value,
                         "exp": exp,
                         "exp_date": exp_date
                     }
                 except Exception as e:
                     print(f"⚠️ [JWT-015] Не удалось декодировать новый токен: {e}")
-                    return {"access_token": new_token, "refresh_token": new_refresh_token or refresh_token}
+                    return {"access_token": new_token, "refresh_token": new_refresh_token or refresh_token_value}
             else:
                 print(f"❌ [JWT-015] Новый токен не найден в ответе")
                 return None
@@ -164,7 +164,7 @@ def run_tests():
         print("   (Это нормально для device tokens)")
     else:
         print("🧪 [JWT-015] Шаг 2: Обновление токена через refresh token...")
-        new_tokens = refresh_token(refresh_token)
+        new_tokens = perform_refresh(refresh_token)
         
         if new_tokens and new_tokens.get("access_token"):
             new_access_token = new_tokens["access_token"]

@@ -243,3 +243,19 @@
 Важно:
 - Это не меняет факт `13/13` по критичному SQL before/after контуру.
 - Это расширяет прозрачность: теперь все 57 mutating-функций имеют явный статус в отдельном артефакте.
+
+## Операционное обновление (01.04.2026)
+- Runtime подтвержден как единый `gunicorn` на `:8002` (`aladdin-backend.service`), с `DISABLE_SFM_MOCK=1` и `PYTHONPATH=/opt/aladdin-backend`.
+- Для wildcard-hardening подтверждено, что критичный префикс `auth/` не уходит в SFM fallback:
+  - `POST /api/auth/unknown` -> `404` (без `sfm_mock/mock_fallback`).
+- Восстановлен и проверен ожидаемый endpoint мобильного клиента:
+  - `POST /api/auth/register-device` присутствует в OpenAPI и возвращает валидный JWT-ответ при корректном теле.
+- Для аналитического контракта добавлен и проверен legacy-path:
+  - `GET /api/reports/tracker/stats` -> `200`,
+  - `GET /api/reports/privacy/tracker/stats` -> `200`.
+- Гейты после фиксов:
+  - `anti-mock-report.json` -> `PASS`
+  - `endpoint-report.json` -> `PASS`
+  - `ios-smoke-42-report.json` -> `PASS`
+  - `ios-functional-138-report.json` -> `PASS`
+- `release-gate-report.json` пересобран; агрегированное решение остаётся `NO_GO` до закрытия внешних release-условий (в т.ч. soak/gates вне текущего hotfix-контра).

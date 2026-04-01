@@ -1,5 +1,5 @@
 {
-  "generated_at": "2026-03-30T17:37:36",
+  "generated_at": "2026-04-02T01:03:33",
   "base_url": "http://149.154.65.180:8002",
   "checked_functions": 137,
   "passed": 137,
@@ -34,12 +34,12 @@
       "method": "POST",
       "endpoint": "/api/ai-categories/age-restriction",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -51,12 +51,12 @@
       "method": "POST",
       "endpoint": "/api/ai-categories/allow",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -68,12 +68,12 @@
       "method": "POST",
       "endpoint": "/api/ai-categories/block",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -85,12 +85,12 @@
       "method": "POST",
       "endpoint": "/api/ai-categories/check",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -102,7 +102,7 @@
       "method": "GET",
       "endpoint": "/api/ai-categories/health",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -114,7 +114,7 @@
       "method": "GET",
       "endpoint": "/api/ai-categories/history",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -126,7 +126,7 @@
       "method": "GET",
       "endpoint": "/api/ai-categories/sites",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -138,7 +138,7 @@
       "method": "GET",
       "endpoint": "/api/ai-categories/status",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -372,7 +372,7 @@
       "method": "GET",
       "endpoint": "/api/anti-tracker/settings",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -384,12 +384,12 @@
       "method": "POST",
       "endpoint": "/api/anti-tracker/settings",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -401,7 +401,7 @@
       "method": "GET",
       "endpoint": "/api/anti-tracker/stats",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -425,7 +425,7 @@
       "method": "GET",
       "endpoint": "/api/anti-tracker/trackers",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -624,12 +624,12 @@
       "method": "POST",
       "endpoint": "/api/components/batch/status",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -641,7 +641,7 @@
       "method": "GET",
       "endpoint": "/api/components/bulk-update",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -653,7 +653,7 @@
       "method": "GET",
       "endpoint": "/api/components/config",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -706,12 +706,12 @@
       "method": "POST",
       "endpoint": "/api/components/configuration/{component_id}",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -735,7 +735,7 @@
       "method": "GET",
       "endpoint": "/api/components/disable",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -764,7 +764,7 @@
       "method": "GET",
       "endpoint": "/api/components/enable",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -841,12 +841,12 @@
       "method": "POST",
       "endpoint": "/api/components/restart/{component_id}",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -858,7 +858,7 @@
       "method": "GET",
       "endpoint": "/api/components/status",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -870,7 +870,7 @@
       "method": "GET",
       "endpoint": "/api/components/status/all",
       "primary": {
-        "status_code": 404,
+        "status_code": 200,
         "markers_found": [],
         "pass": true
       },
@@ -882,7 +882,7 @@
       "method": "GET",
       "endpoint": "/api/components/status/{component_id}",
       "primary": {
-        "status_code": 404,
+        "status_code": 200,
         "markers_found": [],
         "pass": true
       },
@@ -894,12 +894,12 @@
       "method": "POST",
       "endpoint": "/api/components/status/{component_id}",
       "primary": {
-        "status_code": 422,
+        "status_code": 405,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 405,
         "markers_found": [],
         "pass": true
       },
@@ -928,12 +928,12 @@
       "method": "POST",
       "endpoint": "/api/components/update/{component_id}",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -957,12 +957,12 @@
       "method": "POST",
       "endpoint": "/api/crash-detection/cancel-emergency-call",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -974,12 +974,12 @@
       "method": "POST",
       "endpoint": "/api/crash-detection/data",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -991,12 +991,12 @@
       "method": "POST",
       "endpoint": "/api/crash-detection/emergency-call",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1008,7 +1008,7 @@
       "method": "GET",
       "endpoint": "/api/crash-detection/health",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1020,7 +1020,7 @@
       "method": "GET",
       "endpoint": "/api/crash-detection/history",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1102,12 +1102,12 @@
       "method": "POST",
       "endpoint": "/api/crash-detection/start",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1119,7 +1119,7 @@
       "method": "GET",
       "endpoint": "/api/crash-detection/status",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1131,12 +1131,12 @@
       "method": "POST",
       "endpoint": "/api/crash-detection/stop",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1165,7 +1165,7 @@
       "method": "GET",
       "endpoint": "/api/darkweb/breaches",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1177,12 +1177,12 @@
       "method": "POST",
       "endpoint": "/api/darkweb/check",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1194,7 +1194,7 @@
       "method": "GET",
       "endpoint": "/api/darkweb/health",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1206,12 +1206,12 @@
       "method": "POST",
       "endpoint": "/api/darkweb/start-monitoring",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1223,7 +1223,7 @@
       "method": "GET",
       "endpoint": "/api/darkweb/status",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1235,12 +1235,12 @@
       "method": "POST",
       "endpoint": "/api/darkweb/stop-monitoring",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1252,7 +1252,7 @@
       "method": "GET",
       "endpoint": "/api/data-cleanup/health",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1264,12 +1264,12 @@
       "method": "POST",
       "endpoint": "/api/data-cleanup/periodic-scan",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1281,7 +1281,7 @@
       "method": "GET",
       "endpoint": "/api/data-cleanup/preferences",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1293,12 +1293,12 @@
       "method": "POST",
       "endpoint": "/api/data-cleanup/preferences",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1310,12 +1310,12 @@
       "method": "POST",
       "endpoint": "/api/data-cleanup/remove",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1327,7 +1327,7 @@
       "method": "GET",
       "endpoint": "/api/data-cleanup/report",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1339,12 +1339,12 @@
       "method": "POST",
       "endpoint": "/api/data-cleanup/scan",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
       "repeat": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1356,7 +1356,7 @@
       "method": "GET",
       "endpoint": "/api/data-cleanup/scan-status",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1368,7 +1368,7 @@
       "method": "GET",
       "endpoint": "/api/data-cleanup/status",
       "primary": {
-        "status_code": 422,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1438,7 +1438,7 @@
       "method": "GET",
       "endpoint": "/api/driving-reports/monthly/{user_id}",
       "primary": {
-        "status_code": 400,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1450,7 +1450,7 @@
       "method": "GET",
       "endpoint": "/api/driving-reports/recommendations/{user_id}",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1474,7 +1474,7 @@
       "method": "GET",
       "endpoint": "/api/driving-reports/safety-score/{user_id}",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1520,7 +1520,7 @@
       "method": "GET",
       "endpoint": "/api/driving-reports/violations/{user_id}",
       "primary": {
-        "status_code": 400,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1532,7 +1532,7 @@
       "method": "GET",
       "endpoint": "/api/driving-reports/weekly/{user_id}",
       "primary": {
-        "status_code": 400,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1754,7 +1754,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/achievements",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1766,7 +1766,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/achievements/claim",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1778,7 +1778,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/achievements/progress",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1790,7 +1790,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/achievements/unlock",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1802,7 +1802,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/balance",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1814,7 +1814,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/balance/{userId}",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1826,7 +1826,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/progress",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1838,7 +1838,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/progress/level",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1850,7 +1850,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/progress/reset",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1862,7 +1862,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/progress/stats",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1874,7 +1874,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/progress/update",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1886,7 +1886,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/rewards",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1898,7 +1898,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/rewards/claim",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1910,7 +1910,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/rewards/give",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1922,7 +1922,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/rewards/history",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },
@@ -1934,7 +1934,7 @@
       "method": "GET",
       "endpoint": "/api/gamification/rewards/purchase",
       "primary": {
-        "status_code": 200,
+        "status_code": 404,
         "markers_found": [],
         "pass": true
       },

@@ -8,10 +8,24 @@ import logging
 import os
 from datetime import datetime, timedelta
 from typing import Optional, Dict, Any
-from app.models.subscription import (
-    JWTToken, SubscriptionPayload, TrialInfo,
-    SubscriptionLimits, SubscriptionLevel
-)
+
+# Двойной путь импорта: backend/* и gateway/*
+try:  # основной путь для backend/main.py
+    from app.models.subscription import (
+        JWTToken,
+        SubscriptionPayload,
+        TrialInfo,
+        SubscriptionLimits,
+        SubscriptionLevel,
+    )
+except ImportError:  # fallback для gateway (main.py в корне)
+    from backend.app.models.subscription import (  # type: ignore[import]
+        JWTToken,
+        SubscriptionPayload,
+        TrialInfo,
+        SubscriptionLimits,
+        SubscriptionLevel,
+    )
 
 # ✅ JWT-003: Настройка логирования для диагностики JWT
 logger = logging.getLogger(__name__)

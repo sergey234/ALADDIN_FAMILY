@@ -176,7 +176,7 @@ class JWTTokenManager {
         print("🔄 JWT: Прямой HTTP запрос на обновление токена...")
 
         return await withCheckedContinuation { continuation in
-            let urlString = AppConfig.apiBaseURL + "/auth/refresh"
+            let urlString = AppConfig.apiBaseURL + AppConfig.Endpoint.authRefresh
             guard let url = URL(string: urlString) else {
                 print("❌ JWT: Неверный URL для обновления токена")
                 continuation.resume(returning: false)
@@ -266,7 +266,7 @@ class JWTTokenManager {
 
             let request = RefreshTokenRequest(refresh_token: refreshToken)
 
-            networkManager.post(endpoint: "/auth/refresh", body: request) { [weak self] (result: Result<RefreshTokenResponse, Error>) in
+            networkManager.post(endpoint: AppConfig.Endpoint.authRefresh, body: request) { [weak self] (result: Result<RefreshTokenResponse, Error>) in
                 switch result {
                 case .success(let response):
                     // Сохраняем новый access token

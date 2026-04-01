@@ -1,46 +1,71 @@
 {
   "base_url": "http://149.154.65.180:8002",
-  "generated_at": "2026-03-30T17:37:05",
+  "generated_at": "2026-04-02T01:04:07",
   "matrix_path": "docs/release/inventory/endpoint_matrix_enriched.json",
-  "total_checked": 138,
-  "passed": 138,
+  "total_checked": 381,
+  "passed": 381,
   "failed": 0,
   "pass": true,
   "status_distribution": {
-    "200": 68,
-    "422": 59,
+    "200": 164,
+    "422": 104,
+    "404": 110,
     "401": 1,
-    "404": 6,
-    "400": 3,
-    "405": 1
+    "405": 2
   },
   "method_distribution": {
-    "GET": 81,
-    "POST": 56,
-    "DELETE": 1
+    "GET": 243,
+    "POST": 131,
+    "DELETE": 5,
+    "PATCH": 1,
+    "PUT": 1
   },
   "component_distribution": {
-    "other": 1,
-    "payments": 1,
+    "other": 7,
+    "payments": 6,
     "AI Categories": 8,
     "AI Assistant": 8,
-    "system-ai-compat": 2,
+    "system-ai-compat": 3,
     "analytics": 3,
     "anti-tracker": 9,
     "auth": 5,
-    "subscription": 2,
-    "Other Functions": 3,
+    "subscription": 5,
+    "Other Functions": 10,
     "components": 9,
     "Components": 14,
     "crash-detection-compat": 3,
     "Crash Detection": 12,
     "Dark Web Monitoring": 6,
     "Data Cleanup": 9,
-    "misc-other-compat": 1,
+    "misc-other-compat": 9,
     "driving-reports": 11,
     "Elderly Interface": 4,
     "family": 11,
-    "Gamification": 16
+    "Gamification": 26,
+    "Identity Theft Protection": 11,
+    "IoT": 6,
+    "Location Bubble": 6,
+    "Metrics": 1,
+    "network-protection-compat": 8,
+    "Notifications": 2,
+    "notifications-compat": 4,
+    "Offline Storage": 5,
+    "Parental Control": 31,
+    "parental-compat": 3,
+    "Parental Control Bypass": 3,
+    "protection": 8,
+    "referral": 4,
+    "referral-test": 3,
+    "Reports": 49,
+    "Roadside Assistance": 5,
+    "App Settings": 10,
+    "subscription-compat": 5,
+    "Subscription": 6,
+    "subscription-events": 4,
+    "System Management": 11,
+    "user": 6,
+    "User Profile": 5,
+    "Parental Control Legacy": 7
   },
   "forbidden_markers": [
     "sfm_mock",
@@ -75,7 +100,7 @@
       "function": "set_age_restriction_api_ai_categories_age_restriction_post",
       "method": "POST",
       "endpoint": "/api/ai-categories/age-restriction",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -84,7 +109,7 @@
       "function": "allow_sites_api_ai_categories_allow_post",
       "method": "POST",
       "endpoint": "/api/ai-categories/allow",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -93,7 +118,7 @@
       "function": "block_sites_api_ai_categories_block_post",
       "method": "POST",
       "endpoint": "/api/ai-categories/block",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -102,7 +127,7 @@
       "function": "check_access_api_ai_categories_check_post",
       "method": "POST",
       "endpoint": "/api/ai-categories/check",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -111,7 +136,7 @@
       "function": "health_check_api_ai_categories_health_get",
       "method": "GET",
       "endpoint": "/api/ai-categories/health",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -120,7 +145,7 @@
       "function": "get_access_history_api_ai_categories_history_get",
       "method": "GET",
       "endpoint": "/api/ai-categories/history",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -129,7 +154,7 @@
       "function": "get_sites_api_ai_categories_sites_get",
       "method": "GET",
       "endpoint": "/api/ai-categories/sites",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -138,7 +163,7 @@
       "function": "get_status_api_ai_categories_status_get",
       "method": "GET",
       "endpoint": "/api/ai-categories/status",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -291,7 +316,7 @@
       "function": "get_settings_api_anti_tracker_settings_get",
       "method": "GET",
       "endpoint": "/api/anti-tracker/settings",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -300,7 +325,7 @@
       "function": "update_settings_api_anti_tracker_settings_post",
       "method": "POST",
       "endpoint": "/api/anti-tracker/settings",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -309,7 +334,7 @@
       "function": "get_statistics_api_anti_tracker_stats_get",
       "method": "GET",
       "endpoint": "/api/anti-tracker/stats",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -327,7 +352,7 @@
       "function": "get_tracker_lists_api_anti_tracker_trackers_get",
       "method": "GET",
       "endpoint": "/api/anti-tracker/trackers",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -435,7 +460,7 @@
       "function": "get_batch_component_status_api_components_batch_status_post",
       "method": "POST",
       "endpoint": "/api/components/batch/status",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -444,7 +469,7 @@
       "function": "components_bulk_update_compat_api_components_bulk_update_get",
       "method": "GET",
       "endpoint": "/api/components/bulk-update",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -453,7 +478,7 @@
       "function": "components_config_compat_api_components_config_get",
       "method": "GET",
       "endpoint": "/api/components/config",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -489,7 +514,7 @@
       "function": "update_component_configuration_api_components_configuration__component_id__post",
       "method": "POST",
       "endpoint": "/api/components/configuration/{component_id}",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -507,7 +532,7 @@
       "function": "disable_component_compat_api_components_disable_get",
       "method": "GET",
       "endpoint": "/api/components/disable",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -525,7 +550,7 @@
       "function": "enable_component_compat_api_components_enable_get",
       "method": "GET",
       "endpoint": "/api/components/enable",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -579,7 +604,7 @@
       "function": "restart_component_api_components_restart__component_id__post",
       "method": "POST",
       "endpoint": "/api/components/restart/{component_id}",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -588,7 +613,7 @@
       "function": "get_components_status_compat_api_components_status_get",
       "method": "GET",
       "endpoint": "/api/components/status",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -597,7 +622,7 @@
       "function": "get_all_components_status_api_components_status_all_get",
       "method": "GET",
       "endpoint": "/api/components/status/all",
-      "status_code": 404,
+      "status_code": 200,
       "markers_found": [],
       "pass": true
     },
@@ -606,7 +631,7 @@
       "function": "get_component_status_api_components_status__component_id__get",
       "method": "GET",
       "endpoint": "/api/components/status/{component_id}",
-      "status_code": 404,
+      "status_code": 200,
       "markers_found": [],
       "pass": true
     },
@@ -615,7 +640,7 @@
       "function": "update_component_status_compat_api_components_status__component_id__post",
       "method": "POST",
       "endpoint": "/api/components/status/{component_id}",
-      "status_code": 422,
+      "status_code": 405,
       "markers_found": [],
       "pass": true
     },
@@ -633,7 +658,7 @@
       "function": "update_component_api_components_update__component_id__post",
       "method": "POST",
       "endpoint": "/api/components/update/{component_id}",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -651,7 +676,7 @@
       "function": "cancel_emergency_call_api_crash_detection_cancel_emergency_call_post",
       "method": "POST",
       "endpoint": "/api/crash-detection/cancel-emergency-call",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -660,7 +685,7 @@
       "function": "process_sensor_data_api_crash_detection_data_post",
       "method": "POST",
       "endpoint": "/api/crash-detection/data",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -669,7 +694,7 @@
       "function": "call_emergency_api_crash_detection_emergency_call_post",
       "method": "POST",
       "endpoint": "/api/crash-detection/emergency-call",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -678,7 +703,7 @@
       "function": "health_check_api_crash_detection_health_get",
       "method": "GET",
       "endpoint": "/api/crash-detection/health",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -687,7 +712,7 @@
       "function": "get_crash_history_api_crash_detection_history_get",
       "method": "GET",
       "endpoint": "/api/crash-detection/history",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -741,7 +766,7 @@
       "function": "start_monitoring_api_crash_detection_start_post",
       "method": "POST",
       "endpoint": "/api/crash-detection/start",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -750,7 +775,7 @@
       "function": "get_status_api_crash_detection_status_get",
       "method": "GET",
       "endpoint": "/api/crash-detection/status",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -759,7 +784,7 @@
       "function": "stop_monitoring_api_crash_detection_stop_post",
       "method": "POST",
       "endpoint": "/api/crash-detection/stop",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -777,7 +802,7 @@
       "function": "get_breaches_api_darkweb_breaches_get",
       "method": "GET",
       "endpoint": "/api/darkweb/breaches",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -786,7 +811,7 @@
       "function": "check_email_breach_api_darkweb_check_post",
       "method": "POST",
       "endpoint": "/api/darkweb/check",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -795,7 +820,7 @@
       "function": "health_check_api_darkweb_health_get",
       "method": "GET",
       "endpoint": "/api/darkweb/health",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -804,7 +829,7 @@
       "function": "start_monitoring_api_darkweb_start_monitoring_post",
       "method": "POST",
       "endpoint": "/api/darkweb/start-monitoring",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -813,7 +838,7 @@
       "function": "get_monitoring_status_api_darkweb_status_get",
       "method": "GET",
       "endpoint": "/api/darkweb/status",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -822,7 +847,7 @@
       "function": "stop_monitoring_api_darkweb_stop_monitoring_post",
       "method": "POST",
       "endpoint": "/api/darkweb/stop-monitoring",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -831,7 +856,7 @@
       "function": "health_check_api_data_cleanup_health_get",
       "method": "GET",
       "endpoint": "/api/data-cleanup/health",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -840,7 +865,7 @@
       "function": "trigger_periodic_scan_api_data_cleanup_periodic_scan_post",
       "method": "POST",
       "endpoint": "/api/data-cleanup/periodic-scan",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -849,7 +874,7 @@
       "function": "get_user_preferences_api_data_cleanup_preferences_get",
       "method": "GET",
       "endpoint": "/api/data-cleanup/preferences",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -858,7 +883,7 @@
       "function": "update_user_preferences_api_data_cleanup_preferences_post",
       "method": "POST",
       "endpoint": "/api/data-cleanup/preferences",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -867,7 +892,7 @@
       "function": "remove_data_from_sites_api_data_cleanup_remove_post",
       "method": "POST",
       "endpoint": "/api/data-cleanup/remove",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -876,7 +901,7 @@
       "function": "get_cleanup_report_api_data_cleanup_report_get",
       "method": "GET",
       "endpoint": "/api/data-cleanup/report",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -885,7 +910,7 @@
       "function": "scan_broker_sites_api_data_cleanup_scan_post",
       "method": "POST",
       "endpoint": "/api/data-cleanup/scan",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -894,7 +919,7 @@
       "function": "get_scan_status_api_data_cleanup_scan_status_get",
       "method": "GET",
       "endpoint": "/api/data-cleanup/scan-status",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -903,7 +928,7 @@
       "function": "get_removal_status_api_data_cleanup_status_get",
       "method": "GET",
       "endpoint": "/api/data-cleanup/status",
-      "status_code": 422,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -948,7 +973,7 @@
       "function": "get_monthly_report_api_driving_reports_monthly__user_id__get",
       "method": "GET",
       "endpoint": "/api/driving-reports/monthly/{user_id}",
-      "status_code": 400,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -957,7 +982,7 @@
       "function": "get_recommendations_api_driving_reports_recommendations__user_id__get",
       "method": "GET",
       "endpoint": "/api/driving-reports/recommendations/{user_id}",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -975,7 +1000,7 @@
       "function": "get_safety_score_api_driving_reports_safety_score__user_id__get",
       "method": "GET",
       "endpoint": "/api/driving-reports/safety-score/{user_id}",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1002,7 +1027,7 @@
       "function": "get_violations_statistics_api_driving_reports_violations__user_id__get",
       "method": "GET",
       "endpoint": "/api/driving-reports/violations/{user_id}",
-      "status_code": 400,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1011,7 +1036,7 @@
       "function": "get_weekly_report_api_driving_reports_weekly__user_id__get",
       "method": "GET",
       "endpoint": "/api/driving-reports/weekly/{user_id}",
-      "status_code": 400,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1155,7 +1180,7 @@
       "function": "get_gamification_achievements_api_gamification_achievements_get",
       "method": "GET",
       "endpoint": "/api/gamification/achievements",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1164,7 +1189,7 @@
       "function": "claim_gamification_achievement_api_gamification_achievements_claim_get",
       "method": "GET",
       "endpoint": "/api/gamification/achievements/claim",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1173,7 +1198,7 @@
       "function": "get_gamification_achievements_progress_api_gamification_achievements_progress_get",
       "method": "GET",
       "endpoint": "/api/gamification/achievements/progress",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1182,7 +1207,7 @@
       "function": "unlock_gamification_achievement_api_gamification_achievements_unlock_get",
       "method": "GET",
       "endpoint": "/api/gamification/achievements/unlock",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1191,7 +1216,7 @@
       "function": "get_gamification_balance_current_api_gamification_balance_get",
       "method": "GET",
       "endpoint": "/api/gamification/balance",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1200,7 +1225,7 @@
       "function": "get_gamification_balance_api_gamification_balance__userId__get",
       "method": "GET",
       "endpoint": "/api/gamification/balance/{userId}",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1209,7 +1234,7 @@
       "function": "get_gamification_progress_api_gamification_progress_get",
       "method": "GET",
       "endpoint": "/api/gamification/progress",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1218,7 +1243,7 @@
       "function": "get_gamification_progress_level_api_gamification_progress_level_get",
       "method": "GET",
       "endpoint": "/api/gamification/progress/level",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1227,7 +1252,7 @@
       "function": "reset_gamification_progress_api_gamification_progress_reset_get",
       "method": "GET",
       "endpoint": "/api/gamification/progress/reset",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1236,7 +1261,7 @@
       "function": "get_gamification_progress_stats_api_gamification_progress_stats_get",
       "method": "GET",
       "endpoint": "/api/gamification/progress/stats",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1245,7 +1270,7 @@
       "function": "update_gamification_progress_api_gamification_progress_update_get",
       "method": "GET",
       "endpoint": "/api/gamification/progress/update",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1254,7 +1279,7 @@
       "function": "get_gamification_rewards_api_gamification_rewards_get",
       "method": "GET",
       "endpoint": "/api/gamification/rewards",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1263,7 +1288,7 @@
       "function": "claim_gamification_reward_api_gamification_rewards_claim_get",
       "method": "GET",
       "endpoint": "/api/gamification/rewards/claim",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1272,7 +1297,7 @@
       "function": "give_gamification_reward_api_gamification_rewards_give_get",
       "method": "GET",
       "endpoint": "/api/gamification/rewards/give",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1281,7 +1306,7 @@
       "function": "get_gamification_rewards_history_api_gamification_rewards_history_get",
       "method": "GET",
       "endpoint": "/api/gamification/rewards/history",
-      "status_code": 200,
+      "status_code": 404,
       "markers_found": [],
       "pass": true
     },
@@ -1290,6 +1315,2193 @@
       "function": "purchase_gamification_reward_api_gamification_rewards_purchase_get",
       "method": "GET",
       "endpoint": "/api/gamification/rewards/purchase",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Gamification",
+      "function": "get_gamification_rewards_shop_api_gamification_rewards_shop_get",
+      "method": "GET",
+      "endpoint": "/api/gamification/rewards/shop",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Gamification",
+      "function": "get_gamification_settings_api_gamification_settings_get",
+      "method": "GET",
+      "endpoint": "/api/gamification/settings",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Gamification",
+      "function": "get_gamification_notifications_settings_api_gamification_settings_notifications_get",
+      "method": "GET",
+      "endpoint": "/api/gamification/settings/notifications",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Gamification",
+      "function": "update_gamification_notifications_settings_api_gamification_settings_notifications_update_get",
+      "method": "GET",
+      "endpoint": "/api/gamification/settings/notifications/update",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Gamification",
+      "function": "update_gamification_settings_api_gamification_settings_update_get",
+      "method": "GET",
+      "endpoint": "/api/gamification/settings/update",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Gamification",
+      "function": "get_gamification_tournaments_api_gamification_tournaments_get",
+      "method": "GET",
+      "endpoint": "/api/gamification/tournaments",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Gamification",
+      "function": "get_gamification_tournaments_history_api_gamification_tournaments_history_get",
+      "method": "GET",
+      "endpoint": "/api/gamification/tournaments/history",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Gamification",
+      "function": "join_gamification_tournament_api_gamification_tournaments_join_get",
+      "method": "GET",
+      "endpoint": "/api/gamification/tournaments/join",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Gamification",
+      "function": "get_gamification_tournaments_leaderboard_api_gamification_tournaments_leaderboard_get",
+      "method": "GET",
+      "endpoint": "/api/gamification/tournaments/leaderboard",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Gamification",
+      "function": "leave_gamification_tournament_api_gamification_tournaments_leave_get",
+      "method": "GET",
+      "endpoint": "/api/gamification/tournaments/leave",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "other",
+      "function": "health_api_health_get",
+      "method": "GET",
+      "endpoint": "/api/health",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Identity Theft Protection",
+      "function": "get_alerts_api_identity_theft_alerts_get",
+      "method": "GET",
+      "endpoint": "/api/identity-theft/alerts",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Identity Theft Protection",
+      "function": "check_fraud_database_api_identity_theft_check_post",
+      "method": "POST",
+      "endpoint": "/api/identity-theft/check",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Identity Theft Protection",
+      "function": "give_consent_api_identity_theft_consent_post",
+      "method": "POST",
+      "endpoint": "/api/identity-theft/consent",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Identity Theft Protection",
+      "function": "get_credit_freeze_instructions_api_identity_theft_credit_freeze_instructions_get",
+      "method": "GET",
+      "endpoint": "/api/identity-theft/credit-freeze-instructions",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Identity Theft Protection",
+      "function": "detect_identity_theft_api_identity_theft_detect_post",
+      "method": "POST",
+      "endpoint": "/api/identity-theft/detect",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Identity Theft Protection",
+      "function": "health_check_api_identity_theft_health_get",
+      "method": "GET",
+      "endpoint": "/api/identity-theft/health",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Identity Theft Protection",
+      "function": "monitor_credit_api_identity_theft_monitor_credit_post",
+      "method": "POST",
+      "endpoint": "/api/identity-theft/monitor-credit",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Identity Theft Protection",
+      "function": "monitor_snils_api_identity_theft_monitor_snils_post",
+      "method": "POST",
+      "endpoint": "/api/identity-theft/monitor-snils",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Identity Theft Protection",
+      "function": "revoke_consent_api_identity_theft_revoke_consent_post",
+      "method": "POST",
+      "endpoint": "/api/identity-theft/revoke-consent",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Identity Theft Protection",
+      "function": "get_monitoring_status_api_identity_theft_status_get",
+      "method": "GET",
+      "endpoint": "/api/identity-theft/status",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Identity Theft Protection",
+      "function": "stop_monitoring_api_identity_theft_stop_monitoring_post",
+      "method": "POST",
+      "endpoint": "/api/identity-theft/stop-monitoring",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "IoT",
+      "function": "block_iot_device_api_iot_device__deviceId__block_post",
+      "method": "POST",
+      "endpoint": "/api/iot/device/{deviceId}/block",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "IoT",
+      "function": "get_iot_devices_api_iot_devices__homeId__get",
+      "method": "GET",
+      "endpoint": "/api/iot/devices/{homeId}",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "IoT",
+      "function": "fix_iot_threat_api_iot_fix__threatId__post",
+      "method": "POST",
+      "endpoint": "/api/iot/fix/{threatId}",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "IoT",
+      "function": "start_iot_scan_api_iot_scan__homeId__post",
+      "method": "POST",
+      "endpoint": "/api/iot/scan/{homeId}",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "IoT",
+      "function": "get_iot_status_api_iot_status__homeId__get",
+      "method": "GET",
+      "endpoint": "/api/iot/status/{homeId}",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "IoT",
+      "function": "get_iot_threats_api_iot_threats__homeId__get",
+      "method": "GET",
+      "endpoint": "/api/iot/threats/{homeId}",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Location Bubble",
+      "function": "get_bubble_location_api_location_bubble_post",
+      "method": "POST",
+      "endpoint": "/api/location/bubble",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Location Bubble",
+      "function": "health_check_api_location_bubble_health_get",
+      "method": "GET",
+      "endpoint": "/api/location/bubble/health",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Location Bubble",
+      "function": "get_generation_history_api_location_bubble_history_get",
+      "method": "GET",
+      "endpoint": "/api/location/bubble/history",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Location Bubble",
+      "function": "get_person_settings_api_location_bubble_settings_get",
+      "method": "GET",
+      "endpoint": "/api/location/bubble/settings",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Location Bubble",
+      "function": "set_person_settings_api_location_bubble_settings_post",
+      "method": "POST",
+      "endpoint": "/api/location/bubble/settings",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Location Bubble",
+      "function": "get_all_person_settings_api_location_bubble_settings_all_get",
+      "method": "GET",
+      "endpoint": "/api/location/bubble/settings/all",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "misc-other-compat",
+      "function": "location_geofences_api_location_geofences_get",
+      "method": "GET",
+      "endpoint": "/api/location/geofences",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Other Functions",
+      "function": "sync_location_geofences_api_location_geofences_sync_post",
+      "method": "POST",
+      "endpoint": "/api/location/geofences/sync",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Other Functions",
+      "function": "update_location_geofence_api_location_geofences_update_post",
+      "method": "POST",
+      "endpoint": "/api/location/geofences/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Other Functions",
+      "function": "delete_location_geofence_api_location_geofences__geofenceId__delete",
+      "method": "DELETE",
+      "endpoint": "/api/location/geofences/{geofenceId}",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Other Functions",
+      "function": "get_movement_history_api_location_movement_history_get",
+      "method": "GET",
+      "endpoint": "/api/location/movement-history",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Other Functions",
+      "function": "update_movement_history_api_location_movement_history_update_post",
+      "method": "POST",
+      "endpoint": "/api/location/movement-history/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Other Functions",
+      "function": "get_location_status_api_location_status_get",
+      "method": "GET",
+      "endpoint": "/api/location/status",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Other Functions",
+      "function": "update_location_status_api_location_status_update_post",
+      "method": "POST",
+      "endpoint": "/api/location/status/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "misc-other-compat",
+      "function": "malware_quarantine_action_api_malware_quarantine_action_get",
+      "method": "GET",
+      "endpoint": "/api/malware/quarantine/action",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "misc-other-compat",
+      "function": "malware_threats_api_malware_threats_get",
+      "method": "GET",
+      "endpoint": "/api/malware/threats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Metrics",
+      "function": "upload_metrics_api_metrics_upload_post",
+      "method": "POST",
+      "endpoint": "/api/metrics/upload",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "network-protection-compat",
+      "function": "network_protection_config_api_network_protection_config_get",
+      "method": "GET",
+      "endpoint": "/api/network-protection/config",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "network-protection-compat",
+      "function": "network_protection_connect_api_network_protection_connect_get",
+      "method": "GET",
+      "endpoint": "/api/network-protection/connect",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "network-protection-compat",
+      "function": "network_protection_disconnect_api_network_protection_disconnect_get",
+      "method": "GET",
+      "endpoint": "/api/network-protection/disconnect",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "network-protection-compat",
+      "function": "network_protection_servers_api_network_protection_servers_get",
+      "method": "GET",
+      "endpoint": "/api/network-protection/servers",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "network-protection-compat",
+      "function": "network_protection_settings_api_network_protection_settings_get",
+      "method": "GET",
+      "endpoint": "/api/network-protection/settings",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "network-protection-compat",
+      "function": "patch_network_protection_settings_api_network_protection_settings_patch",
+      "method": "PATCH",
+      "endpoint": "/api/network-protection/settings",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "network-protection-compat",
+      "function": "network_protection_stats_api_network_protection_stats_get",
+      "method": "GET",
+      "endpoint": "/api/network-protection/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "network-protection-compat",
+      "function": "network_protection_status_api_network_protection_status_get",
+      "method": "GET",
+      "endpoint": "/api/network-protection/status",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Notifications",
+      "function": "list_notifications_api_notifications_get",
+      "method": "GET",
+      "endpoint": "/api/notifications",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "notifications-compat",
+      "function": "notifications_archive_api_notifications_archive_get",
+      "method": "GET",
+      "endpoint": "/api/notifications/archive",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "notifications-compat",
+      "function": "notifications_bulk_mark_read_api_notifications_bulk_mark_read_get",
+      "method": "GET",
+      "endpoint": "/api/notifications/bulk-mark-read",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "notifications-compat",
+      "function": "notifications_categories_api_notifications_categories_get",
+      "method": "GET",
+      "endpoint": "/api/notifications/categories",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Notifications",
+      "function": "mark_notification_read_api_notifications_read_post",
+      "method": "POST",
+      "endpoint": "/api/notifications/read",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "notifications-compat",
+      "function": "notifications_stats_api_notifications_stats_get",
+      "method": "GET",
+      "endpoint": "/api/notifications/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Offline Storage",
+      "function": "get_offline_data_api_offline_storage_data_get",
+      "method": "GET",
+      "endpoint": "/api/offline-storage/data",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Offline Storage",
+      "function": "update_offline_data_api_offline_storage_data_update_post",
+      "method": "POST",
+      "endpoint": "/api/offline-storage/data/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Offline Storage",
+      "function": "delete_offline_data_api_offline_storage_data__dataId__delete",
+      "method": "DELETE",
+      "endpoint": "/api/offline-storage/data/{dataId}",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Offline Storage",
+      "function": "resolve_offline_storage_conflicts_api_offline_storage_resolve_conflicts_post",
+      "method": "POST",
+      "endpoint": "/api/offline-storage/resolve-conflicts",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Offline Storage",
+      "function": "sync_offline_storage_api_offline_storage_sync_post",
+      "method": "POST",
+      "endpoint": "/api/offline-storage/sync",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_parental_app_blocks_api_parental_control_app_blocks_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/app-blocks",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "sync_app_blocks_api_parental_control_app_blocks_sync_post",
+      "method": "POST",
+      "endpoint": "/api/parental-control/app-blocks/sync",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "update_app_blocks_api_parental_control_app_blocks_update_post",
+      "method": "POST",
+      "endpoint": "/api/parental-control/app-blocks/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_app_blocks_api_parental_control_app_blocks__childId__get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/app-blocks/{childId}",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_dns_config_api_parental_control_dns_config_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/dns-config",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_parental_geofences_api_parental_control_geofences_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/geofences",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "add_geofence_api_parental_control_geofences_add_post",
+      "method": "POST",
+      "endpoint": "/api/parental-control/geofences/add",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "update_geofence_api_parental_control_geofences_update_post",
+      "method": "POST",
+      "endpoint": "/api/parental-control/geofences/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_geofences_api_parental_control_geofences__childId__get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/geofences/{childId}",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "delete_geofence_api_parental_control_geofences__geofenceId__delete",
+      "method": "DELETE",
+      "endpoint": "/api/parental-control/geofences/{geofenceId}",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "report_location_api_parental_control_location_report_post",
+      "method": "POST",
+      "endpoint": "/api/parental-control/location/report",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_daily_reports_api_parental_control_reports_daily_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/reports/daily",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_weekly_reports_api_parental_control_reports_weekly_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/reports/weekly",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_parental_schedules_api_parental_control_schedules_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/schedules",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "delete_schedule_api_parental_control_schedules_delete_post",
+      "method": "POST",
+      "endpoint": "/api/parental-control/schedules/delete",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_schedules_history_api_parental_control_schedules_history_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/schedules/history",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "update_schedule_api_parental_control_schedules_update_post",
+      "method": "POST",
+      "endpoint": "/api/parental-control/schedules/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_schedules_api_parental_control_schedules__childId__get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/schedules/{childId}",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_parental_settings_api_parental_control_settings_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/settings",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_parental_control_settings_conflicts_api_parental_control_settings_conflicts_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/settings/conflicts",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_parental_control_settings_history_api_parental_control_settings_history_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/settings/history",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "sync_parental_control_settings_api_parental_control_settings_sync_post",
+      "method": "POST",
+      "endpoint": "/api/parental-control/settings/sync",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "update_parental_control_settings_api_parental_control_settings_update_post",
+      "method": "POST",
+      "endpoint": "/api/parental-control/settings/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_parental_control_settings_api_parental_control_settings__familyId__get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/settings/{familyId}",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_parental_control_stats_api_parental_control_stats_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_parental_manager_status_api_parental_control_status_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/status",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_parental_time_limits_api_parental_control_time_limits_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/time-limits",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_time_limits_history_api_parental_control_time_limits_history_get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/time-limits/history",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "reset_time_limits_api_parental_control_time_limits_reset_post",
+      "method": "POST",
+      "endpoint": "/api/parental-control/time-limits/reset",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "update_time_limits_api_parental_control_time_limits_update_post",
+      "method": "POST",
+      "endpoint": "/api/parental-control/time-limits/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control",
+      "function": "get_time_limits_api_parental_control_time_limits__childId__get",
+      "method": "GET",
+      "endpoint": "/api/parental-control/time-limits/{childId}",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "parental-compat",
+      "function": "parental_block_api_parental_block_get",
+      "method": "GET",
+      "endpoint": "/api/parental/block",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control Bypass",
+      "function": "apply_bypass_protection_api_parental_bypass_apply_post",
+      "method": "POST",
+      "endpoint": "/api/parental/bypass/apply",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control Bypass",
+      "function": "get_bypass_stats_api_parental_bypass_stats_get",
+      "method": "GET",
+      "endpoint": "/api/parental/bypass/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control Bypass",
+      "function": "get_bypass_manager_status_api_parental_bypass_status_get",
+      "method": "GET",
+      "endpoint": "/api/parental/bypass/status",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "parental-compat",
+      "function": "parental_control_api_parental_control_get",
+      "method": "GET",
+      "endpoint": "/api/parental/control",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "parental-compat",
+      "function": "parental_limits_api_parental_limits_get",
+      "method": "GET",
+      "endpoint": "/api/parental/limits",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "payments",
+      "function": "confirm_payment_api_payments_confirm_post",
+      "method": "POST",
+      "endpoint": "/api/payments/confirm",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "payments",
+      "function": "create_payment_api_payments_create_post",
+      "method": "POST",
+      "endpoint": "/api/payments/create",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "payments",
+      "function": "create_payment_qr_api_payments_qr_create_post",
+      "method": "POST",
+      "endpoint": "/api/payments/qr/create",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "misc-other-compat",
+      "function": "payments_qr_status_test_api_payments_qr_status_test_get",
+      "method": "GET",
+      "endpoint": "/api/payments/qr/status/test",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "payments",
+      "function": "recover_payment_code_api_payments_recover_post",
+      "method": "POST",
+      "endpoint": "/api/payments/recover",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "payments",
+      "function": "check_payment_status_api_payments_status__payment_id__get",
+      "method": "GET",
+      "endpoint": "/api/payments/status/{payment_id}",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "protection",
+      "function": "disable_protection_category_api_protection_disable_post",
+      "method": "POST",
+      "endpoint": "/api/protection/disable",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "protection",
+      "function": "enable_protection_category_api_protection_enable_post",
+      "method": "POST",
+      "endpoint": "/api/protection/enable",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "misc-other-compat",
+      "function": "protection_quarantine_action_api_protection_quarantine_action_get",
+      "method": "GET",
+      "endpoint": "/api/protection/quarantine/action",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "protection",
+      "function": "get_protection_settings_api_protection_settings_get",
+      "method": "GET",
+      "endpoint": "/api/protection/settings",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "protection",
+      "function": "update_protection_settings_api_protection_settings_post",
+      "method": "POST",
+      "endpoint": "/api/protection/settings",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "protection",
+      "function": "get_protection_stats_api_protection_stats_get",
+      "method": "GET",
+      "endpoint": "/api/protection/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "protection",
+      "function": "get_protection_status_api_protection_status_get",
+      "method": "GET",
+      "endpoint": "/api/protection/status",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "protection",
+      "function": "sync_protection_settings_api_protection_sync_post",
+      "method": "POST",
+      "endpoint": "/api/protection/sync",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "protection",
+      "function": "get_threat_scenarios_api_protection_threat_scenarios_get",
+      "method": "GET",
+      "endpoint": "/api/protection/threat-scenarios",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "misc-other-compat",
+      "function": "protection_threats_api_protection_threats_get",
+      "method": "GET",
+      "endpoint": "/api/protection/threats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "misc-other-compat",
+      "function": "protection_threats_test_api_protection_threats_test_get",
+      "method": "GET",
+      "endpoint": "/api/protection/threats/test",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "referral",
+      "function": "get_referral_code_api_referral_code_get",
+      "method": "GET",
+      "endpoint": "/api/referral/code",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "referral",
+      "function": "get_referral_history_api_referral_history_get",
+      "method": "GET",
+      "endpoint": "/api/referral/history",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "referral",
+      "function": "get_referral_rewards_api_referral_rewards_get",
+      "method": "GET",
+      "endpoint": "/api/referral/rewards",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "referral",
+      "function": "get_referral_stats_api_referral_stats_get",
+      "method": "GET",
+      "endpoint": "/api/referral/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "referral-test",
+      "function": "test_apply_discount_api_referral_test_discount_apply_get",
+      "method": "GET",
+      "endpoint": "/api/referral/test/discount/apply",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "referral-test",
+      "function": "test_confirm_payment_api_referral_test_payment_confirm_post",
+      "method": "POST",
+      "endpoint": "/api/referral/test/payment/confirm",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "referral-test",
+      "function": "test_create_payment_api_referral_test_payment_create_post",
+      "method": "POST",
+      "endpoint": "/api/referral/test/payment/create",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_ai_categories_allow_api_reports_ai_categories_allow_get",
+      "method": "GET",
+      "endpoint": "/api/reports/ai-categories/allow",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_ai_categories_block_api_reports_ai_categories_block_get",
+      "method": "GET",
+      "endpoint": "/api/reports/ai-categories/block",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_ai_categories_reports_api_reports_ai_categories_reports_get",
+      "method": "GET",
+      "endpoint": "/api/reports/ai-categories/reports",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "get_ai_categories_stats_api_reports_ai_categories_stats_get",
+      "method": "GET",
+      "endpoint": "/api/reports/ai-categories/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_dark_web_leaks_compat_api_reports_dark_web_leaks_get",
+      "method": "GET",
+      "endpoint": "/api/reports/dark-web/leaks",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_dark_web_leaks_api_reports_dark_web_leaks_list_get",
+      "method": "GET",
+      "endpoint": "/api/reports/dark-web/leaks/list",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_dark_web_resolve_api_reports_dark_web_resolve_get",
+      "method": "GET",
+      "endpoint": "/api/reports/dark-web/resolve",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_dark_web_scan_fast_api_reports_dark_web_scan_fast_get",
+      "method": "GET",
+      "endpoint": "/api/reports/dark-web/scan/fast",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_dark_web_scan_secure_api_reports_dark_web_scan_secure_get",
+      "method": "GET",
+      "endpoint": "/api/reports/dark-web/scan/secure",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_dark_web_scan_start_api_reports_dark_web_scan_start_get",
+      "method": "GET",
+      "endpoint": "/api/reports/dark-web/scan/start",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_dark_web_scan_start_post_api_reports_dark_web_scan_start_post",
+      "method": "POST",
+      "endpoint": "/api/reports/dark-web/scan/start",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_dark_web_scans_api_reports_dark_web_scans_get",
+      "method": "GET",
+      "endpoint": "/api/reports/dark-web/scans",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "get_dark_web_stats_api_reports_dark_web_stats_get",
+      "method": "GET",
+      "endpoint": "/api/reports/dark-web/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_driving_root_api_reports_driving_get",
+      "method": "GET",
+      "endpoint": "/api/reports/driving",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_driving_behavior_api_reports_driving_behavior_get",
+      "method": "GET",
+      "endpoint": "/api/reports/driving/behavior",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_driving_end_api_reports_driving_end_get",
+      "method": "GET",
+      "endpoint": "/api/reports/driving/end",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_driving_events_api_reports_driving_events_get",
+      "method": "GET",
+      "endpoint": "/api/reports/driving/events",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_driving_export_api_reports_driving_export_get",
+      "method": "GET",
+      "endpoint": "/api/reports/driving/export",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_driving_score_api_reports_driving_score_get",
+      "method": "GET",
+      "endpoint": "/api/reports/driving/score",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_driving_start_api_reports_driving_start_get",
+      "method": "GET",
+      "endpoint": "/api/reports/driving/start",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "get_driving_reports_stats_api_reports_driving_stats_get",
+      "method": "GET",
+      "endpoint": "/api/reports/driving/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_identity_theft_allow_api_reports_identity_theft_allow_get",
+      "method": "GET",
+      "endpoint": "/api/reports/identity-theft/allow",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_identity_theft_allow_post_api_reports_identity_theft_allow_post",
+      "method": "POST",
+      "endpoint": "/api/reports/identity-theft/allow",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_identity_theft_attempts_compat_api_reports_identity_theft_attempts_get",
+      "method": "GET",
+      "endpoint": "/api/reports/identity-theft/attempts",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_identity_theft_attempts_api_reports_identity_theft_attempts_list_get",
+      "method": "GET",
+      "endpoint": "/api/reports/identity-theft/attempts/list",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_identity_theft_block_api_reports_identity_theft_block_get",
+      "method": "GET",
+      "endpoint": "/api/reports/identity-theft/block",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_identity_theft_block_post_api_reports_identity_theft_block_post",
+      "method": "POST",
+      "endpoint": "/api/reports/identity-theft/block",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "get_identity_theft_stats_api_reports_identity_theft_stats_get",
+      "method": "GET",
+      "endpoint": "/api/reports/identity-theft/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_identity_theft_whitelist_api_reports_identity_theft_whitelist_get",
+      "method": "GET",
+      "endpoint": "/api/reports/identity-theft/whitelist",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_cleanup_records_compat_api_reports_privacy_cleanup_records_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/cleanup/records",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_cleanup_records_api_reports_privacy_cleanup_records_list_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/cleanup/records/list",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_cleanup_start_api_reports_privacy_cleanup_start_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/cleanup/start",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_cleanup_start_post_api_reports_privacy_cleanup_start_post",
+      "method": "POST",
+      "endpoint": "/api/reports/privacy/cleanup/start",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "get_cleanup_stats_api_reports_privacy_cleanup_stats_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/cleanup/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_location_allow_api_reports_privacy_location_allow_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/location/allow",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_location_allow_post_api_reports_privacy_location_allow_post",
+      "method": "POST",
+      "endpoint": "/api/reports/privacy/location/allow",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_location_block_api_reports_privacy_location_block_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/location/block",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_location_block_post_api_reports_privacy_location_block_post",
+      "method": "POST",
+      "endpoint": "/api/reports/privacy/location/block",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_location_bubble_api_reports_privacy_location_bubble_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/location/bubble",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_location_requests_compat_api_reports_privacy_location_requests_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/location/requests",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_location_requests_api_reports_privacy_location_requests_list_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/location/requests/list",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_location_send_api_reports_privacy_location_send_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/location/send",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "get_location_stats_api_reports_privacy_location_stats_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/location/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_location_update_accuracy_api_reports_privacy_location_update_accuracy_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/location/update-accuracy",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "get_tracker_stats_api_reports_privacy_tracker_stats_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/tracker/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_tracker_top_compat_api_reports_privacy_tracker_top_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/tracker/top",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_tracker_top_api_reports_privacy_tracker_top_list_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/tracker/top/list",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_tracker_whitelist_api_reports_privacy_tracker_whitelist_get",
+      "method": "GET",
+      "endpoint": "/api/reports/privacy/tracker/whitelist",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Reports",
+      "function": "reports_privacy_tracker_whitelist_post_api_reports_privacy_tracker_whitelist_post",
+      "method": "POST",
+      "endpoint": "/api/reports/privacy/tracker/whitelist",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Roadside Assistance",
+      "function": "call_assistance_api_roadside_assistance_call_post",
+      "method": "POST",
+      "endpoint": "/api/roadside-assistance/call",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Roadside Assistance",
+      "function": "cancel_request_api_roadside_assistance_cancel__request_id__post",
+      "method": "POST",
+      "endpoint": "/api/roadside-assistance/cancel/{request_id}",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Roadside Assistance",
+      "function": "health_check_api_roadside_assistance_health_get",
+      "method": "GET",
+      "endpoint": "/api/roadside-assistance/health",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Roadside Assistance",
+      "function": "get_history_api_roadside_assistance_history_get",
+      "method": "GET",
+      "endpoint": "/api/roadside-assistance/history",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Roadside Assistance",
+      "function": "get_status_api_roadside_assistance_status__request_id__get",
+      "method": "GET",
+      "endpoint": "/api/roadside-assistance/status/{request_id}",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "App Settings",
+      "function": "get_biometry_settings_api_settings_biometry_get",
+      "method": "GET",
+      "endpoint": "/api/settings/biometry",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "App Settings",
+      "function": "update_biometry_settings_api_settings_biometry_update_post",
+      "method": "POST",
+      "endpoint": "/api/settings/biometry/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "App Settings",
+      "function": "get_language_settings_api_settings_language_get",
+      "method": "GET",
+      "endpoint": "/api/settings/language",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "App Settings",
+      "function": "update_language_settings_api_settings_language_update_post",
+      "method": "POST",
+      "endpoint": "/api/settings/language/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "App Settings",
+      "function": "get_notification_settings_api_settings_notifications_get",
+      "method": "GET",
+      "endpoint": "/api/settings/notifications",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "App Settings",
+      "function": "update_notification_settings_api_settings_notifications_update_post",
+      "method": "POST",
+      "endpoint": "/api/settings/notifications/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "App Settings",
+      "function": "sync_app_settings_api_settings_sync_post",
+      "method": "POST",
+      "endpoint": "/api/settings/sync",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "App Settings",
+      "function": "get_theme_settings_api_settings_theme_get",
+      "method": "GET",
+      "endpoint": "/api/settings/theme",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "App Settings",
+      "function": "update_theme_settings_api_settings_theme_update_post",
+      "method": "POST",
+      "endpoint": "/api/settings/theme/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "App Settings",
+      "function": "update_app_settings_api_settings_update_post",
+      "method": "POST",
+      "endpoint": "/api/settings/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription-compat",
+      "function": "subscription_activate_api_subscription_activate_get",
+      "method": "GET",
+      "endpoint": "/api/subscription/activate",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription-compat",
+      "function": "subscription_activation_activate_api_subscription_activation_activate_get",
+      "method": "GET",
+      "endpoint": "/api/subscription/activation/activate",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription-compat",
+      "function": "subscription_activation_verify_api_subscription_activation_verify_get",
+      "method": "GET",
+      "endpoint": "/api/subscription/activation/verify",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Subscription",
+      "function": "get_auto_renewal_api_subscription_auto_renewal_get",
+      "method": "GET",
+      "endpoint": "/api/subscription/auto-renewal",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Subscription",
+      "function": "update_auto_renewal_api_subscription_auto_renewal_update_post",
+      "method": "POST",
+      "endpoint": "/api/subscription/auto-renewal/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription",
+      "function": "cancel_subscription_api_subscription_cancel_post",
+      "method": "POST",
+      "endpoint": "/api/subscription/cancel",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription-events",
+      "function": "alert_check_subscription_events_api_subscription_events_alert_check_get",
+      "method": "GET",
+      "endpoint": "/api/subscription/events/alert/check",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription-events",
+      "function": "ingest_subscription_events_batch_api_subscription_events_batch_post",
+      "method": "POST",
+      "endpoint": "/api/subscription/events/batch",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription-events",
+      "function": "get_recent_subscription_events_api_subscription_events_recent_get",
+      "method": "GET",
+      "endpoint": "/api/subscription/events/recent",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription-events",
+      "function": "get_subscription_events_summary_api_subscription_events_stats_summary_get",
+      "method": "GET",
+      "endpoint": "/api/subscription/events/stats/summary",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Subscription",
+      "function": "get_purchase_history_api_subscription_purchase_history_get",
+      "method": "GET",
+      "endpoint": "/api/subscription/purchase-history",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription",
+      "function": "get_subscription_status_api_subscription_status_get",
+      "method": "GET",
+      "endpoint": "/api/subscription/status",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Subscription",
+      "function": "update_subscription_status_api_subscription_status_update_post",
+      "method": "POST",
+      "endpoint": "/api/subscription/status/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription-compat",
+      "function": "subscription_subscribe_api_subscription_subscribe_get",
+      "method": "GET",
+      "endpoint": "/api/subscription/subscribe",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Subscription",
+      "function": "sync_subscription_api_subscription_sync_post",
+      "method": "POST",
+      "endpoint": "/api/subscription/sync",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription-compat",
+      "function": "subscription_tariffs_api_subscription_tariffs_get",
+      "method": "GET",
+      "endpoint": "/api/subscription/tariffs",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Subscription",
+      "function": "update_subscription_api_subscription_update_post",
+      "method": "POST",
+      "endpoint": "/api/subscription/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "subscription",
+      "function": "validate_receipt_api_subscription_validate_receipt_post",
+      "method": "POST",
+      "endpoint": "/api/subscription/validate-receipt",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "System Management",
+      "function": "create_backup_api_system_backup_post",
+      "method": "POST",
+      "endpoint": "/api/system/backup",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "System Management",
+      "function": "get_backup_status_api_system_backup_status_get",
+      "method": "GET",
+      "endpoint": "/api/system/backup/status",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "System Management",
+      "function": "get_system_health_api_system_health_get",
+      "method": "GET",
+      "endpoint": "/api/system/health",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "System Management",
+      "function": "get_system_info_api_system_info_get",
+      "method": "GET",
+      "endpoint": "/api/system/info",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "System Management",
+      "function": "get_system_logs_api_system_logs_get",
+      "method": "GET",
+      "endpoint": "/api/system/logs",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "System Management",
+      "function": "set_maintenance_mode_api_system_maintenance_post",
+      "method": "POST",
+      "endpoint": "/api/system/maintenance",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "System Management",
+      "function": "get_system_metrics_api_system_metrics_get",
+      "method": "GET",
+      "endpoint": "/api/system/metrics",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "System Management",
+      "function": "get_system_resources_api_system_resources_get",
+      "method": "GET",
+      "endpoint": "/api/system/resources",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "System Management",
+      "function": "restart_system_api_system_restart_post",
+      "method": "POST",
+      "endpoint": "/api/system/restart",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "system-ai-compat",
+      "function": "system_status_compat_api_system_status_get",
+      "method": "GET",
+      "endpoint": "/api/system/status",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "System Management",
+      "function": "get_system_uptime_api_system_uptime_get",
+      "method": "GET",
+      "endpoint": "/api/system/uptime",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "System Management",
+      "function": "get_system_version_api_system_version_get",
+      "method": "GET",
+      "endpoint": "/api/system/version",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "misc-other-compat",
+      "function": "api_test_api_test_get",
+      "method": "GET",
+      "endpoint": "/api/test",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "user",
+      "function": "user_2fa_status_compat_api_user_2fa_status_get",
+      "method": "GET",
+      "endpoint": "/api/user/2fa/status",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "user",
+      "function": "user_2fa_update_compat_api_user_2fa_update_get",
+      "method": "GET",
+      "endpoint": "/api/user/2fa/update",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "user",
+      "function": "delete_user_compat_api_user_delete_get",
+      "method": "GET",
+      "endpoint": "/api/user/delete",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "user",
+      "function": "change_password_compat_api_user_password_get",
+      "method": "GET",
+      "endpoint": "/api/user/password",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "user",
+      "function": "get_user_profile_compat_api_user_profile_get",
+      "method": "GET",
+      "endpoint": "/api/user/profile",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "User Profile",
+      "function": "get_user_profile_history_api_user_profile_history_get",
+      "method": "GET",
+      "endpoint": "/api/user/profile/history",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "User Profile",
+      "function": "get_user_privacy_settings_api_user_profile_privacy_get",
+      "method": "GET",
+      "endpoint": "/api/user/profile/privacy",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "User Profile",
+      "function": "update_user_privacy_settings_api_user_profile_privacy_update_post",
+      "method": "POST",
+      "endpoint": "/api/user/profile/privacy/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "User Profile",
+      "function": "sync_user_profile_api_user_profile_sync_post",
+      "method": "POST",
+      "endpoint": "/api/user/profile/sync",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "User Profile",
+      "function": "update_user_profile_api_user_profile_update_post",
+      "method": "POST",
+      "endpoint": "/api/user/profile/update",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "user",
+      "function": "update_user_compat_api_user_update_get",
+      "method": "GET",
+      "endpoint": "/api/user/update",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control Legacy",
+      "function": "get_legacy_access_requests_api_v1_parental_control_access_requests_get",
+      "method": "GET",
+      "endpoint": "/api/v1/parental-control/access-requests",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control Legacy",
+      "function": "handle_legacy_access_request_api_v1_parental_control_access_requests_post",
+      "method": "POST",
+      "endpoint": "/api/v1/parental-control/access-requests",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control Legacy",
+      "function": "get_legacy_parental_blocking_api_v1_parental_control_blocking_get",
+      "method": "GET",
+      "endpoint": "/api/v1/parental-control/blocking",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control Legacy",
+      "function": "get_legacy_location_geofences_api_v1_parental_control_location_geofences_get",
+      "method": "GET",
+      "endpoint": "/api/v1/parental-control/location/geofences",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control Legacy",
+      "function": "track_legacy_location_api_v1_parental_control_location_track_post",
+      "method": "POST",
+      "endpoint": "/api/v1/parental-control/location/track",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control Legacy",
+      "function": "apply_legacy_parental_rules_api_v1_parental_control_rules_post",
+      "method": "POST",
+      "endpoint": "/api/v1/parental-control/rules",
+      "status_code": 422,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "Parental Control Legacy",
+      "function": "get_legacy_stats_api_v1_parental_control_stats_get",
+      "method": "GET",
+      "endpoint": "/api/v1/parental-control/stats",
+      "status_code": 200,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "other",
+      "function": "wildcard_handler_api__path__get",
+      "method": "DELETE",
+      "endpoint": "/api/{path}",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "other",
+      "function": "wildcard_handler_api__path__get",
+      "method": "GET",
+      "endpoint": "/api/{path}",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "other",
+      "function": "wildcard_handler_api__path__get",
+      "method": "POST",
+      "endpoint": "/api/{path}",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "other",
+      "function": "wildcard_handler_api__path__get",
+      "method": "PUT",
+      "endpoint": "/api/{path}",
+      "status_code": 404,
+      "markers_found": [],
+      "pass": true
+    },
+    {
+      "component": "other",
+      "function": "prometheus_metrics_metrics_get",
+      "method": "GET",
+      "endpoint": "/metrics",
       "status_code": 200,
       "markers_found": [],
       "pass": true

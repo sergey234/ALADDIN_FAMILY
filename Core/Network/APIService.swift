@@ -115,6 +115,11 @@ class APIService: ObservableObject {
             case .success:
                 completion(result)
             case .failure(let error):
+                if case .notFound = NetworkError.from(error) {
+                    // Backward-compat fallback for environments where gateway exposes legacy family paths.
+                    self.networkManager.post(endpoint: "/family/create", body: request, requiresAuth: true, completion: completion)
+                    return
+                }
                 let networkError = NetworkError.from(error)
                 let shouldBootstrapToken: Bool
                 switch networkError {
@@ -149,6 +154,11 @@ class APIService: ObservableObject {
             case .success:
                 completion(result)
             case .failure(let error):
+                if case .notFound = NetworkError.from(error) {
+                    // Backward-compat fallback for environments where gateway exposes legacy family paths.
+                    self.networkManager.post(endpoint: "/family/join", body: request, requiresAuth: true, completion: completion)
+                    return
+                }
                 let networkError = NetworkError.from(error)
                 let shouldBootstrapToken: Bool
                 switch networkError {
@@ -268,6 +278,11 @@ class APIService: ObservableObject {
             case .success:
                 completion(result)
             case .failure(let error):
+                if case .notFound = NetworkError.from(error) {
+                    // Backward-compat fallback for environments where gateway exposes legacy family paths.
+                    self.networkManager.get(endpoint: "/family/members", completion: completion)
+                    return
+                }
                 let networkError = NetworkError.from(error)
                 let shouldBootstrapToken: Bool
                 switch networkError {
@@ -319,6 +334,17 @@ class APIService: ObservableObject {
             }
             let request = RemoveMemberRequest(memberId: memberId, source: source, reason: reason)
             networkManager.delete(endpoint: AppConfig.Endpoint.removeFamilyMember, body: request) { (result: Result<FamilyMemberResponse, Error>) in
+                if case .failure(let error) = result, case .notFound = NetworkError.from(error) {
+                    self.networkManager.delete(endpoint: "/family/remove", body: request) { (fallbackResult: Result<FamilyMemberResponse, Error>) in
+                        guard !hasResumed else {
+                            logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in removeFamilyMember() fallback!")
+                            return
+                        }
+                        hasResumed = true
+                        continuation.resume(with: fallbackResult)
+                    }
+                    return
+                }
                 guard !hasResumed else {
                     logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in removeFamilyMember()!")
                     return

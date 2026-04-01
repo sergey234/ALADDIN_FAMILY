@@ -36,10 +36,10 @@ class IoTSecurityModule: ObservableObject {
         // ПРОСТО запрос к серверу
         let response = try await apiService.getIoTDevices(homeId: homeId)
         
-        // Обновление UI
+        // Обновление UI (в этом методе обновляем только список устройств,
+        // угрозы отдельно подтягиваются через loadStatus/monitorCameras)
         await MainActor.run {
             iotDevices = response.devices
-            threatsDetected = response.threats ?? []
         }
     }
     
@@ -55,12 +55,15 @@ class IoTSecurityModule: ObservableObject {
     
     /// ТОЛЬКО запрос к API
     func checkPasswords(homeId: String) async throws {
-        let response = try await apiService.getIoTStatus(homeId: homeId)
+        let status = try await apiService.getIoTStatus(homeId: homeId)
         
-        // Отображаем рекомендации с сервера
+        // На сегодняшний день backend не отдаёт отдельные рекомендации по паролям в IoT‑статусе,
+        // поэтому используем агрегированный уровень защиты как сигнал для UI.
+        let protectionPercent = IoTSecurityModule.mapProtectionLevelToPercent(status.protectionLevel)
+        
         await MainActor.run {
-            recommendations = response.recommendations ?? []
-            protectionLevel = response.protectionLevel ?? 0
+            recommendations = [] // резерв под будущие server‑side рекомендации
+            protectionLevel = protectionPercent
         }
     }
     
@@ -96,13 +99,21 @@ class IoTSecurityModule: ObservableObject {
     func loadStatus(homeId: String) async throws {
         currentHomeId = homeId
         
-        let response = try await apiService.getIoTStatus(homeId: homeId)
+        // Параллельно запрашиваем статус, список устройств и угроз
+        async let statusTask = apiService.getIoTStatus(homeId: homeId)
+        async let devicesTask = apiService.getIoTDevices(homeId: homeId)
+        async let threatsTask = apiService.getIoTThreats(homeId: homeId)
+        
+        let (status, devicesResponse, threatsResponse) = try await (statusTask, devicesTask, threatsTask)
+        
+        let protectionPercent = IoTSecurityModule.mapProtectionLevelToPercent(status.protectionLevel)
         
         await MainActor.run {
-            iotDevices = response.devices ?? []
-            threatsDetected = response.threats ?? []
-            recommendations = response.recommendations ?? []
-            protectionLevel = response.protectionLevel ?? 0
+            iotDevices = devicesResponse.devices
+            threatsDetected = threatsResponse.threats
+            // Пока сервер не отдаёт рекомендации по IoT — оставляем пустой список
+            recommendations = []
+            protectionLevel = protectionPercent
         }
     }
     
@@ -113,6 +124,14 @@ class IoTSecurityModule: ObservableObject {
         }
         
         try await loadStatus(homeId: homeId)
+    }
+    
+    // MARK: - Helpers
+    
+    /// Маппинг уровня защиты 0–5 в проценты 0–100 для UI
+    private static func mapProtectionLevelToPercent(_ level: Int) -> Int {
+        let clamped = max(0, min(level, 5))
+        return Int((Double(clamped) / 5.0) * 100.0)
     }
     
     // MARK: - Device Discovery

@@ -429,7 +429,11 @@ class FamilyRegistrationViewModel: ObservableObject {
                        let ageGroup = self?.selectedAgeGroup {
                         // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ ПОДРОСТКА: Добавляем логирование
                         print("🔍 Создание семьи: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue)")
-                        self?.saveCreatorAsFamilyMember(role: role, ageGroup: ageGroup)
+                        self?.saveCreatorAsFamilyMember(
+                            role: role,
+                            ageGroup: ageGroup,
+                            serverMemberId: response.your_member_id
+                        )
                         logger.business("✅ Creator saved as family member: \(role.rawValue), ageGroup: \(ageGroup.rawValue)")
                         
                         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительная синхронизация UserDefaults
@@ -812,7 +816,11 @@ class FamilyRegistrationViewModel: ObservableObject {
                     // ✅ НОВОЕ: Сохраняем присоединившегося участника в family_members_list
                     // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ ПОДРОСТКА: Добавляем логирование
                     print("🔍 Присоединение к семье: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue)")
-                    self?.saveJoinedMemberAsFamilyMember(role: role, ageGroup: ageGroup)
+                    self?.saveJoinedMemberAsFamilyMember(
+                        role: role,
+                        ageGroup: ageGroup,
+                        serverMemberId: data.your_member_id
+                    )
                     
                     // ✅ НОВОЕ: Инициализируем стартовый баланс единорога для детей
                     // Если это ребенок, устанавливаем стартовый баланс 100 единорогов
@@ -936,7 +944,7 @@ class FamilyRegistrationViewModel: ObservableObject {
     /**
      * Сохранить создателя семьи в family_members_list
      */
-    private func saveCreatorAsFamilyMember(role: FamilyRole, ageGroup: AgeGroup) {
+    private func saveCreatorAsFamilyMember(role: FamilyRole, ageGroup: AgeGroup, serverMemberId: String? = nil) {
         // Получаем имя пользователя из UserDefaults или используем дефолтное
         let userName = UserDefaults.standard.string(forKey: "current_user_name") ?? "Вы"
         
@@ -1006,7 +1014,10 @@ class FamilyRegistrationViewModel: ObservableObject {
         
         if !isDuplicate {
             // ✅ ИСПРАВЛЕНИЕ: Добавляем нового участника к существующему списку
+            let serverId = serverMemberId?.trimmingCharacters(in: .whitespacesAndNewlines)
             let newMember = FamilyMemberData(
+                id: (serverId?.isEmpty == false ? serverId! : UUID().uuidString),
+                serverMemberId: (serverId?.isEmpty == false ? serverId : nil),
                 name: userName,
                 role: cardRole,
                 avatar: avatar,
@@ -1072,7 +1083,7 @@ class FamilyRegistrationViewModel: ObservableObject {
     /**
      * Сохранить присоединившегося участника в family_members_list
      */
-    private func saveJoinedMemberAsFamilyMember(role: FamilyRole, ageGroup: AgeGroup) {
+    private func saveJoinedMemberAsFamilyMember(role: FamilyRole, ageGroup: AgeGroup, serverMemberId: String? = nil) {
         // Получаем имя пользователя из UserDefaults или используем дефолтное
         let userName = UserDefaults.standard.string(forKey: "current_user_name") ?? "Вы"
         
@@ -1142,7 +1153,10 @@ class FamilyRegistrationViewModel: ObservableObject {
         
         if !isDuplicate {
             // ✅ ИСПРАВЛЕНИЕ: Добавляем нового участника к существующему списку
+            let serverId = serverMemberId?.trimmingCharacters(in: .whitespacesAndNewlines)
             let newMember = FamilyMemberData(
+                id: (serverId?.isEmpty == false ? serverId! : UUID().uuidString),
+                serverMemberId: (serverId?.isEmpty == false ? serverId : nil),
                 name: userName,
                 role: cardRole,
                 avatar: avatar,
@@ -1231,91 +1245,15 @@ struct JoinFamilyRequest: Codable {
 extension NetworkManager {
     
     func createFamily(request: CreateFamilyRequest, completion: @escaping (Result<CreateFamilyResponse, Error>) -> Void) {
-        guard let url = URL(string: "\(AppConfig.baseURL)/family/create") else {
-            completion(.failure(NSError(domain: "Invalid URL", code: -1)))
-            return
-        }
-        
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "POST"
-        urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        urlRequest.httpBody = try? JSONEncoder().encode(request)
-        
-        URLSession.shared.dataTask(with: urlRequest) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(NSError(domain: "No data", code: -1)))
-                return
-            }
-            
-            do {
-                let decoded = try JSONDecoder().decode(CreateFamilyResponse.self, from: data)
-                completion(.success(decoded))
-            } catch {
-                completion(.failure(error))
-            }
-        }.resume()
+        post(endpoint: AppConfig.Endpoint.createFamily, body: request, requiresAuth: true, completion: completion)
     }
     
     func joinFamily(request: JoinFamilyRequest, completion: @escaping (Result<JoinFamilyResponse, Error>) -> Void) {
-        guard let url = URL(string: "\(AppConfig.baseURL)/family/join") else {
-            completion(.failure(NSError(domain: "Invalid URL", code: -1)))
-            return
-        }
-        
-        var urlRequest = URLRequest(url: url)
-        urlRequest.httpMethod = "POST"
-        urlRequest.addValue("application/json", forHTTPHeaderField: "Content-Type")
-        urlRequest.httpBody = try? JSONEncoder().encode(request)
-        
-        URLSession.shared.dataTask(with: urlRequest) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(NSError(domain: "No data", code: -1)))
-                return
-            }
-            
-            do {
-                let decoded = try JSONDecoder().decode(JoinFamilyResponse.self, from: data)
-                completion(.success(decoded))
-            } catch {
-                completion(.failure(error))
-            }
-        }.resume()
+        post(endpoint: AppConfig.Endpoint.joinFamily, body: request, requiresAuth: true, completion: completion)
     }
     
     func recoverFamily(familyID: String, completion: @escaping (Result<RecoverFamilyResponse, Error>) -> Void) {
-        guard let url = URL(string: "\(AppConfig.baseURL)/family/recover/\(familyID)") else {
-            completion(.failure(NSError(domain: "Invalid URL", code: -1)))
-            return
-        }
-        
-        URLSession.shared.dataTask(with: url) { data, response, error in
-            if let error = error {
-                completion(.failure(error))
-                return
-            }
-            
-            guard let data = data else {
-                completion(.failure(NSError(domain: "No data", code: -1)))
-                return
-            }
-            
-            do {
-                let decoded = try JSONDecoder().decode(RecoverFamilyResponse.self, from: data)
-                completion(.success(decoded))
-            } catch {
-                completion(.failure(error))
-            }
-        }.resume()
+        get(endpoint: "\(AppConfig.Endpoint.recoverFamily)/\(familyID)", requiresAuth: true, completion: completion)
     }
 }
 

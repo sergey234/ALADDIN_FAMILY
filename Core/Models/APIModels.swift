@@ -1331,6 +1331,7 @@ struct ReferralRewardItem: Codable, Identifiable {
 // MARK: - IoT Models
 
 struct IoTDevice: Codable, Identifiable {
+    /// Внутренний ID устройства в клиенте (совпадает с deviceId на сервере)
     let id: String
     let name: String
     let type: IoTDeviceType
@@ -1342,7 +1343,7 @@ struct IoTDevice: Codable, Identifiable {
     let lastSeen: String?
     
     enum CodingKeys: String, CodingKey {
-        case id
+        case id = "deviceId"
         case name
         case type
         case ip
@@ -1350,7 +1351,7 @@ struct IoTDevice: Codable, Identifiable {
         case vendor
         case model
         case status
-        case lastSeen = "last_seen"
+        case lastSeen
     }
 }
 
@@ -1411,12 +1412,12 @@ struct IoTThreat: Codable, Identifiable {
     let recommendations: [String]?
     
     enum CodingKeys: String, CodingKey {
-        case id
-        case threatType = "threat_type"
+        case id = "threatId"
+        case threatType
         case severity
-        case description
-        case timestamp
-        case deviceId = "device_id"
+        case description = "deviceName"
+        case timestamp = "detectedAt"
+        case deviceId
         case recommendations
     }
 }
@@ -1429,6 +1430,8 @@ enum IoTThreatType: String, Codable {
     case physicalTampering = "physical_tampering"
     case dataLeak = "data_leak"
     case unauthorizedAccess = "unauthorized_access"
+    case vulnerability = "vulnerability"
+    case malware = "malware"
     case camera
     case unknown = "unknown"
 }
@@ -1441,37 +1444,36 @@ enum ThreatSeverity: String, Codable {
 }
 
 struct IoTStatusResponse: Codable {
+    /// ID умного дома
     let homeId: String
-    let devices: [IoTDevice]?
-    let threats: [IoTThreat]?
-    let recommendations: [String]?
-    let protectionLevel: Int?
-    let lastScan: String?
-    
-    enum CodingKeys: String, CodingKey {
-        case homeId = "home_id"
-        case devices
-        case threats
-        case recommendations
-        case protectionLevel = "protection_level"
-        case lastScan = "last_scan"
-    }
+    /// Общее число устройств
+    let totalDevices: Int
+    /// Онлайн‑устройства
+    let onlineDevices: Int
+    /// Оффлайн‑устройства
+    let offlineDevices: Int
+    /// Устройства с угрозами
+    let threatDevices: Int
+    /// Время последнего сканирования (ISO‑строка)
+    let lastScan: String
+    /// Уровень защиты 0–5 (агрегированный)
+    let protectionLevel: Int
+    /// Статус: protected / warning / danger
+    let status: String
 }
 
 struct IoTDevicesResponse: Codable {
+    let homeId: String
     let devices: [IoTDevice]
-    let threats: [IoTThreat]?
-    let total: Int?
-    let compromised: Int?
-    let safe: Int?
+    let total: Int
 }
 
 struct IoTThreatsResponse: Codable {
     let threats: [IoTThreat]
-    let total: Int?
-    let high: Int?
-    let medium: Int?
-    let low: Int?
+    let total: Int
+    let high: Int
+    let medium: Int
+    let low: Int
 }
 
 struct ReferralHistoryItem: Codable, Identifiable {
