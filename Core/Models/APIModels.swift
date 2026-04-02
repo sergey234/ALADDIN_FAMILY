@@ -139,6 +139,8 @@ struct ParentalReportItem: Codable, Identifiable {
 struct FamilyMemberData: Identifiable, Codable {
     var id: String = UUID().uuidString
     var serverMemberId: String?
+    /// Признак локального участника, которого ещё нет на сервере (nil трактуем как false для обратной совместимости)
+    var localOnly: Bool?
     var name: String
     var role: FamilyMemberCard.FamilyRole
     var avatar: String

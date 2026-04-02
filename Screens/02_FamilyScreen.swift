@@ -348,6 +348,7 @@ struct FamilyScreen: View {
                         return FamilyMemberData(
                             id: member.id,
                             serverMemberId: member.id,
+                            localOnly: false,
                             name: member.name,
                             role: role,
                             avatar: avatar,
@@ -470,6 +471,14 @@ struct FamilyScreen: View {
     private func requestRemoveFamilyMember(_ member: FamilyMemberData) {
         removeMemberErrorMessage = nil
         removeMemberSuccessMessage = nil
+
+        // Блокируем удаление для локальных-only участников, которых ещё нет на сервере
+        if (member.localOnly ?? false) || (member.serverMemberId == nil && !member.id.hasPrefix("MEM_")) {
+            removeMemberErrorMessage = localizationManager.currentLanguage == .russian
+                ? "Этот участник ещё не синхронизирован с сервером. Подождите подтверждения и повторите."
+                : "This member is not yet synchronized with the server. Please try again after sync."
+            return
+        }
 
         guard isUserParent || isFamilyCreator else {
             removeMemberErrorMessage = localizationManager.currentLanguage == .russian

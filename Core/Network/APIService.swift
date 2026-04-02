@@ -342,14 +342,25 @@ class APIService: ObservableObject {
         hasRetriedAfterTokenBootstrap: Bool,
         completion: @escaping (Result<FamilyMemberResponse, Error>) -> Void
     ) {
+        VisualLogger.shared.log("➡️ FAMILY ADD(server) name=\(request.name), role=\(request.role)", level: .info, category: "FAMILY")
         networkManager.post(endpoint: AppConfig.Endpoint.addFamilyMember, body: request, requiresAuth: true) { (result: Result<FamilyMemberResponse, Error>) in
             switch result {
-            case .success:
+            case .success(let response):
+                VisualLogger.shared.log("⬅️ FAMILY ADD(server) success: id=\(response.id) name=\(response.name)", level: .success, category: "FAMILY")
                 completion(result)
             case .failure(let error):
                 if case .notFound = NetworkError.from(error) {
                     // Backward-compat fallback для окружений с legacy путями /family/*
-                    self.networkManager.post(endpoint: "/family/add", body: request, requiresAuth: true, completion: completion)
+                    VisualLogger.shared.log("↪️ FAMILY ADD(compat) fallback /family/add", level: .warning, category: "FAMILY")
+                    self.networkManager.post(endpoint: "/family/add", body: request, requiresAuth: true) { (fallback: Result<FamilyMemberResponse, Error>) in
+                        switch fallback {
+                        case .success(let resp):
+                            VisualLogger.shared.log("⬅️ FAMILY ADD(compat) success: id=\(resp.id) name=\(resp.name)", level: .success, category: "FAMILY")
+                        case .failure(let err):
+                            VisualLogger.shared.log("❌ FAMILY ADD(compat) error: \(err.localizedDescription)", level: .error, category: "FAMILY")
+                        }
+                        completion(fallback)
+                    }
                     return
                 }
 
@@ -363,6 +374,7 @@ class APIService: ObservableObject {
                 }
 
                 guard !hasRetriedAfterTokenBootstrap, shouldBootstrapToken else {
+                    VisualLogger.shared.log("❌ FAMILY ADD(server) error: \(error.localizedDescription)", level: .error, category: "FAMILY")
                     completion(.failure(error))
                     return
                 }
@@ -370,8 +382,10 @@ class APIService: ObservableObject {
                 self.bootstrapDeviceTokenIfNeeded(forceRefresh: true) { bootstrapResult in
                     switch bootstrapResult {
                     case .success:
+                        VisualLogger.shared.log("🔄 FAMILY ADD(server) retry after token bootstrap", level: .info, category: "FAMILY")
                         self.performAddFamilyMember(request: request, hasRetriedAfterTokenBootstrap: true, completion: completion)
                     case .failure(let bootstrapError):
+                        VisualLogger.shared.log("❌ FAMILY ADD(server) bootstrap failed: \(bootstrapError.localizedDescription)", level: .error, category: "FAMILY")
                         completion(.failure(bootstrapError))
                     }
                 }

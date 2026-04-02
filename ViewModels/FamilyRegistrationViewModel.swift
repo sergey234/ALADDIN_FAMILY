@@ -1050,6 +1050,7 @@ class FamilyRegistrationViewModel: ObservableObject {
             let newMember = FamilyMemberData(
                 id: (serverId?.isEmpty == false ? serverId! : UUID().uuidString),
                 serverMemberId: (serverId?.isEmpty == false ? serverId : nil),
+                localOnly: (serverId?.isEmpty != false), // true если нет serverId
                 name: userName,
                 role: cardRole,
                 avatar: avatar,
@@ -1189,6 +1190,7 @@ class FamilyRegistrationViewModel: ObservableObject {
             let newMember = FamilyMemberData(
                 id: (serverId?.isEmpty == false ? serverId! : UUID().uuidString),
                 serverMemberId: (serverId?.isEmpty == false ? serverId : nil),
+            localOnly: (serverId?.isEmpty != false),
                 name: userName,
                 role: cardRole,
                 avatar: avatar,

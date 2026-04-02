@@ -576,14 +576,36 @@ async def add_family_member(
         gen = get_postgres_db()
         db = next(gen)
         try:
-            # Находим актуальную семью пользователя
-            fam_row = db.execute(
-                text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
+            # Определяем актёра (член семьи) и его роль в семье
+            actor_row = db.execute(
+                text(
+                    """
+                    SELECT fm.family_id, fm.role
+                    FROM family_members fm
+                    WHERE fm.user_id = :user_id
+                    ORDER BY fm.last_active DESC
+                    LIMIT 1
+                    """
+                ),
                 {"user_id": user_id},
             ).fetchone()
-            if not fam_row:
-                raise HTTPException(status_code=404, detail="Family not found")
-            family_id = fam_row[0]
+            if not actor_row:
+                # Фолбек для старой модели: владелец семьи
+                fam_row = db.execute(
+                    text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
+                    {"user_id": user_id},
+                ).fetchone()
+                if not fam_row:
+                    raise HTTPException(status_code=404, detail="Family not found")
+                family_id = fam_row[0]
+                actor_role = "parent"  # допускаем владельца как администратора
+            else:
+                family_id = actor_row[0]
+                actor_role = str(actor_row[1]).lower() if actor_row[1] is not None else "unknown"
+
+            # Политика доступа: добавлять может только администратор (родитель)
+            if actor_role != "parent":
+                raise HTTPException(status_code=403, detail="Only administrators can add members")
 
             member_id = f"MEM_{uuid.uuid4().hex[:12].upper()}"
             status_val = "protected"
@@ -618,6 +640,7 @@ async def add_family_member(
                 family_id=str(family_id),
                 member_id=member_id,
                 role=role,
+                actor_role=actor_role,
                 name=name,
                 timestamp=datetime.now().isoformat(),
             )
@@ -758,6 +781,10 @@ async def remove_family_member(
             ).fetchone()
             actor_member_id = str(actor_row[0]) if actor_row else None
             actor_role = str(actor_row[1]).lower() if actor_row and actor_row[1] is not None else "unknown"
+
+            # Политика доступа: удалять может только администратор (родитель)
+            if actor_role != "parent":
+                raise HTTPException(status_code=403, detail="Only administrators can remove members")
 
             if actor_member_id and actor_member_id == str(payload.memberId):
                 raise HTTPException(status_code=400, detail="Self-removal is not allowed")
