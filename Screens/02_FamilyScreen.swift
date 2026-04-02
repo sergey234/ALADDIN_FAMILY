@@ -17,6 +17,7 @@ struct FamilyScreen: View {
     @State private var removeMemberSuccessMessage: String? = nil
     @State private var pendingRemovalMember: FamilyMemberData? = nil
     @State private var deletingMemberIds: Set<String> = []
+    // Quick-add sheet was removed; we use navigation to AddMemberOptionsScreen
     
     // UserDefaults ключи для участников семьи
     private let familyMembersKey = "family_members_list"
@@ -264,6 +265,7 @@ struct FamilyScreen: View {
         
         isFamilySyncInProgress = true
         print("🔄 [syncFamilyMembersFromAPI] Начинаем синхронизацию участников семьи с сервером")
+        VisualLogger.shared.log("🔄 FAMILY SYNC: start", level: .info, category: "FAMILY")
         let apiService = APIService.shared
         
         apiService.getFamilyMembers { result in
@@ -271,15 +273,28 @@ struct FamilyScreen: View {
                 defer { self.isFamilySyncInProgress = false }
                 switch result {
                 case .success(let members):
+                    let serverIds = members.map { $0.id }
+                    let localIdsBefore = self.familyMembers.map { $0.id }
                     print("✅ [syncFamilyMembersFromAPI] Получено \(members.count) участников с сервера")
+                    VisualLogger.shared.log("✅ FAMILY SYNC: server=\(members.count), local=\(localIdsBefore.count)", level: .success, category: "FAMILY")
+                    let serverIdsStr = serverIds.joined(separator: ", ")
+                    let localIdsBeforeStr = localIdsBefore.joined(separator: ", ")
+                    VisualLogger.shared.log("🧩 IDs server: \(serverIdsStr)", level: .debug, category: "FAMILY")
+                    VisualLogger.shared.log("🧩 IDs local(before): \(localIdsBeforeStr)", level: .debug, category: "FAMILY")
 
                     // Не перетираем локальный непустой список пустым серверным ответом.
                     // Это защищает UI при задержке server-side propagation после локального добавления.
                     if members.isEmpty && !self.familyMembers.isEmpty {
                         print("ℹ️ [syncFamilyMembersFromAPI] Сервер вернул 0, локально есть \(self.familyMembers.count) — сохраняем локальный список")
+                        VisualLogger.shared.log("ℹ️ FAMILY SYNC: server empty while local non-empty — keep local", level: .warning, category: "FAMILY")
                         return
                     }
                     
+                    // Защита от частичных ответов сервера:
+                    // если сервер прислал меньше участников, чем локально, не "усыхаем" список,
+                    // а объединяем (merge) и оставляем максимум информации, пока не придёт полный ответ.
+                    let localBefore = self.familyMembers
+
                     // Захватываем localizationManager до замыкания map
                     let locManager = self.localizationManager
                     
@@ -341,21 +356,59 @@ struct FamilyScreen: View {
                             lastActive: member.lastActive ?? ""
                         )
                     }
-                    
+
+                    // Merge-стратегия: объединяем локальные и серверные данные по id.
+                    // При конфликте отдаём приоритет серверным данным.
+                    var mergedById: [String: FamilyMemberData] = [:]
+                    for item in localBefore {
+                        mergedById[item.id] = item
+                    }
+                    for item in convertedMembers {
+                        mergedById[item.id] = item
+                    }
+                    let mergedMembers = Array(mergedById.values)
+                        .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+
+                    // Если сервер прислал меньше, чем локально, не уменьшаем список до "усечённого".
+                    // Ждём следующую синхронизацию, сохраняя объединённый список.
+                    let serverIdSet = Set(convertedMembers.map { $0.id })
+                    let localIdSet = Set(localBefore.map { $0.id })
+                    let isServerSubset = serverIdSet.isSubset(of: localIdSet) && serverIdSet.count < localIdSet.count
+                    if isServerSubset {
+                        print("ℹ️ [syncFamilyMembersFromAPI] Частичный ответ сервера (\(serverIdSet.count) < \(localIdSet.count)), применяем merge без усечения")
+                        VisualLogger.shared.log("ℹ️ FAMILY SYNC: partial server subset (server \(serverIdSet.count) < local \(localIdSet.count))", level: .warning, category: "FAMILY")
+                    }
+
                     // Обновляем только при реальном изменении, чтобы не создавать цикл save->reload
                     let oldIds = Set(self.familyMembers.map { $0.id })
-                    let newIds = Set(convertedMembers.map { $0.id })
-                    if oldIds != newIds || self.familyMembers.count != convertedMembers.count {
-                        self.familyMembers = convertedMembers
+                    let newIds = Set(mergedMembers.map { $0.id })
+                    if oldIds != newIds || self.familyMembers.count != mergedMembers.count {
+                        self.familyMembers = mergedMembers
                         self.saveFamilyMembers()
+                        let localIdsAfter = self.familyMembers.map { $0.id }
+                        VisualLogger.shared.log("💾 FAMILY SYNC: saved merged members (\(localIdsAfter.count))", level: .success, category: "FAMILY")
+                        let localIdsAfterStr = localIdsAfter.joined(separator: ", ")
+                        VisualLogger.shared.log("🧩 IDs local(after): \(localIdsAfterStr)", level: .debug, category: "FAMILY")
                     } else {
                         print("ℹ️ [syncFamilyMembersFromAPI] Изменений нет, save пропущен")
+                        VisualLogger.shared.log("ℹ️ FAMILY SYNC: no changes, skip save", level: .info, category: "FAMILY")
                     }
-                    
+
+                    // Если заметили "усыхание", планируем повторную попытку через небольшую задержку
+                    if isServerSubset {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                            print("🔁 [syncFamilyMembersFromAPI] Повторная попытка получить полный список после частичного ответа")
+                            VisualLogger.shared.log("🔁 FAMILY SYNC: retry after partial server subset", level: .info, category: "FAMILY")
+                            self.syncFamilyMembersFromAPI()
+                        }
+                    }
+
                     print("✅ [syncFamilyMembersFromAPI] Синхронизация завершена: \(convertedMembers.count) участников сохранено")
+                    VisualLogger.shared.log("✅ FAMILY SYNC: completed", level: .success, category: "FAMILY")
                     
                 case .failure(let error):
                     print("❌ [syncFamilyMembersFromAPI] Ошибка синхронизации: \(error.localizedDescription)")
+                    VisualLogger.shared.log("❌ FAMILY SYNC: error \(error.localizedDescription)", level: .error, category: "FAMILY")
                     // При ошибке продолжаем использовать локальные данные
                 }
             }
@@ -373,10 +426,45 @@ struct FamilyScreen: View {
             familyMembers.append(member)
             saveFamilyMembers()
             print("✅ Added new family member: \(member.name) (\(member.role))")
+            VisualLogger.shared.log("➕ FAMILY ADD(local): \(member.name) [\(member.role)]", level: .info, category: "FAMILY")
+
+            // Локальное сохранение оставляем как кэш для мгновенного UI,
+            // затем сразу дожимаем серверную запись и повторный fetch.
+            Task {
+                // Быстрая проверка контекста авторизации/семьи, чтобы не отправлять запрос в неверном контексте
+                let currentToken = AppConfig.authToken ?? KeychainManager.shared.loadString(forKey: .authToken)
+                let currentFamilyId = UserDefaults.standard.string(forKey: "family_id")
+                guard let _ = currentToken, let _ = currentFamilyId, !member.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    await MainActor.run {
+                        print("⚠️ [addFamilyMember] Пропускаем серверный add: нет валидного токена/семьи или пустое имя")
+                        VisualLogger.shared.log("⚠️ FAMILY ADD(server): skipped — invalid token/familyId or empty name", level: .warning, category: "FAMILY")
+                    }
+                    return
+                }
+                do {
+                    _ = try await APIService.shared.addFamilyMember(
+                        name: member.name,
+                        role: serverRole(for: member.role)
+                    )
+                    await MainActor.run {
+                        print("✅ [addFamilyMember] Участник добавлен на сервер, запускаем синхронизацию")
+                        VisualLogger.shared.log("✅ FAMILY ADD(server): \(member.name) — success, syncing...", level: .success, category: "FAMILY")
+                        syncFamilyMembersFromAPI()
+                    }
+                } catch {
+                    await MainActor.run {
+                        print("⚠️ [addFamilyMember] Локально добавлено, но сервер не подтвердил: \(error.localizedDescription)")
+                        VisualLogger.shared.log("❌ FAMILY ADD(server): failed \(error.localizedDescription)", level: .error, category: "FAMILY")
+                    }
+                }
+            }
         } else {
             print("⚠️ Family member already exists: \(member.name) (\(member.role))")
+            VisualLogger.shared.log("ℹ️ FAMILY ADD(local): duplicate \(member.name) — skipped", level: .info, category: "FAMILY")
         }
     }
+
+    // Quick add flow removed; using navigation to AddMemberOptionsScreen
     
     // ✅ НОВАЯ ФУНКЦИЯ: Удаление участника семьи
     private func requestRemoveFamilyMember(_ member: FamilyMemberData) {
@@ -544,6 +632,19 @@ struct FamilyScreen: View {
         case .child: return "👧"
         case .teenager: return "🧒"
         case .elderly: return "👵"
+        }
+    }
+
+    private func serverRole(for role: FamilyMemberCard.FamilyRole) -> String {
+        switch role {
+        case .parent:
+            return "parent"
+        case .child:
+            return "child"
+        case .teenager:
+            return "child"
+        case .elderly:
+            return "elderly"
         }
     }
     
@@ -800,7 +901,7 @@ struct FamilyScreen: View {
                                     // Additional member button (available for parents when members < 10)
                                     if familyMembers.count < 10 && isUserParent {
                                         AddMoreMemberCard {
-                                            // ✅ ИСПРАВЛЕНИЕ #3: Используем NavigationManager вместо sheet модала
+                                            // Навигация на прежний экран добавления
                                             navigationManager.navigateTo(.addMemberOptions)
                                         }
                                         .environmentObject(localizationManager)
@@ -909,6 +1010,7 @@ struct FamilyScreen: View {
             FamilyParentalControlSettingsModal(isPresented: $showParentalSettingsModal)
                 .environmentObject(localizationManager)
         }
+        // Removed quick add sheet; using navigation flow instead
         .overlay(alignment: .bottom) {
             if let message = removeMemberErrorMessage, !message.isEmpty {
                 Text(message)
@@ -981,6 +1083,11 @@ struct FamilyScreen: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyMembersUpdated"))) { _ in
             // Явное событие обновления семейного списка после add/join flow.
             reloadFamilyMembersFromStorageOnly()
+            // После локального refresh подтягиваем источник истины с сервера с небольшой задержкой,
+            // чтобы дать серверу время на консистентную репликацию.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                syncFamilyMembersFromAPI()
+            }
         }
         .onAppear {
             logger.screenLoad("FamilyScreen")

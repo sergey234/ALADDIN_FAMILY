@@ -4,6 +4,8 @@ struct ThreatProtectionScreen: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
+    @StateObject private var settingsManager = ProtectionSettingsManager.shared
+    @StateObject private var tariffManager = TariffManager.shared
     
     var body: some View {
         ZStack {
@@ -31,12 +33,25 @@ struct ThreatProtectionScreen: View {
                 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
+                        // Галерея тарифов и краткое резюме
                         TariffFeaturesGallery()
                             .padding(.top, Spacing.m)
                         
                         protectionSummaryCard
                             .padding(.horizontal, Spacing.screenPadding)
-                            .padding(.bottom, Spacing.xxl)
+                        
+                        // Группы функций защиты (включая IoT‑защиту внутри семейной группы)
+                        VStack(spacing: Spacing.l) {
+                            ForEach(ProtectionGroup.allCases) { group in
+                                ProtectionGroupSection(
+                                    group: group,
+                                    settingsManager: settingsManager,
+                                    tariffManager: tariffManager
+                                )
+                            }
+                        }
+                        .padding(.horizontal, Spacing.screenPadding)
+                        .padding(.bottom, Spacing.xxl)
                     }
                 }
             }

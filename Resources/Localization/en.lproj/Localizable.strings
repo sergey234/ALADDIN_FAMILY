@@ -654,6 +654,8 @@
 "component.malware_detection_agent.desc" = "Protection from viruses and trojans";
 "component.mobile_security_agent.title" = "Mobile Security";
 "component.mobile_security_agent.desc" = "Protection for smartphones and tablets";
+"component.iot_security_agent.title" = "IoT Security";
+"component.iot_security_agent.desc" = "Monitoring and protection of smart home devices";
 "component.network_security_agent.title" = "Network Security";
 "component.network_security_agent.desc" = "Protection of network connections";
 

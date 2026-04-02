@@ -342,6 +342,7 @@ struct NetworkProtectionScreen: View {
                 subtitle: localizationManager.localized("component.threat_protection.subtitle"),
                 isExpanded: $threatProtectionExpanded
             ) {
+                // 1. Защита от фишинга
                 SecurityFeatureRow(
                     componentId: "phishing_protection_agent",
                     title: localizationManager.localized("component.phishing_protection_agent.title"),
@@ -355,6 +356,7 @@ struct NetworkProtectionScreen: View {
                     onSettingsTap: { showPhishingSettings = true }
                 )
                 
+                // 2. Обнаружение вредоносного ПО
                 SecurityFeatureRow(
                     componentId: "malware_detection_agent",
                     title: localizationManager.localized("component.malware_detection_agent.title"),
@@ -368,6 +370,7 @@ struct NetworkProtectionScreen: View {
                     onSettingsTap: { showMalwareSettings = true }
                 )
                 
+                // 3. Безопасность мобильных угроз
                 SecurityFeatureRow(
                     componentId: "mobile_security_agent",
                     title: localizationManager.localized("component.mobile_security_agent.title"),
@@ -381,6 +384,7 @@ struct NetworkProtectionScreen: View {
                     onSettingsTap: { showMobileSecuritySettings = true }
                 )
                 
+                // 4. Безопасность сети
                 SecurityFeatureRow(
                     componentId: "network_security_agent",
                     title: localizationManager.localized("component.network_security_agent.title"),
@@ -392,6 +396,22 @@ struct NetworkProtectionScreen: View {
                         viewModel.toggleNetworkSecuritySync(newValue)
                     },
                     onSettingsTap: { showNetworkSecuritySettings = true }
+                )
+
+                // 5. IoT‑защита (умный дом)
+                SecurityFeatureRow(
+                    componentId: "iot_security_agent",
+                    title: localizationManager.localized("component.iot_security_agent.title"),
+                    description: localizationManager.localized("component.iot_security_agent.desc"),
+                    isEnabled: .constant(true), // IoT всегда активен, тумблер управляет только доступностью настроек
+                    hasSettings: true,
+                    onToggle: { _ in
+                        // Пока не привязываем выключение к backend, оставляем как no-op
+                    },
+                    onSettingsTap: {
+                        // Переход на отдельный экран IoT‑защиты
+                        navigationManager.navigateTo(.iotSecurity)
+                    }
                 )
             }
             

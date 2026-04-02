@@ -806,6 +806,8 @@
 "component.malware_detection_agent.desc" = "Защита от вирусов и троянов";
 "component.mobile_security_agent.title" = "Безопасность мобильных устройств";
 "component.mobile_security_agent.desc" = "Защита смартфонов и планшетов";
+"component.iot_security_agent.title" = "IoT‑защита";
+"component.iot_security_agent.desc" = "Мониторинг и защита устройств умного дома";
 "component.network_security_agent.title" = "Безопасность сети";
 "component.network_security_agent.desc" = "Защита сетевых подключений";
 

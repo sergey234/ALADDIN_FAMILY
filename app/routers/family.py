@@ -14,6 +14,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from typing import Optional
 from datetime import datetime
+import uuid
 from pydantic import BaseModel
 
 # ✅ Импорт функции создания семьи (БЕЗ персональных данных)
@@ -382,6 +383,17 @@ class FamilyMemberResponse(BaseModel):
     devices: int
 
 
+class AddFamilyMemberRequest(BaseModel):
+    """
+    Запрос на добавление участника семьи.
+
+    ⚠️ Важно: поле name трактуется как анонимный ярлык (роль + буква/ник),
+    а не как персональные ФИО. Роутер не требует email/телефон/паспорт.
+    """
+    name: str
+    role: str
+
+
 class RemoveFamilyMemberRequest(BaseModel):
     memberId: str
     source: Optional[str] = None
@@ -528,6 +540,116 @@ async def create_family_endpoint(
 # ============================================
 # COMPAT ENDPOINTS: /api/family/*
 # ============================================
+
+
+@router.post("/add", response_model=FamilyMemberResponse)
+async def add_family_member(
+    payload: AddFamilyMemberRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    ✅ Боевой endpoint: POST /api/family/add
+
+    Требования:
+    - Не возвращать sfm_mock/mock_fallback в production.
+    - Использовать PostgreSQL как единственный source of truth.
+    - Работать только для уже созданной семьи (через /api/family/create).
+    """
+    user_id = _resolve_user_id_from_claim(current_user)
+    name = (payload.name or "").strip()
+    role = (payload.role or "").strip().lower()
+
+    if not name:
+        raise HTTPException(status_code=400, detail="name is required")
+    if not role:
+        raise HTTPException(status_code=400, detail="role is required")
+
+    # Допустимые роли в рамках анонимной семейной модели
+    allowed_roles = {"parent", "child", "teenager", "elderly", "other"}
+    if role not in allowed_roles:
+        raise HTTPException(status_code=400, detail="Invalid role")
+
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    def add_member_sync():
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            # Находим актуальную семью пользователя
+            fam_row = db.execute(
+                text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
+                {"user_id": user_id},
+            ).fetchone()
+            if not fam_row:
+                raise HTTPException(status_code=404, detail="Family not found")
+            family_id = fam_row[0]
+
+            member_id = f"MEM_{uuid.uuid4().hex[:12].upper()}"
+            status_val = "protected"
+            last_active = datetime.now().strftime("%H:%M")
+            threats_blocked = 0
+            devices_val = 0
+
+            db.execute(
+                text(
+                    """
+                    INSERT INTO family_members (id, family_id, user_id, name, role, status, threats_blocked, last_active, devices)
+                    VALUES (:id, :family_id, :user_id, :name, :role, :status, :threats_blocked, :last_active, :devices)
+                    """
+                ),
+                {
+                    "id": member_id,
+                    "family_id": family_id,
+                    "user_id": user_id,
+                    "name": name,
+                    "role": role,
+                    "status": status_val,
+                    "threats_blocked": threats_blocked,
+                    "last_active": last_active,
+                    "devices": devices_val,
+                },
+            )
+            db.commit()
+
+            logger.info(
+                "family_member_added",
+                user_id=user_id,
+                family_id=str(family_id),
+                member_id=member_id,
+                role=role,
+                name=name,
+                timestamp=datetime.now().isoformat(),
+            )
+
+            # Аватар подбирается на стороне iOS по роли, здесь возвращаем базовый placeholder.
+            return FamilyMemberResponse(
+                id=member_id,
+                name=name,
+                role=role,
+                avatar="👤",
+                status=status_val,
+                threatsBlocked=threats_blocked,
+                lastActive=last_active,
+                devices=devices_val,
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            db.rollback()
+            logger.error(
+                "family_add_member_db_error",
+                user_id=user_id,
+                name=name,
+                role=role,
+                error=str(e),
+                timestamp=datetime.now().isoformat(),
+            )
+            raise HTTPException(status_code=500, detail="Failed to add family member")
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(add_member_sync)
 
 @router.get("/members", response_model=list[FamilyMemberCompat])
 async def get_family_members_compat(

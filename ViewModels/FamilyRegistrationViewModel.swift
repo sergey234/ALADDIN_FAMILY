@@ -857,9 +857,41 @@ class FamilyRegistrationViewModel: ObservableObject {
                 switch result {
                 case .success(let response):
                     if response.success {
+                        guard let recoveredFamilyId = response.familyId, !recoveredFamilyId.isEmpty else {
+                            self?.errorMessage = "Не удалось определить family_id после восстановления"
+                            NotificationCenter.default.post(
+                                name: NSNotification.Name("FamilyRecoveryError"),
+                                object: nil,
+                                userInfo: ["error": self?.errorMessage ?? "missing family_id"]
+                            )
+                            return
+                        }
+
                         // Сохраняем family_id
-                        self?.familyID = response.familyId
-                        UserDefaults.standard.set(response.familyId, forKey: "family_id")
+                        self?.familyID = recoveredFamilyId
+                        UserDefaults.standard.set(recoveredFamilyId, forKey: "family_id")
+                        UserDefaults.standard.synchronize()
+
+                        // Критично для защищенных family endpoints:
+                        // после recover поднимаем JWT через login-by-recovery-code,
+                        // иначе следующий вызов /api/family/* может получить 403.
+                        self?.apiService.loginByRecoveryCode(
+                            familyID: recoveredFamilyId,
+                            recoveryCode: recoveredFamilyId
+                        ) { loginResult in
+                            DispatchQueue.main.async {
+                                switch loginResult {
+                                case .success(let loginResponse):
+                                    let _ = self?.saveTokens(
+                                        accessToken: loginResponse.access_token,
+                                        refreshToken: loginResponse.refresh_token
+                                    )
+                                case .failure(let loginError):
+                                    // Не блокируем recover flow, но явно логируем отсутствие токена.
+                                    logger.business("⚠️ recoverAccess: login-by-recovery-code failed: \(loginError.localizedDescription)")
+                                }
+                            }
+                        }
                         
                         // Обновляем список участников
                         self?.familyMembers = response.members.map { member in

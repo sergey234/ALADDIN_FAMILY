@@ -1,0 +1,18 @@
+---
+alwaysApply: false
+description: Production policy for parental bypass API with no mock responses
+---
+# Production No-Mock Rule (Parental Bypass)
+
+- Never accept backend responses containing `source: "sfm_mock"` or `result: "mock_fallback"` in production flows.
+- `POST /api/parental/bypass/apply` must return real `APIResponse<Bool>` with:
+  - `success`
+  - `data`
+  - `message`
+- If backend cannot execute real flow, return a real API error, not mock envelope.
+- Keep iOS logs explicit:
+  - `BYPASS APPLY start`
+  - `BYPASS APPLY ok`
+  - `BYPASS APPLY failed`
+
+Primary reference: `ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md`.

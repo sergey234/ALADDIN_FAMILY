@@ -27,6 +27,12 @@ struct HealthResponse: Codable {
 // ✅ Глобальная структура для пустых запросов
 struct EmptyRequest: Codable {}
 
+/// Запрос на добавление участника семьи (анонимный ярлык + роль)
+struct AddMemberRequest: Codable {
+    let name: String
+    let role: String
+}
+
 class APIService: ObservableObject {
 
     let networkManager: NetworkManager
@@ -269,6 +275,16 @@ class APIService: ObservableObject {
         performGetFamilyMembers(hasRetriedAfterTokenBootstrap: false, completion: completion)
     }
 
+    /// Async-обертка для загрузки участников семьи.
+    /// Используется в UI-потоках, где удобнее await-подход.
+    func getFamilyMembers() async throws -> [FamilyMemberResponse] {
+        try await withCheckedThrowingContinuation { continuation in
+            getFamilyMembers { result in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
     private func performGetFamilyMembers(
         hasRetriedAfterTokenBootstrap: Bool,
         completion: @escaping (Result<[FamilyMemberResponse], Error>) -> Void
@@ -308,11 +324,59 @@ class APIService: ObservableObject {
     }
     
     func addFamilyMember(name: String, role: String, completion: @escaping (Result<FamilyMemberResponse, Error>) -> Void) {
-        struct AddMemberRequest: Codable {
-            let name: String
-            let role: String
+        let request = AddMemberRequest(name: name, role: role)
+        performAddFamilyMember(request: request, hasRetriedAfterTokenBootstrap: false, completion: completion)
+    }
+
+    /// Async-обертка для добавления участника семьи.
+    func addFamilyMember(name: String, role: String) async throws -> FamilyMemberResponse {
+        try await withCheckedThrowingContinuation { continuation in
+            addFamilyMember(name: name, role: role) { result in
+                continuation.resume(with: result)
+            }
         }
-        networkManager.post(endpoint: AppConfig.Endpoint.addFamilyMember, body: AddMemberRequest(name: name, role: role), completion: completion)
+    }
+
+    private func performAddFamilyMember(
+        request: AddMemberRequest,
+        hasRetriedAfterTokenBootstrap: Bool,
+        completion: @escaping (Result<FamilyMemberResponse, Error>) -> Void
+    ) {
+        networkManager.post(endpoint: AppConfig.Endpoint.addFamilyMember, body: request, requiresAuth: true) { (result: Result<FamilyMemberResponse, Error>) in
+            switch result {
+            case .success:
+                completion(result)
+            case .failure(let error):
+                if case .notFound = NetworkError.from(error) {
+                    // Backward-compat fallback для окружений с legacy путями /family/*
+                    self.networkManager.post(endpoint: "/family/add", body: request, requiresAuth: true, completion: completion)
+                    return
+                }
+
+                let networkError = NetworkError.from(error)
+                let shouldBootstrapToken: Bool
+                switch networkError {
+                case .unauthorized, .tokenExpired, .invalidToken, .reauthenticationRequired:
+                    shouldBootstrapToken = true
+                default:
+                    shouldBootstrapToken = self.isInvalidUserIdInTokenError(error)
+                }
+
+                guard !hasRetriedAfterTokenBootstrap, shouldBootstrapToken else {
+                    completion(.failure(error))
+                    return
+                }
+
+                self.bootstrapDeviceTokenIfNeeded(forceRefresh: true) { bootstrapResult in
+                    switch bootstrapResult {
+                    case .success:
+                        self.performAddFamilyMember(request: request, hasRetriedAfterTokenBootstrap: true, completion: completion)
+                    case .failure(let bootstrapError):
+                        completion(.failure(bootstrapError))
+                    }
+                }
+            }
+        }
     }
     
     /**

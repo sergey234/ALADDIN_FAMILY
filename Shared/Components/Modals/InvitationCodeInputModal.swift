@@ -27,6 +27,7 @@ struct InvitationCodeInputModal: View {
     
     // ViewModel для регистрации
     @StateObject private var registrationVM = FamilyRegistrationViewModel()
+    private let apiService = APIService.shared
     
     // MARK: - Body
     
@@ -139,27 +140,46 @@ struct InvitationCodeInputModal: View {
             errorMessage = "Неправильный формат кода"
             return
         }
-        
+
         isLoading = true
         errorMessage = nil
-        
-        // Используем recoverAccess для восстановления доступа к семье
-        registrationVM.recoverAccess(withCode: code)
-        
-        // Отслеживаем изменения в ViewModel
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-            // Проверяем статус загрузки
-            if !registrationVM.isLoading {
-                if let error = registrationVM.errorMessage {
-                    self.errorMessage = error
+
+        let familyId = code
+            .replacingOccurrences(of: "-", with: "")
+            .replacingOccurrences(of: "FAM", with: "FAM_")
+
+        // 1) Сначала получаем JWT по recovery code (чтобы family API сразу были авторизованы)
+        apiService.loginByRecoveryCode(familyID: familyId, recoveryCode: code) { loginResult in
+            DispatchQueue.main.async {
+                switch loginResult {
+                case .success(let loginResponse):
+                    AppConfig.authToken = loginResponse.access_token
+                    if let refreshToken = loginResponse.refresh_token, !refreshToken.isEmpty {
+                        KeychainManager.shared.save(refreshToken, forKey: .refreshToken)
+                    }
+
+                    // 2) После токена восстанавливаем доступ и тянем семью
+                    registrationVM.recoverAccess(withCode: code)
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                        if !registrationVM.isLoading {
+                            if let error = registrationVM.errorMessage {
+                                self.errorMessage = error
+                                self.isLoading = false
+                            } else if registrationVM.familyID != nil {
+                                self.isLoading = false
+                                UserDefaults.standard.set(registrationVM.familyID, forKey: "family_id")
+                                NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+                                NotificationCenter.default.post(name: NSNotification.Name("MainFamilyStatsForceRefresh"), object: nil)
+                                isPresented = false
+                            } else {
+                                self.isLoading = false
+                                self.errorMessage = "Не удалось восстановить доступ к семье"
+                            }
+                        }
+                    }
+                case .failure(let error):
                     self.isLoading = false
-                } else if registrationVM.familyID != nil {
-                    // Успешно восстановлен доступ
-                    self.isLoading = false
-                    // Сохраняем familyID
-                    UserDefaults.standard.set(registrationVM.familyID, forKey: "family_id")
-                    // Закрываем модальное окно
-                    isPresented = false
+                    self.errorMessage = error.localizedDescription
                 }
             }
         }
