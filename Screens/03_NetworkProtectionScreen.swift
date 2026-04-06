@@ -403,10 +403,11 @@ struct NetworkProtectionScreen: View {
                     componentId: "iot_security_agent",
                     title: localizationManager.localized("component.iot_security_agent.title"),
                     description: localizationManager.localized("component.iot_security_agent.desc"),
-                    isEnabled: .constant(true), // IoT всегда активен, тумблер управляет только доступностью настроек
+                    isEnabled: $viewModel.iotSecurityEnabled,
                     hasSettings: true,
-                    onToggle: { _ in
-                        // Пока не привязываем выключение к backend, оставляем как no-op
+                    onToggle: { newValue in
+                        logger.toggleChanged("IoT Security", newValue: newValue, screen: "NetworkProtection")
+                        viewModel.toggleIotSecuritySync(newValue)
                     },
                     onSettingsTap: {
                         // Переход на отдельный экран IoT‑защиты

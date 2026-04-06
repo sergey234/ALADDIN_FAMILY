@@ -49,7 +49,7 @@ class IoTSecurityModule: ObservableObject {
         
         // Фильтрация угроз по камерам
         await MainActor.run {
-            threatsDetected = response.threats.filter { $0.threatType == .camera || $0.threatType == .cameraIntrusion }
+            threatsDetected = response.threats?.filter { $0.threatType == .camera || $0.threatType == .cameraIntrusion } ?? []
         }
     }
     
@@ -110,7 +110,7 @@ class IoTSecurityModule: ObservableObject {
         
         await MainActor.run {
             iotDevices = devicesResponse.devices
-            threatsDetected = threatsResponse.threats
+            threatsDetected = threatsResponse.threats ?? []
             // Пока сервер не отдаёт рекомендации по IoT — оставляем пустой список
             recommendations = []
             protectionLevel = protectionPercent

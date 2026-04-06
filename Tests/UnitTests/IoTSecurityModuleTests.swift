@@ -283,11 +283,11 @@ class MockAPIService: APIService {
         }
         
         return IoTThreatsResponse(
+            homeId: homeId,
             threats: mockIoTThreats,
             total: mockIoTThreats.count,
-            high: mockIoTThreats.filter { $0.severity == .high }.count,
-            medium: mockIoTThreats.filter { $0.severity == .medium }.count,
-            low: mockIoTThreats.filter { $0.severity == .low }.count
+            active: mockIoTThreats.count,
+            fixed: 0
         )
     }
     

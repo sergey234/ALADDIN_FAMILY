@@ -34,6 +34,7 @@ class NetworkProtectionViewModel: ObservableObject {
     @Published var malwareDetectionEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_malware_detection_agent_enabled")
     @Published var mobileSecurityEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_mobile_security_agent_enabled")
     @Published var networkSecurityEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_network_security_agent_enabled")
+    @Published var iotSecurityEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_iot_security_agent_enabled")
 
     // Автоматическая система защиты (1 компонент)
     @Published var incidentResponseEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_incident_response_agent_enabled")
@@ -132,6 +133,11 @@ class NetworkProtectionViewModel: ObservableObject {
         
         // Затем асинхронно запускаем логику сохранения
         Task { @MainActor in await toggleNetworkSecurity(newValue) }
+    }
+    
+    func toggleIotSecuritySync(_ newValue: Bool) {
+        self.iotSecurityEnabled = newValue
+        Task { @MainActor in await toggleIotSecurity(newValue) }
     }
     
     func toggleIncidentResponseSync(_ newValue: Bool) {
@@ -310,6 +316,14 @@ class NetworkProtectionViewModel: ObservableObject {
         )
     }
 
+    func toggleIotSecurity(_ newValue: Bool) async {
+        await toggleComponent(
+            componentId: "iot_security_agent",
+            newValue: newValue,
+            updateClosure: { [weak self] value in self?.iotSecurityEnabled = value }
+        )
+    }
+
     func toggleIncidentResponse(_ newValue: Bool) async {
         await toggleComponent(
             componentId: "incident_response_agent",
@@ -338,6 +352,7 @@ class NetworkProtectionViewModel: ObservableObject {
             ("malware_detection_agent", .normal),
             ("mobile_security_agent", .normal),
             ("network_security_agent", .normal),
+            ("iot_security_agent", .normal),
             ("incident_response_agent", .low),
             ("password_security_agent", .low)
         ]
@@ -368,6 +383,8 @@ class NetworkProtectionViewModel: ObservableObject {
             mobileSecurityEnabled = isEnabled
         case "network_security_agent":
             networkSecurityEnabled = isEnabled
+        case "iot_security_agent":
+            iotSecurityEnabled = isEnabled
         case "incident_response_agent":
             incidentResponseEnabled = isEnabled
         case "password_security_agent":

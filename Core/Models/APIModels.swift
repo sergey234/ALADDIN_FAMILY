@@ -1471,11 +1471,11 @@ struct IoTDevicesResponse: Codable {
 }
 
 struct IoTThreatsResponse: Codable {
-    let threats: [IoTThreat]
-    let total: Int
-    let high: Int
-    let medium: Int
-    let low: Int
+    let homeId: String?
+    let threats: [IoTThreat]?
+    let total: Int?
+    let active: Int?
+    let fixed: Int?
 }
 
 struct ReferralHistoryItem: Codable, Identifiable {
