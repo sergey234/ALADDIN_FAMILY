@@ -1,3 +1,83 @@
+> Журнал реального подключения и первичных действий (апрель 2026)
+>
+> Ниже — точные шаги, которые были выполнены для подключения к прод‑серверу и подготовки к задачам по плану (лимиты/идемпотентность/заголовки). Пароли не храним в репозитории — используйте SSH‑ключи или временную передачу пароля вне репо.
+>
+> 1) Внешний health‑check API (проверка доступности шлюза на :8002):
+>
+>    ```bash
+>    curl -s -S -m 8 http://149.154.65.180:8002/api/health
+>    # Ответ: {"status":"ok"}
+>    ```
+>
+> 2) SSH‑подключение по паролю (временный способ; предпочтителен доступ по ключу). Для неинтерактивного входа использован sshpass (без хранения пароля в файлах репозитория):
+>
+>    ```bash
+>    # Установка sshpass на локальной машине (macOS/Homebrew):
+>    brew install sshpass
+>
+>    # Тест соединения (пароль вводится из окружения/секрет‑менеджера, не коммитится):
+>    sshpass -p '<PASSWORD>' ssh \
+>      -o StrictHostKeyChecking=no \
+>      -o PubkeyAuthentication=no \
+>      -o PreferredAuthentications=password \
+>      root@149.154.65.180 'echo connected && exit'
+>    # Ответ: connected
+>    ```
+>
+>    Рекомендация: переключиться на вход по ключу:
+>
+>    ```bash
+>    ssh -o IdentitiesOnly=yes -i /path/to/ssh_key root@149.154.65.180
+>    ```
+>
+> 3) Создание «единого источника правды» по лимитам тарифов (п.1 плана) на сервере:
+>
+>    ```bash
+>    ssh root@149.154.65.180 <<'SSH'
+>    set -e
+>    mkdir -p /opt/aladdin-backend/app/config
+>    cat > /opt/aladdin-backend/app/config/subscription_limits.py <<'PY'
+>    from functools import lru_cache
+>    from typing import Dict
+>
+>    _DEFAULT_MAP: Dict[str, int] = {
+>        "trial": 3,
+>        "free": 1,
+>        "personal": 2,
+>        "family": 6,
+>        "premium": 10,
+>    }
+>
+>    def _normalize(level: str) -> str:
+>        return (level or "").strip().lower()
+>
+>    @lru_cache(maxsize=1)
+>    def get_limits_map() -> Dict[str, int]:
+>        return dict(_DEFAULT_MAP)
+>
+>    def getMaxFamilyMembersFor(level: str) -> int:
+>        m = get_limits_map()
+>        return m.get(_normalize(level), m["free"])
+>    PY
+>
+>    # Самопроверка на сервере
+>    python3 - <<'PY'
+>    import importlib.util
+>    p="/opt/aladdin-backend/app/config/subscription_limits.py"
+>    spec=importlib.util.spec_from_file_location("subscription_limits", p)
+>    m=importlib.util.module_from_spec(spec); spec.loader.exec_module(m)
+>    assert m.getMaxFamilyMembersFor("Trial")==3
+>    assert m.getMaxFamilyMembersFor("free")==1
+>    assert m.getMaxFamilyMembersFor("PERSONAL")==2
+>    assert m.getMaxFamilyMembersFor("family")==6
+>    assert m.getMaxFamilyMembersFor("premium")==10
+>    print("subscription_limits: OK")
+>    PY
+>    SSH
+>    ```
+>
+> Далее по плану (п.2→п.3→п.4) — внедрение гибридного источника тарифа (DB primary, JWT fallback с TTL=60 сек и логами), применение лимита в POST /api/family/add (409 с понятным сообщением и идемпотентностью по Idempotency‑Key), и выдача заголовков X‑Family‑Limit/Remaining в GET /api/family/members. Эти изменения выполняются на бэкенде в модулях services/routers (см. раздел «Предлагаемая архитектура» ниже в документе).
+
 # 🔌 **ПОЛНОЕ РУКОВОДСТВО ПО ПОДКЛЮЧЕНИЮ К СЕРВЕРУ ALADDIN ДЛЯ ML СИСТЕМ**
 
 ---

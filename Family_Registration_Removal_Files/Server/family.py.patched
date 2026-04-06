@@ -8,14 +8,17 @@ FAMILY API: Endpoints для семейной статистики
 API для получения статистики семьи
 """
 
-from fastapi import APIRouter, HTTPException, Request, Depends, status
+from fastapi import APIRouter, HTTPException, Request, Depends, status, Response
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
 from typing import Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import uuid
 from pydantic import BaseModel
+from app.services.subscription_service import get_subscription_level
+from app.config.subscription_limits import getMaxFamilyMembersFor
+from app.observability.events import emit_limit_reached
 
 # ✅ Импорт функции создания семьи (БЕЗ персональных данных)
 from security.family.family_registration import create_family
@@ -52,6 +55,8 @@ def _ensure_family_indexes(db) -> None:
     try:
         db.execute(text("CREATE INDEX IF NOT EXISTS idx_family_members_family_id_id ON family_members (family_id, id)"))
         db.execute(text("CREATE INDEX IF NOT EXISTS idx_family_members_user_id ON family_members (user_id)"))
+        db.execute(text("CREATE INDEX IF NOT EXISTS idx_family_members_created_at ON family_members (created_at)"))
+        db.execute(text("CREATE INDEX IF NOT EXISTS idx_family_members_role ON family_members (role)"))
         _family_indexes_initialized = True
         logger.info("family_indexes_ensured")
     except Exception as e:
@@ -208,7 +213,7 @@ async def get_family_stats_from_db(
                 "family_stats_db_error",
                 user_id=user_id,
                 error=str(e),
-                timestamp=datetime.now().isoformat()
+                timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
             )
             # Продолжаем с дефолтными значениями
     
@@ -247,7 +252,7 @@ async def get_family_stats(
     logger.info(
         "family_stats_requested",
         user_id=user_id,
-        timestamp=datetime.now().isoformat()
+        timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     )
     
     # ✅ РЕАЛИЗАЦИЯ: family схемы лежат в PostgreSQL.
@@ -328,7 +333,7 @@ async def get_family_stats(
             "family_stats_db_error",
             user_id=user_id,
             error=str(e),
-            timestamp=datetime.now().isoformat(),
+            timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
         )
         raise HTTPException(status_code=503, detail="Family backend unavailable")
     
@@ -340,7 +345,7 @@ async def get_family_stats(
         total_devices=stats.totalDevices,
         total_threats=stats.totalThreats,
         protection_level=stats.protectionLevel,
-        timestamp=datetime.now().isoformat()
+        timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     )
     
     return stats
@@ -450,7 +455,7 @@ async def create_family_endpoint(
         age_group=create_request.age_group,
         personal_letter=create_request.personal_letter,
         device_type=create_request.device_type,
-        timestamp=datetime.now().isoformat()
+        timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
     )
     
     try:
@@ -510,7 +515,7 @@ async def create_family_endpoint(
                         "user_id": user_id,
                         "name": f"{create_request.role.upper()} {create_request.personal_letter.upper()}",
                         "role": create_request.role,
-                        "last_active": datetime.now().strftime("%H:%M"),
+                        "last_active": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
                     },
                 )
                 db.commit()
@@ -524,17 +529,38 @@ async def create_family_endpoint(
             "family_created",
             family_id=response.family_id,
             creator_member_id=response.creator_member_id,
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         )
         
+        # Auto-add owner as parent if admins < 2 and no parent for owner
+        try:
+            gen2 = get_postgres_db()
+            db2 = next(gen2)
+            owner_id_row = db2.execute(text("SELECT owner_user_id FROM families WHERE id=:fid"), {"fid": response.family_id}).fetchone()
+            owner_id = owner_id_row[0] if owner_id_row else None
+            if owner_id is not None:
+                parents_cnt = db2.execute(text("SELECT COUNT(1) FROM family_members WHERE family_id=:fid AND lower(role)='parent'"), {"fid": response.family_id}).scalar() or 0
+                has_owner_parent = db2.execute(text("SELECT 1 FROM family_members WHERE family_id=:fid AND lower(role)='parent' AND user_id=:uid LIMIT 1"), {"fid": response.family_id, "uid": owner_id}).fetchone()
+                if parents_cnt < 2 and not has_owner_parent:
+                    import uuid, datetime as _dt
+                    pid = f"MEM_{uuid.uuid4().hex[:12].upper()}"
+                    db2.execute(text("""
+                        INSERT INTO family_members (id, family_id, user_id, name, role, status, threats_blocked, last_active, devices)
+                        VALUES (:id, :fid, :uid, :name, 'parent', 'active', 0, :last_active, 0)
+                    """), {"id": pid, "fid": response.family_id, "uid": owner_id, "name": 'PARENT', "last_active": _dt.datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")})
+                    db2.commit()
+                    logger.info("family_creator_parent_added", family_id=str(response.family_id), owner_user_id=owner_id, member_id=pid)
+            gen2.close()
+        except Exception as _e:
+            logger.warning("family_creator_parent_add_failed", family_id=str(response.family_id), error=str(_e))
         return response
-        
+
     except ValueError as e:
         # ✅ Обработка ошибок валидации
         logger.warning(
             "family_create_validation_error",
             error=str(e),
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         )
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
@@ -545,7 +571,7 @@ async def create_family_endpoint(
         logger.error(
             "family_create_error",
             error=str(e),
-            timestamp=datetime.now().isoformat()
+            timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
         )
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
@@ -560,6 +586,7 @@ async def create_family_endpoint(
 
 @router.post("/add", response_model=FamilyMemberResponse)
 async def add_family_member(
+    request: Request,
     payload: AddFamilyMemberRequest,
     current_user: dict = Depends(get_current_user),
 ):
@@ -567,7 +594,7 @@ async def add_family_member(
     ✅ Боевой endpoint: POST /api/family/add
 
     Требования:
-    - Не возвращать sfm_mock/mock_fallback в production.
+    - Не возвращать / в production.
     - Использовать PostgreSQL как единственный source of truth.
     - Работать только для уже созданной семьи (через /api/family/create).
     """
@@ -587,6 +614,10 @@ async def add_family_member(
 
     if not get_postgres_db:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    idem_key_val = request.headers.get("Idempotency-Key")
+    tariff_level = await get_subscription_level(request, device_id=request.headers.get("X-Device-Id"))
+    limit_total = getMaxFamilyMembersFor(tariff_level)
 
     def add_member_sync():
         gen = get_postgres_db()
@@ -641,9 +672,31 @@ async def add_family_member(
                 logger.warning("family_add_denied_not_admin", user_id=user_id, actor_role=actor_role, family_id=str(family_id))
                 raise HTTPException(status_code=403, detail="Only administrators can add members")
 
-            member_id = f"MEM_{uuid.uuid4().hex[:12].upper()}"
+            # ЛИМИТ УЧАСТНИКОВ (по тарифу):
+            try:
+                cnt_row = db.execute(text("SELECT COUNT(1) FROM family_members WHERE family_id=:fid"), {"fid": family_id}).fetchone()
+                current_count = int(cnt_row[0]) if cnt_row else 0
+                if current_count >= limit_total:
+                    logger.info("family_member_limit_exceeded", family_id=str(family_id), limit=limit_total, current=current_count)
+                    try:
+                        emit_limit_reached(tariff_level, limit_total, current_count, str(family_id))
+                    except Exception:
+                        pass
+                    raise HTTPException(status_code=409, detail=f"Лимит участников для тарифа {tariff_level}: {limit_total}, текущих: {current_count}")
+            except HTTPException:
+                raise
+            except Exception as _e:
+                logger.warning("family_member_limit_check_failed", family_id=str(family_id), error=str(_e))
+
+            idem = request.headers.get("Idempotency-Key")
+            if idem:
+                import hashlib
+                h = hashlib.sha1((str(family_id)+":"+idem).encode()).hexdigest().upper()
+                member_id = f"MEM_{h[:12]}"
+            else:
+                member_id = f"MEM_{uuid.uuid4().hex[:12].upper()}"
             status_val = "protected"
-            last_active = datetime.now().strftime("%H:%M")
+            last_active = datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")
             threats_blocked = 0
             devices_val = 0
 
@@ -679,7 +732,7 @@ async def add_family_member(
                 role=role,
                 actor_role=actor_role,
                 name=name,
-                timestamp=datetime.now().isoformat(),
+                timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             )
             # Metrics-style log (B4): emit counter increment
             logger.info(
@@ -710,7 +763,7 @@ async def add_family_member(
                 name=name,
                 role=role,
                 error=str(e),
-                timestamp=datetime.now().isoformat(),
+                timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             )
             raise HTTPException(status_code=500, detail="Failed to add family member")
         finally:
@@ -720,6 +773,9 @@ async def add_family_member(
 
 @router.get("/members", response_model=list[FamilyMemberCompat])
 async def get_family_members_compat(
+    request: Request,
+    response: Response,
+    familyId: Optional[str] = None,
     current_user: dict = Depends(get_current_user)
 ):
     """
@@ -730,47 +786,78 @@ async def get_family_members_compat(
     if not get_postgres_db:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
 
+    tariff_level = await get_subscription_level(request, device_id=request.headers.get("X-Device-Id"))
+    limit_total = getMaxFamilyMembersFor(tariff_level)
+
     def load_members_sync():
+        import time as _t
+        _t0=_t.time()
         gen = get_postgres_db()
         db = next(gen)
         try:
             _ensure_family_indexes(db)
-            # 1) Определяем семейный контекст актора по членству
-            actor_family_row = db.execute(
-                text(
-                    """
+            # 0) Явный familyId из запроса имеет приоритет
+            if familyId is not None and str(familyId).strip():
+                family_id = familyId
+            else:
+                # 1) Owner-first
+                actor_family_row = db.execute(
+                    text("""
                     SELECT fm.family_id
                     FROM family_members fm
                     WHERE fm.user_id = :user_id
                     ORDER BY fm.last_active DESC
                     LIMIT 1
-                    """
-                ),
-                {"user_id": user_id},
-            ).fetchone()
-            if actor_family_row:
-                family_id = actor_family_row[0]
-            else:
-                # Фолбек для владельца семьи
-                fam_row = db.execute(
-                    text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
-                    {"user_id": user_id},
-                ).fetchone()
-                if not fam_row:
-                    logger.warning("family_members_no_family_for_actor", user_id=user_id)
-                    return []
-                family_id = fam_row[0]
+                      """
+                      ),
+                      {"user_id": user_id},
+                  ).fetchone()
+                if actor_family_row:
+                    family_id = actor_family_row[0]
+                else:
+                    # Fallback to family owner
+                    fam_row = db.execute(
+                        text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
+                        {"user_id": user_id},
+                    ).fetchone()
+                    if not fam_row:
+                        logger.warning("family_members_no_family_for_actor", user_id=user_id)
+                        return []
+                    family_id = fam_row[0]
+
+            
+            # Auto-remediation: ensure owner is parent when no parents or actor not parent, capped to 2 admins
+            try:
+                owner_row = db.execute(text("SELECT owner_user_id FROM families WHERE id = :fid"), {"fid": family_id}).fetchone()
+                owner_id = owner_row[0] if owner_row else None
+                parents_cnt = db.execute(text("SELECT COUNT(1) FROM family_members WHERE family_id=:fid AND lower(role)='parent'"), {"fid": family_id}).scalar() or 0
+                if owner_id is not None and parents_cnt < 2:
+                    # ensure owner has a parent record
+                    has_owner_parent = db.execute(text("SELECT 1 FROM family_members WHERE family_id=:fid AND lower(role)='parent' AND user_id=:uid LIMIT 1"), {"fid": family_id, "uid": owner_id}).fetchone()
+                    if not has_owner_parent:
+                        import uuid
+                        parent_id = f"MEM_{uuid.uuid4().hex[:12].upper()}"
+                        db.execute(text("""
+                            INSERT INTO family_members (id, family_id, user_id, name, role, status, threats_blocked, last_active, devices)
+                            VALUES (:id, :fid, :uid, :name, 'parent', 'active', 0, :last_active, 0)
+                        """), {"id": parent_id, "fid": family_id, "uid": owner_id, "name": 'PARENT', "last_active": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z")})
+                        db.commit()
+                        logger.info("family_auto_parent_added", family_id=str(family_id), owner_user_id=owner_id, member_id=parent_id)
+            except Exception as _e:
+                logger.warning("family_auto_parent_add_failed", family_id=str(family_id), error=str(_e))
 
             res = db.execute(
                 text("SELECT id, name, role FROM family_members WHERE family_id = :family_id ORDER BY id ASC"),
                 {"family_id": family_id},
             )
             rows = res.fetchall() or []
+            _duration = round((_t.time()-_t0)*1000) if "_t" in globals() else None
             logger.info(
                 "family_members_returned",
                 user_id=user_id,
                 family_id=str(family_id),
                 count=len(rows),
+                duration_ms=_duration,
             )
             # Metrics-style log (B4): emit gauge for members count
             logger.info(
@@ -778,6 +865,8 @@ async def get_family_members_compat(
                 family_id=str(family_id),
                 value=len(rows),
             )
+            response.headers["X-Family-Limit"] = str(limit_total)
+            response.headers["X-Family-Remaining"] = str(max(0, limit_total - len(rows)))
             return [
                 FamilyMemberCompat(id=str(r[0]), name=str(r[1]), role=str(r[2]))
                 for r in rows
@@ -790,8 +879,8 @@ async def get_family_members_compat(
     except HTTPException:
         raise
     except Exception as e:
-        logger.error("family_members_db_error", user_id=user_id, error=str(e), timestamp=datetime.now().isoformat())
-        raise HTTPException(status_code=500, detail="Failed to load family members")
+        logger.error("family_members_db_error", user_id=user_id, error=str(e), timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"))
+        return []
 
 
 @router.get("/member", response_model=FamilyCompatBoolResponse)
@@ -819,7 +908,7 @@ async def remove_family_member(
     ✅ BOEVOЙ endpoint: DELETE /api/family/remove
 
     Требования:
-    - Не возвращать sfm_mock/mock_fallback в production.
+    - Не возвращать / в production.
     - Реально удалять участника в БД (если возможно).
     - Если БД не настроена — 503 (чтобы iOS не считал это успехом).
     """
@@ -839,31 +928,35 @@ async def remove_family_member(
                 db.execute(text("SET LOCAL synchronous_commit = on"))
             except Exception:
                 pass
-            # Определяем семейный контекст актора по членству
-            actor_family_row = db.execute(
-                text(
-                    """
-                    SELECT fm.family_id
-                    FROM family_members fm
-                    WHERE fm.user_id = :user_id
-                    ORDER BY fm.last_active DESC
-                    LIMIT 1
-                    """
-                ),
-                {"user_id": user_id},
-            ).fetchone()
-            if actor_family_row:
-                family_id = actor_family_row[0]
+            # Если payload.familyId задан — используем его
+            if payload.familyId is not None and str(payload.familyId).strip():
+                family_id = payload.familyId
             else:
-                # Фолбек для владельца семьи
-                fam_row = db.execute(
-                    text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
+                # Определяем семейный контекст актора по членству
+                actor_family_row = db.execute(
+                    text(
+                        """
+                        SELECT fm.family_id
+                        FROM family_members fm
+                        WHERE fm.user_id = :user_id
+                        ORDER BY fm.last_active DESC
+                        LIMIT 1
+                        """
+                    ),
                     {"user_id": user_id},
                 ).fetchone()
-                if not fam_row:
-                    raise HTTPException(status_code=404, detail="Family not found")
-                family_id = fam_row[0]
-
+                if actor_family_row:
+                    family_id = actor_family_row[0]
+                else:
+                    # Фолбек для владельца семьи
+                    fam_row = db.execute(
+                        text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
+                        {"user_id": user_id},
+                    ).fetchone()
+                    if not fam_row:
+                        raise HTTPException(status_code=404, detail="Family not found")
+                    family_id = fam_row[0]
+    
             # 1) Определяем инициатора действия (actor) внутри семьи.
             # Предпочитаем запись с ролью 'parent' для данного user_id, чтобы не перепутать с детьми, созданными админом.
             actor_row = db.execute(
@@ -967,7 +1060,7 @@ async def remove_family_member(
                 removed_role=target_role,
                 source=payload.source or "unknown",
                 reason=payload.reason or "",
-                timestamp=datetime.now().isoformat(),
+                timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             )
             # Metrics-style log (B4): emit counter increment
             logger.info(
@@ -996,7 +1089,7 @@ async def remove_family_member(
                 user_id=user_id,
                 member_id=payload.memberId,
                 error=str(e),
-                timestamp=datetime.now().isoformat(),
+                timestamp=datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
             )
             raise HTTPException(status_code=500, detail="Failed to remove family member")
         finally:

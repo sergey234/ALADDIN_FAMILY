@@ -327,6 +327,8 @@ struct VisualLogView: View {
 // MARK: - View Modifier для добавления VisualLogView на любой экран
 
 extension View {
+    /// ✅ ИСПРАВЛЕНИЕ: Модификатор для добавления VisualLogView на любой экран
+    /// Используется для отображения логов на всех страницах приложения, включая модальные окна и подстраницы
     func withVisualLogger() -> some View {
         #if DEBUG
         return self.overlay(
@@ -340,7 +342,7 @@ extension View {
                         .padding(.bottom, 120)
                 }
             }
-            .allowsHitTesting(true)
+            .allowsHitTesting(true) // Разрешаем взаимодействие с логами
         )
         #else
         return self

@@ -71,8 +71,6 @@ class StorageManager: ObservableObject {
     }
 }
 
-
-
 enum UnicornRewardsStore {
     private static let legacyBalanceKey = "child_unicorn_balance"
     private static let legacyWeeklyEarnedKey = "child_weekly_earned"
