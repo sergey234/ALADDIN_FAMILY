@@ -600,9 +600,17 @@ class ParentalControlManager: ObservableObject {
     ) {
         let now = Date()
         if let backoffUntil = statsBackoffUntil, now < backoffUntil {
+            DispatchQueue.main.async {
+                self.isLoading = false
+                completion(.failure(NSError(domain: "ParentalControlManager", code: 429, userInfo: [NSLocalizedDescriptionKey: "Запрос отклонен из-за лимита (backoff). Повторите позже."])))
+            }
             return
         }
         if let lastRequest = lastStatsRequestAt, now.timeIntervalSince(lastRequest) < statsMinInterval {
+            DispatchQueue.main.async {
+                self.isLoading = false
+                completion(.failure(NSError(domain: "ParentalControlManager", code: 429, userInfo: [NSLocalizedDescriptionKey: "Слишком частые запросы (throttle). Повторите позже."])))
+            }
             return
         }
         lastStatsRequestAt = now
@@ -640,7 +648,17 @@ class ParentalControlManager: ObservableObject {
         childId: String? = nil,
         completion: @escaping (Result<BypassStatsResponse, Error>) -> Void
     ) {
+        let now = Date()
+        if let lastRequest = lastStatsRequestAt, now.timeIntervalSince(lastRequest) < statsMinInterval {
+            DispatchQueue.main.async {
+                self.isLoading = false
+                completion(.failure(NSError(domain: "ParentalControlManager", code: 429, userInfo: [NSLocalizedDescriptionKey: "Слишком частые запросы (throttle). Повторите позже."])))
+            }
+            return
+        }
+        
         isLoading = true
+        errorMessage = nil
         errorMessage = nil
         
         apiService.getBypassStats(childId: childId) { [weak self] result in

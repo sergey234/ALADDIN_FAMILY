@@ -245,6 +245,7 @@ struct MainScreenWithRegistration: View {
                     
                     Button(localizationManager.localized("common_continue")) {
                         registrationVM.showSuccessModal = false
+                        onComplete?()
                     }
                     .buttonStyle(.borderedProminent)
                 }

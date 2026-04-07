@@ -290,9 +290,13 @@ class FamilyRegistrationViewModel: ObservableObject {
             case .elderly: roleName = "Пожилой"
             }
             let userName = "\(roleName) \(letter)"
-            UserDefaults.standard.set(userName, forKey: "current_user_name")
-            UserDefaults.standard.synchronize()
-            logger.business("✅ User name saved: \(userName)")
+            if !UserDefaults.standard.bool(forKey: "admin_add_mode") {
+                UserDefaults.standard.set(userName, forKey: "current_user_name")
+                UserDefaults.standard.synchronize()
+                logger.business("✅ User name saved: \(userName)")
+            } else {
+                logger.business("🛡️ ADMIN-ADD: skipping current_user_name overwrite (\(userName))")
+            }
         }
         
         // ✅ ИСПРАВЛЕНО: Убрана искусственная задержка, создание семьи происходит сразу
@@ -336,11 +340,15 @@ class FamilyRegistrationViewModel: ObservableObject {
         }
         
         // ✅ СОХРАНЯЕМ РОЛЬ ПОЛЬЗОВАТЕЛЯ
-        saveUserRole(role)
-        logger.business("Family role saved: \(role.rawValue)")
-        // ✅ ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ: Убеждаемся, что UserDefaults синхронизирован
-        UserDefaults.standard.synchronize()
-        logger.business("UserDefaults synchronized")
+        if !UserDefaults.standard.bool(forKey: "admin_add_mode") {
+            saveUserRole(role)
+            logger.business("Family role saved: \(role.rawValue)")
+            // ✅ ПРИНУДИТЕЛЬНАЯ СИНХРОНИЗАЦИЯ: Убеждаемся, что UserDefaults синхронизирован
+            UserDefaults.standard.synchronize()
+            logger.business("UserDefaults synchronized")
+        } else {
+            logger.business("🛡️ ADMIN-ADD: skipping family role save (\(role.rawValue))")
+        }
         
         currentStep = .creatingFamily
         isLoading = true
@@ -353,6 +361,56 @@ class FamilyRegistrationViewModel: ObservableObject {
             personal_letter: letter,
             device_type: getDeviceType()
         )
+
+        let userName: String
+        let roleName: String
+        switch role {
+        case .parent: roleName = "Родитель"
+        case .child: roleName = "Ребенок"
+        case .teenager: roleName = "Подросток"
+        case .elderly: roleName = "Пожилой"
+        }
+        userName = "\(roleName) \(letter)"
+
+        // ✅ ИНТЕГРАЦИЯ ДОБАВЛЕНИЯ УЧАСТНИКА: Если мы в режиме admin_add_mode, 
+        // добавляем участника в ТЕКУЩУЮ семью, а не создаем новую.
+        if UserDefaults.standard.bool(forKey: "admin_add_mode") {
+            logger.business("========== ADDING MEMBER (admin-add mode) ==========")
+            
+            Task {
+                do {
+                    let response = try await apiService.addFamilyMember(name: userName, role: role.serverValue)
+                    
+                    await MainActor.run {
+                        self.isLoading = false
+                        
+                        // Сохраняем добавленного участника локально
+                        self.saveCreatorAsFamilyMember(
+                            role: role,
+                            ageGroup: ageGroup,
+                            serverMemberId: response.id,
+                            explicitName: userName
+                        )
+                        
+                        // Сброс флага
+                        UserDefaults.standard.set(false, forKey: "admin_add_mode")
+                        UserDefaults.standard.synchronize()
+                        
+                        // Завершаем процесс
+                        self.currentStep = .completed
+                        self.showSuccessModal = true
+                    }
+                } catch {
+                    await MainActor.run {
+                        self.isLoading = false
+                        self.errorMessage = error.localizedDescription
+                        self.currentStep = .idle
+                        VisualLogger.shared.log("❌ Oшибка добавления участника: \(error.localizedDescription)", level: .error, category: "FAMILY")
+                    }
+                }
+            }
+            return
+        }
 
         logger.business("========== CREATING FAMILY ==========")
         logger.business("Role (client): \(role.rawValue)")
@@ -437,7 +495,8 @@ class FamilyRegistrationViewModel: ObservableObject {
                         self?.saveCreatorAsFamilyMember(
                             role: role,
                             ageGroup: ageGroup,
-                            serverMemberId: response.your_member_id
+                            serverMemberId: response.your_member_id,
+                            explicitName: userName
                         )
                         logger.business("✅ Creator saved as family member: \(role.rawValue), ageGroup: \(ageGroup.rawValue)")
                         
@@ -992,9 +1051,9 @@ class FamilyRegistrationViewModel: ObservableObject {
     /**
      * Сохранить создателя семьи в family_members_list
      */
-    private func saveCreatorAsFamilyMember(role: FamilyRole, ageGroup: AgeGroup, serverMemberId: String? = nil) {
-        // Получаем имя пользователя из UserDefaults или используем дефолтное
-        let userName = UserDefaults.standard.string(forKey: "current_user_name") ?? "Вы"
+    private func saveCreatorAsFamilyMember(role: FamilyRole, ageGroup: AgeGroup, serverMemberId: String? = nil, explicitName: String? = nil) {
+        // Получаем имя пользователя из явного параметра, иначе из UserDefaults или используем дефолтное
+        let userName = explicitName ?? UserDefaults.standard.string(forKey: "current_user_name") ?? "Вы"
         
         // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ ПОДРОСТКА: Добавляем логирование для отладки
         print("🔍 saveCreatorAsFamilyMember: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), userName=\(userName)")

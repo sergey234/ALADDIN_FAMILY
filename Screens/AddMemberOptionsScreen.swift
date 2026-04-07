@@ -225,6 +225,11 @@ struct AddMemberOptionsScreen: View {
     // MARK: - Navigation After Registration
     
     private func checkRoleAndNavigate() {
+        if UserDefaults.standard.bool(forKey: "admin_add_mode") {
+            print("✅ [AddMemberOptionsScreen] admin_add_mode активен, навигация выполняется через onChange, пропускаем checkRoleAndNavigate")
+            return
+        }
+
         // Проверяем роль пользователя из UserDefaults
         guard let roleString = UserDefaults.standard.string(forKey: "current_user_role"),
               let role = FamilyRole(rawValue: roleString) else {

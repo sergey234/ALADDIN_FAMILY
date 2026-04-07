@@ -16,7 +16,7 @@ struct MainScreen: View {
     @State private var aiQuestion: String = ""
     @StateObject private var mainViewModel: MainViewModel
     @State private var hasAppeared = false
-    @ObservedObject private var tariffManager = TariffManager.shared
+    @ObservedObject private var subscriptionManager = SubscriptionManager.shared
     @ObservedObject private var antivirusManager = AntivirusManager.shared
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
@@ -312,7 +312,7 @@ struct MainScreen: View {
             // ✅ BUILD 100: Асинхронное обновление кеша expiration text для предотвращения рекурсии
             // Читаем значение один раз и передаем в функцию, чтобы избежать повторного чтения @AppStorage
             // ✅ ИСПРАВЛЕНИЕ: Убран избыточный Task { @MainActor in }, так как .task {} уже выполняется на MainActor
-            tariffManager.loadTariff()
+            Task { await subscriptionManager.forceSync() }
             let currentExpiresAt = subscriptionExpiresAtIso
             await updateExpirationTextCache(from: currentExpiresAt)
             debugLog.append("✅ cachedExpirationText инициализирован")
@@ -788,7 +788,7 @@ struct MainScreen: View {
                     // Debounce через orchestrator ViewModel (коалесим внешние триггеры)
                     mainViewModel.refreshFamilyMembersCountFromStorage()
                     mainViewModel.requestRefreshDebounced()
-                    tariffManager.loadTariff()
+                    Task { await subscriptionManager.forceSync() }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyMembersUpdated"))) { _ in
                     // Синхронизируем счетчик на главной с тем же storage, что и FamilyScreen.
@@ -797,7 +797,8 @@ struct MainScreen: View {
     }
 
     private var currentTariffDisplayName: String {
-        switch tariffManager.currentTariff {
+        let level = subscriptionManager.currentSubscription?.level ?? .free
+        switch level {
         case .trial:
             return localizationManager.localized("tariffs_trial")
         case .free:

@@ -862,11 +862,12 @@ struct ParentalControlScreen: View {
         statsErrorMessage = nil
         manager.getStats(childId: childId) { result in
             DispatchQueue.main.async {
-                self.isStatsLoading = false
+                // Не снимаем флаг здесь, так как мы еще ждем ответа от getBypassStats
                 switch result {
                 case .success(let stats):
                     self.applyStats(stats)
                 case .failure(let error):
+                    self.isStatsLoading = false
                     let message = String(format: localizationManager.localized("parental_stats_error_generic"), error.localizedDescription)
                     self.statsErrorMessage = message
                     print("❌ Ошибка загрузки статистики: \(error.localizedDescription)")
@@ -878,6 +879,7 @@ struct ParentalControlScreen: View {
     private func loadBypassStats(for childId: String?) {
         manager.getBypassStats(childId: childId) { result in
             DispatchQueue.main.async {
+                self.isStatsLoading = false
                 switch result {
                 case .success(let stats):
                     self.bypassAttemptsToday = stats.today

@@ -143,45 +143,37 @@ struct InvitationCodeInputModal: View {
 
         isLoading = true
         errorMessage = nil
-
-        let familyId = code
-            .replacingOccurrences(of: "-", with: "")
-            .replacingOccurrences(of: "FAM", with: "FAM_")
-
-        // 1) Сначала получаем JWT по recovery code (чтобы family API сразу были авторизованы)
-        apiService.loginByRecoveryCode(familyID: familyId, recoveryCode: code) { loginResult in
-            DispatchQueue.main.async {
-                switch loginResult {
-                case .success(let loginResponse):
-                    AppConfig.authToken = loginResponse.access_token
-                    if let refreshToken = loginResponse.refresh_token, !refreshToken.isEmpty {
-                        KeychainManager.shared.save(refreshToken, forKey: .refreshToken)
-                    }
-
-                    // 2) После токена восстанавливаем доступ и тянем семью
-                    registrationVM.recoverAccess(withCode: code)
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                        if !registrationVM.isLoading {
-                            if let error = registrationVM.errorMessage {
-                                self.errorMessage = error
-                                self.isLoading = false
-                            } else if registrationVM.familyID != nil {
-                                self.isLoading = false
-                                UserDefaults.standard.set(registrationVM.familyID, forKey: "family_id")
-                                NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
-                                NotificationCenter.default.post(name: NSNotification.Name("MainFamilyStatsForceRefresh"), object: nil)
-                                isPresented = false
-                            } else {
-                                self.isLoading = false
-                                self.errorMessage = "Не удалось восстановить доступ к семье"
-                            }
-                        }
-                    }
-                case .failure(let error):
-                    self.isLoading = false
-                    self.errorMessage = error.localizedDescription
-                }
+        
+        // Используем встроенный метод joinFamily вьюмодели, который обратится к POST /api/family/join
+        registrationVM.joinFamily(withCode: code)
+        
+        // Ожидаем завершения (viewModel.isLoading станет false)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            self.checkJoinStatus()
+        }
+    }
+    
+    private func checkJoinStatus() {
+        if registrationVM.isLoading {
+            // Если все еще грузится, проверяем еще раз через секунду
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                self.checkJoinStatus()
             }
+            return
+        }
+        
+        if let error = registrationVM.errorMessage {
+            self.errorMessage = error
+            self.isLoading = false
+        } else if registrationVM.familyID != nil {
+            self.isLoading = false
+            UserDefaults.standard.set(registrationVM.familyID, forKey: "family_id")
+            NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+            NotificationCenter.default.post(name: NSNotification.Name("MainFamilyStatsForceRefresh"), object: nil)
+            isPresented = false
+        } else {
+            self.isLoading = false
+            self.errorMessage = "Не удалось присоединиться к семье"
         }
     }
 }

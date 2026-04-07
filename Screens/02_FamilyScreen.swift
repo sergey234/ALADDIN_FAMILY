@@ -836,11 +836,23 @@ struct FamilyScreen: View {
     
     // Проверяем, является ли пользователь родителем
     private var isUserParent: Bool {
+        // 1. Проверяем UserDefaults
         if let roleString = UserDefaults.standard.string(forKey: currentUserRoleKey) {
             let normalized = roleString.lowercased()
-            return normalized == "parent" || roleString == localizationManager.localized("family_role_parent_label")
+            if normalized == "parent" || roleString == localizationManager.localized("family_role_parent_label") {
+                return true
+            }
         }
-        return false
+        
+        // 2. Если в UserDefaults нет, ищем себя в списке участников
+        if let myMemberId = UserDefaults.standard.string(forKey: "your_member_id"), !myMemberId.isEmpty {
+            if let myMember = familyMembers.first(where: { $0.id == myMemberId || $0.serverMemberId == myMemberId }) {
+                return myMember.role == .parent
+            }
+        }
+        
+        // 3. Fallback: если мы создатель семьи
+        return isFamilyCreator
     }
     
     // Получаем список детей из familyMembers (для использования в модальных окнах)
@@ -941,6 +953,8 @@ struct FamilyScreen: View {
                         Button(action: {
                             logger.buttonTap("Add Member", screen: "Family")
                             // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager вместо sheet модала
+                            UserDefaults.standard.set(true, forKey: "admin_add_mode")
+                            UserDefaults.standard.synchronize()
                             navigationManager.navigateTo(.addMemberOptions)
                         }) {
                             Image(systemName: "plus")
@@ -1002,6 +1016,8 @@ struct FamilyScreen: View {
                                 if familyRemaining > 0 || familyLimit == 0 {
                                     Button(action: { 
                                         // ✅ ИСПРАВЛЕНИЕ #2: Используем NavigationManager вместо sheet модала
+                                        UserDefaults.standard.set(true, forKey: "admin_add_mode")
+                                        UserDefaults.standard.synchronize()
                                         navigationManager.navigateTo(.addMemberOptions)
                                     }) {
                                         Text(localizationManager.localized("family_add_member"))
@@ -1161,22 +1177,26 @@ struct FamilyScreen: View {
                                         .font(.subheadline)
                                         .foregroundColor(.white.opacity(0.7))
                                     
-                                    Button(action: {
-                                        // ✅ ИСПРАВЛЕНИЕ #4: Используем NavigationManager вместо sheet модала
-                                        navigationManager.navigateTo(.addMemberOptions)
-                                    }) {
-                                        Text(localizationManager.localized("family_add_first_member"))
-                                            .font(.subheadline)
-                                            .fontWeight(.semibold)
-                                            .foregroundColor(.secondaryGold)
-                                            .padding(.vertical, Spacing.s)
-                                            .padding(.horizontal, Spacing.m)
-                                            .background(Color.secondaryGold.opacity(0.1))
-                                            .cornerRadius(CornerRadius.medium)
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                                    .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
-                                            )
+                                    if isUserParent || isFamilyCreator {
+                                        Button(action: {
+                                            // ✅ ИСПРАВЛЕНИЕ #4: Используем NavigationManager вместо sheet модала
+                                            UserDefaults.standard.set(true, forKey: "admin_add_mode")
+                                            UserDefaults.standard.synchronize()
+                                            navigationManager.navigateTo(.addMemberOptions)
+                                        }) {
+                                            Text(localizationManager.localized("family_add_first_member"))
+                                                .font(.subheadline)
+                                                .fontWeight(.semibold)
+                                                .foregroundColor(.secondaryGold)
+                                                .padding(.vertical, Spacing.s)
+                                                .padding(.horizontal, Spacing.m)
+                                                .background(Color.secondaryGold.opacity(0.1))
+                                                .cornerRadius(CornerRadius.medium)
+                                                .overlay(
+                                                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                                        .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
+                                                )
+                                        }
                                     }
                                 }
                                 .frame(maxWidth: .infinity)
@@ -1192,7 +1212,9 @@ struct FamilyScreen: View {
                         )
                         
                         // Parental Controls - НОВАЯ ВЕРСИЯ С КАРТОЧКАМИ 2x3
-                        parentalControlsSection
+                        if isUserParent || isFamilyCreator {
+                            parentalControlsSection
+                        }
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 100)
