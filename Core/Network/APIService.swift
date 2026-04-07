@@ -844,6 +844,11 @@ class APIService: ObservableObject {
         networkManager.get(endpoint: AppConfig.Endpoint.aiAssistantRecommendations, completion: completion)
     }
 
+    // Подписки (Subscriptions)
+    func cancelSubscription(completion: @escaping (Result<SubscriptionCancelResponse, Error>) -> Void) {
+        networkManager.post(endpoint: AppConfig.Endpoint.subscriptionCancel, body: EmptyRequest(), completion: completion)
+    }
+
     // Сообщить об инциденте
     func reportIncident(type: String, description: String, severity: String = "medium", completion: @escaping (Result<AIReportIncidentResponse, Error>) -> Void) {
         let request = AIReportIncidentRequest(type: type, description: description, severity: severity)

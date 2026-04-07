@@ -613,6 +613,58 @@ final class SubscriptionManager: ObservableObject {
         return currentToken?.token
     }
 
+    /// ⬇️ Downgrade to Free (Cancel Trial/Subscription)
+    func downgradeToFree() async {
+        logger.business("⬇️ Downgrading subscription to FREE (Cancel)")
+        
+        do {
+            isLoading = true
+            
+            let response: SubscriptionCancelResponse = try await withCheckedThrowingContinuation { continuation in
+                APIService.shared.cancelSubscription { result in
+                    switch result {
+                    case .success(let resp):
+                        continuation.resume(returning: resp)
+                    case .failure(let error):
+                        continuation.resume(throwing: error)
+                    }
+                }
+            }
+            
+            if response.success {
+                logger.business("✅ Successfully downgraded to FREE on server")
+                
+                // Update local token
+                if let jwtToken = self.parseJWTToken(response.newToken) {
+                    await self.storeToken(jwtToken)
+                }
+                
+                // Clear trial status if it was active
+                if trialStatus != nil {
+                    NotificationManager.shared.cancelTrialNotifications()
+                    trialStatus = nil
+                    
+                    let freeSubscription = self.createSubscriptionStatus(
+                        level: .free,
+                        isActive: true,
+                        expiresAt: nil,
+                        trialInfo: nil,
+                        limits: SubscriptionLimits.freeLimits,
+                        components: ["mobile_security_agent", "network_security_agent"]
+                    )
+                    await updateSubscriptionStatus(freeSubscription)
+                }
+            } else {
+                logger.error("❌ Failed to downgrade to free on server")
+            }
+        } catch {
+            logger.error("❌ Failed to downgrade to free: \(error)")
+            lastError = .serverError(error.localizedDescription)
+        }
+        
+        isLoading = false
+    }
+
     /// 🎁 Activate trial period (14 days)
     func activateTrialIfNeeded() async {
         // If trial is already active locally - do nothing.

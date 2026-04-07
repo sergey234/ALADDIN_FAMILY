@@ -307,6 +307,9 @@ struct TariffsScreen: View {
                 selectedTariff = tariff
                 
                 if tariff == .free {
+                    Task { @MainActor in
+                        await SubscriptionManager.shared.downgradeToFree()
+                    }
                     return
                 }
                 

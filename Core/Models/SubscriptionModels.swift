@@ -738,6 +738,20 @@ struct FeatureAccessConfig {
 
 // MARK: - API Response Models
 
+struct SubscriptionCancelResponse: Codable {
+    let success: Bool
+    let newToken: String
+    let message: String?
+    let subscription: DeviceRegistrationSubscription?
+    
+    enum CodingKeys: String, CodingKey {
+        case success
+        case newToken = "new_token"
+        case message
+        case subscription
+    }
+}
+
 /// 📡 JWT Registration Response
 /// ✅ FIXED: Server returns dates as ISO 8601 strings, not Date objects
 struct JWTDeviceRegisterResponse: Codable {
