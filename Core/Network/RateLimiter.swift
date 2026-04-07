@@ -62,16 +62,21 @@ class RateLimiter {
      */
     func canMakeRequest(to endpoint: String) -> Bool {
         return queue.sync {
-            // Очищаем старые записи
-            cleanOldRequests(for: endpoint)
+            let cutoffDate = Date().addingTimeInterval(-timeWindow)
+            var currentRequests = requestCounts[endpoint] ?? []
+            currentRequests = currentRequests.filter { $0 > cutoffDate }
+            requestCounts[endpoint] = currentRequests
             
-            // Получаем текущие запросы для endpoint'а
-            let currentRequests = requestCounts[endpoint] ?? []
+            if currentRequests.isEmpty {
+                requestCounts.removeValue(forKey: endpoint)
+            }
             
             // Проверяем лимит
             if currentRequests.count >= maxRequests {
-                // Лимит превышен - логируем
-                logRateLimitExceeded(endpoint: endpoint, currentCount: currentRequests.count)
+                // Лимит превышен - логируем асинхронно
+                DispatchQueue.global().async {
+                    self.logRateLimitExceeded(endpoint: endpoint, currentCount: currentRequests.count)
+                }
                 return false
             }
             
@@ -85,20 +90,22 @@ class RateLimiter {
      */
     func recordRequest(to endpoint: String) {
         queue.async(flags: .barrier) {
-            // Очищаем старые записи
-            self.cleanOldRequests(for: endpoint)
-            
-            // Добавляем новую запись
-            let now = Date()
-            if self.requestCounts[endpoint] == nil {
-                self.requestCounts[endpoint] = []
-            }
-            self.requestCounts[endpoint]?.append(now)
+            let cutoffDate = Date().addingTimeInterval(-self.timeWindow)
+            var currentRequests = self.requestCounts[endpoint] ?? []
+            currentRequests = currentRequests.filter { $0 > cutoffDate }
+            currentRequests.append(Date())
+            self.requestCounts[endpoint] = currentRequests
             
             #if DEBUG
-            let currentCount = self.requestCounts[endpoint]?.count ?? 0
+            let currentCount = currentRequests.count
             print("📊 RateLimiter: Запрос записан для \(endpoint) (всего: \(currentCount))")
             #endif
+            
+            // Логируем в production
+            os_log("📊 RateLimiter: Запрос записан для %{public}s",
+                   log: Self.rateLimitLogger,
+                   type: .debug,
+                   endpoint)
         }
     }
     
@@ -109,8 +116,16 @@ class RateLimiter {
      */
     func getRequestCount(for endpoint: String) -> Int {
         return queue.sync {
-            cleanOldRequests(for: endpoint)
-            return requestCounts[endpoint]?.count ?? 0
+            let cutoffDate = Date().addingTimeInterval(-timeWindow)
+            var currentRequests = requestCounts[endpoint] ?? []
+            currentRequests = currentRequests.filter { $0 > cutoffDate }
+            requestCounts[endpoint] = currentRequests
+            
+            if currentRequests.isEmpty {
+                requestCounts.removeValue(forKey: endpoint)
+            }
+            
+            return currentRequests.count
         }
     }
     
@@ -121,12 +136,18 @@ class RateLimiter {
      */
     func getTimeUntilReset(for endpoint: String) -> TimeInterval? {
         return queue.sync {
-            guard let requests = requestCounts[endpoint], !requests.isEmpty else {
+            let cutoffDate = Date().addingTimeInterval(-timeWindow)
+            var currentRequests = requestCounts[endpoint] ?? []
+            currentRequests = currentRequests.filter { $0 > cutoffDate }
+            requestCounts[endpoint] = currentRequests
+            
+            if currentRequests.isEmpty {
+                requestCounts.removeValue(forKey: endpoint)
                 return nil
             }
             
             // Находим самый старый запрос
-            if let oldestRequest = requests.min() {
+            if let oldestRequest = currentRequests.min() {
                 let timePassed = Date().timeIntervalSince(oldestRequest)
                 let timeRemaining = timeWindow - timePassed
                 return max(0, timeRemaining)
@@ -166,20 +187,6 @@ class RateLimiter {
     // MARK: - Private Methods
     
     /**
-     * Очищает устаревшие записи запросов
-     * - Parameter endpoint: Путь endpoint'а
-     */
-    private func cleanOldRequests(for endpoint: String) {
-        let cutoffDate = Date().addingTimeInterval(-timeWindow)
-        
-        if var requests = requestCounts[endpoint] {
-            // Фильтруем только актуальные запросы
-            requests = requests.filter { $0 > cutoffDate }
-            requestCounts[endpoint] = requests
-        }
-    }
-    
-    /**
      * Логирует превышение лимита
      * - Parameters:
      *   - endpoint: Путь endpoint'а
@@ -214,11 +221,18 @@ class RateLimiter {
      */
     func getStatistics() -> [String: Int] {
         return queue.sync {
+            let cutoffDate = Date().addingTimeInterval(-timeWindow)
             var stats: [String: Int] = [:]
             
-            for (endpoint, _) in requestCounts {
-                cleanOldRequests(for: endpoint)
-                stats[endpoint] = requestCounts[endpoint]?.count ?? 0
+            for (endpoint, var requests) in requestCounts {
+                requests = requests.filter { $0 > cutoffDate }
+                requestCounts[endpoint] = requests
+                
+                if requests.isEmpty {
+                    requestCounts.removeValue(forKey: endpoint)
+                } else {
+                    stats[endpoint] = requests.count
+                }
             }
             
             return stats
