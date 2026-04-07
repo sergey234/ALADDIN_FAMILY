@@ -752,15 +752,38 @@ struct SubscriptionCancelRequest: Codable {
 
 struct SubscriptionCancelResponse: Codable {
     let success: Bool
-    let newToken: String
+    let status: String?
+    let newToken: String?
     let message: String?
     let subscription: DeviceRegistrationSubscription?
     
     enum CodingKeys: String, CodingKey {
         case success
+        case status
         case newToken = "new_token"
         case message
         case subscription
+    }
+    
+    // Кастомный декодер для поддержки разных форматов ответа сервера
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Читаем status
+        let decodedStatus = try? container.decodeIfPresent(String.self, forKey: .status)
+        self.status = decodedStatus
+        
+        // Читаем success (может быть bool)
+        if let successValue = try? container.decodeIfPresent(Bool.self, forKey: .success) {
+            self.success = successValue
+        } else {
+            // Если нет success, проверяем status == "success"
+            self.success = (decodedStatus == "success")
+        }
+        
+        self.newToken = try? container.decodeIfPresent(String.self, forKey: .newToken)
+        self.message = try? container.decodeIfPresent(String.self, forKey: .message)
+        self.subscription = try? container.decodeIfPresent(DeviceRegistrationSubscription.self, forKey: .subscription)
     }
 }
 

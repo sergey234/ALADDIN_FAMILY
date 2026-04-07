@@ -638,9 +638,15 @@ final class SubscriptionManager: ObservableObject {
             if response.success {
                 logger.business("✅ Successfully downgraded to FREE on server")
                 
-                // Update local token
-                if let jwtToken = self.parseJWTToken(response.newToken) {
+                // Update local token (если сервер прислал новый токен)
+                if let newToken = response.newToken,
+                   let jwtToken = self.parseJWTToken(newToken) {
                     await self.storeToken(jwtToken)
+                } else {
+                    // Если токен не пришел, запрашиваем синхронизацию в фоне
+                    Task {
+                        await self.syncWithServer()
+                    }
                 }
                 
                 // Clear trial status if it was active
