@@ -845,8 +845,9 @@ class APIService: ObservableObject {
     }
 
     // Подписки (Subscriptions)
-    func cancelSubscription(completion: @escaping (Result<SubscriptionCancelResponse, Error>) -> Void) {
-        networkManager.post(endpoint: AppConfig.Endpoint.subscriptionCancel, body: EmptyRequest(), completion: completion)
+    func downgradeSubscription(userId: String, reason: String? = nil, deviceId: String? = nil, completion: @escaping (Result<SubscriptionCancelResponse, Error>) -> Void) {
+        let request = SubscriptionCancelRequest(userId: userId, reason: reason, deviceId: deviceId)
+        networkManager.post(endpoint: AppConfig.Endpoint.subscriptionCancel, body: request, completion: completion)
     }
 
     // Сообщить об инциденте

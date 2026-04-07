@@ -620,8 +620,12 @@ final class SubscriptionManager: ObservableObject {
         do {
             isLoading = true
             
+            // Получаем userId из UserDefaults или генерируем fallback
+            let userId = UserDefaults.standard.string(forKey: "your_member_id") ?? "anonymous"
+            let deviceId = self.currentToken?.deviceId
+            
             let response: SubscriptionCancelResponse = try await withCheckedThrowingContinuation { continuation in
-                APIService.shared.cancelSubscription { result in
+                APIService.shared.downgradeSubscription(userId: userId, reason: "downgrade_to_free", deviceId: deviceId) { result in
                     switch result {
                     case .success(let resp):
                         continuation.resume(returning: resp)

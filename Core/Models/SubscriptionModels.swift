@@ -738,6 +738,18 @@ struct FeatureAccessConfig {
 
 // MARK: - API Response Models
 
+struct SubscriptionCancelRequest: Codable {
+    let userId: String
+    let reason: String?
+    let deviceId: String?
+    
+    init(userId: String, reason: String? = nil, deviceId: String? = nil) {
+        self.userId = userId
+        self.reason = reason
+        self.deviceId = deviceId
+    }
+}
+
 struct SubscriptionCancelResponse: Codable {
     let success: Bool
     let newToken: String
