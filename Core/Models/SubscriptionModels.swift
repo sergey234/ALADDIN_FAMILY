@@ -551,6 +551,18 @@ struct DeviceRegistrationSubscription: Codable {
 
     /// User ID (optional, не используется в клиенте)
     let userId: String?
+    
+    init(level: String, startDate: String? = nil, expiresAt: String? = nil, isActive: Bool = true, trialInfo: TrialInfo? = nil, limits: SubscriptionLimits? = nil, permissions: [String: AnyCodable]? = nil, deviceId: String? = nil, userId: String? = nil) {
+        self.level = level
+        self.startDate = startDate
+        self.expiresAt = expiresAt
+        self.isActive = isActive
+        self.trialInfo = trialInfo
+        self.limits = limits
+        self.permissions = permissions
+        self.deviceId = deviceId
+        self.userId = userId
+    }
 
     /// ✅ BUILD 121: CodingKeys для маппинга snake_case → camelCase
     enum CodingKeys: String, CodingKey {
@@ -736,14 +748,53 @@ struct JWTDeviceRegisterResponse: Codable {
     let registeredAt: String  // ISO 8601 date string from server
     let subscription: DeviceRegistrationSubscription  // ✅ FIXED: Use separate model for API responses
     
+    // Новые поля для LoginResponse с бэкенда
+    let expiresIn: Int?
+    let tokenType: String?
+    
     /// ✅ ИСПРАВЛЕНИЕ: Маппинг snake_case (сервер) → camelCase (клиент)
     enum CodingKeys: String, CodingKey {
         case token
-        case refreshToken = "refresh_token"  // ✅ BUILD 123: Маппинг snake_case → camelCase
-        case deviceId = "device_id"  // ✅ Сервер возвращает device_id, клиент ожидает deviceId
+        case accessToken = "access_token"
+        case refreshToken = "refresh_token"
+        case deviceId = "device_id"
         case expiresAt = "expires_at"
+        case expiresIn = "expires_in"
         case registeredAt = "registered_at"
         case subscription
+        case tokenType = "token_type"
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Поддержка обоих форматов: "token" или "access_token"
+        if let accessToken = try container.decodeIfPresent(String.self, forKey: .accessToken) {
+            self.token = accessToken
+        } else {
+            self.token = try container.decode(String.self, forKey: .token)
+        }
+        
+        self.refreshToken = try container.decodeIfPresent(String.self, forKey: .refreshToken)
+        self.deviceId = try container.decodeIfPresent(String.self, forKey: .deviceId) ?? "unknown_device"
+        self.expiresAt = try container.decodeIfPresent(String.self, forKey: .expiresAt) ?? ""
+        self.registeredAt = try container.decodeIfPresent(String.self, forKey: .registeredAt) ?? ""
+        self.subscription = try container.decodeIfPresent(DeviceRegistrationSubscription.self, forKey: .subscription) ?? DeviceRegistrationSubscription(level: "free", startDate: nil, expiresAt: nil, isActive: true, trialInfo: nil, limits: nil, permissions: nil, deviceId: nil, userId: nil)
+        
+        self.expiresIn = try container.decodeIfPresent(Int.self, forKey: .expiresIn)
+        self.tokenType = try container.decodeIfPresent(String.self, forKey: .tokenType)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(token, forKey: .token)
+        try container.encodeIfPresent(refreshToken, forKey: .refreshToken)
+        try container.encode(deviceId, forKey: .deviceId)
+        try container.encode(expiresAt, forKey: .expiresAt)
+        try container.encode(registeredAt, forKey: .registeredAt)
+        try container.encode(subscription, forKey: .subscription)
+        try container.encodeIfPresent(expiresIn, forKey: .expiresIn)
+        try container.encodeIfPresent(tokenType, forKey: .tokenType)
     }
 
     /// Convert expiresAt string to Date
