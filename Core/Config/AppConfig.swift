@@ -104,7 +104,7 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "137"
+    static let buildNumber = "138"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -373,6 +373,7 @@ struct AppConfig {
         
         // Devices
         static let devices = "/api/devices"
+        static let devicesBind = "/api/devices/bind"
         static let deviceRegister = "/api/auth/register-device"
         static let deviceDetail = "/api/devices" // /devices/{deviceId}
         static let deviceSettings = "/api/devices" // /devices/{deviceId}/settings

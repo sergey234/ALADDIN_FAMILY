@@ -1773,6 +1773,18 @@ class APIService: ObservableObject {
         networkManager.post(endpoint: AppConfig.Endpoint.devices, body: request, completion: completion)
     }
     
+    // MARK: - Bind Device API
+    
+    struct BindDeviceRequest: Codable {
+        let token: String
+        let pin: String?
+    }
+    
+    func bindDevice(token: String, pin: String? = nil, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        let request = BindDeviceRequest(token: token, pin: pin)
+        networkManager.post(endpoint: AppConfig.Endpoint.devicesBind, body: request, completion: completion)
+    }
+    
     // ✅ ДОБАВЛЕНО: Device Settings API (для синхронизации между устройствами)
     
     /// Загрузить настройки устройства с сервера

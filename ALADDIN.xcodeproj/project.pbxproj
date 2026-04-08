@@ -140,6 +140,7 @@
 		5E6F39592F16C56100CEC103 /* MobileSecuritySettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39582F16C56100CEC103 /* MobileSecuritySettingsModal.swift */; };
 		5E6F395B2F16C57500CEC103 /* NetworkSecuritySettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F395A2F16C57400CEC103 /* NetworkSecuritySettingsModal.swift */; };
 		5E6F71872F6C393E00121781 /* DNSProtectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F71862F6C393E00121781 /* DNSProtectionManager.swift */; };
+		5E6F71892F86448A00121781 /* DevicePairingModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F71882F86448A00121781 /* DevicePairingModal.swift */; };
 		5E70569F2F51BE680065BDC4 /* AdditionalFeaturesManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E70569E2F51BE680065BDC4 /* AdditionalFeaturesManager.swift */; };
 		5E7056A12F51BE710065BDC4 /* ComponentTariffManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056A02F51BE710065BDC4 /* ComponentTariffManager.swift */; };
 		5E7056B52F5478170065BDC4 /* PaymentRecoveryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056B42F5478160065BDC4 /* PaymentRecoveryView.swift */; };
@@ -258,7 +259,6 @@
 		A4AAA106 /* RemoteAnalyticsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA105 /* RemoteAnalyticsService.swift */; };
 		A4AAA108 /* ProfileImageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA107 /* ProfileImageManager.swift */; };
 		A4AAA200 /* RewardModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA201 /* RewardModels.swift */; };
-		B1000201 /* IoTSecurityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000200 /* IoTSecurityScreen.swift */; };
 		A4AAA202 /* ViewModels/ChildRewardsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA203 /* ViewModels/ChildRewardsViewModel.swift */; };
 		A4AAA210 /* AntivirusManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA211 /* AntivirusManager.swift */; };
 		A4AAA212 /* EmptyStateView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4AAA213 /* EmptyStateView.swift */; };
@@ -272,6 +272,7 @@
 		B1000011 /* RecoveryCodeModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000010 /* RecoveryCodeModal.swift */; };
 		B1000021 /* CollapsibleSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000020 /* CollapsibleSection.swift */; };
 		B1000031 /* ParentalControlManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000030 /* ParentalControlManager.swift */; };
+		B1000201 /* IoTSecurityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000200 /* IoTSecurityScreen.swift */; };
 		B2000100B2000100B2000100 /* ProtectionFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000100B1000100B1000100 /* ProtectionFeature.swift */; };
 		B2000110B2000110B2000110 /* ProtectionLevelHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000110B1000110B1000110 /* ProtectionLevelHistory.swift */; };
 		B2000120B2000120B2000120 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000120B1000120B1000120 /* Toast.swift */; };
@@ -458,7 +459,6 @@
 		5E6F392F2F15AF7800CEC103 /* SecurityFeatureRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityFeatureRow.swift; path = Shared/Components/SecurityFeatureRow.swift; sourceTree = "<group>"; };
 		5E6F39312F15AF8400CEC103 /* SettingsAccordion.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SettingsAccordion.swift; path = Shared/Components/SettingsAccordion.swift; sourceTree = "<group>"; };
 		5E6F39332F15AF9100CEC103 /* ComponentToggleCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentToggleCard.swift; path = Shared/Components/ComponentToggleCard.swift; sourceTree = "<group>"; };
-		B1000200 /* IoTSecurityScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IoTSecurityScreen.swift; path = IoTSecurityScreen.swift; sourceTree = "<group>"; };
 		5E6F39352F15AFC400CEC103 /* ComplianceView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComplianceView.swift; path = Screens/Views/ComplianceView.swift; sourceTree = "<group>"; };
 		5E6F39372F15AFCF00CEC103 /* EmergencyContactsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EmergencyContactsView.swift; path = Screens/Views/EmergencyContactsView.swift; sourceTree = "<group>"; };
 		5E6F39392F15AFD800CEC103 /* EmergencyNotificationsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = EmergencyNotificationsView.swift; path = Screens/Views/EmergencyNotificationsView.swift; sourceTree = "<group>"; };
@@ -478,6 +478,7 @@
 		5E6F39582F16C56100CEC103 /* MobileSecuritySettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MobileSecuritySettingsModal.swift; path = Shared/Components/Modals/MobileSecuritySettingsModal.swift; sourceTree = "<group>"; };
 		5E6F395A2F16C57400CEC103 /* NetworkSecuritySettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkSecuritySettingsModal.swift; path = Shared/Components/Modals/NetworkSecuritySettingsModal.swift; sourceTree = "<group>"; };
 		5E6F71862F6C393E00121781 /* DNSProtectionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DNSProtectionManager.swift; path = Core/Managers/DNSProtectionManager.swift; sourceTree = "<group>"; };
+		5E6F71882F86448A00121781 /* DevicePairingModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DevicePairingModal.swift; path = Shared/Components/Modals/DevicePairingModal.swift; sourceTree = "<group>"; };
 		5E70569E2F51BE680065BDC4 /* AdditionalFeaturesManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AdditionalFeaturesManager.swift; path = Core/Managers/AdditionalFeaturesManager.swift; sourceTree = "<group>"; };
 		5E7056A02F51BE710065BDC4 /* ComponentTariffManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ComponentTariffManager.swift; path = Core/Managers/ComponentTariffManager.swift; sourceTree = "<group>"; };
 		5E7056B02F54771D0065BDC4 /* TrialIntegrationTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TrialIntegrationTests.swift; path = Tests/Integration/TrialIntegrationTests.swift; sourceTree = "<group>"; };
@@ -622,6 +623,7 @@
 		B1000150B1000150B1000150 /* ProtectionLevelExplanationModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionLevelExplanationModal.swift; path = Shared/Components/Modals/ProtectionLevelExplanationModal.swift; sourceTree = "<group>"; };
 		B1000160B1000160B1000160 /* ProtectionLevelHistoryModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionLevelHistoryModal.swift; path = Shared/Components/Modals/ProtectionLevelHistoryModal.swift; sourceTree = "<group>"; };
 		B1000170B1000170B1000170 /* AdvancedProtectionSettingsScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AdvancedProtectionSettingsScreen.swift; sourceTree = "<group>"; };
+		B1000200 /* IoTSecurityScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IoTSecurityScreen.swift; sourceTree = "<group>"; };
 		B5001010 /* ALADDINUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ALADDINUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5001100 /* ALADDINUnitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINUnitTests.swift; sourceTree = "<group>"; };
 		B5001101 /* APIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIServiceTests.swift; sourceTree = "<group>"; };
@@ -784,6 +786,7 @@
 			children = (
 				61B300CAE7494F43AEDB4088 /* Certificates */,
 				5EB01F412ECB092800168BE9 /* URLHelper.swift */,
+				5E6F71882F86448A00121781 /* DevicePairingModal.swift */,
 				5E6F71862F6C393E00121781 /* DNSProtectionManager.swift */,
 				5EBA79382F66C70B001C50E3 /* TokenManager.swift */,
 				5EB1A4A62F64B8050030F5C1 /* ComponentAnalyticsModels.swift */,
@@ -1246,6 +1249,7 @@
 				A1000003 /* ContentView.swift in Sources */,
 				B6000001 /* AppDelegate.swift in Sources */,
 				5E0798292F17D7E100D20CF6 /* UserSelectorView.swift in Sources */,
+				5E6F71892F86448A00121781 /* DevicePairingModal.swift in Sources */,
 				5E6F393C2F15AFE200CEC103 /* VoiceControlView.swift in Sources */,
 				5E3200012EAD2692000574C4 /* AgeGroupSelectionModal.swift in Sources */,
 				5EB01F442ECB097500168BE9 /* ActivationCodeViewModel.swift in Sources */,
@@ -1571,7 +1575,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 137;
+				CURRENT_PROJECT_VERSION = 138;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1603,7 +1607,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 137;
+				CURRENT_PROJECT_VERSION = 138;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1759,7 +1763,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 137;
+				CURRENT_PROJECT_VERSION = 138;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1791,7 +1795,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 137;
+				CURRENT_PROJECT_VERSION = 138;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -1822,7 +1826,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 137;
+				CURRENT_PROJECT_VERSION = 138;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -1847,7 +1851,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 137;
+				CURRENT_PROJECT_VERSION = 138;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -1870,7 +1874,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 137;
+				CURRENT_PROJECT_VERSION = 138;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -1894,7 +1898,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 137;
+				CURRENT_PROJECT_VERSION = 138;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

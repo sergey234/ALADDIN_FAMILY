@@ -118,14 +118,19 @@ struct ALADDINNavigationBar: View {
                         Button(action: {
                             onAdd?()
                         }) {
-                            Image(systemName: "plus")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(width: 32, height: 32)
-                                .background(
-                                    Circle()
-                                        .fill(Color.orange.opacity(0.2))
-                                )
+                            HStack(spacing: 4) {
+                                Image(systemName: "plus")
+                                    .font(.system(size: 14, weight: .bold))
+                                Text("Добавить")
+                                    .font(.system(size: 14, weight: .bold))
+                            }
+                            .foregroundColor(Color(red: 1.0, green: 0.84, blue: 0.0)) // Золотой цвет
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 8)
+                            .background(
+                                Capsule()
+                                    .fill(Color(red: 1.0, green: 0.84, blue: 0.0).opacity(0.15))
+                            )
                         }
                         .accessibilityLabel("Добавить")
                     }

@@ -41,6 +41,7 @@ enum DeviceStatus: String, CaseIterable {
     case warning = "warning"
     case danger = "danger"
     case inactive = "inactive"
+    case pending = "pending"
     
     var color: Color {
         switch self {
@@ -48,6 +49,7 @@ enum DeviceStatus: String, CaseIterable {
         case .warning: return .orange
         case .danger: return .red
         case .inactive: return .gray
+        case .pending: return .gray
         }
     }
     
@@ -57,6 +59,7 @@ enum DeviceStatus: String, CaseIterable {
         case .warning: return "Предупреждение"
         case .danger: return "Опасность"
         case .inactive: return "Неактивно"
+        case .pending: return "Ожидает привязки"
         }
     }
 }

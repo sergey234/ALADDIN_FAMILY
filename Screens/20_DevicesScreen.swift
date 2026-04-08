@@ -662,6 +662,7 @@ enum DeviceStatus: String, CaseIterable {
     case warning = "warning"
     case danger = "danger"
     case inactive = "inactive"
+    case pending = "pending"
     
     var color: Color {
         switch self {
@@ -669,6 +670,7 @@ enum DeviceStatus: String, CaseIterable {
         case .warning: return .warningOrange
         case .danger: return .dangerRed
         case .inactive: return .textSecondary
+        case .pending: return .gray
         }
     }
     
@@ -678,6 +680,7 @@ enum DeviceStatus: String, CaseIterable {
         case .warning: return localizationManager.localized("devices_status_warning")
         case .danger: return localizationManager.localized("devices_status_danger")
         case .inactive: return localizationManager.localized("devices_status_inactive")
+        case .pending: return "Ожидает привязки"
         }
     }
 }
@@ -695,7 +698,11 @@ struct AddDeviceView: View {
     @State private var selectedOwner: String = ""
     @State private var isLoading: Bool = false
     @State private var errorMessage: String? = nil
-    @State private var showSuccessAlert: Bool = false
+    @State private var showPairingModal: Bool = false
+    
+    // Mock data until Backend API is ready
+    @State private var mockQrToken: String = ""
+    @State private var mockShortPin: String = ""
     
     @State private var familyMembers: [String] = []
     
@@ -840,13 +847,17 @@ struct AddDeviceView: View {
             .onAppear {
                 loadFamilyMembers()
             }
-            .alert(localizationManager.localized("common_success"), isPresented: $showSuccessAlert) {
-                Button(localizationManager.localized("common_ok")) {
+            .sheet(isPresented: $showPairingModal) {
+                DevicePairingModal(
+                    deviceName: deviceName.trimmingCharacters(in: .whitespaces),
+                    ownerName: selectedOwner,
+                    qrToken: mockQrToken,
+                    shortPin: mockShortPin
+                )
+                .onDisappear {
                     dismiss()
                     onDeviceAdded()
                 }
-            } message: {
-                Text(localizationManager.localized("devices_success_added"))
             }
             .alert(localizationManager.localized("common_error"), isPresented: .constant(errorMessage != nil)) {
                 Button(localizationManager.localized("common_ok")) {
@@ -918,7 +929,9 @@ struct AddDeviceView: View {
                 
                 switch result {
                 case .success:
-                    showSuccessAlert = true
+                    self.mockQrToken = UUID().uuidString
+                    self.mockShortPin = String(format: "%06d", Int.random(in: 100000...999999))
+                    self.showPairingModal = true
                     
                 case .failure(let error):
                     errorMessage = error.localizedDescription

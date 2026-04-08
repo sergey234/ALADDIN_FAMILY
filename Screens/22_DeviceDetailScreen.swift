@@ -215,6 +215,7 @@ struct DeviceDetailScreen: View {
         case .warning: return localizationManager.localized("device_detail_status_warning")
         case .danger: return localizationManager.localized("device_detail_status_danger")
         case .inactive: return localizationManager.localized("device_detail_status_inactive")
+        case .pending: return "Ожидает привязки"
         }
     }
 
