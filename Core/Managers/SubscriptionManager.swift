@@ -614,6 +614,7 @@ final class SubscriptionManager: ObservableObject {
     }
 
     /// ⬇️ Downgrade to Free (Cancel Trial/Subscription)
+    @MainActor
     func downgradeToFree() async {
         logger.business("⬇️ Downgrading subscription to FREE (Cancel)")
         
@@ -676,6 +677,7 @@ final class SubscriptionManager: ObservableObject {
     }
 
     /// 🎁 Activate trial period (14 days)
+    @MainActor
     func activateTrialIfNeeded() async {
         // If trial is already active locally - do nothing.
         if let trial = trialStatus, trial.isActive {
@@ -1126,14 +1128,16 @@ final class SubscriptionManager: ObservableObject {
 
     /// 🔄 Update subscription status
     /// ✅ ИСПРАВЛЕНО: Изменено с private на internal для использования в TokenHealthMonitor
-    func updateSubscriptionStatus(_ status: SubscriptionStatus) async {
+    @MainActor
+    func updateSubscriptionStatus(_ status: SubscriptionStatus) {
         currentSubscription = status
         persistSubscriptionStatus(status)
         logger.business("📊 Subscription updated: \(status.level)")
     }
 
     /// 🎁 Update trial status
-    private func updateTrialStatus(_ trial: TrialInfo) async {
+    @MainActor
+    private func updateTrialStatus(_ trial: TrialInfo) {
         // Cancel trial notifications if trial is no longer active
         if !trial.isActive && trialStatus?.isActive == true {
             NotificationManager.shared.cancelTrialNotifications()
@@ -1500,6 +1504,7 @@ extension SubscriptionManager {
     }
 
     /// 🔄 Sync subscription data with server when online
+    @MainActor
     func syncWithServer() async {
         guard !isOfflineMode else {
             logger.network("📡 Skipping sync - offline mode")
