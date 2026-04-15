@@ -139,8 +139,6 @@ struct ALADDINApp: App {
     @StateObject private var navigationManager = NavigationManager()
     // ✅ BUILD 112: Используем Singleton для LocalizationManager
     @StateObject private var localizationManager = LocalizationManager.shared
-    // ✅ Добавляем SubscriptionManager для JWT токенов
-    private var subscriptionManager = SubscriptionManager.shared
     @AppStorage("selected_theme") private var selectedTheme: String = "system"
     // ✅ BUILD 95: Показ VisualLogger overlay в RELEASE/TestFlight по флагу
     @AppStorage("enable_visual_logging_release") private var enableVisualLoggingRelease: Bool = false
@@ -154,6 +152,7 @@ struct ALADDINApp: App {
 
     // ✅ Состояние навигации
     @State private var navigationInitialized: Bool = false
+    @State private var didRunDeferredBootstrap: Bool = false
     
     // ✅ BUILD 113: Защита от повторных вызовов onAppear
     // SwiftUI может вызывать onAppear несколько раз при пересоздании View
@@ -187,7 +186,6 @@ struct ALADDINApp: App {
         */
 
         print("🚀🚀🚀 ALADDINApp.init() called - APP STARTING")
-        print("🚀🚀🚀 SubscriptionManager.shared created: \(SubscriptionManager.shared)")
         // ✅ ИСПРАВЛЕНИЕ BUILD 93: Убрано создание VisualLogger.shared из init() - может вызывать рекурсию
         // VisualLogger будет создан только при первом использовании
         // print("📱📱📱 VISUAL_LOGGER_TEST: If you see this in Xcode Console, VisualLogger overlay may not be visible")
@@ -209,34 +207,49 @@ struct ALADDINApp: App {
         #endif
         
 #if DEBUG
-        KeychainAutoRecoveryService.repairTokensIfNeeded()
-        
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала проверяем и удаляем debug токены СИНХРОННО
-        // Это нужно сделать ДО создания новых debug токенов
-        let hadDebugTokens = Self.autoFixDebugTokensIfNeeded()
+        // ВАЖНО: тяжелый DEBUG bootstrap вынесен из init() в deferred запуск после первого кадра.
+#endif
+    }
+    
+    var body: some Scene {
+        WindowGroup {
+            // Показываем полноценный root-контент приложения.
+            // Экран loading по-прежнему доступен через navigationManager.currentScreen == .loading.
+            mainAppContent()
+                .onAppear {
+                    // Восстанавливаем первичную инициализацию навигации, иначе приложение
+                    // застревает на статическом loading-экране и не доходит до onboarding.
+                    let navManager = navigationManager
+                    let locManager = localizationManager
+                    Self.initializeNavigation(
+                        navigationManager: navManager,
+                        localizationManager: locManager,
+                        hasCompletedOnboarding: hasCompletedOnboarding
+                    )
+                }
+                .task {
+                    await runDeferredLaunchBootstrapIfNeeded()
+                }
+        }
+    }
 
-        // ✅ ИСПРАВЛЕНИЕ: Проверяем, нужно ли создавать debug токены
-        // Если установлена переменная окружения SKIP_DEBUG_TOKENS=1, пропускаем создание debug токенов
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Тримируем значение, чтобы убрать возможные пробелы
+    @MainActor
+    private func runDeferredLaunchBootstrapIfNeeded() async {
+        guard !didRunDeferredBootstrap else { return }
+        didRunDeferredBootstrap = true
+
+#if DEBUG
+        // Поднимаем debug bootstrap после первого кадра, чтобы не задерживать launch.
+        // В safe-launch режиме не трогаем Keychain и не поднимаем SubscriptionManager на старте.
+        let hadDebugTokens = false
         let skipDebugTokensRaw = ProcessInfo.processInfo.environment["SKIP_DEBUG_TOKENS"] ?? ""
         let skipDebugTokens = skipDebugTokensRaw.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
-
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Если есть AUTO_LOGIN_EMAIL, автоматически считаем, что нужно пропустить debug токены
         let hasAutoLogin = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"] != nil &&
-                          !ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"]!.isEmpty
-
+            !(ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"] ?? "").isEmpty
         let shouldSkipDebugTokens = skipDebugTokens || hasAutoLogin
 
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Всегда создаем debug токены после удаления старых
-        // Если мы удалили debug токены, обязательно создаем новые
         if hadDebugTokens || !shouldSkipDebugTokens {
-            if !shouldSkipDebugTokens {
-                // Создаем debug токены независимо от того, были ли они удалены
-                DebugAuthTokenSeeder.seedIfNeeded()
-            } else if hadDebugTokens {
-                // Если токены были удалены, но skipDebugTokens = true, создаем токены в любом случае
-                DebugAuthTokenSeeder.seedIfNeeded()
-            }
+            DebugAuthTokenSeeder.seedIfNeeded()
         } else {
             if skipDebugTokens {
                 print("⚠️ DEBUG: Пропущено создание debug токенов (SKIP_DEBUG_TOKENS=1)")
@@ -245,29 +258,17 @@ struct ALADDINApp: App {
             }
             print("   Для получения валидных токенов используйте performRealLogin() в Debug Console")
         }
-        
-        // 🧪 ТЕСТИРОВАНИЕ CRASH: Добавляем изолированный тест сети
-        print("🧪🧪🧪 CRASH TESTING: Starting EMERGENCY network test (GET instead of POST)")
-        Task {
-            let networkTestResult = await SubscriptionManager.shared.emergencyTestGET()
-            print("🧪🧪🧪 CRASH TESTING: Emergency test result = \(networkTestResult)")
-        }
 
-        // ✅ АВТОМАТИЧЕСКИЙ ЛОГИН: Если установлены переменные окружения, выполняем логин автоматически
-        // ✅ ПРОДАКШЕН: Проверяем сохраненные credentials для автоматического логина
-        // ✅ BUILD 96: Захватываем значение autoLoginEnabled до входа в closure для предотвращения ошибки компиляции
+        // В safe-launch режиме аварийный сетевой тест полностью отключен.
+        print("ℹ️ SAFE_LAUNCH: Emergency network test disabled on startup")
+
         let isAutoLoginEnabled = autoLoginEnabled
         DispatchQueue.global(qos: .utility).async {
-            // ✅ ДИАГНОСТИКА: Проверяем переменные окружения
             let email = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"]
             let password = ProcessInfo.processInfo.environment["AUTO_LOGIN_PASSWORD"]
-
-            // ✅ ПРОДАКШЕН: Проверяем сохраненные credentials
             let savedEmail = UserDefaults.standard.string(forKey: "saved_login_email")
             let savedPassword = UserDefaults.standard.string(forKey: "saved_login_password")
-            // ✅ BUILD 96: Используем @AppStorage вместо UserDefaults для предотвращения рекурсии
-            // autoLoginEnabled теперь доступен как свойство @AppStorage
-            
+
             print("🔍 ALADDINApp: Проверка переменных окружения...")
             let skipDebugTokensValue = ProcessInfo.processInfo.environment["SKIP_DEBUG_TOKENS"] ?? ""
             let skipDebugTokensTrimmed = skipDebugTokensValue.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -275,8 +276,7 @@ struct ALADDINApp: App {
             print("   - AUTO_LOGIN_EMAIL: \(email != nil ? "✅ установлен (\(email?.prefix(3) ?? "")...)" : "❌ не установлен")")
             print("   - AUTO_LOGIN_PASSWORD: \(password != nil ? "✅ установлен (\(password?.count ?? 0) символов)" : "❌ не установлен")")
             print("   - SKIP_DEBUG_TOKENS: \(skipDebugTokensValue.isEmpty ? "❌ НЕ УСТАНОВЛЕН" : "✅ установлен = '\(skipDebugTokensTrimmed)' (\(skipDebugTokensIsSet ? "активен" : "не активен"))")")
-            
-            // ✅ ДОПОЛНИТЕЛЬНАЯ ДИАГНОСТИКА: Выводим все переменные окружения, начинающиеся с AUTO_ или SKIP_
+
             let allEnvVars = ProcessInfo.processInfo.environment
             let relevantVars = allEnvVars.keys.filter { $0.hasPrefix("AUTO_") || $0.hasPrefix("SKIP_") }
             if !relevantVars.isEmpty {
@@ -293,102 +293,26 @@ struct ALADDINApp: App {
                 print("   - ⚠️ ВНИМАНИЕ: Не найдено ни одной переменной окружения с префиксом AUTO_ или SKIP_!")
                 print("   - Проверьте, что переменные установлены в правильной схеме (Run)")
             }
-            
-            // ✅ ПРОДАКШЕН: Проверяем условия для автоматического логина
-            let shouldAutoLogin = (email != nil && password != nil && !email!.isEmpty && !password!.isEmpty) ||
-                                 (isAutoLoginEnabled && savedEmail != nil && savedPassword != nil)
+
+            let hasValidEnvCredentials = (email != nil && password != nil && !(email?.isEmpty ?? true) && !(password?.isEmpty ?? true))
+            let hasSavedCredentials = isAutoLoginEnabled && savedEmail != nil && savedPassword != nil
+            let shouldAutoLogin = hasValidEnvCredentials || hasSavedCredentials
 
             if shouldAutoLogin {
                 let loginEmail = email ?? savedEmail!
-                let loginPassword = password ?? savedPassword!
-
                 print("🔐 ALADDINApp: Автоматический логин...")
                 print("   - Email: \(loginEmail)")
                 print("   - Тип: \(email != nil ? "переменные окружения" : "сохраненные credentials")")
-
-            // ✅ BUILD 113: Убрано автоматическое выполнение логина из init()
-            // Это вызывало лавину обновлений в первые секунды старта приложения,
-            // что приводило к рекурсии и крашам при отрисовке MainScreen.
-            // Теперь логин должен выполняться только по требованию или в стабильном состоянии.
-            print("ℹ️ ALADDINApp: Автоматический логин пропущен в init() для стабильности")
+                print("ℹ️ ALADDINApp: Автоматический логин пропущен в deferred bootstrap для стабильности")
             } else {
-                #if DEBUG
-                if email == nil || password == nil || email!.isEmpty || password!.isEmpty {
+                if email == nil || password == nil || (email?.isEmpty ?? true) || (password?.isEmpty ?? true) {
                     print("⚠️ ALADDINApp: Переменные окружения для автоматического логина не установлены")
                     print("   - Установите AUTO_LOGIN_EMAIL и AUTO_LOGIN_PASSWORD в Scheme → Run → Arguments → Environment Variables")
                 }
-                #endif
                 print("ℹ️ ALADDINApp: Автоматический логин не настроен - пользователь должен войти вручную")
             }
         }
 #endif
-    }
-    
-    var body: some Scene {
-        WindowGroup {
-            // ✅ Основное приложение
-            mainAppContent()
-            .onAppear {
-                // ✅ BUILD 115: КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ - Проверяем состояние онбординга ПЕРВЫМ ДЕЛОМ
-                // Логируем текущее состояние для диагностики
-                print("🔍 BUILD 115: onAppear вызван")
-                print("🔍 BUILD 115: hasCompletedOnboarding = \(hasCompletedOnboarding)")
-                print("🔍 BUILD 115: Текущий экран = \(navigationManager.currentScreen)")
-                
-                // ✅ BUILD 115: ВСЕГДА проверяем онбординг ПЕРЕД инициализацией навигации
-                // Если онбординг не пройден, устанавливаем экран онбординга СРАЗУ и НЕ вызываем initializeNavigation
-                if !hasCompletedOnboarding {
-                    print("🔴 BUILD 115: Онбординг не пройден - устанавливаем экран онбординга и ПРОПУСКАЕМ initializeNavigation")
-                    navigationManager.currentScreen = .onboarding
-                    // ✅ BUILD 115: НЕ вызываем initializeNavigation если онбординг не пройден
-                    // Это гарантирует, что онбординг не будет перезаписан
-                }
-                
-                // ✅ BUILD 113: Защита от повторных вызовов onAppear
-                // SwiftUI может вызывать onAppear несколько раз при пересоздании View
-                Self.initializationLock.lock()
-                defer { Self.initializationLock.unlock() }
-                
-                guard !Self.hasInitialized else {
-                    print("⚠️ ALADDINApp.onAppear уже вызван, пропускаем повторную инициализацию")
-                    return
-                }
-                
-                Self.hasInitialized = true
-                
-                // ✅ BUILD 114: Убрана принудительная инициализация через DispatchQueue.main.async,
-                // так как она вызывала Deadlock (зависание) в симуляторе.
-                // Оставляем только один чистый вызов ниже.
-
-                // ✅ ИСПРАВЛЕНИЕ BUILD 93: Асинхронная загрузка логов VisualLogger
-                VisualLogger.shared.loadLogsAsync()
-                
-                // ✅ BUILD 95: Дополнительная диагностика (stack size + мониторинг медленных UserDefaults)
-                StackSizeMonitor.logMainThreadStackSize(context: "ALADDINApp.onAppear")
-                MonitoredUserDefaults.slowThresholdMs = 50
-
-                // ✅ BUILD 115: Запускаем инициализацию ТОЛЬКО если онбординг пройден
-                // Если онбординг не пройден, initializeNavigation НЕ вызывается, чтобы не перезаписать экран
-                if hasCompletedOnboarding {
-                    print("🟢 BUILD 115: Онбординг пройден - вызываем initializeNavigation")
-                    // ✅ BUILD 95: Передаем hasCompletedOnboarding из @AppStorage для предотвращения рекурсии
-                    Self.initializeNavigation(navigationManager: navigationManager, localizationManager: localizationManager, hasCompletedOnboarding: hasCompletedOnboarding)
-                } else {
-                    print("🔴 BUILD 115: Онбординг не пройден - ПРОПУСКАЕМ initializeNavigation для сохранения экрана онбординга")
-                }
-
-                // ✅ Инициализируем SubscriptionManager для JWT токенов
-                print("🚀 ALADDINApp: Starting SubscriptionManager initialization Task")
-                Task {
-                    await subscriptionManager.initializeOnAppStart()
-                }
-
-                print("✅ ALADDINApp: Инициализация завершена")
-                #if DEBUG
-                LocalizationDiagnostics.runInitialChecks(with: localizationManager)
-                #endif
-            }
-        }
     }
 
     // ✅ НОВОЕ: Основное содержимое приложения
