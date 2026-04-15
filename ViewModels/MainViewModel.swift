@@ -199,39 +199,31 @@ class MainViewModel: ObservableObject {
         }
 
         if !hasAuthToken {
-            // ❌ НЕТ ТОКЕНА: В продакшн требуем авторизацию, в DEBUG показываем демо данные
+            // ❌ НЕТ ТОКЕНА: Ждём инициализации SubscriptionManager (Phase 1/2 fix)
             #if DEBUG
-            print("ℹ️ MainViewModel: Debug режим - демо данные (токен отсутствует)")
+            print("⚠️ MainViewModel: Токен отсутствует. Ожидаем инициализацию SubscriptionManager...")
             #else
-            // ✅ В ПРОДАКШН: Демо режим НЕ допустим - требуем авторизацию
             print("❌ MainViewModel: Токен отсутствует - требуется авторизация")
             #endif
 
+            // Не сбрасываем данные агрессивно — сохраняем предыдущее состояние
             Task { @MainActor [weak self] in
                 guard let self = self else { return }
                 self.isLoading = false
                 self.isLoadingDashboard = false
-
-                // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности загрузки дашборда
                 PerformanceMonitor.shared.endScreenLoad("MainDashboard")
-                
+
                 #if DEBUG
-                // Только в DEBUG режиме показываем демо данные
-                self.familyMembers = 1
-                self.devicesProtected = 1
-                self.threatsBlocked = 0
-                self.lastUpdateTime = Date()
-                self.errorMessage = nil
-                self.familyProtectionStatus = .active
-                // ✅ BUILD 112: Используем Singleton вместо создания нового тяжелого объекта
-                // Это критически важно для предотвращения переполнения стека при старте
-                let localizationManager = LocalizationManager.shared
-                self.familyProtectionStatusMessage = localizationManager.localized("main_family_protection_status_message")
+                // В DEBUG не сбрасываем в 0 — оставляем предыдущие значения или ставим минимальные
+                if self.familyMembers == 0 {
+                    self.familyMembers = 1
+                    self.devicesProtected = 1
+                    self.familyProtectionStatus = .active
+                    self.familyProtectionStatusMessage = LocalizationManager.shared.localized("main_family_protection_status_message")
+                }
                 NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
                 #else
-                // В продакшн: показываем ошибку и требуем авторизацию
                 self.errorMessage = "Требуется авторизация"
-                // TODO: Переход на экран авторизации
                 #endif
             }
             return
@@ -536,32 +528,40 @@ class MainViewModel: ObservableObject {
     
     /// ✅ АВТООБНОВЛЕНИЕ: Загрузка данных при открытии экрана
     func onAppear() {
-        // ✅ BUILD 115: Добавлена диагностика для отслеживания загрузки данных
-        print("🔄 MainViewModel.onAppear: Вызван")
+        // ✅ PHASE 2: Улучшенный onAppear с ожиданием SubscriptionManager
+        print("🔄 MainViewModel.onAppear: Вызван (Phase 2 improved)")
         print("   - Текущие значения: члены=\(familyMembers), устройства=\(devicesProtected), угрозы=\(threatsBlocked)")
         print("   - lastUpdateTime: \(lastUpdateTime?.description ?? "nil")")
+        print("   - Subscription initialized: \(SubscriptionManager.shared.isInitialized)")
         
-        // ✅ ЗАЩИТА ОТ ЧАСТЫХ ВЫЗОВОВ: Проверяем, не было ли onAppear недавно
-        if let lastCall = lastOnAppearTime, Date().timeIntervalSince(lastCall) < 30 {
-            print("   - ⚠️ onAppear вызван слишком часто (<30 сек), пропускаем")
+        // ✅ ЗАЩИТА ОТ ЧАСТЫХ ВЫЗОВОВ
+        if let lastCall = lastOnAppearTime, Date().timeIntervalSince(lastCall) < 15 {
+            print("   - ⚠️ onAppear вызван слишком часто (<15 сек), пропускаем")
             return
         }
         lastOnAppearTime = Date()
         refreshFamilyMembersCountFromStorage()
 
+        // ✅ PHASE 2: Ждём готовности SubscriptionManager (важно после изменений ALADDINApp)
+        if !SubscriptionManager.shared.isInitialized {
+            print("⏳ SubscriptionManager ещё не инициализирован — откладываем загрузку на 800мс")
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
+                self?.onAppear()
+            }
+            return
+        }
+
         // Проверяем, нужно ли обновлять данные
         let shouldRefresh: Bool
         
         if let lastUpdate = lastUpdateTime {
-            // Обновляем, если прошло больше 5 минут
             let timeSinceUpdate = Date().timeIntervalSince(lastUpdate)
-            shouldRefresh = timeSinceUpdate > 300 // 5 минут
+            shouldRefresh = timeSinceUpdate > 180 // 3 минуты вместо 5 (быстрее обновление)
             print("   - Время с последнего обновления: \(Int(timeSinceUpdate)) сек")
             print("   - Нужно обновить: \(shouldRefresh ? "ДА" : "НЕТ")")
         } else {
-            // Если данных ещё нет - загружаем
             shouldRefresh = true
-            print("   - Данных нет - загружаем обязательно")
+            print("   - Данных нет — загружаем обязательно")
         }
         
         if shouldRefresh {
@@ -569,6 +569,10 @@ class MainViewModel: ObservableObject {
             loadDashboardData()
         } else {
             print("   - ⏭️ Пропускаем загрузку (данные свежие)")
+            // Всё равно обновляем статус, если он устарел
+            if familyProtectionStatus == .networkUnavailable || familyProtectionStatus == .attention {
+                familyProtectionStatus = .active
+            }
         }
     }
     

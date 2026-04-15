@@ -21,6 +21,8 @@ struct FamilyMemberCard: View {
     var isDeleteDisabled: Bool = false
     // Маркер источника: "server" / "local" (микрометка)
     var originBadge: String? = nil
+    // ✅ PHASE 4: Member ID for yellow rectangle (restored from backup behavior)
+    var memberId: String? = nil
     
     // MARK: - Localized Role Label
     
@@ -109,7 +111,8 @@ struct FamilyMemberCard: View {
         onDelete: (() -> Void)? = nil,
         showDeleteButton: Bool = false,
         isDeleteDisabled: Bool = false,
-        originBadge: String? = nil
+        originBadge: String? = nil,
+        memberId: String? = nil  // ✅ PHASE 4: ID parameter
     ) {
         self.name = name
         self.role = role
@@ -122,6 +125,7 @@ struct FamilyMemberCard: View {
         self.showDeleteButton = showDeleteButton
         self.isDeleteDisabled = isDeleteDisabled
         self.originBadge = originBadge
+        self.memberId = memberId
     }
     
     // MARK: - Body
@@ -149,6 +153,21 @@ struct FamilyMemberCard: View {
                         .lineLimit(1)
                     
                     Spacer()
+                    
+                    // ✅ PHASE 4: Member ID badge (yellow rectangle restoration)
+                    if let id = memberId, !id.isEmpty {
+                        Text("ID:\(id)")
+                            .font(.system(size: 9, weight: .bold, design: .monospaced))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.orange.opacity(0.9))
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.yellow.opacity(0.6), lineWidth: 1)
+                            )
+                    }
                     
                     // Микрометка источника
                     if let origin = originBadge, !origin.isEmpty {
@@ -269,50 +288,51 @@ struct FamilyMemberCard: View {
 #if DEBUG
 struct FamilyMemberCard_Previews: PreviewProvider {
     static var previews: some View {
-    VStack(spacing: 16) {
-        // Родитель - защищён
-        FamilyMemberCard(
-            name: "Сергей",
-            role: .parent,
-            avatar: "👨",
-            status: .protected,
-            threatsBlocked: 47
-        ) {
-            print("Открыть профиль Сергея")
+        VStack(spacing: 16) {
+            // Родитель - защищён
+            FamilyMemberCard(
+                name: "Сергей",
+                role: .parent,
+                avatar: "👨",
+                status: .protected,
+                threatsBlocked: 47,
+                lastActive: "сейчас",
+                action: { print("Открыть профиль Сергея") },
+                memberId: "FAM-7842"
+            )
+            
+            // Ребёнок - предупреждение
+            FamilyMemberCard(
+                name: "Маша",
+                role: .child,
+                avatar: "👧",
+                status: .warning,
+                threatsBlocked: 23,
+                lastActive: "5 мин назад",
+                action: { print("Открыть профиль Маши") },
+                memberId: "FAM-7843"
+            )
+            
+            // Пожилой - оффлайн
+            FamilyMemberCard(
+                name: "Бабушка",
+                role: .elderly,
+                avatar: "👵",
+                status: .offline,
+                threatsBlocked: 12,
+                lastActive: "2 часа назад",
+                action: { print("Открыть профиль Бабушки") },
+                memberId: "FAM-7844"
+            )
         }
-        
-        // Ребёнок - предупреждение
-        FamilyMemberCard(
-            name: "Маша",
-            role: .child,
-            avatar: "👧",
-            status: .warning,
-            threatsBlocked: 23,
-            lastActive: "5 мин назад"
-        ) {
-            print("Открыть профиль Маши")
-        }
-        
-        // Пожилой - оффлайн
-        FamilyMemberCard(
-            name: "Бабушка",
-            role: .elderly,
-            avatar: "👵",
-            status: .offline,
-            threatsBlocked: 12,
-            lastActive: "2 часа назад"
-        ) {
-            print("Открыть профиль Бабушки")
-        }
-    }
-    .padding()
-    .background(
-        LinearGradient(
-            colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
+        .padding()
+        .background(
+            LinearGradient(
+                colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
         )
-    )
     }
 }
 #endif

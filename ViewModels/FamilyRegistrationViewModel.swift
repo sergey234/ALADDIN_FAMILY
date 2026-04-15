@@ -308,6 +308,16 @@ class FamilyRegistrationViewModel: ObservableObject {
     func createFamily() {
         logger.business("Creating family with role: \(selectedRole?.rawValue ?? "none")")
         
+        // ✅ CRITICAL FIX: Always reset admin_add_mode for new user registration/onboarding
+        // This prevents incorrectly entering addMember path before family exists (causing 404 "Family not found")
+        let wasAdminAddMode = UserDefaults.standard.bool(forKey: "admin_add_mode")
+        if wasAdminAddMode {
+            logger.business("⚠️ ADMIN_ADD_MODE was active during initial registration - RESETTING it")
+            UserDefaults.standard.set(false, forKey: "admin_add_mode")
+            UserDefaults.standard.synchronize()
+            VisualLogger.shared.log("🔄 Reset admin_add_mode for first-time family creation", level: .warning, category: "FAMILY")
+        }
+        
         // ✅ ИСПРАВЛЕНИЕ ПОДРОСТКА: Детальное логирование
         if let role = selectedRole, role == .teenager {
             VisualLogger.shared.log("🔍 ПОДРОСТОК: createFamily() вызван", level: .info, category: "FAMILY")
@@ -403,6 +413,28 @@ class FamilyRegistrationViewModel: ObservableObject {
                 } catch {
                     await MainActor.run {
                         self.isLoading = false
+                        
+                        let errorDesc = error.localizedDescription.lowercased()
+                        logger.business("❌ addFamilyMember failed: \(error.localizedDescription)")
+                        
+                        // ✅ CRITICAL RECOVERY: If "Family not found" during what should be initial registration,
+                        // fallback to createFamily (this is the root cause of the 404 error)
+                        if errorDesc.contains("family not found") || errorDesc.contains("404") || errorDesc.contains("not found") {
+                            VisualLogger.shared.log("🔄 FAMILY_NOT_FOUND detected during add - falling back to createFamily()", level: .warning, category: "FAMILY")
+                            logger.business("🔄 Auto-fallback: Family not found → calling createFamily() instead")
+                            
+                            // Reset flag and retry with proper family creation path
+                            UserDefaults.standard.set(false, forKey: "admin_add_mode")
+                            UserDefaults.standard.synchronize()
+                            
+                            self.currentStep = .idle
+                            // Retry with create path
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                self.createFamily()
+                            }
+                            return
+                        }
+                        
                         self.errorMessage = error.localizedDescription
                         self.currentStep = .idle
                         VisualLogger.shared.log("❌ Oшибка добавления участника: \(error.localizedDescription)", level: .error, category: "FAMILY")

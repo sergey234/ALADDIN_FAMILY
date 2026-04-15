@@ -401,6 +401,15 @@ class APIService: ObservableObject {
 
                 let networkError = NetworkError.from(error)
                 
+                // ✅ CRITICAL: Specific handling for "Family not found" (404) - root cause of registration failure
+                // This happens when trying to add member before family exists (common during first onboarding)
+                if case .httpError(404) = networkError {
+                    VisualLogger.shared.log("🚨 FAMILY NOT FOUND (404) - likely first-time registration. Will trigger createFamily fallback.", level: .error, category: "FAMILY")
+                    logger.business("🔍 FAMILY ADD: 404 'Family not found' - no existing family for this JWT token")
+                    completion(.failure(NetworkError.httpError(404)))
+                    return
+                }
+                
                 // Дружественная обработка 409 (лимит участников достигнут)
                 switch networkError {
                 case .invalidStatusCode(let code):

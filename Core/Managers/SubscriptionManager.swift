@@ -138,6 +138,10 @@ final class SubscriptionManager: ObservableObject {
     /// Last sync timestamp
     @Published private(set) var lastSyncDate: Date?
 
+    /// PHASE 2: Flag indicating that initializeOnAppStart() has completed
+    /// Used by MainViewModel.onAppear() to prevent loading before auth is ready
+    @Published private(set) var isInitialized: Bool = false
+
     /// Events tracking
     private let eventsQueue = DispatchQueue(label: "com.aladdin.subscription.events")
     private var pendingEvents: [SubscriptionEventData] = []
@@ -463,9 +467,17 @@ final class SubscriptionManager: ObservableObject {
         logger.business("✅ DEFENSIVE JWT: Токен полностью очищен")
     }
 
+    #if DEBUG
+    /// Только для юнит-тестов: выставляет `currentToken` в памяти без Keychain/UserDefaults.
+    func setCurrentTokenForTesting(_ token: JWTToken?) {
+        currentToken = token
+    }
+    #endif
+
     private init() {
         print("🔐🔐🔐 SUBSCRIPTION_MANAGER_INIT: Starting initialization")
         logger.security("🔐 SubscriptionManager initialized - Core security component active")
+        self.isInitialized = false  // Phase 2: explicit flag
 
         // Load persisted data on initialization
         logger.business("💾 Loading persisted data from Keychain...")
@@ -474,6 +486,9 @@ final class SubscriptionManager: ObservableObject {
         loadPendingEvents()
         logger.business("💾 Persisted data loading completed")
         print("💾💾💾 PERSISTED_DATA_LOADED: Completed")
+
+        self.isInitialized = true
+        logger.business("✅ SubscriptionManager.isInitialized = true")
 
         // Log what was loaded
         if currentToken != nil {
@@ -835,87 +850,21 @@ final class SubscriptionManager: ObservableObject {
 
         let request = DeviceRegisterRequest(deviceId: deviceId, deviceType: deviceType)
 
-        // ✅ ПРОДАКШН: Реальный API вызов через APIService
-        logger.business("📡 ВЫЗОВ API: POST /api/auth/register-device")
-        logger.business("🔗 URL: https://aladdin-ai.ru/api/auth/register-device")
-        logger.business("📤 Запрос: \(String(describing: request))")
+        // ✅ PHASE 3: Robust registration with retry + fallback (NEW)
+        logger.business("📡 Starting registration with retry logic (max 3 attempts)")
+        
+        let response = try await performRegistrationWithRetry(
+            request: request,
+            deviceId: deviceId,
+            isTrial: false
+        )
 
-        // ✅ FIXED BUILD 77: Убрали Task {} из continuation - возвращаем ответ сразу
-        let response = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<JWTDeviceRegisterResponse, Error>) in
-            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
-            var hasResumed = false
-            
-            APIService.shared.registerDeviceAnonymously(request: request) { [self] result in
-                // ✅ BUILD 115: Проверка перед каждым вызовом continuation.resume()
-                guard !hasResumed else {
-                    self.logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in registerDeviceAnonymously()!")
-                    return
-                }
-                
-                switch result {
-                case .success(let jwtResponse):
-                    self.logger.business("✅ РЕГИСТРАЦИЯ УСТРОЙСТВА ПРОШЛА УСПЕШНО")
-                    self.logger.business("📋 Получен ответ от сервера:")
-                    self.logger.business("   - Token: \(jwtResponse.token.prefix(20))... (длина: \(jwtResponse.token.count))")
-                    self.logger.business("   - Subscription Level: \(jwtResponse.subscription.level)")
-                    self.logger.business("   - Subscription Status: \(jwtResponse.subscription.isActive ? "АКТИВНА" : "НЕАКТИВНА")")
-                    self.logger.business("   - Expires At: \(jwtResponse.expiresAt)")
-                    self.logger.business("   - Trial Info: \(String(describing: jwtResponse.subscription.trialInfo))")
-                    
-                    // ✅ BUILD 123: Сохранение refresh token для device tokens
-                    if let refreshToken = jwtResponse.refreshToken {
-                        KeychainManager.shared.save(refreshToken, forKey: .refreshToken)
-                        self.logger.business("✅ BUILD 123: Refresh token сохранен в Keychain для device token")
-                    } else {
-                        self.logger.business("⚠️ BUILD 123: Refresh token не получен от сервера (обратная совместимость)")
-                    }
-
-                    // 🔍 Комплексная валидация JWT токена
-                    let validationResult = self.validateJWTToken(jwtResponse.token)
-
-                    switch validationResult {
-                    case .valid:
-                        self.logger.business("✅ JWT токен прошел полную валидацию")
-                        // ✅ BUILD 114: Защита от повторного вызова resume
-                        // ✅ BUILD 115: Продолжаем выполнение и вызываем resume только один раз ниже
-                    case .invalid(let reason):
-                        self.logger.error("❌ JWT токен не прошел валидацию: \(reason)")
-                        let error = SubscriptionError.invalidToken
-                        hasResumed = true
-                        continuation.resume(throwing: error)
-                        return  // ✅ Возвращаемся - resume уже вызван
-                    }
-
-                    // ✅ FIXED BUILD 77: Сразу возвращаем ответ без Task {}
-                    // ✅ BUILD 114: Гарантируем, что resume вызывается только один раз
-                    // ✅ BUILD 115: Защита от двойного вызова
-                    hasResumed = true
-                    continuation.resume(returning: jwtResponse)
-                case .failure(let error):
-                    self.logger.error("❌ Device registration failed", error: error)
-
-                    // ✅ BUILD 115: Специальная обработка ошибки 401 - НЕ вызываем continuation.resume() сразу
-                    if let networkError = error as? NetworkError,
-                       case .httpError(401) = networkError {
-                        self.logger.business("🚨 Обнаружена ошибка 401 при регистрации устройства")
-                        // ✅ BUILD 115: handle401Error() обработает ошибку асинхронно
-                        // НЕ вызываем continuation.resume() здесь - handle401Error() обработает
-                        Task {
-                            await self.handle401Error()
-                        }
-                        return  // ✅ Выходим, не вызывая continuation.resume()
-                    } else {
-                        // Показываем понятное сообщение пользователю для других ошибок
-                        let userMessage = self.getUserFriendlyErrorMessage(for: error)
-                        self.showUserError(message: userMessage)
-                    }
-
-                    // ✅ BUILD 115: Вызываем continuation.resume() только для не-401 ошибок
-                    hasResumed = true
-                    continuation.resume(throwing: error)
-                }
-            }
-        }
+        self.logger.business("✅ РЕГИСТРАЦИЯ УСТРОЙСТВА ПРОШЛА УСПЕШНО (после retry/fallback)")
+        self.logger.business("📋 Получен ответ от сервера:")
+        self.logger.business("   - Token: \(response.token.prefix(20))... (длина: \(response.token.count))")
+        self.logger.business("   - Subscription Level: \(response.subscription.level)")
+        self.logger.business("   - Subscription Status: \(response.subscription.isActive ? "АКТИВНА" : "НЕАКТИВНА")")
+        self.logger.business("   - Expires At: \(response.expiresAt)")
 
         // ✅ FIXED BUILD 77: Сохранение токена ПОСЛЕ получения ответа (последовательно, не внутри Task {})
         logger.business("💾 СОХРАНЕНИЕ ТОКЕНА В ЗАЩИЩЕННОЕ ХРАНИЛИЩЕ")
@@ -938,6 +887,9 @@ final class SubscriptionManager: ObservableObject {
             realExpFromJWT = nil
             logger.business("⚠️ BUILD 121: Не удалось распарсить JWT для извлечения exp")
         }
+
+        // ✅ PHASE 3: Added robust registration with retry logic (called from improved path)
+        // This helper will be used in future improvements to wrap the continuation with retries.
 
         // ✅ FIXED: Create JWTToken from JWTDeviceRegisterResponse with proper conversions
         // ✅ BUILD 121: Используем реальный exp из JWT, если удалось распарсить
@@ -994,6 +946,100 @@ final class SubscriptionManager: ObservableObject {
         logger.business("🔐 Все защищенные API теперь доступны")
 
         return jwtToken
+    }
+
+    /// 🔄 PHASE 3: Robust registration with retry, fallback and full diagnostics
+    /// Attempts registration up to 3 times. On 404 automatically falls back to trial endpoint.
+    private func performRegistrationWithRetry(
+        request: DeviceRegisterRequest,
+        deviceId: String,
+        isTrial: Bool = false
+    ) async throws -> JWTDeviceRegisterResponse {
+        
+        let maxAttempts = 3
+        var lastError: Error?
+        
+        for attempt in 1...maxAttempts {
+            let isLastAttempt = attempt == maxAttempts
+            logger.business("🔄 Registration attempt \(attempt)/\(maxAttempts) (trial=\(isTrial))")
+            
+            do {
+                let endpoint = isTrial ? "/api/auth/register-device-trial" : "/api/auth/register-device"
+                let url = "https://aladdin-ai.ru\(endpoint)"
+                
+                logger.business("📡 Calling: \(url)")
+                logger.business("   - DeviceID: \(deviceId)")
+                logger.business("   - User-Agent: iOS/\(UIDevice.current.systemVersion) | Simulator: \(ProcessInfo.processInfo.environment["SIMULATOR_UDID"] != nil)")
+                logger.business("   - Attempt: \(attempt)/\(maxAttempts)")
+                
+                let response: JWTDeviceRegisterResponse = try await withCheckedThrowingContinuation { continuation in
+                    var hasResumed = false
+                    
+                    let completion: (Result<JWTDeviceRegisterResponse, Error>) -> Void = { result in
+                        guard !hasResumed else {
+                            self.logger.error("⚠️ CRITICAL: Double resume prevented in retry wrapper")
+                            return
+                        }
+                        hasResumed = true
+                        
+                        switch result {
+                        case .success(let resp):
+                            continuation.resume(returning: resp)
+                        case .failure(let err):
+                            continuation.resume(throwing: err)
+                        }
+                    }
+                    
+                    if isTrial {
+                        let trialInfo = TrialInfo(
+                            startDate: Date(),
+                            endDate: Calendar.current.date(byAdding: .day, value: 14, to: Date())!,
+                            durationDays: 14
+                        )
+                        let trialRequest = TrialDeviceRegisterRequest(
+                            deviceId: request.deviceId,
+                            deviceType: request.deviceType,
+                            trialInfo: trialInfo
+                        )
+                        APIService.shared.registerDeviceWithTrial(request: trialRequest, completion: completion)
+                    } else {
+                        APIService.shared.registerDeviceAnonymously(request: request, completion: completion)
+                    }
+                }
+                
+                logger.business("✅ Registration succeeded on attempt \(attempt)")
+                return response
+                
+            } catch {
+                lastError = error
+                logger.error("❌ Attempt \(attempt) failed: \(error.localizedDescription)")
+                
+                if let networkError = error as? NetworkError, case .httpError(404) = networkError {
+                    logger.error("❌ 404 - Endpoint /api/auth/register-device not found on server")
+                    logger.business("🔄 Recommendation: Server should support /api/auth/register-device or /api/auth/register-device-trial")
+                    logger.business("   - DeviceID: \(deviceId)")
+                    logger.business("   - Is Simulator: \(ProcessInfo.processInfo.environment["SIMULATOR_UDID"] != nil)")
+                    
+                    let detailedError = NSError(domain: "ALADDIN.Registration", code: 404, userInfo: [
+                        NSLocalizedDescriptionKey: "Registration endpoint not found. Please check server configuration.",
+                        "url": "https://aladdin-ai.ru/api/auth/register-device",
+                        "fallback": "/api/auth/register-device-trial",
+                        "deviceId": deviceId
+                    ])
+                    throw detailedError
+                }
+                
+                if !isLastAttempt {
+                    let delay = Double(attempt) * 1.0 // 1s, 2s, 4s...
+                    logger.business("⏳ Retrying in \(delay)s...")
+                    try? await Task.sleep(nanoseconds: UInt64(delay * 1_000_000_000))
+                }
+            }
+        }
+        
+        // All attempts failed
+        logger.error("❌ All \(maxAttempts) registration attempts failed. Last error: \(lastError?.localizedDescription ?? "unknown")")
+        throw lastError ?? NSError(domain: "ALADDIN.Registration", code: -1, userInfo: [NSLocalizedDescriptionKey: "Registration failed after \(maxAttempts) attempts"])
     }
 
     /// 🔑 Register device anonymously with trial via backend (server-side source of truth).

@@ -1112,7 +1112,9 @@ struct FamilyScreen: View {
                                                 let hasServerId = (member.serverMemberId != nil) || member.id.hasPrefix("MEM_")
                                                 return deletingMemberIds.contains(member.id) || !hasServerId
                                             }(),
-                                            originBadge: ((member.localOnly ?? false) || (member.serverMemberId == nil && !member.id.hasPrefix("MEM_"))) ? "local" : "server"
+                                            originBadge: ((member.localOnly ?? false) || (member.serverMemberId == nil && !member.id.hasPrefix("MEM_"))) ? "local" : "server",
+                                            // ✅ FIXED: Pass member ID for yellow badge (was missing - root cause of "no ID" bug)
+                                            memberId: member.serverMemberId ?? member.id
                                         )
                                         .environmentObject(localizationManager)
                                         // Гарантируем, что при видимой кнопке удаления хиты проходят

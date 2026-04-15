@@ -186,13 +186,9 @@ struct ALADDINApp: App {
         */
 
         print("🚀🚀🚀 ALADDINApp.init() called - APP STARTING")
-        // ✅ ИСПРАВЛЕНИЕ BUILD 93: Убрано создание VisualLogger.shared из init() - может вызывать рекурсию
-        // VisualLogger будет создан только при первом использовании
-        // print("📱📱📱 VISUAL_LOGGER_TEST: If you see this in Xcode Console, VisualLogger overlay may not be visible")
         print("🚀 ALADDINApp: Начало инициализации приложения")
-        // ✅ ИСПРАВЛЕНИЕ: В init() НЕ используем @StateObject, они еще не созданы!
-        // Вся логика инициализации перенесена в .onAppear
-        // ✅ BUILD 115: Сброс онбординга для тестирования
+        
+        // ✅ BUILD 115: Сброс онбординга для тестирования (если нужно)
         if ProcessInfo.processInfo.environment["RESET_ONBOARDING"] == "1" {
             UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
             #if DEBUG
@@ -205,9 +201,32 @@ struct ALADDINApp: App {
         let currentOnboardingValue = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
         print("🔍 BUILD 115: Значение hasCompletedOnboarding в UserDefaults при старте = \(currentOnboardingValue)")
         #endif
-        
+
+        // ✅ PHASE 1 RESTORE: Возвращаем стабильную инициализацию из бэкапа (апрель 2026)
+        // Это критично для правильной работы SubscriptionManager, family status и регистрации устройства
 #if DEBUG
-        // ВАЖНО: тяжелый DEBUG bootstrap вынесен из init() в deferred запуск после первого кадра.
+        KeychainAutoRecoveryService.repairTokensIfNeeded()
+        
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала проверяем и удаляем debug токены СИНХРОННО
+        let hadDebugTokens = Self.autoFixDebugTokensIfNeeded()
+
+        let skipDebugTokensRaw = ProcessInfo.processInfo.environment["SKIP_DEBUG_TOKENS"] ?? ""
+        let skipDebugTokens = skipDebugTokensRaw.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
+        let hasAutoLogin = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"] != nil &&
+                          !(ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"] ?? "").isEmpty
+
+        let shouldSkipDebugTokens = skipDebugTokens || hasAutoLogin
+
+        if hadDebugTokens || !shouldSkipDebugTokens {
+            DebugAuthTokenSeeder.seedIfNeeded()
+        } else {
+            if skipDebugTokens {
+                print("⚠️ DEBUG: Пропущено создание debug токенов (SKIP_DEBUG_TOKENS=1)")
+            } else if hasAutoLogin {
+                print("⚠️ DEBUG: Пропущено создание debug токенов (настроен автоматический логин)")
+            }
+            print("   Для получения валидных токенов используйте performRealLogin() в Debug Console")
+        }
 #endif
     }
     
@@ -238,17 +257,28 @@ struct ALADDINApp: App {
         guard !didRunDeferredBootstrap else { return }
         didRunDeferredBootstrap = true
 
+        print("🚀 [Phase 1] runDeferredLaunchBootstrapIfNeeded() started")
+
+        // ✅ PHASE 1 RESTORE: SubscriptionManager.initializeOnAppStart() теперь ОБЯЗАТЕЛЕН
+        // Это критично для JWT, family members, component status и предотвращения 404
+        do {
+            print("📡 Initializing SubscriptionManager (DEFENSIVE JWT)...")
+            try await SubscriptionManager.shared.initializeOnAppStart()
+            print("✅ SubscriptionManager.initializeOnAppStart() completed successfully")
+        } catch {
+            print("⚠️ SubscriptionManager initialization failed: \(error.localizedDescription)")
+            // Не падаем полностью — продолжаем, чтобы приложение запустилось
+        }
+
 #if DEBUG
-        // Поднимаем debug bootstrap после первого кадра, чтобы не задерживать launch.
-        // В safe-launch режиме не трогаем Keychain и не поднимаем SubscriptionManager на старте.
-        let hadDebugTokens = false
+        // Debug-only heavy operations (token seeding, auto-login diagnostics)
         let skipDebugTokensRaw = ProcessInfo.processInfo.environment["SKIP_DEBUG_TOKENS"] ?? ""
         let skipDebugTokens = skipDebugTokensRaw.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
         let hasAutoLogin = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"] != nil &&
             !(ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"] ?? "").isEmpty
         let shouldSkipDebugTokens = skipDebugTokens || hasAutoLogin
 
-        if hadDebugTokens || !shouldSkipDebugTokens {
+        if !shouldSkipDebugTokens {
             DebugAuthTokenSeeder.seedIfNeeded()
         } else {
             if skipDebugTokens {
@@ -259,9 +289,8 @@ struct ALADDINApp: App {
             print("   Для получения валидных токенов используйте performRealLogin() в Debug Console")
         }
 
-        // В safe-launch режиме аварийный сетевой тест полностью отключен.
-        print("ℹ️ SAFE_LAUNCH: Emergency network test disabled on startup")
-
+        print("ℹ️ SAFE_LAUNCH: Heavy debug operations completed in deferred bootstrap")
+        
         let isAutoLoginEnabled = autoLoginEnabled
         DispatchQueue.global(qos: .utility).async {
             let email = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"]
