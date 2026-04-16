@@ -1,0 +1,1657 @@
+name: Build and Upload to App Store
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master, main ]
+    tags:
+      - 'v*'
+
+jobs:
+  build-and-upload:
+    name: Build and Upload to App Store Connect
+    runs-on: macos-14  # Используем macOS 14 для поддержки Xcode 16
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Xcode
+      uses: maxim-lobanov/setup-xcode@v1
+      with:
+        xcode-version: '16.2.0'  # Используем Xcode 16.2.0 для iOS 18 SDK
+        
+    - name: Cache dependencies
+      uses: actions/cache@v4
+      with:
+        path: |
+          ~/Library/Developer/Xcode/DerivedData
+          ~/Library/Caches/CocoaPods
+        key: ${{ runner.os }}-xcode-${{ hashFiles('**/Podfile.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-xcode-
+          
+    - name: Show Xcode version
+      run: xcodebuild -version
+      
+    - name: Check Extension Target
+      run: |
+        echo "🔍 Checking if ALADDINContentBlocker target exists..."
+        TARGETS=$(xcodebuild -project ALADDIN.xcodeproj -list 2>&1 | grep -A 10 "Targets:" | grep -i "ALADDINContentBlocker" || echo "")
+        if [ -z "$TARGETS" ]; then
+          echo "❌ ALADDINContentBlocker target NOT found - Extension must exist!"
+          echo "EXTENSION_EXISTS=false" >> $GITHUB_ENV
+          exit 1
+        else
+          echo "✅ ALADDINContentBlocker target found - Extension exists"
+          echo "EXTENSION_EXISTS=true" >> $GITHUB_ENV
+        fi
+      
+    - name: Setup Fastlane
+      run: |
+        echo "🚀 Установка Fastlane..."
+        gem install fastlane
+        fastlane --version
+        
+    - name: Setup Signing Certificate
+      run: |
+        echo "🔐 Setting up signing certificate..."
+        
+        if [ -z "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE }}" ] || [ -z "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}" ]; then
+          echo "⚠️  Signing certificate not provided, will use automatic signing"
+          echo "CERTIFICATE_AVAILABLE=false" >> $GITHUB_ENV
+          echo "✅ Will use automatic signing with App Store Connect API"
+          exit 0
+        fi
+        
+        # Создать временный keychain
+        KEYCHAIN_PATH="$RUNNER_TEMP/app-signing.keychain"
+        KEYCHAIN_PASSWORD=$(openssl rand -base64 32)
+        
+        # Удалить старый keychain если существует
+        security delete-keychain "$KEYCHAIN_PATH" 2>/dev/null || true
+        
+        # Создать новый keychain
+        security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+        security set-keychain-settings -lut 21600 "$KEYCHAIN_PATH"
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+        
+        # Импортировать сертификат
+        echo "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE }}" | base64 -d > /tmp/certificate.p12
+        if [ ! -f /tmp/certificate.p12 ] || [ ! -s /tmp/certificate.p12 ]; then
+          echo "❌ Failed to decode certificate (invalid base64 or empty file)"
+          exit 1
+        fi
+        
+        security import /tmp/certificate.p12 -k "$KEYCHAIN_PATH" -P "${{ secrets.IOS_DISTRIBUTION_CERTIFICATE_PASSWORD }}" -T /usr/bin/codesign -T /usr/bin/security
+        
+        if [ $? -ne 0 ]; then
+          echo "❌ Failed to import certificate (wrong password or invalid certificate)"
+          exit 1
+        fi
+        
+        # Настроить keychain для codesign
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+        
+        # Добавить keychain в список поиска
+        security list-keychains -d user -s "$KEYCHAIN_PATH" $(security list-keychains -d user | sed s/\"//g)
+        
+        # Проверить что сертификат установлен
+        # Ищем "Apple Distribution" или "iPhone Distribution" (оба варианта валидны)
+        CERT_COUNT=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -i "distribution" | wc -l | tr -d ' ')
+        if [ "$CERT_COUNT" -eq 0 ]; then
+          echo "❌ No Distribution certificate found in keychain!"
+          echo "Available certificates:"
+          security find-identity -v -p codesigning "$KEYCHAIN_PATH" || true
+          exit 1
+        fi
+        
+        echo "✅ Signing certificate installed and verified"
+        echo "Found Distribution certificate:"
+        security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -i "distribution" || true
+        echo "KEYCHAIN_PATH=$KEYCHAIN_PATH" >> $GITHUB_ENV
+        echo "KEYCHAIN_PASSWORD=$KEYCHAIN_PASSWORD" >> $GITHUB_ENV
+        echo "CERTIFICATE_AVAILABLE=true" >> $GITHUB_ENV
+        
+    - name: Decode App Profile
+      run: |
+        PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+        mkdir -p "$PROFILE_DIR"
+        
+        # Проверка что секрет установлен
+        if [ -z "${{ secrets.PROVISIONING_PROFILE_APP }}" ]; then
+          echo "❌ PROVISIONING_PROFILE_APP secret is not set!"
+          exit 1
+        fi
+        
+        # Проверка длины секрета (base64 должен быть достаточно длинным)
+        SECRET_LENGTH=$(echo -n "${{ secrets.PROVISIONING_PROFILE_APP }}" | wc -c | tr -d ' ')
+        echo "📊 Secret length: $SECRET_LENGTH characters"
+        if [ "$SECRET_LENGTH" -lt 100 ]; then
+          echo "❌ Secret is too short ($SECRET_LENGTH chars), likely invalid"
+          exit 1
+        fi
+        
+        echo "Decoding app provisioning profile..."
+        
+        # Очистить секрет от пробелов, переносов строк и недопустимых символов base64
+        # Base64 использует только: A-Z, a-z, 0-9, +, /, =
+        # Удаляем все остальные символы (включая %, который может появиться из URL-encoding)
+        CLEANED_SECRET=$(echo -n "${{ secrets.PROVISIONING_PROFILE_APP }}" | tr -d '\n\r\t ' | tr -dc 'A-Za-z0-9+/=')
+        
+        # Проверить что после очистки секрет не пустой
+        CLEANED_LENGTH=$(echo -n "$CLEANED_SECRET" | wc -c | tr -d ' ')
+        if [ "$CLEANED_LENGTH" -lt 100 ]; then
+          echo "❌ Secret is too short after cleaning ($CLEANED_LENGTH chars), likely invalid"
+          echo "   Original length: $SECRET_LENGTH"
+          echo "   Cleaned length: $CLEANED_LENGTH"
+          echo "   This suggests the secret contains many invalid characters"
+          exit 1
+        fi
+        
+        # Показать разницу в длине (для диагностики)
+        if [ "$CLEANED_LENGTH" -ne "$SECRET_LENGTH" ]; then
+          REMOVED=$((SECRET_LENGTH - CLEANED_LENGTH))
+          echo "⚠️  Removed $REMOVED invalid characters from secret (likely URL-encoded or corrupted)"
+        fi
+        
+        # Декодировать base64 в файл (stderr отдельно для диагностики)
+        set +e
+        echo -n "$CLEANED_SECRET" | base64 -d > "$PROFILE_DIR/app.mobileprovision" 2>/tmp/base64_error.log
+        DECODE_EXIT_CODE=$?
+        set -e
+        
+        # Проверить ошибки декодирования
+        if [ $DECODE_EXIT_CODE -ne 0 ]; then
+          echo "❌ Failed to decode PROVISIONING_PROFILE_APP (invalid base64)"
+          echo "Exit code: $DECODE_EXIT_CODE"
+          if [ -f /tmp/base64_error.log ]; then
+            echo "Base64 error details:"
+            cat /tmp/base64_error.log
+          fi
+          echo ""
+          echo "🔍 Diagnostic info:"
+          echo "  Secret length: $SECRET_LENGTH"
+          echo "  First 50 chars: $(echo -n "$CLEANED_SECRET" | head -c 50)..."
+          echo "  Last 50 chars: ...$(echo -n "$CLEANED_SECRET" | tail -c 50)"
+          echo ""
+          echo "💡 Возможные причины:"
+          echo "  1. Секрет не является валидным base64"
+          echo "  2. Секрет поврежден или обрезан"
+          echo "  3. Секрет содержит недопустимые символы"
+          echo ""
+          echo "✅ Решение:"
+          echo "  1. Проверьте секрет PROVISIONING_PROFILE_APP в GitHub Settings > Secrets"
+          echo "  2. Убедитесь что профиль закодирован в base64: cat profile.mobileprovision | base64"
+          echo "  3. Убедитесь что весь base64 скопирован (может быть очень длинным)"
+          exit 1
+        fi
+        
+        # Проверить что файл создан
+        if [ ! -f "$PROFILE_DIR/app.mobileprovision" ]; then
+          echo "❌ Profile file was not created after decoding"
+          exit 1
+        fi
+        
+        # Проверить размер файла
+        FILE_SIZE=$(wc -c < "$PROFILE_DIR/app.mobileprovision" | tr -d ' ')
+        if [ "$FILE_SIZE" -lt 1000 ]; then
+          echo "❌ Profile file is too small ($FILE_SIZE bytes), decoding may have failed"
+          echo "🔍 File content (first 200 bytes):"
+          head -c 200 "$PROFILE_DIR/app.mobileprovision" | hexdump -C || true
+          exit 1
+        fi
+        
+        # Проверить что файл является валидным provisioning profile
+        # Provisioning profile должен начинаться с определенных байтов
+        FIRST_BYTES=$(head -c 10 "$PROFILE_DIR/app.mobileprovision" | hexdump -C | head -1)
+        echo "📋 Profile file first bytes: $FIRST_BYTES"
+        
+        # Попробовать декодировать через security для проверки валидности
+        set +e
+        PROFILE_INFO=$(security cms -D -i "$PROFILE_DIR/app.mobileprovision" 2>&1)
+        SECURITY_EXIT=$?
+        set -e
+        
+        if [ $SECURITY_EXIT -ne 0 ]; then
+          echo "⚠️  Warning: Could not decode profile with security cms (exit code: $SECURITY_EXIT)"
+          echo "   This might be normal if profile format is different"
+        else
+          echo "✅ Profile is valid (can be decoded with security cms)"
+          PROFILE_NAME=$(echo "$PROFILE_INFO" | plutil -extract Name raw -o - - 2>/dev/null || echo "unknown")
+          echo "   Profile name: $PROFILE_NAME"
+        fi
+        
+        echo "✅ Profile decoded successfully ($FILE_SIZE bytes)"
+        
+    - name: Extract App Profile UUID
+      run: |
+        PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+        echo "🔍 Extracting UUID from app profile..."
+        APP_PROFILE_UUID=""
+        if [ ! -f "$PROFILE_DIR/app.mobileprovision" ]; then
+          echo "❌ Profile file not found: $PROFILE_DIR/app.mobileprovision"
+          exit 1
+        fi
+        
+        # Метод 1: Через security cms + plutil
+        set +e
+        PLUTIL_OUTPUT=$(security cms -D -i "$PROFILE_DIR/app.mobileprovision" 2>&1)
+        PLUTIL_EXIT=$?
+        set -e
+        
+        # ДИАГНОСТИКА: Проверить что профиль декодируется
+        if [ $PLUTIL_EXIT -ne 0 ]; then
+          echo "❌ Failed to decode app profile XML (exit code: $PLUTIL_EXIT)"
+          echo "   Error output: $PLUTIL_OUTPUT"
+        elif [ -z "$PLUTIL_OUTPUT" ]; then
+          echo "⚠️  App profile XML is empty"
+        else
+          echo "✅ App profile XML decoded successfully"
+          echo "   XML length: $(echo -n "$PLUTIL_OUTPUT" | wc -c | tr -d ' ') characters"
+        fi
+        
+        if [ $PLUTIL_EXIT -eq 0 ] && [ -n "$PLUTIL_OUTPUT" ]; then
+          set +e
+          APP_PROFILE_UUID=$(echo "$PLUTIL_OUTPUT" | plutil -extract UUID raw -o - - 2>/dev/null || echo "")
+          set -e
+          if [ -n "$APP_PROFILE_UUID" ] && [[ "$APP_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+            echo "✅ UUID extracted via plutil: $APP_PROFILE_UUID"
+          else
+            APP_PROFILE_UUID=""
+            echo "⚠️  plutil failed to extract UUID, trying other methods..."
+          fi
+        fi
+        
+        # Метод 2: Через awk (РАБОТАЕТ! Находит UUID в диагностике)
+        if [ -z "$APP_PROFILE_UUID" ] && [ $PLUTIL_EXIT -eq 0 ] && [ -n "$PLUTIL_OUTPUT" ]; then
+          set +e
+          echo "🔍 Trying awk method to extract UUID from XML..."
+          # awk работает! Находит UUID в диагностике
+          AWK_UUID=$(echo "$PLUTIL_OUTPUT" | awk '/<key>UUID<\/key>/{getline; if(/<string>/){gsub(/.*<string>|<\/string>.*/,""); print; exit}}' | tr -d '\t ' || echo "")
+          set -e
+          if [ -n "$AWK_UUID" ] && [[ "$AWK_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+            APP_PROFILE_UUID="$AWK_UUID"
+            echo "✅ UUID extracted via awk: $APP_PROFILE_UUID"
+          else
+            echo "⚠️  awk method failed, trying grep methods..."
+            # Метод 3: grep с обработкой табов
+            GREP_UUID=$(echo "$PLUTIL_OUTPUT" | grep -A 2 '<key>UUID</key>' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | tr -d '\t ' | head -1 || echo "")
+            if [ -z "$GREP_UUID" ]; then
+              # Метод 4: sed для поиска UUID в следующей строке
+              GREP_UUID=$(echo "$PLUTIL_OUTPUT" | sed -n '/<key>UUID<\/key>/,+2p' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | tr -d '\t ' | head -1 || echo "")
+            fi
+            if [ -z "$GREP_UUID" ]; then
+              # Метод 5: агрессивный поиск UUID в XML (любой UUID)
+              GREP_UUID=$(echo "$PLUTIL_OUTPUT" | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+            fi
+            if [ -n "$GREP_UUID" ] && [[ "$GREP_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              APP_PROFILE_UUID="$GREP_UUID"
+              echo "✅ UUID extracted via grep: $APP_PROFILE_UUID"
+            else
+              echo "⚠️  grep methods failed to extract UUID"
+              echo "   Searching for UUID pattern in XML..."
+              echo "$PLUTIL_OUTPUT" | grep -i uuid | head -3 || echo "   No UUID found in XML"
+            fi
+          fi
+        fi
+        
+        # Метод 3: Через strings (последний резерв)
+        if [ -z "$APP_PROFILE_UUID" ]; then
+          set +e
+          echo "🔍 Trying strings method to extract UUID..."
+          STRINGS_OUTPUT=$(strings "$PROFILE_DIR/app.mobileprovision" 2>/dev/null | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+          set -e
+          if [ -n "$STRINGS_OUTPUT" ] && [[ "$STRINGS_OUTPUT" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+            APP_PROFILE_UUID="$STRINGS_OUTPUT"
+            echo "✅ UUID extracted via strings: $APP_PROFILE_UUID"
+          else
+            echo "⚠️  strings method failed to extract UUID"
+            echo "   Trying to find UUID in raw file..."
+            # Попробовать найти UUID в сыром файле через hexdump
+            set +e
+            HEX_UUID=$(hexdump -C "$PROFILE_DIR/app.mobileprovision" 2>/dev/null | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+            set -e
+            if [ -n "$HEX_UUID" ] && [[ "$HEX_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              APP_PROFILE_UUID="$HEX_UUID"
+              echo "✅ UUID extracted via hexdump: $APP_PROFILE_UUID"
+            fi
+          fi
+        fi
+        
+        # Переименовать файл и установить переменную
+        if [ -n "$APP_PROFILE_UUID" ] && [[ "$APP_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+          mv "$PROFILE_DIR/app.mobileprovision" "$PROFILE_DIR/${APP_PROFILE_UUID}.mobileprovision"
+          echo "✅ App provisioning profile installed with UUID: $APP_PROFILE_UUID"
+          echo "APP_PROFILE_UUID=$APP_PROFILE_UUID" >> $GITHUB_ENV
+          echo "APP_PROFILE_PATH=$PROFILE_DIR/${APP_PROFILE_UUID}.mobileprovision" >> $GITHUB_ENV
+        else
+          echo "❌ CRITICAL: Could not extract UUID from app profile!"
+          echo "🔍 Diagnostic info:"
+          if [ $PLUTIL_EXIT -eq 0 ] && [ -n "$PLUTIL_OUTPUT" ]; then
+            echo "   Profile XML decoded successfully"
+            echo "   First 500 chars of XML:"
+            echo "$PLUTIL_OUTPUT" | head -c 500
+            echo ""
+            echo "   Searching for UUID in XML..."
+            echo "$PLUTIL_OUTPUT" | grep -i uuid || echo "   No UUID found in XML"
+            echo ""
+            echo "   🔍 КРИТИЧЕСКАЯ ДИАГНОСТИКА: Что находится после <key>UUID</key>?"
+            echo "$PLUTIL_OUTPUT" | grep -A 3 '<key>UUID</key>' | head -5
+            echo ""
+            echo "   🔍 Попытка извлечения UUID через awk:"
+            AWK_UUID=$(echo "$PLUTIL_OUTPUT" | awk '/<key>UUID<\/key>/{getline; if(/<string>/){gsub(/.*<string>|<\/string>.*/,""); print; exit}}' | tr -d '\t ' || echo "")
+            if [ -n "$AWK_UUID" ]; then
+              echo "   ✅ UUID найден через awk: $AWK_UUID"
+            else
+              echo "   ❌ UUID не найден через awk"
+            fi
+          else
+            echo "   Failed to decode profile XML (exit code: $PLUTIL_EXIT)"
+          fi
+          echo "⚠️  Will use full path to profile file as fallback"
+          echo "APP_PROFILE_PATH=$PROFILE_DIR/app.mobileprovision" >> $GITHUB_ENV
+          echo "APP_PROFILE_UUID=" >> $GITHUB_ENV
+          # Попробовать извлечь UUID еще раз из файла напрямую (более агрессивные методы)
+          if [ -f "$PROFILE_DIR/app.mobileprovision" ]; then
+            set +e
+            echo "🔄 Retrying UUID extraction with multiple methods..."
+            
+            # Метод 1: security cms + plutil
+            PROFILE_XML=$(security cms -D -i "$PROFILE_DIR/app.mobileprovision" 2>/dev/null)
+            if [ $? -eq 0 ] && [ -n "$PROFILE_XML" ]; then
+              RETRY_UUID=$(echo "$PROFILE_XML" | plutil -extract UUID raw -o - - 2>/dev/null || echo "")
+              if [ -z "$RETRY_UUID" ]; then
+                # Метод 2: awk (РАБОТАЕТ! Находит UUID в диагностике)
+                RETRY_UUID=$(echo "$PROFILE_XML" | awk '/<key>UUID<\/key>/{getline; if(/<string>/){gsub(/.*<string>|<\/string>.*/,""); print; exit}}' | tr -d '\t ' || echo "")
+              fi
+              if [ -z "$RETRY_UUID" ]; then
+                # Метод 3: grep в XML с обработкой табов
+                RETRY_UUID=$(echo "$PROFILE_XML" | grep -A 2 '<key>UUID</key>' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | tr -d '\t ' | head -1 || echo "")
+              fi
+              if [ -z "$RETRY_UUID" ]; then
+                # Метод 4: поиск любого UUID в XML
+                RETRY_UUID=$(echo "$PROFILE_XML" | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+              fi
+            fi
+            
+            # Метод 5: strings (если XML методы не сработали)
+            if [ -z "$RETRY_UUID" ]; then
+              RETRY_UUID=$(strings "$PROFILE_DIR/app.mobileprovision" 2>/dev/null | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+            fi
+            
+            # Проверить и использовать UUID
+            if [ -n "$RETRY_UUID" ] && [[ "$RETRY_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              mv "$PROFILE_DIR/app.mobileprovision" "$PROFILE_DIR/${RETRY_UUID}.mobileprovision"
+              echo "✅ UUID extracted in retry: $RETRY_UUID"
+              echo "APP_PROFILE_UUID=$RETRY_UUID" >> $GITHUB_ENV
+              echo "APP_PROFILE_PATH=$PROFILE_DIR/${RETRY_UUID}.mobileprovision" >> $GITHUB_ENV
+            else
+              echo "❌ All UUID extraction methods failed"
+              echo "🔍 Profile XML preview (first 1000 chars):"
+              echo "$PROFILE_XML" | head -c 1000 || echo "Could not decode profile"
+            fi
+            set -e
+          fi
+        fi
+        
+    - name: Decode Extension Profile
+      if: env.EXTENSION_EXISTS == 'true'
+      run: |
+        PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+        
+        # Проверка что секрет установлен (опционально для extension)
+        if [ -z "${{ secrets.PROVISIONING_PROFILE_EXTENSION }}" ]; then
+          echo "❌❌❌ КРИТИЧЕСКАЯ ОШИБКА ❌❌❌"
+          echo "PROVISIONING_PROFILE_EXTENSION secret is not set!"
+          echo ""
+          echo "РЕШЕНИЕ:"
+          echo "1. Зайдите в Apple Developer Portal: https://developer.apple.com/account/resources/profiles/list"
+          echo "2. Создайте или скачайте App Store Distribution профиль для Content Blocker Extension"
+          echo "3. Bundle ID должен быть: family.aladdin.ios.ALADDINContentBlocker"
+          echo "4. Профиль должен поддерживать App Groups capability"
+          echo "5. Закодируйте профиль в base64: cat profile.mobileprovision | base64"
+          echo "6. Добавьте в GitHub Secrets: PROVISIONING_PROFILE_EXTENSION"
+          echo "7. Добавьте UUID профиля в GitHub Secrets: PROVISIONING_PROFILE_EXTENSION_UUID"
+          echo ""
+          echo "EXT_PROFILE_UUID=" >> $GITHUB_ENV
+          echo "EXT_PROFILE_PATH=" >> $GITHUB_ENV
+          exit 1
+        fi
+        
+        # Проверка длины секрета
+        SECRET_LENGTH=$(echo -n "${{ secrets.PROVISIONING_PROFILE_EXTENSION }}" | wc -c | tr -d ' ')
+        echo "📊 Extension secret length: $SECRET_LENGTH characters"
+        if [ "$SECRET_LENGTH" -lt 100 ]; then
+          echo "❌ Extension secret is too short ($SECRET_LENGTH chars), likely invalid"
+          exit 1
+        fi
+        
+        echo "Decoding extension provisioning profile..."
+        
+        # Очистить секрет от пробелов, переносов строк и недопустимых символов base64
+        # Base64 использует только: A-Z, a-z, 0-9, +, /, =
+        # Удаляем все остальные символы (включая %, который может появиться из URL-encoding)
+        CLEANED_SECRET=$(echo -n "${{ secrets.PROVISIONING_PROFILE_EXTENSION }}" | tr -d '\n\r\t ' | tr -dc 'A-Za-z0-9+/=')
+        
+        # Проверить что после очистки секрет не пустой
+        CLEANED_LENGTH=$(echo -n "$CLEANED_SECRET" | wc -c | tr -d ' ')
+        if [ "$CLEANED_LENGTH" -lt 100 ]; then
+          echo "❌ Extension secret is too short after cleaning ($CLEANED_LENGTH chars), likely invalid"
+          echo "   Original length: $SECRET_LENGTH"
+          echo "   Cleaned length: $CLEANED_LENGTH"
+          exit 1
+        fi
+        
+        # Показать разницу в длине (для диагностики)
+        if [ "$CLEANED_LENGTH" -ne "$SECRET_LENGTH" ]; then
+          REMOVED=$((SECRET_LENGTH - CLEANED_LENGTH))
+          echo "⚠️  Removed $REMOVED invalid characters from extension secret"
+        fi
+        
+        # Декодировать base64 в файл
+        set +e
+        echo -n "$CLEANED_SECRET" | base64 -d > "$PROFILE_DIR/extension.mobileprovision" 2>/tmp/base64_error_ext.log
+        DECODE_EXIT_CODE=$?
+        set -e
+        
+        # Проверить ошибки декодирования
+        if [ $DECODE_EXIT_CODE -ne 0 ]; then
+          echo "❌ Failed to decode PROVISIONING_PROFILE_EXTENSION (invalid base64)"
+          echo "Exit code: $DECODE_EXIT_CODE"
+          if [ -f /tmp/base64_error_ext.log ]; then
+            echo "Base64 error details:"
+            cat /tmp/base64_error_ext.log
+          fi
+          echo ""
+          echo "🔍 Diagnostic info:"
+          echo "  Secret length: $SECRET_LENGTH"
+          echo "  First 50 chars: $(echo -n "$CLEANED_SECRET" | head -c 50)..."
+          echo ""
+          echo "💡 Решение: Проверьте секрет PROVISIONING_PROFILE_EXTENSION в GitHub Settings > Secrets"
+          exit 1
+        fi
+        
+        # Проверить что файл создан
+        if [ ! -f "$PROFILE_DIR/extension.mobileprovision" ]; then
+          echo "❌ Extension profile file was not created after decoding"
+          exit 1
+        fi
+        
+        # Проверить размер файла
+        FILE_SIZE=$(wc -c < "$PROFILE_DIR/extension.mobileprovision" | tr -d ' ')
+        if [ "$FILE_SIZE" -lt 1000 ]; then
+          echo "❌ Extension profile file is too small ($FILE_SIZE bytes), decoding may have failed"
+          exit 1
+        fi
+        
+        # Проверить валидность профиля
+        set +e
+        PROFILE_INFO=$(security cms -D -i "$PROFILE_DIR/extension.mobileprovision" 2>&1)
+        SECURITY_EXIT=$?
+        set -e
+        
+        if [ $SECURITY_EXIT -eq 0 ]; then
+          PROFILE_NAME=$(echo "$PROFILE_INFO" | plutil -extract Name raw -o - - 2>/dev/null || echo "unknown")
+          echo "✅ Extension profile is valid: $PROFILE_NAME"
+        fi
+        
+        echo "✅ Extension profile decoded successfully ($FILE_SIZE bytes)"
+        
+    - name: Skip Extension Profile (Extension removed)
+      if: env.EXTENSION_EXISTS == 'false'
+      run: |
+        echo "✅ Extension target removed from project - skipping extension profile setup"
+        echo "EXT_PROFILE_UUID=" >> $GITHUB_ENV
+        echo "EXT_PROFILE_PATH=" >> $GITHUB_ENV
+        
+    - name: Extract Extension Profile UUID
+      run: |
+        PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+        echo "🔍 Extracting UUID from extension profile..."
+        EXT_PROFILE_UUID=""
+        if [ ! -f "$PROFILE_DIR/extension.mobileprovision" ]; then
+          echo "⚠️  Extension profile file not found, skipping UUID extraction"
+          echo "EXT_PROFILE_UUID=" >> $GITHUB_ENV
+          exit 0
+        fi
+        set +e
+        PLUTIL_OUTPUT=$(security cms -D -i "$PROFILE_DIR/extension.mobileprovision" 2>&1)
+        PLUTIL_EXIT=$?
+        set -e
+        
+        # ДИАГНОСТИКА: Проверить что профиль декодируется
+        if [ $PLUTIL_EXIT -ne 0 ]; then
+          echo "❌ Failed to decode extension profile XML (exit code: $PLUTIL_EXIT)"
+          echo "   Error output: $PLUTIL_OUTPUT"
+        elif [ -z "$PLUTIL_OUTPUT" ]; then
+          echo "⚠️  Extension profile XML is empty"
+        else
+          echo "✅ Extension profile XML decoded successfully"
+          echo "   XML length: $(echo -n "$PLUTIL_OUTPUT" | wc -c | tr -d ' ') characters"
+        fi
+        
+        if [ $PLUTIL_EXIT -eq 0 ] && [ -n "$PLUTIL_OUTPUT" ]; then
+          set +e
+          # Метод 1: plutil
+          EXT_PROFILE_UUID=$(echo "$PLUTIL_OUTPUT" | plutil -extract UUID raw -o - - 2>/dev/null || echo "")
+          set -e
+          if [ -n "$EXT_PROFILE_UUID" ] && [[ "$EXT_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+            echo "✅ UUID extracted via plutil: $EXT_PROFILE_UUID"
+          else
+            EXT_PROFILE_UUID=""
+            echo "⚠️  plutil failed to extract UUID, trying other methods..."
+          fi
+        fi
+        
+        # Метод 2: Через awk (РАБОТАЕТ! Находит UUID в диагностике)
+        if [ -z "$EXT_PROFILE_UUID" ] && [ $PLUTIL_EXIT -eq 0 ] && [ -n "$PLUTIL_OUTPUT" ]; then
+          set +e
+          echo "🔍 Trying awk method to extract UUID from XML..."
+          # awk работает! Находит UUID в диагностике
+          AWK_UUID=$(echo "$PLUTIL_OUTPUT" | awk '/<key>UUID<\/key>/{getline; if(/<string>/){gsub(/.*<string>|<\/string>.*/,""); print; exit}}' | tr -d '\t ' || echo "")
+          set -e
+          echo "   🔍 Debug: AWK_UUID after extraction: '$AWK_UUID'"
+          echo "   🔍 Debug: AWK_UUID length: $(echo -n "$AWK_UUID" | wc -c | tr -d ' ')"
+          if [ -n "$AWK_UUID" ]; then
+            echo "   🔍 Debug: AWK_UUID is not empty, checking regex..."
+            # Используем case-insensitive regex для UUID (может быть в нижнем регистре)
+            if [[ "$AWK_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              EXT_PROFILE_UUID="$AWK_UUID"
+              echo "✅ UUID extracted via awk: $EXT_PROFILE_UUID"
+            else
+              echo "   ⚠️  AWK_UUID doesn't match regex pattern"
+              echo "   🔍 Debug: AWK_UUID value: '$AWK_UUID'"
+              echo "⚠️  awk method failed, trying grep methods..."
+              # Метод 3: grep с обработкой табов
+              GREP_UUID=$(echo "$PLUTIL_OUTPUT" | grep -A 2 '<key>UUID</key>' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | tr -d '\t ' | head -1 || echo "")
+              if [ -z "$GREP_UUID" ]; then
+                # Метод 4: sed для поиска UUID в следующей строке
+                GREP_UUID=$(echo "$PLUTIL_OUTPUT" | sed -n '/<key>UUID<\/key>/,+2p' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | tr -d '\t ' | head -1 || echo "")
+              fi
+              if [ -z "$GREP_UUID" ]; then
+                # Метод 5: агрессивный поиск UUID в XML (любой UUID)
+                GREP_UUID=$(echo "$PLUTIL_OUTPUT" | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+              fi
+              if [ -n "$GREP_UUID" ] && [[ "$GREP_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+                EXT_PROFILE_UUID="$GREP_UUID"
+                echo "✅ UUID extracted via grep: $EXT_PROFILE_UUID"
+              else
+                echo "⚠️  grep methods failed to extract UUID"
+                echo "   Searching for UUID pattern in XML..."
+                echo "$PLUTIL_OUTPUT" | grep -i uuid | head -3 || echo "   No UUID found in XML"
+              fi
+            fi
+          else
+            echo "⚠️  awk method failed (empty result), trying grep methods..."
+            # Метод 3: grep с обработкой табов
+            GREP_UUID=$(echo "$PLUTIL_OUTPUT" | grep -A 2 '<key>UUID</key>' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | tr -d '\t ' | head -1 || echo "")
+            if [ -z "$GREP_UUID" ]; then
+              # Метод 4: sed для поиска UUID в следующей строке
+              GREP_UUID=$(echo "$PLUTIL_OUTPUT" | sed -n '/<key>UUID<\/key>/,+2p' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | tr -d '\t ' | head -1 || echo "")
+            fi
+            if [ -z "$GREP_UUID" ]; then
+              # Метод 5: агрессивный поиск UUID в XML (любой UUID)
+              GREP_UUID=$(echo "$PLUTIL_OUTPUT" | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+            fi
+            if [ -n "$GREP_UUID" ] && [[ "$GREP_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              EXT_PROFILE_UUID="$GREP_UUID"
+              echo "✅ UUID extracted via grep: $EXT_PROFILE_UUID"
+            else
+              echo "⚠️  grep methods failed to extract UUID"
+              echo "   Searching for UUID pattern in XML..."
+              echo "$PLUTIL_OUTPUT" | grep -i uuid | head -3 || echo "   No UUID found in XML"
+            fi
+          fi
+        fi
+        
+        # Метод 3: Через strings (последний резерв)
+        if [ -z "$EXT_PROFILE_UUID" ]; then
+          set +e
+          echo "🔍 Trying strings method to extract UUID..."
+          STRINGS_OUTPUT=$(strings "$PROFILE_DIR/extension.mobileprovision" 2>/dev/null | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+          set -e
+          if [ -n "$STRINGS_OUTPUT" ] && [[ "$STRINGS_OUTPUT" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+            EXT_PROFILE_UUID="$STRINGS_OUTPUT"
+            echo "✅ UUID extracted via strings: $EXT_PROFILE_UUID"
+          else
+            echo "⚠️  strings method failed to extract UUID"
+            echo "   Trying to find UUID in raw file..."
+            # Попробовать найти UUID в сыром файле через hexdump
+            set +e
+            HEX_UUID=$(hexdump -C "$PROFILE_DIR/extension.mobileprovision" 2>/dev/null | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+            set -e
+            if [ -n "$HEX_UUID" ] && [[ "$HEX_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              EXT_PROFILE_UUID="$HEX_UUID"
+              echo "✅ UUID extracted via hexdump: $EXT_PROFILE_UUID"
+            fi
+          fi
+        fi
+        
+        # КРИТИЧЕСКИ ВАЖНО: Переименовать файл в UUID.mobileprovision ДО установки переменных
+        if [ -n "$EXT_PROFILE_UUID" ] && [[ "$EXT_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+          if [ -f "$PROFILE_DIR/extension.mobileprovision" ]; then
+          mv "$PROFILE_DIR/extension.mobileprovision" "$PROFILE_DIR/${EXT_PROFILE_UUID}.mobileprovision"
+            echo "✅ Extension provisioning profile renamed to: ${EXT_PROFILE_UUID}.mobileprovision"
+          fi
+          echo "EXT_PROFILE_UUID=$EXT_PROFILE_UUID" >> $GITHUB_ENV
+          echo "EXT_PROFILE_PATH=$PROFILE_DIR/${EXT_PROFILE_UUID}.mobileprovision" >> $GITHUB_ENV
+          echo "✅ Extension provisioning profile installed with UUID: $EXT_PROFILE_UUID"
+        else
+          echo "❌ CRITICAL: Could not extract UUID from extension profile!"
+          echo "🔍 Diagnostic info:"
+          if [ $PLUTIL_EXIT -eq 0 ] && [ -n "$PLUTIL_OUTPUT" ]; then
+            echo "   Profile XML decoded successfully"
+            echo "   First 500 chars of XML:"
+            echo "$PLUTIL_OUTPUT" | head -c 500
+            echo ""
+            echo "   Searching for UUID in XML..."
+            echo "$PLUTIL_OUTPUT" | grep -i uuid || echo "   No UUID found in XML"
+            echo ""
+            echo "   🔍 КРИТИЧЕСКАЯ ДИАГНОСТИКА: Что находится после <key>UUID</key>?"
+            echo "$PLUTIL_OUTPUT" | grep -A 3 '<key>UUID</key>' | head -5
+            echo ""
+            echo "   🔍 Попытка извлечения UUID через awk:"
+            AWK_UUID=$(echo "$PLUTIL_OUTPUT" | awk '/<key>UUID<\/key>/{getline; if(/<string>/){gsub(/.*<string>|<\/string>.*/,""); print; exit}}' | tr -d '\t ' || echo "")
+            if [ -n "$AWK_UUID" ]; then
+              echo "   ✅ UUID найден через awk: $AWK_UUID"
+            else
+              echo "   ❌ UUID не найден через awk"
+            fi
+          else
+            echo "   Failed to decode profile XML (exit code: $PLUTIL_EXIT)"
+          fi
+          echo "⚠️  Will use full path to profile file as fallback"
+          echo "EXT_PROFILE_PATH=$PROFILE_DIR/extension.mobileprovision" >> $GITHUB_ENV
+          echo "EXT_PROFILE_UUID=" >> $GITHUB_ENV
+          # Попробовать извлечь UUID еще раз из файла напрямую (более агрессивные методы)
+          if [ -f "$PROFILE_DIR/extension.mobileprovision" ]; then
+            set +e
+            echo "🔄 Retrying UUID extraction with multiple methods..."
+            
+            # Метод 1: security cms + plutil
+            PROFILE_XML=$(security cms -D -i "$PROFILE_DIR/extension.mobileprovision" 2>/dev/null)
+            if [ $? -eq 0 ] && [ -n "$PROFILE_XML" ]; then
+              RETRY_UUID=$(echo "$PROFILE_XML" | plutil -extract UUID raw -o - - 2>/dev/null || echo "")
+              if [ -z "$RETRY_UUID" ]; then
+                # Метод 2: awk (РАБОТАЕТ! Находит UUID в диагностике)
+                RETRY_UUID=$(echo "$PROFILE_XML" | awk '/<key>UUID<\/key>/{getline; if(/<string>/){gsub(/.*<string>|<\/string>.*/,""); print; exit}}' | tr -d '\t ' || echo "")
+              fi
+              if [ -z "$RETRY_UUID" ]; then
+                # Метод 3: grep в XML с обработкой табов
+                RETRY_UUID=$(echo "$PROFILE_XML" | grep -A 2 '<key>UUID</key>' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | tr -d '\t ' | head -1 || echo "")
+              fi
+              if [ -z "$RETRY_UUID" ]; then
+                # Метод 4: поиск любого UUID в XML
+                RETRY_UUID=$(echo "$PROFILE_XML" | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+              fi
+            fi
+            
+            # Метод 5: strings (если XML методы не сработали)
+            if [ -z "$RETRY_UUID" ]; then
+              RETRY_UUID=$(strings "$PROFILE_DIR/extension.mobileprovision" 2>/dev/null | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+            fi
+            
+            # Проверить и использовать UUID
+            if [ -n "$RETRY_UUID" ] && [[ "$RETRY_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              mv "$PROFILE_DIR/extension.mobileprovision" "$PROFILE_DIR/${RETRY_UUID}.mobileprovision"
+              echo "✅ UUID extracted in retry: $RETRY_UUID"
+              echo "EXT_PROFILE_UUID=$RETRY_UUID" >> $GITHUB_ENV
+              echo "EXT_PROFILE_PATH=$PROFILE_DIR/${RETRY_UUID}.mobileprovision" >> $GITHUB_ENV
+            else
+              echo "❌ All UUID extraction methods failed"
+              echo "🔍 Profile XML preview (first 1000 chars):"
+              echo "$PROFILE_XML" | head -c 1000 || echo "Could not decode profile"
+            fi
+            set -e
+          fi
+        fi
+        
+    - name: Force Extract UUID and Rename Profiles
+      run: |
+        PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+        echo "🔧 КРИТИЧЕСКИЙ ШАГ: Принудительное извлечение UUID и переименование файлов"
+        echo "📋 Текущие файлы в директории:"
+        ls -la "$PROFILE_DIR" || echo "⚠️  Profile directory not found"
+        echo ""
+        
+        # КРИТИЧЕСКИ ВАЖНО: Извлечь UUID из app.mobileprovision и переименовать
+        if [ -f "$PROFILE_DIR/app.mobileprovision" ]; then
+          echo "🔄 Извлечение UUID из app.mobileprovision..."
+          set +e
+          # Метод 1: security cms + plutil
+          PROFILE_XML=$(security cms -D -i "$PROFILE_DIR/app.mobileprovision" 2>&1)
+          SECURITY_EXIT=$?
+          if [ $SECURITY_EXIT -eq 0 ] && [ -n "$PROFILE_XML" ]; then
+            echo "✅ App profile XML decoded successfully"
+            echo "   XML length: $(echo -n "$PROFILE_XML" | wc -c | tr -d ' ') characters"
+            APP_UUID=$(echo "$PROFILE_XML" | plutil -extract UUID raw -o - - 2>/dev/null || echo "")
+            if [ -n "$APP_UUID" ] && [[ "$APP_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              echo "✅ UUID extracted via plutil: $APP_UUID"
+            else
+              APP_UUID=""
+              echo "⚠️  plutil failed, trying awk..."
+              # Метод 2: awk (РАБОТАЕТ! Находит UUID в диагностике)
+        APP_UUID=$(echo "$PROFILE_XML" | awk '/<key>UUID<\/key>/{getline; if(/<string>/){gsub(/.*<string>|<\/string>.*/,""); print; exit}}' | tr -d '\t ' || echo "")
+        echo "   🔍 Debug: AWK_UUID after extraction: '$APP_UUID'"
+        echo "   🔍 Debug: AWK_UUID length: $(echo -n "$APP_UUID" | wc -c | tr -d ' ')"
+        if [ -n "$APP_UUID" ]; then
+          echo "   🔍 Debug: AWK_UUID is not empty, checking regex..."
+          if [[ "$APP_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+            echo "✅ UUID extracted via awk: $APP_UUID"
+          else
+            echo "   ⚠️  AWK_UUID doesn't match regex pattern"
+            echo "   🔍 Debug: AWK_UUID value: '$APP_UUID'"
+            APP_UUID=""
+            echo "⚠️  awk failed, trying grep..."
+          fi
+        else
+          APP_UUID=""
+          echo "⚠️  awk failed (empty result), trying grep..."
+                # Метод 3: grep в XML с обработкой табов
+                APP_UUID=$(echo "$PROFILE_XML" | grep -A 2 '<key>UUID</key>' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | tr -d '\t ' | head -1 || echo "")
+                if [ -z "$APP_UUID" ]; then
+                  # Метод 4: sed для поиска UUID в следующей строке
+                  APP_UUID=$(echo "$PROFILE_XML" | sed -n '/<key>UUID<\/key>/,+2p' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | tr -d '\t ' | head -1 || echo "")
+                fi
+                if [ -z "$APP_UUID" ]; then
+                  # Метод 5: агрессивный поиск любого UUID в XML
+                  APP_UUID=$(echo "$PROFILE_XML" | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+                fi
+                if [ -n "$APP_UUID" ] && [[ "$APP_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+                  echo "✅ UUID extracted via grep: $APP_UUID"
+                else
+                  echo "❌ All methods failed to extract UUID"
+                  echo "   🔍 Diagnostic: What's after <key>UUID</key>?"
+                  echo "$PROFILE_XML" | grep -A 3 '<key>UUID</key>' | head -5
+                fi
+              fi
+            fi
+            if [ -n "$APP_UUID" ] && [[ "$APP_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              mv "$PROFILE_DIR/app.mobileprovision" "$PROFILE_DIR/${APP_UUID}.mobileprovision"
+              echo "✅ App profile renamed to: ${APP_UUID}.mobileprovision"
+              echo "APP_PROFILE_UUID=$APP_UUID" >> $GITHUB_ENV
+              echo "APP_PROFILE_PATH=$PROFILE_DIR/${APP_UUID}.mobileprovision" >> $GITHUB_ENV
+            else
+              echo "❌ Failed to extract UUID from app profile"
+              echo "   XML preview (first 500 chars):"
+              echo "$PROFILE_XML" | head -c 500
+            fi
+          else
+            echo "❌ Failed to decode app profile XML (exit code: $SECURITY_EXIT)"
+            if [ -n "$PROFILE_XML" ]; then
+              echo "   Error output: $PROFILE_XML"
+            fi
+          fi
+          set -e
+        fi
+        
+        # КРИТИЧЕСКИ ВАЖНО: Извлечь UUID из extension.mobileprovision и переименовать
+        if [ -f "$PROFILE_DIR/extension.mobileprovision" ]; then
+          echo "🔄 Извлечение UUID из extension.mobileprovision..."
+          set +e
+          # Метод 1: security cms + plutil
+          PROFILE_XML=$(security cms -D -i "$PROFILE_DIR/extension.mobileprovision" 2>&1)
+          SECURITY_EXIT=$?
+          if [ $SECURITY_EXIT -eq 0 ] && [ -n "$PROFILE_XML" ]; then
+            echo "✅ Extension profile XML decoded successfully"
+            echo "   XML length: $(echo -n "$PROFILE_XML" | wc -c | tr -d ' ') characters"
+            EXT_UUID=$(echo "$PROFILE_XML" | plutil -extract UUID raw -o - - 2>/dev/null || echo "")
+            if [ -n "$EXT_UUID" ] && [[ "$EXT_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              echo "✅ UUID extracted via plutil: $EXT_UUID"
+            else
+              EXT_UUID=""
+              echo "⚠️  plutil failed, trying awk..."
+              # Метод 2: awk (РАБОТАЕТ! Находит UUID в диагностике)
+        EXT_UUID=$(echo "$PROFILE_XML" | awk '/<key>UUID<\/key>/{getline; if(/<string>/){gsub(/.*<string>|<\/string>.*/,""); print; exit}}' | tr -d '\t ' || echo "")
+        echo "   🔍 Debug: EXT_UUID after extraction: '$EXT_UUID'"
+        echo "   🔍 Debug: EXT_UUID length: $(echo -n "$EXT_UUID" | wc -c | tr -d ' ')"
+        if [ -n "$EXT_UUID" ]; then
+          echo "   🔍 Debug: EXT_UUID is not empty, checking regex..."
+          if [[ "$EXT_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+            echo "✅ UUID extracted via awk: $EXT_UUID"
+          else
+            echo "   ⚠️  EXT_UUID doesn't match regex pattern"
+            echo "   🔍 Debug: EXT_UUID value: '$EXT_UUID'"
+            EXT_UUID=""
+            echo "⚠️  awk failed, trying grep..."
+          fi
+        else
+          EXT_UUID=""
+          echo "⚠️  awk failed (empty result), trying grep..."
+                # Метод 3: grep в XML с обработкой табов
+                EXT_UUID=$(echo "$PROFILE_XML" | grep -A 2 '<key>UUID</key>' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | tr -d '\t ' | head -1 || echo "")
+                if [ -z "$EXT_UUID" ]; then
+                  # Метод 4: sed для поиска UUID в следующей строке
+                  EXT_UUID=$(echo "$PROFILE_XML" | sed -n '/<key>UUID<\/key>/,+2p' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | tr -d '\t ' | head -1 || echo "")
+                fi
+                if [ -z "$EXT_UUID" ]; then
+                  # Метод 5: агрессивный поиск любого UUID в XML
+                  EXT_UUID=$(echo "$PROFILE_XML" | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+                fi
+                if [ -n "$EXT_UUID" ] && [[ "$EXT_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+                  echo "✅ UUID extracted via grep: $EXT_UUID"
+                else
+                  echo "❌ All methods failed to extract UUID"
+                  echo "   🔍 Diagnostic: What's after <key>UUID</key>?"
+                  echo "$PROFILE_XML" | grep -A 3 '<key>UUID</key>' | head -5
+                fi
+              fi
+            fi
+            if [ -n "$EXT_UUID" ] && [[ "$EXT_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              mv "$PROFILE_DIR/extension.mobileprovision" "$PROFILE_DIR/${EXT_UUID}.mobileprovision"
+              echo "✅ Extension profile renamed to: ${EXT_UUID}.mobileprovision"
+              echo "EXT_PROFILE_UUID=$EXT_UUID" >> $GITHUB_ENV
+              echo "EXT_PROFILE_PATH=$PROFILE_DIR/${EXT_UUID}.mobileprovision" >> $GITHUB_ENV
+            else
+              echo "❌ Failed to extract UUID from extension profile"
+              echo "   XML preview (first 500 chars):"
+              echo "$PROFILE_XML" | head -c 500
+            fi
+          else
+            echo "❌ Failed to decode extension profile XML (exit code: $SECURITY_EXIT)"
+            if [ -n "$PROFILE_XML" ]; then
+              echo "   Error output: $PROFILE_XML"
+            fi
+          fi
+          set -e
+        fi
+        
+        echo ""
+        echo "📋 Файлы после переименования:"
+        ls -la "$PROFILE_DIR" || echo "⚠️  Profile directory not found"
+        
+    - name: Verify Profiles
+      env:
+        APP_PROFILE_UUID: ${{ env.APP_PROFILE_UUID }}
+        EXT_PROFILE_UUID: ${{ env.EXT_PROFILE_UUID }}
+      run: |
+        PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+        echo "📋 Installed provisioning profiles:"
+        ls -la "$PROFILE_DIR"
+        echo ""
+        echo "📋 Verifying profiles..."
+        if [ -n "$APP_PROFILE_UUID" ] && [[ "$APP_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+          if [ -f "$PROFILE_DIR/${APP_PROFILE_UUID}.mobileprovision" ]; then
+            echo "✅ App profile found: ${APP_PROFILE_UUID}.mobileprovision"
+            security cms -D -i "$PROFILE_DIR/${APP_PROFILE_UUID}.mobileprovision" 2>/dev/null | plutil -extract Name raw -o - - 2>/dev/null || echo "  Name: (could not extract)"
+          else
+            echo "❌ App profile NOT found: ${APP_PROFILE_UUID}.mobileprovision"
+          fi
+        fi
+        if [ -n "$EXT_PROFILE_UUID" ] && [[ "$EXT_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+          if [ -f "$PROFILE_DIR/${EXT_PROFILE_UUID}.mobileprovision" ]; then
+            echo "✅ Extension profile found: ${EXT_PROFILE_UUID}.mobileprovision"
+            security cms -D -i "$PROFILE_DIR/${EXT_PROFILE_UUID}.mobileprovision" 2>/dev/null | plutil -extract Name raw -o - - 2>/dev/null || echo "  Name: (could not extract)"
+          else
+            echo "❌ Extension profile NOT found: ${EXT_PROFILE_UUID}.mobileprovision"
+          fi
+        fi
+        
+    - name: Prepare Profiles for Build
+      env:
+        APP_PROFILE_UUID: ${{ env.APP_PROFILE_UUID }}
+        EXT_PROFILE_UUID: ${{ env.EXT_PROFILE_UUID }}
+        APP_PROFILE_PATH: ${{ env.APP_PROFILE_PATH }}
+        EXT_PROFILE_PATH: ${{ env.EXT_PROFILE_PATH }}
+      run: |
+        PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+        
+        # КРИТИЧЕСКИ ВАЖНО: Если UUID не извлечен, но файл существует, попытаться извлечь UUID и переименовать файл
+        # Xcode требует, чтобы файлы были переименованы в UUID.mobileprovision
+        if [ -z "$APP_PROFILE_UUID" ] && [ -f "$PROFILE_DIR/app.mobileprovision" ]; then
+          echo "🔄 Attempting to extract UUID from app.mobileprovision for renaming..."
+          set +e
+          PROFILE_XML=$(security cms -D -i "$PROFILE_DIR/app.mobileprovision" 2>/dev/null)
+          if [ $? -eq 0 ] && [ -n "$PROFILE_XML" ]; then
+            # Попробовать все методы извлечения UUID
+            EXTRACTED_UUID=$(echo "$PROFILE_XML" | plutil -extract UUID raw -o - - 2>/dev/null || echo "")
+            if [ -z "$EXTRACTED_UUID" ]; then
+              EXTRACTED_UUID=$(echo "$PROFILE_XML" | grep -A 1 '<key>UUID</key>' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | head -1 || echo "")
+            fi
+            if [ -z "$EXTRACTED_UUID" ]; then
+              EXTRACTED_UUID=$(echo "$PROFILE_XML" | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+            fi
+            if [ -n "$EXTRACTED_UUID" ] && [[ "$EXTRACTED_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              mv "$PROFILE_DIR/app.mobileprovision" "$PROFILE_DIR/${EXTRACTED_UUID}.mobileprovision"
+              echo "✅ UUID extracted and file renamed: ${EXTRACTED_UUID}.mobileprovision"
+              APP_PROFILE_UUID="$EXTRACTED_UUID"
+              echo "APP_PROFILE_UUID=$EXTRACTED_UUID" >> $GITHUB_ENV
+              echo "APP_PROFILE_PATH=$PROFILE_DIR/${EXTRACTED_UUID}.mobileprovision" >> $GITHUB_ENV
+            fi
+          fi
+          set -e
+        fi
+        
+        if [ -z "$EXT_PROFILE_UUID" ] && [ -f "$PROFILE_DIR/extension.mobileprovision" ]; then
+          echo "🔄 Attempting to extract UUID from extension.mobileprovision for renaming..."
+          set +e
+          PROFILE_XML=$(security cms -D -i "$PROFILE_DIR/extension.mobileprovision" 2>/dev/null)
+          if [ $? -eq 0 ] && [ -n "$PROFILE_XML" ]; then
+            # Попробовать все методы извлечения UUID
+            EXTRACTED_UUID=$(echo "$PROFILE_XML" | plutil -extract UUID raw -o - - 2>/dev/null || echo "")
+            if [ -z "$EXTRACTED_UUID" ]; then
+              EXTRACTED_UUID=$(echo "$PROFILE_XML" | grep -A 1 '<key>UUID</key>' | grep '<string>' | sed 's/.*<string>\([^<]*\)<\/string>.*/\1/' | head -1 || echo "")
+            fi
+            if [ -z "$EXTRACTED_UUID" ]; then
+              EXTRACTED_UUID=$(echo "$PROFILE_XML" | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+            fi
+            if [ -n "$EXTRACTED_UUID" ] && [[ "$EXTRACTED_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+              mv "$PROFILE_DIR/extension.mobileprovision" "$PROFILE_DIR/${EXTRACTED_UUID}.mobileprovision"
+              echo "✅ UUID extracted and file renamed: ${EXTRACTED_UUID}.mobileprovision"
+              EXT_PROFILE_UUID="$EXTRACTED_UUID"
+              echo "EXT_PROFILE_UUID=$EXTRACTED_UUID" >> $GITHUB_ENV
+              echo "EXT_PROFILE_PATH=$PROFILE_DIR/${EXTRACTED_UUID}.mobileprovision" >> $GITHUB_ENV
+            fi
+          fi
+          set -e
+        fi
+        
+        # Fallback: Если UUID не извлечен, попытаться найти профили по bundle ID или использовать путь
+        if [ -z "$APP_PROFILE_UUID" ]; then
+          echo "⚠️  APP_PROFILE_UUID not extracted, trying fallback methods..."
+          
+          # Метод 1: Попытаться найти профиль по bundle ID
+          if [ -f "$PROFILE_DIR/app.mobileprovision" ]; then
+            echo "🔍 Found app.mobileprovision, attempting to extract UUID again..."
+            set +e
+            PROFILE_XML=$(security cms -D -i "$PROFILE_DIR/app.mobileprovision" 2>/dev/null)
+            if [ $? -eq 0 ] && [ -n "$PROFILE_XML" ]; then
+              # Попытаться извлечь UUID из XML
+              APP_PROFILE_UUID=$(echo "$PROFILE_XML" | grep -oE '<key>UUID</key>.*?<string>([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})</string>' | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+              if [ -n "$APP_PROFILE_UUID" ] && [[ "$APP_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+                mv "$PROFILE_DIR/app.mobileprovision" "$PROFILE_DIR/${APP_PROFILE_UUID}.mobileprovision"
+                echo "✅ UUID extracted in fallback: $APP_PROFILE_UUID"
+              fi
+            fi
+            set -e
+          fi
+          
+          # Метод 2: Если UUID все еще не найден, использовать bundle ID (Xcode найдет профиль автоматически)
+          if [ -z "$APP_PROFILE_UUID" ]; then
+            echo "⚠️  Using bundle ID fallback for app profile (Xcode will auto-detect)"
+            APP_PROFILE_UUID="family.aladdin.ios"
+          fi
+        fi
+        
+        if [ -z "$EXT_PROFILE_UUID" ]; then
+          echo "⚠️  EXT_PROFILE_UUID not extracted, trying fallback methods..."
+          
+          # Метод 1: Попытаться найти профиль по bundle ID
+          if [ -f "$PROFILE_DIR/extension.mobileprovision" ]; then
+            echo "🔍 Found extension.mobileprovision, attempting to extract UUID again..."
+            set +e
+            PROFILE_XML=$(security cms -D -i "$PROFILE_DIR/extension.mobileprovision" 2>/dev/null)
+            if [ $? -eq 0 ] && [ -n "$PROFILE_XML" ]; then
+              # Попытаться извлечь UUID из XML
+              EXT_PROFILE_UUID=$(echo "$PROFILE_XML" | grep -oE '<key>UUID</key>.*?<string>([0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12})</string>' | grep -oE '[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}' | head -1 || echo "")
+              if [ -n "$EXT_PROFILE_UUID" ] && [[ "$EXT_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+                mv "$PROFILE_DIR/extension.mobileprovision" "$PROFILE_DIR/${EXT_PROFILE_UUID}.mobileprovision"
+                echo "✅ UUID extracted in fallback: $EXT_PROFILE_UUID"
+              fi
+            fi
+            set -e
+          fi
+          
+          # Метод 2: Если UUID все еще не найден, использовать bundle ID
+          if [ -z "$EXT_PROFILE_UUID" ]; then
+            echo "⚠️  Using bundle ID fallback for extension profile (Xcode will auto-detect)"
+            EXT_PROFILE_UUID="family.aladdin.ios.ALADDINContentBlocker"
+          fi
+        fi
+        
+        # Проверить что у нас есть хотя бы bundle ID для профилей
+          if [ -z "$APP_PROFILE_UUID" ] || [ -z "$EXT_PROFILE_UUID" ]; then
+          echo "❌ Failed to extract provisioning profile UUIDs or bundle IDs!"
+            echo "APP_PROFILE_UUID: $APP_PROFILE_UUID"
+            echo "EXT_PROFILE_UUID: $EXT_PROFILE_UUID"
+            exit 1
+          fi
+          
+        # Установить пути к профилям (для fallback)
+        if [[ "$APP_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+          # Это UUID, проверить что файл существует
+          if [ -f "$PROFILE_DIR/${APP_PROFILE_UUID}.mobileprovision" ]; then
+            echo "APP_PROFILE_PATH=$PROFILE_DIR/${APP_PROFILE_UUID}.mobileprovision" >> $GITHUB_ENV
+          elif [ -f "$PROFILE_DIR/app.mobileprovision" ]; then
+            echo "APP_PROFILE_PATH=$PROFILE_DIR/app.mobileprovision" >> $GITHUB_ENV
+          fi
+        elif [ -f "$PROFILE_DIR/app.mobileprovision" ]; then
+          echo "APP_PROFILE_PATH=$PROFILE_DIR/app.mobileprovision" >> $GITHUB_ENV
+        fi
+        
+        if [[ "$EXT_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+          # Это UUID, проверить что файл существует
+          if [ -f "$PROFILE_DIR/${EXT_PROFILE_UUID}.mobileprovision" ]; then
+            echo "EXT_PROFILE_PATH=$PROFILE_DIR/${EXT_PROFILE_UUID}.mobileprovision" >> $GITHUB_ENV
+          elif [ -f "$PROFILE_DIR/extension.mobileprovision" ]; then
+            echo "EXT_PROFILE_PATH=$PROFILE_DIR/extension.mobileprovision" >> $GITHUB_ENV
+          fi
+        elif [ -f "$PROFILE_DIR/extension.mobileprovision" ]; then
+          echo "EXT_PROFILE_PATH=$PROFILE_DIR/extension.mobileprovision" >> $GITHUB_ENV
+        fi
+        
+        echo "✅ Using profiles:"
+        echo "   App: $APP_PROFILE_UUID"
+        echo "   Extension: $EXT_PROFILE_UUID"
+        echo "APP_PROFILE_UUID=$APP_PROFILE_UUID" >> $GITHUB_ENV
+        echo "EXT_PROFILE_UUID=$EXT_PROFILE_UUID" >> $GITHUB_ENV
+        
+    - name: Find Distribution Certificate
+      env:
+        KEYCHAIN_PATH: ${{ env.KEYCHAIN_PATH }}
+        KEYCHAIN_PASSWORD: ${{ env.KEYCHAIN_PASSWORD }}
+      run: |
+        export KEYCHAIN_PATH="$KEYCHAIN_PATH"
+        export KEYCHAIN_PASSWORD="$KEYCHAIN_PASSWORD"
+          
+          # Найти правильное имя сертификата Distribution из keychain
+          echo "🔍 Finding Distribution certificate in keychain..."
+          CERT_INFO=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" | grep -i "distribution" | head -1)
+          if [ -z "$CERT_INFO" ]; then
+            echo "❌ No Distribution certificate found in keychain!"
+            exit 1
+          fi
+          
+          # Извлечь полное имя сертификата (включая "Apple Distribution: NAME (ID)")
+          # Формат вывода security: "   1) HASH \"Apple Distribution: NAME (ID)\""
+          # Извлекаем только имя сертификата из кавычек
+          DIST_CERT_NAME=$(echo "$CERT_INFO" | grep -oE '"Apple Distribution[^"]*"' | sed 's/"//g')
+          
+          # Если не найдено, попробовать другой способ
+          if [ -z "$DIST_CERT_NAME" ]; then
+            DIST_CERT_NAME=$(echo "$CERT_INFO" | sed -E 's/.*"([^"]*Apple Distribution[^"]*)".*/\1/')
+          fi
+          
+          # Если все еще не найдено, использовать просто "Apple Distribution"
+          if [ -z "$DIST_CERT_NAME" ]; then
+            DIST_CERT_NAME="Apple Distribution"
+          fi
+          
+          echo "✅ Using certificate: $DIST_CERT_NAME"
+        echo "DIST_CERT_NAME=$DIST_CERT_NAME" >> $GITHUB_ENV
+        
+    - name: Verify Profiles for Build
+      env:
+        APP_PROFILE_UUID: ${{ env.APP_PROFILE_UUID }}
+        EXT_PROFILE_UUID: ${{ env.EXT_PROFILE_UUID }}
+      run: |
+        PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+        
+        # Проверить что профили существуют (с учетом fallback)
+          echo "🔍 Проверка профилей перед сборкой..."
+        echo "App Profile: $APP_PROFILE_UUID"
+        echo "Extension Profile: $EXT_PROFILE_UUID"
+        
+        # Проверить формат - UUID или bundle ID
+        if [[ "$APP_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+          # Это UUID - проверяем файл
+          APP_PROFILE_FILE="$PROFILE_DIR/${APP_PROFILE_UUID}.mobileprovision"
+          if [ ! -f "$APP_PROFILE_FILE" ]; then
+            echo "❌ App profile not found: ${APP_PROFILE_UUID}.mobileprovision"
+            exit 1
+          fi
+          echo "✅ App profile found: ${APP_PROFILE_UUID}.mobileprovision"
+        else
+          # Это bundle ID - проверяем что есть хотя бы один профиль с таким bundle ID
+          echo "⚠️  Using bundle ID for app profile: $APP_PROFILE_UUID (Xcode will auto-detect)"
+          if [ ! -f "$PROFILE_DIR/app.mobileprovision" ]; then
+            echo "⚠️  app.mobileprovision not found, but Xcode will try to find matching profile"
+          fi
+          APP_PROFILE_FILE=""
+        fi
+        
+        if [[ "$EXT_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+          # Это UUID - проверяем файл
+          EXT_PROFILE_FILE="$PROFILE_DIR/${EXT_PROFILE_UUID}.mobileprovision"
+          if [ ! -f "$EXT_PROFILE_FILE" ]; then
+            echo "❌ Extension profile not found: ${EXT_PROFILE_UUID}.mobileprovision"
+            exit 1
+          fi
+          echo "✅ Extension profile found: ${EXT_PROFILE_UUID}.mobileprovision"
+        else
+          # Это bundle ID - проверяем что есть хотя бы один профиль с таким bundle ID
+          echo "⚠️  Using bundle ID for extension profile: $EXT_PROFILE_UUID (Xcode will auto-detect)"
+          if [ ! -f "$PROFILE_DIR/extension.mobileprovision" ]; then
+            echo "⚠️  extension.mobileprovision not found, but Xcode will try to find matching profile"
+          fi
+          EXT_PROFILE_FILE=""
+        fi
+        
+        # Проверить содержимое профилей (если файлы найдены)
+        if [ -n "$APP_PROFILE_FILE" ] && [ -f "$APP_PROFILE_FILE" ]; then
+          echo "🔍 Проверка содержимого app профиля..."
+          APP_PROFILE_NAME=$(security cms -D -i "$APP_PROFILE_FILE" 2>/dev/null | plutil -extract Name raw -o - - 2>/dev/null || echo "")
+          echo "App Profile Name: $APP_PROFILE_NAME"
+        fi
+        
+        if [ -n "$EXT_PROFILE_FILE" ] && [ -f "$EXT_PROFILE_FILE" ]; then
+          echo "🔍 Проверка содержимого extension профиля..."
+          EXT_PROFILE_NAME=$(security cms -D -i "$EXT_PROFILE_FILE" 2>/dev/null | plutil -extract Name raw -o - - 2>/dev/null || echo "")
+          echo "Extension Profile Name: $EXT_PROFILE_NAME"
+        fi
+        
+        echo "⚠️  Note: If profiles don't match certificate, they need to be regenerated in Developer Portal"
+        echo "⚠️  Using -allowProvisioningUpdates to let Xcode try to fix profile issues"
+        
+        # Проверить capabilities профилей (если файлы найдены)
+        APP_PROFILE_TYPE=""
+        EXT_PROFILE_TYPE=""
+        if [ -n "$APP_PROFILE_FILE" ] && [ -f "$APP_PROFILE_FILE" ]; then
+          echo "🔍 Проверка capabilities app профиля..."
+          APP_PROFILE_BUNDLE_ID=$(security cms -D -i "$APP_PROFILE_FILE" 2>/dev/null | plutil -extract Entitlements.application-identifier raw -o - - 2>/dev/null || echo "")
+            echo "App Profile Bundle ID: $APP_PROFILE_BUNDLE_ID"
+          APP_PROFILE_TYPE=$(security cms -D -i "$APP_PROFILE_FILE" 2>/dev/null | plutil -extract ProvisionedDevices raw -o - - 2>/dev/null || echo "")
+            if [ -z "$APP_PROFILE_TYPE" ]; then
+              echo "✅ App Profile: App Store Distribution (нет ProvisionedDevices)"
+            else
+              echo "⚠️  App Profile: Development/Ad Hoc (есть ProvisionedDevices)"
+            fi
+          fi
+          
+        if [ -n "$EXT_PROFILE_FILE" ] && [ -f "$EXT_PROFILE_FILE" ]; then
+          echo "🔍 Проверка capabilities extension профиля..."
+          EXT_PROFILE_BUNDLE_ID=$(security cms -D -i "$EXT_PROFILE_FILE" 2>/dev/null | plutil -extract Entitlements.application-identifier raw -o - - 2>/dev/null || echo "")
+            echo "Extension Profile Bundle ID: $EXT_PROFILE_BUNDLE_ID"
+          EXT_PROFILE_TYPE=$(security cms -D -i "$EXT_PROFILE_FILE" 2>/dev/null | plutil -extract ProvisionedDevices raw -o - - 2>/dev/null || echo "")
+            if [ -z "$EXT_PROFILE_TYPE" ]; then
+              echo "✅ Extension Profile: App Store Distribution (нет ProvisionedDevices)"
+            else
+              echo "⚠️  Extension Profile: Development/Ad Hoc (есть ProvisionedDevices)"
+            fi
+            
+            # Проверить capabilities для Extension
+          EXT_CAPABILITIES=$(security cms -D -i "$EXT_PROFILE_FILE" 2>/dev/null | plutil -extract Entitlements raw -o - - 2>/dev/null || echo "")
+            if echo "$EXT_CAPABILITIES" | grep -q "com.apple.developer.networking.networkextension"; then
+              echo "✅ Extension Profile содержит Network Extensions capability"
+            else
+              echo "❌ Extension Profile НЕ содержит Network Extensions capability!"
+            fi
+            # ✅ УДАЛЕНО: Проверка Personal VPN capability (больше не используется)
+            # if echo "$EXT_CAPABILITIES" | grep -q "com.apple.developer.networking.vpn.api"; then
+            #   echo "✅ Extension Profile содержит Personal VPN capability"
+            # else
+            #   echo "❌ Extension Profile НЕ содержит Personal VPN capability!"
+            # fi
+          fi
+          
+          # КРИТИЧЕСКАЯ ПРОВЕРКА: Профили должны быть App Store Distribution
+          if [ -n "$APP_PROFILE_TYPE" ] || [ -n "$EXT_PROFILE_TYPE" ]; then
+            echo ""
+            echo "❌❌❌ КРИТИЧЕСКАЯ ОШИБКА ❌❌❌"
+            echo "Профили являются Development/Ad Hoc, а не App Store Distribution!"
+            echo "Для App Store нужны профили БЕЗ ProvisionedDevices (App Store Distribution)"
+            echo ""
+            echo "РЕШЕНИЕ:"
+            echo "1. Зайдите в Apple Developer Portal: https://developer.apple.com/account/resources/profiles/list"
+            echo "2. Создайте НОВЫЕ профили типа 'App Store' (не Development, не Ad Hoc)"
+            echo "3. Для App: Bundle ID 'family.aladdin.ios', тип 'App Store'"
+            echo "4. Для Extension: Bundle ID 'family.aladdin.ios.ALADDINContentBlocker', тип 'App Store'"
+            echo "5. Убедитесь, что профили связаны с сертификатом 'Apple Distribution: SERGEY KHLYSTOV'"
+            echo "6. Обновите GitHub Secrets: PROVISIONING_PROFILE_APP и PROVISIONING_PROFILE_EXTENSION"
+            echo ""
+            echo "⚠️  Продолжаем сборку с текущими профилями (может не сработать для App Store)..."
+            echo ""
+          fi
+          
+    - name: Create xcconfig for Build
+      env:
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        APP_PROFILE_UUID: ${{ env.APP_PROFILE_UUID }}
+        EXT_PROFILE_UUID: ${{ env.EXT_PROFILE_UUID }}
+        APP_PROFILE_PATH: ${{ env.APP_PROFILE_PATH }}
+        EXT_PROFILE_PATH: ${{ env.EXT_PROFILE_PATH }}
+        DIST_CERT_NAME: ${{ env.DIST_CERT_NAME }}
+      run: |
+        if [ -z "$APPLE_TEAM_ID" ]; then
+          echo "❌ APPLE_TEAM_ID secret is not set!"
+          exit 1
+        fi
+        
+        PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+        
+          # КРИТИЧЕСКАЯ ПРОБЛЕМА: Проект настроен на Automatic signing
+          # Xcode игнорирует параметры командной строки, если в проекте установлен Automatic
+          # РЕШЕНИЕ: Создать xcconfig файл, который переопределит настройки проекта
+          echo "🔧 Создание xcconfig файла для переопределения Automatic signing..."
+          mkdir -p ./build
+        
+        # Определить пути к профилям
+        # КРИТИЧЕСКИ ВАЖНО: Приоритет - полный путь к файлу (более надежно в CI)
+        PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+        if [ -n "$APP_PROFILE_PATH" ] && [ -f "$APP_PROFILE_PATH" ]; then
+          # Полный путь к файлу доступен - используем его (приоритет)
+          APP_PROFILE_SPECIFIER="$APP_PROFILE_UUID"
+          APP_PROFILE_VALUE="$APP_PROFILE_PATH"
+          echo "✅ Using full path for app profile: $APP_PROFILE_PATH"
+        elif [[ "$APP_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+          # UUID найден - проверяем, существует ли файл с таким UUID
+          if [ -f "$PROFILE_DIR/${APP_PROFILE_UUID}.mobileprovision" ]; then
+            APP_PROFILE_SPECIFIER="$APP_PROFILE_UUID"
+            APP_PROFILE_VALUE="$PROFILE_DIR/${APP_PROFILE_UUID}.mobileprovision"
+            echo "✅ Using UUID file path for app profile: $APP_PROFILE_VALUE"
+          else
+            # UUID найден, но файл не найден - используем UUID
+            APP_PROFILE_SPECIFIER="$APP_PROFILE_UUID"
+            APP_PROFILE_VALUE="$APP_PROFILE_UUID"
+            echo "⚠️  Using UUID for app profile: $APP_PROFILE_UUID (file not found)"
+          fi
+        elif [ -f "$PROFILE_DIR/app.mobileprovision" ]; then
+          # Файл существует, но UUID не извлечен - используем полный путь
+          APP_PROFILE_SPECIFIER="app"
+          APP_PROFILE_VALUE="$PROFILE_DIR/app.mobileprovision"
+          echo "⚠️  Using full path for app profile (UUID not extracted): $APP_PROFILE_VALUE"
+        else
+          # Fallback на bundle ID
+          APP_PROFILE_SPECIFIER="family.aladdin.ios"
+          APP_PROFILE_VALUE="family.aladdin.ios"
+          echo "⚠️  Using bundle ID fallback for app profile: family.aladdin.ios"
+        fi
+        
+        if [ -n "$EXT_PROFILE_PATH" ] && [ -f "$EXT_PROFILE_PATH" ]; then
+          # Полный путь к файлу доступен - используем его (приоритет)
+          EXT_PROFILE_SPECIFIER="$EXT_PROFILE_UUID"
+          EXT_PROFILE_VALUE="$EXT_PROFILE_PATH"
+          echo "✅ Using full path for extension profile: $EXT_PROFILE_PATH"
+        elif [[ "$EXT_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+          # UUID найден - проверяем, существует ли файл с таким UUID
+          if [ -f "$PROFILE_DIR/${EXT_PROFILE_UUID}.mobileprovision" ]; then
+            EXT_PROFILE_SPECIFIER="$EXT_PROFILE_UUID"
+            EXT_PROFILE_VALUE="$PROFILE_DIR/${EXT_PROFILE_UUID}.mobileprovision"
+            echo "✅ Using UUID file path for extension profile: $EXT_PROFILE_VALUE"
+          else
+            # UUID найден, но файл не найден - используем UUID
+            EXT_PROFILE_SPECIFIER="$EXT_PROFILE_UUID"
+            EXT_PROFILE_VALUE="$EXT_PROFILE_UUID"
+            echo "⚠️  Using UUID for extension profile: $EXT_PROFILE_UUID (file not found)"
+          fi
+        elif [ -f "$PROFILE_DIR/extension.mobileprovision" ]; then
+          # Файл существует, но UUID не извлечен - используем полный путь
+          EXT_PROFILE_SPECIFIER="extension"
+          EXT_PROFILE_VALUE="$PROFILE_DIR/extension.mobileprovision"
+          echo "⚠️  Using full path for extension profile (UUID not extracted): $EXT_PROFILE_VALUE"
+        else
+          # Fallback на bundle ID
+          EXT_PROFILE_SPECIFIER="family.aladdin.ios.ALADDINContentBlocker"
+          EXT_PROFILE_VALUE="family.aladdin.ios.ALADDINContentBlocker"
+          echo "⚠️  Using bundle ID fallback for extension profile: family.aladdin.ios.ALADDINContentBlocker"
+        fi
+        
+        # Создать xcconfig файл
+          {
+            echo "// Override Automatic signing with Manual signing for CI"
+            echo "CODE_SIGN_STYLE = Manual"
+            echo "DEVELOPMENT_TEAM = $APPLE_TEAM_ID"
+            echo "CODE_SIGN_IDENTITY = $DIST_CERT_NAME"
+            echo ""
+            echo "// App target"
+            echo "ALADDIN_CODE_SIGN_STYLE = Manual"
+            echo "ALADDIN_DEVELOPMENT_TEAM = $APPLE_TEAM_ID"
+            echo "ALADDIN_CODE_SIGN_IDENTITY = $DIST_CERT_NAME"
+          echo "ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios"
+          if [[ "$APP_PROFILE_VALUE" =~ ^/ ]]; then
+            # Это полный путь - используем его напрямую
+            echo "ALADDIN_PROVISIONING_PROFILE = $APP_PROFILE_VALUE"
+            echo "ALADDIN_PROVISIONING_PROFILE_SPECIFIER = $APP_PROFILE_SPECIFIER"
+          elif [[ "$APP_PROFILE_VALUE" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+            # Это UUID
+            echo "ALADDIN_PROVISIONING_PROFILE_SPECIFIER = $APP_PROFILE_VALUE"
+            echo "ALADDIN_PROVISIONING_PROFILE = $APP_PROFILE_VALUE"
+          else
+            # Это bundle ID - используем полный путь если доступен
+            if [ -n "$APP_PROFILE_PATH" ] && [ -f "$APP_PROFILE_PATH" ]; then
+              echo "ALADDIN_PROVISIONING_PROFILE = $APP_PROFILE_PATH"
+              echo "ALADDIN_PROVISIONING_PROFILE_SPECIFIER = $APP_PROFILE_SPECIFIER"
+            else
+              echo "ALADDIN_PROVISIONING_PROFILE_SPECIFIER = $APP_PROFILE_SPECIFIER"
+            fi
+          fi
+            echo ""
+            # Extension target (только если существует)
+            if [ "${{ env.EXTENSION_EXISTS }}" = "true" ]; then
+              echo "// Extension target"
+              echo "ALADDINContentBlocker_CODE_SIGN_STYLE = Manual"
+              echo "ALADDINContentBlocker_DEVELOPMENT_TEAM = $APPLE_TEAM_ID"
+              echo "ALADDINContentBlocker_CODE_SIGN_IDENTITY = $DIST_CERT_NAME"
+              echo "ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker"
+              if [[ "$EXT_PROFILE_VALUE" =~ ^/ ]]; then
+                # Это полный путь - используем его напрямую
+                echo "ALADDINContentBlocker_PROVISIONING_PROFILE = $EXT_PROFILE_VALUE"
+                echo "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = $EXT_PROFILE_SPECIFIER"
+              elif [[ "$EXT_PROFILE_VALUE" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+                # Это UUID
+                echo "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = $EXT_PROFILE_VALUE"
+                echo "ALADDINContentBlocker_PROVISIONING_PROFILE = $EXT_PROFILE_VALUE"
+              else
+                # Это bundle ID - используем полный путь если доступен
+                if [ -n "$EXT_PROFILE_PATH" ] && [ -f "$EXT_PROFILE_PATH" ]; then
+                  echo "ALADDINContentBlocker_PROVISIONING_PROFILE = $EXT_PROFILE_PATH"
+                  echo "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = $EXT_PROFILE_SPECIFIER"
+                else
+                  echo "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = $EXT_PROFILE_SPECIFIER"
+                fi
+              fi
+            else
+              echo "// Extension target removed - no configuration needed"
+            fi
+          } > ./build/Release.xcconfig
+          echo "✅ xcconfig файл создан"
+        echo "📋 Contents:"
+        cat ./build/Release.xcconfig
+        
+    - name: Prepare Build Environment
+      env:
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        APP_PROFILE_UUID: ${{ env.APP_PROFILE_UUID }}
+        EXT_PROFILE_UUID: ${{ env.EXT_PROFILE_UUID }}
+        APP_PROFILE_PATH: ${{ env.APP_PROFILE_PATH }}
+        EXT_PROFILE_PATH: ${{ env.EXT_PROFILE_PATH }}
+      run: |
+        echo "Building archive with manual signing..."
+        echo "Team ID: $APPLE_TEAM_ID"
+        echo "Bundle ID: family.aladdin.ios"
+        echo "App Profile UUID: $APP_PROFILE_UUID"
+        echo "Extension Profile UUID: $EXT_PROFILE_UUID"
+        echo "App Profile Path: $APP_PROFILE_PATH"
+        echo "Extension Profile Path: $EXT_PROFILE_PATH"
+        
+        if [ -z "$APPLE_TEAM_ID" ]; then
+          echo "❌ APPLE_TEAM_ID secret is not set!"
+          exit 1
+        fi
+        
+        if [ "${{ env.CERTIFICATE_AVAILABLE }}" != "true" ]; then
+          echo "⚠️  Certificate not available, skipping manual signing preparation"
+          exit 0
+        fi
+        
+        echo "✅ Using manual signing with certificate"
+        PROFILE_DIR="$HOME/Library/MobileDevice/Provisioning Profiles"
+        echo "🔍 Проверка установленных профилей..."
+        ls -la "$PROFILE_DIR" || echo "⚠️  Profile directory not found"
+        
+        # Определить пути к профилям
+        if [[ "$APP_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+          APP_PROFILE_FILE="$PROFILE_DIR/${APP_PROFILE_UUID}.mobileprovision"
+        elif [ -n "$APP_PROFILE_PATH" ] && [ -f "$APP_PROFILE_PATH" ]; then
+          APP_PROFILE_FILE="$APP_PROFILE_PATH"
+        else
+          APP_PROFILE_FILE="$PROFILE_DIR/app.mobileprovision"
+        fi
+        
+        if [[ "$EXT_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+          EXT_PROFILE_FILE="$PROFILE_DIR/${EXT_PROFILE_UUID}.mobileprovision"
+        elif [ -n "$EXT_PROFILE_PATH" ] && [ -f "$EXT_PROFILE_PATH" ]; then
+          EXT_PROFILE_FILE="$EXT_PROFILE_PATH"
+        else
+          EXT_PROFILE_FILE="$PROFILE_DIR/extension.mobileprovision"
+        fi
+        
+        # Проверить что файлы существуют
+        if [ ! -f "$APP_PROFILE_FILE" ]; then
+          if [[ "$APP_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+            echo "❌ App profile not found: $APP_PROFILE_FILE"
+            ls -la "$PROFILE_DIR" || true
+            exit 1
+          else
+            echo "⚠️  App profile file not found, but using bundle ID: $APP_PROFILE_UUID"
+            APP_PROFILE_FILE=""
+          fi
+        else
+          echo "✅ App profile found: $APP_PROFILE_FILE"
+        fi
+        
+        if [ ! -f "$EXT_PROFILE_FILE" ]; then
+          if [[ "$EXT_PROFILE_UUID" =~ ^[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}$ ]]; then
+            echo "❌ Extension profile not found: $EXT_PROFILE_FILE"
+            ls -la "$PROFILE_DIR" || true
+            exit 1
+          else
+            echo "⚠️  Extension profile file not found, but using bundle ID: $EXT_PROFILE_UUID"
+            EXT_PROFILE_FILE=""
+          fi
+        else
+          echo "✅ Extension profile found: $EXT_PROFILE_FILE"
+        fi
+        
+        # Сохранить пути в переменные окружения для следующих шагов
+        echo "APP_PROFILE_FILE=$APP_PROFILE_FILE" >> $GITHUB_ENV
+        echo "EXT_PROFILE_FILE=$EXT_PROFILE_FILE" >> $GITHUB_ENV
+        
+    - name: Diagnose Profiles and Certificates
+      env:
+        APP_PROFILE_FILE: ${{ env.APP_PROFILE_FILE }}
+        EXT_PROFILE_FILE: ${{ env.EXT_PROFILE_FILE }}
+        KEYCHAIN_PATH: ${{ env.KEYCHAIN_PATH }}
+        DIST_CERT_NAME: ${{ env.DIST_CERT_NAME }}
+        APP_PROFILE_UUID: ${{ env.APP_PROFILE_UUID }}
+        EXT_PROFILE_UUID: ${{ env.EXT_PROFILE_UUID }}
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        if [ "${{ env.CERTIFICATE_AVAILABLE }}" != "true" ]; then
+          exit 0
+        fi
+        
+        echo "✅ Используем Manual signing с установленными профилями"
+        echo "Team ID: $APPLE_TEAM_ID"
+        echo "Certificate: $DIST_CERT_NAME"
+        echo "App Profile: $APP_PROFILE_UUID (file: $APP_PROFILE_FILE)"
+        echo "Extension Profile: $EXT_PROFILE_UUID (file: $EXT_PROFILE_FILE)"
+        
+        # Проверить профили
+        if [ -f "$APP_PROFILE_FILE" ]; then
+          echo "📋 App Profile:"
+          APP_PROFILE_XML=$(security cms -D -i "$APP_PROFILE_FILE" 2>/dev/null)
+          if [ -n "$APP_PROFILE_XML" ]; then
+            APP_PROFILE_NAME=$(echo "$APP_PROFILE_XML" | plutil -extract Name raw -o - - 2>/dev/null || echo "unknown")
+            APP_PROFILE_BUNDLE_ID=$(echo "$APP_PROFILE_XML" | plutil -extract Entitlements.application-identifier raw -o - - 2>/dev/null || echo "unknown")
+            echo "   Name: $APP_PROFILE_NAME"
+            echo "   Bundle ID: $APP_PROFILE_BUNDLE_ID"
+          fi
+        fi
+        
+        if [ -f "$EXT_PROFILE_FILE" ]; then
+          echo "📋 Extension Profile:"
+          EXT_PROFILE_XML=$(security cms -D -i "$EXT_PROFILE_FILE" 2>/dev/null)
+          if [ -n "$EXT_PROFILE_XML" ]; then
+            EXT_PROFILE_NAME=$(echo "$EXT_PROFILE_XML" | plutil -extract Name raw -o - - 2>/dev/null || echo "unknown")
+            EXT_PROFILE_BUNDLE_ID=$(echo "$EXT_PROFILE_XML" | plutil -extract Entitlements.application-identifier raw -o - - 2>/dev/null || echo "unknown")
+            echo "   Name: $EXT_PROFILE_NAME"
+            echo "   Bundle ID: $EXT_PROFILE_BUNDLE_ID"
+          fi
+        fi
+        
+        # Проверить сертификаты
+        echo "📋 Сертификаты в keychain:"
+        KEYCHAIN_CERTS=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" 2>/dev/null | grep -i "distribution" || echo "")
+        if [ -n "$KEYCHAIN_CERTS" ]; then
+          echo "$KEYCHAIN_CERTS"
+          KEYCHAIN_CERT_HASH=$(echo "$KEYCHAIN_CERTS" | awk '{print $2}' | head -1)
+          echo "   Fingerprint (SHA-1): $KEYCHAIN_CERT_HASH"
+        fi
+        
+    - name: Build Archive with Fastlane
+      env:
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+        APP_PROFILE_UUID: ${{ env.APP_PROFILE_UUID }}
+        EXT_PROFILE_UUID: ${{ env.EXT_PROFILE_UUID }}
+        DIST_CERT_NAME: ${{ env.DIST_CERT_NAME }}
+        KEYCHAIN_PATH: ${{ env.KEYCHAIN_PATH }}
+        KEYCHAIN_PASSWORD: ${{ env.KEYCHAIN_PASSWORD }}
+      run: |
+        if [ "${{ env.CERTIFICATE_AVAILABLE }}" != "true" ]; then
+          echo "⚠️  Certificate not available"
+          echo "⚠️  Пробуем Automatic signing (может не работать в CI)"
+          
+          if [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
+             [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
+             [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
+            echo "✅ App Store Connect API keys found, trying Automatic signing"
+            mkdir -p ~/.appstoreconnect/private_keys
+            echo "${{ secrets.APP_STORE_CONNECT_API_KEY }}" > ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+            chmod 600 ~/.appstoreconnect/private_keys/AuthKey_${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}.p8
+            
+            xcodebuild archive \
+              -project ALADDIN.xcodeproj \
+              -scheme ALADDIN \
+              -configuration Release \
+              -archivePath ./build/ALADDIN.xcarchive \
+              -destination 'generic/platform=iOS' \
+              CODE_SIGN_STYLE=Automatic \
+              DEVELOPMENT_TEAM="$APPLE_TEAM_ID" \
+              -allowProvisioningUpdates \
+              2>&1 | tee /tmp/xcodebuild.log || {
+                echo "❌ Automatic signing failed"
+                tail -50 /tmp/xcodebuild.log
+                exit 1
+              }
+          else
+            echo "❌ App Store Connect API keys not set!"
+            exit 1
+          fi
+          exit 0
+        fi
+        
+        echo "🚀 Запуск Fastlane для сборки архива..."
+        export APPLE_TEAM_ID="$APPLE_TEAM_ID"
+        export KEYCHAIN_PATH="$KEYCHAIN_PATH"
+        export KEYCHAIN_PASSWORD="$KEYCHAIN_PASSWORD"
+        export APP_PROFILE_UUID="$APP_PROFILE_UUID"
+        export PROVISIONING_PROFILE_EXTENSION_UUID="$EXT_PROFILE_UUID"
+        export EXT_PROFILE_UUID="$EXT_PROFILE_UUID"
+        export DIST_CERT_NAME="$DIST_CERT_NAME"
+        
+        fastlane ios build_archive || {
+          echo "❌ Fastlane build_archive failed"
+          ls -la ~/Library/MobileDevice/Provisioning\ Profiles/ || true
+          exit 1
+        }
+        
+    - name: List Archive Contents
+      run: |
+        echo "Checking archive..."
+        ls -la ./build/ALADDIN.xcarchive/Products/Applications/ 2>&1 || echo "Archive not found or empty"
+        
+    - name: Export IPA
+      env:
+        APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
+      run: |
+        echo "Exporting IPA..."
+        mkdir -p ./build/export
+        
+        # Извлечь UUID профилей для ExportOptions
+        APP_PROFILE_UUID="${{ env.APP_PROFILE_UUID }}"
+        EXT_PROFILE_UUID="${{ env.EXT_PROFILE_UUID }}"
+        
+        # Если UUID не извлечены, используем bundle ID (Xcode найдет профили автоматически)
+        if [ -z "$APP_PROFILE_UUID" ]; then
+          APP_PROFILE_UUID="family.aladdin.ios"
+        fi
+        # Extension UUID только если target существует
+        if [ "${{ env.EXTENSION_EXISTS }}" = "true" ]; then
+          if [ -z "$EXT_PROFILE_UUID" ]; then
+            EXT_PROFILE_UUID="family.aladdin.ios.ALADDINContentBlocker"
+          fi
+        else
+          EXT_PROFILE_UUID=""
+          echo "✅ Extension target removed - will not include extension in ExportOptions.plist"
+        fi
+        
+        # Определить стиль подписи (Manual - приоритет, так как работает в CI)
+        # Если есть сертификат - используем Manual, иначе Automatic (может не работать)
+        if [ "${{ env.CERTIFICATE_AVAILABLE }}" = "true" ]; then
+          SIGNING_STYLE="manual"
+          echo "✅ Using Manual signing for export (работает в CI)"
+        elif [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
+             [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
+             [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
+          SIGNING_STYLE="automatic"
+          echo "⚠️  Using Automatic signing for export (может не работать в CI)"
+        else
+          SIGNING_STYLE="manual"
+          echo "⚠️  Using Manual signing for export (fallback)"
+        fi
+        
+        # Создать ExportOptions.plist
+        if [ "$SIGNING_STYLE" = "automatic" ]; then
+          # Automatic signing - Xcode выберет профили автоматически
+          printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>method</key>\n  <string>app-store</string>\n  <key>teamID</key>\n  <string>%s</string>\n  <key>signingStyle</key>\n  <string>automatic</string>\n  <key>uploadBitcode</key>\n  <false/>\n  <key>uploadSymbols</key>\n  <true/>\n  <key>compileBitcode</key>\n  <false/>\n</dict>\n</plist>\n' "$APPLE_TEAM_ID" > ./build/ExportOptions.plist
+        else
+          # Manual signing - используем установленные профили
+          if [ "${{ env.EXTENSION_EXISTS }}" = "true" ] && [ -n "$EXT_PROFILE_UUID" ]; then
+            # С extension
+            printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>method</key>\n  <string>app-store</string>\n  <key>teamID</key>\n  <string>%s</string>\n  <key>signingStyle</key>\n  <string>manual</string>\n  <key>signingCertificate</key>\n  <string>Apple Distribution</string>\n  <key>provisioningProfiles</key>\n  <dict>\n    <key>family.aladdin.ios</key>\n    <string>%s</string>\n    <key>family.aladdin.ios.ALADDINContentBlocker</key>\n    <string>%s</string>\n  </dict>\n  <key>uploadBitcode</key>\n  <false/>\n  <key>uploadSymbols</key>\n  <true/>\n  <key>compileBitcode</key>\n  <false/>\n</dict>\n</plist>\n' "$APPLE_TEAM_ID" "$APP_PROFILE_UUID" "$EXT_PROFILE_UUID" > ./build/ExportOptions.plist
+          else
+            # Без extension
+            printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>method</key>\n  <string>app-store</string>\n  <key>teamID</key>\n  <string>%s</string>\n  <key>signingStyle</key>\n  <string>manual</string>\n  <key>signingCertificate</key>\n  <string>Apple Distribution</string>\n  <key>provisioningProfiles</key>\n  <dict>\n    <key>family.aladdin.ios</key>\n    <string>%s</string>\n  </dict>\n  <key>uploadBitcode</key>\n  <false/>\n  <key>uploadSymbols</key>\n  <true/>\n  <key>compileBitcode</key>\n  <false/>\n</dict>\n</plist>\n' "$APPLE_TEAM_ID" "$APP_PROFILE_UUID" > ./build/ExportOptions.plist
+          fi
+        fi
+        
+        xcodebuild -exportArchive \
+          -archivePath ./build/ALADDIN.xcarchive \
+          -exportPath ./build/export \
+          -exportOptionsPlist ./build/ExportOptions.plist
+        
+        echo "Checking exported files..."
+        ls -la ./build/export/ 2>&1 || echo "Export directory not found"
+        
+        # Найти .ipa файл
+        IPA_FILE=$(find ./build/export -name "*.ipa" | head -1)
+        echo "IPA file: $IPA_FILE"
+        if [ -z "$IPA_FILE" ]; then
+          echo "Error: IPA file not found!"
+          exit 1
+        fi
+        echo "IPA_FILE_PATH=$IPA_FILE" >> $GITHUB_ENV
+        
+    - name: Setup App Store Connect API keys
+      run: |
+        # Устанавливаем переменные окружения глобально для следующих шагов
+        if [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY }}" ] && \
+           [ -n "${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}" ] && \
+           [ -n "${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}" ]; then
+          echo "✅ App Store Connect API keys are set"
+          echo "APP_STORE_CONNECT_API_KEY_SET=true" >> $GITHUB_ENV
+          echo "APP_STORE_CONNECT_ISSUER_ID_SET=true" >> $GITHUB_ENV
+          echo "APP_STORE_CONNECT_API_KEY_ID_SET=true" >> $GITHUB_ENV
+        else
+          echo "⚠️ App Store Connect API keys not set"
+          echo "IPA file will be available as artifact for manual upload"
+          echo "APP_STORE_CONNECT_API_KEY_SET=false" >> $GITHUB_ENV
+        fi
+        
+        # Проверяем, что IPA файл существует
+        if [ ! -f "${{ env.IPA_FILE_PATH }}" ]; then
+          echo "Error: IPA file not found at ${{ env.IPA_FILE_PATH }}"
+          exit 1
+        fi
+        
+        echo "IPA file found: ${{ env.IPA_FILE_PATH }}"
+        echo "Ready to upload to App Store Connect"
+        
+    - name: Upload to App Store Connect using apple-actions
+      if: env.APP_STORE_CONNECT_API_KEY_SET == 'true'
+      uses: apple-actions/upload-testflight-build@v1
+      with:
+        app-path: ${{ env.IPA_FILE_PATH }}
+        api-private-key: ${{ secrets.APP_STORE_CONNECT_API_KEY }}
+        issuer-id: ${{ secrets.APP_STORE_CONNECT_ISSUER_ID }}
+        api-key-id: ${{ secrets.APP_STORE_CONNECT_API_KEY_ID }}
+        
+    - name: Upload IPA as artifact
+      uses: actions/upload-artifact@v4
+      if: always() && env.IPA_FILE_PATH != ''
+      with:
+        name: ALADDIN-IPA
+        path: ${{ env.IPA_FILE_PATH }}
+        retention-days: 30
+        if-no-files-found: warn
+        
+    - name: Cleanup Keychain
+      if: always() && env.CERTIFICATE_AVAILABLE == 'true'
+      run: |
+        echo "Cleaning up keychain..."
+        if [ -n "${{ env.KEYCHAIN_PATH }}" ] && [ -f "${{ env.KEYCHAIN_PATH }}" ]; then
+          security delete-keychain "${{ env.KEYCHAIN_PATH }}" 2>/dev/null || true
+          echo "✅ Keychain cleaned up"
+        fi
