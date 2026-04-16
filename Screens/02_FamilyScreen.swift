@@ -25,6 +25,19 @@ struct FamilyScreen: View {
     private let currentUserNameKey = "current_user_name"
     private let familyIdKey = "family_id"
     private let familyMemberSeededKey = "family_member_seeded_once"
+    private let familyAdditionOrderKey = "family_addition_order"  // ✅ Stable addition order: new members ALWAYS at bottom. Preserved across syncs.
+
+    // Computed property for stable addition order (persisted across app restarts and syncs)
+    private var familyAdditionOrder: [String] {
+        get {
+            UserDefaults.standard.stringArray(forKey: familyAdditionOrderKey) ?? []
+        }
+        set {
+            UserDefaults.standard.set(newValue, forKey: familyAdditionOrderKey)
+            UserDefaults.standard.synchronize()
+            VisualLogger.shared.log("📋 FAMILY ORDER updated: \(newValue.count) entries [\(newValue.joined(separator: ","))]", level: .debug, category: "FAMILY")
+        }
+    }
     
     // Динамический список участников семьи (до 10 человек)
     @State private var familyMembers: [FamilyMemberData] = []
@@ -136,7 +149,15 @@ struct FamilyScreen: View {
     
     // MARK: - Navigation Helper
     
+    @Environment(\.dismiss) private var dismiss
+    
     private func navigateToMemberScreen(role: FamilyMemberCard.FamilyRole) {
+        // Prevent duplicate navigation calls
+        if lastFamilyOperationTime.timeIntervalSinceNow > -0.5 {
+            print("⚠️ [FamilyScreen] Navigation debounced - too soon after previous action")
+            return
+        }
+        lastFamilyOperationTime = Date()
         // ✅ ШАГ 1: При переходе в профиль родителя/ребёнка — сохраняем информацию для принудительного обновления при возврате
         print("🚨 navigateToMemberScreen triggered for \(role) — will force refresh on return")
         UserDefaults.standard.set(true, forKey: "needs_family_refresh_on_return")
@@ -439,17 +460,19 @@ struct FamilyScreen: View {
                     
                     var mergedMembers = Array(mergedById.values)
                     
-                    // ✅ FIXED ORDER: New members go to the BOTTOM of the list
-                    // Existing members preserve their original addition order
+                    // ✅ STABLE ORDER using persisted familyAdditionOrder (new members ALWAYS at BOTTOM across syncs/restarts)
+                    // Prioritizes additionOrder, falls back to current local order for robustness
+                    let additionOrder = self.familyAdditionOrder
                     let localOrder = localBefore.map { $0.id }
                     mergedMembers.sort { (a, b) in
-                        let indexA = localOrder.firstIndex(of: a.id) ?? Int.max
-                        let indexB = localOrder.firstIndex(of: b.id) ?? Int.max
+                        let indexA = additionOrder.firstIndex(of: a.id) ?? localOrder.firstIndex(of: a.id) ?? Int.max
+                        let indexB = additionOrder.firstIndex(of: b.id) ?? localOrder.firstIndex(of: b.id) ?? Int.max
                         if indexA == Int.max && indexB == Int.max {
-                            return false // New members stay at the end (stable)
+                            return false // New members (not in order) stay at the END (stable)
                         }
                         return indexA < indexB
                     }
+                    VisualLogger.shared.log("📋 FAMILY ORDER: sorted using additionOrder(\(additionOrder.count)) + local(\(localOrder.count))", level: .debug, category: "FAMILY")
 
                     let serverIdSet = Set(convertedMembers.map { $0.id })
                     let localIdSet = Set(localBefore.map { $0.id })
@@ -589,6 +612,15 @@ struct FamilyScreen: View {
             }
             
             familyMembers.append(memberToAdd)
+            
+            // ✅ STABLE ORDER: Append new member ID to persisted additionOrder (ensures it stays at BOTTOM)
+            var currentOrder = familyAdditionOrder
+            if !currentOrder.contains(memberToAdd.id) {
+                currentOrder.append(memberToAdd.id)
+                familyAdditionOrder = currentOrder
+                VisualLogger.shared.log("📋 FAMILY ORDER: appended new member \(memberToAdd.name) (id=\(memberToAdd.id)) — now at bottom", level: .info, category: "FAMILY")
+            }
+            
             saveFamilyMembers()
             print("✅ Added new family member: \(memberToAdd.name) (\(memberToAdd.role)) [serverId=\(memberToAdd.serverMemberId ?? "pending")]")
             VisualLogger.shared.log("➕ FAMILY ADD(local): \(memberToAdd.name) [\(memberToAdd.role)] serverId=\(memberToAdd.serverMemberId ?? "pending")", level: .info, category: "FAMILY")
@@ -1075,6 +1107,17 @@ struct FamilyScreen: View {
         // Reset counters (only once) - no more aggressive pruning
         notSeenCounters.removeAll()
         UserDefaults.standard.set(0, forKey: "family_sync_partial_retry_count")
+        
+        // ✅ STABLE ORDER: Sync additionOrder with current cleaned list (prune deleted members, keep new at end)
+        let currentIds = familyMembers.map { $0.id }
+        var updatedOrder = familyAdditionOrder.filter { currentIds.contains($0) }
+        for id in currentIds where !updatedOrder.contains(id) {
+            updatedOrder.append(id)
+        }
+        if updatedOrder != familyAdditionOrder {
+            familyAdditionOrder = updatedOrder
+            VisualLogger.shared.log("📋 FAMILY ORDER synced after cleanup: \(updatedOrder.count) entries", level: .debug, category: "FAMILY")
+        }
     }
     
     // Вспомогательная функция для получения аватара по роли
@@ -1292,16 +1335,12 @@ struct FamilyScreen: View {
                 HStack {
                     Button(action: {
                         logger.buttonTap("Back", screen: "Family")
-                        // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
-                        // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
-                        dismiss()
+                        VisualLogger.shared.log("⬅️ Back button tapped on FamilyScreen → navigating to main", level: .info, category: "NAVIGATION")
+                        print("🔙 [FamilyScreen] Back button tapped - using switchToMainScreen()")
                         
-                        // Дополнительно синхронизируем NavigationManager для корректной работы стека
-                        DispatchQueue.main.async {
-                            if navigationManager.canGoBack {
-                                navigationManager.goBack()
-                            }
-                        }
+                        // ✅ ПРЯМОЙ И НАДЁЖНЫЙ ПЕРЕХОД НА ГЛАВНЫЙ ЭКРАН
+                        // После всех правок навигации это самый стабильный способ
+                        navigationManager.switchToMainScreen()
                     }) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20, weight: .medium))

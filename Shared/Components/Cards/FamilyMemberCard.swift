@@ -237,8 +237,8 @@ struct FamilyMemberCard: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         .disabled(isDeleteDisabled)
-                        .padding(.top, 6)
-                        .padding(.trailing, 6)
+                        .padding(.top, 12)   // ✅ lowered to not overlap "Сервер" text
+                        .padding(.trailing, 8)
                     }
                     Spacer()
                 }
