@@ -88,6 +88,8 @@ class NavigationManager: ObservableObject {
         case widgetConfiguration = "WidgetConfigurationScreen"
         case rewardsModal = "RewardsModalView"
         case rewardsQuickModal = "RewardsQuickModal"
+        case qrCode = "QRCodeModal"
+        case invitationCode = "InvitationCodeInputModal"
         
         var displayName: String {
             switch self {
@@ -129,6 +131,8 @@ class NavigationManager: ObservableObject {
             case .widgetConfiguration: return "Настройка виджетов"
             case .rewardsModal: return "Модальное окно наград"
             case .rewardsQuickModal: return "Быстрое окно наград"
+            case .qrCode: return "QR код"
+            case .invitationCode: return "Ввод кода приглашения"
             case .youngDefender: return "Юный защитник"
             case .familyProtector: return "Я защитник семьи"
             case .childGoalEditor: return "Моя цель"
@@ -188,6 +192,8 @@ class NavigationManager: ObservableObject {
             case .threatProtectionSettings: return "gearshape.2.fill"
             case .iotSecurity: return "wifi"
             case .advancedProtection: return "lock.shield.fill"
+            case .qrCode: return "qrcode"
+            case .invitationCode: return "keyboard"
             }
         }
     }
