@@ -275,7 +275,7 @@ class FamilyRegistrationViewModel: ObservableObject {
         showLetterModal = true
     }
     
-    func onLetterSelected(_ letter: String) {
+    @MainActor func onLetterSelected(_ letter: String) {
         selectedLetter = letter
         showLetterModal = false
         
@@ -305,7 +305,7 @@ class FamilyRegistrationViewModel: ObservableObject {
     
     // MARK: - Create Family
     
-    func createFamily() {
+    @MainActor func createFamily() {
         logger.business("Creating family with role: \(selectedRole?.rawValue ?? "none")")
         
         // ✅ CRITICAL FIX: Always reset admin_add_mode for new user registration/onboarding
@@ -382,10 +382,29 @@ class FamilyRegistrationViewModel: ObservableObject {
         }
         userName = "\(roleName) \(letter)"
 
-        // ✅ ИНТЕГРАЦИЯ ДОБАВЛЕНИЯ УЧАСТНИКА: Если мы в режиме admin_add_mode, 
-        // добавляем участника в ТЕКУЩУЮ семью, а не создаем новую.
+        // ✅ UPDATED: Uses single source SubscriptionManager.canAddFamilyMember (no more duplicate logic)
+        // This unifies admin_add_mode with FamilyScreen and eliminates bypass.
         if UserDefaults.standard.bool(forKey: "admin_add_mode") {
             logger.business("========== ADDING MEMBER (admin-add mode) ==========")
+            
+            // Load current family count for accurate check
+            var currentCount = 1 // at least the creator
+            if let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
+               let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
+                currentCount = decoded.count
+            }
+            
+            let (allowed, message, _) = SubscriptionManager.shared.canAddFamilyMember(currentCount: currentCount)
+            if !allowed {
+                let limit = SubscriptionManager.currentFamilyLimit
+                logger.business("🚫 TARIFF LIMIT REACHED in admin_add_mode: \(currentCount)/\(limit)")
+                VisualLogger.shared.log("🚫 TARIFF LIMIT: cannot add more members (\(currentCount)/\(limit))", level: .warning, category: "FAMILY")
+                self.errorMessage = message ?? "Лимит участников для вашего тарифа достигнут. Обновите тариф."
+                self.isLoading = false
+                UserDefaults.standard.set(false, forKey: "admin_add_mode")
+                UserDefaults.standard.synchronize()
+                return
+            }
             
             Task {
                 do {

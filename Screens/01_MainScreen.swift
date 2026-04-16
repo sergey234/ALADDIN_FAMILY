@@ -675,9 +675,15 @@ struct MainScreen: View {
                                     .font(.system(size: 9))
                                     .foregroundColor(.black)
 
-                                Text("\(localizationManager.localized("main_family_tariff_label")) \(currentTariffDisplayName)")
-                                    .font(.system(size: 9, weight: .semibold))
-                                    .foregroundColor(.black)
+                                // ✅ IMPROVED: Dynamic tariff name with color accent and icon
+                                HStack(spacing: 4) {
+                                    Image(systemName: tariffIconForCurrentLevel())
+                                        .font(.system(size: 10))
+                                        .foregroundColor(currentTariffColor)
+                                    Text("\(localizationManager.localized("main_family_tariff_label")) \(currentTariffDisplayName)")
+                                        .font(.system(size: 9, weight: .semibold))
+                                        .foregroundColor(.black)
+                                }
 
                                 if let expirationText = cachedExpirationText {
                                     Text("\(localizationManager.localized("main_family_subscription_valid_until")) \(expirationText)")
@@ -724,20 +730,20 @@ struct MainScreen: View {
                         }
                         .padding(12)
                         .background(
-                            RoundedRectangle(cornerRadius: 10)
+                            RoundedRectangle(cornerRadius: 12)
                                 .fill(
                                     LinearGradient(
-                                        colors: [Color.secondaryGold, Color.secondaryGold.opacity(0.8)],
+                                        colors: [currentTariffColor, currentTariffColor.opacity(0.85)],
                                         startPoint: .topLeading,
                                         endPoint: .bottomTrailing
                                     )
                                 )
                                 .overlay(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .stroke(Color.secondaryGold, lineWidth: 2)
+                                    RoundedRectangle(cornerRadius: 12)
+                                        .stroke(currentTariffColor.opacity(0.6), lineWidth: 2)
                                 )
                         )
-                        .shadow(color: Color.secondaryGold.opacity(0.3), radius: 8)
+                        .shadow(color: currentTariffColor.opacity(0.4), radius: 10, x: 0, y: 4)
                         .padding(.horizontal, 20)
                         
                         // AI помощник
@@ -794,10 +800,42 @@ struct MainScreen: View {
                     // Синхронизируем счетчик на главной с тем же storage, что и FamilyScreen.
                     mainViewModel.refreshFamilyMembersCountFromStorage()
                 }
+                // ✅ NEW: React to tariff changes from TariffsScreen, SubscriptionManager, or forceSync
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SubscriptionUpdated"))) { notification in
+                    if let level = notification.userInfo?["level"] as? String {
+                        print("🔄 [MainScreen] Received SubscriptionUpdated notification: \(level)")
+                    }
+                    // Trigger UI refresh
+                    mainViewModel.requestRefreshDebounced()
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("tariffPurchased"))) { notification in
+                    print("🎉 [MainScreen] Received tariffPurchased notification - forcing tariff refresh")
+                    if let tariffType = notification.userInfo?["tariff"] as? String {
+                        print("   Tariff: \(tariffType)")
+                    }
+                    Task { await subscriptionManager.forceSync() }
+                    mainViewModel.requestRefreshDebounced()
+                }
+                .onChange(of: subscriptionManager.currentSubscription) { _ in
+                    print("🔄 [MainScreen] currentSubscription changed - refreshing tariff display")
+                    mainViewModel.requestRefreshDebounced()
+                }
+                .onChange(of: subscriptionManager.getCurrentLevel()) { _ in
+                    print("🔄 [MainScreen] getCurrentLevel() changed - tariff UI will update")
+                }
+                .onAppear {
+                    // Force sync when returning to main screen to ensure latest tariff is shown
+                    Task {
+                        await subscriptionManager.forceSync()
+                        print("🔄 [MainScreen] onAppear: forceSync completed for tariff display")
+                    }
+                }
     }
 
     private var currentTariffDisplayName: String {
-        let level = subscriptionManager.currentSubscription?.level ?? .free
+        // ✅ FIXED: Use single source of truth from SubscriptionManager
+        // getCurrentLevel() is more reliable than currentSubscription?.level
+        let level = subscriptionManager.getCurrentLevel()
         switch level {
         case .trial:
             return localizationManager.localized("tariffs_trial")
@@ -809,6 +847,28 @@ struct MainScreen: View {
             return localizationManager.localized("tariffs_family")
         case .premium:
             return localizationManager.localized("tariffs_premium")
+        }
+    }
+
+    // Helper to get tariff color for UI accent
+    private var currentTariffColor: Color {
+        let level = subscriptionManager.getCurrentLevel()
+        switch level {
+        case .free, .trial: return .secondaryGold
+        case .personal: return .blue
+        case .family: return .purple
+        case .premium: return .orange
+        }
+    }
+
+    // Helper for SF Symbols icon based on current tariff level
+    private func tariffIconForCurrentLevel() -> String {
+        let level = subscriptionManager.getCurrentLevel()
+        switch level {
+        case .free, .trial: return "shield.fill"
+        case .personal: return "person.fill"
+        case .family: return "person.2.fill"
+        case .premium: return "crown.fill"
         }
     }
 

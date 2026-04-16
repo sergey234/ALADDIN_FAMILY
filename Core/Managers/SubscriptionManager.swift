@@ -142,6 +142,13 @@ final class SubscriptionManager: ObservableObject {
     /// Used by MainViewModel.onAppear() to prevent loading before auth is ready
     @Published private(set) var isInitialized: Bool = false
 
+    /// Current family member limit based on active tariff (single source of truth)
+    /// Updated from SubscriptionLevel and X-Family-Limit headers
+    @Published private(set) var currentFamilyLimit: Int = 3
+
+    /// Remaining family member slots (synced from headers or calculated)
+    @Published private(set) var currentFamilyRemaining: Int = 2
+
     /// Events tracking
     private let eventsQueue = DispatchQueue(label: "com.aladdin.subscription.events")
     private var pendingEvents: [SubscriptionEventData] = []
@@ -621,6 +628,48 @@ final class SubscriptionManager: ObservableObject {
             return .trial
         }
         return currentSubscription?.level ?? .free
+    }
+
+    /// Family member limit by tariff level (confirmed mapping: free=1, trial/personal=3, family=6, premium=10)
+    /// Single source of truth used by all add flows
+    func familyMemberLimit(for level: SubscriptionLevel) -> Int {
+        switch level {
+        case .free:
+            return 1
+        case .trial, .personal:
+            return 3
+        case .family:
+            return 6
+        case .premium:
+            return 10
+        }
+    }
+
+    /// Central guard for adding family members. Used by FamilyScreen, FamilyRegistrationViewModel, AddMemberOptionsScreen.
+    /// Returns whether allowed, user-facing message if blocked, and whether upgrade is suggested.
+    func canAddFamilyMember(currentCount: Int) -> (allowed: Bool, message: String?, upgradeSuggested: Bool) {
+        let limit = currentFamilyLimit
+        let remaining = currentFamilyRemaining
+
+        if limit > 0 && currentCount >= limit {
+            let msg = "Лимит участников для вашего тарифа (\(limit)) достигнут. Обновите тариф чтобы добавить больше участников."
+            return (false, msg, true)
+        }
+
+        if remaining <= 0 && limit > 0 {
+            let msg = "Осталось 0 мест по тарифу (\(limit)). Обновите подписку."
+            return (false, msg, true)
+        }
+
+        return (true, nil, false)
+    }
+
+    /// Safe, non-isolated access to current family limit for use in completion handlers, error paths, and non-MainActor contexts.
+    /// Falls back to UserDefaults (which is always updated together with the published property).
+    /// Marked nonisolated to satisfy Swift 6 concurrency rules when called from APIService completion blocks.
+    nonisolated static var currentFamilyLimit: Int {
+        let fromDefaults = UserDefaults.standard.integer(forKey: "family_limit")
+        return fromDefaults > 0 ? fromDefaults : 3 // default to personal/trial limit
     }
 
     /// 🔑 Get current JWT token for API requests
@@ -1179,6 +1228,30 @@ final class SubscriptionManager: ObservableObject {
         currentSubscription = status
         persistSubscriptionStatus(status)
         logger.business("📊 Subscription updated: \(status.level)")
+
+        // ✅ SINGLE SOURCE OF TRUTH: Update both UserDefaults (for legacy) and published properties
+        // Uses exact confirmed mapping: free=1, trial/personal=3, family=6, premium=10
+        let tariffBasedLimit = familyMemberLimit(for: status.level)
+        let calculatedRemaining = max(0, tariffBasedLimit - (currentSubscription?.limits.currentUsage.devices ?? 1))
+
+        // Update legacy storage for backward compatibility with FamilyScreen and VM
+        UserDefaults.standard.set(tariffBasedLimit, forKey: "family_limit")
+        UserDefaults.standard.set(calculatedRemaining, forKey: "family_remaining")
+        UserDefaults.standard.synchronize()
+
+        // Update reactive published properties (new single source)
+        self.currentFamilyLimit = tariffBasedLimit
+        self.currentFamilyRemaining = calculatedRemaining
+
+        VisualLogger.shared.log("🔄 TARIFF→FAMILY SYNC: level=\(status.level), family_limit=\(tariffBasedLimit), remaining=\(calculatedRemaining) (published + UserDefaults)", level: .info, category: "FAMILY")
+        logger.business("🔄 Tariff sync: family_limit=\(tariffBasedLimit) for \(status.level.rawValue) tariff (single source updated)")
+
+        // ✅ NEW: Broadcast subscription update so MainScreen and other views can react immediately
+        NotificationCenter.default.post(
+            name: Notification.Name("SubscriptionUpdated"),
+            object: nil,
+            userInfo: ["level": status.level.rawValue, "limit": tariffBasedLimit]
+        )
     }
 
     /// 🎁 Update trial status
@@ -1612,6 +1685,9 @@ extension SubscriptionManager {
     private func updateFromServerStatus(_ serverStatus: SubscriptionStatus) async {
         // Convert server response to local model
         let subscriptionLevel = serverStatus.level
+
+        // Update family limits from server status (ensures sync after restore/sync)
+        await updateSubscriptionStatus(serverStatus)
 
         // 🔬 DIAGNOSTICS: Testing in another sync context (updateFromServerStatus)
         #if DEBUG

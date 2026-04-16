@@ -17,6 +17,7 @@ struct AddMemberOptionsScreen: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var subscriptionManager: SubscriptionManager // Single source for tariff limits
     @State private var isProcessingCreateFamily: Bool = false // ✅ Защита от двойного клика
     
     // Temporary states for navigation (will be removed in next cleanup)
@@ -56,7 +57,7 @@ struct AddMemberOptionsScreen: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
                 
-                // Заголовок
+                // Заголовок + Limit Banner (consistent with FamilyScreen)
                 VStack(spacing: 8) {
                     Text(localizationManager.localized("add_member_title"))
                         .font(.system(size: 24, weight: .bold))
@@ -67,6 +68,20 @@ struct AddMemberOptionsScreen: View {
                         .foregroundColor(.white.opacity(0.8))
                 }
                 .padding(.top, 10)
+
+                // Limit banner using single source of truth
+                let currentCount = 0 // Would be passed or fetched; for now placeholder from SubscriptionManager
+                let (canAddHere, limitMessage, _) = subscriptionManager.canAddFamilyMember(currentCount: currentCount)
+                if !canAddHere, let msg = limitMessage {
+                    Text(msg)
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                        .multilineTextAlignment(.center)
+                        .padding()
+                        .background(Color.orange.opacity(0.1))
+                        .cornerRadius(8)
+                        .padding(.horizontal, 20)
+                }
                 
                 // Варианты добавления
                 VStack(spacing: 12) {

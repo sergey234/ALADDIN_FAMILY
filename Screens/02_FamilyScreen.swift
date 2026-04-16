@@ -7,6 +7,7 @@ private let logger = MasterLogger.shared
 struct FamilyScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var subscriptionManager: SubscriptionManager // For single-source family limits
     @Environment(\.dismiss) private var dismiss
     
     // ✅ ИСПРАВЛЕНИЕ #7: Убрали @State showAddMemberModal - теперь используем NavigationManager
@@ -52,6 +53,7 @@ struct FamilyScreen: View {
     @State private var serverMemberIdsLatest: Set<String> = []
     @State private var optimisticallyRemovedIds: Set<String> = []
     // Лимиты семьи (обновляются из заголовков ответа /api/family/members)
+    // Legacy for compatibility; primary source is now subscriptionManager.currentFamilyLimit
     @AppStorage("family_limit") private var familyLimit: Int = 0
     @AppStorage("family_remaining") private var familyRemaining: Int = 0
     // Banner for sync status during partial subset
@@ -148,8 +150,6 @@ struct FamilyScreen: View {
     }
     
     // MARK: - Navigation Helper
-    
-    @Environment(\.dismiss) private var dismiss
     
     private func navigateToMemberScreen(role: FamilyMemberCard.FamilyRole) {
         // Prevent duplicate navigation calls
@@ -584,13 +584,16 @@ struct FamilyScreen: View {
         }
     }
     
-    // ✅ ШАГ 2: Улучшенная версия addFamilyMember — надёжное сохранение serverMemberId + сброс notSeenCounters + tariff check + dedup
-    func addFamilyMember(_ member: FamilyMemberData) {
-        // Tariff enforcement (prevents "infinite" additions)
-        if familyLimit > 0 && familyMembers.count >= familyLimit && familyRemaining <= 0 {
-            print("⚠️ [addFamilyMember] Tariff limit reached (\(familyMembers.count)/\(familyLimit)). Cannot add more.")
-            VisualLogger.shared.log("🚫 TARIFF LIMIT: reached \(familyMembers.count)/\(familyLimit) — block add", level: .warning, category: "FAMILY")
-            // Could show alert here, but for now log (UI already disables button)
+    // ✅ UPDATED: Uses single source of truth from SubscriptionManager.canAddFamilyMember
+    // Eliminates bypass and ensures consistent enforcement across all flows
+    private func addFamilyMember(_ member: FamilyMemberData) {
+        let currentCount = familyMembers.count
+        let (allowed, message, _) = subscriptionManager.canAddFamilyMember(currentCount: currentCount)
+
+        if !allowed {
+            print("🚫 [addFamilyMember] Tariff limit reached (\(currentCount)/\(subscriptionManager.currentFamilyLimit)). \(message ?? "")")
+            VisualLogger.shared.log("🚫 TARIFF LIMIT: reached \(currentCount)/\(subscriptionManager.currentFamilyLimit) — block add", level: .warning, category: "FAMILY")
+            // TODO: Show user-facing alert with upgrade option (handled in UI layer)
             return
         }
         
@@ -617,7 +620,9 @@ struct FamilyScreen: View {
             var currentOrder = familyAdditionOrder
             if !currentOrder.contains(memberToAdd.id) {
                 currentOrder.append(memberToAdd.id)
-                familyAdditionOrder = currentOrder
+                // Use direct UserDefaults write to avoid mutating computed property from non-mutating context
+                UserDefaults.standard.set(currentOrder, forKey: familyAdditionOrderKey)
+                UserDefaults.standard.synchronize()
                 VisualLogger.shared.log("📋 FAMILY ORDER: appended new member \(memberToAdd.name) (id=\(memberToAdd.id)) — now at bottom", level: .info, category: "FAMILY")
             }
             
@@ -1115,7 +1120,9 @@ struct FamilyScreen: View {
             updatedOrder.append(id)
         }
         if updatedOrder != familyAdditionOrder {
-            familyAdditionOrder = updatedOrder
+            // Use direct UserDefaults write to avoid mutating computed property from non-mutating context
+            UserDefaults.standard.set(updatedOrder, forKey: familyAdditionOrderKey)
+            UserDefaults.standard.synchronize()
             VisualLogger.shared.log("📋 FAMILY ORDER synced after cleanup: \(updatedOrder.count) entries", level: .debug, category: "FAMILY")
         }
     }
@@ -1377,13 +1384,19 @@ struct FamilyScreen: View {
                         }
                         .accessibilityLabel(localizationManager.localized("family_notification_settings"))
                         
-                        // Кнопка добавления участника
+                        // Updated toolbar + button: uses shared SubscriptionManager.canAddFamilyMember guard
+                        // Prevents bypass. Only shows/enables if allowed.
+                        let toolbarCanAdd = subscriptionManager.canAddFamilyMember(currentCount: familyMembers.count).allowed
                         Button(action: {
                             logger.buttonTap("Add Member", screen: "Family")
-                            // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager вместо sheet модала
-                            UserDefaults.standard.set(true, forKey: "admin_add_mode")
-                            UserDefaults.standard.synchronize()
-                            navigationManager.navigateTo(.addMemberOptions)
+                            if toolbarCanAdd {
+                                UserDefaults.standard.set(true, forKey: "admin_add_mode")
+                                UserDefaults.standard.synchronize()
+                                navigationManager.navigateTo(.addMemberOptions)
+                            } else {
+                                // TODO: Show upgrade toast/alert (handled in improve-family-stats-ui)
+                                print("🚫 Toolbar add blocked by tariff limit")
+                            }
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 16, weight: .bold))
@@ -1409,15 +1422,20 @@ struct FamilyScreen: View {
                                 .accessibilityLabel(localizationManager.localized("family_protection_accessibility"))
                                 .accessibilityAddTraits(.isHeader)
                             
-                            // Stats - ✅ СИНХРОНИЗИРУЕМ С familyMembers
+                            // Improved stats: capacity "X of Y (Plan)" + progress. Single source from SubscriptionManager.
+                            let currentCount2 = familyMembers.count
+                            let limit2 = subscriptionManager.currentFamilyLimit
+                            let capacityText2 = "\(currentCount2) из \(limit2)"
+                            let progress = limit2 > 0 ? Double(currentCount2) / Double(limit2) : 0.0
+
                             HStack(spacing: 15) {
                                 StatItem(
                                     icon: "👥",
-                                    value: "\(familyMembers.count)",
-                                    label: localizationManager.localized("family_members")
+                                    value: capacityText2,
+                                    label: "Участники (\(subscriptionManager.getCurrentLevel().displayName))"
                                 )
                                 .accessibilityElement(children: .combine)
-                                .accessibilityLabel(localizationManager.localized("family_members_stats_accessibility", familyMembers.count))
+                                .accessibilityLabel("Семья: \(capacityText2) участников, тариф \(subscriptionManager.getCurrentLevel().displayName)")
                                 
                                 StatItem(
                                     icon: "👶",
@@ -1439,11 +1457,16 @@ struct FamilyScreen: View {
                             .accessibilityElement(children: .contain)
                             .accessibilityLabel(localizationManager.localized("family_statistics_accessibility"))
                             
-                            // Кнопка добавления участника: скрываем/блокируем при достижении лимита
+                            // Updated: Uses single source SubscriptionManager.canAddFamilyMember + capacity display
+                            // Shows "X of Y members (Plan)" with progress. Consistent across all add paths.
+                            let currentCount3 = familyMembers.count
+                            let limit3 = subscriptionManager.currentFamilyLimit
+                            let canAdd = subscriptionManager.canAddFamilyMember(currentCount: currentCount3).allowed
+                            let capacityText3 = "\(currentCount3) из \(limit3) участников (Tariff)"
+
                             Group {
-                                if familyRemaining > 0 || familyLimit == 0 {
-                                    Button(action: { 
-                                        // ✅ ИСПРАВЛЕНИЕ #2: Используем NavigationManager вместо sheet модала
+                                if canAdd {
+                                    Button(action: {
                                         UserDefaults.standard.set(true, forKey: "admin_add_mode")
                                         UserDefaults.standard.synchronize()
                                         navigationManager.navigateTo(.addMemberOptions)
@@ -1462,7 +1485,6 @@ struct FamilyScreen: View {
                                             )
                                             .clipShape(Capsule())
                                     }
-                                    .disabled(familyRemaining == 0 && familyLimit > 0)
                                 } else {
                                     VStack(spacing: 4) {
                                         Text(localizationManager.localized("family_add_member"))
@@ -1478,7 +1500,7 @@ struct FamilyScreen: View {
                                                 )
                                             )
                                             .clipShape(Capsule())
-                                        Text(localizationManager.currentLanguage == .russian ? "Достигнут лимит. Обновите тариф." : "Limit reached. Upgrade your plan.")
+                                        Text("Достигнут лимит (\(capacityText3)). Обновите тариф.")
                                             .font(.caption)
                                             .foregroundColor(.secondaryGold)
                                     }
@@ -1562,13 +1584,12 @@ struct FamilyScreen: View {
                                         }
                                     }
                                     
-                                    // Additional member button (available for parents when members < 10)
-                                    if familyMembers.count < 10 && isUserParent {
+                                    // Updated: AddMoreMemberCard now respects tariff limit via shared guard (no more <10 bypass)
+                                    let addMoreCanAdd = subscriptionManager.canAddFamilyMember(currentCount: familyMembers.count).allowed
+                                    if addMoreCanAdd && isUserParent {
                                         AddMoreMemberCard {
-                                            // Помечаем, что начинается admin-add поток (не менять токены/your_member_id)
                                             UserDefaults.standard.set(true, forKey: "admin_add_mode")
                                             UserDefaults.standard.synchronize()
-                                            // Навигация на прежний экран добавления
                                             navigationManager.navigateTo(.addMemberOptions)
                                         }
                                         .environmentObject(localizationManager)

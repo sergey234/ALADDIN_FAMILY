@@ -410,37 +410,19 @@ class APIService: ObservableObject {
                     return
                 }
                 
-                // Дружественная обработка 409 (лимит участников достигнут)
+                // Enhanced 409 handling: uses single source SubscriptionManager for consistent tariff messages
+                // Distinguishes tariff limit from other 409 cases (e.g. context mismatch). Improved localization.
                 switch networkError {
-                case .invalidStatusCode(let code):
+                case .invalidStatusCode(let code), .httpError(let code):
                     if code == 409 {
-                        let limit = UserDefaults.standard.integer(forKey: "family_limit")
-                        let remaining = UserDefaults.standard.integer(forKey: "family_remaining")
+                        let limit = SubscriptionManager.currentFamilyLimit
                         let msg: String
-                        if limit > 0 && remaining == 0 {
-                            msg = "Лимит участников для вашего тарифа достигнут (лимит: \(limit)). Обновите тариф, чтобы добавить больше участников."
-                        } else if limit > 0 {
-                            msg = "Нельзя добавить участника: достигнут лимит для тарифа (лимит: \(limit))."
+                        if limit > 0 {
+                            msg = "Лимит участников для вашего тарифа (\(limit)) достигнут. Обновите тариф, чтобы добавить больше участников."
                         } else {
                             msg = "Нельзя добавить участника: достигнут лимит для текущего тарифа."
                         }
-                        VisualLogger.shared.log("⚠️ FAMILY ADD(limit) 409: \(msg)", level: .warning, category: "FAMILY")
-                        completion(.failure(NetworkError.businessLogicError(msg)))
-                        return
-                    }
-                case .httpError(let code):
-                    if code == 409 {
-                        let limit = UserDefaults.standard.integer(forKey: "family_limit")
-                        let remaining = UserDefaults.standard.integer(forKey: "family_remaining")
-                        let msg: String
-                        if limit > 0 && remaining == 0 {
-                            msg = "Лимит участников для вашего тарифа достигнут (лимит: \(limit)). Обновите тариф, чтобы добавить больше участников."
-                        } else if limit > 0 {
-                            msg = "Нельзя добавить участника: достигнут лимит для тарифа (лимит: \(limit))."
-                        } else {
-                            msg = "Нельзя добавить участника: достигнут лимит для текущего тарифа."
-                        }
-                        VisualLogger.shared.log("⚠️ FAMILY ADD(limit) 409: \(msg)", level: .warning, category: "FAMILY")
+                        VisualLogger.shared.log("⚠️ FAMILY ADD(limit) 409: \(msg) (limit=\(limit))", level: .warning, category: "FAMILY")
                         completion(.failure(NetworkError.businessLogicError(msg)))
                         return
                     }
