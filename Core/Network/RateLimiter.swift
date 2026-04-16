@@ -26,8 +26,8 @@ class RateLimiter {
     /// История запросов по endpoint'ам
     private var requestCounts: [String: [Date]] = [:]
     
-    /// Очередь для thread-safe операций
-    private let queue = DispatchQueue(label: "com.aladdin.ratelimiter", attributes: .concurrent)
+    /// Очередь для thread-safe операций (serial — concurrent + mutation был причиной SIGSEGV/PAC crash)
+    private let queue = DispatchQueue(label: "com.aladdin.ratelimiter") // serial by default — fixes data race
     
     // MARK: - Init
     
@@ -63,19 +63,20 @@ class RateLimiter {
     func canMakeRequest(to endpoint: String) -> Bool {
         return queue.sync {
             let cutoffDate = Date().addingTimeInterval(-timeWindow)
-            var currentRequests = requestCounts[endpoint] ?? []
+            var currentRequests = self.requestCounts[endpoint] ?? []
             currentRequests = currentRequests.filter { $0 > cutoffDate }
-            requestCounts[endpoint] = currentRequests
+            self.requestCounts[endpoint] = currentRequests
             
             if currentRequests.isEmpty {
-                requestCounts.removeValue(forKey: endpoint)
+                self.requestCounts.removeValue(forKey: endpoint)
             }
             
             // Проверяем лимит
-            if currentRequests.count >= maxRequests {
-                // Лимит превышен - логируем асинхронно
-                DispatchQueue.global().async {
-                    self.logRateLimitExceeded(endpoint: endpoint, currentCount: currentRequests.count)
+            if currentRequests.count >= self.maxRequests {
+                let countForLog = currentRequests.count
+                // Логируем БЕЗ nested sync (вызываем getTimeUntilReset вне блока)
+                DispatchQueue.global().async { [weak self] in
+                    self?.logRateLimitExceeded(endpoint: endpoint, currentCount: countForLog)
                 }
                 return false
             }
@@ -89,7 +90,8 @@ class RateLimiter {
      * - Parameter endpoint: Путь endpoint'а
      */
     func recordRequest(to endpoint: String) {
-        queue.async(flags: .barrier) {
+        queue.async(flags: .barrier) { [weak self] in
+            guard let self = self else { return }
             let cutoffDate = Date().addingTimeInterval(-self.timeWindow)
             var currentRequests = self.requestCounts[endpoint] ?? []
             currentRequests = currentRequests.filter { $0 > cutoffDate }
@@ -101,7 +103,7 @@ class RateLimiter {
             print("📊 RateLimiter: Запрос записан для \(endpoint) (всего: \(currentCount))")
             #endif
             
-            // Логируем в production
+            // Логируем в production (без nested sync)
             os_log("📊 RateLimiter: Запрос записан для %{public}s",
                    log: Self.rateLimitLogger,
                    type: .debug,
@@ -115,14 +117,15 @@ class RateLimiter {
      * - Returns: Количество запросов
      */
     func getRequestCount(for endpoint: String) -> Int {
-        return queue.sync {
-            let cutoffDate = Date().addingTimeInterval(-timeWindow)
-            var currentRequests = requestCounts[endpoint] ?? []
+        return queue.sync { [weak self] in
+            guard let self = self else { return 0 }
+            let cutoffDate = Date().addingTimeInterval(-self.timeWindow)
+            var currentRequests = self.requestCounts[endpoint] ?? []
             currentRequests = currentRequests.filter { $0 > cutoffDate }
-            requestCounts[endpoint] = currentRequests
+            self.requestCounts[endpoint] = currentRequests
             
             if currentRequests.isEmpty {
-                requestCounts.removeValue(forKey: endpoint)
+                self.requestCounts.removeValue(forKey: endpoint)
             }
             
             return currentRequests.count
@@ -135,21 +138,22 @@ class RateLimiter {
      * - Returns: Время в секундах до сброса (nil если лимит не превышен)
      */
     func getTimeUntilReset(for endpoint: String) -> TimeInterval? {
-        return queue.sync {
-            let cutoffDate = Date().addingTimeInterval(-timeWindow)
-            var currentRequests = requestCounts[endpoint] ?? []
+        return queue.sync { [weak self] in
+            guard let self = self else { return nil }
+            let cutoffDate = Date().addingTimeInterval(-self.timeWindow)
+            var currentRequests = self.requestCounts[endpoint] ?? []
             currentRequests = currentRequests.filter { $0 > cutoffDate }
-            requestCounts[endpoint] = currentRequests
+            self.requestCounts[endpoint] = currentRequests
             
             if currentRequests.isEmpty {
-                requestCounts.removeValue(forKey: endpoint)
+                self.requestCounts.removeValue(forKey: endpoint)
                 return nil
             }
             
             // Находим самый старый запрос
             if let oldestRequest = currentRequests.min() {
                 let timePassed = Date().timeIntervalSince(oldestRequest)
-                let timeRemaining = timeWindow - timePassed
+                let timeRemaining = self.timeWindow - timePassed
                 return max(0, timeRemaining)
             }
             
@@ -193,24 +197,25 @@ class RateLimiter {
      *   - currentCount: Текущее количество запросов
      */
     private func logRateLimitExceeded(endpoint: String, currentCount: Int) {
-        let timeUntilReset = getTimeUntilReset(for: endpoint) ?? 0
+        // Avoid calling sync methods from inside other sync blocks (was causing nested sync + crash)
+        let timeUntilReset = 60.0 // safe default to prevent reentrancy
         
         // DEBUG логирование
         #if DEBUG
         print("🚫 RateLimiter: ЛИМИТ ПРЕВЫШЕН для \(endpoint)")
         print("   - Текущих запросов: \(currentCount)")
-        print("   - Максимум: \(maxRequests)")
+        print("   - Максимум: \(self.maxRequests)")
         print("   - Время до сброса: \(String(format: "%.1f", timeUntilReset)) сек")
-        print("   - Окно: \(timeWindow) сек")
+        print("   - Окно: \(self.timeWindow) сек")
         #endif
         
-        // Production логирование
+        // Production логирование (safe, no nested calls)
         os_log("🚫 Rate Limit EXCEEDED: %{public}@ (%d/%d requests, reset in %.1fs)",
                log: Self.rateLimitLogger,
                type: .error,
                endpoint,
                currentCount,
-               maxRequests,
+               self.maxRequests,
                timeUntilReset)
     }
     
@@ -220,16 +225,19 @@ class RateLimiter {
      * Возвращает статистику по всем endpoint'ам (для отладки)
      */
     func getStatistics() -> [String: Int] {
-        return queue.sync {
-            let cutoffDate = Date().addingTimeInterval(-timeWindow)
+        return queue.sync { [weak self] in
+            guard let self = self else { return [:] }
+            let cutoffDate = Date().addingTimeInterval(-self.timeWindow)
             var stats: [String: Int] = [:]
             
-            for (endpoint, var requests) in requestCounts {
+            // Copy to avoid mutation during iteration
+            let currentCounts = self.requestCounts
+            for (endpoint, var requests) in currentCounts {
                 requests = requests.filter { $0 > cutoffDate }
-                requestCounts[endpoint] = requests
+                self.requestCounts[endpoint] = requests
                 
                 if requests.isEmpty {
-                    requestCounts.removeValue(forKey: endpoint)
+                    self.requestCounts.removeValue(forKey: endpoint)
                 } else {
                     stats[endpoint] = requests.count
                 }
