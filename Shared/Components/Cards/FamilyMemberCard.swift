@@ -182,38 +182,8 @@ struct FamilyMemberCard: View {
                             .clipShape(Capsule())
                     }
                     
-                    // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #4: Кнопка удаления (видимая и заметная)
-                    if showDeleteButton, let onDelete = onDelete {
-                        Button(action: {
-                            guard !isDeleteDisabled else { return }
-                            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Останавливаем распространение события
-                            // чтобы не вызывался action() основной карточки
-                            print("🗑️ [FamilyMemberCard] Кнопка удаления нажата для: \(name)")
-                            
-                            // Haptic feedback
-                            let generator = UINotificationFeedbackGenerator()
-                            generator.notificationOccurred(.warning)
-                            
-                            // Вызываем функцию удаления
-                            onDelete()
-                        }) {
-                            Image(systemName: "trash.fill")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.white)
-                                .frame(width: 28, height: 28)
-                                .background(Color.red)
-                                .clipShape(Circle())
-                                .shadow(color: .red.opacity(0.3), radius: 4, x: 0, y: 2)
-                                .opacity(isDeleteDisabled ? 0.45 : 1.0)
-                        }
-                        .buttonStyle(PlainButtonStyle())
-                        .disabled(isDeleteDisabled)
-                        .zIndex(10)  // Поверх других элементов
-                        .onTapGesture {
-                            // ✅ Дополнительная защита: предотвращаем всплытие события
-                            print("🗑️ [FamilyMemberCard] onTapGesture для кнопки удаления")
-                        }
-                    }
+                    // ✅ УДАЛЕНО ДУБЛИРОВАНИЕ: Внутренняя кнопка удаления удалена, чтобы избежать конфликтов нажатий
+                    // Теперь используется только внешняя кнопка (ниже) — более стабильное поведение
                 }
                 
                 // Роль
@@ -240,40 +210,39 @@ struct FamilyMemberCard: View {
             .clipShape(RoundedRectangle(cornerRadius: 10))
             }
             
-            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Кнопка удаления ВНЕ основной кнопки для предотвращения конфликтов
+            // ✅ УЛУЧШЕНИЕ ШАГА 1: Надёжная внешняя кнопка удаления (единственная)
+            // Красное ведро теперь всегда поверх карточки, без конфликтов с основной кнопкой
             if showDeleteButton, let onDelete = onDelete {
                 VStack {
                     HStack {
                         Spacer()
                         Button(action: {
                             guard !isDeleteDisabled else { return }
-                            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Останавливаем распространение события
                             print("🗑️ [FamilyMemberCard] Кнопка удаления нажата для: \(name)")
-                            
+
                             // Haptic feedback
                             let generator = UINotificationFeedbackGenerator()
                             generator.notificationOccurred(.warning)
-                            
-                            // Вызываем функцию удаления
+
                             onDelete()
                         }) {
                             Image(systemName: "trash.fill")
-                                .font(.system(size: 16, weight: .bold))
+                                .font(.system(size: 18, weight: .bold))
                                 .foregroundColor(.white)
-                                .frame(width: 28, height: 28)
+                                .frame(width: 32, height: 32)
                                 .background(Color.red)
                                 .clipShape(Circle())
-                                .shadow(color: .red.opacity(0.3), radius: 4, x: 0, y: 2)
-                                .opacity(isDeleteDisabled ? 0.45 : 1.0)
+                                .shadow(color: .red.opacity(0.4), radius: 5, x: 0, y: 3)
+                                .opacity(isDeleteDisabled ? 0.4 : 1.0)
                         }
                         .buttonStyle(PlainButtonStyle())
                         .disabled(isDeleteDisabled)
-                        .padding(.top, 8)
-                        .padding(.trailing, 8)
+                        .padding(.top, 6)
+                        .padding(.trailing, 6)
                     }
                     Spacer()
                 }
-                .zIndex(1000)  // ✅ Очень высокий приоритет - поверх всего
+                .zIndex(1000)
                 .allowsHitTesting(true)
             }
         }
@@ -289,7 +258,7 @@ struct FamilyMemberCard: View {
 struct FamilyMemberCard_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 16) {
-            // Родитель - защищён
+            // Родитель - защищён (с кнопкой удаления)
             FamilyMemberCard(
                 name: "Сергей",
                 role: .parent,
@@ -298,10 +267,12 @@ struct FamilyMemberCard_Previews: PreviewProvider {
                 threatsBlocked: 47,
                 lastActive: "сейчас",
                 action: { print("Открыть профиль Сергея") },
+                onDelete: { print("🗑️ Удалить Сергея") },
+                showDeleteButton: true,
                 memberId: "FAM-7842"
             )
             
-            // Ребёнок - предупреждение
+            // Ребёнок - предупреждение (с кнопкой удаления)
             FamilyMemberCard(
                 name: "Маша",
                 role: .child,
@@ -310,6 +281,8 @@ struct FamilyMemberCard_Previews: PreviewProvider {
                 threatsBlocked: 23,
                 lastActive: "5 мин назад",
                 action: { print("Открыть профиль Маши") },
+                onDelete: { print("🗑️ Удалить Машу") },
+                showDeleteButton: true,
                 memberId: "FAM-7843"
             )
             

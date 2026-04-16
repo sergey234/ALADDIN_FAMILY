@@ -147,6 +147,16 @@ struct FamilyMemberData: Identifiable, Codable {
     var status: FamilyMemberCard.ProtectionStatus
     var threatsBlocked: Int
     var lastActive: String
+    
+    // ✅ STRICTER: Computed canonical ID and current user check to prevent duplicates and self-removal bugs
+    var canonicalId: String {
+        serverMemberId?.trimmingCharacters(in: .whitespacesAndNewlines) ?? id
+    }
+    
+    var isCurrentUser: Bool {
+        let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
+        return !myMemberId.isEmpty && (id == myMemberId || serverMemberId == myMemberId || canonicalId == myMemberId)
+    }
 }
 
 struct AppLimitItemCodable: Codable {
@@ -1009,6 +1019,20 @@ struct GeofenceAPI: Codable {
     let latitude: Double
     let longitude: Double
     let radius: Double // метры
+}
+
+// Reconcile response from /api/family/reconcile
+struct ReconcileFamilyResponse: Codable {
+    let familyId: String
+    let total: Int
+    let invalidRoles: Int
+    let fixedStatuses: Int
+}
+
+// Simple response for /api/subscription/events/batch
+struct SubscriptionEventsBatchResponse: Codable {
+    let success: Bool?
+    let message: String?
 }
 
 // Запросы доступа

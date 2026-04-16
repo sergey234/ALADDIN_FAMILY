@@ -131,6 +131,7 @@ struct AppConfig {
         static let removeFamilyMember = "/api/family/remove"
         static let memberProfile = "/api/family/member"
         static let familyStats = "/api/family/stats"
+        static let familyReconcile = "/api/family/reconcile"
 
         // Family Chat
         static let familyChatMessages = "/api/family/chat/messages"

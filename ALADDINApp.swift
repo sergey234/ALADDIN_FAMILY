@@ -547,7 +547,10 @@ struct ALADDINApp: App {
                         )
                         .id("mainWithRegistration")
                         .environmentObject(navigationManager)
-                        .environmentObject(localizationManager))
+                        .environmentObject(localizationManager)
+                        .onDisappear {
+                            print("🔄 MainScreenWithRegistration disappeared — registration flow completed")
+                        })
                     case .childContent:
                         AnyView(ChildContentScreen(
                             category: "Игры",
@@ -594,6 +597,10 @@ struct ALADDINApp: App {
                         )
                     case .advancedProtection:
                         AnyView(AdvancedProtectionSettingsScreen().id("advancedProtection").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .qrCode:
+                        AnyView(QRScannerModal(onCodeScanned: { _ in }).id("qrCode").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .invitationCode:
+                        AnyView(InvitationCodeInputModal(isPresented: .constant(true)).id("invitationCode").environmentObject(navigationManager).environmentObject(localizationManager))
                     default:
                         AnyView(
                             VStack(spacing: 20) {

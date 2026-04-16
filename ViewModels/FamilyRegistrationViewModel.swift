@@ -1090,27 +1090,42 @@ class FamilyRegistrationViewModel: ObservableObject {
         // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ ПОДРОСТКА: Добавляем логирование для отладки
         print("🔍 saveCreatorAsFamilyMember: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), userName=\(userName)")
         
-        // Преобразуем FamilyRole в FamilyMemberCard.FamilyRole
-        let cardRole: FamilyMemberCard.FamilyRole
-        switch role {
-        case .parent:
-            cardRole = .parent
-        case .child:
-            // ✅ ИСПРАВЛЕНИЕ: Если роль .child и возрастная группа .teen, преобразуем в .teenager
-            cardRole = ageGroup == .teen ? .teenager : .child
-        case .teenager:
-            // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Роль .teenager всегда преобразуется в .teenager
-            cardRole = .teenager
-            print("✅ Подросток: роль .teenager преобразована в cardRole .teenager")
-        case .elderly:
-            cardRole = .elderly
+        // Загружаем существующий список участников ПЕРЕД проверкой isFirstUser
+        var existingMembers: [FamilyMemberData] = []
+        if let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
+           let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
+            existingMembers = decoded
         }
         
-        print("🔍 saveCreatorAsFamilyMember: cardRole=\(cardRole)")
-        VisualLogger.shared.log("🔍 saveCreatorAsFamilyMember: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole)", level: .info, category: "FAMILY")
+        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ ДЛЯ ПРОДА: Первый пользователь ВСЕГДА .parent
+        let isFirstUser = existingMembers.isEmpty || 
+                         !UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        
+        // Преобразуем FamilyRole в FamilyMemberCard.FamilyRole
+        let cardRole: FamilyMemberCard.FamilyRole
+        if isFirstUser {
+            cardRole = .parent
+            print("👑 FIRST USER FORCED TO PARENT: \(userName) (was \(role.rawValue))")
+            VisualLogger.shared.log("👑 FIRST USER FORCED TO .parent: \(userName) (original role: \(role.rawValue))", level: .success, category: "FAMILY")
+        } else {
+            switch role {
+            case .parent:
+                cardRole = .parent
+            case .child:
+                cardRole = ageGroup == .teen ? .teenager : .child
+            case .teenager:
+                cardRole = .teenager
+                print("✅ Подросток: роль .teenager преобразована в cardRole .teenager")
+            case .elderly:
+                cardRole = .elderly
+            }
+        }
+        
+        print("🔍 saveCreatorAsFamilyMember: cardRole=\(cardRole) (isFirstUser=\(isFirstUser))")
+        VisualLogger.shared.log("🔍 saveCreatorAsFamilyMember: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole) (isFirstUser=\(isFirstUser))", level: .info, category: "FAMILY")
         
         // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА ДЛЯ ПОДРОСТКА
-        if role == .teenager {
+        if role == .teenager && !isFirstUser {
             print("✅ ПОДРОСТОК: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole)")
             VisualLogger.shared.log("✅ ПОДРОСТОК: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole)", level: .success, category: "FAMILY")
             MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК: role=\(role.rawValue), ageGroup=\(ageGroup.rawValue), cardRole=\(cardRole)")
@@ -1130,16 +1145,8 @@ class FamilyRegistrationViewModel: ObservableObject {
         case .elderly: avatar = "👵"
         }
         
-        // ✅ ИСПРАВЛЕНИЕ: Загружаем существующий список участников
-        var existingMembers: [FamilyMemberData] = []
-        if let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
-           let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
-            existingMembers = decoded
-            print("✅ Загружено \(existingMembers.count) существующих участников")
-            VisualLogger.shared.log("✅ Загружено \(existingMembers.count) существующих участников из UserDefaults", level: .info, category: "FAMILY")
-        } else {
-            VisualLogger.shared.log("⚠️ Не удалось загрузить существующих участников из UserDefaults", level: .warning, category: "FAMILY")
-        }
+        // Загрузка existingMembers уже выполнена выше (для isFirstUser). Пропускаем дублирование.
+        // existingMembers уже содержит актуальный список
         
         // Проверяем, нет ли уже такого участника (по имени и роли)
         let isDuplicate = existingMembers.contains { existingMember in

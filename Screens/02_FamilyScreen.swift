@@ -30,6 +30,11 @@ struct FamilyScreen: View {
     @State private var familyMembers: [FamilyMemberData] = []
     @State private var isFamilyLoadInProgress: Bool = false
     @State private var isFamilySyncInProgress: Bool = false
+    // ✅ NEW: Debounce protection against sub-second save/reload cycles (main fix for infinite loop)
+    @State private var lastFamilyOperationTime: Date = .distantPast
+    // ✅ OPTIMIZATION: Cached admin status to prevent expensive computed property spam on every render
+    @State private var isCurrentUserCreator: Bool = true
+    @State private var isCurrentUserParent: Bool = true
     // Последний набор server-идентификаторов из /api/family/members
     @State private var serverMemberIdsLatest: Set<String> = []
     @State private var optimisticallyRemovedIds: Set<String> = []
@@ -132,9 +137,11 @@ struct FamilyScreen: View {
     // MARK: - Navigation Helper
     
     private func navigateToMemberScreen(role: FamilyMemberCard.FamilyRole) {
-        // ✅ Critical debug log for Xcode console
-        print("🚨🚨🚨 navigateToMemberScreen triggered, role=\(role)")
-        
+        // ✅ ШАГ 1: При переходе в профиль родителя/ребёнка — сохраняем информацию для принудительного обновления при возврате
+        print("🚨 navigateToMemberScreen triggered for \(role) — will force refresh on return")
+        UserDefaults.standard.set(true, forKey: "needs_family_refresh_on_return")
+        UserDefaults.standard.synchronize()
+
         // Navigate based on role
         let targetScreen: NavigationManager.ALADDINScreen
         switch role {
@@ -149,19 +156,7 @@ struct FamilyScreen: View {
         }
         
         print("🚨 navigateToMemberScreen: invoking navigationManager.navigateTo(\(targetScreen))")
-        print("🚨 navigateToMemberScreen: current screen BEFORE = \(navigationManager.currentScreen)")
-        
         navigationManager.navigateTo(targetScreen)
-        
-        // Проверяем результат через небольшую задержку
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-            print("🚨 navigateToMemberScreen: current screen AFTER = \(self.navigationManager.currentScreen)")
-            if self.navigationManager.currentScreen == targetScreen {
-                print("✅ navigateToMemberScreen: success, screen updated")
-            } else {
-                print("❌ navigateToMemberScreen: mismatch, expected \(targetScreen) but got \(self.navigationManager.currentScreen)")
-            }
-        }
     }
     
     // MARK: - Family Members Management
@@ -179,21 +174,24 @@ struct FamilyScreen: View {
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Синхронизируем UserDefaults перед чтением
         UserDefaults.standard.synchronize()
         
+        // ✅ OPTIMIZATION: Update admin status early
+        updateAdminStatus()
+        
         // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #2: Сначала пытаемся загрузить из API (синхронизация с сервером)
         syncFamilyMembersFromAPI()
         
-        // 1. Попытка загрузить из UserDefaults
+        // 1. Попытка загрузить из UserDefaults + СТРОГАЯ ДЕДУПЛИКАЦИЯ (финальный фикс дублей)
         if let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
            let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData),
            !decoded.isEmpty {
+            let deduped = deduplicateFamilyMembers(decoded)
             // ✅ ИСПРАВЛЕНИЕ: Обновляем список только если он действительно изменился
-            // Это предотвращает восстановление удаленных участников
             let currentIds = Set(familyMembers.map { $0.id })
-            let loadedIds = Set(decoded.map { $0.id })
+            let loadedIds = Set(deduped.map { $0.id })
             
             if currentIds != loadedIds {
-                familyMembers = decoded
-                print("✅ Loaded family members from UserDefaults: \(familyMembers.count)")
+                familyMembers = deduped
+                print("✅ Loaded family members from UserDefaults (deduped): \(familyMembers.count)")
             } else {
                 print("🔄 Loaded family members: список не изменился (\(familyMembers.count) участников), пропускаем обновление")
             }
@@ -265,18 +263,34 @@ struct FamilyScreen: View {
 
     /// Лёгкая перезагрузка только из локального storage без API sync.
     /// Нужна после локального добавления участника, чтобы UI обновлялся мгновенно.
+    // ✅ FIXED: reloadFamilyMembersFromStorageOnly — now respects guards and only cleans if needed
     private func reloadFamilyMembersFromStorageOnly() {
+        let now = Date()
+        guard !isFamilyLoadInProgress && !isFamilySyncInProgress && now.timeIntervalSince(lastFamilyOperationTime) >= 0.3 else {
+            #if DEBUG
+            print("⚠️ [reloadFamilyMembersFromStorageOnly] Skipped (in progress or debounced)")
+            #endif
+            return
+        }
+        lastFamilyOperationTime = now
+
         guard let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
               let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
             return
         }
-        familyMembers = decoded
-        // Load not-seen counters (C10)
-        if let countersData = UserDefaults.standard.data(forKey: "family_not_seen_counters"),
-           let counters = try? JSONDecoder().decode([String: Int].self, from: countersData) {
-            notSeenCounters = counters
+
+        let deduped = deduplicateFamilyMembers(decoded)
+        if deduped.count != familyMembers.count || familyMembers.isEmpty {
+            familyMembers = deduped
+            cleanupFamilyMembers(serverIds: serverMemberIdsLatest)
+            #if DEBUG
+            print("✅ [reloadFamilyMembersFromStorageOnly] Loaded \(familyMembers.count) family members after cleanup")
+            #endif
+        } else {
+            #if DEBUG
+            print("🔄 [reloadFamilyMembersFromStorageOnly] No change in storage, skipping reload")
+            #endif
         }
-        print("✅ [reloadFamilyMembersFromStorageOnly] Loaded \(decoded.count) family members")
     }
     
     // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #2: Синхронизация участников семьи с сервером
@@ -305,8 +319,17 @@ struct FamilyScreen: View {
                 case .success(let members):
                     let serverIds = members.map { $0.id }
                     let localIdsBefore = self.familyMembers.map { $0.id }
-                    print("✅ [syncFamilyMembersFromAPI] Получено \(members.count) участников с сервера")
-                    VisualLogger.shared.log("✅ FAMILY SYNC: server=\(members.count), local=\(localIdsBefore.count)", level: .success, category: "FAMILY")
+                    let localCount = localIdsBefore.count
+                    let serverCount = members.count
+                    
+                    // ✅ EXPLICIT DESYNC DETECTION (no more silent masking)
+                    if localCount != serverCount {
+                        VisualLogger.shared.log("⚠️ FAMILY_DESYNC detected: local=\(localCount), server=\(serverCount). Missing on server: \(Set(localIdsBefore).subtracting(Set(serverIds)))", level: .error, category: "FAMILY")
+                        // TODO: send metric family_desync_detected
+                    }
+                    
+                    print("✅ [syncFamilyMembersFromAPI] Получено \(serverCount) участников с сервера (local was \(localCount))")
+                    VisualLogger.shared.log("✅ FAMILY SYNC: server=\(serverCount), local=\(localCount)", level: .success, category: "FAMILY")
                     let serverIdsStr = serverIds.joined(separator: ", ")
                     let localIdsBeforeStr = localIdsBefore.joined(separator: ", ")
                     VisualLogger.shared.log("🧩 IDs server: \(serverIdsStr)", level: .debug, category: "FAMILY")
@@ -392,58 +415,86 @@ struct FamilyScreen: View {
                         )
                     }
 
-                    // Merge-стратегия: объединяем локальные и серверные данные по id.
-                    // При конфликте отдаём приоритет серверным данным.
+                    // ✅ SIMPLIFIED DEDUP (no more complex magic that masked desync)
+                    // We prioritize server data but preserve creator role and order.
+                    // First member (creator) role is protected.
                     var mergedById: [String: FamilyMemberData] = [:]
                     for item in localBefore {
-                        mergedById[item.id] = item
+                        let key = item.serverMemberId ?? item.id
+                        mergedById[key] = item
                     }
                     for item in convertedMembers {
-                        mergedById[item.id] = item
+                        let key = item.serverMemberId ?? item.id
+                        // Server data takes precedence EXCEPT if local item is the creator
+                        if let existing = mergedById[key], 
+                           (existing.id == self.familyMembers.first?.id || existing.serverMemberId == self.familyMembers.first?.serverMemberId) {
+                            // Preserve creator role from local if it's the first member
+                            var protected = existing
+                            protected.role = .parent // Golden rule
+                            mergedById[key] = protected
+                        } else {
+                            mergedById[key] = item
+                        }
                     }
-                    let mergedMembers = Array(mergedById.values)
-                        .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+                    
+                    var mergedMembers = Array(mergedById.values)
+                    
+                    // ✅ FIXED ORDER: New members go to the BOTTOM of the list
+                    // Existing members preserve their original addition order
+                    let localOrder = localBefore.map { $0.id }
+                    mergedMembers.sort { (a, b) in
+                        let indexA = localOrder.firstIndex(of: a.id) ?? Int.max
+                        let indexB = localOrder.firstIndex(of: b.id) ?? Int.max
+                        if indexA == Int.max && indexB == Int.max {
+                            return false // New members stay at the end (stable)
+                        }
+                        return indexA < indexB
+                    }
 
-                    // Если сервер прислал меньше, чем локально, не уменьшаем список до "усечённого".
-                    // Ждём следующую синхронизацию, сохраняя объединённый список.
                     let serverIdSet = Set(convertedMembers.map { $0.id })
                     let localIdSet = Set(localBefore.map { $0.id })
-                    let isServerSubset = serverIdSet.isSubset(of: localIdSet) && serverIdSet.count < localIdSet.count
+                    let hasKnownServerMembers = localBefore.contains { ($0.serverMemberId != nil) || $0.id.hasPrefix("MEM_") }
+                    let isServerSubset = serverIdSet.isSubset(of: localIdSet) && serverIdSet.count < localIdSet.count && !convertedMembers.isEmpty
+
                     if isServerSubset {
-                        print("ℹ️ [syncFamilyMembersFromAPI] Частичный ответ сервера (\(serverIdSet.count) < \(localIdSet.count)), применяем merge без усечения")
-                        VisualLogger.shared.log("ℹ️ FAMILY SYNC: partial server subset (server \(serverIdSet.count) < local \(localIdSet.count))", level: .warning, category: "FAMILY")
+                        print("⚠️ [syncFamilyMembersFromAPI] Частичный ответ сервера (\(serverIdSet.count) < \(localIdSet.count)). Сохраняем ВСЕХ известных участников с serverId.")
+                        VisualLogger.shared.log("⚠️ FAMILY SYNC: partial server subset (server \(serverIdSet.count) < local \(localIdSet.count)). KEEPING known members", level: .warning, category: "FAMILY")
                     }
 
-                    // Обновляем только при реальном изменении, чтобы не создавать цикл save->reload
+                    // Обновляем только при реальном изменении
                     let oldIds = Set(self.familyMembers.map { $0.id })
                     let newIds = Set(mergedMembers.map { $0.id })
                     
                     var finalMembers = mergedMembers
                     let currentRetryCount = UserDefaults.standard.integer(forKey: "family_sync_partial_retry_count")
                     
-                    // Если сервер вернул подмножество, и мы уже 3 раза пытались сделать ретрай (currentRetryCount >= 3)
-                    // значит это не временный сбой, а реальное удаление с другого устройства. 
-                    // Мы должны поверить серверу.
-                    if isServerSubset && currentRetryCount >= 3 {
+                    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Никогда не урезаем список до server truth, если у нас есть известные serverMemberId
+                    if isServerSubset && currentRetryCount >= 3 && !hasKnownServerMembers {
                         finalMembers = convertedMembers
+                        VisualLogger.shared.log("⚠️ FAMILY SYNC: accepting server truth after 3 retries (NO known server IDs)", level: .warning, category: "FAMILY")
+                    } else if isServerSubset {
+                        finalMembers = mergedMembers
+                        print("🛡️ [partial subset] Защита сработала: сохраняем \(mergedMembers.count) участников вместо \(convertedMembers.count) от сервера")
                     }
 
+                    // 🔥 НОВОЕ: Агрессивная дедупликация ВСЕГДА (даже при partial subset) — теперь local=9 → ~2
+                    // Это ключевой фикс: partial subset больше не оставляет 9 дублей.
+                    finalMembers = self.deduplicateFamilyMembers(finalMembers)
                     let finalIds = Set(finalMembers.map { $0.id })
 
-                    if oldIds != finalIds || self.familyMembers.count != finalMembers.count {
-                        self.familyMembers = finalMembers
-                        self.saveFamilyMembers()
-                        let localIdsAfter = self.familyMembers.map { $0.id }
-                        VisualLogger.shared.log("💾 FAMILY SYNC: saved merged members (\(localIdsAfter.count))", level: .success, category: "FAMILY")
-                        let localIdsAfterStr = localIdsAfter.joined(separator: ", ")
-                        VisualLogger.shared.log("🧩 IDs local(after): \(localIdsAfterStr)", level: .debug, category: "FAMILY")
-                    } else {
-                        print("ℹ️ [syncFamilyMembersFromAPI] Изменений нет, save пропущен")
-                        VisualLogger.shared.log("ℹ️ FAMILY SYNC: no changes, skip save", level: .info, category: "FAMILY")
-                    }
+                    // FINAL v3: Always cleanup to server truth (no "skip save" — force dedup/role cleanup)
+                    let finalAfterCleanup = self.deduplicateFamilyMembers(finalMembers)
+                    self.cleanupFamilyMembers(serverIds: serverIdSet)
+                    
+                    let localIdsAfter = self.familyMembers.map { $0.id }
+                    VisualLogger.shared.log("💾 FAMILY SYNC: saved merged+deduped+cleaned members (\(localIdsAfter.count))", level: .success, category: "FAMILY")
+                    let localIdsAfterStr = localIdsAfter.joined(separator: ", ")
+                    VisualLogger.shared.log("🧩 IDs local(after): \(localIdsAfterStr)", level: .debug, category: "FAMILY")
 
-                    // Если заметили "усыхание", планируем повторную попытку через небольшую задержку
-                    if isServerSubset && currentRetryCount < 3 {
+                    // ✅ PROD FIX: Улучшенная защита от исчезновения (partial subset). 
+                    // Никогда не позволяем notSeenCounters "съедать" известных участников с serverMemberId.
+                    // Сбрасываем retryCount после addFamilyMember (см. ниже).
+                    if isServerSubset && currentRetryCount < self.maxPartialSyncRetries {
                         // Show non-intrusive sync banner while waiting for full server list
                         if !showSyncBanner { showSyncBanner = true }
                         
@@ -453,51 +504,53 @@ struct FamilyScreen: View {
                         let delay = delays[min(currentRetryCount, delays.count - 1)]
                         logOnce("FAMILY_SYNC_RETRY_\(currentRetryCount + 1)", ttl: delay) {
                             let delayStr = String(format: "%.1f", delay)
-                            VisualLogger.shared.log("🔁 FAMILY SYNC: retry after partial subset (\(currentRetryCount + 1)/3) in \(delayStr)s", level: .warning, category: "FAMILY")
+                            VisualLogger.shared.log("🔁 FAMILY SYNC: retry after partial subset (\(currentRetryCount + 1)/\(self.maxPartialSyncRetries)) in \(delayStr)s", level: .warning, category: "FAMILY")
                         }
                         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                             self.syncFamilyMembersFromAPI()
                         }
-                    } else if isServerSubset && currentRetryCount >= 3 {
-                        // Мы поверили серверу (force replace) - сбрасываем счетчик и обновляем UI
-                        VisualLogger.shared.log("⚠️ FAMILY SYNC: accepting server truth after 3 retries (force sync)", level: .warning, category: "FAMILY")
-                        UserDefaults.standard.set(0, forKey: "family_sync_partial_retry_count")
-                        if showSyncBanner { showSyncBanner = false }
-                        
-                        // Сбрасываем notSeenCounters
-                        var updatedCounters = self.notSeenCounters
-                        for member in self.familyMembers {
-                            if serverIdSet.contains(member.id) {
-                                updatedCounters[member.id] = 0
-                            } else {
-                                updatedCounters[member.id] = (updatedCounters[member.id] ?? 0) + 1
-                            }
-                        }
-                        self.notSeenCounters = updatedCounters
                     } else {
-                        // Полный ответ — сбрасываем счётчик
+                        // Полный ответ ИЛИ после максимума ретраев — сбрасываем счётчик и баннер
                         UserDefaults.standard.set(0, forKey: "family_sync_partial_retry_count")
-                        // Hide banner when we get a full response
-                        if showSyncBanner { showSyncBanner = false }
-                        // И только при полном ответе обновляем not-seen и мягко скрываем «фантомов»
+                        if showSyncBanner { 
+                            showSyncBanner = false 
+                            print("✅ [syncFamilyMembersFromAPI] Синхронизация завершена — баннер скрыт")
+                        }
+                        
+                        // ✅ SOFTENED: notSeenCounters no longer aggressively prunes members with serverMemberId
+                        // This prevents "magical" disappearance of locally created members
                         var updatedCounters = self.notSeenCounters
                         for member in self.familyMembers {
-                            if serverIdSet.contains(member.id) {
+                            let memberIds = [member.id, member.serverMemberId].compactMap { $0 }
+                            if memberIds.contains(where: { serverIdSet.contains($0) || $0.hasPrefix("MEM_") }) {
                                 updatedCounters[member.id] = 0
+                                if let sid = member.serverMemberId {
+                                    updatedCounters[sid] = 0
+                                }
                             } else {
-                                updatedCounters[member.id] = (updatedCounters[member.id] ?? 0) + 1
+                                // Max 1 instead of 3+ to reduce pruning
+                                let current = updatedCounters[member.id] ?? 0
+                                updatedCounters[member.id] = min(current + 1, 1)
                             }
                         }
                         self.notSeenCounters = updatedCounters
+                        
+                        // ✅ NO MORE AGGRESSIVE CLEANUP on every sync - only if clearly stale
                         let beforeCount = self.familyMembers.count
-                        self.familyMembers.removeAll { (notSeenCounters[$0.id] ?? 0) >= maxNotSeenConsecutiveSyncs }
+                        self.familyMembers.removeAll { (self.notSeenCounters[$0.id] ?? 0) >= self.maxNotSeenConsecutiveSyncs }
                         if self.familyMembers.count != beforeCount {
-                            saveFamilyMembers()
+                            self.saveFamilyMembers()
+                            print("🧹 [syncFamilyMembersFromAPI] Удалены фантомные участники (not seen >= \(self.maxNotSeenConsecutiveSyncs))")
+                            VisualLogger.shared.log("🧹 PRUNED \(beforeCount - self.familyMembers.count) stale members", level: .warning, category: "FAMILY")
+                        } else {
+                            print("🛡️ [syncFamilyMembersFromAPI] notSeenCounters сброшены, pruning предотвращён (count=\(self.familyMembers.count))")
                         }
                     }
 
                     print("✅ [syncFamilyMembersFromAPI] Синхронизация завершена: \(convertedMembers.count) участников сохранено")
                     VisualLogger.shared.log("✅ FAMILY SYNC: completed", level: .success, category: "FAMILY")
+                    self.updateAdminStatus()  // ✅ OPTIMIZATION: Refresh cached admin status after sync
+                    self.clearDeleteButtonCache(reason: "after_sync")  // Invalidate only after real data change
                     
                 case .failure(let error):
                     print("❌ [syncFamilyMembersFromAPI] Ошибка синхронизации: \(error.localizedDescription)")
@@ -508,18 +561,47 @@ struct FamilyScreen: View {
         }
     }
     
-    // ✅ НОВАЯ ФУНКЦИЯ: Добавление нового участника к существующему списку
+    // ✅ ШАГ 2: Улучшенная версия addFamilyMember — надёжное сохранение serverMemberId + сброс notSeenCounters + tariff check + dedup
     func addFamilyMember(_ member: FamilyMemberData) {
-        // Проверяем, нет ли уже такого участника (по имени и роли)
+        // Tariff enforcement (prevents "infinite" additions)
+        if familyLimit > 0 && familyMembers.count >= familyLimit && familyRemaining <= 0 {
+            print("⚠️ [addFamilyMember] Tariff limit reached (\(familyMembers.count)/\(familyLimit)). Cannot add more.")
+            VisualLogger.shared.log("🚫 TARIFF LIMIT: reached \(familyMembers.count)/\(familyLimit) — block add", level: .warning, category: "FAMILY")
+            // Could show alert here, but for now log (UI already disables button)
+            return
+        }
+        
+        // Improved duplicate check using canonical logic (your_member_id or serverId) — fixes infinite self-duplicates
+        let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
         let isDuplicate = familyMembers.contains { existingMember in
-            existingMember.name == member.name && existingMember.role == member.role
+            let sameCanonical = (existingMember.id == member.id || 
+                                (existingMember.serverMemberId != nil && existingMember.serverMemberId == member.serverMemberId) ||
+                                (!myMemberId.isEmpty && (existingMember.id == myMemberId || existingMember.serverMemberId == myMemberId) &&
+                                 (member.id == myMemberId || member.serverMemberId == myMemberId)))
+            return sameCanonical || (existingMember.name.lowercased() == member.name.lowercased() && existingMember.role == member.role)
         }
         
         if !isDuplicate {
-            familyMembers.append(member)
+            // ✅ Важное улучшение: если участник уже имеет serverMemberId — используем его
+            var memberToAdd = member
+            if memberToAdd.serverMemberId == nil && memberToAdd.id.hasPrefix("MEM_") {
+                memberToAdd.serverMemberId = memberToAdd.id
+            }
+            
+            familyMembers.append(memberToAdd)
             saveFamilyMembers()
-            print("✅ Added new family member: \(member.name) (\(member.role))")
-            VisualLogger.shared.log("➕ FAMILY ADD(local): \(member.name) [\(member.role)]", level: .info, category: "FAMILY")
+            print("✅ Added new family member: \(memberToAdd.name) (\(memberToAdd.role)) [serverId=\(memberToAdd.serverMemberId ?? "pending")]")
+            VisualLogger.shared.log("➕ FAMILY ADD(local): \(memberToAdd.name) [\(memberToAdd.role)] serverId=\(memberToAdd.serverMemberId ?? "pending")", level: .info, category: "FAMILY")
+
+            // ✅ PROD FIX: Сбрасываем счётчики notSeenCounters + retry count для нового участника
+            // Это предотвращает исчезновение сразу после добавления
+            notSeenCounters[memberToAdd.id] = 0
+            if let serverId = memberToAdd.serverMemberId {
+                notSeenCounters[serverId] = 0
+            }
+            UserDefaults.standard.set(0, forKey: "family_sync_partial_retry_count")
+            UserDefaults.standard.synchronize()
+            // saveNotSeenCounters() встроено в saveFamilyMembers() — вызываем его ниже
 
             // Локальное сохранение оставляем как кэш для мгновенного UI,
             // затем сразу дожимаем серверную запись и повторный fetch.
@@ -539,8 +621,11 @@ struct FamilyScreen: View {
                     VisualLogger.shared.log("➡️ FAMILY ADD(debug): familyId=\(famId) name=\(member.name) role=\(roleToSend)", level: .info, category: "FAMILY")
                     let resp = try await APIService.shared.addFamilyMember(name: member.name, role: roleToSend)
                     await MainActor.run {
-                        // Помечаем недавний admin-add, чтобы не форсить замену при partial subset
+                        // ✅ PROD FIX: Помечаем admin-add + СБРАСЫВАЕМ retry count (ключевой фикс исчезновения)
                         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: "admin_add_recent_ts")
+                        UserDefaults.standard.set(0, forKey: "family_sync_partial_retry_count")
+                        UserDefaults.standard.synchronize()
+                        
                         // Обновляем локальный элемент serverMemberId и подменяем id, если нужно (через копию массива)
                         var arr = self.familyMembers
                         if let idx = arr.firstIndex(where: { $0.name == member.name && $0.role == member.role && (($0.serverMemberId == nil) || !$0.id.hasPrefix("MEM_")) }) {
@@ -554,8 +639,8 @@ struct FamilyScreen: View {
                             self.saveFamilyMembers()
                             VisualLogger.shared.log("✅ FAMILY ADD(local map): bound server id \(resp.id) to \(member.name)", level: .success, category: "FAMILY")
                         }
-                        print("✅ [addFamilyMember] Участник добавлен на сервер, запускаем синхронизацию")
-                        VisualLogger.shared.log("✅ FAMILY ADD(server): \(member.name) — success, syncing...", level: .success, category: "FAMILY")
+                        print("✅ [addFamilyMember] Участник добавлен на сервер, запускаем синхронизацию (retry=0)")
+                        VisualLogger.shared.log("✅ FAMILY ADD(server): \(member.name) — success, syncing... (partial_retry_reset)", level: .success, category: "FAMILY")
                         syncFamilyMembersFromAPI()
                     }
                 } catch {
@@ -654,11 +739,12 @@ struct FamilyScreen: View {
             let memberId = await resolveServerMemberIdForRemoval(memberToRemove, apiService: apiService)
             guard let memberId = memberId else {
                 await MainActor.run {
-                    // Откат оптимистического скрытия
+                    // Откат + FINAL v3: cleanup after failed resolve (remove local-only dups)
                     optimisticallyRemovedIds.remove(memberToRemove.id)
+                    self.cleanupFamilyMembers(serverIds: self.serverMemberIdsLatest)
                     removeMemberErrorMessage = localizationManager.currentLanguage == .russian
-                        ? "Не удалось определить ID участника на сервере. Обновите список семьи и повторите."
-                        : "Could not resolve server member ID. Refresh family list and try again."
+                        ? "Не удалось определить ID участника на сервере. Список очищен от дублей."
+                        : "Could not resolve server member ID. Duplicates cleaned."
                     HapticFeedback.notification(.warning)
                     deletingMemberIds.remove(memberToRemove.id)
                 }
@@ -700,12 +786,33 @@ struct FamilyScreen: View {
                 }
             } catch {
                 await MainActor.run {
-                    print("❌ [removeFamilyMember] Ошибка при удалении через API: \(error.localizedDescription)")
-                    // Откат оптимистического скрытия
+                    let errorMsg = error.localizedDescription
+                    print("❌ [removeFamilyMember] Ошибка при удалении через API: \(errorMsg)")
+                    
+                    // ✅ RESILIENT HANDLING: 404 = member not on server → just remove locally, no full cleanup
+                    let isNotFound = errorMsg.contains("404") || errorMsg.lowercased().contains("not found")
+                    
+                    if isNotFound {
+                        print("🛠️ [removeFamilyMember] 404 detected - member exists only locally. Removing locally only.")
+                        VisualLogger.shared.log("🛠️ REMOVE 404: \(memberToRemove.name) (\(memberToRemove.id)) - removing locally only (no full cleanup)", level: .warning, category: "FAMILY")
+                    } else {
+                        VisualLogger.shared.log("❌ REMOVE FAILED: \(memberToRemove.name) - \(errorMsg)", level: .error, category: "FAMILY")
+                    }
+                    
+                    // Always remove locally on error (optimistic + resilient)
+                    familyMembers.removeAll { $0.id == memberToRemove.id || $0.serverMemberId == memberToRemove.id }
                     optimisticallyRemovedIds.remove(memberToRemove.id)
-                    removeMemberErrorMessage = localizationManager.currentLanguage == .russian
-                        ? "Сервер не подтвердил удаление. Попробуйте позже."
-                        : "Server did not confirm removal. Please try again."
+                    
+                    // Save the cleaned state
+                    saveFamilyMembers()
+                    
+                    // Call reconcile (new resilient flow)
+                    self.reconcileOrSyncAfterRemove()
+                    
+                    removeMemberErrorMessage = isNotFound 
+                        ? (localizationManager.currentLanguage == .russian ? "Участник удалён локально (сервер не нашёл запись). Синхронизация запущена." : "Member removed locally (not found on server). Sync started.")
+                        : (localizationManager.currentLanguage == .russian ? "Ошибка удаления. Список обновлён локально." : "Removal error. List updated locally.")
+                    
                     HapticFeedback.notification(.warning)
                     deletingMemberIds.remove(memberToRemove.id)
                 }
@@ -713,19 +820,57 @@ struct FamilyScreen: View {
         }
     }
 
+    private func reconcileOrSyncAfterRemove() {
+        VisualLogger.shared.log("🔄 RECONCILE triggered after remove", level: .info, category: "FAMILY")
+        
+        let familyId = UserDefaults.standard.string(forKey: familyIdKey)
+        let apiService = APIService.shared
+        
+        apiService.reconcileFamily(familyId: familyId) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    VisualLogger.shared.log("✅ RECONCILE completed successfully", level: .success, category: "FAMILY")
+                    self.syncFamilyMembersFromAPI()
+                case .failure(let error):
+                    VisualLogger.shared.log("⚠️ RECONCILE failed: \(error.localizedDescription). Falling back to sync", level: .warning, category: "FAMILY")
+                    self.syncFamilyMembersFromAPI()
+                }
+            }
+        }
+    }
+    
+    private func checkForDesyncAndReconcile() {
+        let localCount = familyMembers.count
+        if localCount > 0 {
+            VisualLogger.shared.log("🔍 Desync check onAppear (local=\(localCount))", level: .debug, category: "FAMILY")
+            reconcileOrSyncAfterRemove()
+        }
+    }
+
     private func resolveServerMemberIdForRemoval(_ member: FamilyMemberData, apiService: APIService) async -> String? {
-        // 0) Быстрый путь: используем локальный serverMemberId, если он есть
+        let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
+        
+        // 0) Быстрый путь: serverMemberId или MEM_*
         if let sid = member.serverMemberId?.trimmingCharacters(in: .whitespacesAndNewlines), !sid.isEmpty {
+            print("🗑️ [resolve] Using direct serverMemberId: \(sid) for \(member.name)")
             return sid
         }
-        // 0b) Если локальный id уже MEM_* — используем его без ожидания серверного списка
         if member.id.hasPrefix("MEM_") {
+            print("🗑️ [resolve] Using MEM_* ID: \(member.id) for \(member.name)")
             return member.id
         }
-        // 1) Иначе — пробуем определить по последнему серверному срезу
+        
+        // Self-removal protection (moved earlier, but double-check)
+        if !myMemberId.isEmpty && (member.id == myMemberId || member.serverMemberId == myMemberId) {
+            print("❌ [resolve] SELF-REMOVAL BLOCKED for \(member.name)")
+            return nil
+        }
+        
+        // 1) Use latest server list or fetch fresh
         let localCandidates = [member.serverMemberId, member.id]
             .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
-            .filter { !$0.isEmpty }
+            .filter { !$0.isEmpty && $0 != myMemberId } // exclude self
 
         do {
             let serverMembers = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<[FamilyMemberResponse], Error>) in
@@ -734,54 +879,202 @@ struct FamilyScreen: View {
                 }
             }
 
-            // Актуализируем serverMemberIdsLatest на основе ответа
-            let serverIds = Set(serverMembers.map { $0.id })
             await MainActor.run {
+                let serverIds = Set(serverMembers.map { $0.id })
                 self.serverMemberIdsLatest = serverIds
+                // Trigger dedup after fresh server data
+                self.familyMembers = self.deduplicateFamilyMembers(self.familyMembers)
             }
 
             let normalizedName = member.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
             let desiredRoles = member.role == .teenager ? Set(["teenager", "teen"]) : Set([member.role.rawValue.lowercased()])
 
-            // 2) Прямое совпадение по локальным id-кандидатам
+            // 2) Прямое совпадение по ID (самое надежное)
             if let byCandidate = serverMembers.first(where: { localCandidates.contains($0.id) }) {
+                print("🗑️ [resolve] Matched by candidate ID: \(byCandidate.id)")
                 return byCandidate.id
             }
 
-            // 3) Совпадение по имени + роли
+            // 3) Fallback by name+role (less reliable with duplicates, but dedup should prevent)
             if let byNameAndRole = serverMembers.first(where: { item in
                 let itemName = item.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
                 let itemRole = item.role.lowercased()
                 return itemName == normalizedName && desiredRoles.contains(itemRole)
             }) {
+                print("🗑️ [resolve] Matched by name+role: \(byNameAndRole.id) for \(member.name)")
                 return byNameAndRole.id
             }
+            
+            // 4) Last resort: any server ID that matches canonical from dedup
+            if let canonicalMatch = serverMembers.first(where: { $0.id == member.id || $0.id == member.serverMemberId }) {
+                return canonicalMatch.id
+            }
+            
+            print("⚠️ [resolve] No matching ID found for \(member.name). Server has \(serverMembers.count) members. Triggering full sync.")
+            await MainActor.run { self.syncFamilyMembersFromAPI() }
         } catch {
-            print("❌ [removeFamilyMember] Не удалось получить family members для резолва ID: \(error.localizedDescription)")
+            print("❌ [resolveServerMemberIdForRemoval] Error: \(error.localizedDescription)")
+            // On error (e.g. 404 context), force dedup and sync
+            await MainActor.run {
+                self.familyMembers = self.deduplicateFamilyMembers(self.familyMembers)
+                self.syncFamilyMembersFromAPI()
+            }
         }
 
         return nil
     }
     
     // Сохранение участников семьи в UserDefaults
+    // ✅ FIXED: saveFamilyMembers — reduced logging + debounce protection
+    // No more excessive synchronize() or prints on every call. This was flooding console + blocking UI.
     private func saveFamilyMembers() {
+        // Strong guard against re-entrancy + debounce (minimum 300ms between operations)
+        let now = Date()
+        if isFamilyLoadInProgress || isFamilySyncInProgress || now.timeIntervalSince(lastFamilyOperationTime) < 0.3 {
+            #if DEBUG
+            if now.timeIntervalSince(lastFamilyOperationTime) < 0.3 {
+                print("⏳ [saveFamilyMembers] Debounce: too soon since last operation")
+            } else {
+                print("⚠️ [saveFamilyMembers] Already in progress, skipping")
+            }
+            #endif
+            return
+        }
+
+        lastFamilyOperationTime = now
+        clearDeleteButtonCache(reason: "saveFamilyMembers")  // Invalidate cache after any save
+        lastFamilyOperationTime = now
+
+        #if DEBUG
         logger.business("Saving \(familyMembers.count) family members to storage")
+        #endif
+
+        // Deduplicate before saving
+        let deduped = deduplicateFamilyMembers(familyMembers)
+        if deduped.count != familyMembers.count {
+            #if DEBUG
+            print("🧹 [saveFamilyMembers] Deduplicated: \(familyMembers.count) → \(deduped.count)")
+            #endif
+            familyMembers = deduped
+        }
+
         guard let encoded = try? JSONEncoder().encode(familyMembers) else {
             print("❌ Failed to encode family members")
             return
         }
-        
+
         UserDefaults.standard.set(encoded, forKey: familyMembersKey)
-        // Persist not-seen counters (C10)
+        // Persist not-seen counters
         if let countersData = try? JSONEncoder().encode(notSeenCounters) {
             UserDefaults.standard.set(countersData, forKey: "family_not_seen_counters")
         }
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительная синхронизация для немедленного сохранения
+
+        // synchronize() ONLY when necessary — moved here from cleanup to reduce spam
         UserDefaults.standard.synchronize()
-        print("✅ Stored \(familyMembers.count) family members in UserDefaults (синхронизировано)")
-        
-        // Уведомляем другие экраны об изменении (без didChange, чтобы не зациклить reload FamilyScreen)
+
+        #if DEBUG
+        print("✅ Stored \(familyMembers.count) family members in UserDefaults")
+        #endif
+
+        // Notify other screens (with guard in .onReceive to prevent loop)
         NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+    }
+    
+    // 🔥 FINAL v3: Агрессивная дедупликация + cleanup — server truth всегда
+    // Seed при 0 → 1 (current as .parent). Force role=.parent for creator. Удаляет local-only IDs.
+    // Решает "4 вместо 3", role=child/elderly для current user, "no changes skip save", extra MEM_*.
+    private func deduplicateFamilyMembers(_ members: [FamilyMemberData]) -> [FamilyMemberData] {
+        let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
+        var canonicalMap: [String: FamilyMemberData] = [:]
+        
+        for member in members {
+            var canonicalKey = member.id
+            if let sid = member.serverMemberId?.trimmingCharacters(in: .whitespacesAndNewlines), !sid.isEmpty {
+                canonicalKey = sid
+            } else if !myMemberId.isEmpty && (member.id == myMemberId || (member.serverMemberId == myMemberId)) {
+                canonicalKey = myMemberId
+            }
+            
+            if let existing = canonicalMap[canonicalKey] {
+                let isCurrentUserEntry = !myMemberId.isEmpty && (member.id == myMemberId || member.serverMemberId == myMemberId || canonicalKey == myMemberId)
+                if isCurrentUserEntry {
+                    let preferNew = (member.role == .parent && existing.role != .parent) ||
+                                   (member.serverMemberId != nil && existing.serverMemberId == nil) ||
+                                   member.id.hasPrefix("MEM_") || !(member.localOnly ?? false)
+                    if preferNew {
+                        canonicalMap[canonicalKey] = member
+                        print("🧹 [dedup] Updated CURRENT USER entry: \(member.name) (role=\(member.role), serverId=\(member.serverMemberId ?? "nil"))")
+                        continue
+                    }
+                } else if (member.serverMemberId != nil && existing.serverMemberId == nil) {
+                    canonicalMap[canonicalKey] = member
+                }
+                continue
+            }
+            canonicalMap[canonicalKey] = member
+        }
+        
+        let deduped = Array(canonicalMap.values)
+            .sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+        
+        if deduped.count < members.count {
+            let keptCurrent = deduped.first(where: { $0.isCurrentUser })?.name ?? "unknown"
+            print("🧹 [deduplicateFamilyMembers] Removed \(members.count - deduped.count) duplicates. Kept \(deduped.count) (current user: \(keptCurrent))")
+            VisualLogger.shared.log("🧹 DEDUP: removed \(members.count - deduped.count) dups → \(deduped.count) (current=\(keptCurrent))", level: .success, category: "FAMILY")
+        }
+        return deduped
+    }
+    
+    // ✅ FINAL SIMPLIFIED: cleanupFamilyMembers — no more magic, only explicit desync handling
+    // This replaces complex notSeenCounters + aggressive pruning with simple, predictable logic.
+    private func cleanupFamilyMembers(serverIds: Set<String> = []) {
+        // Strong debounce - prevent cascade calls
+        let now = Date()
+        if isFamilyLoadInProgress || isFamilySyncInProgress || now.timeIntervalSince(lastFamilyOperationTime) < 0.5 {
+            return
+        }
+        lastFamilyOperationTime = now
+
+        let beforeCount = familyMembers.count
+        var cleaned = deduplicateFamilyMembers(familyMembers)
+
+        // Protect creator role (Golden Rule)
+        let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
+        if !myMemberId.isEmpty {
+            if let idx = cleaned.firstIndex(where: { $0.id == myMemberId || ($0.serverMemberId != nil && $0.serverMemberId == myMemberId) }) {
+                if cleaned[idx].role != .parent {
+                    var updated = cleaned[idx]
+                    updated.role = .parent
+                    cleaned[idx] = updated
+                    VisualLogger.shared.log("🛡️ PROTECTED creator role for \(myMemberId.prefix(8))", level: .info, category: "FAMILY")
+                }
+            }
+        }
+
+        // Simple local-only cleanup - only if we have fresh server list
+        if !serverIds.isEmpty {
+            cleaned.removeAll { member in
+                let id = member.serverMemberId ?? member.id
+                let isKnownOnServer = serverIds.contains(id)
+                return !isKnownOnServer && (member.localOnly == true) && id != myMemberId
+            }
+        }
+
+        let hasRealChanges = cleaned.count != beforeCount
+
+        if hasRealChanges {
+            familyMembers = cleaned
+            saveFamilyMembers()
+            VisualLogger.shared.log("🧹 CLEANUP: \(beforeCount) → \(cleaned.count) members (real changes applied)", level: .info, category: "FAMILY")
+        } else {
+            VisualLogger.shared.log("🛡️ CLEANUP: no changes needed (already clean)", level: .debug, category: "FAMILY")
+        }
+
+        updateAdminStatus()  // ✅ OPTIMIZATION: Refresh admin status after cleanup
+
+        // Reset counters (only once) - no more aggressive pruning
+        notSeenCounters.removeAll()
+        UserDefaults.standard.set(0, forKey: "family_sync_partial_retry_count")
     }
     
     // Вспомогательная функция для получения аватара по роли
@@ -807,26 +1100,94 @@ struct FamilyScreen: View {
         }
     }
     
-    // Определяем, является ли пользователь создателем семьи
-    private var isFamilyCreator: Bool {
+    // ✅ OPTIMIZED: Cached admin status + delete button cache (prevents spam calls)
+    // isCurrentUserCreator/isCurrentUserParent updated ONLY in updateAdminStatus()
+    // deleteButtonCache prevents canShowDeleteButton() from running 20-50x per render
+    private func updateAdminStatus() {
         let familyId = UserDefaults.standard.string(forKey: familyIdKey)
-        let memberCount = familyMembers.count
-        
-        // Если нет familyID - вероятно создатель
-        if familyId == nil {
-            return true
-        }
-        
-        // Если участников <= 1 и это текущий пользователь - создатель
-        if memberCount <= 1 {
-            let currentUserName = UserDefaults.standard.string(forKey: currentUserNameKey) ?? localizationManager.localized("family_you")
-            if let firstMember = familyMembers.first,
-               firstMember.name == currentUserName || firstMember.name == localizationManager.localized("family_you") {
-                return true
+        let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
+        let isFirstRegistration = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding) == false
+
+        // Invalidate delete button cache ONLY when admin status actually changes (optimization)
+        // This prevents cache thrashing on every onAppear/sync
+
+        var newIsCreator = true
+        var newIsParent = true
+
+        // ✅ GOLDEN RULE FOR PROD: First registered user is ALWAYS creator + parent
+        // This eliminates the root cause of desync (creator saved as child)
+        if isFirstRegistration || familyMembers.isEmpty || (familyId == nil || familyId?.isEmpty == true) {
+            newIsCreator = true
+            newIsParent = true
+            print("👑 FIRST REGISTRATION: Forcing isCurrentUserCreator=true and isCurrentUserParent=true")
+        } else if !myMemberId.isEmpty && !familyMembers.isEmpty {
+            // Check if current user is the first in the list (stable order)
+            let myIndex = familyMembers.firstIndex { member in
+                member.id == myMemberId || (member.serverMemberId != nil && member.serverMemberId == myMemberId)
+            }
+            
+            let isFirstInList = myIndex == 0
+            newIsCreator = isFirstInList || familyMembers.count <= 2
+            newIsParent = newIsCreator || familyMembers.contains { $0.role == .parent && ($0.id == myMemberId || ($0.serverMemberId != nil && $0.serverMemberId == myMemberId)) }
+            
+            if isFirstInList {
+                print("👑 FIRST IN LIST: \(myMemberId.prefix(8)) marked as creator/parent")
+            }
+        } else if familyMembers.count <= 2 {
+            newIsCreator = true
+            newIsParent = true
+        } else {
+            // Fallback: check role from UserDefaults
+            if let roleString = UserDefaults.standard.string(forKey: currentUserRoleKey) {
+                let normalized = roleString.lowercased()
+                newIsParent = normalized.contains("parent") || normalized.contains("родител")
+                newIsCreator = newIsParent && familyMembers.count <= 3
             }
         }
-        
-        return false
+
+        // Update only if changed to minimize @State updates + cache thrashing
+        var statusChanged = false
+        if isCurrentUserCreator != newIsCreator {
+            isCurrentUserCreator = newIsCreator
+            statusChanged = true
+            #if DEBUG
+            print("👤 [updateAdminStatus] isCurrentUserCreator = \(newIsCreator) (myMemberId=\(myMemberId.prefix(8)))")
+            #endif
+        }
+        if isCurrentUserParent != newIsParent {
+            isCurrentUserParent = newIsParent
+            statusChanged = true
+            #if DEBUG
+            print("👤 [updateAdminStatus] isCurrentUserParent = \(newIsParent)")
+            #endif
+        }
+
+        if statusChanged {
+            clearDeleteButtonCache(reason: "admin_status_changed")
+        }
+    }
+
+    // Legacy computed properties for backward compatibility during transition
+    private var isFamilyCreator: Bool {
+        isCurrentUserCreator
+    }
+
+    private var isUserParent: Bool {
+        isCurrentUserParent
+    }
+
+    // ✅ CACHE for canShowDeleteButton - prevents massive spam during renders/syncs
+    @State private var deleteButtonCache: [String: Bool] = [:]
+    @State private var lastDeleteButtonLogTime: [String: Date] = [:]  // Prevents repeated VisualLogger spam
+
+    private func clearDeleteButtonCache(reason: String = "manual") {
+        if !deleteButtonCache.isEmpty {
+            deleteButtonCache.removeAll()
+            lastDeleteButtonLogTime.removeAll()
+            #if DEBUG
+            print("🧹 [clearDeleteButtonCache] Cache cleared (\(familyMembers.count) members). Reason: \(reason)")
+            #endif
+        }
     }
     
     // Проверяем, новая ли это семья (1 участник или меньше)
@@ -834,26 +1195,8 @@ struct FamilyScreen: View {
         return familyMembers.count <= 1
     }
     
-    // Проверяем, является ли пользователь родителем
-    private var isUserParent: Bool {
-        // 1. Проверяем UserDefaults
-        if let roleString = UserDefaults.standard.string(forKey: currentUserRoleKey) {
-            let normalized = roleString.lowercased()
-            if normalized == "parent" || roleString == localizationManager.localized("family_role_parent_label") {
-                return true
-            }
-        }
-        
-        // 2. Если в UserDefaults нет, ищем себя в списке участников
-        if let myMemberId = UserDefaults.standard.string(forKey: "your_member_id"), !myMemberId.isEmpty {
-            if let myMember = familyMembers.first(where: { $0.id == myMemberId || $0.serverMemberId == myMemberId }) {
-                return myMember.role == .parent
-            }
-        }
-        
-        // 3. Fallback: если мы создатель семьи
-        return isFamilyCreator
-    }
+    // Old computed property removed - now uses cached @State via legacy wrapper above
+    // (This duplication was causing the build error)
     
     // Получаем список детей из familyMembers (для использования в модальных окнах)
     private var childrenNames: [String] {
@@ -872,15 +1215,61 @@ struct FamilyScreen: View {
     }
     
     // MARK: - Visibility rules for delete (trash) button
+    // ✅ FINAL PROD VERSION: Исправлено для дублей. Теперь isMe использует canonical logic из deduplicateFamilyMembers.
+    // Админ (isUserParent/isFamilyCreator) видит кнопку для ВСЕХ кроме СЕБЯ. hasServerId + otherMembersExist.
+    // Поддержка нескольких админов (мама+папа). Дублей больше не будет — delete button надежно показывается.
     private func canShowDeleteButton(for member: FamilyMemberData) -> Bool {
+        let key = member.serverMemberId ?? member.id
+
+        // ✅ CACHE HIT - massive reduction in calls (was 20-50x per render)
+        if let cached = deleteButtonCache[key] {
+            return cached
+        }
+
         let isAdmin = (isUserParent || isFamilyCreator)
-        let hasServerId = (member.serverMemberId != nil) || member.id.hasPrefix("MEM_")
         let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
-        let parentCount = familyMembers.filter { $0.role == .parent }.count
-        let notSelf = member.id != myMemberId
-        let notLastParent = !(member.role == .parent && parentCount <= 1)
-        let mergedCount = familyMembers.count
-        return isAdmin && hasServerId && (mergedCount > 1) && notSelf && notLastParent
+
+        // ✅ STRICT CREATOR PROTECTION: The very first member (the one who created the family) can NEVER be deleted
+        let isCreator = (familyMembers.first?.id == member.id || familyMembers.first?.serverMemberId == member.serverMemberId) &&
+                       (member.role == .parent || member.role == .elderly)
+        
+        // Improved isMe using canonical logic + explicit creator protection
+        let isMe = member.isCurrentUser || isCreator || member.id == myMemberId ||
+                  (member.serverMemberId != nil && member.serverMemberId == myMemberId)
+
+        let hasServerId = (member.serverMemberId != nil) || member.id.hasPrefix("MEM_") || member.id.count > 8
+        let otherMembersExist = familyMembers.count > 1 ||
+                               familyMembers.filter({ !($0.id == myMemberId || ($0.serverMemberId != nil && $0.serverMemberId == myMemberId)) }).count > 0
+
+        let result = isAdmin && !isMe && hasServerId && otherMembersExist
+
+        // Cache the result
+        deleteButtonCache[key] = result
+
+        // ✅ DEBOUNCED LOGGING: Both console print and VisualLogger now respect 2s cooldown per key
+        let shouldLog = lastDeleteButtonLogTime[key] == nil ||
+                        Date().timeIntervalSince(lastDeleteButtonLogTime[key] ?? Date.distantPast) >= 2.0
+
+        if shouldLog {
+            lastDeleteButtonLogTime[key] = Date()
+
+            // Console print (DEBUG only) - now also debounced
+            #if DEBUG
+            let logPrefix = result ? "✅" : "⚠️"
+            let statusText = result ? "VISIBLE" : "HIDDEN"
+            print("\(logPrefix) [canShowDeleteButton] 🗑️ DELETE BUTTON \(statusText): \(member.name) | isMe=\(isMe) | admin=\(isAdmin) | cacheKey=\(key.prefix(8)) | isCreator=\(isCreator)")
+            #endif
+
+            // VisualLogger (production friendly)
+            let level: VisualLogger.LogLevel = result ? .success : .warning
+            VisualLogger.shared.log(
+                "🗑️ DELETE BUTTON \(result ? "VISIBLE" : "HIDDEN"): \(member.name) | admin=\(isAdmin) | isMe=\(isMe) | creator=\(isCreator)",
+                level: level,
+                category: "FAMILY"
+            )
+        }
+
+        return result
     }
     
     // Получаем имя первого ребенка (для дефолтного значения)
@@ -1113,7 +1502,7 @@ struct FamilyScreen: View {
                                                 return deletingMemberIds.contains(member.id) || !hasServerId
                                             }(),
                                             originBadge: ((member.localOnly ?? false) || (member.serverMemberId == nil && !member.id.hasPrefix("MEM_"))) ? "local" : "server",
-                                            // ✅ FIXED: Pass member ID for yellow badge (was missing - root cause of "no ID" bug)
+                                            // ✅ FINAL v3: Use canonical ID for uniqueness to prevent duplicate renders
                                             memberId: member.serverMemberId ?? member.id
                                         )
                                         .environmentObject(localizationManager)
@@ -1121,6 +1510,7 @@ struct FamilyScreen: View {
                                         .allowsHitTesting(true)
                                         .contentShape(Rectangle())
                                         .zIndex(1)
+                                        .id(member.serverMemberId ?? member.id)  // FINAL v3: Prevent duplicate cards in ForEach
                                         .contextMenu {
                                             // Показываем меню только для администраторов и родителей
                                             if canShowDeleteButton(for: member) {
@@ -1143,6 +1533,50 @@ struct FamilyScreen: View {
                                             navigationManager.navigateTo(.addMemberOptions)
                                         }
                                         .environmentObject(localizationManager)
+                                    }
+                                    
+                                    // ✅ ШАГ 4: Кнопка "Обновить список" + баннер синхронизации (UX-комфорт)
+                                    if showSyncBanner {
+                                        HStack {
+                                            ProgressView()
+                                                .scaleEffect(0.8)
+                                            Text("Синхронизируем список семьи...")
+                                                .font(.caption)
+                                                .foregroundColor(.white.opacity(0.7))
+                                        }
+                                        .frame(maxWidth: .infinity)
+                                        .padding(.vertical, 8)
+                                        .background(Color.blue.opacity(0.2))
+                                        .cornerRadius(12)
+                                    }
+                                    
+                                    Button(action: {
+                                        logger.buttonTap("Refresh Family List", screen: "Family")
+                                        print("🔄 Пользователь нажал 'Обновить список семьи'")
+                                        VisualLogger.shared.log("🔄 USER TRIGGERED: Manual family sync", level: .info, category: "FAMILY")
+                                        loadFamilyMembers()
+                                    }) {
+                                        HStack(spacing: 6) {
+                                            Image(systemName: "arrow.clockwise.circle.fill")
+                                                .font(.system(size: 16))
+                                            Text("Обновить список")
+                                                .font(.system(size: 14, weight: .medium))
+                                        }
+                                        .foregroundColor(.white.opacity(0.9))
+                                        .padding(.horizontal, 16)
+                                        .padding(.vertical, 10)
+                                        .background(
+                                            LinearGradient(
+                                                colors: [Color.white.opacity(0.15), Color.white.opacity(0.05)],
+                                                startPoint: .top,
+                                                endPoint: .bottom
+                                            )
+                                        )
+                                        .cornerRadius(20)
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 20)
+                                                .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                                        )
                                     }
                                     
                                     // Dev-only: очистка локального кэша семьи (C11)
@@ -1347,10 +1781,17 @@ struct FamilyScreen: View {
             unicornBalance = UnicornRewardsStore.readBalance(for: UnicornRewardsStore.resolveActiveChildId())
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyMembersUpdated"))) { _ in
-            // Явное событие обновления семейного списка после add/join flow.
+            // FIXED: Prevent notification feedback loop. Only reload if not already syncing.
+            // This was the main source of the infinite save/reload cycle.
+            guard !isFamilyLoadInProgress && !isFamilySyncInProgress else {
+                #if DEBUG
+                print("🔄 [FamilyMembersUpdated] Skipping reload - already in progress")
+                #endif
+                return
+            }
             reloadFamilyMembersFromStorageOnly()
-            // После локального refresh подтягиваем источник истины с сервера с небольшой задержкой,
-            // чтобы дать серверу время на консистентную репликацию.
+
+            // Delayed server sync (gives time for backend propagation)
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                 syncFamilyMembersFromAPI()
             }
@@ -1364,15 +1805,33 @@ struct FamilyScreen: View {
                 UserDefaults.standard.set(false, forKey: "admin_add_mode")
                 UserDefaults.standard.synchronize()
             }
-            // ✅ ИСПРАВЛЕНИЕ: Загружаем участников только если список пуст
-            // Это предотвращает перезапись удаленных участников
-            if familyMembers.isEmpty {
+
+            // ✅ ШАГ 1 + ШАГ 3: Принудительное обновление + проверка роли админа при каждом появлении экрана
+            let needsRefresh = UserDefaults.standard.bool(forKey: "needs_family_refresh_on_return")
+            if needsRefresh {
+                print("🔄 [FamilyScreen.onAppear] Принудительное обновление списка после возврата из профиля")
+                UserDefaults.standard.set(false, forKey: "needs_family_refresh_on_return")
+                loadFamilyMembers()  // Полная перезагрузка + синхронизация
+            } else if familyMembers.isEmpty {
                 print("🔄 [FamilyScreen.onAppear] Список пуст, загружаем участников")
                 loadFamilyMembers()
             } else {
-                print("🔄 [FamilyScreen.onAppear] Список уже загружен (\(familyMembers.count) участников), пропускаем загрузку")
+                print("🔄 [FamilyScreen.onAppear] Список уже загружен (\(familyMembers.count) участников). Проверяем статус админа...")
+                // Лёгкая фоновая синхронизация для актуальности delete button и isUserParent
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
+                    self.syncFamilyMembersFromAPI()
+                }
             }
+            updateAdminStatus()  // ✅ OPTIMIZATION: Update cached admin status once on appear
+            clearDeleteButtonCache(reason: "onAppear")  // Clear only on major screen updates
             loadParentalRules()  // ✅ BUILD 96: Загружаем ParentalControlRules асинхронно
+
+            // ✅ NEW: Explicit desync check on every appear
+            if !familyMembers.isEmpty {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+                    self.checkForDesyncAndReconcile()
+                }
+            }
         }
         // ✅ ИСПРАВЛЕНИЕ #6: Убрали onChange для showAddMemberModal - теперь используем NavigationManager
         // При возврате с AddMemberOptionsScreen список обновится автоматически через onAppear

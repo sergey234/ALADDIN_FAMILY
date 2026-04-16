@@ -13,7 +13,7 @@ class VisualLogger: ObservableObject {
     @Published var isVisible: Bool = true
     @Published var showErrorOnly: Bool = false
     @Published var showCopySuccess: Bool = false
-    @Published var selectedLogLevelFilter: LogLevel? = nil // ✅ BUILD 115: Добавляем фильтр по уровню логов
+    @Published var selectedLogLevelFilter: LogLevel? = nil
 
     /// Публичный доступ к логам для отладки (можно просмотреть в Xcode debugger)
     public var allLogsText: String {
@@ -24,6 +24,21 @@ class VisualLogger: ObservableObject {
     /// Получить все логи для анализа
     func getLogs() -> String {
         return allLogsText
+    }
+
+    /// Direct clipboard copy with minimal side effects (for debugging)
+    func forceCopyToClipboard() {
+        let logText = logs.map { entry in
+            "[\(entry.formattedTime)] [\(entry.level.rawValue)] [\(entry.category)] \(entry.message)"
+        }.joined(separator: "\n")
+
+        UIPasteboard.general.string = logText
+        print("✅ Force copied \(logs.count) logs to clipboard (\(logText.count) chars)")
+        self.showCopySuccess = true
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            self.showCopySuccess = false
+        }
     }
     
     private let maxLogs = 50
@@ -206,17 +221,18 @@ class VisualLogger: ObservableObject {
 
     func copyLogsToClipboard() {
         let logText = logs.map { entry in
-            "[\(entry.formattedTime)] [\(entry.level.rawValue)] \(entry.message)"
+            "[\(entry.formattedTime)] [\(entry.level.rawValue)] [\(entry.category)] \(entry.message)"
         }.joined(separator: "\n")
 
+        // CRITICAL: Do ALL work on main thread, NO recursive self.log() calls
         DispatchQueue.main.async {
             UIPasteboard.general.string = logText
             self.showCopySuccess = true
-            // Добавим временный лог о копировании
-            self.log("📋 Logs copied to clipboard (\(self.logs.count) entries)", level: .success)
 
-            // Скрываем подтверждение через 2 секунды
-            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+            print("✅ VisualLogger: Successfully copied \(self.logs.count) logs to clipboard (\(logText.count) chars)")
+
+            // Auto-hide success message WITHOUT calling log()
+            DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
                 self.showCopySuccess = false
             }
         }
@@ -228,99 +244,129 @@ class VisualLogger: ObservableObject {
 struct VisualLogView: View {
     @ObservedObject var logger = VisualLogger.shared
     
+    // ✅ Computed property to break up complex body and fix "unable to type-check this expression" error
+    private var logLevelFilterPicker: some View {
+        Picker("Фильтр", selection: $logger.selectedLogLevelFilter) {
+            Text("Все").tag(nil as VisualLogger.LogLevel?)
+            ForEach(VisualLogger.LogLevel.allCases, id: \.self) { level in
+                Text(level.rawValue).tag(Optional(level) as VisualLogger.LogLevel?)
+            }
+        }
+        .pickerStyle(.menu)
+        .font(.caption2)
+        .foregroundColor(.white)
+        .background(Color.black.opacity(0.3))
+        .cornerRadius(4)
+    }
+    
     var body: some View {
+        mainContent
+    }
+    
+    // Final extraction - entire body moved to separate property to resolve persistent type-check timeout
+    private var mainContent: some View {
         VStack(alignment: .leading, spacing: 4) {
             // Header
             HStack {
                 Text("📋 ЛОГИ")
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
-                // ✅ BUILD 115: Добавляем фильтр по уровню логов
-                Picker("Фильтр", selection: $logger.selectedLogLevelFilter) {
-                    Text("Все").tag(nil as VisualLogger.LogLevel?)
-                    ForEach(VisualLogger.LogLevel.allCases, id: \.self) { level in
-                        Text(level.rawValue).tag(Optional(level) as VisualLogger.LogLevel?)
-                    }
-                }
-                .pickerStyle(.menu)
-                .font(.caption2)
-                .foregroundColor(.white)
-                .background(Color.black.opacity(0.3))
-                .cornerRadius(4)
+                
+                logLevelFilterPicker
                 
                 Spacer()
-                HStack(spacing: 4) {
-                    if logger.showCopySuccess {
-                        Text("✅ Скопировано!")
-                            .font(.caption)
-                            .foregroundColor(.green)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.white.opacity(0.2))
-                            .cornerRadius(4)
-                    }
-                    Button(action: { logger.copyLogsToClipboard() }) {
-                        Text("Копировать")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.blue)
-                            .cornerRadius(4)
-                    }
-                    Button(action: { logger.clear() }) {
-                        Text("Очистить")
-                            .font(.caption)
-                            .foregroundColor(.white)
-                            .padding(.horizontal, 8)
-                            .padding(.vertical, 4)
-                            .background(Color.red)
-                            .cornerRadius(4)
-                    }
-                }
-                Button(action: { logger.isVisible.toggle() }) {
-                    Image(systemName: logger.isVisible ? "eye.slash" : "eye")
-                        .foregroundColor(.white)
-                }
+                actionButtons
             }
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
             .background(Color.black.opacity(0.7))
             
             if logger.isVisible {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 2) {
-                        ForEach(logger.logs.reversed().filter { entry in
-                            logger.selectedLogLevelFilter == nil || entry.level == logger.selectedLogLevelFilter
-                        }) { entry in
-                            HStack(alignment: .top, spacing: 4) {
-                                Text("[\(entry.formattedTime)]")
-                                    .font(.system(size: 9))
-                                    .foregroundColor(.gray)
-                                Text("[\(entry.category)]") // ✅ BUILD 115: Отображаем категорию
-                                    .font(.system(size: 9))
-                                    .foregroundColor(.white.opacity(0.8))
-                                Text(entry.level.rawValue)
-                                    .font(.system(size: 10))
-                                    .foregroundColor(entry.level.color)
-                                Text(entry.message)
-                                    .font(.system(size: 10))
-                                    .foregroundColor(entry.level.color)
-                                    .multilineTextAlignment(.leading)
-                            }
-                            .padding(.horizontal, 4)
-                            .padding(.vertical, 2)
-                            .frame(maxWidth: .infinity, alignment: .leading)
-                        }
-                    }
-                }
-                .frame(maxHeight: 200)
-                .background(Color.black.opacity(0.8))
+                logContentView
             }
         }
         .font(.system(size: 11, design: .monospaced))
-        .cornerRadius(8)
+        .background(Color.black.opacity(0.7))
+        .cornerRadius(10)
         .padding(8)
+        .shadow(color: Color.black.opacity(0.4), radius: 10, x: 0, y: 5)
+    }
+    
+    // ✅ Extracted to fix "unable to type-check this expression" compiler error
+    private var actionButtons: some View {
+        HStack(spacing: 4) {
+            if logger.showCopySuccess {
+                Text("✅ Скопировано!")
+                    .font(.caption)
+                    .foregroundColor(.green)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.white.opacity(0.2))
+                    .cornerRadius(4)
+            }
+            Button(action: {
+                logger.forceCopyToClipboard()
+            }) {
+                Text("Копировать")
+                    .font(.caption)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.blue)
+                    .cornerRadius(4)
+            }
+            Button(action: { logger.clear() }) {
+                Text("Очистить")
+                    .font(.caption)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.red)
+                    .cornerRadius(4)
+            }
+        }
+    }
+    
+    // ✅ Extracted ScrollView to fix remaining type-check timeout error
+    private var logContentView: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 2) {
+                ForEach(logger.logs.reversed().filter { entry in
+                    logger.selectedLogLevelFilter == nil || entry.level == logger.selectedLogLevelFilter
+                }) { entry in
+                    HStack(alignment: .top, spacing: 4) {
+                        Text("[\(entry.formattedTime)]")
+                            .font(.system(size: 9))
+                            .foregroundColor(.gray)
+                        Text("[\(entry.category)]")
+                            .font(.system(size: 9))
+                            .foregroundColor(.white.opacity(0.8))
+                        Text(entry.level.rawValue)
+                            .font(.system(size: 10))
+                            .foregroundColor(entry.level.color)
+                        Text(entry.message)
+                            .font(.system(size: 10))
+                            .foregroundColor(entry.level.color)
+                            .multilineTextAlignment(.leading)
+                    }
+                    .padding(.horizontal, 4)
+                    .padding(.vertical, 2)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .textSelection(.enabled)
+            .padding(4)
+        }
+        .frame(maxHeight: 200)
+        .background(Color.black.opacity(0.85))
+        .cornerRadius(6)
+        .overlay(
+            RoundedRectangle(cornerRadius: 6)
+                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+        )
+        .onLongPressGesture {
+            logger.forceCopyToClipboard()
+        }
     }
 }
 

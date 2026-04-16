@@ -17,7 +17,28 @@ struct MainScreenWithRegistration: View {
     @StateObject var registrationVM: FamilyRegistrationViewModel
     @State private var showTip: Bool = false
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
+    
+    /// Closure для завершения регистрации (используется в preview и старых вызовах)
     var onComplete: (() -> Void)? = nil
+    
+    /// ✅ НОВОЕ: Логика завершения регистрации (переход на экран семьи)
+    private func completeRegistration(isSuccess: Bool = true) {
+        print("✅ [MainScreenWithRegistration] Завершаем регистрацию. Успех: \(isSuccess). Переходим на .family")
+        
+        // Сохраняем флаг завершения онбординга/регистрации
+        UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        UserDefaults.standard.synchronize()
+        
+        // Вызываем внешний completion если есть
+        onComplete?()
+        
+        // Главное — переходим на экран семьи через NavigationManager
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak navigationManager] in
+            navigationManager?.switchToFamilyScreen()
+            print("✅ [MainScreenWithRegistration] Вызван switchToFamilyScreen()")
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -58,8 +79,8 @@ struct MainScreenWithRegistration: View {
                 HStack {
                     Spacer()
                     Button(localizationManager.localized("common_cancel")) {
-                        print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем onComplete")
-                        onComplete?()
+                        print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем completeRegistration()")
+                        completeRegistration(isSuccess: false)
                     }
                     .font(.system(size: 16, weight: .medium))
                     .foregroundColor(.white)
@@ -223,8 +244,8 @@ struct MainScreenWithRegistration: View {
                     familyID: familyID,
                     onComplete: {
                         UserDefaults.standard.synchronize()
-                        onComplete?()
-                        print("✅ RecoveryCodeModal: onComplete вызван")
+                        print("✅ RecoveryCodeModal: onComplete вызван → вызываем completeRegistration()")
+                        completeRegistration(isSuccess: true)
                     }
                 )
             }
@@ -245,7 +266,8 @@ struct MainScreenWithRegistration: View {
                     
                     Button(localizationManager.localized("common_continue")) {
                         registrationVM.showSuccessModal = false
-                        onComplete?()
+                        print("✅ [MainScreenWithRegistration] Кнопка 'Продолжить' нажата после успеха")
+                        completeRegistration(isSuccess: true)
                     }
                     .buttonStyle(.borderedProminent)
                 }
@@ -304,7 +326,8 @@ struct MainScreenWithRegistration: View {
             
             Button(localizationManager.localized("common_cancel")) {
                 registrationVM.errorMessage = nil
-                onComplete?()
+                print("✅ [MainScreenWithRegistration] Отмена из ошибки")
+                completeRegistration(isSuccess: false)
             }
             .foregroundColor(.white.opacity(0.8))
         }

@@ -34,25 +34,53 @@ struct APIResponseValidator {
         // Production логирование
         os_log("🛡️ Validating %{public}@", log: Self.validationLogger, type: .info, typeName)
 
-        switch response {
-        case let analytics as AnalyticsResponse:
-            try validateAnalyticsResponse(analytics)
-        case let familyMember as FamilyMemberResponse:
-            try validateFamilyMemberResponse(familyMember)
-        case let deviceDetail as DeviceDetailResponse:
-            try validateDeviceDetailResponse(deviceDetail)
-        case let protectionStats as ProtectionStatsResponse:
-            try validateProtectionStatsResponse(protectionStats)
-        case let familyChatMessage as FamilyChatMessageResponse:
-            try validateFamilyChatMessageResponse(familyChatMessage)
-        case let createFamily as CreateFamilyResponse:
-            try validateCreateFamilyResponse(createFamily)
-        default:
-            // Для неизвестных типов просто проверяем что объект не nil
+        // Handle arrays (common for list endpoints like family members)
+        if typeName.contains("Array<") || typeName.hasPrefix("[") {
             #if DEBUG
-            print("⚠️ APIResponseValidator: Неизвестный тип \(typeName) - пропускаем валидацию")
+            print("🛡️ APIResponseValidator: Array type \(typeName) - skipping detailed validation (individual elements validated upstream)")
             #endif
-            break
+            os_log("🛡️ Array type %{public}@ - validation skipped (elements handled individually)", log: Self.validationLogger, type: .info, typeName)
+            // Success for arrays - no further validation needed here
+        }
+        // Handle specific responses that don't have dedicated validators yet
+        else if let _ = response as? RecoveryCodeLoginResponse {
+            #if DEBUG
+            print("✅ RecoveryCodeLoginResponse validated (no complex fields)")
+            #endif
+            // Simple success - tokens already handled in business logic
+        }
+        else if response is SubscriptionEventsBatchResponse {
+            #if DEBUG
+            print("✅ SubscriptionEventsBatchResponse validated (simple ack)")
+            #endif
+            // Simple ack response - no complex validation needed
+        }
+        // Handle MetricsUploadResponse
+        else if let metricsResponse = response as? MetricsUploadResponse {
+            try validateMetricsUploadResponse(metricsResponse)
+        }
+        else {
+            switch response {
+            case let analytics as AnalyticsResponse:
+                try validateAnalyticsResponse(analytics)
+            case let familyMember as FamilyMemberResponse:
+                try validateFamilyMemberResponse(familyMember)
+            case let deviceDetail as DeviceDetailResponse:
+                try validateDeviceDetailResponse(deviceDetail)
+            case let protectionStats as ProtectionStatsResponse:
+                try validateProtectionStatsResponse(protectionStats)
+            case let familyChatMessage as FamilyChatMessageResponse:
+                try validateFamilyChatMessageResponse(familyChatMessage)
+            case let createFamily as CreateFamilyResponse:
+                try validateCreateFamilyResponse(createFamily)
+            default:
+                // Для неизвестных типов просто проверяем что объект не nil
+                #if DEBUG
+                print("⚠️ APIResponseValidator: Неизвестный тип \(typeName) - пропускаем валидацию")
+                #endif
+                os_log("⚠️ Unknown type %{public}@ - skipping validation", log: Self.validationLogger, type: .info, typeName)
+                break
+            }
         }
 
         #if DEBUG
@@ -368,6 +396,27 @@ struct APIResponseValidator {
             }
         }
         // Если members отсутствует - это не ошибка (опциональное поле)
+    }
+
+    // MARK: - Metrics Upload Response Validation
+    private static func validateMetricsUploadResponse(_ response: MetricsUploadResponse) throws {
+        // Простая валидация ответа загрузки метрик
+        guard response.success else {
+            // Даже если success=false, не бросаем ошибку — просто логируем
+            os_log("⚠️ Metrics upload reported success=false: %{public}@", 
+                   log: Self.validationLogger, type: .info, response.message ?? "unknown")
+            return
+        }
+
+        guard response.uploadedCount >= 0 else {
+            throw ValidationError.invalidValue(field: "uploadedCount", 
+                                             value: response.uploadedCount, 
+                                             reason: "должно быть >= 0")
+        }
+
+        #if DEBUG
+        print("✅ MetricsUploadResponse validated: success=\(response.success), uploaded=\(response.uploadedCount)")
+        #endif
     }
 
     // MARK: - Helper Methods

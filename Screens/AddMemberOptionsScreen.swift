@@ -17,12 +17,12 @@ struct AddMemberOptionsScreen: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @State private var isProcessingCreateFamily: Bool = false // ✅ Защита от двойного клика
+    
+    // Temporary states for navigation (will be removed in next cleanup)
     @State private var showCreateFamily: Bool = false
     @State private var showQRScanner: Bool = false
     @State private var showCodeInput: Bool = false
-    @State private var scannedCode: String = ""
-    @State private var familyCreated: Bool = false
-    @State private var isProcessingCreateFamily: Bool = false // ✅ Защита от двойного клика
     
     // MARK: - Body
     
@@ -77,20 +77,22 @@ struct AddMemberOptionsScreen: View {
                         description: localizationManager.localized("add_member_create_family_desc"),
                         color: .orange
                     ) {
-                        // ✅ ИСПРАВЛЕНИЕ: Предотвращаем двойной клик
-                        guard !isProcessingCreateFamily && !showCreateFamily else {
-                            print("⚠️ AddMemberOptionsModal: Попытка повторного открытия регистрации, игнорируем")
+                        // ✅ FIXED: Pure navigation - no internal modals
+                        guard !isProcessingCreateFamily else {
+                            print("⚠️ AddMemberOptionsScreen: Already processing create family, ignoring duplicate tap")
                             return
                         }
                         
                         isProcessingCreateFamily = true
-                        print("✅ AddMemberOptionsModal: Открываем регистрацию семьи")
+                        print("✅ AddMemberOptionsScreen: Navigating to create family registration")
                         
-                        // Сначала открываем регистрацию
-                        showCreateFamily = true
+                        // Use NavigationManager instead of internal fullScreenCover
+                        navigationManager.navigateTo(.mainWithRegistration)
                         
-                        // ✅ ИСПРАВЛЕНИЕ: Не закрываем экран, просто открываем регистрацию
-                        // Экран закроется автоматически после создания семьи через onChange
+                        // Reset after navigation
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                            isProcessingCreateFamily = false
+                        }
                     }
                     
                     // Вариант 2: Сканировать QR-код
@@ -100,17 +102,17 @@ struct AddMemberOptionsScreen: View {
                         description: localizationManager.localized("add_member_scan_qr_desc"),
                         color: .blue
                     ) {
-                        showQRScanner = true
+                        navigationManager.navigateTo(.qrCode)
                     }
                     
-                    // Вариант 3: Ввести код
+                    // Вариант 3: Ввести код приглашения
                     optionButton(
                         icon: "textformat.123",
                         title: localizationManager.localized("add_member_enter_code"),
                         description: localizationManager.localized("add_member_enter_code_desc"),
                         color: .green
                     ) {
-                        showCodeInput = true
+                        navigationManager.navigateTo(.invitationCode)
                     }
                 }
                 
@@ -152,124 +154,41 @@ struct AddMemberOptionsScreen: View {
             .padding(.horizontal, 20)
             .id("add_member_screen_lang_\(localizationManager.currentLanguage.rawValue)")
         }
-        .fullScreenCover(isPresented: $showCreateFamily) {
-            MainScreenWithRegistration(
-                registrationVM: FamilyRegistrationViewModel(),
-                onComplete: {
-                    print("✅ [AddMemberOptionsScreen] Регистрация завершена, закрываем модал")
-                    showCreateFamily = false
-                    isProcessingCreateFamily = false
-                    
-                    // ✅ НОВОЕ: Проверяем роль и навигируем на соответствующий интерфейс
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                        checkRoleAndNavigate()
-                    }
-                }
-            )
-        }
-        .fullScreenCover(isPresented: $showQRScanner) {
-            QRScannerModal { code in
-                // После сканирования QR автоматически открываем ввод кода
-                scannedCode = code
-                showQRScanner = false
-                // Открываем ввод кода после закрытия сканера
-                DispatchQueue.main.async {
-                    showCodeInput = true
-                }
+        // ✅ FIXED: Removed all internal .fullScreenCover and .sheet to prevent "single sheet is supported" warning
+        // Now uses pure NavigationManager navigation (no nested presentation)
+        .onChange(of: showCreateFamily) { newValue in
+            if newValue {
+                // Navigate instead of using fullScreenCover
+                showCreateFamily = false
+                navigationManager.navigateTo(.mainWithRegistration)
             }
         }
-        .sheet(isPresented: $showCodeInput) {
-            InvitationCodeInputModal(
-                isPresented: $showCodeInput,
-                initialCode: scannedCode.isEmpty ? nil : scannedCode
-            )
+        .onChange(of: showQRScanner) { newValue in
+            if newValue {
+                showQRScanner = false
+                navigationManager.navigateTo(.qrCode)
+            }
         }
         .onChange(of: showCodeInput) { newValue in
-            if !newValue {
-                // Сбрасываем scannedCode после закрытия
-                scannedCode = ""
-            }
-        }
-        .onChange(of: showCreateFamily) { newValue in
-            // ✅ ИСПРАВЛЕНИЕ: Когда модал закрывается, проверяем создание семьи и навигируем
-            if !newValue {
-                isProcessingCreateFamily = false
-                print("✅ [AddMemberOptionsScreen] Регистрация закрыта")
-                
-                // Проверяем, создана ли семья
-                DispatchQueue.main.async {
-                    UserDefaults.standard.synchronize()
-                    
-                    if let familyID = UserDefaults.standard.string(forKey: "family_id"),
-                       !familyID.isEmpty {
-                        print("✅ [AddMemberOptionsScreen] Семья создана (family_id: \(familyID)), навигируем на экран семьи")
-                        
-                        // Закрываем текущий экран и навигируем на семью
-                        dismiss()
-                        
-                        // Навигируем на экран семьи после небольшой задержки для завершения анимации закрытия
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-                            if navigationManager.navigationStack.isEmpty {
-                                navigationManager.navigationStack = [.main]
-                            }
-                            navigationManager.navigateTo(.family)
-                        }
-                    } else {
-                        print("⚠️ [AddMemberOptionsScreen] Семья не создана, остаемся на экране")
-                    }
-                }
+            if newValue {
+                showCodeInput = false
+                navigationManager.navigateTo(.invitationCode)
             }
         }
     }
     
-    // MARK: - Navigation After Registration
+    // MARK: - Navigation Helpers
     
+    // Simplified - most navigation now happens directly via NavigationManager
     private func checkRoleAndNavigate() {
-        if UserDefaults.standard.bool(forKey: "admin_add_mode") {
-            print("✅ [AddMemberOptionsScreen] admin_add_mode активен, навигация выполняется через onChange, пропускаем checkRoleAndNavigate")
-            return
-        }
-
-        // Проверяем роль пользователя из UserDefaults
-        guard let roleString = UserDefaults.standard.string(forKey: "current_user_role"),
-              let role = FamilyRole(rawValue: roleString) else {
-            print("⚠️ [AddMemberOptionsScreen] Роль не найдена, навигируем на главный экран")
-            navigateToMainScreen()
-            return
-        }
-        
-        print("✅ [AddMemberOptionsScreen] Роль найдена: \(role.rawValue)")
-        
-        // Закрываем текущий экран
+        print("✅ [AddMemberOptionsScreen] Registration completed - navigating to family")
         dismiss()
         
-        // Навигируем на соответствующий интерфейс в зависимости от роли
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
             if navigationManager.navigationStack.isEmpty {
                 navigationManager.navigationStack = [.main]
             }
-            
-            switch role {
-            case .child, .teenager:
-                print("✅ [AddMemberOptionsScreen] Навигируем на детский интерфейс")
-                navigationManager.navigateTo(.childRewards)
-            case .elderly:
-                print("✅ [AddMemberOptionsScreen] Навигируем на интерфейс 60+")
-                navigationManager.navigateTo(.elderlyInterface)
-            case .parent:
-                print("✅ [AddMemberOptionsScreen] Навигируем на экран семьи")
-                navigationManager.navigateTo(.family)
-            }
-        }
-    }
-    
-    private func navigateToMainScreen() {
-        dismiss()
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
-            if navigationManager.navigationStack.isEmpty {
-                navigationManager.navigationStack = [.main]
-            }
-            navigationManager.navigateTo(.main)
+            navigationManager.navigateTo(.family)
         }
     }
     

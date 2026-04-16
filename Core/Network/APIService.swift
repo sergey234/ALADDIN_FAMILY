@@ -1769,6 +1769,20 @@ class APIService: ObservableObject {
         networkManager.post(endpoint: AppConfig.Endpoint.deviceRegister, body: body, completion: completion)
     }
     
+    // MARK: - Family Reconcile API
+
+    /**
+     * Вызывает reconcile на сервере для исправления рассинхронизации семьи.
+     * Используется после remove 404, registration, или явного desync.
+     */
+    func reconcileFamily(familyId: String? = nil, completion: @escaping (Result<APIResponse<ReconcileFamilyResponse>, Error>) -> Void) {
+        struct ReconcileRequest: Codable {
+            let familyId: String?
+        }
+        let request = ReconcileRequest(familyId: familyId)
+        networkManager.post(endpoint: AppConfig.Endpoint.familyReconcile, body: request, completion: completion)
+    }
+
     // MARK: - Add Device API
     
     struct AddDeviceRequest: Codable {
