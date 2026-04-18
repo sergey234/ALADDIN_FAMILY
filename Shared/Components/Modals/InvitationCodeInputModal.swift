@@ -167,7 +167,10 @@ struct InvitationCodeInputModal: View {
             self.isLoading = false
         } else if registrationVM.familyID != nil {
             self.isLoading = false
-            UserDefaults.standard.set(registrationVM.familyID, forKey: "family_id")
+            if let fid = registrationVM.familyID {
+                FamilyLocalStore.resetPersistedCachesIfFamilyChanged(newFamilyId: fid)
+                UserDefaults.standard.set(fid, forKey: FamilyLocalStore.familyIdKey)
+            }
             NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
             NotificationCenter.default.post(name: NSNotification.Name("MainFamilyStatsForceRefresh"), object: nil)
             isPresented = false

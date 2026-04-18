@@ -8,7 +8,7 @@ FAMILY API: Endpoints для семейной статистики
 API для получения статистики семьи
 """
 
-from fastapi import APIRouter, HTTPException, Request, Depends, status
+from fastapi import APIRouter, HTTPException, Request, Depends, status, Query, Response
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
@@ -96,6 +96,62 @@ def _resolve_user_id_from_claim(current_user: dict) -> int:
             gen.close()
 
     raise HTTPException(status_code=401, detail="Invalid user_id in token")
+
+
+def _iso_utc_timestamp() -> str:
+    """Activity / ordering marker (ISO-8601 UTC). Prefer `updated_at` for ordering; this stays human-readable."""
+    return datetime.utcnow().replace(microsecond=0).isoformat() + "Z"
+
+
+def _resolve_primary_family_id_for_actor(db, user_id: int, current_user: dict) -> Optional[str]:
+    """
+    Единый выбор семьи для JWT-актора (GET /members, reconcile, согласование add/remove).
+
+    1) Если в JWT есть `family_id` и пользователь — участник или владелец этой семьи → используем его.
+    2) Иначе последняя по `updated_at` строка членства в `family_members`.
+    3) Иначе последняя семья, где пользователь — `owner_user_id`.
+    """
+    raw = current_user.get("family_id")
+    if raw is not None:
+        fid = str(raw).strip()
+        if fid:
+            m = db.execute(
+                text(
+                    "SELECT 1 FROM family_members WHERE family_id = :fid AND user_id = :uid LIMIT 1"
+                ),
+                {"fid": fid, "uid": user_id},
+            ).fetchone()
+            if m:
+                return fid
+            o = db.execute(
+                text("SELECT 1 FROM families WHERE id = :fid AND owner_user_id = :uid LIMIT 1"),
+                {"fid": fid, "uid": user_id},
+            ).fetchone()
+            if o:
+                return fid
+    row = db.execute(
+        text(
+            """
+            SELECT fm.family_id
+            FROM family_members fm
+            WHERE fm.user_id = :user_id
+            ORDER BY fm.updated_at DESC NULLS LAST, fm.id DESC
+            LIMIT 1
+            """
+        ),
+        {"user_id": user_id},
+    ).fetchone()
+    if row and row[0] is not None:
+        return str(row[0]).strip()
+    fam_row = db.execute(
+        text(
+            "SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"
+        ),
+        {"user_id": user_id},
+    ).fetchone()
+    if fam_row and fam_row[0] is not None:
+        return str(fam_row[0]).strip()
+    return None
 
 
 # ============================================
@@ -510,7 +566,7 @@ async def create_family_endpoint(
                         "user_id": user_id,
                         "name": f"{create_request.role.upper()} {create_request.personal_letter.upper()}",
                         "role": create_request.role,
-                        "last_active": datetime.now().strftime("%H:%M"),
+                        "last_active": _iso_utc_timestamp(),
                     },
                 )
                 db.commit()
@@ -606,7 +662,7 @@ async def add_family_member(
                     SELECT fm.family_id, fm.role
                     FROM family_members fm
                     WHERE fm.user_id = :user_id
-                    ORDER BY fm.last_active DESC
+                    ORDER BY fm.updated_at DESC NULLS LAST, fm.id DESC
                     LIMIT 1
                     """
                 ),
@@ -643,7 +699,7 @@ async def add_family_member(
 
             member_id = f"MEM_{uuid.uuid4().hex[:12].upper()}"
             status_val = "protected"
-            last_active = datetime.now().strftime("%H:%M")
+            last_active = _iso_utc_timestamp()
             threats_blocked = 0
             devices_val = 0
 
@@ -720,11 +776,22 @@ async def add_family_member(
 
 @router.get("/members", response_model=list[FamilyMemberCompat])
 async def get_family_members_compat(
-    current_user: dict = Depends(get_current_user)
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    familyId: Optional[str] = Query(None, alias="familyId"),
 ):
     """
     ✅ Production rule: no mock/fake.
     Если БД не подключена — отдаём 503, чтобы клиент не принимал пустые/фейковые данные как "успех".
+
+    Согласование контекста семьи:
+    - Сервер вычисляет `family_id` по JWT: приоритет claim `family_id` (если авторизован для этой семьи),
+      затем последнее членство по `updated_at`, затем владелец семьи.
+    - Если клиент передал query `familyId`, он **должен** совпадать с вычисленным id — иначе 409
+      (защита от смешения локального кэша другой семьи с данными актора).
+    - Заголовок `X-Resolved-Family-Id` — явная «правда сервера» для этой выдачи (полный список строк этой семьи).
+    - Заголовок `X-Current-Member-Id` — `family_members.id` строки членства JWT-актора в этой семье (детерминированное
+      выравнивание `your_member_id` на iOS без угадывания по JWT payload).
     """
     user_id = _resolve_user_id_from_claim(current_user)
     if not get_postgres_db:
@@ -735,31 +802,31 @@ async def get_family_members_compat(
         db = next(gen)
         try:
             _ensure_family_indexes(db)
-            # 1) Определяем семейный контекст актора по членству
-            actor_family_row = db.execute(
-                text(
-                    """
-                    SELECT fm.family_id
-                    FROM family_members fm
-                    WHERE fm.user_id = :user_id
-                    ORDER BY fm.last_active DESC
-                    LIMIT 1
-                    """
-                ),
-                {"user_id": user_id},
-            ).fetchone()
-            if actor_family_row:
-                family_id = actor_family_row[0]
-            else:
-                # Фолбек для владельца семьи
-                fam_row = db.execute(
-                    text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
-                    {"user_id": user_id},
-                ).fetchone()
-                if not fam_row:
-                    logger.warning("family_members_no_family_for_actor", user_id=user_id)
-                    return []
-                family_id = fam_row[0]
+            resolved_primary = _resolve_primary_family_id_for_actor(db, user_id, current_user)
+            if not resolved_primary:
+                logger.warning("family_members_no_family_for_actor", user_id=user_id)
+                return [], None, None
+            family_id = resolved_primary
+            resolved = resolved_primary
+            qfid = (familyId or "").strip()
+            if qfid and qfid != resolved:
+                logger.warning(
+                    "family_members_family_id_mismatch",
+                    user_id=user_id,
+                    query_family_id=qfid,
+                    resolved_family_id=resolved,
+                )
+                # P2: scrape as counter in Loki/Datadog — family_members_get_409
+                logger.info(
+                    "metric_family_members_get_409",
+                    user_id=user_id,
+                    query_family_id=qfid,
+                    resolved_family_id=resolved,
+                )
+                raise HTTPException(
+                    status_code=409,
+                    detail="familyId does not match the authenticated user's family context",
+                )
 
             res = db.execute(
                 text("SELECT id, name, role FROM family_members WHERE family_id = :family_id ORDER BY id ASC"),
@@ -778,15 +845,45 @@ async def get_family_members_compat(
                 family_id=str(family_id),
                 value=len(rows),
             )
-            return [
+            members = [
                 FamilyMemberCompat(id=str(r[0]), name=str(r[1]), role=str(r[2]))
                 for r in rows
             ]
+            cur = db.execute(
+                text(
+                    """
+                    SELECT id FROM family_members
+                    WHERE family_id = :family_id AND user_id = :user_id
+                    ORDER BY updated_at DESC NULLS LAST, id DESC
+                    LIMIT 1
+                    """
+                ),
+                {"family_id": family_id, "user_id": user_id},
+            ).fetchone()
+            current_member_id = str(cur[0]).strip() if cur and cur[0] is not None else None
+            return members, resolved, current_member_id
         finally:
             gen.close()
 
     try:
-        return await asyncio.to_thread(load_members_sync)
+        members, resolved_fid, current_member_id = await asyncio.to_thread(load_members_sync)
+        if resolved_fid:
+            response.headers["X-Resolved-Family-Id"] = resolved_fid
+            logger.info(
+                "metric_family_members_get_ok",
+                user_id=user_id,
+                family_id=resolved_fid,
+                count=len(members),
+            )
+        if current_member_id:
+            response.headers["X-Current-Member-Id"] = current_member_id
+            logger.info(
+                "family_members_current_member_header",
+                user_id=user_id,
+                member_id=current_member_id,
+                family_id=resolved_fid,
+            )
+        return members
     except HTTPException:
         raise
     except Exception as e:
@@ -846,7 +943,7 @@ async def remove_family_member(
                     SELECT fm.family_id
                     FROM family_members fm
                     WHERE fm.user_id = :user_id
-                    ORDER BY fm.last_active DESC
+                    ORDER BY fm.updated_at DESC NULLS LAST, fm.id DESC
                     LIMIT 1
                     """
                 ),
@@ -872,7 +969,7 @@ async def remove_family_member(
                     SELECT id, role
                     FROM family_members
                     WHERE family_id = :family_id AND user_id = :user_id AND lower(role) = 'parent'
-                    ORDER BY last_active DESC
+                    ORDER BY updated_at DESC NULLS LAST, id DESC
                     LIMIT 1
                     """
                 ),
@@ -885,7 +982,7 @@ async def remove_family_member(
                         SELECT id, role
                         FROM family_members
                         WHERE family_id = :family_id AND user_id = :user_id
-                        ORDER BY last_active DESC
+                        ORDER BY updated_at DESC NULLS LAST, id DESC
                         LIMIT 1
                         """
                     ),
@@ -1020,7 +1117,8 @@ async def reconcile_family(
 ):
     """
     Фоновая/ручная процедура сверки целостности семьи по familyId.
-    - Определяет familyId по членству актора, если не передан.
+    - `familyId` в теле (если передан) **должен** совпадать с семьёй, вычисленной для JWT-актора (как в GET /members).
+    - Если не передан — берётся семья актора по тому же правилу.
     - Считает и при необходимости мягко исправляет аномальные статусы.
     """
     user_id = _resolve_user_id_from_claim(current_user)
@@ -1032,32 +1130,23 @@ async def reconcile_family(
         db = next(gen)
         try:
             _ensure_family_indexes(db)
-            # Определяем family_id
+            resolved = _resolve_primary_family_id_for_actor(db, user_id, current_user)
             if payload.familyId is not None:
-                family_id = payload.familyId
+                p = str(payload.familyId).strip()
+                if not p:
+                    raise HTTPException(status_code=422, detail="familyId is empty")
+                if resolved is None:
+                    raise HTTPException(status_code=404, detail="Family not found")
+                if p != resolved:
+                    raise HTTPException(
+                        status_code=409,
+                        detail="familyId does not match the authenticated user's family context",
+                    )
+                family_id = p
             else:
-                actor_row = db.execute(
-                    text(
-                        """
-                        SELECT fm.family_id
-                        FROM family_members fm
-                        WHERE fm.user_id = :user_id
-                        ORDER BY fm.last_active DESC
-                        LIMIT 1
-                        """
-                    ),
-                    {"user_id": user_id},
-                ).fetchone()
-                if not actor_row:
-                    fam_row = db.execute(
-                        text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
-                        {"user_id": user_id},
-                    ).fetchone()
-                    if not fam_row:
-                        raise HTTPException(status_code=404, detail="Family not found")
-                    family_id = fam_row[0]
-                else:
-                    family_id = actor_row[0]
+                if resolved is None:
+                    raise HTTPException(status_code=404, detail="Family not found")
+                family_id = resolved
 
             rows = db.execute(
                 text(

@@ -26,9 +26,11 @@ struct MainScreenWithRegistration: View {
     private func completeRegistration(isSuccess: Bool = true) {
         print("✅ [MainScreenWithRegistration] Завершаем регистрацию. Успех: \(isSuccess). Переходим на .family")
         
-        // Сохраняем флаг завершения онбординга/регистрации
-        UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-        UserDefaults.standard.synchronize()
+        // Онбординг завершён только при реальном успехе регистрации. Отмена не должна включать «первый вход» на Family.
+        if isSuccess {
+            UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            UserDefaults.standard.synchronize()
+        }
         
         // Вызываем внешний completion если есть
         onComplete?()

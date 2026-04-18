@@ -709,7 +709,13 @@ struct MainScreen: View {
                                 }
                                 
                                 Button(action: {
-                                    // Используем модал для добавления участника
+                                    // Та же семья: помечаем admin-add, чтобы createFamily() вызвал addFamilyMember, а не family/create
+                                    let fid = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "")
+                                        .trimmingCharacters(in: .whitespacesAndNewlines)
+                                    if !fid.isEmpty {
+                                        UserDefaults.standard.set(true, forKey: "admin_add_mode")
+                                        UserDefaults.standard.synchronize()
+                                    }
                                     navigationManager.navigateTo(.addMemberOptions)
                                 }) {
                                     Text(localizationManager.localized("main_family_add_member"))
@@ -805,7 +811,6 @@ struct MainScreen: View {
                     if let level = notification.userInfo?["level"] as? String {
                         print("🔄 [MainScreen] Received SubscriptionUpdated notification: \(level)")
                     }
-                    // Trigger UI refresh
                     mainViewModel.requestRefreshDebounced()
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("tariffPurchased"))) { notification in
@@ -817,18 +822,7 @@ struct MainScreen: View {
                     mainViewModel.requestRefreshDebounced()
                 }
                 .onChange(of: subscriptionManager.currentSubscription) { _ in
-                    print("🔄 [MainScreen] currentSubscription changed - refreshing tariff display")
                     mainViewModel.requestRefreshDebounced()
-                }
-                .onChange(of: subscriptionManager.getCurrentLevel()) { _ in
-                    print("🔄 [MainScreen] getCurrentLevel() changed - tariff UI will update")
-                }
-                .onAppear {
-                    // Force sync when returning to main screen to ensure latest tariff is shown
-                    Task {
-                        await subscriptionManager.forceSync()
-                        print("🔄 [MainScreen] onAppear: forceSync completed for tariff display")
-                    }
                 }
     }
 

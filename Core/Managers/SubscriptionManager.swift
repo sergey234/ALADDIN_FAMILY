@@ -172,6 +172,10 @@ final class SubscriptionManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private let logger = MasterLogger.shared
 
+    /// Throttle for `checkTrialExpiration` on foreground / post-launch (server remains source of truth after sync).
+    private var lastThrottledTrialExpiryCheckAt: Date?
+    private let trialExpiryForegroundCheckMinInterval: TimeInterval = 15 * 60
+
     // 🏥 DEFENSIVE JWT: Proactive Token Health Monitor
     // 🏥 DEFENSIVE JWT: Token Health Monitor работает через singleton
 
@@ -186,14 +190,13 @@ final class SubscriptionManager: ObservableObject {
     /// ✅ BUILD 101: Добавлена защита от повторного вызова для предотвращения дублирования инициализации
     func initializeOnAppStart() async {
         SubscriptionManager.initializationLock.lock()
-        defer { SubscriptionManager.initializationLock.unlock() }
-        
         guard !SubscriptionManager.hasInitialized else {
+            SubscriptionManager.initializationLock.unlock()
             logger.business("⚠️ SubscriptionManager.initializeOnAppStart() уже вызван, пропускаем повторный вызов")
             return
         }
-        
         SubscriptionManager.hasInitialized = true
+        SubscriptionManager.initializationLock.unlock()
         
         print("🚀🚀🚀 INITIALIZE_ON_APP_START: Method called")
         logger.business("🚀 SubscriptionManager.initializeOnAppStart() called")
@@ -248,6 +251,8 @@ final class SubscriptionManager: ObservableObject {
 
         // 🚨 DEFENSIVE JWT: Emergency reset Circuit Breaker if stuck
         JWTCircuitBreaker.shared.emergencyReset()
+
+        await performThrottledTrialExpiryCheckIfNeeded()
 
         // Log initialization completion
         JWTEventLogger.logEvent(.healthCheckPerformed(
@@ -969,6 +974,11 @@ final class SubscriptionManager: ObservableObject {
         let newSubscriptionStatus = response.subscription.toSubscriptionStatus()
         await updateSubscriptionStatus(newSubscriptionStatus)
 
+        // Align Keychain `trialStatus` with server (same as registerDeviceWithTrial path).
+        if let serverTrial = jwtToken.trialInfo {
+            await updateTrialStatus(serverTrial)
+        }
+
         // Логирование после сохранения токена
         logger.business("✅ Токен успешно сохранен в Keychain:")
         logger.business("   - DeviceID: \(jwtToken.deviceId)")
@@ -1358,7 +1368,42 @@ final class SubscriptionManager: ObservableObject {
             trialStatus = trial
         }
 
+        #if DEBUG
+        logSubscriptionStateSnapshotAfterKeychainLoad()
+        #endif
+
         logger.business("💾 Persisted data loaded")
+    }
+
+    #if DEBUG
+    /// Single diagnostic line: token snapshot vs subscription vs trial Keychain vs effective level (avoids trial/free confusion).
+    private func logSubscriptionStateSnapshotAfterKeychainLoad() {
+        let tokenLevel = currentToken?.subscriptionLevel.rawValue ?? "nil"
+        let planLevel = currentSubscription.map { $0.level.rawValue } ?? "nil"
+        let trialLine: String = {
+            guard let t = trialStatus else { return "trialStatus=nil" }
+            let iso = ISO8601DateFormatter()
+            iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            return "trialStatus active=\(t.isActive) end=\(iso.string(from: t.endDate))"
+        }()
+        let effective = getCurrentLevel().rawValue
+        let line = "📊 SUBSCRIPTION_KEYCHAIN_SNAPSHOT token_level=\(tokenLevel) plan_level=\(planLevel) \(trialLine) getCurrentLevel=\(effective)"
+        print(line)
+        VisualLogger.shared.log(line, level: .info, category: "SUBSCRIPTION")
+        logger.business(line)
+    }
+    #endif
+
+    /// Runs local trial expiry handling at most once per `trialExpiryForegroundCheckMinInterval` (cold start / first active always runs).
+    /// After successful server sync, `updateFromServerStatus` overwrites local state — server wins.
+    func performThrottledTrialExpiryCheckIfNeeded() async {
+        let now = Date()
+        if let last = lastThrottledTrialExpiryCheckAt,
+           now.timeIntervalSince(last) < trialExpiryForegroundCheckMinInterval {
+            return
+        }
+        lastThrottledTrialExpiryCheckAt = now
+        await checkTrialExpiration()
     }
 
     /// 🔐 Store JWT token securely
@@ -1778,6 +1823,10 @@ extension SubscriptionManager {
         errorMessage: String? = nil,
         metadata: [String: String]? = nil
     ) {
+        var mergedMeta = metadata ?? [:]
+        mergedMeta["plan_level"] = currentSubscription?.level.rawValue ?? "unknown"
+        mergedMeta["effective_level"] = getCurrentLevel().rawValue
+
         let eventData = SubscriptionEventData(
             event: event,
             userId: userId ?? currentToken?.deviceId,
@@ -1787,7 +1836,7 @@ extension SubscriptionManager {
             amount: amount,
             transactionId: transactionId,
             errorMessage: errorMessage,
-            metadata: metadata
+            metadata: mergedMeta.isEmpty ? nil : mergedMeta
         )
 
         pendingEvents.append(eventData)

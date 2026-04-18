@@ -1222,6 +1222,8 @@ class NetworkManager: NSObject, ObservableObject {
                         networkError = .forbidden(errorMessage)
                     case 404:
                         networkError = .notFound(errorMessage)
+                    case 409:
+                        networkError = .conflict(errorMessage)
                     case 429:
                         networkError = .tooManyRequests(errorMessage)
                     case 500:

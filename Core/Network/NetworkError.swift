@@ -60,6 +60,9 @@ enum NetworkError: Error, LocalizedError {
     /// Ошибка 404 - Не найдено
     case notFound(String?)
     
+    /// Ошибка 409 — конфликт (например, `familyId` не совпадает с семьёй по токену)
+    case conflict(String?)
+    
     /// Ошибка 429 - Слишком много запросов
     case tooManyRequests(String?)
     
@@ -163,6 +166,8 @@ enum NetworkError: Error, LocalizedError {
             return "Доступ запрещен: \(message ?? "Недостаточно прав")"
         case .notFound(let message):
             return "Ресурс не найден: \(message ?? "Проверьте URL")"
+        case .conflict(let message):
+            return message ?? "Данные не совпадают. Обновите список семьи или войдите снова."
         case .tooManyRequests(let message):
             return "Слишком много запросов: \(message ?? "Попробуйте позже")"
         case .internalServerError(let message):
@@ -325,6 +330,8 @@ enum NetworkError: Error, LocalizedError {
             return .forbidden(message)
         case 404:
             return .notFound(message)
+        case 409:
+            return .conflict(message)
         case 429:
             return .tooManyRequests(message)
         case 500:
@@ -346,6 +353,18 @@ enum NetworkError: Error, LocalizedError {
             return networkError
         } else {
             return .unknown(error)
+        }
+    }
+
+    /// Конфликт контекста семьи при `GET /api/family/members` (HTTP 409).
+    var isFamilyMembersContextConflict: Bool {
+        switch self {
+        case .conflict:
+            return true
+        case .httpError(let code) where code == 409:
+            return true
+        default:
+            return false
         }
     }
 }
@@ -375,6 +394,7 @@ extension NetworkError: Equatable {
              (.unauthorized(let lhsMsg), .unauthorized(let rhsMsg)),
              (.forbidden(let lhsMsg), .forbidden(let rhsMsg)),
              (.notFound(let lhsMsg), .notFound(let rhsMsg)),
+             (.conflict(let lhsMsg), .conflict(let rhsMsg)),
              (.tooManyRequests(let lhsMsg), .tooManyRequests(let rhsMsg)),
              (.internalServerError(let lhsMsg), .internalServerError(let rhsMsg)),
              (.badGateway(let lhsMsg), .badGateway(let rhsMsg)),

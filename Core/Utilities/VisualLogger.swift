@@ -2,6 +2,27 @@ import SwiftUI
 import Foundation
 import UIKit
 
+// MARK: - Machine-readable export pointer (agents / ML pipelines / Cursor)
+
+/// Overwritten on each export. Stable path in app **Documents**: `aladdin_latest_export_manifest.json`
+private struct AladdinLatestExportManifestV1: Codable {
+    var schemaVersion: Int
+    /// e.g. `visual_logs`, `startup_trace`
+    var exportKind: String
+    var primaryFileName: String
+    /// Path on **this device** (simulator or phone). On Mac, pull via Xcode container or `simctl get_app_container`.
+    var primaryFileAbsolutePath: String
+    var byteCount: Int
+    var createdAtISO8601: String
+    /// Same moment as export, in device locale (for humans and matching the filename stamp when applicable).
+    var humanReadableLocalTime: String
+    /// Copy into an ML / agent chat so it knows exactly which file and session to open.
+    var mlSearchPhrase: String
+    var bundleIdentifier: String
+    /// Natural-language hint for automated tools
+    var analyzeNext: String
+}
+
 /**
  * 🔍 Visual Logger - для отображения логов на экране
  * Используется когда Xcode консоль недоступна
@@ -13,6 +34,9 @@ class VisualLogger: ObservableObject {
     @Published var isVisible: Bool = true
     @Published var showErrorOnly: Bool = false
     @Published var showCopySuccess: Bool = false
+    @Published var lastExportPath: String? = nil
+    /// Localized date+time of the last successful file export (visual logs or manifest refresh for Share Trace).
+    @Published var lastExportHumanTime: String? = nil
     @Published var selectedLogLevelFilter: LogLevel? = nil
 
     /// Публичный доступ к логам для отладки (можно просмотреть в Xcode debugger)
@@ -28,16 +52,22 @@ class VisualLogger: ObservableObject {
 
     /// Direct clipboard copy with minimal side effects (for debugging)
     func forceCopyToClipboard() {
-        let logText = logs.map { entry in
+        let sourceLogs = logs.isEmpty ? getSavedLogs() : logs
+        let logText = sourceLogs.isEmpty ? "VisualLogger: no logs available to copy." : sourceLogs.map { entry in
             "[\(entry.formattedTime)] [\(entry.level.rawValue)] [\(entry.category)] \(entry.message)"
         }.joined(separator: "\n")
 
-        UIPasteboard.general.string = logText
-        print("✅ Force copied \(logs.count) logs to clipboard (\(logText.count) chars)")
-        self.showCopySuccess = true
+        DispatchQueue.main.async {
+            self.lastExportPath = nil
+            self.lastExportHumanTime = nil
+            UIPasteboard.general.string = logText
+            let pasted = UIPasteboard.general.string ?? ""
+            print("✅ Force copied \(sourceLogs.count) logs to clipboard (\(logText.count) chars, readback=\(pasted.count))")
+            self.showCopySuccess = true
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            self.showCopySuccess = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                self.showCopySuccess = false
+            }
         }
     }
     
@@ -49,9 +79,69 @@ class VisualLogger: ObservableObject {
     private static var hasLoadedLogs = false
     private static let loadLogsLock = NSLock()
     
+    /// Stable filename in **Documents** — external tools read this first to find the latest export.
+    static let latestExportManifestFileName = "aladdin_latest_export_manifest.json"
+
     private init() {
         // ✅ ИСПРАВЛЕНИЕ BUILD 93: Убрано чтение UserDefaults из init() - может вызывать рекурсию
         // Логи будут загружены асинхронно после инициализации через loadLogsAsync()
+    }
+
+    /// File-safe stamp for export filenames: `2026-04-17T14-30-00-123` (device local timezone, ms suffix avoids collisions).
+    static func exportFilenameTimestamp(for date: Date = Date()) -> String {
+        let f = DateFormatter()
+        f.locale = Locale(identifier: "en_US_POSIX")
+        f.timeZone = TimeZone.current
+        f.dateFormat = "yyyy-MM-dd'T'HH-mm-ss-SSS"
+        return f.string(from: date)
+    }
+
+    /// Medium date + time in current locale (UI and manifest).
+    static func exportHumanReadableLocalTime(for date: Date = Date()) -> String {
+        let f = DateFormatter()
+        f.locale = .current
+        f.timeZone = TimeZone.current
+        f.dateStyle = .medium
+        f.timeStyle = .medium
+        return f.string(from: date)
+    }
+
+    /// Writes `Documents/aladdin_latest_export_manifest.json` so scripts/agents know **which file to analyze next**.
+    func writeLatestExportManifestForAgents(exportKind: String, fileURL: URL, byteCount: Int, exportDate: Date = Date()) {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
+        let manifestURL = docs.appendingPathComponent(Self.latestExportManifestFileName)
+        let bundleId = Bundle.main.bundleIdentifier ?? "unknown"
+        let iso = ISO8601DateFormatter().string(from: exportDate)
+        let human = Self.exportHumanReadableLocalTime(for: exportDate)
+        let name = fileURL.lastPathComponent
+        let mlSearchPhrase =
+            "Диагностика ALADDIN (iOS), exportKind=\(exportKind): открой в контейнере приложения папку Documents и файл «\(name)» (или по абсолютному пути primaryFileAbsolutePath из манифеста). Это актуальный экспорт на момент \(human) (ISO8601: \(iso)). Сначала можно прочитать «\(Self.latestExportManifestFileName)» — там primaryFileName и путь."
+        let analyzeNext =
+            "ALADDIN diagnostic export kind=\(exportKind). UTF-8 file: primaryFileAbsolutePath. Same session: createdAtISO8601=\(iso), humanReadableLocalTime=\(human). Use mlSearchPhrase for LLM prompts. Manifest path: Documents/\(Self.latestExportManifestFileName)."
+        let manifest = AladdinLatestExportManifestV1(
+            schemaVersion: 1,
+            exportKind: exportKind,
+            primaryFileName: name,
+            primaryFileAbsolutePath: fileURL.path,
+            byteCount: byteCount,
+            createdAtISO8601: iso,
+            humanReadableLocalTime: human,
+            mlSearchPhrase: mlSearchPhrase,
+            bundleIdentifier: bundleId,
+            analyzeNext: analyzeNext
+        )
+        do {
+            let enc = JSONEncoder()
+            enc.outputFormatting = [.prettyPrinted, .sortedKeys]
+            let data = try enc.encode(manifest)
+            try data.write(to: manifestURL, options: .atomic)
+            print("🤖 ALADDIN_EXPORT_MANIFEST → \(manifestURL.path)")
+            print("   primary: \(name) (\(byteCount) bytes) @ \(iso) / \(human)")
+            print("   mlSearchPhrase: \(mlSearchPhrase)")
+        } catch {
+            print("⚠️ ALADDIN_EXPORT_MANIFEST write failed: \(error)")
+        }
     }
     
     // ✅ НОВОЕ: Асинхронная загрузка логов после инициализации
@@ -220,16 +310,20 @@ class VisualLogger: ObservableObject {
     }
 
     func copyLogsToClipboard() {
-        let logText = logs.map { entry in
+        let sourceLogs = logs.isEmpty ? getSavedLogs() : logs
+        let logText = sourceLogs.isEmpty ? "VisualLogger: no logs available to copy." : sourceLogs.map { entry in
             "[\(entry.formattedTime)] [\(entry.level.rawValue)] [\(entry.category)] \(entry.message)"
         }.joined(separator: "\n")
 
         // CRITICAL: Do ALL work on main thread, NO recursive self.log() calls
         DispatchQueue.main.async {
+            self.lastExportPath = nil
+            self.lastExportHumanTime = nil
             UIPasteboard.general.string = logText
             self.showCopySuccess = true
 
-            print("✅ VisualLogger: Successfully copied \(self.logs.count) logs to clipboard (\(logText.count) chars)")
+            let pasted = UIPasteboard.general.string ?? ""
+            print("✅ VisualLogger: Successfully copied \(sourceLogs.count) logs to clipboard (\(logText.count) chars, readback=\(pasted.count))")
 
             // Auto-hide success message WITHOUT calling log()
             DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
@@ -237,12 +331,125 @@ class VisualLogger: ObservableObject {
             }
         }
     }
+
+    /// Export logs to **Documents** (`visual-logs-<yyyy-MM-dd'T'HH-mm-ss>.txt`) so the path is stable on simulator/device
+    /// and easy to pull with `simctl` / Finder container. Also printed to Xcode console.
+    @discardableResult
+    func exportLogsToTempFile() -> URL? {
+        let exportDate = Date()
+        let stamp = Self.exportFilenameTimestamp(for: exportDate)
+        let iso = ISO8601DateFormatter().string(from: exportDate)
+        let human = Self.exportHumanReadableLocalTime(for: exportDate)
+        let bundleId = Bundle.main.bundleIdentifier ?? "unknown"
+        let sourceLogs = logs.isEmpty ? getSavedLogs() : logs
+        let logBody = sourceLogs.isEmpty ? "VisualLogger: no logs available to export." : sourceLogs.map { entry in
+            "[\(entry.formattedTime)] [\(entry.level.rawValue)] [\(entry.category)] \(entry.message)"
+        }.joined(separator: "\n")
+        let header = """
+# ALADDIN Visual Logger Export
+# Local time: \(human)
+# ISO8601: \(iso)
+# File stamp: \(stamp)
+# Bundle: \(bundleId)
+
+"""
+        let logText = header + logBody
+
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            ?? FileManager.default.temporaryDirectory
+        let fileURL = docs.appendingPathComponent("visual-logs-\(stamp).txt")
+        do {
+            try logText.write(to: fileURL, atomically: true, encoding: .utf8)
+            let byteCount: Int = {
+                if let n = try? FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? NSNumber {
+                    return n.intValue
+                }
+                if let i = try? FileManager.default.attributesOfItem(atPath: fileURL.path)[.size] as? Int64 {
+                    return Int(i)
+                }
+                return logText.utf8.count
+            }()
+            writeLatestExportManifestForAgents(exportKind: "visual_logs", fileURL: fileURL, byteCount: byteCount, exportDate: exportDate)
+            DispatchQueue.main.async {
+                self.lastExportPath = fileURL.path
+                self.lastExportHumanTime = human
+                self.showCopySuccess = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.5) {
+                    self.showCopySuccess = false
+                }
+            }
+            print("✅ VisualLogger: logs exported to Documents → \(fileURL.path)")
+            print("   Simulator: copy from app container …/Documents/visual-logs-*.txt or use Share (if added).")
+            print("   Agents: also read Documents/\(Self.latestExportManifestFileName)")
+            return fileURL
+        } catch {
+            print("❌ VisualLogger: failed to export logs file: \(error)")
+            DispatchQueue.main.async {
+                self.lastExportPath = "export failed: \(error.localizedDescription)"
+                self.lastExportHumanTime = nil
+                self.showCopySuccess = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 3.0) {
+                    self.showCopySuccess = false
+                }
+            }
+            return nil
+        }
+    }
+
+    func startupTraceURL() -> URL {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        return (docs ?? FileManager.default.temporaryDirectory).appendingPathComponent("startup_trace.txt")
+    }
+
+    func lifecycleTraceURL() -> URL {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        return (docs ?? FileManager.default.temporaryDirectory).appendingPathComponent("app_lifecycle_trace.txt")
+    }
+}
+
+// MARK: - Launch file traces (shared; callable before WindowGroup appears)
+
+/// Writes to Documents `startup_trace.txt` / `app_lifecycle_trace.txt` so diagnostics survive Xcode disconnect and SIGKILL.
+enum LaunchDiagnostics {
+    static func appendStartupTrace(_ message: String) {
+        appendLine(message, fileName: "startup_trace.txt", consolePrefix: "STARTUP_TRACE")
+    }
+
+    static func appendLifecycleTrace(_ message: String) {
+        appendLine(message, fileName: "app_lifecycle_trace.txt", consolePrefix: "LIFECYCLE_TRACE")
+    }
+
+    private static func appendLine(_ message: String, fileName: String, consolePrefix: String) {
+        let ts = ISO8601DateFormatter().string(from: Date())
+        let line = "[\(ts)] \(message)\n"
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        let fileURL = (docs ?? FileManager.default.temporaryDirectory).appendingPathComponent(fileName)
+        do {
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                let handle = try FileHandle(forWritingTo: fileURL)
+                defer { try? handle.close() }
+                try handle.seekToEnd()
+                if let data = line.data(using: .utf8) {
+                    try handle.write(contentsOf: data)
+                }
+            } else {
+                try line.write(to: fileURL, atomically: true, encoding: .utf8)
+            }
+        } catch {
+            print("⚠️ LaunchDiagnostics write failed (\(fileName)): \(error)")
+        }
+        #if DEBUG
+        print("🧭 \(consolePrefix): \(message)")
+        #endif
+    }
 }
 
 // MARK: - Visual Logger View
 
 struct VisualLogView: View {
     @ObservedObject var logger = VisualLogger.shared
+    @State private var shareURL: URL? = nil
+    @State private var showShareSheet = false
     
     // ✅ Computed property to break up complex body and fix "unable to type-check this expression" error
     private var logLevelFilterPicker: some View {
@@ -296,13 +503,24 @@ struct VisualLogView: View {
     private var actionButtons: some View {
         HStack(spacing: 4) {
             if logger.showCopySuccess {
-                Text("✅ Скопировано!")
-                    .font(.caption)
-                    .foregroundColor(.green)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.white.opacity(0.2))
-                    .cornerRadius(4)
+                Group {
+                    if let path = logger.lastExportPath {
+                        let timeLine = logger.lastExportHumanTime.map { "🕐 \($0)\n" } ?? ""
+                        Text(path.hasPrefix("/") ? "✅ Экспорт\n\(timeLine)\(path)" : "✅ \(timeLine)\(path)")
+                            .font(.caption2)
+                            .foregroundColor(.green)
+                            .lineLimit(6)
+                            .multilineTextAlignment(.leading)
+                    } else {
+                        Text("✅ Скопировано в буфер")
+                            .font(.caption)
+                            .foregroundColor(.green)
+                    }
+                }
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.white.opacity(0.2))
+                .cornerRadius(4)
             }
             Button(action: {
                 logger.forceCopyToClipboard()
@@ -313,6 +531,53 @@ struct VisualLogView: View {
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color.blue)
+                    .cornerRadius(4)
+            }
+            Button(action: {
+                _ = logger.exportLogsToTempFile()
+            }) {
+                Text("Экспорт")
+                    .font(.caption)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.orange)
+                    .cornerRadius(4)
+            }
+            Button(action: {
+                let startup = logger.startupTraceURL()
+                if FileManager.default.fileExists(atPath: startup.path) {
+                    let shareDate = Date()
+                    let sz: Int = {
+                        if let n = try? FileManager.default.attributesOfItem(atPath: startup.path)[.size] as? NSNumber {
+                            return n.intValue
+                        }
+                        if let i = try? FileManager.default.attributesOfItem(atPath: startup.path)[.size] as? Int64 {
+                            return Int(i)
+                        }
+                        return 0
+                    }()
+                    logger.writeLatestExportManifestForAgents(exportKind: "startup_trace", fileURL: startup, byteCount: sz, exportDate: shareDate)
+                    let human = VisualLogger.exportHumanReadableLocalTime(for: shareDate)
+                    logger.lastExportPath = startup.path
+                    logger.lastExportHumanTime = human
+                    shareURL = startup
+                    showShareSheet = true
+                } else {
+                    logger.lastExportPath = "startup_trace.txt not found"
+                    logger.lastExportHumanTime = nil
+                    logger.showCopySuccess = true
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+                        logger.showCopySuccess = false
+                    }
+                }
+            }) {
+                Text("Share Trace")
+                    .font(.caption)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.purple)
                     .cornerRadius(4)
             }
             Button(action: { logger.clear() }) {
@@ -367,7 +632,31 @@ struct VisualLogView: View {
         .onLongPressGesture {
             logger.forceCopyToClipboard()
         }
+        .sheet(isPresented: $showShareSheet) {
+            if let url = shareURL {
+                ActivityViewController(activityItems: [url])
+            }
+        }
+        .overlay(alignment: .bottomLeading) {
+            if let lastPath = logger.lastExportPath, lastPath.hasPrefix("/") {
+                let suffix = logger.lastExportHumanTime.map { "\n🕐 \($0)" } ?? ""
+                Text("📄 \(lastPath)\(suffix)")
+                    .font(.system(size: 8))
+                    .foregroundColor(.white.opacity(0.8))
+                    .padding(4)
+            }
+        }
     }
+}
+
+struct ActivityViewController: UIViewControllerRepresentable {
+    let activityItems: [Any]
+
+    func makeUIViewController(context: Context) -> UIActivityViewController {
+        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
+    }
+
+    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - View Modifier для добавления VisualLogView на любой экран
@@ -386,9 +675,10 @@ extension View {
                         .frame(maxWidth: 280)
                         .padding(.trailing, 16)
                         .padding(.bottom, 120)
+                        .allowsHitTesting(true) // Only the logger widget should capture taps
                 }
             }
-            .allowsHitTesting(true) // Разрешаем взаимодействие с логами
+            .allowsHitTesting(false) // Do not block interactions with underlying screens
         )
         #else
         return self

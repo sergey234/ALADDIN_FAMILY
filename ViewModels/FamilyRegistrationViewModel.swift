@@ -308,14 +308,17 @@ class FamilyRegistrationViewModel: ObservableObject {
     @MainActor func createFamily() {
         logger.business("Creating family with role: \(selectedRole?.rawValue ?? "none")")
         
-        // ✅ CRITICAL FIX: Always reset admin_add_mode for new user registration/onboarding
-        // This prevents incorrectly entering addMember path before family exists (causing 404 "Family not found")
+        // Сбрасываем admin_add_mode только если на устройстве ещё нет семьи (истинная первичная регистрация).
+        // Если family_id уже есть, admin_add_mode означает «добавить участника в текущую семью» — не сбрасывать (иначе всегда уходит в family/create).
+        let existingFamilyId = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let hasExistingFamilyOnDevice = !existingFamilyId.isEmpty
         let wasAdminAddMode = UserDefaults.standard.bool(forKey: "admin_add_mode")
-        if wasAdminAddMode {
-            logger.business("⚠️ ADMIN_ADD_MODE was active during initial registration - RESETTING it")
+        if wasAdminAddMode && !hasExistingFamilyOnDevice {
+            logger.business("⚠️ ADMIN_ADD_MODE active but no family_id — resetting (avoid addMember 404 before family exists)")
             UserDefaults.standard.set(false, forKey: "admin_add_mode")
             UserDefaults.standard.synchronize()
-            VisualLogger.shared.log("🔄 Reset admin_add_mode for first-time family creation", level: .warning, category: "FAMILY")
+            VisualLogger.shared.log("🔄 Reset admin_add_mode (no family on device)", level: .warning, category: "FAMILY")
         }
         
         // ✅ ИСПРАВЛЕНИЕ ПОДРОСТКА: Детальное логирование
@@ -481,6 +484,10 @@ class FamilyRegistrationViewModel: ObservableObject {
                 case .success(let response):
                     self?.familyID = response.family_id
                     self?.recoveryCode = response.recovery_code
+
+                    FamilyLocalStore.resetPersistedCachesIfFamilyChanged(newFamilyId: response.family_id)
+                    UserDefaults.standard.set(response.family_id, forKey: FamilyLocalStore.familyIdKey)
+                    FamilyLocalStore.persistFamilyCreatorMemberId(response.creator_member_id)
 
                     // ✅ BUILD 115: Сохраняем your_member_id с диагностикой
                     // ✅ КРЕПОСТЬ 2.1: Асинхронный разрыв - UserDefaults.set в async для предотвращения рекурсии
@@ -905,8 +912,8 @@ class FamilyRegistrationViewModel: ObservableObject {
 
                     self?.familyID = data.family_id
 
-                    // ✅ НОВОЕ: Сохраняем family_id в UserDefaults
-                    UserDefaults.standard.set(data.family_id, forKey: "family_id")
+                    FamilyLocalStore.resetPersistedCachesIfFamilyChanged(newFamilyId: data.family_id)
+                    UserDefaults.standard.set(data.family_id, forKey: FamilyLocalStore.familyIdKey)
                     
                     // ✅ BUILD 115: Сохраняем your_member_id с диагностикой
                     // ✅ КРЕПОСТЬ 2.1: Асинхронный разрыв - UserDefaults.set в async для предотвращения рекурсии
@@ -995,7 +1002,8 @@ class FamilyRegistrationViewModel: ObservableObject {
 
                         // Сохраняем family_id
                         self?.familyID = recoveredFamilyId
-                        UserDefaults.standard.set(recoveredFamilyId, forKey: "family_id")
+                        FamilyLocalStore.resetPersistedCachesIfFamilyChanged(newFamilyId: recoveredFamilyId)
+                        UserDefaults.standard.set(recoveredFamilyId, forKey: FamilyLocalStore.familyIdKey)
                         UserDefaults.standard.synchronize()
 
                         // Критично для защищенных family endpoints:
@@ -1205,20 +1213,20 @@ class FamilyRegistrationViewModel: ObservableObject {
                 UserDefaults.standard.synchronize()
                 print("✅ Создатель семьи добавлен к списку участников: \(userName) (\(cardRole)). Всего участников: \(existingMembers.count)")
                 
-                if role == .teenager {
+                if cardRole == .teenager {
                     VisualLogger.shared.log("✅ ПОДРОСТОК: Сохранено в UserDefaults - всего участников: \(existingMembers.count)", level: .success, category: "FAMILY")
                     MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК: Сохранено в UserDefaults - всего участников: \(existingMembers.count)")
                     
-                    // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Проверяем что подросток действительно сохранен
+                    // Проверяем, что в ростере сохранена та же роль карточки (важно для .child + возраст .teen → cardRole .teenager).
                     if let verifyData = UserDefaults.standard.data(forKey: "family_members_list"),
                        let verifyDecoded = try? JSONDecoder().decode([FamilyMemberData].self, from: verifyData) {
-                        let teenagerFound = verifyDecoded.contains { $0.role == .teenager && $0.name == userName }
-                        if teenagerFound {
+                        let saved = verifyDecoded.contains { $0.role == cardRole && $0.name == userName }
+                        if saved {
                             VisualLogger.shared.log("✅ ПОДРОСТОК: Подтверждено сохранение в UserDefaults!", level: .success, category: "FAMILY")
                             MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК: Подтверждено сохранение в UserDefaults!")
                         } else {
-                            VisualLogger.shared.log("❌ ПОДРОСТОК: ОШИБКА - подросток НЕ найден после сохранения!", level: .error, category: "FAMILY")
-                            MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК: ОШИБКА - подросток НЕ найден после сохранения!")
+                            VisualLogger.shared.log("❌ ПОДРОСТОК: ОШИБКА - участник с ролью \(cardRole.rawValue) НЕ найден после сохранения!", level: .error, category: "FAMILY")
+                            MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК: ОШИБКА - участник с ролью \(cardRole.rawValue) НЕ найден после сохранения!")
                         }
                     }
                 }
@@ -1345,20 +1353,19 @@ class FamilyRegistrationViewModel: ObservableObject {
                 UserDefaults.standard.synchronize()
                 print("✅ Присоединившийся участник добавлен к списку: \(userName) (\(cardRole)). Всего участников: \(existingMembers.count)")
                 
-                if role == .teenager {
+                if cardRole == .teenager {
                     VisualLogger.shared.log("✅ ПОДРОСТОК (JOINED): Сохранено в UserDefaults - всего участников: \(existingMembers.count)", level: .success, category: "FAMILY")
                     MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК (JOINED): Сохранено в UserDefaults - всего участников: \(existingMembers.count)")
                     
-                    // ✅ ДОПОЛНИТЕЛЬНАЯ ПРОВЕРКА: Проверяем что подросток действительно сохранен
                     if let verifyData = UserDefaults.standard.data(forKey: "family_members_list"),
                        let verifyDecoded = try? JSONDecoder().decode([FamilyMemberData].self, from: verifyData) {
-                        let teenagerFound = verifyDecoded.contains { $0.role == .teenager && $0.name == userName }
-                        if teenagerFound {
+                        let saved = verifyDecoded.contains { $0.role == cardRole && $0.name == userName }
+                        if saved {
                             VisualLogger.shared.log("✅ ПОДРОСТОК (JOINED): Подтверждено сохранение в UserDefaults!", level: .success, category: "FAMILY")
                             MasterLogger.shared.log(.info, category: .business, message: "✅ ПОДРОСТОК (JOINED): Подтверждено сохранение в UserDefaults!")
                         } else {
-                            VisualLogger.shared.log("❌ ПОДРОСТОК (JOINED): ОШИБКА - подросток НЕ найден после сохранения!", level: .error, category: "FAMILY")
-                            MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК (JOINED): ОШИБКА - подросток НЕ найден после сохранения!")
+                            VisualLogger.shared.log("❌ ПОДРОСТОК (JOINED): ОШИБКА - участник с ролью \(cardRole.rawValue) НЕ найден после сохранения!", level: .error, category: "FAMILY")
+                            MasterLogger.shared.log(.error, category: .business, message: "❌ ПОДРОСТОК (JOINED): ОШИБКА - участник с ролью \(cardRole.rawValue) НЕ найден после сохранения!")
                         }
                     }
                 }

@@ -1,0 +1,25 @@
+---
+description: ALADDIN iOS — где лежит последний экспорт логов для анализа (манифест в Documents)
+globs:
+  - "**/VisualLogger.swift"
+  - "**/aladdin_latest_export_manifest.json"
+alwaysApply: false
+---
+
+# Диагностические экспорты ALADDIN (симулятор / устройство)
+
+После нажатия **«Экспорт»** в мини-логгере или **«Share Trace»** приложение записывает в каталог **Documents** приложения:
+
+1. **`aladdin_latest_export_manifest.json`** (стабильное имя, перезаписывается каждый раз) — **читать в первую очередь**. Поля:
+   - `exportKind`: `visual_logs` | `startup_trace`
+   - `primaryFileName`, `primaryFileAbsolutePath`, `byteCount`, `createdAtISO8601`, `bundleIdentifier`
+   - **`analyzeNext`**: явная инструкция для автоматического анализа (какой файл считать «входом»).
+
+2. Сам файл логов: **`visual-logs-<unix>.txt`** или **`startup_trace.txt`** (см. манифест).
+
+На **Mac** путь `primaryFileAbsolutePath` относится к **симулятору/устройству**. Чтобы анализировать в Cursor:
+
+- Скопируйте из контейнера приложения в workspace: `aladdin_latest_export_manifest.json` и файл из `primaryFileName`, **или**
+- Выполните `xcrun simctl get_app_container <UDID> family.aladdin.ios data` и возьмите `Documents/` из вывода.
+
+Если пользователь говорит «проанализируй экспорт логов из ALADDIN» — сначала откройте **`aladdin_latest_export_manifest.json`**, затем указанный в нём лог-файл.

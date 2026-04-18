@@ -19,6 +19,20 @@ struct AddMemberOptionsScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var subscriptionManager: SubscriptionManager // Single source for tariff limits
     @State private var isProcessingCreateFamily: Bool = false // ✅ Защита от двойного клика
+
+    /// Уже есть семья на устройстве — первый сценарий ведёт в addFamilyMember (через admin_add_mode), а не в family/create.
+    private var hasExistingFamilyOnDevice: Bool {
+        let fid = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return !fid.isEmpty
+    }
+
+    /// Число участников для баннера лимита (из кэша).
+    private var cachedFamilyMemberCount: Int {
+        guard let data = UserDefaults.standard.data(forKey: FamilyLocalStore.familyMembersKey),
+              let list = try? JSONDecoder().decode([FamilyMemberData].self, from: data) else { return 0 }
+        return list.count
+    }
     
     // Temporary states for navigation (will be removed in next cleanup)
     @State private var showCreateFamily: Bool = false
@@ -70,7 +84,7 @@ struct AddMemberOptionsScreen: View {
                 .padding(.top, 10)
 
                 // Limit banner using single source of truth
-                let currentCount = 0 // Would be passed or fetched; for now placeholder from SubscriptionManager
+                let currentCount = cachedFamilyMemberCount
                 let (canAddHere, limitMessage, _) = subscriptionManager.canAddFamilyMember(currentCount: currentCount)
                 if !canAddHere, let msg = limitMessage {
                     Text(msg)
@@ -85,11 +99,15 @@ struct AddMemberOptionsScreen: View {
                 
                 // Варианты добавления
                 VStack(spacing: 12) {
-                    // Вариант 1: Создать новую семью
+                    // Вариант 1: новая семья ИЛИ добавление в текущую (admin_add_mode + addFamilyMember в VM, см. FamilyRegistrationViewModel.createFamily)
                     optionButton(
                         icon: "plus.circle.fill",
-                        title: localizationManager.localized("add_member_create_family"),
-                        description: localizationManager.localized("add_member_create_family_desc"),
+                        title: localizationManager.localized(
+                            hasExistingFamilyOnDevice ? "add_member_to_current_family" : "add_member_create_family"
+                        ),
+                        description: localizationManager.localized(
+                            hasExistingFamilyOnDevice ? "add_member_to_current_family_desc" : "add_member_create_family_desc"
+                        ),
                         color: .orange
                     ) {
                         // ✅ FIXED: Pure navigation - no internal modals
@@ -99,7 +117,12 @@ struct AddMemberOptionsScreen: View {
                         }
                         
                         isProcessingCreateFamily = true
-                        print("✅ AddMemberOptionsScreen: Navigating to create family registration")
+                        if hasExistingFamilyOnDevice {
+                            UserDefaults.standard.set(true, forKey: "admin_add_mode")
+                            UserDefaults.standard.synchronize()
+                            print("✅ AddMemberOptionsScreen: admin_add_mode ON → registration flow uses addFamilyMember for current family")
+                        }
+                        print("✅ AddMemberOptionsScreen: Navigating to registration (create or add-to-current)")
                         
                         // Use NavigationManager instead of internal fullScreenCover
                         navigationManager.navigateTo(.mainWithRegistration)

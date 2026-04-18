@@ -55,6 +55,9 @@ struct APIResponseValidator {
             #endif
             // Simple ack response - no complex validation needed
         }
+        else if let reconcile = response as? ReconcileFamilyResponse {
+            try validateReconcileFamilyResponse(reconcile)
+        }
         // Handle MetricsUploadResponse
         else if let metricsResponse = response as? MetricsUploadResponse {
             try validateMetricsUploadResponse(metricsResponse)
@@ -354,6 +357,15 @@ struct APIResponseValidator {
     }
 
     // MARK: - Create Family Response Validation
+
+    private static func validateReconcileFamilyResponse(_ response: ReconcileFamilyResponse) throws {
+        guard !response.familyId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw ValidationError.emptyField(field: "familyId")
+        }
+        guard response.total >= 0, response.invalidRoles >= 0, response.fixedStatuses >= 0 else {
+            throw ValidationError.invalidValue(field: "reconcile_counts", value: response.total, reason: "counts must be >= 0")
+        }
+    }
 
     private static func validateCreateFamilyResponse(_ response: CreateFamilyResponse) throws {
         // ✅ ИСПРАВЛЕНО: Валидация обновлена для новой структуры CreateFamilyResponse

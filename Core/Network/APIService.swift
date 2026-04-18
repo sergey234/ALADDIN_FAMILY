@@ -71,6 +71,60 @@ class APIService: ObservableObject {
     init(networkManager: NetworkManager) {
         self.networkManager = networkManager
     }
+
+    /// Результат `GET /api/family/members` с метаданными для безопасного merge (без смешивания двух семей).
+    struct FamilyMembersSyncContext {
+        let members: [FamilyMemberResponse]
+        /// Успешный повтор после 409 `familyId does not match ...` (запрос без `familyId` в query).
+        let recoveredFromFamilyContextConflict: Bool
+        /// Значение `family_id` в UserDefaults до сетевого запроса (снимок цепочки coalesce).
+        let familyIdSnapshotBeforeFetch: String
+        /// После ответа: `family_id` уже обновлён из заголовков (`X-Resolved-Family-Id`), если сервер прислал.
+        let familyIdSnapshotAfterFetch: String
+
+        /// Не смешивать старый локальный ростер с ответом (правила B + C).
+        var shouldReplaceLocalMembersInsteadOfMerge: Bool {
+            if recoveredFromFamilyContextConflict { return true }
+            let before = familyIdSnapshotBeforeFetch.trimmingCharacters(in: .whitespacesAndNewlines)
+            let after = familyIdSnapshotAfterFetch.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !before.isEmpty, !after.isEmpty else { return false }
+            return before != after
+        }
+    }
+
+    /// Сливает параллельные запросы `getFamilyMembers` в один сетевой вызов (снижает дубли и нагрузку на main).
+    private let familyMembersCoalesceLock = NSLock()
+    private var familyMembersPendingCompletions: [(Result<FamilyMembersSyncContext, Error>) -> Void] = []
+    private var familyMembersFetchInFlight = false
+
+    private func enqueueFamilyMembersCompletion(_ completion: @escaping (Result<FamilyMembersSyncContext, Error>) -> Void) {
+        let mergeSnapshot = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        familyMembersCoalesceLock.lock()
+        familyMembersPendingCompletions.append(completion)
+        let start = !familyMembersFetchInFlight
+        if start { familyMembersFetchInFlight = true }
+        familyMembersCoalesceLock.unlock()
+        guard start else { return }
+        performGetFamilyMembers(
+            hasRetriedAfterTokenBootstrap: false,
+            hasRetriedAfterFamilyContextConflict: false,
+            familyContextConflictRecovered: false,
+            mergeFamilyIdSnapshot: mergeSnapshot,
+            omitFamilyIdQuery: false
+        ) { [weak self] result in
+            self?.deliverCoalescedFamilyMembersResult(result)
+        }
+    }
+
+    private func deliverCoalescedFamilyMembersResult(_ result: Result<FamilyMembersSyncContext, Error>) {
+        familyMembersCoalesceLock.lock()
+        let waiters = familyMembersPendingCompletions
+        familyMembersPendingCompletions.removeAll()
+        familyMembersFetchInFlight = false
+        familyMembersCoalesceLock.unlock()
+        waiters.forEach { $0(result) }
+    }
     
     // MARK: - Network Protection API
     
@@ -273,7 +327,14 @@ class APIService: ObservableObject {
     // MARK: - Family API
     
     func getFamilyMembers(completion: @escaping (Result<[FamilyMemberResponse], Error>) -> Void) {
-        performGetFamilyMembers(hasRetriedAfterTokenBootstrap: false, completion: completion)
+        enqueueFamilyMembersCompletion { result in
+            completion(result.map(\.members))
+        }
+    }
+
+    /// То же, что `getFamilyMembers`, плюс флаги для безопасного sync (без merge двух семей после 409).
+    func getFamilyMembersWithSyncContext(completion: @escaping (Result<FamilyMembersSyncContext, Error>) -> Void) {
+        enqueueFamilyMembersCompletion(completion)
     }
 
     /// Async-обертка для загрузки участников семьи.
@@ -286,51 +347,109 @@ class APIService: ObservableObject {
         }
     }
 
+    /// Лимиты тарифа + явный `family_id` из ответа `GET /api/family/members` (сервер: `X-Resolved-Family-Id`).
+    private func applyFamilyMembersListHeaders(_ headers: [AnyHashable: Any]) {
+        let limitKeyCandidates = ["X-Family-Limit", "x-family-limit", "X-FAMILY-LIMIT"]
+        let remainingKeyCandidates = ["X-Family-Remaining", "x-family-remaining", "X-FAMILY-REMAINING"]
+        let resolvedFamilyKeyCandidates = ["X-Resolved-Family-Id", "x-resolved-family-id", "X-RESOLVED-FAMILY-ID"]
+        /// Опционально: если бэкенд отдаёт id участника для текущего JWT — выравниваем `your_member_id` без расшифровки токена.
+        let currentMemberKeyCandidates = [
+            "X-Current-Member-Id", "x-current-member-id", "X-Your-Member-Id", "x-your-member-id",
+            "X-Resolved-Member-Id", "x-resolved-member-id", "X-Member-Id-You", "x-member-id-you"
+        ]
+
+        func headerValue(for keys: [String]) -> String? {
+            for k in keys {
+                if let v = headers[k] as? String { return v }
+                if let vNum = headers[k] as? NSNumber { return vNum.stringValue }
+            }
+            return nil
+        }
+
+        if let limitStr = headerValue(for: limitKeyCandidates), let limit = Int(limitStr) {
+            UserDefaults.standard.set(limit, forKey: "family_limit")
+        }
+        if let remainingStr = headerValue(for: remainingKeyCandidates), let remaining = Int(remainingStr) {
+            UserDefaults.standard.set(remaining, forKey: "family_remaining")
+        }
+        if let resolved = headerValue(for: resolvedFamilyKeyCandidates)?
+            .trimmingCharacters(in: .whitespacesAndNewlines), !resolved.isEmpty {
+            UserDefaults.standard.set(resolved, forKey: FamilyLocalStore.lastResolvedFamilyIdKey)
+            // Единый канонический `family_id` на устройстве = то, что подтвердил сервер для этого токена.
+            UserDefaults.standard.set(resolved, forKey: FamilyLocalStore.familyIdKey)
+        }
+        if let memberHint = headerValue(for: currentMemberKeyCandidates) {
+            FamilyLocalStore.applyYourMemberIdFromFamilyMembersHeaderIfPresent(memberHint)
+        }
+    }
+
     private func performGetFamilyMembers(
         hasRetriedAfterTokenBootstrap: Bool,
-        completion: @escaping (Result<[FamilyMemberResponse], Error>) -> Void
+        hasRetriedAfterFamilyContextConflict: Bool = false,
+        familyContextConflictRecovered: Bool = false,
+        mergeFamilyIdSnapshot: String,
+        omitFamilyIdQuery: Bool = false,
+        completion: @escaping (Result<FamilyMembersSyncContext, Error>) -> Void
     ) {
+        let wrapSuccess: ([FamilyMemberResponse]) -> FamilyMembersSyncContext = { members in
+            let after = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+                .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            return FamilyMembersSyncContext(
+                members: members,
+                recoveredFromFamilyContextConflict: familyContextConflictRecovered,
+                familyIdSnapshotBeforeFetch: mergeFamilyIdSnapshot,
+                familyIdSnapshotAfterFetch: after
+            )
+        }
+
         // Передаём явный familyId, если он известен, чтобы избежать неверного контекста семьи на сервере
-        let activeFamilyId = UserDefaults.standard.string(forKey: "family_id")
+        let storedFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
+        let activeFamilyId = omitFamilyIdQuery ? nil : storedFamilyId
         let query: [String: String]? = {
             if let fid = activeFamilyId, !fid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 return ["familyId": fid]
             }
             return nil
         }()
-        networkManager.get(endpoint: AppConfig.Endpoint.familyMembers, queryParams: query, requiresAuth: true, onHeaders: { headers in
-            // Извлекаем лимиты из заголовков и сохраняем для UI
-            let limitKeyCandidates = ["X-Family-Limit", "x-family-limit", "X-FAMILY-LIMIT"]
-            let remainingKeyCandidates = ["X-Family-Remaining", "x-family-remaining", "X-FAMILY-REMAINING"]
-            
-            func headerValue(for keys: [String]) -> String? {
-                for k in keys {
-                    if let v = headers[k] as? String { return v }
-                    if let vNum = headers[k] as? NSNumber { return vNum.stringValue }
-                }
-                return nil
-            }
-            
-            let limitStr = headerValue(for: limitKeyCandidates)
-            let remainingStr = headerValue(for: remainingKeyCandidates)
-            
-            if let limitStr = limitStr, let limit = Int(limitStr) {
-                UserDefaults.standard.set(limit, forKey: "family_limit")
-            }
-            if let remainingStr = remainingStr, let remaining = Int(remainingStr) {
-                UserDefaults.standard.set(remaining, forKey: "family_remaining")
-            }
+        networkManager.get(endpoint: AppConfig.Endpoint.familyMembers, queryParams: query, requiresAuth: true, onHeaders: { [weak self] headers in
+            self?.applyFamilyMembersListHeaders(headers)
         }) { (result: Result<[FamilyMemberResponse], Error>) in
             switch result {
-            case .success:
-                completion(result)
+            case .success(let members):
+                completion(.success(wrapSuccess(members)))
             case .failure(let error):
                 if case .notFound = NetworkError.from(error) {
                     // Backward-compat fallback for environments where gateway exposes legacy family paths.
-                    self.networkManager.get(endpoint: "/family/members", queryParams: query, requiresAuth: true, completion: completion)
+                    self.networkManager.get(
+                        endpoint: "/family/members",
+                        queryParams: query,
+                        requiresAuth: true,
+                        onHeaders: { [weak self] headers in
+                            self?.applyFamilyMembersListHeaders(headers)
+                        },
+                        completion: { (legacyResult: Result<[FamilyMemberResponse], Error>) in
+                            switch legacyResult {
+                            case .success(let members):
+                                completion(.success(wrapSuccess(members)))
+                            case .failure(let legacyError):
+                                completion(.failure(legacyError))
+                            }
+                        }
+                    )
                     return
                 }
                 let networkError = NetworkError.from(error)
+                if !hasRetriedAfterFamilyContextConflict, networkError.isFamilyMembersContextConflict {
+                    self.performGetFamilyMembers(
+                        hasRetriedAfterTokenBootstrap: hasRetriedAfterTokenBootstrap,
+                        hasRetriedAfterFamilyContextConflict: true,
+                        familyContextConflictRecovered: true,
+                        mergeFamilyIdSnapshot: mergeFamilyIdSnapshot,
+                        omitFamilyIdQuery: true,
+                        completion: completion
+                    )
+                    return
+                }
                 let shouldBootstrapToken: Bool
                 switch networkError {
                 case .unauthorized, .tokenExpired, .invalidToken, .reauthenticationRequired:
@@ -345,7 +464,14 @@ class APIService: ObservableObject {
                 self.bootstrapDeviceTokenIfNeeded(forceRefresh: true) { bootstrapResult in
                     switch bootstrapResult {
                     case .success:
-                        self.performGetFamilyMembers(hasRetriedAfterTokenBootstrap: true, completion: completion)
+                        self.performGetFamilyMembers(
+                            hasRetriedAfterTokenBootstrap: true,
+                            hasRetriedAfterFamilyContextConflict: hasRetriedAfterFamilyContextConflict,
+                            familyContextConflictRecovered: familyContextConflictRecovered,
+                            mergeFamilyIdSnapshot: mergeFamilyIdSnapshot,
+                            omitFamilyIdQuery: omitFamilyIdQuery,
+                            completion: completion
+                        )
                     case .failure(let bootstrapError):
                         completion(.failure(bootstrapError))
                     }
@@ -355,7 +481,7 @@ class APIService: ObservableObject {
     }
     
     func addFamilyMember(name: String, role: String, completion: @escaping (Result<FamilyMemberResponse, Error>) -> Void) {
-        let activeFamilyId = UserDefaults.standard.string(forKey: "family_id")
+        let activeFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
         let request = AddMemberRequest(name: name, role: role, familyId: activeFamilyId)
         performAddFamilyMember(request: request, hasRetriedAfterTokenBootstrap: false, completion: completion)
     }
@@ -476,7 +602,7 @@ class APIService: ObservableObject {
                 let reason: String?
                 let familyId: String?
             }
-            let activeFamilyId = UserDefaults.standard.string(forKey: "family_id")
+            let activeFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
             let request = RemoveMemberRequest(memberId: memberId, source: source, reason: reason, familyId: activeFamilyId)
             VisualLogger.shared.log("➡️ FAMILY REMOVE(server) id=\(memberId)", level: .info, category: "FAMILY")
             networkManager.delete(endpoint: AppConfig.Endpoint.removeFamilyMember, body: request) { (result: Result<FamilyMemberResponse, Error>) in
@@ -1757,7 +1883,8 @@ class APIService: ObservableObject {
      * Вызывает reconcile на сервере для исправления рассинхронизации семьи.
      * Используется после remove 404, registration, или явного desync.
      */
-    func reconcileFamily(familyId: String? = nil, completion: @escaping (Result<APIResponse<ReconcileFamilyResponse>, Error>) -> Void) {
+    /// Сервер (`app/routers/family.py`) возвращает голое тело `ReconcileFamilyResponse`, без обёртки `APIResponse`.
+    func reconcileFamily(familyId: String? = nil, completion: @escaping (Result<ReconcileFamilyResponse, Error>) -> Void) {
         struct ReconcileRequest: Codable {
             let familyId: String?
         }

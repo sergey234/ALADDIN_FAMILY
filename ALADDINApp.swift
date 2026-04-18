@@ -4,10 +4,9 @@ import Foundation
 // ✅ Глобальные флаги для защиты от рекурсии SessionExpired
 // ✅ BUILD 114: Используем принципы из ПОЛНАЯ_ИСТОРИЯ_ИСПРАВЛЕНИЙ_BUILD_77_99.md
 // - Глобальный флаг виден всем экземплярам View
-// - NSLock обеспечивает thread-safety
+// - Флаг обрабатывается на MainActor-потоке UI
 // - Синхронный сброс в defer предотвращает race condition
 private var isHandlingSessionExpiredGlobal: Bool = false
-private let sessionExpiredLockGlobal = NSLock()
 
 /// 👤 User Profile Manager
 /// Singleton класс для управления профилем пользователя
@@ -127,6 +126,11 @@ class UserProfileManager {
 
 @main
 struct ALADDINApp: App {
+    private enum LifecycleKeys {
+        static let lastScenePhase = "lifecycle_last_scene_phase"
+        static let gracefulTerminateMarker = "lifecycle_graceful_terminate"
+        static let lastLaunchTimestamp = "lifecycle_last_launch_ts"
+    }
 
     // 🔍 ТЕСТОВОЕ ЛОГИРОВАНИЕ - проверяем работу при старте приложения
     private let appStartLogger: Void = {
@@ -158,6 +162,8 @@ struct ALADDINApp: App {
     // SwiftUI может вызывать onAppear несколько раз при пересоздании View
     private static var hasInitialized = false
     private static let initializationLock = NSLock()
+    /// Однократная метка: первый вызов `mainAppContent()` (после LocalizationManager).
+    private static var loggedMainAppContentFirstInvocation = false
 
     // MARK: - Theme Helper
     private var preferredColorScheme: ColorScheme? {
@@ -170,6 +176,8 @@ struct ALADDINApp: App {
     }
     
     init() {
+        LaunchDiagnostics.appendStartupTrace("ALADDINApp.init BEGIN")
+        LaunchDiagnostics.appendLifecycleTrace("ALADDINApp.init BEGIN")
         // 🔴 ГЛОБАЛЬНЫЙ EXCEPTION HANDLER - для диагностики крашей
         // ✅ BUILD 114: Временно отключаем кастомный перехватчик, чтобы вернуть системные логи iOS
         /*
@@ -199,35 +207,29 @@ struct ALADDINApp: App {
         // ✅ BUILD 115: Диагностика значения hasCompletedOnboarding при старте
         #if DEBUG
         let currentOnboardingValue = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-        print("🔍 BUILD 115: Значение hasCompletedOnboarding в UserDefaults при старте = \(currentOnboardingValue)")
+        print("🔍 BUILD \(AppConfig.buildNumber): Значение hasCompletedOnboarding в UserDefaults при старте = \(currentOnboardingValue)")
         #endif
 
-        // ✅ PHASE 1 RESTORE: Возвращаем стабильную инициализацию из бэкапа (апрель 2026)
-        // Это критично для правильной работы SubscriptionManager, family status и регистрации устройства
-#if DEBUG
-        KeychainAutoRecoveryService.repairTokensIfNeeded()
-        
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала проверяем и удаляем debug токены СИНХРОННО
-        let hadDebugTokens = Self.autoFixDebugTokensIfNeeded()
-
-        let skipDebugTokensRaw = ProcessInfo.processInfo.environment["SKIP_DEBUG_TOKENS"] ?? ""
-        let skipDebugTokens = skipDebugTokensRaw.trimmingCharacters(in: .whitespacesAndNewlines) == "1"
-        let hasAutoLogin = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"] != nil &&
-                          !(ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"] ?? "").isEmpty
-
-        let shouldSkipDebugTokens = skipDebugTokens || hasAutoLogin
-
-        if hadDebugTokens || !shouldSkipDebugTokens {
-            DebugAuthTokenSeeder.seedIfNeeded()
+        // IMPORTANT: Keep init lightweight.
+        // Heavy debug/token operations are moved to deferred bootstrap (.task) to avoid startup hangs
+        // before onboarding/main screen appears.
+        let defaults = UserDefaults.standard
+        let lastPhase = defaults.string(forKey: LifecycleKeys.lastScenePhase) ?? "unknown"
+        let terminatedGracefully = defaults.bool(forKey: LifecycleKeys.gracefulTerminateMarker)
+        if !terminatedGracefully && (lastPhase == "active" || lastPhase == "inactive") {
+            LaunchDiagnostics.appendLifecycleTrace("⚠️ Inferred previous unclean termination (likely kill/watchdog). lastPhase=\(lastPhase)")
         } else {
-            if skipDebugTokens {
-                print("⚠️ DEBUG: Пропущено создание debug токенов (SKIP_DEBUG_TOKENS=1)")
-            } else if hasAutoLogin {
-                print("⚠️ DEBUG: Пропущено создание debug токенов (настроен автоматический логин)")
-            }
-            print("   Для получения валидных токенов используйте performRealLogin() в Debug Console")
+            LaunchDiagnostics.appendLifecycleTrace("Previous termination marker: graceful=\(terminatedGracefully), lastPhase=\(lastPhase)")
         }
+        defaults.set(false, forKey: LifecycleKeys.gracefulTerminateMarker)
+        defaults.set(Date().timeIntervalSince1970, forKey: LifecycleKeys.lastLaunchTimestamp)
+        defaults.synchronize()
+
+#if DEBUG
+        print("ℹ️ ALADDINApp.init: Debug/token recovery deferred to runDeferredLaunchBootstrapIfNeeded()")
 #endif
+        LaunchDiagnostics.appendStartupTrace("ALADDINApp.init END")
+        LaunchDiagnostics.appendLifecycleTrace("ALADDINApp.init END")
     }
     
     var body: some Scene {
@@ -236,18 +238,29 @@ struct ALADDINApp: App {
             // Экран loading по-прежнему доступен через navigationManager.currentScreen == .loading.
             mainAppContent()
                 .onAppear {
+                    LaunchDiagnostics.appendStartupTrace("WindowGroup.onAppear BEGIN")
+                    LaunchDiagnostics.appendLifecycleTrace("WindowGroup.onAppear")
+                    // Ensure persisted visual logs are restored once per app launch.
+                    VisualLogger.shared.loadLogsAsync()
+                    LaunchDiagnostics.appendStartupTrace("WindowGroup.onAppear after loadLogsAsync")
                     // Восстанавливаем первичную инициализацию навигации, иначе приложение
                     // застревает на статическом loading-экране и не доходит до onboarding.
                     let navManager = navigationManager
                     let locManager = localizationManager
+                    LaunchDiagnostics.appendStartupTrace("initializeNavigation about to run")
                     Self.initializeNavigation(
                         navigationManager: navManager,
                         localizationManager: locManager,
                         hasCompletedOnboarding: hasCompletedOnboarding
                     )
+                    LaunchDiagnostics.appendStartupTrace("initializeNavigation finished; currentScreen=\(navigationManager.currentScreen.rawValue)")
                 }
                 .task {
+                    LaunchDiagnostics.appendStartupTrace("WindowGroup.task BEGIN deferred bootstrap")
+                    LaunchDiagnostics.appendLifecycleTrace("WindowGroup.task BEGIN deferred bootstrap")
                     await runDeferredLaunchBootstrapIfNeeded()
+                    LaunchDiagnostics.appendStartupTrace("WindowGroup.task END deferred bootstrap")
+                    LaunchDiagnostics.appendLifecycleTrace("WindowGroup.task END deferred bootstrap")
                 }
         }
     }
@@ -258,17 +271,23 @@ struct ALADDINApp: App {
         didRunDeferredBootstrap = true
 
         print("🚀 [Phase 1] runDeferredLaunchBootstrapIfNeeded() started")
+        LaunchDiagnostics.appendStartupTrace("runDeferredLaunchBootstrapIfNeeded BEGIN")
+        LaunchDiagnostics.appendLifecycleTrace("runDeferredLaunchBootstrapIfNeeded BEGIN")
+
+#if DEBUG
+        // Run heavy debug recovery here (after UI is already mounted), not in init().
+        LaunchDiagnostics.appendStartupTrace("deferred: KeychainAutoRecoveryService.repairTokensIfNeeded BEGIN")
+        KeychainAutoRecoveryService.repairTokensIfNeeded()
+        LaunchDiagnostics.appendStartupTrace("deferred: KeychainAutoRecoveryService.repairTokensIfNeeded END")
+#endif
 
         // ✅ PHASE 1 RESTORE: SubscriptionManager.initializeOnAppStart() теперь ОБЯЗАТЕЛЕН
         // Это критично для JWT, family members, component status и предотвращения 404
-        do {
-            print("📡 Initializing SubscriptionManager (DEFENSIVE JWT)...")
-            try await SubscriptionManager.shared.initializeOnAppStart()
-            print("✅ SubscriptionManager.initializeOnAppStart() completed successfully")
-        } catch {
-            print("⚠️ SubscriptionManager initialization failed: \(error.localizedDescription)")
-            // Не падаем полностью — продолжаем, чтобы приложение запустилось
-        }
+        print("📡 Initializing SubscriptionManager (DEFENSIVE JWT)...")
+        LaunchDiagnostics.appendStartupTrace("deferred: SubscriptionManager.initializeOnAppStart BEGIN")
+        await SubscriptionManager.shared.initializeOnAppStart()
+        print("✅ SubscriptionManager.initializeOnAppStart() completed successfully")
+        LaunchDiagnostics.appendStartupTrace("deferred: SubscriptionManager.initializeOnAppStart END")
 
 #if DEBUG
         // Debug-only heavy operations (token seeding, auto-login diagnostics)
@@ -279,7 +298,9 @@ struct ALADDINApp: App {
         let shouldSkipDebugTokens = skipDebugTokens || hasAutoLogin
 
         if !shouldSkipDebugTokens {
+            LaunchDiagnostics.appendStartupTrace("deferred: DebugAuthTokenSeeder.seedIfNeeded BEGIN")
             DebugAuthTokenSeeder.seedIfNeeded()
+            LaunchDiagnostics.appendStartupTrace("deferred: DebugAuthTokenSeeder.seedIfNeeded END")
         } else {
             if skipDebugTokens {
                 print("⚠️ DEBUG: Пропущено создание debug токенов (SKIP_DEBUG_TOKENS=1)")
@@ -342,12 +363,18 @@ struct ALADDINApp: App {
             }
         }
 #endif
+        LaunchDiagnostics.appendStartupTrace("runDeferredLaunchBootstrapIfNeeded END")
+        LaunchDiagnostics.appendLifecycleTrace("runDeferredLaunchBootstrapIfNeeded END")
     }
 
     // ✅ НОВОЕ: Основное содержимое приложения
     private func mainAppContent() -> some View {
+        if !Self.loggedMainAppContentFirstInvocation {
+            Self.loggedMainAppContentFirstInvocation = true
+            LaunchDiagnostics.appendStartupTrace("mainAppContent() FIRST invocation; currentScreen=\(navigationManager.currentScreen.rawValue) hasCompletedOnboarding=\(hasCompletedOnboarding)")
+        }
         // КРИТИЧНО: NavigationView для работы навигации
-        NavigationView {
+        return NavigationView {
                 // ✅ КРИТИЧНО: Используем AnyView для каждого case - это заставит SwiftUI пересчитать
                 Group {
                     switch navigationManager.currentScreen {
@@ -494,7 +521,15 @@ struct ALADDINApp: App {
                     case .termsOfService:
                         AnyView(TermsOfServiceScreen().id("termsOfService").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .onboarding:
-                        AnyView(OnboardingScreen().id("onboarding").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(
+                            OnboardingScreen()
+                                .id("onboarding")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                                .onAppear {
+                                    LaunchDiagnostics.appendStartupTrace("OnboardingScreen.onAppear")
+                                }
+                        )
                     case .devices:
                         AnyView(DevicesScreen().id("devices").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .referral:
@@ -631,6 +666,8 @@ struct ALADDINApp: App {
             .environmentObject(navigationManager)
             // ✅ Передаём LocalizationManager через EnvironmentObject
             .environmentObject(localizationManager)
+            // ✅ SubscriptionManager: FamilyScreen, AddMemberOptionsScreen, FeatureGateView используют @EnvironmentObject
+            .environmentObject(SubscriptionManager.shared)
             // ✅ Применяем локализацию через environment
             .environment(\.locale, localizationManager.locale)
             // ✅ ИСПРАВЛЕНИЕ BUILD 93: УБРАН .id() с localizationManager - вызывает рекурсию
@@ -649,11 +686,21 @@ struct ALADDINApp: App {
             }
             // ✅ ИСПРАВЛЕНИЕ: Упрощенная обработка возврата из фона - без лишних проверок
             .onChange(of: scenePhase) { newPhase in
+                UserDefaults.standard.set(newPhase == .active ? "active" : newPhase == .inactive ? "inactive" : "background", forKey: LifecycleKeys.lastScenePhase)
+                LaunchDiagnostics.appendLifecycleTrace("scenePhase changed -> \(newPhase)")
                 if newPhase == .active {
                     // Приложение стало активным (вернулись из Safari/фона)
                     print("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
                     // НЕ вызываем initializeNavigation - это может вызвать двойную загрузку
+                    Task { @MainActor in
+                        await SubscriptionManager.shared.performThrottledTrialExpiryCheckIfNeeded()
+                    }
                 }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
+                UserDefaults.standard.set(true, forKey: LifecycleKeys.gracefulTerminateMarker)
+                UserDefaults.standard.synchronize()
+                LaunchDiagnostics.appendLifecycleTrace("UIApplication.willTerminateNotification received -> graceful terminate marker set")
             }
             // ✅ ЭТАП 1: Обработка уведомления SessionExpired
             // ✅ BUILD 114: Используем принципы из ПОЛНАЯ_ИСТОРИЯ_ИСПРАВЛЕНИЙ_BUILD_77_99.md
@@ -661,25 +708,19 @@ struct ALADDINApp: App {
             // - Защита от рекурсии через глобальные флаги с NSLock
             // - Изоляция диагностики (не используем logger внутри)
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SessionExpired"))) { notification in
-                // ✅ Защита от множественных обработок (глобальный флаг с NSLock)
-                sessionExpiredLockGlobal.lock()
+                // ✅ Защита от множественных обработок (UI callbacks are MainActor-serialized)
                 guard !isHandlingSessionExpiredGlobal else {
-                    sessionExpiredLockGlobal.unlock()
                     #if DEBUG
                     print("⚠️ ALADDINApp: SessionExpired уже обрабатывается, пропускаем")
                     #endif
                     return
                 }
                 isHandlingSessionExpiredGlobal = true
-                sessionExpiredLockGlobal.unlock()
                 
                 // ✅ Асинхронная обработка (разрыв связи с UI циклом)
                 Task { @MainActor in
                     defer {
-                        // ✅ Синхронный сброс флага
-                        sessionExpiredLockGlobal.lock()
                         isHandlingSessionExpiredGlobal = false
-                        sessionExpiredLockGlobal.unlock()
                     }
                     
                     let message = notification.userInfo?["message"] as? String ?? "Сессия истекла. Пожалуйста, войдите снова."
@@ -777,6 +818,7 @@ extension ALADDINApp {
 
         ALADDINApp.hasInitializedNavigation = true
         print("🛠️ [ALADDINApp.initializeNavigation] Начинаем инициализацию...")
+        LaunchDiagnostics.appendStartupTrace("initializeNavigation BEGIN")
 
         // ✅ Активируем бесплатный тариф при первом запуске
         let storeManager = StoreManager()
@@ -808,23 +850,19 @@ extension ALADDINApp {
         print("🛠️ [ALADDINApp.initializeNavigation] onboardingDone = \(onboardingDone)")
         print("🛠️ [ALADDINApp.initializeNavigation] Текущий экран ДО проверки: \(navigationManager.currentScreen)")
 
-        // ✅ BUILD 115: КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ - Проверяем текущий экран перед изменением
-        // Если экран уже установлен в .onboarding, НЕ перезаписываем его
-        // Это предотвращает перезапись онбординга, если он был установлен ранее
-        if navigationManager.currentScreen == .onboarding {
-            print("🔴 ONBOARDING: Экран уже установлен в .onboarding - НЕ перезаписываем")
-            // НЕ меняем экран - он уже правильный
-        } else if !onboardingDone {
-            // Первый запуск - всегда показываем онбординг
-            print("🔴 ONBOARDING: Первый запуск - показываем онбординг")
+        // ✅ ИСПРАВЛЕНИЕ: NavigationManager всегда стартует с .onboarding по умолчанию.
+        // Нельзя трактовать «уже .onboarding» как «пользователь должен остаться на онбординге» —
+        // иначе при hasCompletedOnboarding=true мы никогда не перейдём на .main (синий/залипший старт).
+        if !onboardingDone {
+            print("🔴 ONBOARDING: Показываем онбординг")
             navigationManager.currentScreen = .onboarding
         } else {
-            // Онбординг пройден - переходим на main (только если экран не .onboarding)
-            print("🟢 ONBOARDING: Пройден - переходим на главный экран")
+            print("🟢 ONBOARDING: Пройден (UserDefaults) — переходим на главный экран")
             navigationManager.currentScreen = .main
         }
-        
+
         print("🛠️ [ALADDINApp.initializeNavigation] Текущий экран ПОСЛЕ проверки: \(navigationManager.currentScreen)")
+        LaunchDiagnostics.appendStartupTrace("initializeNavigation END currentScreen=\(navigationManager.currentScreen.rawValue)")
 
         // 📊 МЕТРИКИ ПРОИЗВОДИТЕЛЬНОСТИ: Логируем время инициализации
         let initTime = Date().timeIntervalSince(startTime)

@@ -20,13 +20,14 @@ class NavigationManager: ObservableObject {
     // ✅ ИСПРАВЛЕНИЕ: Добавляем для PaymentQRScreen через NavigationLink
     @Published var selectedTariffForPayment: Tariff? = nil
     
-    // ✅ BUILD 95: Инициализация БЕЗ чтения UserDefaults - предотвращает рекурсию
+    // ✅ Стартовый экран: читаем только флаг онбординга (без записи), чтобы первый кадр SwiftUI
+    // не строил OnboardingScreen до `WindowGroup.onAppear` → `initializeNavigation`.
+    // BUILD 95: рекурсию вызывали сложные цепочки с @AppStorage; простой `bool(forKey:)` безопасен.
     init() {
-        // ✅ ИСПРАВЛЕНИЕ BUILD 95: Убрано чтение UserDefaults из init() - может вызывать рекурсию
-        // Реальное значение будет установлено в initializeNavigation() через параметр
-        // Используем значение по умолчанию (.onboarding) для безопасности
-        self.currentScreen = .onboarding
-        print("🟢 NavigationManager.init: Инициализация с экраном по умолчанию (.onboarding)")
+        let onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        self.currentScreen = onboardingDone ? .main : .onboarding
+        LaunchDiagnostics.appendStartupTrace("NavigationManager.init: currentScreen=\(self.currentScreen.rawValue) (UserDefaults hasCompletedOnboarding=\(onboardingDone))")
+        print("🟢 NavigationManager.init: стартовый экран = \(self.currentScreen.rawValue) (онбординг завершён в UD: \(onboardingDone))")
     }
     
     // MARK: - Основные экраны (25)

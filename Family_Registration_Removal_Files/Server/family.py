@@ -8,7 +8,7 @@ FAMILY API: Endpoints для семейной статистики
 API для получения статистики семьи
 """
 
-from fastapi import APIRouter, HTTPException, Request, Depends, status
+from fastapi import APIRouter, HTTPException, Request, Depends, status, Query, Response
 import asyncio
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
@@ -720,11 +720,20 @@ async def add_family_member(
 
 @router.get("/members", response_model=list[FamilyMemberCompat])
 async def get_family_members_compat(
-    current_user: dict = Depends(get_current_user)
+    response: Response,
+    current_user: dict = Depends(get_current_user),
+    familyId: Optional[str] = Query(None, alias="familyId"),
 ):
     """
     ✅ Production rule: no mock/fake.
     Если БД не подключена — отдаём 503, чтобы клиент не принимал пустые/фейковые данные как "успех".
+
+    Согласование контекста семьи:
+    - Сервер всегда вычисляет `family_id` по JWT (членство актора или владелец семьи).
+    - Если клиент передал query `familyId`, он **должен** совпадать с вычисленным id — иначе 409
+      (защита от смешения локального кэша другой семьи с данными актора).
+    - Заголовок `X-Resolved-Family-Id` — явная «правда сервера» для этой выдачи (полный список строк этой семьи).
+    - Заголовок `X-Current-Member-Id` — `family_members.id` членства JWT-актора в этой семье (выравнивание клиента).
     """
     user_id = _resolve_user_id_from_claim(current_user)
     if not get_postgres_db:
@@ -758,8 +767,29 @@ async def get_family_members_compat(
                 ).fetchone()
                 if not fam_row:
                     logger.warning("family_members_no_family_for_actor", user_id=user_id)
-                    return []
+                    return [], None, None
                 family_id = fam_row[0]
+
+            resolved = str(family_id).strip()
+            qfid = (familyId or "").strip()
+            if qfid and qfid != resolved:
+                logger.warning(
+                    "family_members_family_id_mismatch",
+                    user_id=user_id,
+                    query_family_id=qfid,
+                    resolved_family_id=resolved,
+                )
+                # P2: scrape as counter in Loki/Datadog — family_members_get_409
+                logger.info(
+                    "metric_family_members_get_409",
+                    user_id=user_id,
+                    query_family_id=qfid,
+                    resolved_family_id=resolved,
+                )
+                raise HTTPException(
+                    status_code=409,
+                    detail="familyId does not match the authenticated user's family context",
+                )
 
             res = db.execute(
                 text("SELECT id, name, role FROM family_members WHERE family_id = :family_id ORDER BY id ASC"),
@@ -778,15 +808,39 @@ async def get_family_members_compat(
                 family_id=str(family_id),
                 value=len(rows),
             )
-            return [
+            members = [
                 FamilyMemberCompat(id=str(r[0]), name=str(r[1]), role=str(r[2]))
                 for r in rows
             ]
+            cur = db.execute(
+                text(
+                    """
+                    SELECT id FROM family_members
+                    WHERE family_id = :family_id AND user_id = :user_id
+                    ORDER BY updated_at DESC NULLS LAST, id DESC
+                    LIMIT 1
+                    """
+                ),
+                {"family_id": family_id, "user_id": user_id},
+            ).fetchone()
+            current_member_id = str(cur[0]).strip() if cur and cur[0] is not None else None
+            return members, resolved, current_member_id
         finally:
             gen.close()
 
     try:
-        return await asyncio.to_thread(load_members_sync)
+        members, resolved_fid, current_member_id = await asyncio.to_thread(load_members_sync)
+        if resolved_fid:
+            response.headers["X-Resolved-Family-Id"] = resolved_fid
+            logger.info(
+                "metric_family_members_get_ok",
+                user_id=user_id,
+                family_id=resolved_fid,
+                count=len(members),
+            )
+        if current_member_id:
+            response.headers["X-Current-Member-Id"] = current_member_id
+        return members
     except HTTPException:
         raise
     except Exception as e:

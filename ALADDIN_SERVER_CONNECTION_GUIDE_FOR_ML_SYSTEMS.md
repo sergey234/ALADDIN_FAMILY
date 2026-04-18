@@ -76,7 +76,7 @@
 >    SSH
 >    ```
 >
-> Далее по плану (п.2→п.3→п.4) — внедрение гибридного источника тарифа (DB primary, JWT fallback с TTL=60 сек и логами), применение лимита в POST /api/family/add (409 с понятным сообщением и идемпотентностью по Idempotency‑Key), и выдача заголовков X‑Family‑Limit/Remaining в GET /api/family/members. Эти изменения выполняются на бэкенде в модулях services/routers (см. раздел «Предлагаемая архитектура» ниже в документе).
+> Далее по плану (п.2→п.3→п.4) — внедрение гибридного источника тарифа (DB primary, JWT fallback с TTL=60 сек и логами), применение лимита в POST /api/family/add (409 с понятным сообщением и идемпотентностью по Idempotency‑Key), и выдача заголовков X‑Family‑Limit/Remaining в GET /api/family/members. Для детерминированного `your_member_id` на iOS в ответе `GET /api/family/members` также выдаётся заголовок **`X-Current-Member-Id`** (строка `family_members.id` для JWT-актора в выбранной семье). Эти изменения выполняются на бэкенде в модулях services/routers (см. раздел «Предлагаемая архитектура» ниже в документе).
 
 # 🔌 **ПОЛНОЕ РУКОВОДСТВО ПО ПОДКЛЮЧЕНИЮ К СЕРВЕРУ ALADDIN ДЛЯ ML СИСТЕМ**
 
@@ -516,3 +516,24 @@ chmod +x scripts/aladdin_server_connect_and_setup.sh
   - доступность `/api/reports/privacy/tracker/stats`.
 
 Скрипт служит быстрым «подключить и проверить», соответствуя правилам no‑mock и precision‑роутинга.
+
+---
+
+## 12) P0: Выкат согласования семьи (`GET /api/family/members`)
+
+После обновления `app/routers/family.py` в репозитории **обязательно** задеплойте файл на сервер, который реально обслуживает `:8002` (см. разделы 10–11).
+
+**Автоматизация (SSH без интерактива):** на рабочей машине используйте выделенный ключ, например `~/.ssh/aladdin_server`, с `ssh -i … -o BatchMode=yes -o IdentitiesOnly=yes` (содержимое ключа и пароли в репозиторий не класть).
+
+**Чеклист:**
+
+1. Скопировать актуальный `app/routers/family.py` в дерево деплоя (`/opt/aladdin-backend/...` — путь по вашему окружению).
+2. Перезапустить backend (gunicorn/systemd из раздела 10).
+3. Проверить OpenAPI: у `GET /api/family/members` есть query `familyId` (optional).
+4. С валидным токеном выполнить:
+   - `GET .../api/family/members` — в ответе заголовки **`X-Resolved-Family-Id`** и **`X-Current-Member-Id`** (id членства текущего пользователя в этой семье; клиент сохраняет его как `your_member_id`).
+   - Проверка вручную: `curl -sI -H "Authorization: Bearer <ACCESS>" 'https://<HOST>/api/family/members?familyId=<FAM>' | grep -i current`
+   - `GET .../api/family/members?familyId=<НЕВЕРНЫЙ_ID>` — ожидается **409** (не смешивать контексты).
+5. Метрики в логах: см. `docs/FAMILY_OPS_DASHBOARD.md`.
+
+**Продуктовое правило «одна активная семья»:** `docs/FAMILY_MEMBERSHIP_PRODUCT.md`.

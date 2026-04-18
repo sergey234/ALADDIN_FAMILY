@@ -67,6 +67,7 @@ class LocalizationManager: ObservableObject {
     // MARK: - Init
     
     init() {
+        LaunchDiagnostics.appendStartupTrace("LocalizationManager.init BEGIN")
         // ✅ BUILD 115: Убрано логирование из init() для "Тихого старта"
         // ✅ СНАЧАЛА проверяем сохранённый язык
         if let savedLanguage = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage),
@@ -87,6 +88,7 @@ class LocalizationManager: ObservableObject {
 
         // ✅ НОВОЕ: Отмечаем готовность после полной инициализации
         // Небольшая задержка чтобы дать время на установку currentLanguage
+        LaunchDiagnostics.appendStartupTrace("LocalizationManager.init END (before async isReady)")
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
             self?.isReady = true
             print("✅ LocalizationManager: Ready for use")
@@ -1118,6 +1120,8 @@ class LocalizationManager: ObservableObject {
             "add_member_subtitle": "Выберите удобный способ пригласить нового пользователя",
             "add_member_create_family": "Создать новую семью",
             "add_member_create_family_desc": "Заполните профиль семьи и пригласите близких с нуля",
+            "add_member_to_current_family": "Добавить в текущую семью",
+            "add_member_to_current_family_desc": "Выберите роль и имя — участник появится в вашей семье без создания новой",
             "add_member_scan_qr": "Сканировать QR",
             "add_member_scan_qr_desc": "Откройте камеру и отсканируйте код приглашения",
             "add_member_enter_code": "Ввести код вручную",
@@ -6094,6 +6098,8 @@ class LocalizationManager: ObservableObject {
             "add_member_subtitle": "Choose a convenient way to invite a new user",
             "add_member_create_family": "Create a new family",
             "add_member_create_family_desc": "Fill out the family profile and invite relatives from scratch",
+            "add_member_to_current_family": "Add to current family",
+            "add_member_to_current_family_desc": "Choose role and name — the member joins your existing family (no new family)",
             "add_member_scan_qr": "Scan QR",
             "add_member_scan_qr_desc": "Open the camera and scan the invitation code",
             "add_member_enter_code": "Enter code manually",

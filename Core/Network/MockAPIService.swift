@@ -118,52 +118,70 @@ class MockAPIService: APIService {
     }
     
     // MARK: - Family API
+
+    private func mockFamilyMembersList() -> [FamilyMemberResponse] {
+        [
+            FamilyMemberResponse(
+                id: "member_1",
+                name: "Родитель",
+                role: "parent",
+                avatar: "👨",
+                status: "protected",
+                threatsBlocked: 15,
+                lastActive: "2 минуты назад",
+                devices: 2
+            ),
+            FamilyMemberResponse(
+                id: "member_2",
+                name: "Ребенок",
+                role: "child",
+                avatar: "👶",
+                status: "protected",
+                threatsBlocked: 8,
+                lastActive: "5 минут назад",
+                devices: 1
+            ),
+            FamilyMemberResponse(
+                id: "member_3",
+                name: "Подросток",
+                role: "teenager",
+                avatar: "🧑",
+                status: "warning",
+                threatsBlocked: 3,
+                lastActive: "10 минут назад",
+                devices: 1
+            ),
+            FamilyMemberResponse(
+                id: "member_4",
+                name: "Пожилой",
+                role: "elderly",
+                avatar: "👴",
+                status: "protected",
+                threatsBlocked: 12,
+                lastActive: "1 час назад",
+                devices: 1
+            )
+        ]
+    }
     
     override func getFamilyMembers(completion: @escaping (Result<[FamilyMemberResponse], Error>) -> Void) {
         simulateNetworkDelay {
-            let members = [
-                FamilyMemberResponse(
-                    id: "member_1",
-                    name: "Родитель",
-                    role: "parent",
-                    avatar: "👨",
-                    status: "protected",
-                    threatsBlocked: 15,
-                    lastActive: "2 минуты назад",
-                    devices: 2
-                ),
-                FamilyMemberResponse(
-                    id: "member_2",
-                    name: "Ребенок",
-                    role: "child",
-                    avatar: "👶",
-                    status: "protected",
-                    threatsBlocked: 8,
-                    lastActive: "5 минут назад",
-                    devices: 1
-                ),
-                FamilyMemberResponse(
-                    id: "member_3",
-                    name: "Подросток",
-                    role: "teenager",
-                    avatar: "🧑",
-                    status: "warning",
-                    threatsBlocked: 3,
-                    lastActive: "10 минут назад",
-                    devices: 1
-                ),
-                FamilyMemberResponse(
-                    id: "member_4",
-                    name: "Пожилой",
-                    role: "elderly",
-                    avatar: "👴",
-                    status: "protected",
-                    threatsBlocked: 12,
-                    lastActive: "1 час назад",
-                    devices: 1
-                )
-            ]
-            completion(.success(members))
+            completion(.success(self.mockFamilyMembersList()))
+        }
+    }
+
+    override func getFamilyMembersWithSyncContext(completion: @escaping (Result<FamilyMembersSyncContext, Error>) -> Void) {
+        simulateNetworkDelay {
+            let members = self.mockFamilyMembersList()
+            let fid = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+                .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+            let ctx = FamilyMembersSyncContext(
+                members: members,
+                recoveredFromFamilyContextConflict: false,
+                familyIdSnapshotBeforeFetch: fid,
+                familyIdSnapshotAfterFetch: fid
+            )
+            completion(.success(ctx))
         }
     }
     

@@ -11,6 +11,8 @@ set -euo pipefail
 # - Restarts service and performs health and anti-mock checks
 #
 # Requirements: ssh access, git, python3, systemd, postgres
+#
+# Env: SKIP_GIT_SYNC=1 — пропуск шага git; FORCE_GIT_RESET=1 — жёсткий reset к origin/master.
 
 SSH_USER="${1:-root}"
 HOST="${2:-149.154.65.180}"
@@ -35,17 +37,42 @@ remote_run "uname -a; ss -ltnp | head -n 50 || netstat -ltn | head -n 50 || true
 remote_run "mkdir -p /opt/aladdin-backend/logs"
 
 echo ">>> [2/7] Aligning /opt/aladdin-backend with origin/master"
-remote_run "
-  set -e
-  cd /opt/aladdin-backend || mkdir -p /opt/aladdin-backend && cd /opt/aladdin-backend
-  git rev-parse --is-inside-work-tree || git init
-  git remote -v | grep -q origin || git remote add origin https://github.com/sergey234/ALADDIN_FAMILY.git
-  git fetch origin
-  git checkout -B master origin/master
-  git branch backup-\$(date +%Y%m%d_%H%M%S) || true
-  git reset --hard origin/master
-  git clean -fdX
-"
+# Прод часто живёт как форк master (локальные патчи). Слепой reset уничтожит их.
+# SKIP_GIT_SYNC=1 — никогда не трогать git (только venv/systemd/проверки ниже).
+# FORCE_GIT_RESET=1 — принудительно git fetch + reset --hard (опасно на длинной жизни сервера).
+if [[ "${SKIP_GIT_SYNC:-0}" == "1" ]]; then
+  echo ">>> [2/7] SKIP_GIT_SYNC=1 — пропуск выравнивания с origin/master"
+elif [[ "${FORCE_GIT_RESET:-0}" == "1" ]]; then
+  remote_run "
+    set -e
+    cd /opt/aladdin-backend || mkdir -p /opt/aladdin-backend && cd /opt/aladdin-backend
+    git rev-parse --is-inside-work-tree || git init
+    git remote -v | grep -q origin || git remote add origin https://github.com/sergey234/ALADDIN_FAMILY.git
+    git fetch origin
+    git checkout -B master origin/master
+    git branch backup-\$(date +%Y%m%d_%H%M%S) || true
+    git reset --hard origin/master
+    git clean -fdX
+  "
+else
+  remote_run "
+    set -e
+    cd /opt/aladdin-backend || mkdir -p /opt/aladdin-backend && cd /opt/aladdin-backend
+    git rev-parse --is-inside-work-tree || git init
+    git remote -v | grep -q origin || git remote add origin https://github.com/sergey234/ALADDIN_FAMILY.git
+    if git status --porcelain 2>/dev/null | grep -q .; then
+      echo '[2/7] Рабочее дерево нечистое — НЕ делаю checkout/reset (сохраняем прод-патчи).'
+      echo '[2/7] Точечный выкат: scp нужных файлов + systemctl restart aladdin-backend.service'
+      echo '[2/7] Либо FORCE_GIT_RESET=1 при запуске скрипта (осознанно), либо SKIP_GIT_SYNC=1.'
+      exit 0
+    fi
+    git fetch origin
+    git checkout -B master origin/master
+    git branch backup-\$(date +%Y%m%d_%H%M%S) || true
+    git reset --hard origin/master
+    git clean -fdX
+  "
+fi
 
 echo ">>> [3/7] Ensuring Python venv and dependencies"
 remote_run "
