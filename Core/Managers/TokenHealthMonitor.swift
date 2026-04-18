@@ -179,7 +179,7 @@ class TokenHealthMonitor {
             return nil
         }
         
-        let subscriptionLevel = SubscriptionLevel(rawValue: subscription.level) ?? .free
+        let subscriptionLevel = SubscriptionLevel.fromAPIPlanString(subscription.level)
         let trialInfo = subscription.trial_info
         let limits = subscription.limits?.toSubscriptionLimits() ?? SubscriptionLimits.freeLimits
         let components = subscription.components ?? []
@@ -204,32 +204,14 @@ class TokenHealthMonitor {
         
         // Extract userId from deviceId (or use deviceId as userId for device-based auth)
         let userId = currentToken.deviceId
-        
+        let merge = await MainActor.run { SubscriptionManager.shared.currentSubscription }
+
         return await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            APIService.shared.getSubscriptionStatus(userId: userId) { result in
+            APIService.shared.getSubscriptionStatus(userId: userId, merging: merge) { result in
                 switch result {
-                case .success(let statusResponse):
+                case .success(let updatedStatus):
                     Task { @MainActor in
-                        // Convert SubscriptionStatusSummaryResponse to SubscriptionStatus
-                        // Preserve current subscription data (level, limits, components) and update only isActive
-                        let currentSubscription = SubscriptionManager.shared.currentSubscription
-                        
-                        // Calculate expiresAt from daysRemaining if available
-                        var expiresAt = currentSubscription?.expiresAt
-                        if let daysRemaining = statusResponse.daysRemaining, daysRemaining > 0 {
-                            expiresAt = Calendar.current.date(byAdding: .day, value: daysRemaining, to: Date())
-                        }
-                        
-                        let updatedStatus = SubscriptionStatus(
-                            level: currentSubscription?.level ?? .free,
-                            isActive: statusResponse.isActive,
-                            expiresAt: expiresAt,
-                            trialInfo: currentSubscription?.trialInfo,
-                            limits: currentSubscription?.limits ?? SubscriptionLimits.freeLimits,
-                            components: currentSubscription?.components ?? [],
-                            lastUpdated: Date()
-                        )
-                        await SubscriptionManager.shared.updateSubscriptionStatus(updatedStatus)
+                        await SubscriptionManager.shared.applySubscriptionPayloadFromServer(updatedStatus)
                         self.logger.business("✅ DEFENSIVE JWT: Тариф обновлен с сервера: \(updatedStatus.level), isActive: \(updatedStatus.isActive)")
                         continuation.resume()
                     }

@@ -159,6 +159,47 @@ struct FamilyMemberData: Identifiable, Codable {
     }
 }
 
+// MARK: - Family roster permissions
+
+/// Кто может добавлять/удалять участников семьи в приложении (клиентская граница до ответа API).
+enum FamilyRosterAccess {
+    /// Только участники с ролью `.parent` или `.elderly` по текущему `your_member_id` в ростере.
+    /// При пустом ростере (онбординг) — fallback по сохранённой строке роли из UserDefaults.
+    static func canManageRoster(
+        members: [FamilyMemberData],
+        myMemberId: String?,
+        currentUserRoleFallback: String?
+    ) -> Bool {
+        let my = myMemberId?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let roleFallbackAllows: Bool = {
+            let r = (currentUserRoleFallback ?? "").lowercased()
+            return r.contains("parent") || r.contains("родител") || r.contains("elderly")
+        }()
+        if !my.isEmpty,
+           let me = members.first(where: { row in
+               let sid = row.serverMemberId?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+               let rid = row.id.trimmingCharacters(in: .whitespacesAndNewlines)
+               let canon = row.canonicalId.trimmingCharacters(in: .whitespacesAndNewlines)
+               return rid == my || (!sid.isEmpty && sid == my) || (!canon.isEmpty && canon == my)
+           }) {
+            return me.role == .parent || me.role == .elderly
+        }
+        // Ростер уже есть, но строка «я» не сопоставилась (рассинх id до заголовка/мерджа) — не блокируем родителя по сохранённой роли.
+        if !my.isEmpty && !members.isEmpty && roleFallbackAllows {
+            return true
+        }
+        if members.isEmpty {
+            return roleFallbackAllows
+        }
+        return false
+    }
+
+    /// Число слотов «родитель» в ростере (информационно для UI; лимит 2 — продуктовое правило).
+    static func parentRoleCount(in members: [FamilyMemberData]) -> Int {
+        members.filter { $0.role == .parent }.count
+    }
+}
+
 struct AppLimitItemCodable: Codable {
     let app: String
     var limit: Double

@@ -457,9 +457,8 @@ struct FamilyScreen: View {
                         )
                     }
 
-                    // ✅ SIMPLIFIED DEDUP (no more complex magic that masked desync)
-                    // We prioritize server data but preserve creator role and order.
-                    // First member (creator) role is protected — не используем старый self.familyMembers при смене семьи (B+C).
+                    // ✅ SIMPLIFIED MERGE: локальные записи (в т.ч. только локальные id), затем перезапись данными сервера по ключу MEM_*.
+                    // Не подменяем роль «первого в списке» на .parent — это давало детям роль родителя после сортировки и ломало delete/isMe.
                     var mergedById: [String: FamilyMemberData] = [:]
                     if skipCrossFamilyMerge {
                         for item in convertedMembers {
@@ -471,18 +470,9 @@ struct FamilyScreen: View {
                             let key = item.serverMemberId ?? item.id
                             mergedById[key] = item
                         }
-                        let firstLocal = self.familyMembers.first
                         for item in convertedMembers {
                             let key = item.serverMemberId ?? item.id
-                            if let existing = mergedById[key],
-                               let first = firstLocal,
-                               (existing.id == first.id || existing.serverMemberId == first.serverMemberId) {
-                                var protected = existing
-                                protected.role = .parent // Golden rule
-                                mergedById[key] = protected
-                            } else {
-                                mergedById[key] = item
-                            }
+                            mergedById[key] = item
                         }
                     }
                     
@@ -646,7 +636,13 @@ struct FamilyScreen: View {
             // TODO: Show user-facing alert with upgrade option (handled in UI layer)
             return
         }
-        
+
+        guard canManageFamilyRoster else {
+            print("🚫 [addFamilyMember] Blocked — only parents may add members to the roster")
+            VisualLogger.shared.log("🚫 FAMILY ADD: denied — canManageFamilyRoster=false", level: .warning, category: "FAMILY")
+            return
+        }
+
         // Improved duplicate check using canonical logic (your_member_id or serverId) — fixes infinite self-duplicates
         let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
         let isDuplicate = familyMembers.contains { existingMember in
@@ -759,10 +755,10 @@ struct FamilyScreen: View {
             return
         }
 
-        guard isUserParent || isFamilyCreator else {
+        guard canManageFamilyRoster else {
             removeMemberErrorMessage = localizationManager.currentLanguage == .russian
-                ? "Только администратор может удалять участников."
-                : "Only administrators can remove members."
+                ? "Удалять участников могут только родители (до двух родительских аккаунтов в семье)."
+                : "Only parent accounts (up to two per family) can remove members."
             return
         }
 
@@ -801,8 +797,8 @@ struct FamilyScreen: View {
     private func removeFamilyMember(_ member: FamilyMemberData) {
         logger.business("Removing family member: \(member.name)")
         // Проверяем, что пользователь является администратором или родителем
-        guard isUserParent || isFamilyCreator else {
-            print("⚠️ Only parents or administrators can remove family members")
+        guard canManageFamilyRoster else {
+            print("⚠️ Only parent/elderly roster roles can remove family members")
             return
         }
         if deletingMemberIds.contains(member.id) {
@@ -1261,18 +1257,19 @@ struct FamilyScreen: View {
                 #endif
             } else if let creatorStored = FamilyLocalStore.currentFamilyCreatorMemberId(), !creatorStored.isEmpty {
                 newIsCreator = (myMemberId == creatorStored)
-                newIsParent = newIsCreator || familyMembers.contains { $0.role == .parent && ($0.id == myMemberId || ($0.serverMemberId != nil && $0.serverMemberId == myMemberId)) }
+                newIsParent = FamilyRosterAccess.canManageRoster(
+                    members: familyMembers,
+                    myMemberId: myMemberId,
+                    currentUserRoleFallback: UserDefaults.standard.string(forKey: currentUserRoleKey)
+                )
             } else {
-                // Join / старые установки без сохранённого creator_id: «создатель» ≈ первый в отображаемом списке, но без эвристики count<=2.
-                let myIndex = familyMembers.firstIndex { member in
-                    member.id == myMemberId || (member.serverMemberId != nil && member.serverMemberId == myMemberId)
-                }
-                let isFirstInList = myIndex == 0
-                newIsCreator = isFirstInList
-                newIsParent = newIsCreator || familyMembers.contains { $0.role == .parent && ($0.id == myMemberId || ($0.serverMemberId != nil && $0.serverMemberId == myMemberId)) }
-                if isFirstInList {
-                    print("👑 FIRST IN LIST: \(myMemberId.prefix(8)) marked as creator/parent (no stored family_creator_member_id)")
-                }
+                // Без сохранённого creator_id не используем «первый в списке» — порядок после сортировки недетерминирован и ломал роли/кнопки.
+                newIsCreator = false
+                newIsParent = FamilyRosterAccess.canManageRoster(
+                    members: familyMembers,
+                    myMemberId: myMemberId,
+                    currentUserRoleFallback: UserDefaults.standard.string(forKey: currentUserRoleKey)
+                )
             }
         } else {
             // Fallback: check role from UserDefaults
@@ -1314,6 +1311,63 @@ struct FamilyScreen: View {
         isCurrentUserParent
     }
 
+    /// Добавление/удаление участников: только родитель или пожилой в ростере (не ребёнок/подросток).
+    private var canManageFamilyRoster: Bool {
+        FamilyRosterAccess.canManageRoster(
+            members: familyMembers,
+            myMemberId: UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey),
+            currentUserRoleFallback: UserDefaults.standard.string(forKey: currentUserRoleKey)
+        )
+    }
+
+    /// Краткий баннер: правило и текущее состояние (ваш id в списке / роль / можно ли управлять составом).
+    @ViewBuilder
+    private var familyRosterRulesInfoBanner: some View {
+        let ru = localizationManager.currentLanguage == .russian
+        let myId = UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey) ?? ""
+        let parents = FamilyRosterAccess.parentRoleCount(in: familyMembers)
+        let roleLabel: String = {
+            guard let me = familyMembers.first(where: { $0.id == myId || $0.serverMemberId == myId }) else {
+                return ru ? "нет в списке" : "not in list"
+            }
+            switch me.role {
+            case .parent: return ru ? "родитель" : "parent"
+            case .elderly: return ru ? "пожилой" : "elderly"
+            case .child: return ru ? "ребёнок" : "child"
+            case .teenager: return ru ? "подросток" : "teen"
+            }
+        }()
+        VStack(alignment: .leading, spacing: 6) {
+            Text(ru ? "Кто может менять состав семьи" : "Who can change the family roster")
+                .font(.caption.weight(.semibold))
+                .foregroundColor(Color.secondaryGold)
+            Text(ru
+                 ? "Добавлять и удалять участников могут только родители или пожилой в списке (не ребёнок и не подросток). До двух родительских аккаунтов — по правилам семьи."
+                 : "Only a parent or elderly member in the list may add or remove people (not a child or teen). Up to two parent accounts per family.")
+                .font(.caption2)
+                .foregroundColor(.white.opacity(0.88))
+                .fixedSize(horizontal: false, vertical: true)
+            Divider().background(Color.white.opacity(0.2))
+            Text(ru ? "Сейчас на этом устройстве" : "On this device")
+                .font(.caption.weight(.semibold))
+                .foregroundColor(Color.secondaryGold)
+            Text(ru
+                 ? "Ваш ID: \(myId.isEmpty ? "—" : String(myId.prefix(14)))… · роль в списке: \(roleLabel) · родителей в списке: \(parents) · управление составом: \(canManageFamilyRoster ? "да" : "нет")"
+                 : "Your ID: \(myId.isEmpty ? "—" : String(myId.prefix(14)))… · role in list: \(roleLabel) · parents in list: \(parents) · can manage roster: \(canManageFamilyRoster ? "yes" : "no")")
+                .font(.caption2)
+                .foregroundColor(.white.opacity(0.78))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.06))
+        .cornerRadius(10)
+        .overlay(
+            RoundedRectangle(cornerRadius: 10)
+                .stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1)
+        )
+    }
+
     // ✅ CACHE for canShowDeleteButton - prevents massive spam during renders/syncs
     @State private var deleteButtonCache: [String: Bool] = [:]
     @State private var lastDeleteButtonLogTime: [String: Date] = [:]  // Prevents repeated VisualLogger spam
@@ -1353,9 +1407,7 @@ struct FamilyScreen: View {
     }
     
     // MARK: - Visibility rules for delete (trash) button
-    // ✅ FINAL PROD VERSION: Исправлено для дублей. Теперь isMe использует canonical logic из deduplicateFamilyMembers.
-    // Админ (isUserParent/isFamilyCreator) видит кнопку для ВСЕХ кроме СЕБЯ. hasServerId + otherMembersExist.
-    // Поддержка нескольких админов (мама+папа). Дублей больше не будет — delete button надежно показывается.
+    // Удаление из UI: только родитель/пожилой (canManageFamilyRoster). «Себя» определяем только по совпадению с your_member_id — без флага «создатель» для чужой строки.
 
     /// Создатель семьи для правил удаления: `family_creator_member_id` с `createFamily`, иначе первый родитель/пожилой в списке (join без creator в API).
     private func resolvedFamilyCreatorMemberForDeletionRules() -> FamilyMemberData? {
@@ -1375,10 +1427,10 @@ struct FamilyScreen: View {
             return cached
         }
 
-        let isAdmin = (isUserParent || isFamilyCreator)
-        let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
+        let isAdmin = canManageFamilyRoster
+        let myMemberId = UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey) ?? ""
 
-        // ✅ Создатель = серверный creator_member_id (после createFamily), иначе первый родитель в ростере — не порядок `additionOrder`.
+        // Для логов: совпадение с серверным создателем семьи (не влияет на isMe после фикса).
         let isCreator: Bool
         if let creatorMember = resolvedFamilyCreatorMemberForDeletionRules() {
             isCreator = (creatorMember.id == member.id || creatorMember.serverMemberId == member.serverMemberId)
@@ -1386,10 +1438,8 @@ struct FamilyScreen: View {
         } else {
             isCreator = false
         }
-        
-        // Improved isMe using canonical logic + explicit creator protection
-        let isMe = member.isCurrentUser || isCreator || member.id == myMemberId ||
-                  (member.serverMemberId != nil && member.serverMemberId == myMemberId)
+
+        let isMe = (member.id == myMemberId) || (member.serverMemberId == myMemberId)
 
         let hasServerId = (member.serverMemberId != nil) || member.id.hasPrefix("MEM_") || member.id.count > 8
         let otherMembersExist = familyMembers.count > 1 ||
@@ -1488,18 +1538,17 @@ struct FamilyScreen: View {
                         }
                         .accessibilityLabel(localizationManager.localized("family_notification_settings"))
                         
-                        // Updated toolbar + button: uses shared SubscriptionManager.canAddFamilyMember guard
-                        // Prevents bypass. Only shows/enables if allowed.
+                        // Toolbar «+»: родитель/пожилой (в т.ч. fallback по роли при рассинх id); тариф — на экране добавления или алерт при жёстком лимите
                         Button(action: {
                             logger.buttonTap("Add Member", screen: "Family")
-                            if canAddFamilyMemberUnderTariff {
-                                UserDefaults.standard.set(true, forKey: "admin_add_mode")
-                                UserDefaults.standard.synchronize()
-                                navigationManager.navigateTo(.addMemberOptions)
-                            } else {
-                                // TODO: Show upgrade toast/alert (handled in improve-family-stats-ui)
-                                print("🚫 Toolbar add blocked by tariff limit")
+                            guard canManageFamilyRoster else {
+                                UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                                VisualLogger.shared.log("🚫 FAMILY ADD toolbar: canManageFamilyRoster=false", level: .warning, category: "FAMILY")
+                                return
                             }
+                            UserDefaults.standard.set(true, forKey: "admin_add_mode")
+                            UserDefaults.standard.synchronize()
+                            navigationManager.navigateTo(.addMemberOptions)
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 16, weight: .bold))
@@ -1507,6 +1556,7 @@ struct FamilyScreen: View {
                                 .frame(width: 40, height: 40)
                                 .background(Color(red: 0.96, green: 0.62, blue: 0.04))
                                 .clipShape(Circle())
+                                .opacity(canManageFamilyRoster ? 1 : 0.35)
                         }
                         .accessibilityLabel(localizationManager.localized("add_member_accessibility"))
                         .accessibilityHint(localizationManager.localized("add_member_accessibility_hint"))
@@ -1567,7 +1617,29 @@ struct FamilyScreen: View {
                             let capacityText3 = "\(currentCount3) из \(limit3) участников (Tariff)"
 
                             Group {
-                                if canAddFamilyMemberUnderTariff {
+                                if !canManageFamilyRoster {
+                                    VStack(spacing: 6) {
+                                        Text(localizationManager.localized("family_add_member"))
+                                            .font(.system(size: 16, weight: .bold))
+                                            .foregroundColor(.white.opacity(0.38))
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 12)
+                                            .background(
+                                                LinearGradient(
+                                                    colors: [Color(red: 0.96, green: 0.62, blue: 0.04).opacity(0.35), Color(red: 0.85, green: 0.47, blue: 0.02).opacity(0.35)],
+                                                    startPoint: .leading,
+                                                    endPoint: .trailing
+                                                )
+                                            )
+                                            .clipShape(Capsule())
+                                        Text(localizationManager.currentLanguage == .russian
+                                             ? "Добавлять участников может только родитель (или пожилой) в этой семье."
+                                             : "Only a parent (or elderly member) in this family can add members.")
+                                            .font(.caption)
+                                            .foregroundColor(.white.opacity(0.75))
+                                            .multilineTextAlignment(.center)
+                                    }
+                                } else if canAddFamilyMemberUnderTariff {
                                     Button(action: {
                                         UserDefaults.standard.set(true, forKey: "admin_add_mode")
                                         UserDefaults.standard.synchronize()
@@ -1626,6 +1698,8 @@ struct FamilyScreen: View {
                                 .foregroundColor(Color.secondaryGold)
                                 .accessibilityLabel(localizationManager.localized("family_members_title"))
                                 .accessibilityAddTraits(.isHeader)
+
+                            familyRosterRulesInfoBanner
                             
                             // ✅ ИСПРАВЛЕНИЕ: Всегда показываем карточки участников когда они есть
                             // WelcomeCardForCreator показывается только если список ПУСТ
@@ -1687,7 +1761,7 @@ struct FamilyScreen: View {
                                     }
                                     
                                     // Updated: AddMoreMemberCard now respects tariff limit via shared guard (no more <10 bypass)
-                                    if canAddFamilyMemberUnderTariff && isUserParent {
+                                    if canAddFamilyMemberUnderTariff && canManageFamilyRoster {
                                         AddMoreMemberCard {
                                             UserDefaults.standard.set(true, forKey: "admin_add_mode")
                                             UserDefaults.standard.synchronize()
@@ -1774,7 +1848,7 @@ struct FamilyScreen: View {
                                         .font(.subheadline)
                                         .foregroundColor(.white.opacity(0.7))
                                     
-                                    if isUserParent || isFamilyCreator {
+                                    if canManageFamilyRoster {
                                         Button(action: {
                                             // ✅ ИСПРАВЛЕНИЕ #4: Используем NavigationManager вместо sheet модала
                                             UserDefaults.standard.set(true, forKey: "admin_add_mode")
@@ -1808,8 +1882,8 @@ struct FamilyScreen: View {
                                 .stroke(Color.secondaryGold.opacity(0.4), lineWidth: 2)
                         )
                         
-                        // Parental Controls - НОВАЯ ВЕРСИЯ С КАРТОЧКАМИ 2x3
-                        if isUserParent || isFamilyCreator {
+                        // Parental Controls - НОВАЯ ВЕРСИЯ С КАРТОЧКАМИ 2x3 (только родитель/пожилой в ростере)
+                        if canManageFamilyRoster {
                             parentalControlsSection
                         }
                     }
@@ -1994,7 +2068,7 @@ struct FamilyScreen: View {
                 loadFamilyMembers()
             } else {
                 print("🔄 [FamilyScreen.onAppear] Список уже загружен (\(familyMembers.count) участников). Проверяем статус админа...")
-                // Лёгкая фоновая синхронизация для актуальности delete button и isUserParent
+                // Лёгкая фоновая синхронизация для актуальности delete button и canManageFamilyRoster
                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
                     self.syncFamilyMembersFromAPI()
                 }

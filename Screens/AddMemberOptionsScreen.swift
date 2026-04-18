@@ -33,6 +33,22 @@ struct AddMemberOptionsScreen: View {
               let list = try? JSONDecoder().decode([FamilyMemberData].self, from: data) else { return 0 }
         return list.count
     }
+
+    /// Ростер из UserDefaults (как на FamilyScreen) — для проверки прав до «добавить в текущую семью».
+    private var cachedFamilyMembersForRoster: [FamilyMemberData] {
+        guard let data = UserDefaults.standard.data(forKey: FamilyLocalStore.familyMembersKey),
+              let list = try? JSONDecoder().decode([FamilyMemberData].self, from: data) else { return [] }
+        return list
+    }
+
+    /// Тот же критерий, что `canManageFamilyRoster` на экране семьи (родитель/пожилой в списке).
+    private var canManageFamilyRosterFromCache: Bool {
+        FamilyRosterAccess.canManageRoster(
+            members: cachedFamilyMembersForRoster,
+            myMemberId: UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey),
+            currentUserRoleFallback: UserDefaults.standard.string(forKey: "current_user_role")
+        )
+    }
     
     // Temporary states for navigation (will be removed in next cleanup)
     @State private var showCreateFamily: Bool = false
@@ -99,37 +115,46 @@ struct AddMemberOptionsScreen: View {
                 
                 // Варианты добавления
                 VStack(spacing: 12) {
-                    // Вариант 1: новая семья ИЛИ добавление в текущую (admin_add_mode + addFamilyMember в VM, см. FamilyRegistrationViewModel.createFamily)
-                    optionButton(
-                        icon: "plus.circle.fill",
-                        title: localizationManager.localized(
-                            hasExistingFamilyOnDevice ? "add_member_to_current_family" : "add_member_create_family"
-                        ),
-                        description: localizationManager.localized(
-                            hasExistingFamilyOnDevice ? "add_member_to_current_family_desc" : "add_member_create_family_desc"
-                        ),
-                        color: .orange
-                    ) {
-                        // ✅ FIXED: Pure navigation - no internal modals
-                        guard !isProcessingCreateFamily else {
-                            print("⚠️ AddMemberOptionsScreen: Already processing create family, ignoring duplicate tap")
-                            return
+                    // Вариант 1: новая семья ИЛИ добавление в текущую — только родитель/пожилой в ростере (QR/код ниже доступны всем для присоединения).
+                    VStack(alignment: .leading, spacing: 6) {
+                        optionButton(
+                            icon: "plus.circle.fill",
+                            title: localizationManager.localized(
+                                hasExistingFamilyOnDevice ? "add_member_to_current_family" : "add_member_create_family"
+                            ),
+                            description: localizationManager.localized(
+                                hasExistingFamilyOnDevice ? "add_member_to_current_family_desc" : "add_member_create_family_desc"
+                            ),
+                            color: .orange,
+                            enabled: canManageFamilyRosterFromCache
+                        ) {
+                            // ✅ FIXED: Pure navigation - no internal modals
+                            guard !isProcessingCreateFamily else {
+                                print("⚠️ AddMemberOptionsScreen: Already processing create family, ignoring duplicate tap")
+                                return
+                            }
+
+                            isProcessingCreateFamily = true
+                            if hasExistingFamilyOnDevice {
+                                UserDefaults.standard.set(true, forKey: "admin_add_mode")
+                                UserDefaults.standard.synchronize()
+                                print("✅ AddMemberOptionsScreen: admin_add_mode ON → registration flow uses addFamilyMember for current family")
+                            }
+                            print("✅ AddMemberOptionsScreen: Navigating to registration (create or add-to-current)")
+
+                            navigationManager.navigateTo(.mainWithRegistration)
+
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                isProcessingCreateFamily = false
+                            }
                         }
-                        
-                        isProcessingCreateFamily = true
-                        if hasExistingFamilyOnDevice {
-                            UserDefaults.standard.set(true, forKey: "admin_add_mode")
-                            UserDefaults.standard.synchronize()
-                            print("✅ AddMemberOptionsScreen: admin_add_mode ON → registration flow uses addFamilyMember for current family")
-                        }
-                        print("✅ AddMemberOptionsScreen: Navigating to registration (create or add-to-current)")
-                        
-                        // Use NavigationManager instead of internal fullScreenCover
-                        navigationManager.navigateTo(.mainWithRegistration)
-                        
-                        // Reset after navigation
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                            isProcessingCreateFamily = false
+                        if !canManageFamilyRosterFromCache {
+                            Text(localizationManager.currentLanguage == .russian
+                                 ? "Этот пункт только для родителя (или пожилого) в семье. Присоединиться по QR или коду можно ниже."
+                                 : "This option is for a parent (or elderly member) in the family. Use QR or code below to join.")
+                                .font(.caption2)
+                                .foregroundColor(.orange.opacity(0.95))
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                     }
                     
@@ -237,9 +262,14 @@ struct AddMemberOptionsScreen: View {
         title: String,
         description: String,
         color: Color,
+        enabled: Bool = true,
         action: @escaping () -> Void
     ) -> some View {
         Button(action: {
+            guard enabled else {
+                UINotificationFeedbackGenerator().notificationOccurred(.warning)
+                return
+            }
             let generator = UIImpactFeedbackGenerator(style: .medium)
             generator.impactOccurred()
             action()
@@ -279,6 +309,7 @@ struct AddMemberOptionsScreen: View {
                             .stroke(color.opacity(0.3), lineWidth: 1)
                     )
             )
+            .opacity(enabled ? 1 : 0.48)
         }
         .buttonStyle(PlainButtonStyle())
     }

@@ -183,17 +183,19 @@ struct TariffsScreen: View {
         .id("tariffs_lang_\(localizationManager.currentLanguage.rawValue)")
         // ✅ КРИТИЧНО: Загружаем продукты при открытии экрана тарифов
         .task {
+            #if targetEnvironment(simulator)
+            print("🔄 [TariffsScreen] Симулятор — без повторной проверки IAP (StoreManager не дергает StoreKit)")
+            #else
             print("🔄 [TariffsScreen] Экран открыт, проверяем продукты...")
             let productsCount = await viewModel.getProductsCount()
             print("🔄 [TariffsScreen] Продуктов загружено: \(productsCount)")
-            
-            // Если продукты не загружены, загружаем их
             if productsCount == 0 {
                 print("⚠️ [TariffsScreen] Продукты не загружены, начинаем загрузку...")
                 await viewModel.loadProducts()
             } else {
                 print("✅ [TariffsScreen] Продукты уже загружены")
             }
+            #endif
         }
         // ✅ УДАЛЕНО: Визуальные логи с экрана (оставляем только в консоли)
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УДАЛЕН .sheet модификатор
@@ -363,11 +365,28 @@ struct TariffsScreen: View {
                 let useAltPayments = AppConfig.useAlternativePayments
                 print("🔍 DEBUG Payment: regionCode = '\(regionCode)', useAlternativePayments = \(useAltPayments)")
                 
-                // 🔥 КРИТИЧЕСКАЯ ПРОВЕРКА ПРОДАКШНА: Trial upgrade
+                // 🔥 Trial → платный: в РФ оплата идёт через сайт/QR (как и без trial). Иначе `purchaseTariff` сразу return и логирует «upgrade failed».
                 if let currentSubscription = SubscriptionManager.shared.currentSubscription,
                    currentSubscription.level == .trial {
-                    // 🎯 TRIAL UPGRADE: Пользователь в trial хочет купить подписку
                     print("🔥 TRIAL UPGRADE: User in trial wants to upgrade to \(tariffObj.id)")
+
+                    if AppConfig.useAlternativePayments {
+                        print("🇷🇺 TRIAL UPGRADE (RU): открываем сайт для QR оплаты (тот же поток, что и для не-trial)")
+                        guard !tariffObj.id.isEmpty,
+                              !tariffObj.title.isEmpty,
+                              !tariffObj.price.isEmpty else {
+                            viewModel.errorMessage = localizationManager.localized("tariffs_error_create_tariff")
+                            return
+                        }
+                        let referralCode = UserDefaults.standard.string(forKey: "referral_code")
+                        print("🌐 Открываем сайт: \(AppConfig.subscriptionWebsiteURL) с тарифом: \(tariffObj.id)")
+                        URLHelper.openWebsite(
+                            urlString: AppConfig.subscriptionWebsiteURL,
+                            tariffId: tariffObj.id,
+                            referralCode: referralCode
+                        )
+                        return
+                    }
 
                     Task { @MainActor in
                         await viewModel.upgradeFromTrialToPaid(tariff: tariffObj)

@@ -419,19 +419,14 @@ final class SubscriptionManager: ObservableObject {
         // ✅ Запрашиваем текущую подписку с сервера
         // Используем существующий метод getSubscriptionStatus()
         // Но нужно получить userId из токена (deviceId)
-        APIService.shared.getSubscriptionStatus(userId: deviceId) { [weak self] result in
+        APIService.shared.getSubscriptionStatus(userId: deviceId, merging: currentSubscription) { [weak self] result in
             Task { @MainActor [weak self] in
                 guard let self = self else { return }
                 
                 switch result {
-                case .success(let statusResponse):
-                    // ✅ Восстанавливаем подписку из ответа сервера
-                    self.logger.business("✅ BUILD 123: Подписка восстановлена с сервера")
-                    
-                    // Обновляем currentSubscription из ответа
-                    // TODO: Преобразовать SubscriptionStatusSummaryResponse в SubscriptionStatus
-                    // Пока что просто логируем успех
-                    self.logger.business("✅ BUILD 123: Уровень подписки: \(statusResponse.isActive ? "активна" : "неактивна")")
+                case .success(let status):
+                    self.logger.business("✅ BUILD 123: Подписка восстановлена с сервера, level=\(status.level.rawValue)")
+                    await self.applySubscriptionPayloadFromServer(status)
                     
                 case .failure(let error):
                     // ✅ Если не удалось → перерегистрация (только для FREE)
@@ -803,26 +798,22 @@ final class SubscriptionManager: ObservableObject {
                 return
             }
 
-            let summary: SubscriptionStatusSummaryResponse = try await withCheckedThrowingContinuation { continuation in
-                APIService.shared.getSubscriptionStatusWithToken(userId: "current", token: token) { result in
+            let subscriptionStatus: SubscriptionStatus = try await withCheckedThrowingContinuation { continuation in
+                APIService.shared.getSubscriptionStatusWithToken(
+                    userId: "current",
+                    token: token,
+                    merging: currentSubscription
+                ) { result in
                     switch result {
-                    case .success(let statusSummary):
-                        continuation.resume(returning: statusSummary)
+                    case .success(let status):
+                        continuation.resume(returning: status)
                     case .failure(let error):
                         continuation.resume(throwing: error)
                     }
                 }
             }
 
-            // Convert summary to SubscriptionStatus using current subscription data
-            let subscriptionStatus = summary.toSubscriptionStatus(currentSubscription: currentSubscription)
-
-            await updateSubscriptionStatus(subscriptionStatus)
-
-            // Update trial status if present (trial info comes from current subscription)
-            if let trialInfo = currentSubscription?.trialInfo {
-                await updateTrialStatus(trialInfo)
-            }
+            await updateFromServerStatus(subscriptionStatus)
 
             logger.business("✅ Subscription status refreshed: \(subscriptionStatus.level)")
 
@@ -959,7 +950,7 @@ final class SubscriptionManager: ObservableObject {
         let jwtToken = JWTToken(
             token: response.token,
             deviceId: response.deviceId,
-            subscriptionLevel: SubscriptionLevel(rawValue: response.subscription.level) ?? .free, // ✅ Convert String to enum
+            subscriptionLevel: SubscriptionLevel.fromAPIPlanString(response.subscription.level),
             trialInfo: response.subscription.trialInfo,
             expiresAt: finalExpiresAt, // ✅ BUILD 121: Используем реальный exp из JWT
             issuedAt: response.registeredAtDate ?? Date(),
@@ -1164,7 +1155,7 @@ final class SubscriptionManager: ObservableObject {
         let jwtToken = JWTToken(
             token: response.token,
             deviceId: response.deviceId,
-            subscriptionLevel: SubscriptionLevel(rawValue: response.subscription.level) ?? .free,
+            subscriptionLevel: SubscriptionLevel.fromAPIPlanString(response.subscription.level),
             trialInfo: response.subscription.trialInfo,
             expiresAt: finalExpiresAt,
             issuedAt: response.registeredAtDate ?? Date(),
@@ -1207,7 +1198,7 @@ final class SubscriptionManager: ObservableObject {
         let subscription = apiPayload.subscription
         
         // Получаем subscription level, trial info, limits, components из subscription
-        let subscriptionLevel = subscription != nil ? (SubscriptionLevel(rawValue: subscription!.level) ?? .free) : .free
+        let subscriptionLevel = subscription != nil ? SubscriptionLevel.fromAPIPlanString(subscription!.level) : .free
         let trialInfo = subscription?.trial_info
         let limits = subscription?.limits?.toSubscriptionLimits() ?? SubscriptionLimits.freeLimits
         let components = subscription?.components ?? []
@@ -1231,6 +1222,18 @@ final class SubscriptionManager: ObservableObject {
         )
     }
 
+    /// Level used only for **family roster size cap** (not for billing UI).
+    /// Server may keep `plan_level` at free while `trial_info` is still active — then cap must be trial (3).
+    private func subscriptionLevelForFamilyMemberCap(_ status: SubscriptionStatus) -> SubscriptionLevel {
+        if let t = status.trialInfo, t.isActive {
+            return .trial
+        }
+        if status.trialInfo == nil, trialStatus?.isActive == true {
+            return .trial
+        }
+        return status.level
+    }
+
     /// 🔄 Update subscription status
     /// ✅ ИСПРАВЛЕНО: Изменено с private на internal для использования в TokenHealthMonitor
     @MainActor
@@ -1241,7 +1244,9 @@ final class SubscriptionManager: ObservableObject {
 
         // ✅ SINGLE SOURCE OF TRUTH: Update both UserDefaults (for legacy) and published properties
         // Uses exact confirmed mapping: free=1, trial/personal=3, family=6, premium=10
-        let tariffBasedLimit = familyMemberLimit(for: status.level)
+        // When JWT `plan_level` is still "free" but trial is active, cap must follow trial (3), not free (1).
+        let levelForFamilyCap = subscriptionLevelForFamilyMemberCap(status)
+        let tariffBasedLimit = familyMemberLimit(for: levelForFamilyCap)
         let calculatedRemaining = max(0, tariffBasedLimit - (currentSubscription?.limits.currentUsage.devices ?? 1))
 
         // Update legacy storage for backward compatibility with FamilyScreen and VM
@@ -1253,8 +1258,8 @@ final class SubscriptionManager: ObservableObject {
         self.currentFamilyLimit = tariffBasedLimit
         self.currentFamilyRemaining = calculatedRemaining
 
-        VisualLogger.shared.log("🔄 TARIFF→FAMILY SYNC: level=\(status.level), family_limit=\(tariffBasedLimit), remaining=\(calculatedRemaining) (published + UserDefaults)", level: .info, category: "FAMILY")
-        logger.business("🔄 Tariff sync: family_limit=\(tariffBasedLimit) for \(status.level.rawValue) tariff (single source updated)")
+        VisualLogger.shared.log("🔄 TARIFF→FAMILY SYNC: plan_level=\(status.level), cap_level=\(levelForFamilyCap), family_limit=\(tariffBasedLimit), remaining=\(calculatedRemaining) (published + UserDefaults)", level: .info, category: "FAMILY")
+        logger.business("🔄 Tariff sync: family_limit=\(tariffBasedLimit) for cap_level=\(levelForFamilyCap.rawValue) (plan_level=\(status.level.rawValue))")
 
         // ✅ NEW: Broadcast subscription update so MainScreen and other views can react immediately
         NotificationCenter.default.post(
@@ -1667,6 +1672,12 @@ extension SubscriptionManager {
         isOfflineMode = false // Assume online for now, implement proper check
     }
 
+    /// Apply decoded GET `/api/subscription/status` body (trial, limits, level, persistence, family cap).
+    @MainActor
+    func applySubscriptionPayloadFromServer(_ serverStatus: SubscriptionStatus) async {
+        await updateFromServerStatus(serverStatus)
+    }
+
     /// 🔄 Sync subscription data with server when online
     @MainActor
     func syncWithServer() async {
@@ -1684,20 +1695,20 @@ extension SubscriptionManager {
                 return
             }
 
-            // Get current subscription status summary from server with explicit token
-            let serverSummary: SubscriptionStatusSummaryResponse = try await withCheckedThrowingContinuation { continuation in
-                APIService.shared.getSubscriptionStatusWithToken(userId: "current", token: token) { result in
+            let serverStatus: SubscriptionStatus = try await withCheckedThrowingContinuation { continuation in
+                APIService.shared.getSubscriptionStatusWithToken(
+                    userId: "current",
+                    token: token,
+                    merging: self.currentSubscription
+                ) { result in
                     switch result {
-                    case .success(let summary):
-                        continuation.resume(returning: summary)
+                    case .success(let status):
+                        continuation.resume(returning: status)
                     case .failure(let error):
                         continuation.resume(throwing: error)
                     }
                 }
             }
-
-            // Convert summary to SubscriptionStatus using current subscription data
-            let serverStatus = serverSummary.toSubscriptionStatus(currentSubscription: currentSubscription)
 
             // Update local data if server has newer information
             if shouldUpdateFromServer(serverStatus) {
@@ -1723,7 +1734,8 @@ extension SubscriptionManager {
 
         // Compare subscription levels and expiration dates
         return serverStatus.level != localSubscription.level ||
-               serverStatus.expiresAt != localSubscription.expiresAt
+               serverStatus.expiresAt != localSubscription.expiresAt ||
+               serverStatus.trialInfo != localSubscription.trialInfo
     }
 
     /// 📥 Update local subscription from server data

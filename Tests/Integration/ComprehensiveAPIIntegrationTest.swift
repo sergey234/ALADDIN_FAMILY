@@ -197,10 +197,10 @@ class ComprehensiveAPIIntegrationTest: XCTestCase {
 
         Task {
             do {
-                // Test subscription status
-                let status = try await apiService.getSubscriptionStatus()
+                // GET /api/subscription/status → decoded `SubscriptionStatus` (canonical `{ status, server_time }`)
+                let status = try await apiService.fetchSubscriptionStatus(userId: testDeviceId, merging: nil)
                 XCTAssertNotNil(status)
-                XCTAssertNotNil(status.status)
+                XCTAssertFalse(status.level.rawValue.isEmpty)
 
                 // Test subscription plans
                 let plans = try await apiService.getSubscriptionPlans()

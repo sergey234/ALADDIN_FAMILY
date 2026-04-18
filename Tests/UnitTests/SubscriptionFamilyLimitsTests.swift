@@ -80,6 +80,29 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
         let (allowed, _, _) = subscriptionManager.canAddFamilyMember(currentCount: 1)
         XCTAssertFalse(allowed) // At limit for free
     }
+
+    /// JWT may still report `free` while trial dates are active — roster cap must be 3, not 1.
+    func testFreePlanWithActiveTrialInfoUsesTrialFamilyCap() {
+        let trial = TrialInfo(
+            startDate: Date().addingTimeInterval(-86_400),
+            endDate: Date().addingTimeInterval(86_400 * 7),
+            durationDays: 14
+        )
+        XCTAssertTrue(trial.isActive)
+        let testStatus = SubscriptionStatus(
+            level: .free,
+            isActive: true,
+            expiresAt: nil,
+            trialInfo: trial,
+            limits: SubscriptionLimits.freeLimits,
+            components: [],
+            lastUpdated: Date()
+        )
+        subscriptionManager.updateSubscriptionStatus(testStatus)
+        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 3)
+        let (allowed, _, _) = subscriptionManager.canAddFamilyMember(currentCount: 2)
+        XCTAssertTrue(allowed)
+    }
     
     func testPublishedPropertiesUpdateOnSubscriptionChange() {
         let testStatus = SubscriptionStatus(

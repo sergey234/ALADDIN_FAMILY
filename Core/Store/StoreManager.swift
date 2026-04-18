@@ -114,13 +114,36 @@ class StoreManager: ObservableObject {
     
     // MARK: - Load Products
     
+    /// Параллельные вызовы `loadProducts()` ждут одну и ту же загрузку (нет дублирующих запросов к StoreKit).
+    private var loadProductsCoalescingTask: Task<Void, Never>?
+    
     /**
      * Загрузить продукты из App Store
      */
     func loadProducts() async {
+        if let existing = loadProductsCoalescingTask {
+            await existing.value
+            return
+        }
+        let task = Task { @MainActor in
+            await self.performLoadProducts()
+        }
+        loadProductsCoalescingTask = task
+        await task.value
+        loadProductsCoalescingTask = nil
+    }
+    
+    private func performLoadProducts() async {
         logger.business("Loading App Store products")
         isLoading = true
         errorMessage = nil
+        
+        #if targetEnvironment(simulator)
+        // Симулятор без StoreKit Configuration даёт sim2host/507 и забивает лог; реальный IAP тестируем на устройстве.
+        isLoading = false
+        print("⚠️ [StoreManager.loadProducts] Симулятор — пропуск StoreKit (без Product.products), продуктов: 0")
+        return
+        #endif
         
         // ✅ ДЕТАЛЬНОЕ ЛОГИРОВАНИЕ: Выводим информацию о попытке загрузки
         let productIDs = ProductID.paidSubscriptions.map { $0.rawValue }

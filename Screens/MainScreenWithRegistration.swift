@@ -45,13 +45,28 @@ struct MainScreenWithRegistration: View {
     var body: some View {
         ZStack {
             backgroundView
-            cancelButtonView
-            
+
             registrationModalsView
             loadingOrErrorView
             recoveryCodeModalView
             successModalView
             tipNotificationView
+        }
+        // «Отмена» только в углу — без полноэкранного Spacer, иначе перехватывались нажатия по модалу успеха / Продолжить
+        .overlay(alignment: .topTrailing) {
+            Button(localizationManager.localized("common_cancel")) {
+                print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем completeRegistration()")
+                completeRegistration(isSuccess: false)
+            }
+            .font(.system(size: 16, weight: .medium))
+            .foregroundColor(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 8)
+            .background(Color.black.opacity(0.35))
+            .cornerRadius(20)
+            .accessibilityLabel(localizationManager.localized("common_cancel"))
+            .padding(.top, 20)
+            .padding(.trailing, 20)
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Экран регистрации семьи")
@@ -76,28 +91,6 @@ struct MainScreenWithRegistration: View {
             .ignoresSafeArea()
     }
             
-    private var cancelButtonView: some View {
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(localizationManager.localized("common_cancel")) {
-                        print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем completeRegistration()")
-                        completeRegistration(isSuccess: false)
-                    }
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.white)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 8)
-                    .background(Color.black.opacity(0.3))
-                    .cornerRadius(20)
-                    .accessibilityLabel(localizationManager.localized("common_cancel"))
-                }
-                .padding(.top, 20)
-                .padding(.horizontal, 20)
-                Spacer()
-            }
-    }
-    
     private var loadingView: some View {
         VStack(spacing: 20) {
             ProgressView()
@@ -257,25 +250,42 @@ struct MainScreenWithRegistration: View {
     private var successModalView: some View {
         Group {
             if registrationVM.showSuccessModal {
-                VStack {
+                VStack(spacing: 16) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 48))
+                        .foregroundColor(.green)
+
                     Text(localizationManager.localized("registration_success_title"))
-                        .font(.title)
-                        .foregroundColor(.white)
-                    
+                        .font(.title2.weight(.bold))
+                        .foregroundColor(.primary)
+                        .multilineTextAlignment(.center)
+
                     Text(localizationManager.localized("registration_success_message"))
                         .font(.body)
-                        .foregroundColor(.white)
-                    
-                    Button(localizationManager.localized("common_continue")) {
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+
+                    Button {
                         registrationVM.showSuccessModal = false
                         print("✅ [MainScreenWithRegistration] Кнопка 'Продолжить' нажата после успеха")
                         completeRegistration(isSuccess: true)
+                    } label: {
+                        Text(localizationManager.localized("common_continue"))
+                            .font(.headline)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
                     }
                     .buttonStyle(.borderedProminent)
+                    .tint(.green)
+                    .padding(.top, 4)
                 }
-                .padding()
-                .background(Color.green)
-                .cornerRadius(10)
+                .padding(24)
+                .frame(maxWidth: 320)
+                .background(
+                    RoundedRectangle(cornerRadius: 16)
+                        .fill(Color(UIColor.secondarySystemBackground))
+                        .shadow(color: .black.opacity(0.25), radius: 20, y: 8)
+                )
             }
         }
             }

@@ -1352,13 +1352,64 @@ class APIService: ObservableObject {
         networkManager.get(endpoint: endpoint, completion: completion)
     }
     
-    func getSubscriptionStatus(userId: String, completion: @escaping (Result<SubscriptionStatusSummaryResponse, Error>) -> Void) {
-        let endpoint = AppConfig.Endpoint.subscriptionStatus + "?userId=\(userId)"
-        networkManager.get(endpoint: endpoint, completion: completion)
+    /// GET `/api/subscription/status` — decodes real backend envelope `{ status, server_time }` or legacy summary.
+    func getSubscriptionStatus(
+        userId: String,
+        merging currentSubscription: SubscriptionStatus? = nil,
+        completion: @escaping (Result<SubscriptionStatus, Error>) -> Void
+    ) {
+        Task {
+            _ = await JWTTokenManager.shared.refreshTokenIfNeeded()
+            let endpoint = AppConfig.Endpoint.subscriptionStatus + "?userId=\(userId)"
+            guard let url = URL(string: AppConfig.apiBaseURL + endpoint) else {
+                completion(.failure(NetworkError.invalidURL))
+                return
+            }
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            request.cachePolicy = .reloadIgnoringLocalCacheData
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+            request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
+            guard let authToken = AppConfig.authToken, !authToken.isEmpty else {
+                completion(.failure(NetworkError.unauthorized("Токен авторизации отсутствует")))
+                return
+            }
+            request.setValue("Bearer \(authToken)", forHTTPHeaderField: "Authorization")
+
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                if let error = error {
+                    completion(.failure(NetworkError.unknown(error)))
+                    return
+                }
+                if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+                    completion(.failure(NetworkError.invalidStatusCode(http.statusCode)))
+                    return
+                }
+                guard let data = data else {
+                    completion(.failure(NetworkError.noData))
+                    return
+                }
+                do {
+                    let status = try SubscriptionStatusHTTPDecoder.subscriptionStatus(from: data, merging: currentSubscription)
+                    completion(.success(status))
+                } catch {
+                    #if DEBUG
+                    let body = String(data: data, encoding: .utf8) ?? ""
+                    print("❌ getSubscriptionStatus decode: \(error)\n\(body.prefix(600))")
+                    #endif
+                    completion(.failure(NetworkError.decodingError(error)))
+                }
+            }.resume()
+        }
     }
 
     /// 🔄 Get subscription status with explicit token (for background sync)
-    func getSubscriptionStatusWithToken(userId: String, token: String, completion: @escaping (Result<SubscriptionStatusSummaryResponse, Error>) -> Void) {
+    func getSubscriptionStatusWithToken(
+        userId: String,
+        token: String,
+        merging currentSubscription: SubscriptionStatus? = nil,
+        completion: @escaping (Result<SubscriptionStatus, Error>) -> Void
+    ) {
         let endpoint = AppConfig.Endpoint.subscriptionStatus + "?userId=\(userId)"
 
         // Создаем запрос с явным токеном
@@ -1369,7 +1420,9 @@ class APIService: ObservableObject {
 
         var request = URLRequest(url: url)
         request.httpMethod = "GET"
+        request.cachePolicy = .reloadIgnoringLocalCacheData
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        request.setValue("no-cache", forHTTPHeaderField: "Cache-Control")
         request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
 
         URLSession.shared.dataTask(with: request) { data, response, error in
@@ -1377,19 +1430,35 @@ class APIService: ObservableObject {
                 completion(.failure(NetworkError.unknown(error)))
                 return
             }
-
+            if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+                completion(.failure(NetworkError.invalidStatusCode(http.statusCode)))
+                return
+            }
             guard let data = data else {
                 completion(.failure(NetworkError.noData))
                 return
             }
 
             do {
-                let decodedResponse = try JSONDecoder().decode(SubscriptionStatusSummaryResponse.self, from: data)
-                completion(.success(decodedResponse))
+                let status = try SubscriptionStatusHTTPDecoder.subscriptionStatus(from: data, merging: currentSubscription)
+                completion(.success(status))
             } catch {
+                #if DEBUG
+                let body = String(data: data, encoding: .utf8) ?? ""
+                print("❌ getSubscriptionStatusWithToken decode: \(error)\n\(body.prefix(600))")
+                #endif
                 completion(.failure(NetworkError.decodingError(error)))
             }
         }.resume()
+    }
+
+    /// Swift Concurrency wrapper for tests and `async` call sites (distinct name avoids overload/recursion ambiguity with the completion API).
+    func fetchSubscriptionStatus(userId: String, merging currentSubscription: SubscriptionStatus? = nil) async throws -> SubscriptionStatus {
+        try await withCheckedThrowingContinuation { continuation in
+            getSubscriptionStatus(userId: userId, merging: currentSubscription) { result in
+                continuation.resume(with: result)
+            }
+        }
     }
     
     func updateSubscriptionStatus(userId: String, status: String, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<SubscriptionStatusResponse, Error>) -> Void) {

@@ -182,6 +182,18 @@ enum SubscriptionLevel: String, Codable, CaseIterable {
         case .premium: return 490
         }
     }
+
+    /// Maps JWT / REST `level` strings to the app enum (handles legacy synonyms from backends and docs).
+    static func fromAPIPlanString(_ raw: String) -> SubscriptionLevel {
+        let s = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        if let direct = SubscriptionLevel(rawValue: s) { return direct }
+        switch s {
+        case "basic", "individual", "standard":
+            return .personal
+        default:
+            return .free
+        }
+    }
 }
 
 /// 🎁 Trial Information Structure
@@ -620,7 +632,7 @@ extension DeviceRegistrationSubscription {
     /// ✅ BUILD 121: Использует limits из ответа сервера, если они есть
     func toSubscriptionStatus() -> SubscriptionStatus {
         return SubscriptionStatus(
-            level: SubscriptionLevel(rawValue: level) ?? .free,  // Convert string to enum
+            level: SubscriptionLevel.fromAPIPlanString(level),
             isActive: isActive,
             expiresAt: parseISODate(expiresAt),                  // Convert string to Date
             trialInfo: trialInfo,
@@ -868,6 +880,28 @@ struct SubscriptionStatusSummaryResponse: Codable {
     let daysRemaining: Int?
     let canRenew: Bool
     let lastModified: String // ISO 8601 date string
+}
+
+/// Envelope for GET `/api/subscription/status` (FastAPI: `SubscriptionStatusResponse` → `status` + `server_time`).
+struct SubscriptionStatusGETEnvelope: Codable {
+    let status: DeviceRegistrationSubscription
+    let serverTime: String?
+
+    enum CodingKeys: String, CodingKey {
+        case status
+        case serverTime = "server_time"
+    }
+}
+
+/// Decodes canonical `{ status, server_time }` or legacy summary (needs merge context for level).
+enum SubscriptionStatusHTTPDecoder {
+    static func subscriptionStatus(from data: Data, merging mergeWith: SubscriptionStatus?) throws -> SubscriptionStatus {
+        if let envelope = try? JSONDecoder().decode(SubscriptionStatusGETEnvelope.self, from: data) {
+            return envelope.status.toSubscriptionStatus()
+        }
+        let legacy = try JSONDecoder().decode(SubscriptionStatusSummaryResponse.self, from: data)
+        return legacy.toSubscriptionStatus(currentSubscription: mergeWith)
+    }
 }
 
 /// 📡 Subscription Status Response

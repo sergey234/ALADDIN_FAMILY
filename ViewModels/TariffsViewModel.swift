@@ -55,28 +55,9 @@ class TariffsViewModel: ObservableObject {
             }
             .store(in: &cancellables)
         
-        // ✅ БЕЗОПАСНАЯ ЗАГРУЗКА: Откладываем загрузку продуктов
-        // Используем DispatchQueue для гарантии выполнения на main thread после инициализации
+        // `startLoading()` на устройстве сам запускает loadProducts; дублирующий Task убран (коалесcing в StoreManager).
         DispatchQueue.main.async { [weak self] in
-            guard let self = self else { return }
-            // Начинаем загрузку продуктов
-            self.storeManager.startLoading()
-            
-            // Загрузить продукты
-            Task { @MainActor in
-                await self.loadProducts()
-            }
-        }
-        
-        // ✅ ДОПОЛНИТЕЛЬНАЯ ЗАГРУЗКА: Загружаем продукты при создании ViewModel
-        // Это гарантирует, что продукты будут загружены до попытки покупки
-        Task { @MainActor in
-            // Небольшая задержка для гарантии готовности StoreKit
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
-            if self.storeManager.products.isEmpty {
-                print("🔄 [TariffsViewModel] Продукты пусты при инициализации, загружаем...")
-                await self.loadProducts()
-            }
+            self?.storeManager.startLoading()
         }
         
         print("✅ TariffsViewModel.init: Инициализация завершена")

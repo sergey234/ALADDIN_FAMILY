@@ -237,7 +237,8 @@ struct FamilyMemberCard: View {
                         }
                         .buttonStyle(PlainButtonStyle())
                         .disabled(isDeleteDisabled)
-                        .padding(.top, 12)   // ✅ lowered to not overlap "Сервер" text
+                        // Top row (avatar + name + origin "server" pill) is ~28–32pt tall inside card padding — keep trash fully below it
+                        .padding(.top, 32)
                         .padding(.trailing, 8)
                     }
                     Spacer()
