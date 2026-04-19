@@ -195,17 +195,34 @@ async def get_family_stats_from_db(
             members_row = members_result.fetchone()
             total_members = members_row[0] if members_row else 1  # Минимум 1 (сам пользователь)
             
-            # ✅ Получаем количество устройств
-            devices_result = await db.execute(
-                text("""
-                    SELECT COUNT(*) as count
-                    FROM devices
-                    WHERE user_id = :user_id OR owner_id = :user_id
-                """),
-                {"user_id": user_id}
-            )
-            devices_row = devices_result.fetchone()
-            total_devices = devices_row[0] if devices_row else 1  # Минимум 1 устройство
+            # ✅ Количество устройств: сначала aladdin_family_devices (как GET /api/devices), иначе legacy `devices`
+            total_devices = 0
+            try:
+                devices_result = await db.execute(
+                    text(
+                        """
+                        SELECT COUNT(*) as count
+                        FROM aladdin_family_devices
+                        WHERE user_id = :uid_text
+                        """
+                    ),
+                    {"uid_text": str(user_id)},
+                )
+                devices_row = devices_result.fetchone()
+                total_devices = int(devices_row[0] or 0) if devices_row else 0
+            except Exception:
+                devices_result = await db.execute(
+                    text(
+                        """
+                        SELECT COUNT(*) as count
+                        FROM devices
+                        WHERE user_id = :user_id OR owner_id = :user_id
+                        """
+                    ),
+                    {"user_id": user_id},
+                )
+                devices_row = devices_result.fetchone()
+                total_devices = int(devices_row[0] or 0) if devices_row else 0
             
             # ✅ Получаем количество заблокированных угроз
             threats_result = await db.execute(
@@ -348,8 +365,39 @@ async def get_family_stats(
             ).fetchone()
 
             total_members = int(agg[0] or 0)
-            total_devices = int(agg[1] or 0)
+            member_devices_sum = int(agg[1] or 0)
             total_threats = int(agg[2] or 0)
+
+            # Источник правды для списка устройств — aladdin_family_devices (GET/POST /api/devices).
+            # SUM(family_members.devices) остаётся fallback, если таблица ещё не развёрнута или запрос недоступен.
+            total_devices = member_devices_sum
+            try:
+                drow = db.execute(
+                    text(
+                        """
+                        SELECT COUNT(*)::int
+                        FROM aladdin_family_devices d
+                        WHERE d.user_id IN (
+                            SELECT CAST(fm.user_id AS TEXT)
+                            FROM family_members fm
+                            WHERE fm.family_id = :family_id AND fm.user_id IS NOT NULL
+                            UNION
+                            SELECT CAST(f.owner_user_id AS TEXT)
+                            FROM families f
+                            WHERE f.id = :family_id
+                        )
+                        """
+                    ),
+                    {"family_id": family_id},
+                ).fetchone()
+                total_devices = int(drow[0] or 0) if drow else 0
+            except Exception as e:
+                logger.warning(
+                    "family_stats_aladdin_devices_fallback",
+                    family_id=str(family_id),
+                    error=str(e),
+                )
+                total_devices = member_devices_sum
 
             # Simple protection level heuristic until components are wired to real tables
             protection_level = 95 if total_threats == 0 else 70

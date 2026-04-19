@@ -122,6 +122,9 @@ enum NetworkError: Error, LocalizedError {
     /// Circuit breaker protection active
     case circuitBreakerActive(String?)
 
+    /// Шлюз/прод: маршрут отключён до «живого» бэкенда (см. `detail` на API).
+    case endpointFeatureUnavailable
+
     /// Неизвестная ошибка
     case unknown(Error?)
     
@@ -211,6 +214,8 @@ enum NetworkError: Error, LocalizedError {
             return "Ошибка файловой системы: \(error.localizedDescription)"
         case .circuitBreakerActive(let message):
             return message ?? "Сервер временно недоступен. Повторите попытку позже."
+        case .endpointFeatureUnavailable:
+            return LocalizationManager.shared.localized("api_error_endpoint_feature_unavailable")
 
         case .unknown(let error):
             return "Неизвестная ошибка: \(error?.localizedDescription ?? "Попробуйте позже")"
@@ -229,6 +234,8 @@ enum NetworkError: Error, LocalizedError {
             return "Необходимо войти в систему заново"
         case .tooManyRequests:
             return "Подождите несколько минут"
+        case .endpointFeatureUnavailable:
+            return LocalizationManager.shared.localized("api_error_endpoint_feature_unavailable_reason")
         default:
             return "Обратитесь в поддержку"
         }
@@ -248,6 +255,8 @@ enum NetworkError: Error, LocalizedError {
             return "Войдите в систему заново"
         case .tooManyRequests:
             return "Подождите 5-10 минут"
+        case .endpointFeatureUnavailable:
+            return LocalizationManager.shared.localized("api_error_endpoint_feature_unavailable_recovery")
         default:
             return "Перезапустите приложение"
         }
@@ -386,7 +395,8 @@ extension NetworkError: Equatable {
              (.tokenExpired, .tokenExpired),
              (.invalidToken, .invalidToken),
              (.reauthenticationRequired, .reauthenticationRequired),
-             (.outOfMemory, .outOfMemory):
+             (.outOfMemory, .outOfMemory),
+             (.endpointFeatureUnavailable, .endpointFeatureUnavailable):
             return true
         case (.invalidStatusCode(let lhsCode), .invalidStatusCode(let rhsCode)):
             return lhsCode == rhsCode

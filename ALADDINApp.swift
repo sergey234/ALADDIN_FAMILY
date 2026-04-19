@@ -262,6 +262,26 @@ struct ALADDINApp: App {
                     LaunchDiagnostics.appendStartupTrace("WindowGroup.task END deferred bootstrap")
                     LaunchDiagnostics.appendLifecycleTrace("WindowGroup.task END deferred bootstrap")
                 }
+                .onOpenURL { url in
+                    guard let token = DevicePairingLinkParser.extractToken(from: url)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                          !token.isEmpty else { return }
+                    UserDefaults.standard.set(token, forKey: AppConfig.UserDefaultsKeys.pendingDeviceBindToken)
+                    if hasCompletedOnboarding {
+                        navigationManager.pendingDeviceBindToken = token
+                        navigationManager.navigateTo(.joinDevice)
+                    }
+                }
+                .onChange(of: hasCompletedOnboarding) { completed in
+                    guard completed else { return }
+                    let key = AppConfig.UserDefaultsKeys.pendingDeviceBindToken
+                    guard let raw = UserDefaults.standard.string(forKey: key)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                          !raw.isEmpty else { return }
+                    let token = DevicePairingLinkParser.extractToken(fromScannedString: raw)
+                        ?? URL(string: raw).flatMap { DevicePairingLinkParser.extractToken(from: $0) }
+                    guard let token, !token.isEmpty else { return }
+                    navigationManager.pendingDeviceBindToken = token
+                    navigationManager.navigateTo(.joinDevice)
+                }
         }
     }
 
@@ -537,6 +557,7 @@ struct ALADDINApp: App {
                     case .deviceDetail:
                         AnyView(DeviceDetailScreen(
                             device: Device(
+                                id: "routing-preview",
                                 name: "iPhone 13",
                                 owner: "Пользователь",
                                 type: .iphone,
@@ -636,6 +657,13 @@ struct ALADDINApp: App {
                         AnyView(QRScannerModal(onCodeScanned: { _ in }).id("qrCode").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .invitationCode:
                         AnyView(InvitationCodeInputModal(isPresented: .constant(true)).id("invitationCode").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .joinDevice:
+                        AnyView(
+                            JoinDeviceScreen()
+                                .id("joinDevice")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                        )
                     default:
                         AnyView(
                             VStack(spacing: 20) {

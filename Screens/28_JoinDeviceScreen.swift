@@ -1,51 +1,47 @@
 import SwiftUI
 
-/**
- * 📱 Join Device Screen (Экран привязки устройства)
- * Экран для ребенка/дополнительного устройства. Позволяет отсканировать QR или ввести PIN для привязки.
- */
+/// Экран нового устройства: QR из приглашения родителя или ввод 6 цифр (гибрид с бэкендом).
 struct JoinDeviceScreen: View {
-    @Environment(\.dismiss) var dismiss
+    @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
-    
+
     @State private var pinCode: String = ""
     @State private var isLoading: Bool = false
-    @State private var errorMessage: String? = nil
+    @State private var errorMessage: String?
     @State private var showSuccessAlert: Bool = false
     @State private var showQRScanner: Bool = false
-    
+
+    private var normalizedPin: String {
+        pinCode.filter { $0.isNumber }
+    }
+
     var body: some View {
-        NavigationView {
-            ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
-                
+        ZStack {
+            LinearGradient.backgroundGradient
+                .ignoresSafeArea()
+
+            VStack(spacing: 0) {
+                ALADDINNavigationBar(
+                    title: localizationManager.localized("join_device_title"),
+                    subtitle: localizationManager.localized("join_device_subtitle"),
+                    showBackButton: true,
+                    onBack: {
+                        navigationManager.goBack(reason: "JoinDeviceScreen cancel")
+                    }
+                )
+
                 ScrollView {
                     VStack(spacing: Spacing.xl) {
-                        
-                        // Header
-                        VStack(spacing: Spacing.s) {
-                            Text("Привязать устройство")
-                                .font(.h1)
-                                .foregroundColor(.textPrimary)
-                            
-                            Text("Отсканируйте QR-код с экрана администратора или введите 6-значный код.")
-                                .font(.body)
-                                .foregroundColor(.textSecondary)
-                                .multilineTextAlignment(.center)
-                        }
-                        .padding(.top, Spacing.xl)
-                        
-                        // Scan QR Button
                         Button(action: {
+                            let gen = UIImpactFeedbackGenerator(style: .medium)
+                            gen.impactOccurred()
                             showQRScanner = true
                         }) {
                             VStack(spacing: Spacing.m) {
                                 Image(systemName: "qrcode.viewfinder")
                                     .font(.system(size: 64))
                                     .foregroundColor(.primaryBlue)
-                                
-                                Text("Сканировать QR-код")
+                                Text(localizationManager.localized("join_device_scan"))
                                     .font(.h4)
                                     .foregroundColor(.textPrimary)
                             }
@@ -59,97 +55,109 @@ struct JoinDeviceScreen: View {
                             )
                         }
                         .padding(.horizontal, Spacing.screenPadding)
-                        
-                        Text("ИЛИ")
+                        .padding(.top, Spacing.l)
+
+                        Text(localizationManager.localized("join_device_or"))
                             .font(.bodyBold)
                             .foregroundColor(.textSecondary)
-                        
-                        // PIN Input
+
                         VStack(spacing: Spacing.m) {
-                            Text("Введите код привязки вручную")
+                            Text(localizationManager.localized("join_device_manual_title"))
                                 .font(.h4)
                                 .foregroundColor(.textPrimary)
-                            
-                            TextField("Например, 839124", text: $pinCode)
+
+                            TextField(localizationManager.localized("join_device_placeholder"), text: $pinCode)
                                 .textFieldStyle(ALADDINTextFieldStyle())
                                 .keyboardType(.numberPad)
                                 .multilineTextAlignment(.center)
                                 .font(.system(size: 24, weight: .bold, design: .monospaced))
-                            
+                                .onChange(of: pinCode) { newValue in
+                                    let digits = newValue.filter { $0.isNumber }
+                                    pinCode = String(digits.prefix(6))
+                                }
+
                             Button(action: {
-                                bindDevice(token: "", pin: pinCode)
+                                bindWithPinOnly()
                             }) {
                                 HStack {
                                     if isLoading {
                                         ProgressView()
                                             .progressViewStyle(CircularProgressViewStyle(tint: .white))
                                     } else {
-                                        Text("Привязать")
+                                        Text(localizationManager.localized("join_device_bind"))
                                             .font(.bodyBold)
                                     }
                                 }
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, Spacing.m)
-                                .background(pinCode.count >= 6 ? Color.primaryBlue : Color.gray)
+                                .background(normalizedPin.count == 6 ? Color.primaryBlue : Color.gray)
                                 .cornerRadius(CornerRadius.medium)
                             }
-                            .disabled(pinCode.count < 6 || isLoading)
+                            .disabled(normalizedPin.count != 6 || isLoading)
                         }
                         .padding(Spacing.cardPadding)
                         .background(Color.backgroundMedium.opacity(0.4))
                         .cornerRadius(CornerRadius.large)
                         .padding(.horizontal, Spacing.screenPadding)
-                        
                     }
                     .padding(.bottom, Spacing.xxl)
                 }
             }
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button("Отмена") {
-                        dismiss()
-                    }
-                    .foregroundColor(.textPrimary)
+        }
+        .navigationBarHidden(true)
+        .sheet(isPresented: $showQRScanner) {
+            QRScannerModal(onCodeScanned: { raw in
+                if let token = DevicePairingLinkParser.extractToken(fromScannedString: raw)
+                    ?? URL(string: raw).flatMap({ DevicePairingLinkParser.extractToken(from: $0) }) {
+                    bindWithToken(token)
+                } else {
+                    errorMessage = localizationManager.localized("join_device_error_title")
                 }
+            })
+            .environmentObject(localizationManager)
+        }
+        .alert(localizationManager.localized("join_device_success_title"), isPresented: $showSuccessAlert) {
+            Button(localizationManager.localized("common_ok")) {
+                notifyRefreshAndLeave()
             }
-            .sheet(isPresented: $showQRScanner) {
-                // Временно показываем заглушку, тут должен быть QRScannerModal, который вернёт токен.
-                VStack {
-                    Text("Сканер QR-кода")
-                        .font(.h2)
-                    Button("Симулировать успешное сканирование") {
-                        showQRScanner = false
-                        bindDevice(token: "TEST_QR_TOKEN", pin: nil)
-                    }
-                    .padding()
-                }
+        } message: {
+            Text(localizationManager.localized("join_device_success_message"))
+        }
+        .alert(localizationManager.localized("join_device_error_title"), isPresented: .constant(errorMessage != nil)) {
+            Button(localizationManager.localized("common_ok")) {
+                errorMessage = nil
             }
-            .alert("Успех", isPresented: $showSuccessAlert) {
-                Button("OK") {
-                    dismiss()
-                }
-            } message: {
-                Text("Устройство успешно привязано к вашей семье!")
+        } message: {
+            if let error = errorMessage {
+                Text(error)
             }
-            .alert("Ошибка", isPresented: .constant(errorMessage != nil)) {
-                Button("OK") {
-                    errorMessage = nil
-                }
-            } message: {
-                if let error = errorMessage {
-                    Text(error)
-                }
+        }
+        .onAppear(perform: consumePendingTokenIfAny)
+    }
+
+    private func consumePendingTokenIfAny() {
+        if let t = navigationManager.pendingDeviceBindToken?.trimmingCharacters(in: .whitespacesAndNewlines), !t.isEmpty {
+            navigationManager.pendingDeviceBindToken = nil
+            bindWithToken(t)
+            return
+        }
+        let key = AppConfig.UserDefaultsKeys.pendingDeviceBindToken
+        if let s = UserDefaults.standard.string(forKey: key)?.trimmingCharacters(in: .whitespacesAndNewlines), !s.isEmpty {
+            UserDefaults.standard.removeObject(forKey: key)
+            if let token = DevicePairingLinkParser.extractToken(fromScannedString: s)
+                ?? URL(string: s).flatMap({ DevicePairingLinkParser.extractToken(from: $0) }) {
+                bindWithToken(token)
             }
         }
     }
-    
-    private func bindDevice(token: String, pin: String?) {
+
+    private func bindWithToken(_ token: String) {
+        let trimmed = token.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
         isLoading = true
         errorMessage = nil
-        
-        APIService.shared.bindDevice(token: token, pin: pin) { result in
+        APIService.shared.bindDevice(token: trimmed, pin: nil) { result in
             DispatchQueue.main.async {
                 isLoading = false
                 switch result {
@@ -160,5 +168,28 @@ struct JoinDeviceScreen: View {
                 }
             }
         }
+    }
+
+    private func bindWithPinOnly() {
+        guard normalizedPin.count == 6 else { return }
+        isLoading = true
+        errorMessage = nil
+        APIService.shared.bindDevice(token: nil, pin: normalizedPin) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success:
+                    showSuccessAlert = true
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
+                }
+            }
+        }
+    }
+
+    private func notifyRefreshAndLeave() {
+        UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
+        NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
+        navigationManager.goBack(reason: "JoinDeviceScreen completed")
     }
 }

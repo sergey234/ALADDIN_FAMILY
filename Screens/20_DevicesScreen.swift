@@ -49,32 +49,42 @@ struct DevicesScreen: View {
                 .accessibilityLabel("Фон экрана устройств")
             
             VStack(spacing: 0) {
-                // Навигационная панель
+                // Навигационная панель (вне оверлея — кнопка «Добавить» всегда нажимается во время загрузки)
                 navigationHeader
                 
-                // Основной контент
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: Spacing.l) {
-                        // Статистика устройств
-                        deviceStats
-                        
-                        // Фильтры
-                        deviceFilters
-                        
-                        // Список устройств
-                        deviceList
+                ZStack {
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: Spacing.l) {
+                            // Статистика устройств
+                            deviceStats
+                            
+                            // Фильтры
+                            deviceFilters
+                            
+                            // Список устройств
+                            deviceList
+                        }
+                        .padding(.horizontal, Spacing.screenPadding)
+                        .padding(.bottom, Spacing.xxl)
                     }
-                    .padding(.horizontal, Spacing.screenPadding)
-                    .padding(.bottom, Spacing.xxl)
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel(localizationManager.localized("devices_list_accessibility"))
+                    
+                    if isLoading {
+                        ProgressView()
+                            .scaleEffect(1.5)
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .background(Color.black.opacity(0.25))
+                    }
                 }
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel(localizationManager.localized("devices_list_accessibility"))
             }
         }
         .navigationBarHidden(true)
         .sheet(isPresented: $showAddDevice) {
             AddDeviceView(onDeviceAdded: {
                 loadDevices()
+                UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
+                NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
             })
             .environmentObject(localizationManager)
         }
@@ -83,14 +93,6 @@ struct DevicesScreen: View {
         }
         .onAppear {
             loadDevices()
-        }
-        .overlay {
-            if isLoading {
-                ProgressView()
-                    .scaleEffect(1.5)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.black.opacity(0.3))
-            }
         }
         .alert(localizationManager.localized("common_error"), isPresented: .constant(errorMessage != nil)) {
             Button(localizationManager.localized("common_ok")) {
@@ -343,19 +345,33 @@ struct DevicesScreen: View {
                     .foregroundColor(.textSecondary)
             }
             
-            LazyVStack(spacing: Spacing.s) {
-                ForEach(filteredDevices) { device in
-                    NavigationLink(destination: DeviceDetailScreen(device: device)) {
-                    DeviceCard(device: device)
-                    }
-                    .buttonStyle(PlainButtonStyle())
-                    .simultaneousGesture(
-                        TapGesture().onEnded {
-                            // Haptic feedback при нажатии на карточку
-                            let generator = UIImpactFeedbackGenerator(style: .light)
-                            generator.impactOccurred()
+            if devices.isEmpty && !isLoading {
+                VStack(spacing: Spacing.m) {
+                    Text(localizationManager.localized("devices_list_empty_title"))
+                        .font(.bodyBold)
+                        .foregroundColor(.textPrimary)
+                        .multilineTextAlignment(.center)
+                    Text(localizationManager.localized("devices_list_empty_subtitle"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                        .multilineTextAlignment(.center)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Spacing.xl)
+            } else {
+                LazyVStack(spacing: Spacing.s) {
+                    ForEach(filteredDevices) { device in
+                        NavigationLink(destination: DeviceDetailScreen(device: device)) {
+                            DeviceCard(device: device)
                         }
-                    )
+                        .buttonStyle(PlainButtonStyle())
+                        .simultaneousGesture(
+                            TapGesture().onEnded {
+                                let generator = UIImpactFeedbackGenerator(style: .light)
+                                generator.impactOccurred()
+                            }
+                        )
+                    }
                 }
             }
         }
@@ -370,110 +386,44 @@ struct DevicesScreen: View {
         isLoading = true
         errorMessage = nil
         
-        // ✅ Таймаут: Если запрос не успевает за 5 секунд, показываем мок-данные
-        let timeoutWorkItem = DispatchWorkItem {
-            DispatchQueue.main.async {
-                if self.isLoading {
-                    print("⚠️ Таймаут загрузки устройств - показываем мок-данные")
-                    self.isLoading = false
-                    self.devices = self.getMockDevices()
-                    self.errorMessage = nil
-                }
-            }
-        }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: timeoutWorkItem)
-        
         apiService.getDevices { result in
-            timeoutWorkItem.cancel() // Отменяем таймаут если запрос успел
-            
             DispatchQueue.main.async {
                 isLoading = false
                 
                 switch result {
                 case .success(let deviceResponses):
-                    devices = deviceResponses.map { response in
-                        convertToDevice(response)
-                    }
+                    devices = deviceResponses.map { convertToDevice($0) }
                     errorMessage = nil
-                    
                 case .failure(let error):
-                    // ✅ При ошибке показываем мок-данные вместо ошибки
-                    print("⚠️ Ошибка загрузки устройств: \(error.localizedDescription) - показываем мок-данные")
-                    devices = getMockDevices()
-                    errorMessage = nil
+                    devices = []
+                    errorMessage = String(
+                        format: "%@ %@",
+                        localizationManager.localized("devices_load_failed"),
+                        error.localizedDescription
+                    )
+                    print("❌ Ошибка загрузки устройств: \(error.localizedDescription)")
                 }
             }
         }
     }
     
-    // ✅ МОК-ДАННЫЕ для демонстрации при ошибке API
-    private func getMockDevices() -> [Device] {
-        return [
-            Device(
-                id: UUID(),
-                name: "iPhone 13",
-                owner: "Родитель",
-                type: .iphone,
-                status: .protected,
-                lastActive: "2 часа назад"
-            ),
-            Device(
-                id: UUID(),
-                name: "iPad Pro",
-                owner: "Дочь",
-                type: .ipad,
-                status: .warning,
-                lastActive: "5 минут назад"
-            ),
-            Device(
-                id: UUID(),
-                name: "MacBook Air",
-                owner: "Родитель",
-                type: .mac,
-                status: .protected,
-                lastActive: "1 день назад"
-            ),
-            Device(
-                id: UUID(),
-                name: "Samsung Galaxy",
-                owner: "Сын",
-                type: .android,
-                status: .danger,
-                lastActive: "Только что"
-            )
-        ]
-    }
-    
-    // ✅ PULL-TO-REFRESH: Асинхронная версия loadDevices
+    /// Pull-to-refresh: только реальные данные с сервера (без моков).
     private func loadDevicesAsync() async {
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            // ✅ Таймаут: 5 секунд
-            let timeoutWorkItem = DispatchWorkItem {
-                DispatchQueue.main.async {
-                    print("⚠️ Таймаут обновления устройств - показываем мок-данные")
-                    self.devices = self.getMockDevices()
-                    self.errorMessage = nil
-                    continuation.resume()
-                }
-            }
-            DispatchQueue.main.asyncAfter(deadline: .now() + 5.0, execute: timeoutWorkItem)
-            
             apiService.getDevices { result in
-                timeoutWorkItem.cancel() // Отменяем таймаут если запрос успел
-                
                 DispatchQueue.main.async {
                     switch result {
                     case .success(let deviceResponses):
-                        devices = deviceResponses.map { response in
-                            convertToDevice(response)
-                        }
+                        devices = deviceResponses.map { convertToDevice($0) }
                         errorMessage = nil
-                        
                     case .failure(let error):
-                        // ✅ При ошибке показываем мок-данные
-                        print("⚠️ Ошибка обновления устройств: \(error.localizedDescription) - показываем мок-данные")
-                        devices = getMockDevices()
-                        errorMessage = nil
+                        devices = []
+                        errorMessage = String(
+                            format: "%@ %@",
+                            localizationManager.localized("devices_load_failed"),
+                            error.localizedDescription
+                        )
+                        print("❌ Ошибка обновления устройств: \(error.localizedDescription)")
                     }
                     continuation.resume()
                 }
@@ -503,7 +453,7 @@ struct DevicesScreen: View {
         }
         
         return Device(
-            id: UUID(uuidString: response.id) ?? UUID(),
+            id: response.id,
             name: response.name,
             owner: response.owner,
             type: deviceType,
@@ -614,15 +564,16 @@ struct DeviceCard: View {
 
 // MARK: - Device Model
 
-struct Device: Identifiable {
-    let id: UUID
+struct Device: Identifiable, Hashable {
+    /// Идентификатор устройства на сервере (как в `GET /api/devices`); для API и UserDefaults.
+    let id: String
     let name: String
     let owner: String
     let type: DeviceType
     let status: DeviceStatus
     let lastActive: String
     
-    init(id: UUID = UUID(), name: String, owner: String, type: DeviceType, status: DeviceStatus, lastActive: String) {
+    init(id: String, name: String, owner: String, type: DeviceType, status: DeviceStatus, lastActive: String) {
         self.id = id
         self.name = name
         self.owner = owner
@@ -698,13 +649,12 @@ struct AddDeviceView: View {
     @State private var selectedOwner: String = ""
     @State private var isLoading: Bool = false
     @State private var errorMessage: String? = nil
-    @State private var showPairingModal: Bool = false
-    
-    // Mock data until Backend API is ready
-    @State private var mockQrToken: String = ""
-    @State private var mockShortPin: String = ""
-    
     @State private var familyMembers: [String] = []
+    /// Только фоновое обновление списка с сервера; форма не блокируется (сначала кэш/`Вы`).
+    @State private var isLoadingFamilyMembers: Bool = false
+    @State private var showPairingModal: Bool = false
+    @State private var pairingQrToken: String = ""
+    @State private var pairingShortPin: String = ""
     
     private let apiService = APIService.shared
     
@@ -725,7 +675,7 @@ struct AddDeviceView: View {
                         
                         // Форма
                         VStack(spacing: Spacing.m) {
-                            // Название устройства
+                            // Название устройства (по умолчанию подставляем «Тип · Владелец» — кнопка активна без ручного ввода)
                             VStack(alignment: .leading, spacing: Spacing.xs) {
                                 Text(localizationManager.localized("devices_device_name"))
                                     .font(.body)
@@ -734,7 +684,17 @@ struct AddDeviceView: View {
                                 TextField(localizationManager.localized("devices_device_name_placeholder"), text: $deviceName)
                                     .textFieldStyle(ALADDINTextFieldStyle())
                                     .autocapitalization(.words)
+                                    .frame(minHeight: 48)
+                                    .overlay(
+                                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                            .stroke(Color.white.opacity(0.22), lineWidth: 1)
+                                    )
                                     .accessibilityLabel(localizationManager.localized("devices_device_name"))
+                                
+                                Text(localizationManager.localized("devices_name_auto_hint"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                                    .fixedSize(horizontal: false, vertical: true)
                             }
                             
                             // Тип устройства
@@ -757,6 +717,9 @@ struct AddDeviceView: View {
                                 .background(Color.backgroundMedium.opacity(0.3))
                                 .cornerRadius(CornerRadius.medium)
                                 .accessibilityLabel(localizationManager.localized("devices_device_type"))
+                                .onChange(of: selectedDeviceType) { _ in
+                                    deviceName = makeSuggestedDeviceName()
+                                }
                             }
                             
                             // Владелец
@@ -765,12 +728,12 @@ struct AddDeviceView: View {
                                     .font(.body)
                                     .foregroundColor(.textPrimary)
                                 
-                                if familyMembers.isEmpty {
+                                if isLoadingFamilyMembers && familyMembers.isEmpty {
                                     Text(localizationManager.localized("devices_loading_members"))
                                         .font(.caption)
                                         .foregroundColor(.textSecondary)
                                         .padding()
-                                } else {
+                                } else if !familyMembers.isEmpty {
                                     Picker(localizationManager.localized("devices_owner"), selection: $selectedOwner) {
                                         ForEach(familyMembers, id: \.self) { member in
                                             Text(member)
@@ -782,6 +745,14 @@ struct AddDeviceView: View {
                                     .background(Color.backgroundMedium.opacity(0.3))
                                     .cornerRadius(CornerRadius.medium)
                                     .accessibilityLabel(localizationManager.localized("devices_owner"))
+                                    .onChange(of: selectedOwner) { _ in
+                                        deviceName = makeSuggestedDeviceName()
+                                    }
+                                } else {
+                                    Text(localizationManager.localized("devices_loading_members"))
+                                        .font(.caption)
+                                        .foregroundColor(.textSecondary)
+                                        .padding()
                                 }
                             }
                         }
@@ -826,10 +797,18 @@ struct AddDeviceView: View {
                         }
                         .disabled(!isFormValid || isLoading)
                         .padding(.horizontal, Spacing.screenPadding)
-                        .padding(.bottom, Spacing.xl)
                         .accessibilityLabel(localizationManager.localized("devices_add_device_button"))
                         .accessibilityHint(isFormValid ? localizationManager.localized("devices_add_device_hint_enabled") : localizationManager.localized("devices_add_device_hint_disabled"))
+                        
+                        if !isFormValid, !isLoading {
+                            Text(addDeviceFormValidationHint)
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, Spacing.screenPadding)
+                        }
                     }
+                    .padding(.bottom, Spacing.xl)
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel(localizationManager.localized("devices_add_form_label"))
@@ -845,18 +824,19 @@ struct AddDeviceView: View {
                 }
             }
             .onAppear {
-                loadFamilyMembers()
+                setupAddDeviceForm()
             }
             .sheet(isPresented: $showPairingModal) {
                 DevicePairingModal(
-                    deviceName: deviceName.trimmingCharacters(in: .whitespaces),
+                    deviceName: effectiveDeviceName,
                     ownerName: selectedOwner,
-                    qrToken: mockQrToken,
-                    shortPin: mockShortPin
+                    qrToken: pairingQrToken,
+                    shortPin: pairingShortPin
                 )
+                .environmentObject(localizationManager)
                 .onDisappear {
-                    dismiss()
                     onDeviceAdded()
+                    dismiss()
                 }
             }
             .alert(localizationManager.localized("common_error"), isPresented: .constant(errorMessage != nil)) {
@@ -873,34 +853,113 @@ struct AddDeviceView: View {
     
     // MARK: - Computed Properties
     
+    /// Имя для API и проверки кнопки: введённое пользователем или автоматическое «Тип · Владелец».
+    private var effectiveDeviceName: String {
+        let typed = deviceName.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !typed.isEmpty { return typed }
+        return makeSuggestedDeviceName().trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+    
     private var isFormValid: Bool {
-        !deviceName.trimmingCharacters(in: .whitespaces).isEmpty &&
+        !effectiveDeviceName.isEmpty &&
         !selectedOwner.isEmpty &&
         !familyMembers.isEmpty
     }
     
+    /// Почему кнопка серая (`.disabled`) — подсказка без тапа по кнопке.
+    private var addDeviceFormValidationHint: String {
+        if isLoadingFamilyMembers && familyMembers.isEmpty {
+            return localizationManager.localized("devices_form_hint_syncing_owners")
+        }
+        if familyMembers.isEmpty {
+            return localizationManager.localized("devices_form_hint_no_owners")
+        }
+        if effectiveDeviceName.isEmpty {
+            return localizationManager.localized("devices_form_hint_enter_name")
+        }
+        if selectedOwner.isEmpty {
+            return localizationManager.localized("devices_form_hint_select_owner")
+        }
+        return localizationManager.localized("devices_add_device_hint_disabled")
+    }
+    
     // MARK: - Functions
     
-    private func loadFamilyMembers() {
-        // Загружаем список участников семьи из UserDefaults
+    /// Сразу заполняем владельцев из кэша (кнопка не ждёт сеть), затем подтягиваем актуальный список с API.
+    private func setupAddDeviceForm() {
+        applyOwnerListFromLocalFallback()
+        syncSelectedOwnerWithMembersList()
+        deviceName = makeSuggestedDeviceName()
+        #if DEBUG
+        print("AddDeviceView.setup: members=\(familyMembers.count) owner='\(selectedOwner)' effectiveName='\(effectiveDeviceName)' isFormValid=\(isFormValid)")
+        #endif
+        fetchFamilyMembersFromServer()
+    }
+    
+    /// Удобное имя по умолчанию: тип устройства и владелец (пользователь может отредактировать поле).
+    private func makeSuggestedDeviceName() -> String {
+        let owner = selectedOwner.trimmingCharacters(in: .whitespacesAndNewlines)
+        let type = selectedDeviceType.rawValue
+        if owner.isEmpty { return type }
+        return "\(type) · \(owner)"
+    }
+    
+    private func syncSelectedOwnerWithMembersList() {
+        guard !familyMembers.isEmpty else { return }
+        if selectedOwner.isEmpty || !familyMembers.contains(selectedOwner) {
+            selectedOwner = familyMembers[0]
+        }
+    }
+    
+    private func fetchFamilyMembersFromServer() {
+        isLoadingFamilyMembers = true
+        apiService.getFamilyMembers { result in
+            Task { @MainActor in
+                defer { isLoadingFamilyMembers = false }
+                switch result {
+                case .success(let members):
+                    let names = members
+                        .map { $0.name.trimmingCharacters(in: .whitespacesAndNewlines) }
+                        .filter { !$0.isEmpty }
+                    guard !names.isEmpty else { return }
+                    familyMembers = names
+                    syncSelectedOwnerWithMembersList()
+                    deviceName = makeSuggestedDeviceName()
+                case .failure:
+                    break
+                }
+            }
+        }
+    }
+    
+    /// Если `GET /api/family/members` недоступен или пуст — тот же fallback, что раньше (кэш + текущий пользователь).
+    private func applyOwnerListFromLocalFallback() {
         let familyMembersKey = "family_members_list"
         if let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
            let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
-            familyMembers = decoded.map { $0.name }
-            
-            // Устанавливаем первого владельца по умолчанию
-            if selectedOwner.isEmpty, let firstMember = familyMembers.first {
-                selectedOwner = firstMember
+            let names = decoded
+                .map { $0.name }
+                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                .filter { !$0.isEmpty }
+            if !names.isEmpty {
+                familyMembers = names
+                if selectedOwner.isEmpty, let firstMember = names.first {
+                    selectedOwner = firstMember
+                }
+                return
             }
+        }
+        if let currentUserName = UserDefaults.standard.string(forKey: "current_user_name"),
+           !currentUserName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            familyMembers = [currentUserName]
+            selectedOwner = currentUserName
         } else {
-            // Если нет участников, добавляем текущего пользователя
-            if let currentUserName = UserDefaults.standard.string(forKey: "current_user_name") {
-                familyMembers = [currentUserName]
-                selectedOwner = currentUserName
-            } else {
-                familyMembers = [localizationManager.localized("devices_owner_you")]
-                selectedOwner = localizationManager.localized("devices_owner_you")
-            }
+            let you = localizationManager.localized("devices_owner_you").trimmingCharacters(in: .whitespacesAndNewlines)
+            let youResolved = you.isEmpty
+                ? (localizationManager.currentLanguage == .english ? "You" : "Вы")
+                : you
+            familyMembers = [youResolved]
+            selectedOwner = youResolved
         }
     }
     
@@ -920,7 +979,7 @@ struct AddDeviceView: View {
         }
         
         apiService.addDevice(
-            name: deviceName.trimmingCharacters(in: .whitespaces),
+            name: effectiveDeviceName,
             type: deviceTypeString,
             owner: selectedOwner
         ) { result in
@@ -928,11 +987,15 @@ struct AddDeviceView: View {
                 isLoading = false
                 
                 switch result {
-                case .success:
-                    self.mockQrToken = UUID().uuidString
-                    self.mockShortPin = String(format: "%06d", Int.random(in: 100000...999999))
-                    self.showPairingModal = true
-                    
+                case .success(let response):
+                    if let token = response.pairingToken?.trimmingCharacters(in: .whitespacesAndNewlines), !token.isEmpty {
+                        pairingQrToken = token
+                        pairingShortPin = (response.shortPin ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                        showPairingModal = true
+                    } else {
+                        onDeviceAdded()
+                        dismiss()
+                    }
                 case .failure(let error):
                     errorMessage = error.localizedDescription
                     print("❌ Ошибка добавления устройства: \(error.localizedDescription)")

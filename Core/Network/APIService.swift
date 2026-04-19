@@ -1976,13 +1976,37 @@ class APIService: ObservableObject {
     
     // MARK: - Bind Device API
     
-    struct BindDeviceRequest: Codable {
-        let token: String
+    struct BindDeviceRequest: Encodable {
+        let token: String?
         let pin: String?
+
+        enum CodingKeys: String, CodingKey {
+            case token
+            case pin
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var c = encoder.container(keyedBy: CodingKeys.self)
+            if let t = token?.trimmingCharacters(in: .whitespacesAndNewlines), !t.isEmpty {
+                try c.encode(t, forKey: .token)
+            }
+            if let p = pin?.trimmingCharacters(in: .whitespacesAndNewlines), !p.isEmpty {
+                try c.encode(p, forKey: .pin)
+            }
+        }
     }
-    
-    func bindDevice(token: String, pin: String? = nil, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
-        let request = BindDeviceRequest(token: token, pin: pin)
+
+    /// Привязка устройства: достаточно **либо** `token`, **либо** `pin` (6 цифр) — пустые поля в JSON не попадают.
+    func bindDevice(token: String?, pin: String?, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
+        let t = token?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let p = pin?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let hasToken = (t?.isEmpty == false)
+        let hasPin = (p?.isEmpty == false)
+        guard hasToken || hasPin else {
+            completion(.failure(NSError(domain: "APIService", code: -1, userInfo: [NSLocalizedDescriptionKey: "token or pin required"])))
+            return
+        }
+        let request = BindDeviceRequest(token: hasToken ? t : nil, pin: hasPin ? p : nil)
         networkManager.post(endpoint: AppConfig.Endpoint.devicesBind, body: request, completion: completion)
     }
     

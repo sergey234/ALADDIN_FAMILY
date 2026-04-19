@@ -676,6 +676,7 @@ struct MainScreen: View {
                                     .foregroundColor(.black)
 
                                 // ✅ IMPROVED: Dynamic tariff name with color accent and icon
+                                // layoutPriority + minimumScaleFactor: на узких ширинах HStack не должен сжимать название тарифа до нуля.
                                 HStack(spacing: 4) {
                                     Image(systemName: tariffIconForCurrentLevel())
                                         .font(.system(size: 10))
@@ -683,7 +684,12 @@ struct MainScreen: View {
                                     Text("\(localizationManager.localized("main_family_tariff_label")) \(currentTariffDisplayName)")
                                         .font(.system(size: 9, weight: .semibold))
                                         .foregroundColor(.black)
+                                        .lineLimit(2)
+                                        .minimumScaleFactor(0.72)
+                                        .multilineTextAlignment(.leading)
+                                        .layoutPriority(1)
                                 }
+                                .id(tariffRowViewIdentity)
 
                                 if let expirationText = cachedExpirationText {
                                     Text("\(localizationManager.localized("main_family_subscription_valid_until")) \(expirationText)")
@@ -806,6 +812,9 @@ struct MainScreen: View {
                     // Синхронизируем счетчик на главной с тем же storage, что и FamilyScreen.
                     mainViewModel.refreshFamilyMembersCountFromStorage()
                 }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyDevicesDidChange"))) { _ in
+                    mainViewModel.requestRefreshDebounced()
+                }
                 // ✅ NEW: React to tariff changes from TariffsScreen, SubscriptionManager, or forceSync
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SubscriptionUpdated"))) { notification in
                     if let level = notification.userInfo?["level"] as? String {
@@ -826,22 +835,30 @@ struct MainScreen: View {
                 }
     }
 
+    /// Стабильный идентификатор строки тарифа: при смене уровня/триала/языка SwiftUI пересобирает блок (важно для девайса после async `forceSync`).
+    private var tariffRowViewIdentity: String {
+        let level = subscriptionManager.getCurrentLevel()
+        let trialOn = subscriptionManager.trialStatus?.isActive == true
+        let lang = localizationManager.currentLanguage.rawValue
+        return "\(level.rawValue)|trial:\(trialOn)|\(lang)"
+    }
+    
     private var currentTariffDisplayName: String {
         // ✅ FIXED: Use single source of truth from SubscriptionManager
         // getCurrentLevel() is more reliable than currentSubscription?.level
         let level = subscriptionManager.getCurrentLevel()
+        let key: String
         switch level {
-        case .trial:
-            return localizationManager.localized("tariffs_trial")
-        case .free:
-            return localizationManager.localized("tariffs_free")
-        case .personal:
-            return localizationManager.localized("tariffs_personal")
-        case .family:
-            return localizationManager.localized("tariffs_family")
-        case .premium:
-            return localizationManager.localized("tariffs_premium")
+        case .trial: key = "tariffs_trial"
+        case .free: key = "tariffs_free"
+        case .personal: key = "tariffs_personal"
+        case .family: key = "tariffs_family"
+        case .premium: key = "tariffs_premium"
         }
+        let localized = localizationManager.localized(key).trimmingCharacters(in: .whitespacesAndNewlines)
+        if !localized.isEmpty { return localized }
+        // Fallback: если словарь/ключ временно недоступен — не оставляем пустую подпись на главной.
+        return level.displayName
     }
 
     // Helper to get tariff color for UI accent

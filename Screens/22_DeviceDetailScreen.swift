@@ -15,10 +15,17 @@ struct DeviceDetailScreen: View {
     
     private let apiService = APIService.shared
     
-    // ✅ ИСПРАВЛЕНО: Заменено @State на сохранение через UserDefaults для каждого устройства
-    // Используем имя устройства как часть ключа для уникальности настроек каждого устройства
-    private var protectionKey: String { "device_\(device.name)_protection_enabled" }
-    private var scanningKey: String { "device_\(device.name)_scanning_enabled" }
+    /// Префикс ключей UserDefaults по **server id** устройства (стабильно при переименовании).
+    private var settingsStoragePrefix: String {
+        let safe = device.id.replacingOccurrences(of: "[^A-Za-z0-9_-]", with: "_", options: .regularExpression)
+        return "device_\(safe)"
+    }
+    
+    private var protectionKey: String { "\(settingsStoragePrefix)_protection_enabled" }
+    private var scanningKey: String { "\(settingsStoragePrefix)_scanning_enabled" }
+    
+    private var legacyProtectionKey: String { "device_\(device.name)_protection_enabled" }
+    private var legacyScanningKey: String { "device_\(device.name)_scanning_enabled" }
     
     // @State переменные, которые синхронизируются с UserDefaults
     @State private var isProtectionOn: Bool = true
@@ -123,7 +130,7 @@ struct DeviceDetailScreen: View {
                 case .stats:
                     DeviceStatsView(deviceDetail: deviceDetail)
                 case .threats:
-                    DeviceThreatsView(deviceId: device.id.uuidString)
+                    DeviceThreatsView(deviceId: device.id)
                 case .settings:
                     DeviceSettingsView(
                         isProtectionOn: Binding(
@@ -229,7 +236,7 @@ struct DeviceDetailScreen: View {
         isLoadingAction = true
         actionErrorMessage = nil
 
-                apiService.blockDevice(deviceId: device.id.uuidString) { result in
+                apiService.blockDevice(deviceId: device.id) { result in
             DispatchQueue.main.async {
                 self.isLoadingAction = false
 
@@ -254,7 +261,7 @@ struct DeviceDetailScreen: View {
         isLoadingAction = true
         actionErrorMessage = nil
 
-                apiService.removeDevice(deviceId: device.id.uuidString) { result in
+                apiService.removeDevice(deviceId: device.id) { result in
             DispatchQueue.main.async {
                 self.isLoadingAction = false
 
@@ -278,7 +285,7 @@ struct DeviceDetailScreen: View {
         isLoadingDeviceDetail = true
         deviceDetailError = nil
         
-        apiService.getDeviceDetail(deviceId: device.id.uuidString) { result in
+        apiService.getDeviceDetail(deviceId: device.id) { result in
             DispatchQueue.main.async {
                 self.isLoadingDeviceDetail = false
                 
@@ -297,8 +304,21 @@ struct DeviceDetailScreen: View {
     
     /// Загружает настройки устройства из UserDefaults
     private func loadDeviceSettings() {
-        isProtectionOn = UserDefaults.standard.object(forKey: protectionKey) as? Bool ?? true
-        isScanningEnabled = UserDefaults.standard.object(forKey: scanningKey) as? Bool ?? true
+        let ud = UserDefaults.standard
+        if ud.object(forKey: protectionKey) != nil {
+            isProtectionOn = ud.object(forKey: protectionKey) as? Bool ?? true
+            isScanningEnabled = ud.object(forKey: scanningKey) as? Bool ?? true
+        } else if ud.object(forKey: legacyProtectionKey) != nil {
+            isProtectionOn = ud.object(forKey: legacyProtectionKey) as? Bool ?? true
+            isScanningEnabled = ud.object(forKey: legacyScanningKey) as? Bool ?? true
+            ud.set(isProtectionOn, forKey: protectionKey)
+            ud.set(isScanningEnabled, forKey: scanningKey)
+            ud.removeObject(forKey: legacyProtectionKey)
+            ud.removeObject(forKey: legacyScanningKey)
+        } else {
+            isProtectionOn = true
+            isScanningEnabled = true
+        }
     }
     
     /// Сохраняет настройки устройства в UserDefaults и синхронизирует с сервером
@@ -314,7 +334,7 @@ struct DeviceDetailScreen: View {
     private func loadDeviceSettingsFromServer() {
         Task {
             do {
-                let deviceId = device.id.uuidString
+                let deviceId = device.id
                 
                 let settings = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<DeviceSettingsResponse, Error>) in
                     apiService.getDeviceSettings(deviceId: deviceId) { result in
@@ -339,7 +359,7 @@ struct DeviceDetailScreen: View {
     private func syncDeviceSettingsToServer() {
         Task {
             do {
-                let deviceId = device.id.uuidString
+                let deviceId = device.id
                 
                 _ = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<APIResponse<Bool>, Error>) in
                     apiService.updateDeviceSettings(
@@ -616,7 +636,7 @@ struct DeviceSettingsView: View {
 
 struct DeviceDetailScreen_Previews: PreviewProvider {
     static var previews: some View {
-        DeviceDetailScreen(device: Device(name: "iPhone 14 Pro", owner: "Сергей", type: .iphone, status: .protected, lastActive: "Сейчас"))
+        DeviceDetailScreen(device: Device(id: "preview-device", name: "iPhone 14 Pro", owner: "Сергей", type: .iphone, status: .protected, lastActive: "Сейчас"))
     }
 }
 

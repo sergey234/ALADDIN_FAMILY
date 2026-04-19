@@ -104,7 +104,7 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "144"
+    static let buildNumber = "145"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -372,7 +372,7 @@ struct AppConfig {
         static let notifications = "/api/notifications"
         static let markRead = "/api/notifications/read"
         
-        // Devices
+        // Devices — см. `DeviceResponse` в APIModels: список GET и ответ POST (опц. pairing_token / short_pin, см. openapi misc-other-compat).
         static let devices = "/api/devices"
         static let devicesBind = "/api/devices/bind"
         static let deviceRegister = "/api/auth/register-device"
@@ -559,6 +559,10 @@ extension AppConfig {
         static let consentVersion = "consent_version"
         static let appLanguage = "appLanguage"
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
+        /// После добавления устройства на другом экране — при следующем показе главной принудительно обновить дашборд.
+        static let pendingMainDashboardDevicesRefresh = "pending_main_dashboard_devices_refresh"
+        /// Токен из `aladdin://bind?token=` / Universal Link, если пришёл до завершения онбординга или до открытия экрана присоединения.
+        static let pendingDeviceBindToken = "pending_device_bind_token"
     }
     
     // MARK: - Network Configuration

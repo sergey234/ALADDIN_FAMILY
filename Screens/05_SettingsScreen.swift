@@ -8,8 +8,6 @@ private let logger = MasterLogger.shared
 
 // Spacing is imported from Shared/Styles/Spacing.swift
 
-// Временные определения типов для компиляции
-typealias ALADDINScreen = String
 typealias Language = String
 
 /// ⚙️ Settings Screen - MVVM ВЕРСИЯ БЕЗ КРАШЕЙ
@@ -17,6 +15,7 @@ typealias Language = String
 /// Источник дизайна: /mobile/wireframes/05_settings_screen.html
 struct SettingsScreen: View {
     @StateObject private var viewModel: SettingsViewModel
+    @EnvironmentObject private var navigationManager: NavigationManager
 
     // ✅ BUILD 95: Встроенный просмотр логов крашей/диагностики прямо на устройстве
     @State private var showCrashLogsView: Bool = false
@@ -279,6 +278,31 @@ struct SettingsScreen: View {
                             Text(viewModel.localizedStrings.language)
                                 .foregroundColor(.primary)
                             Text(viewModel.localizedStrings.languageSubtitle)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(Spacing.m)
+                }
+
+                Divider()
+
+                // Присоединить устройство к семье (новый телефон / планшет)
+                Button(action: {
+                    logger.buttonTap("Join family device", screen: "Settings")
+                    navigationManager.navigateTo(.joinDevice)
+                }) {
+                    HStack {
+                        Image(systemName: "iphone.and.arrow.forward.inward")
+                            .foregroundColor(.secondary)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(viewModel.localizedStrings.settingsJoinDeviceTitle)
+                                .foregroundColor(.primary)
+                            Text(viewModel.localizedStrings.settingsJoinDeviceSubtitle)
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -835,7 +859,7 @@ struct SettingsScreen_Previews: PreviewProvider {
 
 // MARK: - Mock Services for Preview
 class MockNavigationService {
-    func navigateTo(_ screen: ALADDINScreen) {}
+    func navigateTo(_ screen: NavigationManager.ALADDINScreen) {}
 }
 
 class MockLocalizationService: LocalizationService {

@@ -33,7 +33,7 @@ protocol ProtectionHistoryService {
 // We'll use TariffType instead of creating duplicate enum
 
 protocol NavigationService {
-    func navigateTo(_ screen: ALADDINScreen)
+    func navigateTo(_ screen: NavigationManager.ALADDINScreen)
 }
 
 protocol LocalizationService {
@@ -123,6 +123,8 @@ struct LocalizedStrings {
     var appSection: String { localizationManager.localized("app_section") }
     var language: String { localizationManager.localized("language") }
     var languageSubtitle: String { localizationManager.localized("language_subtitle_select") }
+    var settingsJoinDeviceTitle: String { localizationManager.localized("settings_join_device_title") }
+    var settingsJoinDeviceSubtitle: String { localizationManager.localized("settings_join_device_subtitle") }
     var darkTheme: String { localizationManager.localized("dark_theme") }
     var updates: String { localizationManager.localized("updates") }
     var updatesSubtitle: String { localizationManager.localized("updates_subtitle") }

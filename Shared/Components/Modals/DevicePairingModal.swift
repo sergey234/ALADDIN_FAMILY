@@ -1,5 +1,6 @@
 import SwiftUI
 import CoreImage.CIFilterBuiltins
+import UIKit
 
 /**
  * 📱 Device Pairing Modal (Экран сопряжения устройства)
@@ -12,57 +13,56 @@ import CoreImage.CIFilterBuiltins
 struct DevicePairingModal: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
-    
+
     // Данные от сервера после создания устройства
     let deviceName: String
     let ownerName: String
     let qrToken: String
     let shortPin: String
-    
+
     @State private var showShareSheet = false
-    
-    // Для генерации Deep Link
+
     private var inviteLink: String {
         "aladdin://bind?token=\(qrToken)"
     }
-    
+
+    private var formattedPin: String {
+        DevicePairingLinkParser.formattedPIN(shortPin.filter { $0.isNumber })
+    }
+
     var body: some View {
         NavigationView {
             ZStack {
-                // Фон
                 LinearGradient.backgroundGradient
                     .ignoresSafeArea()
-                
+
                 ScrollView {
                     VStack(spacing: Spacing.l) {
-                        
-                        // Заголовок и пояснение
                         VStack(spacing: Spacing.s) {
-                            Text("Устройство добавлено!")
+                            Text(localizationManager.localized("device_pairing_title"))
                                 .font(.h2)
                                 .foregroundColor(.textPrimary)
-                            
-                            Text("Остался один шаг: привяжите физическое устройство \(deviceName) (\(ownerName)) к вашей семье.")
+
+                            Text(localizationManager.localized("device_pairing_intro", deviceName, ownerName))
                                 .font(.body)
                                 .foregroundColor(.textSecondary)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal)
                         }
                         .padding(.top, Spacing.m)
-                        
-                        // МЕТОД 1: QR КОД (Основной)
+
                         VStack(spacing: Spacing.m) {
-                            Text("Способ 1: Сканировать QR-код (Рекомендуется)")
+                            Text(localizationManager.localized("device_pairing_method1_title"))
                                 .font(.h4)
                                 .foregroundColor(.primaryBlue)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            
+
                             VStack(spacing: Spacing.s) {
-                                Text("Откройте ALADDIN на новом устройстве и отсканируйте этот код")
+                                Text(localizationManager.localized("device_pairing_method1_hint"))
                                     .font(.caption)
                                     .foregroundColor(.textSecondary)
                                     .multilineTextAlignment(.center)
-                                
+
                                 if let qrImage = generateQRCode(from: inviteLink) {
                                     Image(uiImage: qrImage)
                                         .interpolation(.none)
@@ -80,14 +80,13 @@ struct DevicePairingModal: View {
                             .background(Color.backgroundMedium.opacity(0.4))
                             .cornerRadius(CornerRadius.medium)
                         }
-                        
-                        // МЕТОД 2: ССЫЛКА (Удаленный)
+
                         VStack(spacing: Spacing.m) {
-                            Text("Способ 2: Отправить ссылку")
+                            Text(localizationManager.localized("device_pairing_method2_title"))
                                 .font(.h4)
                                 .foregroundColor(.primaryBlue)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            
+
                             Button(action: {
                                 let generator = UIImpactFeedbackGenerator(style: .medium)
                                 generator.impactOccurred()
@@ -95,7 +94,7 @@ struct DevicePairingModal: View {
                             }) {
                                 HStack {
                                     Image(systemName: "square.and.arrow.up")
-                                    Text("Поделиться ссылкой-приглашением")
+                                    Text(localizationManager.localized("device_pairing_method2_button"))
                                 }
                                 .font(.bodyBold)
                                 .foregroundColor(.white)
@@ -105,32 +104,51 @@ struct DevicePairingModal: View {
                                 .cornerRadius(CornerRadius.medium)
                             }
                         }
-                        
-                        // МЕТОД 3: PIN-КОД (Резервный)
+
                         VStack(spacing: Spacing.m) {
-                            Text("Способ 3: Короткий код")
+                            Text(localizationManager.localized("device_pairing_method3_title"))
                                 .font(.h4)
                                 .foregroundColor(.primaryBlue)
                                 .frame(maxWidth: .infinity, alignment: .leading)
-                            
+
                             VStack(spacing: Spacing.s) {
-                                Text("Если камера не работает, введите этот код на новом устройстве")
+                                Text(localizationManager.localized("device_pairing_method3_hint"))
                                     .font(.caption)
                                     .foregroundColor(.textSecondary)
                                     .multilineTextAlignment(.center)
-                                
-                                Text(shortPin)
+
+                                Text(formattedPin)
                                     .font(.system(size: 32, weight: .black, design: .monospaced))
-                                    .foregroundColor(Color(red: 1.0, green: 0.84, blue: 0.0)) // Золотой
-                                    .tracking(4) // Исправлено letterSpacing на tracking
+                                    .foregroundColor(Color(red: 1.0, green: 0.84, blue: 0.0))
                                     .padding(.vertical, Spacing.s)
+
+                                Text(localizationManager.localized("device_pairing_pin_digits_hint", formattedPin.replacingOccurrences(of: "-", with: "")))
+                                    .font(.caption2)
+                                    .foregroundColor(.textSecondary)
+                                    .multilineTextAlignment(.center)
+
+                                Button(action: {
+                                    UIPasteboard.general.string = shortPin.filter { $0.isNumber }
+                                    let gen = UINotificationFeedbackGenerator()
+                                    gen.notificationOccurred(.success)
+                                }) {
+                                    HStack {
+                                        Image(systemName: "doc.on.doc")
+                                        Text(localizationManager.localized("device_pairing_copy_pin"))
+                                    }
+                                    .font(.bodyBold)
+                                    .foregroundColor(.primaryBlue)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, Spacing.s)
+                                    .background(Color.backgroundMedium.opacity(0.5))
+                                    .cornerRadius(CornerRadius.medium)
+                                }
                             }
                             .padding(Spacing.cardPadding)
                             .frame(maxWidth: .infinity)
                             .background(Color.backgroundMedium.opacity(0.4))
                             .cornerRadius(CornerRadius.medium)
                         }
-                        
                     }
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.bottom, Spacing.xxl)
@@ -139,7 +157,7 @@ struct DevicePairingModal: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("device_pairing_done")) {
                         dismiss()
                     }
                     .font(.bodyBold)
@@ -147,17 +165,17 @@ struct DevicePairingModal: View {
                 }
             }
             .sheet(isPresented: $showShareSheet) {
-                ShareSheet(activityItems: ["Установи защиту ALADDIN на свое устройство, перейдя по ссылке: \(inviteLink)"])
+                ShareSheet(activityItems: [localizationManager.localized("device_pairing_share_message", inviteLink)])
             }
         }
     }
-    
+
     // MARK: - QR Generator
     private func generateQRCode(from string: String) -> UIImage? {
         let context = CIContext()
         let filter = CIFilter.qrCodeGenerator()
         filter.message = Data(string.utf8)
-        
+
         if let outputImage = filter.outputImage {
             let transform = CGAffineTransform(scaleX: 10, y: 10)
             let scaledImage = outputImage.transformed(by: transform)

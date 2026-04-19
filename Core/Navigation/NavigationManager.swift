@@ -19,6 +19,9 @@ class NavigationManager: ObservableObject {
     
     // ✅ ИСПРАВЛЕНИЕ: Добавляем для PaymentQRScreen через NavigationLink
     @Published var selectedTariffForPayment: Tariff? = nil
+
+    /// Токен из `aladdin://bind?token=` или Universal Link — подставляется на экране присоединения.
+    @Published var pendingDeviceBindToken: String? = nil
     
     // ✅ Стартовый экран: читаем только флаг онбординга (без записи), чтобы первый кадр SwiftUI
     // не строил OnboardingScreen до `WindowGroup.onAppear` → `initializeNavigation`.
@@ -58,6 +61,7 @@ class NavigationManager: ObservableObject {
         case privacyPolicy = "18_PrivacyPolicyScreen"
         case termsOfService = "19_TermsOfServiceScreen"
         case devices = "20_DevicesScreen"
+        case joinDevice = "28_JoinDeviceScreen"
         case referral = "21_ReferralScreen"
         case deviceDetail = "22_DeviceDetailScreen"
         case familyChat = "23_FamilyChatScreen"
@@ -117,6 +121,7 @@ class NavigationManager: ObservableObject {
             case .privacyPolicy: return "Политика конфиденциальности"
             case .termsOfService: return "Условия использования"
             case .devices: return "Устройства"
+            case .joinDevice: return "Присоединить устройство"
             case .referral: return "Реферальная программа"
             case .deviceDetail: return "Детали устройства"
             case .familyChat: return "Семейный чат"
@@ -170,6 +175,7 @@ class NavigationManager: ObservableObject {
             case .privacyPolicy: return "doc.text.fill"
             case .termsOfService: return "doc.plaintext.fill"
             case .devices: return "iphone"
+            case .joinDevice: return "iphone.and.arrow.forward.inward"
             case .referral: return "gift.fill"
             case .deviceDetail: return "info.circle.fill"
             case .familyChat: return "message.fill"
@@ -567,7 +573,7 @@ extension NavigationManager.ALADDINScreen {
     /// Проверка, требует ли экран авторизации
     var requiresAuthentication: Bool {
         switch self {
-        case .profile, .devices, .referral, .familyChat, .paymentQR:
+        case .profile, .devices, .joinDevice, .referral, .familyChat, .paymentQR:
             return true
         default:
             return false

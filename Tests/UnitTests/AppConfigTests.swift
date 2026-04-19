@@ -165,6 +165,8 @@ class AppConfigTests: XCTestCase {
         XCTAssertEqual(AppConfig.UserDefaultsKeys.consentVersion, "consent_version")
         XCTAssertEqual(AppConfig.UserDefaultsKeys.appLanguage, "appLanguage")
         XCTAssertEqual(AppConfig.UserDefaultsKeys.hasCompletedOnboarding, "hasCompletedOnboarding")
+        XCTAssertEqual(AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh, "pending_main_dashboard_devices_refresh")
+        XCTAssertEqual(AppConfig.UserDefaultsKeys.pendingDeviceBindToken, "pending_device_bind_token")
     }
     
     // MARK: - Network Configuration Tests

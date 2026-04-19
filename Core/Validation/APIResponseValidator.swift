@@ -49,12 +49,6 @@ struct APIResponseValidator {
             #endif
             // Simple success - tokens already handled in business logic
         }
-        else if response is SubscriptionEventsBatchResponse {
-            #if DEBUG
-            print("✅ SubscriptionEventsBatchResponse validated (simple ack)")
-            #endif
-            // Simple ack response - no complex validation needed
-        }
         else if let reconcile = response as? ReconcileFamilyResponse {
             try validateReconcileFamilyResponse(reconcile)
         }
@@ -76,6 +70,16 @@ struct APIResponseValidator {
                 try validateFamilyChatMessageResponse(familyChatMessage)
             case let createFamily as CreateFamilyResponse:
                 try validateCreateFamilyResponse(createFamily)
+            case let familyStats as FamilyStatsResponse:
+                try validateFamilyStatsResponse(familyStats)
+            case let cancelSub as SubscriptionCancelResponse:
+                try validateSubscriptionCancelResponse(cancelSub)
+            case let jwtReg as JWTDeviceRegisterResponse:
+                try validateJWTDeviceRegisterResponse(jwtReg)
+            case let device as DeviceResponse:
+                try validateDeviceResponse(device)
+            case let eventsBatch as SubscriptionEventsBatchResponse:
+                try validateSubscriptionEventsBatchResponse(eventsBatch)
             default:
                 // Для неизвестных типов просто проверяем что объект не nil
                 #if DEBUG
@@ -199,6 +203,34 @@ struct APIResponseValidator {
         }
     }
 
+    // MARK: - Device List / Add Response
+    
+    private static func validateDeviceResponse(_ response: DeviceResponse) throws {
+        guard !response.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw ValidationError.emptyField(field: "id")
+        }
+        if response.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            #if DEBUG
+            print("⚠️ DeviceResponse: пустое name (серверный объект допускает заглушку)")
+            #endif
+        }
+        #if DEBUG
+        print("✅ DeviceResponse validated: id=\(response.id.prefix(8))…")
+        #endif
+    }
+    
+    private static func validateSubscriptionEventsBatchResponse(_ response: SubscriptionEventsBatchResponse) throws {
+        if response.success == false, (response.message?.isEmpty ?? true) {
+            #if DEBUG
+            print("⚠️ SubscriptionEventsBatchResponse: success=false без message (серверный ack)")
+            #endif
+            os_log("⚠️ Subscription events batch: success=false, empty message", log: Self.validationLogger, type: .info)
+        }
+        #if DEBUG
+        print("✅ SubscriptionEventsBatchResponse validated")
+        #endif
+    }
+    
     // MARK: - Device Detail Response Validation
 
     private static func validateDeviceDetailResponse(_ response: DeviceDetailResponse) throws {
@@ -431,6 +463,51 @@ struct APIResponseValidator {
         #endif
     }
 
+    // MARK: - Family Stats
+    
+    private static func validateFamilyStatsResponse(_ response: FamilyStatsResponse) throws {
+        guard response.totalMembers >= 0 else {
+            throw ValidationError.invalidValue(field: "totalMembers", value: response.totalMembers, reason: "должно быть >= 0")
+        }
+        guard response.totalDevices >= 0 else {
+            throw ValidationError.invalidValue(field: "totalDevices", value: response.totalDevices, reason: "должно быть >= 0")
+        }
+        guard response.totalThreats >= 0 else {
+            throw ValidationError.invalidValue(field: "totalThreats", value: response.totalThreats, reason: "должно быть >= 0")
+        }
+        #if DEBUG
+        print("✅ FamilyStatsResponse validated: members=\(response.totalMembers) devices=\(response.totalDevices)")
+        #endif
+    }
+    
+    // MARK: - Subscription / JWT
+    
+    private static func validateSubscriptionCancelResponse(_ response: SubscriptionCancelResponse) throws {
+        let hasNewToken = !(response.newToken?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ?? true)
+        if !response.success,
+           (response.status?.isEmpty ?? true),
+           (response.message?.isEmpty ?? true),
+           !hasNewToken,
+           response.subscription == nil {
+            throw ValidationError.invalidValue(field: "success", value: response.success, reason: "ожидалось success, статус/сообщение, new_token или subscription от сервера")
+        }
+        #if DEBUG
+        print("✅ SubscriptionCancelResponse validated: success=\(response.success)")
+        #endif
+    }
+    
+    private static func validateJWTDeviceRegisterResponse(_ response: JWTDeviceRegisterResponse) throws {
+        guard !response.token.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw ValidationError.emptyField(field: "token")
+        }
+        guard !response.deviceId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw ValidationError.emptyField(field: "deviceId")
+        }
+        #if DEBUG
+        print("✅ JWTDeviceRegisterResponse validated (token length=\(response.token.count))")
+        #endif
+    }
+    
     // MARK: - Helper Methods
 
     private static func isValidURL(_ string: String) -> Bool {

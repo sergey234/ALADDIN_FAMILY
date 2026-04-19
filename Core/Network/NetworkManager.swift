@@ -73,6 +73,14 @@ class NetworkManager: NSObject, ObservableObject {
             detail.contains("contract")
     }
 
+    /// Ответ шлюза/прода, когда маршрут намеренно отключён (не «опечатка URL»).
+    private static func isGatewayFeatureDisabledDetail(_ detail: String?) -> Bool {
+        guard let detail = detail?.trimmingCharacters(in: .whitespacesAndNewlines), !detail.isEmpty else { return false }
+        if detail == "Endpoint unavailable without explicit real backend flow" { return true }
+        let lower = detail.lowercased()
+        return lower.contains("endpoint unavailable") && lower.contains("explicit real backend flow")
+    }
+
     // ✅ ЗАДАЧА 62: Rate Limiting
     /// Rate limiter для защиты от перегрузки API
     private let rateLimiter = RateLimiter(maxRequests: 100, timeWindow: 60.0) // 100 запросов в минуту
@@ -1193,11 +1201,26 @@ class NetworkManager: NSObject, ObservableObject {
                 // Обработка ошибок HTTP
                 guard (200...299).contains(httpResponse.statusCode) else {
                     // Пытаемся декодировать ошибку от сервера
+                    let serverDetail = Self.extractServerDetail(from: data)
                     let errorMessage: String
                     if let data = data, let errorData = try? JSONDecoder().decode([String: String].self, from: data) {
                         errorMessage = errorData["detail"] ?? errorData["message"] ?? "HTTP ошибка \(httpResponse.statusCode)"
                     } else {
                         errorMessage = "HTTP ошибка \(httpResponse.statusCode)"
+                    }
+
+                    if Self.isGatewayFeatureDisabledDetail(serverDetail) {
+                        let networkError = NetworkError.endpointFeatureUnavailable
+                        self?.lastError = networkError.localizedDescription
+                        os_log("Gateway feature disabled: %{public}@",
+                               log: Self.networkLogger,
+                               type: .error,
+                               request.url?.path ?? "unknown")
+                        #if DEBUG
+                        print("❌ NetworkManager: маршрут отключён на шлюзе (detail известный контракт)")
+                        #endif
+                        completion(.failure(networkError))
+                        return
                     }
                     
                     // ✅ Production логирование HTTP ошибок

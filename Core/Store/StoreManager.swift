@@ -100,6 +100,7 @@ class StoreManager: ObservableObject {
         print("🔍 StoreManager.startLoading: Начало загрузки продуктов")
         
         // ✅ ЗАЩИТА: Проверяем симулятор перед загрузкой
+        // Для локального теста IAP: Xcode → Scheme → Run → Options → StoreKit Configuration (файл .storekit с ID из `ProductID`).
         #if targetEnvironment(simulator)
         print("⚠️ StoreManager.startLoading: Симулятор - пропускаем загрузку продуктов")
         return

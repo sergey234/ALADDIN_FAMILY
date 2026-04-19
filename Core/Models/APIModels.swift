@@ -1225,13 +1225,49 @@ struct SiteVisitReport: Codable {
 
 // MARK: - Device Models
 
-struct DeviceResponse: Codable, Identifiable {
+/// Ответ элемента `GET /api/devices` и тела `POST /api/devices`.
+/// В `docs/release/current/openapi.json` список устройств описан как массив объектов без жёсткой схемы;
+/// клиент ожидает строковые поля профиля и опционально `pairing_token` / `short_pin` после создания записи.
+/// Ключи активности: и `last_active` (snake), и `lastActive` (camel); при отсутствии — пустая строка.
+struct DeviceResponse: Decodable, Identifiable {
     let id: String
     let name: String
     let owner: String
     let type: String // "iphone", "mac", "ipad", "android"
     let status: String // "protected", "warning", "danger", "inactive"
     let lastActive: String
+    /// Если бэкенд возвращает данные для экрана сопряжения после `POST /api/devices`.
+    let pairingToken: String?
+    let shortPin: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, name, owner, type, status
+        case lastActiveSnake = "last_active"
+        case lastActiveCamel = "lastActive"
+        case pairingTokenSnake = "pairing_token"
+        case pairingTokenCamel = "pairingToken"
+        case shortPinSnake = "short_pin"
+        case shortPinCamel = "shortPin"
+    }
+    
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        name = try c.decode(String.self, forKey: .name)
+        owner = try c.decode(String.self, forKey: .owner)
+        type = try c.decode(String.self, forKey: .type)
+        status = try c.decode(String.self, forKey: .status)
+        let lastSnake = try c.decodeIfPresent(String.self, forKey: .lastActiveSnake)
+        let lastCamel = try c.decodeIfPresent(String.self, forKey: .lastActiveCamel)
+        lastActive = [lastSnake, lastCamel].compactMap { $0 }.first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty } ?? ""
+        let pinSnake = try c.decodeIfPresent(String.self, forKey: .pairingTokenSnake)
+        let pinCamel = try c.decodeIfPresent(String.self, forKey: .pairingTokenCamel)
+        let mergedPin = [pinSnake, pinCamel].compactMap { $0 }.first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+        pairingToken = mergedPin
+        let shortSnake = try c.decodeIfPresent(String.self, forKey: .shortPinSnake)
+        let shortCamel = try c.decodeIfPresent(String.self, forKey: .shortPinCamel)
+        shortPin = [shortSnake, shortCamel].compactMap { $0 }.first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
+    }
 }
 
 struct DeviceDetailResponse: Codable {

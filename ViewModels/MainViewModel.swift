@@ -282,15 +282,12 @@ class MainViewModel: ObservableObject {
                     // ✅ BUILD 115: ОБНОВЛЯЕМ ДАННЫЕ ИЗ API с диагностикой
                     print("📊 MainViewModel: Обновление данных из API:")
                     print("   - Члены семьи: \(self.familyMembers) → \(stats.totalMembers)")
-                    print("   - Устройства: \(self.devicesProtected) → \(stats.totalDevices)")
+                    print("   - Устройства: \(self.devicesProtected) → (ожидаем список /api/devices, fallback stats=\(stats.totalDevices))")
                     print("   - Угрозы: \(self.threatsBlocked) → \(stats.totalThreats)")
                     print("   - Статус: \(stats.familyStatus ?? "nil")")
                     
-                    // Единый источник количества членов семьи для UI: локальный family_members_list
-                    // (он синхронизируется с FamilyScreen/add/join/remove потоками).
-                    let storageCount = self.readFamilyMembersCountFromStorage()
-                    self.familyMembers = storageCount ?? stats.totalMembers
-                    self.devicesProtected = stats.totalDevices
+                    // Члены: источник правды — ответ `family/stats` (избегаем рассинхрона с локальным списком до обновления экрана «Семья»).
+                    self.familyMembers = stats.totalMembers
                     self.threatsBlocked = stats.totalThreats
                     self.lastUpdateTime = Date()
                     self.errorMessage = nil // Авто-очистка баннера при успехе
@@ -306,8 +303,21 @@ class MainViewModel: ObservableObject {
                     self.familyProtectionStatusMessage = stats.familyStatusMessage
                     VisualLogger.shared.log("ℹ️ FAMILY.STATUS raw=\(stats.familyStatus ?? "nil") mapped=\(mappedStatus.rawValue) source=api ttl_left=0s fails=\(self.consecutiveFailures)", level: .info, category: "MAIN.STATUS")
                     
-                    print("✅ MainViewModel: Данные успешно обновлены из API")
-                    NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+                    let fallbackDevices = stats.totalDevices
+                    self.apiService.getDevices { devicesResult in
+                        Task { @MainActor in
+                            switch devicesResult {
+                            case .success(let list):
+                                self.devicesProtected = list.count
+                                print("   - Устройства (из /api/devices): \(self.devicesProtected)")
+                            case .failure(let err):
+                                self.devicesProtected = fallbackDevices
+                                print("   - Устройства: список API недоступен, используем family/stats: \(fallbackDevices) (\(err.localizedDescription))")
+                            }
+                            print("✅ MainViewModel: Данные успешно обновлены из API")
+                            NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+                        }
+                    }
                     
                 case .failure(let error):
                     // ✅ BUILD 115: Улучшенная диагностика ошибок
@@ -534,10 +544,14 @@ class MainViewModel: ObservableObject {
         print("   - lastUpdateTime: \(lastUpdateTime?.description ?? "nil")")
         print("   - Subscription initialized: \(SubscriptionManager.shared.isInitialized)")
         
-        // ✅ ЗАЩИТА ОТ ЧАСТЫХ ВЫЗОВОВ
-        if let lastCall = lastOnAppearTime, Date().timeIntervalSince(lastCall) < 15 {
-            print("   - ⚠️ onAppear вызван слишком часто (<15 сек), пропускаем")
-            return
+        let pendingDevicesRefresh = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
+        
+        // ✅ ЗАЩИТА ОТ ЧАСТЫХ ВЫЗОВОВ (не применяем, если ждём обновление после экрана «Устройства»)
+        if !pendingDevicesRefresh {
+            if let lastCall = lastOnAppearTime, Date().timeIntervalSince(lastCall) < 15 {
+                print("   - ⚠️ onAppear вызван слишком часто (<15 сек), пропускаем")
+                return
+            }
         }
         lastOnAppearTime = Date()
         refreshFamilyMembersCountFromStorage()
@@ -564,7 +578,11 @@ class MainViewModel: ObservableObject {
             print("   - Данных нет — загружаем обязательно")
         }
         
-        if shouldRefresh {
+        if pendingDevicesRefresh || shouldRefresh {
+            if pendingDevicesRefresh {
+                UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
+                print("   - ✅ Принудительное обновление дашборда (изменился список устройств)")
+            }
             print("   - ✅ Запускаем loadDashboardData()...")
             loadDashboardData()
         } else {
@@ -605,21 +623,12 @@ class MainViewModel: ObservableObject {
     }
 
     func refreshFamilyMembersCountFromStorage() {
-        if let count = readFamilyMembersCountFromStorage() {
-            familyMembers = count
-        }
+        // Число членей на главной берётся из `GET /api/family/stats` (см. `loadDashboardDataWithRetry`),
+        // а не из `family_members_list`, чтобы не было рассинхрона «2 → 1» при устаревшем локальном кэше.
     }
     
     // MARK: - Private Methods
 
-    private func readFamilyMembersCountFromStorage() -> Int? {
-        guard let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
-              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
-            return nil
-        }
-        return decoded.count
-    }
-    
     private func connectNetworkProtection() {
         // ✅ BUILD 110: Удален лог
         // В реальности: API вызов к сервису защиты сети
