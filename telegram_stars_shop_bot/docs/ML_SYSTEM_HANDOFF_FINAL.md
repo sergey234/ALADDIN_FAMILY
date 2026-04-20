@@ -205,6 +205,7 @@ systemctl is-active aladdin-backend.service
 ## 6) Что уже проверено
 
 - Автотесты: `13 passed`.
+- Дополнение (2026-04-20): полный прогон `pytest tests/` — **`39 passed`** (каталог `products.yaml`, ценообразование и wholesale, FX/USDT/UAH, маркетинг/канал, настройки admin/LAVA, smoke `GET /health` + `GET /openapi.json`, схема SQLite, `provider_mark_paid_idempotent`; на прод-сервере те же тесты прогонялись из `/opt/aladdin-telegram-shop-bot/current_app` в общем `venv`).
 - Bot polling поднят.
 - Partner API работает (profile/orders/topups/webhooks).
 - Payment webhook (`/v1/payments/provider-webhook`) переводит заказ в `paid`.
