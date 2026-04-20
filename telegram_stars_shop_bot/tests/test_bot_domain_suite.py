@@ -183,6 +183,39 @@ def test_partner_api_health_and_openapi(partner_api_http_client: TestClient) -> 
     assert any("/v1/orders" in p for p in data["paths"])
 
 
+def test_privacy_screen_includes_policy_links(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BOT_TOKEN", "9:leg")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "leg_test_pepper_minimum_32_chars_____")
+    monkeypatch.setenv(
+        "PRIVACY_POLICY_URL",
+        "https://telegra.ph/Politika-konfidencialnosti-03-24-56",
+    )
+    monkeypatch.setenv(
+        "TERMS_OF_SERVICE_URL",
+        "https://telegra.ph/Polzovatelskoe-soglashenie-03-24-40",
+    )
+    s = load_settings()
+    html = marketing.privacy_screen_html(s)
+    assert "Politika-konfidencialnosti" in html
+    assert "Polzovatelskoe-soglashenie" in html
+    assert "Частые вопросы" in html
+
+
+def test_faq_comprehensive_uses_referral_settings(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BOT_TOKEN", "9:faq")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "faq_test_pepper_minimum_32_chars_____")
+    monkeypatch.setenv("REF_REFERRER_COMMISSION_FIRST_ORDER_PERCENT", "10")
+    monkeypatch.setenv("REF_BUYER_FIRST_ORDER_DISCOUNT_PERCENT", "5")
+    s = load_settings()
+    html = marketing.faq_comprehensive_html(s)
+    assert "Ответы на часто задаваемые вопросы" in html
+    assert "10.0%" in html
+    assert "5.0%" in html
+    assert "Unverified token" in html
+
+
 @pytest.mark.asyncio
 async def test_database_has_orders_and_payment_events_tables(conn) -> None:
     cur = await conn.execute(

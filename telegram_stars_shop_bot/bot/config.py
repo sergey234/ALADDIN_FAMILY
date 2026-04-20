@@ -66,6 +66,16 @@ class Settings(BaseSettings):
     # Опционально: file_id картинки для /start (получите через бота и вставьте в .env).
     start_photo_file_id: str = Field(default="", validation_alias="START_PHOTO_FILE_ID")
 
+    # Публичные юридические страницы (Telegraph и др.). Пусто = не показывать кнопку в боте.
+    privacy_policy_url: str = Field(
+        default="https://telegra.ph/Politika-konfidencialnosti-03-24-56",
+        validation_alias="PRIVACY_POLICY_URL",
+    )
+    terms_of_service_url: str = Field(
+        default="https://telegra.ph/Polzovatelskoe-soglashenie-03-24-40",
+        validation_alias="TERMS_OF_SERVICE_URL",
+    )
+
     # Обязательная подписка на канал перед покупкой (бот должен быть админом канала).
     # ID: @username или -100… ; пусто = проверка отключена.
     required_channel_id: str = Field(default="", validation_alias="REQUIRED_CHANNEL_ID")

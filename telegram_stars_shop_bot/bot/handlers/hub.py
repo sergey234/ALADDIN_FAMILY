@@ -12,7 +12,13 @@ from bot.services import api_clients_repo, balance_repo, contest_repo, orders_re
 from bot.services.api_repo import create_api_key_request
 from bot.services.catalog import Product, sort_for_display
 from bot.services.channel_gate import channel_gate_enabled, user_is_channel_member
-from bot.services.marketing import partner_onboarding_html, payment_faq_html, referral_faq_html
+from bot.services.marketing import (
+    faq_comprehensive_html,
+    partner_onboarding_html,
+    payment_faq_html,
+    privacy_screen_html,
+    referral_faq_html,
+)
 from bot.services.pricing import rub_per_100_stars_display
 from bot.services.sell_repo import count_user_sells, create_sell_request, list_user_sells_page
 from bot.states.checkout import ApiKeyStates, SellStates, TopupStates
@@ -433,6 +439,7 @@ async def nav_profile(cb: CallbackQuery, settings: Settings, conn, bot: Bot) -> 
     text = await profile_body_html(bot, settings, conn, cb.from_user.id)
     b = InlineKeyboardBuilder()
     b.row(InlineKeyboardButton(text="📖 Как работает рефералка", callback_data="nav:reffaq"))
+    b.row(InlineKeyboardButton(text="ℹ️ Частые вопросы", callback_data="nav:faq"))
     b.row(InlineKeyboardButton(text="📤 Мои заявки на выкуп", callback_data="nav:sells:0"))
     b.row(InlineKeyboardButton(text="🔒 Данные и политика", callback_data="nav:privacy"))
     b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
@@ -479,17 +486,34 @@ async def _render_sells_page(cb: CallbackQuery, conn, page: int) -> None:
 
 
 @router.callback_query(F.data == "nav:privacy")
-async def nav_privacy(cb: CallbackQuery) -> None:
+async def nav_privacy(cb: CallbackQuery, settings: Settings) -> None:
     b = InlineKeyboardBuilder()
+    pu = (settings.privacy_policy_url or "").strip()
+    tu = (settings.terms_of_service_url or "").strip()
+    if pu:
+        b.row(InlineKeyboardButton(text="📄 Политика конфиденциальности", url=pu))
+    if tu:
+        b.row(InlineKeyboardButton(text="📄 Пользовательское соглашение", url=tu))
+    b.row(InlineKeyboardButton(text="ℹ️ Частые вопросы", callback_data="nav:faq"))
     b.row(InlineKeyboardButton(text="⬅️ В профиль", callback_data="nav:profile"))
     await cb.message.edit_text(
-        "<b>Данные и политика</b>\n\n"
-        "Мы храним в сервисе: ваш Telegram ID, ник (если есть), историю заказов, "
-        "баланс и реферальные начисления, заявки на выкуп и пополнение — для оказания услуги.\n\n"
-        "Данные не передаём третьим лицам для рекламы. Срок хранения — пока нужен для учёта и поддержки.\n\n"
-        "По вопросам удаления или выгрузки данных напишите в раздел «Поддержка» с темой "
-        "<code>персональные данные</code>.",
+        privacy_screen_html(settings),
         reply_markup=b.as_markup(),
+        disable_web_page_preview=True,
+    )
+    await cb.answer()
+
+
+@router.callback_query(F.data == "nav:faq")
+async def nav_faq(cb: CallbackQuery, settings: Settings) -> None:
+    b = InlineKeyboardBuilder()
+    b.row(InlineKeyboardButton(text="🔒 Данные и документы", callback_data="nav:privacy"))
+    b.row(InlineKeyboardButton(text="💳 Оплата и зачисление", callback_data="nav:payfaq"))
+    b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
+    await cb.message.edit_text(
+        faq_comprehensive_html(settings),
+        reply_markup=b.as_markup(),
+        disable_web_page_preview=True,
     )
     await cb.answer()
 
