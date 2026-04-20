@@ -36,13 +36,14 @@
 
 ## 4) Канонические источники истины (группа файлов)
 
-- Главный экран статуса: `docs/MASTER_PROGRESS_DASHBOARD_2026-04-20.md`
-- Handoff c журналом исполнения: `docs/HANDOFF_NEXT_ML_SYSTEM_2026-04-20.md`
-- План/журнал прогресса: `docs/PLAN_FOR_NEXT_ML_SYSTEM_20260328.md`
-- Аудит 42 компонентов: `docs/audit/AUDIT_42_INVENTORY.md`
-- Матрица device/UI smoke: `docs/audit/DEVICE_UI_SMOKE_MATRIX_42.md`
-- Расширенный чеклист 138: `docs/audit/EXTENDED_138_CHECKLIST.md`
-- Остаточные задачи поддержки: `docs/REMAINING_MAINTENANCE_TODO_2026-04-20.md`
+- Главный вход: [`docs/MAIN_HANDOFF_MASTER_42_138_2026-04-20.md`](./MAIN_HANDOFF_MASTER_42_138_2026-04-20.md)
+- Главный экран статуса: [`docs/MASTER_PROGRESS_DASHBOARD_2026-04-20.md`](./MASTER_PROGRESS_DASHBOARD_2026-04-20.md)
+- Handoff c журналом исполнения: [`docs/HANDOFF_NEXT_ML_SYSTEM_2026-04-20.md`](./HANDOFF_NEXT_ML_SYSTEM_2026-04-20.md)
+- План/журнал прогресса: [`docs/PLAN_FOR_NEXT_ML_SYSTEM_20260328.md`](./PLAN_FOR_NEXT_ML_SYSTEM_20260328.md)
+- Аудит 42 компонентов: [`docs/audit/AUDIT_42_INVENTORY.md`](./audit/AUDIT_42_INVENTORY.md)
+- Расширенный чеклист 138: [`docs/audit/EXTENDED_138_CHECKLIST.md`](./audit/EXTENDED_138_CHECKLIST.md)
+- Матрица device/UI smoke: [`docs/audit/DEVICE_UI_SMOKE_MATRIX_42.md`](./audit/DEVICE_UI_SMOKE_MATRIX_42.md)
+- Остаточные задачи поддержки: [`docs/REMAINING_MAINTENANCE_TODO_2026-04-20.md`](./REMAINING_MAINTENANCE_TODO_2026-04-20.md)
 
 ## 5) Что обязательно поддерживать дальше
 
