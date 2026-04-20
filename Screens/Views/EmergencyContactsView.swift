@@ -3,7 +3,7 @@ import SwiftUI
 /**
  * 📞 Emergency Contacts View
  * Экран управления экстренными контактами
- * Компонент: emergency_contact_manager
+ * Компонент: emergency_contacts_manager
  */
 
 struct EmergencyContactsView: View {
@@ -151,7 +151,7 @@ struct EmergencyContactsView: View {
             } else {
                 // ✅ Попробовать загрузить через ComponentConfigurationService
                 do {
-                    let config = try await configurationService.getConfiguration(for: "emergency_contact_manager")
+                    let config = try await configurationService.getConfiguration(for: "emergency_contacts_manager")
                     if let settings = config.additionalSettings,
                        let contactsData = settings["contacts"]?.value as? [[String: Any]] {
                         // Конвертировать из словарей в EmergencyContact
@@ -197,7 +197,7 @@ struct EmergencyContactsView: View {
             do {
                 // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
                 let isComponentEnabled = await MainActor.run {
-                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: "emergency_contact_manager")
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: "emergency_contacts_manager")
                 }
                 
                 // Конвертировать контакты в словари для сохранения
@@ -220,7 +220,7 @@ struct EmergencyContactsView: View {
                 )
                 
                 try await configurationService.saveConfiguration(
-                    componentId: "emergency_contact_manager",
+                    componentId: "emergency_contacts_manager",
                     configuration: config
                 )
                 

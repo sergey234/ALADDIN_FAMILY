@@ -1288,8 +1288,8 @@ struct FeatureRegistry {
         AppFeature(id: "location_bubble_agent", name: "Location Bubble", description: "Скрывает точное местоположение пользователя", requiredLevel: .family, category: .premiumComponents, module: .advancedThreatProtection, isEnabled: true),
 
         // Регуляторные (2 компонента)
-        AppFeature(id: "russian_child_protection_manager", name: "Защита детей РФ", description: "Соответствие закону о защите детей", requiredLevel: .family, category: .premiumComponents, module: .messagingApps, isEnabled: true),
-        AppFeature(id: "russian_data_protection_manager", name: "Защита данных РФ", description: "Соблюдение законов о данных", requiredLevel: .family, category: .premiumComponents, module: .messagingApps, isEnabled: true),
+        AppFeature(id: "russian_child_protection_compliance_manager", name: "Защита детей РФ", description: "Соответствие закону о защите детей", requiredLevel: .family, category: .premiumComponents, module: .messagingApps, isEnabled: true),
+        AppFeature(id: "russian_data_protection_compliance_manager", name: "Защита данных РФ", description: "Соблюдение законов о данных", requiredLevel: .family, category: .premiumComponents, module: .messagingApps, isEnabled: true),
 
         // Интерфейсы (3 компонента)
         AppFeature(id: "family_notification_manager", name: "Семейные уведомления", description: "Управляет семейными уведомлениями", requiredLevel: .family, category: .premiumComponents, module: .privacyMonitoring, isEnabled: true),
@@ -1306,8 +1306,8 @@ struct FeatureRegistry {
         AppFeature(id: "emergency_event_manager", name: "Менеджер экстренных событий", description: "Управляет всеми экстренными событиями и инцидентами", requiredLevel: .premium, category: .premiumComponents, module: .emergencyAssistance, isEnabled: true),
         AppFeature(id: "incident_response_agent", name: "Агент реагирования на инциденты", description: "Автоматически реагирует на обнаруженные угрозы безопасности", requiredLevel: .premium, category: .premiumComponents, module: .emergencyAssistance, isEnabled: true),
         AppFeature(id: "password_security_agent", name: "Агент безопасности паролей", description: "Генерирует и проверяет надежность паролей", requiredLevel: .premium, category: .premiumComponents, module: .emergencyAssistance, isEnabled: true),
-        AppFeature(id: "emergency_contact_manager", name: "Менеджер экстренных контактов", description: "Управляет базой экстренных контактов", requiredLevel: .premium, category: .premiumComponents, module: .emergencyAssistance, isEnabled: true),
-        AppFeature(id: "emergency_notification_manager", name: "Менеджер экстренных уведомлений", description: "Настраивает шаблоны экстренных уведомлений", requiredLevel: .premium, category: .premiumComponents, module: .emergencyAssistance, isEnabled: true),
+        AppFeature(id: "emergency_contacts_manager", name: "Менеджер экстренных контактов", description: "Управляет базой экстренных контактов", requiredLevel: .premium, category: .premiumComponents, module: .emergencyAssistance, isEnabled: true),
+        AppFeature(id: "emergency_notifications_manager", name: "Менеджер экстренных уведомлений", description: "Настраивает шаблоны экстренных уведомлений", requiredLevel: .premium, category: .premiumComponents, module: .emergencyAssistance, isEnabled: true),
         AppFeature(id: "voice_control_manager", name: "Голосовое управление", description: "Предоставляет голосовое управление устройством", requiredLevel: .premium, category: .premiumComponents, module: .emergencyAssistance, isEnabled: true),
         AppFeature(id: "smart_notification_manager", name: "Умные уведомления", description: "Интеллектуально управляет уведомлениями", requiredLevel: .premium, category: .premiumComponents, module: .emergencyAssistance, isEnabled: true),
 

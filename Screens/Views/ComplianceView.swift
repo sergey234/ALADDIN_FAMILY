@@ -3,7 +3,7 @@ import SwiftUI
 /**
  * ⚖️ Compliance View
  * Экран настройки соответствия требованиям (152-ФЗ, защита детей)
- * Компоненты: russian_child_protection_manager, russian_data_protection_manager
+ * Компоненты: russian_child_protection_compliance_manager, russian_data_protection_compliance_manager
  */
 
 struct ComplianceView: View {
@@ -320,8 +320,8 @@ struct ComplianceView: View {
         Task {
             do {
                 let componentId = section == .childProtection 
-                    ? "russian_child_protection_manager"
-                    : "russian_data_protection_manager"
+                    ? "russian_child_protection_compliance_manager"
+                    : "russian_data_protection_compliance_manager"
                 
                 let config = try await configurationService.getConfiguration(for: componentId)
                 if let settings = config.additionalSettings {
@@ -361,8 +361,8 @@ struct ComplianceView: View {
         Task {
             do {
                 let componentId = section == .childProtection 
-                    ? "russian_child_protection_manager"
-                    : "russian_data_protection_manager"
+                    ? "russian_child_protection_compliance_manager"
+                    : "russian_data_protection_compliance_manager"
                 
                 // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
                 let isComponentEnabled = await MainActor.run {

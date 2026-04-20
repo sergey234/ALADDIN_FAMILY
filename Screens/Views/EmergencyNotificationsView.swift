@@ -3,7 +3,7 @@ import SwiftUI
 /**
  * 🔔 Emergency Notifications View
  * Экран настройки экстренных уведомлений
- * Компонент: emergency_notification_manager
+ * Компонент: emergency_notifications_manager
  */
 
 struct EmergencyNotificationsView: View {
@@ -157,7 +157,7 @@ struct EmergencyNotificationsView: View {
     private func loadSettings() {
         Task {
             do {
-                let config = try await configurationService.getConfiguration(for: "emergency_notification_manager")
+                let config = try await configurationService.getConfiguration(for: "emergency_notifications_manager")
                 if let settings = config.additionalSettings {
                     if let templates = settings["messageTemplates"]?.value as? [String: String] {
                         messageTemplates = templates
@@ -181,7 +181,7 @@ struct EmergencyNotificationsView: View {
             do {
                 // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
                 let isComponentEnabled = await MainActor.run {
-                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: "emergency_notification_manager")
+                    ComponentStatusService.shared.getComponentEnabledStatus(componentId: "emergency_notifications_manager")
                 }
                 
                 let config = ComponentConfiguration(
@@ -195,7 +195,7 @@ struct EmergencyNotificationsView: View {
                 )
                 
                 try await configurationService.saveConfiguration(
-                    componentId: "emergency_notification_manager",
+                    componentId: "emergency_notifications_manager",
                     configuration: config
                 )
                 

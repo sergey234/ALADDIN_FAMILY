@@ -169,8 +169,8 @@ class ComponentTariffManager: ObservableObject {
             "location_bubble_agent",
 
             // Регуляторные (2)
-            "russian_child_protection_manager",
-            "russian_data_protection_manager",
+            "russian_child_protection_compliance_manager",
+            "russian_data_protection_compliance_manager",
 
             // Интерфейсы (3)
             "family_notification_manager",
@@ -201,8 +201,8 @@ class ComponentTariffManager: ObservableObject {
             "driving_reports_agent",
 
             // Менеджеры (8)
-            "emergency_contact_manager",
-            "emergency_notification_manager",
+            "emergency_contacts_manager",
+            "emergency_notifications_manager",
             "voice_control_manager",
             "smart_notification_manager"
         ]
