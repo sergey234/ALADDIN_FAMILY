@@ -45,6 +45,8 @@ class NetworkProtectionViewModel: ObservableObject {
 
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    @Published var crashDetectionUnavailableOnThisDevice: Bool = false
+    @Published var crashDetectionUnavailableReason: String?
 
     // ✅ BUILD 104: Защита от повторной загрузки статусов
     private var hasLoadedStatuses = false
@@ -61,6 +63,8 @@ class NetworkProtectionViewModel: ObservableObject {
         self.configurationService = configurationService
         self.retryManager = retryManager
         self.crashDetection = crashDetection ?? CrashDetectionManager.shared
+        self.crashDetectionUnavailableOnThisDevice = !self.crashDetection.isCrashDetectionSupportedOnCurrentDevice
+        self.crashDetectionUnavailableReason = self.crashDetection.crashDetectionUnsupportedReason
 
         // ✅ BUILD 104: УБРАЛИ Task {} из init() - загрузка статусов перенесена в .onAppear
         // Это предотвращает рекурсию при пересоздании View
@@ -291,9 +295,15 @@ class NetworkProtectionViewModel: ObservableObject {
 
         do {
             try await crashDetection.startMonitoring()
+            crashDetectionUnavailableOnThisDevice = false
+            crashDetectionUnavailableReason = nil
         } catch {
             crashDetectionEnabled = false
             errorMessage = error.localizedDescription
+            if case CrashDetectionError.accelerometerUnavailable = error {
+                crashDetectionUnavailableOnThisDevice = true
+                crashDetectionUnavailableReason = crashDetection.crashDetectionUnsupportedReason ?? error.localizedDescription
+            }
             componentAnalytics.trackComponentError(componentId: componentId, error: error)
             toastManager.showError(error.localizedDescription)
             print("❌ NetworkProtectionViewModel: Не удалось запустить Crash Detection на устройстве: \(error.localizedDescription)")

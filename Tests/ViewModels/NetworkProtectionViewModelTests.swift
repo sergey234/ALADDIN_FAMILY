@@ -444,6 +444,8 @@ class NetworkProtectionViewModelTests: XCTestCase {
 final class MockCrashDetectionControlling: CrashDetectionControlling {
     var shouldFailStart = false
     var failStartError: Error = NSError(domain: "Test", code: 0, userInfo: [NSLocalizedDescriptionKey: "start failed"])
+    var isCrashDetectionSupportedOnCurrentDevice: Bool = true
+    var crashDetectionUnsupportedReason: String? = nil
     private(set) var startMonitoringCallCount = 0
     private(set) var stopMonitoringCallCount = 0
     private(set) var lastStartMonitoringAt: TimeInterval = 0

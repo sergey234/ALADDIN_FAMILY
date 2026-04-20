@@ -298,6 +298,19 @@ struct NetworkProtectionScreen: View {
                     }
                     // onSettingsTap: { showCrashDetectionSettings = true } // ⚠️ Temporarily disabled
                 )
+                
+                if viewModel.crashDetectionUnavailableOnThisDevice {
+                    HStack(alignment: .top, spacing: Spacing.xs) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(.warningOrange)
+                        Text(viewModel.crashDetectionUnavailableReason ?? "Crash Detection недоступен на этом устройстве.")
+                            .font(.caption)
+                            .foregroundColor(.warningOrange)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, Spacing.m)
+                }
 
                 #if DEBUG
                 // Диагностика: не попадает в пользовательские Release-сборки

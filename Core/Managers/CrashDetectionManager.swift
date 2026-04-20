@@ -8,6 +8,8 @@ import Combine
 protocol CrashDetectionControlling: AnyObject {
     func startMonitoring() async throws
     func stopMonitoring() async throws
+    var isCrashDetectionSupportedOnCurrentDevice: Bool { get }
+    var crashDetectionUnsupportedReason: String? { get }
 }
 
 /**
@@ -88,6 +90,17 @@ class CrashDetectionManager: NSObject, ObservableObject {
     private let speedThreshold: Double = 50.0 // Минимальная скорость для активации мониторинга (km/h)
     private var isSpeedMonitoringActive = false
     private var speedMonitoringTask: Task<Void, Never>?
+    
+    // MARK: - Device capability flags
+    
+    var isCrashDetectionSupportedOnCurrentDevice: Bool {
+        CMMotionManager().isAccelerometerAvailable
+    }
+    
+    var crashDetectionUnsupportedReason: String? {
+        guard !isCrashDetectionSupportedOnCurrentDevice else { return nil }
+        return "Crash Detection недоступен на этом устройстве: отсутствует акселерометр."
+    }
 
     // Конфигурация геозоны и обнаружения
     private let geofenceRadius: Double = 1000.0 // Радиус геозоны в метрах
