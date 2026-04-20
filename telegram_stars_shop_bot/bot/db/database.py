@@ -208,6 +208,21 @@ async def migrate_legacy(conn: aiosqlite.Connection) -> None:
     )
     await _ensure_column(conn, "api_clients", "webhook_url", "webhook_url TEXT")
     await _ensure_column(conn, "api_clients", "webhook_secret", "webhook_secret TEXT")
+    await conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS partner_contests (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            title TEXT NOT NULL,
+            prize_text TEXT NOT NULL,
+            starts_at TEXT NOT NULL,
+            ends_at TEXT NOT NULL,
+            is_active INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_partner_contests_active
+        ON partner_contests(is_active, starts_at, ends_at);
+        """
+    )
     await conn.commit()
 
 

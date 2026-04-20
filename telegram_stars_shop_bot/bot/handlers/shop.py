@@ -11,13 +11,16 @@ from bot.config import Settings
 from bot.keyboards.shop_kb import (
     confirm_order_kb,
     hub_menu_kb,
+    lava_payment_kb,
     payment_methods_kb,
     premium_dest_kb,
     verify_username_kb,
 )
 from bot.services import balance_repo, orders_repo, users_repo
 from bot.services.catalog import Product, products_by_id
+from bot.services.lava_api import create_invoice_payment_url
 from bot.services.payments_stub import crypto_payment_block_html, fiat_placeholder_html
+from bot.services.fx_display import fx_payment_hints_html
 from bot.services.pricing import quote_product, rub_per_100_stars_display
 from bot.states.checkout import CheckoutStates
 from bot.util_html import esc
@@ -27,7 +30,7 @@ router = Router(name="shop")
 _USERNAME_RE = re.compile(r"^@?[a-zA-Z0-9_]{4,32}$")
 
 
-def _fmt_quote_html(p: Product, q) -> str:
+def _fmt_quote_html(p: Product, q, settings: Settings) -> str:
     lines = [
         f"{p.emoji} <b>{esc(p.title)}</b>",
         "",
@@ -38,11 +41,14 @@ def _fmt_quote_html(p: Product, q) -> str:
     if q.rub_wholesale_discount > 0:
         lines.append(f"Опт Stars: <b>−{esc(f'{q.rub_wholesale_discount:.2f}')} ₽</b>")
     lines.append(f"К оплате: <b>{esc(f'{q.rub_final:.2f}')} ₽</b> (~{esc(f'{q.usd:.2f}')} USD)")
-    return "\n".join(lines)
+    body = "\n".join(lines)
+    fx = fx_payment_hints_html(settings, rub_final=q.rub_final, usd_base=q.usd)
+    return body + fx
 
 
 async def _is_first_purchase(conn, user_id: int) -> bool:
-    return await orders_repo.count_user_orders(conn, user_id) == 0
+    """Реф. скидка до первого выданного (completed) заказа — см. pricing.quote_product."""
+    return await orders_repo.count_user_completed_orders(conn, user_id) == 0
 
 
 def _payment_kb(product_id: str, balance: float, rub_final: float):
@@ -54,6 +60,40 @@ def _payment_kb(product_id: str, balance: float, rub_final: float):
         show_partial_mix=show_partial,
         balance=balance,
         rub_final=rub_final,
+    )
+
+
+async def _present_fiat_checkout(
+    cb: CallbackQuery,
+    settings: Settings,
+    *,
+    order_id: int,
+    rub_due: float,
+    intro_html: str,
+    usd_base: float,
+) -> None:
+    """LAVA при настроенных ключах и LAVA_HOOK_URL, иначе текст-заглушка."""
+    memo = f"ORDER{order_id}"
+    pay_url = await create_invoice_payment_url(
+        settings,
+        order_id=order_id,
+        sum_rub=rub_due,
+        comment=memo[:255],
+    )
+    fx = fx_payment_hints_html(settings, rub_final=rub_due, usd_base=usd_base)
+    if pay_url:
+        tail = (
+            fx
+            + "\n\n<b>Оплата через LAVA</b> (<a href=\"https://lava.ru\">lava.ru</a>) — СБП, банковские карты "
+            "и другие способы по тарифу вашего проекта в LAVA.\n"
+            "После подтверждения оплаты статус заказа в боте обновится автоматически."
+        )
+        await cb.message.edit_text(intro_html + tail, reply_markup=lava_payment_kb(pay_url))
+        return
+    instr = fiat_placeholder_html(settings, order_id=order_id, rub=rub_due)
+    await cb.message.edit_text(
+        intro_html + fx + f"\n\n<b>{esc(instr.title)}</b>\n{instr.body_html}",
+        reply_markup=hub_menu_kb(),
     )
 
 
@@ -76,7 +116,7 @@ async def open_product(cb: CallbackQuery, products: list[Product], settings: Set
     q = quote_product(p, settings, is_first_order=is_first)
     if p.kind == "premium":
         text = (
-            _fmt_quote_html(p, q)
+            _fmt_quote_html(p, q, settings)
             + "\n\nКому оформляем <b>Telegram Premium</b>?"
         )
         await cb.message.edit_text(text, reply_markup=premium_dest_kb(p.id))
@@ -90,7 +130,7 @@ async def open_product(cb: CallbackQuery, products: list[Product], settings: Set
         if p.kind == "gift":
             hint = "\n\n<i>Укажите @username получателя после выбора способа оплаты.</i>"
         bal = await balance_repo.get_balance(conn, cb.from_user.id)
-        text = _fmt_quote_html(p, q) + hint + "\n\n<b>Способ оплаты</b>"
+        text = _fmt_quote_html(p, q, settings) + hint + "\n\n<b>Способ оплаты</b>"
         await cb.message.edit_text(
             text,
             reply_markup=_payment_kb(p.id, bal, q.rub_final),
@@ -110,7 +150,7 @@ async def premium_pick_dest(cb: CallbackQuery, products: list[Product], settings
     is_first = await _is_first_purchase(conn, cb.from_user.id)
     q = quote_product(p, settings, is_first_order=is_first)
     bal = await balance_repo.get_balance(conn, cb.from_user.id)
-    text = _fmt_quote_html(p, q) + "\n\n<b>Способ оплаты</b>"
+    text = _fmt_quote_html(p, q, settings) + "\n\n<b>Способ оплаты</b>"
     await cb.message.edit_text(
         text,
         reply_markup=_payment_kb(pid, bal, q.rub_final),
@@ -147,7 +187,7 @@ async def choose_payment(cb: CallbackQuery, state: FSMContext, products: list[Pr
         is_first = await _is_first_purchase(conn, cb.from_user.id)
         q = quote_product(p, settings, is_first_order=is_first)
         await cb.message.edit_text(
-            _fmt_quote_html(p, q)
+            _fmt_quote_html(p, q, settings)
             + f"\n\n<b>Получатель:</b> <code>{esc(recipient)}</code> (ваш аккаунт)",
             reply_markup=confirm_order_kb(),
         )
@@ -205,7 +245,7 @@ async def verify_username_ok(cb: CallbackQuery, state: FSMContext, products: lis
     q = quote_product(p, settings, is_first_order=is_first)
     await state.set_state(CheckoutStates.waiting_confirm)
     await cb.message.edit_text(
-        _fmt_quote_html(p, q)
+        _fmt_quote_html(p, q, settings)
         + f"\n\n<b>Получатель:</b> <code>{esc(recipient)}</code>\n"
         "Нажмите «Создать заказ».",
         reply_markup=confirm_order_kb(),
@@ -325,16 +365,17 @@ async def order_submit(
             )
             await cb.message.edit_text(body, reply_markup=hub_menu_kb())
         elif payment == "mixfi":
-            instr = fiat_placeholder_html(settings, order_id=order_id, rub=due)
-            await cb.message.edit_text(
+            intro = (
                 f"<b>Заказ #{esc(order_id)}</b>\n"
                 f"С баланса списано: <b>{esc(f'{apply:.2f}')} ₽</b>\n"
-                f"<b>К доплате:</b> <b>{esc(f'{due:.2f}')} ₽</b>\n\n"
-                f"<b>{esc(instr.title)}</b>\n{instr.body_html}",
-                reply_markup=hub_menu_kb(),
+                f"<b>К доплате:</b> <b>{esc(f'{due:.2f}')} ₽</b>\n"
+            )
+            await _present_fiat_checkout(
+                cb, settings, order_id=order_id, rub_due=due, intro_html=intro, usd_base=q.usd
             )
         else:
-            pay = crypto_payment_block_html(settings, order_id=order_id, rub=due)
+            usd_part = q.usd * (due / rub) if rub > 1e-6 else q.usd
+            pay = crypto_payment_block_html(settings, order_id=order_id, rub=due, usd_for_fx=usd_part)
             await cb.message.edit_text(
                 f"<b>Заказ #{esc(order_id)}</b>\n"
                 f"С баланса: <b>{esc(f'{apply:.2f}')} ₽</b>\n"
@@ -365,18 +406,14 @@ async def order_submit(
     await state.clear()
 
     if payment == "crypto":
-        pay = crypto_payment_block_html(settings, order_id=order_id, rub=rub)
+        pay = crypto_payment_block_html(settings, order_id=order_id, rub=rub, usd_for_fx=q.usd)
         await cb.message.edit_text(
             f"<b>Заказ создан</b>\nID: <code>{esc(order_id)}</code>\n\n" + pay,
             reply_markup=hub_menu_kb(),
         )
     else:
-        instr = fiat_placeholder_html(settings, order_id=order_id, rub=rub)
-        await cb.message.edit_text(
-            f"<b>Заказ создан</b>\nID: <code>{esc(order_id)}</code>\n\n"
-            f"<b>{esc(instr.title)}</b>\n{instr.body_html}",
-            reply_markup=hub_menu_kb(),
-        )
+        intro = f"<b>Заказ создан</b>\nID: <code>{esc(order_id)}</code>\n"
+        await _present_fiat_checkout(cb, settings, order_id=order_id, rub_due=rub, intro_html=intro, usd_base=q.usd)
     await cb.answer()
 
     await _notify_admins(bot, settings, conn, order_id)

@@ -8,12 +8,12 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.config import Settings
 from bot.keyboards.shop_kb import hub_menu_kb, order_detail_kb, products_kb
-from bot.services import balance_repo, orders_repo, users_repo
+from bot.services import api_clients_repo, balance_repo, contest_repo, orders_repo, users_repo
 from bot.services.api_repo import create_api_key_request
 from bot.services.catalog import Product, sort_for_display
-from bot.services.marketing import referral_faq_html
+from bot.services.channel_gate import channel_gate_enabled, user_is_channel_member
+from bot.services.marketing import partner_onboarding_html, payment_faq_html, referral_faq_html
 from bot.services.pricing import rub_per_100_stars_display
-from bot.services import api_clients_repo
 from bot.services.sell_repo import count_user_sells, create_sell_request, list_user_sells_page
 from bot.states.checkout import ApiKeyStates, SellStates, TopupStates
 from bot.support_links import (
@@ -101,8 +101,8 @@ async def profile_body_html(bot: Bot, settings: Settings, conn, user_id: int) ->
         "<b>Мой профиль</b>\n\n"
         f"<b>Реферальная ссылка</b>\n<code>{esc(ref_link)}</code>\n\n"
         "<b>Условия</b> (те же %, что в приветствии)\n"
-        f"• Скидка другу на 1-й заказ: <b>{rb}%</b>\n"
-        f"• Вам с 1-й покупки друга: <b>{rc}%</b> в ₽ на реф. баланс\n"
+        f"• Скидка другу до первого <b>выданного</b> заказа: <b>{rb}%</b>\n"
+        f"• Вам с первой <b>выданной</b> покупки друга: <b>{rc}%</b> в ₽ на реф. баланс\n"
         f"• «До {md}%» — в рамках акций и способов оплаты, см. прайс\n\n"
         f"<b>Баланс</b> (оплата заказов): <b>{esc(f'{br:.2f}')} ₽</b>\n"
         f"<b>Реф. баланс</b>: <b>{esc(f'{rr:.2f}')} ₽</b>\n"
@@ -167,7 +167,12 @@ async def _sells_page_html(conn, user_id: int, page: int) -> tuple[str, bool, bo
 
 
 @router.callback_query(F.data == "start:hub")
-async def onboarding_continue(cb: CallbackQuery) -> None:
+async def onboarding_continue(cb: CallbackQuery, settings: Settings) -> None:
+    if channel_gate_enabled(settings) and not await user_is_channel_member(
+        cb.bot, settings, cb.from_user.id
+    ):
+        await cb.answer("Подпишитесь на канал магазина, затем снова нажмите «Далее» или «открыть меню».", show_alert=True)
+        return
     await cb.message.edit_text(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb())
     await cb.answer()
 
@@ -254,7 +259,7 @@ async def nav_buy_stars(cb: CallbackQuery, products: list[Product], settings: Se
         )
         await cb.answer()
         return
-    is_first = await orders_repo.count_user_orders(conn, cb.from_user.id) == 0
+    is_first = await orders_repo.count_user_completed_orders(conn, cb.from_user.id) == 0
     r100 = rub_per_100_stars_display(products, settings, is_first_order=is_first)
     sub = ""
     if r100 is not None:
@@ -331,11 +336,10 @@ async def nav_receipts(cb: CallbackQuery, conn) -> None:
 @router.callback_query(F.data == "nav:api")
 async def nav_api(cb: CallbackQuery, settings: Settings) -> None:
     await cb.message.edit_text(
-        "<b>API для партнёров</b>\n\n"
-        "• Платёжная ссылка\n"
-        "• Статус заказа\n"
-        "• Вебхук оплаты (позже)\n\n"
-        "<i>HTTP API: см. OpenAPI в репозитории, заголовок <code>X-API-KEY</code>.</i>",
+        "<b>Наш API</b> — для <b>вашего бота, сайта или приложения</b>\n\n"
+        "Создание заказов, статусы, пополнения и исходящие вебхуки — по HTTPS, заголовок <code>X-API-KEY</code> "
+        "(ключ выпускается ниже). Не встраивайте ключ в публичный фронт — только server-to-server.\n\n"
+        "<i>Подробный сценарий «рефералка vs API» — кнопка «Партнёрам» в главном меню.</i>",
         reply_markup=_api_kb(settings),
     )
     await cb.answer()
@@ -495,6 +499,81 @@ async def nav_reffaq(cb: CallbackQuery, settings: Settings) -> None:
     b = InlineKeyboardBuilder()
     b.row(InlineKeyboardButton(text="⬅️ В профиль", callback_data="nav:profile"))
     await cb.message.edit_text(referral_faq_html(settings), reply_markup=b.as_markup())
+    await cb.answer()
+
+
+@router.callback_query(F.data == "nav:payfaq")
+async def nav_payfaq(cb: CallbackQuery, settings: Settings) -> None:
+    b = InlineKeyboardBuilder()
+    b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
+    await cb.message.edit_text(payment_faq_html(settings), reply_markup=b.as_markup())
+    await cb.answer()
+
+
+@router.callback_query(F.data == "nav:partners")
+async def nav_partners(cb: CallbackQuery, settings: Settings) -> None:
+    b = InlineKeyboardBuilder()
+    b.row(InlineKeyboardButton(text="👤 Мой профиль (реф-ссылка)", callback_data="nav:profile"))
+    b.row(InlineKeyboardButton(text="🔌 Наш API (ключ)", callback_data="nav:api"))
+    b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
+    await cb.message.edit_text(partner_onboarding_html(settings), reply_markup=b.as_markup())
+    await cb.answer()
+
+
+@router.callback_query(F.data == "nav:contest")
+async def nav_contest(cb: CallbackQuery, conn) -> None:
+    row = await contest_repo.get_active_contest(conn)
+    b = InlineKeyboardBuilder()
+    b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
+    if row is None:
+        await cb.message.edit_text(
+            "<b>Конкурс партнёров</b>\n\n"
+            "Сейчас нет активного конкурса. Следите за объявлениями в канале магазина.\n\n"
+            "<i>Метрика: число успешно выданных заказов ваших приглашённых за период конкурса.</i>",
+            reply_markup=b.as_markup(),
+        )
+        await cb.answer()
+        return
+    title = esc(row["title"])
+    prize = esc(row["prize_text"])
+    starts = esc(row["starts_at"] or "")
+    ends = esc(row["ends_at"] or "")
+    board = await contest_repo.leaderboard_for_contest(
+        conn, starts_at=str(row["starts_at"]), ends_at=str(row["ends_at"]), limit=12
+    )
+    lines = [
+        f"<b>🏆 {title}</b>\n",
+        f"<i>Период:</i> {starts} — {ends}\n",
+        f"<b>Призы:</b>\n{prize}\n",
+        "<b>Топ партнёров</b> <i>(выданные заказы с рефералом)</i>\n",
+    ]
+    if not board:
+        lines.append("\nПока нет зачётных заказов в этом периоде.")
+    else:
+        for i, r in enumerate(board, start=1):
+            uid = r["referrer_id"]
+            vol = float(r["volume_rub"])
+            lines.append(f"{i}. <code>{uid}</code> — <b>{r['orders']}</b> зак. · {esc(f'{vol:.0f}')} ₽")
+    st = await contest_repo.user_contest_stats(
+        conn,
+        user_id=cb.from_user.id,
+        starts_at=str(row["starts_at"]),
+        ends_at=str(row["ends_at"]),
+    )
+    if st and st["orders"] > 0:
+        rk = await contest_repo.rank_for_referrer(
+            conn,
+            referrer_id=cb.from_user.id,
+            starts_at=str(row["starts_at"]),
+            ends_at=str(row["ends_at"]),
+        )
+        rk_s = esc(str(rk)) if rk is not None else "—"
+        lines.append(
+            f"\n<b>Ваш результат:</b> место <b>{rk_s}</b>, выданных заказов по вашей ссылке: <b>{st['orders']}</b>."
+        )
+    else:
+        lines.append("\n<b>Ваш результат:</b> пока нет выданных заказов по вашим рефералам в этом периоде.")
+    await cb.message.edit_text("\n".join(lines), reply_markup=b.as_markup())
     await cb.answer()
 
 

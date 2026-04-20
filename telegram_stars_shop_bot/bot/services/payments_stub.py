@@ -3,6 +3,7 @@ from __future__ import annotations
 from dataclasses import dataclass
 
 from bot.config import Settings
+from bot.services.fx_display import fx_payment_hints_html
 from bot.util_html import esc
 
 
@@ -24,11 +25,19 @@ def fiat_placeholder_html(settings: Settings, *, order_id: int, rub: float) -> F
     return FiatInstruction(title="Оплата СБП / картой", body_html=body)
 
 
-def crypto_payment_block_html(settings: Settings, *, order_id: int, rub: float) -> str:
+def crypto_payment_block_html(
+    settings: Settings,
+    *,
+    order_id: int,
+    rub: float,
+    usd_for_fx: float = 0.0,
+) -> str:
     memo = f"ORDER{order_id}"
+    usd_fx = float(usd_for_fx) if usd_for_fx > 0 else 0.0
+    fx = fx_payment_hints_html(settings, rub_final=rub, usd_base=usd_fx) if usd_fx > 0 else ""
     parts: list[str] = [
         f"<b>Криптооплата</b> — заказ <code>{esc(order_id)}</code>",
-        f"Сумма к оплате: <b>{esc(f'{rub:.2f}')} ₽</b> (пересчитайте в USDT/TON по курсу вашего кошелька).",
+        f"Сумма к оплате: <b>{esc(f'{rub:.2f}')} ₽</b> (основной расчёт; USDT/TON переведите на указанные реквизиты).",
         "",
         "<b>Важно:</b> в комментарии / memo к переводу укажите:",
         f"<code>{esc(memo)}</code>",
@@ -44,4 +53,5 @@ def crypto_payment_block_html(settings: Settings, *, order_id: int, rub: float) 
     else:
         parts.append("TON: <i>не задан в .env</i>\n")
     parts.append("После отправки средств статус обновит администратор после сверки.")
-    return "\n".join(parts)
+    body = "\n".join(parts)
+    return body + fx

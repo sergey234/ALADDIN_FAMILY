@@ -10,8 +10,8 @@ from bot.services.pricing import commission_for_first_order
 async def apply_completed_side_effects(conn: aiosqlite.Connection, order_id: int, settings: Settings) -> None:
     """
     Вызывать после перевода заказа в status=completed.
-    Первый завершённый заказ пользователя: фиксируем first_order_completed и начисляем комиссию рефереру
-    (15% от суммы этого заказа в ₽ — см. Settings).
+    Первый завершённый (выданный) заказ пользователя: фиксируем first_order_completed и начисляем комиссию рефереру
+    (процент от суммы этого заказа в ₽ — см. Settings).
     """
     order = await orders_repo.get_order(conn, order_id)
     if order is None or order["status"] != "completed":

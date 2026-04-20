@@ -111,6 +111,15 @@ async def count_user_orders(conn: aiosqlite.Connection, user_id: int) -> int:
     return int(row["c"] if row else 0)
 
 
+async def count_user_completed_orders(conn: aiosqlite.Connection, user_id: int) -> int:
+    cur = await conn.execute(
+        "SELECT COUNT(*) AS c FROM orders WHERE user_id = ? AND status = 'completed'",
+        (user_id,),
+    )
+    row = await cur.fetchone()
+    return int(row["c"] if row else 0)
+
+
 def _balance_applied_from_row(order: aiosqlite.Row) -> float:
     try:
         return float(order["balance_applied_rub"] or 0)

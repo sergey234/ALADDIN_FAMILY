@@ -3,12 +3,13 @@ from __future__ import annotations
 import asyncio
 
 from aiogram import F, Router
-from aiogram.filters import Command
+from aiogram.filters import Command, CommandObject
 from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message
 
 from bot.config import Settings
 from bot.keyboards.shop_kb import admin_order_kb, admin_sell_kb, admin_topup_kb
-from bot.services import balance_repo, orders_repo
+from bot.services import balance_repo, contest_repo, orders_repo
+from bot.services.contest_dates import normalize_contest_date
 from bot.services.order_flow import apply_completed_side_effects
 from bot.services.partner_outbound import emit_order_status_changed
 from bot.services.sell_repo import get_sell, update_sell_status
@@ -36,7 +37,80 @@ async def cmd_admin(message: Message, settings: Settings, conn) -> None:
             f"#{esc(r['id'])} {esc(r['product_title'])} — <code>{esc(r['status'])}</code> — "
             f"<b>{esc(f'{amt:.2f}')} ₽</b>"
         )
-    await message.answer("\n".join(lines))
+    await message.answer("\n".join(lines) + "\n\n<i>Конкурсы партнёров: команда /contest</i>")
+
+
+@router.message(Command("contest"))
+async def cmd_contest(message: Message, command: CommandObject, settings: Settings, conn) -> None:
+    if not _is_admin(message.from_user.id, settings):
+        return
+    raw = (command.args or "").strip()
+    if not raw:
+        await message.answer(
+            "<b>Конкурсы партнёров</b>\n\n"
+            "<code>/contest list</code> — список\n"
+            "<code>/contest new Заголовок | Текст приза | YYYY-MM-DD | YYYY-MM-DD [on]</code>\n"
+            "  последний аргумент <code>on</code> — сразу сделать единственным активным\n"
+            "<code>/contest activate ID</code>\n"
+            "<code>/contest deactivate_all</code>",
+        )
+        return
+    parts = raw.split()
+    cmd = parts[0].lower()
+    if cmd == "list":
+        rows = await contest_repo.list_contests(conn, limit=15)
+        if not rows:
+            await message.answer("<b>Конкурсы</b>: записей нет.")
+            return
+        lines = ["<b>Конкурсы</b>\n"]
+        for r in rows:
+            act = "✅" if int(r["is_active"] or 0) else "○"
+            lines.append(
+                f"{act} <code>#{r['id']}</code> {esc(r['title'])} · {esc(r['starts_at'])} → {esc(r['ends_at'])}"
+            )
+        await message.answer("\n".join(lines))
+        return
+    if cmd == "deactivate_all":
+        await contest_repo.deactivate_all(conn)
+        await message.answer("<b>Конкурсы</b>: все деактивированы.")
+        return
+    if cmd == "activate" and len(parts) >= 2:
+        try:
+            cid = int(parts[1])
+        except ValueError:
+            await message.answer("Некорректный ID.")
+            return
+        ok = await contest_repo.set_contest_active(conn, cid, active=True)
+        await message.answer("Активирован." if ok else "Не найдено.")
+        return
+    if cmd == "new":
+        body = raw.removeprefix("new").strip()
+        if not body:
+            await message.answer("Укажите поля через | после <code>new</code>.")
+            return
+        seg = [x.strip() for x in body.split("|")]
+        if len(seg) < 4:
+            await message.answer("Нужно 4 поля: Заголовок | Приз | дата начала | дата конца")
+            return
+        title, prize, ds, de = seg[:4]
+        activate = len(seg) >= 5 and seg[4].lower() in ("on", "1", "yes", "true")
+        try:
+            s_norm = normalize_contest_date(ds, end_of_day=False)
+            e_norm = normalize_contest_date(de, end_of_day=True)
+        except Exception:
+            await message.answer("Ошибка дат. Формат: YYYY-MM-DD")
+            return
+        oid = await contest_repo.create_contest(
+            conn,
+            title=title,
+            prize_text=prize,
+            starts_at=s_norm,
+            ends_at=e_norm,
+            activate=activate,
+        )
+        await message.answer(f"<b>Создан конкурс</b> <code>#{oid}</code>." + (" Активен." if activate else ""))
+        return
+    await message.answer("Неизвестная подкоманда. См. /contest")
 
 
 @router.callback_query(F.data.startswith("adm:"))

@@ -17,6 +17,7 @@ from bot.handlers import admin as admin_handlers
 from bot.handlers import common as common_handlers
 from bot.handlers import hub as hub_handlers
 from bot.handlers import shop as shop_handlers
+from bot.middlewares.channel_gate import ChannelGateMiddleware
 from bot.middlewares.inject import InjectMiddleware
 from bot.middlewares.throttling import ThrottleMiddleware
 from bot.logutil import slog
@@ -36,6 +37,7 @@ async def _setup_bot_commands(bot: Bot) -> None:
         BotCommand(command="my", description="Мой профиль"),
         BotCommand(command="orders", description="Мои заказы"),
         BotCommand(command="admin", description="Админ-панель"),
+        BotCommand(command="contest", description="Админ: конкурсы партнёров"),
     ]
     await bot.set_my_commands(commands)
 
@@ -62,6 +64,7 @@ async def run() -> None:
     dp.message.middleware(ThrottleMiddleware(settings))
     dp.include_router(common_handlers.router)
     dp.include_router(hub_handlers.router)
+    shop_handlers.router.callback_query.middleware(ChannelGateMiddleware())
     dp.include_router(shop_handlers.router)
     dp.include_router(admin_handlers.router)
     try:

@@ -2,11 +2,13 @@ from __future__ import annotations
 
 from aiogram import Router
 from aiogram.filters import Command, CommandObject, CommandStart
-from aiogram.types import Message
+from aiogram.types import InlineKeyboardButton, Message
+from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.config import Settings
 from bot.handlers.hub import orders_first_page_html, profile_body_html
 from bot.keyboards.shop_kb import hub_menu_kb, onboarding_step1_kb
+from bot.services.channel_gate import channel_gate_enabled, user_is_channel_member
 from bot.services.marketing import onboarding_screen_1_html
 from bot.services import users_repo
 from bot.ui_copy import ONBOARDING_SCREEN_2
@@ -32,10 +34,11 @@ async def cmd_start(message: Message, command: CommandObject, settings: Settings
             pass
     cap = onboarding_screen_1_html(settings)
     fid = (settings.start_photo_file_id or "").strip()
+    kb = onboarding_step1_kb(settings)
     if fid:
-        await message.answer_photo(fid, caption=cap, reply_markup=onboarding_step1_kb())
+        await message.answer_photo(fid, caption=cap, reply_markup=kb)
     else:
-        await message.answer(cap, reply_markup=onboarding_step1_kb())
+        await message.answer(cap, reply_markup=kb)
 
 
 @router.message(Command("my"))
@@ -51,6 +54,21 @@ async def cmd_orders(message: Message, conn) -> None:
 
 
 @router.message(Command("menu"))
-async def cmd_menu(message: Message) -> None:
+async def cmd_menu(message: Message, settings: Settings) -> None:
     """Открывает тот же хаб с 10 карточками, что и кнопка «Далее»."""
+    if channel_gate_enabled(settings) and not await user_is_channel_member(
+        message.bot, settings, message.from_user.id
+    ):
+        inv = (settings.required_channel_invite_url or "").strip()
+        b = InlineKeyboardBuilder()
+        if inv:
+            b.row(InlineKeyboardButton(text="📢 Подписаться на канал", url=inv))
+        b.row(InlineKeyboardButton(text="✅ Я подписался — открыть меню", callback_data="start:hub"))
+        await message.answer(
+            "<b>Сначала канал магазина</b>\n\n"
+            "Подпишитесь на канал — так вы не пропустите акции и конкурсы партнёров. "
+            "После подписки нажмите кнопку ниже.",
+            reply_markup=b.as_markup(),
+        )
+        return
     await message.answer(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb())

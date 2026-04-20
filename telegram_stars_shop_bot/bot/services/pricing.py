@@ -21,6 +21,7 @@ def quote_product(
     *,
     is_first_order: bool,
 ) -> PriceQuote:
+    # is_first_order: True пока у пользователя нет ни одного completed-заказа (реф. скидка на «первую выдачу»).
     usd = product.price_usd
     rub_list = round(usd * settings.usd_rub_rate, 2)
 

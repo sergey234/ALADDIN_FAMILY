@@ -72,3 +72,12 @@ products:
     emoji: "⭐"
     stars: 2000
     price_usd: 32.0
+
+  # Крупный пакет (ТЗ «2000+»): при необходимости добавьте 10k / кастом через новую строку.
+  - id: stars_5000
+    kind: stars
+    title: "5000 Stars"
+    emoji: "⭐"
+    stars: 5000
+    price_usd: 78.0
+    sort_order: 5

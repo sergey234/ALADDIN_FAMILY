@@ -3,17 +3,22 @@ from __future__ import annotations
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from bot.config import Settings
 from bot.services.catalog import Product
 
 
-def onboarding_step1_kb() -> InlineKeyboardMarkup:
+def onboarding_step1_kb(settings: Settings) -> InlineKeyboardMarkup:
     b = InlineKeyboardBuilder()
+    inv = (settings.required_channel_invite_url or "").strip()
+    if inv and (settings.required_channel_id or "").strip():
+        b.row(InlineKeyboardButton(text="📢 Подписаться на канал", url=inv))
     b.row(InlineKeyboardButton(text="Далее »", callback_data="start:hub"))
     return b.as_markup()
 
 
 def hub_menu_kb() -> InlineKeyboardMarkup:
     b = InlineKeyboardBuilder()
+    b.row(InlineKeyboardButton(text="❓ Оплата и зачисление", callback_data="nav:payfaq"))
     b.row(
         InlineKeyboardButton(text="⭐ Купить Stars", callback_data="nav:buy_stars"),
         InlineKeyboardButton(text="💸 Продать Stars", callback_data="nav:sell_stars"),
@@ -21,6 +26,10 @@ def hub_menu_kb() -> InlineKeyboardMarkup:
     b.row(
         InlineKeyboardButton(text="🎁 Купить подарки", callback_data="nav:gifts"),
         InlineKeyboardButton(text="💎 Купить Premium", callback_data="nav:premium"),
+    )
+    b.row(
+        InlineKeyboardButton(text="🤝 Партнёрам", callback_data="nav:partners"),
+        InlineKeyboardButton(text="🏆 Конкурс", callback_data="nav:contest"),
     )
     b.row(
         InlineKeyboardButton(text="🧾 Чеки", callback_data="nav:receipts"),
@@ -92,6 +101,14 @@ def payment_methods_kb(
     b.row(InlineKeyboardButton(text="💳 СБП / карта", callback_data=f"pay:fiat:{product_id}"))
     b.row(InlineKeyboardButton(text="₿ TON / крипта", callback_data=f"pay:crypto:{product_id}"))
     b.row(InlineKeyboardButton(text="⬅️ Назад", callback_data=f"buy:{product_id}"))
+    return b.as_markup()
+
+
+def lava_payment_kb(pay_url: str) -> InlineKeyboardMarkup:
+    """Кнопка на страницу оплаты LAVA (СБП, карты и др. по тарифам магазина)."""
+    b = InlineKeyboardBuilder()
+    b.row(InlineKeyboardButton(text="💳 Оплатить (LAVA — СБП / карта)", url=pay_url))
+    b.row(InlineKeyboardButton(text="🏠 В главное меню", callback_data="nav:hub"))
     return b.as_markup()
 
 

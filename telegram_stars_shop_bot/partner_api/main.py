@@ -10,6 +10,7 @@ from bot.config import load_settings
 from bot.services.catalog import load_products
 from bot.sentry_util import init_sentry_fastapi
 from partner_api.routers import orders as orders_r
+from partner_api.routers import lava_webhook as lava_r
 from partner_api.routers import payment_provider as payment_r
 from partner_api.routers import profile as profile_r
 from partner_api.routers import topups as topups_r
@@ -62,6 +63,7 @@ def create_app() -> FastAPI:
     app.include_router(orders_r.router, prefix=v1)
     app.include_router(topups_r.router, prefix=v1)
     app.include_router(payment_r.router, prefix=v1)
+    app.include_router(lava_r.router, prefix=v1)
     app.include_router(webhooks_r.router, prefix=v1)
 
     @app.get("/health")
