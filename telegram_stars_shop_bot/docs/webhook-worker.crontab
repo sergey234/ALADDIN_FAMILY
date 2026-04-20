@@ -1,0 +1,2 @@
+# ALADDIN outbound webhook queue reconciler (run every minute)
+* * * * * cd /opt/telegram_stars_shop_bot && /usr/bin/python3 -m partner_api.webhook_worker --limit 200 >> /var/log/aladdin-webhook-worker.log 2>&1

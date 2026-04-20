@@ -55,6 +55,11 @@ backend_path = "/opt/aladdin-backend"
 if backend_path not in sys.path:
     sys.path.insert(0, backend_path)
 
+# Repo / deploy root (рядом с `security/`, `app/`) — нужен для precision `reports_router`
+_gateway_root = os.path.dirname(os.path.abspath(__file__))
+if _gateway_root not in sys.path:
+    sys.path.insert(0, _gateway_root)
+
 try:
     from sfm_adapter import sfm_adapter
     logger.info("✅ SFM Adapter loaded successfully")
@@ -250,6 +255,15 @@ for router_name in router_files:
     except Exception as e:
         logger.error(f"❌ Failed to connect router {router_name}: {e}")
 
+# --- 2b. REPORTS PRECISION (same router as main.py; DB-backed stats/list/scan) ---
+try:
+    from security.api.routers.reports_router import router as reports_precision_router
+
+    app.include_router(reports_precision_router)
+    logger.info("✅ Precision Router connected: security.api.routers.reports_router (/api/reports/*)")
+except Exception as e:
+    logger.error(f"❌ Failed to connect reports_router precision: {e}")
+
 # --- 3. SMART PROXY (Catch-all Safety Net) ---
 
 @app.api_route("/api/{path:path}", methods=["GET", "POST", "PUT", "DELETE"])
@@ -259,6 +273,14 @@ async def catch_all_api_proxy(request: Request, path: str, authorization: Option
     Гарантирует 100% отсутствие 404 ошибок.
     """
     user_id = get_user_from_token(authorization)
+
+    # /api/reports/* обязаны обслуживаться только precision‑роутером выше (никогда SFM и никогда «успех‑заглушка»).
+    if path.startswith("reports/"):
+        logger.error("Wildcard reached for /api/reports/* — reports_router failed to register or path is unknown")
+        raise HTTPException(
+            status_code=503,
+            detail="Reports API unavailable: use precision /api/reports routes only",
+        )
     
     # Конвертируем путь в имя функции (например, /location/status -> location_status)
     func_name = path.replace("/", "_")

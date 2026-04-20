@@ -75,26 +75,25 @@ struct AppConfig {
     
     /**
      * Токен авторизации (если есть)
-     * Читается из Keychain для безопасности с fallback на UserDefaults
+     * Хранится в Keychain. Легаси-копия в UserDefaults при первом чтении переносится в Keychain и удаляется из UserDefaults.
      */
     static var authToken: String? {
         get {
-            // ✅ ИСПРАВЛЕНО: Используем loadString вместо load(String.self, ...)
-            // Сначала пробуем Keychain (основное хранилище)
             if let keychainToken = KeychainManager.shared.loadString(forKey: .authToken) {
                 return keychainToken
             }
-            // Fallback на UserDefaults для обратной совместимости
-            return UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.authToken)
+            if let legacy = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.authToken) {
+                KeychainManager.shared.save(legacy, forKey: .authToken)
+                UserDefaults.standard.removeObject(forKey: AppConfig.UserDefaultsKeys.authToken)
+                return legacy
+            }
+            return nil
         }
         set {
             if let token = newValue {
-                // Сохраняем в Keychain
                 KeychainManager.shared.save(token, forKey: .authToken)
-                // И в UserDefaults для обратной совместимости
-                UserDefaults.standard.set(token, forKey: AppConfig.UserDefaultsKeys.authToken)
+                UserDefaults.standard.removeObject(forKey: AppConfig.UserDefaultsKeys.authToken)
             } else {
-                // Удаляем из обоих мест
                 KeychainManager.shared.delete(forKey: .authToken)
                 UserDefaults.standard.removeObject(forKey: AppConfig.UserDefaultsKeys.authToken)
             }
@@ -104,7 +103,7 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "145"
+    static let buildNumber = "146"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -415,6 +414,8 @@ struct AppConfig {
         static let malwareThreats = "/api/malware/threats"
         static let malwareThreatsByStatus = "/api/malware/threats"  // Используем query параметр ?status=
         static let malwareQuarantineAction = "/api/malware/quarantine/action"
+        /// Загрузка файла на серверное сканирование (канонический путь бэкенда; при отсутствии — 404, клиент обрабатывает мягко)
+        static let malwareFileScan = "/api/antivirus/scan"
         
         // Альтернативные пути (если будут созданы)
         static let protectionThreats = "/api/protection/threats"
@@ -563,6 +564,54 @@ extension AppConfig {
         static let pendingMainDashboardDevicesRefresh = "pending_main_dashboard_devices_refresh"
         /// Токен из `aladdin://bind?token=` / Universal Link, если пришёл до завершения онбординга или до открытия экрана присоединения.
         static let pendingDeviceBindToken = "pending_device_bind_token"
+        /// Рубильник серверного сканирования Dark Web (`false` = UI и API-вызовы скана отключены). По умолчанию включено.
+        static let darkWebServerScanEnabled = "dark_web_server_scan_enabled"
+    }
+
+    /// Продуктовый рубильник: серверные POST сканирования Dark Web (`/api/reports/dark-web/scan/*`).
+    /// Выключить: `UserDefaults.standard.set(false, forKey: UserDefaultsKeys.darkWebServerScanEnabled)`.
+    static var isDarkWebServerScanEnabled: Bool {
+        if UserDefaults.standard.object(forKey: UserDefaultsKeys.darkWebServerScanEnabled) != nil {
+            return UserDefaults.standard.bool(forKey: UserDefaultsKeys.darkWebServerScanEnabled)
+        }
+        return true
+    }
+
+    /// Локальный кэш положения тумблеров компонентов на экране «Защита сети», пока нет синхронизации с API (гость или офлайн). Это не mock API.
+    enum NetworkProtectionComponentToggleStorage {
+        private static let v1KeyPrefix = "np_component_toggle_v1_"
+        private static let legacyKeyPrefix = "demo_component_"
+
+        static func storageKey(componentId: String) -> String {
+            "\(v1KeyPrefix)\(componentId)_enabled"
+        }
+
+        private static func legacyKey(componentId: String) -> String {
+            "\(legacyKeyPrefix)\(componentId)_enabled"
+        }
+
+        /// Читает v1-ключ; при отсутствии переносит значение из устаревшего префикса `demo_component_`.
+        static func readBool(componentId: String) -> Bool {
+            let ud = UserDefaults.standard
+            let key = storageKey(componentId: componentId)
+            if ud.object(forKey: key) != nil {
+                return ud.bool(forKey: key)
+            }
+            let old = legacyKey(componentId: componentId)
+            if ud.object(forKey: old) != nil {
+                let value = ud.bool(forKey: old)
+                ud.set(value, forKey: key)
+                ud.removeObject(forKey: old)
+                return value
+            }
+            return false
+        }
+
+        static func writeBool(_ value: Bool, componentId: String) {
+            let ud = UserDefaults.standard
+            ud.set(value, forKey: storageKey(componentId: componentId))
+            ud.removeObject(forKey: legacyKey(componentId: componentId))
+        }
     }
     
     // MARK: - Network Configuration

@@ -12,6 +12,8 @@ import logging
 logger = logging.getLogger(__name__)
 
 security = HTTPBearer()
+# Не бросает 403, если заголовка Authorization нет (для опциональной привязки к пользователю, напр. скан).
+optional_security = HTTPBearer(auto_error=False)
 
 # ✅ JWT-011: Унифицированный JWT_SECRET (совпадает с jwt_service.py)
 # В продакшене использовать переменные окружения
@@ -128,16 +130,16 @@ def get_current_user(
 
 # Альтернативная версия для случаев, когда токен может быть необязательным
 def get_current_user_optional(
-    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security)
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(optional_security),
 ) -> Optional[Dict]:
     """
-    Опциональная версия get_current_user
-    
-    Возвращает None если токен отсутствует или невалиден
+    Опциональная версия get_current_user.
+
+    Возвращает None, если заголовок Authorization отсутствует или токен невалиден.
     """
-    if credentials is None:
+    if credentials is None or not credentials.credentials:
         return None
-    
+
     try:
         return get_current_user(credentials)
     except HTTPException:

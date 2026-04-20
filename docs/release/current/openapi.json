@@ -107,6 +107,48 @@
         }
       }
     },
+    "/api/auth/register-device": {
+      "post": {
+        "tags": [
+          "subscription"
+        ],
+        "summary": "Register Device",
+        "description": "Register new device with free subscription in DB",
+        "operationId": "register_device_api_auth_register_device_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/backend__app__models__subscription__DeviceRegisterRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JWTDeviceRegisterResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/auth/refresh": {
       "post": {
         "tags": [
@@ -600,18 +642,19 @@
           "payments"
         ],
         "summary": "Confirm Payment",
-        "description": "Подтверждение платежа (webhook/внутренний callback).\n\nSecurity:\n- Требует HMAC подпись.\n  Заголовки:\n    - X-Timestamp: unix seconds\n    - X-Signature: hex(hmac_sha256(secret, f\"{ts}.{raw_body}\"))\n- Идемпотентность: eventId/providerTxnId фиксируются в payment_webhook_events.",
+        "description": "Подтверждение платежа (webhook от платежной системы)",
         "operationId": "confirm_payment_api_payments_confirm_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/PaymentConfirmRequest"
-              }
+        "parameters": [
+          {
+            "name": "payment_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Payment Id"
             }
-          },
-          "required": true
-        },
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1159,7 +1202,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Components Config Compat Api Components Config Get"
                 }
@@ -1583,46 +1625,14 @@
         ]
       }
     },
-    "/api/family/members": {
+    "/api/family/add": {
       "get": {
         "tags": [
           "family",
           "family"
         ],
-        "summary": "Get Family Members Compat",
-        "description": "✅ Production rule: no mock/fake.\nЕсли БД не подключена — отдаём 503, чтобы клиент не принимал пустые/фейковые данные как \"успех\".",
-        "operationId": "get_family_members_compat_api_family_members_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/FamilyMemberCompat"
-                  },
-                  "type": "array",
-                  "title": "Response Get Family Members Compat Api Family Members Get"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/api/family/member": {
-      "get": {
-        "tags": [
-          "family",
-          "family"
-        ],
-        "summary": "Get Family Member Compat",
-        "operationId": "get_family_member_compat_api_family_member_get",
+        "summary": "Add Family Member Compat",
+        "operationId": "add_family_member_compat_api_family_add_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1640,16 +1650,122 @@
             "HTTPBearer": []
           }
         ]
+      },
+      "post": {
+        "tags": [
+          "family",
+          "family"
+        ],
+        "summary": "Add Family Member",
+        "description": "✅ Боевой endpoint: POST /api/family/add\n\nТребования:\n- Не возвращать sfm_mock/mock_fallback в production.\n- Использовать PostgreSQL как единственный source of truth.\n- Работать только для уже созданной семьи (через /api/family/create).",
+        "operationId": "add_family_member_api_family_add_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddFamilyMemberRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FamilyMemberResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
       }
     },
-    "/api/family/add": {
+    "/api/family/members": {
       "get": {
         "tags": [
           "family",
           "family"
         ],
-        "summary": "Add Family Member Compat",
-        "operationId": "add_family_member_compat_api_family_add_get",
+        "summary": "Get Family Members Compat",
+        "description": "✅ Production rule: no mock/fake.\nЕсли БД не подключена — отдаём 503, чтобы клиент не принимал пустые/фейковые данные как \"успех\".\n\nСогласование контекста семьи:\n- Сервер вычисляет `family_id` по JWT: приоритет claim `family_id` (если авторизован для этой семьи),\n  затем последнее членство по `updated_at`, затем владелец семьи.\n- Если клиент передал query `familyId`, он **должен** совпадать с вычисленным id — иначе 409\n  (защита от смешения локального кэша другой семьи с данными актора).\n- Заголовок `X-Resolved-Family-Id` — явная «правда сервера» для этой выдачи (полный список строк этой семьи).\n- Заголовок `X-Current-Member-Id` — `family_members.id` строки членства JWT-актора в этой семье (детерминированное\n  выравнивание `your_member_id` на iOS без угадывания по JWT payload).",
+        "operationId": "get_family_members_compat_api_family_members_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "familyId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Familyid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/FamilyMemberCompat"
+                  },
+                  "title": "Response Get Family Members Compat Api Family Members Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/family/member": {
+      "get": {
+        "tags": [
+          "family",
+          "family"
+        ],
+        "summary": "Get Family Member Compat",
+        "operationId": "get_family_member_compat_api_family_member_get",
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -1742,6 +1858,54 @@
         ]
       }
     },
+    "/api/family/reconcile": {
+      "post": {
+        "tags": [
+          "family",
+          "family"
+        ],
+        "summary": "Reconcile Family",
+        "description": "Фоновая/ручная процедура сверки целостности семьи по familyId.\n- `familyId` в теле (если передан) **должен** совпадать с семьёй, вычисленной для JWT-актора (как в GET /members).\n- Если не передан — берётся семья актора по тому же правилу.\n- Считает и при необходимости мягко исправляет аномальные статусы.",
+        "operationId": "reconcile_family_api_family_reconcile_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReconcileFamilyRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReconcileFamilyResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
     "/api/family/join": {
       "get": {
         "tags": [
@@ -1811,7 +1975,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -2031,7 +2194,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response System Status Compat Api System Status Get"
                 }
@@ -2055,7 +2217,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Get System Uptime Api System Uptime Get"
                 }
@@ -2125,7 +2286,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Ai Chat Compat Api Ai Chat Get"
                 }
               }
@@ -2178,7 +2338,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Ai Message Compat Api Ai Message Get"
                 }
               }
@@ -2211,7 +2370,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Network Protection Status Api Network Protection Status Get"
                 }
@@ -2240,7 +2398,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Network Protection Stats Api Network Protection Stats Get"
                 }
@@ -2269,7 +2426,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Network Protection Settings Api Network Protection Settings Get"
                 }
@@ -2306,7 +2462,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Patch Network Protection Settings Api Network Protection Settings Patch"
                 }
@@ -2346,7 +2501,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -2377,7 +2531,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Network Protection Connect Api Network Protection Connect Get"
                 }
@@ -2406,7 +2559,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Network Protection Disconnect Api Network Protection Disconnect Get"
                 }
@@ -2435,7 +2587,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Network Protection Config Api Network Protection Config Get"
                 }
@@ -2465,7 +2616,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -2496,7 +2646,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Subscription Subscribe Api Subscription Subscribe Get"
                 }
@@ -2525,7 +2674,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Subscription Activate Api Subscription Activate Get"
                 }
@@ -2554,7 +2702,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Subscription Activation Activate Api Subscription Activation Activate Get"
                 }
@@ -2583,7 +2730,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Subscription Activation Verify Api Subscription Activation Verify Get"
                 }
@@ -2810,7 +2956,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Notifications Stats Api Notifications Stats Get"
                 }
@@ -2840,7 +2985,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -2871,7 +3015,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Notifications Archive Api Notifications Archive Get"
                 }
@@ -2900,7 +3043,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Notifications Bulk Mark Read Api Notifications Bulk Mark Read Get"
                 }
@@ -2929,7 +3071,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Crash Detection Setup Api Crash Detection Setup Get"
                 }
@@ -2958,7 +3099,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Crash Detection Alert Api Crash Detection Alert Get"
                 }
@@ -2987,7 +3127,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Crash Detection Settings Update Api Crash Detection Settings Update Get"
                 }
@@ -3016,7 +3155,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Parental Block Api Parental Block Get"
                 }
@@ -3045,7 +3183,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Parental Control Api Parental Control Get"
                 }
@@ -3074,38 +3211,8 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Parental Limits Api Parental Limits Get"
-                }
-              }
-            }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/api/malware/quarantine/action": {
-      "get": {
-        "tags": [
-          "misc-other-compat",
-          "misc-other-compat"
-        ],
-        "summary": "Malware Quarantine Action",
-        "operationId": "malware_quarantine_action_api_malware_quarantine_action_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "additionalProperties": true,
-                  "type": "object",
-                  "title": "Response Malware Quarantine Action Api Malware Quarantine Action Get"
                 }
               }
             }
@@ -3125,19 +3232,120 @@
           "misc-other-compat"
         ],
         "summary": "Malware Threats",
+        "description": "Список угроз в формате iOS `ThreatsListResponse` (не сырой массив).\nQuery `status` принимается для совместимости с клиентом; пока не фильтрует (пустой список).",
         "operationId": "malware_threats_api_malware_threats_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "additionalProperties": true,
-                    "type": "object"
-                  },
-                  "type": "array",
+                  "type": "object",
                   "title": "Response Malware Threats Api Malware Threats Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/malware/quarantine/action": {
+      "get": {
+        "tags": [
+          "misc-other-compat",
+          "misc-other-compat"
+        ],
+        "summary": "Malware Quarantine Action Get",
+        "description": "Легаси GET; iOS использует POST. Оставлен для совместимости и OpenAPI.",
+        "operationId": "malware_quarantine_action_get_api_malware_quarantine_action_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Malware Quarantine Action Get Api Malware Quarantine Action Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "misc-other-compat",
+          "misc-other-compat"
+        ],
+        "summary": "Malware Quarantine Action Post",
+        "description": "Действие по карантину как у iOS `quarantineFileAsync` (POST + JSON).\nРеальная синхронизация с файловой системой устройства здесь недоступна — подтверждение команды (без mock-маркеров sfm_mock).",
+        "operationId": "malware_quarantine_action_post_api_malware_quarantine_action_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuarantineActionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Malware Quarantine Action Post Api Malware Quarantine Action Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -3156,17 +3364,62 @@
           "misc-other-compat",
           "misc-other-compat"
         ],
-        "summary": "Protection Quarantine Action",
-        "operationId": "protection_quarantine_action_api_protection_quarantine_action_get",
+        "summary": "Protection Quarantine Action Get",
+        "operationId": "protection_quarantine_action_get_api_protection_quarantine_action_get",
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
-                  "title": "Response Protection Quarantine Action Api Protection Quarantine Action Get"
+                  "title": "Response Protection Quarantine Action Get Api Protection Quarantine Action Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "misc-other-compat",
+          "misc-other-compat"
+        ],
+        "summary": "Protection Quarantine Action Post",
+        "operationId": "protection_quarantine_action_post_api_protection_quarantine_action_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/QuarantineActionBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Protection Quarantine Action Post Api Protection Quarantine Action Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -3187,28 +3440,52 @@
         ],
         "summary": "Protection Threats",
         "operationId": "protection_threats_api_protection_threats_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "additionalProperties": true,
-                    "type": "object"
-                  },
-                  "type": "array",
+                  "type": "object",
                   "title": "Response Protection Threats Api Protection Threats Get"
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/protection/threats/test": {
@@ -3225,7 +3502,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Protection Threats Test Api Protection Threats Test Get"
                 }
@@ -3255,11 +3531,105 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
                   "title": "Response Devices List Api Devices Get"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      },
+      "post": {
+        "tags": [
+          "misc-other-compat",
+          "misc-other-compat"
+        ],
+        "summary": "Devices Create",
+        "operationId": "devices_create_api_devices_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddDeviceBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Devices Create Api Devices Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ]
+      }
+    },
+    "/api/devices/bind": {
+      "post": {
+        "tags": [
+          "misc-other-compat",
+          "misc-other-compat"
+        ],
+        "summary": "Devices Bind",
+        "description": "Сопряжение: по секретному `pairing_token` (QR/ссылка) или по `short_pin` внутри TTL.\nТокен не привязан к user_id создателя: достаточно знать секрет (как у бытовых pairing-кодов).",
+        "operationId": "devices_bind_api_devices_bind_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BindDeviceBody"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "title": "Response Devices Bind Api Devices Bind Post"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -3287,7 +3657,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -3318,7 +3687,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Payments Qr Status Test Api Payments Qr Status Test Get"
                 }
@@ -3347,9 +3715,50 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Api Test Api Test Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/antivirus/scan": {
+      "post": {
+        "tags": [
+          "antivirus",
+          "antivirus"
+        ],
+        "summary": "Scan Uploaded File",
+        "operationId": "scan_uploaded_file_api_antivirus_scan_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/FileScanRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FileScanResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -3834,6 +4243,57 @@
         }
       }
     },
+    "/api/reports/tracker/stats": {
+      "get": {
+        "tags": [
+          "Reports"
+        ],
+        "summary": "Get Tracker Stats Legacy",
+        "operationId": "get_tracker_stats_legacy_api_reports_tracker_stats_get",
+        "parameters": [
+          {
+            "name": "user_id",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ID пользователя",
+              "title": "User Id"
+            },
+            "description": "ID пользователя"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReportStatsResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/reports/ai-categories/stats": {
       "get": {
         "tags": [
@@ -3999,8 +4459,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "additionalProperties": true
+                    "type": "object"
                   },
                   "title": "Response Reports Driving Events Api Reports Driving Events Get"
                 }
@@ -4033,7 +4492,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Reports Driving Behavior Api Reports Driving Behavior Get"
                 }
@@ -4056,7 +4514,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Reports Driving Score Api Reports Driving Score Get"
                 }
@@ -4080,7 +4537,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -4313,7 +4769,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -4461,7 +4916,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -4550,7 +5004,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -4719,7 +5172,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -4951,7 +5403,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -5040,7 +5491,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -5129,7 +5579,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -5237,7 +5686,6 @@
               "application/json": {
                 "schema": {
                   "items": {
-                    "additionalProperties": true,
                     "type": "object"
                   },
                   "type": "array",
@@ -5263,7 +5711,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Get Sites Api Ai Categories Sites Get"
                 }
@@ -5297,7 +5744,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Block Sites Api Ai Categories Block Post"
                 }
@@ -5341,7 +5787,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Allow Sites Api Ai Categories Allow Post"
                 }
@@ -5385,7 +5830,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Check Access Api Ai Categories Check Post"
                 }
@@ -5433,7 +5877,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Get Status Api Ai Categories Status Get"
                 }
               }
@@ -5494,7 +5937,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Get Access History Api Ai Categories History Get"
                 }
               }
@@ -5537,7 +5979,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Set Age Restriction Api Ai Categories Age Restriction Post"
                 }
@@ -5571,7 +6012,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Health Check Api Ai Categories Health Get"
                 }
@@ -6528,7 +6968,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Scan Broker Sites Api Data Cleanup Scan Post"
                 }
@@ -6572,7 +7011,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Remove Data From Sites Api Data Cleanup Remove Post"
                 }
@@ -6638,7 +7076,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Get Removal Status Api Data Cleanup Status Get"
                 }
               }
@@ -6685,7 +7122,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Get Cleanup Report Api Data Cleanup Report Get"
                 }
               }
@@ -6732,7 +7168,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Get Scan Status Api Data Cleanup Scan Status Get"
                 }
               }
@@ -6779,7 +7214,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Get User Preferences Api Data Cleanup Preferences Get"
                 }
               }
@@ -6821,7 +7255,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Update User Preferences Api Data Cleanup Preferences Post"
                 }
               }
@@ -6864,7 +7297,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Trigger Periodic Scan Api Data Cleanup Periodic Scan Post"
                 }
@@ -6898,7 +7330,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Health Check Api Data Cleanup Health Get"
                 }
@@ -7571,7 +8002,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Get Bubble Location Api Location Bubble Post"
                 }
@@ -7616,7 +8046,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Set Person Settings Api Location Bubble Settings Post"
                 }
               }
@@ -7672,7 +8101,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Get Person Settings Api Location Bubble Settings Get"
                 }
               }
@@ -7719,7 +8147,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Get All Person Settings Api Location Bubble Settings All Get"
                 }
               }
@@ -7780,7 +8207,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Get Generation History Api Location Bubble History Get"
                 }
               }
@@ -7813,7 +8239,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Health Check Api Location Bubble Health Get"
                 }
@@ -8028,7 +8453,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Health Check Api Roadside Assistance Health Get"
                 }
@@ -8195,8 +8619,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "additionalProperties": true
+                    "type": "object"
                   },
                   "title": "Response Get Parental App Blocks Api Parental Control App Blocks Get"
                 }
@@ -8312,8 +8735,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "additionalProperties": true
+                    "type": "object"
                   },
                   "title": "Response Get Parental Schedules Api Parental Control Schedules Get"
                 }
@@ -8370,7 +8792,6 @@
               "application/json": {
                 "schema": {
                   "type": "object",
-                  "additionalProperties": true,
                   "title": "Response Get Parental Settings Api Parental Control Settings Get"
                 }
               }
@@ -8427,8 +8848,7 @@
                 "schema": {
                   "type": "array",
                   "items": {
-                    "type": "object",
-                    "additionalProperties": true
+                    "type": "object"
                   },
                   "title": "Response Get Parental Time Limits Api Parental Control Time Limits Get"
                 }
@@ -9221,7 +9641,7 @@
           "IoT"
         ],
         "summary": "Block Iot Device",
-        "description": "Блокирует IoT устройство.",
+        "description": "Блокирует IoT устройство (меняет статус на 'blocked').",
         "operationId": "block_iot_device_api_iot_device__deviceId__block_post",
         "parameters": [
           {
@@ -9270,7 +9690,7 @@
           "IoT"
         ],
         "summary": "Start Iot Scan",
-        "description": "Запускает сканирование умного дома на угрозы.",
+        "description": "Запускает сканирование умного дома на угрозы (записывает scan_id и время).",
         "operationId": "start_iot_scan_api_iot_scan__homeId__post",
         "parameters": [
           {
@@ -9315,7 +9735,7 @@
           "IoT"
         ],
         "summary": "Fix Iot Threat",
-        "description": "Исправляет обнаруженную угрозу IoT.",
+        "description": "Исправляет обнаруженную угрозу IoT (меняет статус угрозы на 'fixed').",
         "operationId": "fix_iot_threat_api_iot_fix__threatId__post",
         "parameters": [
           {
@@ -11002,7 +11422,6 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "additionalProperties": true,
                   "type": "object",
                   "title": "Response Restart System Api System Restart Post"
                 }
@@ -11139,6 +11558,51 @@
             }
           }
         }
+      },
+      "post": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Update Gamification Balance Endpoint",
+        "description": "POST /api/gamification/balance\nРеальное изменение баланса пользователя.\n\n- Положительный amount = начисление.\n- Отрицательный amount = списание.\n- userId берём из payload, при отсутствии — из JWT.",
+        "operationId": "update_gamification_balance_endpoint_api_gamification_balance_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AddBalanceRequest"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GamificationBalanceResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/api/gamification/balance/{userId}": {
@@ -11189,7 +11653,7 @@
           "Gamification"
         ],
         "summary": "Get Gamification Achievements",
-        "description": "GET /api/gamification/achievements\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/achievements\nРеальный список достижений пользователя (минимальный DTO AchievementItemResponse).",
         "operationId": "get_gamification_achievements_api_gamification_achievements_get",
         "responses": {
           "200": {
@@ -11247,7 +11711,7 @@
           "Gamification"
         ],
         "summary": "Get Gamification Achievements Progress",
-        "description": "GET /api/gamification/achievements/progress\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/achievements/progress\nРеальный агрегированный прогресс по достижениям пользователя.",
         "operationId": "get_gamification_achievements_progress_api_gamification_achievements_progress_get",
         "responses": {
           "200": {
@@ -11301,8 +11765,31 @@
           "Gamification"
         ],
         "summary": "Get Gamification Progress",
-        "description": "GET /api/gamification/progress\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/progress\nРеальный агрегированный прогресс геймификации пользователя.",
         "operationId": "get_gamification_progress_api_gamification_progress_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Userid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -11313,13 +11800,18 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/gamification/progress/level": {
@@ -11328,8 +11820,31 @@
           "Gamification"
         ],
         "summary": "Get Gamification Progress Level",
-        "description": "GET /api/gamification/progress/level\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/progress/level\nРеальный уровень игрока по агрегированному прогрессу.",
         "operationId": "get_gamification_progress_level_api_gamification_progress_level_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Userid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -11340,13 +11855,18 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/gamification/progress/reset": {
@@ -11355,8 +11875,31 @@
           "Gamification"
         ],
         "summary": "Reset Gamification Progress",
-        "description": "GET /api/gamification/progress/reset\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/progress/reset\nСброс агрегированного прогресса (уровень 1, 0 очков).",
         "operationId": "reset_gamification_progress_api_gamification_progress_reset_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Userid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -11367,13 +11910,18 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/gamification/progress/stats": {
@@ -11382,8 +11930,31 @@
           "Gamification"
         ],
         "summary": "Get Gamification Progress Stats",
-        "description": "GET /api/gamification/progress/stats\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/progress/stats\nСтатистика прогресса (сейчас совпадает с агрегированным прогрессом).",
         "operationId": "get_gamification_progress_stats_api_gamification_progress_stats_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Userid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -11394,13 +11965,18 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/gamification/progress/update": {
@@ -11409,8 +11985,28 @@
           "Gamification"
         ],
         "summary": "Update Gamification Progress",
-        "description": "GET /api/gamification/progress/update\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/progress/update\nУпрощённое обновление прогресса (увеличивает общие очки на delta).",
         "operationId": "update_gamification_progress_api_gamification_progress_update_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "delta",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 0,
+              "description": "На сколько очков увеличить прогресс",
+              "default": 10,
+              "title": "Delta"
+            },
+            "description": "На сколько очков увеличить прогресс"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -11421,13 +12017,18 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/gamification/rewards": {
@@ -11436,46 +12037,216 @@
           "Gamification"
         ],
         "summary": "Get Gamification Rewards",
-        "description": "GET /api/gamification/rewards\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/rewards\nРеальный каталог наград (совместим с iOS RewardsListResponse).",
         "operationId": "get_gamification_rewards_api_gamification_rewards_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/RewardItemResponse"
-                  },
-                  "type": "array",
-                  "title": "Response Get Gamification Rewards Api Gamification Rewards Get"
-                }
-              }
-            }
-          }
-        },
         "security": [
           {
             "HTTPBearer": []
           }
-        ]
-      }
-    },
-    "/api/gamification/rewards/claim": {
-      "get": {
-        "tags": [
-          "Gamification"
         ],
-        "summary": "Claim Gamification Reward",
-        "description": "GET /api/gamification/rewards/claim\nCompatibility endpoint to avoid wildcard mock fallback on production.",
-        "operationId": "claim_gamification_reward_api_gamification_rewards_claim_get",
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Userid"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GamificationBoolResponse"
+                  "$ref": "#/components/schemas/RewardsListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gamification/rewards/history": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Get Gamification Rewards History",
+        "description": "GET /api/gamification/rewards/history\nИстория наград пользователя (совместимо с iOS `[RewardResponse]`).",
+        "operationId": "get_gamification_rewards_history_api_gamification_rewards_history_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Userid"
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/RewardResponse"
+                  },
+                  "title": "Response Get Gamification Rewards History Api Gamification Rewards History Get"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gamification/rewards/shop": {
+      "get": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Get Gamification Rewards Shop",
+        "description": "GET /api/gamification/rewards/shop\nМагазин наград (каталог доступных товаров).",
+        "operationId": "get_gamification_rewards_shop_api_gamification_rewards_shop_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Userid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RewardsListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/gamification/rewards/claim": {
+      "post": {
+        "tags": [
+          "Gamification"
+        ],
+        "summary": "Claim Gamification Reward",
+        "description": "POST /api/gamification/rewards/claim\nСписание единорогов и выдача награды пользователю.",
+        "operationId": "claim_gamification_reward_api_gamification_rewards_claim_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimRewardRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ClaimRewardResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -11489,109 +12260,119 @@
       }
     },
     "/api/gamification/rewards/give": {
-      "get": {
+      "post": {
         "tags": [
           "Gamification"
         ],
         "summary": "Give Gamification Reward",
-        "description": "GET /api/gamification/rewards/give\nCompatibility endpoint to avoid wildcard mock fallback on production.",
-        "operationId": "give_gamification_reward_api_gamification_rewards_give_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/GamificationBoolResponse"
-                }
-              }
-            }
-          }
-        },
+        "description": "POST /api/gamification/rewards/give\nРодитель выдаёт награду ребёнку (баланс можно не изменять).",
+        "operationId": "give_gamification_reward_api_gamification_rewards_give_post",
         "security": [
           {
             "HTTPBearer": []
           }
-        ]
-      }
-    },
-    "/api/gamification/rewards/history": {
-      "get": {
-        "tags": [
-          "Gamification"
         ],
-        "summary": "Get Gamification Rewards History",
-        "description": "GET /api/gamification/rewards/history\nCompatibility endpoint to avoid wildcard mock fallback on production.",
-        "operationId": "get_gamification_rewards_history_api_gamification_rewards_history_get",
+        "parameters": [
+          {
+            "name": "childId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "ID ребёнка, которому выдаём награду",
+              "title": "Childid"
+            },
+            "description": "ID ребёнка, которому выдаём награду"
+          },
+          {
+            "name": "rewardId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "ID награды",
+              "title": "Rewardid"
+            },
+            "description": "ID награды"
+          },
+          {
+            "name": "parentId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ID родителя",
+              "title": "Parentid"
+            },
+            "description": "ID родителя"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/RewardItemResponse"
-                  },
-                  "type": "array",
-                  "title": "Response Get Gamification Rewards History Api Gamification Rewards History Get"
+                  "$ref": "#/components/schemas/ClaimRewardResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/gamification/rewards/purchase": {
-      "get": {
+      "post": {
         "tags": [
           "Gamification"
         ],
         "summary": "Purchase Gamification Reward",
-        "description": "GET /api/gamification/rewards/purchase\nCompatibility endpoint to avoid wildcard mock fallback on production.",
-        "operationId": "purchase_gamification_reward_api_gamification_rewards_purchase_get",
+        "description": "POST /api/gamification/rewards/purchase\nПокупка награды из магазина (аналогична claim, но с другим source для истории).",
+        "operationId": "purchase_gamification_reward_api_gamification_rewards_purchase_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ClaimRewardRequest"
+              }
+            }
+          },
+          "required": true
+        },
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/GamificationBoolResponse"
+                  "$ref": "#/components/schemas/ClaimRewardResponse"
                 }
               }
             }
-          }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
-      }
-    },
-    "/api/gamification/rewards/shop": {
-      "get": {
-        "tags": [
-          "Gamification"
-        ],
-        "summary": "Get Gamification Rewards Shop",
-        "description": "GET /api/gamification/rewards/shop\nCompatibility endpoint to avoid wildcard mock fallback on production.",
-        "operationId": "get_gamification_rewards_shop_api_gamification_rewards_shop_get",
-        "responses": {
-          "200": {
-            "description": "Successful Response",
+          },
+          "422": {
+            "description": "Validation Error",
             "content": {
               "application/json": {
                 "schema": {
-                  "items": {
-                    "$ref": "#/components/schemas/RewardItemResponse"
-                  },
-                  "type": "array",
-                  "title": "Response Get Gamification Rewards Shop Api Gamification Rewards Shop Get"
+                  "$ref": "#/components/schemas/HTTPValidationError"
                 }
               }
             }
@@ -11610,7 +12391,7 @@
           "Gamification"
         ],
         "summary": "Get Gamification Settings",
-        "description": "GET /api/gamification/settings\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/settings\nРеальные настройки геймификации (упрощённая проекция).",
         "operationId": "get_gamification_settings_api_gamification_settings_get",
         "responses": {
           "200": {
@@ -11637,7 +12418,7 @@
           "Gamification"
         ],
         "summary": "Get Gamification Notifications Settings",
-        "description": "GET /api/gamification/settings/notifications\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/settings/notifications\nВозвращает текущее состояние флагов уведомлений (сводно).",
         "operationId": "get_gamification_notifications_settings_api_gamification_settings_notifications_get",
         "responses": {
           "200": {
@@ -11664,8 +12445,87 @@
           "Gamification"
         ],
         "summary": "Update Gamification Notifications Settings",
-        "description": "GET /api/gamification/settings/notifications/update\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/settings/notifications/update\nОбновляет настройки уведомлений (через query-параметры).",
         "operationId": "update_gamification_notifications_settings_api_gamification_settings_notifications_update_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "achievementUnlocked",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Уведомления о разблокировке достижений",
+              "title": "Achievementunlocked"
+            },
+            "description": "Уведомления о разблокировке достижений"
+          },
+          {
+            "name": "tournamentStarted",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Уведомления о начале турнира",
+              "title": "Tournamentstarted"
+            },
+            "description": "Уведомления о начале турнира"
+          },
+          {
+            "name": "rewardAvailable",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Уведомления о доступных наградах",
+              "title": "Rewardavailable"
+            },
+            "description": "Уведомления о доступных наградах"
+          },
+          {
+            "name": "levelUp",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Уведомления о повышении уровня",
+              "title": "Levelup"
+            },
+            "description": "Уведомления о повышении уровня"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -11676,13 +12536,18 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/gamification/settings/update": {
@@ -11691,8 +12556,51 @@
           "Gamification"
         ],
         "summary": "Update Gamification Settings",
-        "description": "GET /api/gamification/settings/update\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/settings/update\nОбновляет основные игровые настройки (уведомления/звук) через query-параметры.",
         "operationId": "update_gamification_settings_api_gamification_settings_update_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "notificationsEnabled",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Включены ли игровые уведомления",
+              "title": "Notificationsenabled"
+            },
+            "description": "Включены ли игровые уведомления"
+          },
+          {
+            "name": "soundsEnabled",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "boolean"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Включены ли звуки",
+              "title": "Soundsenabled"
+            },
+            "description": "Включены ли звуки"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -11703,13 +12611,18 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/gamification/tournaments": {
@@ -11718,29 +12631,59 @@
           "Gamification"
         ],
         "summary": "Get Gamification Tournaments",
-        "description": "GET /api/gamification/tournaments\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/tournaments\nРеальный список турниров (минимальное DTO TournamentItemResponse).",
         "operationId": "get_gamification_tournaments_api_gamification_tournaments_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "status",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "Фильтр по статусу (upcoming, active, finished)",
+              "title": "Status"
+            },
+            "description": "Фильтр по статусу (upcoming, active, finished)"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/TournamentItemResponse"
                   },
-                  "type": "array",
                   "title": "Response Get Gamification Tournaments Api Gamification Tournaments Get"
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/gamification/tournaments/history": {
@@ -11749,39 +12692,99 @@
           "Gamification"
         ],
         "summary": "Get Gamification Tournaments History",
-        "description": "GET /api/gamification/tournaments/history\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/tournaments/history\nИстория участия пользователя в турнирах.",
         "operationId": "get_gamification_tournaments_history_api_gamification_tournaments_history_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "userId",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "description": "ID пользователя",
+              "title": "Userid"
+            },
+            "description": "ID пользователя"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/TournamentItemResponse"
                   },
-                  "type": "array",
                   "title": "Response Get Gamification Tournaments History Api Gamification Tournaments History Get"
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/gamification/tournaments/join": {
-      "get": {
+      "post": {
         "tags": [
           "Gamification"
         ],
         "summary": "Join Gamification Tournament",
-        "description": "GET /api/gamification/tournaments/join\nCompatibility endpoint to avoid wildcard mock fallback on production.",
-        "operationId": "join_gamification_tournament_api_gamification_tournaments_join_get",
+        "description": "POST /api/gamification/tournaments/join\nПрисоединиться к турниру.",
+        "operationId": "join_gamification_tournament_api_gamification_tournaments_join_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "ID турнира",
+              "title": "Tournamentid"
+            },
+            "description": "ID турнира"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -11792,13 +12795,18 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/gamification/tournaments/leaderboard": {
@@ -11807,39 +12815,92 @@
           "Gamification"
         ],
         "summary": "Get Gamification Tournaments Leaderboard",
-        "description": "GET /api/gamification/tournaments/leaderboard\nCompatibility endpoint to avoid wildcard mock fallback on production.",
+        "description": "GET /api/gamification/tournaments/leaderboard\nПока возвращаем просто список участников турнира без реального ранжирования.",
         "operationId": "get_gamification_tournaments_leaderboard_api_gamification_tournaments_leaderboard_get",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "ID турнира",
+              "title": "Tournamentid"
+            },
+            "description": "ID турнира"
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 50,
+              "title": "Limit"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
+                  "type": "array",
                   "items": {
                     "$ref": "#/components/schemas/TournamentItemResponse"
                   },
-                  "type": "array",
                   "title": "Response Get Gamification Tournaments Leaderboard Api Gamification Tournaments Leaderboard Get"
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/gamification/tournaments/leave": {
-      "get": {
+      "post": {
         "tags": [
           "Gamification"
         ],
         "summary": "Leave Gamification Tournament",
-        "description": "GET /api/gamification/tournaments/leave\nCompatibility endpoint to avoid wildcard mock fallback on production.",
-        "operationId": "leave_gamification_tournament_api_gamification_tournaments_leave_get",
+        "description": "POST /api/gamification/tournaments/leave\nПокинуть турнир.",
+        "operationId": "leave_gamification_tournament_api_gamification_tournaments_leave_post",
+        "security": [
+          {
+            "HTTPBearer": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "tournamentId",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "description": "ID турнира",
+              "title": "Tournamentid"
+            },
+            "description": "ID турнира"
+          }
+        ],
         "responses": {
           "200": {
             "description": "Successful Response",
@@ -11850,13 +12911,18 @@
                 }
               }
             }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
           }
-        },
-        "security": [
-          {
-            "HTTPBearer": []
-          }
-        ]
+        }
       }
     },
     "/api/parental-control/settings/{familyId}": {
@@ -13239,7 +14305,7 @@
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/app__models__subscription__SubscriptionStatusResponse"
+                  "$ref": "#/components/schemas/backend__app__models__subscription__SubscriptionStatusResponse"
                 }
               }
             }
@@ -13427,48 +14493,6 @@
         }
       }
     },
-    "/api/auth/register-device": {
-      "post": {
-        "tags": [
-          "subscription"
-        ],
-        "summary": "Register Device",
-        "description": "Register new device with free subscription in DB",
-        "operationId": "register_device_api_auth_register_device_post",
-        "requestBody": {
-          "content": {
-            "application/json": {
-              "schema": {
-                "$ref": "#/components/schemas/DeviceRegisterRequest"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Successful Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/JWTDeviceRegisterResponse"
-                }
-              }
-            }
-          },
-          "422": {
-            "description": "Validation Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
-              }
-            }
-          }
-        }
-      }
-    },
     "/api/auth/register-device-trial": {
       "post": {
         "tags": [
@@ -13536,7 +14560,6 @@
             "application/json": {
               "schema": {
                 "type": "object",
-                "additionalProperties": true,
                 "title": "Request"
               }
             }
@@ -15146,10 +16169,10 @@
       }
     },
     "/api/{path}": {
-      "post": {
+      "put": {
         "summary": "Wildcard Handler",
         "description": "Wildcard Handler для endpoints без конкретных роутеров.\nПреобразует путь в SFM функцию и вызывает её через adapter.\n\nВАРИАНТ 5: Упрощенная версия - только вызов SFM, без исключений.\nFastAPI автоматически обработает все конкретные роутеры первыми.",
-        "operationId": "wildcard_handler_api__path__post",
+        "operationId": "wildcard_handler_api__path__put",
         "parameters": [
           {
             "name": "path",
@@ -15185,7 +16208,7 @@
       "get": {
         "summary": "Wildcard Handler",
         "description": "Wildcard Handler для endpoints без конкретных роутеров.\nПреобразует путь в SFM функцию и вызывает её через adapter.\n\nВАРИАНТ 5: Упрощенная версия - только вызов SFM, без исключений.\nFastAPI автоматически обработает все конкретные роутеры первыми.",
-        "operationId": "wildcard_handler_api__path__post",
+        "operationId": "wildcard_handler_api__path__put",
         "parameters": [
           {
             "name": "path",
@@ -15221,7 +16244,7 @@
       "delete": {
         "summary": "Wildcard Handler",
         "description": "Wildcard Handler для endpoints без конкретных роутеров.\nПреобразует путь в SFM функцию и вызывает её через adapter.\n\nВАРИАНТ 5: Упрощенная версия - только вызов SFM, без исключений.\nFastAPI автоматически обработает все конкретные роутеры первыми.",
-        "operationId": "wildcard_handler_api__path__post",
+        "operationId": "wildcard_handler_api__path__put",
         "parameters": [
           {
             "name": "path",
@@ -15254,10 +16277,10 @@
           }
         }
       },
-      "put": {
+      "post": {
         "summary": "Wildcard Handler",
         "description": "Wildcard Handler для endpoints без конкретных роутеров.\nПреобразует путь в SFM функцию и вызывает её через adapter.\n\nВАРИАНТ 5: Упрощенная версия - только вызов SFM, без исключений.\nFastAPI автоматически обработает все конкретные роутеры первыми.",
-        "operationId": "wildcard_handler_api__path__post",
+        "operationId": "wildcard_handler_api__path__put",
         "parameters": [
           {
             "name": "path",
@@ -15395,7 +16418,8 @@
           "id",
           "title"
         ],
-        "title": "AchievementItemResponse"
+        "title": "AchievementItemResponse",
+        "description": "Краткое DTO достижения для списков и прогресса."
       },
       "AchievementProgressResponse": {
         "properties": {
@@ -15417,6 +16441,106 @@
         },
         "type": "object",
         "title": "AchievementProgressResponse"
+      },
+      "AddBalanceRequest": {
+        "properties": {
+          "userId": {
+            "type": "string",
+            "title": "Userid"
+          },
+          "amount": {
+            "type": "integer",
+            "title": "Amount"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "deviceId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deviceid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "userId",
+          "amount"
+        ],
+        "title": "AddBalanceRequest",
+        "description": "Запрос изменения баланса (amount может быть как положительным, так и отрицательным)."
+      },
+      "AddDeviceBody": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "maxLength": 32,
+            "minLength": 1,
+            "title": "Type"
+          },
+          "owner": {
+            "type": "string",
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Owner"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "type",
+          "owner"
+        ],
+        "title": "AddDeviceBody"
+      },
+      "AddFamilyMemberRequest": {
+        "properties": {
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          },
+          "familyId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Familyid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "name",
+          "role"
+        ],
+        "title": "AddFamilyMemberRequest",
+        "description": "Запрос на добавление участника семьи.\n\n⚠️ Важно: поле name трактуется как анонимный ярлык (роль + буква/ник),\nа не как персональные ФИО. Роутер не требует email/телефон/паспорт."
       },
       "AddGeofenceRequest": {
         "properties": {
@@ -15584,7 +16708,6 @@
           "metadata": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -15977,7 +17100,6 @@
             "title": "Agegroup"
           },
           "rules": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Rules"
           }
@@ -16150,7 +17272,6 @@
             "description": "Тип проблемы"
           },
           "location": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Location",
             "description": "Местоположение"
@@ -16170,7 +17291,6 @@
           "vehicle_info": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -16183,7 +17303,6 @@
           "service_provider": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -16459,6 +17578,37 @@
         ],
         "title": "BatchStatusRequest"
       },
+      "BindDeviceBody": {
+        "properties": {
+          "token": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 512
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Token"
+          },
+          "pin": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 32
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Pin"
+          }
+        },
+        "type": "object",
+        "title": "BindDeviceBody",
+        "description": "Гибрид: токен из QR/ссылки или только PIN (6 цифр в TTL)."
+      },
       "BiometrySettingsResponse": {
         "properties": {
           "userId": {
@@ -16671,7 +17821,6 @@
           },
           "threats": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -16680,7 +17829,6 @@
           },
           "analyzed_threats": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -16818,7 +17966,11 @@
             "description": "Тип проблемы (towing, jump_start, tire_change, lockout, fuel_delivery и т.д.)"
           },
           "location": {
-            "$ref": "#/components/schemas/LocationRequest",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/LocationRequest"
+              }
+            ],
             "description": "Местоположение"
           },
           "description": {
@@ -16874,7 +18026,11 @@
             "description": "Статус ответа"
           },
           "request": {
-            "$ref": "#/components/schemas/AssistanceStatusResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AssistanceStatusResponse"
+              }
+            ],
             "description": "Информация о запросе"
           },
           "message": {
@@ -17050,7 +18206,6 @@
         "properties": {
           "conversations": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -17433,6 +18588,76 @@
         "title": "CheckRequestRequest",
         "description": "Запрос на проверку URL"
       },
+      "ClaimRewardRequest": {
+        "properties": {
+          "userId": {
+            "type": "string",
+            "title": "Userid"
+          },
+          "rewardId": {
+            "type": "string",
+            "title": "Rewardid"
+          },
+          "deviceId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deviceid"
+          }
+        },
+        "type": "object",
+        "required": [
+          "userId",
+          "rewardId"
+        ],
+        "title": "ClaimRewardRequest",
+        "description": "Запрос на получение/покупку награды."
+      },
+      "ClaimRewardResponse": {
+        "properties": {
+          "success": {
+            "type": "boolean",
+            "title": "Success"
+          },
+          "newBalance": {
+            "type": "integer",
+            "title": "Newbalance"
+          },
+          "reward": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/RewardResponse"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "message": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Message"
+          }
+        },
+        "type": "object",
+        "required": [
+          "success",
+          "newBalance"
+        ],
+        "title": "ClaimRewardResponse",
+        "description": "Ответ на получение/покупку награды (совместим со Swift ClaimRewardResponse)."
+      },
       "ComponentBatchStatusResponse": {
         "properties": {
           "statuses": {
@@ -17457,7 +18682,6 @@
             "description": "ID компонента"
           },
           "config": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Config",
             "description": "Конфигурация компонента"
@@ -17499,7 +18723,6 @@
       "ComponentConfigUpdateRequest": {
         "properties": {
           "config": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Config",
             "description": "Новая конфигурация"
@@ -17519,7 +18742,6 @@
             "title": "Componentid"
           },
           "settings": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Settings"
           },
@@ -17624,7 +18846,6 @@
           },
           "logs": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -17654,7 +18875,6 @@
             "description": "ID компонента"
           },
           "metrics": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Metrics",
             "description": "Метрики компонента"
@@ -17742,7 +18962,6 @@
             "description": "Тест пройден"
           },
           "test_results": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Test Results",
             "description": "Результаты тестов"
@@ -18082,7 +19301,6 @@
           "details": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -18223,7 +19441,6 @@
             "anyOf": [
               {
                 "items": {
-                  "additionalProperties": true,
                   "type": "object"
                 },
                 "type": "array"
@@ -18301,7 +19518,6 @@
         "properties": {
           "items": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -18501,25 +19717,6 @@
         "title": "DetectIdentityTheftResponse",
         "description": "Ответ на обнаружение кражи личности"
       },
-      "DeviceRegisterRequest": {
-        "properties": {
-          "device_id": {
-            "type": "string",
-            "title": "Device Id"
-          },
-          "device_type": {
-            "type": "string",
-            "title": "Device Type",
-            "default": "ios"
-          }
-        },
-        "type": "object",
-        "required": [
-          "device_id"
-        ],
-        "title": "DeviceRegisterRequest",
-        "description": "Device registration request"
-      },
       "DrivingEventRequest": {
         "properties": {
           "user_id": {
@@ -18547,7 +19744,6 @@
           "location": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -18572,7 +19768,6 @@
           "metadata": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -18846,6 +20041,82 @@
         "title": "FeedbackResponse",
         "description": "Ответ на отправку обратной связи"
       },
+      "FileScanRequest": {
+        "properties": {
+          "file_data": {
+            "type": "string",
+            "title": "File Data",
+            "description": "Base64-encoded file contents"
+          },
+          "file_name": {
+            "type": "string",
+            "maxLength": 512,
+            "title": "File Name"
+          },
+          "file_size": {
+            "type": "integer",
+            "maximum": 26214400.0,
+            "minimum": 0.0,
+            "title": "File Size"
+          },
+          "file_hash": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 128
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "File Hash"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file_data",
+          "file_name",
+          "file_size"
+        ],
+        "title": "FileScanRequest"
+      },
+      "FileScanResponse": {
+        "properties": {
+          "clean": {
+            "type": "boolean",
+            "title": "Clean"
+          },
+          "threats_found": {
+            "items": {
+              "$ref": "#/components/schemas/ThreatItem"
+            },
+            "type": "array",
+            "title": "Threats Found"
+          },
+          "recommendations": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Recommendations"
+          },
+          "scan_time": {
+            "type": "number",
+            "title": "Scan Time"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence",
+            "default": 0.99
+          }
+        },
+        "type": "object",
+        "required": [
+          "clean",
+          "scan_time"
+        ],
+        "title": "FileScanResponse"
+      },
       "FraudRecordResponse": {
         "properties": {
           "id": {
@@ -18959,7 +20230,8 @@
           "userId",
           "lastModified"
         ],
-        "title": "GamificationBalanceResponse"
+        "title": "GamificationBalanceResponse",
+        "description": "DTO для баланса единорогов (совместим со Swift GamificationBalanceResponse)."
       },
       "GamificationBoolResponse": {
         "properties": {
@@ -19494,17 +20766,6 @@
           "token": {
             "type": "string",
             "title": "Token"
-          },
-          "refresh_token": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Refresh Token"
           },
           "device_id": {
             "type": "string",
@@ -20357,7 +21618,6 @@
           "context": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -20996,7 +22256,6 @@
             "description": "URL действия, если требуется"
           },
           "metadata": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Metadata",
             "description": "Дополнительные данные"
@@ -21114,7 +22373,6 @@
             "description": "Тип данных: settings, cache, temp, etc."
           },
           "data": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Data",
             "description": "Данные (JSON)"
@@ -21375,7 +22633,6 @@
             "title": "Type"
           },
           "content": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Content"
           },
@@ -21394,62 +22651,6 @@
           "created_at"
         ],
         "title": "ParentalReportItem"
-      },
-      "PaymentConfirmRequest": {
-        "properties": {
-          "eventId": {
-            "type": "string",
-            "title": "Eventid"
-          },
-          "provider": {
-            "type": "string",
-            "title": "Provider"
-          },
-          "providerTxnId": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Providertxnid"
-          },
-          "paymentId": {
-            "type": "string",
-            "title": "Paymentid"
-          },
-          "amount": {
-            "type": "number",
-            "title": "Amount"
-          },
-          "currency": {
-            "type": "string",
-            "title": "Currency",
-            "default": "RUB"
-          },
-          "paidAt": {
-            "anyOf": [
-              {
-                "type": "string"
-              },
-              {
-                "type": "null"
-              }
-            ],
-            "title": "Paidat"
-          }
-        },
-        "type": "object",
-        "required": [
-          "eventId",
-          "provider",
-          "paymentId",
-          "amount"
-        ],
-        "title": "PaymentConfirmRequest",
-        "description": "Подтверждение оплаты (webhook/внутренний callback).\n\nВажно: этот endpoint должен быть защищён подписью (HMAC) и быть идемпотентным."
       },
       "PaymentCreateRequest": {
         "properties": {
@@ -21603,7 +22804,7 @@
           "amount"
         ],
         "title": "PaymentQRCreateRequest",
-        "description": "Создание платежа + возврат QR (РФ: СБП/SberPay)."
+        "description": "Создание платежа + возврат QR (РФ: СБП/SberPay).\n\npaymentMethod: ожидается \"sbp\" | \"sberpay\""
       },
       "PaymentRecoveryRequest": {
         "properties": {
@@ -21713,7 +22914,6 @@
             "description": "ID пользователя, который внес изменения"
           },
           "changes": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Changes",
             "description": "Словарь изменений (поле -> старое значение -> новое значение)"
@@ -21964,6 +23164,41 @@
         "title": "PurchaseHistoryResponse",
         "description": "История покупок"
       },
+      "QuarantineActionBody": {
+        "properties": {
+          "threatId": {
+            "type": "string",
+            "maxLength": 256,
+            "minLength": 1,
+            "title": "Threatid"
+          },
+          "action": {
+            "type": "string",
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Action"
+          },
+          "filePath": {
+            "anyOf": [
+              {
+                "type": "string",
+                "maxLength": 4096
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Filepath"
+          }
+        },
+        "type": "object",
+        "required": [
+          "threatId",
+          "action"
+        ],
+        "title": "QuarantineActionBody",
+        "description": "Тело как у iOS `QuarantineActionRequest` (camelCase в JSON)."
+      },
       "RecentEvent": {
         "properties": {
           "eventId": {
@@ -22000,7 +23235,6 @@
           "metadata": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -22058,6 +23292,51 @@
         ],
         "title": "RecommendationsResponse",
         "description": "Персональные рекомендации"
+      },
+      "ReconcileFamilyRequest": {
+        "properties": {
+          "familyId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Familyid"
+          }
+        },
+        "type": "object",
+        "title": "ReconcileFamilyRequest"
+      },
+      "ReconcileFamilyResponse": {
+        "properties": {
+          "familyId": {
+            "type": "string",
+            "title": "Familyid"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "invalidRoles": {
+            "type": "integer",
+            "title": "Invalidroles"
+          },
+          "fixedStatuses": {
+            "type": "integer",
+            "title": "Fixedstatuses"
+          }
+        },
+        "type": "object",
+        "required": [
+          "familyId",
+          "total",
+          "invalidRoles",
+          "fixedStatuses"
+        ],
+        "title": "ReconcileFamilyResponse"
       },
       "RecoveryCodeLoginRequest": {
         "properties": {
@@ -22400,6 +23679,39 @@
           "memberId": {
             "type": "string",
             "title": "Memberid"
+          },
+          "source": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "familyId": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Familyid"
           }
         },
         "type": "object",
@@ -22575,7 +23887,6 @@
           "details": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -22770,7 +24081,6 @@
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -22808,7 +24118,6 @@
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -22896,33 +24205,85 @@
         "title": "RevokeConsentResponse",
         "description": "Ответ на отзыв согласия"
       },
-      "RewardItemResponse": {
+      "RewardResponse": {
         "properties": {
-          "id": {
+          "rewardId": {
             "type": "string",
-            "title": "Id"
+            "title": "Rewardid",
+            "description": "ID награды"
           },
-          "title": {
+          "name": {
             "type": "string",
-            "title": "Title"
+            "title": "Name",
+            "description": "Название награды"
           },
-          "cost": {
+          "description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description",
+            "description": "Описание награды"
+          },
+          "price": {
             "type": "integer",
-            "title": "Cost",
-            "default": 0
+            "minimum": 0.0,
+            "title": "Price",
+            "description": "Цена в единорогах"
+          },
+          "category": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Category",
+            "description": "Категория награды"
           },
           "available": {
             "type": "boolean",
             "title": "Available",
+            "description": "Доступна ли награда",
             "default": true
           }
         },
         "type": "object",
         "required": [
-          "id",
-          "title"
+          "rewardId",
+          "name",
+          "price"
         ],
-        "title": "RewardItemResponse"
+        "title": "RewardResponse",
+        "description": "Награда в формате, совместимом с iOS `RewardResponse`:\n- rewardId\n- name\n- description\n- price\n- category\n- available"
+      },
+      "RewardsListResponse": {
+        "properties": {
+          "rewards": {
+            "items": {
+              "$ref": "#/components/schemas/RewardResponse"
+            },
+            "type": "array",
+            "title": "Rewards"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "rewards",
+          "total"
+        ],
+        "title": "RewardsListResponse",
+        "description": "Список наград (совместим со Swift RewardsListResponse)."
       },
       "ScanRequest": {
         "properties": {
@@ -23030,7 +24391,6 @@
           "changes": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -23467,7 +24827,11 @@
             "description": "ID сайта"
           },
           "age_restriction": {
-            "$ref": "#/components/schemas/AgeRestrictionModel",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AgeRestrictionModel"
+              }
+            ],
             "description": "Ограничение по возрасту"
           }
         },
@@ -23658,7 +25022,6 @@
             "description": "ID пользователя, который внес изменения"
           },
           "changes": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Changes",
             "description": "Словарь изменений (поле -> старое значение -> новое значение)"
@@ -24055,7 +25418,11 @@
             "title": "Max Reports"
           },
           "current_usage": {
-            "$ref": "#/components/schemas/UsageCounters",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UsageCounters"
+              }
+            ],
             "default": {
               "ai_messages": 0,
               "scans": 0,
@@ -24115,7 +25482,6 @@
             "$ref": "#/components/schemas/SubscriptionLimits"
           },
           "permissions": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Permissions",
             "default": {}
@@ -24288,12 +25654,15 @@
             "description": "ID ребенка"
           },
           "appBlocks": {
-            "$ref": "#/components/schemas/AppBlockResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppBlockResponse"
+              }
+            ],
             "description": "Блокировки приложений"
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -24358,12 +25727,15 @@
             "description": "ID пользователя"
           },
           "settings": {
-            "$ref": "#/components/schemas/AppSettingsResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/AppSettingsResponse"
+              }
+            ],
             "description": "Настройки приложения"
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -24437,7 +25809,6 @@
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -24511,7 +25882,6 @@
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -24585,7 +25955,6 @@
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -24659,7 +26028,6 @@
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -24744,7 +26112,6 @@
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -24834,7 +26201,6 @@
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -24915,7 +26281,6 @@
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -24980,12 +26345,15 @@
             "description": "ID пользователя"
           },
           "subscription": {
-            "$ref": "#/components/schemas/SubscriptionResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/SubscriptionResponse"
+              }
+            ],
             "description": "Информация о подписке"
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -25050,12 +26418,15 @@
             "description": "ID пользователя"
           },
           "profile": {
-            "$ref": "#/components/schemas/UserProfileResponse",
+            "allOf": [
+              {
+                "$ref": "#/components/schemas/UserProfileResponse"
+              }
+            ],
             "description": "Профиль пользователя"
           },
           "conflicts": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -25179,7 +26550,6 @@
         "properties": {
           "logs": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -25279,25 +26649,21 @@
       "SystemResourcesResponse": {
         "properties": {
           "cpu": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Cpu",
             "description": "Информация о CPU"
           },
           "memory": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Memory",
             "description": "Информация о памяти"
           },
           "disk": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Disk",
             "description": "Информация о диске"
           },
           "network": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Network",
             "description": "Информация о сети"
@@ -25460,6 +26826,44 @@
         "title": "ThreatByType",
         "description": "Статистика по типу угрозы"
       },
+      "ThreatItem": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "type": {
+            "type": "string",
+            "title": "Type",
+            "default": "test_signature"
+          },
+          "severity": {
+            "type": "string",
+            "title": "Severity",
+            "default": "low"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "confidence": {
+            "type": "number",
+            "title": "Confidence",
+            "default": 1.0
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "description"
+        ],
+        "title": "ThreatItem"
+      },
       "ThreatScenarioResponse": {
         "properties": {
           "id": {
@@ -25510,7 +26914,6 @@
         "properties": {
           "threats": {
             "items": {
-              "additionalProperties": true,
               "type": "object"
             },
             "type": "array",
@@ -25588,7 +26991,6 @@
             "description": "ID пользователя, который внес изменения"
           },
           "changes": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Changes",
             "description": "Словарь изменений"
@@ -25900,13 +27302,27 @@
       "TrialInfo": {
         "properties": {
           "start_date": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Start Date"
           },
           "end_date": {
-            "type": "string",
-            "format": "date-time",
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "End Date"
           },
           "duration_days": {
@@ -25916,10 +27332,6 @@
           }
         },
         "type": "object",
-        "required": [
-          "start_date",
-          "end_date"
-        ],
         "title": "TrialInfo",
         "description": "Trial period information"
       },
@@ -26358,7 +27770,6 @@
       "UpdateConfigurationRequest": {
         "properties": {
           "settings": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Settings"
           }
@@ -26967,7 +28378,6 @@
             "description": "Тип данных"
           },
           "data": {
-            "additionalProperties": true,
             "type": "object",
             "title": "Data",
             "description": "Данные (JSON)"
@@ -27822,8 +29232,19 @@
             "type": "string",
             "title": "Id"
           },
+          "is_guest": {
+            "type": "boolean",
+            "title": "Is Guest"
+          },
           "email": {
-            "type": "string",
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
             "title": "Email"
           },
           "name": {
@@ -27834,7 +29255,7 @@
         "type": "object",
         "required": [
           "id",
-          "email",
+          "is_guest",
           "name"
         ],
         "title": "UserProfileCompatResponse"
@@ -28042,7 +29463,57 @@
         "title": "VehicleInfoRequest",
         "description": "Информация о транспортном средстве"
       },
-      "app__models__subscription__SubscriptionStatusResponse": {
+      "app__routers__auth_router__DeviceRegisterRequest": {
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "title": "Device Id"
+          },
+          "device_type": {
+            "type": "string",
+            "title": "Device Type",
+            "default": "ios"
+          }
+        },
+        "type": "object",
+        "required": [
+          "device_id"
+        ],
+        "title": "DeviceRegisterRequest",
+        "description": "Anonymous device registration request (supports snake_case and camelCase)."
+      },
+      "app__routers__components__ComponentStatusResponse": {
+        "properties": {
+          "status": {
+            "$ref": "#/components/schemas/ComponentStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status"
+        ],
+        "title": "ComponentStatusResponse"
+      },
+      "backend__app__models__subscription__DeviceRegisterRequest": {
+        "properties": {
+          "device_id": {
+            "type": "string",
+            "title": "Device Id"
+          },
+          "device_type": {
+            "type": "string",
+            "title": "Device Type",
+            "default": "ios"
+          }
+        },
+        "type": "object",
+        "required": [
+          "device_id"
+        ],
+        "title": "DeviceRegisterRequest",
+        "description": "Device registration request"
+      },
+      "backend__app__models__subscription__SubscriptionStatusResponse": {
         "properties": {
           "status": {
             "$ref": "#/components/schemas/SubscriptionPayload"
@@ -28060,18 +29531,6 @@
         ],
         "title": "SubscriptionStatusResponse",
         "description": "Subscription status response"
-      },
-      "app__routers__components__ComponentStatusResponse": {
-        "properties": {
-          "status": {
-            "$ref": "#/components/schemas/ComponentStatus"
-          }
-        },
-        "type": "object",
-        "required": [
-          "status"
-        ],
-        "title": "ComponentStatusResponse"
       },
       "security__api__routers__components_router__ComponentStatusResponse": {
         "properties": {
@@ -28190,7 +29649,6 @@
           "cache_stats": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -28242,7 +29700,6 @@
           "status": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {
@@ -28456,7 +29913,6 @@
           "status": {
             "anyOf": [
               {
-                "additionalProperties": true,
                 "type": "object"
               },
               {

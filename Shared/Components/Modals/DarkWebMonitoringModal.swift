@@ -234,6 +234,8 @@ struct DarkWebMonitoringModal: View {
                 )
             }
             .buttonStyle(PlainButtonStyle())
+            .disabled(!AppConfig.isDarkWebServerScanEnabled || viewModel.isLoading)
+            .opacity(AppConfig.isDarkWebServerScanEnabled ? 1 : 0.45)
             
             // Фильтры
             filtersSection
@@ -569,6 +571,8 @@ struct DarkWebMonitoringModal: View {
                     .background(Color.white.opacity(0.2))
                     .clipShape(Capsule())
             }
+            .disabled(!AppConfig.isDarkWebServerScanEnabled)
+            .opacity(AppConfig.isDarkWebServerScanEnabled ? 1 : 0.45)
         }
         .padding(.horizontal, Spacing.m)
         .padding(.vertical, Spacing.s)

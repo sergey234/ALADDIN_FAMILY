@@ -14,25 +14,30 @@ class NetworkProtectionViewModelTests: XCTestCase {
     var mockStatusService: MockComponentStatusService!
     var mockConfigurationService: MockComponentConfigurationService!
     var mockRetryManager: MockRetryManager!
+    var mockCrashDetection: MockCrashDetectionControlling!
     
     override func setUpWithError() throws {
         try super.setUpWithError()
         mockStatusService = MockComponentStatusService()
         mockConfigurationService = MockComponentConfigurationService()
         mockRetryManager = MockRetryManager()
+        mockCrashDetection = MockCrashDetectionControlling()
         
         viewModel = NetworkProtectionViewModel(
             statusService: mockStatusService,
             configurationService: mockConfigurationService,
-            retryManager: mockRetryManager
+            retryManager: mockRetryManager,
+            crashDetection: mockCrashDetection
         )
     }
     
     override func tearDownWithError() throws {
+        AppConfig.authToken = nil
         viewModel = nil
         mockStatusService = nil
         mockConfigurationService = nil
         mockRetryManager = nil
+        mockCrashDetection = nil
         try super.tearDownWithError()
     }
     
@@ -51,8 +56,8 @@ class NetworkProtectionViewModelTests: XCTestCase {
      * ✅ BUILD 108: Тест инициализации из UserDefaults
      */
     func testInitializationFromUserDefaults() {
-        // Arrange
-        let key = "demo_component_crash_detection_enabled"
+        // Arrange — v1 ключ
+        let key = AppConfig.NetworkProtectionComponentToggleStorage.storageKey(componentId: "crash_detection_agent")
         UserDefaults.standard.set(true, forKey: key)
         defer { UserDefaults.standard.removeObject(forKey: key) }
         
@@ -60,11 +65,29 @@ class NetworkProtectionViewModelTests: XCTestCase {
         let newViewModel = NetworkProtectionViewModel(
             statusService: mockStatusService,
             configurationService: mockConfigurationService,
-            retryManager: mockRetryManager
+            retryManager: mockRetryManager,
+            crashDetection: mockCrashDetection
         )
         
         // Assert
         XCTAssertTrue(newViewModel.crashDetectionEnabled, "Должно загружаться из UserDefaults")
+    }
+
+    /// Устаревший префикс `demo_component_*` переносится в `np_component_toggle_v1_*` при чтении.
+    func testLegacyDemoComponentKeyMigratedToV1Storage() {
+        let componentId = "crash_detection_agent"
+        let legacyKey = "demo_component_\(componentId)_enabled"
+        let v1Key = AppConfig.NetworkProtectionComponentToggleStorage.storageKey(componentId: componentId)
+        UserDefaults.standard.removeObject(forKey: v1Key)
+        UserDefaults.standard.set(true, forKey: legacyKey)
+        defer {
+            UserDefaults.standard.removeObject(forKey: legacyKey)
+            UserDefaults.standard.removeObject(forKey: v1Key)
+        }
+
+        XCTAssertTrue(AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: componentId))
+        XCTAssertTrue(UserDefaults.standard.bool(forKey: v1Key))
+        XCTAssertNil(UserDefaults.standard.object(forKey: legacyKey))
     }
     
     // MARK: - Synchronous Toggle Tests (BUILD 108)
@@ -315,7 +338,8 @@ class NetworkProtectionViewModelTests: XCTestCase {
     // MARK: - Error Handling Tests
     
     func testToggleWithNetworkError() async {
-        // Arrange
+        // Arrange: вариант B — локальный старт успешен (mock), серверный enable падает
+        AppConfig.authToken = "unit_test_token"
         let initialValue = viewModel.crashDetectionEnabled
         mockStatusService.shouldSucceed = false
         mockStatusService.error = ComponentError.networkError("Network error")
@@ -326,18 +350,131 @@ class NetworkProtectionViewModelTests: XCTestCase {
         // Wait for async operation
         try? await Task.sleep(nanoseconds: 100_000_000)
         
-        // Assert - should rollback to initial value
+        // Assert — сервер не включён, UI откатан
         XCTAssertEqual(viewModel.crashDetectionEnabled, initialValue)
         XCTAssertNotNil(viewModel.errorMessage)
+    }
+
+    // MARK: - Crash Detection variant B (PR1 regression)
+
+    /// Локальный preflight (`startMonitoring`) падает — сервер не вызывается, тумблер выключается.
+    func testCrashDetection_Enable_StartMonitoringFails_NoServerUpdate() async {
+        AppConfig.authToken = "unit_test_token"
+        viewModel.crashDetectionEnabled = true
+        mockCrashDetection.shouldFailStart = true
+        mockCrashDetection.failStartError = NSError(domain: "TestMotion", code: 1, userInfo: [NSLocalizedDescriptionKey: "Motion denied"])
+        mockStatusService.shouldSucceed = true
+        mockStatusService.updateStatusCallCount = 0
+
+        await viewModel.toggleCrashDetection(true)
+        try? await Task.sleep(nanoseconds: 150_000_000)
+
+        XCTAssertFalse(viewModel.crashDetectionEnabled)
+        XCTAssertEqual(viewModel.errorMessage, "Motion denied")
+        XCTAssertGreaterThanOrEqual(mockCrashDetection.startMonitoringCallCount, 1)
+        XCTAssertEqual(mockStatusService.updateStatusCallCount, 0, "Не должны звать сервер без успешного локального старта")
+        mockCrashDetection.shouldFailStart = false
+    }
+
+    /// После успешного `startMonitoring` падение `updateStatus` → откат и `stopMonitoring`.
+    func testCrashDetection_Enable_ServerFails_StopMonitoringCalled() async {
+        AppConfig.authToken = "unit_test_token"
+        viewModel.crashDetectionEnabled = false
+        mockCrashDetection.shouldFailStart = false
+        mockCrashDetection.resetCallCounts()
+        mockStatusService.shouldSucceed = false
+        mockStatusService.error = ComponentError.networkError("Server unreachable")
+        mockStatusService.updateStatusCallCount = 0
+
+        await viewModel.toggleCrashDetection(true)
+        try? await Task.sleep(nanoseconds: 150_000_000)
+
+        XCTAssertFalse(viewModel.crashDetectionEnabled)
+        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertGreaterThanOrEqual(mockCrashDetection.startMonitoringCallCount, 1)
+        XCTAssertGreaterThanOrEqual(mockStatusService.updateStatusCallCount, 1)
+        XCTAssertGreaterThanOrEqual(mockCrashDetection.stopMonitoringCallCount, 1)
+    }
+
+    /// Порядок: сначала локальный старт, затем обращение к серверу.
+    func testCrashDetection_Enable_StartMonitoringBeforeUpdateStatus() async {
+        AppConfig.authToken = "unit_test_token"
+        viewModel.crashDetectionEnabled = false
+        mockCrashDetection.shouldFailStart = false
+        mockCrashDetection.resetCallCounts()
+        mockStatusService.shouldSucceed = true
+        mockStatusService.updateStatusCallCount = 0
+        mockStatusService.updateStatusThrows = false
+
+        await viewModel.toggleCrashDetection(true)
+        try? await Task.sleep(nanoseconds: 150_000_000)
+
+        XCTAssertTrue(viewModel.crashDetectionEnabled)
+        XCTAssertGreaterThanOrEqual(mockCrashDetection.startMonitoringCallCount, 1)
+        XCTAssertGreaterThanOrEqual(mockStatusService.updateStatusCallCount, 1)
+        XCTAssertTrue(
+            mockCrashDetection.lastStartMonitoringAt <= mockStatusService.lastUpdateStatusAt,
+            "Серверный enable должен идти после успешного startMonitoring"
+        )
+    }
+
+    /// Быстрый повторный вызов enable пока первый держит lock — второй не должен ломать состояние.
+    func testCrashDetection_EnableConcurrentSecondCallSkipped() async {
+        AppConfig.authToken = "unit_test_token"
+        viewModel.crashDetectionEnabled = false
+        mockCrashDetection.shouldFailStart = false
+        mockCrashDetection.resetCallCounts()
+        mockStatusService.shouldSucceed = true
+        mockStatusService.updateStatusDelayNanoseconds = 400_000_000
+
+        async let first: Void = viewModel.toggleCrashDetection(true)
+        try? await Task.sleep(nanoseconds: 20_000_000)
+        await viewModel.toggleCrashDetection(true)
+        await first
+        try? await Task.sleep(nanoseconds: 500_000_000)
+
+        XCTAssertTrue(viewModel.crashDetectionEnabled)
+        XCTAssertGreaterThanOrEqual(mockCrashDetection.startMonitoringCallCount, 1)
     }
 }
 
 // MARK: - Mock Services
 
+@MainActor
+final class MockCrashDetectionControlling: CrashDetectionControlling {
+    var shouldFailStart = false
+    var failStartError: Error = NSError(domain: "Test", code: 0, userInfo: [NSLocalizedDescriptionKey: "start failed"])
+    private(set) var startMonitoringCallCount = 0
+    private(set) var stopMonitoringCallCount = 0
+    private(set) var lastStartMonitoringAt: TimeInterval = 0
+
+    func resetCallCounts() {
+        startMonitoringCallCount = 0
+        stopMonitoringCallCount = 0
+        lastStartMonitoringAt = 0
+    }
+
+    func startMonitoring() async throws {
+        startMonitoringCallCount += 1
+        lastStartMonitoringAt = Date().timeIntervalSince1970
+        if shouldFailStart {
+            throw failStartError
+        }
+    }
+
+    func stopMonitoring() async throws {
+        stopMonitoringCallCount += 1
+    }
+}
+
 class MockComponentStatusService: ComponentStatusService {
     var shouldSucceed = true
     var error: ComponentError?
-    
+    private(set) var updateStatusCallCount = 0
+    private(set) var lastUpdateStatusAt: TimeInterval = 0
+    var updateStatusDelayNanoseconds: UInt64 = 0
+    var updateStatusThrows = true
+
     override func getStatus(for componentId: String, priority: ComponentPriority = .normal) async throws -> ComponentStatus {
         if shouldSucceed {
             return ComponentStatus(
@@ -351,8 +488,16 @@ class MockComponentStatusService: ComponentStatusService {
     }
     
     override func updateStatus(componentId: String, isEnabled: Bool, configuration: ComponentConfiguration? = nil) async throws {
+        if updateStatusDelayNanoseconds > 0 {
+            try await Task.sleep(nanoseconds: updateStatusDelayNanoseconds)
+        }
+        updateStatusCallCount += 1
+        lastUpdateStatusAt = Date().timeIntervalSince1970
         if !shouldSucceed {
-            throw error ?? ComponentError.networkError("Mock error")
+            if updateStatusThrows {
+                throw error ?? ComponentError.networkError("Mock error")
+            }
+            return
         }
         // Update local status
         componentStatuses[componentId] = ComponentStatus(

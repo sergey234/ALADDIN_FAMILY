@@ -1890,6 +1890,21 @@ struct ComponentStatusResponse: Codable {
     }
 }
 
+// MARK: - Component configuration (server envelope)
+
+/// Тело `configuration` из ответа GET/POST `/api/.../configuration/:id`.
+struct ServerComponentConfiguration: Codable {
+    let componentId: String
+    let settings: [String: AnyCodable]
+    let version: String?
+    let lastUpdated: String?
+}
+
+struct ServerComponentConfigurationResponse: Codable {
+    let configuration: ServerComponentConfiguration
+    let isDefault: Bool?
+}
+
 struct ComponentConfigurationResponse: Codable {
     let component_id: String
     let config: ComponentConfigData

@@ -13,18 +13,25 @@ class JWTTokenManager {
     private var refreshTask: Task<Bool, Never>?
     
     private init() {}
+
+    /// Диагностика JWT только в DEBUG (в Release не светим сроки/ветки в системный лог).
+    private func jwtDiag(_ message: @autoclosure () -> String) {
+        #if DEBUG
+        print(message())
+        #endif
+    }
     
     // MARK: - Token Expiration Check
     
     /// Проверяет, истёк ли токен
     func isTokenExpired(_ token: String) -> Bool {
         guard let payload = decodeJWTPayload(token) else {
-            print("⚠️ JWT: Не удалось декодировать токен - считаем истёкшим")
+            jwtDiag("⚠️ JWT: Не удалось декодировать токен - считаем истёкшим")
             return true // Если не можем декодировать, считаем истёкшим
         }
         
         guard let exp = payload["exp"] as? TimeInterval else {
-            print("⚠️ JWT: Нет поля exp в токене - считаем истёкшим")
+            jwtDiag("⚠️ JWT: Нет поля exp в токене - считаем истёкшим")
             return true // Если нет поля exp, считаем истёкшим
         }
         
@@ -33,10 +40,10 @@ class JWTTokenManager {
         
         if isExpired {
             let timeSinceExpiration = Date().timeIntervalSince(expirationDate)
-            print("⚠️ JWT Token истёк \(Int(timeSinceExpiration)) секунд назад (истёк: \(expirationDate))")
+            jwtDiag("⚠️ JWT Token истёк \(Int(timeSinceExpiration)) секунд назад (истёк: \(expirationDate))")
         } else {
             let timeUntilExpiration = expirationDate.timeIntervalSinceNow
-            print("✅ JWT Token действителен ещё \(Int(timeUntilExpiration)) секунд (истекает: \(expirationDate))")
+            jwtDiag("✅ JWT Token действителен ещё \(Int(timeUntilExpiration)) секунд (истекает: \(expirationDate))")
         }
         
         return isExpired
@@ -46,7 +53,7 @@ class JWTTokenManager {
     private func decodeJWTPayload(_ token: String) -> [String: Any]? {
         let parts = token.components(separatedBy: ".")
         guard parts.count == 3 else {
-            print("❌ JWT: Неверный формат токена (ожидается 3 части, получено: \(parts.count))")
+            jwtDiag("❌ JWT: Неверный формат токена (ожидается 3 части, получено: \(parts.count))")
             return nil
         }
         
@@ -63,12 +70,12 @@ class JWTTokenManager {
         }
         
         guard let data = Data(base64Encoded: base64) else {
-            print("❌ JWT: Не удалось декодировать base64 payload")
+            jwtDiag("❌ JWT: Не удалось декодировать base64 payload")
             return nil
         }
         
         guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
-            print("❌ JWT: Не удалось распарсить JSON payload")
+            jwtDiag("❌ JWT: Не удалось распарсить JSON payload")
             return nil
         }
         
@@ -82,15 +89,15 @@ class JWTTokenManager {
     func forceRefreshToken() async -> Bool {
         // ✅ Если уже обновляется, ждём завершения существующей задачи
         if let existingTask = refreshTask {
-            print("🔄 JWT: Обновление токена уже выполняется, ждём завершения...")
+            jwtDiag("🔄 JWT: Обновление токена уже выполняется, ждём завершения...")
             return await existingTask.value
         }
         
-        print("🔄 JWT: Принудительное обновление токена...")
+        jwtDiag("🔄 JWT: Принудительное обновление токена...")
 
         // Получаем refresh token
         guard let refreshToken = keychainManager.loadString(forKey: .refreshToken) else {
-            print("❌ JWT: Refresh token не найден в Keychain")
+            jwtDiag("❌ JWT: Refresh token не найден в Keychain")
             return false
         }
 
@@ -121,33 +128,33 @@ class JWTTokenManager {
     func refreshTokenIfNeeded() async -> Bool {
         // ✅ Если уже обновляется, ждём завершения существующей задачи
         if let existingTask = refreshTask {
-            print("🔄 JWT: Обновление токена уже выполняется, ждём завершения...")
+            jwtDiag("🔄 JWT: Обновление токена уже выполняется, ждём завершения...")
             return await existingTask.value
         }
         
         guard let accessToken = keychainManager.loadString(forKey: .authToken) else {
-            print("❌ JWT: Access token не найден в Keychain")
+            jwtDiag("❌ JWT: Access token не найден в Keychain")
             return false
         }
         
         // Проверяем, не истёк ли токен
         if !isTokenExpired(accessToken) {
-            print("✅ JWT: Access token действителен, обновление не требуется")
+            jwtDiag("✅ JWT: Access token действителен, обновление не требуется")
             return false // Возвращаем false - токен не был обновлен
         }
         
-        print("🔄 JWT: Access token истёк, обновляем...")
+        jwtDiag("🔄 JWT: Access token истёк, обновляем...")
         
         // Получаем refresh token
         guard let refreshToken = keychainManager.loadString(forKey: .refreshToken) else {
-            print("⚠️ JWT: Refresh token не найден в Keychain - возможно device token")
+            jwtDiag("⚠️ JWT: Refresh token не найден в Keychain - возможно device token")
             
             // ✅ BUILD 122: Для device tokens перерегистрируем устройство
             // Только если это device token (проверяем тип токена)
             if let currentToken = AppConfig.authToken,
                let payload = decodeJWTPayload(currentToken),
                payload["type"] as? String == "device_auth" {
-                print("🔄 JWT: Device token без refresh token - перерегистрируем устройство")
+                jwtDiag("🔄 JWT: Device token без refresh token - перерегистрируем устройство")
                 Task { @MainActor in
                     await SubscriptionManager.shared.performDeviceRegistration()
                 }
@@ -173,12 +180,12 @@ class JWTTokenManager {
     
     /// Прямой HTTP запрос на обновление токена (без использования NetworkManager, чтобы избежать бесконечного цикла)
     private func directRefreshTokenRequest(refreshToken: String) async -> Bool {
-        print("🔄 JWT: Прямой HTTP запрос на обновление токена...")
+        jwtDiag("🔄 JWT: Прямой HTTP запрос на обновление токена...")
 
         return await withCheckedContinuation { continuation in
             let urlString = AppConfig.apiBaseURL + AppConfig.Endpoint.authRefresh
             guard let url = URL(string: urlString) else {
-                print("❌ JWT: Неверный URL для обновления токена")
+                jwtDiag("❌ JWT: Неверный URL для обновления токена")
                 continuation.resume(returning: false)
                 return
             }
@@ -196,26 +203,30 @@ class JWTTokenManager {
             do {
                 request.httpBody = try JSONEncoder().encode(requestBody)
             } catch {
-                print("❌ JWT: Ошибка кодирования тела запроса: \(error)")
+                jwtDiag("❌ JWT: Ошибка кодирования тела запроса: \(error)")
                 continuation.resume(returning: false)
                 return
             }
 
-            let task = URLSession.shared.dataTask(with: request) { data, response, error in
+            let task = URLSession.shared.dataTask(with: request) { [weak self] data, response, error in
+                guard let self else {
+                    continuation.resume(returning: false)
+                    return
+                }
                 if let error = error {
-                    print("❌ JWT: Сетевая ошибка при обновлении токена: \(error.localizedDescription)")
+                    self.jwtDiag("❌ JWT: Сетевая ошибка при обновлении токена: \(error.localizedDescription)")
                     continuation.resume(returning: false)
                     return
                 }
 
                 guard let httpResponse = response as? HTTPURLResponse else {
-                    print("❌ JWT: Неверный HTTP ответ")
+                    self.jwtDiag("❌ JWT: Неверный HTTP ответ")
                     continuation.resume(returning: false)
                     return
                 }
 
                 guard let data = data else {
-                    print("❌ JWT: Пустой ответ от сервера")
+                    self.jwtDiag("❌ JWT: Пустой ответ от сервера")
                     continuation.resume(returning: false)
                     return
                 }
@@ -232,18 +243,18 @@ class JWTTokenManager {
                             self.keychainManager.save(newRefreshToken, forKey: .refreshToken)
                         }
 
-                        print("✅ JWT: Токен успешно обновлён через прямой запрос")
+                        self.jwtDiag("✅ JWT: Токен успешно обновлён через прямой запрос")
                         continuation.resume(returning: true)
 
                     } catch {
-                        print("❌ JWT: Ошибка декодирования ответа: \(error)")
+                        self.jwtDiag("❌ JWT: Ошибка декодирования ответа: \(error)")
                         continuation.resume(returning: false)
                     }
                 } else {
                     if let responseString = String(data: data, encoding: .utf8) {
-                        print("❌ JWT: Ошибка сервера (\(httpResponse.statusCode)): \(responseString)")
+                        self.jwtDiag("❌ JWT: Ошибка сервера (\(httpResponse.statusCode)): \(responseString)")
                     } else {
-                        print("❌ JWT: Ошибка сервера (\(httpResponse.statusCode))")
+                        self.jwtDiag("❌ JWT: Ошибка сервера (\(httpResponse.statusCode))")
                     }
                     continuation.resume(returning: false)
                 }
@@ -254,7 +265,7 @@ class JWTTokenManager {
     
     /// Обновляет access token используя refresh token
     private func refreshAccessToken(refreshToken: String) async -> Bool {
-        print("🔄 JWT: Отправляем запрос на обновление токена...")
+        jwtDiag("🔄 JWT: Отправляем запрос на обновление токена...")
         
         return await withCheckedContinuation { continuation in
             // Используем NetworkManager из APIService, чтобы избежать создания лишних экземпляров
@@ -267,21 +278,23 @@ class JWTTokenManager {
             let request = RefreshTokenRequest(refresh_token: refreshToken)
 
             networkManager.post(endpoint: AppConfig.Endpoint.authRefresh, body: request) { [weak self] (result: Result<RefreshTokenResponse, Error>) in
+                guard let self else {
+                    continuation.resume(returning: false)
+                    return
+                }
                 switch result {
                 case .success(let response):
-                    // Сохраняем новый access token
-                    self?.keychainManager.save(response.access_token, forKey: .authToken)
-                    
-                    // Сохраняем новый refresh token если он есть
+                    self.keychainManager.save(response.access_token, forKey: .authToken)
+
                     if let newRefreshToken = response.refresh_token {
-                        self?.keychainManager.save(newRefreshToken, forKey: .refreshToken)
+                        self.keychainManager.save(newRefreshToken, forKey: .refreshToken)
                     }
-                    
-                    print("✅ JWT: Токен успешно обновлён")
+
+                    self.jwtDiag("✅ JWT: Токен успешно обновлён")
                     continuation.resume(returning: true)
-                    
+
                 case .failure(let error):
-                    print("❌ JWT: Ошибка обновления токена: \(error.localizedDescription)")
+                    self.jwtDiag("❌ JWT: Ошибка обновления токена: \(error.localizedDescription)")
                     continuation.resume(returning: false)
                 }
             }

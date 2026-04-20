@@ -1895,6 +1895,84 @@ class APIService: ObservableObject {
             }
         }
     }
+
+    // MARK: - Malware file scan (upload JSON + base64)
+
+    /// Тело запроса сканирования файла (согласовано с ожидаемым Python-контрактом: `file_data`, snake_case).
+    struct MalwareFileScanAPIRequest: Encodable {
+        let fileData: String
+        let fileName: String
+        let fileSize: Int
+        let fileHash: String?
+
+        enum CodingKeys: String, CodingKey {
+            case fileData = "file_data"
+            case fileName = "file_name"
+            case fileSize = "file_size"
+            case fileHash = "file_hash"
+        }
+    }
+
+    struct MalwareFileScanThreatDTO: Decodable {
+        let id: String?
+        let name: String?
+        let type: String?
+        let severity: String?
+        let description: String?
+        let confidence: Double?
+    }
+
+    struct MalwareFileScanAPIResponse: Decodable {
+        let clean: Bool?
+        let threatsFound: [MalwareFileScanThreatDTO]?
+        let recommendations: [String]?
+        let scanTime: Double?
+        let confidence: Double?
+
+        enum CodingKeys: String, CodingKey {
+            case clean
+            case threatsFound = "threats_found"
+            case recommendations
+            case scanTime = "scan_time"
+            case confidence
+        }
+    }
+
+    /// Загрузка содержимого файла на серверное сканирование (JSON + base64). При 404/ошибке сети — throw.
+    func uploadFileForScanAsync(
+        fileData: Data,
+        fileName: String,
+        fileSize: Int64,
+        checksum: String?
+    ) async throws -> MalwareFileScanAPIResponse {
+        try await withCheckedThrowingContinuation { continuation in
+            var hasResumed = false
+
+            let body = MalwareFileScanAPIRequest(
+                fileData: fileData.base64EncodedString(),
+                fileName: fileName,
+                fileSize: Int(fileSize),
+                fileHash: checksum
+            )
+
+            networkManager.post(
+                endpoint: AppConfig.Endpoint.malwareFileScan,
+                body: body
+            ) { (result: Result<MalwareFileScanAPIResponse, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in uploadFileForScanAsync()!")
+                    return
+                }
+                hasResumed = true
+                switch result {
+                case .success(let response):
+                    continuation.resume(returning: response)
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
+    }
     
     // MARK: - Auth API
     
@@ -2338,15 +2416,18 @@ class APIService: ObservableObject {
                 
                 switch result {
                 case .success(let response):
-                    // Создаем ComponentStatus с правильным componentId
-                    let componentStatus = ComponentStatus(
-                        componentId: componentId,
-                        isEnabled: response.componentStatus.isEnabled,
-                        lastUpdate: response.componentStatus.lastUpdate,
-                        configuration: response.componentStatus.configuration
-                    )
-                    hasResumed = true
-                    continuation.resume(returning: componentStatus)
+                    do {
+                        let componentStatus = try APIResponseValidator.makeComponentStatus(
+                            from: response,
+                            canonicalComponentId: componentId,
+                            policy: .canonicalRequestIdAlwaysWins
+                        )
+                        hasResumed = true
+                        continuation.resume(returning: componentStatus)
+                    } catch {
+                        hasResumed = true
+                        continuation.resume(throwing: error)
+                    }
                 case .failure(let error):
                     hasResumed = true
                     continuation.resume(throwing: error)
@@ -2376,15 +2457,18 @@ class APIService: ObservableObject {
                 
                 switch result {
                 case .success(let response):
-                    // Создаем ComponentStatus с правильным componentId
-                    let componentStatus = ComponentStatus(
-                        componentId: componentId,
-                        isEnabled: response.componentStatus.isEnabled,
-                        lastUpdate: response.componentStatus.lastUpdate,
-                        configuration: response.componentStatus.configuration
-                    )
-                    hasResumed = true
-                    continuation.resume(returning: componentStatus)
+                    do {
+                        let componentStatus = try APIResponseValidator.makeComponentStatus(
+                            from: response,
+                            canonicalComponentId: componentId,
+                            policy: .canonicalRequestIdAlwaysWins
+                        )
+                        hasResumed = true
+                        continuation.resume(returning: componentStatus)
+                    } catch {
+                        hasResumed = true
+                        continuation.resume(throwing: error)
+                    }
                 case .failure(let error):
                     hasResumed = true
                     continuation.resume(throwing: error)
@@ -2413,15 +2497,18 @@ class APIService: ObservableObject {
                 
                 switch result {
                 case .success(let response):
-                    // Создаем ComponentStatus с правильным componentId
-                    let componentStatus = ComponentStatus(
-                        componentId: componentId,
-                        isEnabled: response.componentStatus.isEnabled,
-                        lastUpdate: response.componentStatus.lastUpdate,
-                        configuration: response.componentStatus.configuration
-                    )
-                    hasResumed = true
-                    continuation.resume(returning: componentStatus)
+                    do {
+                        let componentStatus = try APIResponseValidator.makeComponentStatus(
+                            from: response,
+                            canonicalComponentId: componentId,
+                            policy: .canonicalRequestIdAlwaysWins
+                        )
+                        hasResumed = true
+                        continuation.resume(returning: componentStatus)
+                    } catch {
+                        hasResumed = true
+                        continuation.resume(throwing: error)
+                    }
                 case .failure(let error):
                     hasResumed = true
                     continuation.resume(throwing: error)
@@ -2464,9 +2551,20 @@ class APIService: ObservableObject {
                 switch result {
                 case .success(let response):
                     // Каноничный ответ: ComponentStatusResponse
-                    // Валидация: компонент совпадает и флаг применён
-                    let status = response.componentStatus
-                    if status.componentId == componentId && status.isEnabled == isEnabled {
+                    let status: ComponentStatus
+                    do {
+                        status = try APIResponseValidator.makeComponentStatus(
+                            from: response,
+                            canonicalComponentId: componentId,
+                            policy: .canonicalRequestIdAlwaysWins
+                        )
+                    } catch {
+                        hasResumed = true
+                        continuation.resume(throwing: error)
+                        return
+                    }
+                    // Валидация: флаг применён
+                    if status.isEnabled == isEnabled {
                         hasResumed = true
                         continuation.resume()
                     } else {
@@ -2488,18 +2586,6 @@ class APIService: ObservableObject {
         return try await withCheckedThrowingContinuation { continuation in
             // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
             var hasResumed = false
-
-            struct ServerComponentConfiguration: Codable {
-                let componentId: String
-                let settings: [String: AnyCodable]
-                let version: String?
-                let lastUpdated: String?
-            }
-
-            struct ServerComponentConfigurationResponse: Codable {
-                let configuration: ServerComponentConfiguration
-                let isDefault: Bool?
-            }
 
             networkManager.get(endpoint: "\(AppConfig.Endpoint.componentConfiguration)/\(componentId)") { (result: Result<ServerComponentConfigurationResponse, Error>) in
                 guard !hasResumed else {
@@ -2718,10 +2804,12 @@ class APIService: ObservableObject {
     
     /// Запустить автоматическое сканирование темной сети
     func startDarkWebScan(completion: @escaping (Result<DarkWebScan, Error>) -> Void) {
+        // POST — боевой путь на сервере (запись события в БД для freshness). GET оставлен как легаси-заглушка.
+        struct EmptyDarkWebScanStartBody: Codable {}
         // Backend для /dark-web/scan/start отдаёт ReportCompatBoolResponse:
         // { "success": true, "data": true, "message": "..." }.
         // Мы декодим это как APIResponse<Bool>, а UI-процесс рассматривает успех как "запуск сессии".
-        networkManager.get(endpoint: AppConfig.Endpoint.darkWebScanStart, completion: { (result: Result<APIResponse<Bool>, Error>) in
+        networkManager.post(endpoint: AppConfig.Endpoint.darkWebScanStart, body: EmptyDarkWebScanStartBody(), completion: { (result: Result<APIResponse<Bool>, Error>) in
             switch result {
             case .success(let apiResponse):
                 if apiResponse.success == true {

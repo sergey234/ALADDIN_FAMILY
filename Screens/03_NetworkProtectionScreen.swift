@@ -2,6 +2,7 @@ import SwiftUI
 import Combine
 import CoreMotion
 import CoreLocation
+import UniformTypeIdentifiers
 
 // Master Logger for UI logging
 private let logger = MasterLogger.shared
@@ -31,6 +32,7 @@ struct NetworkProtectionScreen: View {
     @State private var showPasswordGenerator = false
     @State private var showQuarantineDetails = false
     @State private var showScanHistory = false
+    @State private var showAntivirusFileImporter = false
     
     // Данные для антивируса (локальное состояние)
     @State private var scanHistory: [ScanHistoryItem] = []
@@ -238,6 +240,39 @@ struct NetworkProtectionScreen: View {
         //     .environmentObject(localizationManager)
         // }
         // ✅ УДАЛЕНО: .sheet для showingStatistics и showingHelp (Quick Actions удалены)
+        .withToast()
+        .fileImporter(
+            isPresented: $showAntivirusFileImporter,
+            allowedContentTypes: [.item],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                Task {
+                    await processAntivirusPickedFile(url)
+                }
+            case .failure(let error):
+                if isLikelyDocumentPickerCancellation(error) {
+                    VisualLogger.shared.log(
+                        "ℹ️ Выбор файла для скана отменён пользователем",
+                        level: .info,
+                        category: "ANTIVIRUS.UI"
+                    )
+                } else {
+                    VisualLogger.shared.log(
+                        "⚠️ Ошибка выбора файла: \(error.localizedDescription)",
+                        level: .warning,
+                        category: "ANTIVIRUS.UI"
+                    )
+                    Task { @MainActor in
+                        ToastManager.shared.showError(
+                            localizationManager.localized("antivirus_scan_picker_error")
+                        )
+                    }
+                }
+            }
+        }
     }
     
     // MARK: - Components Sections (42 компонента)
@@ -264,19 +299,19 @@ struct NetworkProtectionScreen: View {
                     // onSettingsTap: { showCrashDetectionSettings = true } // ⚠️ Temporarily disabled
                 )
 
-                // 🚨 Тестовая кнопка для демонстрации Crash Detection
+                #if DEBUG
+                // Диагностика: не попадает в пользовательские Release-сборки
                 Button(action: {
                     logger.buttonTap("Test Crash Detection", screen: "NetworkProtection")
-                    // Используем новый метод симуляции краха
                     Task {
-                        await CrashDetectionManager.shared.simulateCrashForTesting(gForce: 5.0)
+                        await CrashDetectionManager.shared.simulateCrashForDiagnostics(gForce: 5.0)
                     }
                 }) {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundColor(.red)
                         VStack(alignment: .leading) {
-                            Text("🚨 ТЕСТ: Симулировать аварию")
+                            Text("🚨 DEBUG: Симулировать аварию")
                                 .foregroundColor(.red)
                                 .font(.subheadline)
                                 .fontWeight(.bold)
@@ -297,6 +332,7 @@ struct NetworkProtectionScreen: View {
                     )
                 }
                 .padding(.horizontal)
+                #endif
                 
                 SecurityFeatureRow(
                     componentId: "roadside_assistance_agent",
@@ -476,6 +512,18 @@ struct NetworkProtectionScreen: View {
                     componentCount: 10
                 )
             }
+
+            #if targetEnvironment(simulator)
+            let bannerKey = "np_crash_simulator_banner_shown_v1"
+            if !UserDefaults.standard.bool(forKey: bannerKey) {
+                UserDefaults.standard.set(true, forKey: bannerKey)
+                let text = localizationManager.localized("crash_detection_simulator_banner")
+                Task { @MainActor in
+                    try? await Task.sleep(nanoseconds: 600_000_000)
+                    ToastManager.shared.showWarning(text)
+                }
+            }
+            #endif
         }
     }
     
@@ -724,15 +772,17 @@ struct NetworkProtectionScreen: View {
                     level: .info,
                     category: "ANTIVIRUS.UI"
                 )
-                Task {
-                    await performQuickScan()
-                }
+                showAntivirusFileImporter = true
             }) {
                 HStack {
-                    Image(systemName: antivirusManager.isScanning ? "stop.circle.fill" : "play.circle.fill")
+                    Image(systemName: antivirusManager.isScanning ? "stop.circle.fill" : "doc.badge.plus")
                         .font(.title3)
-                    Text(antivirusManager.isScanning ? localizationManager.localized("network_protection_scanning") : localizationManager.localized("network_protection_start_scan"))
-                        .font(.headline)
+                    Text(
+                        antivirusManager.isScanning
+                            ? localizationManager.localized("network_protection_scanning")
+                            : localizationManager.localized("antivirus_scan_choose_file_button")
+                    )
+                    .font(.headline)
                 }
                 .foregroundColor(.white)
                 .frame(maxWidth: .infinity)
@@ -744,6 +794,19 @@ struct NetworkProtectionScreen: View {
             }
             .disabled(!antivirusEnabled || antivirusManager.isScanning)
             .opacity(antivirusEnabled ? 1.0 : 0.5)
+            .accessibilityHint(localizationManager.localized("antivirus_scan_choose_file_accessibility_hint"))
+
+            Text(
+                localizationManager.localized(
+                    "antivirus_scan_legal_disclaimer",
+                    AntivirusManager.maxServerScanUploadMegabytes
+                )
+            )
+            .font(.caption2)
+            .foregroundColor(.textSecondary)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.top, Spacing.xs)
         }
         .padding(.top, Spacing.m)
     }
@@ -828,9 +891,7 @@ struct NetworkProtectionScreen: View {
             
             // Scan Button - Кнопка сканирования
             Button(action: {
-                Task {
-                    await performQuickScan()
-                }
+                showAntivirusFileImporter = true
             }) {
                 HStack {
                     Image(systemName: antivirusManager.isScanning ? "stop.circle.fill" : "play.circle.fill")
@@ -1153,6 +1214,18 @@ struct NetworkProtectionScreen: View {
         }
     }
     
+    /// Отмена системного выбора файла — без ошибочного тоста.
+    private func isLikelyDocumentPickerCancellation(_ error: Error) -> Bool {
+        let ns = error as NSError
+        if ns.domain == NSCocoaErrorDomain, ns.code == NSUserCancelledError {
+            return true
+        }
+        if ns.domain == NSCocoaErrorDomain, ns.code == 3072 {
+            return true
+        }
+        return false
+    }
+
     private func formatLastScan() -> String {
         // Форматируем время последней проверки
         if let lastResult = antivirusManager.lastScanResult {
@@ -1170,81 +1243,76 @@ struct NetworkProtectionScreen: View {
         return localizationManager.localized("network_protection_never")
     }
     
-    private func performQuickScan() async {
-        // Быстрое сканирование демонстрационных файлов
+    /// Скан выбранного пользователем файла: `AntivirusManager.performFullScan` + запись в локальную историю.
+    private func processAntivirusPickedFile(_ url: URL) async {
         let visualLogger = VisualLogger.shared
         let startTime = Date()
-        visualLogger.log("🛡️ Начато антивирусное сканирование...", level: .info, category: "ANTIVIRUS")
-        
-        // В реальном приложении здесь будет выбор файлов
-        // Пока имитируем сканирование
-        await MainActor.run {
-            antivirusManager.isScanning = true
-            antivirusManager.scanProgress = 0.0
+        visualLogger.log("🛡️ Сканирование выбранного файла: \(url.lastPathComponent)", level: .info, category: "ANTIVIRUS")
+
+        let accessed = url.startAccessingSecurityScopedResource()
+        defer {
+            if accessed {
+                url.stopAccessingSecurityScopedResource()
+            }
         }
-        
-        // Имитация прогресса сканирования
-        visualLogger.log("🔍 Проверка системных файлов...", level: .info, category: "ANTIVIRUS")
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
-        
-        await MainActor.run {
-            antivirusManager.scanProgress = 0.3
-        }
-        
-        visualLogger.log("🔍 Проверка установленных приложений...", level: .info, category: "ANTIVIRUS")
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
-        
-        await MainActor.run {
-            antivirusManager.scanProgress = 0.6
-        }
-        
-        visualLogger.log("🔍 Проверка загруженных файлов...", level: .info, category: "ANTIVIRUS")
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
-        
-        await MainActor.run {
-            antivirusManager.scanProgress = 0.9
-        }
-        
-        try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 секунды
-        
+
+        let declaredSize: Int64 = {
+            guard let values = try? url.resourceValues(forKeys: [.fileSizeKey]),
+                  let n = values.fileSize else { return 0 }
+            return Int64(n)
+        }()
+
+        let scanResult = await antivirusManager.performFullScan(fileURL: url)
         let endTime = Date()
-        let duration = endTime.timeIntervalSince(startTime)
-        let threatsFound = antivirusManager.threatsDetected.count
-        
-        // Создаем результат сканирования
-        let scanResult = AntivirusManager.ScanResult(
-            filePath: "System Scan",
-            threatLevel: .clean,
-            detectedThreats: [],
-            scanTime: endTime,
-            checksum: nil
-        )
-        
-        // Добавляем запись в историю сканирований
+        let threatsFound = scanResult.detectedThreats.count
+        let status: String
+        if scanResult.threatLevel == .checkingServer {
+            status = "warning"
+        } else if scanResult.threatLevel == .dangerous || scanResult.threatLevel == .suspicious {
+            status = threatsFound > 0 ? "completed" : "warning"
+        } else {
+            status = "completed"
+        }
+
         let scanSession = ScanHistoryItem(
             id: UUID().uuidString,
             startTime: startTime,
             endTime: endTime,
             filesScanned: 1,
             threatsFound: threatsFound,
-            status: "completed",
-            duration: duration
+            status: status,
+            duration: endTime.timeIntervalSince(startTime)
         )
-        
+
         await MainActor.run {
-            antivirusManager.isScanning = false
-            antivirusManager.scanProgress = 1.0
-            antivirusManager.lastScanResult = scanResult
             scanHistory.insert(scanSession, at: 0)
-            // Ограничиваем историю последними 50 записями
             if scanHistory.count > 50 {
                 scanHistory.removeLast()
             }
         }
-        
-        visualLogger.log("✅ Сканирование завершено. Угроз не обнаружено.", level: .success, category: "ANTIVIRUS")
-        
-        // Обновляем статистику карантина
+
+        visualLogger.log(
+            "✅ Скан файла завершён: \(scanResult.threatLevel.rawValue), угроз: \(threatsFound)",
+            level: .success,
+            category: "ANTIVIRUS"
+        )
+
+        await MainActor.run {
+            if scanResult.threatLevel == .checkingServer {
+                ToastManager.shared.showWarning(
+                    localizationManager.localized("antivirus_toast_server_check_unavailable")
+                )
+            } else if declaredSize > AntivirusManager.maxServerScanUploadBytes,
+                      scanResult.threatLevel == .safe || scanResult.threatLevel == .clean {
+                ToastManager.shared.showInfo(
+                    localizationManager.localized(
+                        "antivirus_toast_large_file_local_only",
+                        AntivirusManager.maxServerScanUploadMegabytes
+                    )
+                )
+            }
+        }
+
         loadQuarantineStats()
     }
     
@@ -2112,7 +2180,10 @@ struct NetworkProtectionHelpView: View {
                     VStack(spacing: 15) {
                         HelpCard(
                             question: localizationManager.localized("network_protection_help_antivirus_question"),
-                            answer: localizationManager.localized("network_protection_help_antivirus_answer")
+                            answer: localizationManager.localized(
+                                "network_protection_help_antivirus_answer",
+                                AntivirusManager.maxServerScanUploadMegabytes
+                            )
                         )
                         
                         HelpCard(

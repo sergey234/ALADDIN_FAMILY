@@ -1,5 +1,5 @@
 import Foundation
-import os.log
+import os
 
 /// 🔍 Settings Diagnostics Logger
 /// Централизованное логирование для диагностики краша Settings Screen
@@ -13,11 +13,16 @@ class SettingsDiagnosticsLogger {
     
     /// Флаг включения логирования (работает в RELEASE)
     static let ENABLE_LOGS = true
-    
-    /// os_log для системного логирования
-    private let osLog = OSLog(
-        subsystem: "com.aladdin.settings",
-        category: "diagnostics"
+
+    /// Subsystem для фильтра в Console.app (совпадает с bundle приложения).
+    static var logSubsystem: String {
+        Bundle.main.bundleIdentifier ?? "ALADDIN"
+    }
+
+    /// Unified logging (DEBUG + Release): безопасные строки после `removeEmoji`.
+    private let unifiedLog = Logger(
+        subsystem: SettingsDiagnosticsLogger.logSubsystem,
+        category: "SETTINGS_DIAG"
     )
     
     /// Массив логов для экспорта (ограничен размером)
@@ -67,14 +72,6 @@ class SettingsDiagnosticsLogger {
             }
         }
         
-        var osLogType: OSLogType {
-            switch self {
-            case .info: return .info
-            case .warning: return .default
-            case .error: return .error
-            case .critical: return .fault
-            }
-        }
     }
     
     // MARK: - Initialization
@@ -170,23 +167,19 @@ class SettingsDiagnosticsLogger {
         // Используем прямой print() - он работает на любом потоке
         print("🔍 SETTINGS_DIAG: \(safeMessage)")
 
-        // 1. os_log (системное логирование) - ТОЛЬКО в DEBUG
-        // ✅ FIXED BUILD 86: Отключен в RELEASE для предотвращения рекурсии при обработке эмодзи
-        #if DEBUG
-            // В DEBUG используем os_log для системного логирования
-            // Убираем эмодзи перед os_log для безопасности
-            let messageForOSLog = removeEmoji(safeMessage)
-            os_log(
-                "%{public}@",
-                log: osLog,
-                type: level.osLogType,
-                messageForOSLog
-            )
-        #else
-            // В RELEASE используем только print() - os_log вызывает рекурсию при обработке эмодзи
-            // print() уже вызван выше (строка 156), os_log отключен для предотвращения рекурсии в TestFlight/Production
-        #endif
-        
+        // 1. Системный лог (Console.app): `Logger` + строка без эмодзи — в DEBUG и Release.
+        let messageForOSLog = removeEmoji(safeMessage)
+        switch level {
+        case .info:
+            unifiedLog.info("\(messageForOSLog, privacy: .public)")
+        case .warning:
+            unifiedLog.warning("\(messageForOSLog, privacy: .public)")
+        case .error:
+            unifiedLog.error("\(messageForOSLog, privacy: .public)")
+        case .critical:
+            unifiedLog.critical("\(messageForOSLog, privacy: .public)")
+        }
+
         // 2. Массив (для экспорта) - асинхронно
         logQueue.async { [weak self] in
             guard let self = self else { return }

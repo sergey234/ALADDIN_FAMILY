@@ -1,17 +1,117 @@
 {
-  "generated_at": "2026-03-31T00:46:16",
+  "generated_at": "2026-04-19T20:21:28",
   "base_url": "http://149.154.65.180:8002",
   "baseline_file": "docs/release/baseline/openapi.json",
   "current_snapshot": "docs/release/current/openapi.json",
   "baseline_path_count": 362,
-  "current_path_count": 362,
-  "added_paths_count": 0,
+  "current_path_count": 366,
+  "added_paths_count": 4,
   "removed_paths_count": 0,
-  "methods_changed_count": 3,
+  "methods_changed_count": 13,
   "pass": true,
-  "added_paths": [],
+  "added_paths": [
+    "/api/antivirus/scan",
+    "/api/devices/bind",
+    "/api/family/reconcile",
+    "/api/reports/tracker/stats"
+  ],
   "removed_paths": [],
   "methods_changed": [
+    {
+      "path": "/api/devices",
+      "baseline_methods": [
+        "GET"
+      ],
+      "current_methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "path": "/api/family/add",
+      "baseline_methods": [
+        "GET"
+      ],
+      "current_methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "path": "/api/gamification/balance",
+      "baseline_methods": [
+        "GET"
+      ],
+      "current_methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "path": "/api/gamification/rewards/claim",
+      "baseline_methods": [
+        "GET"
+      ],
+      "current_methods": [
+        "POST"
+      ]
+    },
+    {
+      "path": "/api/gamification/rewards/give",
+      "baseline_methods": [
+        "GET"
+      ],
+      "current_methods": [
+        "POST"
+      ]
+    },
+    {
+      "path": "/api/gamification/rewards/purchase",
+      "baseline_methods": [
+        "GET"
+      ],
+      "current_methods": [
+        "POST"
+      ]
+    },
+    {
+      "path": "/api/gamification/tournaments/join",
+      "baseline_methods": [
+        "GET"
+      ],
+      "current_methods": [
+        "POST"
+      ]
+    },
+    {
+      "path": "/api/gamification/tournaments/leave",
+      "baseline_methods": [
+        "GET"
+      ],
+      "current_methods": [
+        "POST"
+      ]
+    },
+    {
+      "path": "/api/malware/quarantine/action",
+      "baseline_methods": [
+        "GET"
+      ],
+      "current_methods": [
+        "GET",
+        "POST"
+      ]
+    },
+    {
+      "path": "/api/protection/quarantine/action",
+      "baseline_methods": [
+        "GET"
+      ],
+      "current_methods": [
+        "GET",
+        "POST"
+      ]
+    },
     {
       "path": "/api/reports/dark-web/scan/fast",
       "baseline_methods": [

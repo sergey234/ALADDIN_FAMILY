@@ -177,8 +177,15 @@
 "network_protection_settings_title" = "Настройки защиты сети";
 "network_protection_protection_time" = "Время защиты";
 "network_protection_faq" = "Часто задаваемые вопросы";
-"network_protection_help_antivirus_question" = "Как работает антивирус?";
-"network_protection_help_antivirus_answer" = "Антивирус автоматически проверяет все файлы на наличие вирусов и вредоносного ПО.";
+"network_protection_help_antivirus_question" = "Как работает проверка файлов?";
+"network_protection_help_antivirus_answer" = "Вы выбираете один файл. Приложение не сканирует всё устройство целиком (так iOS и не позволяет сторонним приложениям). Сначала выполняются локальные проверки; для файлов до %d МБ при наличии интернета и входа в аккаунт может выполняться дополнительная проверка на сервере. Защита сети шифрует соединение.";
+"antivirus_scan_choose_file_button" = "Выбрать файл для проверки";
+"antivirus_scan_choose_file_accessibility_hint" = "Открывает выбор одного файла. Проверяется только выбранный файл.";
+"antivirus_scan_legal_disclaimer" = "Проверяется только выбранный вами файл. Полный обход хранилища телефона недоступен. Локальные эвристики; облачная проверка — только для файлов до %d МБ и при доступном сервере.";
+"antivirus_scan_picker_error" = "Не удалось выбрать файл. Попробуйте ещё раз.";
+"crash_detection_simulator_banner" = "Симулятор: данные движения приблизительные. Реальное обнаружение ДТП проверяйте на iPhone. В сборке DEBUG доступен синтетический тест.";
+"antivirus_toast_server_check_unavailable" = "Проверка на сервере сейчас недоступна. Учтите результат локальных проверок.";
+"antivirus_toast_large_file_local_only" = "Файл больше %d МБ — на сервер он не отправлялся; показан результат локальных проверок.";
 "network_protection_help_ad_blocking_question" = "Как работает блокировка рекламы?";
 "network_protection_help_ad_blocking_answer" = "Блокировка рекламы убирает назойливую рекламу с веб-сайтов и в приложениях.";
 "network_protection_help_anti_tracking_question" = "Как работает антитрекинг?";

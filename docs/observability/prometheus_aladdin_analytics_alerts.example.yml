@@ -1,0 +1,52 @@
+# Пример правил Prometheus (obs-alerts-rules) для доменной свежести.
+# Скопируйте фрагмент в конфиг Prometheus на сервере и адаптируйте labels/пути.
+# Предполагается метрика: aladdin_analytics_freshness_seconds{domain="darkweb|identity|..."}
+
+groups:
+  - name: aladdin_analytics_freshness
+    interval: 30s
+    rules:
+      - alert: AladdinNoFreshDataDarkweb
+        expr: aladdin_analytics_freshness_seconds{domain="darkweb"} > 72 * 3600
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Dark Web analytics stale"
+          description: "Freshness age exceeds 72h for domain=darkweb"
+
+      - alert: AladdinNoFreshDataIdentity
+        expr: aladdin_analytics_freshness_seconds{domain="identity"} > 24 * 3600
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Identity theft analytics stale"
+          description: "Freshness age exceeds 24h for domain=identity"
+
+      - alert: AladdinNoFreshDataTracker
+        expr: aladdin_analytics_freshness_seconds{domain="tracker"} > 12 * 3600
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Tracker analytics stale"
+          description: "Freshness age exceeds 12h for domain=tracker"
+
+      - alert: AladdinNoFreshDataLocation
+        expr: aladdin_analytics_freshness_seconds{domain="location"} > 6 * 3600
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Location bubble analytics stale"
+          description: "Freshness age exceeds 6h for domain=location"
+
+      - alert: AladdinNoFreshDataCleanup
+        expr: aladdin_analytics_freshness_seconds{domain="cleanup"} > 168 * 3600
+        for: 15m
+        labels:
+          severity: warning
+        annotations:
+          summary: "Data cleanup analytics stale"
+          description: "Freshness age exceeds 168h for domain=cleanup"

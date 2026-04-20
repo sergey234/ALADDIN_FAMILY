@@ -3,9 +3,9 @@ import json
 import os
 import re
 import time
+import urllib.error
+import urllib.request
 from pathlib import Path
-
-import requests
 
 
 BASE_URL = os.environ.get("ALADDIN_API_BASE", "https://aladdin-ai.ru").rstrip("/")
@@ -39,6 +39,14 @@ def _load_json(path: Path):
     return json.loads(path.read_text(encoding="utf-8"))
 
 
+def _fetch_openapi_json(url: str, timeout_s: float = 20.0):
+    req = urllib.request.Request(
+        url, headers={"User-Agent": "ALADDIN-release-gate/1"}
+    )
+    with urllib.request.urlopen(req, timeout=timeout_s) as resp:
+        return json.loads(resp.read().decode("utf-8"))
+
+
 def _canonical_paths_methods(doc: dict):
     paths = {}
     for path, methods in (doc.get("paths") or {}).items():
@@ -69,9 +77,12 @@ def _exists_in_openapi(endpoint: str, openapi_paths: set):
 
 
 def main():
-    resp = requests.get(f"{BASE_URL}/openapi.json", timeout=20)
-    resp.raise_for_status()
-    current_openapi = resp.json()
+    try:
+        current_openapi = _fetch_openapi_json(f"{BASE_URL}/openapi.json")
+    except urllib.error.HTTPError as e:
+        raise SystemExit(f"OpenAPI fetch failed: HTTP {e.code} {e.reason}") from e
+    except urllib.error.URLError as e:
+        raise SystemExit(f"OpenAPI fetch failed: {e.reason}") from e
 
     OUT_CURRENT_OPENAPI.parent.mkdir(parents=True, exist_ok=True)
     OUT_CURRENT_OPENAPI.write_text(

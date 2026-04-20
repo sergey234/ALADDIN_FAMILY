@@ -125,6 +125,17 @@ ssh root@149.154.65.180
 - `api_gateway_complete_full.py` -> `/opt/aladdin-backend/`
 - `app/routers/referral_fixed.py` -> `/opt/aladdin-backend/app/routers/`
 
+**`scp` с несколькими файлами:** у каждого локального файла целевой путь на сервере должен быть **полным** до конечного имени. Если указать один общий каталог (`root@host:/opt/aladdin-backend/`), все файлы попадут **в корень** дерева — например `reports_router.py` окажется как `/opt/aladdin-backend/reports_router.py` вместо `security/api/routers/reports_router.py`. Правильно:
+```bash
+scp -o IdentitiesOnly=yes -i ~/.ssh/aladdin_server \
+  ./api_gateway.py \
+  root@149.154.65.180:/opt/aladdin-backend/api_gateway.py
+scp -o IdentitiesOnly=yes -i ~/.ssh/aladdin_server \
+  ./security/api/routers/reports_router.py \
+  root@149.154.65.180:/opt/aladdin-backend/security/api/routers/reports_router.py
+```
+(либо две отдельные команды `scp`, либо одна команда с **чётным** числом аргументов `локальный удалённый` попарно.)
+
 ---
 
 ## 🚨 **ПРОБЛЕМЫ И РЕШЕНИЯ**
@@ -537,3 +548,71 @@ chmod +x scripts/aladdin_server_connect_and_setup.sh
 5. Метрики в логах: см. `docs/FAMILY_OPS_DASHBOARD.md`.
 
 **Продуктовое правило «одна активная семья»:** `docs/FAMILY_MEMBERSHIP_PRODUCT.md`.
+
+**Геймификация, OpenAPI и iOS (важно):**
+
+1. **Импорт роутера:** в `main.py` геймификация подключается только если `from security.api.routers.gamification_router import router` выполняется без ошибки. Если в venv **нет** зависимостей из `backend/requirements.txt` (типичный случай — отсутствует **`python-jose`**, ошибка `No module named 'jose'`), флаг `gamification_router_available` остаётся `false`, и **весь** префикс `/api/gamification/*` пропадает из OpenAPI.
+
+2. **Синхронизация venv с репозиторием (рекомендуется на каждый выкат):**
+   ```bash
+   cd /opt/aladdin-backend
+   ./venv/bin/pip install -r backend/requirements.txt
+   ./venv/bin/python3 -m py_compile main.py
+   systemctl restart aladdin-backend.service
+   ```
+   Файл на проде: `backend/requirements.txt` (должен совпадать с репозиторием `mobile_apps/ALADDIN_iOS/backend/requirements.txt`). Так venv не «обедняется» относительно кода.
+
+3. **Паритет файла роутера с репозиторием:** на проде могла лежать **урезанная** версия `security/api/routers/gamification_router.py` (например, только SFM/`GET` для `/balance`). iOS для начисления/списания вызывает **`POST /api/gamification/balance`** (`AppConfig.gamificationBalanceAdd` / `Subtract`). В OpenAPI у `/api/gamification/balance` должны быть **`get` и `post`**; у `rewards/claim`, `rewards/give`, `rewards/purchase`, `tournaments/join`, `tournaments/leave` — **`post`** там, где в каноническом роутере объявлен `post`. После выката полного файла из репозитория перезапустите сервис и проверьте методы в `openapi.json` (скриптом или `tools/release_openapi_drift_and_ios_sync.py`).
+
+4. **Быстрая проверка снаружи (после рестарта):**  
+   `curl -s -S -m 20 http://149.154.65.180:8002/openapi.json` → в `paths["/api/gamification/balance"]` есть и `get`, и `post`; всего путей с `/api/gamification` — **26**.
+
+---
+
+## 13) Выкат антивирусного скана файла (`POST /api/antivirus/scan`)
+
+Контракт совпадает с iOS (`MalwareFileScanAPIRequest` / `MalwareFileScanAPIResponse`): тело JSON в **snake_case** (`file_data` base64, `file_name`, `file_size`, опционально `file_hash`); ответ — `clean`, `threats_found`, `recommendations`, `scan_time`, `confidence`. Роутер: `app/routers/antivirus.py`; подключение в `main.py` (флаги `antivirus_router_available` + `app.include_router(antivirus.router)`).
+
+**Чеклист (как на проде, апрель 2026):**
+
+1. **Снаружи:** `curl -s -S -m 8 http://149.154.65.180:8002/api/health` → `200`, JSON со `status`.
+2. **Бэкап на сервере:** `cp -a /opt/aladdin-backend/main.py /opt/aladdin-backend/main.py.bak_<timestamp>` (и при замене целого `main.py` — обязателен).
+3. **Файлы:** скопировать `app/routers/antivirus.py` → `/opt/aladdin-backend/app/routers/antivirus.py`; в `main.py` добавить импорт/`include_router` для `antivirus` (если ещё нет — см. репозиторий `mobile_apps/ALADDIN_iOS`).
+4. **Синтаксис:** `cd /opt/aladdin-backend && ./venv/bin/python3 -m py_compile app/routers/antivirus.py main.py`
+5. **Перезапуск:** `systemctl restart aladdin-backend.service` → `systemctl is-active aladdin-backend.service` → `active`.
+6. **Проверки:**
+   - локально на сервере: `curl -s -S -m 8 http://127.0.0.1:8002/api/health`
+   - снаружи: тот же `curl` на `:8002`
+   - OpenAPI: `curl -s -S -m 12 http://149.154.65.180:8002/openapi.json` — в `paths` должен быть ключ **`/api/antivirus/scan`** с методом `post`.
+   - смоук POST (минимальный чистый файл, 1 байт):  
+     `curl -s -S -m 12 -X POST http://149.154.65.180:8002/api/antivirus/scan -H "Content-Type: application/json" -d '{"file_data":"QQ==","file_name":"t.txt","file_size":1}'` → **200**, в теле `"clean":true` (или сработавший тест EICAR в `threats_found`).
+
+**Лимит:** декодированное тело не более **25 MiB** (как на iOS); иначе **413**.
+
+**Журнал:** успешный выкат зафиксирован при живом `systemd`-юните `aladdin-backend.service` и появлении маршрута в OpenAPI на `:8002`.
+
+---
+
+## 14) Угрозы и карантин (`/api/malware/*`, `/api/protection/*`) — контракт с iOS
+
+Клиент (`APIService.getUserThreatsAsync`, `quarantineFileAsync`) ожидает:
+
+- **`GET /api/malware/threats`** (опционально `?status=`) — JSON-объект **`ThreatsListResponse`**: поля `threats`, `total`, `active`, `quarantined`, `resolved` (не «сырой» массив).
+- **`POST /api/malware/quarantine/action`** — тело **`{ "threatId", "action", "filePath"? }`** (camelCase), ответ **`{ "success", "message"?, "threat"? }`**. Допустимо оставить легаси **`GET`** на том же пути для совместимости; в OpenAPI должны быть **`get` и `post`**.
+- Аналогично для префикса **`/api/protection/threats`** и **`/api/protection/quarantine/action`**, если клиент или альтернативные экраны используют эти URL.
+
+**Источник правды на сервере:** PostgreSQL, таблица **`user_malware_threats`** (см. `app/database/migrations/create_user_malware_threats.sql`). При первом обращении таблица также создаётся из кода (`ensure_user_malware_threats_table`). Для прод-деплоя предпочтительно один раз применить миграцию на хосте с `DATABASE_URL`:  
+`python3 app/database/migrations/apply_user_malware_threats_migration.py`
+
+**Запись при скане:** `POST /api/antivirus/scan` при валидном JWT сохраняет найденные сигнатуры в **`user_malware_threats`** (роутер `app/routers/antivirus.py`, логика `app/services/user_malware_threats.py`). Содержимое файла не пишется; в БД допускаются только метаданные (имя/размер/путь как строка, опциональный **`file_hash`** от клиента). Сессия PostgreSQL открывается **только** если есть и JWT, и найденные угрозы (чистый скан без записи не требует БД). Без JWT ответ скана прежний, строки в БД не пишутся.
+
+**Автопроверка (без пароля):** с хоста разработки при живом API:  
+`ALADDIN_API_BASE=http://149.154.65.180:8002 python3 tools/smoke_malware_threats_persist.py` — ожидается `OK`: реальные вызовы к прод-шлюзу, запись в PostgreSQL, затем **`POST /api/malware/quarantine/action`** и проверка **`GET /api/malware/threats?status=quarantined`** (строка `eicar-test` в статусе `quarantined`).
+
+**Отчёты 5 доменов + driving + ai-categories (план ML):**  
+`ALADDIN_API_BASE=http://149.154.65.180:8002 python3 tools/smoke_reports_five_domains.py` — **OK**, если все `GET /api/reports/*/stats` и пять list‑эндпоинтов вернули **200** и в теле нет `sfm_mock` / `mock_fallback` / `reports_compat`.
+
+**Связка с карантином на устройстве:** iOS при помещении в карантин передаёт **`threatId`**, совпадающий с id угрозы со скана (например `eicar-test`), см. `QuarantineManager.quarantineFile(..., stableThreatId:)` и `AntivirusManager.quarantineThreat`.
+
+Роутеры: `app/routers/misc_other_compat.py`, `app/routers/antivirus.py`. После правок:  
+`python3 -m py_compile app/routers/misc_other_compat.py app/routers/antivirus.py app/services/user_malware_threats.py app/auth/auth.py`, выкат каталога **`app/services/`** и перечисленных файлов в `/opt/aladdin-backend/`, **`systemctl restart aladdin-backend.service`**, прогон `tools/release_openapi_drift_and_ios_sync.py`.

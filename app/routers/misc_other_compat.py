@@ -22,6 +22,7 @@ from sqlalchemy.orm import Session
 
 from app.auth.auth import get_current_user
 from app.database.database import get_db
+from app.services.user_malware_threats import apply_quarantine_action, fetch_threats_envelope
 
 logger = logging.getLogger(__name__)
 
@@ -169,36 +170,127 @@ def _now_iso() -> str:
     )
 
 
+class QuarantineActionBody(BaseModel):
+    """Тело как у iOS `QuarantineActionRequest` (camelCase в JSON)."""
+
+    threatId: str = Field(..., min_length=1, max_length=256)
+    action: str = Field(..., min_length=1, max_length=64)
+    filePath: Optional[str] = Field(None, max_length=4096)
+
+
+@router.get("/api/malware/threats", response_model=Dict[str, Any])
+async def malware_threats(
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """
+    Список угроз в формате iOS `ThreatsListResponse` (PostgreSQL `user_malware_threats`).
+    Query `status` фильтрует элементы `threats` (active | quarantined | resolved); счётчики — по всем записям пользователя.
+    """
+    uid = _uid_str(current_user)
+    if not uid:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
+    try:
+        return fetch_threats_envelope(db, uid, status)
+    except SQLAlchemyError as e:
+        logger.exception("malware_threats_list_failed: %s", e)
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Threats list unavailable",
+        )
+
+
 @router.get("/api/malware/quarantine/action", response_model=Dict[str, Any])
-async def malware_quarantine_action(
+async def malware_quarantine_action_get(
     current_user: dict = Depends(get_current_user),
 ) -> Dict[str, Any]:
+    """Легаси GET; iOS использует POST. Оставлен для совместимости и OpenAPI."""
     _ = current_user.get("id")
-    return {"success": True}
+    return {"success": True, "message": None, "threat": None}
 
 
-@router.get("/api/malware/threats", response_model=List[Dict[str, Any]])
-async def malware_threats(
+@router.post("/api/malware/quarantine/action", response_model=Dict[str, Any])
+async def malware_quarantine_action_post(
+    body: QuarantineActionBody,
     current_user: dict = Depends(get_current_user),
-) -> List[Dict[str, Any]]:
-    _ = current_user.get("id")
-    return []
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """
+    Действие по карантину как у iOS `quarantineFileAsync` (POST + JSON).
+    Обновляет строки в `user_malware_threats` (источник правды на сервере).
+    """
+    uid = _uid_str(current_user)
+    if not uid:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
+    if body.action not in ("quarantine", "restore", "remove"):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail="action must be one of: quarantine, restore, remove",
+        )
+    try:
+        return apply_quarantine_action(
+            db, uid, body.threatId, body.action, body.filePath
+        )
+    except SQLAlchemyError as e:
+        logger.exception("malware_quarantine_action_failed: %s", e)
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Quarantine action unavailable",
+        )
 
 
 @router.get("/api/protection/quarantine/action", response_model=Dict[str, Any])
-async def protection_quarantine_action(
+async def protection_quarantine_action_get(
     current_user: dict = Depends(get_current_user),
 ) -> Dict[str, Any]:
     _ = current_user.get("id")
-    return {"success": True}
+    return {"success": True, "message": None, "threat": None}
 
 
-@router.get("/api/protection/threats", response_model=List[Dict[str, Any]])
-async def protection_threats(
+@router.post("/api/protection/quarantine/action", response_model=Dict[str, Any])
+async def protection_quarantine_action_post(
+    body: QuarantineActionBody,
     current_user: dict = Depends(get_current_user),
-) -> List[Dict[str, Any]]:
-    _ = current_user.get("id")
-    return []
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    uid = _uid_str(current_user)
+    if not uid:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
+    if body.action not in ("quarantine", "restore", "remove"):
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            detail="action must be one of: quarantine, restore, remove",
+        )
+    try:
+        return apply_quarantine_action(
+            db, uid, body.threatId, body.action, body.filePath
+        )
+    except SQLAlchemyError as e:
+        logger.exception("protection_quarantine_action_failed: %s", e)
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Quarantine action unavailable",
+        )
+
+
+@router.get("/api/protection/threats", response_model=Dict[str, Any])
+async def protection_threats(
+    status: Optional[str] = None,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    uid = _uid_str(current_user)
+    if not uid:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
+    try:
+        return fetch_threats_envelope(db, uid, status)
+    except SQLAlchemyError as e:
+        logger.exception("protection_threats_list_failed: %s", e)
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Threats list unavailable",
+        )
 
 
 @router.get("/api/protection/threats/test", response_model=Dict[str, Any])

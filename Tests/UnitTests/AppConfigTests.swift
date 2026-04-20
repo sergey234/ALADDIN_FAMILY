@@ -142,16 +142,17 @@ class AppConfigTests: XCTestCase {
     }
     
     func testAuthTokenPersistence() throws {
-        // Тест сохранения токена в UserDefaults
         let testToken = "persistent-token-456"
-        
+
         AppConfig.authToken = testToken
-        
-        // Проверяем что токен сохранился в UserDefaults
-        let savedToken = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.authToken)
-        XCTAssertEqual(savedToken, testToken)
-        
-        // Очищаем
+
+        XCTAssertEqual(AppConfig.authToken, testToken)
+        XCTAssertNil(
+            UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.authToken),
+            "Access token must not remain stored in UserDefaults"
+        )
+        XCTAssertEqual(KeychainManager.shared.loadString(forKey: .authToken), testToken)
+
         AppConfig.authToken = nil
     }
     
@@ -249,6 +250,70 @@ class AppConfigTests: XCTestCase {
     // MARK: - Memory Management Tests
     
     // Тестов на работу со слабой ссылкой не требуется, так как AppConfig является структурой.
+}
+
+// MARK: - APIResponseValidator (PR3)
+
+final class APIResponseValidatorTests: XCTestCase {
+
+    func testEnvelopeDecodeAndCanonicalPolicyOverridesBodyComponentId() throws {
+        let json = Data(
+            """
+            {"status":{"componentId":"wrong_agent","isEnabled":true,"status":"enabled","lastUpdated":"2026-03-18 19:58:49","error":null}}
+            """.utf8
+        )
+        let response = try JSONDecoder().decode(ComponentStatusResponse.self, from: json)
+        let status = try APIResponseValidator.makeComponentStatus(
+            from: response,
+            canonicalComponentId: "crash_detection_agent",
+            policy: .canonicalRequestIdAlwaysWins
+        )
+        XCTAssertEqual(status.componentId, "crash_detection_agent")
+        XCTAssertTrue(status.isEnabled)
+    }
+
+    func testRejectMismatchedExplicitComponentIdThrows() throws {
+        let json = Data(
+            """
+            {"status":{"componentId":"other_agent","isEnabled":true,"status":"enabled","lastUpdated":"2026-03-18 19:58:49","error":null}}
+            """.utf8
+        )
+        let response = try JSONDecoder().decode(ComponentStatusResponse.self, from: json)
+        XCTAssertThrowsError(
+            try APIResponseValidator.makeComponentStatus(
+                from: response,
+                canonicalComponentId: "crash_detection_agent",
+                policy: .rejectMismatchedExplicitComponentId
+            )
+        )
+    }
+
+    func testFlatContractDecodesAndMapsEnabled() throws {
+        let json = Data(
+            """
+            {"status":"enabled","uptime":99.0}
+            """.utf8
+        )
+        let response = try JSONDecoder().decode(ComponentStatusResponse.self, from: json)
+        let status = try APIResponseValidator.makeComponentStatus(
+            from: response,
+            canonicalComponentId: "malware_detection_agent",
+            policy: .canonicalRequestIdAlwaysWins
+        )
+        XCTAssertEqual(status.componentId, "malware_detection_agent")
+        XCTAssertTrue(status.isEnabled)
+    }
+
+    func testServerConfigurationEnvelopeDecodes() throws {
+        let json = Data(
+            """
+            {"configuration":{"componentId":"malware_detection_agent","settings":{},"version":"1","lastUpdated":null},"isDefault":true}
+            """.utf8
+        )
+        let envelope = try JSONDecoder().decode(ServerComponentConfigurationResponse.self, from: json)
+        XCTAssertTrue(envelope.isDefault ?? false)
+        XCTAssertEqual(envelope.configuration.componentId, "malware_detection_agent")
+    }
 }
 
 // MARK: - AppConfig Test Extensions

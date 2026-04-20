@@ -150,6 +150,10 @@ class DarkWebMonitoringViewModel: ObservableObject {
     }
     
     func startScan() async {
+        guard AppConfig.isDarkWebServerScanEnabled else {
+            errorMessage = localizationManager.localized("dark_web_scan_disabled_by_settings")
+            return
+        }
         // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед запуском сканирования
         guard AppConfig.authToken != nil else {
             errorMessage = localizationManager.localized("dark_web_error_unauthorized")
@@ -196,6 +200,10 @@ class DarkWebMonitoringViewModel: ObservableObject {
     // MARK: - Hybrid Scan Methods
     
     func scanSecure(email: String?, password: String?) async {
+        guard AppConfig.isDarkWebServerScanEnabled else {
+            errorMessage = localizationManager.localized("dark_web_scan_disabled_by_settings")
+            return
+        }
         isScanning = true
         errorMessage = nil
         defer { isScanning = false }
@@ -289,6 +297,10 @@ class DarkWebMonitoringViewModel: ObservableObject {
     }
     
     func scanFast(email: String?, phone: String?, passport: String?, snils: String?) async {
+        guard AppConfig.isDarkWebServerScanEnabled else {
+            errorMessage = localizationManager.localized("dark_web_scan_disabled_by_settings")
+            return
+        }
         print("⚡ DarkWebMonitoringViewModel.scanFast: Начало быстрого сканирования")
         MasterLogger.shared.log(.info, category: .business, message: "⚡ DarkWebMonitoringViewModel.scanFast: Начало быстрого сканирования")
         

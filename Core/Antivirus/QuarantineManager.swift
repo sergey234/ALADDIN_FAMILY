@@ -55,12 +55,18 @@ class QuarantineManager: ObservableObject {
         threatName: String,
         threatType: String,
         severity: String,
-        confidence: Double
+        confidence: Double,
+        stableThreatId: String? = nil
     ) async throws -> QuarantinedFile {
 
         print("[QuarantineManager] Карантин файла: \(originalURL.lastPathComponent)")
 
-        let fileId = UUID().uuidString
+        let fileId: String
+        if let sid = stableThreatId?.trimmingCharacters(in: .whitespacesAndNewlines), !sid.isEmpty {
+            fileId = sid
+        } else {
+            fileId = UUID().uuidString
+        }
         let quarantinedName = "\(fileId)_\(originalURL.lastPathComponent)"
         let quarantineURL = quarantineDirectory.appendingPathComponent(quarantinedName)
 

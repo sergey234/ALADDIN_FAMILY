@@ -146,6 +146,12 @@ try:
 except ImportError:
     misc_other_compat_available = False
 
+try:
+    from app.routers import antivirus
+    antivirus_router_available = True
+except ImportError:
+    antivirus_router_available = False
+
 # ✅ ДОБАВЛЕНО: Импортируем роутер для Analytics API
 try:
     from app.routers import analytics_router
@@ -767,6 +773,15 @@ if misc_other_compat_available:
         print(f"⚠️ Не удалось подключить роутер Misc Other compat: {e}")
 else:
     print("⚠️ Роутер Misc Other compat недоступен")
+
+if antivirus_router_available:
+    try:
+        app.include_router(antivirus.router, tags=["antivirus"])
+        print("✅ Роутер Antivirus scan подключен: POST /api/antivirus/scan")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер Antivirus: {e}")
+else:
+    print("⚠️ Роутер Antivirus недоступен")
 
 # ✅ ДОБАВЛЕНО: Добавлен роутер для Analytics API
 if analytics_router_available:

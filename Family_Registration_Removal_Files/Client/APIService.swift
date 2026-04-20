@@ -2475,10 +2475,12 @@ class APIService: ObservableObject {
     
     /// Запустить автоматическое сканирование темной сети
     func startDarkWebScan(completion: @escaping (Result<DarkWebScan, Error>) -> Void) {
+        // POST — боевой путь на сервере (запись события в БД для freshness). GET оставлен как легаси-заглушка.
+        struct EmptyDarkWebScanStartBody: Codable {}
         // Backend для /dark-web/scan/start отдаёт ReportCompatBoolResponse:
         // { "success": true, "data": true, "message": "..." }.
         // Мы декодим это как APIResponse<Bool>, а UI-процесс рассматривает успех как "запуск сессии".
-        networkManager.get(endpoint: AppConfig.Endpoint.darkWebScanStart, completion: { (result: Result<APIResponse<Bool>, Error>) in
+        networkManager.post(endpoint: AppConfig.Endpoint.darkWebScanStart, body: EmptyDarkWebScanStartBody(), completion: { (result: Result<APIResponse<Bool>, Error>) in
             switch result {
             case .success(let apiResponse):
                 if apiResponse.success == true {

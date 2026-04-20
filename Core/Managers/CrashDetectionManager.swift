@@ -3,6 +3,13 @@ import CoreMotion
 import CoreLocation
 import Combine
 
+/// Абстракция для `NetworkProtectionViewModel` (вариант B: сначала локальный мониторинг, затем сервер).
+@MainActor
+protocol CrashDetectionControlling: AnyObject {
+    func startMonitoring() async throws
+    func stopMonitoring() async throws
+}
+
 /**
  * 🚨 CrashDetectionManager
  * Управление обнаружением аварий через акселерометр и гироскоп
@@ -88,29 +95,19 @@ class CrashDetectionManager: NSObject, ObservableObject {
         return sensitivity.gForceThreshold
     }
     
-    // MARK: - Testing Support
+    // MARK: - Diagnostics (synthetic crash pipeline)
 
-    /// Симулировать крах для тестирования (ТОЛЬКО ДЛЯ РАЗРАБОТКИ!)
-    /// - Parameter gForce: Уровень G-силы для симуляции
-    func simulateCrashForTesting(gForce: Double = 5.0) async {
-        print("🧪 TEST: Simulating crash with G-force: \(gForce)")
-
-        // Вместо создания CMAccelerometerData напрямую,
-        // вызовем detectCrash с mock данными
-        await detectCrashWithMockData(gForce: gForce)
-    }
-
-    /// Обнаружить крах с mock данными для тестирования
-    private func detectCrashWithMockData(gForce: Double) async {
+    /// Синтетический сценарий: цепочка как при ДТП, без показаний реального акселерометра (только отладка / DEBUG-UI).
+    private func runSyntheticCrashScenario(gForce: Double) async {
         guard !crashDetected else { return }
 
-        print("🚨 CrashDetectionManager: TEST CRASH DETECTED! G-сила: \(String(format: "%.2f", gForce))")
+        print("🚨 CrashDetectionManager: SYNTHETIC crash scenario G-сила: \(String(format: "%.2f", gForce))")
 
         crashDetected = true
 
         // Получить текущее местоположение
         guard let location = try? await locationManager.getCurrentLocation() else {
-            print("❌ CrashDetectionManager: TEST - Не удалось получить местоположение")
+            print("❌ CrashDetectionManager: Synthetic scenario — нет местоположения")
             return
         }
 
@@ -142,9 +139,9 @@ class CrashDetectionManager: NSObject, ObservableObject {
                     }
                 }
             }
-            print("✅ CrashDetectionManager: TEST - Алерт отправлен на сервер")
+            print("✅ CrashDetectionManager: Synthetic scenario — алерт отправлен")
         } catch {
-            print("❌ CrashDetectionManager: TEST - Ошибка отправки алерта: \(error.localizedDescription)")
+            print("❌ CrashDetectionManager: Synthetic scenario — ошибка алерта: \(error.localizedDescription)")
         }
 
         // Запустить обратный отсчет
@@ -622,6 +619,18 @@ class CrashDetectionManager: NSObject, ObservableObject {
         }
     }
 }
+
+#if DEBUG
+@MainActor
+extension CrashDetectionManager {
+    /// Кнопка/инструменты отладки: воспроизвести цепочку алерта без реального датчика.
+    func simulateCrashForDiagnostics(gForce: Double = 5.0) async {
+        await runSyntheticCrashScenario(gForce: gForce)
+    }
+}
+#endif
+
+extension CrashDetectionManager: CrashDetectionControlling {}
 
 // MARK: - Crash Data Model
 

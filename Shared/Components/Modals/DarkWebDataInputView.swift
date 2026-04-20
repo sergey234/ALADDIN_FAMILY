@@ -129,7 +129,7 @@ struct DarkWebDataInputView: View {
                                     .fill(Color.primaryBlue)
                             )
                         }
-                        .disabled(isScanning || !hasAnyData)
+                        .disabled(isScanning || !hasAnyData || !AppConfig.isDarkWebServerScanEnabled)
                         .padding(.horizontal, Spacing.screenPadding)
                         .padding(.bottom, Spacing.l)
                     }

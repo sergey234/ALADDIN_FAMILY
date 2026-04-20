@@ -611,7 +611,19 @@ struct SettingsScreen: View {
             // ✅ BUILD 100: Логирование загрузки экрана перемещено из testLogger в .onAppear
             // Это предотвращает избыточное логирование при пересоздании View
             logger.screenLoad("SettingsScreen")
+            SettingsDiagnosticsLogger.shared.logSection(
+                "SettingsScreen",
+                function: #function,
+                message: "onAppear"
+            )
             viewModel.initializeView()
+        }
+        .onDisappear {
+            SettingsDiagnosticsLogger.shared.logSection(
+                "SettingsScreen",
+                function: #function,
+                message: "onDisappear"
+            )
         }
         .sheet(isPresented: $viewModel.showProfileEdit) {
             ProfileEditView()

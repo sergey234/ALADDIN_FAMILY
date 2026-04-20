@@ -1,8 +1,6 @@
 import Foundation
 import SwiftUI
 import Combine
-import CoreMotion
-import CoreLocation
 
 /**
  * 🔒 Network Protection ViewModel
@@ -18,29 +16,30 @@ class NetworkProtectionViewModel: ObservableObject {
     private let statusService: ComponentStatusService
     private let configurationService: ComponentConfigurationService
     private let retryManager: RetryManager
+    private let crashDetection: CrashDetectionControlling
     private let toastManager = ToastManager.shared
     private let componentAnalytics = ComponentAnalytics.shared
 
     // MARK: - Published Properties - Component Statuses
 
     // Экстренная помощь (4 компонента)
-    @Published var crashDetectionEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_crash_detection_agent_enabled")
-    @Published var roadsideAssistanceEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_roadside_assistance_agent_enabled")
-    @Published var emergencyResponseEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_emergency_response_bot_enabled")
-    @Published var emergencyEventEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_emergency_event_manager_enabled")
+    @Published var crashDetectionEnabled: Bool = AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: "crash_detection_agent")
+    @Published var roadsideAssistanceEnabled: Bool = AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: "roadside_assistance_agent")
+    @Published var emergencyResponseEnabled: Bool = AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: "emergency_response_bot")
+    @Published var emergencyEventEnabled: Bool = AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: "emergency_event_manager")
 
     // Защита от угроз (4 компонента)
-    @Published var phishingProtectionEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_phishing_protection_agent_enabled")
-    @Published var malwareDetectionEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_malware_detection_agent_enabled")
-    @Published var mobileSecurityEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_mobile_security_agent_enabled")
-    @Published var networkSecurityEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_network_security_agent_enabled")
-    @Published var iotSecurityEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_iot_security_agent_enabled")
+    @Published var phishingProtectionEnabled: Bool = AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: "phishing_protection_agent")
+    @Published var malwareDetectionEnabled: Bool = AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: "malware_detection_agent")
+    @Published var mobileSecurityEnabled: Bool = AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: "mobile_security_agent")
+    @Published var networkSecurityEnabled: Bool = AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: "network_security_agent")
+    @Published var iotSecurityEnabled: Bool = AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: "iot_security_agent")
 
     // Автоматическая система защиты (1 компонент)
-    @Published var incidentResponseEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_incident_response_agent_enabled")
+    @Published var incidentResponseEnabled: Bool = AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: "incident_response_agent")
 
     // Безопасность паролей (1 компонент)
-    @Published var passwordSecurityEnabled: Bool = UserDefaults.standard.bool(forKey: "demo_component_password_security_agent_enabled")
+    @Published var passwordSecurityEnabled: Bool = AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: "password_security_agent")
 
     // MARK: - Published Properties - UI State
 
@@ -55,11 +54,13 @@ class NetworkProtectionViewModel: ObservableObject {
     init(
         statusService: ComponentStatusService = ComponentStatusService.shared,
         configurationService: ComponentConfigurationService = ComponentConfigurationService.shared,
-        retryManager: RetryManager = RetryManager()
+        retryManager: RetryManager = RetryManager(),
+        crashDetection: CrashDetectionControlling? = nil
     ) {
         self.statusService = statusService
         self.configurationService = configurationService
         self.retryManager = retryManager
+        self.crashDetection = crashDetection ?? CrashDetectionManager.shared
 
         // ✅ BUILD 104: УБРАЛИ Task {} из init() - загрузка статусов перенесена в .onAppear
         // Это предотвращает рекурсию при пересоздании View
@@ -171,9 +172,9 @@ class NetworkProtectionViewModel: ObservableObject {
         // Загружаем статусы по приоритетам
         let prioritizedItems = createPrioritizedLoadItems()
 
-        // Проверяем демо режим
+        // Режим без сессии (локальный кэш тумблеров)
         if AppConfig.authToken == nil {
-            // Демо режим: загружаем из UserDefaults
+            // Локальный режим (без токена): загружаем из UserDefaults
             await loadDemoModeStatuses(prioritizedItems: prioritizedItems)
         } else {
             // Продакшен режим: загружаем из API
@@ -184,15 +185,14 @@ class NetworkProtectionViewModel: ObservableObject {
     }
 
     private func loadDemoModeStatuses(prioritizedItems: [(id: String, priority: ComponentLoadPriority)]) async {
-        // Демо режим: загружаем статусы из UserDefaults
+        // Локальный режим: статусы из UserDefaults (кэш тумблеров)
         // ✅ BUILD 104: УБРАЛИ await MainActor.run {} - метод уже на @MainActor
         for item in prioritizedItems {
-            let userDefaultsKey = "demo_component_\(item.id)_enabled"
-            let isEnabled = UserDefaults.standard.bool(forKey: userDefaultsKey)
+            let isEnabled = AppConfig.NetworkProtectionComponentToggleStorage.readBool(componentId: item.id)
 
             self.updateStatusForComponent(componentId: item.id, isEnabled: isEnabled)
 
-            print("📱 Демо режим: Загружен статус \(item.id) = \(isEnabled)")
+            print("📱 Локальный кэш: статус \(item.id) = \(isEnabled)")
         }
     }
 
@@ -201,7 +201,7 @@ class NetworkProtectionViewModel: ObservableObject {
         // ✅ BUILD 104: УБРАЛИ await MainActor.run {} - метод уже на @MainActor
         // ✅ ЭТАП 2: Проверка токена перед загрузкой
         guard AppConfig.authToken != nil else {
-            print("⚠️ NetworkProtectionViewModel: Токен отсутствует, переключаемся на демо режим")
+            print("⚠️ NetworkProtectionViewModel: Токен отсутствует, загружаем локальный кэш тумблеров")
             await loadDemoModeStatuses(prioritizedItems: prioritizedItems)
             return
         }
@@ -242,21 +242,92 @@ class NetworkProtectionViewModel: ObservableObject {
     }
 
     func toggleCrashDetection(_ newValue: Bool) async {
+        if newValue {
+            await enableCrashDetectionHardwareFirstThenServer()
+            return
+        }
+
         await toggleComponent(
             componentId: "crash_detection_agent",
-            newValue: newValue,
+            newValue: false,
             updateClosure: { [weak self] value in self?.crashDetectionEnabled = value }
         )
 
-        // Интеграция с CrashDetectionManager
         do {
-            if newValue {
-                try await CrashDetectionManager.shared.startMonitoring()
-            } else {
-                try await CrashDetectionManager.shared.stopMonitoring()
-            }
+            try await crashDetection.stopMonitoring()
         } catch {
-            print("❌ NetworkProtectionViewModel: Ошибка управления Crash Detection: \(error.localizedDescription)")
+            print("❌ NetworkProtectionViewModel: Ошибка остановки Crash Detection: \(error.localizedDescription)")
+        }
+    }
+
+    /// Вариант B: сначала локальный мониторинг; при успехе — включение компонента на сервере.
+    private func enableCrashDetectionHardwareFirstThenServer() async {
+        let componentId = "crash_detection_agent"
+        let recursionKey = "NetworkProtectionViewModel.isToggling.\(componentId)"
+        if Thread.current.threadDictionary[recursionKey] != nil {
+            print("⚠️ [NetworkProtectionViewModel] Рекурсия заблокирована для \(componentId)")
+            return
+        }
+        Thread.current.threadDictionary[recursionKey] = true
+        defer { Thread.current.threadDictionary.removeObject(forKey: recursionKey) }
+
+        togglingLock.lock()
+        guard !isToggling else {
+            togglingLock.unlock()
+            print("⚠️ NetworkProtectionViewModel: toggleComponent уже выполняется, пропускаем")
+            return
+        }
+        isToggling = true
+        togglingLock.unlock()
+        defer {
+            togglingLock.lock()
+            isToggling = false
+            togglingLock.unlock()
+        }
+
+        let isProduction = AppConfig.authToken != nil
+
+        errorMessage = nil
+
+        do {
+            try await crashDetection.startMonitoring()
+        } catch {
+            crashDetectionEnabled = false
+            errorMessage = error.localizedDescription
+            componentAnalytics.trackComponentError(componentId: componentId, error: error)
+            toastManager.showError(error.localizedDescription)
+            print("❌ NetworkProtectionViewModel: Не удалось запустить Crash Detection на устройстве: \(error.localizedDescription)")
+            return
+        }
+
+        if isProduction {
+            do {
+                try await statusService.updateStatus(componentId: componentId, isEnabled: true)
+            } catch {
+                try? await crashDetection.stopMonitoring()
+                crashDetectionEnabled = false
+                errorMessage = error.localizedDescription
+                let networkError = NetworkError.from(error)
+                if case .unauthorized(let message) = networkError {
+                    let errorText = message ?? "Сессия истекла. Пожалуйста, войдите снова."
+                    toastManager.showError(errorText)
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("SessionExpired"),
+                        object: nil,
+                        userInfo: ["message": errorText]
+                    )
+                } else {
+                    componentAnalytics.trackComponentError(componentId: componentId, error: error)
+                    toastManager.showError("Ошибка: \(error.localizedDescription)")
+                }
+                return
+            }
+            componentAnalytics.trackComponentToggle(componentId: componentId, enabled: true)
+            toastManager.showSuccess("Компонент обновлен")
+        } else {
+            AppConfig.NetworkProtectionComponentToggleStorage.writeBool(true, componentId: componentId)
+            componentAnalytics.trackComponentToggle(componentId: componentId, enabled: true)
+            toastManager.showSuccess("Компонент обновлён локально")
         }
     }
 
@@ -435,8 +506,6 @@ class NetworkProtectionViewModel: ObservableObject {
         // ✅ BUILD 102: Оптимистичное обновление UI
         updateClosure(newValue)
 
-        // ✅ BUILD 114: Асинхронная запись для предотвращения петли уведомлений
-        let userDefaultsKey = "demo_component_\(componentId)_enabled"
         let isProduction = AppConfig.authToken != nil
 
         if isProduction {
@@ -489,11 +558,11 @@ class NetworkProtectionViewModel: ObservableObject {
                 }
             }
         } else {
-            // Демо режим: асинхронно в UserDefaults
+            // Локально (без сессии): сохраняем только на устройстве
             DispatchQueue.main.async { [weak self] in
-                UserDefaults.standard.set(newValue, forKey: userDefaultsKey)
+                AppConfig.NetworkProtectionComponentToggleStorage.writeBool(newValue, componentId: componentId)
                 self?.componentAnalytics.trackComponentToggle(componentId: componentId, enabled: newValue)
-                self?.toastManager.showSuccess("Компонент обновлен (демо режим)")
+                self?.toastManager.showSuccess("Компонент обновлён локально")
             }
         }
     }

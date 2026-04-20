@@ -169,3 +169,11 @@ Exit criteria:
   - run smoke checks for 5 stats + 5 list endpoints
   - confirm no mock markers
 
+## Связанные артефакты (репозиторий)
+
+- Утверждённые пороги freshness: `THRESHOLDS_CONFIRMED.md`
+- Пример Prometheus alert rules: `prometheus_aladdin_analytics_alerts.example.yml`
+- Чеклист PII для метрик/логов: `PII_METRICS_CHECKLIST.md`
+- Минимум панелей Grafana: `GRAFANA_DASHBOARD_MINIMUM.md`
+- Смоук плановых карточек Driving + AI Categories: `../../tools/smoke_plan_cards_driving_ai.py`
+

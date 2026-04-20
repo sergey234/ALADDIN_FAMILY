@@ -81,6 +81,15 @@
 "network_protection.threats.blocked" = "Blocked";
 "network_protection.connect" = "Connect Network Protection";
 "network_protection.disconnect" = "Disconnect Network Protection";
+"network_protection_help_antivirus_question" = "How does file checking work?";
+"network_protection_help_antivirus_answer" = "You pick a single file. The app does not scan your entire device (iOS does not allow that for third‑party apps). Local checks run first; for files up to %d MB, an extra server check may run when you are online and signed in. Network protection encrypts your connection.";
+"antivirus_scan_choose_file_button" = "Choose file to scan";
+"antivirus_scan_choose_file_accessibility_hint" = "Opens a document picker. Only the file you select is analyzed.";
+"antivirus_scan_legal_disclaimer" = "Only the file you select is analyzed. A full storage sweep is not available on iOS. Local heuristics always run; cloud scanning applies only to files up to %d MB when the service is reachable.";
+"antivirus_scan_picker_error" = "Could not access the selected file. Please try again.";
+"crash_detection_simulator_banner" = "Simulator: motion data is approximate. Validate real crash detection on an iPhone. DEBUG builds include a synthetic test.";
+"antivirus_toast_server_check_unavailable" = "Server scan is unavailable. Rely on the local check result.";
+"antivirus_toast_large_file_local_only" = "Files over %d MB are not uploaded; you are seeing local checks only.";
 
 /* ═══════════════════════════════════════════════════════════════
  * ANALYTICS

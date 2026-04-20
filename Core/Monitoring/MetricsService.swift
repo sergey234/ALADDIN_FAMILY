@@ -79,14 +79,32 @@ class MetricsService {
      *   - action: Название действия
      *   - parameters: Дополнительные параметры
      */
+    /// Параметры не должны содержать секреты; перед отправкой ключи вроде password/token скрываются.
     func trackUserAction(action: String, parameters: [String: Any]? = nil) {
         let metric = UserActionMetric(
             timestamp: Date(),
             action: action,
-            parameters: parameters
+            parameters: Self.sanitizeMetricParameters(parameters)
         )
 
         addMetric(metric)
+    }
+
+    /// Убирает из словаря метрик поля, по имени ключа похожие на секреты (отправка на `/api/metrics/upload` без обязательной авторизации).
+    private static func sanitizeMetricParameters(_ parameters: [String: Any]?) -> [String: Any]? {
+        guard let parameters, !parameters.isEmpty else { return parameters }
+        let blockedSubstrings = ["password", "token", "secret", "authorization", "cookie", "session", "refresh", "bearer"]
+        var out: [String: Any] = [:]
+        out.reserveCapacity(parameters.count)
+        for (key, value) in parameters {
+            let lower = key.lowercased()
+            if blockedSubstrings.contains(where: { lower.contains($0) }) {
+                out[key] = "<redacted>"
+            } else {
+                out[key] = value
+            }
+        }
+        return out
     }
 
     /**

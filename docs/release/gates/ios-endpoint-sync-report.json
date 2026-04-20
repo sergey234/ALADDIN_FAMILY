@@ -1,8 +1,8 @@
 {
-  "generated_at": "2026-03-31T00:46:16",
+  "generated_at": "2026-04-19T20:21:28",
   "ios_config": "Core/Config/AppConfig.swift",
   "openapi_snapshot": "docs/release/current/openapi.json",
-  "ios_endpoint_count": 255,
+  "ios_endpoint_count": 258,
   "missing_in_openapi_count": 0,
   "pass": true,
   "missing_in_openapi": []

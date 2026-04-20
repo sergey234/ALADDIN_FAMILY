@@ -223,45 +223,38 @@ class AntivirusManager: ObservableObject {
     
     // MARK: - Full Server Scan
     
-    /// Полное сканирование файла на сервере
+    /// Максимальный размер файла для отправки на сервер (байты). Крупнее — только локальные эвристики.
+    static let maxServerScanUploadBytes: Int64 = 25 * 1024 * 1024
+    
+    static var maxServerScanUploadMegabytes: Int {
+        Int(maxServerScanUploadBytes / (1024 * 1024))
+    }
+    
+    /// Полное сканирование: локальная база → метаданные → при возможности сервер.
     func performFullScan(fileURL: URL) async -> ScanResult {
         log("🛡️ Начато полное сканирование: \(fileURL.lastPathComponent)")
         
         isScanning = true
         scanProgress = 0.0
         
-        // Начало сканирования (может использоваться для логирования времени)
-        let _ = Date()
-        
-        // 1. Быстрая локальная проверка
-        let quickResult = await quickMetadataCheck(fileURL: fileURL)
-        
-        if quickResult == .clean || quickResult == .safe {
-            scanProgress = 1.0
+        let offline = await scanOffline(fileURL: fileURL)
+        scanProgress = 0.15
+        if offline.threatLevel == .suspicious {
             isScanning = false
-            
-            let result = ScanResult(
-                filePath: fileURL.path,
-                threatLevel: quickResult,
-                detectedThreats: [],
-                scanTime: Date(),
-                checksum: nil
-            )
-            
-            lastScanResult = result
-            log("✅ Сканирование завершено: файл безопасен")
-            
-            return result
+            scanProgress = 1.0
+            lastScanResult = offline
+            threatsDetected = offline.detectedThreats
+            log("⚠️ Офлайн-скан: обнаружена угроза")
+            return offline
         }
         
+        let quickResult = await quickMetadataCheck(fileURL: fileURL)
         scanProgress = 0.3
         
-        // 2. Отправка на сервер для глубокого сканирования
-        guard let metadata = extractMetadata(from: fileURL),
-              let fileData = try? Data(contentsOf: fileURL) else {
-            log("❌ Не удалось загрузить файл для сканирования")
+        guard let metadata = extractMetadata(from: fileURL) else {
+            log("❌ Не удалось извлечь метаданные для полного скана")
             isScanning = false
-            
+            scanProgress = 1.0
             let result = ScanResult(
                 filePath: fileURL.path,
                 threatLevel: .checkingServer,
@@ -269,14 +262,53 @@ class AntivirusManager: ObservableObject {
                 scanTime: Date(),
                 checksum: nil
             )
-            
             lastScanResult = result
             return result
         }
         
-        scanProgress = 0.6
+        let sizeOk = metadata.size > 0 && metadata.size <= Self.maxServerScanUploadBytes
+        let needsServerByMeta = (quickResult == .suspicious || quickResult == .checkingServer)
+        let shouldTryServer = sizeOk && (needsServerByMeta || quickResult == .safe)
         
-        // Отправка на сервер
+        if !shouldTryServer {
+            isScanning = false
+            scanProgress = 1.0
+            let level: ThreatLevel
+            if !sizeOk && (quickResult == .suspicious || quickResult == .checkingServer) {
+                level = quickResult == .suspicious ? .suspicious : .checkingServer
+            } else {
+                level = quickResult == .clean ? .clean : .safe
+            }
+            let result = ScanResult(
+                filePath: fileURL.path,
+                threatLevel: level,
+                detectedThreats: [],
+                scanTime: Date(),
+                checksum: metadata.checksum
+            )
+            lastScanResult = result
+            threatsDetected = []
+            log("✅ Сканирование завершено без отправки на сервер (размер или политика)")
+            return result
+        }
+        
+        guard let fileData = try? Data(contentsOf: fileURL), !fileData.isEmpty else {
+            log("❌ Не удалось прочитать файл для сканирования")
+            isScanning = false
+            scanProgress = 1.0
+            let result = ScanResult(
+                filePath: fileURL.path,
+                threatLevel: .checkingServer,
+                detectedThreats: [],
+                scanTime: Date(),
+                checksum: metadata.checksum
+            )
+            lastScanResult = result
+            return result
+        }
+        
+        scanProgress = 0.55
+        
         if let serverResult = await uploadForDeepScan(fileData: fileData, metadata: metadata) {
             scanProgress = 1.0
             isScanning = false
@@ -293,24 +325,40 @@ class AntivirusManager: ObservableObject {
             threatsDetected = serverResult.detectedThreats
             
             log("✅ Серверное сканирование завершено: \(serverResult.detectedThreats.count) угроз обнаружено")
-            
+
+            if !serverResult.detectedThreats.isEmpty {
+                Task {
+                    do {
+                        let serverList = try await APIService.shared.getUserThreatsAsync()
+                        await MainActor.run {
+                            self.log("📡 Каталог угроз на сервере после скана: \(serverList.count) записей")
+                        }
+                    } catch {
+                        await MainActor.run {
+                            self.log("⚠️ Не удалось подтянуть GET /api/malware/threats: \(error.localizedDescription)")
+                        }
+                    }
+                }
+            }
+
             return result
         }
         
-        // Ошибка подключения к серверу
         scanProgress = 1.0
         isScanning = false
         
+        let fallbackLevel: ThreatLevel = (quickResult == .safe) ? .safe : .checkingServer
         let result = ScanResult(
             filePath: fileURL.path,
-            threatLevel: .checkingServer,
+            threatLevel: fallbackLevel,
             detectedThreats: [],
             scanTime: Date(),
             checksum: metadata.checksum
         )
         
         lastScanResult = result
-        log("⚠️ Не удалось подключиться к серверу для сканирования")
+        threatsDetected = []
+        log("⚠️ Серверное сканирование недоступно или завершилось ошибкой")
         
         return result
     }
@@ -322,9 +370,48 @@ class AntivirusManager: ObservableObject {
         logger.business("Uploading file for deep server scan: \(metadata.name) (\(fileData.count) bytes)")
         log("📤 Отправка файла на сервер для сканирования")
         
-        // TODO: Интеграция с APIService
-        // Временная заглушка
-        return nil
+        do {
+            let api = try await APIService.shared.uploadFileForScanAsync(
+                fileData: fileData,
+                fileName: metadata.name,
+                fileSize: metadata.size,
+                checksum: metadata.checksum
+            )
+            return Self.mapFileScanResponse(api)
+        } catch {
+            log("❌ Ошибка серверного скана: \(error.localizedDescription)")
+            return nil
+        }
+    }
+
+    private static func mapFileScanResponse(_ api: APIService.MalwareFileScanAPIResponse) -> ServerScanResult {
+        let threats: [Threat] = (api.threatsFound ?? []).enumerated().map { index, dto in
+            let tid: String
+            if let id = dto.id, !id.isEmpty {
+                tid = id
+            } else {
+                tid = "server_threat_\(index)"
+            }
+            return Threat(
+                id: tid,
+                name: dto.name ?? "Unknown threat",
+                type: dto.type ?? "malware",
+                severity: dto.severity ?? "medium",
+                description: dto.description ?? "",
+                confidence: dto.confidence ?? (api.confidence ?? 0.5)
+            )
+        }
+        let isClean = api.clean ?? threats.isEmpty
+        let level: ThreatLevel
+        if threats.isEmpty && isClean {
+            level = .clean
+        } else if threats.isEmpty && !isClean {
+            level = .suspicious
+        } else {
+            level = .dangerous
+        }
+        let recs = api.recommendations ?? []
+        return ServerScanResult(threatLevel: level, detectedThreats: threats, recommendations: recs)
     }
     
     struct ServerScanResult {
@@ -405,7 +492,8 @@ class AntivirusManager: ObservableObject {
                 threatName: threat.name,
                 threatType: threat.type,
                 severity: threat.severity,
-                confidence: threat.confidence
+                confidence: threat.confidence,
+                stableThreatId: threat.id
             )
             
             await MainActor.run {

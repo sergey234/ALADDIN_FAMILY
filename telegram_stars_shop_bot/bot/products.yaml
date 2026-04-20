@@ -1,0 +1,74 @@
+# Каталог: добавляйте позиции здесь. price_usd — закуп/себестоимость-ориентир или ваша наценка.
+# kind: premium | stars
+products:
+  - id: premium_1
+    kind: premium
+    title: "Premium 1 мес."
+    emoji: "💎"
+    duration_months: 1
+    price_usd: 4.5
+
+  - id: premium_3
+    kind: premium
+    title: "Premium 3 мес."
+    emoji: "💎"
+    duration_months: 3
+    price_usd: 12.0
+
+  - id: premium_6
+    kind: premium
+    title: "Premium 6 мес."
+    emoji: "💎"
+    duration_months: 6
+    price_usd: 22.0
+
+  - id: premium_12
+    kind: premium
+    title: "Premium 12 мес."
+    emoji: "💎"
+    duration_months: 12
+    price_usd: 40.0
+
+  - id: stars_100
+    kind: stars
+    title: "100 Stars"
+    emoji: "⭐"
+    stars: 100
+    price_usd: 1.8
+
+  - id: stars_300
+    kind: stars
+    title: "300 Stars"
+    emoji: "⭐"
+    stars: 300
+    price_usd: 5.2
+
+  - id: stars_500
+    kind: stars
+    title: "500 Stars"
+    emoji: "⭐"
+    stars: 500
+    price_usd: 8.5
+    featured: true
+    sort_order: 0
+
+  - id: gift_custom
+    kind: gift
+    title: "Подарок (на выбор)"
+    emoji: "🎁"
+    price_usd: 5.0
+    sort_order: 10
+
+  - id: stars_1000
+    kind: stars
+    title: "1000 Stars"
+    emoji: "⭐"
+    stars: 1000
+    price_usd: 16.5
+
+  - id: stars_2000
+    kind: stars
+    title: "2000 Stars"
+    emoji: "⭐"
+    stars: 2000
+    price_usd: 32.0

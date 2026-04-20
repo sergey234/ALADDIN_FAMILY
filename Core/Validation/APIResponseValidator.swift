@@ -1,12 +1,48 @@
 import Foundation
 import os.log
 
+/// Как сопоставлять ответ статуса компонента с запрошенным `componentId` (эндпоинты get/enable/disable).
+enum ComponentStatusAPIResolutionPolicy {
+    /// Id из URL/запроса — канон: расхождение в теле не ломает клиент.
+    case canonicalRequestIdAlwaysWins
+    /// Непустой `component_id` в envelope должен совпадать с запросом.
+    case rejectMismatchedExplicitComponentId
+}
+
 /**
  * 🛡️ API Response Validator
  * Валидация данных, получаемых от API
  * Предотвращает краши приложения от некорректных данных
  */
 struct APIResponseValidator {
+
+    // MARK: - Component status (envelope / flat → ComponentStatus)
+
+    /// Единая сборка `ComponentStatus` из `ComponentStatusResponse` для `APIService` get/enable/disable.
+    static func makeComponentStatus(
+        from response: ComponentStatusResponse,
+        canonicalComponentId: String,
+        policy: ComponentStatusAPIResolutionPolicy = .canonicalRequestIdAlwaysWins
+    ) throws -> ComponentStatus {
+        let derived = response.componentStatus
+
+        if case .rejectMismatchedExplicitComponentId = policy {
+            if let bodyId = response.componentId, !bodyId.isEmpty, bodyId != canonicalComponentId {
+                throw NetworkError.decodingError(NSError(
+                    domain: "APIResponseValidator",
+                    code: 10,
+                    userInfo: [NSLocalizedDescriptionKey: "component_id mismatch: expected \(canonicalComponentId), got \(bodyId)"]
+                ))
+            }
+        }
+
+        return ComponentStatus(
+            componentId: canonicalComponentId,
+            isEnabled: derived.isEnabled,
+            lastUpdate: derived.lastUpdate,
+            configuration: derived.configuration
+        )
+    }
 
     // MARK: - Logger
 

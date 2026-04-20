@@ -2,9 +2,11 @@
 
 Этот документ — краткая, практичная инструкция: что уже сделано, в чём проблема, что именно требуется сделать для 100% боевых, «честных» данных по всем компонентам (42) и функциям безопасности (138), и как это проверить.
 
+**Единый список того, что ещё не закрыто (включая 11 задач из старого трекера и хвосты после него):** `docs/REMAINING_TASKS_MASTER.md`.
+
 ## 1) Краткий контекст
 - Клиент (iOS) стабилизирован: единый источник `componentsAnalytics`, анти‑livelock, Retry, мини‑логи, Dark Web переведён на агрегатор; все mock‑ответы на уровне gateway/middleware блокируются (503).
-- Сервер: для пяти доменов компонентной аналитики (Dark Web, Identity Theft, Tracker, Location Bubble, Data Cleanup) сейчас отдаются совместимые «compat» ответы, НО отсутствуют боевые провайдеры данных и реальные таблицы/ingest → нет «честных» прод‑цифр.
+- Сервер (пять доменов компонентной аналитики: Dark Web, Identity Theft, Tracker, Location Bubble, Data Cleanup): основной путь **stats + list** и персистентность на стороне API описаны в §2.1 (миграции, ingest, чтение из БД). Дальше по плану — **gateway precision**, **наблюдаемость**, **полная верификация 42/138** и наполнение данными по SLA, а не «включить таблицы с нуля».
 
 ## 2) Что уже реализовано (факт)
 - Gateway/middleware:
@@ -14,23 +16,40 @@
 - iOS:
   - Аналитика переведена на `componentsAnalytics` (единый источник), удалены повторные GET.
   - Добавлены watchdog/дефер/дебаунсы/минимизация публикаций (устранён livelock).
-  - Для Dark Web scan старт — временно отключён на клиенте (и блокируется на сервере).
-- Контрактные смоук‑тесты для компонентных DTO присутствуют (`tools/contract_tests_components.py`).
+  - **Dark Web scan (старт):** клиент вызывает боевой **`POST`** на `…/dark-web/scan/start` (запись события на сервере); легаси‑**GET** не используется. **Продуктовый рубильник:** `AppConfig.isDarkWebServerScanEnabled` / ключ `UserDefaults` `dark_web_server_scan_enabled` — если ключ **не** задан, скан **включён**; явное `false` отключает UI и сетевые вызовы скана без пересборки.
+- Контрактные смоук‑тесты для компонентных DTO: `tools/contract_tests_components.py` на **stdlib** (`urllib`), без зависимости **`requests`**; переменная окружения `ALADDIN_API_BASE` (команды — в `docs/ANALYTICS_COMPONENTS_CONTRACT_SMOKE.md`).
 
-## 2.1) Текущий статус выполнения (2026‑03‑29)
+## 2.1) Текущий статус выполнения (2026‑04‑19)
 - Выполнено:
   - A. Миграции БД по 5 доменам (схемы/таблицы/индексы/UNIQUE для идемпотентности).
   - B. Минимальный ingestion (идемпотентные upsert’ы + функции агрегатов; свежесть подтверждена).
   - C. Боевые stats‑роутеры 5 доменов читают из БД (200 OK; нет `reports_compat/sfm_mock/mock_fallback`).
-  - `ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md` дополнен пошаговым алгоритмом входа/аудита.
+  - Расширение C на **list‑эндпоинты** с курсором: реализовано в `security/api/routers/reports_router.py` (напр. `/dark-web/leaks/list`, `/identity-theft/attempts/list`, …); на проде отвечают **200** с полем `items`.
+  - `ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md` дополнен пошаговым алгоритмом входа/аудита и блоком malware/threats/quarantine.
+  - **Malware (iOS + API):** PostgreSQL `user_malware_threats`, запись при скане с JWT, карантин `POST /api/malware/quarantine/action`, метаданные + `file_hash`, смоук **`tools/smoke_malware_threats_persist.py`** (реальный прод: скан EICAR → список → quarantine → `status=quarantined`).
+  - **Смоук отчётов по плану F:** **`tools/smoke_reports_five_domains.py`** — 7×`stats` (включая driving и ai-categories) + 5×list, проверка отсутствия mock‑маркеров в теле ответа.
+  - **Контракт компонентных stats (расширение):** **`tools/contract_tests_components.py`** — регистрация устройства → JWT → GET канонических `stats` (в т.ч. driving week, dark-web, identity-theft, privacy/*, ai-categories); **503** по политике блокировки моков считается допустимым проходом; транспорт только **stdlib** (без `requests`).
+  - **iOS Dark Web scan:** см. §2 (POST + рубильник); дублирующий клиент в `Family_Registration_Removal_Files/Client/APIService.swift` выровнен по **POST** с основным `APIService`.
 - В работе:
-  - D. Precision в gateway (жёсткие маршруты на новые handlers; исключить wildcard/SFM).
-- Осталось:
-  - Расширение C на list‑эндпоинты (leaks/attempts/requests/records/top) с cursor‑пагинацией;
-  - E/F/G и задачи раздела 5.3 ниже (наблюдаемость, контракты, разморозка, верификация 42/138 и пр.).
+  - D. **Precision `/api/reports/*`** — для `main:app` на `:8002` закрыто; файл **`api_gateway.py`** на сервере выровнен с репо (см. §2.2 п.1). Если где‑то ещё поднимают **отдельный** процесс gateway — сверять с репозиторием вручную (`docs/REMAINING_TASKS_MASTER.md` → B5).
+- Осталось (см. **очередь §2.2** и **`docs/REMAINING_TASKS_MASTER.md`**):
+  - E. Наблюдаемость **на инфраструктуре** (вкатить правила/дашборд; см. §5.3 obs‑5).
+  - F. Регулярный прогон смоуков/контрактов в CI + секрет базового URL; ручные `curl` по чеклисту §7.
+  - Инвентаризация и приёмка **42/138** — канон: `docs/audit/AUDIT_42_INVENTORY.md`, `docs/audit/EXTENDED_138_CHECKLIST.md`.
+
+## 2.2) Очередь выполнения (по порядку, без расползания по прочим TODO‑файлам)
+
+Делать **строго по шагам**; следующий шаг не начинать, пока не зафиксирован результат предыдущего (лог смоука, PR, деплой по гайду).
+
+1. **[precision-gw]** — **выполнено (код + прод 2026‑04‑19):** `api_gateway.py` / `api_gateway_server_current.py` + `reports_router` на хосте; `main:app` на `:8002` с precision `/api/reports/*`; контроль `ALADDIN_API_BASE=… python3 tools/contract_tests_components.py` → **7/7**.
+2. **[obs-5]** — **в репозитории зафиксированы артефакты (2026‑04‑19):** пороги `docs/observability/THRESHOLDS_CONFIRMED.md`; пример правил Prometheus `docs/observability/prometheus_aladdin_analytics_alerts.example.yml`; чеклист PII `docs/observability/PII_METRICS_CHECKLIST.md`; минимум панелей Grafana `docs/observability/GRAFANA_DASHBOARD_MINIMUM.md`. Экспортёр freshness уже в **`main.py`** и **`api_gateway.py`** (`/metrics`, gauge `aladdin_analytics_freshness_seconds`). **Осталось на инфраструктуре:** применить YAML в реальном Prometheus/Alertmanager, импортировать дашборд в Grafana.
+3. **[driving-verify]** — **автосмоук 1‑го уровня:** `ALADDIN_API_BASE=… python3 tools/smoke_plan_cards_driving_ai.py` (ветка Driving); полная цепочка ingest→SLA + мини‑лог iOS — в backlog.
+4. **[ai-categories-verify]** — то же скрипт, ветка AI Categories; полная верификация содержимого — в backlog.
+5. **[extended-42-verify]** — журнал старта в **§5.4**; дальше заполнять пакетами по §5.2.
+6. **CI** — workflow **`.github/workflows/api-contract-components.yml`**: Ubuntu, `contract_tests_components.py` + `smoke_plan_cards_driving_ai.py`; опционально секрет `ALADDIN_CONTRACT_API_BASE`, иначе дефолтный базовый URL в скриптах.
 
 ## 3) Главная проблема
-У пяти компонентных доменов нет боевых провайдеров данных и персистентного слоя (PostgreSQL + ingest). «Compat» возвращает контрактно‑верный, но не боевой payload. Клиент честно покажет 503 вместо «мок‑успеха», пока не появятся реальные источники данных.
+Исторически «compat» давал контракт без боевых цифр. После шагов A–C (§2.1) **персистентный слой и чтение stats/list из БД** для пяти доменов заведены; остаётся риск **пустых или редко обновляемых агрегатов** без нормального **ingest‑потока по SLA**, без **наблюдаемости (freshness)** и без завершённой **precision‑маршрутизации** на всех входах (в т.ч. отдельный gateway). Клиент по-прежнему честно показывает пустоту/503, если данных нет или маршрут заблокирован политикой моков.
 
 ## 4) Что конкретно сделать (шаги А→G)
 
@@ -77,11 +96,12 @@
     - `tools/contract_tests_components.py` (ожидаем 200 OK или 503 для явно заблокированных моков);
     - ручные GET всех новых эндпоинтов (ожидаем 200 OK, без mock‑маркеров; при пустых данных — нули/пустые массивы).
 
-- G. Разморозка клиентских фич:
-  - Включить кнопку `dark-web scan` и возвратить вызовы только после появления реального backend.
+- G. Разморозка клиентских фич (Dark Web scan):
+  - **Сделано на iOS:** боевой **POST** старта скана + рубильник в UserDefaults (по умолчанию включено).
+  - **Продуктово:** при необходимости «заморозки» для стора — выставить `dark_web_server_scan_enabled = false` без смены кода; при полной готовности оставить ключ незаданным или `true`.
   
 - H. Почему «5 из 7 карточек» и что с оставшимися двумя:
-  - Эти 5 доменов (Dark Web, Identity Theft, Tracker, Location Bubble, Data Cleanup) — проблемные области без боевых провайдеров данных, их реализуем по шагам A→G.
+  - Эти 5 доменов (Dark Web, Identity Theft, Tracker, Location Bubble, Data Cleanup) — первыми выровнены по схеме A→C (БД, ingest, роутеры); дальнейшая работа — **SLA данных**, gateway, наблюдаемость и полная инвентаризация 42/138.
   - Оставшиеся 2 карточки («Driving», «AI Categories») — проходят такую же верификацию по шаблону 5.2 (источник→БД/ingest→роутер→DTO→gateway precision).
   - Если выявим compat/отсутствие провайдера — применяем те же шаги A→G точечно для соответствующей карточки. Это не «передел плана», а локальное дополнение.
 
@@ -113,22 +133,40 @@
    - mini‑лог фиксирует источник (api/cache) и причины пустоты.
 
 ### 5.3. Список задач (родительские тикеты)
-- [in_progress] audit-42-inventory: Полная карта «экран/фича → endpoint → БД → агент → SLA».
+- [in_progress] audit-42-inventory: Полная карта «экран/фича → endpoint → БД → агент → SLA». **Каноническая живая таблица:** `docs/audit/AUDIT_42_INVENTORY.md` (заполнять до `inventory=ok` по всем 42; старые отчёты `ПОЛНЫЙ_АНАЛИЗ_42_*` — справочно, не заменяют эту таблицу).
 - [completed] db-migrations-5: Миграции под 5 доменов (DarkWeb/Identity/Tracker/Location/Cleanup).
 - [completed] ingest-5: Настроить ingestion (очередь/consumer), MVs/cron агрегаты.
-- [completed] routers-5: Реализовать боевые handlers чтения из БД для `stats` по 5 доменам (list‑эндпоинты — TODO).
-- [in_progress] precision-gw: Подключить новые роутеры как precision в gateway.
-- [in_progress] obs-5: Наблюдаемость (Prometheus pull, http_* метрики, freshness, алёрты, дашборды).
-  - [pending] obs-freshness-exporter: Prometheus pull‑экспортёр freshness (RO к БД, cache 30–60с).
-  - [pending] obs-alerts-rules: Alertmanager правила — NoFreshData, p95>500ms(10m), 5xx>1%(5m).
-  - [pending] obs-grafana-dashboard: Дашборд Grafana — RPS, p50/p95, 5xx%, freshness per domain, фильтры env/version.
-  - [pending] obs-pii-audit-metrics: Аудит/маскирование PII в лейблах/логах метрик; только тех.лейблы.
-  - [pending] obs-thresholds-confirm: Утвердить доменные пороги freshness (DW72h/ID24h/TR12h/LOC6h/CLN168h).
-- [pending] smoke-contracts: Прогнать контрактные смоук‑тесты + ручные GET.
-- [pending] extended-42-verify: Финальная верификация 42/138 с реальными данными (BusinessOK не только по контракту, но и по содержанию).
-- [pending] unfreeze-dw-scan: Включить `dark-web scan` в клиенте после боевого backend.
-- [pending] driving-verify: Проверка карточки Driving (источники→БД/ingest→роутер→DTO→precision).
-- [pending] ai-categories-verify: Проверка карточки AI Categories (источники→БД/ingest→роутер→DTO→precision).
+- [completed] routers-5: Боевые handlers чтения из БД для `stats` и **list** (cursor) по 5 доменам в `reports_router.py`.
+- [completed] precision-gw: Precision `/api/reports/*` в коде + выкат на прод; wildcard `reports/*` в `api_gateway.py` → 503.
+- [in_progress] obs-5: Наблюдаемость — **код/доки в репо [completed]**; **операции на прод‑инфраструктуре [pending]** (Prometheus rules, Alertmanager, Grafana, HTTP p95/5xx при готовности метрик). Детали: `docs/REMAINING_TASKS_MASTER.md` → B2, B3.
+  - [completed] obs-freshness-exporter: Gauge + фоновое обновление в **`main.py`** и **`api_gateway.py`**, scrape `/metrics`.
+  - [completed] obs-alerts-rules (репо): пример правил — `docs/observability/prometheus_aladdin_analytics_alerts.example.yml` (вкатить в боевой Prometheus вручную).
+  - [completed] obs-grafana-dashboard (репо): минимум панелей — `docs/observability/GRAFANA_DASHBOARD_MINIMUM.md` (импорт JSON в Grafana вручную).
+  - [completed] obs-pii-audit-metrics (репо): чеклист — `docs/observability/PII_METRICS_CHECKLIST.md`.
+  - [completed] obs-thresholds-confirm: `docs/observability/THRESHOLDS_CONFIRMED.md`.
+- [completed] smoke-contracts (база): автосмоуки `tools/smoke_malware_threats_persist.py`, `tools/smoke_reports_five_domains.py` (прод, без mock‑маркеров). Расширенный прогон **`tools/contract_tests_components.py`** — **только stdlib** (`urllib`), **`requests` не требуется**; прогон: `ALADDIN_API_BASE=<API> python3 tools/contract_tests_components.py`.
+- [pending] extended-42-verify: Финальная верификация 42/138 с реальными данными (BusinessOK не только по контракту, но и по содержанию). **Трекер:** `docs/audit/EXTENDED_138_CHECKLIST.md`.
+- [completed] unfreeze-dw-scan: Клиент iOS вызывает боевой **POST** старта скана; включение/выключение — **рубильник** `dark_web_server_scan_enabled` (см. §2). Дальнейшие изменения — только продуктовые (копирайт, лимиты, UX), без отката на GET‑заглушку для старта.
+- [in_progress] driving-verify: автосмоук `tools/smoke_plan_cards_driving_ai.py`; полная цепочка + iOS mini‑log — далее.
+- [in_progress] ai-categories-verify: то же.
+
+### 5.4. Журнал прогресса extended‑42 / 138 (старт 2026‑04‑19)
+
+Семь карточек «Компоненты защиты» (KPI дня) — контракт + прод‑смоук:
+
+| Карточка        | GET stats (канон)                         | Контракт 7/7 | Смоук содержим. (source)      |
+|-----------------|-------------------------------------------|--------------|-------------------------------|
+| Driving         | `/api/reports/driving/stats?period=week`  | OK           | `smoke_plan_cards_driving_ai` |
+| Dark Web        | `/api/reports/dark-web/stats`             | OK           | в составе contract 7/7        |
+| Identity Theft  | `/api/reports/identity-theft/stats`       | OK           | в составе contract 7/7        |
+| Location Bubble | `/api/reports/privacy/location/stats`     | OK           | в составе contract 7/7        |
+| Data Cleanup    | `/api/reports/privacy/cleanup/stats`      | OK           | в составе contract 7/7        |
+| Tracker         | `/api/reports/privacy/tracker/stats`      | OK           | в составе contract 7/7        |
+| AI Categories   | `/api/reports/ai-categories/stats`        | OK           | `smoke_plan_cards_driving_ai` |
+
+Остальные **35** компонентов и **138** функций — строки таблицы добавлять по мере прохождения §5.2.
+
+- **2026‑04‑19:** в `docs/audit/AUDIT_42_INVENTORY.md` (таблица 2) уточнены цепочки API по `AppConfig.Endpoint` и экранам; добавлена таблица расхождений id реестра 42 vs Swift для четырёх компонентов; повторный прогон `ALADDIN_API_BASE=http://149.154.65.180:8002 python3 tools/contract_tests_components.py` — **7/7**.
 
 ## 6) Почему так и что уже устранено
 - Mock‑данные больше не «притворяются успехом»: gateway/middleware возвращают 503, чтобы UI был честным (или реальные данные, или «сервис временно недоступен»).

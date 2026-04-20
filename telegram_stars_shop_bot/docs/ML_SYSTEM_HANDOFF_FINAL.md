@@ -1,0 +1,257 @@
+# Telegram Shop Bot — Final ML Handoff
+
+Этот документ — единая входная точка для другой ML/agent системы.  
+Цель: открыть один файл и быстро понять, **что развернуто, где лежит, как работает, как проверять и где риски**.
+
+## 1) Что это за система
+
+Развернут отдельный Telegram Shop Bot с Partner API:
+
+- Telegram-бот (aiogram) для пользователей/админов.
+- Partner API (FastAPI) для партнёров.
+- Worker очереди исходящих webhook.
+- Отдельный деплой на сервере, не затрагивающий основной ALADDIN backend.
+
+Архитектура: **один бот + один API + один worker + SQLite БД бота**.
+
+## 2) Где что находится
+
+### Локальный репозиторий
+
+- Код бота: `telegram_stars_shop_bot/`
+- Ключевая документация: `telegram_stars_shop_bot/docs/`
+- CI workflow: `.github/workflows/telegram_shop_bot_ci.yml`
+
+### Сервер (production)
+
+- Основной ALADDIN backend (отдельно, не трогать): `/opt/aladdin-backend`
+- Отдельный бот-проект:
+  - `/opt/aladdin-telegram-shop-bot/current_app`
+  - `/opt/aladdin-telegram-shop-bot/current_release`
+  - `/opt/aladdin-telegram-shop-bot/releases/<timestamp>/telegram_stars_shop_bot`
+  - `/opt/aladdin-telegram-shop-bot/shared/.env`
+  - `/opt/aladdin-telegram-shop-bot/venv`
+  - `/opt/aladdin-telegram-shop-bot/logs`
+
+## 3) Сервисы systemd (production)
+
+- `aladdin-telegram-bot.service` — Telegram polling.
+- `aladdin-partner-api.service` — FastAPI на `:8090`.
+- `aladdin-webhook-worker.service` — фоновая доставка исходящих webhook.
+- `aladdin-backend.service` — основной ALADDIN backend, отдельный.
+
+Проверка:
+
+```bash
+systemctl is-active aladdin-telegram-bot.service
+systemctl is-active aladdin-partner-api.service
+systemctl is-active aladdin-webhook-worker.service
+systemctl is-active aladdin-backend.service
+```
+
+## 4) Обязательные env-переменные бота
+
+Файл: `/opt/aladdin-telegram-shop-bot/shared/.env`
+
+Минимум:
+
+- `BOT_TOKEN`
+- `ADMIN_IDS` (ID живых админов Telegram)
+- `API_KEY_PEPPER`
+- `PAYMENT_WEBHOOK_SECRET`
+
+Дополнительно:
+
+- `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE`
+- `PARTNER_API_CORS_ORIGINS`
+- `SUPPORT_URL` / `SUPPORT_USERNAME`
+
+## 5) Ключевые runtime-эндпоинты
+
+- Partner API health: `http://127.0.0.1:8090/health`
+- OpenAPI: `http://127.0.0.1:8090/openapi.json`
+- Внешний health (основной ALADDIN): `http://149.154.65.180:8002/api/health`
+
+## 6) Что уже проверено
+
+- Автотесты: `13 passed`.
+- Bot polling поднят.
+- Partner API работает (profile/orders/topups/webhooks).
+- Payment webhook (`/v1/payments/provider-webhook`) переводит заказ в `paid`.
+- Исходящие webhooks идут через очередь + retry worker.
+- Меню Telegram:
+  - `/start` -> первая страница -> `Далее` -> 10 карточек.
+  - `/menu` (через кнопку Menu внизу) -> те же 10 карточек.
+
+## 7) Критичные operational нюансы
+
+1. **ADMIN_IDS**  
+   Должны быть реальные user_id админов.  
+   Каждый админ обязан открыть бота и нажать `/start`, иначе Telegram `sendMessage` может отдавать `400/403`.
+
+2. **Telegram egress**  
+   Если появляются `TelegramNetworkError timeout`, проверять доступность `api.telegram.org:443` с сервера.
+   В текущем проде применён фикс резолва в `/etc/hosts` на рабочий Telegram DC IP.
+
+3. **Разделение проектов**  
+   Любые действия по этому боту делать только в `/opt/aladdin-telegram-shop-bot/**`.  
+   Не менять `/opt/aladdin-backend/**`, если задача не про основной ALADDIN backend.
+
+4. **Worker обязателен**  
+   `aladdin-webhook-worker.service` должен быть активен, иначе `outbound_webhook_events` будет копиться в `pending/failed`.
+
+## 8) Логи и диагностика
+
+- `/opt/aladdin-telegram-shop-bot/logs/bot.log`
+- `/opt/aladdin-telegram-shop-bot/logs/partner_api.log`
+- `/opt/aladdin-telegram-shop-bot/logs/webhook_worker.log`
+
+Быстрая проверка:
+
+```bash
+tail -n 100 /opt/aladdin-telegram-shop-bot/logs/bot.log
+tail -n 100 /opt/aladdin-telegram-shop-bot/logs/partner_api.log
+tail -n 100 /opt/aladdin-telegram-shop-bot/logs/webhook_worker.log
+```
+
+## 9) Минимальный smoke-check после изменений
+
+1. Проверить `systemctl is-active` для 3 сервисов бота.
+2. Проверить `curl http://127.0.0.1:8090/health`.
+3. В Telegram: `/start` -> `Далее` -> видны 10 карточек.
+4. В Telegram: `/menu` -> видны те же 10 карточек.
+5. Сделать тестовый API заказ и проверить, что статус/уведомление проходят.
+
+## 10) Ссылки на основные документы проекта
+
+- Runbook: `docs/RUNBOOK.md`
+- Acceptance: `docs/ACCEPTANCE_CHECKLIST.md`
+- Final hardening: `docs/FINAL_HARDENING_CHECKLIST.md`
+- Sentry incident response: `docs/SENTRY_INCIDENT_RESPONSE.md`
+- Deploy webhook worker: `docs/DEPLOY_WEBHOOK_WORKER.md`
+- Systemd unit worker template: `docs/webhook-worker.service`
+- Cron template worker: `docs/webhook-worker.crontab`
+- Separate server deployment: `docs/SERVER_DEPLOY_SEPARATE.md`
+- Roadmap A/B: `docs/ROADMAP_PLANS_A_B.md`
+- Progress tracker: `docs/PROGRESS_TRACKER.json`
+- OpenAPI v1: `docs/openapi_v1.yaml`
+
+## 11) Definition of done (для следующей ML системы)
+
+Если новая система может подтвердить все пункты ниже — контекст считан корректно:
+
+- Понимает разделение `/opt/aladdin-backend` и `/opt/aladdin-telegram-shop-bot`.
+- Умеет проверить 3 systemd сервиса бота + health `:8090`.
+- Знает, где env, логи, OpenAPI, worker queue.
+- Понимает критичные риски: `ADMIN_IDS`, Telegram egress, активность worker.
+
+## 12) Карта модулей (кодовая структура)
+
+### `bot/`
+
+- `bot/main.py` — запуск polling, middleware, регистрация Telegram Menu команд.
+- `bot/handlers/common.py` — `/start`, `/menu`, `/my`, `/orders`.
+- `bot/handlers/hub.py` — основной UI хаба (10 карточек), навигация, профиль, support/API экран.
+- `bot/handlers/shop.py` — checkout-поток покупки Stars/Premium.
+- `bot/handlers/admin.py` — админские callback-действия (статусы, топап, sell).
+- `bot/middlewares/*` — внедрение зависимостей и антифлуд.
+- `bot/keyboards/shop_kb.py` — inline keyboards.
+- `bot/states/*` — FSM состояния.
+- `bot/db/database.py` — схема SQLite + legacy миграции.
+
+### `bot/services/`
+
+- `orders_repo.py` — CRUD заказов, API idempotency, статусные операции.
+- `order_flow.py` — side effects при `completed` (рефералка/комиссия).
+- `balance_repo.py` — баланс и topup.
+- `sell_repo.py` — заявки на выкуп и пагинация.
+- `api_clients_repo.py` — API ключи, owner binding, webhook subscription поля.
+- `partner_outbound.py` — очередь + retry доставки `order.status_changed`.
+- `payment_events_repo.py` — идемпотентность входящего payment webhook.
+- `catalog.py`, `pricing.py`, `marketing.py`, `users_repo.py`, `hmac_util.py` — доменная логика.
+
+### `partner_api/`
+
+- `partner_api/main.py` — FastAPI app, роуты, CORS, health.
+- `partner_api/deps.py` — auth по `X-API-KEY`, rate limit, контекст запроса.
+- `partner_api/routers/orders.py` — create/list/get заказов API.
+- `partner_api/routers/topups.py` — create/list/get пополнений.
+- `partner_api/routers/profile.py` — профиль владельца ключа.
+- `partner_api/routers/payment_provider.py` — входящий webhook оплаты `mark_paid`.
+- `partner_api/routers/webhooks_partner.py` — подписка партнёра на исходящие webhooks.
+- `partner_api/webhook_worker.py` — CLI worker для обработки очереди webhook.
+- `partner_api/schemas.py`, `notify.py`, `ratelimit.py` — схемы/уведомления/лимиты.
+
+## 13) Таблица endpoint -> handler -> БД таблицы
+
+| Endpoint | Handler | Основные таблицы |
+|---|---|---|
+| `GET /health` | `partner_api.main:create_app.health` | — |
+| `GET /v1/user/profile` | `partner_api/routers/profile.py:get_profile` | `users`, `api_clients` |
+| `POST /v1/orders/create` | `partner_api/routers/orders.py:create_order` | `orders`, `users`, `api_clients` |
+| `GET /v1/orders` | `partner_api/routers/orders.py:list_orders` | `orders` |
+| `GET /v1/orders/{order_id}` | `partner_api/routers/orders.py:get_order` | `orders` |
+| `POST /v1/topups/create` | `partner_api/routers/topups.py:create_topup` | `topup_requests`, `api_clients` |
+| `GET /v1/topups` | `partner_api/routers/topups.py:list_topups` | `topup_requests` |
+| `GET /v1/topups/{topup_id}` | `partner_api/routers/topups.py:get_topup` | `topup_requests` |
+| `POST /v1/payments/provider-webhook` | `partner_api/routers/payment_provider.py:payment_provider_webhook` | `orders`, `payment_provider_events`, `outbound_webhook_events` |
+| `GET /v1/webhooks/subscription` | `partner_api/routers/webhooks_partner.py:get_webhook_subscription` | `api_clients` |
+| `PUT /v1/webhooks/subscription` | `partner_api/routers/webhooks_partner.py:put_webhook_subscription` | `api_clients` |
+
+## 14) Таблица callback/action в боте
+
+| Callback / Command | Где обрабатывается | Что делает |
+|---|---|---|
+| `start:hub` | `bot/handlers/hub.py:onboarding_continue` | Переход к хабу (10 карточек) |
+| `nav:hub` | `bot/handlers/hub.py:nav_hub` | Возврат в хаб |
+| `nav:buy_stars` | `bot/handlers/hub.py` | Открывает каталог Stars |
+| `nav:premium` | `bot/handlers/hub.py` | Открывает каталог Premium |
+| `nav:orders:0` / `nav:orders:{page}` | `bot/handlers/hub.py` | Пагинация «Мои заказы» |
+| `nav:sells:0` / `nav:sells:{page}` | `bot/handlers/hub.py` | Пагинация «Мои заявки на выкуп» |
+| `nav:privacy` | `bot/handlers/hub.py` | Экран политики данных |
+| `api:partner_key` / `api:req` | `bot/handlers/hub.py` | Выдача/запрос API ключа |
+| `adm:paid|proc|done:{id}` | `bot/handlers/admin.py` | Изменение статуса заказа админом |
+| `top:ok:{id}` | `bot/handlers/admin.py` | Подтверждение топапа админом |
+| `sel:proc|done|can:{id}` | `bot/handlers/admin.py` | Статусы заявки sell |
+| `/menu` | `bot/handlers/common.py:cmd_menu` | Открывает тот же хаб (10 карточек) |
+
+## 15) Release chronology (что и зачем меняли)
+
+1. **База/архитектура API v1:** добавлены `api_clients`, поля `orders.source/api_client_id/idempotency_key/external_ref`, idempotency индекс.  
+   **Зачем:** безопасная партнёрская интеграция без дубликатов.
+2. **Partner API endpoints:** profile/orders/topups + OpenAPI draft.  
+   **Зачем:** дать партнёрам stable HTTP контракт.
+3. **Bot UX hardening:** pagination orders/sells, privacy screen, empty catalog UX.  
+   **Зачем:** завершённый клиентский опыт без тупиков.
+4. **Sentry + структурные логи:** инициализация в bot/api, scrub секретов.  
+   **Зачем:** наблюдаемость и безопасный error tracking.
+5. **Payment webhook + idempotency:** `POST /v1/payments/provider-webhook`.  
+   **Зачем:** автоплатежи v1 с контролем повторов.
+6. **Outbound webhooks + subscription:** `order.status_changed`, `PUT /v1/webhooks/subscription`.  
+   **Зачем:** уведомлять партнёра о статусах заказа.
+7. **Webhook queue + worker:** `outbound_webhook_events`, retry/backoff, `partner_api.webhook_worker`.  
+   **Зачем:** не терять события при сетевых ошибках.
+8. **CI усиление:** `ruff`, optional `mypy`, расширение тестов (до 13).  
+   **Зачем:** снизить риск регрессий.
+9. **Отдельный production deploy:** `/opt/aladdin-telegram-shop-bot` + отдельные systemd units.  
+   **Зачем:** полная изоляция от `/opt/aladdin-backend`.
+10. **Telegram menu UX:** регистрация `/menu` в `setMyCommands`.  
+    **Зачем:** доступ к хабу как через «Далее», так и через кнопку Menu.
+
+## 16) Known limitations + future migration notes
+
+### Known limitations
+
+- SQLite подходит для малого/среднего трафика, но имеет предел под high concurrency.
+- Outbound webhook retry есть, но без DLQ/отдельного durable брокера.
+- `mypy` пока optional в CI (не gate).
+- Telegram-зависимость чувствительна к сетевой доступности `api.telegram.org`.
+- `ADMIN_IDS` должны быть валидными и админы должны нажать `/start`.
+
+### Future migration notes
+
+1. **DB migration:** SQLite -> Postgres при росте нагрузки (заказы, webhook queue, ledger).
+2. **Webhook delivery v2:** отдельный worker process с DLQ, jitter backoff, replay CLI.
+3. **Observability v2:** метрики Prometheus/Grafana + SLO по API/webhook.
+4. **Security v2:** регулярная ротация API/webhook секретов + audit trail.
+5. **CI v2:** сделать `mypy` обязательным, добавить контрактные API тесты из OpenAPI.

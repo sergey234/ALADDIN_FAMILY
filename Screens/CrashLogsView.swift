@@ -72,6 +72,13 @@ struct CrashLogsView: View {
             result += json
         }
 
+        // 4) SETTINGS_DIAG ring buffer (MasterLogger → SettingsDiagnosticsLogger)
+        let settingsRing = SettingsDiagnosticsLogger.shared.exportLogs()
+        if !settingsRing.isEmpty {
+            result += "\n\n=== SETTINGS_DIAG (in-memory, Console category SETTINGS_DIAG) ===\n"
+            result += settingsRing
+        }
+
         text = result.isEmpty ? "Логи не найдены." : result
     }
 }
