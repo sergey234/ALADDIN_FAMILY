@@ -1,5 +1,45 @@
 # Telegram Shop Bot — Final ML Handoff
 
+## 0) Журнал: фактический деплой на production (2026-04-20)
+
+Ниже зафиксированы **реальные шаги**, которые были выполнены для выкладки бота на прод (без изменения мобильного приложения и без изменения `/opt/aladdin-backend`).
+
+1. **Внешний health основного ALADDIN API (до SSH):**  
+   `curl -s -S -m 8 http://149.154.65.180:8002/api/health` → ожидаемо `{"status":"ok"}` (порядок действий с хостом — в `ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md`).
+
+2. **SSH на прод:** пользователь `root`, хост `149.154.65.180`; для неинтерактивного входа использован существующий ключ **`~/.ssh/aladdin_server`** с опциями в духе `ssh -o IdentitiesOnly=yes -i ~/.ssh/aladdin_server` (ключ `~/.ssh/aladdin_prod` в окружении агента отсутствовал — важно зафиксировать фактически рабочий путь к ключу).
+
+3. **Проверка дерева бота на сервере:** каталог `ROOT=/opt/aladdin-telegram-shop-bot` существует; активная версия до выкладки указывала на предыдущий релиз в `ROOT/releases/.../telegram_stars_shop_bot`; симлинки `current_app` и `current_release` уже использовались.
+
+4. **Подготовка каталога нового релиза:** на сервере выполнено `mkdir -p "${ROOT}/releases/<TS>/telegram_stars_shop_bot"` (конкретный timestamp см. п. 6).
+
+5. **`rsync` с машины разработки** из корня монорепозитория, где лежит `telegram_stars_shop_bot/` (пример пути локально: `.../mobile_apps/ALADDIN_iOS`): синхронизация в `root@149.154.65.180:${ROOT}/releases/<TS>/telegram_stars_shop_bot/` с транспортом `rsync -e "ssh … -i ~/.ssh/aladdin_server"` и исключениями **`--exclude`**: `.git`, `__pycache__`, `*.pyc`, `.venv`, `venv`, **`data`** (SQLite на проде), **`.env`** (секреты не из репозитория), плюс режим **`--delete`** для зеркалирования кода без лишних файлов — **без** затрагивания `ROOT/shared/.env`, `ROOT/venv/`, `ROOT/logs/`.
+
+6. **Фактический активный релиз после этой выкладки:**  
+   `/opt/aladdin-telegram-shop-bot/releases/20260420-233510/telegram_stars_shop_bot`  
+   (timestamp в формате `YYYYMMDD-HHMMSS` от локальной машины на момент деплоя).
+
+7. **Переключение симлинков на сервере:**  
+   `ln -sfn "${ROOT}/releases/<TS>" "${ROOT}/current_release"`  
+   `ln -sfn "${ROOT}/releases/<TS>/telegram_stars_shop_bot" "${ROOT}/current_app"`
+
+8. **Зависимости Python:**  
+   `sudo "${ROOT}/venv/bin/pip" install -r "${ROOT}/current_app/requirements.txt"`  
+   (общий venv в `ROOT/venv`, код — в `current_app`).
+
+9. **Рестарт сервисов бота:**  
+   `systemctl restart aladdin-telegram-bot.service aladdin-partner-api.service aladdin-webhook-worker.service`
+
+10. **Пост-деплой проверки на сервере:**  
+    `curl -s -S -m 8 http://127.0.0.1:8090/health` → `{"status":"ok"}`;  
+    `systemctl is-active` для трёх unit’ов выше → `active`.
+
+**Инварианты этой сессии:** дерево **мобильного приложения** в репозитории не менялось для целей деплоя; на сервере **не** выполнялись правки в **`/opt/aladdin-backend`** и не перезапускался `aladdin-backend` в рамках этой выкладки.
+
+**Дальше по эксплуатации:** полный канон команд (`rsync` / `git pull` / `scp`, симлинки, что нельзя затирать) — в подразделе **«Доставка кода на production (канон)»** ниже в разделе 2; быстрый смоук в Telegram (`/start`, сценарии оплаты и т.д.) — **раздел 9** этого файла и чеклисты по ссылкам в разделе 10.
+
+---
+
 Этот документ — единая входная точка для другой ML/agent системы.  
 Цель: открыть один файл и быстро понять, **что развернуто, где лежит, как работает, как проверять и где риски**.
 
