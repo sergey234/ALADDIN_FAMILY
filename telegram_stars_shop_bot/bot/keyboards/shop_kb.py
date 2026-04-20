@@ -18,8 +18,6 @@ def onboarding_step1_kb(settings: Settings) -> InlineKeyboardMarkup:
 
 def hub_menu_kb() -> InlineKeyboardMarkup:
     b = InlineKeyboardBuilder()
-    b.row(InlineKeyboardButton(text="❓ Оплата и зачисление", callback_data="nav:payfaq"))
-    b.row(InlineKeyboardButton(text="ℹ️ Частые вопросы", callback_data="nav:faq"))
     b.row(
         InlineKeyboardButton(text="⭐ Купить Stars", callback_data="nav:buy_stars"),
         InlineKeyboardButton(text="💸 Продать Stars", callback_data="nav:sell_stars"),

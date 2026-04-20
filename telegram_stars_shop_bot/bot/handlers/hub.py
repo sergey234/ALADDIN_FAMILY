@@ -3,7 +3,7 @@ from __future__ import annotations
 from aiogram import Bot, F, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
-from aiogram.types import CallbackQuery, InlineKeyboardButton, Message
+from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.config import Settings
@@ -55,6 +55,9 @@ FAQ_TEMPLATES = {
 
 def _support_kb(settings: Settings):
     b = InlineKeyboardBuilder()
+    b.row(InlineKeyboardButton(text="🔒 Политика и данные", callback_data="sup:privacy"))
+    b.row(InlineKeyboardButton(text="ℹ️ Частые вопросы", callback_data="sup:faq"))
+    b.row(InlineKeyboardButton(text="💳 Оплата и зачисление", callback_data="sup:payfaq"))
     base = telegram_support_base(settings)
     if base and is_telegram_contact(base):
         u1 = support_prefill_url(settings, "Заказ # — оплатил, статус не обновился") or base
@@ -439,9 +442,7 @@ async def nav_profile(cb: CallbackQuery, settings: Settings, conn, bot: Bot) -> 
     text = await profile_body_html(bot, settings, conn, cb.from_user.id)
     b = InlineKeyboardBuilder()
     b.row(InlineKeyboardButton(text="📖 Как работает рефералка", callback_data="nav:reffaq"))
-    b.row(InlineKeyboardButton(text="ℹ️ Частые вопросы", callback_data="nav:faq"))
     b.row(InlineKeyboardButton(text="📤 Мои заявки на выкуп", callback_data="nav:sells:0"))
-    b.row(InlineKeyboardButton(text="🔒 Данные и политика", callback_data="nav:privacy"))
     b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
     await cb.message.edit_text(text, reply_markup=b.as_markup())
     await cb.answer()
@@ -485,8 +486,7 @@ async def _render_sells_page(cb: CallbackQuery, conn, page: int) -> None:
     await cb.answer()
 
 
-@router.callback_query(F.data == "nav:privacy")
-async def nav_privacy(cb: CallbackQuery, settings: Settings) -> None:
+def _kb_privacy_support(settings: Settings) -> InlineKeyboardMarkup:
     b = InlineKeyboardBuilder()
     pu = (settings.privacy_policy_url or "").strip()
     tu = (settings.terms_of_service_url or "").strip()
@@ -494,25 +494,43 @@ async def nav_privacy(cb: CallbackQuery, settings: Settings) -> None:
         b.row(InlineKeyboardButton(text="📄 Политика конфиденциальности", url=pu))
     if tu:
         b.row(InlineKeyboardButton(text="📄 Пользовательское соглашение", url=tu))
-    b.row(InlineKeyboardButton(text="ℹ️ Частые вопросы", callback_data="nav:faq"))
-    b.row(InlineKeyboardButton(text="⬅️ В профиль", callback_data="nav:profile"))
+    b.row(InlineKeyboardButton(text="ℹ️ Частые вопросы", callback_data="sup:faq"))
+    b.row(InlineKeyboardButton(text="💳 Оплата и зачисление", callback_data="sup:payfaq"))
+    b.row(InlineKeyboardButton(text="⬅️ В поддержку", callback_data="nav:supp"))
+    return b.as_markup()
+
+
+def _kb_faq_support() -> InlineKeyboardMarkup:
+    b = InlineKeyboardBuilder()
+    b.row(InlineKeyboardButton(text="🔒 Политика и данные", callback_data="sup:privacy"))
+    b.row(InlineKeyboardButton(text="💳 Оплата и зачисление", callback_data="sup:payfaq"))
+    b.row(InlineKeyboardButton(text="⬅️ В поддержку", callback_data="nav:supp"))
+    return b.as_markup()
+
+
+def _kb_payfaq_support() -> InlineKeyboardMarkup:
+    b = InlineKeyboardBuilder()
+    b.row(InlineKeyboardButton(text="🔒 Политика и данные", callback_data="sup:privacy"))
+    b.row(InlineKeyboardButton(text="ℹ️ Частые вопросы", callback_data="sup:faq"))
+    b.row(InlineKeyboardButton(text="⬅️ В поддержку", callback_data="nav:supp"))
+    return b.as_markup()
+
+
+@router.callback_query(F.data.in_({"sup:privacy", "nav:privacy"}))
+async def screen_privacy_support(cb: CallbackQuery, settings: Settings) -> None:
     await cb.message.edit_text(
         privacy_screen_html(settings),
-        reply_markup=b.as_markup(),
+        reply_markup=_kb_privacy_support(settings),
         disable_web_page_preview=True,
     )
     await cb.answer()
 
 
-@router.callback_query(F.data == "nav:faq")
-async def nav_faq(cb: CallbackQuery, settings: Settings) -> None:
-    b = InlineKeyboardBuilder()
-    b.row(InlineKeyboardButton(text="🔒 Данные и документы", callback_data="nav:privacy"))
-    b.row(InlineKeyboardButton(text="💳 Оплата и зачисление", callback_data="nav:payfaq"))
-    b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
+@router.callback_query(F.data.in_({"sup:faq", "nav:faq"}))
+async def screen_faq_support(cb: CallbackQuery, settings: Settings) -> None:
     await cb.message.edit_text(
         faq_comprehensive_html(settings),
-        reply_markup=b.as_markup(),
+        reply_markup=_kb_faq_support(),
         disable_web_page_preview=True,
     )
     await cb.answer()
@@ -526,11 +544,13 @@ async def nav_reffaq(cb: CallbackQuery, settings: Settings) -> None:
     await cb.answer()
 
 
-@router.callback_query(F.data == "nav:payfaq")
-async def nav_payfaq(cb: CallbackQuery, settings: Settings) -> None:
-    b = InlineKeyboardBuilder()
-    b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
-    await cb.message.edit_text(payment_faq_html(settings), reply_markup=b.as_markup())
+@router.callback_query(F.data.in_({"sup:payfaq", "nav:payfaq"}))
+async def screen_payfaq_support(cb: CallbackQuery, settings: Settings) -> None:
+    await cb.message.edit_text(
+        payment_faq_html(settings),
+        reply_markup=_kb_payfaq_support(),
+        disable_web_page_preview=True,
+    )
     await cb.answer()
 
 
@@ -716,7 +736,10 @@ async def sell_amount(message: Message, state: FSMContext, settings: Settings, c
 @router.callback_query(F.data == "nav:supp")
 async def nav_support(cb: CallbackQuery, settings: Settings) -> None:
     await cb.message.edit_text(
-        "<b>Поддержка</b>\n\nОпишите проблему и номер заказа.",
+        "<b>Поддержка</b>\n\n"
+        "Здесь: <b>политика и соглашение</b> (Telegraph), <b>частые вопросы</b>, раздел про <b>оплату</b>, "
+        "а ниже — быстрые шаблоны и связь с оператором.\n\n"
+        "Опишите проблему и <b>номер заказа</b> (или заявки на пополнение), если обращаетесь в чат.",
         reply_markup=_support_kb(settings),
     )
     await cb.answer()

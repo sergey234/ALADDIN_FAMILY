@@ -199,7 +199,7 @@ def test_privacy_screen_includes_policy_links(monkeypatch: pytest.MonkeyPatch) -
     html = marketing.privacy_screen_html(s)
     assert "Politika-konfidencialnosti" in html
     assert "Polzovatelskoe-soglashenie" in html
-    assert "Частые вопросы" in html
+    assert "Поддержка" in html
 
 
 def test_faq_comprehensive_uses_referral_settings(monkeypatch: pytest.MonkeyPatch) -> None:
