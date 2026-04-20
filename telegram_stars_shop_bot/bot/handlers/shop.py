@@ -18,7 +18,7 @@ from bot.keyboards.shop_kb import (
 )
 from bot.services import balance_repo, orders_repo, users_repo
 from bot.services.catalog import Product, products_by_id
-from bot.services.lava_api import create_invoice_payment_url
+from bot.services.lava_api import create_invoice_payment_url, lava_checkout_configured
 from bot.services.payments_stub import crypto_payment_block_html, fiat_placeholder_html
 from bot.services.fx_display import fx_payment_hints_html
 from bot.services.pricing import quote_product, rub_per_100_stars_display
@@ -72,7 +72,11 @@ async def _present_fiat_checkout(
     intro_html: str,
     usd_base: float,
 ) -> None:
-    """LAVA при настроенных ключах и LAVA_HOOK_URL, иначе текст-заглушка."""
+    """
+    После создания заказа со статусом «ожидает оплаты»:
+    - если в .env настроены LAVA — показываем кнопку на страницу оплаты LAVA;
+    - иначе — текстовая инструкция (ручная оплата / донастройка).
+    """
     memo = f"ORDER{order_id}"
     pay_url = await create_invoice_payment_url(
         settings,
@@ -86,13 +90,33 @@ async def _present_fiat_checkout(
             fx
             + "\n\n<b>Оплата через LAVA</b> (<a href=\"https://lava.ru\">lava.ru</a>) — СБП, банковские карты "
             "и другие способы по тарифу вашего проекта в LAVA.\n"
-            "После подтверждения оплаты статус заказа в боте обновится автоматически."
+            "<b>Нажмите кнопку ниже</b> — откроется страница оплаты. "
+            "После успешной оплаты статус заказа в боте обновится автоматически.\n\n"
+            "<i>Отдельное сообщение с кнопками «Оплачен / В работе / Выдан» — это панель для операторов магазина, "
+            "не нажимайте их как покупатель.</i>"
         )
         await cb.message.edit_text(intro_html + tail, reply_markup=lava_payment_kb(pay_url))
         return
+    missing_lava = ""
+    if not lava_checkout_configured(settings):
+        missing_lava = (
+            "\n\n<b>Почему нет кнопки LAVA</b>\n"
+            "Для автоматического счёта в LAVA в <code>shared/.env</code> на сервере должны быть заданы одновременно:\n"
+            "<code>LAVA_SHOP_ID</code>, <code>LAVA_SECRET_KEY</code> и публичный HTTPS "
+            "<code>LAVA_HOOK_URL</code> на ваш Partner API (путь вида <code>…/v1/payments/lava-webhook</code>).\n"
+            "Пока они не заполнены или LAVA вернула ошибку — оплата идёт по инструкции ниже или вручную через поддержку."
+        )
+    else:
+        missing_lava = (
+            "\n\n<b>Счёт LAVA не создан</b> (ошибка ответа API). Заказ в статусе «ожидает оплаты». "
+            "Попробуйте оформить заказ позже или напишите в поддержку с номером заказа."
+        )
     instr = fiat_placeholder_html(settings, order_id=order_id, rub=rub_due)
     await cb.message.edit_text(
-        intro_html + fx + f"\n\n<b>{esc(instr.title)}</b>\n{instr.body_html}",
+        intro_html
+        + fx
+        + missing_lava
+        + f"\n\n<b>{esc(instr.title)}</b>\n{instr.body_html}",
         reply_markup=hub_menu_kb(),
     )
 
@@ -412,7 +436,10 @@ async def order_submit(
             reply_markup=hub_menu_kb(),
         )
     else:
-        intro = f"<b>Заказ создан</b>\nID: <code>{esc(order_id)}</code>\n"
+        intro = (
+            f"<b>Заказ создан</b>\nID: <code>{esc(order_id)}</code>\n"
+            f"<i>Статус: ожидает оплаты</i> — дальше откроется оплата (LAVA или инструкция).\n"
+        )
         await _present_fiat_checkout(cb, settings, order_id=order_id, rub_due=rub, intro_html=intro, usd_base=q.usd)
     await cb.answer()
 
@@ -436,6 +463,8 @@ async def _notify_admins(bot: Bot, settings: Settings, conn, order_id: int) -> N
     if bap > 0.01:
         extra = f"\nС баланса: <b>{esc(f'{bap:.2f}')} ₽</b>\nК доплате: <b>{esc(f'{due:.2f}')} ₽</b>"
     text = (
+        "<b>Админам магазина</b> <i>(служебное сообщение, не страница оплаты LAVA)</i>\n"
+        "Кнопки «Оплачен / В работе / Выдан» — для операторов после проверки оплаты.\n\n"
         "<b>Новый заказ</b>\n\n"
         f"ID: <code>{esc(order['id'])}</code>\n"
         f"Пользователь: {esc(user_line)}\n"
@@ -448,7 +477,12 @@ async def _notify_admins(bot: Bot, settings: Settings, conn, order_id: int) -> N
     from bot.keyboards.shop_kb import admin_order_kb
 
     kb = admin_order_kb(int(order["id"]))
-    for admin_id in settings.parsed_admin_ids():
+    buyer_id = int(order["user_id"])
+    admin_ids = settings.parsed_admin_ids()
+    for admin_id in admin_ids:
+        if admin_id == buyer_id and len(admin_ids) > 1:
+            # Покупатель сам в ADMIN_IDS: не дублировать ему панель оператора, если есть другие админы.
+            continue
         try:
             await bot.send_message(admin_id, text, reply_markup=kb)
         except Exception:

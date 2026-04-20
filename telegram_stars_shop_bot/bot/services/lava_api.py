@@ -54,6 +54,14 @@ def sign_lava_request_body(secret: str, payload: dict[str, Any]) -> str:
     return hmac.new(secret.encode("utf-8"), raw, hashlib.sha256).hexdigest()
 
 
+def lava_checkout_configured(settings: Settings) -> bool:
+    """True, если заданы все три параметра для создания счёта LAVA (invoice/create)."""
+    shop = (settings.lava_shop_id or "").strip()
+    secret = (settings.lava_secret_key or "").strip()
+    hook = (settings.lava_hook_url or "").strip()
+    return bool(shop and secret and hook)
+
+
 async def create_invoice_payment_url(
     settings: Settings,
     *,
@@ -65,11 +73,11 @@ async def create_invoice_payment_url(
     Создаёт счёт в LAVA Business и возвращает URL оплаты (СБП / карты и др. по тарифам проекта).
     https://api.lava.ru/business/invoice/create
     """
+    if not lava_checkout_configured(settings):
+        return None
     shop = (settings.lava_shop_id or "").strip()
     secret = (settings.lava_secret_key or "").strip()
     hook = (settings.lava_hook_url or "").strip()
-    if not shop or not secret or not hook:
-        return None
 
     base = (settings.lava_api_base or DEFAULT_LAVA_API_BASE).rstrip("/") + "/"
     expire = max(1, min(int(settings.lava_invoice_expire_minutes), 43200))
