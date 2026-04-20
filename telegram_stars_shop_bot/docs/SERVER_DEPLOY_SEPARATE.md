@@ -13,6 +13,10 @@
   - `venv/`
   - `logs/`
 
+## Доставка кода (rsync / git / scp, симлинки)
+
+Полная пошаговая инструкция: подраздел **«Доставка кода на production (канон)»** в `docs/ML_SYSTEM_HANDOFF_FINAL.md` (варианты A: `rsync` в `releases/<timestamp>/` + `current_release` / `current_app`, B: `git pull` в `current_app`, C: точечный `scp`; исключения для `data/`, `venv/`, `shared/.env`; рестарт трёх unit’ов и `curl` health).
+
 ## Раздельные systemd-юниты
 
 - `aladdin-telegram-bot.service`

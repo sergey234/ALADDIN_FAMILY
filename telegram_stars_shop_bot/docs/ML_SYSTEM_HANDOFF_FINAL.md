@@ -33,6 +33,96 @@
   - `/opt/aladdin-telegram-shop-bot/venv`
   - `/opt/aladdin-telegram-shop-bot/logs`
 
+### Доставка кода на production (канон)
+
+**Корень на сервере:** `ROOT=/opt/aladdin-telegram-shop-bot`.  
+**Новый релиз:** каталог `ROOT/releases/<timestamp>/telegram_stars_shop_bot/`. **Активная версия:** симлинки `ROOT/current_release` → каталог релиза и `ROOT/current_app` → `.../telegram_stars_shop_bot` внутри него.
+
+**Секреты:** только файл `ROOT/shared/.env` на сервере. Не заливать поверх него локальный `.env` с машины разработчика и не включать `shared/.env` в команды копирования «поверх всего дерева».
+
+**Нельзя перезатирать или удалять при обновлении кода:** `ROOT/shared/.env`, дерево `ROOT/venv/`, каталог **`data/`** внутри приложения (по умолчанию там SQLite `shop.db`), каталог **`ROOT/logs/`**. В `rsync` с `--delete` обязательно исключать `data`, иначе можно уничтожить продовую БД.
+
+**SSH и порядок действий с хостом** (ключ, health основного API при необходимости): см. `ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md` в корне монорепозитория. IP прод-сервера в примерах ниже — тот же, что в гайде.
+
+**Перед деплоем:** убедиться, что unit-файлы systemd указывают на канонические пути, например `WorkingDirectory=/opt/aladdin-telegram-shop-bot/current_app` и `EnvironmentFile=/opt/aladdin-telegram-shop-bot/shared/.env` (`systemctl cat aladdin-telegram-bot.service` и аналогично для API и worker).
+
+#### Вариант A (рекомендуется): `rsync` в новый release + переключение симлинков
+
+С локальной машины, из каталога, где лежит папка `telegram_stars_shop_bot/` (например корень клона `ALADDIN_iOS`):
+
+```bash
+export SSH_HOST="root@149.154.65.180"
+export ROOT="/opt/aladdin-telegram-shop-bot"
+export TS="$(date +%Y%m%d-%H%M%S)"
+rsync -az --delete \
+  --exclude '.git' \
+  --exclude '__pycache__' \
+  --exclude '*.pyc' \
+  --exclude '.venv' \
+  --exclude 'venv' \
+  --exclude 'data' \
+  --exclude '.env' \
+  ./telegram_stars_shop_bot/ "${SSH_HOST}:${ROOT}/releases/${TS}/telegram_stars_shop_bot/"
+```
+
+На сервере после успешной синхронизации (подставить тот же `TS`):
+
+```bash
+ROOT=/opt/aladdin-telegram-shop-bot
+sudo ln -sfn "${ROOT}/releases/${TS}" "${ROOT}/current_release"
+sudo ln -sfn "${ROOT}/releases/${TS}/telegram_stars_shop_bot" "${ROOT}/current_app"
+```
+
+Если менялся `telegram_stars_shop_bot/requirements.txt`, на сервере обновить зависимости в общем venv:
+
+```bash
+sudo /opt/aladdin-telegram-shop-bot/venv/bin/pip install -r /opt/aladdin-telegram-shop-bot/current_app/requirements.txt
+```
+
+Рестарт и проверка API (полный smoke — раздел 9 ниже):
+
+```bash
+sudo systemctl restart aladdin-telegram-bot.service aladdin-partner-api.service aladdin-webhook-worker.service
+curl -s -S -m 8 http://127.0.0.1:8090/health
+```
+
+**Компактно одной цепочкой** (после `rsync` с локальной машины; пути SSH/ключ — как в вашем окружении):
+
+```bash
+TS="$(date +%Y%m%d-%H%M%S)" && rsync -az --delete \
+  --exclude '.git' --exclude '__pycache__' --exclude '*.pyc' \
+  --exclude '.venv' --exclude 'venv' --exclude 'data' --exclude '.env' \
+  ./telegram_stars_shop_bot/ "root@149.154.65.180:/opt/aladdin-telegram-shop-bot/releases/${TS}/telegram_stars_shop_bot/" && \
+ssh root@149.154.65.180 "TS='${TS}' ROOT=/opt/aladdin-telegram-shop-bot && sudo ln -sfn \"\$ROOT/releases/\$TS\" \"\$ROOT/current_release\" && sudo ln -sfn \"\$ROOT/releases/\$TS/telegram_stars_shop_bot\" \"\$ROOT/current_app\" && sudo systemctl restart aladdin-telegram-bot.service aladdin-partner-api.service aladdin-webhook-worker.service && curl -s -S -m 8 http://127.0.0.1:8090/health"
+```
+
+(При необходимости добавьте к `ssh` опции ключа, например `-o IdentitiesOnly=yes -i ~/.ssh/aladdin_prod`.)
+
+#### Вариант B: `git pull` в каталоге активного приложения
+
+Если `current_app` — рабочий клон того же репозитория с настроенным `origin`:
+
+```bash
+cd "$(readlink -f /opt/aladdin-telegram-shop-bot/current_app)"
+git fetch origin && git checkout <ветка_или_тег> && git pull --ff-only
+sudo systemctl restart aladdin-telegram-bot.service aladdin-partner-api.service aladdin-webhook-worker.service
+curl -s -S -m 8 http://127.0.0.1:8090/health
+```
+
+`git push` на `origin` **сам по себе сервер не обновляет** — на хосте всё равно нужен pull (вариант B) или выкладка файлов (вариант A).
+
+#### Вариант C: точечный hotfix через `scp`
+
+Для срочной подмены одного файла в уже активном дереве:
+
+```bash
+scp ./telegram_stars_shop_bot/bot/handlers/shop.py \
+  root@149.154.65.180:/opt/aladdin-telegram-shop-bot/current_app/bot/handlers/shop.py
+sudo systemctl restart aladdin-telegram-bot.service aladdin-partner-api.service aladdin-webhook-worker.service
+```
+
+Минус: расхождение с релизами в `releases/`; после патча лучше закрепить состояние через вариант A или B.
+
 ## 3) Сервисы systemd (production)
 
 - `aladdin-telegram-bot.service` — Telegram polling.
@@ -143,6 +233,7 @@ tail -n 100 /opt/aladdin-telegram-shop-bot/logs/webhook_worker.log
 - Понимает разделение `/opt/aladdin-backend` и `/opt/aladdin-telegram-shop-bot`.
 - Умеет проверить 3 systemd сервиса бота + health `:8090`.
 - Знает, где env, логи, OpenAPI, worker queue.
+- Знает канон доставки кода (подраздел «Доставка кода на production» в разделе 2): `rsync` в `releases/` + симлинки, либо `git pull` в `current_app`, исключения для `data/`, `shared/.env`, `venv/`.
 - Понимает критичные риски: `ADMIN_IDS`, Telegram egress, активность worker.
 
 ## 12) Карта модулей (кодовая структура)

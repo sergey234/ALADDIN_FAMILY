@@ -7,9 +7,9 @@
 1. Скопируйте unit:
    - источник: `docs/webhook-worker.service`
    - назначение: `/etc/systemd/system/aladdin-webhook-worker.service`
-2. Проверьте пути внутри unit:
-   - `WorkingDirectory=/opt/telegram_stars_shop_bot`
-   - `EnvironmentFile=/opt/telegram_stars_shop_bot/.env`
+2. Проверьте пути внутри unit (прод-канон — как в `docs/webhook-worker.service`):
+   - `WorkingDirectory=/opt/aladdin-telegram-shop-bot/current_app`
+   - `EnvironmentFile=/opt/aladdin-telegram-shop-bot/shared/.env`
    - `ExecStart=/usr/bin/python3 -m partner_api.webhook_worker --forever --sleep-sec 30 --limit 200`
 3. Включите сервис:
 
