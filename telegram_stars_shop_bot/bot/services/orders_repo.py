@@ -137,6 +137,27 @@ async def count_user_orders_by_status(conn: aiosqlite.Connection, user_id: int, 
     return int(row["c"] if row else 0)
 
 
+async def list_user_pending_payment_order_ids(
+    conn: aiosqlite.Connection,
+    user_id: int,
+    *,
+    limit: int = 12,
+) -> list[int]:
+    """ID заказов пользователя в статусе pending_payment (новые сверху) - для памятки оператору при сверке bc."""
+    lim = max(1, min(50, int(limit)))
+    cur = await conn.execute(
+        """
+        SELECT id FROM orders
+        WHERE user_id = ? AND status = 'pending_payment'
+        ORDER BY id DESC
+        LIMIT ?
+        """,
+        (user_id, lim),
+    )
+    rows = await cur.fetchall()
+    return [int(r[0]) for r in rows]
+
+
 async def require_pending_order_cap(conn: aiosqlite.Connection, user_id: int, settings: Settings) -> None:
     cap = settings.max_pending_payment_orders_per_user
     if cap <= 0:
@@ -230,6 +251,75 @@ async def set_invoice_provider_metadata(
         (prov, ext, order_id),
     )
     await conn.commit()
+
+
+async def touch_bc_payment_claim_if_allowed(
+    conn: aiosqlite.Connection,
+    *,
+    order_id: int,
+    user_id: int,
+    cooldown_seconds: int,
+) -> tuple[str, int]:
+    """
+    Покупатель нажал «Я оплатил» после оплаты на универсальной bc-странице Ckassa.
+    Возвращает (код, секунд_до_повтора). код: ok | not_found | wrong_user | wrong_status | cooldown.
+    """
+    row = await get_order(conn, order_id)
+    if row is None:
+        return ("not_found", 0)
+    if int(row["user_id"]) != int(user_id):
+        return ("wrong_user", 0)
+    try:
+        st = str(row["status"] or "").strip().lower()
+    except (KeyError, IndexError, TypeError):
+        st = ""
+    if st != "pending_payment":
+        return ("wrong_status", 0)
+    cool = max(0, int(cooldown_seconds))
+    if cool == 0:
+        await conn.execute(
+            """
+            UPDATE orders
+            SET bc_payment_claim_at = datetime('now'), updated_at = datetime('now')
+            WHERE id = ? AND user_id = ? AND status = 'pending_payment'
+            """,
+            (order_id, user_id),
+        )
+        await conn.commit()
+        return ("ok", 0)
+    cur = await conn.execute(
+        """
+        UPDATE orders
+        SET bc_payment_claim_at = datetime('now'), updated_at = datetime('now')
+        WHERE id = ?
+          AND user_id = ?
+          AND status = 'pending_payment'
+          AND (
+            bc_payment_claim_at IS NULL
+            OR CAST((julianday('now') - julianday(bc_payment_claim_at)) * 86400 AS INTEGER) >= ?
+          )
+        """,
+        (order_id, user_id, cool),
+    )
+    await conn.commit()
+    if cur.rowcount and int(cur.rowcount) > 0:
+        return ("ok", 0)
+    cur2 = await conn.execute(
+        """
+        SELECT CAST(
+          MAX(
+            0,
+            ? - CAST((julianday('now') - julianday(bc_payment_claim_at)) * 86400 AS INTEGER)
+          ) AS INTEGER
+        )
+        FROM orders
+        WHERE id = ? AND user_id = ? AND bc_payment_claim_at IS NOT NULL
+        """,
+        (cool, order_id, user_id),
+    )
+    r2 = await cur2.fetchone()
+    wait = int(r2[0]) if r2 and r2[0] is not None else cool
+    return ("cooldown", max(0, wait))
 
 
 async def expire_stale_pending_payment_orders(
@@ -364,7 +454,7 @@ async def create_order_with_balance_partial(
 ) -> int:
     """
     Списывает balance_apply с кошелька, создаёт заказ.
-    Если доплата ~0 — сразу paid; иначе pending_payment и payment_method mix_fiat / mix_crypto.
+    Если доплата ~0 - сразу paid; иначе pending_payment и payment_method mix_fiat / mix_crypto.
     """
     from bot.services import balance_repo
 
@@ -718,7 +808,7 @@ async def set_order_fulfillment_mode(
 async def super_reset_paid_auto_fulfill_fields(conn: aiosqlite.Connection, order_id: int) -> bool:
     """
     Супер-админ: сброс полей авто-выдачи для заказа в paid (повтор в очереди воркера).
-    Не трогает processing с ref — там риск дубля у провайдера.
+    Не трогает processing с ref - там риск дубля у провайдера.
     """
     await conn.execute("BEGIN IMMEDIATE")
     cur = await conn.execute(

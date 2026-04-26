@@ -14,8 +14,8 @@ def effective_usdt_rub_rate(settings: Settings) -> float:
 def fx_payment_hints_html(settings: Settings, *, rub_final: float, usd_base: float) -> str:
     """
     Подсказки к сумме к оплате:
-    - ₽ — основной расчёт в боте (уже в rub_final).
-    - USDT (TRC20) — ориентир из .env (см. effective_usdt_rub_rate); сумма в реальном счёте задаётся провайдером.
+    - ₽ - основной расчёт в боте (уже в rub_final).
+    - USDT (TRC20) - ориентир по курсу магазина; сумма в реальном счёте задаётся провайдером.
     """
     lines: list[str] = []
     rub = float(rub_final)
@@ -27,22 +27,16 @@ def fx_payment_hints_html(settings: Settings, *, rub_final: float, usd_base: flo
     usdt_r = effective_usdt_rub_rate(settings)
     if usdt_r > 0:
         usdt_amt = round(rub / usdt_r, 4)
-        src = (
-            "<code>USDT_RUB_RATE</code>"
-            if float(settings.usdt_rub_rate) > 0
-            else "<code>USD_RUB_RATE</code> (USDT_RUB_RATE=0)"
-        )
         lines.append(
-            f"<b>USDT (TRC20)</b> — ориентир из .env ({src}): <b>{esc(f'{usdt_amt}')}</b> USDT "
+            f"<b>USDT (TRC20)</b> - ориентир: <b>{esc(f'{usdt_amt}')}</b> USDT "
             f"(<code>{esc(f'{usdt_r}')}</code> ₽ за 1 USDT)."
         )
 
     if not lines:
         return ""
     header = (
-        "<i><b>Цена в ₽</b> — по курсу магазина (<code>USD_RUB_RATE</code>), это основа заказа. "
-        "Ниже — ориентир в USDT из .env; <b>фактическую сумму USDT</b> в счёте Crypto Pay / xRocket "
-        "провайдер фиксирует при создании счёта и она может чуть отличаться.</i>"
+        "<i><b>Цена в ₽</b> - основа заказа. Ниже - ориентир в USDT; <b>сумма USDT</b> в готовом счёте в Telegram "
+        "может чуть отличаться: её фиксирует платёжный сервис при выставлении счёта.</i>"
     )
     out = [header]
     if usd_nom > 0:

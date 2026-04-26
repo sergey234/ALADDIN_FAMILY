@@ -268,6 +268,58 @@ def test_privacy_screen_includes_policy_links(monkeypatch: pytest.MonkeyPatch) -
     assert "Поддержка" in html
 
 
+def test_payment_faq_no_env_jargon(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BOT_TOKEN", "9:pfq")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "pfq_test_pepper_minimum_32_chars_____")
+    s = load_settings()
+    html = marketing.payment_faq_html(s)
+    assert "Stars" in html or "Premium" in html
+    assert "ORDER" in html  # memo code for users
+    assert ".env" not in html
+    assert "USDT_RUB" not in html
+    assert "ORDER_PENDING" not in html
+
+
+def test_payment_faq_universal_block_when_bc_url_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BOT_TOKEN", "9:uni")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "uni_test_pepper_minimum_32_chars_____")
+    monkeypatch.setenv("CKASSA_BC_UNIVERSAL_PAYMENT_URL", "https://bc.ckassa.ru/demo")
+    s = load_settings()
+    html = marketing.payment_faq_html(s)
+    assert "Оплата по ссылке Ckassa" in html
+    assert ".env" not in html
+
+
+def test_channel_pin_bc_checkout_html_when_url_set(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BOT_TOKEN", "9:pin")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "pin_test_pepper_minimum_32_chars_____")
+    monkeypatch.setenv("CKASSA_BC_UNIVERSAL_PAYMENT_URL", "https://bc.ckassa.ru/x")
+    s = load_settings()
+    html = marketing.channel_pin_bc_checkout_html(s)
+    assert "минимум" in html.lower() or "50" in html
+    assert "ORDER" in html
+
+
+def test_fiat_checkout_options_kb_urls_and_home() -> None:
+    from bot.keyboards.shop_kb import fiat_checkout_options_kb
+
+    m = fiat_checkout_options_kb(
+        universal_url="https://bc.example/x",
+        ckassa_shop_url="https://shop.ckassa.example/p",
+        lava_url="https://lava.example/i",
+        bc_claim_order_id=42,
+        support_order_url="https://t.me/support?text=order42",
+    )
+    assert len(m.inline_keyboard) == 6
+    assert m.inline_keyboard[-1][0].callback_data == "nav:hub"
+    assert m.inline_keyboard[-2][0].url == "https://t.me/support?text=order42"
+    assert m.inline_keyboard[-3][0].callback_data == "pay:bcc:42"
+    assert m.inline_keyboard[0][0].url == "https://bc.example/x"
+
+
 def test_faq_comprehensive_uses_referral_settings(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("BOT_TOKEN", "9:faq")
     monkeypatch.setenv("ADMIN_IDS", "1")
@@ -276,7 +328,7 @@ def test_faq_comprehensive_uses_referral_settings(monkeypatch: pytest.MonkeyPatc
     monkeypatch.setenv("REF_BUYER_FIRST_ORDER_DISCOUNT_PERCENT", "5")
     s = load_settings()
     html = marketing.faq_comprehensive_html(s)
-    assert "Ответы на часто задаваемые вопросы" in html
+    assert "Частые вопросы" in html
     assert "10.0%" in html
     assert "5.0%" in html
     assert "Unverified token" in html

@@ -13,8 +13,8 @@ async def allow_checkout_invoice_attempt(
     cooldown_seconds: int,
 ) -> tuple[bool, float]:
     """
-    True — можно вызывать createInvoice / LAVA invoice снова.
-    False — слишком рано; второе значение — примерно сколько секунд подождать.
+    True - можно вызывать createInvoice / LAVA invoice снова.
+    False - слишком рано; второе значение - примерно сколько секунд подождать.
     """
     return await orders_repo.assert_invoice_request_allowed(
         conn,

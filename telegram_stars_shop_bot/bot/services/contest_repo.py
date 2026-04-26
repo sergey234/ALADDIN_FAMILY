@@ -136,7 +136,7 @@ async def rank_for_referrer(
     starts_at: str,
     ends_at: str,
 ) -> int | None:
-    """Позиция в таблице (1 — лучший) по числу успешных заказов рефералов."""
+    """Позиция в таблице (1 - лучший) по числу успешных заказов рефералов."""
     board = await leaderboard_for_contest(conn, starts_at=starts_at, ends_at=ends_at, limit=500)
     for i, row in enumerate(board, start=1):
         if row["referrer_id"] == referrer_id:

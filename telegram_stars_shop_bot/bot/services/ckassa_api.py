@@ -57,7 +57,7 @@ def ckassa_checkout_configured(settings: Settings) -> bool:
     shop = (getattr(settings, "ckassa_shop_token", "") or "").strip()
     sec = (getattr(settings, "ckassa_secret_key", "") or "").strip()
     cb = (getattr(settings, "ckassa_callback_public_url", "") or "").strip()
-    # Без cbUrl Ckassa не пришлёт callback — заказ не перейдёт в paid автоматически.
+    # Без cbUrl Ckassa не пришлёт callback - заказ не перейдёт в paid автоматически.
     return bool(shop and sec and cb)
 
 

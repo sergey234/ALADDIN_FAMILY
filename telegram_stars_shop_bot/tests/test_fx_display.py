@@ -43,7 +43,7 @@ def test_fx_hints_usdt_only(monkeypatch) -> None:
     assert "USDT" in html
     assert "TRC20" in html
     assert "10" in html or "10.0" in html
-    assert "провайдер" in html.lower() or "Crypto Pay" in html
+    assert "провайдер" in html.lower() or "платёж" in html.lower() or "Crypto Pay" in html
     assert "UAH" not in html
     assert "BYN" not in html
 

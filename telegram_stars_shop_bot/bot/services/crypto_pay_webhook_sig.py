@@ -1,4 +1,4 @@
-"""Проверка подписи вебхука Crypto Pay (@CryptoBot) — как в pycryptopay-sdk (raw body)."""
+"""Проверка подписи вебхука Crypto Pay (@CryptoBot) - как в pycryptopay-sdk (raw body)."""
 
 from __future__ import annotations
 

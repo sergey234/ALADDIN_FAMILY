@@ -13,6 +13,8 @@ from aiogram.types import BotCommand
 from bot.config import load_settings
 from bot.sentry_util import init_sentry_bot
 from bot.db.database import connect
+from bot.services.ckassa_api import ckassa_checkout_configured
+from bot.services.lava_api import lava_checkout_configured
 from bot.support_links import telegram_support_base
 from bot.handlers import admin as admin_handlers
 from bot.handlers import common as common_handlers
@@ -64,6 +66,15 @@ async def run() -> None:
             "CKASSA_TEST_MODE=true: демо-шлюз и демо-ключи, не для реального приёма. "
             "Прод: CKASSA_TEST_MODE=false, ShopToken/SecKey из ЛК Ckassa, CKASSA_CALLBACK_PUBLIC_URL публичный HTTPS."
         )
+    univers = (getattr(settings, "ckassa_bc_universal_payment_url", "") or "").strip()
+    if not univers and not ckassa_checkout_configured(settings) and not lava_checkout_configured(settings):
+        logger.warning(
+            "Fiat: не задана CKASSA_BC_UNIVERSAL_PAYMENT_URL и не настроены Ckassa Shop API / LAVA - "
+            "покупатели при «Карта / СБП» увидят текст без кнопки оплаты. Добавьте переменные в shared/.env "
+            "(см. telegram_stars_shop_bot/env.example, docs/ML_SYSTEM_HANDOFF_FINAL.md §4)."
+        )
+    elif univers:
+        logger.info("Fiat: CKASSA_BC_UNIVERSAL_PAYMENT_URL задан - кнопка оплаты по ссылке bc доступна при оформлении.")
     conn = await connect(settings.database_path)
     slog(logger, "bot_start", database=str(settings.database_path))
     products = load_products(settings.products_path)

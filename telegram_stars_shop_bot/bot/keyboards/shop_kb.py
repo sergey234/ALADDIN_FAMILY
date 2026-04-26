@@ -17,7 +17,7 @@ def channel_subscribe_kb(settings: Settings) -> InlineKeyboardMarkup:
     inv = (settings.required_channel_invite_url or "").strip()
     if inv:
         b.row(InlineKeyboardButton(text="📢 Подписаться на канал", url=inv))
-    b.row(InlineKeyboardButton(text="✅ Я подписался — открыть меню", callback_data="start:hub"))
+    b.row(InlineKeyboardButton(text="✅ Я подписался - открыть меню", callback_data="start:hub"))
     return b.as_markup()
 
 
@@ -152,7 +152,7 @@ def payment_methods_kb(
 def lava_payment_kb(pay_url: str) -> InlineKeyboardMarkup:
     """Кнопка на страницу оплаты LAVA (СБП, карты и др. по тарифам магазина)."""
     b = InlineKeyboardBuilder()
-    b.row(InlineKeyboardButton(text="💳 Оплатить (LAVA — СБП / карта)", url=pay_url))
+    b.row(InlineKeyboardButton(text="💳 Оплатить в ₽ (карта / СБП)", url=pay_url))
     b.row(InlineKeyboardButton(text="🏠 В главное меню", callback_data="nav:hub"))
     return b.as_markup()
 
@@ -160,7 +160,50 @@ def lava_payment_kb(pay_url: str) -> InlineKeyboardMarkup:
 def ckassa_payment_kb(pay_url: str) -> InlineKeyboardMarkup:
     """Кнопка на платёжную форму Ckassa (карты, СБП, SberPay и др. по тарифам ЦК)."""
     b = InlineKeyboardBuilder()
-    b.row(InlineKeyboardButton(text="💳 Оплатить (Ckassa — ₽, карта / СБП)", url=pay_url))
+    b.row(InlineKeyboardButton(text="💳 Оплатить в ₽ (карта / СБП)", url=pay_url))
+    b.row(InlineKeyboardButton(text="🏠 В главное меню", callback_data="nav:hub"))
+    return b.as_markup()
+
+
+def fiat_checkout_options_kb(
+    *,
+    universal_url: str | None,
+    ckassa_shop_url: str | None,
+    lava_url: str | None,
+    bc_claim_order_id: int | None = None,
+    support_order_url: str | None = None,
+) -> InlineKeyboardMarkup:
+    """
+    До трёх URL-способов ₽: универсальная страница Ckassa (сумма вручную), счёт Shop API Ckassa, LAVA.
+    Порядок: сначала универсальная ссылка (если задана) - как основной «живой» вариант при проблемах API.
+    После оплаты на универсальной странице - callback «Я оплатил» (уведомление админам, не авто-оплата).
+    """
+    b = InlineKeyboardBuilder()
+    if universal_url:
+        b.row(
+            InlineKeyboardButton(
+                text="⭐ Ckassa: сумма вручную (сейчас основной)",
+                url=universal_url,
+            )
+        )
+    if ckassa_shop_url:
+        b.row(
+            InlineKeyboardButton(
+                text="💳 Ckassa: фикс. сумма по заказу",
+                url=ckassa_shop_url,
+            )
+        )
+    if lava_url:
+        b.row(InlineKeyboardButton(text="💳 LAVA: карта / СБП", url=lava_url))
+    if universal_url and bc_claim_order_id is not None and bc_claim_order_id > 0:
+        b.row(
+            InlineKeyboardButton(
+                text="📨 Я оплатил",
+                callback_data=f"pay:bcc:{bc_claim_order_id}",
+            )
+        )
+    if (support_order_url or "").strip():
+        b.row(InlineKeyboardButton(text="💬 Поддержка по заказу", url=(support_order_url or "").strip()))
     b.row(InlineKeyboardButton(text="🏠 В главное меню", callback_data="nav:hub"))
     return b.as_markup()
 

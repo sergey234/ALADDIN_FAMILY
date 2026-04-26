@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import logging
 import re
+
+_log = logging.getLogger(__name__)
 
 from aiogram import Bot, F, Router
 from aiogram.filters import Command
@@ -12,6 +15,7 @@ from bot.keyboards.shop_kb import (
     ckassa_payment_kb,
     confirm_order_kb,
     crypto_providers_kb,
+    fiat_checkout_options_kb,
     hub_menu_kb,
     lava_payment_kb,
     payment_methods_kb,
@@ -19,6 +23,7 @@ from bot.keyboards.shop_kb import (
     verify_username_kb,
 )
 from bot.services import balance_repo, orders_repo, users_repo
+from bot.services.operator_payment_memo import operator_bc_manual_checklist_html
 from bot.services.invoice_checkout_cooldown import allow_checkout_invoice_attempt
 from bot.services.catalog import Product, products_by_id
 from bot.services.crypto_pay_api import (
@@ -32,6 +37,7 @@ from bot.services.payments_stub import crypto_payment_block_html, fiat_placehold
 from bot.services.fx_display import fx_payment_hints_html
 from bot.services.pricing import format_shop_quote_money_html, quote_product, rub_per_100_stars_display
 from bot.states.checkout import CheckoutStates
+from bot.support_links import support_order_question_url
 from bot.util_html import esc
 
 router = Router(name="shop")
@@ -56,7 +62,7 @@ def _fmt_quote_html(p: Product, q, settings: Settings) -> str:
 
 
 async def _is_first_purchase(conn, user_id: int) -> bool:
-    """Реф. скидка до первого выданного (completed) заказа — см. pricing.quote_product."""
+    """Реф. скидка до первого выданного (completed) заказа - см. pricing.quote_product."""
     return await orders_repo.count_user_completed_orders(conn, user_id) == 0
 
 
@@ -85,9 +91,10 @@ async def _present_fiat_checkout(
 ) -> None:
     """
     После создания заказа со статусом «ожидает оплаты»:
-    - приоритетно Ckassa (если CKASSA_ENABLED и заданы токен/секрет/cbUrl);
-    - иначе LAVA (если настроена);
-    - иначе — текстовая инструкция (ручная оплата / донастройка).
+    - если задана CKASSA_BC_UNIVERSAL_PAYMENT_URL или FIAT_PARALLEL_CKASSA_AND_LAVA - экран с ссылкой bc и кодом ORDER{id}
+      для назначения платежа; при CKASSA_BC_SOLO_CHECKOUT=true только ссылка (без Shop API и LAVA);
+      иначе плюс счёт Shop API Ckassa и LAVA при настройке;
+    - иначе по старой схеме: Ckassa Shop API, затем LAVA, затем текстовая инструкция.
     """
     ok_cd, wait_s = await allow_checkout_invoice_attempt(
         conn, order_id, settings.payment_checkout_invoice_cooldown_seconds
@@ -108,6 +115,162 @@ async def _present_fiat_checkout(
     payer_email = f"tg{buyer_user_id}@telegram.invalid"
     payer_phone = (settings.ckassa_default_phone or "").strip() or "+79990000000"
 
+    univers = (getattr(settings, "ckassa_bc_universal_payment_url", "") or "").strip()
+    solo_bc = bool(univers) and bool(getattr(settings, "ckassa_bc_solo_checkout", False))
+    multi_lane = bool(univers) or bool(getattr(settings, "fiat_parallel_ckassa_and_lava", False))
+    ck_url: str | None = None
+    ck_ext: str | None = None
+    pay_lava: str | None = None
+    ext_lava: str | None = None
+
+    if multi_lane:
+        if not solo_bc:
+            if ckassa_checkout_configured(settings):
+                ck_url, ck_ext = await create_ckassa_payment_meta(
+                    settings,
+                    order_id=order_id,
+                    rub_due=rub_due,
+                    product_title=product_title,
+                    payer_email=payer_email,
+                    payer_phone=payer_phone,
+                    payer_fio=fio,
+                )
+            if lava_checkout_configured(settings):
+                memo = f"ORDER{order_id}"
+                pay_lava, ext_lava = await create_invoice_payment_meta(
+                    settings,
+                    order_id=order_id,
+                    sum_rub=rub_due,
+                    comment=memo[:255],
+                )
+            if ck_url and pay_lava:
+                await orders_repo.set_invoice_provider_metadata(
+                    conn, order_id=order_id, provider="multi", external_id=None
+                )
+            elif ck_url:
+                await orders_repo.set_invoice_provider_metadata(
+                    conn, order_id=order_id, provider="ckassa", external_id=ck_ext
+                )
+            elif pay_lava:
+                await orders_repo.set_invoice_provider_metadata(
+                    conn, order_id=order_id, provider="lava", external_id=ext_lava
+                )
+        else:
+            await orders_repo.set_invoice_provider_metadata(
+                conn, order_id=order_id, provider="ckassa_bc", external_id=None
+            )
+
+        if univers or ck_url or pay_lava:
+            rub_s = esc(f"{float(rub_due):.2f}")
+            oid_s = esc(str(order_id))
+            order_memo = f"ORDER{order_id}"
+            order_memo_esc = esc(order_memo)
+            sup_u = support_order_question_url(settings, order_id)
+            sup_href = esc(sup_u) if sup_u else ""
+            bc_min = float(getattr(settings, "ckassa_bc_display_min_rub", 50.0) or 50.0)
+            if bc_min < 1.0:
+                bc_min = 50.0
+            bc_min_s = esc(f"{bc_min:.0f}")
+            parts: list[str] = [
+                fx,
+                "",
+                f"<b>Сумма заказа: {rub_s} ₽</b>",
+                "",
+                "<b>Как оплатить</b>",
+            ]
+            if solo_bc:
+                parts.append(
+                    "Сейчас доступна <b>оплата по ссылке</b> ниже. Счёт Ckassa с готовой суммой и LAVA "
+                    "(авто-статус «Оплачен» по webhook) подключим позже - скажем в канале / закрепе."
+                )
+            else:
+                parts.append("Нажмите <b>одну</b> кнопку оплаты ниже (два раза платить не нужно).")
+            if univers:
+                under_min = float(rub_due) + 1e-6 < bc_min
+                parts.extend(
+                    [
+                        "",
+                        "<b>⭐ Оплата по ссылке Ckassa (пошагово)</b>",
+                        f"• <b>Минимум на странице оплаты</b> - обычно <b>{bc_min_s} ₽</b> (ограничение банка/эквайринга). "
+                        "Если заказ меньше - уточните в поддержке или доплатите до минимума одним платежом.",
+                        f"• <b>Сумма</b> - введите на странице <b>ровно {rub_s} ₽</b>, как в заказе выше.",
+                        "• <b>Один платёж</b> - не оплачивайте дважды разными кнопками.",
+                        f"• <b>ID заказа в боте</b> - <code>{oid_s}</code> (тот же номер в «Заказы»).",
+                        "• <b>Назначение платежа</b> - если банк даёт поле «назначение» / «комментарий», вставьте "
+                        "(нажмите на строку ниже в Telegram - скопируется):",
+                        f"<code>{order_memo_esc}</code>",
+                        "  Так проще найти ваш платёж в выписке.",
+                        "• Нажмите кнопку <b>«⭐ Ckassa…»</b>, завершите оплату картой или СБП.",
+                        "• Вернитесь сюда и нажмите <b>«Я оплатил»</b> - оператор сверит платёж в кабинете.",
+                        f"• Статус <b>«Оплачен»</b> появится в <b>«Заказы»</b> после проверки (часто до 15-30 минут в нерабочее время).",
+                        "• <b>Выдача Stars / Premium</b> - только после «Оплачен», затем «В работе» / «Выдан» по очереди магазина.",
+                    ]
+                )
+                if under_min:
+                    parts.append(
+                        f"\n<b>Внимание:</b> сумма заказа ниже типичного минимума {bc_min_s} ₽ - страница оплаты может не принять. "
+                        "Напишите в поддержку до оплаты."
+                    )
+                if sup_u:
+                    parts.append(f'<a href="{sup_href}">Написать в поддержку по заказу #{oid_s}</a>')
+                else:
+                    parts.append("Вопросы - раздел <b>«Поддержка»</b> в главном меню, укажите номер заказа.")
+                parts.append(
+                    "<i>Нет поля «назначение» - всё равно нажмите «Я оплатил» после оплаты или напишите в поддержку.</i>"
+                )
+            if ck_url:
+                parts.extend(
+                    [
+                        "",
+                        "<b>💳 Ckassa с готовой суммой</b>",
+                        "Сумма уже подставлена. Часто статус «Оплачен» обновляется сам, без кнопки «Я оплатил».",
+                    ]
+                )
+            if pay_lava:
+                parts.extend(
+                    [
+                        "",
+                        "<b>💳 LAVA</b>",
+                        "Другой способ оплаты картой или СБП. Статус обновится после оплаты по данным LAVA.",
+                    ]
+                )
+            parts.append(
+                "\n<i>До появления «Выдан» сохраните квитанцию из банка. Возвраты - только через поддержку по правилам магазина.</i>"
+            )
+            await cb.message.edit_text(
+                intro_html + "\n".join(parts),
+                reply_markup=fiat_checkout_options_kb(
+                    universal_url=univers or None,
+                    ckassa_shop_url=ck_url,
+                    lava_url=pay_lava,
+                    bc_claim_order_id=order_id if univers else None,
+                    support_order_url=sup_u,
+                ),
+            )
+            return
+
+        missing_multi = (
+            "\n\n<b>Онлайн-оплата сейчас не открылась.</b> "
+            "Напишите в <b>Поддержку</b> с номером заказа или попробуйте позже."
+        )
+        _log.warning(
+            "fiat_checkout_no_urls_multi_lane order_id=%s univers=%s solo_bc=%s ck_url=%s pay_lava=%s "
+            "ckassa_cfg=%s lava_cfg=%s",
+            order_id,
+            bool(univers),
+            solo_bc,
+            bool(ck_url),
+            bool(pay_lava),
+            ckassa_checkout_configured(settings),
+            lava_checkout_configured(settings),
+        )
+        instr = fiat_placeholder_html(settings, order_id=order_id, rub=rub_due)
+        await cb.message.edit_text(
+            intro_html + fx + missing_multi + f"\n\n<b>{esc(instr.title)}</b>\n{instr.body_html}",
+            reply_markup=hub_menu_kb(),
+        )
+        return
+
     if ckassa_checkout_configured(settings):
         ck_url, ck_ext = await create_ckassa_payment_meta(
             settings,
@@ -125,26 +288,20 @@ async def _present_fiat_checkout(
             rub_s = esc(f"{float(rub_due):.2f}")
             tail = (
                 fx
-                + f"\n\n<b>К оплате: {rub_s} ₽</b> — на платёжной странице должна быть <b>та же сумма в рублях</b>.\n"
-                "<b>Как оплатить (коротко по шагам):</b>\n"
-                "1) Нажмите кнопку <b>«Оплатить (Ckassa)»</b> ниже — откроется форма Ckassa.\n"
-                "2) На форме выберите способ: <b>карта</b> (в т.ч. Google Pay / Apple Pay, если доступны), <b>СБП</b> "
-                "или SberPay — набор способов задаёт Ckassa по вашему тарифу и банку.\n"
-                "3) Подтвердите списание в банковском приложении / по SMS. <b>Итог к оплате в ₽</b> должен совпадать с "
-                f"<b>{rub_s} ₽</b> за этот заказ.\n"
-                "4) Закройте оплату и дождитесь, пока в боте в разделе <b>«Мои заказы»</b> у этого заказа не появится статус "
-                "<b>«Оплачен»</b> (обычно в течение 1–2 минут; иногда дольше при 3DS).\n\n"
-                "Если статус не сменился — откройте <b>«Мои заказы»</b> снова через пару минут. "
-                "С номером заказа обращайтесь в поддержку.\n"
-                "\n<i>Дальше заказ в работе: автоматическая выдача Stars / Premium, если в настройках магазина включена автовыдача; "
-                "иначе оператор завершит выдачу вручную.</i>"
+                + f"\n\n<b>Сумма: {rub_s} ₽</b> - на странице оплаты должна быть <b>та же сумма</b>.\n"
+                "После оплаты в боте заказ <b>встанет в очередь</b> на выдачу: Stars, Premium или подарок - что вы "
+                "выбрали. Срок - от нагрузки, обычно недолго.\n"
+                "<b>Что сделать:</b>\n"
+                "1) Нажмите <b>«Оплатить в ₽ (карта / СБП)»</b> ниже.\n"
+                "2) Оплатите на открывшейся странице: карта, СБП и др. - как предложит банк.\n"
+                "3) Откройте <b>«Мои заказы»</b> - дождитесь <b>«Оплачен»</b> (часто 1-2 минуты).\n"
+                "4) Если <b>«Оплачен»</b> нет - напишите в <b>Поддержку</b> с номером заказа.\n"
+                "\n<i>Защищённый эквайринг (партнёры Ckassa / LAVA - у магазина настраивается один поток). "
+                "Дальше - выдача Stars / Premium: автоматом или вручную, по политике магазина.</i>"
             )
             await cb.message.edit_text(intro_html + tail, reply_markup=ckassa_payment_kb(ck_url))
             return
-        miss = (
-            "\n\n<b>Ссылка Ckassa не получена</b> (ошибка API или проверьте CKASSA_* в <code>shared/.env</code>). "
-            "Пробуем запасной провайдер, если он настроен."
-        )
+        miss = "\n\n<b>Ссылка на оплату не открылась.</b> Пробуем запасной способ - подождите пару секунд."
         intro_html = intro_html + miss
 
     memo = f"ORDER{order_id}"
@@ -162,36 +319,41 @@ async def _present_fiat_checkout(
         rub_s = esc(f"{float(rub_due):.2f}")
         tail = (
             fx
-            + f"\n\n<b>К оплате: {rub_s} ₽</b> (проверьте сумму на странице LAVA).\n"
-            "<b>Шаги:</b>\n"
-            "1) Нажмите <b>«Оплатить (LAVA)»</b> — откроется страница LAVA (СБП, карта и т.д. по вашему проекту).\n"
-            "2) Подтвердите оплату в банке; сумма в <b>рублях</b> = сумме заказа.\n"
-            "3) В <b>«Мои заказы»</b> дождитесь <b>«Оплачен»</b>. "
-            "Если нет — напишите в поддержку с номером заказа.\n"
-            "\n<i>Дальше — обработка заказа и выдача, как в настройках магазина (авто или вручную).</i>"
+            + f"\n\n<b>Сумма: {rub_s} ₽</b> - на странице проверьте ту же сумму.\n"
+            "После оплаты в боте заказ <b>встанет в очередь</b> на выдачу: Stars, Premium или подарок - что в заказе. "
+            "Срок - от нагрузки, обычно недолго.\n"
+            "<b>Что сделать:</b>\n"
+            "1) Нажмите <b>«Оплатить в ₽ (карта / СБП)»</b> ниже.\n"
+            "2) Оплатите на открывшейся странице (карта / СБП - что предложит банк).\n"
+            "3) <b>«Мои заказы»</b> - ждите <b>«Оплачен»</b>.\n"
+            "4) Статус не сменился - <b>Поддержка</b> с номером заказа.\n"
+            "\n<i>Дальше - выдача Stars / Premium: автоматом или вручную, по политике магазина.</i>"
         )
         await cb.message.edit_text(intro_html + tail, reply_markup=lava_payment_kb(pay_url))
         return
     missing_lava = ""
     if not lava_checkout_configured(settings) and not ckassa_checkout_configured(settings):
         missing_lava = (
-            "\n\n<b>Почему нет кнопки онлайн-оплаты</b>\n"
-            "Для <b>Ckassa</b>: <code>CKASSA_ENABLED=true</code>, <code>CKASSA_SHOP_TOKEN</code>, <code>CKASSA_SECRET_KEY</code>, "
-            "публичный <code>CKASSA_CALLBACK_PUBLIC_URL</code> (например <code>https://ваш-домен/v1/payments/ckassa-webhook</code>).\n"
-            "Для <b>LAVA</b> (запасной вариант): <code>LAVA_SHOP_ID</code>, <code>LAVA_SECRET_KEY</code>, "
-            "<code>LAVA_HOOK_URL</code> на <code>…/v1/payments/lava-webhook</code>.\n"
-            "Пока провайдеры не настроены — оплата по инструкции ниже или через поддержку."
+            "\n\n<b>Онлайн-оплата сейчас недоступна.</b> "
+            "Напишите в <b>Поддержку</b> - укажите номер заказа, вам подскажут, как оплатить."
         )
     elif ckassa_checkout_configured(settings) and not lava_checkout_configured(settings):
         missing_lava = (
-            "\n\n<b>Онлайн-оплата недоступна</b> (ошибка ответа Ckassa). Заказ в статусе «ожидает оплаты». "
-            "Проверьте логи Partner API и поля CKASSA_*; при необходимости настройте LAVA как запасной канал."
+            "\n\n<b>Оплата картой/СБП сейчас не открылась.</b> "
+            "Заказ сохранён. Напишите в <b>Поддержку</b> с номером заказа или попробуйте позже."
         )
     else:
         missing_lava = (
-            "\n\n<b>Счёт LAVA не создан</b> (ошибка ответа API). Заказ в статусе «ожидает оплаты». "
-            "Попробуйте оформить заказ позже или напишите в поддержку с номером заказа."
+            "\n\n<b>Ссылка на оплату не создалась.</b> "
+            "Попробуйте через несколько минут или напишите в <b>Поддержку</b> (номер заказа пригодится)."
         )
+    _log.warning(
+        "fiat_checkout_placeholder_sequential order_id=%s univers_nonempty=%s ckassa_cfg=%s lava_cfg=%s",
+        order_id,
+        bool((getattr(settings, "ckassa_bc_universal_payment_url", "") or "").strip()),
+        ckassa_checkout_configured(settings),
+        lava_checkout_configured(settings),
+    )
     instr = fiat_placeholder_html(settings, order_id=order_id, rub=rub_due)
     await cb.message.edit_text(
         intro_html
@@ -213,8 +375,8 @@ async def _present_crypto_checkout(
     usd_for_fx: float,
 ) -> None:
     """
-    Счета USDT (TRC20): Crypto Pay (@CryptoBot) и/или xRocket Pay — URL-кнопки.
-    Если провайдеры выключены или не настроены — ручной блок USDT из .env (TON в том же блоке при CRYPTO_SHOW_TON_MANUAL и заполненном CRYPTO_TON).
+    Счета USDT (TRC20): Crypto Pay (@CryptoBot) и/или xRocket Pay - URL-кнопки.
+    Если провайдеры выключены или не настроены - ручной блок USDT из .env (TON в том же блоке при CRYPTO_SHOW_TON_MANUAL и заполненном CRYPTO_TON).
     """
     ok_cd, wait_s = await allow_checkout_invoice_attempt(
         conn, order_id, settings.payment_checkout_invoice_cooldown_seconds
@@ -256,20 +418,28 @@ async def _present_crypto_checkout(
     if urls:
         tail = (
             fx
-            + "\n\n<b>Оплата USDT в сети TRC20</b>\n"
-            "Выберите провайдера — откроется счёт в Telegram. После оплаты статус заказа обычно сам станет "
-            "<b>«Оплачен»</b> в течение короткого времени (магазин получает подтверждение от провайдера). "
-            "Загляните в «Мои заказы»; если статус долго не меняется — напишите в поддержку с номером заказа.\n\n"
-            "<i>Выдача Stars / Premium — дальше по очереди: оператор переведёт заказ в «В работе» и «Выдан».</i>\n"
+            + "\n\n<b>Сумма: оплата в USDT (TRC20) по счёту</b> - в Telegram откроется счёт выбранного сервиса. "
+            "Сумма в USDT в счёте - от провайдера.\n"
+            "После оплаты в боте заказ <b>встанет в очередь</b> на выдачу: Stars, Premium - как в заказе.\n"
+            "<b>Что сделать:</b>\n"
+            "1) Нажмите кнопку Crypto Pay и/или xRocket ниже - откроется счёт в Telegram.\n"
+            "2) Оплатите по счёту. Дождитесь, пока статус в боте станет <b>«Оплачен»</b> (часто быстро).\n"
+            "3) <b>«Мои заказы»</b> - проверяйте статус.\n"
+            "4) <b>«Оплачен»</b> нет - напишите в <b>Поддержку</b> с номером заказа.\n"
+            "\n<i>Дальше - выдача по очереди, оператор переведёт заказ в <b>«В работе»</b> и <b>«Выдан»</b> "
+            "когда будет готово.</i>\n"
         )
         await cb.message.edit_text(intro_html + tail, reply_markup=crypto_providers_kb(urls))
         return
 
     if tried_providers:
+        _log.warning(
+            "crypto_checkout: invoice not created (providers tried), order_id=%s - check rates/API in env, logs",
+            order_id,
+        )
         fail = (
-            "\n\n<b>Счёт не создан</b> (Crypto Pay / xRocket: сеть, курс USDT↔₽ или ответ API). "
-            "Заказ в статусе «ожидает оплаты». Убедитесь, что в .env задан курс "
-            "<code>USDT_RUB_RATE</code> или <code>USD_RUB_RATE</code> для резерва, и повторите позже.\n"
+            "\n\n<b>Счёт в Telegram не открылся.</b> Заказ ждёт оплаты. "
+            "Попробуйте через пару минут или напишите в <b>Поддержку</b> (номер заказа). "
         )
         if settings.crypto_pay_wallet_fallback:
             pay = crypto_payment_block_html(settings, order_id=order_id, rub=due_rub, usd_for_fx=usd_for_fx)
@@ -343,6 +513,43 @@ async def premium_pick_dest(cb: CallbackQuery, products: list[Product], settings
     await cb.answer()
 
 
+@router.callback_query(F.data.startswith("pay:bcc:"))
+async def bc_universal_payment_claim(cb: CallbackQuery, settings: Settings, conn, bot: Bot) -> None:
+    """Покупатель сообщил, что оплатил на универсальной bc-странице Ckassa - пинг админам для ручной сверки."""
+    raw = (cb.data or "").strip()
+    parts = raw.split(":")
+    if len(parts) != 3:
+        await cb.answer()
+        return
+    try:
+        oid = int(parts[2])
+    except ValueError:
+        await cb.answer()
+        return
+    cool = max(0, int(getattr(settings, "bc_payment_claim_cooldown_seconds", 900) or 0))
+    code, wait_s = await orders_repo.touch_bc_payment_claim_if_allowed(
+        conn,
+        order_id=oid,
+        user_id=cb.from_user.id,
+        cooldown_seconds=cool,
+    )
+    if code == "not_found":
+        await cb.answer("Заказ не найден", show_alert=True)
+        return
+    if code == "wrong_user":
+        await cb.answer("Это не ваш заказ", show_alert=True)
+        return
+    if code == "wrong_status":
+        await cb.answer("Статус заказа уже другой - откройте «Мои заказы».", show_alert=True)
+        return
+    if code == "cooldown":
+        m = max(1, int(wait_s) // 60) if int(wait_s) >= 60 else 1
+        await cb.answer(f"Сигнал уже отправляли. Повторите примерно через {m} мин или напишите в поддержку.", show_alert=True)
+        return
+    await _notify_admins_bc_payment_claim(bot, settings, conn, order_id=oid, from_user=cb.from_user)
+    await cb.answer("Отправили операторам. Ждите проверки в «Мои заказы».")
+
+
 @router.callback_query(F.data.startswith("pay:"))
 async def choose_payment(cb: CallbackQuery, state: FSMContext, products: list[Product], settings: Settings, conn) -> None:
     parts = cb.data.split(":", 2)
@@ -409,7 +616,7 @@ async def read_recipient(message: Message, state: FSMContext, products: list[Pro
     await state.set_state(CheckoutStates.waiting_verify_username)
     await message.answer(
         f"<b>Проверьте получателя</b>\n<code>{esc(handle)}</code>\n\n"
-        "Если ошиблись — нажмите «Исправить» и введите снова.",
+        "Если ошиблись - нажмите «Исправить» и введите снова.",
         reply_markup=verify_username_kb(),
     )
 
@@ -559,8 +766,8 @@ async def order_submit(
         elif payment == "mixfi":
             intro = (
                 f"<b>Заказ #{esc(order_id)}</b>\n"
-                f"С баланса списано: <b>{esc(f'{apply:.2f}')} ₽</b>.\n"
-                f"<b>Осталось к доплате в рублях:</b> <b>{esc(f'{due:.2f}')} ₽</b> (ниже — ссылка на Ckassa или LAVA, сумма = этой цифре).\n"
+                f"С баланса: <b>{esc(f'{apply:.2f}')} ₽</b> · "
+                f"<b>доплатить: {esc(f'{due:.2f}')} ₽</b>\n"
             )
             await _present_fiat_checkout(
                 cb,
@@ -633,9 +840,8 @@ async def order_submit(
         )
     else:
         intro = (
-            f"<b>Заказ создан</b> — ID: <code>{esc(order_id)}</code>\n"
-            f"К оплате: <b>{esc(f'{rub:.2f}')} ₽</b> в рублях (без скрытых валют).\n"
-            "<i>Далее: кнопка на защищённую оплату (в первую очередь Ckassa) или запасной канал, если Ckassa недоступна.</i>\n"
+            f"<b>Заказ #{esc(order_id)}</b>\n"
+            f"К оплате: <b>{esc(f'{rub:.2f}')} ₽</b>\n"
         )
         await _present_fiat_checkout(
             cb,
@@ -650,6 +856,71 @@ async def order_submit(
     await cb.answer()
 
     await _notify_admins(bot, settings, conn, order_id)
+
+
+async def _notify_admins_bc_payment_claim(
+    bot: Bot,
+    settings: Settings,
+    conn,
+    *,
+    order_id: int,
+    from_user,
+) -> None:
+    """Пинг админам: покупатель нажал «Я оплатил» после универсальной bc-страницы (ручная сверка в ЛК Ckassa)."""
+    order = await orders_repo.get_order(conn, order_id)
+    if not order:
+        return
+    u = await users_repo.get_user(conn, int(order["user_id"]))
+    uname = u["username"] if u else None
+    user_line = f"@{uname}" if uname else f"id {order['user_id']}"
+    amt = float(order["rub_after_discounts"])
+    due = orders_repo.amount_due_external(order)
+    try:
+        bap = float(order["balance_applied_rub"] or 0)
+    except (KeyError, TypeError):
+        bap = 0.0
+    extra = ""
+    if bap > 0.01:
+        extra = f"\nС баланса: <b>{esc(f'{bap:.2f}')} ₽</b>\nК доплате внешней оплатой: <b>{esc(f'{due:.2f}')} ₽</b>"
+    claim_un = (from_user.username or "").strip()
+    claim_line = f"@{claim_un}" if claim_un else f"id {from_user.id}"
+    text = (
+        "<b>Админам магазина</b> <i>(служебное)</i>\n"
+        "<b>Покупатель: оплатил на универсальной странице Ckassa (bc)</b>\n"
+        "Кнопка «Я оплатил» - только сигнал. Сверьте поступление в <b>личном кабинете Ckassa</b> по сумме и времени; "
+        "в назначении ищите код как в боте. Если совпадает с заказом - нажмите <b>«Оплачен»</b>.\n\n"
+        f"Заказ: <code>{esc(str(order_id))}</code> · в выписке: <code>{esc(f'ORDER{order_id}')}</code>\n"
+        f"Покупатель (заказ): {esc(user_line)}\n"
+        f"Нажал кнопку: {esc(claim_line)}\n"
+        f"Товар: {esc(order['product_title'])}\n"
+        f"Сумма заказа: <b>{esc(f'{amt:.2f}')} ₽</b>{extra}\n"
+        f"Получатель Stars/Premium: <code>{esc(order['user_note'] or '')}</code>\n"
+        f"Статус: <code>{esc(order['status'])}</code>"
+    )
+    from bot.keyboards.shop_kb import admin_order_kb
+    from bot.services.admin_order_ff import ff_context_from_order_row, format_fulfillment_admin_block
+
+    text = text + format_fulfillment_admin_block(order)
+    text += await operator_bc_manual_checklist_html(conn, settings, order)
+    oid = int(order["id"])
+    buyer_id = int(order["user_id"])
+    admin_ids = settings.parsed_admin_ids()
+    for admin_id in admin_ids:
+        if admin_id == buyer_id and len(admin_ids) > 1:
+            continue
+        try:
+            await bot.send_message(
+                admin_id,
+                text,
+                reply_markup=admin_order_kb(
+                    oid,
+                    settings=settings,
+                    actor_id=admin_id,
+                    order_ff=ff_context_from_order_row(order),
+                ),
+            )
+        except Exception:
+            continue
 
 
 async def _notify_admins(bot: Bot, settings: Settings, conn, order_id: int) -> None:
@@ -670,7 +941,7 @@ async def _notify_admins(bot: Bot, settings: Settings, conn, order_id: int) -> N
         extra = f"\nС баланса: <b>{esc(f'{bap:.2f}')} ₽</b>\nК доплате: <b>{esc(f'{due:.2f}')} ₽</b>"
     text = (
         "<b>Админам магазина</b> <i>(служебное сообщение, не страница оплаты)</i>\n"
-        "Кнопки «Оплачен / В работе / Выдан» — для операторов после проверки оплаты.\n\n"
+        "Кнопки «Оплачен / В работе / Выдан» - для операторов после проверки оплаты.\n\n"
         "<b>Новый заказ</b>\n\n"
         f"ID: <code>{esc(order['id'])}</code>\n"
         f"Пользователь: {esc(user_line)}\n"
@@ -684,6 +955,9 @@ async def _notify_admins(bot: Bot, settings: Settings, conn, order_id: int) -> N
     from bot.services.admin_order_ff import ff_context_from_order_row, format_fulfillment_admin_block
 
     text = text + format_fulfillment_admin_block(order)
+    pm = str(order.get("payment_method") or "").strip().lower()
+    if pm in ("fiat", "mix_fiat"):
+        text += await operator_bc_manual_checklist_html(conn, settings, order)
     oid = int(order["id"])
     buyer_id = int(order["user_id"])
     admin_ids = settings.parsed_admin_ids()

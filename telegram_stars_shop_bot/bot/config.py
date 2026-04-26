@@ -5,6 +5,9 @@ from pathlib import Path
 from pydantic import Field, model_validator
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+# Страница Ckassa Market «произвольная сумма» магазина: подставляется, если CKASSA_BC_UNIVERSAL_PAYMENT_URL пуст.
+DEFAULT_CKASSA_BC_UNIVERSAL_PAYMENT_URL = "https://bc.ckassa.ru/u6lfph2p6e"
+
 
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
@@ -19,7 +22,7 @@ class Settings(BaseSettings):
     # Пусто = все из ADMIN_IDS считаются супер-админами (как раньше).
     super_admin_ids: str = Field(default="", validation_alias="SUPER_ADMIN_IDS")
 
-    # ₽ за 1 USD — обязателен в .env на проде (дефолт 0: без переменной бот не стартует — см. model_validator).
+    # ₽ за 1 USD - обязателен в .env на проде (дефолт 0: без переменной бот не стартует - см. model_validator).
     usd_rub_rate: float = Field(default=0.0, validation_alias="USD_RUB_RATE")
     # ₽ за 1 USDT для резерва и подсказок (0 = использовать USD_RUB_RATE при отсутствии курса Crypto Pay).
     usdt_rub_rate: float = Field(default=0.0, validation_alias="USDT_RUB_RATE")
@@ -28,9 +31,16 @@ class Settings(BaseSettings):
     def _require_positive_usd_rub(self) -> "Settings":
         if float(self.usd_rub_rate) <= 0:
             raise ValueError(
-                "USD_RUB_RATE must be > 0 (₽ per 1 USD). Set it in .env / shared/.env — "
+                "USD_RUB_RATE must be > 0 (₽ per 1 USD). Set it in .env / shared/.env - "
                 "see telegram_stars_shop_bot/env.example and docs/FX_RATES_RUNBOOK.md"
             )
+        return self
+
+    @model_validator(mode="after")
+    def _default_ckassa_bc_universal_url(self) -> "Settings":
+        u = (self.ckassa_bc_universal_payment_url or "").strip()
+        if not u:
+            object.__setattr__(self, "ckassa_bc_universal_payment_url", DEFAULT_CKASSA_BC_UNIVERSAL_PAYMENT_URL)
         return self
 
     ref_buyer_discount_percent: float = Field(
@@ -54,12 +64,12 @@ class Settings(BaseSettings):
 
     crypto_usdt_trc20: str = Field(default="", validation_alias="CRYPTO_USDT_TRC20")
     crypto_ton: str = Field(default="", validation_alias="CRYPTO_TON")
-    # Показывать блок TON в ручной крипто-инструкции (основной канал — USDT TRC20 через Crypto Pay / xRocket).
+    # Показывать блок TON в ручной крипто-инструкции (основной канал - USDT TRC20 через Crypto Pay / xRocket).
     crypto_show_ton_manual: bool = Field(default=True, validation_alias="CRYPTO_SHOW_TON_MANUAL")
 
     # Поддержка и документация API (для кнопок «Поддержка» / «Наш API»).
     support_username: str = Field(default="", validation_alias="SUPPORT_USERNAME")
-    # Полная ссылка на поддержку (если задана — приоритет над SUPPORT_USERNAME для URL).
+    # Полная ссылка на поддержку (если задана - приоритет над SUPPORT_USERNAME для URL).
     support_url: str = Field(default="", validation_alias="SUPPORT_URL")
     api_docs_url: str = Field(default="", validation_alias="API_DOCS_URL")
     # Обязателен для Partner HTTP API и выпуска ключей в боте (соль для SHA-256).
@@ -129,10 +139,10 @@ class Settings(BaseSettings):
     # Входящий вебхук «платёж подтверждён» (HMAC тела, заголовок X-Payment-Signature).
     payment_webhook_secret: str = Field(default="", validation_alias="PAYMENT_WEBHOOK_SECRET")
 
-    # LAVA Business (https://dev.lava.ru/) — фиат, СБП и др. на стороне LAVA.
+    # LAVA Business (https://dev.lava.ru/) - фиат, СБП и др. на стороне LAVA.
     lava_shop_id: str = Field(default="", validation_alias="LAVA_SHOP_ID")
     lava_secret_key: str = Field(default="", validation_alias="LAVA_SECRET_KEY")
-    # «Дополнительный ключ» из кабинета LAVA — проверка заголовка Authorization на вебхуке.
+    # «Дополнительный ключ» из кабинета LAVA - проверка заголовка Authorization на вебхуке.
     lava_webhook_additional_secret: str = Field(default="", validation_alias="LAVA_WEBHOOK_ADDITIONAL_SECRET")
     lava_api_base: str = Field(default="", validation_alias="LAVA_API_BASE")
     # Публичный URL эндпоинта Partner API, например https://shop-api.example.com/v1/payments/lava-webhook
@@ -143,13 +153,13 @@ class Settings(BaseSettings):
     # Список service_id через запятую (пусто = LAVA покажет все доступные методы проекта).
     lava_include_services: str = Field(default="card,sbp", validation_alias="LAVA_INCLUDE_SERVICES")
 
-    # Ckassa (ЦК) — фиат ₽ по API как в WooCommerce-модуле: do-pay/anonymous + callback cbUrl.
+    # Ckassa (ЦК) - фиат ₽ по API как в WooCommerce-модуле: do-pay/anonymous + callback cbUrl.
     # https://api2.ckassa.ru/api-shop/rs/wordpress/do-pay/anonymous
     ckassa_enabled: bool = Field(default=False, validation_alias="CKASSA_ENABLED")
     ckassa_test_mode: bool = Field(default=False, validation_alias="CKASSA_TEST_MODE")
     ckassa_shop_token: str = Field(default="", validation_alias="CKASSA_SHOP_TOKEN")
     ckassa_secret_key: str = Field(default="", validation_alias="CKASSA_SECRET_KEY")
-    # Полный URL do-pay (если пусто — prod или demo по CKASSA_TEST_MODE).
+    # Полный URL do-pay (если пусто - prod или demo по CKASSA_TEST_MODE).
     ckassa_do_pay_url: str = Field(default="", validation_alias="CKASSA_DO_PAY_URL")
     # Публичный HTTPS Partner API для cbUrl (как LAVA_HOOK_URL): …/v1/payments/ckassa-webhook
     ckassa_callback_public_url: str = Field(default="", validation_alias="CKASSA_CALLBACK_PUBLIC_URL")
@@ -158,7 +168,7 @@ class Settings(BaseSettings):
     ckassa_country: str = Field(default="RU", validation_alias="CKASSA_COUNTRY")
     ckassa_language: str = Field(default="RU", validation_alias="CKASSA_LANGUAGE")
     ckassa_http_timeout_seconds: float = Field(default=15.0, validation_alias="CKASSA_HTTP_TIMEOUT_SECONDS")
-    # Плательщик для анонимной формы (если нет email из Telegram — подставляются дефолты).
+    # Плательщик для анонимной формы (если нет email из Telegram - подставляются дефолты).
     ckassa_default_email: str = Field(default="", validation_alias="CKASSA_DEFAULT_EMAIL")
     ckassa_default_phone: str = Field(default="+79990000000", validation_alias="CKASSA_DEFAULT_PHONE")
     ckassa_default_fio: str = Field(default="Покупатель Telegram", validation_alias="CKASSA_DEFAULT_FIO")
@@ -169,23 +179,36 @@ class Settings(BaseSettings):
         default="full_prepayment", validation_alias="CKASSA_RECEIPT_PAYMENT_METHOD"
     )
     ckassa_receipt_payment_object: str = Field(default="service", validation_alias="CKASSA_RECEIPT_PAYMENT_OBJECT")
+    # Постоянная страница Ckassa «произвольная сумма» (bc.ckassa.ru/…). Не подставляет orderId в callback бота -
+    # после оплаты сверка по сумме и номеру заказа (поддержка / админ «Оплачен»). Пусто в .env → DEFAULT_CKASSA_BC_UNIVERSAL_PAYMENT_URL.
+    # На экране ₽: при CKASSA_BC_SOLO_CHECKOUT=true только эта ссылка; иначе до трёх кнопок (+ Shop API + LAVA при настройке).
+    ckassa_bc_universal_payment_url: str = Field(default="", validation_alias="CKASSA_BC_UNIVERSAL_PAYMENT_URL")
+    # Показывать счёт LAVA одновременно со счётом Ckassa Shop API (без универсальной ссылки). По умолчанию false -
+    # LAVA остаётся запасным потоком, если Ckassa API не сработал.
+    fiat_parallel_ckassa_and_lava: bool = Field(default=False, validation_alias="FIAT_PARALLEL_CKASSA_AND_LAVA")
+    # После кнопки «Я оплатил (универсальная Ckassa)» повторное уведомление админам не чаще, чем раз в N секунд.
+    bc_payment_claim_cooldown_seconds: int = Field(default=900, validation_alias="BC_PAYMENT_CLAIM_COOLDOWN_SECONDS")
+    # true: на шаге ₽ только универсальная ссылка bc (без счёта Shop API Ckassa и без LAVA). false + API/LAVA — доп. кнопки.
+    ckassa_bc_solo_checkout: bool = Field(default=True, validation_alias="CKASSA_BC_SOLO_CHECKOUT")
+    # Текст для покупателя: минимальная сумма платежа на универсальной странице Ckassa (часто 50 ₽ у эквайринга).
+    ckassa_bc_display_min_rub: float = Field(default=50.0, validation_alias="CKASSA_BC_DISPLAY_MIN_RUB")
 
-    # Crypto Pay (@CryptoBot / testnet @CryptoTestnetBot). При CRYPTO_PAY_ENABLED=false — сценарий счёта через API не используется.
+    # Crypto Pay (@CryptoBot / testnet @CryptoTestnetBot). При CRYPTO_PAY_ENABLED=false - сценарий счёта через API не используется.
     crypto_pay_enabled: bool = Field(default=False, validation_alias="CRYPTO_PAY_ENABLED")
     crypto_pay_api_token: str = Field(default="", validation_alias="CRYPTO_PAY_API_TOKEN")
     crypto_pay_testnet: bool = Field(default=False, validation_alias="CRYPTO_PAY_TESTNET")
-    # Полный https://… или только hostname; пусто — pay.crypt.bot / testnet-pay.crypt.bot по CRYPTO_PAY_TESTNET.
+    # Полный https://… или только hostname; пусто - pay.crypt.bot / testnet-pay.crypt.bot по CRYPTO_PAY_TESTNET.
     crypto_pay_api_host: str = Field(default="", validation_alias="CRYPTO_PAY_API_HOST")
     crypto_pay_default_asset: str = Field(default="USDT", validation_alias="CRYPTO_PAY_DEFAULT_ASSET")
     crypto_pay_invoice_expire_seconds: int = Field(
         default=3600, validation_alias="CRYPTO_PAY_INVOICE_EXPIRE_SECONDS"
     )
-    # После оплаты счёта — кнопка «открыть бота» (https://t.me/…). Пусто = не передаём paid_btn_* в Crypto Pay.
+    # После оплаты счёта - кнопка «открыть бота» (https://t.me/…). Пусто = не передаём paid_btn_* в Crypto Pay.
     crypto_pay_paid_btn_url: str = Field(default="", validation_alias="CRYPTO_PAY_PAID_BTN_URL")
     # Если Crypto Pay включён и счёт не создался: показывать ли старый блок с кошельками (для отладки). В проде обычно false.
     crypto_pay_wallet_fallback: bool = Field(default=False, validation_alias="CRYPTO_PAY_WALLET_FALLBACK")
 
-    # xRocket Pay — второй провайдер счёта USDT (TRC20), см. https://docs.xrocket.tg/api/pay/pay-api-overview
+    # xRocket Pay - второй провайдер счёта USDT (TRC20), см. https://docs.xrocket.tg/api/pay/pay-api-overview
     xrocket_pay_enabled: bool = Field(default=False, validation_alias="XROCKET_PAY_ENABLED")
     xrocket_pay_api_key: str = Field(default="", validation_alias="XROCKET_PAY_API_KEY")
     xrocket_pay_api_base: str = Field(
@@ -193,7 +216,7 @@ class Settings(BaseSettings):
         validation_alias="XROCKET_PAY_API_BASE",
     )
 
-    # Автовыдача Stars/Premium после paid (план 37). Пока только флаги и политика в коде; воркер очереди — позже.
+    # Автовыдача Stars/Premium после paid (план 37). Пока только флаги и политика в коде; воркер очереди - позже.
     auto_fulfill_enabled: bool = Field(default=False, validation_alias="AUTO_FULFILL_ENABLED")
     auto_fulfill_stars_enabled: bool = Field(default=False, validation_alias="AUTO_FULFILL_STARS_ENABLED")
     auto_fulfill_premium_enabled: bool = Field(default=False, validation_alias="AUTO_FULFILL_PREMIUM_ENABLED")
@@ -218,7 +241,7 @@ class Settings(BaseSettings):
     # Подпись вебхука iStar: HMAC-SHA256(raw_body, secret) hex → заголовок X-iStar-Signature (см. istar.fragmentapi.com/docs).
     istar_webhook_secret: str = Field(default="", validation_alias="ISTAR_WEBHOOK_SECRET")
 
-    # Авто-истечение заказов в pending_payment (фоновый цикл в боте). В .env можно задать 0 — выключить.
+    # Авто-истечение заказов в pending_payment (фоновый цикл в боте). В .env можно задать 0 - выключить.
     # По умолчанию 720 мин (как типичный срок счёта LAVA); для крипты/ручной оплаты тот же таймер.
     order_pending_payment_expire_minutes: int = Field(
         default=720, validation_alias="ORDER_PENDING_PAYMENT_EXPIRE_MINUTES"
@@ -304,7 +327,7 @@ class Settings(BaseSettings):
         return _parse_ids_csv(self.super_admin_ids)
 
     def admin_roles_restricted(self) -> bool:
-        """True если задан непустой SUPER_ADMIN_IDS с пересечением с ADMIN — есть роль «оператор»."""
+        """True если задан непустой SUPER_ADMIN_IDS с пересечением с ADMIN - есть роль «оператор»."""
         s = self.parsed_super_admin_ids_explicit()
         if not s:
             return False

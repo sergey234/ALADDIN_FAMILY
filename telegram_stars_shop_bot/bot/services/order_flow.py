@@ -21,7 +21,7 @@ async def apply_completed_side_effects(conn: aiosqlite.Connection, order_id: int
     Идемпотентно (один раз на заказ): колонка fulfillment_applied_at + атомарный UPDATE commission_paid.
 
     Первый завершённый (выданный) заказ пользователя: first_order_completed и комиссия рефереру
-    (процент от суммы заказа в ₽ после скидок — см. Settings), если есть referrer и комиссия ещё не проведена.
+    (процент от суммы заказа в ₽ после скидок - см. Settings), если есть referrer и комиссия ещё не проведена.
     Скидка покупателю по рефкоду (`quote_product` / is_first_order) тоже действует до первого completed.
     """
     await conn.execute("BEGIN IMMEDIATE")

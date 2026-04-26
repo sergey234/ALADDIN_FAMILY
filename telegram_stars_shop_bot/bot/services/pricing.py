@@ -50,7 +50,7 @@ def commission_for_first_order(rub_paid: float, settings: Settings) -> float:
 
 
 def rub_per_100_stars_display(products: list[Product], settings: Settings, *, is_first_order: bool) -> float | None:
-    """Цена пакета 100 ⭐ в ₽ после скидок — для подзаголовка экрана Stars."""
+    """Цена пакета 100 ⭐ в ₽ после скидок - для подзаголовка экрана Stars."""
     pmap = products_by_id(products)
     p = pmap.get("stars_100")
     if not p:
@@ -78,7 +78,7 @@ def format_shop_quote_money_html(
     usd_decimals: int = 2,
 ) -> str:
     """
-    Живая витрина / чекаут: ₽ согласованы с курсом магазина; USD — эквивалент rub/USD_RUB_RATE
+    Живая витрина / чекаут: ₽ согласованы с курсом магазина; USD - эквивалент rub/USD_RUB_RATE
     и отдельно номинал из каталога (products.yaml), чтобы не путать со скидками.
     """
     rate = float(settings.usd_rub_rate)

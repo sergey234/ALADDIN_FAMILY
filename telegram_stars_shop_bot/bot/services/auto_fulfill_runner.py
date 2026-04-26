@@ -87,7 +87,7 @@ async def process_auto_fulfill_batch(
     if not settings.auto_fulfill_enabled:
         return stats
     if not IstarFulfillClient.is_configured(settings):
-        logger.warning("AUTO_FULFILL_ENABLED but ISTAR_API_KEY is empty — batch skipped")
+        logger.warning("AUTO_FULFILL_ENABLED but ISTAR_API_KEY is empty - batch skipped")
         return stats
 
     pmap = products_by_id(products)

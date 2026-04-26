@@ -31,7 +31,7 @@ async def run_pending_payment_ttl_sweep(bot: Bot, settings: Settings) -> None:
         lines = [
             f"Заказ <b>#{esc(order_id)}</b>: время на оплату истекло.",
             "",
-            "Если вы уже оплатили — напишите в поддержку с номером заказа.",
+            "Если вы уже оплатили - напишите в поддержку с номером заказа.",
             "Новый заказ можно оформить в меню /menu.",
         ]
         url = support_order_question_url(settings, order_id)

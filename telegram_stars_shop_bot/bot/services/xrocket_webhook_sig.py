@@ -1,4 +1,4 @@
-"""Проверка подписи вебхука xRocket Pay — как в xrocket-pay-api-sdk (webhook-utils)."""
+"""Проверка подписи вебхука xRocket Pay - как в xrocket-pay-api-sdk (webhook-utils)."""
 
 from __future__ import annotations
 
@@ -10,7 +10,7 @@ def verify_xrocket_webhook_signature(body_str: str, signature_header: str | None
     """
     Заголовок: rocket-pay-signature.
     Алгоритм: hex(HMAC-SHA256(SHA256(api_key utf-8), body utf-8 bytes)).
-    Тело — та же строка, что пришла в HTTP (как JSON.stringify после express.json).
+    Тело - та же строка, что пришла в HTTP (как JSON.stringify после express.json).
     """
     sig = (signature_header or "").strip()
     key = (api_key or "").strip()

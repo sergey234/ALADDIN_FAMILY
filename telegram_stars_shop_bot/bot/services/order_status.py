@@ -2,7 +2,7 @@
 Допустимые переходы статусов заказа (orders.status).
 
 Инвариант: completed только из paid или processing (не из pending_payment).
-Терминальные completed / expired / refunded; payment_disputed — только через paid или refunded.
+Терминальные completed / expired / refunded; payment_disputed - только через paid или refunded.
 """
 
 from __future__ import annotations
@@ -22,7 +22,7 @@ KNOWN_STATUSES = frozenset(
 
 
 def can_transition(from_status: str, to_status: str) -> bool:
-    """True если переход разрешён; одинаковый статус — no-op, кроме терминального `completed`."""
+    """True если переход разрешён; одинаковый статус - no-op, кроме терминального `completed`."""
     old = (from_status or "").strip()
     new = (to_status or "").strip()
     if old == new:

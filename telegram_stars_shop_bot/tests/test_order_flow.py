@@ -65,3 +65,96 @@ async def test_referrer_commission_on_first_completed(conn, monkeypatch) -> None
     await apply_completed_side_effects(conn, oid, settings)
     ref2 = await users_repo.get_user(conn, 8002)
     assert float(ref2["ref_balance_rub"] or 0) == pytest.approx(15.0, rel=1e-3)
+
+
+@pytest.mark.asyncio
+async def test_bc_payment_claim_ok_then_cooldown(conn) -> None:
+    oid = await orders_repo.create_order(
+        conn,
+        user_id=8010,
+        product_id="stars_100",
+        product_title="⭐ 100",
+        payment_method="fiat",
+        usd_base=1.0,
+        rub_before=100.0,
+        rub_after=100.0,
+        referral_discount_rub=0.0,
+        wholesale_discount_rub=0.0,
+        referrer_id=None,
+        commission_rub=0.0,
+        user_note="@recv",
+        status="pending_payment",
+    )
+    a, _w = await orders_repo.touch_bc_payment_claim_if_allowed(
+        conn, order_id=oid, user_id=8010, cooldown_seconds=3600
+    )
+    assert a == "ok"
+    b, wait = await orders_repo.touch_bc_payment_claim_if_allowed(
+        conn, order_id=oid, user_id=8010, cooldown_seconds=3600
+    )
+    assert b == "cooldown"
+    assert int(wait) > 0
+
+
+@pytest.mark.asyncio
+async def test_bc_payment_claim_wrong_user(conn) -> None:
+    oid = await orders_repo.create_order(
+        conn,
+        user_id=8011,
+        product_id="s",
+        product_title="S",
+        payment_method="fiat",
+        usd_base=1.0,
+        rub_before=10.0,
+        rub_after=10.0,
+        referral_discount_rub=0.0,
+        wholesale_discount_rub=0.0,
+        referrer_id=None,
+        commission_rub=0.0,
+        user_note="@x",
+        status="pending_payment",
+    )
+    code, _ = await orders_repo.touch_bc_payment_claim_if_allowed(
+        conn, order_id=oid, user_id=9999, cooldown_seconds=60
+    )
+    assert code == "wrong_user"
+
+
+@pytest.mark.asyncio
+async def test_list_user_pending_payment_order_ids(conn) -> None:
+    u = 8020
+    a = await orders_repo.create_order(
+        conn,
+        user_id=u,
+        product_id="s",
+        product_title="S",
+        payment_method="fiat",
+        usd_base=1.0,
+        rub_before=10.0,
+        rub_after=10.0,
+        referral_discount_rub=0.0,
+        wholesale_discount_rub=0.0,
+        referrer_id=None,
+        commission_rub=0.0,
+        user_note="@x",
+        status="pending_payment",
+    )
+    b = await orders_repo.create_order(
+        conn,
+        user_id=u,
+        product_id="s",
+        product_title="S2",
+        payment_method="fiat",
+        usd_base=1.0,
+        rub_before=20.0,
+        rub_after=20.0,
+        referral_discount_rub=0.0,
+        wholesale_discount_rub=0.0,
+        referrer_id=None,
+        commission_rub=0.0,
+        user_note="@x",
+        status="pending_payment",
+    )
+    ids = await orders_repo.list_user_pending_payment_order_ids(conn, u, limit=10)
+    assert b in ids and a in ids
+    assert ids[0] == b

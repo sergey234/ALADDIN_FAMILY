@@ -1,8 +1,8 @@
 """
-xRocket Pay API — счета Telegram (/tg-invoices).
+xRocket Pay API - счета Telegram (/tg-invoices).
 
 Документация: https://docs.xrocket.tg/api/pay/pay-api-overview
-Base (prod): https://pay.xrocket.exchange — заголовок Rocket-Pay-Key (см. OpenAPI pay.xrocket.tg).
+Base (prod): https://pay.xrocket.exchange - заголовок Rocket-Pay-Key (см. OpenAPI pay.xrocket.tg).
 
 В магазине только USDT в сети TRC20 (как у пользователя); сумма счёта в USDT считается так же, как для Crypto Pay (₽ → USDT).
 """

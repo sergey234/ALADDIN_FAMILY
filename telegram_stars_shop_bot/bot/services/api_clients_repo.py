@@ -41,7 +41,7 @@ async def create_api_client(
     revoke_previous: bool = True,
 ) -> tuple[int, str]:
     """
-    Создаёт новый ключ. Возвращает (id, raw_secret) — raw_secret показать пользователю один раз.
+    Создаёт новый ключ. Возвращает (id, raw_secret) - raw_secret показать пользователю один раз.
     """
     if revoke_previous:
         await revoke_all_active_for_owner(conn, owner_user_id)

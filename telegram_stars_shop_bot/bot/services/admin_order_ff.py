@@ -70,9 +70,9 @@ def format_fulfillment_admin_block(row: Mapping[str, Any] | Any | None) -> str:
 
     mode_label = "manual_only" if _is_manual_only(ctx.fulfillment_mode_raw) else "auto"
     ref_raw = str(row_m.get("fulfillment_provider_ref") or "").strip()
-    ref_disp = esc(ref_raw) if ref_raw else "—"
+    ref_disp = esc(ref_raw) if ref_raw else " - "
     err_raw = str(row_m.get("fulfillment_last_error") or "").strip()
-    err_disp = esc(err_raw[:500]) if err_raw else "—"
+    err_disp = esc(err_raw[:500]) if err_raw else " - "
     att = esc(str(ctx.attempt_count))
     lines = [
         "",

@@ -3,7 +3,7 @@
 
 Канон строки: SB1|<order_id>|<due_kop>  (due_kop = копейки, целое от round(due_rub, 2) * 100).
 
-Для payment_method crypto — due = весь заказ в ₽ после скидок; для mix_crypto — внешняя часть
+Для payment_method crypto - due = весь заказ в ₽ после скидок; для mix_crypto - внешняя часть
 (как orders_repo.amount_due_external: rub_after_discounts − balance_applied_rub).
 """
 
@@ -16,7 +16,7 @@ import aiosqlite
 from bot.config import Settings
 from bot.services import orders_repo
 
-# SB1 — метка версии 1 формата строки payload (см. docs/CRYPTO_PAY_SPEC.md). При смене формата — SB2 и парсер по версии.
+# SB1 - метка версии 1 формата строки payload (см. docs/CRYPTO_PAY_SPEC.md). При смене формата - SB2 и парсер по версии.
 _PAYLOAD_MAGIC = "SB1"
 _PAYLOAD_SEP = "|"
 _MAX_PAYLOAD_LEN = 512
@@ -38,7 +38,7 @@ def encode_crypto_invoice_payload(*, order_id: int, due_rub: float) -> str:
     """
     Строка для параметра createInvoice.payload (ASCII, короткая).
 
-    due_rub — сумма в ₽ к оплате через Crypto Pay (полный заказ или внешняя часть при mix).
+    due_rub - сумма в ₽ к оплате через Crypto Pay (полный заказ или внешняя часть при mix).
     """
     if order_id < 1:
         raise ValueError("invalid_order_id")
@@ -76,7 +76,7 @@ def verify_decoded_payload_against_order(
     payload: DecodedCryptoInvoicePayload,
     order: aiosqlite.Row,
 ) -> None:
-    """Сверка с текущей строкой заказа (статус pending_payment и т.д. — на вызывающем)."""
+    """Сверка с текущей строкой заказа (статус pending_payment и т.д. - на вызывающем)."""
     oid = int(order["id"])
     if payload.order_id != oid:
         raise ValueError("crypto_payload_order_mismatch")
@@ -93,7 +93,7 @@ def crypto_invoice_expires_in_seconds(settings: Settings) -> int:
     Секунды для expires_in счёта Crypto Pay: не дольше окна «ожидает оплаты» заказа.
 
     Если ORDER_PENDING_PAYMENT_EXPIRE_MINUTES = 0 (TTL выкл.), берём только CRYPTO_PAY_INVOICE_EXPIRE_SECONDS.
-    Минимум 60 с — разумный нижний порог для стороннего API.
+    Минимум 60 с - разумный нижний порог для стороннего API.
     """
     inv = max(60, int(settings.crypto_pay_invoice_expire_seconds))
     om = int(settings.order_pending_payment_expire_minutes)

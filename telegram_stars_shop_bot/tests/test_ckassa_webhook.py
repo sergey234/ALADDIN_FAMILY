@@ -105,3 +105,33 @@ def test_ckassa_webhook_bad_signature_fail(ckassa_hook_client) -> None:
     r = client.get(f"/v1/payments/ckassa-webhook?{qs}")
     assert r.status_code == 200
     assert r.text.strip() == "fail"
+
+
+def test_ckassa_webhook_disabled_returns_200_plain_fail_no_503(tmp_path, monkeypatch) -> None:
+    """Пока Ckassa выключена — не 503 JSON (иначе ops middleware шлёт WARNING в Telegram)."""
+    monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "ckassa_off.db"))
+    monkeypatch.setenv("BOT_TOKEN", "9:ckassa-off")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "ckassa_test_pepper_minimum_32_chars_______")
+    monkeypatch.setenv("CKASSA_ENABLED", "false")
+    monkeypatch.setenv("CKASSA_TEST_MODE", "false")
+    with TestClient(create_app()) as client:
+        r = client.get("/v1/payments/ckassa-webhook")
+        assert r.status_code == 200
+        assert r.text.strip() == "fail"
+
+
+def test_ckassa_webhook_enabled_prod_unconfigured_returns_200_plain_fail(tmp_path, monkeypatch) -> None:
+    monkeypatch.setenv("DATABASE_PATH", str(tmp_path / "ckassa_nc.db"))
+    monkeypatch.setenv("BOT_TOKEN", "9:ckassa-nc")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "ckassa_test_pepper_minimum_32_chars_______")
+    monkeypatch.setenv("CKASSA_ENABLED", "true")
+    monkeypatch.setenv("CKASSA_TEST_MODE", "false")
+    monkeypatch.setenv("CKASSA_SHOP_TOKEN", "")
+    monkeypatch.setenv("CKASSA_SECRET_KEY", "")
+    monkeypatch.setenv("CKASSA_CALLBACK_PUBLIC_URL", "")
+    with TestClient(create_app()) as client:
+        r = client.get("/v1/payments/ckassa-webhook")
+        assert r.status_code == 200
+        assert r.text.strip() == "fail"

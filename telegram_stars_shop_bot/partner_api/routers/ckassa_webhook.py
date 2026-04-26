@@ -4,7 +4,7 @@ import asyncio
 import logging
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Request
 from starlette.responses import PlainTextResponse
 
 from bot.config import Settings
@@ -58,16 +58,14 @@ async def _ckassa_payment_webhook_impl(request: Request, settings: Settings) -> 
     Callback Ckassa (как WooCommerce notify_url): плоские поля regPayNum, result, orderId, amount, shop, signature.
     Ответ строго «success» или «fail» — текст/plain, как ожидает процессинг ЦК.
     """
+    # Не 503/JSON: иначе PartnerRateLimitMiddleware шлёт WARNING в Telegram на каждый
+    # зонд (мониторинг, браузер, ЦК). Ckassa ждёт text/plain success|fail при 200.
     if not bool(settings.ckassa_enabled):
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={"code": "misconfigured", "message": "CKASSA_ENABLED is false"},
-        )
+        _log.info("ckassa_webhook noop: CKASSA_ENABLED is false")
+        return PlainTextResponse("fail", status_code=200)
     if not bool(settings.ckassa_test_mode) and not ckassa_checkout_configured(settings):
-        raise HTTPException(
-            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={"code": "misconfigured", "message": "CKASSA is not configured"},
-        )
+        _log.warning("ckassa_webhook noop: CKASSA prod not configured (token/secret/callback)")
+        return PlainTextResponse("fail", status_code=200)
     params = await _flat_request_params(request)
     try:
         order_id = int(str(params.get("orderId") or params.get("order_id") or "").strip())

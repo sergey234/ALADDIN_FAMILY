@@ -1,0 +1,29 @@
+---
+description: Деплой Telegram Shop Bot на прод (rsync + systemd). Всегда сверяться с каноном в docs.
+globs: telegram_stars_shop_bot/**/*
+alwaysApply: false
+---
+
+# Деплой `telegram_stars_shop_bot` на production
+
+Полный канон, пути, исключения `rsync`, смоук: **`telegram_stars_shop_bot/docs/ML_SYSTEM_HANDOFF_FINAL.md`** (раздел 2, вариант A).
+
+Порядок с хостом **149.154.65.180** (SSH, при необходимости health `:8002`): корень репозитория **`ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md`**.
+
+## Обязательный порядок
+
+1. **Снаружи:** `curl -sS -m 8 http://149.154.65.180:8002/api/health` — ожидаемо `{"status":"ok"}`.
+2. **Локально в репо:** из каталога **`.../mobile_apps/ALADDIN_iOS`** (рядом с папкой `telegram_stars_shop_bot/`):
+   - `TS=$(date +%Y%m%d-%H%M%S)`
+   - `ssh -o IdentitiesOnly=yes -o BatchMode=yes -i ~/.ssh/aladdin_server root@149.154.65.180 "mkdir -p /opt/aladdin-telegram-shop-bot/releases/${TS}/telegram_stars_shop_bot"`
+   - `rsync -az --delete` с `-e "ssh -o IdentitiesOnly=yes -o BatchMode=yes -i $HOME/.ssh/aladdin_server"` и **`--exclude`** `.git`, `__pycache__`, `*.pyc`, `.venv`, `venv`, **`data`**, **`.env`** из **`./telegram_stars_shop_bot/`** в `root@149.154.65.180:/opt/aladdin-telegram-shop-bot/releases/${TS}/telegram_stars_shop_bot/`
+3. **На сервере:** `sudo ln -sfn` на `current_release` и `current_app` (см. ML handoff).
+4. **Зависимости:** при изменении `requirements.txt` — `sudo /opt/aladdin-telegram-shop-bot/venv/bin/pip install -r /opt/aladdin-telegram-shop-bot/current_app/requirements.txt`
+5. **Рестарт:** `sudo systemctl restart aladdin-telegram-bot.service aladdin-partner-api.service aladdin-webhook-worker.service`
+6. **Проверка:** подождать несколько секунд, затем `curl -sS -m 10 http://127.0.0.1:8090/health` на сервере → `{"status":"ok"}`; `systemctl is-active` для трёх unit’ов.
+
+**Не трогать** без отдельной задачи: `/opt/aladdin-backend`, **`aladdin-backend.service`**.
+
+**Секреты:** только `/opt/aladdin-telegram-shop-bot/shared/.env` на сервере — после выкладки сверить новые ключи с `telegram_stars_shop_bot/env.example` (вручную merge).
+
+**Не сообщать пользователю «деплой невозможен»**, если ключ `~/.ssh/aladdin_server` есть и health проходит: выполнить шаги выше или явно зафиксировать ошибку `ssh`/`rsync`/`systemctl`.

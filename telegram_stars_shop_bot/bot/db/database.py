@@ -182,6 +182,7 @@ async def migrate_legacy(conn: aiosqlite.Connection) -> None:
     await _ensure_column(conn, "orders", "invoice_last_requested_at", "invoice_last_requested_at TEXT")
     await _ensure_column(conn, "orders", "invoice_last_provider", "invoice_last_provider TEXT")
     await _ensure_column(conn, "orders", "invoice_last_external_id", "invoice_last_external_id TEXT")
+    await _ensure_column(conn, "orders", "bc_payment_claim_at", "bc_payment_claim_at TEXT")
     await conn.execute(
         """
         UPDATE orders

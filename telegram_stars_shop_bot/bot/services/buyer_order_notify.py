@@ -15,7 +15,7 @@ _log = logging.getLogger(__name__)
 
 
 async def send_buyer_html(settings: Settings, user_id: int, html: str) -> None:
-    """Одно сообщение покупателю (HTML). Ошибки сети — только в лог."""
+    """Одно сообщение покупателю (HTML). Ошибки сети - только в лог."""
     bot = Bot(settings.bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     try:
         await bot.send_message(int(user_id), html)
@@ -54,7 +54,7 @@ def buyer_message_admin_status_change(*, order_id: int, new_status: str) -> str 
     if new_status == "refunded":
         return (
             f"<b>Сторно / возврат по заказу</b>\n"
-            f"<b>#{oid}</b>: статус в магазине обновлён. Если вопрос остался — напишите в поддержку с номером заказа."
+            f"<b>#{oid}</b>: статус в магазине обновлён. Если вопрос остался - напишите в поддержку с номером заказа."
         )
     if new_status == "payment_disputed":
         return (
@@ -103,7 +103,7 @@ def buyer_message_istar_failed(*, order_id: int, settings: Settings, reason: str
     lines = [
         "<b>Не удалось отправить автоматически</b>",
         f"Заказ <b>#{oid}</b>: провайдер сообщил об ошибке.{tail}",
-        "Напишите в поддержку — разберём вручную.",
+        "Напишите в поддержку - разберём вручную.",
     ]
     url = support_order_question_url(settings, order_id)
     if url:

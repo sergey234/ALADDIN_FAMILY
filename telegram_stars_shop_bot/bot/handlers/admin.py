@@ -9,7 +9,7 @@ from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message
 
 from bot.config import Settings
 from bot.keyboards.shop_kb import admin_order_kb, admin_sell_kb, admin_topup_kb
-from bot.services import admin_audit_repo, balance_repo, contest_repo, orders_repo
+from bot.services import admin_audit_repo, balance_repo, contest_repo, marketing, orders_repo
 from bot.services.admin_crypto_paid_gate import crypto_manual_paid_gate_applies
 from bot.services.admin_order_ff import ff_context_from_order_row, format_fulfillment_admin_block
 from bot.services.alerts import send_alert
@@ -131,13 +131,22 @@ async def cmd_admin(message: Message, settings: Settings, conn) -> None:
     for r in rows:
         amt = float(r["rub_after_discounts"])
         lines.append(
-            f"#{esc(r['id'])} {esc(r['product_title'])} — <code>{esc(r['status'])}</code> — "
+            f"#{esc(r['id'])} {esc(r['product_title'])} - <code>{esc(r['status'])}</code> - "
             f"<b>{esc(f'{amt:.2f}')} ₽</b>"
         )
     foot = "\n\n<i>Конкурсы партнёров: команда /contest</i>"
+    foot += "\n<i>Текст для закрепа канала (оплата по ссылке bc): /channel_checkout_pin</i>"
     if settings.admin_roles_restricted():
-        foot += "\n<i>Роли: зачисление топапа / «Оплачен» / «Выдан» и правки конкурсов — только у SUPER_ADMIN_IDS.</i>"
+        foot += "\n<i>Роли: зачисление топапа / «Оплачен» / «Выдан» и правки конкурсов - только у SUPER_ADMIN_IDS.</i>"
     await message.answer("\n".join(lines) + foot)
+
+
+@router.message(Command("channel_checkout_pin"))
+async def cmd_channel_checkout_pin(message: Message, settings: Settings) -> None:
+    """HTML для закрепля в канале: чеклист оплаты по ссылке bc (копировать / переслать в канал)."""
+    if not _is_admin(message.from_user.id, settings):
+        return
+    await message.answer(marketing.channel_pin_bc_checkout_html(settings), disable_web_page_preview=True)
 
 
 @router.message(Command("admqueue"))
@@ -165,7 +174,7 @@ async def cmd_admqueue(message: Message, settings: Settings, conn) -> None:
         st = esc(str(r["status"] or ""))
         title = esc(str(r["product_title"] or ""))[:60]
         err_raw = str(r["fulfillment_last_error"] or "").strip()
-        err = esc(err_raw[:120]) if err_raw else "—"
+        err = esc(err_raw[:120]) if err_raw else " - "
         note = esc(str(r["user_note"] or "")[:40])
         lines.append(
             f"#{esc(str(oid))} <code>{st}</code> {title}\n"
@@ -174,7 +183,7 @@ async def cmd_admqueue(message: Message, settings: Settings, conn) -> None:
         )
     lines.append(
         "\n<i>Откройте карточку из уведомления о заказе или найдите номер в админ-чате; "
-        "кнопки статусов — там же.</i>"
+        "кнопки статусов - там же.</i>"
     )
     await message.answer("\n".join(lines))
 
@@ -187,9 +196,9 @@ async def cmd_contest(message: Message, command: CommandObject, settings: Settin
     if not raw:
         await message.answer(
             "<b>Конкурсы партнёров</b>\n\n"
-            "<code>/contest list</code> — список\n"
+            "<code>/contest list</code> - список\n"
             "<code>/contest new Заголовок | Текст приза | YYYY-MM-DD | YYYY-MM-DD [on]</code>\n"
-            "  последний аргумент <code>on</code> — сразу сделать единственным активным\n"
+            "  последний аргумент <code>on</code> - сразу сделать единственным активным\n"
             "<code>/contest activate ID</code>\n"
             "<code>/contest deactivate_all</code>",
         )
@@ -315,7 +324,7 @@ async def admin_set_status(cb: CallbackQuery, settings: Settings, conn) -> None:
         if action == "paid" and applies:
             await cb.answer(
                 "Заказ в ожидании оплаты через Crypto Pay / xRocket: дождитесь вебхука. "
-                "Ручное «Оплачен» здесь отключено. Если вебхук невозможен — кнопка break-glass в карточке заказа.",
+                "Ручное «Оплачен» здесь отключено. Если вебхук невозможен - кнопка break-glass в карточке заказа.",
                 show_alert=True,
             )
             return

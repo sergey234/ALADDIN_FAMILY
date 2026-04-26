@@ -38,17 +38,17 @@ SELLS_PAGE = 5
 
 FAQ_TEMPLATES = {
     "pay": (
-        "<b>Оплата — статус не меняется</b>\n\n"
+        "<b>Оплата - статус не меняется</b>\n\n"
         "Скопируйте шаблон, подставьте номер заказа и отправьте в поддержку:\n"
-        "<code>Заказ #____ — оплатил, статус в боте не обновился</code>"
+        "<code>Заказ #____ - оплатил, статус в боте не обновился</code>"
     ),
     "stars": (
         "<b>Не пришли Stars</b>\n\n"
-        "<code>Заказ #____ — не пришли Stars на @username</code>"
+        "<code>Заказ #____ - не пришли Stars на @username</code>"
     ),
     "user": (
         "<b>Ошибка в @username</b>\n\n"
-        "<code>Заказ #____ — ошибся в username получателя, нужно исправить на @____</code>"
+        "<code>Заказ #____ - ошибся в username получателя, нужно исправить на @____</code>"
     ),
 }
 
@@ -60,10 +60,10 @@ def _support_kb(settings: Settings):
     b.row(InlineKeyboardButton(text="💳 Оплата и зачисление", callback_data="sup:payfaq"))
     base = telegram_support_base(settings)
     if base and is_telegram_contact(base):
-        u1 = support_prefill_url(settings, "Заказ # — оплатил, статус не обновился") or base
-        u2 = support_prefill_url(settings, "Заказ # — не пришли Stars") or base
-        u3 = support_prefill_url(settings, "Заказ # — ошибся в @username") or base
-        b.row(InlineKeyboardButton(text="💳 Оплатил — статус не меняется", url=u1))
+        u1 = support_prefill_url(settings, "Заказ # - оплатил, статус не обновился") or base
+        u2 = support_prefill_url(settings, "Заказ # - не пришли Stars") or base
+        u3 = support_prefill_url(settings, "Заказ # - ошибся в @username") or base
+        b.row(InlineKeyboardButton(text="💳 Оплатил - статус не меняется", url=u1))
         b.row(InlineKeyboardButton(text="⭐ Не пришли Stars", url=u2))
         b.row(InlineKeyboardButton(text="@username ошибка", url=u3))
         b.row(InlineKeyboardButton(text="💬 Написать в поддержку", url=base))
@@ -115,7 +115,7 @@ async def profile_body_html(bot: Bot, settings: Settings, conn, user_id: int) ->
         "<b>Условия</b> (те же %, что в приветствии)\n"
         f"• Скидка другу до первого <b>выданного</b> заказа: <b>{rb}%</b>\n"
         f"• Вам с первой <b>выданной</b> покупки друга: <b>{rc}%</b> в ₽ на реф. баланс\n"
-        f"• «До {md}%» — в рамках акций и способов оплаты, см. прайс\n\n"
+        f"• «До {md}%» - в рамках акций и способов оплаты, см. прайс\n\n"
         "<b>Реферальная статистика</b>\n"
         f"• Зашли по ссылке: <b>{r_inv}</b>\n"
         f"• С выданной покупкой: <b>{r_done}</b>\n"
@@ -152,8 +152,8 @@ async def _orders_page_html(conn, user_id: int, page: int) -> tuple[str, bool, b
         usd = float(r["usd_base"] or 0.0)
         st = esc(status_ru.get(r["status"], r["status"]))
         lines.append(
-            f"#{esc(rid)} — {esc(r['product_title'])}\n"
-            f"  <i>{created}</i> · <b>{format_rub_usd_html(amt, usd)}</b> — {st}\n"
+            f"#{esc(rid)} - {esc(r['product_title'])}\n"
+            f"  <i>{created}</i> · <b>{format_rub_usd_html(amt, usd)}</b> - {st}\n"
         )
     return "\n".join(lines), has_prev, has_next
 
@@ -180,7 +180,7 @@ async def _sells_page_html(conn, user_id: int, page: int) -> tuple[str, bool, bo
         st = esc(status_ru.get(r["status"], r["status"]))
         created = esc(r["created_at"] or "")
         lines.append(
-            f"#{esc(sid)} · <b>{stars} ⭐</b> · {esc(f'{rub:.2f}')} ₽ — {st}\n"
+            f"#{esc(sid)} · <b>{stars} ⭐</b> · {esc(f'{rub:.2f}')} ₽ - {st}\n"
             f"<i>{created}</i>\n"
         )
     return "\n".join(lines), has_prev, has_next
@@ -192,7 +192,7 @@ async def onboarding_continue(cb: CallbackQuery, settings: Settings) -> None:
         cb.bot, settings, cb.from_user.id
     ):
         await cb.answer(
-            "Кажется, подписка на канал ещё не подтверждена. Нажмите «Подписаться», затем «Я подписался — открыть меню».",
+            "Кажется, подписка на канал ещё не подтверждена. Нажмите «Подписаться», затем «Я подписался - открыть меню».",
             show_alert=True,
         )
         return
@@ -285,7 +285,7 @@ async def order_detail(cb: CallbackQuery, settings: Settings, conn) -> None:
         f"Получатель: <code>{esc(order['user_note'] or '')}</code>\n\n"
     )
     if st_raw == "expired":
-        text += "<i>Счёт не оплачен в срок. Если оплатили — напишите в поддержку с номером заказа.</i>"
+        text += "<i>Счёт не оплачен в срок. Если оплатили - напишите в поддержку с номером заказа.</i>"
     elif st_raw == "refunded":
         text += "<i>По этому заказу зафиксировано сторно или возврат средств со стороны магазина/поддержки.</i>"
     elif st_raw == "payment_disputed":
@@ -377,7 +377,7 @@ async def nav_receipts(cb: CallbackQuery, conn) -> None:
             b.row(InlineKeyboardButton(text=f"#{rid} · {format_rub_usd_html(amt, usd, rub_decimals=0)}", callback_data=f"ord:{rid}"))
         b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
         await cb.message.edit_text(
-            "<b>Выданные</b>\n\nВыберите завершённый заказ — откроется карточка. Для PDF уточните в поддержке.",
+            "<b>Выданные</b>\n\nВыберите завершённый заказ - откроется карточка. Для PDF уточните в поддержке.",
             reply_markup=b.as_markup(),
         )
     await cb.answer()
@@ -386,10 +386,10 @@ async def nav_receipts(cb: CallbackQuery, conn) -> None:
 @router.callback_query(F.data == "nav:api")
 async def nav_api(cb: CallbackQuery, settings: Settings) -> None:
     await cb.message.edit_text(
-        "<b>Наш API</b> — для <b>вашего бота, сайта или приложения</b>\n\n"
-        "Создание заказов, статусы, пополнения и исходящие вебхуки — по HTTPS, заголовок <code>X-API-KEY</code> "
-        "(ключ выпускается ниже). Не встраивайте ключ в публичный фронт — только server-to-server.\n\n"
-        "<i>Подробный сценарий «рефералка vs API» — кнопка «Партнёрам» в главном меню.</i>",
+        "<b>Наш API</b> - для <b>вашего бота, сайта или приложения</b>\n\n"
+        "Создание заказов, статусы, пополнения и исходящие вебхуки - по HTTPS, заголовок <code>X-API-KEY</code> "
+        "(ключ выпускается ниже). Не встраивайте ключ в публичный фронт - только server-to-server.\n\n"
+        "<i>Подробный сценарий «рефералка vs API» - кнопка «Партнёрам» в главном меню.</i>",
         reply_markup=_api_kb(settings),
     )
     await cb.answer()
@@ -404,7 +404,7 @@ async def api_partner_key_menu(cb: CallbackQuery, settings: Settings, conn) -> N
     txt = (
         "<b>Partner API</b>\n\n"
         "Ключ передаётся в заголовке <code>X-API-KEY</code>.\n"
-        "<b>Не встраивайте</b> ключ в публичный сайт — только server-to-server.\n\n"
+        "<b>Не встраивайте</b> ключ в публичный сайт - только server-to-server.\n\n"
     )
     if prefix:
         txt += f"Активный ключ (маска): <code>{esc(prefix)}</code>\n\n"
@@ -432,11 +432,11 @@ async def api_partner_key_new(cb: CallbackQuery, settings: Settings, conn) -> No
         revoke_previous=True,
     )
     await cb.message.answer(
-        "<b>Partner API — новый ключ</b>\n\n"
-        "Сохраните сейчас — показан <b>один раз</b>.\n\n"
+        "<b>Partner API - новый ключ</b>\n\n"
+        "Сохраните сейчас - показан <b>один раз</b>.\n\n"
         f"<code>{esc(raw)}</code>\n\n"
         "Передавайте в заголовке <code>X-API-KEY</code>.\n"
-        "<b>Не передавайте</b> третьим лицам — полный доступ к вашим заказам и пополнениям через API.",
+        "<b>Не передавайте</b> третьим лицам - полный доступ к вашим заказам и пополнениям через API.",
     )
     await cb.answer("Ключ отправлен отдельным сообщением")
 
@@ -662,7 +662,7 @@ async def nav_contest(cb: CallbackQuery, conn) -> None:
     )
     lines = [
         f"<b>🏆 {title}</b>\n",
-        f"<i>Период:</i> {starts} — {ends}\n",
+        f"<i>Период:</i> {starts} - {ends}\n",
         f"<b>Призы:</b>\n{prize}\n",
         "<b>Топ партнёров</b> <i>(выданные заказы с рефералом)</i>\n",
     ]
@@ -672,7 +672,7 @@ async def nav_contest(cb: CallbackQuery, conn) -> None:
         for i, r in enumerate(board, start=1):
             uid = r["referrer_id"]
             vol = float(r["volume_rub"])
-            lines.append(f"{i}. <code>{uid}</code> — <b>{r['orders']}</b> зак. · {esc(f'{vol:.0f}')} ₽")
+            lines.append(f"{i}. <code>{uid}</code> - <b>{r['orders']}</b> зак. · {esc(f'{vol:.0f}')} ₽")
     st = await contest_repo.user_contest_stats(
         conn,
         user_id=cb.from_user.id,
@@ -686,7 +686,7 @@ async def nav_contest(cb: CallbackQuery, conn) -> None:
             starts_at=str(row["starts_at"]),
             ends_at=str(row["ends_at"]),
         )
-        rk_s = esc(str(rk)) if rk is not None else "—"
+        rk_s = esc(str(rk)) if rk is not None else " - "
         lines.append(
             f"\n<b>Ваш результат:</b> место <b>{rk_s}</b>, выданных заказов по вашей ссылке: <b>{st['orders']}</b>."
         )
@@ -708,7 +708,7 @@ async def nav_topup(cb: CallbackQuery, conn, settings: Settings) -> None:
     b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
     await cb.message.edit_text(
         f"<b>Пополнить баланс</b>\n\nТекущий: <b>{esc(f'{bal:.2f}')} ₽</b>\n"
-        "Выберите сумму — заявка уйдёт админу на зачисление.",
+        "Выберите сумму - заявка уйдёт админу на зачисление.",
         reply_markup=b.as_markup(),
     )
     await cb.answer()
@@ -846,7 +846,7 @@ async def nav_support(cb: CallbackQuery, settings: Settings) -> None:
     await cb.message.edit_text(
         "<b>Поддержка</b>\n\n"
         "Здесь: <b>политика и соглашение</b> (Telegraph), <b>частые вопросы</b>, раздел про <b>оплату</b>, "
-        "а ниже — быстрые шаблоны и связь с оператором.\n\n"
+        "а ниже - быстрые шаблоны и связь с оператором.\n\n"
         "Опишите проблему и <b>номер заказа</b> (или заявки на пополнение), если обращаетесь в чат.",
         reply_markup=_support_kb(settings),
     )
@@ -862,7 +862,7 @@ async def sup_faq_template(cb: CallbackQuery, settings: Settings) -> None:
         await cb.message.edit_text(
             "<b>Поддержка в .env</b>\n\n"
             "Укажите <code>SUPPORT_URL</code> (любая ссылка) или <code>SUPPORT_USERNAME</code> "
-            "(ник без @) — тогда появятся кнопки с переходом в чат и префиллом текста.\n"
+            "(ник без @) - тогда появятся кнопки с переходом в чат и префиллом текста.\n"
             "Если ничего не задано, используйте шаблоны ниже и свой канал связи.",
             reply_markup=back.as_markup(),
         )

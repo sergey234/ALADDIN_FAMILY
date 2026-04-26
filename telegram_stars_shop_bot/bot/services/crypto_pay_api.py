@@ -1,7 +1,7 @@
 """
 Вызовы HTTPS Crypto Pay API (createInvoice, getExchangeRates).
 
-GET {origin}/api/{method} + заголовок Crypto-Pay-API-Token — как в открытых SDK под @CryptoBot.
+GET {origin}/api/{method} + заголовок Crypto-Pay-API-Token - как в открытых SDK под @CryptoBot.
 """
 
 from __future__ import annotations
@@ -21,7 +21,7 @@ from bot.services.crypto_pay_payload import (
 
 _log = logging.getLogger(__name__)
 
-# В продукте для оплаты через провайдеров — только USDT в сети TRC20 (как у Crypto Pay / xRocket для USDT).
+# В продукте для оплаты через провайдеров - только USDT в сети TRC20 (как у Crypto Pay / xRocket для USDT).
 _INVOICE_ASSET = "USDT"
 
 _MIN_ASSET_AMOUNTS: dict[str, Decimal] = {
@@ -35,7 +35,7 @@ _MIN_ASSET_AMOUNTS: dict[str, Decimal] = {
 
 
 def crypto_pay_invoice_api_ready(settings: Settings) -> bool:
-    """True — можно вызывать createInvoice (включено в .env и задан токен)."""
+    """True - можно вызывать createInvoice (включено в .env и задан токен)."""
     if not settings.crypto_pay_enabled:
         return False
     return bool((settings.crypto_pay_api_token or "").strip())
@@ -50,7 +50,7 @@ def _fallback_rub_per_usdt(settings: Settings) -> float | None:
 
 
 def _maybe_warn_crypto_pay_token(settings: Settings) -> None:
-    """Частая ошибка: в CRYPTO_PAY_API_TOKEN кладут BOT_TOKEN вида 123456:AA… — это не Crypto Pay."""
+    """Частая ошибка: в CRYPTO_PAY_API_TOKEN кладут BOT_TOKEN вида 123456:AA… - это не Crypto Pay."""
     if not settings.crypto_pay_enabled:
         return
     t = (settings.crypto_pay_api_token or "").strip()
@@ -73,7 +73,7 @@ def _maybe_warn_crypto_pay_token(settings: Settings) -> None:
 async def resolve_rub_per_usdt(settings: Settings) -> float | None:
     """
     Сколько ₽ за 1 USDT: сначала getExchangeRates Crypto Pay (если задан CRYPTO_PAY_API_TOKEN),
-    иначе / при отсутствии пары — USDT_RUB_RATE или USD_RUB_RATE.
+    иначе / при отсутствии пары - USDT_RUB_RATE или USD_RUB_RATE.
     """
     rates = await crypto_pay_get_exchange_rates(settings)
     r = rub_per_asset_unit_from_rates(rates, "USDT")

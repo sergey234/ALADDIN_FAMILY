@@ -28,7 +28,7 @@ def crypto_invoice_providers_enabled(settings: Settings) -> bool:
 
 def crypto_manual_paid_gate_applies(order: Mapping[str, Any], settings: Settings) -> bool:
     """
-    True — обычную кнопку «Оплачен» (adm:paid) для pending_payment нужно блокировать:
+    True - обычную кнопку «Оплачен» (adm:paid) для pending_payment нужно блокировать:
     ждём вебхук провайдера; ручной paid только через break-glass (adm:paidbg).
     """
     st = str(order.get("status") or "").strip().lower()
