@@ -35,6 +35,23 @@
 - `API_KEY_PEPPER=...`
 - `PAYMENT_WEBHOOK_SECRET=...`
 
+### Крипто (Crypto Pay + xRocket) и авто `paid`
+
+Чеклист переменных и URL вебхуков для Partner API: **`docs/CRYPTO_PAY_SPEC.md`** (раздел **«0. Прод: shared/.env + вебхуки»**). Кратко:
+
+- В `shared/.env`: `CRYPTO_PAY_ENABLED=true`, `CRYPTO_PAY_API_TOKEN=` (не BOT_TOKEN); при xRocket — `XROCKET_PAY_ENABLED=true`, `XROCKET_PAY_API_KEY=`; задать **`USDT_RUB_RATE`** или **`USD_RUB_RATE`** как резерв курса.
+- В кабинетах провайдеров указать публичные HTTPS URL:  
+  `https://<ваш-хост>/v1/payments/crypto-pay-webhook` и  
+  `https://<ваш-хост>/v1/payments/xrocket-webhook`  
+  (тот же хост/прокси, что обслуживает `aladdin-partner-api`).
+- После смены секретов или URL: `sudo systemctl restart aladdin-partner-api.service`, затем смоук из спеки §0.3.
+
+### LAVA (₽): что в `.env`, а что в кабинете LAVA
+
+В **`shared/.env`** только техническое подключение магазина к API LAVA и вебхуку Partner API: `LAVA_SHOP_ID`, `LAVA_SECRET_KEY`, `LAVA_HOOK_URL` (публичный URL до `…/v1/payments/lava-webhook`), `LAVA_WEBHOOK_ADDITIONAL_SECRET` (проверка входящего POST), плюс опционально `LAVA_SUCCESS_URL` / `LAVA_FAIL_URL`, `LAVA_INCLUDE_SERVICES` и т.д.
+
+**Банковский счёт, карта для выручки, график выплат** задаются в **личном кабинете LAVA** (договор, реквизиты мерчанта) — в переменные бота это не дублируется. После оплаты на странице LAVA заказ в боте переходит в **`paid`** по вебхуку; дальше выдача товара — сценарий оператора в админке бота («В работе» → «Выдан»).
+
 ## Команды включения после заполнения .env
 
 ```bash

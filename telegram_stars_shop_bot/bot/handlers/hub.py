@@ -19,7 +19,7 @@ from bot.services.marketing import (
     privacy_screen_html,
     referral_faq_html,
 )
-from bot.services.pricing import rub_per_100_stars_display
+from bot.services.pricing import format_rub_usd_html, rub_per_100_stars_display
 from bot.services.sell_repo import count_user_sells, create_sell_request, list_user_sells_page
 from bot.states.checkout import ApiKeyStates, SellStates, TopupStates
 from bot.support_links import (
@@ -55,8 +55,8 @@ FAQ_TEMPLATES = {
 
 def _support_kb(settings: Settings):
     b = InlineKeyboardBuilder()
-    b.row(InlineKeyboardButton(text="🔒 Политика и данные", callback_data="sup:privacy"))
-    b.row(InlineKeyboardButton(text="ℹ️ Частые вопросы", callback_data="sup:faq"))
+    b.row(InlineKeyboardButton(text="🛡️ Политика и данные", callback_data="sup:privacy"))
+    b.row(InlineKeyboardButton(text="📚 Частые вопросы", callback_data="sup:faq"))
     b.row(InlineKeyboardButton(text="💳 Оплата и зачисление", callback_data="sup:payfaq"))
     base = telegram_support_base(settings)
     if base and is_telegram_contact(base):
@@ -70,12 +70,12 @@ def _support_kb(settings: Settings):
     elif base:
         b.row(InlineKeyboardButton(text="🔗 Связаться с поддержкой", url=base))
     else:
-        b.row(InlineKeyboardButton(text="❓ Шаблон: оплата / статус", callback_data="sup:tpl:pay"))
-        b.row(InlineKeyboardButton(text="❓ Шаблон: Stars", callback_data="sup:tpl:stars"))
-        b.row(InlineKeyboardButton(text="❓ Шаблон: username", callback_data="sup:tpl:user"))
+        b.row(InlineKeyboardButton(text="🧾 Шаблон: оплата / статус", callback_data="sup:tpl:pay"))
+        b.row(InlineKeyboardButton(text="⭐ Шаблон: Stars", callback_data="sup:tpl:stars"))
+        b.row(InlineKeyboardButton(text="👤 Шаблон: username", callback_data="sup:tpl:user"))
         b.row(
             InlineKeyboardButton(
-                text="ℹ️ Как указать SUPPORT_URL",
+                text="🧭 Как указать SUPPORT_URL",
                 callback_data="sup:tpl:hint",
             )
         )
@@ -106,13 +106,20 @@ async def profile_body_html(bot: Bot, settings: Settings, conn, user_id: int) ->
     rb = esc(settings.ref_buyer_discount_percent)
     rc = esc(settings.ref_commission_percent)
     co = esc(stats["completed_orders"])
+    r_inv = int(stats["referral_invited_count"])
+    r_done = int(stats["referral_buyers_completed_count"])
+    r_earn = float(stats["referral_commission_earned_rub"])
     return (
-        "<b>Мой профиль</b>\n\n"
+        "<b>Мой профиль</b> · MonkeyStars\n\n"
         f"<b>Реферальная ссылка</b>\n<code>{esc(ref_link)}</code>\n\n"
         "<b>Условия</b> (те же %, что в приветствии)\n"
         f"• Скидка другу до первого <b>выданного</b> заказа: <b>{rb}%</b>\n"
         f"• Вам с первой <b>выданной</b> покупки друга: <b>{rc}%</b> в ₽ на реф. баланс\n"
         f"• «До {md}%» — в рамках акций и способов оплаты, см. прайс\n\n"
+        "<b>Реферальная статистика</b>\n"
+        f"• Зашли по ссылке: <b>{r_inv}</b>\n"
+        f"• С выданной покупкой: <b>{r_done}</b>\n"
+        f"• Всего начислено с рефки: <b>{esc(f'{r_earn:.2f}')} ₽</b>\n\n"
         f"<b>Баланс</b> (оплата заказов): <b>{esc(f'{br:.2f}')} ₽</b>\n"
         f"<b>Реф. баланс</b>: <b>{esc(f'{rr:.2f}')} ₽</b>\n"
         f"Заказов выдано: <b>{co}</b>\n"
@@ -134,15 +141,19 @@ async def _orders_page_html(conn, user_id: int, page: int) -> tuple[str, bool, b
         "paid": "оплачен",
         "processing": "в обработке",
         "completed": "выдан",
+        "expired": "срок оплаты истёк",
+        "refunded": "сторно / возврат",
+        "payment_disputed": "спор по оплате",
     }
     for r in rows:
         rid = r["id"]
         created = esc(r["created_at"] or "")
         amt = float(r["rub_after_discounts"])
+        usd = float(r["usd_base"] or 0.0)
         st = esc(status_ru.get(r["status"], r["status"]))
         lines.append(
             f"#{esc(rid)} — {esc(r['product_title'])}\n"
-            f"  <i>{created}</i> · <b>{esc(f'{amt:.2f}')} ₽</b> — {st}\n"
+            f"  <i>{created}</i> · <b>{format_rub_usd_html(amt, usd)}</b> — {st}\n"
         )
     return "\n".join(lines), has_prev, has_next
 
@@ -180,9 +191,18 @@ async def onboarding_continue(cb: CallbackQuery, settings: Settings) -> None:
     if channel_gate_enabled(settings) and not await user_is_channel_member(
         cb.bot, settings, cb.from_user.id
     ):
-        await cb.answer("Подпишитесь на канал магазина, затем снова нажмите «Далее» или «открыть меню».", show_alert=True)
+        await cb.answer(
+            "Кажется, подписка на канал ещё не подтверждена. Нажмите «Подписаться», затем «Я подписался — открыть меню».",
+            show_alert=True,
+        )
         return
-    await cb.message.edit_text(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb())
+    fid2 = (settings.start_photo_file_id_2 or "").strip()
+    if fid2:
+        # Keep hub controls on a text message so downstream handlers can safely use edit_text.
+        await cb.message.answer_photo(fid2)
+        await cb.message.answer(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb())
+    else:
+        await cb.message.edit_text(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb())
     await cb.answer()
 
 
@@ -211,7 +231,8 @@ async def nav_orders(cb: CallbackQuery, conn) -> None:
     for r in rows:
         rid = int(r["id"])
         amt = float(r["rub_after_discounts"])
-        b.row(InlineKeyboardButton(text=f"#{rid} · {amt:.0f} ₽", callback_data=f"ord:{rid}"))
+        usd = float(r["usd_base"] or 0.0)
+        b.row(InlineKeyboardButton(text=f"#{rid} · {format_rub_usd_html(amt, usd, rub_decimals=0)}", callback_data=f"ord:{rid}"))
     row = []
     if has_prev:
         row.append(InlineKeyboardButton(text="◀️", callback_data=f"nav:orders:{page - 1}"))
@@ -234,24 +255,43 @@ async def order_detail(cb: CallbackQuery, settings: Settings, conn) -> None:
         return
     sup = support_order_question_url(settings, oid)
     amt = float(order["rub_after_discounts"])
+    usd = float(order["usd_base"] or 0.0)
     bap = float(order["balance_applied_rub"] or 0)
     due = orders_repo.amount_due_external(order)
+    st_raw = str(order["status"])
+    st_ru = {
+        "pending_payment": "ожидает оплаты",
+        "paid": "оплачен",
+        "processing": "в обработке",
+        "completed": "выдан",
+        "expired": "срок оплаты истёк",
+        "refunded": "сторно / возврат",
+        "payment_disputed": "спор по оплате",
+    }.get(st_raw, st_raw)
     text = (
         f"<b>Заказ #{esc(oid)}</b>\n"
         f"<i>{esc(order['created_at'] or '')}</i>\n\n"
         f"Товар: {esc(order['product_title'])}\n"
-        f"Сумма: <b>{esc(f'{amt:.2f}')} ₽</b>\n"
+        f"Сумма: <b>{format_rub_usd_html(amt, usd)}</b>\n"
     )
     if bap > 0.005:
         text += f"С баланса: <b>{esc(f'{bap:.2f}')} ₽</b>\n"
     if due > 0.005:
-        text += f"К оплате снаружи: <b>{esc(f'{due:.2f}')} ₽</b>\n"
+        due_usd = usd * (due / amt) if amt > 0.005 else 0.0
+        text += f"К оплате снаружи: <b>{format_rub_usd_html(due, due_usd)}</b>\n"
     text += (
         f"Оплата: <code>{esc(order['payment_method'])}</code>\n"
-        f"Статус: <code>{esc(order['status'])}</code>\n"
+        f"Статус: <b>{esc(st_ru)}</b>\n"
         f"Получатель: <code>{esc(order['user_note'] or '')}</code>\n\n"
-        "<i>После оплаты статус обновит оператор.</i>"
     )
+    if st_raw == "expired":
+        text += "<i>Счёт не оплачен в срок. Если оплатили — напишите в поддержку с номером заказа.</i>"
+    elif st_raw == "refunded":
+        text += "<i>По этому заказу зафиксировано сторно или возврат средств со стороны магазина/поддержки.</i>"
+    elif st_raw == "payment_disputed":
+        text += "<i>Идёт разбор по оплате; при необходимости поддержка напишет или ответьте в тикет с номером заказа.</i>"
+    else:
+        text += "<i>После оплаты статус обновит оператор.</i>"
     await cb.message.edit_text(text, reply_markup=order_detail_kb(oid, sup))
     await cb.answer()
 
@@ -280,7 +320,7 @@ async def nav_buy_stars(cb: CallbackQuery, products: list[Product], settings: Se
 
 @router.callback_query(F.data == "nav:premium")
 async def nav_premium(cb: CallbackQuery, products: list[Product]) -> None:
-    items = sort_for_display([p for p in products if p.kind == "premium"])
+    items = sort_for_display([p for p in products if p.kind == "premium" and not p.hide_from_menu])
     if not items:
         await cb.message.edit_text(
             "<b>Купить Premium</b>\n\n"
@@ -317,7 +357,7 @@ async def nav_gifts(cb: CallbackQuery, products: list[Product]) -> None:
 async def nav_receipts(cb: CallbackQuery, conn) -> None:
     cur = await conn.execute(
         """
-        SELECT id, created_at, rub_after_discounts, product_title FROM orders
+        SELECT id, created_at, rub_after_discounts, usd_base, product_title FROM orders
         WHERE user_id = ? AND status = 'completed' ORDER BY id DESC LIMIT 12
         """,
         (cb.from_user.id,),
@@ -325,7 +365,7 @@ async def nav_receipts(cb: CallbackQuery, conn) -> None:
     rows = await cur.fetchall()
     if not rows:
         await cb.message.edit_text(
-            "<b>Чеки</b>\n\nЗавершённых заказов пока нет.",
+            "<b>Выданные</b>\n\nЗавершённых заказов пока нет.",
             reply_markup=hub_menu_kb(),
         )
     else:
@@ -333,10 +373,11 @@ async def nav_receipts(cb: CallbackQuery, conn) -> None:
         for r in rows:
             rid = int(r["id"])
             amt = float(r["rub_after_discounts"])
-            b.row(InlineKeyboardButton(text=f"#{rid} · {amt:.0f} ₽", callback_data=f"ord:{rid}"))
+            usd = float(r["usd_base"] or 0.0)
+            b.row(InlineKeyboardButton(text=f"#{rid} · {format_rub_usd_html(amt, usd, rub_decimals=0)}", callback_data=f"ord:{rid}"))
         b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
         await cb.message.edit_text(
-            "<b>Чеки</b>\n\nВыберите завершённый заказ — откроется карточка. Для PDF уточните в поддержке.",
+            "<b>Выданные</b>\n\nВыберите завершённый заказ — откроется карточка. Для PDF уточните в поддержке.",
             reply_markup=b.as_markup(),
         )
     await cb.answer()
@@ -437,12 +478,43 @@ async def api_req_done(message: Message, state: FSMContext, conn, bot: Bot, sett
             pass
 
 
+@router.callback_query(F.data == "nav:ref")
+async def nav_ref(cb: CallbackQuery, settings: Settings, conn, bot: Bot) -> None:
+    me = await bot.get_me()
+    bot_user = me.username or "your_bot"
+    uid = cb.from_user.id
+    ref_link = f"https://t.me/{bot_user}?start=ref_{uid}"
+    stats = await users_repo.user_stats(conn, uid)
+    r_inv = int(stats["referral_invited_count"])
+    r_done = int(stats["referral_buyers_completed_count"])
+    r_earn = float(stats["referral_commission_earned_rub"])
+    rb = esc(settings.ref_buyer_discount_percent)
+    rc = esc(settings.ref_commission_percent)
+    text = (
+        "<b>Реферальная ссылка</b> · MonkeyStars\n\n"
+        f"<code>{esc(ref_link)}</code>\n\n"
+        f"<b>Условия:</b> −{rb}% другу до первого выданного заказа; "
+        f"+{rc}% вам с первой выданной покупки друга.\n\n"
+        "<b>Статистика</b>\n"
+        f"• По ссылке зашли: <b>{r_inv}</b>\n"
+        f"• С выданной покупкой: <b>{r_done}</b>\n"
+        f"• Всего начислено: <b>{esc(f'{r_earn:.2f}')} ₽</b>"
+    )
+    b = InlineKeyboardBuilder()
+    b.row(InlineKeyboardButton(text="📖 Подробнее", callback_data="nav:reffaq"))
+    b.row(InlineKeyboardButton(text="👤 Полный профиль", callback_data="nav:profile"))
+    b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
+    await cb.message.edit_text(text, reply_markup=b.as_markup())
+    await cb.answer()
+
+
 @router.callback_query(F.data == "nav:profile")
 async def nav_profile(cb: CallbackQuery, settings: Settings, conn, bot: Bot) -> None:
     text = await profile_body_html(bot, settings, conn, cb.from_user.id)
     b = InlineKeyboardBuilder()
     b.row(InlineKeyboardButton(text="📖 Как работает рефералка", callback_data="nav:reffaq"))
     b.row(InlineKeyboardButton(text="📤 Мои заявки на выкуп", callback_data="nav:sells:0"))
+    b.row(InlineKeyboardButton(text="💸 Продать Stars", callback_data="nav:sell_stars"))
     b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
     await cb.message.edit_text(text, reply_markup=b.as_markup())
     await cb.answer()
@@ -540,6 +612,8 @@ async def screen_faq_support(cb: CallbackQuery, settings: Settings) -> None:
 async def nav_reffaq(cb: CallbackQuery, settings: Settings) -> None:
     b = InlineKeyboardBuilder()
     b.row(InlineKeyboardButton(text="⬅️ В профиль", callback_data="nav:profile"))
+    b.row(InlineKeyboardButton(text="🔗 Реф-ссылка", callback_data="nav:ref"))
+    b.row(InlineKeyboardButton(text="🏠 В меню", callback_data="nav:hub"))
     await cb.message.edit_text(referral_faq_html(settings), reply_markup=b.as_markup())
     await cb.answer()
 
@@ -557,7 +631,8 @@ async def screen_payfaq_support(cb: CallbackQuery, settings: Settings) -> None:
 @router.callback_query(F.data == "nav:partners")
 async def nav_partners(cb: CallbackQuery, settings: Settings) -> None:
     b = InlineKeyboardBuilder()
-    b.row(InlineKeyboardButton(text="👤 Мой профиль (реф-ссылка)", callback_data="nav:profile"))
+    b.row(InlineKeyboardButton(text="🔗 Реф-ссылка", callback_data="nav:ref"))
+    b.row(InlineKeyboardButton(text="👤 Мой профиль", callback_data="nav:profile"))
     b.row(InlineKeyboardButton(text="🔌 Наш API (ключ)", callback_data="nav:api"))
     b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
     await cb.message.edit_text(partner_onboarding_html(settings), reply_markup=b.as_markup())
@@ -622,11 +697,13 @@ async def nav_contest(cb: CallbackQuery, conn) -> None:
 
 
 @router.callback_query(F.data == "nav:topup")
-async def nav_topup(cb: CallbackQuery, conn) -> None:
+async def nav_topup(cb: CallbackQuery, conn, settings: Settings) -> None:
     bal = await balance_repo.get_balance(conn, cb.from_user.id)
     b = InlineKeyboardBuilder()
+    lo, hi = settings.topup_min_rub, settings.topup_max_rub
     for amt in (500, 1000, 3000, 5000):
-        b.row(InlineKeyboardButton(text=f"+{amt} ₽", callback_data=f"top:amt:{amt}"))
+        if lo - 1e-6 <= amt <= hi + 1e-6:
+            b.row(InlineKeyboardButton(text=f"+{amt} ₽", callback_data=f"top:amt:{amt}"))
     b.row(InlineKeyboardButton(text="✏️ Своя сумма", callback_data="top:custom"))
     b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
     await cb.message.edit_text(
@@ -640,16 +717,30 @@ async def nav_topup(cb: CallbackQuery, conn) -> None:
 @router.callback_query(F.data.startswith("top:amt:"))
 async def topup_fixed(cb: CallbackQuery, conn, bot: Bot, settings: Settings) -> None:
     amt = float(cb.data.split(":")[-1])
-    tid = await balance_repo.create_topup_request(conn, user_id=cb.from_user.id, amount_rub=amt)
+    try:
+        tid = await balance_repo.create_topup_request(
+            conn, user_id=cb.from_user.id, amount_rub=amt, settings=settings
+        )
+    except ValueError as e:
+        msg = {
+            "topup_amount_invalid": "Сумма вне допустимого диапазона.",
+            "topup_pending_cap": "Слишком много заявок на пополнение в ожидании. Дождитесь зачисления или отмены.",
+            "topup_rate_limit": "Подождите немного перед следующей заявкой на пополнение.",
+        }.get(str(e), "Не удалось создать заявку.")
+        await cb.answer(msg, show_alert=True)
+        return
     from bot.keyboards.shop_kb import admin_topup_kb
 
     for aid in settings.parsed_admin_ids():
         try:
-            await bot.send_message(
-                aid,
-                f"<b>Пополнение #{esc(tid)}</b>\n<code>{cb.from_user.id}</code> · <b>{amt:.2f} ₽</b>",
-                reply_markup=admin_topup_kb(tid),
-            )
+            kb = admin_topup_kb(tid, settings=settings, actor_id=aid)
+            msg_kw: dict = {
+                "chat_id": aid,
+                "text": f"<b>Пополнение #{esc(tid)}</b>\n<code>{cb.from_user.id}</code> · <b>{amt:.2f} ₽</b>",
+            }
+            if kb.inline_keyboard:
+                msg_kw["reply_markup"] = kb
+            await bot.send_message(**msg_kw)
         except Exception:
             pass
     await cb.message.edit_text(
@@ -660,9 +751,11 @@ async def topup_fixed(cb: CallbackQuery, conn, bot: Bot, settings: Settings) -> 
 
 
 @router.callback_query(F.data == "top:custom")
-async def topup_custom(cb: CallbackQuery, state: FSMContext) -> None:
+async def topup_custom(cb: CallbackQuery, state: FSMContext, settings: Settings) -> None:
     await state.set_state(TopupStates.waiting_custom_amount)
-    await cb.message.edit_text("<b>Своя сумма</b>\nВведите ₽ от 100 до 500000.")
+    await cb.message.edit_text(
+        f"<b>Своя сумма</b>\nВведите ₽ от {settings.topup_min_rub:g} до {settings.topup_max_rub:g}."
+    )
     await cb.answer()
 
 
@@ -670,22 +763,37 @@ async def topup_custom(cb: CallbackQuery, state: FSMContext) -> None:
 async def topup_custom_val(message: Message, state: FSMContext, conn, bot: Bot, settings: Settings) -> None:
     try:
         amt = float((message.text or "").strip().replace(",", "."))
-        if amt < 100 or amt > 500_000:
+        lo, hi = settings.topup_min_rub, settings.topup_max_rub
+        if amt + 1e-6 < lo or amt - 1e-6 > hi:
             raise ValueError
     except ValueError:
-        await message.answer("Сумма от 100 до 500000 ₽.")
+        await message.answer(f"Сумма от {settings.topup_min_rub:g} до {settings.topup_max_rub:g} ₽.")
         return
     await state.clear()
-    tid = await balance_repo.create_topup_request(conn, user_id=message.from_user.id, amount_rub=amt)
+    try:
+        tid = await balance_repo.create_topup_request(
+            conn, user_id=message.from_user.id, amount_rub=amt, settings=settings
+        )
+    except ValueError as e:
+        msg = {
+            "topup_amount_invalid": f"Сумма от {settings.topup_min_rub:g} до {settings.topup_max_rub:g} ₽.",
+            "topup_pending_cap": "Слишком много заявок в ожидании.",
+            "topup_rate_limit": "Подождите перед следующей заявкой.",
+        }.get(str(e), "Не удалось создать заявку.")
+        await message.answer(msg, reply_markup=hub_menu_kb())
+        return
     from bot.keyboards.shop_kb import admin_topup_kb
 
     for aid in settings.parsed_admin_ids():
         try:
-            await bot.send_message(
-                aid,
-                f"<b>Пополнение #{esc(tid)}</b>\n<code>{message.from_user.id}</code> · <b>{amt:.2f} ₽</b>",
-                reply_markup=admin_topup_kb(tid),
-            )
+            kb = admin_topup_kb(tid, settings=settings, actor_id=aid)
+            msg_kw: dict = {
+                "chat_id": aid,
+                "text": f"<b>Пополнение #{esc(tid)}</b>\n<code>{message.from_user.id}</code> · <b>{amt:.2f} ₽</b>",
+            }
+            if kb.inline_keyboard:
+                msg_kw["reply_markup"] = kb
+            await bot.send_message(**msg_kw)
         except Exception:
             pass
     await message.answer(f"<b>Заявка #{esc(tid)}</b> создана.", reply_markup=hub_menu_kb())
@@ -723,7 +831,7 @@ async def sell_amount(message: Message, state: FSMContext, settings: Settings, c
             await bot.send_message(
                 aid,
                 f"<b>Выкуп #{esc(sid)}</b>\n<code>{message.from_user.id}</code> · {stars} ⭐ · {rub:.2f} ₽",
-                reply_markup=admin_sell_kb(sid),
+                reply_markup=admin_sell_kb(sid, settings=settings, actor_id=aid),
             )
         except Exception:
             pass

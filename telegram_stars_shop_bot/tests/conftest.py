@@ -10,6 +10,8 @@ import pytest
 os.environ.setdefault("BOT_TOKEN", "9:pytest-bot-token")
 os.environ.setdefault("ADMIN_IDS", "1")
 os.environ.setdefault("API_KEY_PEPPER", "pytest_pepper_value_minimum_32_chars__")
+# В проде курс только из .env; в тестах — стабильное значение, если тест не переопределяет.
+os.environ.setdefault("USD_RUB_RATE", "90")
 
 
 @pytest.fixture

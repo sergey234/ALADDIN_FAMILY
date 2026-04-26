@@ -1,5 +1,6 @@
 # Каталог: добавляйте позиции здесь. price_usd — закуп/себестоимость-ориентир или ваша наценка.
 # kind: premium | stars
+# hide_from_menu: true — не показывать кнопку в инлайн-витрине бота (заказ по id через API всё ещё возможен).
 products:
   - id: premium_1
     kind: premium
@@ -7,6 +8,7 @@ products:
     emoji: "💎"
     duration_months: 1
     price_usd: 4.5
+    hide_from_menu: true
 
   - id: premium_3
     kind: premium

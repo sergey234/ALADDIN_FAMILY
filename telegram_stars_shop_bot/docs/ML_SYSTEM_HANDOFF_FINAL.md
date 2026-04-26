@@ -43,6 +43,27 @@
 Этот документ — единая входная точка для другой ML/agent системы.  
 Цель: открыть один файл и быстро понять, **что развернуто, где лежит, как работает, как проверять и где риски**.
 
+## 0.5) Два независимых продукта: iOS / backend / Telegram Shop Bot
+
+В одном монорепозитории **`ALADDIN_iOS`** лежат **разные артефакты**. Другая ML-система должна различать **что деплоить куда** и **не смешивать** пути.
+
+| Продукт | Где в репозитории | Куда на сервере (prod) | Как выкатывать |
+|---------|-------------------|-------------------------|----------------|
+| **Мобильное приложение ALADDIN (iOS)** | `Core/`, Xcode-проект, каталоги приложения **вне** `telegram_stars_shop_bot/` | **Не** в `/opt/aladdin-telegram-shop-bot`. Сборка — через Xcode / CI мобильного приложения; на сервере бота **не копировать**. |
+| **Основной ALADDIN backend (API)** | Отдельный репозиторий/дерево на сервере | **`/opt/aladdin-backend`**, публичный health обычно **`:8002`** | Свой деплой и `systemctl` (например `aladdin-backend`). При выкладке **магазина** backend **не трогать**, если нет отдельной задачи на backend. |
+| **Telegram Shop Bot** (этот документ) | Только **`telegram_stars_shop_bot/`** | **`ROOT=/opt/aladdin-telegram-shop-bot`**, Partner API внутри сервера **`:8090`**, три unit'а: `aladdin-telegram-bot`, `aladdin-partner-api`, `aladdin-webhook-worker` | **`rsync`** содержимого `./telegram_stars_shop_bot/` → `releases/<TS>/telegram_stars_shop_bot/` + симлинки `current_app` / `current_release` + `pip` в `ROOT/venv` + рестарт **трёх** сервисов бота. Канон — §2 и §2.1 ниже. |
+
+**Правило:** команда деплоя бота всегда начинается с пути **`…/ALADDIN_iOS/telegram_stars_shop_bot/`** (или эквивалента на диске). **Никогда** не делать `rsync` всего корня `ALADDIN_iOS` в `current_app` бота — туда попадёт мусор из iOS и сломается Python.
+
+### Что **не** попадает на сервер тем же `rsync` бота (и это правильно)
+
+| Что | Почему |
+|-----|--------|
+| **`ROOT/shared/.env`** | Файл **только на сервере**; в git не коммитится. После выкладки кода **вручную** сверить с `telegram_stars_shop_bot/env.example` и дописать новые переменные — иначе часть функций останется на старых дефолтах. |
+| **`data/` и `shop.db`** | Исключены из `rsync` (`--exclude data`), чтобы **не уничтожить** продовую SQLite. |
+| **Локальный `.env`** внутри клона | Исключён из `rsync`; не подменять им `shared/.env` на сервере. |
+| **Задача `0-backup` из плана 44 ID** | Это **операция на сервере** (копии `shared/.env`, `shop.db`, архив кода), а не содержимое git. `rsync` её **не выполняет** — делает человек по §1.2 плана в `IMPLEMENTATION_PLAN_AND_TASKS.md` и по §1.2 этого файла. |
+
 ## 1) Что это за система
 
 Развернут отдельный Telegram Shop Bot с Partner API:
@@ -58,9 +79,10 @@
 
 ### Локальный репозиторий
 
-- Код бота: `telegram_stars_shop_bot/`
-- Ключевая документация: `telegram_stars_shop_bot/docs/`
-- CI workflow: `.github/workflows/telegram_shop_bot_ci.yml`
+- Код бота (единственный источник для деплоя магазина): `telegram_stars_shop_bot/`
+- **iOS и прочее в корне `ALADDIN_iOS/`** (`Core/` и т.д.) — **отдельный продукт**; в выкладку бота **не входят** (см. §0.5).
+- Ключевая документация бота: `telegram_stars_shop_bot/docs/`
+- CI workflow бота: `.github/workflows/telegram_shop_bot_ci.yml`
 
 ### Сервер (production)
 
@@ -94,6 +116,8 @@
 export SSH_HOST="root@149.154.65.180"
 export ROOT="/opt/aladdin-telegram-shop-bot"
 export TS="$(date +%Y%m%d-%H%M%S)"
+# Каталог релиза на сервере должен существовать до rsync (иначе ошибка mkdir на стороне receiver):
+ssh "${SSH_HOST}" "mkdir -p \"${ROOT}/releases/${TS}/telegram_stars_shop_bot\""
 rsync -az --delete \
   --exclude '.git' \
   --exclude '__pycache__' \
@@ -163,6 +187,21 @@ sudo systemctl restart aladdin-telegram-bot.service aladdin-partner-api.service 
 
 Минус: расхождение с релизами в `releases/`; после патча лучше закрепить состояние через вариант A или B.
 
+### 2.1) Чеклист: всё из репозитория доставлено и реально применилось на сервере
+
+Цель — не «файлы уехали по scp», а **работающий** бот + API + worker на канонических путях.
+
+1. **Локально** (в каталоге `telegram_stars_shop_bot/`): `python3 -m pytest -q` — зелёный прогон перед выкладкой.
+2. **Источник rsync:** с машины разработки синхронизируется **только** каталог `./telegram_stars_shop_bot/` → `${ROOT}/releases/<TS>/telegram_stars_shop_bot/` (как в варианте A). Не путать с корнем всего монорепозитория `ALADDIN_iOS`, если там несколько проектов.
+3. **Перед rsync на сервере:** `ssh … "mkdir -p \"${ROOT}/releases/<TS>/telegram_stars_shop_bot\""` — иначе `rsync` может завершиться с ошибкой «No such file or directory» на приёмнике.
+4. **Исключения обязательны:** `--exclude 'data'`, `--exclude '.env'`, venv и `.git` — иначе можно затереть продовую SQLite или залить локальный `.env`.
+5. **Секреты:** после выкладки кода сравнить **`telegram_stars_shop_bot/env.example`** с **`${ROOT}/shared/.env`**: новые ключи из репо должны появиться на сервере вручную (merge), иначе сервис стартует со старыми дефолтами. Актуальные имена см. в `env.example`; среди часто забываемых после доработок плана: `SUPER_ADMIN_IDS`, `PARTNER_API_RATE_LIMIT_*`, `STUCK_PAID_ALERT_HOURS`, `STUCK_PAID_CHECK_INTERVAL_SECONDS`, `STUCK_PROCESSING_ALERT_MINUTES`, `OPERATOR_QUEUE_PROCESSING_IDLE_MINUTES`, `AUTO_FULFILL_FAILURE_ALERTS_ENABLED`, `PAYMENT_CHECKOUT_INVOICE_COOLDOWN_SECONDS`, флаги `CRYPTO_PAY_*` / `XROCKET_*` / `AUTO_FULFILL_*`, `ISTAR_*`. Ротация — `docs/SECRETS_AND_ROTATION_RUNBOOK.md`.
+6. **Симлинки:** `current_release` → каталог релиза, `current_app` → `.../telegram_stars_shop_bot` внутри него (обе команды `ln -sfn`).
+7. **Зависимости:** если менялся `requirements.txt` — `pip install -r "${ROOT}/current_app/requirements.txt"` в **`${ROOT}/venv`**, не в системный Python.
+8. **Рестарт только трёх сервисов бота** — см. §3. **`aladdin-backend`** для выкладки магазина **не перезапускать**, если нет отдельной задачи на backend.
+9. **Проверки:** подождать несколько секунд после `systemctl restart`, затем `curl` на `127.0.0.1:8090/health` (сразу после рестарта порт может быть ещё не готов). `systemctl is-active` для трёх unit’ов; затем смоук из §9 (Telegram + при необходимости тестовый API заказ).
+10. **Приёмка по ID плана:** заполнить колонку «Человек» в `docs/ACCEPTANCE_CHECKLIST_BY_ID.md` для строк с pytest **Нет** / **Частично** и для операционных пунктов.
+
 ## 3) Сервисы systemd (production)
 
 - `aladdin-telegram-bot.service` — Telegram polling.
@@ -189,17 +228,29 @@ systemctl is-active aladdin-backend.service
 - `ADMIN_IDS` (ID живых админов Telegram)
 - `API_KEY_PEPPER`
 - `PAYMENT_WEBHOOK_SECRET`
+- **`USD_RUB_RATE`** — строго **`> 0`** (₽ за 1 USD); иначе процессы не стартуют. Регламент обновления: **`docs/FX_RATES_RUNBOOK.md`**.
 
 Дополнительно:
 
+- `SUPER_ADMIN_IDS` (роль супер-админа при непустом пересечении с `ADMIN_IDS`; иначе все админы считаются супер-админами — см. код/тесты `test_admin_ops.py`)
 - `SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_TRACES_SAMPLE_RATE`
 - `PARTNER_API_CORS_ORIGINS`
+- `PARTNER_API_RATE_LIMIT_API_PER_MINUTE`, `PARTNER_API_RATE_LIMIT_WEBHOOK_PER_MINUTE`, `PARTNER_API_RATE_LIMIT_PUBLIC_PER_MINUTE` (`0` = отключить класс лимита)
+- `STUCK_PAID_ALERT_HOURS`, `STUCK_PAID_CHECK_INTERVAL_SECONDS` (лог «paid без движения»; цикл выключен только если **и** часы `0`, **и** `STUCK_PROCESSING_ALERT_MINUTES=0`), `STUCK_PROCESSING_ALERT_MINUTES`, `OPERATOR_QUEUE_PROCESSING_IDLE_MINUTES`, `AUTO_FULFILL_FAILURE_ALERTS_ENABLED`
+- `PAYMENT_CHECKOUT_INVOICE_COOLDOWN_SECONDS` (повторный счёт Ckassa/LAVA/Crypto на тот же `order_id`)
 - `SUPPORT_URL` / `SUPPORT_USERNAME`
+- **Ckassa (₽, прод):** `CKASSA_ENABLED=true`, **`CKASSA_TEST_MODE=false`**, `CKASSA_SHOP_TOKEN`, `CKASSA_SECRET_KEY`, публичный **`CKASSA_CALLBACK_PUBLIC_URL`** → `https://<домен>/v1/payments/ckassa-webhook`. При `CKASSA_TEST_MODE=true` в логах — WARNING (только демо, не настоящие платежи).
+- **Crypto Pay + xRocket** (вкл. флаги, токены, резерв курса `USDT_RUB_RATE` / `USD_RUB_RATE`, публичные URL вебхуков на Partner API): **`docs/CRYPTO_PAY_SPEC.md`** — раздел **«0. Прод: shared/.env + вебхуки»**.
+- **Автовыдача / iStar (прод):** чеклист в **`env.example`** (блок AUTO_FULFILL / ISTAR), воркер — `docs/auto-fulfill-worker.service`, см. также `docs/AUTO_FULFILL_SMOKE.md`
 
 ## 5) Ключевые runtime-эндпоинты
 
 - Partner API health: `http://127.0.0.1:8090/health`
 - OpenAPI: `http://127.0.0.1:8090/openapi.json`
+- Входящие вебхуки оплаты (публичный HTTPS, см. `CRYPTO_PAY_SPEC.md` §0):  
+  `POST/GET /v1/payments/ckassa-webhook`, `POST /v1/payments/lava-webhook`, `POST /v1/payments/crypto-pay-webhook`, `POST /v1/payments/xrocket-webhook`
+- **Прод, nginx `aladdin-ai.ru`:** префикс **`/v1/`** проксируется на Partner API **`127.0.0.1:8090`** (TLS на домене). В кабинетах Crypto Pay / xRocket указывать полные URL:  
+  `https://aladdin-ai.ru/v1/payments/crypto-pay-webhook` и `https://aladdin-ai.ru/v1/payments/xrocket-webhook` (регистрация URL — только в UI ботов; через HTTP API Crypto Pay метод `setWebhook` недоступен).
 - Внешний health (основной ALADDIN): `http://149.154.65.180:8002/api/health`
 
 ## 6) Что уже проверено
@@ -255,8 +306,12 @@ tail -n 100 /opt/aladdin-telegram-shop-bot/logs/webhook_worker.log
 
 ## 10) Ссылки на основные документы проекта
 
+- Курсы USD/USDT и регламент обновления: `docs/FX_RATES_RUNBOOK.md`
+- Ротация секретов (LAVA, Crypto Pay, xRocket): `docs/SECRETS_AND_ROTATION_RUNBOOK.md`
+- Опциональные доработки эксплуатации (фаза 2): `docs/OPS_PHASE2_PLAN.md`
 - Runbook: `docs/RUNBOOK.md`
 - Acceptance: `docs/ACCEPTANCE_CHECKLIST.md`
+- Acceptance по ID плана (44 строки): `docs/ACCEPTANCE_CHECKLIST_BY_ID.md`
 - Final hardening: `docs/FINAL_HARDENING_CHECKLIST.md`
 - Sentry incident response: `docs/SENTRY_INCIDENT_RESPONSE.md`
 - Deploy webhook worker: `docs/DEPLOY_WEBHOOK_WORKER.md`
@@ -327,6 +382,11 @@ tail -n 100 /opt/aladdin-telegram-shop-bot/logs/webhook_worker.log
 | `GET /v1/topups` | `partner_api/routers/topups.py:list_topups` | `topup_requests` |
 | `GET /v1/topups/{topup_id}` | `partner_api/routers/topups.py:get_topup` | `topup_requests` |
 | `POST /v1/payments/provider-webhook` | `partner_api/routers/payment_provider.py:payment_provider_webhook` | `orders`, `payment_provider_events`, `outbound_webhook_events` |
+| `POST/GET /v1/payments/ckassa-webhook` | `partner_api/routers/ckassa_webhook.py` | `orders`, `payment_provider_events`, … |
+| `POST /v1/payments/lava-webhook` | `partner_api/routers/lava_webhook.py` | `orders`, `payment_provider_events`, … |
+| `POST /v1/payments/crypto-pay-webhook` | `partner_api/routers/crypto_pay_webhook.py` | `orders`, `payment_provider_events`, … |
+| `POST /v1/payments/xrocket-webhook` | `partner_api/routers/xrocket_webhook.py` | `orders`, `payment_provider_events`, … |
+| `POST /v1/payments/istar-webhook` | `partner_api/routers/istar_webhook.py` | `orders`, … |
 | `GET /v1/webhooks/subscription` | `partner_api/routers/webhooks_partner.py:get_webhook_subscription` | `api_clients` |
 | `PUT /v1/webhooks/subscription` | `partner_api/routers/webhooks_partner.py:put_webhook_subscription` | `api_clients` |
 
@@ -342,7 +402,8 @@ tail -n 100 /opt/aladdin-telegram-shop-bot/logs/webhook_worker.log
 | `nav:sells:0` / `nav:sells:{page}` | `bot/handlers/hub.py` | Пагинация «Мои заявки на выкуп» |
 | `nav:privacy` | `bot/handlers/hub.py` | Экран политики данных |
 | `api:partner_key` / `api:req` | `bot/handlers/hub.py` | Выдача/запрос API ключа |
-| `adm:paid|proc|done:{id}` | `bot/handlers/admin.py` | Изменение статуса заказа админом |
+| `adm:paid` / `adm:paidbg` / `adm:proc` / `adm:done` / `adm:refund` / `adm:disp` / `adm:dispok` | `bot/handlers/admin.py` | Статусы заказа; break-glass оплаты; сторно/спор (супер-админ) |
+| `adm:ffman` / `adm:ffauto` / `adm:ffrst` | `bot/handlers/admin.py` | Автовыдача: только вручную / снова авто / сброс полей |
 | `top:ok:{id}` | `bot/handlers/admin.py` | Подтверждение топапа админом |
 | `sel:proc|done|can:{id}` | `bot/handlers/admin.py` | Статусы заявки sell |
 | `/menu` | `bot/handlers/common.py:cmd_menu` | Открывает тот же хаб (10 карточек) |

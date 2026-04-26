@@ -3,6 +3,9 @@ from __future__ import annotations
 from bot.config import Settings
 from bot.util_html import esc
 
+# Подпись к фото в Telegram — до 1024 символов; оставляем запас под сущности HTML.
+CHANNEL_GATE_PHOTO_CAPTION_MAX = 1000
+
 
 def why_us_block_html(settings: Settings) -> str:
     """Блок «почему мы» на первом экране (бренд + доверие)."""
@@ -14,6 +17,76 @@ def why_us_block_html(settings: Settings) -> str:
         "• Реферальная программа и партнёрский API для тех, кто хочет масштабировать продажи.\n"
         "• Поддержка и инструкции по оплате (СБП, карта, крипта) — см. раздел «Оплата и зачисление» в меню."
     )
+
+
+def _channel_gate_marketing_mode(settings: Settings) -> str:
+    raw = (settings.required_channel_gate_marketing or "short").strip().lower()
+    if raw in ("full", "short", "title_only"):
+        return raw
+    return "short"
+
+
+def channel_start_member_ack_html(settings: Settings) -> str:
+    """Сообщение на /start, если гейт включён и пользователь уже в канале (без мгновенного «втихаря» в хаб)."""
+    raw = (settings.required_channel_display_name or "").strip()
+    name = esc(raw) if raw else "канал магазина"
+    return (
+        f"<b>Доступ к {name} уже есть</b> — вы в канале.\n\n"
+        f"Нажмите <b>«Открыть меню»</b> ниже: Stars, Premium, заказы, пополнение и поддержка. "
+        f"Прайс, скидки и FAQ — в <b>закрепе</b> канала."
+    )
+
+
+def channel_subscribe_after_greeting_html(settings: Settings) -> str:
+    """Короткий второй шаг после приветствия на /start: только подписка и проверка кнопкой."""
+    raw = (settings.required_channel_display_name or "").strip()
+    title = esc(raw) if raw else "Канал магазина"
+    return (
+        f"<b>{title}</b>\n\n"
+        "Чтобы открыть покупки и меню бота, подпишитесь на канал.\n"
+        "После подписки нажмите «✅ Я подписался — открыть меню»."
+    )
+
+
+def channel_gate_short_punch_html(settings: Settings) -> str:
+    """
+    Короткий «wow»-экран до подписки: Stars/Premium, скидки из .env, призыв на канал.
+    Детали вынесены в канал (закреп) — здесь только крючок и 2 кнопки.
+    """
+    raw = (settings.required_channel_display_name or "").strip()
+    title = esc(raw) if raw else "канал MonkeyStars"
+    md = esc(f"{float(settings.marketing_max_discount_percent):.0f}")
+    rb = esc(f"{float(settings.ref_buyer_discount_percent):.0f}")
+    return (
+        "<b>⭐ MonkeyStars: Stars и Premium за минуты</b>\n"
+        "Быстрое оформление, прозрачный статус и живая поддержка без квестов.\n"
+        f"До <b>{md}%</b> выгоды + до <b>{rb}%</b> скидка другу на первую покупку.\n\n"
+        f"👉 Подпишитесь на <b>{title}</b> — сразу откроем меню: оплата, заказы, поддержка.\n"
+        "Прайс и подробный FAQ — в закрепе канала. Дальше: «Подписаться» → "
+        "«✅ Я подписался — открыть меню»."
+    )
+
+
+def channel_hard_wall_html(settings: Settings) -> str:
+    """Текст экрана подписки (жёсткая стена). Режим REQUIRED_CHANNEL_GATE_MARKETING: full | short | title_only."""
+    raw = (settings.required_channel_display_name or "").strip()
+    title = esc(raw) if raw else "Канал магазина"
+    mode = _channel_gate_marketing_mode(settings)
+    if mode == "title_only":
+        return (
+            f"<b>{title}</b>\n\n"
+            "Подпишитесь на канал — так откроется меню бота: Stars, Premium, пополнение, заказы и поддержка. "
+            "После подписки нажмите кнопку ниже: мы проверим доступ и покажем основное меню."
+        )
+    gate_footer = (
+        f"\n\n<b>{title}</b>\n"
+        "Чтобы открыть меню бота (Stars, Premium, пополнение, заказы), подпишитесь на канал. "
+        "После подписки нажмите «Я подписался — открыть меню» — проверим доступ автоматически."
+    )
+    hero = onboarding_screen_1_html(settings)
+    if mode == "short":
+        return channel_gate_short_punch_html(settings)
+    return hero + "\n\n" + why_us_block_html(settings) + gate_footer
 
 
 def channel_hint_html(settings: Settings) -> str:
@@ -32,18 +105,13 @@ def channel_hint_html(settings: Settings) -> str:
 
 
 def onboarding_screen_1_html(settings: Settings) -> str:
-    """Единый источник цифр: маркетинг подтягивает реальные % из настроек."""
-    md = esc(settings.marketing_max_discount_percent)
-    rb = esc(settings.ref_buyer_discount_percent)
-    rc = esc(settings.ref_commission_percent)
-    core = (
-        f"<b>Telegram Stars</b> без KYC — скидка до <b>{md}%</b> на условиях сервиса.\n"
-        f"Быстро купить звёзды прямо в Telegram.\n\n"
-        f"Оплата: <b>СБП</b>, <b>карта</b>, <b>TON</b> / крипта.\n\n"
-        f"Рефералка: друг получает <b>−{rb}%</b> до первого выданного заказа, "
-        f"вам <b>+{rc}%</b> от суммы его первой выданной покупки на баланс в ₽."
+    """Короткий hero-экран для первого касания (2-3 строки)."""
+    _ = settings
+    return (
+        "<b>⭐ Telegram Stars и Premium — быстро и выгодно!</b>\n"
+        "Оформляйте заказ в пару кликов прямо в Telegram.\n"
+        "Надёжно. Удобно. Быстро."
     )
-    return core + "\n\n" + why_us_block_html(settings) + channel_hint_html(settings)
 
 
 def partner_onboarding_html(settings: Settings) -> str:
@@ -57,8 +125,9 @@ def partner_onboarding_html(settings: Settings) -> str:
     return (
         "<b>Партнёрам</b>\n\n"
         "<b>1. Реферальная ссылка</b> (простой старт)\n"
-        "Откройте «Мой профиль» — там персональная ссылка. Делитесь ею: приглашённый получает скидку на первые "
-        "выданные заказы, вам начисляются проценты на реф. баланс после первой выданной покупки друга.\n"
+        "Кнопка «Реф-ссылка» в меню или «Мой профиль» — персональная ссылка. Приглашённый получает скидку "
+        "до первого <b>выданного</b> заказа; вам начисляются проценты на реф. баланс с первой "
+        "<b>выданной</b> покупки друга.\n"
         "Идеально для блогеров и личных рекомендаций.\n\n"
         "<b>2. API для своего бота или сайта</b>\n"
         "Если у вас свой Telegram-бот, сайт или приложение: выпустите ключ в разделе «Наш API», "
@@ -98,8 +167,9 @@ def payment_faq_html(settings: Settings) -> str:
         "<b>СБП и фиат через LAVA</b>\n"
         "Подтверждение обычно приходит быстро; в редких случаях задержка до ~30 минут на стороне банка. "
         "Если после этого статус не обновился — поддержка + квитанция (PDF) и номер заказа.\n"
-        "Ориентиры USDT / UAH / BYN к сумме в ₽ настраиваются в .env (см. <code>USDT_RUB_RATE</code>, "
-        "<code>DISPLAY_USD_UAH_RATE</code>, <code>DISPLAY_USD_BYN_RATE</code> в <code>env.example</code>).\n\n"
+        "Заказ в ожидании оплаты может автоматически получить статус «срок оплаты истёк» по таймеру из настроек "
+        "(см. <code>ORDER_PENDING_PAYMENT_EXPIRE_MINUTES</code>); тогда оформите заказ заново или напишите в поддержку, если уже оплатили.\n"
+        "Ориентир USDT (TRC20) к сумме в ₽ настраивается в .env (см. <code>USDT_RUB_RATE</code> или <code>USD_RUB_RATE</code> в <code>env.example</code>).\n\n"
         "<b>Реферальная модель в этом боте</b>\n"
         f"Проценты не «из маржи», а фиксированные из настроек сервера: скидка приглашённому до первого выданного "
         f"заказа <b>{rb}%</b>, начисление рефереру с первой выданной покупки друга <b>{rc}%</b> от суммы заказа в ₽ "

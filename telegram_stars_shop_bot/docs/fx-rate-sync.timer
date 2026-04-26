@@ -1,0 +1,11 @@
+[Unit]
+Description=Run fx-rate-sync daily
+
+[Timer]
+OnCalendar=*-*-* 09:00:00
+Persistent=true
+Unit=fx-rate-sync.service
+
+[Install]
+WantedBy=timers.target
+

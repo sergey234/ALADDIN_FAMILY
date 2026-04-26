@@ -4,6 +4,8 @@ import sqlite3
 
 import aiosqlite
 
+from bot.config import Settings
+
 
 async def create_order(
     conn: aiosqlite.Connection,
@@ -54,6 +56,12 @@ async def create_order(
 
 
 async def update_status(conn: aiosqlite.Connection, order_id: int, status: str) -> None:
+    row = await get_order(conn, order_id)
+    if row is None:
+        raise ValueError("order_not_found")
+    from bot.services.order_status import require_transition
+
+    require_transition(str(row["status"]), status)
     await update_status_no_commit(conn, order_id, status)
     await conn.commit()
 
@@ -120,6 +128,142 @@ async def count_user_completed_orders(conn: aiosqlite.Connection, user_id: int) 
     return int(row["c"] if row else 0)
 
 
+async def count_user_orders_by_status(conn: aiosqlite.Connection, user_id: int, status: str) -> int:
+    cur = await conn.execute(
+        "SELECT COUNT(*) AS c FROM orders WHERE user_id = ? AND status = ?",
+        (user_id, status),
+    )
+    row = await cur.fetchone()
+    return int(row["c"] if row else 0)
+
+
+async def require_pending_order_cap(conn: aiosqlite.Connection, user_id: int, settings: Settings) -> None:
+    cap = settings.max_pending_payment_orders_per_user
+    if cap <= 0:
+        return
+    n = await count_user_orders_by_status(conn, user_id, "pending_payment")
+    if n >= cap:
+        raise ValueError("order_pending_cap")
+
+
+async def assert_invoice_request_allowed(
+    conn: aiosqlite.Connection,
+    *,
+    order_id: int,
+    cooldown_seconds: int,
+) -> tuple[bool, float]:
+    """
+    Транзакционно проверяет и фиксирует момент запроса счёта для order_id.
+    Ожидаемый сценарий: вызывать перед генерацией LAVA/Crypto счёта.
+    Возвращает (allowed, wait_seconds).
+    """
+    cd = max(0, int(cooldown_seconds))
+    await conn.execute("BEGIN IMMEDIATE")
+    try:
+        row = await get_order(conn, order_id)
+        if row is None:
+            await conn.rollback()
+            return False, 0.0
+        status = str(row["status"] or "").strip().lower()
+        if status != "pending_payment":
+            await conn.rollback()
+            return False, 0.0
+
+        wait_seconds = 0.0
+        if cd > 0 and row["invoice_last_requested_at"]:
+            cur = await conn.execute(
+                """
+                SELECT
+                  MAX(
+                    0,
+                    CAST(
+                      ROUND((julianday(invoice_last_requested_at) + (? / 86400.0) - julianday('now')) * 86400)
+                      AS INTEGER
+                    )
+                  ) AS wait_s
+                FROM orders
+                WHERE id = ?
+                """,
+                (cd, order_id),
+            )
+            got = await cur.fetchone()
+            wait_seconds = float(got["wait_s"] or 0)
+            if wait_seconds > 0:
+                await conn.rollback()
+                return False, wait_seconds
+
+        await conn.execute(
+            """
+            UPDATE orders
+            SET invoice_last_requested_at = datetime('now'),
+                updated_at = datetime('now')
+            WHERE id = ?
+            """,
+            (order_id,),
+        )
+        await conn.commit()
+        return True, 0.0
+    except Exception:
+        await conn.rollback()
+        raise
+
+
+async def set_invoice_provider_metadata(
+    conn: aiosqlite.Connection,
+    *,
+    order_id: int,
+    provider: str,
+    external_id: str | None,
+) -> None:
+    prov = (provider or "").strip().lower()[:32]
+    ext = (external_id or "").strip()[:255] or None
+    if not prov:
+        return
+    await conn.execute(
+        """
+        UPDATE orders
+        SET invoice_last_provider = ?,
+            invoice_last_external_id = ?,
+            updated_at = datetime('now')
+        WHERE id = ?
+        """,
+        (prov, ext, order_id),
+    )
+    await conn.commit()
+
+
+async def expire_stale_pending_payment_orders(
+    conn: aiosqlite.Connection,
+    *,
+    ttl_minutes: int,
+) -> list[tuple[int, int]]:
+    """
+    Переводит pending_payment → expired, если с момента created_at прошло ≥ ttl_minutes.
+    Возвращает (order_id, user_id) для уведомлений пользователю.
+    """
+    if ttl_minutes <= 0:
+        return []
+    mod = f"+{int(ttl_minutes)} minutes"
+    await conn.execute("BEGIN IMMEDIATE")
+    try:
+        cur = await conn.execute(
+            """
+            UPDATE orders
+            SET status = 'expired', updated_at = datetime('now')
+            WHERE status = 'pending_payment'
+              AND datetime(created_at, ?) < datetime('now')
+            RETURNING id, user_id
+            """,
+            (mod,),
+        )
+        rows = await cur.fetchall()
+        await conn.commit()
+    except Exception:
+        await conn.rollback()
+        raise
+    return [(int(r["id"]), int(r["user_id"])) for r in rows]
+
+
 def _balance_applied_from_row(order: aiosqlite.Row) -> float:
     try:
         return float(order["balance_applied_rub"] or 0)
@@ -146,12 +290,23 @@ async def create_paid_order_from_balance(
 
     await conn.execute("BEGIN IMMEDIATE")
     try:
+        await balance_repo.ensure_balance_user_row(conn, user_id)
         bal = await balance_repo.get_balance(conn, user_id)
         if bal + 1e-6 < rub_after:
             await conn.rollback()
             raise ValueError("insufficient_balance")
+        cur = await conn.execute(
+            """
+            UPDATE users
+            SET balance_rub = round(balance_rub - ?, 2)
+            WHERE user_id = ? AND balance_rub + 1e-6 >= ?
+            """,
+            (rub_after, user_id, rub_after),
+        )
+        if cur.rowcount != 1:
+            await conn.rollback()
+            raise ValueError("insufficient_balance")
         new_bal = round(bal - rub_after, 2)
-        await conn.execute("UPDATE users SET balance_rub = ? WHERE user_id = ?", (new_bal, user_id))
         cur = await conn.execute(
             """
             INSERT INTO orders (
@@ -205,6 +360,7 @@ async def create_order_with_balance_partial(
     referrer_id: int | None,
     user_note: str | None,
     balance_apply: float,
+    settings: Settings,
 ) -> int:
     """
     Списывает balance_apply с кошелька, создаёт заказ.
@@ -221,12 +377,25 @@ async def create_order_with_balance_partial(
 
     await conn.execute("BEGIN IMMEDIATE")
     try:
+        if remainder > 0.01:
+            await require_pending_order_cap(conn, user_id, settings)
+        await balance_repo.ensure_balance_user_row(conn, user_id)
         bal = await balance_repo.get_balance(conn, user_id)
         if bal + 1e-6 < balance_apply:
             await conn.rollback()
             raise ValueError("insufficient_balance")
+        ucur = await conn.execute(
+            """
+            UPDATE users
+            SET balance_rub = round(balance_rub - ?, 2)
+            WHERE user_id = ? AND balance_rub + 1e-6 >= ?
+            """,
+            (balance_apply, user_id, balance_apply),
+        )
+        if ucur.rowcount != 1:
+            await conn.rollback()
+            raise ValueError("insufficient_balance")
         new_bal = round(bal - balance_apply, 2)
-        await conn.execute("UPDATE users SET balance_rub = ? WHERE user_id = ?", (new_bal, user_id))
 
         if remainder <= 0.01:
             status = "paid"
@@ -313,6 +482,7 @@ async def create_order_partner_api(
     wholesale_discount_rub: float,
     referrer_id: int | None,
     user_note: str,
+    settings: Settings,
 ) -> tuple[int, bool]:
     """
     Атомарно: идемпотентность + вставка заказа source=api.
@@ -331,6 +501,8 @@ async def create_order_partner_api(
         if row:
             await conn.commit()
             return int(row["id"]), False
+
+        await require_pending_order_cap(conn, owner_user_id, settings)
 
         try:
             cur = await conn.execute(
@@ -411,3 +583,266 @@ async def get_order_api_for_owner(
         (order_id, owner_user_id),
     )
     return await cur.fetchone()
+
+
+async def list_orders_for_auto_fulfill(conn: aiosqlite.Connection, *, limit: int) -> list[aiosqlite.Row]:
+    cur = await conn.execute(
+        """
+        SELECT * FROM orders
+        WHERE status = 'paid'
+          AND LOWER(TRIM(COALESCE(fulfillment_mode, 'auto'))) != 'manual_only'
+          AND (fulfillment_provider_ref IS NULL OR TRIM(COALESCE(fulfillment_provider_ref, '')) = '')
+        ORDER BY id ASC
+        LIMIT ?
+        """,
+        (max(1, int(limit)),),
+    )
+    return await cur.fetchall()
+
+
+async def claim_auto_fulfill_attempt_slot(
+    conn: aiosqlite.Connection,
+    *,
+    order_id: int,
+    max_attempts: int,
+) -> aiosqlite.Row | None:
+    """
+    Атомарно увеличивает fulfillment_attempt_count для заказа в paid+auto без provider_ref,
+    если не исчерпан лимит попыток. Возвращает строку заказа после UPDATE или None.
+    """
+    cap = max(1, int(max_attempts))
+    await conn.execute("BEGIN IMMEDIATE")
+    try:
+        cur = await conn.execute(
+            """
+            UPDATE orders SET
+              fulfillment_attempt_count = COALESCE(fulfillment_attempt_count, 0) + 1,
+              fulfillment_last_attempt_at = datetime('now'),
+              fulfillment_last_error = NULL,
+              updated_at = datetime('now')
+            WHERE id = ?
+              AND status = 'paid'
+              AND LOWER(TRIM(COALESCE(fulfillment_mode, 'auto'))) != 'manual_only'
+              AND (fulfillment_provider_ref IS NULL OR TRIM(COALESCE(fulfillment_provider_ref, '')) = '')
+              AND (fulfillment_attempt_count IS NULL OR fulfillment_attempt_count < ?)
+            RETURNING *
+            """,
+            (order_id, cap),
+        )
+        row = await cur.fetchone()
+        await conn.commit()
+    except Exception:
+        await conn.rollback()
+        raise
+    return row
+
+
+async def set_fulfillment_last_error(
+    conn: aiosqlite.Connection,
+    order_id: int,
+    message: str,
+) -> None:
+    msg = (message or "")[:2000]
+    await conn.execute(
+        """
+        UPDATE orders SET fulfillment_last_error = ?, updated_at = datetime('now')
+        WHERE id = ?
+        """,
+        (msg, order_id),
+    )
+    await conn.commit()
+
+
+async def set_fulfillment_provider_ref(
+    conn: aiosqlite.Connection,
+    order_id: int,
+    provider_ref: str,
+) -> None:
+    ref = (provider_ref or "").strip()[:500]
+    await conn.execute(
+        """
+        UPDATE orders SET
+          fulfillment_provider_ref = ?,
+          fulfillment_last_error = NULL,
+          updated_at = datetime('now')
+        WHERE id = ? AND status = 'processing'
+        """,
+        (ref, order_id),
+    )
+    await conn.commit()
+
+
+async def get_order_by_fulfillment_provider_ref(
+    conn: aiosqlite.Connection,
+    provider_ref: str,
+) -> aiosqlite.Row | None:
+    cur = await conn.execute(
+        "SELECT * FROM orders WHERE fulfillment_provider_ref = ? LIMIT 1",
+        ((provider_ref or "").strip(),),
+    )
+    return await cur.fetchone()
+
+
+async def set_order_fulfillment_mode(
+    conn: aiosqlite.Connection,
+    order_id: int,
+    *,
+    mode: str | None,
+) -> bool:
+    """
+    mode=None или 'auto' → в БД значение `auto` (колонка NOT NULL).
+    mode='manual_only' → только ручная выдача, воркер не берёт заказ.
+    Разрешено для заказов в paid / processing (не completed / expired).
+    """
+    norm = (mode or "").strip().lower()
+    if norm in ("", "auto"):
+        val = "auto"
+    elif norm == "manual_only":
+        val = "manual_only"
+    else:
+        raise ValueError("invalid_fulfillment_mode")
+
+    await conn.execute("BEGIN IMMEDIATE")
+    cur = await conn.execute(
+        """
+        UPDATE orders SET fulfillment_mode = ?, updated_at = datetime('now')
+        WHERE id = ? AND status IN ('paid', 'processing')
+        """,
+        (val, order_id),
+    )
+    n = cur.rowcount or 0
+    await conn.commit()
+    return n == 1
+
+
+async def super_reset_paid_auto_fulfill_fields(conn: aiosqlite.Connection, order_id: int) -> bool:
+    """
+    Супер-админ: сброс полей авто-выдачи для заказа в paid (повтор в очереди воркера).
+    Не трогает processing с ref — там риск дубля у провайдера.
+    """
+    await conn.execute("BEGIN IMMEDIATE")
+    cur = await conn.execute(
+        """
+        UPDATE orders SET
+          fulfillment_attempt_count = 0,
+          fulfillment_last_error = NULL,
+          fulfillment_last_attempt_at = NULL,
+          fulfillment_provider_ref = NULL,
+          fulfillment_mode = 'auto',
+          updated_at = datetime('now')
+        WHERE id = ? AND status = 'paid'
+        """,
+        (order_id,),
+    )
+    ok = (cur.rowcount or 0) == 1
+    await conn.commit()
+    return ok
+
+
+async def revert_processing_to_paid_after_auto_fulfill_failure(
+    conn: aiosqlite.Connection,
+    order_id: int,
+) -> bool:
+    """
+    Только если заказ в processing без fulfillment_provider_ref (create у провайдера не прошёл).
+    Возвращает True если откат выполнен.
+    """
+    from bot.services.order_status import require_transition
+
+    await conn.execute("BEGIN IMMEDIATE")
+    try:
+        row = await get_order(conn, order_id)
+        if row is None or str(row["status"] or "").strip().lower() != "processing":
+            await conn.rollback()
+            return False
+        ref = str(row["fulfillment_provider_ref"] or "").strip()
+        if ref:
+            await conn.rollback()
+            return False
+        require_transition("processing", "paid")
+        await update_status_no_commit(conn, order_id, "paid")
+        await conn.commit()
+    except Exception:
+        await conn.rollback()
+        raise
+    return True
+
+
+async def list_order_ids_stuck_paid_or_processing(
+    conn: aiosqlite.Connection,
+    *,
+    hours_without_update: int,
+    limit: int = 200,
+) -> list[int]:
+    """
+    Заказы в paid или processing, у которых updated_at старше N часов (алерт «нет движения»).
+    """
+    if hours_without_update <= 0:
+        return []
+    mod = f"-{int(hours_without_update)} hours"
+    cur = await conn.execute(
+        """
+        SELECT id FROM orders
+        WHERE status IN ('paid', 'processing')
+          AND datetime(updated_at) < datetime('now', ?)
+        ORDER BY id ASC
+        LIMIT ?
+        """,
+        (mod, int(limit)),
+    )
+    rows = await cur.fetchall()
+    return [int(r["id"]) for r in rows]
+
+
+async def list_order_ids_stuck_processing_only(
+    conn: aiosqlite.Connection,
+    *,
+    minutes_without_update: int,
+    limit: int = 200,
+) -> list[int]:
+    """Заказы в processing без обновления дольше N минут (отдельный ops-алерт)."""
+    if minutes_without_update <= 0:
+        return []
+    mod = f"-{int(minutes_without_update)} minutes"
+    cur = await conn.execute(
+        """
+        SELECT id FROM orders
+        WHERE status = 'processing'
+          AND datetime(updated_at) < datetime('now', ?)
+        ORDER BY id ASC
+        LIMIT ?
+        """,
+        (mod, int(limit)),
+    )
+    rows = await cur.fetchall()
+    return [int(r["id"]) for r in rows]
+
+
+async def list_orders_operator_attention_queue(
+    conn: aiosqlite.Connection,
+    *,
+    processing_idle_minutes: int,
+    limit: int = 25,
+) -> list[aiosqlite.Row]:
+    """
+    Очередь для оператора: paid с непустой fulfillment_last_error или processing «без движения»
+    дольше processing_idle_minutes.
+    """
+    idle = max(1, int(processing_idle_minutes))
+    mod = f"-{idle} minutes"
+    cur = await conn.execute(
+        """
+        SELECT id, status, product_title, fulfillment_last_error, updated_at, user_note
+        FROM orders
+        WHERE (
+            (status = 'paid' AND fulfillment_last_error IS NOT NULL
+             AND length(trim(fulfillment_last_error)) > 0)
+            OR (status = 'processing' AND datetime(updated_at) < datetime('now', ?))
+        )
+        ORDER BY id ASC
+        LIMIT ?
+        """,
+        (mod, int(limit)),
+    )
+    rows = await cur.fetchall()
+    return list(rows)

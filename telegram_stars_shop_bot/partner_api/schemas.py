@@ -60,10 +60,14 @@ class UserProfileOut(BaseModel):
     balance_rub: float
     ref_balance_rub: float
     scopes: List[str]
+    referral_invited_count: int = 0
+    referral_buyers_completed_count: int = 0
+    referral_commission_earned_rub: float = 0.0
 
 
 class TopupCreateBody(BaseModel):
-    amount_rub: float = Field(..., ge=100, le=500_000)
+    # Точные min/max задаются в Settings / .env; здесь только защита от мусора.
+    amount_rub: float = Field(..., gt=0, lt=50_000_000)
 
 
 class TopupCreateResponse(BaseModel):

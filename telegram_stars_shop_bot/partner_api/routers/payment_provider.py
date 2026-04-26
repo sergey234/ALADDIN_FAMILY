@@ -44,7 +44,7 @@ async def payment_provider_webhook(
     settings: Annotated[Settings, Depends(_settings_dep)],
 ) -> dict[str, Any]:
     """
-    Автоплатежи v1: провайдер (YooKassa / свой оркестратор) вызывает после успешной оплаты.
+    Автоплатежи v1: свой оркестратор (не LAVA) вызывает после успешной оплаты по договорённости.
     Подпись: hex HMAC-SHA256(PAYMENT_WEBHOOK_SECRET, raw_body) в заголовке X-Payment-Signature (опционально префикс sha256=).
     """
     secret = (settings.payment_webhook_secret or "").strip()

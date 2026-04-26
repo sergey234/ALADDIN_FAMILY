@@ -41,7 +41,7 @@ async def mark_order_paid_idempotent(
     if order is None:
         return MarkOrderPaidResult("not_found", order_id, None, None)
     st = str(order["status"])
-    if st in ("paid", "completed"):
+    if st in ("paid", "completed", "refunded"):
         return MarkOrderPaidResult("already_terminal", order_id, st, st)
     if st != "pending_payment":
         return MarkOrderPaidResult("conflict", order_id, st, None)
@@ -58,5 +58,8 @@ async def mark_order_paid_idempotent(
         return MarkOrderPaidResult("duplicate", oid, None, None)
 
     prev = st
+    from bot.services.order_status import require_transition
+
+    require_transition(prev, "paid")
     await orders_repo.update_status_no_commit(conn, order_id, "paid")
     return MarkOrderPaidResult("ok", order_id, prev, "paid")

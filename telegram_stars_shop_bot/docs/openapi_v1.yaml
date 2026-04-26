@@ -299,6 +299,15 @@ components:
         scopes:
           type: array
           items: { type: string }
+        referral_invited_count:
+          type: integer
+          description: Пользователи с referrer_id = владелец ключа
+        referral_buyers_completed_count:
+          type: integer
+          description: Уникальные приглашённые с хотя бы одним completed-заказом
+        referral_commission_earned_rub:
+          type: number
+          description: Сумма commission_rub по заказам с commission_paid=1
 
     OrderCreateRequest:
       type: object

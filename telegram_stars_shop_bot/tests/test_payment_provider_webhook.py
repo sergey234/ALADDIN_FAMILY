@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 from fastapi.testclient import TestClient
 
+from bot.config import Settings
 from bot.db.database import connect
 from bot.services import api_clients_repo, orders_repo, users_repo
 from partner_api.main import create_app
@@ -49,6 +50,7 @@ def payment_client(tmp_path, monkeypatch):
             wholesale_discount_rub=0.0,
             referrer_id=None,
             user_note="@buyer",
+            settings=Settings(),
         )
         await conn.close()
         return oid
@@ -108,6 +110,7 @@ def test_payment_webhook_409_for_processing_state(payment_client) -> None:
 
     async def set_processing() -> None:
         conn = await connect(Path(db_path))
+        await orders_repo.update_status(conn, order_id, "paid")
         await orders_repo.update_status(conn, order_id, "processing")
         await conn.close()
 

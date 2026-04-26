@@ -15,8 +15,7 @@ def fx_payment_hints_html(settings: Settings, *, rub_final: float, usd_base: flo
     """
     Подсказки к сумме к оплате:
     - ₽ — основной расчёт в боте (уже в rub_final).
-    - USDT — по курсу USDT_RUB_RATE (или USD_RUB_RATE), считается как точный пересчёт из ₽.
-    - UAH / BYN — ориентир через «сколько UAH/BYN за 1 USD» и курс ₽/USD (без гарантии рыночного курса).
+    - USDT (TRC20) — ориентир из .env (см. effective_usdt_rub_rate); сумма в реальном счёте задаётся провайдером.
     """
     lines: list[str] = []
     rub = float(rub_final)
@@ -28,28 +27,27 @@ def fx_payment_hints_html(settings: Settings, *, rub_final: float, usd_base: flo
     usdt_r = effective_usdt_rub_rate(settings)
     if usdt_r > 0:
         usdt_amt = round(rub / usdt_r, 4)
+        src = (
+            "<code>USDT_RUB_RATE</code>"
+            if float(settings.usdt_rub_rate) > 0
+            else "<code>USD_RUB_RATE</code> (USDT_RUB_RATE=0)"
+        )
         lines.append(
-            f"<b>USDT</b> (пересчёт из ₽ по курсу из .env): <b>{esc(f'{usdt_amt}')}</b> USDT "
+            f"<b>USDT (TRC20)</b> — ориентир из .env ({src}): <b>{esc(f'{usdt_amt}')}</b> USDT "
             f"(<code>{esc(f'{usdt_r}')}</code> ₽ за 1 USDT)."
-        )
-
-    if settings.display_usd_uah_rate > 0:
-        uah = round(rub * (settings.display_usd_uah_rate / rub_rate), 2)
-        lines.append(
-            f"<i>Ориентир UAH (через USD, приблизительно): ≈ {esc(f'{uah}')} UAH к сумме {esc(f'{rub:.2f}')} ₽.</i>"
-        )
-    if settings.display_usd_byn_rate > 0:
-        byn = round(rub * (settings.display_usd_byn_rate / rub_rate), 2)
-        lines.append(
-            f"<i>Ориентир BYN (через USD, приблизительно): ≈ {esc(f'{byn}')} BYN к сумме {esc(f'{rub:.2f}')} ₽.</i>"
         )
 
     if not lines:
         return ""
     header = (
-        "<i>Дополнительно к ₽: USDT — по вашему курсу в .env; UAH/BYN — только ориентир для пользователя.</i>"
+        "<i><b>Цена в ₽</b> — по курсу магазина (<code>USD_RUB_RATE</code>), это основа заказа. "
+        "Ниже — ориентир в USDT из .env; <b>фактическую сумму USDT</b> в счёте Crypto Pay / xRocket "
+        "провайдер фиксирует при создании счёта и она может чуть отличаться.</i>"
     )
     out = [header]
     if usd_nom > 0:
-        out.insert(0, f"<i>Номинал в прайсе (USD): ~{esc(f'{usd_nom:.2f}')} USD.</i>")
+        out.insert(
+            0,
+            f"<i>Номинал позиции в каталоге (USD, не пересчитывается курсом): ~{esc(f'{usd_nom:.2f}')} USD.</i>",
+        )
     return "\n\n" + "\n".join(out + lines)

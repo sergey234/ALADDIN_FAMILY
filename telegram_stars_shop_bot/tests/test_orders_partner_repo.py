@@ -5,6 +5,7 @@ import uuid
 
 import pytest
 
+from bot.config import Settings
 from bot.services import api_clients_repo, orders_repo, users_repo
 
 
@@ -20,6 +21,7 @@ async def test_create_order_partner_api_idempotent(conn) -> None:
     assert row is not None
     cid = int(row["id"])
     idem = str(uuid.uuid4())
+    settings = Settings()
     oid1, created1 = await orders_repo.create_order_partner_api(
         conn,
         owner_user_id=7001,
@@ -36,6 +38,7 @@ async def test_create_order_partner_api_idempotent(conn) -> None:
         wholesale_discount_rub=0.0,
         referrer_id=None,
         user_note="@dest",
+        settings=settings,
     )
     assert created1 is True
     oid2, created2 = await orders_repo.create_order_partner_api(
@@ -54,6 +57,7 @@ async def test_create_order_partner_api_idempotent(conn) -> None:
         wholesale_discount_rub=0.0,
         referrer_id=None,
         user_note="@dest",
+        settings=settings,
     )
     assert created2 is False
     assert oid1 == oid2
@@ -84,6 +88,7 @@ async def test_amount_due_external(conn) -> None:
         wholesale_discount_rub=0.0,
         referrer_id=None,
         user_note="@x",
+        settings=Settings(),
     )
     order = await orders_repo.get_order(conn, oid)
     assert orders_repo.amount_due_external(order) == 100.0

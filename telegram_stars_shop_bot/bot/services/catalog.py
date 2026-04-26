@@ -18,6 +18,8 @@ class Product:
     stars: int | None = None
     featured: bool = False
     sort_order: int = 0
+    # Скрыть из инлайн-витрины бота (Partner API / YAML id по-прежнему доступны).
+    hide_from_menu: bool = False
 
 
 def load_products(path: Path) -> list[Product]:
@@ -35,6 +37,7 @@ def load_products(path: Path) -> list[Product]:
                 stars=row.get("stars"),
                 featured=bool(row.get("featured", False)),
                 sort_order=int(row.get("sort_order", 0)),
+                hide_from_menu=bool(row.get("hide_from_menu", False)),
             )
         )
     return items
@@ -45,5 +48,21 @@ def products_by_id(products: list[Product]) -> dict[str, Product]:
 
 
 def sort_for_display(items: list[Product]) -> list[Product]:
-    """Сначала featured, затем sort_order, затем id."""
-    return sorted(items, key=lambda p: (not p.featured, p.sort_order, p.id))
+    """
+    Сортировка для витрины без «прыжков»:
+    - stars/gift со stars: по количеству звёзд (возрастание),
+    - premium: по длительности (возрастание),
+    - затем цена и стабильный fallback.
+    """
+
+    def _key(p: Product) -> tuple[int, int, float, int, str]:
+        kind = (p.kind or "").strip().lower()
+        if kind in ("stars", "gift") and p.stars is not None:
+            qty = int(p.stars)
+            return (0, qty, float(p.price_usd), int(p.sort_order), p.id)
+        if kind == "premium" and p.duration_months is not None:
+            months = int(p.duration_months)
+            return (1, months, float(p.price_usd), int(p.sort_order), p.id)
+        return (2, 0, float(p.price_usd), int(p.sort_order), p.id)
+
+    return sorted(items, key=_key)

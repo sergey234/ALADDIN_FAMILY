@@ -13,6 +13,7 @@ CREATE TABLE IF NOT EXISTS users (
     first_order_completed INTEGER NOT NULL DEFAULT 0,
     ref_balance_rub REAL NOT NULL DEFAULT 0,
     balance_rub REAL NOT NULL DEFAULT 0,
+    channel_member_ack_shown INTEGER NOT NULL DEFAULT 0,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
 );
 
@@ -31,6 +32,15 @@ CREATE TABLE IF NOT EXISTS orders (
     referrer_id INTEGER,
     commission_rub REAL NOT NULL DEFAULT 0,
     commission_paid INTEGER NOT NULL DEFAULT 0,
+    fulfillment_applied_at TEXT,
+    fulfillment_mode TEXT NOT NULL DEFAULT 'auto',
+    fulfillment_attempt_count INTEGER NOT NULL DEFAULT 0,
+    fulfillment_last_error TEXT,
+    fulfillment_last_attempt_at TEXT,
+    fulfillment_provider_ref TEXT,
+    invoice_last_requested_at TEXT,
+    invoice_last_provider TEXT,
+    invoice_last_external_id TEXT,
     user_note TEXT,
     admin_note TEXT,
     balance_applied_rub REAL NOT NULL DEFAULT 0,
@@ -45,6 +55,15 @@ CREATE TABLE IF NOT EXISTS orders (
 
 CREATE INDEX IF NOT EXISTS idx_orders_user ON orders(user_id);
 CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
+
+CREATE TABLE IF NOT EXISTS admin_audit_log (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    admin_user_id INTEGER NOT NULL,
+    action TEXT NOT NULL,
+    payload_json TEXT
+);
+CREATE INDEX IF NOT EXISTS idx_admin_audit_created ON admin_audit_log(created_at);
 
 CREATE TABLE IF NOT EXISTS api_clients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -116,22 +135,62 @@ ON outbound_webhook_events(status, next_attempt_at);
 """
 
 
-async def _ensure_column(conn: aiosqlite.Connection, table: str, column: str, ddl: str) -> None:
+async def _ensure_column(conn: aiosqlite.Connection, table: str, column: str, ddl: str) -> bool:
     cur = await conn.execute(f"PRAGMA table_info({table})")
     rows = await cur.fetchall()
     names = {r[1] for r in rows}
     if column not in names:
         await conn.execute(f"ALTER TABLE {table} ADD COLUMN {ddl}")
+        return True
+    return False
 
 
 async def migrate_legacy(conn: aiosqlite.Connection) -> None:
     """Добавляет колонки/таблицы к старым БД без balance_rub и т.д."""
     await _ensure_column(conn, "users", "balance_rub", "balance_rub REAL NOT NULL DEFAULT 0")
+    ack_col_added = await _ensure_column(
+        conn,
+        "users",
+        "channel_member_ack_shown",
+        "channel_member_ack_shown INTEGER NOT NULL DEFAULT 0",
+    )
+    if ack_col_added:
+        # Старым пользователям не показываем повторно служебный экран «доступ уже есть».
+        await conn.execute("UPDATE users SET channel_member_ack_shown = 1")
     await _ensure_column(conn, "orders", "balance_applied_rub", "balance_applied_rub REAL NOT NULL DEFAULT 0")
     await _ensure_column(conn, "orders", "source", "source TEXT NOT NULL DEFAULT 'telegram'")
     await _ensure_column(conn, "orders", "api_client_id", "api_client_id INTEGER")
     await _ensure_column(conn, "orders", "idempotency_key", "idempotency_key TEXT")
     await _ensure_column(conn, "orders", "external_ref", "external_ref TEXT")
+    await _ensure_column(conn, "orders", "fulfillment_applied_at", "fulfillment_applied_at TEXT")
+    await _ensure_column(
+        conn, "orders", "fulfillment_mode", "fulfillment_mode TEXT NOT NULL DEFAULT 'auto'"
+    )
+    await _ensure_column(
+        conn,
+        "orders",
+        "fulfillment_attempt_count",
+        "fulfillment_attempt_count INTEGER NOT NULL DEFAULT 0",
+    )
+    await _ensure_column(conn, "orders", "fulfillment_last_error", "fulfillment_last_error TEXT")
+    await _ensure_column(
+        conn, "orders", "fulfillment_last_attempt_at", "fulfillment_last_attempt_at TEXT"
+    )
+    await _ensure_column(
+        conn, "orders", "fulfillment_provider_ref", "fulfillment_provider_ref TEXT"
+    )
+    await _ensure_column(conn, "orders", "invoice_last_requested_at", "invoice_last_requested_at TEXT")
+    await _ensure_column(conn, "orders", "invoice_last_provider", "invoice_last_provider TEXT")
+    await _ensure_column(conn, "orders", "invoice_last_external_id", "invoice_last_external_id TEXT")
+    await conn.execute(
+        """
+        UPDATE orders
+        SET fulfillment_applied_at = COALESCE(updated_at, datetime('now'))
+        WHERE status = 'completed'
+          AND fulfillment_applied_at IS NULL
+          AND commission_paid = 1
+        """
+    )
     await conn.executescript(
         """
         CREATE TABLE IF NOT EXISTS ledger (
@@ -204,6 +263,14 @@ async def migrate_legacy(conn: aiosqlite.Connection) -> None:
         );
         CREATE INDEX IF NOT EXISTS idx_outbound_webhooks_pending
         ON outbound_webhook_events(status, next_attempt_at);
+        CREATE TABLE IF NOT EXISTS admin_audit_log (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            admin_user_id INTEGER NOT NULL,
+            action TEXT NOT NULL,
+            payload_json TEXT
+        );
+        CREATE INDEX IF NOT EXISTS idx_admin_audit_created ON admin_audit_log(created_at);
         """
     )
     await _ensure_column(conn, "api_clients", "webhook_url", "webhook_url TEXT")

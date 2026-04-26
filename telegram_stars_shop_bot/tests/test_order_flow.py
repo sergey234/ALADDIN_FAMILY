@@ -8,6 +8,28 @@ from bot.services.order_flow import apply_completed_side_effects
 
 
 @pytest.mark.asyncio
+async def test_update_status_rejects_completed_to_completed(conn) -> None:
+    oid = await orders_repo.create_order(
+        conn,
+        user_id=8009,
+        product_id="s",
+        product_title="S",
+        payment_method="fiat",
+        usd_base=1.0,
+        rub_before=10.0,
+        rub_after=10.0,
+        referral_discount_rub=0.0,
+        wholesale_discount_rub=0.0,
+        referrer_id=None,
+        commission_rub=0.0,
+        user_note="@x",
+        status="completed",
+    )
+    with pytest.raises(ValueError, match="invalid_order_transition"):
+        await orders_repo.update_status(conn, oid, "completed")
+
+
+@pytest.mark.asyncio
 async def test_referrer_commission_on_first_completed(conn, monkeypatch) -> None:
     monkeypatch.setenv("BOT_TOKEN", "9:orderflow-test")
     monkeypatch.setenv("ADMIN_IDS", "1")
@@ -39,3 +61,7 @@ async def test_referrer_commission_on_first_completed(conn, monkeypatch) -> None
 
     ref = await users_repo.get_user(conn, 8002)
     assert float(ref["ref_balance_rub"] or 0) == pytest.approx(15.0, rel=1e-3)
+
+    await apply_completed_side_effects(conn, oid, settings)
+    ref2 = await users_repo.get_user(conn, 8002)
+    assert float(ref2["ref_balance_rub"] or 0) == pytest.approx(15.0, rel=1e-3)

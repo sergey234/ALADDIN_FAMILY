@@ -38,6 +38,11 @@ def test_partner_profile_and_order(partner_client) -> None:
     client, key = partner_client
     r = client.get("/v1/user/profile", headers={"X-API-KEY": key})
     assert r.status_code == 200
+    prof = r.json()
+    assert prof["owner_user_id"] == 424242
+    assert prof.get("referral_invited_count") == 0
+    assert prof.get("referral_buyers_completed_count") == 0
+    assert prof.get("referral_commission_earned_rub") == 0.0
     idem = str(uuid.uuid4())
     r2 = client.post(
         "/v1/orders/create",

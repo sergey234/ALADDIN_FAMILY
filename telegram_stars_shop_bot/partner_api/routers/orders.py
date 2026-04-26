@@ -80,23 +80,35 @@ async def create_order(
     recipient = normalize_recipient(body.recipient)
     title = f"{p.emoji} {p.title}"
 
-    oid, created = await orders_repo.create_order_partner_api(
-        conn,
-        owner_user_id=owner,
-        api_client_id=api_client_id,
-        idempotency_key=idem,
-        external_ref=body.external_ref,
-        product_id=p.id,
-        product_title=title,
-        payment_method=body.payment_method,
-        usd_base=q.usd,
-        rub_before=q.rub_list,
-        rub_after=q.rub_final,
-        referral_discount_rub=q.rub_referral_discount,
-        wholesale_discount_rub=q.rub_wholesale_discount,
-        referrer_id=referrer_id,
-        user_note=recipient,
-    )
+    try:
+        oid, created = await orders_repo.create_order_partner_api(
+            conn,
+            owner_user_id=owner,
+            api_client_id=api_client_id,
+            idempotency_key=idem,
+            external_ref=body.external_ref,
+            product_id=p.id,
+            product_title=title,
+            payment_method=body.payment_method,
+            usd_base=q.usd,
+            rub_before=q.rub_list,
+            rub_after=q.rub_final,
+            referral_discount_rub=q.rub_referral_discount,
+            wholesale_discount_rub=q.rub_wholesale_discount,
+            referrer_id=referrer_id,
+            user_note=recipient,
+            settings=settings,
+        )
+    except ValueError as e:
+        if str(e) == "order_pending_cap":
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                detail={
+                    "code": "order_pending_cap",
+                    "message": "Too many orders awaiting payment for this user",
+                },
+            ) from e
+        raise
 
     row = await orders_repo.get_order(conn, oid)
     if not row:

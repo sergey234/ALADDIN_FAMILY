@@ -4,6 +4,7 @@ from dataclasses import dataclass
 
 from bot.config import Settings
 from bot.services.catalog import Product, products_by_id
+from bot.util_html import esc
 
 
 @dataclass(frozen=True)
@@ -44,6 +45,7 @@ def quote_product(
 
 
 def commission_for_first_order(rub_paid: float, settings: Settings) -> float:
+    """Комиссия рефереру за первый выданный (completed) заказ приглашённого; % от суммы заказа в ₽."""
     return round(rub_paid * (settings.ref_commission_percent / 100.0), 2)
 
 
@@ -60,3 +62,34 @@ def rub_per_100_stars_display(products: list[Product], settings: Settings, *, is
         return None
     q = quote_product(p, settings, is_first_order=is_first_order)
     return q.rub_final
+
+
+def format_rub_usd_html(rub: float, usd: float, *, rub_decimals: int = 2, usd_decimals: int = 2) -> str:
+    """Суммы по заказам из БД: ₽ + номинал USD из заказа (снимок каталога на момент оформления)."""
+    return f"{esc(f'{rub:.{rub_decimals}f}')} ₽ (~{esc(f'{usd:.{usd_decimals}f}')} USD)"
+
+
+def format_shop_quote_money_html(
+    settings: Settings,
+    rub: float,
+    catalog_usd: float,
+    *,
+    rub_decimals: int = 2,
+    usd_decimals: int = 2,
+) -> str:
+    """
+    Живая витрина / чекаут: ₽ согласованы с курсом магазина; USD — эквивалент rub/USD_RUB_RATE
+    и отдельно номинал из каталога (products.yaml), чтобы не путать со скидками.
+    """
+    rate = float(settings.usd_rub_rate)
+    if rate <= 0:
+        return format_rub_usd_html(rub, catalog_usd, rub_decimals=rub_decimals, usd_decimals=usd_decimals)
+    shop_usd = rub / rate
+    ru = esc(f"{rub:.{rub_decimals}f}")
+    su = esc(f"{shop_usd:.{usd_decimals}f}")
+    r = esc(f"{rate:.2f}")
+    cat = esc(f"{catalog_usd:.{usd_decimals}f}")
+    return (
+        f"{ru} ₽ (~{su} USD по курсу магазина <code>{r}</code> ₽/USD; "
+        f"номинал в каталоге ~{cat} USD)"
+    )

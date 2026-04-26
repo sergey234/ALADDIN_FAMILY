@@ -10,11 +10,17 @@ from bot.config import load_settings
 from bot.services.catalog import load_products
 from bot.sentry_util import init_sentry_fastapi
 from partner_api.routers import orders as orders_r
+from partner_api.routers import crypto_pay_webhook as crypto_pay_r
+from partner_api.routers import istar_webhook as istar_r
+from partner_api.routers import ckassa_webhook as ckassa_r
 from partner_api.routers import lava_webhook as lava_r
 from partner_api.routers import payment_provider as payment_r
+from partner_api.routers import xrocket_webhook as xrocket_r
 from partner_api.routers import profile as profile_r
 from partner_api.routers import topups as topups_r
 from partner_api.routers import webhooks_partner as webhooks_r
+from partner_api.rate_limit_middleware import PartnerRateLimitMiddleware
+from partner_api.rate_limit_store import build_rate_limit_store
 
 logger = logging.getLogger(__name__)
 
@@ -33,6 +39,11 @@ async def lifespan(app: FastAPI):
         traces_sample_rate=settings.sentry_traces_sample_rate,
     )
     logger.info("Partner API started: %d products loaded", len(app.state.products))
+    st = app.state.settings
+    if bool(getattr(st, "ckassa_enabled", False)) and bool(getattr(st, "ckassa_test_mode", False)):
+        logger.warning(
+            "CKASSA_TEST_MODE=true: демо-шлюз Ckassa, не для боя. Прод: CKASSA_TEST_MODE=false и боевые ключи."
+        )
     yield
 
 
@@ -58,12 +69,18 @@ def create_app() -> FastAPI:
             allow_headers=["*"],
         )
 
+    app.add_middleware(PartnerRateLimitMiddleware, store=build_rate_limit_store(settings))
+
     v1 = "/v1"
     app.include_router(profile_r.router, prefix=v1)
     app.include_router(orders_r.router, prefix=v1)
     app.include_router(topups_r.router, prefix=v1)
     app.include_router(payment_r.router, prefix=v1)
     app.include_router(lava_r.router, prefix=v1)
+    app.include_router(ckassa_r.router, prefix=v1)
+    app.include_router(crypto_pay_r.router, prefix=v1)
+    app.include_router(xrocket_r.router, prefix=v1)
+    app.include_router(istar_r.router, prefix=v1)
     app.include_router(webhooks_r.router, prefix=v1)
 
     @app.get("/health")

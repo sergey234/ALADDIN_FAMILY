@@ -25,9 +25,14 @@ def test_products_yaml_loads_and_has_stars_and_premium() -> None:
     assert (by_id["stars_100"].stars or 0) == 100
     premium = [p for p in items if p.kind == "premium"]
     assert premium, "expected at least one premium product"
+    assert by_id["premium_1"].hide_from_menu is True
+    menu_premium = [p for p in items if p.kind == "premium" and not p.hide_from_menu]
+    menu_ids = {p.id for p in menu_premium}
+    assert "premium_1" not in menu_ids
+    assert {"premium_3", "premium_6", "premium_12"} <= menu_ids
 
 
-def test_sort_for_display_orders_featured_first() -> None:
+def test_sort_for_display_orders_stars_by_quantity() -> None:
     a = catalog.Product(
         id="a", kind="stars", title="A", emoji="⭐", price_usd=1.0, stars=10, featured=False, sort_order=5
     )
@@ -35,7 +40,7 @@ def test_sort_for_display_orders_featured_first() -> None:
         id="b", kind="stars", title="B", emoji="⭐", price_usd=2.0, stars=20, featured=True, sort_order=9
     )
     out = catalog.sort_for_display([a, b])
-    assert out[0].id == "b"
+    assert [x.id for x in out] == ["a", "b"]
 
 
 def test_quote_first_order_discount_and_wholesale(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -74,7 +79,7 @@ def test_commission_for_first_order(monkeypatch: pytest.MonkeyPatch) -> None:
 
 
 def test_rub_per_100_stars_display() -> None:
-    s = Settings(BOT_TOKEN="9:x", ADMIN_IDS="1", API_KEY_PEPPER="k" * 32, USD_RUB_RATE=97.5)
+    s = Settings(BOT_TOKEN="9:x", ADMIN_IDS="1", API_KEY_PEPPER="k" * 32, USD_RUB_RATE=75.237)
     pmap = catalog.products_by_id(catalog.load_products(PRODUCTS_YAML))
     products = list(pmap.values())
     v = rub_per_100_stars_display(products, s, is_first_order=False)
@@ -100,19 +105,18 @@ def test_effective_usdt_rub_rate_fallback() -> None:
     assert effective_usdt_rub_rate(s2) == 88.0
 
 
-def test_fx_payment_hints_contains_usdt_and_optional_uah() -> None:
+def test_fx_payment_hints_contains_usdt_rub_only() -> None:
     s = Settings(
         BOT_TOKEN="9:x",
         ADMIN_IDS="1",
         API_KEY_PEPPER="k" * 32,
         USD_RUB_RATE=100.0,
         USDT_RUB_RATE=100.0,
-        DISPLAY_USD_UAH_RATE=42.0,
-        DISPLAY_USD_BYN_RATE=0.0,
     )
     html = fx_payment_hints_html(s, rub_final=1000.0, usd_base=10.0)
     assert "USDT" in html
-    assert "UAH" in html
+    assert "TRC20" in html
+    assert "UAH" not in html and "BYN" not in html
 
 
 def test_channel_gate_flags() -> None:
@@ -139,8 +143,70 @@ def test_marketing_onboarding_contains_config_percents(monkeypatch: pytest.Monke
     monkeypatch.setenv("REF_REFERRER_COMMISSION_FIRST_ORDER_PERCENT", "14")
     s = load_settings()
     html = marketing.onboarding_screen_1_html(s)
-    assert "40" in html and "8" in html and "14" in html
+    assert "Telegram Stars и Premium" in html
+    assert "быстро и выгодно" in html
+    assert "пару кликов" in html
+    assert "Надёжно. Удобно. Быстро." in html
     assert "Почему мы" in marketing.why_us_block_html(s)
+
+
+def test_channel_hard_wall_html_display_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BOT_TOKEN", "9:m")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "m" * 32)
+    monkeypatch.setenv("REQUIRED_CHANNEL_ID", "@shop")
+    monkeypatch.setenv("REQUIRED_CHANNEL_DISPLAY_NAME", "Monkey Stars | Premium")
+    monkeypatch.setenv("REQUIRED_CHANNEL_GATE_MARKETING", "full")
+    s = load_settings()
+    html = marketing.channel_hard_wall_html(s)
+    assert "Monkey Stars" in html and "Premium" in html
+    assert "меню бота" in html
+    assert "Почему мы" in html
+    assert "Telegram Stars и Premium" in html
+
+
+def test_channel_start_member_ack_contains_display_name(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BOT_TOKEN", "9:m")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "m" * 32)
+    monkeypatch.setenv("REQUIRED_CHANNEL_ID", "@shop")
+    monkeypatch.setenv("REQUIRED_CHANNEL_DISPLAY_NAME", "Monkey Test")
+    s = load_settings()
+    h = marketing.channel_start_member_ack_html(s)
+    assert "Monkey Test" in h
+    assert "закрепе" in h
+
+
+
+
+@pytest.mark.asyncio
+async def test_channel_member_ack_seen_flag_roundtrip(conn) -> None:
+    from bot.services import users_repo
+
+    uid = 777001
+    await users_repo.upsert_user(conn, user_id=uid, username="u", first_name="n")
+    assert await users_repo.has_seen_channel_member_ack(conn, uid) is False
+    await users_repo.mark_channel_member_ack_seen(conn, uid)
+    assert await users_repo.has_seen_channel_member_ack(conn, uid) is True
+
+def test_channel_hard_wall_gate_marketing_modes(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BOT_TOKEN", "9:m")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "m" * 32)
+    monkeypatch.setenv("REQUIRED_CHANNEL_ID", "@shop")
+    monkeypatch.setenv("REQUIRED_CHANNEL_DISPLAY_NAME", "X")
+    monkeypatch.setenv("REQUIRED_CHANNEL_GATE_MARKETING", "short")
+    s = load_settings()
+    h = marketing.channel_hard_wall_html(s)
+    assert "Почему мы" not in h
+    assert "MonkeyStars" in h
+    assert "закрепе канала" in h
+    assert "7" in h or "47" in h  # проценты из дефолтных настроек теста
+    monkeypatch.setenv("REQUIRED_CHANNEL_GATE_MARKETING", "title_only")
+    s2 = load_settings()
+    h2 = marketing.channel_hard_wall_html(s2)
+    assert "Почему мы" not in h2
+    assert "Stars, Premium" in h2
 
 
 def test_channel_hint_empty_without_channel(monkeypatch: pytest.MonkeyPatch) -> None:

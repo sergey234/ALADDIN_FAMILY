@@ -17,12 +17,14 @@ def fiat_placeholder_html(settings: Settings, *, order_id: int, rub: float) -> F
     _ = settings
     body = (
         f"Заказ <code>{esc(order_id)}</code> на сумму <b>{esc(f'{rub:.2f}')} ₽</b>.\n\n"
-        "Подключите YooKassa / Lava / Robokassa и подставьте сюда ссылку на оплату.\n"
-        "После оплаты ваш оркестратор может вызвать Partner API "
-        "<code>POST /v1/payments/provider-webhook</code> (см. <code>RUNBOOK</code> раздел 9); "
-        "пока админ может отметить заказ вручную."
+        "Для автоматической оплаты настройте <b>LAVA Business</b> в .env "
+        "(<code>LAVA_SHOP_ID</code>, <code>LAVA_SECRET_KEY</code>, <code>LAVA_HOOK_URL</code> на Partner API) — "
+        "тогда здесь появится кнопка на страницу оплаты LAVA (СБП, карты и др. по тарифам проекта).\n\n"
+        "Альтернатива без LAVA: ваш бэкенд после факта оплаты вызывает "
+        "<code>POST /v1/payments/provider-webhook</code> (см. документацию Partner API); "
+        "пока можно отметить заказ вручную в админке бота."
     )
-    return FiatInstruction(title="Оплата СБП / картой", body_html=body)
+    return FiatInstruction(title="Оплата ₽ (LAVA или вручную)", body_html=body)
 
 
 def crypto_payment_block_html(
@@ -37,7 +39,7 @@ def crypto_payment_block_html(
     fx = fx_payment_hints_html(settings, rub_final=rub, usd_base=usd_fx) if usd_fx > 0 else ""
     parts: list[str] = [
         f"<b>Криптооплата</b> — заказ <code>{esc(order_id)}</code>",
-        f"Сумма к оплате: <b>{esc(f'{rub:.2f}')} ₽</b> (основной расчёт; USDT/TON переведите на указанные реквизиты).",
+        f"Сумма к оплате: <b>{esc(f'{rub:.2f}')} ₽</b> (основной расчёт в ₽; в крипте принимаем <b>USDT в сети TRC20</b>).",
         "",
         "<b>Важно:</b> в комментарии / memo к переводу укажите:",
         f"<code>{esc(memo)}</code>",
@@ -45,13 +47,14 @@ def crypto_payment_block_html(
         "",
     ]
     if settings.crypto_usdt_trc20:
-        parts.append(f"USDT TRC20:\n<code>{esc(settings.crypto_usdt_trc20)}</code>\n")
+        parts.append(f"USDT (TRC20):\n<code>{esc(settings.crypto_usdt_trc20)}</code>\n")
     else:
-        parts.append("USDT TRC20: <i>не задан в .env</i>\n")
-    if settings.crypto_ton:
-        parts.append(f"TON:\n<code>{esc(settings.crypto_ton)}</code>\n")
-    else:
-        parts.append("TON: <i>не задан в .env</i>\n")
-    parts.append("После отправки средств статус обновит администратор после сверки.")
+        parts.append("USDT (TRC20): <i>не задан в .env</i>\n")
+    if settings.crypto_show_ton_manual and settings.crypto_ton:
+        parts.append(f"TON (только если согласовано с поддержкой):\n<code>{esc(settings.crypto_ton)}</code>\n")
+    parts.append(
+        "Это <b>ручной</b> перевод (без счёта Crypto Pay / xRocket): вебхук не приходит — "
+        "оператор сверит платёж по memo и отметит оплату. При необходимости напишите в поддержку с номером заказа."
+    )
     body = "\n".join(parts)
     return body + fx

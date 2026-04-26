@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import asyncio
 import hashlib
 import hmac
 import json
@@ -69,12 +70,28 @@ async def create_invoice_payment_url(
     sum_rub: float,
     comment: str | None = None,
 ) -> str | None:
+    url, _ = await create_invoice_payment_meta(
+        settings,
+        order_id=order_id,
+        sum_rub=sum_rub,
+        comment=comment,
+    )
+    return url
+
+
+async def create_invoice_payment_meta(
+    settings: Settings,
+    *,
+    order_id: int,
+    sum_rub: float,
+    comment: str | None = None,
+) -> tuple[str | None, str | None]:
     """
     Создаёт счёт в LAVA Business и возвращает URL оплаты (СБП / карты и др. по тарифам проекта).
     https://api.lava.ru/business/invoice/create
     """
     if not lava_checkout_configured(settings):
-        return None
+        return None, None
     shop = (settings.lava_shop_id or "").strip()
     secret = (settings.lava_secret_key or "").strip()
     hook = (settings.lava_hook_url or "").strip()
@@ -100,26 +117,50 @@ async def create_invoice_payment_url(
         "Signature": signature,
     }
     url = f"{base}invoice/create"
-    try:
-        async with httpx.AsyncClient(timeout=20.0) as client:
-            r = await client.post(url, content=json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8"), headers=headers)
-    except Exception:
-        _log.exception("lava_invoice_create_http_error order_id=%s", order_id)
-        return None
-    if r.status_code != 200:
+    body_bytes = json.dumps(payload, separators=(",", ":"), ensure_ascii=False).encode("utf-8")
+    for attempt in range(3):
+        try:
+            async with httpx.AsyncClient(timeout=20.0) as client:
+                r = await client.post(url, content=body_bytes, headers=headers)
+        except Exception:
+            _log.exception("lava_invoice_create_http_error order_id=%s attempt=%s", order_id, attempt)
+            if attempt == 2:
+                return None, None
+            await asyncio.sleep(0.4 * (attempt + 1))
+            continue
+        if r.status_code == 200:
+            try:
+                data = r.json()
+            except Exception:
+                _log.warning("lava_invoice_create_invalid_json order_id=%s", order_id)
+                return None, None
+            inner = data.get("data") if isinstance(data, dict) else None
+            if not isinstance(inner, dict):
+                _log.warning("lava_invoice_create_no_data order_id=%s raw=%s", order_id, str(data)[:300])
+                return None, None
+            pay_url = inner.get("url")
+            if not pay_url or not isinstance(pay_url, str):
+                _log.warning("lava_invoice_create_no_url order_id=%s", order_id)
+                return None, None
+            ext = (
+                inner.get("id")
+                or inner.get("invoice_id")
+                or inner.get("invoiceId")
+                or data.get("id")
+                if isinstance(data, dict)
+                else None
+            )
+            ext_s = str(ext).strip() if ext is not None else None
+            return pay_url, (ext_s or None)
+        if r.status_code in (429, 502, 503, 504) or r.status_code >= 500:
+            _log.warning(
+                "lava_invoice_create_retryable status=%s order_id=%s attempt=%s",
+                r.status_code,
+                order_id,
+                attempt,
+            )
+            if attempt < 2:
+                await asyncio.sleep(0.5 * (attempt + 1))
+                continue
         _log.warning("lava_invoice_create_bad_status %s body=%s", r.status_code, r.text[:500])
-        return None
-    try:
-        data = r.json()
-    except Exception:
-        _log.warning("lava_invoice_create_invalid_json order_id=%s", order_id)
-        return None
-    inner = data.get("data") if isinstance(data, dict) else None
-    if not isinstance(inner, dict):
-        _log.warning("lava_invoice_create_no_data order_id=%s raw=%s", order_id, str(data)[:300])
-        return None
-    pay_url = inner.get("url")
-    if not pay_url or not isinstance(pay_url, str):
-        _log.warning("lava_invoice_create_no_url order_id=%s", order_id)
-        return None
-    return pay_url
+        return None, None
