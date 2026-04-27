@@ -997,8 +997,11 @@ class APIService: ObservableObject {
     }
     
     func getGamificationBalanceHistory(userId: String, limit: Int = 50, offset: Int = 0, completion: @escaping (Result<BalanceHistoryResponse, Error>) -> Void) {
-        let endpoint = AppConfig.Endpoint.gamificationBalanceHistory + "?userId=\(userId)&limit=\(limit)&offset=\(offset)"
-        networkManager.get(endpoint: endpoint, completion: completion)
+        var path = "\(AppConfig.Endpoint.gamificationBalanceHistory)?userId=\(userId)&limit=\(limit)"
+        if offset > 0 {
+            path += "&offset=\(offset)"
+        }
+        networkManager.get(endpoint: path, completion: completion)
     }
     
     // Награды (6 методов)

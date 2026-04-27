@@ -1,0 +1,248 @@
+# Independent Plan-Fact Audit (Static)
+
+Generated: 2026-04-25T14:17:16Z
+
+Method: parse dashboard checklist and verify referenced artifacts/symbols in codebase (not trusting checklist text alone).
+
+- Total checklist tasks: 178
+
+- Marked done: 174
+
+- Marked open: 4
+
+
+## Per-item audit
+
+- [DONE] (no-explicit-ref) L110: Зафиксировать MVP вертикальный срез (1 возрастная группа + минимальный контент pipeline + родительский дашборд v1).
+- [DONE] (evidence-missing) L111: Ввести критерии отсечения фич (`Must/Should/Could/Won't`) для каждой фазы.
+  - `Must/Should/Could/Won't`: NOT FOUND
+- [DONE] (no-explicit-ref) L112: Переформулировать "190 единиц" как roadmap v2+ с поэтапным наращиванием.
+- [DONE] (no-explicit-ref) L113: Зафиксировать локализацию как обязательный Definition of Done для каждой UI-задачи (RU + EN в одном PR).
+- [DONE] (no-explicit-ref) L116: Подготовить checklist для Kids Category и App Review (parential gate, age appropriateness, link-out restrictions).
+- [DONE] (no-explicit-ref) L117: Зафиксировать возрастной рейтинг и соответствие метаданным App Store.
+- [DONE] (no-explicit-ref) L118: Описать отдельный review-пакет доказательств (privacy, parental control, moderation guardrails).
+- [DONE] (evidence-ok) L119: Добавить ссылку на стандарты локализации: `docs/LOCALIZATION_IMPLEMENTATION_STANDARD.md`, `docs/LOCALIZATION_PR_CHECKLIST.md`, `docs/LOCALIZATION_KEY_NAMESPACE_MAP.md`.
+  - `docs/LOCALIZATION_IMPLEMENTATION_STANDARD.md`: found
+  - `docs/LOCALIZATION_PR_CHECKLIST.md`: found
+  - `docs/LOCALIZATION_KEY_NAMESPACE_MAP.md`: found
+- [DONE] (no-explicit-ref) L122: Ввести data minimization matrix: какие данные реально нужны в детских сценариях.
+- [DONE] (evidence-ok) L123: Добавить версионирование согласия (`consent_version`, `consent_date`, `consent_source`) и server-side audit trail.
+  - `consent_version`: found
+  - `consent_date`: found
+  - `consent_source`: found
+- [DONE] (no-explicit-ref) L124: Спроектировать DSAR: экспорт данных ребенка и удаление данных по заявке родителя.
+- [DONE] (no-explicit-ref) L125: Ввести retention policy и регулярные purge-задачи.
+- [DONE] (no-explicit-ref) L126: Локализовать все privacy и consent потоки сразу в RU/EN, включая ошибки и пустые состояния.
+- [DONE] (no-explicit-ref) L129: Разделить в архитектуре app-level family profiles и системный device-level parental control.
+- [DONE] (no-explicit-ref) L130: Family Sharing использовать для покупок/семейного окружения и связанных системных сценариев.
+- [DONE] (no-explicit-ref) L131: Family Controls + Managed Settings + Device Activity вести отдельной веткой с entitlement/extension readiness.
+- [DONE] (evidence-ok) L136: Создать `ContentManager` класс для централизованного управления
+  - `ContentManager`: found
+- [DONE] (evidence-ok) L137: Реализовать `ContentDatabase` с CoreData для локального хранения
+  - `ContentDatabase`: found
+- [DONE] (evidence-ok) L138: Добавить `ContentSyncManager` для облачной синхронизации
+  - `ContentSyncManager`: found
+- [DONE] (evidence-ok) L139: Создать `ContentVersionManager` для версионирования контента
+  - `ContentVersionManager`: found
+- [DONE] (evidence-ok) L140: Реализовать `ContentCacheManager` для оптимизации производительности
+  - `ContentCacheManager`: found
+- [DONE] (evidence-ok) L143: Создать `ContentItem` модель с типами (game, lesson, video, etc.)
+  - `ContentItem`: found
+- [DONE] (evidence-ok) L144: Реализовать `ContentCategory` для группировки по темам
+  - `ContentCategory`: found
+- [DONE] (evidence-ok) L145: Добавить `ContentProgress` для трекинга прогресса
+  - `ContentProgress`: found
+- [DONE] (evidence-ok) L146: Создать `ContentMetadata` для описаний и требований
+  - `ContentMetadata`: found
+- [DONE] (no-explicit-ref) L149: Добавить API эндпоинты для загрузки контента
+- [DONE] (evidence-ok) L150: Реализовать `ContentDownloader` для фоновой загрузки
+  - `ContentDownloader`: found
+- [DONE] (evidence-ok) L151: Создать `ContentValidator` для проверки целостности
+  - `ContentValidator`: found
+- [DONE] (no-explicit-ref) L152: Добавить обработку оффлайн режима
+- [DONE] (evidence-ok) L153: Ввести подписанный `content-manifest` (хеш + цифровая подпись) с проверкой перед применением.
+  - `content-manifest`: found
+- [DONE] (no-explicit-ref) L154: Добавить delta-update стратегию (manifest version + patch + rollback на last-known-good).
+- [DONE] (no-explicit-ref) L155: Зафиксировать лимиты кеша и политику очистки (TTL/LRU + disk budget).
+- [DONE] (no-explicit-ref) L160: **Игрушки (15 элементов):** Интерактивные 3D игрушки, звуковые эффекты
+- [DONE] (no-explicit-ref) L161: **Рисование (10 элементов):** Canvas с инструментами, сохранение работ
+- [DONE] (no-explicit-ref) L162: **Песенки (15 элементов):** Караоке с текстом, детские мелодии
+- [DONE] (no-explicit-ref) L163: **Сказки (10 элементов):** Интерактивные истории с озвучкой
+- [DONE] (no-explicit-ref) L166: **Игры (20 элементов):** Образовательные игры (математика, русский)
+- [DONE] (no-explicit-ref) L167: **Учёба (30 элементов):** Уроки по предметам с тестами
+- [DONE] (no-explicit-ref) L168: **Безопасность (15 элементов):** Интерактивные уроки онлайн-безопасности
+- [DONE] (no-explicit-ref) L169: **Мультфильмы (15 элементов):** Короткие образовательные видео
+- [DONE] (no-explicit-ref) L172: **Программирование (15 элементов):** Основы Swift, визуальное программирование
+- [DONE] (no-explicit-ref) L173: **Социальные сети (15 элементов):** Образовательные материалы о соцсетях
+- [DONE] (no-explicit-ref) L174: **Музыка (15 элементов):** Плейлисты, музыкальные тесты
+- [DONE] (no-explicit-ref) L175: **Образование (15 элементов):** Тематические уроки (финансы, карьера)
+- [DONE] (evidence-ok) L180: Создать `ProgressTracker` для мониторинга активности
+  - `ProgressTracker`: found
+- [DONE] (evidence-ok) L181: Реализовать `AchievementSystem` с наградами
+  - `AchievementSystem`: found
+- [DONE] (evidence-ok) L182: Добавить `StreakTracker` для ежедневных привычек
+  - `StreakTracker`: found
+- [DONE] (evidence-ok) L183: Создать `TimeTracker` для ограничения времени использования
+  - `TimeTracker`: found
+- [DONE] (evidence-ok) L186: Реализовать `ContentRecommender` на основе предпочтений
+  - `ContentRecommender`: found
+- [DONE] (evidence-ok) L187: Добавить `DifficultyAdapter` для адаптации сложности
+  - `DifficultyAdapter`: found
+- [DONE] (evidence-ok) L188: Создать `LearningPathGenerator` для индивидуальных траекторий
+  - `LearningPathGenerator`: found
+- [DONE] (evidence-ok) L189: Добавить `InterestAnalyzer` на основе поведения
+  - `InterestAnalyzer`: found
+- [DONE] (evidence-ok) L192: Создать `ParentDashboardView` с обзором активности
+  - `ParentDashboardView`: found
+- [DONE] (evidence-ok) L193: Реализовать `ActivityReports` с графиками и статистикой
+  - `ActivityReports`: found
+- [DONE] (evidence-ok) L194: Добавить `TimeLimitsManager` для настройки ограничений
+  - `TimeLimitsManager`: found
+- [DONE] (evidence-ok) L195: Создать `ContentFilters` для родительского контроля
+  - `ContentFilters`: found
+- [DONE] (evidence-ok) L200: Создать `AudioManager` singleton класс
+  - `AudioManager`: found
+- [DONE] (no-explicit-ref) L201: Реализовать загрузку и кеширование аудио файлов
+- [DONE] (no-explicit-ref) L202: Добавить управление громкостью (master + effects + music)
+- [DONE] (evidence-ok) L203: Создать `AudioPlayer` для фоновой музыки
+  - `AudioPlayer`: found
+- [DONE] (no-explicit-ref) L206: Добавить 20+ звуковых эффектов (click, success, error, etc.)
+- [DONE] (evidence-ok) L207: Реализовать `SoundEffectPlayer` для мгновенного воспроизведения
+  - `SoundEffectPlayer`: found
+- [DONE] (no-explicit-ref) L208: Добавить голосовые подсказки для навигации
+- [DONE] (no-explicit-ref) L209: Создать систему приоритетов для звуков
+- [DONE] (evidence-ok) L212: Создать `AudioSettingsView` для пользовательских настроек
+  - `AudioSettingsView`: found
+- [DONE] (no-explicit-ref) L213: Реализовать сохранение предпочтений в UserDefaults
+- [DONE] (no-explicit-ref) L214: Добавить возможность полного отключения звука
+- [DONE] (no-explicit-ref) L215: Создать preview для тестирования настроек
+- [DONE] (evidence-ok) L220: Создать `AnimatedButton` компонент с pulse эффектами
+  - `AnimatedButton`: found
+- [DONE] (no-explicit-ref) L221: Реализовать success/error анимации
+- [DONE] (no-explicit-ref) L222: Добавить loading состояния с индикаторами
+- [DONE] (no-explicit-ref) L223: Создать разные стили для разных типов контента
+- [DONE] (no-explicit-ref) L226: Реализовать плавные переходы между экранами
+- [DONE] (no-explicit-ref) L227: Добавить slide/fade/scale анимации
+- [DONE] (evidence-ok) L228: Создать `TransitionManager` для управления
+  - `TransitionManager`: found
+- [DONE] (no-explicit-ref) L229: Оптимизировать производительность анимаций
+- [DONE] (no-explicit-ref) L232: Создать базовых персонажей с простыми анимациями
+- [DONE] (no-explicit-ref) L233: Реализовать idle/active состояния
+- [DONE] (no-explicit-ref) L234: Добавить реакцию на действия пользователя
+- [DONE] (no-explicit-ref) L235: Создать систему эмоций персонажей
+- [DONE] (evidence-ok) L240: Реализовать `ParticleSystem` для конфетти
+  - `ParticleSystem`: found
+- [DONE] (no-explicit-ref) L241: Добавить звездочки для правильных ответов
+- [DONE] (no-explicit-ref) L242: Создать магические частицы для достижений
+- [DONE] (no-explicit-ref) L243: Оптимизировать производительность частиц
+- [DONE] (no-explicit-ref) L246: Создать визуальную обратную связь для действий
+- [DONE] (no-explicit-ref) L247: Реализовать цветовые индикаторы прогресса
+- [DONE] (no-explicit-ref) L248: Добавить микро-анимации для интерактивности
+- [DONE] (no-explicit-ref) L249: Создать систему наградных анимаций
+- [DONE] (evidence-ok) L254: Создать `ChildProfile` модель с полной информацией
+  - `ChildProfile`: found
+- [DONE] (evidence-ok) L255: Реализовать `ProfileManager` для управления профилями
+  - `ProfileManager`: found
+- [DONE] (no-explicit-ref) L256: Добавить валидацию данных профиля
+- [DONE] (no-explicit-ref) L257: Создать систему резервного копирования
+- [DONE] (evidence-ok) L260: Реализовать app-level `ChildProfile` и семейный roster как источник данных для UI.
+  - `ChildProfile`: found
+- [DONE] (no-explicit-ref) L261: Разграничить Family Sharing (подписки/покупки/Ask to Buy) и профили детей внутри приложения.
+- [DONE] (no-explicit-ref) L262: Добавить родительский gate для критичных действий (биометрия взрослого + таймаут сессии).
+- [DONE] (no-explicit-ref) L263: Добавить управление разрешениями
+- [DONE] (no-explicit-ref) L264: Создать синхронизацию между устройствами
+- [DONE] (no-explicit-ref) L267: Подготовить entitlement readiness для Family Controls (app + extensions + provisioning).
+- [DONE] (evidence-ok) L268: Реализовать end-to-end pipeline `AuthorizationCenter` -> `ManagedSettings` -> `DeviceActivity`.
+  - `AuthorizationCenter`: found
+  - `ManagedSettings`: found
+  - `DeviceActivity`: found
+- [DONE] (no-explicit-ref) L269: Добавить fallback UX, если entitlement/authorization недоступны.
+- [DONE] (no-explicit-ref) L272: Реализовать анализ предпочтений ребенка
+- [DONE] (no-explicit-ref) L273: Создать алгоритм персональных рекомендаций
+- [DONE] (no-explicit-ref) L274: Добавить адаптацию сложности контента
+- [DONE] (no-explicit-ref) L275: Интегрировать с системой прогресса
+- [DONE] (evidence-ok) L278: Создать `ParentalDashboard` с полной статистикой
+  - `ParentalDashboard`: found
+- [DONE] (no-explicit-ref) L279: Реализовать настройки ограничений времени
+- [DONE] (no-explicit-ref) L280: Добавить фильтры контента по категориям
+- [DONE] (no-explicit-ref) L281: Создать систему отчетов и уведомлений
+- [DONE] (no-explicit-ref) L282: Ввести модель угроз для parental PIN (не хранить PIN в открытом виде, только secure storage + rate limiting).
+- [DONE] (no-explicit-ref) L283: Добавить обязательный challenge для чувствительных операций (биометрия взрослого или secure fallback).
+- [DONE] (no-explicit-ref) L284: Реализовать экспорт/удаление данных ребенка (право на забвение по применимым юрисдикциям).
+- [DONE] (no-explicit-ref) L289: Тестирование всего контента на корректность
+- [DONE] (no-explicit-ref) L290: Проверка работы оффлайн режима
+- [DONE] (no-explicit-ref) L291: Тестирование синхронизации данных
+- [DONE] (no-explicit-ref) L292: Валидация работы на разных устройствах
+- [DONE] (no-explicit-ref) L295: Тестирование с реальными детьми разных возрастов
+- [DONE] (no-explicit-ref) L296: Проверка доступности (VoiceOver, крупный шрифт)
+- [DONE] (no-explicit-ref) L297: Проверка Reduce Motion, contrast и читабельности интерфейса для детских сценариев
+- [DONE] (no-explicit-ref) L298: Тестирование производительности анимаций
+- [DONE] (no-explicit-ref) L299: Валидация работы на разных размерах экранов
+- [DONE] (no-explicit-ref) L302: Оптимизация загрузки и кеширования контента
+- [DONE] (no-explicit-ref) L303: Уменьшение размера приложения
+- [DONE] (no-explicit-ref) L304: Оптимизация анимаций и звуков
+- [DONE] (no-explicit-ref) L305: Тестирование на старых устройствах
+- [DONE] (no-explicit-ref) L308: Проверка соответствия COPPA
+- [DONE] (no-explicit-ref) L309: Аудит хранения персональных данных
+- [DONE] (no-explicit-ref) L310: Тестирование Family Sharing безопасности
+- [DONE] (no-explicit-ref) L311: Валидация родительского контроля
+- [DONE] (no-explicit-ref) L312: Проверка DSAR процессов (экспорт/удаление данных) и журналирования согласий
+- [DONE] (evidence-ok) L317: Провести аудит `ElderlyInterfaceScreen` на реальные данные против заглушек.
+  - `ElderlyInterfaceScreen`: found
+- [DONE] (no-explicit-ref) L318: Убрать placeholder-данные контактов и завершить модель семейных номеров.
+- [DONE] (no-explicit-ref) L319: Упростить критические сценарии 60+ (экстренный звонок, лекарства, безопасность) до одного-двух действий.
+- [DONE] (no-explicit-ref) L320: Добавить крупный режим чтения и контрастные пресеты для возрастного интерфейса.
+- [DONE] (no-explicit-ref) L323: Синхронизировать данные семьи, лекарств и событий между устройствами без потерь.
+- [DONE] (no-explicit-ref) L324: Добавить устойчивое хранение health-сущностей с валидацией и восстановлением после сбоев.
+- [DONE] (no-explicit-ref) L325: Ввести проверку целостности для экстренных контактов и fallback-процедуру.
+- [DONE] (no-explicit-ref) L326: Добавить отчёт о рассинхронизации данных для родителя.
+- [DONE] (evidence-ok) L329: Унифицировать `family roster` как единый источник ролей child parent elderly.
+  - `family roster`: found
+- [DONE] (no-explicit-ref) L330: Синхронизировать правила доступа: кто может редактировать контакты, лимиты, критичные настройки.
+- [DONE] (no-explicit-ref) L331: Добавить общий слой семейных разрешений, используемый в детском и 60+ интерфейсах.
+- [DONE] (no-explicit-ref) L332: Добавить интеграционные тесты на сценарии child->parent->elderly в одном семейном контуре.
+- [DONE] (no-explicit-ref) L335: Связать детские категории контента и семейные настройки безопасности с 60+ контролями.
+- [DONE] (no-explicit-ref) L336: Добавить зеркальный родительский обзор: что видит ребёнок и что доступно для 60+ участника.
+- [DONE] (no-explicit-ref) L337: Устранить расхождения в названиях и логике категорий между экранами.
+- [DONE] (no-explicit-ref) L338: Зафиксировать единый жизненный цикл контента для детей и зрелого интерфейса.
+- [DONE] (no-explicit-ref) L341: Локализовать все 60+ сценарии в RU/EN без hardcoded строк.
+- [DONE] (no-explicit-ref) L342: Локализовать accessibility метки и подсказки для 60+ модалок и карточек.
+- [DONE] (evidence-ok) L343: Добавить проверку `localization-lint` для 60+ экранов как обязательный merge gate.
+  - `localization-lint`: found
+- [DONE] (no-explicit-ref) L344: Добавить UX smoke тесты 60+ в RU и EN на крупном шрифте и повышенном контрасте.
+- [DONE] (no-explicit-ref) L349: Для каждой фазы: unit + integration + UI smoke + accessibility smoke как exit criteria.
+- [DONE] (no-explicit-ref) L350: Для каждой фазы: TestFlight beta ring (internal -> limited external) с чеклистом отката.
+- [DONE] (no-explicit-ref) L351: Для каждой фазы: privacy/compliance check перед merge в release ветку.
+- [DONE] (no-explicit-ref) L352: Для каждой фазы: release notes + known limitations + risk log update.
+- [DONE] (evidence-ok) L353: Для каждой фазы: `localization-lint` как блокирующий CI gate (hardcoded строки, parity RU/EN, дубли ключей).
+  - `localization-lint`: found
+- [DONE] (no-explicit-ref) L354: Для каждой фазы: использование ключей строго по namespace-map без семантических дублей.
+- [DONE] (no-explicit-ref) L355: Для фаз 2, 7 и 9: обязательный cross-audience regression (детский интерфейс + 60+ интерфейс + семейная синхронизация).
+- [DONE] (no-explicit-ref) L358: Каждая UI-задача из фаз 0-8 закрывается только вместе с RU и EN локализацией в том же PR.
+- [DONE] (no-explicit-ref) L359: Каждая UI-задача включает локализацию happy-path, error-state, empty-state и accessibility текстов.
+- [DONE] (evidence-ok) L360: Каждая UI-задача проверяется по `localization-lint` и PR checklist до merge.
+  - `localization-lint`: found
+- [DONE] (evidence-ok) L363: Добавлены ключи в `ru.lproj` и `en.lproj` без дублей и с корректным namespace.
+  - `ru.lproj`: found
+  - `en.lproj`: found
+- [DONE] (evidence-ok) L364: Проверен placeholder parity (`%@`, `%d`, порядок аргументов).
+  - `%@`: found
+  - `%d`: found
+- [DONE] (no-explicit-ref) L365: Нет hardcoded пользовательских строк в изменённых экранах.
+- [DONE] (no-explicit-ref) L366: Есть скриншоты RU и EN для изменённого UI.
+- [OPEN] (evidence-ok) L369: Wave 1 Baseline cleanup: закрыть текущий долг линтера (parity + hardcoded) по `docs/LOCALIZATION_BASELINE_BACKLOG.md`.
+  - `docs/LOCALIZATION_BASELINE_BACKLOG.md`: found
+- [DONE] (no-explicit-ref) L370: Wave 2 Feature mode: после baseline все новые PR проходят lint без исключений.
+- [DONE] (no-explicit-ref) L371: На weekly checkpoint публиковать 3 метрики: открытые parity gaps, hardcoded violations, pass-rate localization gate.
+- [OPEN] (no-explicit-ref) L374: Размер приложения: < 500MB
+- [DONE] (no-explicit-ref) L375: Время запуска: < 3 секунды
+- [DONE] (no-explicit-ref) L376: Потребление батареи: < 15% в час
+- [DONE] (no-explicit-ref) L377: Память: < 200MB в фоне
+- [DONE] (no-explicit-ref) L378: Вовлеченность: > 20 минут сессии
+- [DONE] (no-explicit-ref) L379: Retention: целевые значения по возрастным сегментам, пересмотр после beta когорт
+- [DONE] (no-explicit-ref) L380: Завершение уроков: > 80%
+- [DONE] (no-explicit-ref) L381: Родительское одобрение: > 4.5 звезд
+- [OPEN] (no-explicit-ref) L382: COPPA compliance: 100%
+- [DONE] (no-explicit-ref) L383: Шифрование данных: AES-256
+- [OPEN] (no-explicit-ref) L384: Родительский контроль: обязательный
+- [DONE] (no-explicit-ref) L385: Аудит логов: ежемесячно

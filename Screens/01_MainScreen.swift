@@ -151,6 +151,7 @@ struct MainScreen: View {
                             }
                         }
                     }
+                    .accessibilityIdentifier("main_nav_profile")
                     .accessibilityLabel("Открыть профиль")
                     .accessibilityHint("Нажмите для перехода в профиль пользователя")
                 }
@@ -487,6 +488,7 @@ struct MainScreen: View {
                                 )
                             }
                             .buttonStyle(PlainButtonStyle())
+                            .accessibilityIdentifier("main_nav_network_protection")
                             .accessibilityLabel("Антивирус Аладин - \(antivirusEnabled ? "Активен" : "Отключен")")
                             .accessibilityHint("Нажмите для открытия экрана защиты")
                             
@@ -521,6 +523,7 @@ struct MainScreen: View {
                                 )
                             }
                             .buttonStyle(PlainButtonStyle())
+                            .accessibilityIdentifier("main_nav_tariffs")
                             .accessibilityLabel("Тарифы - Выбор плана")
                             .accessibilityHint("Нажмите для открытия экрана тарифов")
                             
@@ -629,7 +632,7 @@ struct MainScreen: View {
                                         // ✅ ОТЛАДКА: Выводим информацию если ID не найден
                                         #if DEBUG
                                         Spacer()
-                                        Text("(ID не найден)")
+                                        Text(localizationManager.localized("main_member_id_not_found_debug"))
                                             .font(.system(size: 8))
                                             .foregroundColor(.red.opacity(0.5))
                                         #endif
@@ -713,6 +716,7 @@ struct MainScreen: View {
                                                 .fill(Color.black)
                                         )
                                 }
+                                .accessibilityIdentifier("main_nav_family_manage")
                                 
                                 Button(action: {
                                     // Та же семья: помечаем admin-add, чтобы createFamily() вызвал addFamilyMember, а не family/create
@@ -795,6 +799,7 @@ struct MainScreen: View {
                                     )
                             )
                         }
+                        .accessibilityIdentifier("main_nav_ai_assistant")
                         .padding(.horizontal, 20)
                         
                     }
@@ -1001,6 +1006,6 @@ struct MainScreen_Previews: PreviewProvider {
 
 struct Previews_01_MainScreen_LibraryContent: LibraryContentProvider {
     var views: [LibraryItem] {
-        LibraryItem(/*@START_MENU_TOKEN@*/Text("Hello, World!")/*@END_MENU_TOKEN@*/)
+        LibraryItem(/*@START_MENU_TOKEN@*/Text("•")/*@END_MENU_TOKEN@*/)
     }
 }

@@ -4,6 +4,7 @@ import SwiftUI
 /// Экран просмотра диагностических логов прямо на устройстве (TestFlight/Release).
 struct CrashLogsView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
 
     @State private var text: String = "Загрузка логов..."
     @State private var showShare = false
@@ -39,7 +40,7 @@ struct CrashLogsView: View {
                 }
                 .padding(.bottom, 12)
             }
-            .navigationTitle("Crash Logs")
+            .navigationTitle(localizationManager.localized("crash_logs_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {

@@ -8,6 +8,8 @@ struct GamesParentalControlScreen: View {
     // MARK: - State
     
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @State private var parentAuthMessage: String?
     
     // Сохраняем настройки игр в AppStorage
     @AppStorage("games_wheel_enabled") private var isWheelEnabled: Bool = true
@@ -32,8 +34,8 @@ struct GamesParentalControlScreen: View {
             VStack(spacing: 0) {
                 // Навигационная панель
                 ALADDINNavigationBar(
-                    title: "УПРАВЛЕНИЕ ИГРАМИ",
-                    subtitle: "Родительский контроль",
+                    title: localizationManager.localized("games_parental_nav_title"),
+                    subtitle: localizationManager.localized("games_parental_nav_subtitle"),
                     showBackButton: true,
                     showProfileButton: false,
                     showListButton: false,
@@ -77,6 +79,19 @@ struct GamesParentalControlScreen: View {
             }
         }
         .navigationBarHidden(true)
+        .alert(
+            localizationManager.localized("games_parental_auth_alert_title"),
+            isPresented: Binding(
+                get: { parentAuthMessage != nil },
+                set: { if !$0 { parentAuthMessage = nil } }
+            )
+        ) {
+            Button(localizationManager.localized("common_ok"), role: .cancel) {
+                parentAuthMessage = nil
+            }
+        } message: {
+            Text(parentAuthMessage ?? "")
+        }
     }
     
     // MARK: - Info Card
@@ -87,11 +102,11 @@ struct GamesParentalControlScreen: View {
                 .font(.system(size: 20))
             
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("Родительский контроль игр")
+                Text(localizationManager.localized("games_parental_info_title"))
                     .font(.body)
                     .fontWeight(.semibold)
                     .foregroundColor(.textPrimary)
-                Text("Здесь вы можете включать/отключать игровые элементы. Единорог-питомец всегда активен - это основная мотивация! 🦄")
+                Text(localizationManager.localized("games_parental_info_description"))
                     .font(.captionSmall)
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -114,7 +129,7 @@ struct GamesParentalControlScreen: View {
                 HStack(spacing: Spacing.xs) {
                     Text("🎰")
                         .font(.system(size: 22))
-                    Text("Колесо удачи")
+                    Text(localizationManager.localized("games_parental_wheel_title"))
                         .font(.body)
                         .fontWeight(.semibold)
                         .foregroundColor(.textPrimary)
@@ -122,12 +137,19 @@ struct GamesParentalControlScreen: View {
                 
                 Spacer()
                 
-                Toggle("", isOn: $isWheelEnabled)
+                Toggle("", isOn: Binding(
+                    get: { isWheelEnabled },
+                    set: { newValue in
+                        requestParentSessionForSettingChange {
+                            isWheelEnabled = newValue
+                        }
+                    }
+                ))
                     .labelsHidden()
             }
             
             // Описание
-            Text("Ребёнок крутит колесо и получает случайный приз от 5 до 500 🦄. Призы: 1️⃣ 5🦄 • 2️⃣ 10🦄 • 3️⃣ 20🦄 • 4️⃣ 50🦄 • 5️⃣ 100🦄 • 6️⃣ 500🦄 ДЖЕКПОТ!")
+            Text(localizationManager.localized("games_parental_wheel_description"))
                 .font(.captionSmall)
                 .foregroundColor(.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -135,7 +157,7 @@ struct GamesParentalControlScreen: View {
             if isWheelEnabled {
                 // Частота вращений
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("Частота вращений в день:")
+                    Text(localizationManager.localized("games_parental_wheel_frequency_title"))
                         .font(.caption)
                         .foregroundColor(.textPrimary)
                     
@@ -143,7 +165,7 @@ struct GamesParentalControlScreen: View {
                         .accentColor(.successGreen)
                     
                     HStack {
-                        Text("1 раз")
+                        Text(localizationManager.localized("games_parental_wheel_frequency_min"))
                             .font(.captionSmall)
                             .foregroundColor(.textSecondary)
                         Spacer()
@@ -152,7 +174,7 @@ struct GamesParentalControlScreen: View {
                             .fontWeight(.semibold)
                             .foregroundColor(.successGreen)
                         Spacer()
-                        Text("7 раз")
+                        Text(localizationManager.localized("games_parental_wheel_frequency_max"))
                             .font(.captionSmall)
                             .foregroundColor(.textSecondary)
                     }
@@ -160,7 +182,7 @@ struct GamesParentalControlScreen: View {
                 
                 // Настройка призов
                 VStack(alignment: .leading, spacing: Spacing.s) {
-                    Text("⚙️ Настройка призов на барабане:")
+                    Text(localizationManager.localized("games_parental_wheel_prizes_title"))
                         .font(.caption)
                         .foregroundColor(.textPrimary)
                     
@@ -171,7 +193,7 @@ struct GamesParentalControlScreen: View {
                     prizeSlider(sector: 5, chance: "4%", prize: $prizeSector5, range: 50...300)
                     prizeSlider(sector: 6, chance: "1%", prize: $prizeSector6, range: 100...1000, isJackpot: true)
                     
-                    Text("💡 Совет: Начните с малых призов и постепенно увеличивайте для мотивации!")
+                    Text(localizationManager.localized("games_parental_wheel_tip"))
                         .font(.captionSmall)
                         .foregroundColor(.textSecondary)
                         .padding(Spacing.s)
@@ -194,7 +216,11 @@ struct GamesParentalControlScreen: View {
     private func prizeSlider(sector: Int, chance: String, prize: Binding<Double>, range: ClosedRange<Double>, isJackpot: Bool = false) -> some View {
         VStack(alignment: .leading, spacing: 4) {
             HStack {
-                Text("\(sector)️⃣ Сектор \(sector)\(isJackpot ? " ДЖЕКПОТ" : "") (\(chance) шанс):")
+                Text(
+                    isJackpot
+                    ? localizationManager.localized("games_parental_wheel_sector_jackpot", sector, chance)
+                    : localizationManager.localized("games_parental_wheel_sector", sector, chance)
+                )
                     .font(.captionSmall)
                     .foregroundColor(.textSecondary)
                 Spacer()
@@ -215,8 +241,8 @@ struct GamesParentalControlScreen: View {
     private var tournamentGameCard: some View {
         gameCard(
             icon: "🏆",
-            title: "Семейный турнир",
-            description: "Еженедельное соревнование всей семьи. 5 типов турниров: отличники 📚, помощники 🧹, без конфликтов 😊, чтение 📖, универсальный 🎯. Призы: 🥇 +50 • 🥈 +30 • 🥉 +20 🦄",
+            title: localizationManager.localized("games_parental_tournament_title"),
+            description: localizationManager.localized("games_parental_tournament_description"),
             isEnabled: $isTournamentEnabled
         )
     }
@@ -229,7 +255,7 @@ struct GamesParentalControlScreen: View {
                 HStack(spacing: Spacing.xs) {
                     Text("🦄")
                         .font(.system(size: 22))
-                    Text("Единорог-питомец")
+                    Text(localizationManager.localized("games_parental_pet_title"))
                         .font(.body)
                         .fontWeight(.semibold)
                         .foregroundColor(.textPrimary)
@@ -237,7 +263,7 @@ struct GamesParentalControlScreen: View {
                 
                 Spacer()
                 
-                Text("🔒 ВСЕГДА ВКЛ")
+                Text(localizationManager.localized("games_parental_pet_always_on"))
                     .font(.captionSmall)
                     .foregroundColor(Color(hex: "C084FC"))
                     .padding(.horizontal, 10)
@@ -252,7 +278,7 @@ struct GamesParentalControlScreen: View {
                     )
             }
             
-            Text("Тамагочи-питомец с индикаторами ❤️🍎⭐😊. Ребёнок кормит, играет, гладит. 4 стадии эволюции. Нельзя отключить - это основа мотивации!")
+            Text(localizationManager.localized("games_parental_pet_description"))
                 .font(.captionSmall)
                 .foregroundColor(.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -274,8 +300,8 @@ struct GamesParentalControlScreen: View {
     private var universeGameCard: some View {
         gameCard(
             icon: "🌳",
-            title: "Единорог-вселенная",
-            description: "Сад единорогов, коллекция 10 видов, сторителлинг 5 глав. Чем больше единорогов, тем красивее сад!",
+            title: localizationManager.localized("games_parental_universe_title"),
+            description: localizationManager.localized("games_parental_universe_description"),
             isEnabled: $isUniverseEnabled
         )
     }
@@ -294,7 +320,14 @@ struct GamesParentalControlScreen: View {
                 
                 Spacer()
                 
-                Toggle("", isOn: isEnabled)
+                Toggle("", isOn: Binding(
+                    get: { isEnabled.wrappedValue },
+                    set: { newValue in
+                        requestParentSessionForSettingChange {
+                            isEnabled.wrappedValue = newValue
+                        }
+                    }
+                ))
                     .labelsHidden()
             }
             
@@ -316,8 +349,12 @@ struct GamesParentalControlScreen: View {
     
     private var quickActions: some View {
         VStack(spacing: Spacing.s) {
-            Button(action: disableAllGames) {
-                Text("Отключить все (кроме 🦄)")
+            Button(action: {
+                requestParentSessionForSettingChange {
+                    disableAllGames()
+                }
+            }) {
+                Text(localizationManager.localized("games_parental_disable_all"))
                     .font(.body)
                     .fontWeight(.semibold)
                     .foregroundColor(.dangerRed)
@@ -334,8 +371,12 @@ struct GamesParentalControlScreen: View {
             }
             .buttonStyle(PlainButtonStyle())
             
-            Button(action: enableAllGames) {
-                Text("Включить все")
+            Button(action: {
+                requestParentSessionForSettingChange {
+                    enableAllGames()
+                }
+            }) {
+                Text(localizationManager.localized("games_parental_enable_all"))
                     .font(.body)
                     .fontWeight(.semibold)
                     .foregroundColor(.successGreen)
@@ -359,34 +400,50 @@ struct GamesParentalControlScreen: View {
     
     private var currentSettings: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            Text("📊 Текущие настройки:")
+            Text(localizationManager.localized("games_parental_current_settings_title"))
                 .font(.body)
                 .fontWeight(.semibold)
                 .foregroundColor(.textPrimary)
             
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 if isWheelEnabled {
-                    Text("• Колесо удачи: ✅ Включено (\(Int(wheelFrequency)) \(wheelFrequency == 1 ? "раз в день" : "раз в день"))")
+                    Text(localizationManager.localized("games_parental_current_wheel_enabled", Int(wheelFrequency)))
                         .font(.captionSmall)
                         .foregroundColor(.textSecondary)
-                    Text("  Призы: 1️⃣\(Int(prizeSector1)) • 2️⃣\(Int(prizeSector2)) • 3️⃣\(Int(prizeSector3)) • 4️⃣\(Int(prizeSector4)) • 5️⃣\(Int(prizeSector5)) • 6️⃣\(Int(prizeSector6)) 🦄")
+                    Text(localizationManager.localized(
+                        "games_parental_current_wheel_prizes",
+                        Int(prizeSector1),
+                        Int(prizeSector2),
+                        Int(prizeSector3),
+                        Int(prizeSector4),
+                        Int(prizeSector5),
+                        Int(prizeSector6)
+                    ))
                         .font(.captionSmall)
                         .foregroundColor(.textSecondary)
                 } else {
-                    Text("• Колесо удачи: ❌ Отключено")
+                    Text(localizationManager.localized("games_parental_current_wheel_disabled"))
                         .font(.captionSmall)
                         .foregroundColor(.textSecondary)
                 }
                 
-                Text(isTournamentEnabled ? "• Семейный турнир: ✅ Включен" : "• Семейный турнир: ❌ Отключен")
+                Text(
+                    isTournamentEnabled
+                    ? localizationManager.localized("games_parental_current_tournament_enabled")
+                    : localizationManager.localized("games_parental_current_tournament_disabled")
+                )
                     .font(.captionSmall)
                     .foregroundColor(.textSecondary)
                 
-                Text("• Единорог-питомец: 🔒 Всегда включен")
+                Text(localizationManager.localized("games_parental_current_pet_always_on"))
                     .font(.captionSmall)
                     .foregroundColor(.textSecondary)
                 
-                Text(isUniverseEnabled ? "• Единорог-вселенная: ✅ Включена" : "• Единорог-вселенная: ❌ Отключена")
+                Text(
+                    isUniverseEnabled
+                    ? localizationManager.localized("games_parental_current_universe_enabled")
+                    : localizationManager.localized("games_parental_current_universe_disabled")
+                )
                     .font(.captionSmall)
                     .foregroundColor(.textSecondary)
             }
@@ -402,8 +459,12 @@ struct GamesParentalControlScreen: View {
     // MARK: - Save Button
     
     private var saveButton: some View {
-        Button(action: saveSettings) {
-            Text("💾 Сохранить настройки")
+        Button(action: {
+            requestParentSessionForSettingChange {
+                saveSettings()
+            }
+        }) {
+            Text(localizationManager.localized("games_parental_save"))
                 .font(.body)
                 .fontWeight(.semibold)
                 .foregroundColor(.textPrimary)
@@ -455,6 +516,20 @@ struct GamesParentalControlScreen: View {
         print("- Вселенная: \(isUniverseEnabled ? "ВКЛ" : "ВЫКЛ")")
         
         navigationManager.goBack()
+    }
+
+    @MainActor
+    private func requestParentSessionForSettingChange(action: @escaping () -> Void) {
+        Task {
+            let ok = await ParentSessionGate.confirmSensitiveAction(forceReauth: true)
+            await MainActor.run {
+                if ok {
+                    action()
+                } else {
+                    parentAuthMessage = localizationManager.localized("games_parental_auth_required")
+                }
+            }
+        }
     }
 }
 

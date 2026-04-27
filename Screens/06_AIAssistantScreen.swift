@@ -85,6 +85,7 @@ struct AIAssistantScreen: View {
                             )
                     }
                     .accessibilityLabel(localizationManager.localized("ai_assistant_back"))
+                    .accessibilityIdentifier("ai_assistant_nav_back")
                     
                     VStack(alignment: .leading, spacing: 4) {
                         Text(localizationManager.localized("ai_assistant_title"))
@@ -1061,8 +1062,8 @@ struct AIFeedbackSheet: View {
             }
             .padding()
             .navigationBarHidden(true)
-            .alert("Спасибо!", isPresented: $showSuccess) {
-                Button("OK") {
+            .alert(localizationManager.localized("ai_assistant_feedback_thanks_title"), isPresented: $showSuccess) {
+                Button(localizationManager.localized("common_ok")) {
                     isPresented = false
                 }
             } message: {

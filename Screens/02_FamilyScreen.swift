@@ -18,6 +18,10 @@ struct FamilyScreen: View {
     @State private var removeMemberSuccessMessage: String? = nil
     /// Дружелюбное сообщение при 409 на загрузке списка (несовпадение сохранённой семьи и аккаунта).
     @State private var familySyncContextBanner: String? = nil
+    /// Диагностический статус reconcile child roster/profile (Phase 7.2 cross-device sync).
+    @State private var childRosterReconcileBanner: String? = nil
+    @State private var showFamilyRolesHelp: Bool = false
+    @State private var showFamilyControlsHelp: Bool = false
     @State private var pendingRemovalMember: FamilyMemberData? = nil
     @State private var deletingMemberIds: Set<String> = []
     // Quick-add sheet was removed; we use navigation to AddMemberOptionsScreen
@@ -539,6 +543,20 @@ struct FamilyScreen: View {
                     self.familyMembers = finalAfterCleanup
                     self.cleanupFamilyMembers(serverIds: serverIdSet, allowDuringFamilySync: true)
                     self.saveFamilyMembers(allowDuringFamilySync: true)
+
+                    let rosterFamilyId = familyId.trimmingCharacters(in: .whitespacesAndNewlines)
+                    ProfileManager.shared.syncChildRosterFromServer(
+                        members: members,
+                        familyId: rosterFamilyId.isEmpty ? nil : rosterFamilyId,
+                        removeMissingServerLinkedChildren: !effectivePartialSubset && !members.isEmpty
+                    )
+                    if let summary = ProfileManager.shared.lastChildRosterReconcileSummary {
+                        let ru = self.localizationManager.currentLanguage == .russian
+                        self.childRosterReconcileBanner = ru
+                            ? "Синхронизация детских профилей: \(summary)"
+                            : "Child profile sync: \(summary)"
+                        VisualLogger.shared.log("🔄 FAMILY/UI roster reconcile: \(summary)", level: .info, category: "FAMILY")
+                    }
                     
                     let localIdsAfter = self.familyMembers.map { $0.id }
                     VisualLogger.shared.log("💾 FAMILY SYNC: saved merged+deduped+cleaned members (\(localIdsAfter.count))", level: .success, category: "FAMILY")
@@ -1257,19 +1275,11 @@ struct FamilyScreen: View {
                 #endif
             } else if let creatorStored = FamilyLocalStore.currentFamilyCreatorMemberId(), !creatorStored.isEmpty {
                 newIsCreator = (myMemberId == creatorStored)
-                newIsParent = FamilyRosterAccess.canManageRoster(
-                    members: familyMembers,
-                    myMemberId: myMemberId,
-                    currentUserRoleFallback: UserDefaults.standard.string(forKey: currentUserRoleKey)
-                )
+                newIsParent = FamilyRosterAccess.canManageRoster(members: familyMembers)
             } else {
                 // Без сохранённого creator_id не используем «первый в списке» — порядок после сортировки недетерминирован и ломал роли/кнопки.
                 newIsCreator = false
-                newIsParent = FamilyRosterAccess.canManageRoster(
-                    members: familyMembers,
-                    myMemberId: myMemberId,
-                    currentUserRoleFallback: UserDefaults.standard.string(forKey: currentUserRoleKey)
-                )
+                newIsParent = FamilyRosterAccess.canManageRoster(members: familyMembers)
             }
         } else {
             // Fallback: check role from UserDefaults
@@ -1313,11 +1323,89 @@ struct FamilyScreen: View {
 
     /// Добавление/удаление участников: только родитель или пожилой в ростере (не ребёнок/подросток).
     private var canManageFamilyRoster: Bool {
-        FamilyRosterAccess.canManageRoster(
-            members: familyMembers,
-            myMemberId: UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey),
-            currentUserRoleFallback: UserDefaults.standard.string(forKey: currentUserRoleKey)
-        )
+        FamilyAccessPolicy.hasPermission(.manageAppProfiles, members: familyMembers)
+    }
+
+    /// Family Sharing операции отделены от app-level профилей:
+    /// доступ разрешён только parent-профилю (не elderly/child/teen).
+    private var canManageFamilySharing: Bool {
+        FamilyAccessPolicy.hasPermission(.manageFamilySharing, members: familyMembers)
+    }
+
+    private var familyMembersAsResponse: [FamilyMemberResponse] {
+        familyMembers.map { member in
+            FamilyMemberResponse(
+                id: member.serverMemberId ?? member.id,
+                name: member.name,
+                role: member.role.rawValue,
+                avatar: member.avatar,
+                status: member.status.rawValue,
+                threatsBlocked: member.threatsBlocked,
+                lastActive: member.lastActive,
+                devices: nil
+            )
+        }
+    }
+
+    private var shouldShowRosterConflictBanner: Bool {
+        canManageFamilySharing && ProfileManager.shared.lastChildRosterConflictCount > 0
+    }
+
+    @ViewBuilder
+    private var rosterConflictResolutionBanner: some View {
+        if shouldShowRosterConflictBanner {
+            let ru = localizationManager.currentLanguage == .russian
+            VStack(alignment: .leading, spacing: 8) {
+                Text(ru ? "Конфликт синхронизации профилей" : "Profile sync conflict")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.white)
+                Text(ProfileManager.shared.lastChildRosterReconcileSummary ?? (ru
+                    ? "Обнаружены конкурирующие изменения между устройствами."
+                    : "Competing cross-device updates were detected."))
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.92))
+                    .fixedSize(horizontal: false, vertical: true)
+                HStack(spacing: 8) {
+                    Button(ru ? "Принять сервер" : "Use server") {
+                        _ = ProfileManager.shared.resolveChildRosterConflicts(
+                            members: familyMembersAsResponse,
+                            familyId: UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey),
+                            prefer: .serverWins,
+                            removeMissingServerLinkedChildren: true
+                        )
+                    }
+                    .font(.caption2.weight(.semibold))
+                    .foregroundColor(.white)
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 10)
+                    .background(Color.orange.opacity(0.35))
+                    .cornerRadius(8)
+
+                    Button(ru ? "Оставить локальное" : "Keep local") {
+                        _ = ProfileManager.shared.resolveChildRosterConflicts(
+                            members: familyMembersAsResponse,
+                            familyId: UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey),
+                            prefer: .localWins,
+                            removeMissingServerLinkedChildren: true
+                        )
+                    }
+                    .font(.caption2.weight(.semibold))
+                    .foregroundColor(.white)
+                    .padding(.vertical, 6)
+                    .padding(.horizontal, 10)
+                    .background(Color.blue.opacity(0.35))
+                    .cornerRadius(8)
+                }
+            }
+            .padding(10)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.orange.opacity(0.24))
+            .cornerRadius(10)
+            .overlay(
+                RoundedRectangle(cornerRadius: 10)
+                    .stroke(Color.orange.opacity(0.5), lineWidth: 1)
+            )
+        }
     }
 
     /// Краткий баннер: правило и текущее состояние (ваш id в списке / роль / можно ли управлять составом).
@@ -1356,6 +1444,12 @@ struct FamilyScreen: View {
                  : "Your ID: \(myId.isEmpty ? "—" : String(myId.prefix(14)))… · role in list: \(roleLabel) · parents in list: \(parents) · can manage roster: \(canManageFamilyRoster ? "yes" : "no")")
                 .font(.caption2)
                 .foregroundColor(.white.opacity(0.78))
+                .fixedSize(horizontal: false, vertical: true)
+            Text(ru
+                 ? "Family Sharing операции: \(canManageFamilySharing ? "доступны (parent)" : "недоступны")"
+                 : "Family Sharing operations: \(canManageFamilySharing ? "allowed (parent)" : "not allowed")")
+                .font(.caption2)
+                .foregroundColor(.white.opacity(0.72))
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(10)
@@ -1510,6 +1604,7 @@ struct FamilyScreen: View {
                             .background(Color.white.opacity(0.1))
                             .clipShape(Circle())
                     }
+                    .accessibilityIdentifier("family_nav_back")
                     .accessibilityLabel(localizationManager.localized("family_back_button_label"))
                     .accessibilityHint(localizationManager.localized("family_back_button_hint"))
                     
@@ -1700,6 +1795,28 @@ struct FamilyScreen: View {
                                 .accessibilityAddTraits(.isHeader)
 
                             familyRosterRulesInfoBanner
+                            HStack(spacing: 8) {
+                                Button(localizationManager.currentLanguage == .russian ? "Family роли и профили" : "Family roles & profiles") {
+                                    showFamilyRolesHelp = true
+                                }
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(.white)
+                                .padding(.vertical, 6)
+                                .padding(.horizontal, 10)
+                                .background(Color.white.opacity(0.12))
+                                .cornerRadius(8)
+
+                                Button(localizationManager.currentLanguage == .russian ? "Family Controls и Screen Time" : "Family Controls & Screen Time") {
+                                    showFamilyControlsHelp = true
+                                }
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(.white)
+                                .padding(.vertical, 6)
+                                .padding(.horizontal, 10)
+                                .background(Color.white.opacity(0.12))
+                                .cornerRadius(8)
+                            }
+                            rosterConflictResolutionBanner
                             
                             // ✅ ИСПРАВЛЕНИЕ: Всегда показываем карточки участников когда они есть
                             // WelcomeCardForCreator показывается только если список ПУСТ
@@ -1775,7 +1892,7 @@ struct FamilyScreen: View {
                                         HStack {
                                             ProgressView()
                                                 .scaleEffect(0.8)
-                                            Text("Синхронизируем список семьи...")
+                                            Text(localizationManager.localized("family_sync_banner_loading"))
                                                 .font(.caption)
                                                 .foregroundColor(.white.opacity(0.7))
                                         }
@@ -1794,7 +1911,7 @@ struct FamilyScreen: View {
                                         HStack(spacing: 6) {
                                             Image(systemName: "arrow.clockwise.circle.fill")
                                                 .font(.system(size: 16))
-                                            Text("Обновить список")
+                                            Text(localizationManager.localized("family_sync_refresh_button"))
                                                 .font(.system(size: 14, weight: .medium))
                                         }
                                         .foregroundColor(.white.opacity(0.9))
@@ -1945,6 +2062,14 @@ struct FamilyScreen: View {
             FamilyParentalControlSettingsModal(isPresented: $showParentalSettingsModal)
                 .environmentObject(localizationManager)
         }
+        .sheet(isPresented: $showFamilyRolesHelp) {
+            FamilyRolesHelpView()
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showFamilyControlsHelp) {
+            FamilyControlsGuideHelpView()
+                .environmentObject(localizationManager)
+        }
         // Removed quick add sheet; using navigation flow instead
         .overlay(alignment: .bottom) {
             if let message = removeMemberErrorMessage, !message.isEmpty {
@@ -1990,6 +2115,22 @@ struct FamilyScreen: View {
                     .onTapGesture { familySyncContextBanner = nil }
             }
         }
+        .overlay(alignment: .bottom) {
+            if let message = childRosterReconcileBanner, !message.isEmpty {
+                Text(message)
+                    .font(.caption2)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 9)
+                    .background(Color.blue.opacity(0.92))
+                    .clipShape(RoundedRectangle(cornerRadius: 10))
+                    .shadow(radius: 4)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 150)
+                    .onTapGesture { childRosterReconcileBanner = nil }
+            }
+        }
         .confirmationDialog(
             localizationManager.localized("family_remove_member"),
             isPresented: Binding(
@@ -2009,7 +2150,19 @@ struct FamilyScreen: View {
                 ) {
                     let target = member
                     pendingRemovalMember = nil
-                    removeFamilyMember(target)
+                    Task {
+                        let ok = await ParentSessionGate.confirmSensitiveAction()
+                        await MainActor.run {
+                            if ok {
+                                removeFamilyMember(target)
+                            } else {
+                                removeMemberErrorMessage = localizationManager.currentLanguage == .russian
+                                    ? "Подтверждение не выполнено. Участник не удалён."
+                                    : "Verification was not completed. The member was not removed."
+                                HapticFeedback.notification(.warning)
+                            }
+                        }
+                    }
                 }
             }
             Button(localizationManager.localized("common_cancel"), role: .cancel) {
@@ -7387,6 +7540,83 @@ struct FamilyBypassProtectionModal: View {
                     self.loadBypassStatistics()
                 } else {
                     print("❌ Failed to apply bypass protection: \(errorMessage ?? "Unknown error")")
+                }
+            }
+        }
+    }
+}
+
+struct FamilyRolesHelpView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                let ru = localizationManager.currentLanguage == .russian
+                VStack(alignment: .leading, spacing: 14) {
+                    Text(ru ? "Apple Family Sharing не равен профилям ALADDIN." : "Apple Family Sharing is different from ALADDIN app profiles.")
+                        .font(.headline)
+                        .foregroundColor(.textPrimary)
+                    Text(ru
+                         ? "В ALADDIN роли (parent/elderly/child/teen) определяют, кто может менять состав семьи, лимиты и чувствительные настройки внутри приложения."
+                         : "In ALADDIN, roles (parent/elderly/child/teen) define who can manage roster, limits, and sensitive settings inside the app.")
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                    Text(ru
+                         ? "Family Sharing в iOS отвечает за покупки, подписки и Ask to Buy на уровне Apple ID, но не заменяет app-level permissions ALADDIN."
+                         : "iOS Family Sharing controls purchases, subscriptions, and Ask to Buy at Apple ID level, but does not replace ALADDIN app-level permissions.")
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                }
+                .padding(Spacing.m)
+            }
+            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .navigationTitle(localizationManager.currentLanguage == .russian ? "Роли и профили" : "Roles & Profiles")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(localizationManager.currentLanguage == .russian ? "Готово" : "Done") { dismiss() }
+                }
+            }
+        }
+    }
+}
+
+struct FamilyControlsGuideHelpView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationView {
+            ScrollView {
+                let ru = localizationManager.currentLanguage == .russian
+                VStack(alignment: .leading, spacing: 14) {
+                    Text(ru ? "FamilyControls + Screen Time" : "FamilyControls + Screen Time")
+                        .font(.headline)
+                        .foregroundColor(.textPrimary)
+                    Text(ru
+                         ? "Системный FamilyControls (AuthorizationCenter/ManagedSettings/DeviceActivity) — это iOS-контур экранного времени."
+                         : "System FamilyControls (AuthorizationCenter/ManagedSettings/DeviceActivity) is the iOS Screen Time layer.")
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                    Text(ru
+                         ? "ALADDIN использует его при доступности, а при недоступности продолжает серверный fallback. Это не снимает родительские правила в приложении."
+                         : "ALADDIN uses it when available, and falls back to server-side controls when unavailable. This does not bypass app parent rules.")
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                    Text(ru
+                         ? "Практика: сначала назначьте роли в Family, затем настройте лимиты и мониторинг в Parental Control."
+                         : "Best practice: assign family roles first, then configure limits and monitoring in Parental Control.")
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                }
+                .padding(Spacing.m)
+            }
+            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .navigationTitle(localizationManager.currentLanguage == .russian ? "FamilyControls и лимиты" : "FamilyControls & Limits")
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(localizationManager.currentLanguage == .russian ? "Готово" : "Done") { dismiss() }
                 }
             }
         }

@@ -8,6 +8,7 @@ import SwiftUI
 struct SimplePrivacyPolicyScreen: View {
     
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         ZStack {
@@ -25,7 +26,7 @@ struct SimplePrivacyPolicyScreen: View {
                     
                     Spacer()
                     
-                    Text("Политика конфиденциальности")
+                    Text(localizationManager.localized("privacy_policy_title"))
                         .font(.h2)
                         .foregroundColor(.white)
                     
@@ -39,11 +40,11 @@ struct SimplePrivacyPolicyScreen: View {
                 // Content
                 ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text("ПОЛИТИКА КОНФИДЕНЦИАЛЬНОСТИ")
+                        Text(localizationManager.localized("privacy_policy_title"))
                             .font(.h3)
                             .foregroundColor(.textPrimary)
                         
-                        Text("Последнее обновление: 29 октября 2024")
+                        Text(localizationManager.localized("privacy_policy_last_updated"))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                         

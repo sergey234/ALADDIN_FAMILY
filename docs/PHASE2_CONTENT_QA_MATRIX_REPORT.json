@@ -1,0 +1,148 @@
+{
+  "generated_at": "2026-04-27T18:07:05.779762+00:00",
+  "check_count": 19,
+  "failed_count": 0,
+  "category_level": {
+    "check_count": 13,
+    "failed_count": 0
+  },
+  "item_level": {
+    "check_count": 6,
+    "failed_count": 0
+  },
+  "checks": [
+    {
+      "id": "P2Q-CAT-COVERAGE",
+      "level": "category",
+      "status": "PASS",
+      "description": "All 12 Phase 2 categories have QA entries",
+      "details": "covered=12/12"
+    },
+    {
+      "id": "P2Q-CAT-TOYS",
+      "level": "category",
+      "status": "PASS",
+      "description": "Category 'child_interface_category_toys' has minimum item set",
+      "details": "items=3 required>=3"
+    },
+    {
+      "id": "P2Q-CAT-DRAWING",
+      "level": "category",
+      "status": "PASS",
+      "description": "Category 'child_interface_category_drawing' has minimum item set",
+      "details": "items=3 required>=3"
+    },
+    {
+      "id": "P2Q-CAT-SONGS",
+      "level": "category",
+      "status": "PASS",
+      "description": "Category 'child_interface_category_songs' has minimum item set",
+      "details": "items=3 required>=3"
+    },
+    {
+      "id": "P2Q-CAT-STORIES",
+      "level": "category",
+      "status": "PASS",
+      "description": "Category 'child_interface_category_stories' has minimum item set",
+      "details": "items=3 required>=3"
+    },
+    {
+      "id": "P2Q-CAT-GAMES",
+      "level": "category",
+      "status": "PASS",
+      "description": "Category 'child_interface_category_games' has minimum item set",
+      "details": "items=3 required>=3"
+    },
+    {
+      "id": "P2Q-CAT-STUDY",
+      "level": "category",
+      "status": "PASS",
+      "description": "Category 'child_interface_category_study' has minimum item set",
+      "details": "items=3 required>=3"
+    },
+    {
+      "id": "P2Q-CAT-SAFETY",
+      "level": "category",
+      "status": "PASS",
+      "description": "Category 'child_interface_category_safety' has minimum item set",
+      "details": "items=3 required>=3"
+    },
+    {
+      "id": "P2Q-CAT-CARTOONS",
+      "level": "category",
+      "status": "PASS",
+      "description": "Category 'child_interface_category_cartoons' has minimum item set",
+      "details": "items=3 required>=3"
+    },
+    {
+      "id": "P2Q-CAT-PROGRAMMING",
+      "level": "category",
+      "status": "PASS",
+      "description": "Category 'child_interface_category_programming' has minimum item set",
+      "details": "items=3 required>=3"
+    },
+    {
+      "id": "P2Q-CAT-SOCIAL",
+      "level": "category",
+      "status": "PASS",
+      "description": "Category 'child_interface_category_social' has minimum item set",
+      "details": "items=3 required>=3"
+    },
+    {
+      "id": "P2Q-CAT-MUSIC",
+      "level": "category",
+      "status": "PASS",
+      "description": "Category 'child_interface_category_music' has minimum item set",
+      "details": "items=3 required>=3"
+    },
+    {
+      "id": "P2Q-CAT-EDUCATION",
+      "level": "category",
+      "status": "PASS",
+      "description": "Category 'child_interface_category_education' has minimum item set",
+      "details": "items=3 required>=3"
+    },
+    {
+      "id": "P2Q-ITEM-NONEMPTY",
+      "level": "item",
+      "status": "PASS",
+      "description": "Item titles are non-empty",
+      "details": "total_items=36"
+    },
+    {
+      "id": "P2Q-ITEM-MINLEN",
+      "level": "item",
+      "status": "PASS",
+      "description": "Item titles satisfy minimum length",
+      "details": "min_length>=3"
+    },
+    {
+      "id": "P2Q-ITEM-NOPLACEHOLDER",
+      "level": "item",
+      "status": "PASS",
+      "description": "Item titles contain no placeholder tokens",
+      "details": "blocked: todo/tbd/placeholder/replace_me/fixme/lorem"
+    },
+    {
+      "id": "P2Q-ITEM-UNIQUE-GLOBAL",
+      "level": "item",
+      "status": "PASS",
+      "description": "Item titles are globally unique across Phase 2",
+      "details": "unique=36 total=36"
+    },
+    {
+      "id": "P2Q-ITEM-UNIQUE-CATEGORY",
+      "level": "item",
+      "status": "PASS",
+      "description": "Item titles are unique inside each category",
+      "details": "per-category uniqueness"
+    },
+    {
+      "id": "P2Q-ITEM-TOTAL",
+      "level": "item",
+      "status": "PASS",
+      "description": "Total item count satisfies Phase 2 baseline",
+      "details": "total_items=36 required>=36"
+    }
+  ]
+}

@@ -106,6 +106,7 @@ struct MediaMessageBubble: View {
 struct VideoThumbnailView: View {
     let url: URL
     @State private var thumbnail: UIImage? = nil
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         Group {
@@ -120,7 +121,7 @@ struct VideoThumbnailView: View {
                         Image(systemName: "play.circle.fill")
                             .font(.largeTitle)
                             .foregroundColor(.secondaryGold)
-                        Text("Video")
+                        Text(localizationManager.localized("media.video"))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                     }
@@ -144,6 +145,7 @@ struct FullscreenMediaView: View {
     let url: URL
     let mediaType: String
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         ZStack {
@@ -160,7 +162,7 @@ struct FullscreenMediaView: View {
                             .resizable()
                             .aspectRatio(contentMode: .fit)
                     case .failure:
-                        Text("Ошибка загрузки")
+                        Text(localizationManager.localized("media.load_error"))
                             .foregroundColor(.white)
                     @unknown default:
                         EmptyView()

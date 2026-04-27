@@ -87,19 +87,19 @@ struct ALADDINToggle_Previews: PreviewProvider {
     static var previews: some View {
         VStack(spacing: 20) {
             HStack {
-                Text("Защита сети")
+                Text(verbatim: "Защита сети")
                 Spacer()
                 ALADDINToggle(isOn: .constant(true))
             }
             
             HStack {
-                Text("Push уведомления")
+                Text(verbatim: "Push уведомления")
                 Spacer()
                 ALADDINToggle(isOn: .constant(false))
             }
             
             HStack {
-                Text("Face ID")
+                Text(verbatim: "Face ID")
                 Spacer()
                 ALADDINToggle(isOn: .constant(true))
             }

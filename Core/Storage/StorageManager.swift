@@ -80,6 +80,7 @@ enum UnicornRewardsStore {
     static func resolveActiveChildId(from defaults: UserDefaults = .standard) -> String? {
         let candidates = [
             defaults.string(forKey: "parental_selected_child_id"),
+            defaults.string(forKey: "active_child_profile_server_id"),
             defaults.string(forKey: "your_member_id"),
             defaults.string(forKey: "user_id")
         ]

@@ -59,6 +59,30 @@ struct AppConfig {
     
     /// Показывать отладочные оверлеи
     static let showDebugOverlays: Bool = false
+
+    // MARK: - Content manifest (G1 / G3)
+
+    /// В **Release** (после W1-3): при `true` манифест без валидной ECDSA P-256 подписи не применяется.  
+    /// См. `docs/CONTENT_MANIFEST_SIGNATURE_POLICY_G3.md`, `docs/ADR-CONTENT-PERSISTENCE-G1.md`.
+    static let contentManifestRequireValidSignature: Bool = {
+        #if DEBUG
+        return false
+        #else
+        return true
+        #endif
+    }()
+
+    /// Лимит байт под `Application Support/ContentPayloads` (G2 / W1-2). `0` — без eviction.
+    static let contentPayloadDiskCacheMaxBytes: Int = 250 * 1024 * 1024
+
+    /// Минимальная плотность каталога: сколько элементов контента должно быть в каждой категории.
+    static let contentCatalogMinItemsPerCategory: Int = 3
+
+    /// Base64 raw P-256 публичный ключ для проверки подписи манифеста; `Info.plist` `CONTENT_MANIFEST_SIGNING_PUBLIC_KEY_BASE64`.
+    static var contentManifestSigningPublicKeyBase64: String {
+        let raw = Bundle.main.object(forInfoDictionaryKey: "CONTENT_MANIFEST_SIGNING_PUBLIC_KEY_BASE64") as? String
+        return raw?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+    }
     
     // ✅ ИСПРАВЛЕНИЕ #5: Метод для безопасной проверки доступности API
     static func isAPIURLValid() -> Bool {
@@ -103,7 +127,7 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "146"
+    static let buildNumber = "147"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -216,7 +240,8 @@ struct AppConfig {
         // OpenAPI exposes balance operations on base endpoint and /{userId}
         static let gamificationBalanceAdd = "/api/gamification/balance"
         static let gamificationBalanceSubtract = "/api/gamification/balance"
-        static let gamificationBalanceHistory = "/api/gamification/balance"
+        /// List of balance operations (see `docs/API_DOCUMENTATION_NEW_ENDPOINTS.md`).
+        static let gamificationBalanceHistory = "/api/gamification/balance/history"
         
         // Награды (6 endpoints)
         static let gamificationRewards = "/api/gamification/rewards"
@@ -366,6 +391,10 @@ struct AppConfig {
         static let elderlyMedicationsUpdate = "/api/elderly/medications/update"
         static let elderlyAppointmentsSync = "/api/elderly/appointments/sync"
         static let elderlyAppointmentsUpdate = "/api/elderly/appointments/update"
+
+        // Content sync (Phase 2 / Phase 9)
+        static let contentManifest = "/api/content/manifest"
+        static let contentDelta = "/api/content/delta"
         
         // Notifications
         static let notifications = "/api/notifications"

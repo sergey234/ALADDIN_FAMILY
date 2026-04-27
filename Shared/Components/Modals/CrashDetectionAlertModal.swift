@@ -31,17 +31,17 @@ struct CrashDetectionAlertModal: View {
                     .font(.system(size: 60))
                     .foregroundColor(.white)
 
-                Text("🚨 АВАРИЯ ОБНАРУЖЕНА!")
+                Text(localizationManager.localized("crash_alert_title"))
                     .font(.title)
                     .fontWeight(.bold)
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
 
-                Text("Вызвать экстренные службы?")
+                Text(localizationManager.localized("crash_alert_call_services_question"))
                     .font(.body)
                     .foregroundColor(.white.opacity(0.9))
 
-                Text("⚠️ Функция может давать ложные срабатывания")
+                Text(localizationManager.localized("crash_alert_false_positive_warning"))
                     .font(.caption)
                     .foregroundColor(.yellow.opacity(0.8))
                     .multilineTextAlignment(.center)

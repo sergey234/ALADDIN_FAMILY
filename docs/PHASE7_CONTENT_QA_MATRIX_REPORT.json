@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-04-27T10:17:51.371221+00:00",
+  "check_count": 7,
+  "failed_count": 0,
+  "checks": [
+    {
+      "id": "G17-FILE-1",
+      "description": "Child content screen exists",
+      "status": "PASS",
+      "details": "Screens/ChildContentScreen.swift"
+    },
+    {
+      "id": "G17-FILE-2",
+      "description": "Content sync manager exists",
+      "status": "PASS",
+      "details": "Core/Content/Sync/ContentSyncManager.swift"
+    },
+    {
+      "id": "G17-FILE-3",
+      "description": "Progress systems module exists",
+      "status": "PASS",
+      "details": "Core/Content/Progress/ProgressSystems.swift"
+    },
+    {
+      "id": "G17-TEST-1",
+      "description": "UI progress test exists",
+      "status": "PASS",
+      "details": "Tests/UITests/ChildContentProgressUITests.swift"
+    },
+    {
+      "id": "G17-STATE-OPEN",
+      "description": "Child content open/progress hooks present",
+      "status": "PASS",
+      "details": "tokens: progress, ChildCategoryKey, contentItem"
+    },
+    {
+      "id": "G17-STATE-EMPTY-ERROR",
+      "description": "Child content has empty/error/loading handling",
+      "status": "PASS",
+      "details": "tokens: empty, error, loading"
+    },
+    {
+      "id": "G17-I18N-1",
+      "description": "RU/EN include baseline child content keys",
+      "status": "PASS",
+      "details": "prefix/key fragments: child_content_loading, child_content_error_message, child_content_empty_title, child_content_overall_progress"
+    }
+  ]
+}

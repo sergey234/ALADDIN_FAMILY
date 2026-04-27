@@ -102,7 +102,7 @@ struct MainScreenWithRegistration: View {
                 .foregroundColor(.white)
             
             if let role = registrationVM.selectedRole, role == .teenager {
-                Text("Создание семьи для подростка...")
+                Text(localizationManager.localized("registration_creating_family_teenager"))
                     .font(.system(size: 14))
                     .foregroundColor(.white.opacity(0.8))
             }

@@ -12,6 +12,7 @@ struct WidgetConfigurationScreen: View {
     
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var showingInstructions = false
     
     // MARK: - Body
@@ -57,13 +58,13 @@ struct WidgetConfigurationScreen: View {
                                 .foregroundColor(.blue)
                                 .accessibilityLabel("Иконка виджетов")
                             
-                            Text("Widget Configuration")
+                            Text(localizationManager.localized("widget_config_title"))
                                 .font(.title2)
                                 .fontWeight(.bold)
                                 .accessibilityAddTraits(.isHeader)
                                 .accessibilityLabel("Настройка виджетов")
                             
-                            Text("Configure your home screen widgets")
+                            Text(localizationManager.localized("widget_config_subtitle"))
                                 .font(.body)
                                 .foregroundColor(.secondary)
                                 .multilineTextAlignment(.center)
@@ -75,7 +76,7 @@ struct WidgetConfigurationScreen: View {
                         
                         // Instructions Card
                         VStack(alignment: .leading, spacing: Spacing.m) {
-                            Text("How to Add Widgets")
+                            Text(localizationManager.localized("widget_config_how_to_add"))
                                 .font(.headline)
                                 .fontWeight(.semibold)
                                 .accessibilityAddTraits(.isHeader)
@@ -115,7 +116,7 @@ struct WidgetConfigurationScreen: View {
                         
                         // Available Widgets
                         VStack(alignment: .leading, spacing: Spacing.m) {
-                            Text("Available Widgets")
+                            Text(localizationManager.localized("widget_config_available_widgets"))
                                 .font(.headline)
                                 .fontWeight(.semibold)
                                 .accessibilityAddTraits(.isHeader)

@@ -26,12 +26,66 @@ struct ParentalControlScreen: View {
     @State private var children: [FamilyMemberResponse] = []
     @State private var isChildrenLoading: Bool = false
     @State private var childrenErrorMessage: String?
-    
-    private var childMembers: [FamilyMemberResponse] {
-        children.filter { member in
-            let role = member.role.lowercased()
-            return role == "child" || role == "teenager"
+    @ObservedObject private var profileManager = ProfileManager.shared
+
+    private var familyMembersForPolicy: [FamilyMemberData] {
+        guard let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
+              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
+            return []
         }
+        return decoded
+    }
+
+    private var canManageParentalControls: Bool {
+        FamilyAccessPolicy.hasPermission(.manageParentalControls, members: familyMembersForPolicy)
+    }
+
+    private var canManageFamilyLimits: Bool {
+        FamilyAccessPolicy.hasPermission(.manageFamilyLimits, members: familyMembersForPolicy)
+    }
+
+    private var canManageCriticalFamilySettings: Bool {
+        FamilyAccessPolicy.hasPermission(.manageCriticalFamilySettings, members: familyMembersForPolicy)
+    }
+
+    private var profileBackedChildren: [FamilyMemberResponse] {
+        profileManager.profiles.compactMap { profile in
+            let sid = (profile.serverUserId ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !sid.isEmpty else { return nil }
+            let role: String = {
+                switch profile.ageGroup {
+                case .teen14plus, .tween11to13: return "teenager"
+                default: return "child"
+                }
+            }()
+            return FamilyMemberResponse(
+                id: sid,
+                name: profile.displayName,
+                role: role,
+                avatar: profile.avatarKey,
+                status: "protected",
+                threatsBlocked: nil,
+                lastActive: nil,
+                devices: nil
+            )
+        }
+    }
+
+    private var childMembers: [FamilyMemberResponse] {
+        let apiChildren = children.filter { member in
+            let role = member.role.lowercased()
+            return role == "child" || role == "teenager" || role == "teen"
+        }
+        if apiChildren.isEmpty {
+            return profileBackedChildren
+        }
+
+        var merged = apiChildren
+        let existing = Set(apiChildren.map(\.id))
+        for profileChild in profileBackedChildren where !existing.contains(profileChild.id) {
+            merged.append(profileChild)
+        }
+        return merged
     }
     
     private var currentChildDisplayName: String {
@@ -60,13 +114,18 @@ struct ParentalControlScreen: View {
     // MARK: - Modal Visibility
     
     @State private var showContentBlockModal: Bool = false
-    @State private var showTimeControlModal: Bool = false
+    @State private var showUnifiedTimeLimits: Bool = false
     @State private var showMonitoringModal: Bool = false
     @State private var showLocationModal: Bool = false
     @State private var showReportsModal: Bool = false
     @State private var showAdditionalModal: Bool = false
     @State private var showBypassProtectionModal: Bool = false
     @State private var showRewardsModal: Bool = false
+    @State private var showParentDashboardModal: Bool = false
+    @State private var showFamilyControlsGuideHelp: Bool = false
+    @State private var familyControlsReadiness: FamilyControlsReadiness?
+    @State private var familyControlsFallbackMessage: String?
+    @State private var elderlySyncReportBanner: String?
     
     // MARK: - Rewards Storage
     
@@ -130,6 +189,10 @@ struct ParentalControlScreen: View {
                     VStack(spacing: Spacing.l) {
                         // Выбор ребёнка
                         childSelector
+
+                        familyControlsReadinessBanner
+                        familyControlsScopeHintBanner
+                        elderlySyncAuditBanner
                         
                         // Сетка карточек родительского контроля
                         parentalControlCards
@@ -167,8 +230,8 @@ struct ParentalControlScreen: View {
                 contentBlockerManager.loadActiveCategories()
             }
         }
-        .sheet(isPresented: $showTimeControlModal) {
-            FamilyTimeControlModal(isPresented: $showTimeControlModal, isEnabled: $isTimeControlEnabled)
+        .sheet(isPresented: $showUnifiedTimeLimits) {
+            UnifiedTimeLimitsScreen()
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showMonitoringModal) {
@@ -202,6 +265,14 @@ struct ParentalControlScreen: View {
             )
             .environmentObject(localizationManager)
         }
+        .sheet(isPresented: $showParentDashboardModal) {
+            ParentDashboardView(isPresented: $showParentDashboardModal)
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showFamilyControlsGuideHelp) {
+            FamilyControlsGuideHelpView()
+                .environmentObject(localizationManager)
+        }
         .onAppear {
             // ✅ КРИТИЧНО: Устанавливаем роль родителя при входе в экран
             // ДОЛЖНО БЫТЬ В САМОМ НАЧАЛЕ .onAppear!
@@ -234,10 +305,13 @@ struct ParentalControlScreen: View {
             // ✅ РОДИТЕЛЬСКИЙ КОНТРОЛЬ: Синхронизация с сервером
             Task {
                 await syncParentalControlData()
+                await refreshFamilyControlsReadiness()
+                refreshElderlySyncReport()
             }
         }
         .refreshable {
             await syncParentalControlData()
+            refreshElderlySyncReport()
         }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
             let newBalance = UnicornRewardsStore.readBalance(for: rewardsScopeChildId)
@@ -250,21 +324,70 @@ struct ParentalControlScreen: View {
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("parental_lang_\(localizationManager.currentLanguage.rawValue)")
     }
+
+    @MainActor
+    private func requireSensitiveParentSession(
+        permission: FamilyAccessPolicy.Permission = .manageCriticalFamilySettings,
+        deniedMessageRu: String = "Недостаточно прав для выполнения действия.",
+        deniedMessageEn: String = "You don't have enough permissions to perform this action.",
+        verifyFailedRu: String = "Подтверждение не выполнено. Действие отменено.",
+        verifyFailedEn: String = "Verification was not completed. Action was cancelled.",
+        action: @escaping () -> Void
+    ) {
+        guard FamilyAccessPolicy.hasPermission(permission, members: familyMembersForPolicy) else {
+            statsErrorMessage = localizationManager.currentLanguage == .russian ? deniedMessageRu : deniedMessageEn
+            HapticFeedback.notification(.warning)
+            return
+        }
+
+        Task {
+            let ok = await ParentSessionGate.confirmSensitiveAction()
+            await MainActor.run {
+                if ok {
+                    action()
+                } else {
+                    statsErrorMessage = localizationManager.currentLanguage == .russian ? verifyFailedRu : verifyFailedEn
+                    HapticFeedback.notification(.warning)
+                }
+            }
+        }
+    }
+
+    @MainActor
+    private func requestSensitiveToggleUpdate(
+        _ newValue: Bool,
+        permission: FamilyAccessPolicy.Permission = .manageCriticalFamilySettings,
+        apply: @escaping (Bool) -> Void
+    ) {
+        requireSensitiveParentSession(
+            permission: permission,
+            deniedMessageRu: "Недостаточно прав для изменения настройки.",
+            deniedMessageEn: "You don't have enough permissions to change this setting.",
+            verifyFailedRu: "Изменение отклонено: нужно подтверждение родителя.",
+            verifyFailedEn: "Change was blocked: parent verification is required."
+        ) {
+            apply(newValue)
+        }
+    }
     
     // MARK: - Achievement Card
     
     private var achievementCard: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             HStack {
-                Text("🏆 Карта достижений (Неделя)")
+                Text(localizationManager.localized("parental_achievements_weekly_map"))
                     .font(.h3)
                     .foregroundColor(.secondaryGold)
                 
                 Spacer()
                 
-                Text("Подробнее")
-                    .font(.captionBold)
-                    .foregroundColor(.textTertiary)
+                Button("Dashboard") {
+                    requireSensitiveParentSession(permission: .viewParentalDashboard) {
+                        showParentDashboardModal = true
+                    }
+                }
+                .font(.captionBold)
+                .foregroundColor(.textTertiary)
             }
             
             VStack(alignment: .leading, spacing: Spacing.s) {
@@ -290,7 +413,7 @@ struct ParentalControlScreen: View {
                     HStack(spacing: Spacing.m) {
                         Text("⏳")
                             .font(.title3)
-                        Text("Анализируем данные за неделю...")
+                        Text(localizationManager.localized("parental_achievements_weekly_loading"))
                             .font(.body)
                             .foregroundColor(.textSecondary)
                     }
@@ -303,6 +426,97 @@ struct ParentalControlScreen: View {
         .padding(Spacing.m)
         .background(cardBackground)
         .cardShadow()
+    }
+
+    private var familyControlsReadinessBanner: some View {
+        let ready = familyControlsReadiness?.isPipelineReady ?? false
+        let statusText: String = {
+            if ready {
+                return localizationManager.currentLanguage == .russian
+                    ? "Family Controls pipeline активен: Authorization + ManagedSettings + DeviceActivity."
+                    : "Family Controls pipeline is active: Authorization + ManagedSettings + DeviceActivity."
+            }
+            return familyControlsFallbackMessage ?? (localizationManager.currentLanguage == .russian
+                ? "Системный Family Controls недоступен. Используется серверный fallback."
+                : "System Family Controls is unavailable. Server-side fallback is active.")
+        }()
+
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.currentLanguage == .russian ? "Screen Time readiness" : "Screen Time readiness")
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.white.opacity(0.9))
+            Text(statusText)
+                .font(.caption2)
+                .foregroundColor(.white)
+                .fixedSize(horizontal: false, vertical: true)
+            if !ready {
+                Button(localizationManager.currentLanguage == .russian ? "Повторить инициализацию Family Controls" : "Retry Family Controls initialization") {
+                    Task { await refreshFamilyControlsReadiness() }
+                }
+                .font(.caption.weight(.semibold))
+                .foregroundColor(Color.secondaryGold)
+            }
+        }
+        .padding(Spacing.s)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background((ready ? Color.successGreen : Color.orange).opacity(0.22))
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .stroke((ready ? Color.successGreen : Color.orange).opacity(0.45), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+    }
+
+    private var familyControlsScopeHintBanner: some View {
+        let ru = localizationManager.currentLanguage == .russian
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(ru ? "Граница системного и app-контуров" : "System vs app boundaries")
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.white.opacity(0.92))
+            Text(ru
+                 ? "FamilyControls/Screen Time регулируют устройство на уровне iOS, а права ролей и семейные правила ALADDIN работают отдельно внутри приложения."
+                 : "FamilyControls/Screen Time governs device-level iOS behavior, while ALADDIN role permissions and family rules are enforced separately in-app.")
+                .font(.caption2)
+                .foregroundColor(.white)
+                .fixedSize(horizontal: false, vertical: true)
+            Button(ru ? "Открыть краткий гайд" : "Open quick guide") {
+                showFamilyControlsGuideHelp = true
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundColor(Color.secondaryGold)
+        }
+        .padding(Spacing.s)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.blue.opacity(0.2))
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .stroke(Color.blue.opacity(0.45), lineWidth: 1)
+        )
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+    }
+
+    private var elderlySyncAuditBanner: some View {
+        Group {
+            if let elderlySyncReportBanner, !elderlySyncReportBanner.isEmpty {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(localizationManager.currentLanguage == .russian ? "Elderly sync audit" : "Elderly sync audit")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.white.opacity(0.9))
+                    Text(elderlySyncReportBanner)
+                        .font(.caption2)
+                        .foregroundColor(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(Spacing.s)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.orange.opacity(0.22))
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                        .stroke(Color.orange.opacity(0.45), lineWidth: 1)
+                )
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+            }
+        }
     }
     
     // MARK: - Navigation Header
@@ -391,7 +605,9 @@ struct ParentalControlScreen: View {
                         Button(action: {
                             withAnimation(.spring(response: 0.3, dampingFraction: 0.7)) {
                                 selectedChild = child.id
+                                selectedChildId = child.id
                             }
+                            UserDefaults.standard.set(child.id, forKey: "active_child_profile_server_id")
                             HapticFeedback.selection()
                             loadParentalControlData(for: child.id)
                         }) {
@@ -485,11 +701,22 @@ struct ParentalControlScreen: View {
                         isEnabled: Binding(
                             get: { isContentBlockEnabled },
                             set: { newValue in
-                                isContentBlockEnabled = newValue
-                                VisualLogger.shared.log("🔄 family_content_block_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                                requestSensitiveToggleUpdate(newValue, permission: .manageFamilyLimits) { accepted in
+                                    isContentBlockEnabled = accepted
+                                    VisualLogger.shared.log("🔄 family_content_block_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                                }
                             }
                         ),
-                        action: { showContentBlockModal = true }
+                        action: {
+                            guard canManageFamilyLimits else {
+                                statsErrorMessage = localizationManager.currentLanguage == .russian
+                                    ? "Недостаточно прав для управления лимитами."
+                                    : "You don't have enough permissions to manage limits."
+                                HapticFeedback.notification(.warning)
+                                return
+                            }
+                            showContentBlockModal = true
+                        }
                     )
                     
                     ParentalControlCard(
@@ -504,11 +731,22 @@ struct ParentalControlScreen: View {
                         isEnabled: Binding(
                             get: { isTimeControlEnabled },
                             set: { newValue in
-                                isTimeControlEnabled = newValue
-                                VisualLogger.shared.log("🔄 family_time_control_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                                requestSensitiveToggleUpdate(newValue, permission: .manageFamilyLimits) { accepted in
+                                    isTimeControlEnabled = accepted
+                                    VisualLogger.shared.log("🔄 family_time_control_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                                }
                             }
                         ),
-                        action: { showTimeControlModal = true }
+                        action: {
+                            guard canManageFamilyLimits else {
+                                statsErrorMessage = localizationManager.currentLanguage == .russian
+                                    ? "Недостаточно прав для управления лимитами."
+                                    : "You don't have enough permissions to manage limits."
+                                HapticFeedback.notification(.warning)
+                                return
+                            }
+                            showUnifiedTimeLimits = true
+                        }
                     )
                     
                     ParentalControlCard(
@@ -523,11 +761,22 @@ struct ParentalControlScreen: View {
                         isEnabled: Binding(
                             get: { isMonitoringEnabled },
                             set: { newValue in
-                                isMonitoringEnabled = newValue
-                                VisualLogger.shared.log("🔄 family_monitoring_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                                requestSensitiveToggleUpdate(newValue, permission: .manageFamilyLimits) { accepted in
+                                    isMonitoringEnabled = accepted
+                                    VisualLogger.shared.log("🔄 family_monitoring_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                                }
                             }
                         ),
-                        action: { showMonitoringModal = true }
+                        action: {
+                            guard canManageFamilyLimits else {
+                                statsErrorMessage = localizationManager.currentLanguage == .russian
+                                    ? "Недостаточно прав для управления лимитами."
+                                    : "You don't have enough permissions to manage limits."
+                                HapticFeedback.notification(.warning)
+                                return
+                            }
+                            showMonitoringModal = true
+                        }
                     )
                     
                     ParentalControlCard(
@@ -542,11 +791,22 @@ struct ParentalControlScreen: View {
                         isEnabled: Binding(
                             get: { isLocationEnabled },
                             set: { newValue in
-                                isLocationEnabled = newValue
-                                VisualLogger.shared.log("🔄 family_location_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                                requestSensitiveToggleUpdate(newValue, permission: .manageFamilyLimits) { accepted in
+                                    isLocationEnabled = accepted
+                                    VisualLogger.shared.log("🔄 family_location_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                                }
                             }
                         ),
-                        action: { showLocationModal = true }
+                        action: {
+                            guard canManageFamilyLimits else {
+                                statsErrorMessage = localizationManager.currentLanguage == .russian
+                                    ? "Недостаточно прав для управления лимитами."
+                                    : "You don't have enough permissions to manage limits."
+                                HapticFeedback.notification(.warning)
+                                return
+                            }
+                            showLocationModal = true
+                        }
                     )
                     
                     ParentalControlCard(
@@ -561,11 +821,17 @@ struct ParentalControlScreen: View {
                         isEnabled: Binding(
                             get: { isReportsEnabled },
                             set: { newValue in
-                                isReportsEnabled = newValue
-                                VisualLogger.shared.log("🔄 family_reports_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                                requestSensitiveToggleUpdate(newValue, permission: .manageCriticalFamilySettings) { accepted in
+                                    isReportsEnabled = accepted
+                                    VisualLogger.shared.log("🔄 family_reports_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                                }
                             }
                         ),
-                        action: { showReportsModal = true }
+                        action: {
+                            requireSensitiveParentSession(permission: .manageCriticalFamilySettings) {
+                                showReportsModal = true
+                            }
+                        }
                     )
                     
                     ParentalControlCard(
@@ -580,11 +846,17 @@ struct ParentalControlScreen: View {
                         isEnabled: Binding(
                             get: { isAdditionalEnabled },
                             set: { newValue in
-                                isAdditionalEnabled = newValue
-                                VisualLogger.shared.log("🔄 family_additional_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                                requestSensitiveToggleUpdate(newValue, permission: .manageCriticalFamilySettings) { accepted in
+                                    isAdditionalEnabled = accepted
+                                    VisualLogger.shared.log("🔄 family_additional_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                                }
                             }
                         ),
-                        action: { showAdditionalModal = true }
+                        action: {
+                            requireSensitiveParentSession(permission: .manageCriticalFamilySettings) {
+                                showAdditionalModal = true
+                            }
+                        }
                     )
                     
                     ParentalControlCard(
@@ -599,11 +871,17 @@ struct ParentalControlScreen: View {
                         isEnabled: Binding(
                             get: { isBypassProtectionEnabled },
                             set: { newValue in
-                                isBypassProtectionEnabled = newValue
-                                VisualLogger.shared.log("🔄 family_bypass_protection_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
+                                requestSensitiveToggleUpdate(newValue, permission: .manageCriticalFamilySettings) { accepted in
+                                    isBypassProtectionEnabled = accepted
+                                    VisualLogger.shared.log("🔄 family_bypass_protection_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                                }
                             }
                         ),
-                        action: { showBypassProtectionModal = true }
+                        action: {
+                            requireSensitiveParentSession(permission: .manageCriticalFamilySettings) {
+                                showBypassProtectionModal = true
+                            }
+                        }
                     )
                 }
             }
@@ -617,8 +895,10 @@ struct ParentalControlScreen: View {
     
     private var rewardsCard: some View {
         Button(action: {
-            HapticFeedback.impact(.medium)
-            showRewardsModal = true
+            requireSensitiveParentSession(permission: .manageCriticalFamilySettings) {
+                HapticFeedback.impact(.medium)
+                showRewardsModal = true
+            }
         }) {
             HStack(spacing: Spacing.m) {
                 // Название "Вознаграждение ребенка" на всю ширину карточки (без переносов)
@@ -750,6 +1030,13 @@ struct ParentalControlScreen: View {
                     self.statsErrorMessage = nil
                     // Обновляем список детей из API
                     self.children = members
+                    let rosterFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+                        .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                    ProfileManager.shared.syncChildRosterFromServer(
+                        members: members,
+                        familyId: rosterFamilyId.isEmpty ? nil : rosterFamilyId,
+                        removeMissingServerLinkedChildren: true
+                    )
                     
                     // ✅ ИСПРАВЛЕНИЕ: Если после фильтрации нет детей из API, но есть локальные - используем локальные
                     if self.childMembers.isEmpty && hasLocalChildren {
@@ -825,25 +1112,30 @@ struct ParentalControlScreen: View {
         // Приоритет нового ключа ID
         if let byStoredId = childMembers.first(where: { $0.id == selectedChildId }) {
             selectedChild = byStoredId.id
+            UserDefaults.standard.set(byStoredId.id, forKey: "active_child_profile_server_id")
             return byStoredId.id
         }
         // Обратная совместимость: если selectedChild содержит имя, конвертируем в ID
         if let byName = childMembers.first(where: { $0.name == selectedChild }) {
             selectedChild = byName.id
             selectedChildId = byName.id
+            UserDefaults.standard.set(byName.id, forKey: "active_child_profile_server_id")
             return byName.id
         }
         if let existing = childMembers.first(where: { $0.id == selectedChild }) {
             selectedChildId = existing.id
+            UserDefaults.standard.set(existing.id, forKey: "active_child_profile_server_id")
             return existing.id
         }
         if let firstChild = childMembers.first {
             selectedChild = firstChild.id
             selectedChildId = firstChild.id
+            UserDefaults.standard.set(firstChild.id, forKey: "active_child_profile_server_id")
             return firstChild.id
         }
         selectedChild = ""
         selectedChildId = ""
+        UserDefaults.standard.removeObject(forKey: "active_child_profile_server_id")
         return nil
     }
     
@@ -1075,6 +1367,34 @@ struct ParentalControlScreen: View {
                 print("⚠️ Ошибка загрузки блокировок приложений: \(error.localizedDescription)")
             }
         }
+    }
+
+    @MainActor
+    private func refreshFamilyControlsReadiness() async {
+        let readiness = await manager.applyFamilyControlsPipelineIfPossible()
+        familyControlsReadiness = readiness
+
+        guard !readiness.isPipelineReady else {
+            familyControlsFallbackMessage = nil
+            return
+        }
+
+        let reason = readiness.fallbackReason ?? "unknown"
+        familyControlsFallbackMessage = localizationManager.currentLanguage == .russian
+            ? "Системный контур Family Controls недоступен (\(reason)). Продолжаем через серверный fallback."
+            : "System Family Controls pipeline is unavailable (\(reason)). Continuing with server-side fallback."
+    }
+
+    private func refreshElderlySyncReport() {
+        guard let report = ElderlyHealthSyncAudit.latestReport() else {
+            elderlySyncReportBanner = nil
+            return
+        }
+        guard report.hasDesync else {
+            elderlySyncReportBanner = nil
+            return
+        }
+        elderlySyncReportBanner = report.summary
     }
 }
 

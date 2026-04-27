@@ -27,6 +27,9 @@ struct ElderlyInterfaceScreen: View {
     
     // Сохраняем настройку безопасности в AppStorage
     @AppStorage("elderly_security_enabled") private var isSecurityEnabled: Bool = true
+    @AppStorage("elderly_font_size") private var elderlyFontSize: Double = 16
+    @AppStorage("elderly_large_read_mode") private var elderlyLargeReadMode: Bool = false
+    @AppStorage("elderly_contrast_preset") private var elderlyContrastPreset: String = "standard"
     @State private var blockedContactsCount: Int = 0
     
     // Состояния для экстренной помощи
@@ -35,6 +38,7 @@ struct ElderlyInterfaceScreen: View {
     @State private var showCallChildrenAlert: Bool = false
     @State private var showSecurityStatus: Bool = false
     @State private var showElderlySettings: Bool = false
+    @State private var criticalActionStatusMessage: String?
     
     // Данные здоровья (загружаются из UserDefaults)
     @State private var medications: [Medication] = []
@@ -43,6 +47,32 @@ struct ElderlyInterfaceScreen: View {
     
     // Данные семьи (синхронизируются с family_members_list)
     @State private var familyMembers: [ElderlyFamilyMember] = []
+    @State private var elderlyFeedItems: [ContentItem] = []
+    
+    private var emergencyContacts: [ElderlyFamilyMember] {
+        familyMembers.filter { member in
+            member.rawRole == .child || member.rawRole == .teenager || member.rawRole == .parent
+        }
+    }
+
+    private var elderlyDynamicType: DynamicTypeSize {
+        elderlyLargeReadMode || elderlyFontSize >= 22 ? .accessibility3 : .large
+    }
+
+    private var elderlyContrastValue: Double {
+        elderlyContrastPreset == "high" ? 1.22 : 1.0
+    }
+
+    private var elderlyBackgroundColors: [Color] {
+        if elderlyContrastPreset == "high" {
+            return [Color.black, Color(hex: "#103b1e"), Color(hex: "#1b5e20")]
+        }
+        return [
+            Color(hex: "#2D5016"),
+            Color(hex: "#4A7C59"),
+            Color(hex: "#6B8E23")
+        ]
+    }
     
     // MARK: - Body
     
@@ -50,11 +80,7 @@ struct ElderlyInterfaceScreen: View {
         ZStack {
             // Фон (зеленый как в wireframe для пожилых)
             LinearGradient(
-                colors: [
-                    Color(hex: "#2D5016"),
-                    Color(hex: "#4A7C59"), 
-                    Color(hex: "#6B8E23")
-                ],
+                colors: elderlyBackgroundColors,
                 startPoint: .topLeading,
                 endPoint: .bottomTrailing
             )
@@ -72,6 +98,9 @@ struct ElderlyInterfaceScreen: View {
                         
                         // Секция здоровья
                         healthSection
+
+                        // Рекомендованный контент 60+
+                        elderlyContentSection
                         
                         // Семейная панель
                         familySection
@@ -147,8 +176,8 @@ struct ElderlyInterfaceScreen: View {
                 .environmentObject(localizationManager)
         }
         .alert(localizationManager.localized("elderly_interface_call_children_question"), isPresented: $showCallChildrenAlert) {
-            // Динамический список детей из familyMembers
-            ForEach(familyMembers.filter { $0.role.lowercased().contains("сын") || $0.role.lowercased().contains("дочь") || $0.role.lowercased().contains("внук") || $0.role.lowercased().contains("внучка") }) { member in
+            // Use role-safe filtering instead of localized string matching.
+            ForEach(emergencyContacts) { member in
                 Button("\(member.name) (\(member.role))") {
                     callFamilyMember(member.name, member.phone)
                 }
@@ -157,14 +186,44 @@ struct ElderlyInterfaceScreen: View {
         } message: {
             Text(localizationManager.localized("elderly_interface_choose_whom"))
         }
+        .overlay(alignment: .bottom) {
+            if let status = criticalActionStatusMessage, !status.isEmpty {
+                Text(status)
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, Spacing.l)
+                    .padding(.vertical, Spacing.s)
+                    .background(Color.black.opacity(0.6))
+                    .clipShape(Capsule())
+                    .padding(.bottom, Spacing.xl)
+                    .onTapGesture { criticalActionStatusMessage = nil }
+            }
+        }
         .onAppear {
             loadFamilyMembers()
             loadMedications()
             loadAppointments()
             loadBloodPressure()
+            runDataIntegrityAudit()
+            Task {
+                await loadElderlyContentFeed()
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
             loadFamilyMembers()
+        }
+        .dynamicTypeSize(elderlyDynamicType)
+        .contrast(elderlyContrastValue)
+    }
+
+    private func loadElderlyContentFeed() async {
+        let resolvedCategories = Set(FamilyContentSafetyBridge.resolvedElderlyCategories())
+        let feed = await ContentManager.shared.loadUnifiedAudienceFeed(
+            audience: .elderly,
+            limit: 6
+        )
+        elderlyFeedItems = feed.filter { item in
+            resolvedCategories.contains(item.categoryId)
         }
     }
     
@@ -313,6 +372,32 @@ struct ElderlyInterfaceScreen: View {
         }
         .padding(.horizontal, Spacing.screenPadding)
     }
+
+    private var elderlyContentSection: some View {
+        VStack(spacing: Spacing.m) {
+            HStack {
+                Text(localizationManager.localized(FamilyContentSafetyBridge.safetyTitleKey))
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.white)
+                Spacer()
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+
+            if !elderlyFeedItems.isEmpty {
+                VStack(spacing: Spacing.m) {
+                    ForEach(elderlyFeedItems, id: \.id) { item in
+                        bigElderlyButton(
+                            icon: "📘",
+                            title: item.metadata.title,
+                            subtitle: item.metadata.subtitle ?? localizationManager.localized("elderly_interface_view_records"),
+                            color: .secondaryGold
+                        )
+                    }
+                }
+                .padding(.horizontal, Spacing.screenPadding)
+            }
+        }
+    }
     
     // MARK: - Health Section
     
@@ -340,7 +425,8 @@ struct ElderlyInterfaceScreen: View {
                         ? localizationManager.localized("elderly_medications_add_for_reminders")
                         : String(format: localizationManager.localized("elderly_medications_next_dose"), medications.first?.time ?? "—", medications.first?.name ?? "—"),
                     color: .blue,
-                    action: { showMedicationReminder = true }
+                    action: { showMedicationReminder = true },
+                    accessibilityHint: localizationManager.localized("elderly_a11y_opens_details_hint")
                 )
                 
                 // 2. Визиты к врачу
@@ -351,7 +437,8 @@ struct ElderlyInterfaceScreen: View {
                         ? localizationManager.localized("elderly_appointments_add")
                         : String(format: localizationManager.localized("elderly_appointments_next"), appointments.first?.date ?? "—", appointments.first?.doctor ?? "—"),
                     color: .green,
-                    action: { showDoctorAppointments = true }
+                    action: { showDoctorAppointments = true },
+                    accessibilityHint: localizationManager.localized("elderly_a11y_opens_details_hint")
                 )
                 
                 // 3. Измерение давления
@@ -360,7 +447,8 @@ struct ElderlyInterfaceScreen: View {
                     title: localizationManager.localized("elderly_interface_blood_pressure"),
                     subtitle: localizationManager.localized("elderly_interface_last_reading", bloodPressure.systolic, bloodPressure.diastolic, bloodPressure.date),
                     color: .red,
-                    action: { showBloodPressure = true }
+                    action: { showBloodPressure = true },
+                    accessibilityHint: localizationManager.localized("elderly_a11y_opens_details_hint")
                 )
                 
                 // 4. Журнал здоровья
@@ -369,13 +457,14 @@ struct ElderlyInterfaceScreen: View {
                     title: localizationManager.localized("elderly_interface_health_journal"),
                     subtitle: localizationManager.localized("elderly_interface_view_records"),
                     color: .purple,
-                    action: { showHealthJournal = true }
+                    action: { showHealthJournal = true },
+                    accessibilityHint: localizationManager.localized("elderly_a11y_opens_details_hint")
                 )
             }
         }
     }
     
-    private func healthCard(icon: String, title: String, subtitle: String, color: Color, action: @escaping () -> Void) -> some View {
+    private func healthCard(icon: String, title: String, subtitle: String, color: Color, action: @escaping () -> Void, accessibilityHint: String? = nil) -> some View {
         Button(action: action) {
             HStack(spacing: Spacing.l) {
                 // Иконка
@@ -416,6 +505,9 @@ struct ElderlyInterfaceScreen: View {
         }
         .buttonStyle(PlainButtonStyle())
         .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title). \(subtitle)")
+        .accessibilityHint(accessibilityHint ?? localizationManager.localized("elderly_a11y_opens_details_hint"))
     }
     
     // MARK: - Family Section
@@ -511,6 +603,8 @@ struct ElderlyInterfaceScreen: View {
                     .clipShape(Circle())
             }
             .buttonStyle(PlainButtonStyle())
+            .accessibilityLabel("\(localizationManager.localized("elderly_interface_call_children")): \(member.name)")
+            .accessibilityHint(localizationManager.localized("elderly_a11y_calls_family_hint"))
         }
         .padding(Spacing.l)
         .background(
@@ -544,7 +638,7 @@ struct ElderlyInterfaceScreen: View {
             VStack(spacing: Spacing.m) {
                 // Кнопка "ПОЗВОНИТЬ ДЕТЯМ"
                 Button(action: {
-                    showCallChildrenAlert = true
+                    startQuickFamilyCall()
                 }) {
                     HStack(spacing: Spacing.l) {
                         Text("📞")
@@ -583,6 +677,9 @@ struct ElderlyInterfaceScreen: View {
                     )
                 }
                 .buttonStyle(PlainButtonStyle())
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(localizationManager.localized("elderly_interface_call_children"))
+                .accessibilityHint(localizationManager.localized("elderly_a11y_calls_family_hint"))
                 
                 // Кнопка SOS
                 sosButton
@@ -596,7 +693,7 @@ struct ElderlyInterfaceScreen: View {
         VStack(spacing: Spacing.l) {
             // Заголовок секции
             HStack {
-                Text(localizationManager.localized("elderly_interface_security_title"))
+                Text(localizationManager.localized(FamilyContentSafetyBridge.safetyTitleKey))
                     .font(.system(size: 24, weight: .bold))
                     .foregroundColor(.white)
                     .lineLimit(1)
@@ -679,6 +776,9 @@ struct ElderlyInterfaceScreen: View {
         }
         .buttonStyle(PlainButtonStyle())
         .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title). \(subtitle)")
+        .accessibilityHint(localizationManager.localized("elderly_a11y_opens_details_hint"))
     }
     
     // MARK: - Big Buttons List
@@ -691,9 +791,10 @@ struct ElderlyInterfaceScreen: View {
                 title: localizationManager.localized("elderly_interface_big_button_call"),
                 subtitle: localizationManager.localized("elderly_interface_big_button_call_subtitle"),
                 color: .successGreen,
+                accessibilityHint: localizationManager.localized("elderly_a11y_calls_family_hint"),
                 action: {
-                    // Логика звонка родным
-                    showCallChildrenAlert = true
+                    // 1 tap direct call when priority contact exists; fallback to chooser.
+                    startQuickFamilyCall()
                 }
             )
             
@@ -703,19 +804,23 @@ struct ElderlyInterfaceScreen: View {
                 title: localizationManager.localized("elderly_interface_big_button_protection"),
                 subtitle: localizationManager.localized("elderly_interface_big_button_protection_subtitle"),
                 color: .primaryBlue,
+                accessibilityHint: localizationManager.localized("elderly_a11y_triggers_protection_hint"),
                 action: {
-                    showSecuritySettings = true
+                    runQuickSecurityAction()
                 }
             )
             
             // Инструкции
             bigElderlyButton(
-                icon: "📖",
-                title: localizationManager.localized("elderly_interface_big_button_instructions"),
-                subtitle: localizationManager.localized("elderly_interface_big_button_instructions_subtitle"),
+                icon: "💊",
+                title: localizationManager.localized("elderly_interface_medications"),
+                subtitle: medications.first(where: { !$0.taken }) != nil
+                    ? localizationManager.localized("elderly_medications_take")
+                    : localizationManager.localized("elderly_medications_add_for_reminders"),
                 color: .warningOrange,
+                accessibilityHint: localizationManager.localized("elderly_a11y_marks_medication_hint"),
                 action: {
-                    showInstructions = true
+                    markFirstPendingMedicationAsTaken()
                 }
             )
         }
@@ -727,6 +832,7 @@ struct ElderlyInterfaceScreen: View {
         title: String,
         subtitle: String,
         color: Color,
+        accessibilityHint: String? = nil,
         action: @escaping () -> Void = {}
     ) -> some View {
         Button(action: {
@@ -773,6 +879,9 @@ struct ElderlyInterfaceScreen: View {
             .shadow(color: color.opacity(0.3), radius: 12, x: 0, y: 4)
         }
         .buttonStyle(PlainButtonStyle())
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("\(title). \(subtitle)")
+        .accessibilityHint(accessibilityHint ?? localizationManager.localized("elderly_a11y_opens_details_hint"))
     }
     
     // MARK: - SOS Button
@@ -815,6 +924,9 @@ struct ElderlyInterfaceScreen: View {
         }
         .buttonStyle(PlainButtonStyle())
         .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel(localizationManager.localized("elderly_interface_sos_button"))
+        .accessibilityHint(localizationManager.localized("elderly_a11y_sos_hint"))
         .alert(localizationManager.localized("elderly_emergency_services_title"), isPresented: $showEmergencyAlert) {
             Button(localizationManager.localized("elderly_interface_ambulance")) {
                 callEmergencyService("103")
@@ -839,9 +951,70 @@ struct ElderlyInterfaceScreen: View {
         if let url = URL(string: "tel://\(phone.replacingOccurrences(of: " ", with: "").replacingOccurrences(of: "-", with: "").replacingOccurrences(of: "(", with: "").replacingOccurrences(of: ")", with: ""))"),
            UIApplication.shared.canOpenURL(url) {
             UIApplication.shared.open(url)
+            criticalActionStatusMessage = "\(localizationManager.localized("elderly_interface_quick_call")): \(name)"
         } else {
             print("⚠️ Не удалось открыть звонок \(name): \(phone)")
         }
+    }
+
+    private func startQuickFamilyCall() {
+        if let primary = emergencyContacts.first {
+            callFamilyMember(primary.name, primary.phone)
+            return
+        }
+        showCallChildrenAlert = true
+    }
+
+    private func markFirstPendingMedicationAsTaken() {
+        guard let idx = medications.firstIndex(where: { !$0.taken }) else {
+            criticalActionStatusMessage = localizationManager.localized("elderly_medications_add_for_reminders")
+            return
+        }
+        medications[idx].taken = true
+        saveMedications()
+        criticalActionStatusMessage = localizationManager.localized("elderly_medications_taken")
+    }
+
+    private func runQuickSecurityAction() {
+        isSecurityEnabled = true
+        blockedContactsCount = max(blockedContactsCount, 0)
+        criticalActionStatusMessage = localizationManager.localized("elderly_interface_protection_enabled")
+    }
+
+    // Phase 9.2 start: integrity check + normalization for critical 60+ data.
+    private func runDataIntegrityAudit() {
+        let existingContacts: [FamilyContact] = {
+            let key = "elderly_family_contacts_list"
+            guard let raw = UserDefaults.standard.data(forKey: key),
+                  let decoded = try? JSONDecoder().decode([FamilyContact].self, from: raw) else {
+                return []
+            }
+            return decoded
+        }()
+
+        let result = ElderlyHealthSyncAudit.synchronizeAcrossDevices(
+            localMedications: medications,
+            localAppointments: appointments,
+            localContacts: existingContacts
+        )
+        medications = result.medications
+        appointments = result.appointments
+        saveMedications()
+        saveAppointments()
+        if let encoded = try? JSONEncoder().encode(result.contacts) {
+            UserDefaults.standard.set(encoded, forKey: "elderly_family_contacts_list")
+        }
+        ElderlyHealthSyncAudit.persistLatestReport(result.report)
+        if result.report.hasDesync {
+            criticalActionStatusMessage = result.report.summary
+        }
+    }
+
+    private func placeholderPhone(for member: FamilyMemberData) -> String {
+        let source = (member.serverMemberId ?? member.id)
+        let digits = source.filter(\.isNumber)
+        let tail = String(digits.suffix(2)).padding(toLength: 2, withPad: "0", startingAt: 0)
+        return "+7 (999) 000-00-\(tail)"
     }
     
     // MARK: - Profile Image Management
@@ -870,9 +1043,8 @@ struct ElderlyInterfaceScreen: View {
     // MARK: - Data Loading and Saving
     
     private func loadFamilyMembers() {
-        // Загружаем из family_members_list и преобразуем в ElderlyFamilyMember
-        guard let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
-              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
+        let decoded = UnifiedFamilyRoster.load()
+        guard !decoded.isEmpty else {
             familyMembers = []
             print("⚠️ Нет данных о членах семьи в UserDefaults")
             return
@@ -886,7 +1058,7 @@ struct ElderlyInterfaceScreen: View {
             case .parent: roleString = localizationManager.localized("elderly_family_role_parent")
             case .child: roleString = localizationManager.localized("elderly_family_role_child")
             case .teenager: roleString = localizationManager.localized("elderly_family_role_teenager")
-            case .elderly: roleString = "60+"
+            case .elderly: roleString = localizationManager.localized("elderly_family_role_elderly")
             }
             
             // Определяем статус (упрощённо - всегда online для синхронизированных данных)
@@ -895,9 +1067,10 @@ struct ElderlyInterfaceScreen: View {
             return ElderlyFamilyMember(
                 name: member.name,
                 role: roleString,
+                rawRole: member.role,
                 status: status,
                 avatar: member.avatar,
-                phone: "+7 (999) 000-00-00" // TODO: Добавить телефон в FamilyMemberData
+                phone: placeholderPhone(for: member)
             )
         }
         
@@ -924,6 +1097,11 @@ struct ElderlyInterfaceScreen: View {
         
         UserDefaults.standard.set(encoded, forKey: "elderly_medications_list")
         print("✅ Сохранено лекарств: \(medications.count)")
+        ElderlyHealthSyncAudit.persistSnapshot(
+            medications: medications,
+            appointments: appointments,
+            contacts: loadPersistedContacts()
+        )
         
         // Уведомляем другие экраны об изменении (для синхронизации)
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
@@ -949,6 +1127,11 @@ struct ElderlyInterfaceScreen: View {
         
         UserDefaults.standard.set(encoded, forKey: "elderly_appointments_list")
         print("✅ Сохранено записей к врачу: \(appointments.count)")
+        ElderlyHealthSyncAudit.persistSnapshot(
+            medications: medications,
+            appointments: appointments,
+            contacts: loadPersistedContacts()
+        )
         
         // Уведомляем другие экраны об изменении (для синхронизации)
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
@@ -981,6 +1164,14 @@ struct ElderlyInterfaceScreen: View {
         // Уведомляем другие экраны об изменении
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
     }
+
+    private func loadPersistedContacts() -> [FamilyContact] {
+        guard let raw = UserDefaults.standard.data(forKey: "elderly_family_contacts_list"),
+              let decoded = try? JSONDecoder().decode([FamilyContact].self, from: raw) else {
+            return []
+        }
+        return decoded
+    }
 }
 
 // MARK: - Elderly Settings Modal
@@ -989,6 +1180,8 @@ struct ElderlySettingsModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
     @AppStorage("elderly_font_size") private var fontSize: Double = 16
+    @AppStorage("elderly_large_read_mode") private var largeReadMode: Bool = false
+    @AppStorage("elderly_contrast_preset") private var contrastPreset: String = "standard"
     @AppStorage("elderly_sound_enabled") private var soundEnabled: Bool = true
     @AppStorage("elderly_vibration_enabled") private var vibrationEnabled: Bool = true
     @AppStorage("elderly_auto_call_enabled") private var autoCallEnabled: Bool = false
@@ -1025,6 +1218,15 @@ struct ElderlySettingsModal: View {
                         Text(String(format: localizationManager.localized("elderly_settings_font_size_current"), Int(fontSize)))
                             .font(.system(size: 16))
                             .foregroundColor(.blue)
+
+                        Toggle(localizationManager.localized("elderly_settings_large_read_mode"), isOn: $largeReadMode)
+                            .font(.system(size: 16, weight: .semibold))
+
+                        Picker(localizationManager.localized("elderly_settings_contrast_title"), selection: $contrastPreset) {
+                            Text(localizationManager.localized("elderly_settings_contrast_standard")).tag("standard")
+                            Text(localizationManager.localized("elderly_settings_contrast_high")).tag("high")
+                        }
+                        .pickerStyle(.segmented)
                     }
                     .padding()
                     .background(Color.blue.opacity(0.1))
@@ -1278,15 +1480,12 @@ struct AddPhoneNumberModal: View {
 struct EditContactsModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @State private var familyContacts: [FamilyContact] = [
-        FamilyContact(name: "Александр", phone: "+7 (999) 123-45-67", relation: "Сын"),
-        FamilyContact(name: "Елена", phone: "+7 (999) 234-56-78", relation: "Невестка"),
-        FamilyContact(name: "Алексей", phone: "+7 (999) 345-67-89", relation: "Внук")
-    ]
+    @State private var familyContacts: [FamilyContact] = []
     @State private var editingContact: FamilyContact?
     @State private var editingContactIndex: Int?
     @State private var showDeleteAlert: Bool = false
     @State private var contactToDelete: Int?
+    @State private var canEditContacts: Bool = false
     
     var body: some View {
         NavigationView {
@@ -1294,6 +1493,14 @@ struct EditContactsModal: View {
                 Text(localizationManager.localized("elderly_settings_edit_contacts_title"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
+
+                if !canEditContacts {
+                    Text(localizationManager.localized("elderly_contacts_edit_permission_notice"))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.orange)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Spacing.m)
+                }
                 
                 ScrollView {
                     LazyVStack(spacing: Spacing.s) {
@@ -1316,20 +1523,30 @@ struct EditContactsModal: View {
                                 Spacer()
                                 
                                 Button(action: {
+                                    guard canEditContacts else { return }
                                     editingContact = familyContacts[index]
                                     editingContactIndex = index
                                 }) {
                                     Image(systemName: "pencil")
                                         .foregroundColor(.blue)
                                 }
+                                .disabled(!canEditContacts)
+                                .opacity(canEditContacts ? 1 : 0.35)
+                                .accessibilityLabel(localizationManager.localized("elderly_contact_edit_save"))
+                                .accessibilityHint(localizationManager.localized("elderly_a11y_contact_edit_hint"))
                                 
                                 Button(action: {
+                                    guard canEditContacts else { return }
                                     contactToDelete = index
                                     showDeleteAlert = true
                                 }) {
                                     Image(systemName: "trash")
                                         .foregroundColor(.red)
                                 }
+                                .disabled(!canEditContacts)
+                                .opacity(canEditContacts ? 1 : 0.35)
+                                .accessibilityLabel(localizationManager.localized("elderly_contact_edit_delete"))
+                                .accessibilityHint(localizationManager.localized("elderly_a11y_contact_delete_hint"))
                             }
                             .padding()
                             .background(Color.gray.opacity(0.1))
@@ -1350,11 +1567,18 @@ struct EditContactsModal: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("elderly_settings_edit_contacts_done")) {
+                        if canEditContacts {
+                            saveContacts()
+                        }
                         isPresented = false
                     }
                 }
             }
             .onAppear {
+                let members = UnifiedFamilyRoster.load()
+                let permissionSnapshot = FamilyPermissionLayer.snapshot(members: members)
+                let directPermission = FamilyAccessPolicy.hasPermission(.editFamilyContacts, members: members)
+                canEditContacts = permissionSnapshot.canEditContacts && directPermission
                 loadContacts()
             }
             .sheet(item: $editingContact) { contact in
@@ -1399,31 +1623,21 @@ struct EditContactsModal: View {
             print("✅ Загружено контактов из elderly_family_contacts_list: \(familyContacts.count)")
             return
         }
-        
-        // Если нет сохраненных контактов, загружаем из family_members_list и преобразуем в FamilyContact
-        guard let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
-              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
+
+        let decoded = UnifiedFamilyRoster.load()
+        guard !decoded.isEmpty else {
             familyContacts = []
             print("⚠️ Нет данных о членах семьи в UserDefaults")
             return
         }
-        
-        // Преобразуем FamilyMemberData в FamilyContact
-        familyContacts = decoded.map { member in
-            // Определяем роль (преобразуем FamilyMemberCard.FamilyRole в строку)
-            let relationString: String
-            switch member.role {
-            case .parent: relationString = localizationManager.localized("elderly_family_role_parent")
-            case .child: relationString = localizationManager.localized("elderly_family_relation_son")
-            case .teenager: relationString = localizationManager.localized("elderly_family_role_teenager")
-            case .elderly: relationString = localizationManager.localized("elderly_family_relation_you")
-            }
-            
-            return FamilyContact(
-                id: UUID(uuidString: member.id) ?? UUID(),
-                name: member.name,
-                phone: "+7 (999) 000-00-00", // TODO: Добавить телефон в FamilyMemberData
-                relation: relationString
+
+        let projections = UnifiedFamilyRoster.contactProjections(audience: .elderly, members: decoded)
+        familyContacts = projections.map { item in
+            FamilyContact(
+                id: item.id,
+                name: item.name,
+                phone: item.phone,
+                relation: localizationManager.localized(item.relationLocalizationKey)
             )
         }
         
@@ -1440,9 +1654,33 @@ struct EditContactsModal: View {
         UserDefaults.standard.set(encoded, forKey: "elderly_family_contacts_list")
         UserDefaults.standard.synchronize() // Принудительная синхронизация
         print("✅ Сохранено контактов: \(familyContacts.count) в elderly_family_contacts_list")
+        let roster = UnifiedFamilyRoster.load()
+        let phoneEntries = Dictionary(uniqueKeysWithValues: familyContacts.map { ($0.id, $0.phone) })
+        UnifiedFamilyRoster.persistPhoneDirectory(entriesByContactId: phoneEntries, members: roster)
+        ElderlyHealthSyncAudit.persistSnapshot(
+            medications: loadPersistedMedications(),
+            appointments: loadPersistedAppointments(),
+            contacts: familyContacts
+        )
         
         // Уведомляем другие экраны об изменении
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+    }
+
+    private func loadPersistedMedications() -> [Medication] {
+        guard let raw = UserDefaults.standard.data(forKey: "elderly_medications_list"),
+              let decoded = try? JSONDecoder().decode([Medication].self, from: raw) else {
+            return []
+        }
+        return decoded
+    }
+
+    private func loadPersistedAppointments() -> [DoctorAppointment] {
+        guard let raw = UserDefaults.standard.data(forKey: "elderly_appointments_list"),
+              let decoded = try? JSONDecoder().decode([DoctorAppointment].self, from: raw) else {
+            return []
+        }
+        return decoded
     }
 // MARK: - Elderly Edit Contact Modal
 
@@ -1692,6 +1930,219 @@ struct BloodPressureReading: Identifiable {
     let date: String
 }
 
+struct ElderlyHealthSyncReport: Codable {
+    let createdAt: Date
+    let medicationsRemoved: Int
+    let appointmentsRemoved: Int
+    let contactsRemoved: Int
+
+    var hasDesync: Bool {
+        medicationsRemoved > 0 || appointmentsRemoved > 0 || contactsRemoved > 0
+    }
+
+    var summary: String {
+        "Elderly data sync audit: medsRemoved=\(medicationsRemoved), appointmentsRemoved=\(appointmentsRemoved), contactsRemoved=\(contactsRemoved)"
+    }
+}
+
+struct ElderlyHealthSyncEnvelope: Codable {
+    let revision: Int
+    let updatedAt: Date
+    let medications: [Medication]
+    let appointments: [DoctorAppointment]
+    let contacts: [FamilyContact]
+}
+
+enum ElderlyHealthSyncAudit {
+    static let latestReportKey = "elderly_health_sync_audit_report_v1"
+    static let snapshotEnvelopeKey = "elderly_health_sync_snapshot_envelope_v1"
+
+    struct Result {
+        let medications: [Medication]
+        let appointments: [DoctorAppointment]
+        let contacts: [FamilyContact]
+        let report: ElderlyHealthSyncReport
+    }
+
+    static func perform(
+        medications: [Medication],
+        appointments: [DoctorAppointment],
+        contacts: [FamilyContact],
+        now: Date = Date()
+    ) -> Result {
+        let filteredMeds = medications.filter {
+            !$0.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            !$0.time.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+        let filteredAppointments = appointments.filter {
+            !$0.doctor.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            !$0.date.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+            !$0.time.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        }
+        let filteredContacts = contacts.filter { isPhoneLikelyCallable($0.phone) }
+
+        let report = ElderlyHealthSyncReport(
+            createdAt: now,
+            medicationsRemoved: max(0, medications.count - filteredMeds.count),
+            appointmentsRemoved: max(0, appointments.count - filteredAppointments.count),
+            contactsRemoved: max(0, contacts.count - filteredContacts.count)
+        )
+        return Result(
+            medications: filteredMeds,
+            appointments: filteredAppointments,
+            contacts: filteredContacts,
+            report: report
+        )
+    }
+
+    static func synchronizeAcrossDevices(
+        localMedications: [Medication],
+        localAppointments: [DoctorAppointment],
+        localContacts: [FamilyContact],
+        defaults: UserDefaults = .standard,
+        now: Date = Date()
+    ) -> Result {
+        let incoming = latestSnapshot(defaults: defaults)
+        let merged = mergeWithoutLoss(
+            localMedications: localMedications,
+            localAppointments: localAppointments,
+            localContacts: localContacts,
+            incoming: incoming
+        )
+        let normalized = perform(
+            medications: merged.medications,
+            appointments: merged.appointments,
+            contacts: merged.contacts,
+            now: now
+        )
+        persistLatestReport(normalized.report, defaults: defaults)
+        persistSnapshot(
+            medications: normalized.medications,
+            appointments: normalized.appointments,
+            contacts: normalized.contacts,
+            defaults: defaults,
+            now: now
+        )
+        return normalized
+    }
+
+    static func persistLatestReport(_ report: ElderlyHealthSyncReport, defaults: UserDefaults = .standard) {
+        guard let encoded = try? JSONEncoder().encode(report) else { return }
+        defaults.set(encoded, forKey: latestReportKey)
+    }
+
+    static func latestReport(defaults: UserDefaults = .standard) -> ElderlyHealthSyncReport? {
+        guard let raw = defaults.data(forKey: latestReportKey) else { return nil }
+        return try? JSONDecoder().decode(ElderlyHealthSyncReport.self, from: raw)
+    }
+
+    static func persistSnapshot(
+        medications: [Medication],
+        appointments: [DoctorAppointment],
+        contacts: [FamilyContact],
+        defaults: UserDefaults = .standard,
+        now: Date = Date()
+    ) {
+        let currentRevision = latestSnapshot(defaults: defaults)?.revision ?? 0
+        let envelope = ElderlyHealthSyncEnvelope(
+            revision: currentRevision + 1,
+            updatedAt: now,
+            medications: medications,
+            appointments: appointments,
+            contacts: contacts
+        )
+        guard let encoded = try? JSONEncoder().encode(envelope) else { return }
+        defaults.set(encoded, forKey: snapshotEnvelopeKey)
+    }
+
+    static func latestSnapshot(defaults: UserDefaults = .standard) -> ElderlyHealthSyncEnvelope? {
+        guard let raw = defaults.data(forKey: snapshotEnvelopeKey) else { return nil }
+        return try? JSONDecoder().decode(ElderlyHealthSyncEnvelope.self, from: raw)
+    }
+
+    private static func mergeWithoutLoss(
+        localMedications: [Medication],
+        localAppointments: [DoctorAppointment],
+        localContacts: [FamilyContact],
+        incoming: ElderlyHealthSyncEnvelope?
+    ) -> (medications: [Medication], appointments: [DoctorAppointment], contacts: [FamilyContact]) {
+        guard let incoming else {
+            return (localMedications, localAppointments, localContacts)
+        }
+
+        let medications = mergeByMedicationId(local: localMedications, incoming: incoming.medications)
+        let appointments = mergeByAppointmentId(local: localAppointments, incoming: incoming.appointments)
+        let contacts = mergeByContactId(local: localContacts, incoming: incoming.contacts)
+        return (medications, appointments, contacts)
+    }
+
+    private static func mergeByMedicationId(local: [Medication], incoming: [Medication]) -> [Medication] {
+        var byId: [UUID: Medication] = [:]
+        incoming.forEach { byId[$0.id] = $0 }
+        for item in local {
+            if let previous = byId[item.id] {
+                byId[item.id] = Medication(
+                    id: item.id,
+                    name: preferredString(local: item.name, incoming: previous.name),
+                    time: preferredString(local: item.time, incoming: previous.time),
+                    taken: item.taken || previous.taken
+                )
+            } else {
+                byId[item.id] = item
+            }
+        }
+        return byId.values.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    private static func mergeByAppointmentId(local: [DoctorAppointment], incoming: [DoctorAppointment]) -> [DoctorAppointment] {
+        var byId: [UUID: DoctorAppointment] = [:]
+        incoming.forEach { byId[$0.id] = $0 }
+        for item in local {
+            if let previous = byId[item.id] {
+                byId[item.id] = DoctorAppointment(
+                    id: item.id,
+                    date: preferredString(local: item.date, incoming: previous.date),
+                    doctor: preferredString(local: item.doctor, incoming: previous.doctor),
+                    time: preferredString(local: item.time, incoming: previous.time)
+                )
+            } else {
+                byId[item.id] = item
+            }
+        }
+        return byId.values.sorted { $0.date.localizedCaseInsensitiveCompare($1.date) == .orderedAscending }
+    }
+
+    private static func mergeByContactId(local: [FamilyContact], incoming: [FamilyContact]) -> [FamilyContact] {
+        var byId: [UUID: FamilyContact] = [:]
+        incoming.forEach { byId[$0.id] = $0 }
+        for item in local {
+            if let previous = byId[item.id] {
+                byId[item.id] = FamilyContact(
+                    id: item.id,
+                    name: preferredString(local: item.name, incoming: previous.name),
+                    phone: preferredString(local: item.phone, incoming: previous.phone),
+                    relation: preferredString(local: item.relation, incoming: previous.relation)
+                )
+            } else {
+                byId[item.id] = item
+            }
+        }
+        return byId.values.sorted { $0.name.localizedCaseInsensitiveCompare($1.name) == .orderedAscending }
+    }
+
+    private static func preferredString(local: String, incoming: String) -> String {
+        let l = local.trimmingCharacters(in: .whitespacesAndNewlines)
+        let r = incoming.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !l.isEmpty { return l }
+        return r
+    }
+
+    private static func isPhoneLikelyCallable(_ value: String) -> Bool {
+        let digits = value.filter(\.isNumber)
+        return digits.count >= 10
+    }
+}
+
 struct SafetyInstructionsModal: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -1855,6 +2306,7 @@ struct ElderlyFamilyMember: Identifiable {
     let id = UUID()
     let name: String
     let role: String
+    let rawRole: FamilyMemberCard.FamilyRole
     let status: ElderlyFamilyMemberStatus
     let avatar: String
     let phone: String
@@ -1959,7 +2411,7 @@ struct MedicationReminderModal: View {
                         VStack(alignment: .leading) {
                             Text(medication.name)
                                 .font(.system(size: 20, weight: .bold))
-                            Text("Время: \(medication.time)")
+                            Text(String(format: localizationManager.localized("elderly_medications_time"), medication.time))
                                 .font(.system(size: 16))
                                 .foregroundColor(.secondary)
                         }
@@ -1978,7 +2430,7 @@ struct MedicationReminderModal: View {
                             .foregroundColor(.white)
                             .cornerRadius(CornerRadius.small)
                             
-                            Button("✏️") {
+                            Button(localizationManager.localized("elderly_medications_edit")) {
                                 // ✅ РЕДАКТИРОВАНИЕ: Заполняем поля для редактирования
                                 editingMedication = medication
                                 newMedicationName = medication.name
@@ -1991,7 +2443,7 @@ struct MedicationReminderModal: View {
                             .foregroundColor(.white)
                             .cornerRadius(CornerRadius.small)
                             
-                            Button("🗑️") {
+                            Button(localizationManager.localized("elderly_contact_edit_delete")) {
                                 medications.removeAll { $0.id == medication.id }
                                 onSave() // Сохраняем после удаления
                             }
@@ -2149,10 +2601,10 @@ struct DoctorAppointmentsModal: View {
                         VStack(alignment: .leading) {
                             Text(appointment.doctor)
                                 .font(.system(size: 20, weight: .bold))
-                            Text("Дата: \(appointment.date)")
+                            Text(String(format: localizationManager.localized("elderly_appointments_date"), appointment.date))
                                 .font(.system(size: 16))
                                 .foregroundColor(.secondary)
-                            Text("Время: \(appointment.time)")
+                            Text(String(format: localizationManager.localized("elderly_appointments_time"), appointment.time))
                                 .font(.system(size: 16))
                                 .foregroundColor(.secondary)
                         }
@@ -2172,7 +2624,7 @@ struct DoctorAppointmentsModal: View {
                             .cornerRadius(CornerRadius.small)
                             .font(.system(size: 12))
                             
-                            Button("✏️") {
+                            Button(localizationManager.localized("elderly_appointments_edit")) {
                                 // ✅ РЕДАКТИРОВАНИЕ: Заполняем поля для редактирования
                                 editingAppointment = appointment
                                 newDoctorName = appointment.doctor
@@ -2186,7 +2638,7 @@ struct DoctorAppointmentsModal: View {
                             .foregroundColor(.white)
                             .cornerRadius(CornerRadius.small)
                             
-                            Button("🗑️") {
+                            Button(localizationManager.localized("elderly_contact_edit_delete")) {
                                 appointments.removeAll { $0.id == appointment.id }
                                 onSave() // Сохраняем после удаления
                             }
@@ -2387,7 +2839,7 @@ struct BloodPressureModal: View {
                             
                             Spacer()
                             
-                            Button("✏️") {
+                            Button(localizationManager.localized("elderly_medications_edit")) {
                                 // Редактирование измерения для конкретного дня
                                 editPressureForDay(day)
                             }
@@ -2611,7 +3063,7 @@ struct HealthJournalModal: View {
                 
                 // ✅ ИНФОРМАЦИЯ О ЛИМИТЕ: Показываем если достигнут лимит
                 if healthEntries.count >= MAX_HEALTH_ENTRIES {
-                    Text("Достигнут лимит записей (\(MAX_HEALTH_ENTRIES)). Удалите старые записи для добавления новых.")
+                    Text(String(format: localizationManager.localized("elderly_health_journal_limit_reached"), MAX_HEALTH_ENTRIES))
                         .font(.system(size: 12))
                         .foregroundColor(.orange)
                         .padding(.horizontal)
@@ -2637,7 +3089,7 @@ struct HealthJournalModal: View {
                                 
                                 HStack(spacing: Spacing.s) {
                                     // ✅ КНОПКА РЕДАКТИРОВАНИЯ
-                                    Button("✏️") {
+                                    Button(localizationManager.localized("elderly_health_journal_edit_entry")) {
                                         editingEntry = entry
                                         newEntryDate = entry.date
                                         newEntryText = entry.text
@@ -2651,7 +3103,7 @@ struct HealthJournalModal: View {
                                     .cornerRadius(CornerRadius.small)
                                     
                                     // ✅ КНОПКА УДАЛЕНИЯ
-                                    Button("🗑️") {
+                                    Button(localizationManager.localized("elderly_contact_edit_delete")) {
                                         healthEntries.removeAll { $0.id == entry.id }
                                         saveHealthEntries() // Сохраняем после удаления
                                     }
@@ -2816,7 +3268,7 @@ struct AddHealthEntrySheet: View {
                 
                 // ✅ ИНФОРМАЦИЯ О ЛИМИТЕ
                 if entries.count >= MAX_HEALTH_ENTRIES {
-                    Text("Достигнут лимит записей (\(MAX_HEALTH_ENTRIES)). Удалите старые записи.")
+                    Text(String(format: localizationManager.localized("elderly_health_journal_limit_message"), MAX_HEALTH_ENTRIES))
                         .font(.system(size: 12))
                         .foregroundColor(.orange)
                         .padding(.horizontal)

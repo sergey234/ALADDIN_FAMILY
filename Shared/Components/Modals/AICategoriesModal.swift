@@ -204,7 +204,7 @@ struct AICategoriesModal: View {
             
             if let stats = viewModel.stats {
                 VStack(spacing: Spacing.s) {
-                    ForEach(ContentCategory.allCases, id: \.self) { category in
+                    ForEach(ThreatContentCategory.allCases, id: \.self) { category in
                         if let count = stats.byCategory[category.rawValue], count > 0 {
                             categoryRow(
                                 category: category,
@@ -223,7 +223,7 @@ struct AICategoriesModal: View {
         .cardShadow()
     }
     
-    private func categoryRow(category: ContentCategory, count: Int, blocked: Int) -> some View {
+    private func categoryRow(category: ThreatContentCategory, count: Int, blocked: Int) -> some View {
         HStack {
             // Иконка категории
             Text(category.icon)

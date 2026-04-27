@@ -1,0 +1,79 @@
+{
+  "version": 1,
+  "updated_for": "independent_acceptance_gate",
+  "tasks": [
+    {
+      "task_id": "a1-fix-phase9-access-rules",
+      "required_scripts": ["scripts/phase9_access_rules_smoke.py"],
+      "required_files": [
+        "Core/Profile/FamilyAccessPolicy.swift",
+        "Screens/08_ChildInterfaceScreen.swift",
+        "Screens/09_ElderlyInterfaceScreen.swift",
+        "Screens/07_ParentalControlScreen.swift"
+      ],
+      "required_symbols": [".editFamilyContacts", ".manageFamilyLimits", ".manageCriticalFamilySettings"]
+    },
+    {
+      "task_id": "a2-fix-phase8-data-rights",
+      "required_scripts": ["scripts/phase8_security_smoke.py", "scripts/phase8_compliance_smoke.py"],
+      "required_files": ["Screens/ParentDashboardView.swift", "Core/Profile/ProfileManager.swift"],
+      "required_symbols": ["runSensitiveAction", "ParentSessionGate.confirmSensitiveAction()", "exportChildDataRightsPackage"]
+    },
+    {
+      "task_id": "a3-fix-phase8-timeouts",
+      "required_scripts": ["scripts/phase8_content_device_smoke.py", "scripts/phase8_ux_smoke.py"],
+      "required_files": ["scripts/phase8_content_device_smoke.py", "scripts/phase8_ux_smoke.py"],
+      "required_symbols": ["run_with_retry", "ROOT_CAUSE_TRACE", "BUILD_TIMEOUT_SEC"]
+    },
+    {
+      "task_id": "b1-add-independent-gate",
+      "required_scripts": ["scripts/independent_acceptance_gate.py"],
+      "required_files": [
+        "docs/INDEPENDENT_SMOKE_SUITE_REPORT.md",
+        "docs/INDEPENDENT_SMOKE_SUITE_REPORT.json"
+      ],
+      "required_symbols": ["GATE RESULT: PASS", "GATE RESULT: FAIL"]
+    },
+    {
+      "task_id": "b2-add-proof-matrix",
+      "required_scripts": [],
+      "required_files": ["docs/PLAN_PROOF_MATRIX.json"],
+      "required_symbols": ["task_id", "required_scripts", "required_files", "required_symbols"]
+    },
+    {
+      "task_id": "b3-add-weekly-pack",
+      "required_scripts": ["scripts/weekly_phase8_phase9_regression.py"],
+      "required_files": ["docs/WEEKLY_PHASE8_PHASE9_REGRESSION_REPORT.md"],
+      "required_symbols": ["pass/fail deltas", "phase8", "phase9"]
+    },
+    {
+      "task_id": "c3-build-after-target-fix",
+      "required_scripts": [],
+      "required_files": [
+        "Shared/Components/Modals/CrashDetectionSettingsModal.swift",
+        "Shared/Components/Cards/WelcomeCardForCreator.swift",
+        "Screens/GamesParentalControlScreen.swift"
+      ],
+      "required_symbols": ["ComponentConfiguration(", "CornerRadius.medium", "Color.primaryBlue"]
+    },
+    {
+      "task_id": "d1-run-full-independent-gate",
+      "required_scripts": ["scripts/independent_acceptance_gate.py"],
+      "required_files": [
+        "docs/INDEPENDENT_SMOKE_SUITE_REPORT.md",
+        "docs/INDEPENDENT_SMOKE_SUITE_REPORT.json"
+      ],
+      "required_symbols": ["Total", "Pass", "Fail/Timeout"]
+    },
+    {
+      "task_id": "d2-refresh-independent-reports",
+      "required_scripts": ["scripts/independent_acceptance_gate.py", "scripts/weekly_phase8_phase9_regression.py"],
+      "required_files": [
+        "docs/INDEPENDENT_SMOKE_SUITE_REPORT.md",
+        "docs/INDEPENDENT_SMOKE_SUITE_REPORT.json",
+        "docs/WEEKLY_PHASE8_PHASE9_REGRESSION_REPORT.md"
+      ],
+      "required_symbols": ["Generated (UTC)", "pass/fail deltas"]
+    }
+  ]
+}

@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-04-27T14:45:39.165787+00:00",
+  "check_count": 4,
+  "failed_count": 0,
+  "checks": [
+    {
+      "id": "P2W-FILE",
+      "status": "PASS",
+      "description": "Weekly loop policy exists",
+      "details": "docs/PHASE2_WEEKLY_IMPROVEMENT_LOOP.md"
+    },
+    {
+      "id": "P2W-CADENCE",
+      "status": "PASS",
+      "description": "Cadence declared",
+      "details": "weekly Monday"
+    },
+    {
+      "id": "P2W-WORKFLOW",
+      "status": "PASS",
+      "description": "Workflow stages declared",
+      "details": "build->measure->tune"
+    },
+    {
+      "id": "P2W-REPORT-CONTRACT",
+      "status": "PASS",
+      "description": "Weekly report contract declared",
+      "details": "contract fields"
+    }
+  ]
+}

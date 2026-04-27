@@ -8,6 +8,7 @@ struct MemberSettingsModalView: View {
     let memberRole: String
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     // MARK: - State для переключателей (сохранение через @AppStorage)
     
@@ -59,7 +60,7 @@ struct MemberSettingsModalView: View {
                             Text("⚙️")
                                 .font(.system(size: 64))
                             
-                            Text("Настройки")
+                            Text(localizationManager.localized("member_settings_title"))
                                 .font(.h1)
                                 .foregroundColor(.textPrimary)
                             
@@ -89,7 +90,7 @@ struct MemberSettingsModalView: View {
                     .padding(.horizontal, Spacing.screenPadding)
                 }
             }
-            .navigationTitle("Настройки")
+            .navigationTitle(localizationManager.localized("member_settings_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -104,7 +105,7 @@ struct MemberSettingsModalView: View {
             .sheet(isPresented: $showLoginHistory) {
                 LoginHistoryView()
             }
-            .alert("Смена пароля", isPresented: $showPasswordChange) {
+            .alert(localizationManager.localized("member_settings_change_password_title"), isPresented: $showPasswordChange) {
                 TextField("Новый пароль", text: .constant(""))
                 TextField("Подтверждение", text: .constant(""))
                 Button("Отмена", role: .cancel) {}
@@ -112,7 +113,7 @@ struct MemberSettingsModalView: View {
                     // TODO: Реализовать смену пароля
                 }
             } message: {
-                Text("Введите новый пароль")
+                Text(localizationManager.localized("member_settings_enter_new_password"))
             }
         }
         .environmentObject(navigationManager)
@@ -156,7 +157,7 @@ struct MemberSettingsModalView: View {
                 }) {
                     SettingsRow(
                         icon: "🔐",
-                        title: "Двухфакторная аутентификация",
+                        title: localizationManager.localized("member_settings_two_factor_auth"),
                         value: twoFactorEnabled ? "Включена" : "Выключена"
                     )
                 }
@@ -170,7 +171,7 @@ struct MemberSettingsModalView: View {
                 Button(action: {
                     showLoginHistory = true
                 }) {
-                    SettingsRow(icon: "📊", title: "История входов", value: nil)
+                    SettingsRow(icon: "📊", title: localizationManager.localized("member_settings_login_history"), value: nil)
                 }
                 .buttonStyle(PlainButtonStyle())
             }
@@ -274,6 +275,7 @@ struct MemberSettingsModalView: View {
 struct TwoFactorSettingsView: View {
     @Binding var enabled: Bool
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var code: String = ""
     
     var body: some View {
@@ -286,7 +288,7 @@ struct TwoFactorSettingsView: View {
                     Text("🔐")
                         .font(.system(size: 64))
                     
-                    Text("Двухфакторная аутентификация")
+                    Text(localizationManager.localized("member_settings_two_factor_auth"))
                         .font(.h2)
                         .foregroundColor(.textPrimary)
                         .multilineTextAlignment(.center)
@@ -315,7 +317,7 @@ struct TwoFactorSettingsView: View {
                 }
                 .padding()
             }
-            .navigationTitle("2FA")
+            .navigationTitle(localizationManager.localized("member_settings_2fa_short"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -332,6 +334,7 @@ struct TwoFactorSettingsView: View {
 
 struct LoginHistoryView: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     let history = [
         ("26.01.2025 14:30", "iPhone 13", "Успешный вход"),
@@ -379,7 +382,7 @@ struct LoginHistoryView: View {
                     .padding()
                 }
             }
-            .navigationTitle("История входов")
+            .navigationTitle(localizationManager.localized("member_settings_login_history"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

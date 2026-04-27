@@ -117,11 +117,16 @@ struct APIResponseValidator {
             case let eventsBatch as SubscriptionEventsBatchResponse:
                 try validateSubscriptionEventsBatchResponse(eventsBatch)
             default:
-                // Для неизвестных типов просто проверяем что объект не nil
-                #if DEBUG
-                print("⚠️ APIResponseValidator: Неизвестный тип \(typeName) - пропускаем валидацию")
-                #endif
-                os_log("⚠️ Unknown type %{public}@ - skipping validation", log: Self.validationLogger, type: .info, typeName)
+                // Для типов без явных правил валидации оставляем мягкий режим:
+                // либо тихо пропускаем (известные безопасные DTO), либо логируем warning.
+                if shouldSilenceUnknownTypeWarning(typeName) {
+                    os_log("🛡️ Skipping dedicated validation for known type %{public}@", log: Self.validationLogger, type: .info, typeName)
+                } else {
+                    #if DEBUG
+                    print("⚠️ APIResponseValidator: Неизвестный тип \(typeName) - пропускаем валидацию")
+                    #endif
+                    os_log("⚠️ Unknown type %{public}@ - skipping validation", log: Self.validationLogger, type: .info, typeName)
+                }
                 break
             }
         }
@@ -549,6 +554,19 @@ struct APIResponseValidator {
     private static func isValidURL(_ string: String) -> Bool {
         guard let url = URL(string: string) else { return false }
         return url.scheme != nil && url.host != nil
+    }
+    
+    /// Снижает шум логов для DTO, которые ожидаемо валидируются на уровне декодирования.
+    private static func shouldSilenceUnknownTypeWarning(_ typeName: String) -> Bool {
+        let safeTypePrefixes = [
+            "ComponentStatsDTO",
+            "LocationStats",
+            "ServerComponentConfigurationResponse",
+            "UpdateResponse",
+            "DataCleanupStats",
+            "AntiTrackerStats"
+        ]
+        return safeTypePrefixes.contains(where: { typeName.contains($0) })
     }
 }
 

@@ -1,0 +1,80 @@
+{
+  "generated_at": "2026-04-27T18:07:00.622733+00:00",
+  "profile": "baseline",
+  "check_count": 12,
+  "failed_count": 0,
+  "checks": [
+    {
+      "category_id": "child_interface_category_toys",
+      "actual": 3,
+      "required": 3,
+      "status": "PASS"
+    },
+    {
+      "category_id": "child_interface_category_drawing",
+      "actual": 3,
+      "required": 3,
+      "status": "PASS"
+    },
+    {
+      "category_id": "child_interface_category_songs",
+      "actual": 3,
+      "required": 3,
+      "status": "PASS"
+    },
+    {
+      "category_id": "child_interface_category_stories",
+      "actual": 3,
+      "required": 3,
+      "status": "PASS"
+    },
+    {
+      "category_id": "child_interface_category_games",
+      "actual": 3,
+      "required": 3,
+      "status": "PASS"
+    },
+    {
+      "category_id": "child_interface_category_study",
+      "actual": 3,
+      "required": 3,
+      "status": "PASS"
+    },
+    {
+      "category_id": "child_interface_category_safety",
+      "actual": 3,
+      "required": 3,
+      "status": "PASS"
+    },
+    {
+      "category_id": "child_interface_category_cartoons",
+      "actual": 3,
+      "required": 3,
+      "status": "PASS"
+    },
+    {
+      "category_id": "child_interface_category_programming",
+      "actual": 3,
+      "required": 3,
+      "status": "PASS"
+    },
+    {
+      "category_id": "child_interface_category_social",
+      "actual": 3,
+      "required": 3,
+      "status": "PASS"
+    },
+    {
+      "category_id": "child_interface_category_music",
+      "actual": 3,
+      "required": 3,
+      "status": "PASS"
+    },
+    {
+      "category_id": "child_interface_category_education",
+      "actual": 3,
+      "required": 3,
+      "status": "PASS"
+    }
+  ]
+}

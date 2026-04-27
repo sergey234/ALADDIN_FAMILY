@@ -621,18 +621,30 @@ struct QuizView: View {
     let onComplete: (Int) -> Void
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var currentQuestion = 0
     @State private var score = 0
     @State private var selectedAnswer: Int? = nil
+    @State private var starBurstActive = false
+    @State private var confettiBurstActive = false
+    @State private var wrongAnswerFlash = false
+    /// Итог по уже закрытым вопросам (цветные сегменты прогресса)
+    @State private var roundResults: [Bool] = []
     
     var body: some View {
         NavigationView {
             ZStack {
                 LinearGradient.backgroundGradient
                     .ignoresSafeArea()
+
+                CelebrationParticleBurstView(kind: .correctAnswerStars, active: starBurstActive, onFinished: { starBurstActive = false })
+                    .ignoresSafeArea()
+                CelebrationParticleBurstView(kind: .confetti, active: confettiBurstActive, onFinished: { confettiBurstActive = false })
+                    .ignoresSafeArea()
                 
                 VStack(spacing: Spacing.l) {
+                    quizSegmentedProgress
                     // Прогресс вопросов
                     Text(String(format: localizationManager.localized("young_defender_quiz_question"), currentQuestion + 1, lesson.quizQuestions.count))
                         .font(.caption)
@@ -641,6 +653,11 @@ struct QuizView: View {
                     // Текущий вопрос
                     if currentQuestion < lesson.quizQuestions.count {
                         quizCard(question: lesson.quizQuestions[currentQuestion])
+                            .overlay(
+                                RoundedRectangle(cornerRadius: CornerRadius.large)
+                                    .stroke(Color.dangerRed.opacity(wrongAnswerFlash ? 0.85 : 0), lineWidth: 4)
+                            )
+                            .animation(.easeOut(duration: 0.2), value: wrongAnswerFlash)
                     }
                     
                     // Кнопка продолжить
@@ -663,11 +680,13 @@ struct QuizView: View {
                     }
                     .disabled(selectedAnswer == nil)
                     .padding(.horizontal, Spacing.screenPadding)
+                    .buttonStyle(PressScaleButtonStyle())
                     
                     Spacer()
                 }
                 .padding(.top, Spacing.l)
             }
+            .onAppear { roundResults = [] }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
@@ -691,7 +710,9 @@ struct QuizView: View {
                 ForEach(0..<question.optionKeys.count, id: \.self) { index in
                     Button(action: {
                         HapticFeedback.impact(.light)
-                        selectedAnswer = index
+                        withAnimation(reduceMotion ? nil : .spring(response: 0.28, dampingFraction: 0.72)) {
+                            selectedAnswer = index
+                        }
                     }) {
                         HStack {
                             Text(localizationManager.localized(question.optionKeys[index]))
@@ -718,8 +739,9 @@ struct QuizView: View {
                                         )
                                 )
                         )
+                        .scaleEffect(selectedAnswer == index && !reduceMotion ? 1.02 : 1.0)
                     }
-                    .buttonStyle(PlainButtonStyle())
+                    .buttonStyle(PressScaleButtonStyle())
                 }
             }
         }
@@ -730,14 +752,52 @@ struct QuizView: View {
         )
         .padding(.horizontal, Spacing.screenPadding)
     }
+
+    private var quizSegmentedProgress: some View {
+        let total = lesson.quizQuestions.count
+        return HStack(spacing: 5) {
+            ForEach(0..<total, id: \.self) { idx in
+                RoundedRectangle(cornerRadius: 3)
+                    .fill(quizSegmentColor(index: idx))
+                    .frame(height: 8)
+                    .accessibilityHidden(true)
+            }
+        }
+        .padding(.horizontal, Spacing.screenPadding)
+    }
+
+    private func quizSegmentColor(index: Int) -> Color {
+        if index < roundResults.count {
+            return roundResults[index] ? Color.successGreen : Color.dangerRed
+        }
+        if index == currentQuestion {
+            return Color.primaryBlue
+        }
+        return Color.textSecondary.opacity(0.32)
+    }
     
     private func goToNextQuestion() {
+        let isLast = currentQuestion == lesson.quizQuestions.count - 1
         if let answer = selectedAnswer {
-            if answer == lesson.quizQuestions[currentQuestion].correctAnswer {
+            let correct = answer == lesson.quizQuestions[currentQuestion].correctAnswer
+            roundResults.append(correct)
+            if correct {
                 score += 1
                 HapticFeedback.notification(.success)
+                if !reduceMotion {
+                    starBurstActive = true
+                    if isLast {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+                            confettiBurstActive = true
+                        }
+                    }
+                }
             } else {
                 HapticFeedback.notification(.error)
+                wrongAnswerFlash = true
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                    wrongAnswerFlash = false
+                }
             }
         }
         
@@ -745,7 +805,7 @@ struct QuizView: View {
             currentQuestion += 1
             selectedAnswer = nil
         } else {
-            // Квиз завершён
+            // Квиз завершён (конфетти уже запущено на последнем верном ответе)
             onComplete(score)
             dismiss()
         }

@@ -110,10 +110,11 @@ struct ReactionPickerView: View {
     let popularEmojis: [String]
     let onSelect: (String) -> Void
     @Environment(\.dismiss) var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         VStack(spacing: Spacing.m) {
-            Text("Выберите реакцию")
+            Text(localizationManager.localized("family_chat_reactions_choose"))
                 .font(.headline)
                 .padding()
             
@@ -133,7 +134,7 @@ struct ReactionPickerView: View {
             .padding()
             
             Button(action: { dismiss() }) {
-                Text("Отмена")
+                Text(localizationManager.localized("common_cancel"))
                     .font(.body)
                     .foregroundColor(.textPrimary)
                     .padding()

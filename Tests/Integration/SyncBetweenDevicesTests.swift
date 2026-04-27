@@ -13,6 +13,16 @@ class SyncBetweenDevicesTests: XCTestCase {
     var userId: String = "test_user_123"
     
     override func setUpWithError() throws {
+        let env = ProcessInfo.processInfo.environment
+        let mode = (env["SYNC_INTEGRATION_MODE"] ?? "mock").lowercased()
+        let runFlag = env["RUN_SYNC_INTEGRATION_TESTS"] ?? "0"
+        guard mode == "staging", runFlag == "1" else {
+            throw XCTSkip(
+                "SyncBetweenDevicesTests require staging opt-in: " +
+                "set SYNC_INTEGRATION_MODE=staging and RUN_SYNC_INTEGRATION_TESTS=1"
+            )
+        }
+
         // Настройка перед каждым тестом
         let networkManager = NetworkManager()
         apiService = APIService(networkManager: networkManager)
@@ -308,6 +318,52 @@ class SyncBetweenDevicesTests: XCTestCase {
         }
         
         wait(for: [expectation], timeout: 10.0)
+    }
+
+    func testRosterConflictResolutionStrategiesRespectVersioning() {
+        let existing = ChildProfile(
+            displayName: "Local Device",
+            serverUserId: "srv-conflict-1",
+            familyId: "fam-sync",
+            avatarKey: "🙂",
+            version: 4,
+            updatedAt: Date().addingTimeInterval(120)
+        )
+        let serverMembers = [
+            FamilyMemberResponse(
+                id: "srv-conflict-1",
+                name: "Server Device",
+                role: "child",
+                avatar: "🧒",
+                status: "protected",
+                threatsBlocked: nil,
+                lastActive: nil,
+                devices: nil
+            )
+        ]
+
+        let keepLocal = ChildRosterReconcilePolicy.reconcile(
+            existingProfiles: [existing],
+            serverMembers: serverMembers,
+            familyId: "fam-sync",
+            removeMissingServerLinkedChildren: false,
+            mergeStrategy: .localWins
+        )
+        XCTAssertEqual(keepLocal.profiles.first?.displayName, "Local Device")
+        XCTAssertEqual(keepLocal.mergeStrategy, .localWins)
+        XCTAssertEqual(keepLocal.conflicts, 1)
+        XCTAssertGreaterThan((keepLocal.profiles.first?.version ?? 0), 4)
+
+        let forceServer = ChildRosterReconcilePolicy.reconcile(
+            existingProfiles: [existing],
+            serverMembers: serverMembers,
+            familyId: "fam-sync",
+            removeMissingServerLinkedChildren: false,
+            mergeStrategy: .serverWins
+        )
+        XCTAssertEqual(forceServer.profiles.first?.displayName, "Server Device")
+        XCTAssertEqual(forceServer.mergeStrategy, .serverWins)
+        XCTAssertEqual(forceServer.conflicts, 1)
     }
     
     // MARK: - Performance Tests

@@ -170,28 +170,16 @@ enum FamilyRosterAccess {
         myMemberId: String?,
         currentUserRoleFallback: String?
     ) -> Bool {
-        let my = myMemberId?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        let roleFallbackAllows: Bool = {
-            let r = (currentUserRoleFallback ?? "").lowercased()
-            return r.contains("parent") || r.contains("родител") || r.contains("elderly")
-        }()
-        if !my.isEmpty,
-           let me = members.first(where: { row in
-               let sid = row.serverMemberId?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-               let rid = row.id.trimmingCharacters(in: .whitespacesAndNewlines)
-               let canon = row.canonicalId.trimmingCharacters(in: .whitespacesAndNewlines)
-               return rid == my || (!sid.isEmpty && sid == my) || (!canon.isEmpty && canon == my)
-           }) {
-            return me.role == .parent || me.role == .elderly
-        }
-        // Ростер уже есть, но строка «я» не сопоставилась (рассинх id до заголовка/мерджа) — не блокируем родителя по сохранённой роли.
-        if !my.isEmpty && !members.isEmpty && roleFallbackAllows {
-            return true
-        }
-        if members.isEmpty {
-            return roleFallbackAllows
-        }
-        return false
+        // Новый policy-layer является канонической точкой принятия решения.
+        // Параметры оставлены для обратной совместимости старых вызовов.
+        _ = myMemberId
+        _ = currentUserRoleFallback
+        return FamilyAccessPolicy.canManageAppProfiles(members: members)
+    }
+
+    /// Упрощённый overload: экраны не должны читать `UserDefaults` напрямую.
+    static func canManageRoster(members: [FamilyMemberData]) -> Bool {
+        FamilyAccessPolicy.canManageAppProfiles(members: members)
     }
 
     /// Число слотов «родитель» в ростере (информационно для UI; лимит 2 — продуктовое правило).
@@ -2007,16 +1995,84 @@ struct BalanceHistoryEntry: Codable, Identifiable {
     let id: String  // operationId
     let userId: String
     let amount: Int
-    let balanceAfter: Int
+    let balanceAfter: Int?
     let reason: String?
     let timestamp: String  // ISO дата
     let deviceId: String?
+    /// Some backends use `type` (add/subtract) instead of signed `amount`
+    private let opType: String?
+    
+    enum CodingKeys: String, CodingKey {
+        case id, userId, amount, balanceAfter, reason, timestamp, deviceId, opType = "type"
+    }
+    
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.id = try c.decodeIfPresent(String.self, forKey: .id) ?? UUID().uuidString
+        self.userId = try c.decodeIfPresent(String.self, forKey: .userId) ?? ""
+        self.balanceAfter = try c.decodeIfPresent(Int.self, forKey: .balanceAfter)
+        self.reason = try c.decodeIfPresent(String.self, forKey: .reason)
+        self.deviceId = try c.decodeIfPresent(String.self, forKey: .deviceId)
+        self.opType = try c.decodeIfPresent(String.self, forKey: .opType)
+        let rawAmount = try c.decodeIfPresent(Int.self, forKey: .amount)
+        self.timestamp = try c.decodeIfPresent(String.self, forKey: .timestamp) ?? ISO8601DateFormatter().string(from: Date())
+        let signed: Int
+        if let rawAmount {
+            signed = rawAmount
+        } else {
+            let t = (self.opType ?? "").lowercased()
+            signed = (t == "subtract" || t == "debit" || t == "remove") ? -1 : 1
+        }
+        self.amount = signed
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(userId, forKey: .userId)
+        try c.encode(amount, forKey: .amount)
+        try c.encodeIfPresent(balanceAfter, forKey: .balanceAfter)
+        try c.encodeIfPresent(reason, forKey: .reason)
+        try c.encode(timestamp, forKey: .timestamp)
+        try c.encodeIfPresent(deviceId, forKey: .deviceId)
+    }
 }
 
 struct BalanceHistoryResponse: Codable {
     let history: [BalanceHistoryEntry]
     let total: Int
     let currentBalance: Int
+
+    init(history: [BalanceHistoryEntry], total: Int, currentBalance: Int) {
+        self.history = history
+        self.total = total
+        self.currentBalance = currentBalance
+    }
+    
+    init(from decoder: Decoder) throws {
+        if var unkeyed = try? decoder.unkeyedContainer() {
+            var rows: [BalanceHistoryEntry] = []
+            while !unkeyed.isAtEnd {
+                if let e = try? unkeyed.decode(BalanceHistoryEntry.self) {
+                    rows.append(e)
+                } else {
+                    _ = try? unkeyed.decode(String.self)
+                }
+            }
+            self.history = rows
+            self.total = rows.count
+            self.currentBalance = 0
+            return
+        }
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        self.history = (try? c.decode([BalanceHistoryEntry].self, forKey: .history)) ?? []
+        self.total = (try? c.decodeIfPresent(Int.self, forKey: .total)) ?? self.history.count
+        self.currentBalance = (try? c.decodeIfPresent(Int.self, forKey: .currentBalance)) ?? 0
+    }
+    
+    private enum CodingKeys: String, CodingKey {
+        case history, total, currentBalance
+    }
 }
 
 // Награды

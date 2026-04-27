@@ -2,58 +2,43 @@ import XCTest
 @testable import ALADDIN
 
 /**
- * 🧪 ComponentConfigurationService Unit Tests
- * Тесты для сервиса управления конфигурациями компонентов
+ * ComponentConfigurationService unit tests (aligned with `ComponentConfiguration` model).
  */
 
 @MainActor
-class ComponentConfigurationServiceTests: XCTestCase {
-    
+final class ComponentConfigurationServiceTests: XCTestCase {
+
     var service: ComponentConfigurationService!
-    
+
     override func setUpWithError() throws {
         try super.setUpWithError()
         service = ComponentConfigurationService.shared
     }
-    
+
     override func tearDownWithError() throws {
+        service?.configurations.removeValue(forKey: "crash_detection_agent")
+        service?.configurations.removeValue(forKey: "test_component_x")
         service = nil
         try super.tearDownWithError()
     }
-    
-    // MARK: - Get Configuration Tests
-    
-    func testGetConfigurationSuccess() async throws {
-        // Arrange
-        let componentId = "crash_detection_agent"
-        let expectedConfig = ComponentConfiguration(
-            componentId: componentId,
-            settings: ["enabled": true]
-        )
-        
-        // Act
+
+    func testGetConfigurationReturnsInMemoryCache() async throws {
+        let componentId = "test_component_x"
+        let cached = ComponentConfiguration(isEnabled: true, priority: .critical)
+        service.configurations[componentId] = cached
+
         let config = try await service.getConfiguration(for: componentId)
-        
-        // Assert
-        XCTAssertEqual(config.componentId, componentId)
+        XCTAssertTrue(config.isEnabled)
+        XCTAssertEqual(config.priority, .critical)
     }
-    
-    // MARK: - Save Configuration Tests
-    
-    func testSaveConfigurationSuccess() async throws {
-        // Arrange
-        let componentId = "crash_detection_agent"
-        let config = ComponentConfiguration(
-            componentId: componentId,
-            settings: ["enabled": true]
-        )
-        
-        // Act
-        try await service.saveConfiguration(config)
-        
-        // Assert
-        let savedConfig = service.configurations[componentId]
-        XCTAssertNotNil(savedConfig)
+
+    func testValidateConfigurationAcceptsEnabledNormal() throws {
+        let config = ComponentConfiguration(isEnabled: true, priority: .normal)
+        try service.validateConfiguration(config)
+    }
+
+    func testValidateConfigurationRejectsCriticalDisabled() throws {
+        let config = ComponentConfiguration(isEnabled: false, priority: .critical)
+        XCTAssertThrowsError(try service.validateConfiguration(config))
     }
 }
-

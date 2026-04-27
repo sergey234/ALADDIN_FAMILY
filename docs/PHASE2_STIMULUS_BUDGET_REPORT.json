@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-04-27T13:15:47.244808+00:00",
+  "check_count": 9,
+  "failed_count": 0,
+  "category_level": {
+    "check_count": 4,
+    "failed_count": 0
+  },
+  "item_level": {
+    "check_count": 5,
+    "failed_count": 0
+  },
+  "checks": [
+    {
+      "id": "P2S-FILE-POLICY",
+      "level": "category",
+      "description": "Stimulus budget policy document exists",
+      "status": "PASS",
+      "details": "docs/PHASE2_STIMULUS_BUDGET_POLICY_1_6.md"
+    },
+    {
+      "id": "P2S-LIMITS",
+      "level": "category",
+      "description": "Numeric budget limits are declared",
+      "status": "PASS",
+      "details": "effects/rewards/burst limits"
+    },
+    {
+      "id": "P2S-SCOPE",
+      "level": "category",
+      "description": "All 1-6 categories are in scope",
+      "status": "PASS",
+      "details": "scope_count=4/4"
+    },
+    {
+      "id": "P2S-MAP-EFFECTS",
+      "level": "item",
+      "description": "Effects event mapping is declared",
+      "status": "PASS",
+      "details": "effects mapping"
+    },
+    {
+      "id": "P2S-MAP-REWARDS",
+      "level": "item",
+      "description": "Rewards event mapping is declared",
+      "status": "PASS",
+      "details": "rewards mapping"
+    },
+    {
+      "id": "P2S-GUARDRAIL-EFFECTS",
+      "level": "item",
+      "description": "Effects threshold fallback is declared",
+      "status": "PASS",
+      "details": "effects fallback"
+    },
+    {
+      "id": "P2S-GUARDRAIL-REWARDS",
+      "level": "item",
+      "description": "Rewards threshold fallback is declared",
+      "status": "PASS",
+      "details": "rewards fallback"
+    },
+    {
+      "id": "P2S-GUARDRAIL-CALM",
+      "level": "item",
+      "description": "Calm mode escalation is declared",
+      "status": "PASS",
+      "details": "calm mode"
+    },
+    {
+      "id": "P2S-ACCEPTANCE",
+      "level": "category",
+      "description": "Acceptance rule for policy validity is defined",
+      "status": "PASS",
+      "details": "acceptance criteria"
+    }
+  ]
+}

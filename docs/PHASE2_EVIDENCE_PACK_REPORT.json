@@ -1,0 +1,155 @@
+{
+  "generated_at": "2026-04-27T12:55:46Z",
+  "phase": "P2-403",
+  "status": "PASS",
+  "gates": [
+    {
+      "name": "phase2_category_count_gate",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_CATEGORY_COUNT_GATE_REPORT.json"
+    },
+    {
+      "name": "phase2_category_acceptance_smoke",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_CATEGORY_ACCEPTANCE_SMOKE_REPORT.json"
+    },
+    {
+      "name": "phase2_learning_effectiveness_gate",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_LEARNING_EFFECTIVENESS_GATE_REPORT.json"
+    },
+    {
+      "name": "phase2_engagement_health_gate",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_ENGAGEMENT_HEALTH_GATE_REPORT.json"
+    },
+    {
+      "name": "phase2_editorial_model_smoke",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_EDITORIAL_MODEL_SMOKE_REPORT.json"
+    },
+    {
+      "name": "phase2_content_qa_matrix_smoke",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_CONTENT_QA_MATRIX_REPORT.json"
+    },
+    {
+      "name": "phase2_ab_validation_smoke",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_AB_VALIDATION_SMOKE_REPORT.json"
+    },
+    {
+      "name": "phase2_content_freshness_sla_smoke",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_CONTENT_FRESHNESS_SLA_REPORT.json"
+    },
+    {
+      "name": "phase2_stimulus_budget_smoke",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_STIMULUS_BUDGET_REPORT.json"
+    },
+    {
+      "name": "phase2_unified_telemetry_schema_smoke",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_UNIFIED_TELEMETRY_SCHEMA_REPORT.json"
+    },
+    {
+      "name": "phase2_weekly_improvement_loop_smoke",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_WEEKLY_IMPROVEMENT_LOOP_REPORT.json"
+    },
+    {
+      "name": "phase2_content_health_dashboard_smoke",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_CONTENT_HEALTH_DASHBOARD_REPORT.json"
+    },
+    {
+      "name": "phase2_completion_not_learning_guard_smoke",
+      "status": "PASS",
+      "report_json": "docs/PHASE2_COMPLETION_NOT_LEARNING_GUARD_REPORT.json"
+    },
+    {
+      "name": "localization_lint",
+      "status": "PASS",
+      "ru_keys": 1171,
+      "en_keys": 1171
+    },
+    {
+      "name": "xcodebuild_debug_build",
+      "status": "PASS"
+    }
+  ],
+  "category_count_gate": {
+    "check_count": 12,
+    "failed_count": 0
+  },
+  "acceptance_smoke": {
+    "check_count": 9,
+    "failed_count": 0,
+    "category_summary": {
+      "ready": 12,
+      "ready_with_conditions": 0,
+      "not_ready": 0
+    }
+  },
+  "kpi_snapshot": {
+    "learning_effectiveness": {
+      "check_count": 8,
+      "failed_count": 0
+    },
+    "engagement_health": {
+      "check_count": 7,
+      "failed_count": 0
+    },
+    "editorial_model": {
+      "check_count": 7,
+      "failed_count": 0
+    },
+    "content_qa_matrix": {
+      "check_count": 19,
+      "failed_count": 0,
+      "category_level_failed_count": 0,
+      "item_level_failed_count": 0
+    },
+    "ab_validation": {
+      "check_count": 8,
+      "failed_count": 0,
+      "category_level_failed_count": 0,
+      "item_level_failed_count": 0
+    },
+    "content_freshness_sla": {
+      "check_count": 9,
+      "failed_count": 0,
+      "category_level_failed_count": 0,
+      "item_level_failed_count": 0
+    },
+    "stimulus_budget": {
+      "check_count": 9,
+      "failed_count": 0,
+      "category_level_failed_count": 0,
+      "item_level_failed_count": 0
+    },
+    "unified_telemetry_schema": {
+      "check_count": 9,
+      "failed_count": 0,
+      "category_level_failed_count": 0,
+      "item_level_failed_count": 0
+    },
+    "weekly_improvement_loop": {
+      "check_count": 4,
+      "failed_count": 0
+    },
+    "content_health_dashboard": {
+      "check_count": 4,
+      "failed_count": 0
+    },
+    "completion_not_learning_guard": {
+      "check_count": 5,
+      "failed_count": 0
+    }
+  },
+  "screenshots": [
+    "docs/screenshots/trackb/elderly_ru.png",
+    "docs/screenshots/trackb/elderly_en.png"
+  ]
+}

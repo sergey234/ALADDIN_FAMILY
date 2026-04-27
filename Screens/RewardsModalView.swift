@@ -85,6 +85,20 @@ struct RewardsModalView: View {
     @State private var showEditPunishmentReason: Bool = false
     @State private var editingPunishmentReason: PunishmentReason?
     
+    @State private var showParentAuthDeniedAlert: Bool = false
+    
+    /// Чувствительные действия в модалке наград — только после подтверждения родителя (биометрия / PIN-сессия).
+    private func runWithParentConfirmation(_ action: @escaping @MainActor () -> Void) {
+        Task { @MainActor in
+            let ok = await ParentSessionGate.confirmSensitiveAction(forceReauth: true)
+            if ok {
+                action()
+            } else {
+                showParentAuthDeniedAlert = true
+            }
+        }
+    }
+    
     // MARK: - Achievement Request Model
     
     struct AchievementRequest: Identifiable {
@@ -320,7 +334,9 @@ struct RewardsModalView: View {
                         Button(action: {
                             HapticFeedback.impact(.light)
                             print("🔍 DEBUG: Открываем настройки игр")
-                            showGamesSettings = true
+                            runWithParentConfirmation {
+                                showGamesSettings = true
+                            }
                         }) {
                             Image(systemName: "gearshape.fill")
                                 .font(.system(size: 20))
@@ -358,6 +374,13 @@ struct RewardsModalView: View {
                     .accessibilityHint("Нажмите для закрытия модального окна")
                 }
             }
+        .alert(isPresented: $showParentAuthDeniedAlert) {
+            SwiftUI.Alert(
+                title: Text(localizationManager.localized("games_parental_auth_alert_title")),
+                message: Text(localizationManager.localized("child_rewards_parent_auth_required")),
+                dismissButton: .default(Text(localizationManager.localized("common_ok")))
+            )
+        }
         }
     }
     
@@ -452,7 +475,9 @@ struct RewardsModalView: View {
                 // Кнопка "Настроить" (открывает полный модал)
                 Button(action: {
                     print("🔍 DEBUG: Открываем управление магазином наград")
-                    showShopManagement = true
+                    runWithParentConfirmation {
+                        showShopManagement = true
+                    }
                 }) {
                     HStack(spacing: Spacing.xs) {
                         Image(systemName: "gearshape.fill")
@@ -556,8 +581,9 @@ struct RewardsModalView: View {
                 
                 // Кнопка редактирования открывает модал через showShopManagement
                 Button(action: {
-                    // Можно открыть модал редактирования конкретной награды
-                    showShopManagement = true
+                    runWithParentConfirmation {
+                        showShopManagement = true
+                    }
                 }) {
                     HStack(spacing: Spacing.xs) {
                         Image(systemName: "pencil.circle.fill")
@@ -602,7 +628,9 @@ struct RewardsModalView: View {
                 // Кнопка "Настроить игры" (открывает полный модал)
                 Button(action: {
                     print("🔍 DEBUG: Открываем настройки игр из секции")
-                    showGamesSettings = true
+                    runWithParentConfirmation {
+                        showGamesSettings = true
+                    }
                 }) {
                     HStack(spacing: Spacing.xs) {
                         Image(systemName: "gearshape.fill")
@@ -824,8 +852,10 @@ struct RewardsModalView: View {
                     print("🔍 DEBUG: Нажата кнопка 'Вознаградить'")
                     print("🔍 DEBUG: showRewardInput до = \(showRewardInput)")
                     HapticFeedback.impact(.medium)
-                    showRewardInput = true
-                    print("🔍 DEBUG: showRewardInput после = \(showRewardInput)")
+                    runWithParentConfirmation {
+                        showRewardInput = true
+                        print("🔍 DEBUG: showRewardInput после = \(showRewardInput)")
+                    }
                 }) {
                     VStack(spacing: Spacing.xs) {
                         Text("✅")
@@ -852,8 +882,10 @@ struct RewardsModalView: View {
                     print("🔍 DEBUG: Нажата кнопка 'Наказать'")
                     print("🔍 DEBUG: showPunishInput до = \(showPunishInput)")
                     HapticFeedback.impact(.medium)
-                    showPunishInput = true
-                    print("🔍 DEBUG: showPunishInput после = \(showPunishInput)")
+                    runWithParentConfirmation {
+                        showPunishInput = true
+                        print("🔍 DEBUG: showPunishInput после = \(showPunishInput)")
+                    }
                 }) {
                     VStack(spacing: Spacing.xs) {
                         Text("❌")
@@ -913,7 +945,9 @@ struct RewardsModalView: View {
                 // Кнопка добавления (только для родителей)
                 if isUserParent {
                     Button(action: {
-                        showAddEarningWay = true
+                        runWithParentConfirmation {
+                            showAddEarningWay = true
+                        }
                     }) {
                         HStack {
                             Image(systemName: "plus.circle.fill")
@@ -1022,8 +1056,10 @@ struct RewardsModalView: View {
                 
                 // Кнопка редактирования
                 Button(action: {
-                    editingEarningWay = earningWay.wrappedValue
-                    showEditEarningWay = true
+                    runWithParentConfirmation {
+                        editingEarningWay = earningWay.wrappedValue
+                        showEditEarningWay = true
+                    }
                 }) {
                     HStack(spacing: Spacing.xs) {
                         Image(systemName: "pencil.circle.fill")
@@ -1110,7 +1146,9 @@ struct RewardsModalView: View {
                 // Кнопка добавления (только для родителей)
                 if isUserParent {
                     Button(action: {
-                        showAddPunishmentReason = true
+                        runWithParentConfirmation {
+                            showAddPunishmentReason = true
+                        }
                     }) {
                         HStack {
                             Image(systemName: "plus.circle.fill")
@@ -1216,13 +1254,15 @@ struct RewardsModalView: View {
                 
                 // Кнопка редактирования
                 Button(action: {
-                    editingPunishmentReason = punishmentReason.wrappedValue
-                    showEditPunishmentReason = true
+                    runWithParentConfirmation {
+                        editingPunishmentReason = punishmentReason.wrappedValue
+                        showEditPunishmentReason = true
+                    }
                 }) {
                     HStack(spacing: Spacing.xs) {
                         Image(systemName: "pencil.circle.fill")
                             .font(.caption)
-                        Text("Изменить")
+                        Text(localizationManager.localized("rewards_modal_edit"))
                             .font(.caption)
                     }
                     .foregroundColor(.secondaryGold)
@@ -1312,7 +1352,9 @@ struct RewardsModalView: View {
             HStack(spacing: Spacing.s) {
                 Button(action: {
                     HapticFeedback.impact(.medium)
-                    approveGoal()
+                    runWithParentConfirmation {
+                        approveGoal()
+                    }
                 }) {
                     Text(localizationManager.localized("rewards_modal_goal_approve"))
                         .font(.bodyBold)
@@ -1326,7 +1368,9 @@ struct RewardsModalView: View {
                 
                 Button(action: {
                     HapticFeedback.impact(.medium)
-                    rejectGoal()
+                    runWithParentConfirmation {
+                        rejectGoal()
+                    }
                 }) {
                     Text(localizationManager.localized("rewards_modal_goal_reject"))
                         .font(.bodyBold)
@@ -1475,7 +1519,9 @@ struct RewardsModalView: View {
             HStack(spacing: Spacing.s) {
                 Button(action: {
                     HapticFeedback.impact(.medium)
-                    approveAchievement(request: request, rewardAmount: 15)
+                    runWithParentConfirmation {
+                        approveAchievement(request: request, rewardAmount: 15)
+                    }
                 }) {
                     Text(String(format: localizationManager.localized("rewards_modal_achievement_reward"), 15))
                         .font(.bodyBold)
@@ -1489,7 +1535,9 @@ struct RewardsModalView: View {
                 
                 Button(action: {
                     HapticFeedback.impact(.medium)
-                    rejectAchievement(request: request)
+                    runWithParentConfirmation {
+                        rejectAchievement(request: request)
+                    }
                 }) {
                     Text(localizationManager.localized("rewards_modal_achievement_reject"))
                         .font(.bodyBold)

@@ -1,5 +1,7 @@
 > Журнал реального подключения и первичных действий (апрель 2026)
 >
+> **Telegram Shop Bot на том же хосте** (`149.154.65.180`, корень **`/opt/aladdin-telegram-shop-bot`**, Partner API на **`127.0.0.1:8090`**): выкладка кода, `rsync` в `releases/<TS>/telegram_stars_shop_bot/`, симлинки `current_app` / `current_release`, три unit'а (`aladdin-telegram-bot`, `aladdin-partner-api`, `aladdin-webhook-worker`), смоук — **не здесь**, а в **`telegram_stars_shop_bot/docs/ML_SYSTEM_HANDOFF_FINAL.md`**. Дальше по этому файлу — в первую очередь **основной ALADDIN backend** (`:8002`, `/opt/aladdin-backend`) и общий SSH; пути `/opt/aladdin-backend` и `/opt/aladdin-telegram-shop-bot` не смешивать.
+>
 > Ниже — точные шаги, которые были выполнены для подключения к прод‑серверу и подготовки к задачам по плану (лимиты/идемпотентность/заголовки). Пароли не храним в репозитории — используйте SSH‑ключи или временную передачу пароля вне репо.
 >
 > 1) Внешний health‑check API (проверка доступности шлюза на :8002):

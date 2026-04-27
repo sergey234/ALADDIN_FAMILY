@@ -32,27 +32,27 @@ struct CrashDetectionSettingsModal: View {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundColor(.orange)
-                        Text("Важное предупреждение")
+                        Text(localizationManager.localized("crash_settings_warning_title"))
                             .font(.h4)
                             .foregroundColor(.textPrimary)
                     }
 
-                    Text("Функция обнаружения аварий может давать ложные срабатывания. Всегда проверяйте ситуацию перед вызовом экстренных служб.")
+                    Text(localizationManager.localized("crash_settings_warning_message"))
                         .font(.body)
                         .foregroundColor(.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding()
                 .background(Color.orange.opacity(0.1))
-                .cornerRadius(CornerRadius.m)
+                .cornerRadius(CornerRadius.medium)
                 .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.m)
+                    RoundedRectangle(cornerRadius: CornerRadius.medium)
                         .stroke(Color.orange.opacity(0.3), lineWidth: 1)
                 )
 
                 // Настройки чувствительности
                 VStack(alignment: .leading, spacing: Spacing.m) {
-                    Text("Настройки обнаружения")
+                    Text(localizationManager.localized("crash_settings_detection_title"))
                         .font(.h4)
                         .foregroundColor(.textPrimary)
 
@@ -66,8 +66,7 @@ struct CrashDetectionSettingsModal: View {
                                     componentAnalytics.trackSettingToggle(
                                         componentId: componentId,
                                         settingKey: "sensitivity",
-                                        enabled: true,
-                                        parameters: ["value": sensitivityOption.rawValue]
+                                        enabled: true
                                     )
                                     print("🔄 CrashDetection: sensitivity = \(sensitivityOption.rawValue)")
                                 }
@@ -81,19 +80,19 @@ struct CrashDetectionSettingsModal: View {
                     HStack {
                         Image(systemName: "battery.100")
                             .foregroundColor(.green)
-                        Text("Оптимизация батареи")
+                        Text(localizationManager.localized("crash_settings_battery_optimization_title"))
                             .font(.h4)
                             .foregroundColor(.textPrimary)
                     }
 
-                    Text("Мониторинг работает только при скорости выше 50 км/ч для экономии заряда батареи.")
+                    Text(localizationManager.localized("crash_settings_battery_optimization_message"))
                         .font(.body)
                         .foregroundColor(.textSecondary)
                         .fixedSize(horizontal: false, vertical: true)
                 }
                 .padding()
                 .background(Color.green.opacity(0.1))
-                .cornerRadius(CornerRadius.m)
+                .cornerRadius(CornerRadius.medium)
             }
         }
         .onAppear {
@@ -115,18 +114,18 @@ struct CrashDetectionSettingsModal: View {
 
                 // Сохранить в конфигурацию компонента
                 let configuration = ComponentConfiguration(
-                    priority: "high",
+                    isEnabled: true,
+                    priority: .critical,
                     additionalSettings: [
-                        "sensitivity": sensitivity.rawValue,
-                        "gForceThreshold": sensitivity.gForceThreshold,
-                        "speedThreshold": 50.0,
-                        "batteryOptimization": true
-                    ],
-                    isEnabled: true
+                        "sensitivity": AnyCodable(sensitivity.rawValue),
+                        "gForceThreshold": AnyCodable(sensitivity.gForceThreshold),
+                        "speedThreshold": AnyCodable(50.0),
+                        "batteryOptimization": AnyCodable(true),
+                    ]
                 )
 
-                try await configurationService.updateConfiguration(
-                    for: componentId,
+                try await configurationService.saveConfiguration(
+                    componentId: componentId,
                     configuration: configuration
                 )
 
@@ -173,7 +172,7 @@ struct SensitivityOptionRow: View {
 
                 if isSelected {
                     Image(systemName: "checkmark.circle.fill")
-                        .foregroundColor(.accentPrimary)
+                        .foregroundColor(.primaryBlue)
                         .font(.title2)
                 } else {
                     Circle()
@@ -183,11 +182,11 @@ struct SensitivityOptionRow: View {
             }
             .padding()
             .background(
-                RoundedRectangle(cornerRadius: CornerRadius.m)
-                    .fill(isSelected ? Color.accentPrimary.opacity(0.1) : Color.clear)
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(isSelected ? Color.primaryBlue.opacity(0.1) : Color.clear)
                     .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.m)
-                            .stroke(isSelected ? Color.accentPrimary.opacity(0.3) : Color.gray.opacity(0.2), lineWidth: 1)
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .stroke(isSelected ? Color.primaryBlue.opacity(0.3) : Color.gray.opacity(0.2), lineWidth: 1)
                     )
             )
         }

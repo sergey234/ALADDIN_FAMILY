@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>146</string>
+	<string>147</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -102,7 +102,12 @@
 	<true/>
 	<key>UIBackgroundModes</key>
 	<array>
+		<string>fetch</string>
 		<string>remote-notification</string>
+	</array>
+	<key>BGTaskSchedulerPermittedIdentifiers</key>
+	<array>
+		<string>family.aladdin.ios.content.refresh</string>
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>
@@ -135,6 +140,8 @@
 	<string>Automatic</string>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
+	<key>CONTENT_MANIFEST_SIGNING_PUBLIC_KEY_BASE64</key>
+	<string></string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>

@@ -324,11 +324,11 @@ struct NetworkProtectionScreen: View {
                         Image(systemName: "exclamationmark.triangle.fill")
                             .foregroundColor(.red)
                         VStack(alignment: .leading) {
-                            Text("🚨 DEBUG: Симулировать аварию")
+                            Text(localizationManager.localized("network_protection_debug_simulate_crash"))
                                 .foregroundColor(.red)
                                 .font(.subheadline)
                                 .fontWeight(.bold)
-                            Text("G-сила: 5.0 (критическая)")
+                            Text(localizationManager.localized("network_protection_debug_gforce_critical"))
                                 .foregroundColor(.red.opacity(0.7))
                                 .font(.caption)
                         }
@@ -2127,7 +2127,7 @@ struct NetworkProtectionStatisticsView: View {
                         VStack(spacing: 8) {
                             Text("⬇️")
                                 .font(.system(size: 40))
-                            Text("2.4 GB")
+                            Text(localizationManager.localized("network_protection_stats_uploaded_value"))
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.white)
                             Text(localizationManager.localized("network_protection.uploaded"))
@@ -2145,7 +2145,7 @@ struct NetworkProtectionStatisticsView: View {
                         VStack(spacing: 8) {
                             Text("⬆️")
                                 .font(.system(size: 40))
-                            Text("1.2 GB")
+                            Text(localizationManager.localized("network_protection_stats_downloaded_value"))
                                 .font(.system(size: 20, weight: .bold))
                                 .foregroundColor(.white)
                             Text(localizationManager.localized("network_protection.downloaded"))

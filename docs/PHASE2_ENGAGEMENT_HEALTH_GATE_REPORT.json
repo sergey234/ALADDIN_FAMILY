@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-04-27T18:07:04.996213+00:00",
+  "enforce_signals": false,
+  "required_metrics": [
+    "session_depth",
+    "d1_d7_voluntary_return",
+    "boredom_signal"
+  ],
+  "engagement_health_metrics_available": [],
+  "check_count": 7,
+  "failed_count": 0,
+  "checks": [
+    {
+      "id": "P2E-FILE-1",
+      "description": "Progress systems file exists",
+      "status": "PASS",
+      "details": "Core/Content/Progress/ProgressSystems.swift"
+    },
+    {
+      "id": "P2E-FILE-2",
+      "description": "Child content screen exists",
+      "status": "PASS",
+      "details": "Screens/ChildContentScreen.swift"
+    },
+    {
+      "id": "P2E-FILE-3",
+      "description": "Acceptance smoke report exists",
+      "status": "PASS",
+      "details": "docs/PHASE2_CATEGORY_ACCEPTANCE_SMOKE_REPORT.json"
+    },
+    {
+      "id": "P2E-SIGNAL-BASE-1",
+      "description": "Session-depth baseline hooks exist",
+      "status": "PASS",
+      "details": "usedSeconds + opens/completions tracking"
+    },
+    {
+      "id": "P2E-SIGNAL-BASE-2",
+      "description": "Child flow has loading/empty/error states for dropout observation",
+      "status": "PASS",
+      "details": "loading/empty/error branches"
+    },
+    {
+      "id": "P2E-SIGNAL-BASE-3",
+      "description": "Daily trend points available for retention proxies",
+      "status": "PASS",
+      "details": "ParentActivityDailyAggregator.trendPoints"
+    },
+    {
+      "id": "P2E-METRICS-DECL",
+      "description": "Engagement metrics declaration present in acceptance smoke report",
+      "status": "PASS",
+      "details": "declared=[]"
+    }
+  ]
+}

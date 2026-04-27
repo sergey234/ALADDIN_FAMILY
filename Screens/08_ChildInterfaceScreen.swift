@@ -113,6 +113,9 @@ struct ChildInterfaceScreen: View {
         }
         .onAppear {
             loadProfileImage()
+            Task {
+                await ContentManager.shared.runUnifiedLifecycle()
+            }
         }
         .onChange(of: selectedImage) { newImage in
             if let image = newImage {
@@ -338,90 +341,90 @@ struct ChildInterfaceScreen: View {
             case .kids:
                 // Для малышей 1-6 лет: простые игры
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "🧸", title: localizationManager.localized("child_interface_category_toys"), color: Color.pink) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_toys"))
+                    bigChildButton(icon: "🧸", title: localizationManager.localized(ChildCategoryKey.toys), color: Color.pink) {
+                        navigateToContent(category: ChildCategoryKey.toys)
                     }
-                    bigChildButton(icon: "🎨", title: localizationManager.localized("child_interface_category_drawing"), color: Color.orange) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_drawing"))
+                    bigChildButton(icon: "🎨", title: localizationManager.localized(ChildCategoryKey.drawing), color: Color.orange) {
+                        navigateToContent(category: ChildCategoryKey.drawing)
                     }
                 }
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "🎵", title: localizationManager.localized("child_interface_category_songs"), color: Color.purple) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_songs"))
+                    bigChildButton(icon: "🎵", title: localizationManager.localized(ChildCategoryKey.songs), color: Color.purple) {
+                        navigateToContent(category: ChildCategoryKey.songs)
                     }
-                    bigChildButton(icon: "📖", title: localizationManager.localized("child_interface_category_stories"), color: Color.blue) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_stories"))
+                    bigChildButton(icon: "📖", title: localizationManager.localized(ChildCategoryKey.stories), color: Color.blue) {
+                        navigateToContent(category: ChildCategoryKey.stories)
                     }
                 }
             case .school:
                 // Для школьников 7-12 лет: учёба и развлечения
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "🎮", title: localizationManager.localized("child_interface_category_games"), color: Color.green) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_games"))
+                    bigChildButton(icon: "🎮", title: localizationManager.localized(ChildCategoryKey.games), color: Color.green) {
+                        navigateToContent(category: ChildCategoryKey.games)
                     }
-                    bigChildButton(icon: "📚", title: localizationManager.localized("child_interface_category_study"), color: Color.blue) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_study"))
+                    bigChildButton(icon: "📚", title: localizationManager.localized(ChildCategoryKey.study), color: Color.blue) {
+                        navigateToContent(category: ChildCategoryKey.study)
                     }
                 }
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "🛡️", title: localizationManager.localized("child_interface_category_safety"), color: Color.cyan) {
+                    bigChildButton(icon: "🛡️", title: localizationManager.localized(FamilyContentSafetyBridge.safetyTitleKey), color: Color.cyan) {
                         showChildInstructions = true
                     }
-                    bigChildButton(icon: "📺", title: localizationManager.localized("child_interface_category_cartoons"), color: Color.red) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_cartoons"))
+                    bigChildButton(icon: "📺", title: localizationManager.localized(ChildCategoryKey.cartoons), color: Color.red) {
+                        navigateToContent(category: ChildCategoryKey.cartoons)
                     }
                 }
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "🎨", title: localizationManager.localized("child_interface_category_creativity"), color: Color.orange) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_creativity"))
+                    bigChildButton(icon: "🎨", title: localizationManager.localized(ChildCategoryKey.creativity), color: Color.orange) {
+                        navigateToContent(category: ChildCategoryKey.creativity)
                     }
                     Spacer()
                 }
             case .teen:
                 // Для подростков 13-17 лет: развитие и развлечения
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "🛡️", title: localizationManager.localized("child_interface_category_safety"), color: Color.cyan) {
+                    bigChildButton(icon: "🛡️", title: localizationManager.localized(FamilyContentSafetyBridge.safetyTitleKey), color: Color.cyan) {
                         navigationManager.navigateTo(.securityEducation)
                     }
-                    bigChildButton(icon: "💻", title: localizationManager.localized("child_interface_category_programming"), color: Color.blue) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_programming"))
+                    bigChildButton(icon: "💻", title: localizationManager.localized(ChildCategoryKey.programming), color: Color.blue) {
+                        navigateToContent(category: ChildCategoryKey.programming)
                     }
                 }
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "📱", title: localizationManager.localized("child_interface_category_social"), color: Color.purple) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_social"))
+                    bigChildButton(icon: "📱", title: localizationManager.localized(ChildCategoryKey.social), color: Color.purple) {
+                        navigateToContent(category: ChildCategoryKey.social)
                     }
-                    bigChildButton(icon: "🎵", title: localizationManager.localized("child_interface_category_music"), color: Color.orange) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_music"))
+                    bigChildButton(icon: "🎵", title: localizationManager.localized(ChildCategoryKey.music), color: Color.orange) {
+                        navigateToContent(category: ChildCategoryKey.music)
                     }
                 }
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "📺", title: localizationManager.localized("child_interface_category_video"), color: Color.red) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_video"))
+                    bigChildButton(icon: "📺", title: localizationManager.localized(ChildCategoryKey.video), color: Color.red) {
+                        navigateToContent(category: ChildCategoryKey.video)
                     }
                     Spacer()
                 }
             case .youngAdult:
                 // Для молодых взрослых 18-22 лет: образование и карьера
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "🛡️", title: localizationManager.localized("child_interface_category_safety"), color: Color.cyan) {
+                    bigChildButton(icon: "🛡️", title: localizationManager.localized(FamilyContentSafetyBridge.safetyTitleKey), color: Color.cyan) {
                         navigationManager.navigateTo(.securityEducation)
                     }
-                    bigChildButton(icon: "🎓", title: localizationManager.localized("child_interface_category_education"), color: Color.blue) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_education"))
+                    bigChildButton(icon: "🎓", title: localizationManager.localized(ChildCategoryKey.education), color: Color.blue) {
+                        navigateToContent(category: ChildCategoryKey.education)
                     }
                 }
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "💼", title: localizationManager.localized("child_interface_category_career"), color: Color.green) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_career"))
+                    bigChildButton(icon: "💼", title: localizationManager.localized(ChildCategoryKey.career), color: Color.green) {
+                        navigateToContent(category: ChildCategoryKey.career)
                     }
-                    bigChildButton(icon: "🌐", title: localizationManager.localized("child_interface_category_internet"), color: Color.purple) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_internet"))
+                    bigChildButton(icon: "🌐", title: localizationManager.localized(ChildCategoryKey.internet), color: Color.purple) {
+                        navigateToContent(category: ChildCategoryKey.internet)
                     }
                 }
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "🎬", title: localizationManager.localized("child_interface_category_movies"), color: Color.orange) {
-                        navigateToContent(category: localizationManager.localized("child_interface_category_movies"))
+                    bigChildButton(icon: "🎬", title: localizationManager.localized(ChildCategoryKey.movies), color: Color.orange) {
+                        navigateToContent(category: ChildCategoryKey.movies)
                     }
                     Spacer()
                 }
@@ -937,6 +940,7 @@ struct ChildEditContactsModal: View {
     @State private var editingContactIndex: Int?
     @State private var showDeleteAlert: Bool = false
     @State private var contactToDelete: Int?
+    @State private var canEditContacts: Bool = false
     
     var body: some View {
         NavigationView {
@@ -944,6 +948,16 @@ struct ChildEditContactsModal: View {
                 Text(localizationManager.localized("child_interface_my_contacts"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.primary)
+
+                if !canEditContacts {
+                    Text(localizationManager.currentLanguage == .russian
+                         ? "Только родитель или пожилой опекун может редактировать контакты."
+                         : "Only a parent or elderly caregiver can edit contacts.")
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.orange)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, Spacing.m)
+                }
                 
                 if familyContacts.isEmpty {
                     EmptyStateView(
@@ -976,20 +990,26 @@ struct ChildEditContactsModal: View {
                                     Spacer()
                                     
                                     Button(action: {
+                                        guard canEditContacts else { return }
                                         editingContact = familyContacts[index]
                                         editingContactIndex = index
                                     }) {
                                         Image(systemName: "pencil")
                                             .foregroundColor(.blue)
                                     }
+                                    .disabled(!canEditContacts)
+                                    .opacity(canEditContacts ? 1 : 0.35)
                                     
                                     Button(action: {
+                                        guard canEditContacts else { return }
                                         contactToDelete = index
                                         showDeleteAlert = true
                                     }) {
                                         Image(systemName: "trash")
                                             .foregroundColor(.red)
                                     }
+                                    .disabled(!canEditContacts)
+                                    .opacity(canEditContacts ? 1 : 0.35)
                                 }
                                 .padding()
                                 .background(Color.gray.opacity(0.1))
@@ -1011,7 +1031,9 @@ struct ChildEditContactsModal: View {
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("child_interface_done")) {
-                        saveContacts() // Сохраняем перед закрытием
+                        if canEditContacts {
+                            saveContacts() // Сохраняем перед закрытием
+                        }
                         isPresented = false
                     }
                 }
@@ -1024,7 +1046,10 @@ struct ChildEditContactsModal: View {
             UserDefaults.standard.synchronize() // Принудительная синхронизация
             print("✅ ChildInterfaceScreen: Роль установлена как 'child'")
             print("   Проверка: UserDefaults['current_user_role'] = '\(UserDefaults.standard.string(forKey: "current_user_role") ?? "НЕ УСТАНОВЛЕНА")'")
-            
+            let members = UnifiedFamilyRoster.load()
+            let permissionSnapshot = FamilyPermissionLayer.snapshot(members: members)
+            let directPermission = FamilyAccessPolicy.hasPermission(.editFamilyContacts, members: members)
+            canEditContacts = permissionSnapshot.canEditContacts && directPermission
             loadContacts()
         }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
@@ -1071,30 +1096,21 @@ struct ChildEditContactsModal: View {
             print("✅ Загружено контактов из child_family_contacts_list: \(familyContacts.count)")
             return
         }
-        
-        // Если нет сохраненных контактов, загружаем из family_members_list и преобразуем в ChildFamilyContact
-        guard let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
-              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
+
+        let decoded = UnifiedFamilyRoster.load()
+        guard !decoded.isEmpty else {
             familyContacts = []
             print("⚠️ Нет данных о членах семьи в UserDefaults")
             return
         }
-        
-        // Преобразуем FamilyMemberData в ChildFamilyContact
-        familyContacts = decoded.map { member in
-            // Определяем роль (преобразуем FamilyMemberCard.FamilyRole в строку)
-            let relationString: String
-            switch member.role {
-            case .parent: relationString = localizationManager.localized("elderly_family_role_parent")
-            case .child: relationString = localizationManager.localized("elderly_family_role_child")
-            case .teenager: relationString = localizationManager.localized("elderly_family_role_teenager")
-            case .elderly: relationString = localizationManager.localized("family_role_elderly_label")
-            }
-            
-            return ChildFamilyContact(
-                name: member.name,
-                phone: "+7 (999) 000-00-00", // TODO: Добавить телефон в FamilyMemberData
-                relation: relationString
+
+        let projections = UnifiedFamilyRoster.contactProjections(audience: .child, members: decoded)
+        familyContacts = projections.map { item in
+            ChildFamilyContact(
+                id: item.id,
+                name: item.name,
+                phone: item.phone,
+                relation: localizationManager.localized(item.relationLocalizationKey)
             )
         }
         
@@ -1111,6 +1127,10 @@ struct ChildEditContactsModal: View {
         UserDefaults.standard.set(encoded, forKey: "child_family_contacts_list")
         UserDefaults.standard.synchronize() // Принудительная синхронизация
         print("✅ Сохранено контактов: \(familyContacts.count) в child_family_contacts_list")
+
+        let roster = UnifiedFamilyRoster.load()
+        let phoneEntries = Dictionary(uniqueKeysWithValues: familyContacts.map { ($0.id, $0.phone) })
+        UnifiedFamilyRoster.persistPhoneDirectory(entriesByContactId: phoneEntries, members: roster)
         
         // Уведомляем другие экраны об изменении
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)

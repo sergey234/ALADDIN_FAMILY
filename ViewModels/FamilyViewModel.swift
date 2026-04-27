@@ -24,7 +24,8 @@ class FamilyViewModel: ObservableObject {
     // MARK: - Models
     
     struct FamilyMember: Identifiable {
-        let id = UUID()
+        /// Стабильный идентификатор с сервера (`FamilyMemberResponse.id`).
+        let id: String
         let name: String
         let role: String
         let avatar: String
@@ -60,6 +61,7 @@ class FamilyViewModel: ObservableObject {
                     // Преобразуем FamilyMemberResponse в FamilyMember
                     self?.familyMembers = members.map { member in
                         FamilyMember(
+                            id: member.id,
                             name: member.name,
                             role: member.role,
                             avatar: member.avatar ?? "",
@@ -70,6 +72,19 @@ class FamilyViewModel: ObservableObject {
                         )
                     }
                     self?.isLoading = false
+
+                    let rosterFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+                        .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                    Task { @MainActor in
+                        ProfileManager.shared.syncChildRosterFromServer(
+                            members: members,
+                            familyId: rosterFamilyId.isEmpty ? nil : rosterFamilyId,
+                            removeMissingServerLinkedChildren: true
+                        )
+                        if let summary = ProfileManager.shared.lastChildRosterReconcileSummary {
+                            print("🔄 FamilyViewModel roster reconcile summary: \(summary)")
+                        }
+                    }
 
                     // Загружаем статистику семьи
                     self?.loadFamilyStats()

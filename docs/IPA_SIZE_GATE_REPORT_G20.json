@@ -1,0 +1,91 @@
+{
+  "generated_at": "2026-04-27T10:17:52.419173+00:00",
+  "artifact_type": "app_bundle",
+  "artifact_path": "/Users/sergejhlystov/Library/Developer/Xcode/DerivedData/ALADDIN-eahryzmutvtbyceygnlyjsmiiaha/Build/Products/Debug-iphonesimulator/ALADDIN.app",
+  "size_bytes": 185508106,
+  "size_mb": 176.91,
+  "max_mb": 500.0,
+  "pass": true,
+  "top_entries": [
+    {
+      "path": "ALADDIN.debug.dylib",
+      "size_bytes": 178407344
+    },
+    {
+      "path": "PlugIns/ALADDINUnitTests.xctest/ALADDINUnitTests",
+      "size_bytes": 3154960
+    },
+    {
+      "path": "Assets.car",
+      "size_bytes": 3094063
+    },
+    {
+      "path": "PlugIns/ALADDINContentBlocker.appex/ALADDINContentBlocker.debug.dylib",
+      "size_bytes": 356576
+    },
+    {
+      "path": "ALADDIN",
+      "size_bytes": 123152
+    },
+    {
+      "path": "PlugIns/ALADDINContentBlocker.appex/ALADDINContentBlocker",
+      "size_bytes": 120944
+    },
+    {
+      "path": "__preview.dylib",
+      "size_bytes": 84048
+    },
+    {
+      "path": "PlugIns/ALADDINContentBlocker.appex/__preview.dylib",
+      "size_bytes": 84048
+    },
+    {
+      "path": "AppIcon76x76@2x~ipad.png",
+      "size_bytes": 35284
+    },
+    {
+      "path": "AppIcon60x60@2x.png",
+      "size_bytes": 23462
+    },
+    {
+      "path": "_CodeSignature/CodeResources",
+      "size_bytes": 10499
+    },
+    {
+      "path": "Info.plist",
+      "size_bytes": 4739
+    },
+    {
+      "path": "PlugIns/ALADDINContentBlocker.appex/_CodeSignature/CodeResources",
+      "size_bytes": 2492
+    },
+    {
+      "path": "PlugIns/ALADDINUnitTests.xctest/_CodeSignature/CodeResources",
+      "size_bytes": 1798
+    },
+    {
+      "path": "PlugIns/ALADDINContentBlocker.appex/Info.plist",
+      "size_bytes": 965
+    },
+    {
+      "path": "aladdin_cert_backup.cer",
+      "size_bytes": 936
+    },
+    {
+      "path": "aladdin_cert.cer",
+      "size_bytes": 936
+    },
+    {
+      "path": "PlugIns/ALADDINUnitTests.xctest/Info.plist",
+      "size_bytes": 747
+    },
+    {
+      "path": "PlugIns/ALADDINContentBlocker.appex/blockerList.json",
+      "size_bytes": 145
+    },
+    {
+      "path": "Audio/tapSoft.mp3",
+      "size_bytes": 48
+    }
+  ]
+}

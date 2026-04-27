@@ -9,7 +9,7 @@ struct OnboardingAladdinLogoView: View {
     var body: some View {
         VStack(alignment: .center, spacing: 2) {
             // ✅ Стилизованный золотой текст "Aladdin AI"
-            Text("Aladdin AI")
+            Text(NSLocalizedString("app.name", comment: "App name"))
                 .font(.system(size: size, weight: .bold, design: .rounded))
                 .foregroundStyle(
                     LinearGradient(
@@ -26,7 +26,7 @@ struct OnboardingAladdinLogoView: View {
                 .shadow(color: Color(red: 0.85, green: 0.65, blue: 0.13).opacity(0.6), radius: 4, x: 0, y: 1)
                 .overlay(
                     // ✅ Блики для объёмного эффекта
-                    Text("Aladdin AI")
+                    Text(NSLocalizedString("app.name", comment: "App name"))
                         .font(.system(size: size, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
@@ -43,7 +43,7 @@ struct OnboardingAladdinLogoView: View {
                 .accessibilityLabel("Название приложения Aladdin AI")
             
             if showSubtitle {
-                Text("AI Защита семьи")
+                Text(NSLocalizedString("app.tagline", comment: "App tagline"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.white.opacity(0.7))
                     .dynamicTypeSize(.small ... .medium)
@@ -703,7 +703,7 @@ struct LoadingOnboardingView: View {
                 .tint(.secondaryGold)
 
             // Текст загрузки
-            Text("Подготовка приложения...")
+            Text(NSLocalizedString("onboarding.preparing_app", comment: "Loading onboarding state"))
                 .font(.body)
                 .foregroundColor(.textSecondary)
                 .multilineTextAlignment(.center)

@@ -3,6 +3,7 @@ import SwiftUI
 /// 🎉 Welcome Card for Family Creator
 /// Информационная карточка для нового создателя семьи (Вариант 3)
 struct WelcomeCardForCreator: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let currentUser: FamilyMemberData
     let onShowInvitationGuide: () -> Void
     let onAddMember: () -> Void
@@ -13,13 +14,13 @@ struct WelcomeCardForCreator: View {
             HStack {
                 Text("🎉")
                     .font(.system(size: 32))
-                Text("Добро пожаловать!")
+                Text(localizationManager.localized("welcome_creator_title"))
                     .font(.h2)
                     .foregroundColor(.secondaryGold)
             }
             .padding(.top, Spacing.m)
             
-            Text("Вы создали новую семью")
+            Text(localizationManager.localized("welcome_creator_subtitle"))
                 .font(.body)
                 .foregroundColor(.white.opacity(0.9))
                 .padding(.bottom, Spacing.s)
@@ -39,7 +40,7 @@ struct WelcomeCardForCreator: View {
             
             // Подсказки
             VStack(alignment: .leading, spacing: Spacing.xs) {
-                Text("Теперь пригласите членов семьи:")
+                Text(localizationManager.localized("welcome_creator_invite_prompt"))
                     .font(.subheadline)
                     .foregroundColor(.white.opacity(0.8))
                     .padding(.bottom, Spacing.xxs)
@@ -47,7 +48,7 @@ struct WelcomeCardForCreator: View {
                 HStack(spacing: Spacing.xs) {
                     Text("•")
                         .foregroundColor(.secondaryGold)
-                    Text("Введите код приглашения")
+                    Text(localizationManager.localized("welcome_creator_invite_code"))
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.7))
                 }
@@ -55,7 +56,7 @@ struct WelcomeCardForCreator: View {
                 HStack(spacing: Spacing.xs) {
                     Text("•")
                         .foregroundColor(.secondaryGold)
-                    Text("Сканируйте QR-код")
+                    Text(localizationManager.localized("welcome_creator_scan_qr"))
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.7))
                 }
@@ -63,7 +64,7 @@ struct WelcomeCardForCreator: View {
                 HStack(spacing: Spacing.xs) {
                     Text("•")
                         .foregroundColor(.secondaryGold)
-                    Text("Создайте новую семью")
+                    Text(localizationManager.localized("welcome_creator_create_family"))
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.7))
                 }
@@ -74,7 +75,7 @@ struct WelcomeCardForCreator: View {
             Button(action: onShowInvitationGuide) {
                 HStack {
                     Text("➡️")
-                    Text("Как пригласить участников")
+                    Text(localizationManager.localized("welcome_creator_how_to_invite"))
                         .font(.subheadline)
                         .fontWeight(.semibold)
                 }

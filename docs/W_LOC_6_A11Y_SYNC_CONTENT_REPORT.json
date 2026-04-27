@@ -1,0 +1,49 @@
+{
+  "generated_at": "2026-04-27T18:07:04.181161+00:00",
+  "check_count": 7,
+  "failed_count": 0,
+  "checks": [
+    {
+      "id": "WLOC6-FILE-1",
+      "description": "Child content screen exists",
+      "status": "PASS",
+      "details": "Screens/ChildContentScreen.swift"
+    },
+    {
+      "id": "WLOC6-FILE-2",
+      "description": "Parent dashboard screen exists",
+      "status": "PASS",
+      "details": "Screens/ParentDashboardView.swift"
+    },
+    {
+      "id": "WLOC6-CONTENT-STATE-1",
+      "description": "Child content uses localized loading/error/empty states",
+      "status": "PASS",
+      "details": "child_content_loading/error_message/empty_title"
+    },
+    {
+      "id": "WLOC6-CONTENT-A11Y-1",
+      "description": "Child content retry buttons use localized accessibility hints",
+      "status": "PASS",
+      "details": "child_content retry accessibility"
+    },
+    {
+      "id": "WLOC6-DASHBOARD-A11Y-1",
+      "description": "Parent dashboard primary actions include localized accessibility hints",
+      "status": "PASS",
+      "details": "unified limits + export buttons hints"
+    },
+    {
+      "id": "WLOC6-DASHBOARD-STATE-1",
+      "description": "Parent dashboard localized empty/error/reporting states exist",
+      "status": "PASS",
+      "details": "trends_empty + report_export_failed + digest"
+    },
+    {
+      "id": "WLOC6-I18N-KEYS-1",
+      "description": "RU/EN contain required W-LOC-6 keys",
+      "status": "PASS",
+      "details": "child_content_retry_accessibility_hint, parent_dashboard_open_unified_limits_hint, parent_dashboard_report_export_csv_hint, parent_dashboard_report_export_pdf_hint, child_content_loading, child_content_error_message, child_content_empty_title, parent_dashboard_trends_empty, parent_dashboard_report_export_failed"
+    }
+  ]
+}

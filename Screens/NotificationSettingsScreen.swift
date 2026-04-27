@@ -13,6 +13,7 @@ struct NotificationSettingsScreen: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var notificationManager: NotificationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     // ✅ ИСПРАВЛЕНО: Заменено @State на @AppStorage для всех 12 тумблеров
     @AppStorage("notification_security_enabled") private var securityEnabled: Bool = true
@@ -164,7 +165,7 @@ struct NotificationSettingsScreen: View {
     
     private var notificationTypesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("ТИПЫ УВЕДОМЛЕНИЙ")
+            Text(localizationManager.localized("notification_settings_types_title"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
                 .lineLimit(1)
@@ -217,7 +218,7 @@ struct NotificationSettingsScreen: View {
     
     private var soundAndBadgeSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("ЗВУК И BADGE")
+            Text(localizationManager.localized("notification_settings_sound_badge_title"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
                 .lineLimit(1)
@@ -257,7 +258,7 @@ struct NotificationSettingsScreen: View {
     
     private var advancedModesSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("ДОПОЛНИТЕЛЬНЫЕ РЕЖИМЫ")
+            Text(localizationManager.localized("notification_settings_advanced_modes_title"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
                 .lineLimit(1)
@@ -311,7 +312,7 @@ struct NotificationSettingsScreen: View {
                 // Ограничение частоты
                 VStack(alignment: .leading, spacing: 8) {
                     HStack(alignment: .center, spacing: 12) {
-                        Text("Ограничение частоты")
+                        Text(localizationManager.localized("notification_settings_rate_limit_title"))
                             .font(.system(size: 16, weight: .medium))
                             .foregroundColor(.white)
                             .lineLimit(2)
@@ -372,7 +373,7 @@ struct NotificationSettingsScreen: View {
     
     private var quietHoursSection: some View {
         VStack(alignment: .leading, spacing: 16) {
-            Text("ТИХИЕ ЧАСЫ")
+            Text(localizationManager.localized("notification_settings_quiet_hours_title"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
                 .lineLimit(1)
@@ -388,7 +389,7 @@ struct NotificationSettingsScreen: View {
                 if quietHoursEnabled {
                     VStack(spacing: 8) {
                         HStack(alignment: .center) {
-                            Text("Начало")
+                            Text(localizationManager.localized("notification_settings_quiet_hours_start"))
                                 .font(.system(size: 14))
                                 .foregroundColor(.white.opacity(0.8))
                                 .lineLimit(1)
@@ -405,7 +406,7 @@ struct NotificationSettingsScreen: View {
                         }
                         
                         HStack(alignment: .center) {
-                            Text("Конец")
+                            Text(localizationManager.localized("notification_settings_quiet_hours_end"))
                                 .font(.system(size: 14))
                                 .foregroundColor(.white.opacity(0.8))
                                 .lineLimit(1)

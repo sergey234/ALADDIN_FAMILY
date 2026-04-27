@@ -4,6 +4,7 @@ import SwiftUI
 /// Единорог-вселенная (сад + коллекция)
 /// Источник дизайна: /mobile/wireframes/unicorn_universe_component.html
 struct UnicornUniverseView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     // Используем баланс из глобального AppStorage
     @AppStorage("child_unicorn_balance") private var unicornBalance: Int = 245
@@ -25,7 +26,7 @@ struct UnicornUniverseView: View {
             
             ScrollView {
                 VStack(spacing: Spacing.l) {
-                    Text("🌳 ЕДИНОРОГ-ВСЕЛЕННАЯ")
+                    Text(localizationManager.localized("unicorn_universe_title"))
                         .font(.h1)
                         .foregroundColor(.textPrimary)
                         .accessibilityAddTraits(.isHeader)
@@ -54,7 +55,7 @@ struct UnicornUniverseView: View {
     
     private var gardenView: some View {
         VStack(spacing: Spacing.m) {
-            Text("🌳 МОЙ САД")
+            Text(localizationManager.localized("unicorn_universe_garden_title"))
                 .font(.h2)
                 .foregroundColor(.textPrimary)
                 .accessibilityAddTraits(.isHeader)
@@ -90,7 +91,7 @@ struct UnicornUniverseView: View {
     
     private var collectionView: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Text("📚 КОЛЛЕКЦИЯ")
+            Text(localizationManager.localized("unicorn_universe_collection_title"))
                 .font(.h2)
                 .foregroundColor(.textPrimary)
                 .accessibilityAddTraits(.isHeader)

@@ -7,6 +7,7 @@ import SwiftUI
 struct RewardsQuickModal: View {
     
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @Binding var unicornBalance: Int
     @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
     
@@ -33,6 +34,8 @@ struct RewardsQuickModal: View {
         return UnicornRewardsStore.resolveActiveChildId()
     }
     
+    @State private var showParentAuthDeniedAlert = false
+    
     var body: some View {
         NavigationView {
             ZStack {
@@ -50,7 +53,7 @@ struct RewardsQuickModal: View {
                                 .font(.system(size: 36, weight: .bold))
                                 .foregroundColor(Color(hex: "C084FC"))
                             
-                            Text("Единорогов на счету")
+                            Text(localizationManager.localized("rewards_quick_balance_label"))
                                 .font(.caption)
                                 .foregroundColor(.textSecondary)
                         }
@@ -64,12 +67,26 @@ struct RewardsQuickModal: View {
                         
                         // Быстрые действия
                         HStack(spacing: Spacing.m) {
-                            quickActionButton(icon: "✅", title: "Вознаградить", color: .successGreen) {
-                                rewardChild()
+                            quickActionButton(icon: "✅", title: localizationManager.localized("rewards_quick_action_reward"), color: .successGreen) {
+                                Task { @MainActor in
+                                    let ok = await ParentSessionGate.confirmSensitiveAction(forceReauth: true)
+                                    if ok {
+                                        rewardChild()
+                                    } else {
+                                        showParentAuthDeniedAlert = true
+                                    }
+                                }
                             }
                             
-                            quickActionButton(icon: "❌", title: "Наказать", color: .dangerRed) {
-                                punishChild()
+                            quickActionButton(icon: "❌", title: localizationManager.localized("rewards_quick_action_punish"), color: .dangerRed) {
+                                Task { @MainActor in
+                                    let ok = await ParentSessionGate.confirmSensitiveAction(forceReauth: true)
+                                    if ok {
+                                        punishChild()
+                                    } else {
+                                        showParentAuthDeniedAlert = true
+                                    }
+                                }
                             }
                         }
                         .padding(.horizontal, Spacing.screenPadding)
@@ -82,10 +99,10 @@ struct RewardsQuickModal: View {
                     VStack(spacing: Spacing.l) {
                         Text("🔒")
                             .font(.system(size: 64))
-                        Text("Доступ ограничен")
+                        Text(localizationManager.localized("rewards_quick_access_limited_title"))
                             .font(.h2)
                             .foregroundColor(.textPrimary)
-                        Text("Этот функционал доступен только родителям.")
+                        Text(localizationManager.localized("rewards_quick_access_limited_message"))
                             .font(.body)
                             .foregroundColor(.textSecondary)
                             .multilineTextAlignment(.center)
@@ -95,7 +112,7 @@ struct RewardsQuickModal: View {
                             HapticFeedback.impact(.medium)
                             dismiss()
                         }) {
-                            Text("Понятно")
+                            Text(localizationManager.localized("rewards_quick_acknowledge"))
                                 .font(.bodyBold)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
@@ -114,7 +131,7 @@ struct RewardsQuickModal: View {
                     HStack(spacing: Spacing.xs) {
                         Text("🦄")
                             .font(.system(size: 20))
-                        Text("Вознаграждение ребёнка")
+                        Text(localizationManager.localized("rewards_quick_title"))
                             .font(.h3)
                             .foregroundColor(Color(hex: "C084FC"))
                     }
@@ -127,6 +144,13 @@ struct RewardsQuickModal: View {
                             .foregroundColor(.textSecondary)
                     }
                 }
+            }
+            .alert(isPresented: $showParentAuthDeniedAlert) {
+                SwiftUI.Alert(
+                    title: Text(localizationManager.localized("games_parental_auth_alert_title")),
+                    message: Text(localizationManager.localized("child_rewards_parent_auth_required")),
+                    dismissButton: .default(Text(localizationManager.localized("common_ok")))
+                )
             }
         }
     }

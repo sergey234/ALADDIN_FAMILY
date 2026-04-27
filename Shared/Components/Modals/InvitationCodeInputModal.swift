@@ -14,6 +14,7 @@ struct InvitationCodeInputModal: View {
     
     @Binding var isPresented: Bool
     let initialCode: String?
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     @State private var code: String = ""
     @State private var isLoading: Bool = false
@@ -40,11 +41,11 @@ struct InvitationCodeInputModal: View {
                         .font(.system(size: 50))
                         .foregroundColor(.green)
                     
-                    Text("Введите код приглашения")
+                    Text(localizationManager.localized("invitation_code_enter_title"))
                         .font(.system(size: 22, weight: .bold))
                         .foregroundColor(.primary)
                     
-                    Text("Попросите у администратора семьи код вида: FAM-XXXX-XXXX-XXXX")
+                    Text(localizationManager.localized("invitation_code_enter_subtitle"))
                         .font(.subheadline)
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)
@@ -54,7 +55,7 @@ struct InvitationCodeInputModal: View {
                 
                 // Поле ввода
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Код приглашения")
+                    Text(localizationManager.localized("invitation_code_field_label"))
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.secondary)
                     
@@ -78,7 +79,7 @@ struct InvitationCodeInputModal: View {
                             .foregroundColor(.red)
                             .padding(.horizontal, 4)
                     } else if !code.isEmpty && !code.isValidRecoveryCode {
-                        Text("Формат: FAM-XXXX-XXXX-XXXX")
+                        Text(localizationManager.localized("invitation_code_format_hint"))
                             .font(.caption)
                             .foregroundColor(.secondary)
                             .padding(.horizontal, 4)
@@ -94,7 +95,7 @@ struct InvitationCodeInputModal: View {
                             ProgressView()
                                 .progressViewStyle(CircularProgressViewStyle(tint: .white))
                         } else {
-                            Text("Присоединиться к семье")
+                            Text(localizationManager.localized("invitation_join_family_button"))
                                 .font(.system(size: 16, weight: .semibold))
                         }
                     }
@@ -111,7 +112,7 @@ struct InvitationCodeInputModal: View {
                 Spacer()
             }
             .padding(.horizontal, 20)
-            .navigationTitle("Присоединение")
+            .navigationTitle(localizationManager.localized("invitation_join_navigation_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -123,7 +124,7 @@ struct InvitationCodeInputModal: View {
         }
         .sheet(isPresented: $showRoleSelection) {
             // TODO: Показывать выбор роли после успешной проверки кода
-            Text("Выбор роли")
+            Text(localizationManager.localized("invitation_role_selection_title"))
         }
         .onAppear {
             // Устанавливаем initialCode если он есть

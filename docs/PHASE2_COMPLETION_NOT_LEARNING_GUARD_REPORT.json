@@ -1,0 +1,41 @@
+{
+  "generated_at": "2026-04-27T14:45:38.670800+00:00",
+  "check_count": 5,
+  "failed_count": 0,
+  "guard_declared": true,
+  "learning_metrics_present": true,
+  "completion_only_paths_detected": false,
+  "status": "PASS",
+  "checks": [
+    {
+      "id": "P2G-FILE",
+      "status": "PASS",
+      "description": "Guard policy exists",
+      "details": "docs/PHASE2_COMPLETION_NOT_LEARNING_GUARD.md"
+    },
+    {
+      "id": "P2G-RULE",
+      "status": "PASS",
+      "description": "Core guard rule declared",
+      "details": "completion != learning"
+    },
+    {
+      "id": "P2G-METRICS",
+      "status": "PASS",
+      "description": "Mandatory learning evidence declared",
+      "details": "learning metrics"
+    },
+    {
+      "id": "P2G-ACCEPTANCE",
+      "status": "PASS",
+      "description": "Acceptance behavior defined",
+      "details": "status behavior"
+    },
+    {
+      "id": "P2G-REPORT-CONTRACT",
+      "status": "PASS",
+      "description": "Guard report contract declared",
+      "details": "contract fields"
+    }
+  ]
+}

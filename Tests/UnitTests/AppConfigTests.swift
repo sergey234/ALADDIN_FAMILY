@@ -21,6 +21,22 @@ class AppConfigTests: XCTestCase {
     
     // MARK: - App Info Tests
     
+    func testContentManifestRequireValidSignatureMatchesBuildMode() {
+        #if DEBUG
+        XCTAssertFalse(AppConfig.contentManifestRequireValidSignature)
+        #else
+        XCTAssertTrue(AppConfig.contentManifestRequireValidSignature)
+        #endif
+    }
+
+    func testContentPayloadDiskCacheMaxBytesIsPositive() {
+        XCTAssertGreaterThan(AppConfig.contentPayloadDiskCacheMaxBytes, 0)
+    }
+
+    func testContentCatalogMinItemsPerCategoryIsPositive() {
+        XCTAssertGreaterThanOrEqual(AppConfig.contentCatalogMinItemsPerCategory, 1)
+    }
+
     func testAppName() throws {
         XCTAssertEqual(AppConfig.appName, "ALADDIN")
     }

@@ -14,6 +14,7 @@ struct ChildRewardsScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @StateObject private var viewModel = ChildRewardsViewModel()
     @State private var selectedTab: RewardTab = .shop
     @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
@@ -86,7 +87,10 @@ struct ChildRewardsScreen: View {
     @State private var shopRewardsSaveDebounceTask: Task<Void, Never>? = nil
     @State private var lastDashboardSignature: String? = nil
     @State private var lastDashboardHandledAt: Date = .distantPast
-    
+    @State private var achievementBurstActive = false
+    @State private var lastSampledGoalProgress: Double = -1
+    @State private var purchaseRewardBurstActive = false
+
     // ✅ ГЕЙМИФИКАЦИЯ: API синхронизация
     @State private var isLoadingRewards: Bool = false
     @State private var isLoadingHistory: Bool = false
@@ -161,6 +165,12 @@ struct ChildRewardsScreen: View {
             // Фон
             LinearGradient.backgroundGradient
                 .ignoresSafeArea()
+
+            CelebrationParticleBurstView(kind: .achievementMagic, active: achievementBurstActive, onFinished: { achievementBurstActive = false })
+                .ignoresSafeArea()
+
+            CelebrationParticleBurstView(kind: .rewardPurchase, active: purchaseRewardBurstActive, onFinished: { purchaseRewardBurstActive = false })
+                .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // Навигационная панель
@@ -234,6 +244,15 @@ struct ChildRewardsScreen: View {
                     await refreshData()
                 }
             }
+        }
+        .onAppear {
+            lastSampledGoalProgress = goalProgress
+        }
+        .onChange(of: goalProgress) { newValue in
+            if newValue >= 0.999 && lastSampledGoalProgress < 0.999 {
+                achievementBurstActive = true
+            }
+            lastSampledGoalProgress = newValue
         }
         .navigationBarHidden(true)
         .withVisualLogger()
@@ -643,27 +662,25 @@ struct ChildRewardsScreen: View {
                     .foregroundColor(.textPrimary)
             }
             
-            // Прогресс-бар
+            // Прогресс-бар (цвет по фазе накопления + микро-анимация ширины)
             GeometryReader { geometry in
+                let w = geometry.size.width
                 ZStack(alignment: .leading) {
-                    // Фон
                     RoundedRectangle(cornerRadius: 10)
                         .fill(Color.backgroundMedium.opacity(0.5))
                         .frame(height: 20)
-                    
-                    // Прогресс
+                        .overlay(milestoneTicks(totalWidth: w))
+
                     RoundedRectangle(cornerRadius: 10)
                         .fill(
                             LinearGradient(
-                                gradient: Gradient(colors: [
-                                    Color(hex: "A855F7"),
-                                    Color(hex: "EC4899")
-                                ]),
+                                gradient: goalProgressGradient(for: goalProgress),
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
                         )
-                        .frame(width: geometry.size.width * goalProgress, height: 20)
+                        .frame(width: max(8, w * goalProgress), height: 20)
+                        .animation(reduceMotion ? nil : .spring(response: 0.55, dampingFraction: 0.82), value: goalProgress)
                 }
             }
             .frame(height: 20)
@@ -691,6 +708,29 @@ struct ChildRewardsScreen: View {
                 .fill(Color.backgroundMedium.opacity(0.3))
         )
         .padding(.horizontal, Spacing.screenPadding)
+    }
+
+    private func goalProgressGradient(for progress: Double) -> Gradient {
+        let p = min(1, max(0, progress))
+        if p < 0.34 {
+            return Gradient(colors: [Color(hex: "22C55E"), Color(hex: "84CC16")])
+        }
+        if p < 0.67 {
+            return Gradient(colors: [Color(hex: "EAB308"), Color(hex: "F97316")])
+        }
+        return Gradient(colors: [Color(hex: "A855F7"), Color(hex: "EC4899")])
+    }
+
+    private func milestoneTicks(totalWidth: CGFloat) -> some View {
+        ZStack(alignment: .leading) {
+            ForEach([0.25, 0.5, 0.75], id: \.self) { mark in
+                Rectangle()
+                    .fill(Color.textSecondary.opacity(0.22))
+                    .frame(width: 1, height: 14)
+                    .offset(x: totalWidth * mark - 0.5)
+            }
+        }
+        .allowsHitTesting(false)
     }
     
     // MARK: - Games Grid (2x3)
@@ -785,7 +825,9 @@ struct ChildRewardsScreen: View {
         Button(action: {
             HapticFeedback.impact(.medium)
             if isTab, let tab = tabDestination {
-                selectedTab = tab
+                withAnimation(reduceMotion ? nil : .spring(response: 0.38, dampingFraction: 0.84)) {
+                    selectedTab = tab
+                }
             } else if let destination = destination {
                 navigationManager.navigateTo(destination)
             }
@@ -832,7 +874,7 @@ struct ChildRewardsScreen: View {
                     )
             )
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(PressScaleButtonStyle())
     }
     
     // MARK: - Helper Methods
@@ -942,17 +984,96 @@ struct ChildRewardsScreen: View {
         VisualLogger.shared.log("🌐 rewards history request start", level: .info, category: "CHILD_REWARDS.API")
         
         apiService.getGamificationRewardsHistory(userId: userId, limit: 50) { [self] result in
-            isLoadingHistory = false
             switch result {
             case .success(let rewards):
-                VisualLogger.shared.log("✅ rewards history request ok items=\(rewards.count)", level: .success, category: "CHILD_REWARDS.API")
-                // Конвертируем RewardResponse в RewardHistoryEntry
-                // TODO: Обновить историю в локальном хранилище
-                print("✅ Загружено \(rewards.count) наград из истории")
+                if rewards.isEmpty {
+                    VisualLogger.shared.log("ℹ️ rewards/history empty → balance op history", level: .info, category: "CHILD_REWARDS.API")
+                } else {
+                    VisualLogger.shared.log("ℹ️ rewards/history count=\(rewards.count); list UI uses /gamification/balance history (rewards/history 500-safe)", level: .info, category: "CHILD_REWARDS.API")
+                }
+                self.loadHistoryFromBalanceHistoryFallback()
             case .failure(let error):
-                VisualLogger.shared.log("❌ rewards history request failed: \(error.localizedDescription)", level: .error, category: "CHILD_REWARDS.API")
-                apiError = error.localizedDescription
+                VisualLogger.shared.log("❌ rewards history request failed: \(error.localizedDescription) — balance history fallback", level: .error, category: "CHILD_REWARDS.API")
+                self.loadHistoryFromBalanceHistoryFallback()
             }
+        }
+    }
+    
+    /// If `/api/gamification/rewards/history` is empty or 5xx, we still show wallet activity from `/api/gamification/balance?...` history.
+    private func loadHistoryFromBalanceHistoryFallback() {
+        apiService.getGamificationBalanceHistory(userId: userId, limit: 100, offset: 0) { [self] result in
+            switch result {
+            case .success(let response):
+                DispatchQueue.main.async {
+                    isLoadingHistory = false
+                    let mapped = response.history.map { balanceEntryToHistoryEntry($0) }
+                    if mapped.isEmpty {
+                        VisualLogger.shared.log("ℹ️ balance history empty, keeping local rewards_history", level: .info, category: "CHILD_REWARDS.API")
+                    } else {
+                        VisualLogger.shared.log("✅ balance history ok items=\(mapped.count) (rewards/history fallback)", level: .success, category: "CHILD_REWARDS.API")
+                    }
+                    persistAndApplyHistory(mergeWithLocal: true, serverEntries: mapped)
+                }
+            case .failure(let error):
+                DispatchQueue.main.async {
+                    isLoadingHistory = false
+                    VisualLogger.shared.log("❌ balance history fallback failed: \(error.localizedDescription)", level: .error, category: "CHILD_REWARDS.API")
+                    if getHistoryOperations().isEmpty {
+                        apiError = error.localizedDescription
+                    } else {
+                        apiError = nil
+                    }
+                }
+            }
+        }
+    }
+    
+    private func dateFromServerTimestamp(_ raw: String) -> Date {
+        let f1 = ISO8601DateFormatter()
+        f1.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        if let d = f1.date(from: raw) { return d }
+        let f2 = ISO8601DateFormatter()
+        f2.formatOptions = [.withInternetDateTime]
+        if let d = f2.date(from: raw) { return d }
+        return Date()
+    }
+    
+    private func balanceEntryToHistoryEntry(_ entry: BalanceHistoryEntry) -> RewardHistoryEntry {
+        let label: String
+        if let r = entry.reason, !r.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            label = r
+        } else {
+            label = entry.amount >= 0
+                ? localizationManager.localized("child_rewards_balance_server_credit")
+                : localizationManager.localized("child_rewards_balance_server_debit")
+        }
+        var title = RewardText(translations: [:])
+        title.setCustom(label, for: .russian)
+        title.setCustom(label, for: .english)
+        return RewardHistoryEntry(
+            id: "server.balance.\(entry.id)",
+            title: title,
+            reason: RewardText(translations: [:]),
+            amount: abs(entry.amount),
+            isReward: entry.amount >= 0,
+            date: dateFromServerTimestamp(entry.timestamp)
+        )
+    }
+    
+    private func persistAndApplyHistory(mergeWithLocal: Bool, serverEntries: [RewardHistoryEntry]) {
+        let local = getHistoryOperations()
+        let merged: [RewardHistoryEntry]
+        if mergeWithLocal {
+            let serverIds = Set(serverEntries.map(\.id))
+            let localOnly = local.filter { !serverIds.contains($0.id) }
+            merged = (serverEntries + localOnly).sorted { $0.date > $1.date }
+        } else {
+            merged = serverEntries.sorted { $0.date > $1.date }
+        }
+        cachedHistoryOperations = merged
+        if let encoded = try? JSONEncoder().encode(merged),
+           let jsonString = String(data: encoded, encoding: .utf8) {
+            UserDefaults.standard.set(jsonString, forKey: "rewards_history")
         }
     }
     
@@ -1099,7 +1220,14 @@ struct ChildRewardsScreen: View {
                 Button(action: {
                     print("🔍 DEBUG: Нажата кнопка 'Вознаградить' в ChildRewardsScreen")
                     HapticFeedback.impact(.medium)
-                    showRewardInput = true
+                    Task { @MainActor in
+                        let allowed = await ParentSessionGate.confirmSensitiveAction(forceReauth: true)
+                        guard allowed else {
+                            loadErrorMessage = localizationManager.localized("child_rewards_parent_auth_required")
+                            return
+                        }
+                        showRewardInput = true
+                    }
                 }) {
                     VStack(spacing: Spacing.xs) {
                         Text("✅")
@@ -1125,7 +1253,14 @@ struct ChildRewardsScreen: View {
                 Button(action: {
                     print("🔍 DEBUG: Нажата кнопка 'Наказать' в ChildRewardsScreen")
                     HapticFeedback.impact(.medium)
-                    showPunishInput = true
+                    Task { @MainActor in
+                        let allowed = await ParentSessionGate.confirmSensitiveAction(forceReauth: true)
+                        guard allowed else {
+                            loadErrorMessage = localizationManager.localized("child_rewards_parent_auth_required")
+                            return
+                        }
+                        showPunishInput = true
+                    }
                 }) {
                     VStack(spacing: Spacing.xs) {
                         Text("❌")
@@ -1311,7 +1446,9 @@ struct ChildRewardsScreen: View {
         HStack(spacing: 0) {
             ForEach([RewardTab.shop, .history, .achievements], id: \.self) { tab in
                 Button(action: {
-                    selectedTab = tab
+                    withAnimation(reduceMotion ? nil : .spring(response: 0.38, dampingFraction: 0.84)) {
+                        selectedTab = tab
+                    }
                 }) {
                     Text(tab.localizedTitle(localizationManager))
                         .font(.body)
@@ -1325,8 +1462,9 @@ struct ChildRewardsScreen: View {
                                 .fill(Color.primaryBlue.opacity(0.3)) :
                             nil
                         )
+                        .scaleEffect(selectedTab == tab && !reduceMotion ? 1.03 : 1.0)
                 }
-                .buttonStyle(PlainButtonStyle())
+                .buttonStyle(PressScaleButtonStyle())
             }
         }
         .padding(4)
@@ -1451,7 +1589,7 @@ struct ChildRewardsScreen: View {
                     )
             )
         }
-        .buttonStyle(PlainButtonStyle())
+        .buttonStyle(PressScaleButtonStyle())
         .disabled(!canAfford)
     }
     
@@ -1720,8 +1858,15 @@ struct ChildRewardsScreen: View {
                         .frame(height: 8)
                     
                     RoundedRectangle(cornerRadius: 5)
-                        .fill(Color.successGreen)
-                        .frame(width: geometry.size.width * progress, height: 8)
+                        .fill(
+                            LinearGradient(
+                                gradient: Gradient(colors: [Color.successGreen, Color.secondaryGold.opacity(0.95)]),
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .frame(width: max(4, geometry.size.width * progress), height: 8)
+                        .animation(reduceMotion ? nil : .easeOut(duration: 0.35), value: progress)
                 }
             }
             .frame(height: 8)
@@ -1778,28 +1923,23 @@ struct ChildRewardsScreen: View {
             ) { [self] result in
                 switch result {
                 case .success(let response):
-                    // Обновляем баланс с сервера
-                    unicornBalance = response.newBalance
-                    storedUnicornBalance = response.newBalance
-                    UnicornRewardsStore.writeBalance(unicornBalance, for: rewardsScopeChildId)
-                    
-                    // Применяем награду в зависимости от типа
-                    applyReward(pendingPurchaseTitle)
-                    
-                    // Отправляем уведомление для обновления других экранов
-                    NotificationCenter.default.post(name: .childRewardsDataDidChange, object: nil)
-                    
-                    // Успешный feedback
-                    HapticFeedback.notification(.success)
-                    
-                    print("🎁 Куплена награда: \(pendingPurchaseTitle) за \(pendingPurchasePrice) 🦄. Осталось: \(unicornBalance) 🦄")
-                    
-                    // Закрываем модальное окно
-                    showPurchaseConfirmation = false
+                    Task { @MainActor in
+                        unicornBalance = response.newBalance
+                        storedUnicornBalance = response.newBalance
+                        UnicornRewardsStore.writeBalance(unicornBalance, for: rewardsScopeChildId)
+                        applyReward(pendingPurchaseTitle)
+                        NotificationCenter.default.post(name: .childRewardsDataDidChange, object: nil)
+                        HapticFeedback.notification(.success)
+                        print("🎁 Куплена награда: \(pendingPurchaseTitle) за \(pendingPurchasePrice) 🦄. Осталось: \(unicornBalance) 🦄")
+                        showPurchaseConfirmation = false
+                        purchaseRewardBurstActive = true
+                    }
                 case .failure(let error):
-                    apiError = error.localizedDescription
-                    HapticFeedback.notification(.error)
-                    print("❌ Ошибка покупки награды: \(error.localizedDescription)")
+                    Task { @MainActor in
+                        apiError = error.localizedDescription
+                        HapticFeedback.notification(.error)
+                        print("❌ Ошибка покупки награды: \(error.localizedDescription)")
+                    }
                 }
             }
         } else {
@@ -1811,6 +1951,7 @@ struct ChildRewardsScreen: View {
             NotificationCenter.default.post(name: .childRewardsDataDidChange, object: nil)
             HapticFeedback.notification(.success)
             showPurchaseConfirmation = false
+            purchaseRewardBurstActive = true
         }
     }
     

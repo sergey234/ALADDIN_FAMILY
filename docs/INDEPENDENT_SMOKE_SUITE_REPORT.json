@@ -1,0 +1,152 @@
+{
+  "generated_at_utc": "2026-04-25T17:40:32.648790+00:00",
+  "total": 24,
+  "pass": 24,
+  "fail_or_timeout": 0,
+  "results": [
+    {
+      "script": "scripts/phase8_content_device_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 43.95
+    },
+    {
+      "script": "scripts/phase8_ux_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 48.49
+    },
+    {
+      "script": "scripts/phase8_security_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 0.21
+    },
+    {
+      "script": "scripts/phase8_compliance_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 53.73
+    },
+    {
+      "script": "scripts/phase8_offline_sync_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 0.22
+    },
+    {
+      "script": "scripts/phase8_performance_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 8.91
+    },
+    {
+      "script": "scripts/phase9_access_rules_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 15.67
+    },
+    {
+      "script": "scripts/phase9_content_lifecycle_unified_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 8.92
+    },
+    {
+      "script": "scripts/phase9_content_safety_alignment_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 8.55
+    },
+    {
+      "script": "scripts/phase9_data_integrity_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 8.73
+    },
+    {
+      "script": "scripts/phase9_elderly_accessibility_localization_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 9.07
+    },
+    {
+      "script": "scripts/phase9_elderly_critical_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 16.47
+    },
+    {
+      "script": "scripts/phase9_elderly_data_audit_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 15.77
+    },
+    {
+      "script": "scripts/phase9_elderly_localization_gate_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 0.63
+    },
+    {
+      "script": "scripts/phase9_elderly_readability_contrast_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 8.8
+    },
+    {
+      "script": "scripts/phase9_elderly_ux_ru_en_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 8.49
+    },
+    {
+      "script": "scripts/phase9_family_flow_integration_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 7.93
+    },
+    {
+      "script": "scripts/phase9_parent_mirror_overview_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 8.69
+    },
+    {
+      "script": "scripts/phase9_shared_permission_layer_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 8.51
+    },
+    {
+      "script": "scripts/phase9_unified_family_model_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 8.42
+    },
+    {
+      "script": "scripts/trackb_wave2_feature_mode_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 0.23
+    },
+    {
+      "script": "scripts/trackb_product_kpi_gates_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 0.23
+    },
+    {
+      "script": "scripts/trackb_aes256_encryption_gate_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 0.24
+    },
+    {
+      "script": "scripts/trackb_monthly_log_audit_smoke.py",
+      "status": "PASS",
+      "detail": "",
+      "elapsed_sec": 0.24
+    }
+  ]
+}

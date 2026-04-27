@@ -78,24 +78,35 @@ def get_jwt_token():
         
         for ep in reg_endpoints:
             print(f"📡 Проверка: {ep}")
-            reg_resp = requests.post(f"{BASE_URL}{ep}", json={
-                "deviceId": DEVICE_ID,
-                "deviceType": "ios"
-            }, timeout=30)
-            
+            # Prod contract (Pydantic): required field is device_id; response uses access_token (see ALADDIN_JWT_API_ARCHITECTURE_COMPLETE.md).
+            reg_resp = requests.post(
+                f"{BASE_URL}{ep}",
+                json={
+                    "device_id": DEVICE_ID,
+                    "deviceType": "ios",
+                },
+                timeout=30,
+            )
+
             if reg_resp.status_code in [200, 201]:
-                token = reg_resp.json().get("token")
+                data = reg_resp.json() if reg_resp.text else {}
+                token = data.get("access_token") or data.get("token")
                 if token:
                     print(f"✅ Устройство зарегистрировано через {ep}")
                     return token
-        
-        # Если регистрация не прошла, пробуем логин
+
+        # Если регистрация не прошла, пробуем логин (требует email/password на текущем бэкенде)
         login_endpoints = ["/api/auth/login", "/auth/login"]
         for ep in login_endpoints:
             print(f"📡 Проверка входа: {ep}")
-            login_resp = requests.post(f"{BASE_URL}{ep}", json={"deviceId": DEVICE_ID}, timeout=30)
+            login_resp = requests.post(
+                f"{BASE_URL}{ep}",
+                json={"device_id": DEVICE_ID},
+                timeout=30,
+            )
             if login_resp.status_code == 200:
-                token = login_resp.json().get("access_token")
+                data = login_resp.json() if login_resp.text else {}
+                token = data.get("access_token") or data.get("token")
                 if token:
                     print(f"✅ Вход выполнен через {ep}")
                     return token
@@ -145,6 +156,7 @@ def test_endpoint(path, method, token):
     
     payload = {
         "deviceId": DEVICE_ID,
+        "device_id": DEVICE_ID,
         "appVersion": "1.0.0",
         "platform": "ios",
         "timestamp": datetime.utcnow().isoformat(),

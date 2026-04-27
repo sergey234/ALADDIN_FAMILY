@@ -150,13 +150,13 @@ struct ALADDINToggle_Previews: PreviewProvider {
         VStack(spacing: 20) {
             // Новый API (без title)
             HStack {
-                Text("Защита сети")
+                Text(verbatim: "Защита сети")
                 Spacer()
                 ALADDINToggle(isOn: .constant(true))
             }
             
             HStack {
-                Text("Push уведомления")
+                Text(verbatim: "Push уведомления")
                 Spacer()
                 ALADDINToggle(isOn: .constant(false), size: 40)
             }

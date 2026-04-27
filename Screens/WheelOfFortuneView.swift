@@ -4,6 +4,7 @@ import SwiftUI
 /// Колесо удачи с анимацией вращения
 /// Источник дизайна: /mobile/wireframes/wheel_of_fortune_component.html
 struct WheelOfFortuneView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     // MARK: - State
     
@@ -30,7 +31,7 @@ struct WheelOfFortuneView: View {
             
             VStack(spacing: Spacing.l) {
                 // Заголовок
-                Text("🎰 КОЛЕСО УДАЧИ")
+                Text(localizationManager.localized("wheel_of_fortune_title"))
                     .font(.h1)
                     .foregroundColor(.textPrimary)
                 
@@ -52,12 +53,12 @@ struct WheelOfFortuneView: View {
             }
             .padding(.top, Spacing.xxl)
         }
-        .alert("🎉 ПРИЗ!", isPresented: $showPrizeAlert) {
-            Button("OK") {
+        .alert(localizationManager.localized("wheel_of_fortune_prize_title"), isPresented: $showPrizeAlert) {
+            Button(localizationManager.localized("common_ok")) {
                 showPrizeAlert = false
             }
         } message: {
-            Text("Ты выиграл \(wonPrize) 🦄!")
+            Text(localizationManager.localized("wheel_of_fortune_prize_message", wonPrize))
         }
     }
     
@@ -156,7 +157,7 @@ struct WheelOfFortuneView: View {
     
     private var timerView: some View {
         VStack(spacing: Spacing.xs) {
-            Text("⏰ Следующее вращение через:")
+            Text(localizationManager.localized("wheel_of_fortune_next_spin_in"))
                 .font(.caption)
                 .foregroundColor(.textSecondary)
             
@@ -180,7 +181,7 @@ struct WheelOfFortuneView: View {
                 Text("\(totalSpins)")
                     .font(.h2)
                     .foregroundColor(.primaryBlue)
-                Text("Вращений")
+                Text(localizationManager.localized("wheel_of_fortune_spins_label"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
             }
@@ -193,7 +194,7 @@ struct WheelOfFortuneView: View {
                 Text("\(totalWon) 🦄")
                     .font(.h2)
                     .foregroundColor(.successGreen)
-                Text("Выиграно")
+                Text(localizationManager.localized("wheel_of_fortune_won_label"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
             }

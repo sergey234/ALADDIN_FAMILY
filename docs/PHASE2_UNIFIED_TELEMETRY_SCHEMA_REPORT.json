@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-04-27T14:45:38.773057+00:00",
+  "check_count": 9,
+  "failed_count": 0,
+  "category_level": {
+    "check_count": 5,
+    "failed_count": 0
+  },
+  "item_level": {
+    "check_count": 4,
+    "failed_count": 0
+  },
+  "checks": [
+    {
+      "id": "P2T-FILE-SCHEMA",
+      "level": "category",
+      "description": "Unified telemetry schema document exists",
+      "status": "PASS",
+      "details": "docs/PHASE2_UNIFIED_TELEMETRY_SCHEMA.md"
+    },
+    {
+      "id": "P2T-BLOCKS",
+      "level": "category",
+      "description": "Learning/Engagement/Freshness blocks are declared",
+      "status": "PASS",
+      "details": "three mandatory blocks"
+    },
+    {
+      "id": "P2T-CORE-ENVELOPE",
+      "level": "item",
+      "description": "Core envelope fields are declared",
+      "status": "PASS",
+      "details": "core envelope"
+    },
+    {
+      "id": "P2T-LEARNING-FIELDS",
+      "level": "item",
+      "description": "Learning metrics fields are declared",
+      "status": "PASS",
+      "details": "learning fields"
+    },
+    {
+      "id": "P2T-ENGAGEMENT-FIELDS",
+      "level": "item",
+      "description": "Engagement metrics fields are declared",
+      "status": "PASS",
+      "details": "engagement fields"
+    },
+    {
+      "id": "P2T-FRESHNESS-FIELDS",
+      "level": "item",
+      "description": "Freshness metrics fields are declared",
+      "status": "PASS",
+      "details": "freshness fields"
+    },
+    {
+      "id": "P2T-EVENT-FAMILIES",
+      "level": "category",
+      "description": "Event families are declared",
+      "status": "PASS",
+      "details": "event families"
+    },
+    {
+      "id": "P2T-VALIDATION-RULES",
+      "level": "category",
+      "description": "Validation rules section is present",
+      "status": "PASS",
+      "details": "validation rules"
+    },
+    {
+      "id": "P2T-ACCEPTANCE",
+      "level": "category",
+      "description": "Acceptance rule is declared",
+      "status": "PASS",
+      "details": "acceptance criteria"
+    }
+  ]
+}

@@ -73,6 +73,7 @@ struct ALADDINNavigationBar: View {
                             )
                     }
                     .accessibilityLabel("Назад")
+                    .accessibilityIdentifier("aladdin_nav_back")
                 } else {
                     // Логотип ALADDIN
                     HStack(spacing: 8) {
@@ -121,7 +122,7 @@ struct ALADDINNavigationBar: View {
                             HStack(spacing: 4) {
                                 Image(systemName: "plus")
                                     .font(.system(size: 14, weight: .bold))
-                                Text("Добавить")
+                                Text(localizationManager.localized("common_add"))
                                     .font(.system(size: 14, weight: .bold))
                             }
                             .foregroundColor(Color(red: 1.0, green: 0.84, blue: 0.0)) // Золотой цвет
@@ -132,7 +133,7 @@ struct ALADDINNavigationBar: View {
                                     .fill(Color(red: 1.0, green: 0.84, blue: 0.0).opacity(0.15))
                             )
                         }
-                        .accessibilityLabel("Добавить")
+                        .accessibilityLabel(localizationManager.localized("common_add"))
                     }
                     
                     // Дополнительные кнопки

@@ -448,13 +448,14 @@ enum LaunchDiagnostics {
 
 struct VisualLogView: View {
     @ObservedObject var logger = VisualLogger.shared
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var shareURL: URL? = nil
     @State private var showShareSheet = false
     
     // ✅ Computed property to break up complex body and fix "unable to type-check this expression" error
     private var logLevelFilterPicker: some View {
-        Picker("Фильтр", selection: $logger.selectedLogLevelFilter) {
-            Text("Все").tag(nil as VisualLogger.LogLevel?)
+        Picker(localizationManager.localized("visual_logger_filter_title"), selection: $logger.selectedLogLevelFilter) {
+            Text(localizationManager.localized("visual_logger_filter_all")).tag(nil as VisualLogger.LogLevel?)
             ForEach(VisualLogger.LogLevel.allCases, id: \.self) { level in
                 Text(level.rawValue).tag(Optional(level) as VisualLogger.LogLevel?)
             }
@@ -475,7 +476,7 @@ struct VisualLogView: View {
         VStack(alignment: .leading, spacing: 4) {
             // Header
             HStack {
-                Text("📋 ЛОГИ")
+                Text(localizationManager.localized("visual_logger_title"))
                     .font(.system(size: 14, weight: .bold))
                     .foregroundColor(.white)
                 
@@ -512,7 +513,7 @@ struct VisualLogView: View {
                             .lineLimit(6)
                             .multilineTextAlignment(.leading)
                     } else {
-                        Text("✅ Скопировано в буфер")
+                        Text(localizationManager.localized("visual_logger_copy_success"))
                             .font(.caption)
                             .foregroundColor(.green)
                     }
@@ -525,7 +526,7 @@ struct VisualLogView: View {
             Button(action: {
                 logger.forceCopyToClipboard()
             }) {
-                Text("Копировать")
+                Text(localizationManager.localized("visual_logger_copy_button"))
                     .font(.caption)
                     .foregroundColor(.white)
                     .padding(.horizontal, 8)
@@ -536,7 +537,7 @@ struct VisualLogView: View {
             Button(action: {
                 _ = logger.exportLogsToTempFile()
             }) {
-                Text("Экспорт")
+                Text(localizationManager.localized("visual_logger_export_button"))
                     .font(.caption)
                     .foregroundColor(.white)
                     .padding(.horizontal, 8)
@@ -572,7 +573,7 @@ struct VisualLogView: View {
                     }
                 }
             }) {
-                Text("Share Trace")
+                Text(localizationManager.localized("visual_logger_share_trace_button"))
                     .font(.caption)
                     .foregroundColor(.white)
                     .padding(.horizontal, 8)
@@ -581,7 +582,7 @@ struct VisualLogView: View {
                     .cornerRadius(4)
             }
             Button(action: { logger.clear() }) {
-                Text("Очистить")
+                Text(localizationManager.localized("visual_logger_clear_button"))
                     .font(.caption)
                     .foregroundColor(.white)
                     .padding(.horizontal, 8)
@@ -672,6 +673,7 @@ extension View {
                 HStack {
                     Spacer()
                     VisualLogView()
+                        .environmentObject(LocalizationManager.shared)
                         .frame(maxWidth: 280)
                         .padding(.trailing, 16)
                         .padding(.bottom, 120)

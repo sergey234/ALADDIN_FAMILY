@@ -364,7 +364,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockCrashDetection.shouldFailStart = true
         mockCrashDetection.failStartError = NSError(domain: "TestMotion", code: 1, userInfo: [NSLocalizedDescriptionKey: "Motion denied"])
         mockStatusService.shouldSucceed = true
-        mockStatusService.updateStatusCallCount = 0
+        mockStatusService.resetUpdateStatusCallCount()
 
         await viewModel.toggleCrashDetection(true)
         try? await Task.sleep(nanoseconds: 150_000_000)
@@ -384,7 +384,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockCrashDetection.resetCallCounts()
         mockStatusService.shouldSucceed = false
         mockStatusService.error = ComponentError.networkError("Server unreachable")
-        mockStatusService.updateStatusCallCount = 0
+        mockStatusService.resetUpdateStatusCallCount()
 
         await viewModel.toggleCrashDetection(true)
         try? await Task.sleep(nanoseconds: 150_000_000)
@@ -403,7 +403,7 @@ class NetworkProtectionViewModelTests: XCTestCase {
         mockCrashDetection.shouldFailStart = false
         mockCrashDetection.resetCallCounts()
         mockStatusService.shouldSucceed = true
-        mockStatusService.updateStatusCallCount = 0
+        mockStatusService.resetUpdateStatusCallCount()
         mockStatusService.updateStatusThrows = false
 
         await viewModel.toggleCrashDetection(true)
@@ -476,6 +476,10 @@ class MockComponentStatusService: ComponentStatusService {
     private(set) var lastUpdateStatusAt: TimeInterval = 0
     var updateStatusDelayNanoseconds: UInt64 = 0
     var updateStatusThrows = true
+
+    func resetUpdateStatusCallCount() {
+        updateStatusCallCount = 0
+    }
 
     override func getStatus(for componentId: String, priority: ComponentPriority = .normal) async throws -> ComponentStatus {
         if shouldSucceed {

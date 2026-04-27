@@ -112,6 +112,7 @@ struct IoTSecurityScreen: View {
 
 /// Карточка статуса безопасности
 struct SecurityStatusCard: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let devicesCount: Int
     let threatsCount: Int
     let protectionLevel: Int
@@ -129,7 +130,7 @@ struct SecurityStatusCard: View {
     
     var body: some View {
         VStack(spacing: 12) {
-            Text("Статус безопасности")
+            Text(localizationManager.localized("iot_security_status_title"))
                 .font(.headline)
                 .foregroundColor(.textPrimary)
             
@@ -138,7 +139,7 @@ struct SecurityStatusCard: View {
                     Text("\(devicesCount)")
                         .font(.title)
                         .foregroundColor(.textPrimary)
-                    Text("Устройств")
+                    Text(localizationManager.localized("iot_security_devices_label"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                 }
@@ -149,7 +150,7 @@ struct SecurityStatusCard: View {
                     Text("\(threatsCount)")
                         .font(.title)
                         .foregroundColor(threatsCount > 0 ? .red : .green)
-                    Text("Угроз")
+                    Text(localizationManager.localized("iot_security_threats_label"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                 }
@@ -160,7 +161,7 @@ struct SecurityStatusCard: View {
                     Text("\(protectionLevel)%")
                         .font(.title)
                         .foregroundColor(protectionLevelColor)
-                    Text("Защита")
+                    Text(localizationManager.localized("iot_security_protection_label"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                 }
@@ -181,17 +182,18 @@ struct SecurityStatusCard: View {
 
 /// Список IoT устройств
 struct DevicesListSection: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let devices: [IoTDevice]
     let onBlock: (String) -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Устройства")
+            Text(localizationManager.localized("iot_security_devices_section"))
                 .font(.headline)
                 .foregroundColor(.textPrimary)
             
             if devices.isEmpty {
-                Text("Устройства не обнаружены")
+                Text(localizationManager.localized("iot_security_devices_empty"))
                     .font(.body)
                     .foregroundColor(.textSecondary)
                     .padding()
@@ -320,12 +322,13 @@ struct DeviceRow: View {
 
 /// Секция с обнаруженными угрозами
 struct ThreatsSection: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let threats: [IoTThreat]
     let onFix: (String) -> Void
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Обнаруженные угрозы")
+            Text(localizationManager.localized("iot_security_threats_section"))
                 .font(.headline)
                 .foregroundColor(threats.isEmpty ? .green : .red)
             
@@ -333,7 +336,7 @@ struct ThreatsSection: View {
                 HStack {
                     Image(systemName: "checkmark.circle.fill")
                         .foregroundColor(.green)
-                    Text("Угроз не обнаружено")
+                    Text(localizationManager.localized("iot_security_threats_empty"))
                         .foregroundColor(.green)
                 }
                 .padding()
@@ -360,6 +363,7 @@ struct ThreatsSection: View {
 // MARK: - Threat Row
 
 struct ThreatRow: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let threat: IoTThreat
     let onFix: () -> Void
     
@@ -412,7 +416,7 @@ struct ThreatRow: View {
             
             if let recommendations = threat.recommendations, !recommendations.isEmpty {
                 VStack(alignment: .leading, spacing: 4) {
-                    Text("Рекомендации:")
+                    Text(localizationManager.localized("iot_security_recommendations_title"))
                         .font(.caption)
                         .fontWeight(.semibold)
                         .foregroundColor(.textPrimary)
@@ -429,7 +433,7 @@ struct ThreatRow: View {
             Button(action: onFix) {
                 HStack {
                     Image(systemName: "wrench.fill")
-                    Text("Исправить")
+                    Text(localizationManager.localized("iot_security_fix_action"))
                 }
                 .font(.caption)
                 .foregroundColor(.white)
@@ -450,16 +454,17 @@ struct ThreatRow: View {
 
 /// Секция с рекомендациями
 struct RecommendationsSection: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let recommendations: [String]
     
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("Рекомендации")
+            Text(localizationManager.localized("iot_security_recommendations_section"))
                 .font(.headline)
                 .foregroundColor(.textPrimary)
             
             if recommendations.isEmpty {
-                Text("Рекомендаций нет")
+                Text(localizationManager.localized("iot_security_recommendations_empty"))
                     .font(.body)
                     .foregroundColor(.textSecondary)
                     .padding()

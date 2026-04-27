@@ -1,0 +1,71 @@
+{
+  "generated_at": "2026-04-27T13:09:10.050759+00:00",
+  "check_count": 8,
+  "failed_count": 0,
+  "category_level": {
+    "check_count": 6,
+    "failed_count": 0
+  },
+  "item_level": {
+    "check_count": 2,
+    "failed_count": 0
+  },
+  "checks": [
+    {
+      "id": "P2AB-FILE-FRAMEWORK",
+      "level": "category",
+      "description": "A/B framework document exists",
+      "status": "PASS",
+      "details": "docs/PHASE2_AB_VALIDATION_FRAMEWORK.md"
+    },
+    {
+      "id": "P2AB-VARIANTS-CORE",
+      "level": "category",
+      "description": "Core format variants are declared (short/long, text/visual)",
+      "status": "PASS",
+      "details": "tokens: short,long,text,visual"
+    },
+    {
+      "id": "P2AB-VARIANTS-GROUPS",
+      "level": "category",
+      "description": "All experiment groups A1/A2/B1/B2 are declared",
+      "status": "PASS",
+      "details": "groups: A1,A2,B1,B2"
+    },
+    {
+      "id": "P2AB-ASSIGNMENT",
+      "level": "category",
+      "description": "Deterministic assignment policy is declared",
+      "status": "PASS",
+      "details": "deterministic assignment contract"
+    },
+    {
+      "id": "P2AB-TELEMETRY",
+      "level": "item",
+      "description": "Telemetry contract fields are declared",
+      "status": "PASS",
+      "details": "required telemetry fields"
+    },
+    {
+      "id": "P2AB-QA-CATEGORY",
+      "level": "category",
+      "description": "Category-level QA matrix rules are present",
+      "status": "PASS",
+      "details": "category-level QA rules"
+    },
+    {
+      "id": "P2AB-QA-ITEM",
+      "level": "item",
+      "description": "Item-level QA matrix rules are present",
+      "status": "PASS",
+      "details": "item-level QA rules"
+    },
+    {
+      "id": "P2AB-ACCEPTANCE",
+      "level": "category",
+      "description": "Acceptance rule for framework validity is defined",
+      "status": "PASS",
+      "details": "framework acceptance criteria"
+    }
+  ]
+}

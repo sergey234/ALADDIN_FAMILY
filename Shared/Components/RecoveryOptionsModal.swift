@@ -4,13 +4,14 @@ import SwiftUI
 /// Модальное окно для восстановления доступа
 struct RecoveryOptionsModal: View {
     @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var selectedOption: RecoveryOption = .backup
     
     enum RecoveryOption: String, CaseIterable {
         case backup = "backup"
         
         var displayName: String {
-            return "Сохранение"
+            return LocalizationManager.shared.localized("recovery_option_backup")
         }
         
         var icon: String {
@@ -24,11 +25,11 @@ struct RecoveryOptionsModal: View {
                 Text("🔐")
                     .font(.system(size: 64))
                 
-                Text("Восстановление доступа")
+                Text(localizationManager.localized("recovery_access_title"))
                     .font(.title2)
                     .fontWeight(.bold)
                 
-                Text("Выберите способ восстановления доступа к аккаунту")
+                Text(localizationManager.localized("recovery_access_subtitle"))
                     .font(.body)
                     .foregroundColor(.secondary)
                     .multilineTextAlignment(.center)
@@ -70,7 +71,7 @@ struct RecoveryOptionsModal: View {
                 .disabled(false)
             }
             .padding()
-            .navigationTitle("Восстановление")
+            .navigationTitle(localizationManager.localized("recovery_navigation_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

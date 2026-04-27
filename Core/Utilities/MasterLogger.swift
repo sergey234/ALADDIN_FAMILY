@@ -305,6 +305,7 @@ class MasterLogger {
     /// Получить VisualLogView для отображения
     var visualLogView: some View {
         VisualLogView()
+            .environmentObject(LocalizationManager.shared)
     }
 
     /// Получить все логи из Visual Logger в текстовом формате

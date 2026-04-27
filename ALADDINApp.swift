@@ -134,6 +134,11 @@ struct ALADDINApp: App {
 
     // 🔍 ТЕСТОВОЕ ЛОГИРОВАНИЕ - проверяем работу при старте приложения
     private let appStartLogger: Void = {
+        // W4-1 UI tests: must run before `NavigationManager()` reads onboarding defaults.
+        if ProcessInfo.processInfo.arguments.contains("-UITestSkipOnboarding") {
+            UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            UserDefaults.standard.synchronize()
+        }
         print("🚀 ALADDIN_APP: Application starting...")
         print("🚀 ALADDIN_APP: Testing logger initialization...")
         return ()
@@ -153,6 +158,7 @@ struct ALADDINApp: App {
 
     // ✅ ИСПРАВЛЕНИЕ: Отслеживаем состояние приложения для предотвращения сброса навигации
     @Environment(\.scenePhase) private var scenePhase
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
     // ✅ Состояние навигации
     @State private var navigationInitialized: Bool = false
@@ -224,6 +230,8 @@ struct ALADDINApp: App {
         defaults.set(false, forKey: LifecycleKeys.gracefulTerminateMarker)
         defaults.set(Date().timeIntervalSince1970, forKey: LifecycleKeys.lastLaunchTimestamp)
         defaults.synchronize()
+        ContentBackgroundSyncScheduler.shared.registerIfNeeded()
+        ContentBackgroundSyncScheduler.shared.scheduleNextRefresh()
 
 #if DEBUG
         print("ℹ️ ALADDINApp.init: Debug/token recovery deferred to runDeferredLaunchBootstrapIfNeeded()")
@@ -253,6 +261,9 @@ struct ALADDINApp: App {
                         localizationManager: locManager,
                         hasCompletedOnboarding: hasCompletedOnboarding
                     )
+                    if ProcessInfo.processInfo.arguments.contains("-UITestChildContentW4_4") {
+                        navManager.currentScreen = .childContent
+                    }
                     LaunchDiagnostics.appendStartupTrace("initializeNavigation finished; currentScreen=\(navigationManager.currentScreen.rawValue)")
                 }
                 .task {
@@ -401,11 +412,29 @@ struct ALADDINApp: App {
                     case .loading:
                         AnyView(AppLoadingView().id("loading"))
                     case .main:
-                        AnyView(MainScreen().id("main").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(
+                            MainScreen()
+                                .id("main")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                                .accessibilityIdentifier("aladdin_root_01_MainScreen")
+                        )
                     case .family:
-                        AnyView(FamilyScreen().id("family").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(
+                            FamilyScreen()
+                                .id("family")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                                .accessibilityIdentifier("aladdin_root_02_FamilyScreen")
+                        )
                     case .networkProtection:
-                        AnyView(NetworkProtectionScreen().id("network_protection").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(
+                            NetworkProtectionScreen()
+                                .id("network_protection")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                                .accessibilityIdentifier("aladdin_root_03_NetworkProtectionScreen")
+                        )
                     case .analytics:
                         AnyView(AnalyticsScreen().id("analytics").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .settings:
@@ -414,7 +443,13 @@ struct ALADDINApp: App {
                             .environmentObject(navigationManager)
                             .environmentObject(localizationManager)) // ✅ Добавляем LocalizationManager
                     case .aiAssistant:
-                        AnyView(AIAssistantScreen().id("aiAssistant").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(
+                            AIAssistantScreen()
+                                .id("aiAssistant")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                                .accessibilityIdentifier("aladdin_root_06_AIAssistantScreen")
+                        )
                     case .parentalControl:
                         AnyView(ParentalControlScreen()
                             .id("parentalControl")
@@ -456,7 +491,13 @@ struct ALADDINApp: App {
                                 #endif
                             })
                     case .tariffs:
-                        AnyView(TariffsScreen().id("tariffs").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(
+                            TariffsScreen()
+                                .id("tariffs")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                                .accessibilityIdentifier("aladdin_root_10_TariffsScreen")
+                        )
 #if !APP_STORE_BUILD
                     case .paymentQR:
                         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем AnyView для отложенного создания View
@@ -526,14 +567,17 @@ struct ALADDINApp: App {
                                 .environmentObject(localizationManager)
                         )
                     case .profile:
-                        AnyView(ProfileScreen()
-                            .id("profile")
-                            .environmentObject(navigationManager)
-                            .environmentObject(localizationManager)
-                            .onAppear { 
-                                print("🔍 DEBUG ALADDINApp: ProfileScreen отображён!")
-                                print("🔍 DEBUG ALADDINApp: currentScreen = \(navigationManager.currentScreen)")
-                            })
+                        AnyView(
+                            ProfileScreen()
+                                .id("profile")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                                .accessibilityIdentifier("aladdin_root_11_ProfileScreen")
+                                .onAppear {
+                                    print("🔍 DEBUG ALADDINApp: ProfileScreen отображён!")
+                                    print("🔍 DEBUG ALADDINApp: currentScreen = \(navigationManager.currentScreen)")
+                                }
+                        )
                     case .notifications:
                         AnyView(NotificationsScreen().id("notifications").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .privacyPolicy:
@@ -609,7 +653,7 @@ struct ALADDINApp: App {
                         })
                     case .childContent:
                         AnyView(ChildContentScreen(
-                            category: "Игры",
+                            category: ChildCategoryKey.games,
                             ageGroup: .school
                         )
                         .id("childContent")
@@ -684,6 +728,7 @@ struct ALADDINApp: App {
                         )
                     }
                 }
+                .appContentTransition(reduceMotion ? .fade : .slideTrailing, value: navigationManager.currentScreen)
                 .id("screen_\(navigationManager.currentScreen.rawValue)")
                 .navigationBarHidden(true)
                 // ✅ ИСПРАВЛЕНИЕ: Добавляем VisualLogView на все экраны через модификатор
@@ -694,6 +739,8 @@ struct ALADDINApp: App {
             .environmentObject(navigationManager)
             // ✅ Передаём LocalizationManager через EnvironmentObject
             .environmentObject(localizationManager)
+            // W4-3 G12: единая обратная связь (haptic, звук, частицы, VoiceOver)
+            .environmentObject(FeedbackSystem.shared)
             // ✅ SubscriptionManager: FamilyScreen, AddMemberOptionsScreen, FeatureGateView используют @EnvironmentObject
             .environmentObject(SubscriptionManager.shared)
             // ✅ Применяем локализацию через environment
@@ -723,6 +770,9 @@ struct ALADDINApp: App {
                     Task { @MainActor in
                         await SubscriptionManager.shared.performThrottledTrialExpiryCheckIfNeeded()
                     }
+                    ContentBackgroundSyncScheduler.shared.triggerForegroundRefresh()
+                } else if newPhase == .background {
+                    ContentBackgroundSyncScheduler.shared.scheduleNextRefresh()
                 }
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
@@ -804,6 +854,9 @@ struct ALADDINApp: App {
                     #endif
                 }
             )
+            .overlay {
+                FeedbackParticleOverlay()
+            }
         }
     }
 
@@ -860,6 +913,7 @@ extension ALADDINApp {
         // и загружает профиль в фоне
         _ = UserProfileManager.shared
         print("✅ UserProfileManager initialized and profile loading started")
+        _ = ProfileManager.shared
 
         // 🔔 ИНИЦИАЛИЗИРУЕМ PUSH УВЕДОМЛЕНИЯ
         // NotificationManager инициализируется для обработки push уведомлений

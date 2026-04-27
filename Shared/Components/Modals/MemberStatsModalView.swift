@@ -7,6 +7,7 @@ struct MemberStatsModalView: View {
     let memberName: String
     let memberRole: String
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         NavigationView {
@@ -22,7 +23,7 @@ struct MemberStatsModalView: View {
                             Text("📊")
                                 .font(.system(size: 64))
                             
-                            Text("Статистика")
+                            Text(localizationManager.localized("member_stats_title"))
                                 .font(.h1)
                                 .foregroundColor(.textPrimary)
                             
@@ -52,7 +53,7 @@ struct MemberStatsModalView: View {
                     .padding(.horizontal, Spacing.screenPadding)
                 }
             }
-            .navigationTitle("Статистика")
+            .navigationTitle(localizationManager.localized("member_stats_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

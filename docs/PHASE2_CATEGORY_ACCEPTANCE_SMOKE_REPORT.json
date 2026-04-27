@@ -1,0 +1,69 @@
+{
+  "generated_at": "2026-04-27T18:07:01.041093+00:00",
+  "enforce_ready": false,
+  "check_count": 9,
+  "failed_count": 0,
+  "category_summary": {
+    "ready": 12,
+    "ready_with_conditions": 0,
+    "not_ready": 0
+  },
+  "count_gate_profile": "baseline",
+  "count_gate_failed_count": 0,
+  "checks": [
+    {
+      "id": "P2A-FILE-STATUS",
+      "description": "Category status doc exists",
+      "status": "PASS",
+      "details": "docs/PHASE2_CATEGORY_ACCEPTANCE_STATUS_ALL.md"
+    },
+    {
+      "id": "P2A-FILE-COUNT-GATE",
+      "description": "Count gate report exists",
+      "status": "PASS",
+      "details": "docs/PHASE2_CATEGORY_COUNT_GATE_REPORT.json"
+    },
+    {
+      "id": "P2A-FILE-CHILD-SCREEN",
+      "description": "Child content screen exists",
+      "status": "PASS",
+      "details": "Screens/ChildContentScreen.swift"
+    },
+    {
+      "id": "P2A-FILE-EXPERIENCE-SCREEN",
+      "description": "Child experience screen exists",
+      "status": "PASS",
+      "details": "Screens/ChildContentExperienceScreen.swift"
+    },
+    {
+      "id": "P2A-FILE-RU",
+      "description": "RU localization file exists",
+      "status": "PASS",
+      "details": "Resources/Localization/ru.lproj/Localizable.strings"
+    },
+    {
+      "id": "P2A-FILE-EN",
+      "description": "EN localization file exists",
+      "status": "PASS",
+      "details": "Resources/Localization/en.lproj/Localizable.strings"
+    },
+    {
+      "id": "P2A-STATUS-COVERAGE",
+      "description": "All 12 Phase 2 categories have status entries",
+      "status": "PASS",
+      "details": "12/12 categories mapped"
+    },
+    {
+      "id": "P2A-COUNT-COVERAGE",
+      "description": "Count gate contains 12 category checks",
+      "status": "PASS",
+      "details": "check_count=12"
+    },
+    {
+      "id": "P2A-I18N-BASE",
+      "description": "RU/EN include baseline child content acceptance keys",
+      "status": "PASS",
+      "details": "child_content_loading, child_content_error_message, child_content_empty_title"
+    }
+  ]
+}

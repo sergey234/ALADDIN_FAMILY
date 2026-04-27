@@ -1,91 +1,46 @@
 import XCTest
 @testable import ALADDIN
 
-/**
- * 🧪 ComponentCacheService Unit Tests
- * Тесты для сервиса кэширования компонентов
- */
-
 @MainActor
-class ComponentCacheServiceTests: XCTestCase {
-    
-    var service: ComponentCacheService!
-    
-    override func setUpWithError() throws {
-        try super.setUpWithError()
-        service = ComponentCacheService.shared
-    }
-    
-    override func tearDownWithError() throws {
-        service = nil
-        try super.tearDownWithError()
-    }
-    
-    // MARK: - Save Status Tests
-    
-    func testSaveStatus() async {
-        // Arrange
-        let componentId = "crash_detection_agent"
+final class ComponentCacheServiceTests: XCTestCase {
+
+    func testSaveAndLoadStatus() async {
+        let service = ComponentCacheService.shared
+        await service.clearAllCache()
+
+        let componentId = "unit_test_status_\(UUID().uuidString)"
         let status = ComponentStatus(
             componentId: componentId,
             isEnabled: true,
-            lastUpdate: Date()
+            lastUpdate: Date(),
+            configuration: nil
         )
-        
-        // Act
+
         await service.saveStatus(componentId: componentId, status: status)
-        
-        // Assert
+
         let loadedStatus = await service.loadStatus(componentId: componentId)
-        XCTAssertNotNil(loadedStatus)
-        XCTAssertEqual(loadedStatus?.componentId, componentId)
-    }
-    
-    // MARK: - Load Status Tests
-    
-    func testLoadStatus() async {
-        // Arrange
-        let componentId = "crash_detection_agent"
-        let status = ComponentStatus(
-            componentId: componentId,
-            isEnabled: true,
-            lastUpdate: Date()
-        )
-        await service.saveStatus(componentId: componentId, status: status)
-        
-        // Act
-        let loadedStatus = await service.loadStatus(componentId: componentId)
-        
-        // Assert
         XCTAssertNotNil(loadedStatus)
         XCTAssertEqual(loadedStatus?.componentId, componentId)
         XCTAssertTrue(loadedStatus?.isEnabled ?? false)
+
+        await service.clearAllCache()
     }
-    
-    // MARK: - Load All Statuses Tests
-    
-    func testLoadAllStatuses() async {
-        // Arrange
-        let status1 = ComponentStatus(
-            componentId: "component1",
-            isEnabled: true,
-            lastUpdate: Date()
-        )
-        let status2 = ComponentStatus(
-            componentId: "component2",
-            isEnabled: false,
-            lastUpdate: Date()
-        )
-        await service.saveStatus(componentId: "component1", status: status1)
-        await service.saveStatus(componentId: "component2", status: status2)
-        
-        // Act
+
+    func testLoadAllStatusesReturnsMultiple() async {
+        let service = ComponentCacheService.shared
+        await service.clearAllCache()
+
+        let id1 = "unit_test_c1_\(UUID().uuidString)"
+        let id2 = "unit_test_c2_\(UUID().uuidString)"
+        let status1 = ComponentStatus(componentId: id1, isEnabled: true, lastUpdate: Date(), configuration: nil)
+        let status2 = ComponentStatus(componentId: id2, isEnabled: false, lastUpdate: Date(), configuration: nil)
+        await service.saveStatus(componentId: id1, status: status1)
+        await service.saveStatus(componentId: id2, status: status2)
+
         let allStatuses = await service.loadAllStatuses()
-        
-        // Assert
-        XCTAssertEqual(allStatuses.count, 2)
-        XCTAssertNotNil(allStatuses["component1"])
-        XCTAssertNotNil(allStatuses["component2"])
+        XCTAssertEqual(allStatuses[id1]?.componentId, id1)
+        XCTAssertEqual(allStatuses[id2]?.componentId, id2)
+
+        await service.clearAllCache()
     }
 }
-

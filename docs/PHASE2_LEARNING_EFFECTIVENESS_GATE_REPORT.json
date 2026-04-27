@@ -1,0 +1,63 @@
+{
+  "generated_at": "2026-04-27T18:07:04.573966+00:00",
+  "enforce_signals": false,
+  "required_metrics": [
+    "mastery_gain",
+    "reattempt_success",
+    "drop_off_step",
+    "hint_dependency"
+  ],
+  "learning_effectiveness_metrics_available": [],
+  "check_count": 8,
+  "failed_count": 0,
+  "checks": [
+    {
+      "id": "P2L-FILE-1",
+      "description": "Content models file exists",
+      "status": "PASS",
+      "details": "Core/Content/Models/ContentModels.swift"
+    },
+    {
+      "id": "P2L-FILE-2",
+      "description": "Content validator file exists",
+      "status": "PASS",
+      "details": "Core/Content/Validation/ContentValidator.swift"
+    },
+    {
+      "id": "P2L-FILE-3",
+      "description": "Progress systems file exists",
+      "status": "PASS",
+      "details": "Core/Content/Progress/ProgressSystems.swift"
+    },
+    {
+      "id": "P2L-FILE-4",
+      "description": "Acceptance smoke report exists",
+      "status": "PASS",
+      "details": "docs/PHASE2_CATEGORY_ACCEPTANCE_SMOKE_REPORT.json"
+    },
+    {
+      "id": "P2L-CONTRACT-1",
+      "description": "Learning outcome contract fields exist in model layer",
+      "status": "PASS",
+      "details": "ContentLearningOutcomeContract + key fields"
+    },
+    {
+      "id": "P2L-CONTRACT-2",
+      "description": "Validator checks learning contract presence/quality",
+      "status": "PASS",
+      "details": "validateLearningOutcomeContract(...)"
+    },
+    {
+      "id": "P2L-ANALYTICS-BASE",
+      "description": "Progress system has baseline tracking hooks",
+      "status": "PASS",
+      "details": "recordOpen/recordCompletion/daily aggregator"
+    },
+    {
+      "id": "P2L-METRICS-DECL",
+      "description": "Learning metrics declaration present in acceptance smoke report",
+      "status": "PASS",
+      "details": "declared=[]"
+    }
+  ]
+}

@@ -8,6 +8,7 @@ import SwiftUI
 struct SimpleTermsOfServiceScreen: View {
     
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         ZStack {
@@ -25,7 +26,7 @@ struct SimpleTermsOfServiceScreen: View {
                     
                     Spacer()
                     
-                    Text("Условия использования")
+                    Text(localizationManager.localized("terms_title"))
                         .font(.h2)
                         .foregroundColor(.white)
                     
@@ -39,11 +40,11 @@ struct SimpleTermsOfServiceScreen: View {
                 // Content
                 ScrollView {
                     VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text("УСЛОВИЯ ИСПОЛЬЗОВАНИЯ")
+                        Text(localizationManager.localized("terms_title"))
                             .font(.h3)
                             .foregroundColor(.textPrimary)
                         
-                        Text("Последнее обновление: 29 октября 2024")
+                        Text(localizationManager.localized("terms_last_updated"))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                         

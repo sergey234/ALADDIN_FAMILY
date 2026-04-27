@@ -821,7 +821,7 @@ struct ActiveSessionsView: View {
                 ForEach(0..<3, id: \.self) { index in
                     HStack {
                         VStack(alignment: .leading) {
-                            Text("iPhone 13")
+                            Text(localizationManager.localized("active_sessions_device_name_default"))
                                 .font(.headline)
                             HStack {
                                 Text(localizationManager.localized("active_sessions_location"))

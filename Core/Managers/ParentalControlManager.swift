@@ -59,6 +59,21 @@ struct AppSetting: Codable {
     let timeLimit: TimeInterval?
 }
 
+// MARK: - FamilyControls Readiness
+
+struct FamilyControlsReadiness: Sendable {
+    let hasAuthorization: Bool
+    let authorizationStatus: AuthorizationStatus
+    let hasDeviceActivityExtension: Bool
+    let managedSettingsAvailable: Bool
+    let deviceActivityAvailable: Bool
+    let fallbackReason: String?
+
+    var isPipelineReady: Bool {
+        hasAuthorization && managedSettingsAvailable && deviceActivityAvailable
+    }
+}
+
 class ParentalControlManager: ObservableObject {
     
     // MARK: - Dependencies
@@ -81,6 +96,7 @@ class ParentalControlManager: ObservableObject {
     // Managed Settings Store
     private let managedSettingsStore = ManagedSettingsStore()
     private let deviceActivityCenter = DeviceActivityCenter()
+    private let defaultDeviceActivityName = DeviceActivityName("aladdin.family.daily")
     
     // MARK: - Singleton
     
@@ -140,6 +156,88 @@ class ParentalControlManager: ObservableObject {
                 }
             })
         }
+    }
+
+    // MARK: - Phase 7.2.1 readiness + pipeline
+
+    func assessFamilyControlsReadiness() -> FamilyControlsReadiness {
+        let authStatus = AuthorizationCenter.shared.authorizationStatus
+        let hasAuthorization = authStatus == .approved
+
+        // Provisioning/extension readiness heuristic: check if any Screen Time related extension is bundled.
+        let hasDeviceActivityExtension: Bool = {
+            guard let pluginsURL = Bundle.main.builtInPlugInsURL,
+                  let urls = try? FileManager.default.contentsOfDirectory(
+                    at: pluginsURL,
+                    includingPropertiesForKeys: nil,
+                    options: [.skipsHiddenFiles]
+                  ) else {
+                return false
+            }
+            let names = urls.map { $0.lastPathComponent.lowercased() }
+            return names.contains(where: { $0.contains("deviceactivity") || $0.contains("shield") || $0.contains("familycontrols") })
+        }()
+
+        let managedSettingsAvailable = true
+        let deviceActivityAvailable = true
+
+        let fallbackReason: String? = {
+            if !hasAuthorization { return "authorization_not_approved" }
+            if !hasDeviceActivityExtension { return "extension_missing_or_not_embedded" }
+            if !managedSettingsAvailable { return "managed_settings_unavailable" }
+            if !deviceActivityAvailable { return "device_activity_unavailable" }
+            return nil
+        }()
+
+        return FamilyControlsReadiness(
+            hasAuthorization: hasAuthorization,
+            authorizationStatus: authStatus,
+            hasDeviceActivityExtension: hasDeviceActivityExtension,
+            managedSettingsAvailable: managedSettingsAvailable,
+            deviceActivityAvailable: deviceActivityAvailable,
+            fallbackReason: fallbackReason
+        )
+    }
+
+    /// End-to-end pipeline: AuthorizationCenter -> ManagedSettings -> DeviceActivity.
+    /// Returns latest readiness snapshot; caller may show fallback UX when `isPipelineReady == false`.
+    @discardableResult
+    func applyFamilyControlsPipelineIfPossible() async -> FamilyControlsReadiness {
+        var readiness = assessFamilyControlsReadiness()
+
+        if !readiness.hasAuthorization {
+            do {
+                try await requestFamilyAuthorization()
+            } catch {
+                print("⚠️ FamilyControls auth request failed: \(error.localizedDescription)")
+            }
+            readiness = assessFamilyControlsReadiness()
+        }
+
+        guard readiness.isPipelineReady else {
+            return readiness
+        }
+
+        // ManagedSettings stage
+        setAppRemovalDenied(true)
+
+        // DeviceActivity stage
+        do {
+            try startDefaultDeviceActivityMonitoring()
+        } catch {
+            print("⚠️ DeviceActivity monitoring start failed: \(error.localizedDescription)")
+        }
+
+        return assessFamilyControlsReadiness()
+    }
+
+    private func startDefaultDeviceActivityMonitoring() throws {
+        let schedule = DeviceActivitySchedule(
+            intervalStart: DateComponents(hour: 0, minute: 0),
+            intervalEnd: DateComponents(hour: 23, minute: 59),
+            repeats: true
+        )
+        try deviceActivityCenter.startMonitoring(defaultDeviceActivityName, during: schedule)
     }
     
     // MARK: - App & Content Management

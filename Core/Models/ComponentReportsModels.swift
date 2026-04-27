@@ -569,6 +569,72 @@ struct DataCleanupStats: Codable {
     let cleanupsCount: Int
     let byCategory: [String: Int64] // "cache": 1200000000
     
+    enum CodingKeys: String, CodingKey {
+        case totalFreed
+        case lastCleanupDate
+        case cleanupsCount
+        case byCategory
+        // Compat keys from reports_compat backend
+        case total
+        case blocked
+        case allowed
+        case last_24h
+        case last_7d
+        case last_30d
+        case timestamp
+    }
+    
+    init(totalFreed: Int64, lastCleanupDate: Date?, cleanupsCount: Int, byCategory: [String : Int64]) {
+        self.totalFreed = totalFreed
+        self.lastCleanupDate = lastCleanupDate
+        self.cleanupsCount = cleanupsCount
+        self.byCategory = byCategory
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        // Old schema first, then reports_compat fallback.
+        let totalFreedValue = try container.decodeIfPresent(Int64.self, forKey: .totalFreed)
+            ?? Int64(try container.decodeIfPresent(Int.self, forKey: .total) ?? 0)
+        
+        let byCategoryValue = try container.decodeIfPresent([String: Int64].self, forKey: .byCategory) ?? [:]
+        
+        let cleanupsCountValue = try container.decodeIfPresent(Int.self, forKey: .cleanupsCount)
+            ?? container.decodeIfPresent(Int.self, forKey: .last_30d)
+            ?? max(0, try container.decodeIfPresent(Int.self, forKey: .total) ?? 0)
+        
+        let lastCleanupDateValue: Date? = {
+            if let date = try? container.decodeIfPresent(Date.self, forKey: .lastCleanupDate) {
+                return date
+            }
+            if let ts = try? container.decodeIfPresent(String.self, forKey: .timestamp) {
+                let fallbackFormatter = DateFormatter()
+                fallbackFormatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+                fallbackFormatter.locale = Locale(identifier: "en_US_POSIX")
+                fallbackFormatter.timeZone = TimeZone(secondsFromGMT: 0)
+                return DateFormatter.iso8601.date(from: ts)
+                    ?? fallbackFormatter.date(from: ts)
+            }
+            return nil
+        }()
+        
+        self.init(
+            totalFreed: max(0, totalFreedValue),
+            lastCleanupDate: lastCleanupDateValue,
+            cleanupsCount: cleanupsCountValue,
+            byCategory: byCategoryValue
+        )
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(totalFreed, forKey: .totalFreed)
+        try container.encodeIfPresent(lastCleanupDate, forKey: .lastCleanupDate)
+        try container.encode(cleanupsCount, forKey: .cleanupsCount)
+        try container.encode(byCategory, forKey: .byCategory)
+    }
+    
     var formattedTotalFreed: String {
         let formatter = ByteCountFormatter()
         formatter.allowedUnits = [.useMB, .useGB]
@@ -599,6 +665,60 @@ struct AntiTrackerStats: Codable {
     let effectiveness: Double // 0-100%
     let topTrackers: [TrackerBlock]
     
+    enum CodingKeys: String, CodingKey {
+        case totalBlocked
+        case blockedThisWeek
+        case effectiveness
+        case topTrackers
+        // Compat keys from reports_compat backend
+        case total
+        case blocked
+        case allowed
+        case last_7d
+    }
+    
+    init(totalBlocked: Int, blockedThisWeek: Int, effectiveness: Double, topTrackers: [TrackerBlock]) {
+        self.totalBlocked = totalBlocked
+        self.blockedThisWeek = blockedThisWeek
+        self.effectiveness = effectiveness
+        self.topTrackers = topTrackers
+    }
+    
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        
+        let totalBlockedValue = try container.decodeIfPresent(Int.self, forKey: .totalBlocked)
+            ?? container.decodeIfPresent(Int.self, forKey: .blocked)
+            ?? 0
+        
+        let blockedThisWeekValue = try container.decodeIfPresent(Int.self, forKey: .blockedThisWeek)
+            ?? container.decodeIfPresent(Int.self, forKey: .last_7d)
+            ?? 0
+        
+        let allowedValue = try container.decodeIfPresent(Int.self, forKey: .allowed) ?? 0
+        let totalValue = try container.decodeIfPresent(Int.self, forKey: .total) ?? (totalBlockedValue + allowedValue)
+        
+        let effectivenessValue = try container.decodeIfPresent(Double.self, forKey: .effectiveness)
+            ?? (totalValue > 0 ? (Double(totalBlockedValue) / Double(totalValue) * 100.0) : 0.0)
+        
+        let topTrackersValue = try container.decodeIfPresent([TrackerBlock].self, forKey: .topTrackers) ?? []
+        
+        self.init(
+            totalBlocked: max(0, totalBlockedValue),
+            blockedThisWeek: max(0, blockedThisWeekValue),
+            effectiveness: max(0, min(100, effectivenessValue)),
+            topTrackers: topTrackersValue
+        )
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(totalBlocked, forKey: .totalBlocked)
+        try container.encode(blockedThisWeek, forKey: .blockedThisWeek)
+        try container.encode(effectiveness, forKey: .effectiveness)
+        try container.encode(topTrackers, forKey: .topTrackers)
+    }
+    
     var formattedEffectiveness: String {
         String(format: "%.0f%%", effectiveness)
     }
@@ -610,7 +730,7 @@ struct AICategoryReport: Identifiable, Codable {
     let id: String
     let childId: String?
     let childName: String?
-    let category: ContentCategory
+    let category: ThreatContentCategory
     let sitesCount: Int
     let blockedCount: Int
     
@@ -620,7 +740,7 @@ struct AICategoryReport: Identifiable, Codable {
     }
 }
 
-enum ContentCategory: String, Codable, CaseIterable {
+enum ThreatContentCategory: String, Codable, CaseIterable {
     case education = "education"
     case games = "games"
     case entertainment = "entertainment"
@@ -893,7 +1013,7 @@ extension LocationAccuracy {
     }
 }
 
-extension ContentCategory {
+extension ThreatContentCategory {
     func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
         let key = "ai_categories_category_\(self.rawValue)"
         let localized = localizationManager.localized(key)

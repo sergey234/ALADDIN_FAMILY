@@ -1,5 +1,19 @@
 import SwiftUI
 
+/// W4-4: загрузка, пусто, ошибка + rich progress (полоса, %, last opened)
+private enum ChildContentLoadPhase: Equatable {
+    case loading
+    case ready
+    case empty
+    case error
+}
+
+private enum ChildDailyJourneyStep: Int {
+    case discover = 0
+    case practice = 1
+    case reflect = 2
+}
+
 /// 👶 Child Content Screen
 /// Универсальный экран контента для детей с адаптацией по возрасту
 struct ChildContentScreen: View {
@@ -7,10 +21,40 @@ struct ChildContentScreen: View {
     // MARK: - State
     
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     let category: String
     let ageGroup: ChildInterfaceScreen.AgeGroup
+    @State private var loadPhase: ChildContentLoadPhase = .loading
+    @State private var contentItems: [ContentItem] = []
+    @State private var progressById: [String: ContentProgress] = [:]
+    @State private var mascotEmotion: CharacterEmotion = .neutral
+    @State private var mascotActivity: CharacterActivityState = .idle
+    @State private var mascotResetToken: UUID = UUID()
+    @State private var selectedExperience: ContentExperiencePresentation?
+    @State private var dailyJourneyStep: ChildDailyJourneyStep = .discover
+    @State private var consecutiveOpenErrors: Int = 0
+    @State private var adaptiveHintVisible: Bool = false
+    @State private var simplifiedModeEnabled: Bool = false
+    @State private var dailyRewardPoints: Int = 0
+    @State private var lastSkillRewardPoints: Int = 0
+    @State private var surpriseVisible: Bool = false
+    @State private var surpriseTitleKey: String = "child_surprise_title_default"
+    @State private var sessionsUntilSurprise: Int = 0
+    @State private var creativeOutputDone: Bool = false
+    @State private var creativeReminderVisible: Bool = false
+    @State private var schoolPacingKey: String = "child_daily_journey_v2_pacing_steady"
+    @State private var schoolCorrectiveFeedbackVisible: Bool = false
+    @State private var schoolCorrectiveFeedbackKey: String = "child_daily_journey_v2_feedback_keep_going"
+    @State private var frustrationLevel: Int = 0
+    @State private var frustrationPlanVisible: Bool = false
+    @State private var teenAutonomyFocusKey: String = "child_daily_journey_v3_focus_explore"
+    @State private var teenReflectionPromptVisible: Bool = false
+    @State private var teenReflectionCompleted: Bool = false
+    @State private var teenArtifactCount: Int = 0
+    @State private var teenArtifactTarget: Int = 2
+    @State private var teenLastArtifactKey: String = "child_creative_output_v2_none"
     
     // MARK: - Body
     
@@ -41,6 +85,17 @@ struct ChildContentScreen: View {
                 }
             }
         }
+        .sheet(item: $selectedExperience) { presentation in
+            ChildContentExperienceScreen(
+                item: presentation.item,
+                route: presentation.route
+            ) {
+                await markContentCompleted(presentation.item)
+            }
+            .environmentObject(navigationManager)
+            .environmentObject(localizationManager)
+        }
+        .accessibilityIdentifier("aladdin_root_child_content")
     }
     
     // MARK: - Background Gradient
@@ -66,8 +121,46 @@ struct ChildContentScreen: View {
         }
     }
     
+    private var localizedCategoryTitle: String {
+        localizationManager.localized(category)
+    }
+
+    // MARK: - Data Loading
+
+    private func loadDataDrivenContent() async {
+        await MainActor.run { loadPhase = .loading }
+        do {
+            try await ContentManager.shared.bootstrapLocalContentIfNeeded()
+        } catch {
+            await MainActor.run { loadPhase = .error }
+            return
+        }
+        await ContentManager.shared.runUnifiedLifecycle(forceRefresh: false)
+        let items = await ContentManager.shared.loadPersonalizedContent(
+            for: category,
+            ageBand: ageGroup.contentAgeBand
+        )
+        var map: [String: ContentProgress] = [:]
+        for item in items {
+            if let progress = await ContentManager.shared.loadProgress(contentId: item.id) {
+                map[item.id] = progress
+            }
+        }
+        await MainActor.run {
+            contentItems = items
+            progressById = map
+            loadPhase = items.isEmpty ? .empty : .ready
+            refreshDailyJourneyStep()
+            loadDailyRewardPoints()
+            loadSurpriseState()
+            loadCreativeOutputState()
+            loadTeenJourneyState()
+            loadTeenCreativeOutputState()
+        }
+    }
+
     // MARK: - Header
-    
+
     private var contentHeader: some View {
         HStack(spacing: 16) {
             // Кнопка назад
@@ -92,7 +185,7 @@ struct ChildContentScreen: View {
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.white.opacity(0.8))
                 
-                Text(category)
+                Text(localizedCategoryTitle)
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(.white)
             }
@@ -102,48 +195,75 @@ struct ChildContentScreen: View {
         .padding(.horizontal, 20)
         .padding(.top, 16)
         .padding(.bottom, 12)
+        .task {
+            await loadDataDrivenContent()
+        }
     }
-    
+
     // MARK: - Greeting Section
     
     private var greetingSection: some View {
-        VStack(spacing: 12) {
-            Text(greetingEmoji)
-                .font(.system(size: 60))
-            
-            Text(greetingText)
-                .font(.system(size: 24, weight: .bold))
-                .foregroundColor(.white)
-                .multilineTextAlignment(.center)
+        HStack(alignment: .center, spacing: 16) {
+            VStack(spacing: 12) {
+                Text(greetingEmoji)
+                    .font(.system(size: 60))
+                
+                Text(greetingText)
+                    .font(.system(size: 24, weight: .bold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+            }
+            .frame(maxWidth: .infinity)
+
+            CharacterAvatarView(emotion: mascotEmotion, activity: mascotActivity)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(localizationManager.localized("child_mascot_accessibility_label"))
+                .accessibilityHint(localizationManager.localized("child_mascot_accessibility_hint"))
+                .onTapGesture {
+                    mascotResetToken = UUID()
+                    mascotEmotion = .happy
+                    mascotActivity = .active
+                    SoundEffectPlayer.shared.play(.reward, priority: .low)
+                    scheduleMascotReset(to: .neutral, activity: .idle, delay: 0.85)
+                }
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 24)
     }
+
+    private func scheduleMascotReset(to emotion: CharacterEmotion, activity: CharacterActivityState, delay: TimeInterval) {
+        let token = mascotResetToken
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            guard token == mascotResetToken else { return }
+            mascotEmotion = emotion
+            mascotActivity = activity
+        }
+    }
     
     private var greetingEmoji: String {
         // Используем только локализованные значения
-        if category == localizationManager.localized("child_interface_category_toys") {
+        if category == ChildCategoryKey.toys {
             return "🧸"
         }
-        if category == localizationManager.localized("child_interface_category_drawing") {
+        if category == ChildCategoryKey.drawing {
             return "🎨"
         }
-        if category == localizationManager.localized("child_interface_category_songs") {
+        if category == ChildCategoryKey.songs {
             return "🎵"
         }
-        if category == localizationManager.localized("child_interface_category_stories") {
+        if category == ChildCategoryKey.stories {
             return "📖"
         }
-        if category == localizationManager.localized("child_interface_category_games") {
+        if category == ChildCategoryKey.games {
             return "🎮"
         }
-        if category == localizationManager.localized("child_interface_category_study") {
+        if category == ChildCategoryKey.study {
             return "📚"
         }
-        if category == localizationManager.localized("child_interface_category_creativity") {
+        if category == ChildCategoryKey.creativity {
             return "🎨"
         }
-        if category == localizationManager.localized("child_interface_category_cartoons") {
+        if category == ChildCategoryKey.cartoons {
             return "📺"
         }
         // Fallback
@@ -180,24 +300,1035 @@ struct ChildContentScreen: View {
         return localizationManager.localized("child_game_welcome")
     }
     
-    // MARK: - Category Content
+    // MARK: - Category Content (W4-4)
     
     private var categoryContent: some View {
         VStack(spacing: 16) {
-            switch ageGroup {
-            case .kids:
-                kidsContent
-            case .school:
-                schoolContent
-            case .teen:
-                teenContent
-            case .youngAdult:
-                youngAdultContent
+            switch loadPhase {
+            case .loading:
+                childContentLoadingView
+            case .error:
+                childContentErrorView
+            case .empty:
+                childContentEmptyView
+            case .ready:
+                VStack(spacing: 14) {
+                    childDailyJourneyCard
+                    if ageGroup == .school {
+                        schoolJourneyPacingCard
+                    }
+                    if ageGroup == .teen || ageGroup == .youngAdult {
+                        teenJourneyAutonomyCard
+                    }
+                    rewardProgressCard
+                    if ageGroup == .kids {
+                        creativeOutputCard
+                    }
+                    if ageGroup == .teen || ageGroup == .youngAdult {
+                        teenCreativeOutputCard
+                    }
+                    if surpriseVisible {
+                        surpriseEventCard
+                    }
+                    if adaptiveHintVisible {
+                        adaptiveSupportCard
+                    }
+                    if frustrationPlanVisible {
+                        frustrationRecoveryCard
+                    }
+                    if !contentItems.isEmpty {
+                        childContentOverallProgressCard
+                    }
+                    dataDrivenContent
+                }
+            }
+        }
+        .id(contentIdentity)
+        .appContentTransition(reduceMotion ? .fade : .scale, value: contentIdentity)
+    }
+
+    private var childContentLoadingView: some View {
+        VStack(spacing: 12) {
+            ProgressView()
+                .tint(.white)
+            Text(localizationManager.localized("child_content_loading"))
+                .font(.system(size: 15, weight: .medium))
+                .foregroundColor(.white.opacity(0.9))
+        }
+        .frame(maxWidth: .infinity)
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.12))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("child_content_loading")
+    }
+
+    private var childContentErrorView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .font(.system(size: 40))
+                .foregroundColor(.orange)
+            Text(localizationManager.localized("child_content_error_message"))
+                .font(.system(size: 16, weight: .semibold))
+                .multilineTextAlignment(.center)
+                .foregroundColor(.white)
+            Button {
+                Task { await loadDataDrivenContent() }
+            } label: {
+                Text(localizationManager.localized("child_content_error_retry"))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color.blue.opacity(0.5)))
+            }
+            .accessibilityLabel(localizationManager.localized("child_content_error_retry"))
+            .accessibilityHint(localizationManager.localized("child_content_retry_accessibility_hint"))
+            .accessibilityIdentifier("child_content_error_retry")
+        }
+        .frame(maxWidth: .infinity)
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.12))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("child_content_error")
+    }
+
+    private var childContentEmptyView: some View {
+        VStack(spacing: 12) {
+            Image(systemName: "sparkles")
+                .font(.system(size: 44))
+                .foregroundColor(.white.opacity(0.85))
+            Text(localizationManager.localized("child_content_empty_title"))
+                .font(.system(size: 18, weight: .bold))
+                .foregroundColor(.white)
+            Text(localizationManager.localized("child_content_empty_subtitle"))
+                .font(.system(size: 15))
+                .multilineTextAlignment(.center)
+                .foregroundColor(.white.opacity(0.85))
+            Button {
+                Task { await loadDataDrivenContent() }
+            } label: {
+                Text(localizationManager.localized("child_content_empty_retry"))
+                    .font(.system(size: 16, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 12)
+                    .background(RoundedRectangle(cornerRadius: 12).fill(Color.white.opacity(0.2)))
+            }
+            .accessibilityLabel(localizationManager.localized("child_content_empty_retry"))
+            .accessibilityHint(localizationManager.localized("child_content_retry_accessibility_hint"))
+            .accessibilityIdentifier("child_content_empty_retry")
+        }
+        .frame(maxWidth: .infinity)
+        .padding(24)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white.opacity(0.1))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("child_content_empty_state")
+    }
+
+    private var averageCategoryProgress: Double {
+        guard !contentItems.isEmpty else { return 0 }
+        let total = contentItems.reduce(0.0) { acc, item in
+            acc + (progressById[item.id]?.completionPercent ?? 0)
+        }
+        return total / Double(contentItems.count)
+    }
+
+    private var childContentOverallProgressCard: some View {
+        let value = min(100, max(0, averageCategoryProgress))
+        return VStack(alignment: .leading, spacing: 10) {
+            HStack {
+                Text(localizationManager.localized("child_content_overall_progress"))
+                    .font(.system(size: 15, weight: .semibold))
+                    .foregroundColor(.white)
+                Spacer()
+                Text(String(format: "%.0f%%", value))
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
+            }
+            ChildContentProgressBar(
+                value: value,
+                track: Color.white.opacity(0.22),
+                fill: Color.green.opacity(0.9)
+            )
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.12))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(localizationManager.localized("child_content_overall_progress"))
+        .accessibilityValue(String(format: "%.0f%%", value))
+        .accessibilityIdentifier("child_content_overall_progress")
+    }
+
+    private var childDailyJourneyCard: some View {
+        let current = dailyJourneyStep.rawValue
+        return VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("child_daily_journey_title"))
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.white)
+            Text(localizationManager.localized("child_daily_journey_subtitle"))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white.opacity(0.85))
+            HStack(spacing: 8) {
+                journeyBadge(for: .discover, index: 0, current: current)
+                journeyBadge(for: .practice, index: 1, current: current)
+                journeyBadge(for: .reflect, index: 2, current: current)
+            }
+        }
+        .padding(16)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.12))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(localizationManager.localized("child_daily_journey_title"))
+        .accessibilityValue(localizationManager.localized(journeyKey(for: dailyJourneyStep)))
+        .accessibilityIdentifier("child_daily_journey")
+    }
+
+    private var schoolJourneyPacingCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("child_daily_journey_v2_title"))
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.white)
+            Text(localizationManager.localized(schoolPacingKey))
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.white.opacity(0.9))
+            if schoolCorrectiveFeedbackVisible {
+                Text(localizationManager.localized(schoolCorrectiveFeedbackKey))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white.opacity(0.85))
+                Button {
+                    simplifiedModeEnabled = true
+                    schoolCorrectiveFeedbackVisible = false
+                    SoundEffectPlayer.shared.play(.success, priority: .medium)
+                } label: {
+                    Text(localizationManager.localized("child_daily_journey_v2_corrective_action"))
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.cyan.opacity(0.45))
+                        )
+                }
+                .accessibilityLabel(localizationManager.localized("child_daily_journey_v2_corrective_action"))
+                .accessibilityIdentifier("child_daily_journey_v2_corrective_action")
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.blue.opacity(0.22))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("child_daily_journey_v2_card")
+    }
+
+    private var teenJourneyAutonomyCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("child_daily_journey_v3_title"))
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.white)
+            Text(localizationManager.localized(teenAutonomyFocusKey))
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.white.opacity(0.9))
+            if teenReflectionPromptVisible {
+                Text(localizationManager.localized("child_daily_journey_v3_reflection_prompt"))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white.opacity(0.85))
+                Button {
+                    completeTeenReflection()
+                } label: {
+                    Text(localizationManager.localized(teenReflectionCompleted ? "child_daily_journey_v3_reflection_done" : "child_daily_journey_v3_reflection_action"))
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill((teenReflectionCompleted ? Color.green : Color.indigo).opacity(0.45))
+                        )
+                }
+                .disabled(teenReflectionCompleted)
+                .accessibilityLabel(localizationManager.localized("child_daily_journey_v3_reflection_action"))
+                .accessibilityIdentifier("child_daily_journey_v3_reflection_action")
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.indigo.opacity(0.24))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("child_daily_journey_v3_card")
+    }
+
+    private var rewardProgressCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("child_reward_progress_title"))
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.white)
+            Text("\(localizationManager.localized("child_reward_progress_total_prefix")) \(dailyRewardPoints)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.white.opacity(0.9))
+            if lastSkillRewardPoints > 0 {
+                Text("\(localizationManager.localized("child_reward_progress_last_prefix")) +\(lastSkillRewardPoints)")
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white.opacity(0.85))
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.yellow.opacity(0.22))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(localizationManager.localized("child_reward_progress_title"))
+        .accessibilityValue("\(dailyRewardPoints)")
+        .accessibilityIdentifier("child_reward_progress_card")
+    }
+
+    private var creativeOutputCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("child_creative_output_title"))
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.white)
+            Text(localizationManager.localized(creativeOutputDone ? "child_creative_output_done" : "child_creative_output_required"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white.opacity(0.9))
+            if !creativeOutputDone {
+                Button {
+                    markCreativeOutputDone()
+                } label: {
+                    Text(localizationManager.localized("child_creative_output_action"))
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.green.opacity(0.45))
+                        )
+                }
+                .accessibilityLabel(localizationManager.localized("child_creative_output_action"))
+                .accessibilityIdentifier("child_creative_output_action")
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill((creativeOutputDone ? Color.green : Color.blue).opacity(0.2))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("child_creative_output_card")
+    }
+
+    private var teenCreativeOutputCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("child_creative_output_v2_title"))
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.white)
+            Text("\(localizationManager.localized("child_creative_output_v2_progress_prefix")) \(teenArtifactCount)/\(teenArtifactTarget)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.white.opacity(0.9))
+            Text(localizationManager.localized(teenLastArtifactKey))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white.opacity(0.82))
+
+            HStack(spacing: 8) {
+                Button {
+                    recordTeenArtifact(typeKey: "child_creative_output_v2_artifact_prototype")
+                } label: {
+                    Text(localizationManager.localized("child_creative_output_v2_action_prototype"))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 9)
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.blue.opacity(0.45)))
+                }
+                .disabled(teenArtifactCount >= teenArtifactTarget)
+
+                Button {
+                    recordTeenArtifact(typeKey: "child_creative_output_v2_artifact_pitch")
+                } label: {
+                    Text(localizationManager.localized("child_creative_output_v2_action_pitch"))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 9)
+                        .background(RoundedRectangle(cornerRadius: 10).fill(Color.purple.opacity(0.45)))
+                }
+                .disabled(teenArtifactCount >= teenArtifactTarget)
+            }
+
+            if teenArtifactCount >= teenArtifactTarget {
+                Text(localizationManager.localized("child_creative_output_v2_done"))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.green)
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill((teenArtifactCount >= teenArtifactTarget ? Color.green : Color.indigo).opacity(0.22))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("child_creative_output_v2_card")
+    }
+
+    private var surpriseEventCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("child_surprise_title"))
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.white)
+            Text(localizationManager.localized(surpriseTitleKey))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white.opacity(0.9))
+            Button {
+                dismissSurprise()
+            } label: {
+                Text(localizationManager.localized("child_surprise_action"))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.purple.opacity(0.45))
+                    )
+            }
+            .accessibilityLabel(localizationManager.localized("child_surprise_action"))
+            .accessibilityIdentifier("child_surprise_action")
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.purple.opacity(0.25))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("child_surprise_card")
+    }
+
+    private func journeyBadge(for step: ChildDailyJourneyStep, index: Int, current: Int) -> some View {
+        let isReached = current >= index
+        return Text(localizationManager.localized(journeyKey(for: step)))
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundColor(isReached ? .white : .white.opacity(0.65))
+            .padding(.horizontal, 10)
+            .padding(.vertical, 8)
+            .frame(maxWidth: .infinity)
+            .background(
+                RoundedRectangle(cornerRadius: 10)
+                    .fill(isReached ? Color.cyan.opacity(0.45) : Color.white.opacity(0.15))
+            )
+    }
+
+    private func journeyKey(for step: ChildDailyJourneyStep) -> String {
+        switch step {
+        case .discover:
+            return "child_daily_journey_step_discover"
+        case .practice:
+            return "child_daily_journey_step_practice"
+        case .reflect:
+            return "child_daily_journey_step_reflect"
+        }
+    }
+
+    private var contentIdentity: String {
+        return "\(category)|\(ageGroup)|\(String(describing: loadPhase))|\(contentItems.count)|\(adaptiveHintVisible)|\(simplifiedModeEnabled)|\(schoolPacingKey)|\(schoolCorrectiveFeedbackVisible)|\(teenArtifactCount)|\(teenLastArtifactKey)"
+    }
+
+    private var dataDrivenContent: some View {
+        VStack(spacing: 12) {
+            ForEach(displayedContentItems, id: \.id) { item in
+                let pct = min(100, max(0, progressById[item.id]?.completionPercent ?? 0))
+                AnimatedButton(tone: animatedTone(for: item), haptics: true, playsSound: true) {
+                    let result = await trackContentOpen(item)
+                    await MainActor.run {
+                        switch result {
+                        case .success:
+                            mascotResetToken = UUID()
+                            mascotEmotion = .happy
+                            mascotActivity = .active
+                            scheduleMascotReset(to: .neutral, activity: .idle, delay: 0.75)
+                        case .error:
+                            mascotResetToken = UUID()
+                            mascotEmotion = .supportive
+                            mascotActivity = .active
+                            SoundEffectPlayer.shared.play(.warning, priority: .medium)
+                            scheduleMascotReset(to: .neutral, activity: .idle, delay: 0.75)
+                        case .none:
+                            mascotActivity = .active
+                            scheduleMascotReset(to: mascotEmotion, activity: .idle, delay: 0.45)
+                        }
+                        if result != .error,
+                           let route = ContentExperienceResolver.shared.resolve(for: item) {
+                            selectedExperience = ContentExperiencePresentation(
+                                item: item,
+                                route: route
+                            )
+                        }
+                    }
+                    return result
+                } label: {
+                    HStack(alignment: .top, spacing: 12) {
+                        VStack(alignment: .leading, spacing: 6) {
+                            Text(item.metadata.title)
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundColor(.white)
+                            Text(item.type.rawValue.capitalized)
+                                .font(.system(size: 11, weight: .medium))
+                                .foregroundColor(.white.opacity(0.6))
+                            ChildContentProgressBar(
+                                value: pct,
+                                track: Color.white.opacity(0.2),
+                                fill: Color.cyan.opacity(0.9)
+                            )
+                            .accessibilityIdentifier("child_content_item_progress_\(item.id)")
+                            HStack {
+                                Text(lastOpenedDescription(for: item.id))
+                                    .font(.system(size: 12, weight: .medium))
+                                    .foregroundColor(.white.opacity(0.72))
+                                Spacer()
+                                Text(progressText(for: item.id))
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .foregroundColor(.white.opacity(0.9))
+                            }
+                        }
+                        VStack(alignment: .trailing) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .font(.system(size: 22))
+                                .foregroundColor(isCompleted(item.id) ? .green : .white.opacity(0.4))
+                        }
+                    }
+                    .padding()
+                    .background(
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(Color.white.opacity(0.16))
+                    )
+                }
+                .accessibilityLabel(item.metadata.title)
+                .accessibilityValue([progressText(for: item.id), lastOpenedDescription(for: item.id)].joined(separator: " · "))
+                .accessibilityIdentifier("child_content_row_\(item.id)")
+                .contextMenu {
+                    Button(localizationManager.localized("child_interface_done")) {
+                        Task {
+                            await markContentCompleted(item)
+                        }
+                    }
+                }
             }
         }
     }
+
+    private var displayedContentItems: [ContentItem] {
+        guard simplifiedModeEnabled else { return contentItems }
+        return contentItems.sorted { lhs, rhs in
+            let lhsProgress = progressById[lhs.id]?.completionPercent ?? 0
+            let rhsProgress = progressById[rhs.id]?.completionPercent ?? 0
+            if lhsProgress != rhsProgress {
+                return lhsProgress < rhsProgress
+            }
+            let lhsDuration = lhs.metadata.estimatedDurationSec ?? Int.max
+            let rhsDuration = rhs.metadata.estimatedDurationSec ?? Int.max
+            return lhsDuration < rhsDuration
+        }
+    }
+
+    private var adaptiveSupportCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("child_adaptive_loop_title"))
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.white)
+            Text(localizationManager.localized("child_adaptive_loop_hint"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white.opacity(0.9))
+            Button {
+                simplifiedModeEnabled = true
+                SoundEffectPlayer.shared.play(.success, priority: .medium)
+            } label: {
+                Text(localizationManager.localized("child_adaptive_loop_simplify_action"))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.cyan.opacity(0.45))
+                    )
+            }
+            .accessibilityLabel(localizationManager.localized("child_adaptive_loop_simplify_action"))
+            .accessibilityIdentifier("child_adaptive_loop_simplify")
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.orange.opacity(0.25))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("child_adaptive_loop_card")
+    }
+
+    private var frustrationRecoveryCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("child_adaptive_loop_v2_title"))
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.white)
+            Text(localizationManager.localized("child_adaptive_loop_v2_confidence_message"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white.opacity(0.9))
+            Text(localizationManager.localized("child_adaptive_loop_v2_recovery_plan"))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white.opacity(0.85))
+            Button {
+                applyFrustrationRecoveryPlan()
+            } label: {
+                Text(localizationManager.localized("child_adaptive_loop_v2_action"))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.green.opacity(0.45))
+                    )
+            }
+            .accessibilityLabel(localizationManager.localized("child_adaptive_loop_v2_action"))
+            .accessibilityIdentifier("child_adaptive_loop_v2_action")
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.red.opacity(0.25))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("child_adaptive_loop_v2_card")
+    }
+
+    private func animatedTone(for item: ContentItem) -> AnimatedButtonTone {
+        switch ageGroup {
+        case .kids:
+            return .playful
+        case .school:
+            if item.type == .lesson || item.type == .safety {
+                return .study
+            }
+            return .playful
+        case .teen, .youngAdult:
+            return .calm
+        }
+    }
+
+    private func trackContentOpen(_ item: ContentItem) async -> AnimatedButtonFlash {
+        guard TimeTracker.shared.canStartSession() else {
+            await MainActor.run {
+                registerAdaptiveError()
+            }
+            return .error
+        }
+
+        var progress = await ContentManager.shared.loadProgress(contentId: item.id)
+            ?? ContentProgress(contentId: item.id, completionPercent: 0, attempts: 0, lastOpenedAt: nil, completedAt: nil)
+        let previousPercent = progress.completionPercent
+        let wasCompleted = progress.completionPercent >= 100
+        progress.attempts += 1
+        progress.lastOpenedAt = Date()
+        if progress.completionPercent < 100 {
+            progress.completionPercent = min(100, progress.completionPercent + 20)
+            if progress.completionPercent >= 100 {
+                progress.completedAt = Date()
+            }
+        }
+        if ageGroup == .kids, !creativeOutputDone, progress.completionPercent >= 100 {
+            progress.completionPercent = 80
+            progress.completedAt = nil
+        }
+        try? await ContentManager.shared.saveProgress(progress)
+        ProgressTracker.shared.recordOpen(contentId: item.id)
+        TimeTracker.shared.addUsage(seconds: max(60, item.metadata.estimatedDurationSec ?? 300))
+        ContentManager.shared.recordPersonalizationInteraction(for: item)
+        let completedNow = progress.completionPercent >= 100
+        let deltaPercent = max(0, progress.completionPercent - previousPercent)
+        let rewardDelta = rewardPoints(forDeltaPercent: deltaPercent, completedNow: completedNow, wasCompleted: wasCompleted)
+        await MainActor.run {
+            progressById[item.id] = progress
+            refreshDailyJourneyStep()
+            refreshSchoolJourneyPacing()
+            refreshTeenJourneyAutonomy()
+            clearAdaptiveErrorStreak()
+            if ageGroup == .kids, !creativeOutputDone, progress.completionPercent >= 80 {
+                creativeReminderVisible = true
+            }
+            if rewardDelta > 0 {
+                awardSkillProgressPoints(rewardDelta)
+            }
+            registerSessionForSurprise()
+        }
+        if completedNow && !wasCompleted {
+            return .success
+        }
+        return .none
+    }
+
+    private func markContentCompleted(_ item: ContentItem) async {
+        if ageGroup == .kids, !creativeOutputDone {
+            await MainActor.run {
+                creativeReminderVisible = true
+                mascotResetToken = UUID()
+                mascotEmotion = .supportive
+                mascotActivity = .active
+                SoundEffectPlayer.shared.play(.warning, priority: .medium)
+                scheduleMascotReset(to: .neutral, activity: .idle, delay: 0.75)
+            }
+            return
+        }
+        var progress = await ContentManager.shared.loadProgress(contentId: item.id)
+            ?? ContentProgress(contentId: item.id, completionPercent: 0, attempts: 0, lastOpenedAt: nil, completedAt: nil)
+        let previousPercent = progress.completionPercent
+        progress.completionPercent = 100
+        progress.completedAt = Date()
+        progress.lastOpenedAt = Date()
+        try? await ContentManager.shared.saveProgress(progress)
+        ProgressTracker.shared.recordCompletion(contentId: item.id)
+        ContentManager.shared.recordPersonalizationInteraction(for: item)
+        await MainActor.run {
+            progressById[item.id] = progress
+            refreshDailyJourneyStep()
+            refreshSchoolJourneyPacing()
+            refreshTeenJourneyAutonomy()
+            clearAdaptiveErrorStreak()
+            let deltaPercent = max(0, progress.completionPercent - previousPercent)
+            let rewardDelta = rewardPoints(forDeltaPercent: deltaPercent, completedNow: true, wasCompleted: previousPercent >= 100)
+            if rewardDelta > 0 {
+                awardSkillProgressPoints(rewardDelta)
+            }
+            mascotResetToken = UUID()
+            mascotEmotion = .happy
+            mascotActivity = .active
+            SoundEffectPlayer.shared.play(.complete, priority: .high)
+            scheduleMascotReset(to: .neutral, activity: .idle, delay: 0.85)
+        }
+    }
+
+    private func progressText(for contentId: String) -> String {
+        let percent = Int(progressById[contentId]?.completionPercent ?? 0)
+        return "\(percent)%"
+    }
+
+    private func lastOpenedDescription(for contentId: String) -> String {
+        if let d = progressById[contentId]?.lastOpenedAt {
+            let fmt = RelativeDateTimeFormatter()
+            fmt.locale = localizationManager.locale
+            fmt.unitsStyle = .short
+            return fmt.localizedString(for: d, relativeTo: Date())
+        }
+        return localizationManager.localized("child_content_last_opened_never")
+    }
+
+    private func isCompleted(_ contentId: String) -> Bool {
+        (progressById[contentId]?.completionPercent ?? 0) >= 100
+    }
+
+    private func refreshDailyJourneyStep() {
+        let computed = computeJourneyStep()
+        let key = dailyJourneyStorageKey()
+        let previousRaw = UserDefaults.standard.integer(forKey: key)
+        let nextRaw = max(previousRaw, computed.rawValue)
+        let next = ChildDailyJourneyStep(rawValue: nextRaw) ?? computed
+        dailyJourneyStep = next
+        UserDefaults.standard.set(nextRaw, forKey: key)
+    }
+
+    private func refreshSchoolJourneyPacing() {
+        guard ageGroup == .school else { return }
+        let attempts = progressById.values.reduce(0) { $0 + $1.attempts }
+        let average = averageCategoryProgress
+        if average >= 75 {
+            schoolPacingKey = "child_daily_journey_v2_pacing_fast"
+            schoolCorrectiveFeedbackVisible = false
+            schoolCorrectiveFeedbackKey = "child_daily_journey_v2_feedback_keep_going"
+            return
+        }
+        if average >= 35 {
+            schoolPacingKey = "child_daily_journey_v2_pacing_steady"
+            schoolCorrectiveFeedbackVisible = false
+            schoolCorrectiveFeedbackKey = "child_daily_journey_v2_feedback_keep_going"
+            return
+        }
+        schoolPacingKey = "child_daily_journey_v2_pacing_support"
+        schoolCorrectiveFeedbackVisible = attempts >= 3
+        schoolCorrectiveFeedbackKey = attempts >= 5
+            ? "child_daily_journey_v2_feedback_retry"
+            : "child_daily_journey_v2_feedback_hint"
+    }
+
+    private func refreshTeenJourneyAutonomy() {
+        guard ageGroup == .teen || ageGroup == .youngAdult else { return }
+        let attempts = progressById.values.reduce(0) { $0 + $1.attempts }
+        let completions = progressById.values.filter { $0.completionPercent >= 100 }.count
+        let average = averageCategoryProgress
+        if completions >= 2 || average >= 85 {
+            teenAutonomyFocusKey = "child_daily_journey_v3_focus_lead"
+            teenReflectionPromptVisible = true
+        } else if attempts >= 2 || average >= 45 {
+            teenAutonomyFocusKey = "child_daily_journey_v3_focus_build"
+            teenReflectionPromptVisible = true
+        } else {
+            teenAutonomyFocusKey = "child_daily_journey_v3_focus_explore"
+            teenReflectionPromptVisible = false
+        }
+        UserDefaults.standard.set(teenAutonomyFocusKey, forKey: teenAutonomyStorageKey())
+        UserDefaults.standard.set(teenReflectionPromptVisible, forKey: teenReflectionPromptStorageKey())
+    }
+
+    private func computeJourneyStep() -> ChildDailyJourneyStep {
+        let attempts = progressById.values.reduce(0) { $0 + $1.attempts }
+        let completions = progressById.values.filter { $0.completionPercent >= 100 }.count
+        let average = averageCategoryProgress
+        if completions > 0 || average >= 80 {
+            return .reflect
+        }
+        if attempts >= 2 || average >= 30 {
+            return .practice
+        }
+        return .discover
+    }
+
+    private func dailyJourneyStorageKey() -> String {
+        let child = activeChildID()
+        let day = dayKey(for: Date())
+        return "child.dailyJourney.\(child).\(category).\(day)"
+    }
+
+    private func loadTeenJourneyState() {
+        guard ageGroup == .teen || ageGroup == .youngAdult else { return }
+        let focus = UserDefaults.standard.string(forKey: teenAutonomyStorageKey()) ?? "child_daily_journey_v3_focus_explore"
+        teenAutonomyFocusKey = focus
+        teenReflectionPromptVisible = UserDefaults.standard.bool(forKey: teenReflectionPromptStorageKey())
+        teenReflectionCompleted = UserDefaults.standard.bool(forKey: teenReflectionDoneStorageKey())
+        refreshTeenJourneyAutonomy()
+    }
+
+    private func completeTeenReflection() {
+        teenReflectionCompleted = true
+        UserDefaults.standard.set(true, forKey: teenReflectionDoneStorageKey())
+        awardSkillProgressPoints(3)
+        MasterLogger.shared.business("P2-305 reflection_complete child=\(activeChildID()) category=\(category) focus=\(teenAutonomyFocusKey)")
+    }
+
+    private func teenAutonomyStorageKey() -> String {
+        let child = activeChildID()
+        let day = dayKey(for: Date())
+        return "child.dailyJourneyV3.focus.\(child).\(category).\(day)"
+    }
+
+    private func teenReflectionPromptStorageKey() -> String {
+        let child = activeChildID()
+        let day = dayKey(for: Date())
+        return "child.dailyJourneyV3.prompt.\(child).\(category).\(day)"
+    }
+
+    private func teenReflectionDoneStorageKey() -> String {
+        let child = activeChildID()
+        let day = dayKey(for: Date())
+        return "child.dailyJourneyV3.done.\(child).\(category).\(day)"
+    }
+
+    private func activeChildID() -> String {
+        let raw = UserDefaults.standard.string(forKey: "active_child_profile_server_id")?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return raw.isEmpty ? "local-default-child" : raw
+    }
+
+    private func dayKey(for date: Date) -> String {
+        let c = Calendar.current.dateComponents([.year, .month, .day], from: date)
+        return String(format: "%04d-%02d-%02d", c.year ?? 0, c.month ?? 0, c.day ?? 0)
+    }
+
+    private func rewardPoints(forDeltaPercent delta: Double, completedNow: Bool, wasCompleted: Bool) -> Int {
+        guard delta > 0 else { return 0 }
+        var points = max(1, Int(delta / 10.0))
+        if completedNow && !wasCompleted {
+            points += 2
+        }
+        return points
+    }
+
+    private func awardSkillProgressPoints(_ points: Int) {
+        guard points > 0 else { return }
+        dailyRewardPoints += points
+        lastSkillRewardPoints = points
+        UserDefaults.standard.set(dailyRewardPoints, forKey: dailyRewardStorageKey())
+        SoundEffectPlayer.shared.play(.reward, priority: .medium)
+    }
+
+    private func loadDailyRewardPoints() {
+        dailyRewardPoints = UserDefaults.standard.integer(forKey: dailyRewardStorageKey())
+        lastSkillRewardPoints = 0
+    }
+
+    private func dailyRewardStorageKey() -> String {
+        let child = activeChildID()
+        let day = dayKey(for: Date())
+        return "child.dailyReward.\(child).\(category).\(day)"
+    }
+
+    private func loadSurpriseState() {
+        surpriseVisible = false
+        sessionsUntilSurprise = UserDefaults.standard.integer(forKey: surpriseSessionsStorageKey())
+        if sessionsUntilSurprise <= 0 {
+            sessionsUntilSurprise = 3
+            UserDefaults.standard.set(sessionsUntilSurprise, forKey: surpriseSessionsStorageKey())
+        }
+    }
+
+    private func registerSessionForSurprise() {
+        sessionsUntilSurprise -= 1
+        if sessionsUntilSurprise <= 0 {
+            triggerSurpriseEvent()
+            sessionsUntilSurprise = 4
+        }
+        UserDefaults.standard.set(sessionsUntilSurprise, forKey: surpriseSessionsStorageKey())
+    }
+
+    private func triggerSurpriseEvent() {
+        let keys = [
+            "child_surprise_title_hero",
+            "child_surprise_title_sticker",
+            "child_surprise_title_mini_event"
+        ]
+        let index = Int.random(in: 0..<keys.count)
+        surpriseTitleKey = keys[index]
+        surpriseVisible = true
+        mascotResetToken = UUID()
+        mascotEmotion = .happy
+        mascotActivity = .active
+        SoundEffectPlayer.shared.play(.reward, priority: .high)
+        scheduleMascotReset(to: .neutral, activity: .idle, delay: 1.1)
+    }
+
+    private func dismissSurprise() {
+        surpriseVisible = false
+    }
+
+    private func surpriseSessionsStorageKey() -> String {
+        let child = activeChildID()
+        return "child.surprise.sessionsUntil.\(child).\(category)"
+    }
+
+    private func markCreativeOutputDone() {
+        creativeOutputDone = true
+        creativeReminderVisible = false
+        UserDefaults.standard.set(true, forKey: creativeOutputStorageKey())
+        awardSkillProgressPoints(2)
+    }
+
+    private func loadCreativeOutputState() {
+        creativeOutputDone = UserDefaults.standard.bool(forKey: creativeOutputStorageKey())
+        creativeReminderVisible = false
+    }
+
+    private func loadTeenCreativeOutputState() {
+        guard ageGroup == .teen || ageGroup == .youngAdult else { return }
+        teenArtifactCount = UserDefaults.standard.integer(forKey: teenCreativeOutputCountStorageKey())
+        let last = UserDefaults.standard.string(forKey: teenCreativeOutputLastStorageKey()) ?? "child_creative_output_v2_none"
+        teenLastArtifactKey = last
+        teenArtifactTarget = 2
+    }
+
+    private func recordTeenArtifact(typeKey: String) {
+        guard ageGroup == .teen || ageGroup == .youngAdult else { return }
+        guard teenArtifactCount < teenArtifactTarget else { return }
+        teenArtifactCount += 1
+        teenLastArtifactKey = typeKey
+        UserDefaults.standard.set(teenArtifactCount, forKey: teenCreativeOutputCountStorageKey())
+        UserDefaults.standard.set(typeKey, forKey: teenCreativeOutputLastStorageKey())
+        awardSkillProgressPoints(2)
+        MasterLogger.shared.business("P2-306 artifact_recorded child=\(activeChildID()) category=\(category) artifact=\(typeKey) count=\(teenArtifactCount)")
+    }
+
+    private func creativeOutputStorageKey() -> String {
+        let child = activeChildID()
+        let day = dayKey(for: Date())
+        return "child.creativeOutput.done.\(child).\(category).\(day)"
+    }
+
+    private func teenCreativeOutputCountStorageKey() -> String {
+        let child = activeChildID()
+        let day = dayKey(for: Date())
+        return "child.creativeOutputV2.count.\(child).\(category).\(day)"
+    }
+
+    private func teenCreativeOutputLastStorageKey() -> String {
+        let child = activeChildID()
+        let day = dayKey(for: Date())
+        return "child.creativeOutputV2.last.\(child).\(category).\(day)"
+    }
+
+    private func registerAdaptiveError() {
+        consecutiveOpenErrors += 1
+        frustrationLevel += 1
+        if consecutiveOpenErrors >= 2 {
+            adaptiveHintVisible = true
+            mascotResetToken = UUID()
+            mascotEmotion = .supportive
+            mascotActivity = .active
+            SoundEffectPlayer.shared.play(.warning, priority: .high)
+            scheduleMascotReset(to: .neutral, activity: .idle, delay: 0.9)
+        }
+        if frustrationLevel >= 3 {
+            frustrationPlanVisible = true
+        }
+    }
+
+    private func clearAdaptiveErrorStreak() {
+        consecutiveOpenErrors = 0
+        adaptiveHintVisible = false
+        frustrationLevel = max(0, frustrationLevel - 1)
+        if frustrationLevel == 0 {
+            frustrationPlanVisible = false
+        }
+    }
+
+    private func applyFrustrationRecoveryPlan() {
+        simplifiedModeEnabled = true
+        frustrationLevel = 0
+        frustrationPlanVisible = false
+        adaptiveHintVisible = false
+        mascotResetToken = UUID()
+        mascotEmotion = .happy
+        mascotActivity = .active
+        SoundEffectPlayer.shared.play(.success, priority: .high)
+        scheduleMascotReset(to: .neutral, activity: .idle, delay: 0.9)
+    }
     
-    // MARK: - Kids Content (1-6 лет)
+    #if false
+    // W4-4: прежние off-line карточки (игрушки/сетки) отключены — пусто и ошибка через `childContentEmptyView` / `childContentErrorView`.
+    // Код оставлен в #if false для удобства археологии; не удаляйте без product review.
+    // MARK: - Kids Content (1-6 лет, legacy)
     
     private var kidsContent: some View {
         VStack(spacing: 16) {
@@ -599,7 +1730,7 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.blue)
             
-            Text("Учись программированию")
+            Text(localizationManager.localized("child_content_programming_title"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
@@ -640,7 +1771,7 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.purple)
             
-            Text("Общайся безопасно")
+            Text(localizationManager.localized("child_content_social_title"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
@@ -681,7 +1812,7 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.orange)
             
-            Text("Твоя музыка")
+            Text(localizationManager.localized("child_content_music_title"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
@@ -722,7 +1853,7 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.red)
             
-            Text("Интересные видео")
+            Text(localizationManager.localized("child_content_video_title"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
@@ -782,7 +1913,7 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.blue)
             
-            Text("Развивайся и учись")
+            Text(localizationManager.localized("child_content_education_title"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
@@ -823,7 +1954,7 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.green)
             
-            Text("Строй карьеру")
+            Text(localizationManager.localized("child_content_career_title"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
@@ -864,7 +1995,7 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.purple)
             
-            Text("Изучай мир онлайн")
+            Text(localizationManager.localized("child_content_internet_title"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
@@ -905,7 +2036,7 @@ struct ChildContentScreen: View {
                 .font(.system(size: 80))
                 .foregroundColor(.orange)
             
-            Text("Смотри и наслаждайся")
+            Text(localizationManager.localized("child_content_cinema_title"))
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
             
@@ -939,7 +2070,8 @@ struct ChildContentScreen: View {
         }
         .buttonStyle(PlainButtonStyle())
     }
-    
+    #endif
+
     // MARK: - Additional Info Section
     
     private var additionalInfoSection: some View {
@@ -989,14 +2121,58 @@ struct ChildContentScreen: View {
     }
 }
 
+private struct ChildContentProgressBar: View {
+    let value: Double
+    var track: Color
+    var fill: Color
+
+    var body: some View {
+        GeometryReader { g in
+            let w = g.size.width * CGFloat(min(100, max(0, value)) / 100.0)
+            ZStack(alignment: .leading) {
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(track)
+                RoundedRectangle(cornerRadius: 4, style: .continuous)
+                    .fill(fill)
+                    .frame(width: max(3, w))
+            }
+        }
+        .frame(height: 8)
+        .accessibilityHidden(true)
+    }
+}
+
+private struct ContentExperiencePresentation: Identifiable {
+    let item: ContentItem
+    let route: ContentExperienceRoute
+
+    var id: String { item.id }
+}
+
 // MARK: - Preview
 
 struct ChildContentScreen_Previews: PreviewProvider {
     static var previews: some View {
         ChildContentScreen(
-            category: "ИГРУШКИ",
+            category: ChildCategoryKey.games,
             ageGroup: .kids
         )
         .environmentObject(NavigationManager())
+        .environmentObject(LocalizationManager.shared)
+    }
+}
+
+private extension ChildInterfaceScreen.AgeGroup {
+    var contentAgeBand: ContentAgeBand {
+        switch self {
+        case .kids:
+            return .kids_1_6
+        case .school:
+            return .school_7_12
+        case .teen:
+            return .teen_13_17
+        case .youngAdult:
+            return .youngAdult_18_22
+        }
     }
 }

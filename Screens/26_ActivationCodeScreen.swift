@@ -44,13 +44,13 @@ struct ActivationCodeScreen: View {
             get: { viewModel.successMessage != nil },
             set: { if !$0 { viewModel.successMessage = nil } }
         )) {
-            Button("OK") {}
+            Button(localizationManager.localized("common_ok")) {}
         }
         .alert(viewModel.errorMessage ?? "", isPresented: Binding(
             get: { viewModel.errorMessage != nil },
             set: { if !$0 { viewModel.errorMessage = nil } }
         )) {
-            Button("OK") {}
+            Button(localizationManager.localized("common_ok")) {}
         }
     }
     
@@ -196,7 +196,7 @@ struct ActivationCodeScreen: View {
     private var debugLogsCard: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             HStack {
-                Text("🔍 ЛОГИ АКТИВАЦИИ")
+                Text(localizationManager.localized("activation_logs_title"))
                     .font(.headline.bold())
                     .foregroundColor(.white)
                 
@@ -206,7 +206,7 @@ struct ActivationCodeScreen: View {
                     Button(action: {
                         viewModel.clearLogs()
                     }) {
-                        Text("Очистить")
+                        Text(localizationManager.localized("activation_logs_clear"))
                             .font(.caption.bold())
                             .foregroundColor(.white)
                             .padding(.horizontal, 12)
@@ -219,11 +219,11 @@ struct ActivationCodeScreen: View {
             
             if viewModel.logs.isEmpty {
                 VStack(spacing: 8) {
-                    Text("📋 Логи появятся здесь при активации кода")
+                    Text(localizationManager.localized("activation_logs_empty_title"))
                         .font(.subheadline)
                         .foregroundColor(.textSecondary)
                         .italic()
-                    Text("Введите код и нажмите 'Активировать'")
+                    Text(localizationManager.localized("activation_logs_empty_subtitle"))
                         .font(.caption)
                         .foregroundColor(.textSecondary.opacity(0.7))
                 }
@@ -301,12 +301,12 @@ struct ActivationCodeScreen: View {
                 }
                 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text("Согласие на обработку персональных данных")
+                    Text(localizationManager.localized("activation_consent_title"))
                         .font(.subheadline.bold())
                         .foregroundColor(.textPrimary)
                     
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Нажимая «Активировать», я даю согласие на обработку персональных данных в соответствии с:")
+                        Text(localizationManager.localized("activation_consent_message"))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                         
@@ -314,20 +314,20 @@ struct ActivationCodeScreen: View {
                             Button(action: {
                                 URLHelper.openWebsite(urlString: "https://aladdin-ai.ru/consent.html", tariffId: nil)
                             }) {
-                                Text("Согласием на обработку персональных данных")
+                                Text(localizationManager.localized("activation_consent_link_title"))
                                     .font(.caption)
                                     .foregroundColor(.primaryBlue)
                                     .underline()
                             }
                             
-                            Text("и")
+                            Text(localizationManager.localized("common_and"))
                                 .font(.caption)
                                 .foregroundColor(.textSecondary)
                             
                             Button(action: {
                                 URLHelper.openWebsite(urlString: "https://aladdin-ai.ru/privacy.html", tariffId: nil)
                             }) {
-                                Text("Политикой конфиденциальности")
+                                Text(localizationManager.localized("privacy_policy"))
                                     .font(.caption)
                                     .foregroundColor(.primaryBlue)
                                     .underline()
@@ -342,7 +342,7 @@ struct ActivationCodeScreen: View {
             }
             
             if !consentAccepted && !viewModel.code.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-                Text("⚠️ Для активации кода необходимо дать согласие на обработку персональных данных")
+                Text(localizationManager.localized("activation_consent_required_warning"))
                     .font(.caption)
                     .foregroundColor(.orange)
                     .padding(.leading, 28)

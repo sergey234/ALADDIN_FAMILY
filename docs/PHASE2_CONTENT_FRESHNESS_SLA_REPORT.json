@@ -1,0 +1,78 @@
+{
+  "generated_at": "2026-04-27T18:07:06.167434+00:00",
+  "check_count": 9,
+  "failed_count": 0,
+  "category_level": {
+    "check_count": 5,
+    "failed_count": 0
+  },
+  "item_level": {
+    "check_count": 4,
+    "failed_count": 0
+  },
+  "checks": [
+    {
+      "id": "P2F-FILE-SLA",
+      "level": "category",
+      "description": "SLA policy document exists",
+      "status": "PASS",
+      "details": "docs/PHASE2_CONTENT_FRESHNESS_SLA.md"
+    },
+    {
+      "id": "P2F-FILE-SEED",
+      "level": "item",
+      "description": "Seed provider exists",
+      "status": "PASS",
+      "details": "Core/Content/Seed/ContentSeedProvider.swift"
+    },
+    {
+      "id": "P2F-POLICY-CORE",
+      "level": "category",
+      "description": "SLA policy includes cadence and thresholds",
+      "status": "PASS",
+      "details": "cadence + warning/fail thresholds"
+    },
+    {
+      "id": "P2F-POLICY-FALLBACK",
+      "level": "category",
+      "description": "SLA includes emergency fallback window",
+      "status": "PASS",
+      "details": "fallback <=24h"
+    },
+    {
+      "id": "P2F-SCOPE-TOP",
+      "level": "category",
+      "description": "All top categories are included in SLA scope",
+      "status": "PASS",
+      "details": "scope_count=8/8"
+    },
+    {
+      "id": "P2F-CONTRACT-META",
+      "level": "category",
+      "description": "Metadata contract fields are declared",
+      "status": "PASS",
+      "details": "metadata contract"
+    },
+    {
+      "id": "P2F-ITEM-MIN",
+      "level": "item",
+      "description": "Top categories satisfy minimum item baseline",
+      "status": "PASS",
+      "details": "required>=3 each top category"
+    },
+    {
+      "id": "P2F-ITEM-NONEMPTY",
+      "level": "item",
+      "description": "Top-category items are non-empty",
+      "status": "PASS",
+      "details": "items=24"
+    },
+    {
+      "id": "P2F-ITEM-NOPLACEHOLDER",
+      "level": "item",
+      "description": "Top-category items have no placeholder tokens",
+      "status": "PASS",
+      "details": "blocked: todo/tbd/placeholder/replace_me/fixme/lorem"
+    }
+  ]
+}

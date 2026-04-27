@@ -1,0 +1,31 @@
+{
+  "generated_at": "2026-04-27T14:45:39.534854+00:00",
+  "check_count": 4,
+  "failed_count": 0,
+  "checks": [
+    {
+      "id": "P2H-FILE",
+      "status": "PASS",
+      "description": "Health dashboard policy exists",
+      "details": "docs/PHASE2_CONTENT_HEALTH_DASHBOARD_ALERTING.md"
+    },
+    {
+      "id": "P2H-PANELS",
+      "status": "PASS",
+      "description": "Dashboard panels declared",
+      "details": "core panels"
+    },
+    {
+      "id": "P2H-ALERTS",
+      "status": "PASS",
+      "description": "Alert rules declared",
+      "details": "alert rules"
+    },
+    {
+      "id": "P2H-ROUTING",
+      "status": "PASS",
+      "description": "Alert routing declared",
+      "details": "warning/critical"
+    }
+  ]
+}

@@ -1,0 +1,32 @@
+{
+  "generated_at": "2026-04-27T08:53:24.430468+00:00",
+  "required_count": 6,
+  "missing_count": 0,
+  "entries": [
+    {
+      "path": "docs/PHASE8_SECURITY_VALIDATION.md",
+      "exists": true
+    },
+    {
+      "path": "docs/TRACKB_PRIVACY_COMPLIANCE_GATE.md",
+      "exists": true
+    },
+    {
+      "path": "docs/W_LOC_6_A11Y_SYNC_CONTENT_REPORT.md",
+      "exists": true
+    },
+    {
+      "path": "docs/THREAT_MODEL_DELTA_G21_G23.md",
+      "exists": true
+    },
+    {
+      "path": "docs/DATA_MAP_G21_G23.md",
+      "exists": true
+    },
+    {
+      "path": "docs/DSAR_SCREENSHOTS_LOG_G21_G23.md",
+      "exists": true
+    }
+  ],
+  "zip_path": "docs/EVIDENCE_PACK_G21_G23.zip"
+}
