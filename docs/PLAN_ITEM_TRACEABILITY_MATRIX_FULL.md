@@ -13,10 +13,13 @@
 
 Этот документ — **каноническая матрица 275** строк (`PLAN_ITEM | category_id | item_id | status | …`). Он описывает **каталог и план-факт по пунктам**, а не весь narrative реализации.
 
+**Постоянный порядок работ (сверка, волны, гейты, 100%):** `docs/PLAN_ITEM_275_OPERATING_RHYTHM.md`
+
 **Читать вместе с матрицей (полная картина «от начала до конца»):**
 
 | Документ | Зачем |
 | --- | --- |
+| **`docs/PLAN_ITEM_275_OPERATING_RHYTHM.md`** | **Как не терять пункты:** канон vs копии, волны, DoD волны, сверка чек-листа с матрицей по возрастам/категориям. |
 | **`docs/CHILD_CONTENT_INTERFACE_ML_HANDBOOK.md`** | Единый handbook: как связаны планы **178 / 68 / 275**, карта кода, гейты, волны, индекс артефактов. |
 | `docs/ML_SYSTEM_TRANSFER_PACKAGE_PHASE2.md` | Точка входа Phase 2 + порядок чтения (обновлён под матрицу 275). |
 | `docs/PLAN_ITEM_OPEN_TASKS.md` | Только открытые строки матрицы (`PARTIAL` + `TODO`). |
@@ -39,60 +42,60 @@
 ### Игрушки (`child_interface_category_toys`)
 - Интерактивные 3D-игрушки с анимацией | child_interface_category_toys | toys.01 | DONE | Child Core UX Squad | 2026-04-27 | baseline | W1
 - Звуковые эффекты при взаимодействии | child_interface_category_toys | toys.02 | DONE | Child Core UX Squad | 2026-04-27 | baseline | W1
-- Цветовые игры (узнай цвет) | child_interface_category_toys | toys.03 | PARTIAL | 1-6 Content Squad | 2026-05-11 | baseline+qa_matrix | W2
-- Геометрические фигуры (найди круг, квадрат) | child_interface_category_toys | toys.04 | PARTIAL | 1-6 Content Squad | 2026-05-11 | baseline+qa_matrix | W2
-- Животные с звуками | child_interface_category_toys | toys.05 | TODO | 1-6 Content Squad | 2026-05-18 | baseline+qa_matrix | W3
-- Транспорт с движением | child_interface_category_toys | toys.06 | TODO | 1-6 Content Squad | 2026-05-18 | baseline+qa_matrix | W3
-- Музыкальные инструменты | child_interface_category_toys | toys.07 | TODO | 1-6 Content Squad | 2026-05-25 | baseline+qa_matrix | W4
-- Простые пазлы (2-4 элемента) | child_interface_category_toys | toys.08 | TODO | 1-6 Content Squad | 2026-05-25 | baseline+qa_matrix | W4
-- Интерактивные книги | child_interface_category_toys | toys.09 | TODO | 1-6 Content Squad | 2026-06-01 | baseline+qa_matrix | W5
-- Ролевые игры (кухня, магазин) | child_interface_category_toys | toys.10 | TODO | 1-6 Content Squad | 2026-06-01 | baseline+qa_matrix | W5
-- Простые загадки | child_interface_category_toys | toys.11 | TODO | 1-6 Content Squad | 2026-06-08 | baseline+qa_matrix | W6
-- Цифры и буквы | child_interface_category_toys | toys.12 | PARTIAL | 1-6 Content Squad | 2026-06-08 | baseline+qa_matrix | W6
-- Эмоции и мимика | child_interface_category_toys | toys.13 | TODO | 1-6 Content Squad | 2026-06-15 | baseline+qa_matrix | W7
-- Цвета и формы | child_interface_category_toys | toys.14 | PARTIAL | 1-6 Content Squad | 2026-06-15 | baseline+qa_matrix | W7
-- Дни недели и времена года | child_interface_category_toys | toys.15 | TODO | 1-6 Content Squad | 2026-06-22 | baseline+qa_matrix | W8
+- Цветовые игры (узнай цвет) | child_interface_category_toys | toys.03 | DONE | 1-6 Content Squad | 2026-04-27 | baseline+qa_matrix | W2
+- Геометрические фигуры (найди круг, квадрат) | child_interface_category_toys | toys.04 | DONE | 1-6 Content Squad | 2026-04-27 | baseline+qa_matrix | W2
+- Животные с звуками | child_interface_category_toys | toys.05 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W3
+- Транспорт с движением | child_interface_category_toys | toys.06 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W3
+- Музыкальные инструменты | child_interface_category_toys | toys.07 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W4
+- Простые пазлы (2-4 элемента) | child_interface_category_toys | toys.08 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W4
+- Интерактивные книги | child_interface_category_toys | toys.09 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W5
+- Ролевые игры (кухня, магазин) | child_interface_category_toys | toys.10 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W5
+- Простые загадки | child_interface_category_toys | toys.11 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W6
+- Цифры и буквы | child_interface_category_toys | toys.12 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W6
+- Эмоции и мимика | child_interface_category_toys | toys.13 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W7
+- Цвета и формы | child_interface_category_toys | toys.14 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W7
+- Дни недели и времена года | child_interface_category_toys | toys.15 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W8
 
 ### Рисование (`child_interface_category_drawing`)
 - Canvas с пальцевым рисованием | child_interface_category_drawing | drawing.01 | DONE | Child Core UX Squad | 2026-04-27 | baseline | W1
 - Выбор цветов (палитра) | child_interface_category_drawing | drawing.02 | DONE | Child Core UX Squad | 2026-04-27 | baseline | W1
-- Разные кисти (толстая, тонкая) | child_interface_category_drawing | drawing.03 | PARTIAL | 1-6 Content Squad | 2026-05-11 | baseline+qa_matrix | W2
+- Разные кисти (толстая, тонкая) | child_interface_category_drawing | drawing.03 | DONE | 1-6 Content Squad | 2026-04-27 | baseline+qa_matrix | W2
 - Сохранение рисунков в галерею | child_interface_category_drawing | drawing.04 | DONE | Child Core UX Squad | 2026-04-27 | baseline | W1
-- Шаблоны для раскрашивания | child_interface_category_drawing | drawing.05 | TODO | 1-6 Content Squad | 2026-05-18 | baseline+qa_matrix | W3
-- Геометрические фигуры | child_interface_category_drawing | drawing.06 | PARTIAL | 1-6 Content Squad | 2026-05-18 | baseline+qa_matrix | W3
-- Животные и растения | child_interface_category_drawing | drawing.07 | TODO | 1-6 Content Squad | 2026-05-25 | baseline+qa_matrix | W4
-- Дом и семья | child_interface_category_drawing | drawing.08 | TODO | 1-6 Content Squad | 2026-06-01 | baseline+qa_matrix | W5
-- Транспорт и техника | child_interface_category_drawing | drawing.09 | TODO | 1-6 Content Squad | 2026-06-08 | baseline+qa_matrix | W6
-- Абстрактные узоры | child_interface_category_drawing | drawing.10 | TODO | 1-6 Content Squad | 2026-06-15 | baseline+qa_matrix | W7
+- Шаблоны для раскрашивания | child_interface_category_drawing | drawing.05 | DONE | 1-6 Content Squad | 2026-04-27 | baseline+qa_matrix | W3
+- Геометрические фигуры | child_interface_category_drawing | drawing.06 | DONE | 1-6 Content Squad | 2026-04-27 | baseline+qa_matrix | W3
+- Животные и растения | child_interface_category_drawing | drawing.07 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W4
+- Дом и семья | child_interface_category_drawing | drawing.08 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W5
+- Транспорт и техника | child_interface_category_drawing | drawing.09 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W6
+- Абстрактные узоры | child_interface_category_drawing | drawing.10 | DONE | 1-6 Content Squad | 2026-04-28 | baseline+qa_matrix | W7
 
 ### Песенки (`child_interface_category_songs`)
-- Детские песни с текстом | child_interface_category_songs | songs.01 | PARTIAL | 1-6 Audio Squad | 2026-05-11 | baseline+qa_matrix | W2
+- Детские песни с текстом | child_interface_category_songs | songs.01 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W2
 - Караоке режим с подсветкой слов | child_interface_category_songs | songs.02 | DONE | Child Core UX Squad | 2026-04-27 | baseline | W1
-- Мелодии с аккомпанементом | child_interface_category_songs | songs.03 | TODO | 1-6 Audio Squad | 2026-05-18 | baseline+qa_matrix | W3
-- Сохранение любимых песен | child_interface_category_songs | songs.04 | TODO | 1-6 Audio Squad | 2026-05-25 | baseline+qa_matrix | W4
-- Категории (колыбельные, игровые, обучающие) | child_interface_category_songs | songs.05 | TODO | 1-6 Audio Squad | 2026-05-25 | baseline+qa_matrix | W4
-- Песни про цифры | child_interface_category_songs | songs.06 | TODO | 1-6 Audio Squad | 2026-06-01 | baseline+qa_matrix | W5
-- Песни про цвета | child_interface_category_songs | songs.07 | TODO | 1-6 Audio Squad | 2026-06-01 | baseline+qa_matrix | W5
-- Песни про животных | child_interface_category_songs | songs.08 | TODO | 1-6 Audio Squad | 2026-06-08 | baseline+qa_matrix | W6
-- Песни про времена года | child_interface_category_songs | songs.09 | TODO | 1-6 Audio Squad | 2026-06-08 | baseline+qa_matrix | W6
-- Песни про дружбу | child_interface_category_songs | songs.10 | TODO | 1-6 Audio Squad | 2026-06-15 | baseline+qa_matrix | W7
-- Песни про здоровье | child_interface_category_songs | songs.11 | TODO | 1-6 Audio Squad | 2026-06-15 | baseline+qa_matrix | W7
-- Народные песенки | child_interface_category_songs | songs.12 | TODO | 1-6 Audio Squad | 2026-06-22 | baseline+qa_matrix | W8
-- Современные детские песни | child_interface_category_songs | songs.13 | TODO | 1-6 Audio Squad | 2026-06-22 | baseline+qa_matrix | W8
-- Песни разных стран | child_interface_category_songs | songs.14 | TODO | 1-6 Audio Squad | 2026-06-29 | baseline+qa_matrix | W9
-- Ритмичные стишки | child_interface_category_songs | songs.15 | TODO | 1-6 Audio Squad | 2026-06-29 | baseline+qa_matrix | W9
+- Мелодии с аккомпанементом | child_interface_category_songs | songs.03 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W3
+- Сохранение любимых песен | child_interface_category_songs | songs.04 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W4
+- Категории (колыбельные, игровые, обучающие) | child_interface_category_songs | songs.05 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W4
+- Песни про цифры | child_interface_category_songs | songs.06 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W5
+- Песни про цвета | child_interface_category_songs | songs.07 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W5
+- Песни про животных | child_interface_category_songs | songs.08 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W6
+- Песни про времена года | child_interface_category_songs | songs.09 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W6
+- Песни про дружбу | child_interface_category_songs | songs.10 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W7
+- Песни про здоровье | child_interface_category_songs | songs.11 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W7
+- Народные песенки | child_interface_category_songs | songs.12 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W8
+- Современные детские песни | child_interface_category_songs | songs.13 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W8
+- Песни разных стран | child_interface_category_songs | songs.14 | DONE | 1-6 Audio Squad | 2026-04-28 | baseline+qa_matrix | W9
+- Ритмичные стишки | child_interface_category_songs | songs.15 | DONE | 1-6 Audio Squad | 2026-06-29 | baseline+qa_matrix | W9
 
 ### Сказки (`child_interface_category_stories`)
 - Интерактивные сказки с картинками | child_interface_category_stories | stories.01 | DONE | Child Core UX Squad | 2026-04-27 | baseline | W1
-- Озвучка текста профессиональными актерами | child_interface_category_stories | stories.02 | PARTIAL | 1-6 Narrative Squad | 2026-05-18 | baseline+qa_matrix | W3
-- Выбор темпа чтения | child_interface_category_stories | stories.03 | TODO | 1-6 Narrative Squad | 2026-05-25 | baseline+qa_matrix | W4
-- Закладки на любимые места | child_interface_category_stories | stories.04 | TODO | 1-6 Narrative Squad | 2026-05-25 | baseline+qa_matrix | W4
-- Вопросы после прочтения | child_interface_category_stories | stories.05 | PARTIAL | 1-6 Narrative Squad | 2026-06-01 | baseline+qa_matrix | W5
-- Колобок и другие народные сказки | child_interface_category_stories | stories.06 | TODO | 1-6 Narrative Squad | 2026-06-08 | baseline+qa_matrix | W6
-- Сказки про животных | child_interface_category_stories | stories.07 | TODO | 1-6 Narrative Squad | 2026-06-08 | baseline+qa_matrix | W6
-- Волшебные истории | child_interface_category_stories | stories.08 | TODO | 1-6 Narrative Squad | 2026-06-15 | baseline+qa_matrix | W7
-- Сказки разных народов | child_interface_category_stories | stories.09 | TODO | 1-6 Narrative Squad | 2026-06-22 | baseline+qa_matrix | W8
-- Современные сказки | child_interface_category_stories | stories.10 | TODO | 1-6 Narrative Squad | 2026-06-22 | baseline+qa_matrix | W8
+- Озвучка текста профессиональными актерами | child_interface_category_stories | stories.02 | DONE | 1-6 Narrative Squad | 2026-04-28 | baseline+qa_matrix | W3
+- Выбор темпа чтения | child_interface_category_stories | stories.03 | DONE | 1-6 Narrative Squad | 2026-05-25 | baseline+qa_matrix | W4
+- Закладки на любимые места | child_interface_category_stories | stories.04 | DONE | 1-6 Narrative Squad | 2026-05-25 | baseline+qa_matrix | W4
+- Вопросы после прочтения | child_interface_category_stories | stories.05 | DONE | 1-6 Narrative Squad | 2026-04-28 | baseline+qa_matrix | W5
+- Колобок и другие народные сказки | child_interface_category_stories | stories.06 | DONE | 1-6 Narrative Squad | 2026-06-08 | baseline+qa_matrix | W6
+- Сказки про животных | child_interface_category_stories | stories.07 | DONE | 1-6 Narrative Squad | 2026-06-08 | baseline+qa_matrix | W6
+- Волшебные истории | child_interface_category_stories | stories.08 | DONE | 1-6 Narrative Squad | 2026-06-15 | baseline+qa_matrix | W7
+- Сказки разных народов | child_interface_category_stories | stories.09 | DONE | 1-6 Narrative Squad | 2026-06-22 | baseline+qa_matrix | W8
+- Современные сказки | child_interface_category_stories | stories.10 | DONE | 1-6 Narrative Squad | 2026-06-22 | baseline+qa_matrix | W8
 
 ## 7-12 лет
 
@@ -100,29 +103,29 @@
 - Математические игры | child_interface_category_games | games.01 | PARTIAL | 7-12 Learning Games Squad | 2026-05-11 | baseline+qa_matrix | W2
 - Русский язык | child_interface_category_games | games.02 | PARTIAL | 7-12 Learning Games Squad | 2026-05-11 | baseline+qa_matrix | W2
 - Головоломки и логические задачи | child_interface_category_games | games.03 | DONE | Child Core UX Squad | 2026-04-27 | baseline | W1
-- Викторины по предметам | child_interface_category_games | games.04 | TODO | 7-12 Learning Games Squad | 2026-05-18 | baseline+qa_matrix | W3
-- Игры на развитие памяти | child_interface_category_games | games.05 | TODO | 7-12 Learning Games Squad | 2026-05-18 | baseline+qa_matrix | W3
-- Скоростные игры | child_interface_category_games | games.06 | TODO | 7-12 Learning Games Squad | 2026-05-25 | baseline+qa_matrix | W4
-- Командные игры | child_interface_category_games | games.07 | TODO | 7-12 Learning Games Squad | 2026-05-25 | baseline+qa_matrix | W4
-- Стратегические игры | child_interface_category_games | games.08 | TODO | 7-12 Learning Games Squad | 2026-06-01 | baseline+qa_matrix | W5
+- Викторины по предметам | child_interface_category_games | games.04 | DONE | 7-12 Learning Games Squad | 2026-05-18 | baseline+qa_matrix | W3
+- Игры на развитие памяти | child_interface_category_games | games.05 | DONE | 7-12 Learning Games Squad | 2026-05-18 | baseline+qa_matrix | W3
+- Скоростные игры | child_interface_category_games | games.06 | DONE | 7-12 Learning Games Squad | 2026-05-25 | baseline+qa_matrix | W4
+- Командные игры | child_interface_category_games | games.07 | DONE | 7-12 Learning Games Squad | 2026-05-25 | baseline+qa_matrix | W4
+- Стратегические игры | child_interface_category_games | games.08 | DONE | 7-12 Learning Games Squad | 2026-06-01 | baseline+qa_matrix | W5
 - Приключенческие квесты | child_interface_category_games | games.09 | PARTIAL | 7-12 Learning Games Squad | 2026-06-01 | baseline+qa_matrix | W5
-- Спортивные симуляторы | child_interface_category_games | games.10 | TODO | 7-12 Learning Games Squad | 2026-06-08 | baseline+qa_matrix | W6
-- Настольные игры | child_interface_category_games | games.11 | TODO | 7-12 Learning Games Squad | 2026-06-08 | baseline+qa_matrix | W6
-- Карточные игры | child_interface_category_games | games.12 | TODO | 7-12 Learning Games Squad | 2026-06-15 | baseline+qa_matrix | W7
-- Аркадные игры | child_interface_category_games | games.13 | TODO | 7-12 Learning Games Squad | 2026-06-15 | baseline+qa_matrix | W7
-- Платформеры | child_interface_category_games | games.14 | TODO | 7-12 Learning Games Squad | 2026-06-22 | baseline+qa_matrix | W8
-- Гонки | child_interface_category_games | games.15 | TODO | 7-12 Learning Games Squad | 2026-06-22 | baseline+qa_matrix | W8
-- Строительство и крафтинг | child_interface_category_games | games.16 | TODO | 7-12 Learning Games Squad | 2026-06-29 | baseline+qa_matrix | W9
-- Ферма и животные | child_interface_category_games | games.17 | TODO | 7-12 Learning Games Squad | 2026-06-29 | baseline+qa_matrix | W9
-- Космос и наука | child_interface_category_games | games.18 | TODO | 7-12 Learning Games Squad | 2026-07-06 | baseline+qa_matrix | W10
-- История и география | child_interface_category_games | games.19 | TODO | 7-12 Learning Games Squad | 2026-07-06 | baseline+qa_matrix | W10
-- Музыкальные игры | child_interface_category_games | games.20 | TODO | 7-12 Learning Games Squad | 2026-07-13 | baseline+qa_matrix | W11
+- Спортивные симуляторы | child_interface_category_games | games.10 | DONE | 7-12 Learning Games Squad | 2026-06-08 | baseline+qa_matrix | W6
+- Настольные игры | child_interface_category_games | games.11 | DONE | 7-12 Learning Games Squad | 2026-06-08 | baseline+qa_matrix | W6
+- Карточные игры | child_interface_category_games | games.12 | DONE | 7-12 Learning Games Squad | 2026-06-15 | baseline+qa_matrix | W7
+- Аркадные игры | child_interface_category_games | games.13 | DONE | 7-12 Learning Games Squad | 2026-06-15 | baseline+qa_matrix | W7
+- Платформеры | child_interface_category_games | games.14 | DONE | 7-12 Learning Games Squad | 2026-06-22 | baseline+qa_matrix | W8
+- Гонки | child_interface_category_games | games.15 | DONE | 7-12 Learning Games Squad | 2026-06-22 | baseline+qa_matrix | W8
+- Строительство и крафтинг | child_interface_category_games | games.16 | DONE | 7-12 Learning Games Squad | 2026-06-29 | baseline+qa_matrix | W9
+- Ферма и животные | child_interface_category_games | games.17 | DONE | 7-12 Learning Games Squad | 2026-06-29 | baseline+qa_matrix | W9
+- Космос и наука | child_interface_category_games | games.18 | DONE | 7-12 Learning Games Squad | 2026-07-06 | baseline+qa_matrix | W10
+- История и география | child_interface_category_games | games.19 | DONE | 7-12 Learning Games Squad | 2026-07-06 | baseline+qa_matrix | W10
+- Музыкальные игры | child_interface_category_games | games.20 | DONE | 7-12 Learning Games Squad | 2026-07-13 | baseline+qa_matrix | W11
 
 ### Учёба (`child_interface_category_study`)
 - Русский язык: чтение, письмо, грамматика | child_interface_category_study | study.01 | PARTIAL | 7-12 Study Squad | 2026-05-18 | baseline+qa_matrix | W3
 - Математика: арифметика, геометрия, задачи | child_interface_category_study | study.02 | PARTIAL | 7-12 Study Squad | 2026-05-18 | baseline+qa_matrix | W3
 - Окружающий мир | child_interface_category_study | study.03 | PARTIAL | 7-12 Study Squad | 2026-05-25 | baseline+qa_matrix | W4
-- История | child_interface_category_study | study.04 | TODO | 7-12 Study Squad | 2026-05-25 | baseline+qa_matrix | W4
+- История | child_interface_category_study | study.04 | DONE | 7-12 Study Squad | 2026-05-25 | baseline+qa_matrix | W4
 - География | child_interface_category_study | study.05 | TODO | 7-12 Study Squad | 2026-06-01 | baseline+qa_matrix | W5
 - Биология | child_interface_category_study | study.06 | TODO | 7-12 Study Squad | 2026-06-01 | baseline+qa_matrix | W5
 - Физика | child_interface_category_study | study.07 | TODO | 7-12 Study Squad | 2026-06-08 | baseline+qa_matrix | W6

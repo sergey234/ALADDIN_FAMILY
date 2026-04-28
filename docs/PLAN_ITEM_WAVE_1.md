@@ -5,16 +5,16 @@
 
 ## Scope
 
-1. Разные кисти (толстая, тонкая) | `child_interface_category_drawing` | `drawing.03` | PARTIAL  
-2. Шаблоны для раскрашивания | `child_interface_category_drawing` | `drawing.05` | TODO  
-3. Геометрические фигуры (рисование) | `child_interface_category_drawing` | `drawing.06` | PARTIAL  
-4. Цветовые игры (узнай цвет) | `child_interface_category_toys` | `toys.03` | PARTIAL  
-5. Геометрические фигуры (найди круг, квадрат) | `child_interface_category_toys` | `toys.04` | PARTIAL  
-6. Детские песни с текстом | `child_interface_category_songs` | `songs.01` | PARTIAL  
-7. Мелодии с аккомпанементом | `child_interface_category_songs` | `songs.03` | TODO  
-8. Категории песен (колыбельные/игровые/обучающие) | `child_interface_category_songs` | `songs.05` | TODO  
-9. Озвучка текста проф. актерами | `child_interface_category_stories` | `stories.02` | PARTIAL  
-10. Вопросы после прочтения | `child_interface_category_stories` | `stories.05` | PARTIAL
+1. ~~Разные кисти (толстая, тонкая) | `child_interface_category_drawing` | `drawing.03` | **DONE 2026-04-27** (тонкая/толстая кисть в `DrawingExperienceHostView`)~~  
+2. ~~Шаблоны для раскрашивания | `child_interface_category_drawing` | `drawing.05` | **DONE 2026-04-27** (контуры: свободный / круг / домик / солнце, `TemplatedPencilContainerView` + `PKCanvasView`)~~  
+3. ~~Геометрические фигуры (рисование) | `child_interface_category_drawing` | `drawing.06` | **DONE 2026-04-27** (квадрат, треугольник, шестиугольник в шаблонах `ChildDrawingLineArtFactory`)~~  
+4. ~~Цветовые игры (узнай цвет) | `child_interface_category_toys` | `toys.03` | **DONE 2026-04-27** (мини-игра в `Toys3DSceneHostView` — полоска + 4 кружка)~~  
+5. ~~Геометрические фигуры (найди круг, квадрат) | `child_interface_category_toys` | `toys.04` | **DONE 2026-04-27** (мини-игра форм: круг/квадрат/треугольник в `Toys3DSceneHostView`)~~  
+6. ~~Детские песни с текстом | `child_interface_category_songs` | `songs.01` | **DONE 2026-04-28** (караоке-линии и треки в `KaraokeExperienceHostView`)~~  
+7. ~~Мелодии с аккомпанементом | `child_interface_category_songs` | `songs.03` | **DONE 2026-04-28** (переключатель и уровень аккомпанемента)~~  
+8. ~~Категории песен (колыбельные/игровые/обучающие) | `child_interface_category_songs` | `songs.05` | **DONE 2026-04-28** (фильтр по категориям треков)~~  
+9. ~~Озвучка текста проф. актерами | `child_interface_category_stories` | `stories.02` | **DONE 2026-04-28** (выбор профиля озвучки актёра)~~  
+10. ~~Вопросы после прочтения | `child_interface_category_stories` | `stories.05` | **DONE 2026-04-28** (quiz-блок на финальной странице истории)~~
 
 ## Ownership And Dates
 

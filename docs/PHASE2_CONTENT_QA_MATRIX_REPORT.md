@@ -1,6 +1,6 @@
 # Phase 2 Content QA Matrix Report
 
-- generated_at: `2026-04-27T18:07:05.779762+00:00`
+- generated_at: `2026-04-28T08:36:20.992412+00:00`
 - checks: `19`
 - failed: `0`
 - category_level_failed: `0`

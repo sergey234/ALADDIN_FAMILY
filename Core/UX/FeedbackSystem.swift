@@ -171,7 +171,7 @@ final class FeedbackSystem: ObservableObject {
 // MARK: - Root overlay (host in `ALADDINApp` above `NavigationView`)
 
 struct FeedbackParticleOverlay: View {
-    @EnvironmentObject private var feedback: FeedbackSystem
+    @ObservedObject private var feedback = FeedbackSystem.shared
 
     var body: some View {
         ZStack {

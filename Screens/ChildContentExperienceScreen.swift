@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import SceneKit
 import PencilKit
 import Combine
@@ -1180,8 +1181,17 @@ private struct StudyLessonTestExperienceView: View {
     @State private var testFinished: Bool = false
     @State private var passed: Bool = false
 
+    private var isHistoryStudy: Bool { item.id == "study.04" }
+
     private var lessonPages: [String] {
-        [
+        if isHistoryStudy {
+            return [
+                localizationManager.localized("child_study_history_page_1"),
+                localizationManager.localized("child_study_history_page_2"),
+                localizationManager.localized("child_study_history_page_3")
+            ]
+        }
+        return [
             localizationManager.localized("child_study_lesson_page_1"),
             localizationManager.localized("child_study_lesson_page_2"),
             localizationManager.localized("child_study_lesson_page_3")
@@ -1189,7 +1199,38 @@ private struct StudyLessonTestExperienceView: View {
     }
 
     private var questions: [StudyQuestion] {
-        [
+        if isHistoryStudy {
+            return [
+                StudyQuestion(
+                    prompt: localizationManager.localized("child_study_history_test_prompt_1"),
+                    options: [
+                        localizationManager.localized("child_study_history_test_option_1a"),
+                        localizationManager.localized("child_study_history_test_option_1b"),
+                        localizationManager.localized("child_study_history_test_option_1c")
+                    ],
+                    correctIndex: 0
+                ),
+                StudyQuestion(
+                    prompt: localizationManager.localized("child_study_history_test_prompt_2"),
+                    options: [
+                        localizationManager.localized("child_study_history_test_option_2a"),
+                        localizationManager.localized("child_study_history_test_option_2b"),
+                        localizationManager.localized("child_study_history_test_option_2c")
+                    ],
+                    correctIndex: 1
+                ),
+                StudyQuestion(
+                    prompt: localizationManager.localized("child_study_history_test_prompt_3"),
+                    options: [
+                        localizationManager.localized("child_study_history_test_option_3a"),
+                        localizationManager.localized("child_study_history_test_option_3b"),
+                        localizationManager.localized("child_study_history_test_option_3c")
+                    ],
+                    correctIndex: 2
+                )
+            ]
+        }
+        return [
             StudyQuestion(
                 prompt: localizationManager.localized("child_study_test_prompt_1"),
                 options: [
@@ -1408,6 +1449,35 @@ private struct GamesChallengeEngineView: View {
     @State private var selectedIndex: Int?
     @State private var showHint: Bool = false
     @State private var answeredCount: Int = 0
+    @State private var subjectQuizIndex: Int = 0
+    @State private var subjectQuizScore: Int = 0
+    @State private var subjectQuizSelected: Int?
+    @State private var memorySequence: [Int] = []
+    @State private var memoryGuess: [Int] = []
+    @State private var memoryRound: Int = 1
+    @State private var memorySolvedRounds: Int = 0
+    @State private var memoryFeedbackKey: String?
+    @State private var speedRound: Int = 1
+    @State private var speedTarget: Int = Int.random(in: 1...9)
+    @State private var speedScore: Int = 0
+    @State private var teamTaskIndex: Int = 0
+    @State private var teamHelpCount: Int = 0
+    @State private var strategyStep: Int = 0
+    @State private var strategyPlan: [String] = []
+    @State private var sportDistance: Double = 0
+    @State private var boardPosition: Int = 0
+    @State private var boardRoll: Int = 0
+    @State private var cardPairTarget: Int = Int.random(in: 1...6)
+    @State private var cardScore: Int = 0
+    @State private var arcadeCoins: Int = 0
+    @State private var arcadeLives: Int = 3
+    @State private var platformDistance: Int = 0
+    @State private var raceProgress: Double = 0
+    @State private var craftResources: Int = 0
+    @State private var farmAnimalsFed: Int = 0
+    @State private var sciencePoints: Int = 0
+    @State private var mapProgress: Int = 0
+    @State private var musicCombo: Int = 0
 
     private var tasks: [GamesChallengeTask] {
         switch domain {
@@ -1477,7 +1547,64 @@ private struct GamesChallengeEngineView: View {
         return Double(answeredCount) / Double(tasks.count)
     }
 
+    private var isSubjectQuiz: Bool { item.id == "games.04" }
+    private var isMemoryTraining: Bool { item.id == "games.05" }
+    private var isSpeedGame: Bool { item.id == "games.06" }
+    private var isTeamGame: Bool { item.id == "games.07" }
+    private var isStrategyGame: Bool { item.id == "games.08" }
+    private var isSportGame: Bool { item.id == "games.10" }
+    private var isBoardGame: Bool { item.id == "games.11" }
+    private var isCardGame: Bool { item.id == "games.12" }
+    private var isArcadeGame: Bool { item.id == "games.13" }
+    private var isPlatformGame: Bool { item.id == "games.14" }
+    private var isRaceGame: Bool { item.id == "games.15" }
+    private var isCraftGame: Bool { item.id == "games.16" }
+    private var isFarmGame: Bool { item.id == "games.17" }
+    private var isScienceGame: Bool { item.id == "games.18" }
+    private var isHistoryGeoGame: Bool { item.id == "games.19" }
+    private var isMusicGame: Bool { item.id == "games.20" }
+
     var body: some View {
+        Group {
+            if isSubjectQuiz {
+                subjectQuizCard
+            } else if isMemoryTraining {
+                memoryCard
+            } else if isSpeedGame {
+                speedCard
+            } else if isTeamGame {
+                teamCard
+            } else if isStrategyGame {
+                strategyCard
+            } else if isSportGame {
+                sportCard
+            } else if isBoardGame {
+                boardCard
+            } else if isCardGame {
+                cardCard
+            } else if isArcadeGame {
+                arcadeCard
+            } else if isPlatformGame {
+                platformCard
+            } else if isRaceGame {
+                raceCard
+            } else if isCraftGame {
+                craftCard
+            } else if isFarmGame {
+                farmCard
+            } else if isScienceGame {
+                scienceCard
+            } else if isHistoryGeoGame {
+                historyGeoCard
+            } else if isMusicGame {
+                musicCard
+            } else {
+                challengeCard
+            }
+        }
+    }
+
+    private var challengeCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(localizationManager.localized("child_games_challenge_title"))
                 .font(.system(size: 17, weight: .bold))
@@ -1563,6 +1690,536 @@ private struct GamesChallengeEngineView: View {
         .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
     }
 
+    private var subjectQuizTasks: [GamesChallengeTask] {
+        [
+            GamesChallengeTask(
+                prompt: localizationManager.localized("child_games_subject_quiz_prompt_1"),
+                options: [
+                    localizationManager.localized("child_games_subject_quiz_option_math"),
+                    localizationManager.localized("child_games_subject_quiz_option_music"),
+                    localizationManager.localized("child_games_subject_quiz_option_dance")
+                ],
+                correctIndex: 0,
+                hint: localizationManager.localized("child_games_subject_quiz_hint_1")
+            ),
+            GamesChallengeTask(
+                prompt: localizationManager.localized("child_games_subject_quiz_prompt_2"),
+                options: [
+                    localizationManager.localized("child_games_subject_quiz_option_wolf"),
+                    localizationManager.localized("child_games_subject_quiz_option_fox"),
+                    localizationManager.localized("child_games_subject_quiz_option_cow")
+                ],
+                correctIndex: 1,
+                hint: localizationManager.localized("child_games_subject_quiz_hint_2")
+            ),
+            GamesChallengeTask(
+                prompt: localizationManager.localized("child_games_subject_quiz_prompt_3"),
+                options: [
+                    localizationManager.localized("child_games_subject_quiz_option_north"),
+                    localizationManager.localized("child_games_subject_quiz_option_south"),
+                    localizationManager.localized("child_games_subject_quiz_option_west")
+                ],
+                correctIndex: 0,
+                hint: localizationManager.localized("child_games_subject_quiz_hint_3")
+            )
+        ]
+    }
+
+    private var activeSubjectQuizTask: GamesChallengeTask {
+        subjectQuizTasks[min(subjectQuizIndex, subjectQuizTasks.count - 1)]
+    }
+
+    private var subjectQuizCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_subject_quiz_title"))
+                .font(.system(size: 17, weight: .bold))
+            Text(activeSubjectQuizTask.prompt)
+                .font(.system(size: 15, weight: .semibold))
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.orange.opacity(0.1)))
+            ForEach(Array(activeSubjectQuizTask.options.enumerated()), id: \.offset) { index, option in
+                Button(option) {
+                    guard subjectQuizSelected == nil else { return }
+                    subjectQuizSelected = index
+                    if index == activeSubjectQuizTask.correctIndex {
+                        subjectQuizScore += 1
+                    }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.45) {
+                        if subjectQuizIndex < subjectQuizTasks.count - 1 {
+                            subjectQuizIndex += 1
+                            subjectQuizSelected = nil
+                        }
+                    }
+                }
+                .buttonStyle(.borderedProminent)
+                .disabled(subjectQuizSelected != nil)
+            }
+            Text("\(localizationManager.localized("child_games_subject_quiz_score")): \(subjectQuizScore)/\(subjectQuizTasks.count)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            if subjectQuizIndex >= subjectQuizTasks.count - 1, subjectQuizSelected != nil {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var memoryCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_memory_title"))
+                .font(.system(size: 17, weight: .bold))
+            Text("\(localizationManager.localized("child_games_memory_round")) \(memoryRound)")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.secondary)
+            if !memorySequence.isEmpty {
+                Text(memorySequence.map(String.init).joined(separator: " • "))
+                    .font(.system(size: 20, weight: .bold))
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(8)
+                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.blue.opacity(0.1)))
+            }
+            HStack {
+                ForEach(Array(1...4), id: \.self) { n in
+                    Button("\(n)") { appendMemoryGuess(n) }
+                        .buttonStyle(.bordered)
+                }
+            }
+            if let memoryFeedbackKey {
+                Text(localizationManager.localized(memoryFeedbackKey))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(memoryFeedbackKey.contains("ok") ? .green : .orange)
+            }
+            Button(localizationManager.localized("child_games_memory_next")) {
+                startMemoryRound()
+            }
+            .buttonStyle(.bordered)
+            if memorySolvedRounds >= 3 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+        .onAppear {
+            if memorySequence.isEmpty {
+                startMemoryRound()
+            }
+        }
+    }
+
+    private var speedCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_speed_title"))
+                .font(.system(size: 17, weight: .bold))
+            Text("\(localizationManager.localized("child_games_speed_round")) \(speedRound)")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.secondary)
+            Text("\(localizationManager.localized("child_games_speed_target")): \(speedTarget)")
+                .font(.system(size: 26, weight: .bold))
+                .frame(maxWidth: .infinity, alignment: .center)
+                .padding(8)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.red.opacity(0.1)))
+            HStack {
+                ForEach(Array(1...9), id: \.self) { number in
+                    Button("\(number)") {
+                        if number == speedTarget {
+                            speedScore += 1
+                            speedRound += 1
+                            speedTarget = Int.random(in: 1...9)
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+            Text("\(localizationManager.localized("child_games_speed_score")): \(speedScore)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            if speedScore >= 5 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var teamTasks: [String] {
+        [
+            localizationManager.localized("child_games_team_task_1"),
+            localizationManager.localized("child_games_team_task_2"),
+            localizationManager.localized("child_games_team_task_3")
+        ]
+    }
+
+    private var teamCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_team_title"))
+                .font(.system(size: 17, weight: .bold))
+            Text(teamTasks[min(teamTaskIndex, teamTasks.count - 1)])
+                .font(.system(size: 15, weight: .semibold))
+                .padding(10)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.green.opacity(0.1)))
+            HStack(spacing: 10) {
+                Button(localizationManager.localized("child_games_team_help")) {
+                    teamHelpCount += 1
+                }
+                .buttonStyle(.bordered)
+                Button(localizationManager.localized("child_games_team_next")) {
+                    if teamTaskIndex < teamTasks.count - 1 {
+                        teamTaskIndex += 1
+                    }
+                }
+                .buttonStyle(.bordered)
+            }
+            Text("\(localizationManager.localized("child_games_team_score")): \(teamHelpCount)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            if teamTaskIndex >= teamTasks.count - 1, teamHelpCount >= 2 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var strategyCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_strategy_title"))
+                .font(.system(size: 17, weight: .bold))
+            Text(localizationManager.localized("child_games_strategy_goal"))
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.secondary)
+            HStack(spacing: 8) {
+                Button(localizationManager.localized("child_games_strategy_step_scout")) {
+                    appendStrategyStep("scout")
+                }
+                .buttonStyle(.bordered)
+                Button(localizationManager.localized("child_games_strategy_step_build")) {
+                    appendStrategyStep("build")
+                }
+                .buttonStyle(.bordered)
+                Button(localizationManager.localized("child_games_strategy_step_defend")) {
+                    appendStrategyStep("defend")
+                }
+                .buttonStyle(.bordered)
+            }
+            Text(strategyPlan.joined(separator: " → "))
+                .font(.system(size: 13, weight: .semibold))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(8)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.purple.opacity(0.08)))
+            if strategyStep >= 3 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var sportCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_sport_title"))
+                .font(.system(size: 17, weight: .bold))
+            ProgressView(value: sportDistance, total: 100)
+                .tint(.blue)
+            Text("\(localizationManager.localized("child_games_sport_distance")): \(Int(sportDistance))/100")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_games_sport_run")) {
+                sportDistance = min(100, sportDistance + 20)
+            }
+            .buttonStyle(.borderedProminent)
+            if sportDistance >= 100 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var boardCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_board_title"))
+                .font(.system(size: 17, weight: .bold))
+            Text("\(localizationManager.localized("child_games_board_position")): \(boardPosition)")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.secondary)
+            Text("\(localizationManager.localized("child_games_board_last_roll")): \(boardRoll)")
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_games_board_roll")) {
+                boardRoll = Int.random(in: 1...6)
+                boardPosition = min(20, boardPosition + boardRoll)
+            }
+            .buttonStyle(.borderedProminent)
+            if boardPosition >= 20 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var cardCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_card_title"))
+                .font(.system(size: 17, weight: .bold))
+            Text("\(localizationManager.localized("child_games_card_target")): \(cardPairTarget)")
+                .font(.system(size: 18, weight: .semibold))
+            HStack {
+                ForEach(Array(1...6), id: \.self) { number in
+                    Button("\(number)") {
+                        if number == cardPairTarget {
+                            cardScore += 1
+                            cardPairTarget = Int.random(in: 1...6)
+                        }
+                    }
+                    .buttonStyle(.bordered)
+                }
+            }
+            Text("\(localizationManager.localized("child_games_card_score")): \(cardScore)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            if cardScore >= 5 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var arcadeCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_arcade_title"))
+                .font(.system(size: 17, weight: .bold))
+            Text("\(localizationManager.localized("child_games_arcade_coins")): \(arcadeCoins)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Text("\(localizationManager.localized("child_games_arcade_lives")): \(arcadeLives)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            HStack(spacing: 10) {
+                Button(localizationManager.localized("child_games_arcade_jump")) {
+                    arcadeCoins += 1
+                }
+                .buttonStyle(.bordered)
+                Button(localizationManager.localized("child_games_arcade_avoid")) {
+                    arcadeLives = max(0, arcadeLives - 1)
+                }
+                .buttonStyle(.bordered)
+            }
+            if arcadeCoins >= 8 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var platformCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_platform_title"))
+                .font(.system(size: 17, weight: .bold))
+            ProgressView(value: Double(platformDistance), total: 10)
+                .tint(.mint)
+            Text("\(localizationManager.localized("child_games_platform_distance")): \(platformDistance)/10")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_games_platform_move")) {
+                platformDistance = min(10, platformDistance + 1)
+            }
+            .buttonStyle(.borderedProminent)
+            if platformDistance >= 10 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var raceCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_race_title"))
+                .font(.system(size: 17, weight: .bold))
+            ProgressView(value: raceProgress, total: 100)
+                .tint(.orange)
+            Text("\(localizationManager.localized("child_games_race_progress")): \(Int(raceProgress))%")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_games_race_accelerate")) {
+                raceProgress = min(100, raceProgress + Double(Int.random(in: 12...25)))
+            }
+            .buttonStyle(.borderedProminent)
+            if raceProgress >= 100 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var craftCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_craft_title"))
+                .font(.system(size: 17, weight: .bold))
+            Text("\(localizationManager.localized("child_games_craft_resources")): \(craftResources)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            HStack(spacing: 10) {
+                Button(localizationManager.localized("child_games_craft_collect")) {
+                    craftResources = min(12, craftResources + 2)
+                }
+                .buttonStyle(.bordered)
+                Button(localizationManager.localized("child_games_craft_build")) {
+                    craftResources = max(0, craftResources - 3)
+                }
+                .buttonStyle(.bordered)
+            }
+            if craftResources >= 10 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var farmCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_farm_title"))
+                .font(.system(size: 17, weight: .bold))
+            Text("\(localizationManager.localized("child_games_farm_fed")): \(farmAnimalsFed)/5")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_games_farm_feed")) {
+                farmAnimalsFed = min(5, farmAnimalsFed + 1)
+            }
+            .buttonStyle(.borderedProminent)
+            if farmAnimalsFed >= 5 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var scienceCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_science_title"))
+                .font(.system(size: 17, weight: .bold))
+            Text("\(localizationManager.localized("child_games_science_points")): \(sciencePoints)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            HStack(spacing: 10) {
+                Button(localizationManager.localized("child_games_science_space")) {
+                    sciencePoints += 2
+                }
+                .buttonStyle(.bordered)
+                Button(localizationManager.localized("child_games_science_lab")) {
+                    sciencePoints += 3
+                }
+                .buttonStyle(.bordered)
+            }
+            if sciencePoints >= 12 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var historyGeoCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_history_geo_title"))
+                .font(.system(size: 17, weight: .bold))
+            ProgressView(value: Double(mapProgress), total: 6)
+                .tint(.indigo)
+            Text("\(localizationManager.localized("child_games_history_geo_progress")): \(mapProgress)/6")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_games_history_geo_explore")) {
+                mapProgress = min(6, mapProgress + 1)
+            }
+            .buttonStyle(.borderedProminent)
+            if mapProgress >= 6 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
+    private var musicCard: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("child_games_music_title"))
+                .font(.system(size: 17, weight: .bold))
+            Text("\(localizationManager.localized("child_games_music_combo")): \(musicCombo)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            HStack(spacing: 10) {
+                Button("♪") { musicCombo += 1 }
+                    .buttonStyle(.bordered)
+                Button("♫") { musicCombo += 1 }
+                    .buttonStyle(.bordered)
+                Button("♬") { musicCombo += 1 }
+                    .buttonStyle(.bordered)
+            }
+            if musicCombo >= 7 {
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+
     private func selectOption(_ index: Int) {
         guard selectedIndex == nil else { return }
         selectedIndex = index
@@ -1607,6 +2264,34 @@ private struct GamesChallengeEngineView: View {
         }
         return Color.gray.opacity(0.55)
     }
+
+    private func startMemoryRound() {
+        let count = min(2 + memoryRound, 5)
+        memorySequence = (0..<count).map { _ in Int.random(in: 1...4) }
+        memoryGuess = []
+        memoryFeedbackKey = nil
+    }
+
+    private func appendMemoryGuess(_ value: Int) {
+        guard memorySolvedRounds < 3 else { return }
+        guard memoryGuess.count < memorySequence.count else { return }
+        memoryGuess.append(value)
+        if memoryGuess.count == memorySequence.count {
+            if memoryGuess == memorySequence {
+                memorySolvedRounds += 1
+                memoryRound += 1
+                memoryFeedbackKey = "child_games_memory_feedback_ok"
+            } else {
+                memoryFeedbackKey = "child_games_memory_feedback_retry"
+            }
+        }
+    }
+
+    private func appendStrategyStep(_ step: String) {
+        guard strategyStep < 3 else { return }
+        strategyPlan.append(step)
+        strategyStep += 1
+    }
 }
 
 private struct StoryChoice: Identifiable, Hashable {
@@ -1645,6 +2330,26 @@ private struct StoryExperienceHostView: View {
     @State private var pageId: String = "start"
     @State private var reachedCheckpoints: Set<String> = []
     @State private var narrationCount: Int = 0
+    @State private var narratorIndex: Int = 0
+    @State private var readingTempo: String = "normal"
+    @State private var bookmarks: Set<String> = []
+    @State private var quizChoiceIndex: Int?
+    @State private var quizAnswered = false
+    @State private var quizCorrect = false
+
+    private struct NarratorProfile: Identifiable {
+        let id: Int
+        let name: String
+        let localeCode: String
+    }
+
+    private var narrators: [NarratorProfile] {
+        [
+            .init(id: 0, name: localizationManager.localized("child_story_narrator_actor_anna"), localeCode: "ru-RU"),
+            .init(id: 1, name: localizationManager.localized("child_story_narrator_actor_ivan"), localeCode: "ru-RU"),
+            .init(id: 2, name: localizationManager.localized("child_story_narrator_actor_elena"), localeCode: "ru-RU")
+        ]
+    }
 
     private var stories: [InteractiveStory] {
         [
@@ -1652,7 +2357,12 @@ private struct StoryExperienceHostView: View {
             makeRobotStory(),
             makeKindnessStory(),
             makeStarStory(),
-            makeLibraryStory()
+            makeLibraryStory(),
+            makeKolobokStory(),
+            makeAnimalTalesStory(),
+            makeMagicStory(),
+            makeWorldTalesStory(),
+            makeModernStory()
         ]
     }
 
@@ -1692,6 +2402,28 @@ private struct StoryExperienceHostView: View {
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(.secondary)
 
+            HStack(spacing: 8) {
+                Text(localizationManager.localized("child_story_tempo_label"))
+                    .font(.system(size: 13, weight: .semibold))
+                Picker("", selection: $readingTempo) {
+                    Text(localizationManager.localized("child_story_tempo_slow")).tag("slow")
+                    Text(localizationManager.localized("child_story_tempo_normal")).tag("normal")
+                    Text(localizationManager.localized("child_story_tempo_fast")).tag("fast")
+                }
+                .pickerStyle(.segmented)
+            }
+
+            HStack(spacing: 8) {
+                Text(localizationManager.localized("child_story_voice_actor_label"))
+                    .font(.system(size: 13, weight: .semibold))
+                Picker("", selection: $narratorIndex) {
+                    ForEach(narrators) { n in
+                        Text(n.name).tag(n.id)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+
             ProgressView(value: checkpointProgress)
                 .tint(.indigo)
 
@@ -1703,10 +2435,37 @@ private struct StoryExperienceHostView: View {
 
             Button(localizationManager.localized("child_game_welcome")) {
                 narrationCount += 1
-                SoundEffectPlayer.shared.playVoicePrompt(page.narration, languageCode: "ru-RU", priority: .high)
-                MasterLogger.shared.business("P2-104 narration played contentId=\(item.id) story=\(story.id) page=\(page.id) count=\(narrationCount)")
+                let actor = narrators.first(where: { $0.id == narratorIndex }) ?? narrators[0]
+                SoundEffectPlayer.shared.playVoicePrompt(
+                    narratedTextWithTempo(page.narration),
+                    languageCode: actor.localeCode,
+                    priority: .high
+                )
+                MasterLogger.shared.business("P2-104 narration played contentId=\(item.id) story=\(story.id) page=\(page.id) count=\(narrationCount) tempo=\(readingTempo)")
             }
             .buttonStyle(.bordered)
+
+            HStack(spacing: 10) {
+                Button(
+                    isBookmarkedCurrentPage
+                    ? localizationManager.localized("child_story_bookmark_remove")
+                    : localizationManager.localized("child_story_bookmark_add")
+                ) {
+                    toggleBookmarkCurrentPage()
+                }
+                .buttonStyle(.bordered)
+                if !bookmarks.isEmpty {
+                    Menu(localizationManager.localized("child_story_bookmark_open")) {
+                        ForEach(Array(bookmarks).sorted(), id: \.self) { mark in
+                            Button(mark) {
+                                if let pageKey = mark.components(separatedBy: ":").last {
+                                    pageId = pageKey
+                                }
+                            }
+                        }
+                    }
+                }
+            }
 
             VStack(spacing: 8) {
                 ForEach(page.choices) { choice in
@@ -1723,6 +2482,7 @@ private struct StoryExperienceHostView: View {
             }
 
             if page.isEnding {
+                storyQuizCard
                 Button(localizationManager.localized("child_interface_done")) {
                     Task { await onComplete() }
                 }
@@ -1742,6 +2502,9 @@ private struct StoryExperienceHostView: View {
         }
         if let next = choice.nextPageId, story.page(by: next) != nil {
             pageId = next
+            quizChoiceIndex = nil
+            quizAnswered = false
+            quizCorrect = false
             captureCheckpointIfNeeded(page)
             MasterLogger.shared.business("P2-104 choice selected contentId=\(item.id) story=\(story.id) page=\(page.id)")
         } else if page.isEnding {
@@ -1753,6 +2516,12 @@ private struct StoryExperienceHostView: View {
         pageId = story.startPageId
         reachedCheckpoints = []
         narrationCount = 0
+        narratorIndex = 0
+        readingTempo = "normal"
+        bookmarks = []
+        quizChoiceIndex = nil
+        quizAnswered = false
+        quizCorrect = false
         captureCheckpointIfNeeded(page)
     }
 
@@ -1760,6 +2529,72 @@ private struct StoryExperienceHostView: View {
         if let checkpoint = currentPage.checkpointId {
             reachedCheckpoints.insert(checkpoint)
         }
+    }
+
+    private var quizAnswers: [String] {
+        [
+            localizationManager.localized("child_story_quiz_answer_help"),
+            localizationManager.localized("child_story_quiz_answer_ignore"),
+            localizationManager.localized("child_story_quiz_answer_laugh")
+        ]
+    }
+
+    private var correctQuizIndex: Int { 0 }
+
+    private var isBookmarkedCurrentPage: Bool {
+        bookmarks.contains("\(story.id):\(page.id)")
+    }
+
+    private func toggleBookmarkCurrentPage() {
+        let key = "\(story.id):\(page.id)"
+        if bookmarks.contains(key) {
+            bookmarks.remove(key)
+        } else {
+            bookmarks.insert(key)
+        }
+    }
+
+    private func narratedTextWithTempo(_ text: String) -> String {
+        switch readingTempo {
+        case "slow": return text.replacingOccurrences(of: " ", with: "  ")
+        case "fast": return text
+        default: return text
+        }
+    }
+
+    private var storyQuizCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_story_quiz_title"))
+                .font(.system(size: 14, weight: .bold))
+            Text(localizationManager.localized("child_story_quiz_question"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+            ForEach(Array(quizAnswers.enumerated()), id: \.offset) { idx, title in
+                Button {
+                    quizChoiceIndex = idx
+                    quizAnswered = true
+                    quizCorrect = (idx == correctQuizIndex)
+                } label: {
+                    Text(title)
+                        .font(.system(size: 13, weight: .semibold))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 10)
+                        .background(
+                            RoundedRectangle(cornerRadius: 8)
+                                .fill((quizChoiceIndex == idx) ? Color.indigo.opacity(0.2) : Color(.secondarySystemBackground))
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+            if quizAnswered {
+                Text(localizationManager.localized(quizCorrect ? "child_story_quiz_feedback_ok" : "child_story_quiz_feedback_retry"))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(quizCorrect ? .green : .orange)
+            }
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.indigo.opacity(0.06)))
     }
 }
 
@@ -2005,6 +2840,218 @@ private func makeLibraryStory() -> InteractiveStory {
     )
 }
 
+private func makeKolobokStory() -> InteractiveStory {
+    InteractiveStory(
+        id: "kolobok",
+        title: "Колобок",
+        pages: [
+            StoryPage(
+                id: "start",
+                narration: "Колобок покатился по дорожке и встретил зайца.",
+                choices: [
+                    StoryChoice(title: "Спеть песенку", nextPageId: "song", checkpointId: "c1"),
+                    StoryChoice(title: "Убежать быстрее", nextPageId: "road", checkpointId: "c1")
+                ],
+                checkpointId: "c0",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "song",
+                narration: "Колобок спел весёлую песенку и покатился дальше.",
+                choices: [StoryChoice(title: "К медведю", nextPageId: "bear", checkpointId: "c2")],
+                checkpointId: "c1",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "road",
+                narration: "На дорожке Колобок встретил медведя, который хотел дружить.",
+                choices: [StoryChoice(title: "Поговорить с медведем", nextPageId: "bear", checkpointId: "c2")],
+                checkpointId: "c1",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "bear",
+                narration: "Медведь показал короткую тропинку к дому бабушки и дедушки.",
+                choices: [StoryChoice(title: "Вернуться домой", nextPageId: "ending", checkpointId: "c3")],
+                checkpointId: "c2",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "ending",
+                narration: "Колобок вернулся домой и рассказал о своих приключениях.",
+                choices: [],
+                checkpointId: "c3",
+                isEnding: true
+            )
+        ],
+        startPageId: "start"
+    )
+}
+
+private func makeAnimalTalesStory() -> InteractiveStory {
+    InteractiveStory(
+        id: "animal_tales",
+        title: "Сказки про животных",
+        pages: [
+            StoryPage(
+                id: "start",
+                narration: "Лисёнок и бельчонок решили помочь птицам найти зёрнышки.",
+                choices: [
+                    StoryChoice(title: "Идти к поляне", nextPageId: "field", checkpointId: "c1"),
+                    StoryChoice(title: "Проверить у реки", nextPageId: "river", checkpointId: "c1")
+                ],
+                checkpointId: "c0",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "field",
+                narration: "На поляне друзья нашли мешочек с зёрнами.",
+                choices: [StoryChoice(title: "Позвать птиц", nextPageId: "ending", checkpointId: "c2")],
+                checkpointId: "c1",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "river",
+                narration: "У реки бобр подсказал, где лежит мешочек с едой.",
+                choices: [StoryChoice(title: "Позвать птиц", nextPageId: "ending", checkpointId: "c2")],
+                checkpointId: "c1",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "ending",
+                narration: "Птицы поблагодарили друзей, и все вместе устроили праздник.",
+                choices: [],
+                checkpointId: "c3",
+                isEnding: true
+            )
+        ],
+        startPageId: "start"
+    )
+}
+
+private func makeMagicStory() -> InteractiveStory {
+    InteractiveStory(
+        id: "magic_story",
+        title: "Волшебные истории",
+        pages: [
+            StoryPage(
+                id: "start",
+                narration: "Ночью в саду зажглись светлячки и открыли путь к волшебному дереву.",
+                choices: [
+                    StoryChoice(title: "Подойти к дереву", nextPageId: "tree", checkpointId: "c1"),
+                    StoryChoice(title: "Попросить совета у феи", nextPageId: "fairy", checkpointId: "c1")
+                ],
+                checkpointId: "c0",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "tree",
+                narration: "На дереве висел фонарик желаний. Нужно назвать доброе дело.",
+                choices: [StoryChoice(title: "Загадать доброе желание", nextPageId: "ending", checkpointId: "c2")],
+                checkpointId: "c1",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "fairy",
+                narration: "Фея подсказала: волшебство работает, когда мы помогаем другим.",
+                choices: [StoryChoice(title: "Сделать доброе дело", nextPageId: "ending", checkpointId: "c2")],
+                checkpointId: "c1",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "ending",
+                narration: "Сад засиял ярче, а друзья получили волшебные значки доброты.",
+                choices: [],
+                checkpointId: "c3",
+                isEnding: true
+            )
+        ],
+        startPageId: "start"
+    )
+}
+
+private func makeWorldTalesStory() -> InteractiveStory {
+    InteractiveStory(
+        id: "world_tales",
+        title: "Сказки разных народов",
+        pages: [
+            StoryPage(
+                id: "start",
+                narration: "Дети нашли карту мира, где каждая страна прятала сказочную историю.",
+                choices: [
+                    StoryChoice(title: "Выбрать северную страну", nextPageId: "north", checkpointId: "c1"),
+                    StoryChoice(title: "Выбрать южную страну", nextPageId: "south", checkpointId: "c1")
+                ],
+                checkpointId: "c0",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "north",
+                narration: "На севере их встретил олень и рассказал легенду о храбром путешественнике.",
+                choices: [StoryChoice(title: "Продолжить путь", nextPageId: "ending", checkpointId: "c2")],
+                checkpointId: "c1",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "south",
+                narration: "На юге мудрая черепаха поделилась историей о дружбе и терпении.",
+                choices: [StoryChoice(title: "Продолжить путь", nextPageId: "ending", checkpointId: "c2")],
+                checkpointId: "c1",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "ending",
+                narration: "Вернувшись домой, дети собрали книгу сказок народов мира.",
+                choices: [],
+                checkpointId: "c3",
+                isEnding: true
+            )
+        ],
+        startPageId: "start"
+    )
+}
+
+private func makeModernStory() -> InteractiveStory {
+    InteractiveStory(
+        id: "modern_story",
+        title: "Современные сказки",
+        pages: [
+            StoryPage(
+                id: "start",
+                narration: "Робот Ри помогал ребятам в умном городе и искал потерянный дрон.",
+                choices: [
+                    StoryChoice(title: "Проверить парк", nextPageId: "park", checkpointId: "c1"),
+                    StoryChoice(title: "Проверить школьный двор", nextPageId: "school", checkpointId: "c1")
+                ],
+                checkpointId: "c0",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "park",
+                narration: "В парке дрон запутался в ветках, и друзья аккуратно его освободили.",
+                choices: [StoryChoice(title: "Вернуть дрон владельцу", nextPageId: "ending", checkpointId: "c2")],
+                checkpointId: "c1",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "school",
+                narration: "Во дворе дрон подал сигнал, и ребята нашли его по карте.",
+                choices: [StoryChoice(title: "Вернуть дрон владельцу", nextPageId: "ending", checkpointId: "c2")],
+                checkpointId: "c1",
+                isEnding: false
+            ),
+            StoryPage(
+                id: "ending",
+                narration: "Дрон снова летал, а робот Ри получил звание лучшего помощника.",
+                choices: [],
+                checkpointId: "c3",
+                isEnding: true
+            )
+        ],
+        startPageId: "start"
+    )
+}
+
 private struct KaraokeLyricLine: Identifiable, Hashable {
     let id = UUID()
     let startSec: TimeInterval
@@ -2016,6 +3063,8 @@ private struct KaraokeTrack: Identifiable, Hashable {
     let id = UUID()
     let title: String
     let artist: String
+    let category: String
+    let topics: [String]
     let lines: [KaraokeLyricLine]
 
     var duration: TimeInterval {
@@ -2032,6 +3081,12 @@ private struct KaraokeExperienceHostView: View {
     @State private var selectedTrackIndex: Int = 0
     @State private var currentTime: TimeInterval = 0
     @State private var isPlaying: Bool = false
+    @State private var selectedCategory: String = "learning"
+    @State private var accompanimentOn = true
+    @State private var accompanimentLevel: Double = 0.65
+    @State private var selectedTopic: String = "all"
+    @State private var favoriteTitles: Set<String> = []
+    @State private var favoritesLoaded = false
     private let ticker = Timer.publish(every: 0.35, on: .main, in: .common).autoconnect()
 
     private var tracks: [KaraokeTrack] {
@@ -2039,6 +3094,8 @@ private struct KaraokeExperienceHostView: View {
             KaraokeTrack(
                 title: "Солнечный день",
                 artist: "ALADDIN Kids",
+                category: "play",
+                topics: ["seasons"],
                 lines: [
                     .init(startSec: 0, endSec: 3, text: "Солнечный день зовёт играть"),
                     .init(startSec: 3, endSec: 6, text: "Мы умеем вместе петь и танцевать"),
@@ -2049,6 +3106,8 @@ private struct KaraokeExperienceHostView: View {
             KaraokeTrack(
                 title: "Буквы поют",
                 artist: "ALADDIN Kids",
+                category: "learning",
+                topics: ["letters"],
                 lines: [
                     .init(startSec: 0, endSec: 3, text: "Буква А поёт: давай учить"),
                     .init(startSec: 3, endSec: 7, text: "Буква Б зовёт слова сложить"),
@@ -2059,6 +3118,8 @@ private struct KaraokeExperienceHostView: View {
             KaraokeTrack(
                 title: "Считалочка друзей",
                 artist: "ALADDIN Kids",
+                category: "learning",
+                topics: ["numbers"],
                 lines: [
                     .init(startSec: 0, endSec: 3, text: "Раз и два, шагай смелей"),
                     .init(startSec: 3, endSec: 6, text: "Три и четыре, мы среди друзей"),
@@ -2069,6 +3130,8 @@ private struct KaraokeExperienceHostView: View {
             KaraokeTrack(
                 title: "Добрые слова",
                 artist: "ALADDIN Kids",
+                category: "lullaby",
+                topics: ["friendship"],
                 lines: [
                     .init(startSec: 0, endSec: 4, text: "Скажем вместе: добрый день"),
                     .init(startSec: 4, endSec: 8, text: "И улыбка станет всем теплей"),
@@ -2079,18 +3142,137 @@ private struct KaraokeExperienceHostView: View {
             KaraokeTrack(
                 title: "Звёздный ритм",
                 artist: "ALADDIN Kids",
+                category: "play",
+                topics: ["space"],
                 lines: [
                     .init(startSec: 0, endSec: 3, text: "В небе звёзды ярко так горят"),
                     .init(startSec: 3, endSec: 7, text: "Наши голоса в один момент звучат"),
                     .init(startSec: 7, endSec: 11, text: "Пой со мной, держи весёлый такт"),
                     .init(startSec: 11, endSec: 15, text: "Музыка ведёт нас в новый старт")
                 ]
+            ),
+            KaraokeTrack(
+                title: "Цветные краски",
+                artist: "ALADDIN Kids",
+                category: "learning",
+                topics: ["colors"],
+                lines: [
+                    .init(startSec: 0, endSec: 3, text: "Красный, синий, жёлтый свет"),
+                    .init(startSec: 3, endSec: 7, text: "Каждый цвет нам шлёт привет"),
+                    .init(startSec: 7, endSec: 11, text: "Зелёный лист и неба синь"),
+                    .init(startSec: 11, endSec: 15, text: "Пой про краски и запомни")
+                ]
+            ),
+            KaraokeTrack(
+                title: "Зверята поют",
+                artist: "ALADDIN Kids",
+                category: "play",
+                topics: ["animals"],
+                lines: [
+                    .init(startSec: 0, endSec: 3, text: "Кот мурлычет, пёс зовёт"),
+                    .init(startSec: 3, endSec: 7, text: "Утка крякает, корова поёт"),
+                    .init(startSec: 7, endSec: 11, text: "Вместе звери дружно в ряд"),
+                    .init(startSec: 11, endSec: 15, text: "Песню дарят для ребят")
+                ]
+            ),
+            KaraokeTrack(
+                title: "Четыре времени года",
+                artist: "ALADDIN Kids",
+                category: "learning",
+                topics: ["seasons"],
+                lines: [
+                    .init(startSec: 0, endSec: 3, text: "Весна пришла и тает лёд"),
+                    .init(startSec: 3, endSec: 7, text: "Лето солнце в гости ждёт"),
+                    .init(startSec: 7, endSec: 11, text: "Осень листьями кружит"),
+                    .init(startSec: 11, endSec: 15, text: "Зима снежинками блестит")
+                ]
+            ),
+            KaraokeTrack(
+                title: "Песня про дружбу",
+                artist: "ALADDIN Kids",
+                category: "play",
+                topics: ["friendship"],
+                lines: [
+                    .init(startSec: 0, endSec: 4, text: "Если рядом друг, улыбка ярче"),
+                    .init(startSec: 4, endSec: 8, text: "Вместе мы решим любую задачу"),
+                    .init(startSec: 8, endSec: 12, text: "Поделись добром, протяни ладонь"),
+                    .init(startSec: 12, endSec: 16, text: "Дружба нас ведёт в весёлый день")
+                ]
+            ),
+            KaraokeTrack(
+                title: "Песня про здоровье",
+                artist: "ALADDIN Kids",
+                category: "learning",
+                topics: ["health"],
+                lines: [
+                    .init(startSec: 0, endSec: 4, text: "Чистим зубы утром, моем руки"),
+                    .init(startSec: 4, endSec: 8, text: "Фрукты и зарядка без разлуки"),
+                    .init(startSec: 8, endSec: 12, text: "Сильным быть поможет каждый день"),
+                    .init(startSec: 12, endSec: 16, text: "Здоровый ритм нам дарит вдохновенье")
+                ]
+            ),
+            KaraokeTrack(
+                title: "Народные песенки",
+                artist: "ALADDIN Folk",
+                category: "lullaby",
+                topics: ["folk"],
+                lines: [
+                    .init(startSec: 0, endSec: 4, text: "Во поле берёзка тихо пела"),
+                    .init(startSec: 4, endSec: 8, text: "Колыбельный ветер к нам летел"),
+                    .init(startSec: 8, endSec: 12, text: "Сохраним напевы старины"),
+                    .init(startSec: 12, endSec: 16, text: "Пусть звучат народные мотивы")
+                ]
+            ),
+            KaraokeTrack(
+                title: "Современные детские песни",
+                artist: "ALADDIN Pop Kids",
+                category: "play",
+                topics: ["modern"],
+                lines: [
+                    .init(startSec: 0, endSec: 4, text: "Ритм в наушниках зовёт играть"),
+                    .init(startSec: 4, endSec: 8, text: "Танец света будет помогать"),
+                    .init(startSec: 8, endSec: 12, text: "Новый день и новый яркий бит"),
+                    .init(startSec: 12, endSec: 16, text: "Современный трек для всех звучит")
+                ]
+            ),
+            KaraokeTrack(
+                title: "Песни разных стран",
+                artist: "ALADDIN World Kids",
+                category: "learning",
+                topics: ["countries"],
+                lines: [
+                    .init(startSec: 0, endSec: 4, text: "Bonjour, hola, hello — поём"),
+                    .init(startSec: 4, endSec: 8, text: "Дружбу между странами найдём"),
+                    .init(startSec: 8, endSec: 12, text: "Пусть мелодии летят вокруг"),
+                    .init(startSec: 12, endSec: 16, text: "Музыка объединяет всех друзей")
+                ]
+            ),
+            KaraokeTrack(
+                title: "Ритмичные стишки",
+                artist: "ALADDIN Rhythm Kids",
+                category: "play",
+                topics: ["rhythm"],
+                lines: [
+                    .init(startSec: 0, endSec: 4, text: "Топ-топ, хлоп-хлоп, ритм не устаёт"),
+                    .init(startSec: 4, endSec: 8, text: "Шаг вперёд, прыжок назад, песенка зовёт"),
+                    .init(startSec: 8, endSec: 12, text: "Слог за слогом, в ладоши в такт"),
+                    .init(startSec: 12, endSec: 16, text: "Ритмичный стих звучит вот так")
+                ]
             )
         ]
     }
 
+    private var filteredTracks: [KaraokeTrack] {
+        tracks.filter { track in
+            track.category == selectedCategory
+                && (selectedTopic == "all" || track.topics.contains(selectedTopic))
+        }
+    }
+
     private var selectedTrack: KaraokeTrack {
-        tracks[selectedTrackIndex]
+        let list = filteredTracks.isEmpty ? tracks : filteredTracks
+        let i = min(max(0, selectedTrackIndex), max(0, list.count - 1))
+        return list[i]
     }
 
     var body: some View {
@@ -2098,8 +3280,36 @@ private struct KaraokeExperienceHostView: View {
             Text(localizationManager.localized("child_content_music_title"))
                 .font(.system(size: 17, weight: .bold))
 
+            Picker("", selection: $selectedCategory) {
+                Text(localizationManager.localized("child_songs_category_learning")).tag("learning")
+                Text(localizationManager.localized("child_songs_category_play")).tag("play")
+                Text(localizationManager.localized("child_songs_category_lullaby")).tag("lullaby")
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: selectedCategory) { _ in
+                selectedTrackIndex = 0
+                currentTime = 0
+                isPlaying = false
+            }
+
+            Picker("", selection: $selectedTopic) {
+                Text(localizationManager.localized("child_songs_topic_all")).tag("all")
+                Text(localizationManager.localized("child_songs_topic_numbers")).tag("numbers")
+                Text(localizationManager.localized("child_songs_topic_colors")).tag("colors")
+                Text(localizationManager.localized("child_songs_topic_animals")).tag("animals")
+                Text(localizationManager.localized("child_songs_topic_seasons")).tag("seasons")
+                Text(localizationManager.localized("child_songs_topic_rhythm")).tag("rhythm")
+            }
+            .pickerStyle(.menu)
+            .onChange(of: selectedTopic) { _ in
+                selectedTrackIndex = 0
+                currentTime = 0
+                isPlaying = false
+            }
+
             Picker("", selection: $selectedTrackIndex) {
-                ForEach(Array(tracks.enumerated()), id: \.offset) { index, track in
+                let list = filteredTracks.isEmpty ? tracks : filteredTracks
+                ForEach(Array(list.enumerated()), id: \.offset) { index, track in
                     Text("\(index + 1)").tag(index)
                 }
             }
@@ -2113,6 +3323,37 @@ private struct KaraokeExperienceHostView: View {
             Text("\(selectedTrack.title) • \(selectedTrack.artist)")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.secondary)
+
+            Button(
+                favoriteTitles.contains(selectedTrack.title)
+                    ? localizationManager.localized("child_songs_remove_favorite")
+                    : localizationManager.localized("child_songs_add_favorite")
+            ) {
+                toggleFavorite(selectedTrack.title)
+            }
+            .buttonStyle(.bordered)
+
+            if !favoriteTitles.isEmpty {
+                Text(
+                    String(
+                        format: localizationManager.localized("child_songs_favorites_count"),
+                        favoriteTitles.count
+                    )
+                )
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.secondary)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                Toggle(localizationManager.localized("child_songs_accompaniment_toggle"), isOn: $accompanimentOn)
+                HStack(spacing: 8) {
+                    Text(localizationManager.localized("child_songs_accompaniment_level"))
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.secondary)
+                    Slider(value: $accompanimentLevel, in: 0...1)
+                        .disabled(!accompanimentOn)
+                }
+            }
 
             ProgressView(value: min(1.0, selectedTrack.duration == 0 ? 0 : currentTime / selectedTrack.duration))
                 .tint(.pink)
@@ -2137,6 +3378,9 @@ private struct KaraokeExperienceHostView: View {
             HStack(spacing: 10) {
                 Button(isPlaying ? localizationManager.localized("child_interface_back") : localizationManager.localized("child_interface_done")) {
                     isPlaying.toggle()
+                    if isPlaying && accompanimentOn {
+                        SoundEffectPlayer.shared.play(.tapSoft, priority: .medium)
+                    }
                     MasterLogger.shared.business("P2-103 karaoke play_toggle contentId=\(item.id) track=\(selectedTrack.title) playing=\(isPlaying)")
                 }
                 .buttonStyle(.borderedProminent)
@@ -2169,10 +3413,279 @@ private struct KaraokeExperienceHostView: View {
                 currentTime = next
             }
         }
+        .onAppear {
+            loadFavoritesIfNeeded()
+        }
     }
 
     private func isActive(_ line: KaraokeLyricLine) -> Bool {
         currentTime >= line.startSec && currentTime < line.endSec
+    }
+
+    private func favoritesKey() -> String {
+        let childId = UserDefaults.standard.string(forKey: "active_child_profile_server_id") ?? "local-default-child"
+        return "child.karaoke.favorites.\(childId)"
+    }
+
+    private func loadFavoritesIfNeeded() {
+        guard !favoritesLoaded else { return }
+        favoritesLoaded = true
+        let arr = UserDefaults.standard.stringArray(forKey: favoritesKey()) ?? []
+        favoriteTitles = Set(arr)
+    }
+
+    private func persistFavorites() {
+        UserDefaults.standard.set(Array(favoriteTitles).sorted(), forKey: favoritesKey())
+    }
+
+    private func toggleFavorite(_ title: String) {
+        if favoriteTitles.contains(title) {
+            favoriteTitles.remove(title)
+        } else {
+            favoriteTitles.insert(title)
+        }
+        persistFavorites()
+    }
+}
+
+/// Раскрашивание и контуры — `drawing.05`, геометрия — `drawing.06`.
+private enum ChildDrawingColoringTemplate: String, CaseIterable, Identifiable {
+    case none
+    case circle
+    case square
+    case triangle
+    case hexagon
+    case animal
+    case plant
+    case family
+    case vehicle
+    case abstractPattern
+    case house
+    case sun
+    var id: String { rawValue }
+}
+
+/// Генерация ч/б линеарта под размер вью; `none` = без сетки (белый фон).
+private enum ChildDrawingLineArtFactory {
+    static func lineArtImage(
+        for template: ChildDrawingColoringTemplate,
+        size: CGSize,
+        displayScale: CGFloat
+    ) -> UIImage? {
+        guard size.width > 4, size.height > 4 else { return nil }
+        if template == .none { return nil }
+        let format = UIGraphicsImageRendererFormat()
+        format.scale = max(1, displayScale)
+        format.opaque = true
+        let r = UIGraphicsImageRenderer(size: size, format: format)
+        return r.image { rctx in
+            let ctx = rctx.cgContext
+            UIColor.white.setFill()
+            ctx.fill(CGRect(origin: .zero, size: size))
+            let stroke = UIColor.label.withAlphaComponent(0.82)
+            let lw = max(1.5, min(size.width, size.height) * 0.012)
+            ctx.setLineWidth(lw)
+            ctx.setLineCap(.round)
+            ctx.setLineJoin(.round)
+            ctx.setStrokeColor(stroke.cgColor)
+            switch template {
+            case .none: break
+            case .circle:
+                let s = min(size.width, size.height) * 0.62
+                let rIn = CGRect(
+                    x: (size.width - s) * 0.5,
+                    y: (size.height - s) * 0.5,
+                    width: s,
+                    height: s
+                )
+                ctx.strokeEllipse(in: rIn)
+            case .square:
+                let s = min(size.width, size.height) * 0.55
+                let rct = CGRect(
+                    x: (size.width - s) * 0.5,
+                    y: (size.height - s) * 0.5,
+                    width: s,
+                    height: s
+                )
+                ctx.stroke(rct)
+            case .triangle:
+                let w = size.width, h = size.height
+                let cx = w * 0.5, cy = h * 0.5
+                let r = min(w, h) * 0.32
+                let p = UIBezierPath()
+                for i in 0..<3 {
+                    let a = CGFloat(i) * 2 * .pi / 3 - .pi / 2
+                    let x = cx + cos(a) * r * 1.15
+                    let y = cy + sin(a) * r * 1.15
+                    if i == 0 { p.move(to: CGPoint(x: x, y: y)) } else { p.addLine(to: CGPoint(x: x, y: y)) }
+                }
+                p.close()
+                ctx.addPath(p.cgPath)
+                ctx.drawPath(using: .stroke)
+            case .hexagon:
+                let w = size.width, h = size.height
+                let cx = w * 0.5, cy = h * 0.5
+                let rad = min(w, h) * 0.3
+                let p = UIBezierPath()
+                for i in 0..<6 {
+                    let a = CGFloat(i) * .pi / 3 - .pi / 2
+                    let x = cx + cos(a) * rad
+                    let y = cy + sin(a) * rad
+                    if i == 0 { p.move(to: CGPoint(x: x, y: y)) } else { p.addLine(to: CGPoint(x: x, y: y)) }
+                }
+                p.close()
+                ctx.addPath(p.cgPath)
+                ctx.drawPath(using: .stroke)
+            case .animal:
+                let w = size.width, h = size.height
+                // simple cat-like face contour
+                let faceRect = CGRect(x: w * 0.3, y: h * 0.34, width: w * 0.4, height: h * 0.38)
+                ctx.strokeEllipse(in: faceRect)
+                let earL = UIBezierPath()
+                earL.move(to: CGPoint(x: w * 0.36, y: h * 0.38))
+                earL.addLine(to: CGPoint(x: w * 0.3, y: h * 0.22))
+                earL.addLine(to: CGPoint(x: w * 0.44, y: h * 0.33))
+                earL.close()
+                let earR = UIBezierPath()
+                earR.move(to: CGPoint(x: w * 0.64, y: h * 0.38))
+                earR.addLine(to: CGPoint(x: w * 0.7, y: h * 0.22))
+                earR.addLine(to: CGPoint(x: w * 0.56, y: h * 0.33))
+                earR.close()
+                ctx.addPath(earL.cgPath)
+                ctx.addPath(earR.cgPath)
+                ctx.drawPath(using: .stroke)
+            case .plant:
+                let w = size.width, h = size.height
+                ctx.beginPath()
+                ctx.move(to: CGPoint(x: w * 0.5, y: h * 0.78))
+                ctx.addLine(to: CGPoint(x: w * 0.5, y: h * 0.34))
+                ctx.strokePath()
+                for (cx, cy, ex, ey) in [(0.5,0.46,0.36,0.40),(0.5,0.58,0.64,0.52),(0.5,0.66,0.38,0.62)] {
+                    let leaf = UIBezierPath()
+                    leaf.move(to: CGPoint(x: w * cx, y: h * cy))
+                    leaf.addQuadCurve(to: CGPoint(x: w * ex, y: h * ey), controlPoint: CGPoint(x: w * ((cx+ex)/2), y: h * (cy - 0.1)))
+                    leaf.addQuadCurve(to: CGPoint(x: w * cx, y: h * cy), controlPoint: CGPoint(x: w * ((cx+ex)/2), y: h * (ey + 0.1)))
+                    ctx.addPath(leaf.cgPath)
+                    ctx.drawPath(using: .stroke)
+                }
+                ctx.stroke(CGRect(x: w * 0.42, y: h * 0.78, width: w * 0.16, height: h * 0.12))
+            case .family:
+                let w = size.width, h = size.height
+                // two adults and one child (heads + body lines)
+                for (x, y, r) in [(0.36,0.38,0.06),(0.64,0.38,0.06),(0.5,0.48,0.045)] {
+                    let head = CGRect(x: w * (x-r), y: h * (y-r), width: w * (r*2), height: h * (r*2))
+                    ctx.strokeEllipse(in: head)
+                }
+                ctx.beginPath()
+                ctx.move(to: CGPoint(x: w * 0.36, y: h * 0.44)); ctx.addLine(to: CGPoint(x: w * 0.36, y: h * 0.74))
+                ctx.move(to: CGPoint(x: w * 0.64, y: h * 0.44)); ctx.addLine(to: CGPoint(x: w * 0.64, y: h * 0.74))
+                ctx.move(to: CGPoint(x: w * 0.50, y: h * 0.53)); ctx.addLine(to: CGPoint(x: w * 0.50, y: h * 0.74))
+                ctx.strokePath()
+            case .vehicle:
+                let w = size.width, h = size.height
+                let body = UIBezierPath(roundedRect: CGRect(x: w * 0.24, y: h * 0.48, width: w * 0.52, height: h * 0.2), cornerRadius: w * 0.03)
+                ctx.addPath(body.cgPath)
+                ctx.drawPath(using: .stroke)
+                ctx.strokeEllipse(in: CGRect(x: w * 0.30, y: h * 0.65, width: w * 0.1, height: h * 0.1))
+                ctx.strokeEllipse(in: CGRect(x: w * 0.60, y: h * 0.65, width: w * 0.1, height: h * 0.1))
+            case .abstractPattern:
+                let w = size.width, h = size.height
+                for i in 0..<5 {
+                    let inset = CGFloat(i) * min(w, h) * 0.05
+                    ctx.stroke(CGRect(x: w * 0.2 + inset, y: h * 0.2 + inset, width: w * 0.6 - 2*inset, height: h * 0.6 - 2*inset))
+                }
+                ctx.beginPath()
+                ctx.move(to: CGPoint(x: w * 0.2, y: h * 0.2))
+                ctx.addLine(to: CGPoint(x: w * 0.8, y: h * 0.8))
+                ctx.move(to: CGPoint(x: w * 0.8, y: h * 0.2))
+                ctx.addLine(to: CGPoint(x: w * 0.2, y: h * 0.8))
+                ctx.strokePath()
+            case .house:
+                let w = size.width, h = size.height
+                let p = UIBezierPath()
+                p.move(to: CGPoint(x: w * 0.22, y: h * 0.5))
+                p.addLine(to: CGPoint(x: w * 0.5, y: h * 0.18))
+                p.addLine(to: CGPoint(x: w * 0.78, y: h * 0.5))
+                p.addLine(to: CGPoint(x: w * 0.78, y: h * 0.88))
+                p.addLine(to: CGPoint(x: w * 0.22, y: h * 0.88))
+                p.close()
+                ctx.addPath(p.cgPath)
+                ctx.drawPath(using: .stroke)
+            case .sun:
+                let cx = size.width * 0.5, cy = size.height * 0.48
+                let rad = min(size.width, size.height) * 0.18
+                let disc = UIBezierPath(
+                    arcCenter: CGPoint(x: cx, y: cy), radius: rad, startAngle: 0, endAngle: .pi * 2, clockwise: true
+                )
+                ctx.addPath(disc.cgPath)
+                ctx.drawPath(using: .stroke)
+                let r1 = min(size.width, size.height) * 0.32
+                for i in 0..<8 {
+                    let a = CGFloat(i) * .pi * 0.25 - .pi * 0.5
+                    let r0 = rad * 1.12
+                    ctx.beginPath()
+                    ctx.move(to: CGPoint(x: cx + cos(a) * r0, y: cy + sin(a) * r0))
+                    ctx.addLine(to: CGPoint(x: cx + cos(a) * r1, y: cy + sin(a) * r1))
+                    ctx.strokePath()
+                }
+            }
+        }
+    }
+}
+
+private final class TemplatedPencilContainerView: UIView {
+    let imageView = UIImageView()
+    let canvas = PKCanvasView()
+
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+        imageView.translatesAutoresizingMaskIntoConstraints = false
+        imageView.backgroundColor = .systemBackground
+        imageView.contentMode = .scaleToFill
+        imageView.clipsToBounds = true
+        canvas.translatesAutoresizingMaskIntoConstraints = false
+        canvas.backgroundColor = .clear
+        canvas.isOpaque = false
+        canvas.drawingPolicy = .anyInput
+        addSubview(imageView)
+        addSubview(canvas)
+        NSLayoutConstraint.activate([
+            imageView.leadingAnchor.constraint(equalTo: leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: trailingAnchor),
+            imageView.topAnchor.constraint(equalTo: topAnchor),
+            imageView.bottomAnchor.constraint(equalTo: bottomAnchor),
+            canvas.leadingAnchor.constraint(equalTo: leadingAnchor),
+            canvas.trailingAnchor.constraint(equalTo: trailingAnchor),
+            canvas.topAnchor.constraint(equalTo: topAnchor),
+            canvas.bottomAnchor.constraint(equalTo: bottomAnchor)
+        ])
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) { nil }
+
+    func setTemplateImage(_ image: UIImage?) {
+        if image == nil {
+            imageView.image = nil
+            imageView.backgroundColor = .systemBackground
+        } else {
+            imageView.image = image
+            imageView.backgroundColor = .white
+        }
+    }
+}
+
+/// Разные кисти (тонкая / толстая) — PLAN matrix `drawing.03`.
+private enum ChildDrawingBrushStyle: String, CaseIterable, Identifiable {
+    case thin
+    case thick
+    var id: String { rawValue }
+    /// `PKInkingTool` ширина линии в pt (детский рисунок).
+    var lineWidth: CGFloat {
+        switch self {
+        case .thin: return 5
+        case .thick: return 14
+        }
     }
 }
 
@@ -2181,6 +3694,8 @@ private struct DrawingExperienceHostView: View {
 
     let item: ContentItem
     @State private var drawing = PKDrawing()
+    @State private var brush: ChildDrawingBrushStyle = .thick
+    @State private var coloringTemplate: ChildDrawingColoringTemplate = .none
     @State private var savedItems: [ChildSavedDrawing] = []
     @State private var selectedDrawingID: UUID?
 
@@ -2189,7 +3704,66 @@ private struct DrawingExperienceHostView: View {
             Text(localizationManager.localized("child_creativity_create"))
                 .font(.system(size: 17, weight: .bold))
 
-            DrawingCanvasRepresentable(drawing: $drawing)
+            VStack(alignment: .leading, spacing: 8) {
+                Text(localizationManager.localized("child_drawing_template_label"))
+                    .font(.system(size: 14, weight: .semibold))
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 8) {
+                        ForEach(ChildDrawingColoringTemplate.allCases) { tm in
+                            let isOn = (coloringTemplate == tm)
+                            Button {
+                                coloringTemplate = tm
+                            } label: {
+                                Text(templateTitle(tm))
+                                    .font(.system(size: 13, weight: .semibold))
+                                    .padding(.horizontal, 10)
+                                    .padding(.vertical, 8)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                            .fill(isOn ? Color.orange.opacity(0.2) : Color(.secondarySystemBackground))
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel(localizationManager.localized("child_drawing_template_a11y"))
+            }
+
+            VStack(alignment: .leading, spacing: 8) {
+                Text(localizationManager.localized("child_drawing_brush_label"))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.primary)
+                HStack(spacing: 10) {
+                    ForEach(ChildDrawingBrushStyle.allCases) { style in
+                        let isOn = (brush == style)
+                        Button {
+                            brush = style
+                        } label: {
+                            Text(brushTitle(style))
+                                .font(.system(size: 14, weight: .semibold))
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 10)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10, style: .continuous)
+                                        .fill(isOn ? Color.teal.opacity(0.25) : Color(.secondarySystemBackground))
+                                )
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier(style == .thin ? "child_drawing_brush_thin" : "child_drawing_brush_thick")
+                        .accessibilityAddTraits(isOn ? [.isSelected] : [])
+                    }
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel(localizationManager.localized("child_drawing_brush_a11y"))
+            }
+
+            TemplatedDrawingCanvasRepresentable(
+                drawing: $drawing,
+                lineWidth: brush.lineWidth,
+                template: coloringTemplate
+            )
                 .frame(height: 300)
                 .background(
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
@@ -2252,6 +3826,33 @@ private struct DrawingExperienceHostView: View {
         .task {
             refreshGallery()
         }
+        .onChange(of: coloringTemplate) { _ in
+            drawing = PKDrawing()
+        }
+    }
+
+    private func templateTitle(_ tm: ChildDrawingColoringTemplate) -> String {
+        switch tm {
+        case .none: return localizationManager.localized("child_drawing_template_none")
+        case .circle: return localizationManager.localized("child_drawing_template_circle")
+        case .square: return localizationManager.localized("child_drawing_template_square")
+        case .triangle: return localizationManager.localized("child_drawing_template_triangle")
+        case .hexagon: return localizationManager.localized("child_drawing_template_hexagon")
+        case .animal: return localizationManager.localized("child_drawing_template_animal")
+        case .plant: return localizationManager.localized("child_drawing_template_plant")
+        case .family: return localizationManager.localized("child_drawing_template_family")
+        case .vehicle: return localizationManager.localized("child_drawing_template_vehicle")
+        case .abstractPattern: return localizationManager.localized("child_drawing_template_abstract")
+        case .house: return localizationManager.localized("child_drawing_template_house")
+        case .sun: return localizationManager.localized("child_drawing_template_sun")
+        }
+    }
+
+    private func brushTitle(_ style: ChildDrawingBrushStyle) -> String {
+        switch style {
+        case .thin: return localizationManager.localized("child_drawing_brush_thin")
+        case .thick: return localizationManager.localized("child_drawing_brush_thick")
+        }
     }
 
     private func refreshGallery() {
@@ -2284,35 +3885,50 @@ private struct DrawingExperienceHostView: View {
     }
 }
 
-private struct DrawingCanvasRepresentable: UIViewRepresentable {
+private struct TemplatedDrawingCanvasRepresentable: UIViewRepresentable {
     @Binding var drawing: PKDrawing
+    var lineWidth: CGFloat
+    var template: ChildDrawingColoringTemplate
 
-    func makeUIView(context: Context) -> PKCanvasView {
-        let canvas = PKCanvasView()
-        canvas.delegate = context.coordinator
-        canvas.drawingPolicy = .anyInput
-        canvas.backgroundColor = .systemBackground
-        canvas.tool = PKInkingTool(.marker, color: .systemBlue, width: 8)
-        canvas.drawing = drawing
-        return canvas
+    func makeUIView(context: Context) -> TemplatedPencilContainerView {
+        let v = TemplatedPencilContainerView()
+        v.canvas.delegate = context.coordinator
+        v.canvas.drawingPolicy = .anyInput
+        v.canvas.tool = PKInkingTool(.marker, color: .systemBlue, width: lineWidth)
+        v.canvas.drawing = drawing
+        context.coordinator.lastLineWidth = lineWidth
+        return v
     }
 
-    func updateUIView(_ uiView: PKCanvasView, context: Context) {
-        if uiView.drawing != drawing {
-            uiView.drawing = drawing
+    func updateUIView(_ uiView: TemplatedPencilContainerView, context: Context) {
+        let w = lineWidth
+        if abs(context.coordinator.lastLineWidth - w) > 0.1 {
+            uiView.canvas.tool = PKInkingTool(.marker, color: .systemBlue, width: w)
+            context.coordinator.lastLineWidth = w
+        }
+        let b = uiView.bounds.size
+        if b.width > 2, b.height > 2
+            && (context.coordinator.lastSize != b || context.coordinator.lastTemplate != template) {
+            let sc = uiView.traitCollection.displayScale
+            let img = ChildDrawingLineArtFactory.lineArtImage(for: template, size: b, displayScale: sc)
+            uiView.setTemplateImage(img)
+            context.coordinator.lastSize = b
+            context.coordinator.lastTemplate = template
+        }
+        if uiView.canvas.drawing != drawing {
+            uiView.canvas.drawing = drawing
         }
     }
 
-    func makeCoordinator() -> Coordinator {
-        Coordinator(drawing: $drawing)
-    }
+    func makeCoordinator() -> Coordinator { Coordinator(drawing: $drawing) }
 
     final class Coordinator: NSObject, PKCanvasViewDelegate {
         @Binding var drawing: PKDrawing
+        var lastLineWidth: CGFloat = 0
+        var lastSize: CGSize = .zero
+        var lastTemplate: ChildDrawingColoringTemplate?
 
-        init(drawing: Binding<PKDrawing>) {
-            _drawing = drawing
-        }
+        init(drawing: Binding<PKDrawing>) { _drawing = drawing }
 
         func canvasViewDrawingDidChange(_ canvasView: PKCanvasView) {
             drawing = canvasView.drawing
@@ -2424,13 +4040,98 @@ private enum ToySceneKind: String, CaseIterable, Identifiable {
     }
 }
 
+private enum ToyShapeKind: String, CaseIterable, Identifiable {
+    case circle
+    case square
+    case triangle
+
+    var id: String { rawValue }
+}
+
+private enum ToyAnimalKind: String, CaseIterable, Identifiable {
+    case cat
+    case dog
+    case cow
+    case duck
+
+    var id: String { rawValue }
+
+    var emoji: String {
+        switch self {
+        case .cat: return "🐱"
+        case .dog: return "🐶"
+        case .cow: return "🐮"
+        case .duck: return "🦆"
+        }
+    }
+}
+
+private enum ToyTransportKind: String, CaseIterable, Identifiable {
+    case car
+    case train
+    case airplane
+    case ship
+
+    var id: String { rawValue }
+}
+
+private enum ToyInstrumentKind: String, CaseIterable, Identifiable {
+    case piano
+    case drum
+    case guitar
+    case flute
+
+    var id: String { rawValue }
+}
+
+private enum ToyRolePlayScene: String, CaseIterable, Identifiable {
+    case kitchen
+    case shop
+
+    var id: String { rawValue }
+}
+
 /// P2-101: reusable 3D scene host for toy interactions with telemetry hooks.
+/// PLAN `toys.03`: мини-игра «Узнай цвет» (образец + 4 варианта).
 private struct Toys3DSceneHostView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
 
     let item: ContentItem
     @State private var sceneKind: ToySceneKind = .robot
     @State private var interactionCount: Int = 0
+    @State private var colorTargetId: String = "red"
+    @State private var colorShuffled: [String] = ["red", "blue", "yellow", "green"]
+    @State private var colorHits: Int = 0
+    @State private var colorLastWrong: Bool = false
+    @State private var shapeTarget: ToyShapeKind = .circle
+    @State private var shapeOptions: [ToyShapeKind] = ToyShapeKind.allCases
+    @State private var shapeHits: Int = 0
+    @State private var shapeLastWrong: Bool = false
+    @State private var animalTarget: ToyAnimalKind = .cat
+    @State private var animalOptions: [ToyAnimalKind] = ToyAnimalKind.allCases
+    @State private var animalHits: Int = 0
+    @State private var animalLastWrong: Bool = false
+    @State private var transportKind: ToyTransportKind = .car
+    @State private var transportStep: Int = 0
+    @State private var instrumentHits: Int = 0
+    @State private var puzzleOrder: [Int] = [1, 2, 3, 4]
+    @State private var puzzleExpected: Int = 1
+    @State private var puzzleSolved: Int = 0
+    @State private var bookPageIndex: Int = 0
+    @State private var rolePlayScene: ToyRolePlayScene = .kitchen
+    @State private var rolePlayScore: Int = 0
+    @State private var riddleIndex: Int = 0
+    @State private var riddleSelected: Int?
+    @State private var riddleSolved: Int = 0
+    @State private var alphaTarget: String = "A"
+    @State private var alphaOptions: [String] = ["A", "B", "1", "2"]
+    @State private var alphaScore: Int = 0
+    @State private var emotionTarget: String = "happy"
+    @State private var emotionScore: Int = 0
+    @State private var colorFormTarget: (color: String, shape: ToyShapeKind) = ("red", .circle)
+    @State private var colorFormScore: Int = 0
+    @State private var weekdayIndex: Int = 0
+    @State private var seasonIndex: Int = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -2442,6 +4143,20 @@ private struct Toys3DSceneHostView: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
             }
+
+            toyColorMatchCard
+            toyShapeMatchCard
+            toyAnimalSoundCard
+            toyTransportCard
+            toyInstrumentsCard
+            toyPuzzleCard
+            toyBookCard
+            toyRolePlayCard
+            toyRiddlesCard
+            toyNumbersLettersCard
+            toyEmotionsCard
+            toyColorsFormsCard
+            toyCalendarCard
 
             Picker("", selection: $sceneKind) {
                 ForEach(ToySceneKind.allCases) { kind in
@@ -2482,6 +4197,793 @@ private struct Toys3DSceneHostView: View {
         }
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+        .onAppear {
+            startToyColorRound()
+            startToyShapeRound()
+            startToyAnimalRound()
+            startToyPuzzleRound()
+            startNumbersLettersRound()
+            startEmotionRound()
+            startColorFormRound()
+        }
+    }
+
+    private var toyColorMatchCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_color_game_title"))
+                .font(.system(size: 15, weight: .bold))
+            Text(localizationManager.localized("child_toys_color_game_subtitle"))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(toyColorSwiftUI(colorTargetId))
+                .frame(height: 52)
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12, style: .continuous)
+                        .stroke(Color.black.opacity(0.1), lineWidth: 1)
+                )
+                .accessibilityIdentifier("child_toy_color_swatch")
+                .accessibilityLabel(
+                    String(
+                        format: localizationManager.localized("child_toys_color_swatch_a11y"),
+                        localeNameForToyColorId(colorTargetId)
+                    )
+                )
+
+            HStack(spacing: 10) {
+                ForEach(colorShuffled, id: \.self) { cid in
+                    Button {
+                        if cid == colorTargetId {
+                            colorLastWrong = false
+                            colorHits += 1
+                            let gen = UINotificationFeedbackGenerator()
+                            gen.notificationOccurred(.success)
+                            MasterLogger.shared.business(
+                                "P2-104 toys color match OK contentId=\(item.id) hits=\(colorHits) target=\(colorTargetId)"
+                            )
+                            startToyColorRound()
+                        } else {
+                            colorLastWrong = true
+                            UINotificationFeedbackGenerator().notificationOccurred(.error)
+                        }
+                    } label: {
+                        Circle()
+                            .fill(toyColorSwiftUI(cid))
+                            .frame(width: 44, height: 44)
+                            .overlay(
+                                Circle().stroke(Color.primary.opacity(0.15), lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("child_toy_color_option_\(cid)")
+                    .accessibilityLabel(
+                        String(
+                            format: localizationManager.localized("child_toys_color_option_a11y"),
+                            localeNameForToyColorId(cid)
+                        )
+                    )
+                }
+            }
+            if colorLastWrong {
+                Text(localizationManager.localized("child_toys_color_game_wrong"))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.orange)
+            }
+            Text(
+                String(format: localizationManager.localized("child_toys_color_game_score"), colorHits)
+            )
+            .font(.system(size: 12, weight: .medium))
+            .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
+    }
+
+    private static let toyColorAllIds: [String] = ["red", "blue", "yellow", "green"]
+
+    private func startToyColorRound() {
+        colorTargetId = Self.toyColorAllIds.randomElement() ?? "red"
+        colorShuffled = Self.toyColorAllIds.shuffled()
+    }
+
+    private func toyColorSwiftUI(_ id: String) -> Color {
+        switch id {
+        case "red": return .red
+        case "blue": return .blue
+        case "yellow": return .yellow
+        case "green": return .green
+        default: return .gray
+        }
+    }
+
+    private func localeNameForToyColorId(_ id: String) -> String {
+        let key: String
+        switch id {
+        case "red": key = "child_toys_color_name_red"
+        case "blue": key = "child_toys_color_name_blue"
+        case "yellow": key = "child_toys_color_name_yellow"
+        case "green": key = "child_toys_color_name_green"
+        default: key = "child_toys_color_name_red"
+        }
+        return localizationManager.localized(key)
+    }
+
+    private var toyShapeMatchCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_shape_game_title"))
+                .font(.system(size: 15, weight: .bold))
+            Text(localizationManager.localized("child_toys_shape_game_subtitle"))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            toyShapePreview(shapeTarget)
+                .frame(height: 54)
+                .accessibilityIdentifier("child_toy_shape_preview")
+                .accessibilityLabel(
+                    String(
+                        format: localizationManager.localized("child_toys_shape_preview_a11y"),
+                        localizedName(for: shapeTarget)
+                    )
+                )
+
+            HStack(spacing: 10) {
+                ForEach(shapeOptions) { shape in
+                    Button {
+                        if shape == shapeTarget {
+                            shapeLastWrong = false
+                            shapeHits += 1
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                            MasterLogger.shared.business(
+                                "P2-105 toys shape match OK contentId=\(item.id) hits=\(shapeHits) target=\(shapeTarget.rawValue)"
+                            )
+                            startToyShapeRound()
+                        } else {
+                            shapeLastWrong = true
+                            UINotificationFeedbackGenerator().notificationOccurred(.error)
+                        }
+                    } label: {
+                        toyShapePreview(shape)
+                            .frame(width: 54, height: 44)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("child_toy_shape_option_\(shape.rawValue)")
+                    .accessibilityLabel(
+                        String(
+                            format: localizationManager.localized("child_toys_shape_option_a11y"),
+                            localizedName(for: shape)
+                        )
+                    )
+                }
+            }
+            if shapeLastWrong {
+                Text(localizationManager.localized("child_toys_shape_game_wrong"))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.orange)
+            }
+            Text(
+                String(format: localizationManager.localized("child_toys_shape_game_score"), shapeHits)
+            )
+            .font(.system(size: 12, weight: .medium))
+            .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
+    }
+
+    @ViewBuilder
+    private func toyShapePreview(_ shape: ToyShapeKind) -> some View {
+        switch shape {
+        case .circle:
+            Circle()
+                .fill(Color.purple.opacity(0.72))
+                .overlay(Circle().stroke(Color.primary.opacity(0.15), lineWidth: 1))
+        case .square:
+            RoundedRectangle(cornerRadius: 4, style: .continuous)
+                .fill(Color.blue.opacity(0.7))
+                .overlay(RoundedRectangle(cornerRadius: 4).stroke(Color.primary.opacity(0.15), lineWidth: 1))
+        case .triangle:
+            TriangleShape()
+                .fill(Color.green.opacity(0.72))
+                .overlay(TriangleShape().stroke(Color.primary.opacity(0.15), lineWidth: 1))
+        }
+    }
+
+    private func startToyShapeRound() {
+        shapeTarget = ToyShapeKind.allCases.randomElement() ?? .circle
+        shapeOptions = ToyShapeKind.allCases.shuffled()
+    }
+
+    private func localizedName(for shape: ToyShapeKind) -> String {
+        let key: String
+        switch shape {
+        case .circle: key = "child_toys_shape_name_circle"
+        case .square: key = "child_toys_shape_name_square"
+        case .triangle: key = "child_toys_shape_name_triangle"
+        }
+        return localizationManager.localized(key)
+    }
+
+    private var toyAnimalSoundCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_animal_game_title"))
+                .font(.system(size: 15, weight: .bold))
+            Text(localizationManager.localized("child_toys_animal_game_subtitle"))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            HStack(spacing: 8) {
+                Text(animalTarget.emoji).font(.system(size: 26))
+                Text(localizationManager.localized("child_toys_animal_prompt"))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.secondary)
+            }
+
+            HStack(spacing: 10) {
+                ForEach(animalOptions) { animal in
+                    Button {
+                        if animal == animalTarget {
+                            animalLastWrong = false
+                            animalHits += 1
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                            SoundEffectPlayer.shared.playVoicePrompt(
+                                localizedAnimalSoundPhrase(for: animal),
+                                languageCode: "ru-RU",
+                                priority: .high
+                            )
+                            MasterLogger.shared.business(
+                                "P2-106 toys animal sound OK contentId=\(item.id) hits=\(animalHits) animal=\(animal.rawValue)"
+                            )
+                            startToyAnimalRound()
+                        } else {
+                            animalLastWrong = true
+                            UINotificationFeedbackGenerator().notificationOccurred(.error)
+                        }
+                    } label: {
+                        VStack(spacing: 4) {
+                            Text(animal.emoji).font(.system(size: 28))
+                            Text(localizedAnimalName(animal))
+                                .font(.system(size: 11, weight: .semibold))
+                                .foregroundColor(.primary)
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color(.secondarySystemBackground)))
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("child_toy_animal_option_\(animal.rawValue)")
+                }
+            }
+            if animalLastWrong {
+                Text(localizationManager.localized("child_toys_animal_game_wrong"))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.orange)
+            }
+            Text(String(format: localizationManager.localized("child_toys_animal_game_score"), animalHits))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 12, style: .continuous)
+                .fill(Color(.secondarySystemBackground))
+        )
+    }
+
+    private func startToyAnimalRound() {
+        animalTarget = ToyAnimalKind.allCases.randomElement() ?? .cat
+        animalOptions = ToyAnimalKind.allCases.shuffled()
+    }
+
+    private func localizedAnimalName(_ animal: ToyAnimalKind) -> String {
+        let key: String
+        switch animal {
+        case .cat: key = "child_toys_animal_name_cat"
+        case .dog: key = "child_toys_animal_name_dog"
+        case .cow: key = "child_toys_animal_name_cow"
+        case .duck: key = "child_toys_animal_name_duck"
+        }
+        return localizationManager.localized(key)
+    }
+
+    private func localizedAnimalSoundPhrase(for animal: ToyAnimalKind) -> String {
+        let key: String
+        switch animal {
+        case .cat: key = "child_toys_animal_sound_cat"
+        case .dog: key = "child_toys_animal_sound_dog"
+        case .cow: key = "child_toys_animal_sound_cow"
+        case .duck: key = "child_toys_animal_sound_duck"
+        }
+        return localizationManager.localized(key)
+    }
+
+    private var toyTransportCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_transport_title"))
+                .font(.system(size: 15, weight: .bold))
+            Picker("", selection: $transportKind) {
+                Text(localizationManager.localized("child_toys_transport_car")).tag(ToyTransportKind.car)
+                Text(localizationManager.localized("child_toys_transport_train")).tag(ToyTransportKind.train)
+                Text(localizationManager.localized("child_toys_transport_airplane")).tag(ToyTransportKind.airplane)
+                Text(localizationManager.localized("child_toys_transport_ship")).tag(ToyTransportKind.ship)
+            }
+            .pickerStyle(.segmented)
+            Button(localizationManager.localized("child_toys_transport_move_action")) {
+                transportStep = (transportStep + 1) % 6
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+            }
+            .buttonStyle(.borderedProminent)
+            Text(localizedTransportEmoji(transportKind))
+                .font(.system(size: 34))
+                .offset(x: CGFloat(transportStep) * 18)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .animation(.easeInOut(duration: 0.25), value: transportStep)
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+    }
+
+    private func localizedTransportEmoji(_ kind: ToyTransportKind) -> String {
+        switch kind {
+        case .car: return "🚗"
+        case .train: return "🚂"
+        case .airplane: return "✈️"
+        case .ship: return "🚢"
+        }
+    }
+
+    private var toyInstrumentsCard: some View {
+        let instruments: [ToyInstrumentKind] = [.piano, .drum, .guitar, .flute]
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_instruments_title"))
+                .font(.system(size: 15, weight: .bold))
+            HStack(spacing: 8) {
+                ForEach(instruments) { inst in
+                    Button {
+                        instrumentHits += 1
+                        SoundEffectPlayer.shared.play(.tapSoft, priority: .high)
+                        SoundEffectPlayer.shared.playVoicePrompt(localizedInstrumentPhrase(inst), languageCode: "ru-RU", priority: .medium)
+                    } label: {
+                        VStack(spacing: 4) {
+                            Text(localizedInstrumentEmoji(inst)).font(.system(size: 24))
+                            Text(localizedInstrumentName(inst))
+                                .font(.system(size: 11, weight: .semibold))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color(.tertiarySystemBackground)))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            Text(String(format: localizationManager.localized("child_toys_instruments_score"), instrumentHits))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+    }
+
+    private func localizedInstrumentEmoji(_ kind: ToyInstrumentKind) -> String {
+        switch kind {
+        case .piano: return "🎹"
+        case .drum: return "🥁"
+        case .guitar: return "🎸"
+        case .flute: return "🪈"
+        }
+    }
+
+    private func localizedInstrumentName(_ kind: ToyInstrumentKind) -> String {
+        switch kind {
+        case .piano: return localizationManager.localized("child_toys_instrument_piano")
+        case .drum: return localizationManager.localized("child_toys_instrument_drum")
+        case .guitar: return localizationManager.localized("child_toys_instrument_guitar")
+        case .flute: return localizationManager.localized("child_toys_instrument_flute")
+        }
+    }
+
+    private func localizedInstrumentPhrase(_ kind: ToyInstrumentKind) -> String {
+        switch kind {
+        case .piano: return localizationManager.localized("child_toys_instrument_phrase_piano")
+        case .drum: return localizationManager.localized("child_toys_instrument_phrase_drum")
+        case .guitar: return localizationManager.localized("child_toys_instrument_phrase_guitar")
+        case .flute: return localizationManager.localized("child_toys_instrument_phrase_flute")
+        }
+    }
+
+    private var toyPuzzleCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_puzzle_title"))
+                .font(.system(size: 15, weight: .bold))
+            Text(String(format: localizationManager.localized("child_toys_puzzle_prompt"), puzzleExpected))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+            HStack(spacing: 8) {
+                ForEach(puzzleOrder, id: \.self) { piece in
+                    Button {
+                        if piece == puzzleExpected {
+                            puzzleSolved += 1
+                            puzzleExpected += 1
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                            if puzzleExpected > 4 {
+                                startToyPuzzleRound()
+                            }
+                        } else {
+                            UINotificationFeedbackGenerator().notificationOccurred(.error)
+                        }
+                    } label: {
+                        Text("\(piece)")
+                            .font(.system(size: 18, weight: .bold))
+                            .frame(width: 44, height: 44)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.yellow.opacity(0.35)))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            Text(String(format: localizationManager.localized("child_toys_puzzle_score"), puzzleSolved))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+    }
+
+    private func startToyPuzzleRound() {
+        puzzleOrder = [1, 2, 3, 4].shuffled()
+        puzzleExpected = 1
+    }
+
+    private var toyBookCard: some View {
+        let pages: [(emoji: String, textKey: String)] = [
+            ("📚", "child_toys_book_page_1"),
+            ("🌈", "child_toys_book_page_2"),
+            ("🦊", "child_toys_book_page_3")
+        ]
+        let idx = min(max(0, bookPageIndex), pages.count - 1)
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_book_title"))
+                .font(.system(size: 15, weight: .bold))
+            Text(pages[idx].emoji).font(.system(size: 34))
+            Text(localizationManager.localized(pages[idx].textKey))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+            HStack {
+                Button(localizationManager.localized("child_toys_book_prev")) {
+                    bookPageIndex = max(0, bookPageIndex - 1)
+                }
+                .buttonStyle(.bordered)
+                Button(localizationManager.localized("child_toys_book_next")) {
+                    bookPageIndex = min(pages.count - 1, bookPageIndex + 1)
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+    }
+
+    private var toyRolePlayCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_roleplay_title"))
+                .font(.system(size: 15, weight: .bold))
+            Picker("", selection: $rolePlayScene) {
+                Text(localizationManager.localized("child_toys_roleplay_kitchen")).tag(ToyRolePlayScene.kitchen)
+                Text(localizationManager.localized("child_toys_roleplay_shop")).tag(ToyRolePlayScene.shop)
+            }
+            .pickerStyle(.segmented)
+
+            Text(rolePlayPromptText)
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+                .padding(.vertical, 2)
+
+            HStack(spacing: 8) {
+                ForEach(rolePlayActions, id: \.self) { action in
+                    Button(action) {
+                        rolePlayScore += 1
+                        UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        SoundEffectPlayer.shared.play(.success, priority: .high)
+                        MasterLogger.shared.business(
+                            "P2-107 toys roleplay action contentId=\(item.id) scene=\(rolePlayScene.rawValue) action=\(action) score=\(rolePlayScore)"
+                        )
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.purple.opacity(0.8))
+                }
+            }
+
+            Text(String(format: localizationManager.localized("child_toys_roleplay_score"), rolePlayScore))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+    }
+
+    private var rolePlayPromptText: String {
+        switch rolePlayScene {
+        case .kitchen:
+            return localizationManager.localized("child_toys_roleplay_kitchen_prompt")
+        case .shop:
+            return localizationManager.localized("child_toys_roleplay_shop_prompt")
+        }
+    }
+
+    private var rolePlayActions: [String] {
+        switch rolePlayScene {
+        case .kitchen:
+            return [
+                localizationManager.localized("child_toys_roleplay_kitchen_action_cook"),
+                localizationManager.localized("child_toys_roleplay_kitchen_action_serve")
+            ]
+        case .shop:
+            return [
+                localizationManager.localized("child_toys_roleplay_shop_action_buy"),
+                localizationManager.localized("child_toys_roleplay_shop_action_pay")
+            ]
+        }
+    }
+
+    private struct ToyRiddle {
+        let questionKey: String
+        let optionsKeys: [String]
+        let correctIndex: Int
+    }
+
+    private var riddles: [ToyRiddle] {
+        [
+            .init(
+                questionKey: "child_toys_riddle_q1",
+                optionsKeys: ["child_toys_riddle_q1_a1", "child_toys_riddle_q1_a2", "child_toys_riddle_q1_a3"],
+                correctIndex: 0
+            ),
+            .init(
+                questionKey: "child_toys_riddle_q2",
+                optionsKeys: ["child_toys_riddle_q2_a1", "child_toys_riddle_q2_a2", "child_toys_riddle_q2_a3"],
+                correctIndex: 1
+            )
+        ]
+    }
+
+    private var toyRiddlesCard: some View {
+        let r = riddles[riddleIndex]
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_riddles_title"))
+                .font(.system(size: 15, weight: .bold))
+            Text(localizationManager.localized(r.questionKey))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+            ForEach(Array(r.optionsKeys.enumerated()), id: \.offset) { idx, key in
+                Button {
+                    riddleSelected = idx
+                    if idx == r.correctIndex {
+                        riddleSolved += 1
+                        UINotificationFeedbackGenerator().notificationOccurred(.success)
+                        riddleIndex = (riddleIndex + 1) % riddles.count
+                        riddleSelected = nil
+                    } else {
+                        UINotificationFeedbackGenerator().notificationOccurred(.error)
+                    }
+                } label: {
+                    Text(localizationManager.localized(key))
+                        .font(.system(size: 13, weight: .semibold))
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 10)
+                        .background(RoundedRectangle(cornerRadius: 8).fill(Color(.tertiarySystemBackground)))
+                }
+                .buttonStyle(.plain)
+            }
+            Text(String(format: localizationManager.localized("child_toys_riddles_score"), riddleSolved))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+    }
+
+    private var toyNumbersLettersCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_numbers_letters_title"))
+                .font(.system(size: 15, weight: .bold))
+            Text(String(format: localizationManager.localized("child_toys_numbers_letters_prompt"), alphaTarget))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+            HStack(spacing: 8) {
+                ForEach(alphaOptions, id: \.self) { opt in
+                    Button {
+                        if opt == alphaTarget {
+                            alphaScore += 1
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                            startNumbersLettersRound()
+                        } else {
+                            UINotificationFeedbackGenerator().notificationOccurred(.error)
+                        }
+                    } label: {
+                        Text(opt)
+                            .font(.system(size: 20, weight: .bold))
+                            .frame(maxWidth: .infinity, minHeight: 44)
+                            .background(RoundedRectangle(cornerRadius: 8).fill(Color.blue.opacity(0.2)))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            Text(String(format: localizationManager.localized("child_toys_numbers_letters_score"), alphaScore))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+    }
+
+    private func startNumbersLettersRound() {
+        let targets = ["A", "B", "1", "2", "3", "C"]
+        alphaTarget = targets.randomElement() ?? "A"
+        alphaOptions = Array(Set([alphaTarget, "A", "B", "1", "2", "3", "C"].shuffled().prefix(4))).shuffled()
+        if !alphaOptions.contains(alphaTarget) {
+            alphaOptions[0] = alphaTarget
+        }
+    }
+
+    private var toyEmotionsCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_emotions_title"))
+                .font(.system(size: 15, weight: .bold))
+            Text(String(format: localizationManager.localized("child_toys_emotions_prompt"), localizedEmotionName(emotionTarget)))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+            HStack(spacing: 8) {
+                emotionButton("happy", emoji: "😄")
+                emotionButton("sad", emoji: "😢")
+                emotionButton("surprised", emoji: "😲")
+                emotionButton("calm", emoji: "😌")
+            }
+            Text(String(format: localizationManager.localized("child_toys_emotions_score"), emotionScore))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+    }
+
+    private func emotionButton(_ key: String, emoji: String) -> some View {
+        Button {
+            if key == emotionTarget {
+                emotionScore += 1
+                UINotificationFeedbackGenerator().notificationOccurred(.success)
+                startEmotionRound()
+            } else {
+                UINotificationFeedbackGenerator().notificationOccurred(.error)
+            }
+        } label: {
+            Text(emoji)
+                .font(.system(size: 28))
+                .frame(maxWidth: .infinity, minHeight: 44)
+                .background(RoundedRectangle(cornerRadius: 8).fill(Color.orange.opacity(0.18)))
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func startEmotionRound() {
+        emotionTarget = ["happy", "sad", "surprised", "calm"].randomElement() ?? "happy"
+    }
+
+    private func localizedEmotionName(_ key: String) -> String {
+        localizationManager.localized("child_toys_emotion_\(key)")
+    }
+
+    private var toyColorsFormsCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_colors_forms_title"))
+                .font(.system(size: 15, weight: .bold))
+            Text(
+                String(
+                    format: localizationManager.localized("child_toys_colors_forms_prompt"),
+                    localeNameForToyColorId(colorFormTarget.color),
+                    localizedName(for: colorFormTarget.shape)
+                )
+            )
+            .font(.system(size: 13, weight: .medium))
+            .foregroundColor(.secondary)
+            HStack(spacing: 8) {
+                ForEach(ToyShapeKind.allCases) { shape in
+                    Button {
+                        if shape == colorFormTarget.shape {
+                            colorFormScore += 1
+                            UINotificationFeedbackGenerator().notificationOccurred(.success)
+                            startColorFormRound()
+                        } else {
+                            UINotificationFeedbackGenerator().notificationOccurred(.error)
+                        }
+                    } label: {
+                        toyShapePreview(shape)
+                            .frame(width: 54, height: 44)
+                            .foregroundColor(toyColorSwiftUI(colorFormTarget.color))
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            Text(String(format: localizationManager.localized("child_toys_colors_forms_score"), colorFormScore))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.secondary)
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
+    }
+
+    private func startColorFormRound() {
+        let colors = ["red", "blue", "yellow", "green"]
+        colorFormTarget = (colors.randomElement() ?? "red", ToyShapeKind.allCases.randomElement() ?? .circle)
+    }
+
+    private var toyCalendarCard: some View {
+        let weekdays = [
+            localizationManager.localized("child_toys_weekday_mon"),
+            localizationManager.localized("child_toys_weekday_tue"),
+            localizationManager.localized("child_toys_weekday_wed"),
+            localizationManager.localized("child_toys_weekday_thu"),
+            localizationManager.localized("child_toys_weekday_fri"),
+            localizationManager.localized("child_toys_weekday_sat"),
+            localizationManager.localized("child_toys_weekday_sun")
+        ]
+        let seasons = [
+            localizationManager.localized("child_toys_season_spring"),
+            localizationManager.localized("child_toys_season_summer"),
+            localizationManager.localized("child_toys_season_autumn"),
+            localizationManager.localized("child_toys_season_winter")
+        ]
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_toys_calendar_title"))
+                .font(.system(size: 15, weight: .bold))
+            HStack {
+                Text(localizationManager.localized("child_toys_calendar_weekday_label"))
+                    .font(.system(size: 12, weight: .semibold))
+                Spacer()
+                Text(weekdays[weekdayIndex])
+                    .font(.system(size: 14, weight: .bold))
+            }
+            HStack(spacing: 8) {
+                Button(localizationManager.localized("child_toys_calendar_prev")) {
+                    weekdayIndex = (weekdayIndex + weekdays.count - 1) % weekdays.count
+                }
+                .buttonStyle(.bordered)
+                Button(localizationManager.localized("child_toys_calendar_next")) {
+                    weekdayIndex = (weekdayIndex + 1) % weekdays.count
+                }
+                .buttonStyle(.borderedProminent)
+            }
+            HStack {
+                Text(localizationManager.localized("child_toys_calendar_season_label"))
+                    .font(.system(size: 12, weight: .semibold))
+                Spacer()
+                Text(seasons[seasonIndex])
+                    .font(.system(size: 14, weight: .bold))
+            }
+            HStack(spacing: 8) {
+                Button(localizationManager.localized("child_toys_calendar_prev")) {
+                    seasonIndex = (seasonIndex + seasons.count - 1) % seasons.count
+                }
+                .buttonStyle(.bordered)
+                Button(localizationManager.localized("child_toys_calendar_next")) {
+                    seasonIndex = (seasonIndex + 1) % seasons.count
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(12)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color(.secondarySystemBackground)))
     }
 
     private func buildScene(for kind: ToySceneKind) -> SCNScene {
@@ -2562,5 +5064,16 @@ private struct Toys3DSceneHostView: View {
             cube.runAction(.repeatForever(.rotateBy(x: 0, y: CGFloat.pi * 2, z: CGFloat.pi * 0.25, duration: 4.0 + Double(index))))
             scene.rootNode.addChildNode(cube)
         }
+    }
+}
+
+private struct TriangleShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var p = Path()
+        p.move(to: CGPoint(x: rect.midX, y: rect.minY))
+        p.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        p.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        p.closeSubpath()
+        return p
     }
 }

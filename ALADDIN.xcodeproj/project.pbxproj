@@ -299,6 +299,8 @@
 		D45B3CF25BA5F021571AAD43 /* ImplementationPlanProgressValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = C422BEE58F91FA0A69D6E136 /* ImplementationPlanProgressValues.swift */; };
 		E12D4A8B90123456ABCD1021 /* ImplementationPlanDashboardMirror.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = E12D4A8B90123456ABCD1020 /* ImplementationPlanDashboardMirror.generated.swift */; };
 		F12D4A8B90123456ABCD1023 /* ImplementationPlanWorkbenchCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12D4A8B90123456ABCD1022 /* ImplementationPlanWorkbenchCard.swift */; };
+		F12D4A8B90123456ABCD1031 /* PlanItem275CatalogMirror.generated.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12D4A8B90123456ABCD1030 /* PlanItem275CatalogMirror.generated.swift */; };
+		F12D4A8B90123456ABCD1033 /* PlanItem275CatalogWorkbenchCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = F12D4A8B90123456ABCD1032 /* PlanItem275CatalogWorkbenchCard.swift */; };
 		A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000048 /* Core/Analytics/AnalyticsManager.swift */; };
 		A3000051 /* ViewModels/FamilyRegistrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */; };
 		A3000053 /* ViewModels/TariffsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000052 /* ViewModels/TariffsViewModel.swift */; };
@@ -779,6 +781,8 @@
 		C422BEE58F91FA0A69D6E136 /* ImplementationPlanProgressValues.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ImplementationPlanProgressValues.swift; path = Core/Planning/ImplementationPlanProgressValues.swift; sourceTree = "<group>"; };
 		E12D4A8B90123456ABCD1020 /* ImplementationPlanDashboardMirror.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ImplementationPlanDashboardMirror.generated.swift; path = Core/Planning/ImplementationPlanDashboardMirror.generated.swift; sourceTree = "<group>"; };
 		F12D4A8B90123456ABCD1022 /* ImplementationPlanWorkbenchCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ImplementationPlanWorkbenchCard.swift; sourceTree = "<group>"; };
+		F12D4A8B90123456ABCD1030 /* PlanItem275CatalogMirror.generated.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PlanItem275CatalogMirror.generated.swift; path = Core/Planning/PlanItem275CatalogMirror.generated.swift; sourceTree = "<group>"; };
+		F12D4A8B90123456ABCD1032 /* PlanItem275CatalogWorkbenchCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PlanItem275CatalogWorkbenchCard.swift; sourceTree = "<group>"; };
 		DD10070F12CB43428ABC432E /* aladdin_cert_backup.cer */ = {isa = PBXFileReference; lastKnownFileType = text; path = aladdin_cert_backup.cer; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -852,6 +856,7 @@
 				825733825A02EFE513A157D3 /* AudioSettingsView.swift */,
 				C3A100012F72B001A0000001 /* GamesParentalControlScreen.swift */,
 				F12D4A8B90123456ABCD1022 /* ImplementationPlanWorkbenchCard.swift */,
+				F12D4A8B90123456ABCD1032 /* PlanItem275CatalogWorkbenchCard.swift */,
 				5E0C30B72EAFAD0B00FD6647 /* 02_FamilyScreen.swift */,
 				5EC308F22EA6AB8C00C7D34B /* 01_MainScreen.swift */,
 				5EC308F52EA6AB8C00C7D34B /* 03_NetworkProtectionScreen.swift */,
@@ -1190,6 +1195,7 @@
 				D7C400012F71B001A0000001 /* ChildRosterReconcilePolicy.swift */,
 				C422BEE58F91FA0A69D6E136 /* ImplementationPlanProgressValues.swift */,
 				E12D4A8B90123456ABCD1020 /* ImplementationPlanDashboardMirror.generated.swift */,
+				F12D4A8B90123456ABCD1030 /* PlanItem275CatalogMirror.generated.swift */,
 				A3000048 /* Core/Analytics/AnalyticsManager.swift */,
 				A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */,
 				A3000052 /* ViewModels/TariffsViewModel.swift */,
@@ -1596,6 +1602,8 @@
 				D45B3CF25BA5F021571AAD43 /* ImplementationPlanProgressValues.swift in Sources */,
 				E12D4A8B90123456ABCD1021 /* ImplementationPlanDashboardMirror.generated.swift in Sources */,
 				F12D4A8B90123456ABCD1023 /* ImplementationPlanWorkbenchCard.swift in Sources */,
+				F12D4A8B90123456ABCD1031 /* PlanItem275CatalogMirror.generated.swift in Sources */,
+				F12D4A8B90123456ABCD1033 /* PlanItem275CatalogWorkbenchCard.swift in Sources */,
 				B2000100B2000100B2000100 /* ProtectionFeature.swift in Sources */,
 				B2000110B2000110B2000110 /* ProtectionLevelHistory.swift in Sources */,
 				5E0798272F17D77500D20CF6 /* ComponentReportsModels.swift in Sources */,
@@ -1838,7 +1846,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 147;
+				CURRENT_PROJECT_VERSION = 148;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1871,7 +1879,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 147;
+				CURRENT_PROJECT_VERSION = 148;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2028,7 +2036,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 147;
+				CURRENT_PROJECT_VERSION = 148;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2061,7 +2069,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 147;
+				CURRENT_PROJECT_VERSION = 148;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2093,7 +2101,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 147;
+				CURRENT_PROJECT_VERSION = 148;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2119,7 +2127,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 147;
+				CURRENT_PROJECT_VERSION = 148;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2143,7 +2151,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 147;
+				CURRENT_PROJECT_VERSION = 148;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2168,7 +2176,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 147;
+				CURRENT_PROJECT_VERSION = 148;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

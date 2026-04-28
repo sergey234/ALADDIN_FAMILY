@@ -16,6 +16,7 @@ typealias Language = String
 struct SettingsScreen: View {
     @StateObject private var viewModel: SettingsViewModel
     @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
 
     // ✅ BUILD 95: Встроенный просмотр логов крашей/диагностики прямо на устройстве
     @State private var showCrashLogsView: Bool = false
@@ -559,6 +560,22 @@ struct SettingsScreen: View {
         }
     }
 
+    #if DEBUG
+    private var planItem275DebugSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("plan_275_debug_section_header"))
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+                .padding(.bottom, Spacing.xs)
+
+            PlanItem275CatalogWorkbenchCard()
+                .environmentObject(localizationManager)
+        }
+    }
+    #endif
+
     // MARK: - Body
         
         var body: some View {
@@ -587,6 +604,10 @@ struct SettingsScreen: View {
 
                         // App Section
                         appSection
+
+                        #if DEBUG
+                        planItem275DebugSection
+                        #endif
 
                         // System Components (только для админов)
                         if viewModel.isAdmin {
@@ -866,6 +887,8 @@ struct SettingsScreen_Previews: PreviewProvider {
         // Создаем mock ViewModel для preview
         let mockViewModel = SettingsViewModel()
         SettingsScreen(viewModel: mockViewModel)
+            .environmentObject(NavigationManager())
+            .environmentObject(LocalizationManager.shared)
     }
 }
 

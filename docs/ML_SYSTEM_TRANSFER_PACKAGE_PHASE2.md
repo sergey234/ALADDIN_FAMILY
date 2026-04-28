@@ -9,6 +9,7 @@ Use this file as the single entry point for another ML system.
 1. **`docs/PLAN_GOVERNANCE_ONEPAGER.md`** — **178 / 68 / 275 / G** disambiguation, release scope rows **R0–R3**, non-code G19/G21+ table.
 2. **`docs/CHILD_CONTENT_INTERFACE_ML_HANDBOOK.md`** — full picture: 178 vs 68 vs **275** matrix, code map, gates, waves, document index.
 3. **`docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md`** — canonical **275-row** `PLAN_ITEM -> category_id -> item_id -> status` catalog (baseline gates include **`localization_lint`** per matrix header).
+3a. **`docs/PLAN_ITEM_275_OPERATING_RHYTHM.md`** — **постоянный порядок:** сверка с каноном, волны, DoD, таблица соответствия возраст/категория, скрипты после правок.
 4. `docs/PLAN_ITEM_OPEN_TASKS.md` — only `PARTIAL` + `TODO` rows from the matrix.
 4a. **`docs/PLAN_ITEM_275_BY_AGE_READABLE.md`** — human checklist by age (regenerate: `python3 scripts/plan_item_275_age_checklist.py`).
 4b. **`docs/PLAN_ITEM_275_AUDIT_REPORT.md`** — duplicates, per-category counts, Xcode Sources heuristic, **localization vs 275** (§1a), `linked_module` hints (regenerate: `python3 scripts/plan_item_275_audit.py`).

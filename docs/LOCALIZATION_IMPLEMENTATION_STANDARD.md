@@ -14,9 +14,13 @@ Applies to:
 - Accessibility strings: labels, hints, values.
 - Test assertions that validate text behavior.
 
-Current primary localization files:
-- `Resources/Localization/ru.lproj/Localizable.strings`
-- `Resources/Localization/en.lproj/Localizable.strings`
+Current primary localization **stores** in this repo (both are real; not duplicates of each other):
+
+- **In-memory (first for `LocalizationManager.localized` / `L("key")`):** `Core/Localization/LocalizationManager.swift` — `translations[.russian]` / `translations[.english]`.
+- **Bundle (used when `NSLocalizedString` is the resolver, or a key is missing in the manager):**  
+  `Resources/Localization/ru.lproj/Localizable.strings` and `en.lproj/Localizable.strings`
+
+Resolution order is implemented in `LocalizationManager`: in-memory first, then `NSLocalizedString`, then Russian fallbacks. For **the same `key` string**, **do not** keep the same RU+EN copy in both the Swift `translations` dictionaries and `Localizable.strings` — that causes drift. Pick **one** authoritative place per key (see **Rule 2a**). For child-content + matrix workflow, see also `docs/PLAN_ITEM_275_OPERATING_RHYTHM.md` §4.
 
 ## Mandatory Rules
 
@@ -35,6 +39,15 @@ Do not hardcode user-facing strings in views or controllers.
 Use localization keys only, for example:
 - `Text(L("family.parent_mode.enter"))`
 - `NSLocalizedString("parental.time_limit.title", comment: "")`
+
+### 2a) One source of truth: no `LocalizationManager` + `Localizable.strings` duplicates
+
+For a given key:
+
+- If call sites go through `LocalizationManager` / `L("key")` with that key, add and maintain RU+EN in **`LocalizationManager.swift`** (`translations[.russian]` / `translations[.english]`) **only**. Do not copy the same key into `Localizable.strings` unless you are **migrating** off the manager in the same PR and remove the other copy.
+- If a key is used **only** via `NSLocalizedString` (or is intentionally not present in the manager), keep RU+EN in **`ru.lproj` / `en.lproj` `Localizable.strings`** only.
+
+Never ship the same key and same copy text in both stores: updates will diverge. New child-interface strings that use `localized(_:)` should go into **`LocalizationManager`** first (aligned with `docs/PLAN_ITEM_275_OPERATING_RHYTHM.md`).
 
 ### 3) Stable key namespace
 
@@ -104,7 +117,7 @@ When renaming/removing keys:
 
 For each plan task:
 1. Define feature string map (UI, errors, empty states, accessibility).
-2. Add keys in EN and RU files in one commit.
+2. Add keys in the **correct** store: both RU and EN in **`LocalizationManager.swift`** *or* both in **`ru.lproj` + `en.lproj` `Localizable.strings`**, per Rule **2a** — not both.
 3. Replace literals in code with keys.
 4. Validate on device/simulator in RU and EN.
 5. Run localization quality checks before merge.
@@ -114,7 +127,7 @@ For each plan task:
 A PR is blocked if at least one condition fails:
 - New or changed feature has missing RU or EN key.
 - User-facing hardcoded text is introduced.
-- Duplicate localization keys are introduced.
+- Duplicate localization keys are introduced, or the **same key** is added to **both** `LocalizationManager.swift` and `Localizable.strings` with user-facing copy (Rule 2a).
 - Placeholder mismatch exists between RU and EN.
 - Accessibility text for new controls is not localized.
 
@@ -131,7 +144,7 @@ For each shipped feature:
 Pre-merge checks should include:
 - Search for potential hardcoded strings in Swift files.
 - Diff-based detection for newly added localization keys and parity check RU/EN.
-- Duplicate key detection in `Localizable.strings`.
+- Duplicate key detection in `Localizable.strings` and cross-check that new keys are not **also** added with the same name in `LocalizationManager.swift` (Rule 2a).
 - Placeholder parity checks between RU and EN for changed keys.
 
 ## Ownership

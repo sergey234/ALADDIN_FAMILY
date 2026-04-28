@@ -18,7 +18,7 @@ Checked that each file name appears in a **`… in Sources`** build phase entry 
 ## 1) Summary
 
 - Total rows parsed: **275**
-- DONE: **16** | PARTIAL: **48** | TODO: **211**
+- DONE: **76** | PARTIAL: **39** | TODO: **160**
 - Distinct `category_id`: **17**
 
 ## 1a) Localization vs 275 items (child content)
@@ -41,16 +41,16 @@ Checked that each file name appears in a **`… in Sources`** build phase entry 
 These titles appear under more than one `category_id` (often intentional: e.g. safety vs internet vs social).
 
 - **Безопасность в соцсетях** → 3 categories: child_interface_category_internet, child_interface_category_safety, child_interface_category_social
-- **Создание контента** → 2 categories: child_interface_category_social, child_interface_category_video
-- **Продвинутая кибербезопасность** → 2 categories: child_interface_category_internet, child_interface_category_safety
-- **Финансовая грамотность** → 2 categories: child_interface_category_career, child_interface_category_study
-- **Проектная деятельность** → 2 categories: child_interface_category_education, child_interface_category_study
-- **Безопасность в путешествиях** → 2 categories: child_interface_category_internet, child_interface_category_safety
+- **Нетворкинг** → 2 categories: child_interface_category_career, child_interface_category_social
 - **Исследовательская работа** → 2 categories: child_interface_category_education, child_interface_category_study
-- **Защита от мошенничества** → 2 categories: child_interface_category_internet, child_interface_category_safety
 - **Защита персональных данных** → 2 categories: child_interface_category_internet, child_interface_category_safety
 - **Музыкальные инструменты** → 2 categories: child_interface_category_music, child_interface_category_toys
-- **Нетворкинг** → 2 categories: child_interface_category_career, child_interface_category_social
+- **Проектная деятельность** → 2 categories: child_interface_category_education, child_interface_category_study
+- **Безопасность в путешествиях** → 2 categories: child_interface_category_internet, child_interface_category_safety
+- **Защита от мошенничества** → 2 categories: child_interface_category_internet, child_interface_category_safety
+- **Продвинутая кибербезопасность** → 2 categories: child_interface_category_internet, child_interface_category_safety
+- **Финансовая грамотность** → 2 categories: child_interface_category_career, child_interface_category_study
+- **Создание контента** → 2 categories: child_interface_category_social, child_interface_category_video
 
 ## 3) Per `category_id` breakdown
 
@@ -59,19 +59,19 @@ These titles appear under more than one `category_id` (often intentional: e.g. s
 | `child_interface_category_career` | 15 | 0 | 3 | 12 |
 | `child_interface_category_cartoons` | 15 | 0 | 1 | 14 |
 | `child_interface_category_creativity` | 10 | 0 | 1 | 9 |
-| `child_interface_category_drawing` | 10 | 3 | 2 | 5 |
+| `child_interface_category_drawing` | 10 | 10 | 0 | 0 |
 | `child_interface_category_education` | 15 | 1 | 3 | 11 |
-| `child_interface_category_games` | 20 | 1 | 3 | 16 |
+| `child_interface_category_games` | 20 | 17 | 3 | 0 |
 | `child_interface_category_internet` | 15 | 0 | 3 | 12 |
 | `child_interface_category_movies` | 15 | 0 | 0 | 15 |
 | `child_interface_category_music` | 15 | 1 | 3 | 11 |
 | `child_interface_category_programming` | 15 | 1 | 4 | 10 |
 | `child_interface_category_safety` | 30 | 1 | 7 | 22 |
 | `child_interface_category_social` | 15 | 3 | 4 | 8 |
-| `child_interface_category_songs` | 15 | 1 | 1 | 13 |
-| `child_interface_category_stories` | 10 | 1 | 2 | 7 |
-| `child_interface_category_study` | 30 | 1 | 6 | 23 |
-| `child_interface_category_toys` | 15 | 2 | 4 | 9 |
+| `child_interface_category_songs` | 15 | 15 | 0 | 0 |
+| `child_interface_category_stories` | 10 | 10 | 0 | 0 |
+| `child_interface_category_study` | 30 | 2 | 6 | 22 |
+| `child_interface_category_toys` | 15 | 15 | 0 | 0 |
 | `child_interface_category_video` | 15 | 0 | 1 | 14 |
 
 ## 4) Per-row register (all 275)
@@ -80,78 +80,78 @@ Columns: `item_id` | status | **linked_module** (heuristic by `category_id`, onl
 
 - `toys.01` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Интерактивные 3D-игрушки с анимацией | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
 - `toys.02` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Звуковые эффекты при взаимодействии | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
-- `toys.03` | **PARTIAL** | ChildContentExperienceScreen → Toys3DSceneHostView | Цветовые игры (узнай цвет) | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
-- `toys.04` | **PARTIAL** | ChildContentExperienceScreen → Toys3DSceneHostView | Геометрические фигуры (найди круг, квадрат) | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
-- `toys.05` | **TODO** | — | Животные с звуками | `child_interface_category_toys` → seed + experience branch + localization (to add)
-- `toys.06` | **TODO** | — | Транспорт с движением | `child_interface_category_toys` → seed + experience branch + localization (to add)
-- `toys.07` | **TODO** | — | Музыкальные инструменты | `child_interface_category_toys` → seed + experience branch + localization (to add)
-- `toys.08` | **TODO** | — | Простые пазлы (2-4 элемента) | `child_interface_category_toys` → seed + experience branch + localization (to add)
-- `toys.09` | **TODO** | — | Интерактивные книги | `child_interface_category_toys` → seed + experience branch + localization (to add)
-- `toys.10` | **TODO** | — | Ролевые игры (кухня, магазин) | `child_interface_category_toys` → seed + experience branch + localization (to add)
-- `toys.11` | **TODO** | — | Простые загадки | `child_interface_category_toys` → seed + experience branch + localization (to add)
-- `toys.12` | **PARTIAL** | ChildContentExperienceScreen → Toys3DSceneHostView | Цифры и буквы | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
-- `toys.13` | **TODO** | — | Эмоции и мимика | `child_interface_category_toys` → seed + experience branch + localization (to add)
-- `toys.14` | **PARTIAL** | ChildContentExperienceScreen → Toys3DSceneHostView | Цвета и формы | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
-- `toys.15` | **TODO** | — | Дни недели и времена года | `child_interface_category_toys` → seed + experience branch + localization (to add)
+- `toys.03` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Цветовые игры (узнай цвет) | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
+- `toys.04` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Геометрические фигуры (найди круг, квадрат) | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
+- `toys.05` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Животные с звуками | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
+- `toys.06` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Транспорт с движением | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
+- `toys.07` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Музыкальные инструменты | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
+- `toys.08` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Простые пазлы (2-4 элемента) | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
+- `toys.09` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Интерактивные книги | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
+- `toys.10` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Ролевые игры (кухня, магазин) | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
+- `toys.11` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Простые загадки | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
+- `toys.12` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Цифры и буквы | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
+- `toys.13` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Эмоции и мимика | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
+- `toys.14` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Цвета и формы | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
+- `toys.15` | **DONE** | ChildContentExperienceScreen → Toys3DSceneHostView | Дни недели и времена года | `child_interface_category_toys` → ChildContentExperienceScreen + ContentSeedProvider
 - `drawing.01` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Canvas с пальцевым рисованием | `child_interface_category_drawing` → ChildContentExperienceScreen + ContentSeedProvider
 - `drawing.02` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Выбор цветов (палитра) | `child_interface_category_drawing` → ChildContentExperienceScreen + ContentSeedProvider
-- `drawing.03` | **PARTIAL** | ChildContentExperienceScreen → DrawingExperienceHostView | Разные кисти (толстая, тонкая) | `child_interface_category_drawing` → ChildContentExperienceScreen + ContentSeedProvider
+- `drawing.03` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Разные кисти (толстая, тонкая) | `child_interface_category_drawing` → ChildContentExperienceScreen + ContentSeedProvider
 - `drawing.04` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Сохранение рисунков в галерею | `child_interface_category_drawing` → ChildContentExperienceScreen + ContentSeedProvider
-- `drawing.05` | **TODO** | — | Шаблоны для раскрашивания | `child_interface_category_drawing` → seed + experience branch + localization (to add)
-- `drawing.06` | **PARTIAL** | ChildContentExperienceScreen → DrawingExperienceHostView | Геометрические фигуры | `child_interface_category_drawing` → ChildContentExperienceScreen + ContentSeedProvider
-- `drawing.07` | **TODO** | — | Животные и растения | `child_interface_category_drawing` → seed + experience branch + localization (to add)
-- `drawing.08` | **TODO** | — | Дом и семья | `child_interface_category_drawing` → seed + experience branch + localization (to add)
-- `drawing.09` | **TODO** | — | Транспорт и техника | `child_interface_category_drawing` → seed + experience branch + localization (to add)
-- `drawing.10` | **TODO** | — | Абстрактные узоры | `child_interface_category_drawing` → seed + experience branch + localization (to add)
-- `songs.01` | **PARTIAL** | ChildContentExperienceScreen → KaraokeExperienceHostView | Детские песни с текстом | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `drawing.05` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Шаблоны для раскрашивания | `child_interface_category_drawing` → ChildContentExperienceScreen + ContentSeedProvider
+- `drawing.06` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Геометрические фигуры | `child_interface_category_drawing` → ChildContentExperienceScreen + ContentSeedProvider
+- `drawing.07` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Животные и растения | `child_interface_category_drawing` → ChildContentExperienceScreen + ContentSeedProvider
+- `drawing.08` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Дом и семья | `child_interface_category_drawing` → ChildContentExperienceScreen + ContentSeedProvider
+- `drawing.09` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Транспорт и техника | `child_interface_category_drawing` → ChildContentExperienceScreen + ContentSeedProvider
+- `drawing.10` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Абстрактные узоры | `child_interface_category_drawing` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.01` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Детские песни с текстом | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
 - `songs.02` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Караоке режим с подсветкой слов | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
-- `songs.03` | **TODO** | — | Мелодии с аккомпанементом | `child_interface_category_songs` → seed + experience branch + localization (to add)
-- `songs.04` | **TODO** | — | Сохранение любимых песен | `child_interface_category_songs` → seed + experience branch + localization (to add)
-- `songs.05` | **TODO** | — | Категории (колыбельные, игровые, обучающие) | `child_interface_category_songs` → seed + experience branch + localization (to add)
-- `songs.06` | **TODO** | — | Песни про цифры | `child_interface_category_songs` → seed + experience branch + localization (to add)
-- `songs.07` | **TODO** | — | Песни про цвета | `child_interface_category_songs` → seed + experience branch + localization (to add)
-- `songs.08` | **TODO** | — | Песни про животных | `child_interface_category_songs` → seed + experience branch + localization (to add)
-- `songs.09` | **TODO** | — | Песни про времена года | `child_interface_category_songs` → seed + experience branch + localization (to add)
-- `songs.10` | **TODO** | — | Песни про дружбу | `child_interface_category_songs` → seed + experience branch + localization (to add)
-- `songs.11` | **TODO** | — | Песни про здоровье | `child_interface_category_songs` → seed + experience branch + localization (to add)
-- `songs.12` | **TODO** | — | Народные песенки | `child_interface_category_songs` → seed + experience branch + localization (to add)
-- `songs.13` | **TODO** | — | Современные детские песни | `child_interface_category_songs` → seed + experience branch + localization (to add)
-- `songs.14` | **TODO** | — | Песни разных стран | `child_interface_category_songs` → seed + experience branch + localization (to add)
-- `songs.15` | **TODO** | — | Ритмичные стишки | `child_interface_category_songs` → seed + experience branch + localization (to add)
+- `songs.03` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Мелодии с аккомпанементом | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.04` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Сохранение любимых песен | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.05` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Категории (колыбельные, игровые, обучающие) | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.06` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Песни про цифры | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.07` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Песни про цвета | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.08` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Песни про животных | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.09` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Песни про времена года | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.10` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Песни про дружбу | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.11` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Песни про здоровье | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.12` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Народные песенки | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.13` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Современные детские песни | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.14` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Песни разных стран | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
+- `songs.15` | **DONE** | ChildContentExperienceScreen → KaraokeExperienceHostView | Ритмичные стишки | `child_interface_category_songs` → ChildContentExperienceScreen + ContentSeedProvider
 - `stories.01` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Интерактивные сказки с картинками | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
-- `stories.02` | **PARTIAL** | ChildContentExperienceScreen → StoryExperienceHostView | Озвучка текста профессиональными актерами | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
-- `stories.03` | **TODO** | — | Выбор темпа чтения | `child_interface_category_stories` → seed + experience branch + localization (to add)
-- `stories.04` | **TODO** | — | Закладки на любимые места | `child_interface_category_stories` → seed + experience branch + localization (to add)
-- `stories.05` | **PARTIAL** | ChildContentExperienceScreen → StoryExperienceHostView | Вопросы после прочтения | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
-- `stories.06` | **TODO** | — | Колобок и другие народные сказки | `child_interface_category_stories` → seed + experience branch + localization (to add)
-- `stories.07` | **TODO** | — | Сказки про животных | `child_interface_category_stories` → seed + experience branch + localization (to add)
-- `stories.08` | **TODO** | — | Волшебные истории | `child_interface_category_stories` → seed + experience branch + localization (to add)
-- `stories.09` | **TODO** | — | Сказки разных народов | `child_interface_category_stories` → seed + experience branch + localization (to add)
-- `stories.10` | **TODO** | — | Современные сказки | `child_interface_category_stories` → seed + experience branch + localization (to add)
+- `stories.02` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Озвучка текста профессиональными актерами | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
+- `stories.03` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Выбор темпа чтения | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
+- `stories.04` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Закладки на любимые места | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
+- `stories.05` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Вопросы после прочтения | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
+- `stories.06` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Колобок и другие народные сказки | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
+- `stories.07` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Сказки про животных | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
+- `stories.08` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Волшебные истории | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
+- `stories.09` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Сказки разных народов | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
+- `stories.10` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Современные сказки | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.01` | **PARTIAL** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Математические игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.02` | **PARTIAL** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Русский язык | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.03` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Головоломки и логические задачи | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
-- `games.04` | **TODO** | — | Викторины по предметам | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.05` | **TODO** | — | Игры на развитие памяти | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.06` | **TODO** | — | Скоростные игры | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.07` | **TODO** | — | Командные игры | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.08` | **TODO** | — | Стратегические игры | `child_interface_category_games` → seed + experience branch + localization (to add)
+- `games.04` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Викторины по предметам | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.05` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Игры на развитие памяти | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.06` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Скоростные игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.07` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Командные игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.08` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Стратегические игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.09` | **PARTIAL** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Приключенческие квесты | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
-- `games.10` | **TODO** | — | Спортивные симуляторы | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.11` | **TODO** | — | Настольные игры | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.12` | **TODO** | — | Карточные игры | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.13` | **TODO** | — | Аркадные игры | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.14` | **TODO** | — | Платформеры | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.15` | **TODO** | — | Гонки | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.16` | **TODO** | — | Строительство и крафтинг | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.17` | **TODO** | — | Ферма и животные | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.18` | **TODO** | — | Космос и наука | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.19` | **TODO** | — | История и география | `child_interface_category_games` → seed + experience branch + localization (to add)
-- `games.20` | **TODO** | — | Музыкальные игры | `child_interface_category_games` → seed + experience branch + localization (to add)
+- `games.10` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Спортивные симуляторы | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.11` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Настольные игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.12` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Карточные игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.13` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Аркадные игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.14` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Платформеры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.15` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Гонки | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.16` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Строительство и крафтинг | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.17` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Ферма и животные | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.18` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Космос и наука | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.19` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | История и география | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.20` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Музыкальные игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `study.01` | **PARTIAL** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Русский язык: чтение, письмо, грамматика | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
 - `study.02` | **PARTIAL** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Математика: арифметика, геометрия, задачи | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
 - `study.03` | **PARTIAL** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Окружающий мир | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
-- `study.04` | **TODO** | — | История | `child_interface_category_study` → seed + experience branch + localization (to add)
+- `study.04` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | История | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
 - `study.05` | **TODO** | — | География | `child_interface_category_study` → seed + experience branch + localization (to add)
 - `study.06` | **TODO** | — | Биология | `child_interface_category_study` → seed + experience branch + localization (to add)
 - `study.07` | **TODO** | — | Физика | `child_interface_category_study` → seed + experience branch + localization (to add)

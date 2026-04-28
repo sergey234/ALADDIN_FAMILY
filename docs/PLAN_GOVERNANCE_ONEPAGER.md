@@ -10,7 +10,7 @@
 
 1. `docs/ML_SYSTEM_TRANSFER_PACKAGE_PHASE2.md` — индекс Phase 2 + 275 + скрипты.  
 2. **Этот файл** — метрики, релизный скоуп, P0–P3.  
-3. Детский контент и каталог 275: `docs/CHILD_CONTENT_INTERFACE_ML_HANDBOOK.md`, `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md`.  
+3. Детский контент и каталог 275: `docs/CHILD_CONTENT_INTERFACE_ML_HANDBOOK.md`, `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md`, **`docs/PLAN_ITEM_275_OPERATING_RHYTHM.md`** (как вести волны и не терять сверку с матрицей).  
 4. Пробелы до «идеала» (G1–G24): `docs/GAP_CLOSURE_PLAN_PHASES_1_8_ML_HANDOFF.md`.  
 5. Контент с сервера: `docs/CHILD_CONTENT_PROD_CHECK_AND_ROADMAP.md`, `docs/ENDPOINT_CONTRACT_AND_SERVER_ACCESS.md`.
 

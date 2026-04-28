@@ -31,7 +31,7 @@
 3. **Phase 2 product plan:** `docs/PHASE2_CHILD_CONTENT_100_PERCENT_PLAN.md`
 4. **Transfer package (canonical index):** `docs/ML_SYSTEM_TRANSFER_PACKAGE_PHASE2.md`
 5. **Gap closure context:** `docs/GAP_CLOSURE_PLAN_PHASES_1_8_ML_HANDOFF.md`
-6. **275 matrix:** `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md` + `docs/PLAN_ITEM_OPEN_TASKS.md`
+6. **275 matrix:** `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md` + `docs/PLAN_ITEM_OPEN_TASKS.md` + **`docs/PLAN_ITEM_275_OPERATING_RHYTHM.md`** (ритм сверки и волн)
 7. **Category truth:** `docs/PHASE2_CATEGORY_ACCEPTANCE_STATUS_ALL.md`
 8. **Evidence and sign-off:** `docs/PHASE2_EVIDENCE_PACK_REPORT.md`, `docs/PHASE2_FINAL_SIGNOFF.md`
 9. **Last full gate run:** `docs/PHASE2_FINAL_VERIFICATION_RUN.md`
