@@ -2,6 +2,8 @@
 
 **Purpose:** one narrative for a future ML system: how work was organized, what was built, where it lives, how to verify it, and how the **275-item catalog matrix** relates to code.
 
+**Single ML-ready end-state handoff (architecture + gates + doc map):** `docs/CHILD_CONTENT_FINAL_SYSTEM_HANDOFF.md`
+
 **Canonical catalog matrix (275 rows):** `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md`  
 **Open rows only (PARTIAL + TODO):** `docs/PLAN_ITEM_OPEN_TASKS.md`  
 **Matrix structure smoke:** `scripts/plan_item_traceability_smoke.py`  
@@ -18,28 +20,29 @@
 | **178** | Client-wide execution and localization dashboard (total tasks in that plan) | `docs/EXECUTION_AND_LOCALIZATION_DASHBOARD.md`, `docs/PLAN_174_ML_HANDOFF_FRONTEND.md` | Sets **global** rules: localization, CI, screens list, handoff narrative. Child screens are listed there as product surfaces. |
 | **38** | Not a separate numbered file in-repo; if your “38” referred to a sprint slice or chat batch, map it to **`docs/PHASE2_LIVE_TODO_TRACKER.md`** sprint sections or **`docs/CURSOR_CHAT_PENDING_CHECKLIST.md`**. | Use Phase 2 trackers below | Phase 2 **implementation** tasks are grouped as P2-001…P2-604 (43) + category readiness (12) + exit/strategy (13) = **68** in the chat checklist. |
 | **68** | Phase 2 child-content closure checklist (child depth + gates + parent outcome + strategy) | `docs/CURSOR_CHAT_PENDING_CHECKLIST.md`, `docs/PHASE2_LIVE_TODO_TRACKER.md`, `docs/TASK_56_DONE.md` … `docs/TASK_68_DONE.md` | Delivers **engines**, **journeys**, **gates**, **parent mirror**, **telemetry docs**. |
-| **275** | Item-level **product catalog** you specified (by age and category), traced to `category_id` / `item_id` | `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md` | This is **volume and theme** roadmap; many rows are still `TODO` / `PARTIAL` while **modules** exist. |
+| **275** | Item-level **product catalog** you specified (by age and category), traced to `category_id` / `item_id` | `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md` | As of **2026-04-28**, the matrix is **DONE: 275 / PARTIAL: 0 / TODO: 0** (validated by `scripts/plan_item_traceability_smoke.py`). |
 
-**Short truth:** 68 closes **Phase 2 engineering and governance** for the child stack; 275 tracks **per-item content completeness** against your full wish list.
+**Short truth:** 68 closes **Phase 2 engineering and governance** for the child stack; 275 tracks **per-item content completeness** against your full wish list — and that catalog is now **fully closed** at the matrix level.
 
 ---
 
 ## 2) Read order for the next ML system (30 minutes → deep dive)
 
-1. **This file** (`docs/CHILD_CONTENT_INTERFACE_ML_HANDBOOK.md`) — orientation.
-2. **Plan vs fact (child):** `docs/CHILD_CONTENT_INTERFACE_PLAN_FACT.md`
-3. **Phase 2 product plan:** `docs/PHASE2_CHILD_CONTENT_100_PERCENT_PLAN.md`
-4. **Transfer package (canonical index):** `docs/ML_SYSTEM_TRANSFER_PACKAGE_PHASE2.md`
-5. **Gap closure context:** `docs/GAP_CLOSURE_PLAN_PHASES_1_8_ML_HANDOFF.md`
-6. **275 matrix:** `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md` + `docs/PLAN_ITEM_OPEN_TASKS.md` + **`docs/PLAN_ITEM_275_OPERATING_RHYTHM.md`** (ритм сверки и волн)
-7. **Category truth:** `docs/PHASE2_CATEGORY_ACCEPTANCE_STATUS_ALL.md`
-8. **Evidence and sign-off:** `docs/PHASE2_EVIDENCE_PACK_REPORT.md`, `docs/PHASE2_FINAL_SIGNOFF.md`
-9. **Last full gate run:** `docs/PHASE2_FINAL_VERIFICATION_RUN.md`
-10. **275 audit:** `docs/PLAN_ITEM_275_AUDIT_REPORT.md` (includes §1a **localization vs 275**; regenerate: `python3 scripts/plan_item_275_audit.py`)
-11. **275 age checklist (generated):** `docs/PLAN_ITEM_275_BY_AGE_READABLE.md` (`python3 scripts/plan_item_275_age_checklist.py`)
-12. **Prod content API + plan gaps:** `docs/CHILD_CONTENT_PROD_CHECK_AND_ROADMAP.md`
-13. **Content endpoint contract + smoke:** `docs/ENDPOINT_CONTRACT_AND_SERVER_ACCESS.md`
-14. **Wave-1 slice (optional):** `docs/PLAN_ITEM_WAVE_1.md`
+1. **End-state handoff (recommended first read):** `docs/CHILD_CONTENT_FINAL_SYSTEM_HANDOFF.md`
+2. **This file** (`docs/CHILD_CONTENT_INTERFACE_ML_HANDBOOK.md`) — orientation + deep index.
+3. **Plan vs fact (child):** `docs/CHILD_CONTENT_INTERFACE_PLAN_FACT.md`
+4. **Phase 2 product plan:** `docs/PHASE2_CHILD_CONTENT_100_PERCENT_PLAN.md`
+5. **Transfer package (canonical index):** `docs/ML_SYSTEM_TRANSFER_PACKAGE_PHASE2.md`
+6. **Gap closure context:** `docs/GAP_CLOSURE_PLAN_PHASES_1_8_ML_HANDOFF.md`
+7. **275 matrix:** `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md` + `docs/PLAN_ITEM_OPEN_TASKS.md` + **`docs/PLAN_ITEM_275_OPERATING_RHYTHM.md`** (ритм сверки и волн)
+8. **Category truth:** `docs/PHASE2_CATEGORY_ACCEPTANCE_STATUS_ALL.md`
+9. **Evidence and sign-off:** `docs/PHASE2_EVIDENCE_PACK_REPORT.md`, `docs/PHASE2_FINAL_SIGNOFF.md`
+10. **Last full gate run:** `docs/PHASE2_FINAL_VERIFICATION_RUN.md`
+11. **275 audit:** `docs/PLAN_ITEM_275_AUDIT_REPORT.md` (includes §1a **localization vs 275**; regenerate: `python3 scripts/plan_item_275_audit.py`)
+12. **275 age checklist (generated):** `docs/PLAN_ITEM_275_BY_AGE_READABLE.md` (`python3 scripts/plan_item_275_age_checklist.py`)
+13. **Prod content API + plan gaps:** `docs/CHILD_CONTENT_PROD_CHECK_AND_ROADMAP.md`
+14. **Content endpoint contract + smoke:** `docs/ENDPOINT_CONTRACT_AND_SERVER_ACCESS.md`
+15. **Wave-1 slice (optional):** `docs/PLAN_ITEM_WAVE_1.md`
 
 ---
 
@@ -180,26 +183,28 @@ Examples: `docs/PHASE2_CONTENT_EDITORIAL_MODEL.md`, `docs/PHASE2_CONTENT_FRESHNE
 | Artifact | Purpose |
 | --- | --- |
 | `docs/PLAN_ITEM_WAVE_1.md` | First 10 open items from `PLAN_ITEM_OPEN_TASKS.md` with owners and gates. |
-| `docs/PLAN_ITEM_OPEN_TASKS.md` | Filtered backlog (`PARTIAL` + `TODO`). |
+| `docs/PLAN_ITEM_OPEN_TASKS.md` | Filtered backlog (`PARTIAL` + `TODO`) — should be **empty** when the matrix is fully `DONE`. |
 
 **Rule:** each wave closes with: `plan_item_traceability_smoke.py` + `phase2_content_qa_matrix_smoke.py` + `localization_lint.py` + `xcodebuild` (as already written in Wave-1).
+
+**Current baseline:** the **275** matrix is closed (`DONE: 275 / PARTIAL: 0 / TODO: 0`). Keep the wave machinery for the **next** catalog expansion (new rows), not because open rows exist today.
 
 ---
 
 ## 6) What is *not* fully covered by “68 done”
 
-- **275 catalog**: many `TODO` / `PARTIAL` rows — need content design + seed/API expansion + UX per theme.
-- **Strict item counts** (e.g. 15 toys, 30 study topics): growth targets; see “Missing” lines in `PHASE2_CATEGORY_ACCEPTANCE_STATUS_ALL.md`.
+- **Living product work outside the matrix row:** regulators, new locales, new server packs, new OS APIs, refreshed editorial/telemetry policies — these can still require **new docs and new matrix rows** even when the current **275** revision is `DONE`.
+- **Strict item counts** (e.g. 15 toys, 30 study topics): if you tighten acceptance math beyond the matrix, treat it as a **new target layer** and update `PHASE2_CATEGORY_ACCEPTANCE_STATUS_ALL.md` + gates explicitly (do not infer from stale “Missing” lines without re-reading the file).
 
 ---
 
 ## 7) Quick “start coding” checklist for ML
 
-1. Pick a row in `PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md` (or `PLAN_ITEM_OPEN_TASKS.md`).
-2. Map `category_id` → `ContentSeedProvider` / server manifest → `ChildContentExperienceScreen` branch.
-3. Add RU+EN keys; run `python3 scripts/localization_lint.py`.
-4. Run `python3 scripts/phase2_content_qa_matrix_smoke.py` and `xcodebuild` on the ALADDIN scheme.
-5. Update the matrix row from `TODO`/`PARTIAL` to `DONE` with owner/due/wave.
+1. If you are **extending** the catalog: add/adjust a row in `PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md` (and ensure `PLAN_ITEM_OPEN_TASKS.md` reflects any non-`DONE` rows).
+2. Map `category_id` → `ContentSeedProvider` / server manifest → `ChildContentExperienceScreen` branch (remember: many items are served via **category host engines**, not necessarily a dedicated `case` string).
+3. Add RU+EN keys; run `python3 scripts/localization_lint.py` (+ child coverage gate if UI is child-facing).
+4. Run `python3 scripts/phase2_content_qa_matrix_smoke.py`, `python3 scripts/plan_item_traceability_smoke.py`, and `xcodebuild` on the ALADDIN scheme.
+5. Regenerate audits/checklists as needed: `python3 scripts/plan_item_275_audit.py`, `python3 scripts/plan_item_275_age_checklist.py`.
 
 ---
 
@@ -207,7 +212,7 @@ Examples: `docs/PHASE2_CONTENT_EDITORIAL_MODEL.md`, `docs/PHASE2_CONTENT_FRESHNE
 
 | Layer | Files |
 | --- | --- |
-| Global execution (178) | `docs/EXECUTION_AND_LOCALIZATION_DASHBOARD.md`, `docs/PLAN_174_ML_HANDOFF_FRONTEND.md`, `docs/INDEPENDENT_PLAN_FACT_AUDIT_174.md` |
+| Global execution (178) | `docs/EXECUTION_AND_LOCALIZATION_DASHBOARD.md`, `docs/CHILD_CONTENT_FINAL_SYSTEM_HANDOFF.md`, `docs/PLAN_174_ML_HANDOFF_FRONTEND.md` (historical **174/178** snapshot — see §0 inside), `docs/INDEPENDENT_PLAN_FACT_AUDIT_174.md` |
 | Phase 2 plan | `docs/PHASE2_CHILD_CONTENT_100_PERCENT_PLAN.md`, `docs/PHASE2_100_IMPLEMENTATION_BACKLOG_FOR_ML.md` |
 | Phase 2 trackers | `docs/PHASE2_LIVE_TODO_TRACKER.md`, `docs/CURSOR_CHAT_PENDING_CHECKLIST.md` |
 | Acceptance | `docs/PHASE2_CATEGORY_ACCEPTANCE_CHECKLIST_TEMPLATE.md`, `docs/PHASE2_CATEGORY_ACCEPTANCE_STATUS_ALL.md` |

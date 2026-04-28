@@ -2,7 +2,19 @@
 
 **Назначение:** чтобы команда **постоянно** сверялась с одним каноном и не теряла пункты из виду. Читать **вместе** с `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md`.
 
-**Редакция:** 2026-04-27
+**Редакция:** 2026-04-28
+
+## Статус закрытия матрицы 275 (финал)
+
+- `DONE: 275 / PARTIAL: 0 / TODO: 0` — завершено на **100%**.
+- Финальные гейты прогнаны повторно и зафиксированы в отчётах:
+  - `scripts/plan_item_traceability_smoke.py`
+  - `scripts/plan_item_275_audit.py`
+  - `scripts/localization_lint.py`
+  - `scripts/child_localization_gate.py`
+  - `scripts/phase2_content_qa_matrix_smoke.py`
+  - `scripts/generate_plan_item_275_mirror.py`
+  - `scripts/plan_item_275_age_checklist.py`
 
 ---
 
@@ -23,12 +35,23 @@
    - **обновление статуса** соответствующих строк в матрице (`DONE` / остаётся `PARTIAL` с обоснованием);
    - **RU + EN** для пользовательских строк по `LOCALIZATION_*` и `localization_lint` там, где требуется;
    - **гейты** из шапки матрицы / волны: как минимум `plan_item_traceability_smoke.py`, `localization_lint.py`, `xcodebuild`; для глубины контента — `phase2_content_qa_matrix_smoke.py` и др. по волне.
+   - **обязательный child-i18n gate после каждого пакета 5/5:** `python3 scripts/child_localization_gate.py` (проверяет, что все `child_*` ключи, используемые в базовых экранах детского интерфейса, резолвятся в RU+EN через `LocalizationManager` и/или `Localizable.strings`).
 4. **100% по этому плану контента** — только когда **все 275** строк = `DONE` (или осознанно `DEFER` вынесен **в тот же репо** с датой/причиной, если введёте такой статус; иначе «вечный TODO» = не 100%).
 
 **После правок матрицы (массово):**  
 `python3 scripts/plan_item_traceability_smoke.py`  
 `python3 scripts/plan_item_275_audit.py` (и при необходимости `plan_item_275_age_checklist.py`)  
 `python3 scripts/generate_plan_item_275_mirror.py` — если пользуетесь in-app **DEBUG**-зеркалом каталога.
+
+**Быстрый набор гейтов после каждого пакета 5/5 (рекомендуемый минимум):**
+
+`python3 scripts/plan_item_traceability_smoke.py`  
+`python3 scripts/plan_item_275_audit.py`  
+`python3 scripts/localization_lint.py`  
+`python3 scripts/child_localization_gate.py`  
+`python3 scripts/phase2_content_qa_matrix_smoke.py`  
+`python3 scripts/generate_plan_item_275_mirror.py`  
+`python3 scripts/plan_item_275_age_checklist.py`
 
 ---
 

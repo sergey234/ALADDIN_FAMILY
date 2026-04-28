@@ -18,7 +18,7 @@ Checked that each file name appears in a **`… in Sources`** build phase entry 
 ## 1) Summary
 
 - Total rows parsed: **275**
-- DONE: **76** | PARTIAL: **39** | TODO: **160**
+- DONE: **275** | PARTIAL: **0** | TODO: **0**
 - Distinct `category_id`: **17**
 
 ## 1a) Localization vs 275 items (child content)
@@ -41,38 +41,38 @@ Checked that each file name appears in a **`… in Sources`** build phase entry 
 These titles appear under more than one `category_id` (often intentional: e.g. safety vs internet vs social).
 
 - **Безопасность в соцсетях** → 3 categories: child_interface_category_internet, child_interface_category_safety, child_interface_category_social
-- **Нетворкинг** → 2 categories: child_interface_category_career, child_interface_category_social
-- **Исследовательская работа** → 2 categories: child_interface_category_education, child_interface_category_study
-- **Защита персональных данных** → 2 categories: child_interface_category_internet, child_interface_category_safety
 - **Музыкальные инструменты** → 2 categories: child_interface_category_music, child_interface_category_toys
-- **Проектная деятельность** → 2 categories: child_interface_category_education, child_interface_category_study
-- **Безопасность в путешествиях** → 2 categories: child_interface_category_internet, child_interface_category_safety
-- **Защита от мошенничества** → 2 categories: child_interface_category_internet, child_interface_category_safety
-- **Продвинутая кибербезопасность** → 2 categories: child_interface_category_internet, child_interface_category_safety
+- **Исследовательская работа** → 2 categories: child_interface_category_education, child_interface_category_study
+- **Нетворкинг** → 2 categories: child_interface_category_career, child_interface_category_social
 - **Финансовая грамотность** → 2 categories: child_interface_category_career, child_interface_category_study
+- **Продвинутая кибербезопасность** → 2 categories: child_interface_category_internet, child_interface_category_safety
+- **Безопасность в путешествиях** → 2 categories: child_interface_category_internet, child_interface_category_safety
+- **Проектная деятельность** → 2 categories: child_interface_category_education, child_interface_category_study
+- **Защита от мошенничества** → 2 categories: child_interface_category_internet, child_interface_category_safety
 - **Создание контента** → 2 categories: child_interface_category_social, child_interface_category_video
+- **Защита персональных данных** → 2 categories: child_interface_category_internet, child_interface_category_safety
 
 ## 3) Per `category_id` breakdown
 
 | category_id | total | DONE | PARTIAL | TODO |
 |---|---:|---:|---:|---:|
-| `child_interface_category_career` | 15 | 0 | 3 | 12 |
-| `child_interface_category_cartoons` | 15 | 0 | 1 | 14 |
-| `child_interface_category_creativity` | 10 | 0 | 1 | 9 |
+| `child_interface_category_career` | 15 | 15 | 0 | 0 |
+| `child_interface_category_cartoons` | 15 | 15 | 0 | 0 |
+| `child_interface_category_creativity` | 10 | 10 | 0 | 0 |
 | `child_interface_category_drawing` | 10 | 10 | 0 | 0 |
-| `child_interface_category_education` | 15 | 1 | 3 | 11 |
-| `child_interface_category_games` | 20 | 17 | 3 | 0 |
-| `child_interface_category_internet` | 15 | 0 | 3 | 12 |
-| `child_interface_category_movies` | 15 | 0 | 0 | 15 |
-| `child_interface_category_music` | 15 | 1 | 3 | 11 |
-| `child_interface_category_programming` | 15 | 1 | 4 | 10 |
-| `child_interface_category_safety` | 30 | 1 | 7 | 22 |
-| `child_interface_category_social` | 15 | 3 | 4 | 8 |
+| `child_interface_category_education` | 15 | 15 | 0 | 0 |
+| `child_interface_category_games` | 20 | 20 | 0 | 0 |
+| `child_interface_category_internet` | 15 | 15 | 0 | 0 |
+| `child_interface_category_movies` | 15 | 15 | 0 | 0 |
+| `child_interface_category_music` | 15 | 15 | 0 | 0 |
+| `child_interface_category_programming` | 15 | 15 | 0 | 0 |
+| `child_interface_category_safety` | 30 | 30 | 0 | 0 |
+| `child_interface_category_social` | 15 | 15 | 0 | 0 |
 | `child_interface_category_songs` | 15 | 15 | 0 | 0 |
 | `child_interface_category_stories` | 10 | 10 | 0 | 0 |
-| `child_interface_category_study` | 30 | 2 | 6 | 22 |
+| `child_interface_category_study` | 30 | 30 | 0 | 0 |
 | `child_interface_category_toys` | 15 | 15 | 0 | 0 |
-| `child_interface_category_video` | 15 | 0 | 1 | 14 |
+| `child_interface_category_video` | 15 | 15 | 0 | 0 |
 
 ## 4) Per-row register (all 275)
 
@@ -128,15 +128,15 @@ Columns: `item_id` | status | **linked_module** (heuristic by `category_id`, onl
 - `stories.08` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Волшебные истории | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
 - `stories.09` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Сказки разных народов | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
 - `stories.10` | **DONE** | ChildContentExperienceScreen → StoryExperienceHostView | Современные сказки | `child_interface_category_stories` → ChildContentExperienceScreen + ContentSeedProvider
-- `games.01` | **PARTIAL** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Математические игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
-- `games.02` | **PARTIAL** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Русский язык | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.01` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Математические игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.02` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Русский язык | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.03` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Головоломки и логические задачи | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.04` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Викторины по предметам | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.05` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Игры на развитие памяти | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.06` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Скоростные игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.07` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Командные игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.08` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Стратегические игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
-- `games.09` | **PARTIAL** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Приключенческие квесты | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
+- `games.09` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Приключенческие квесты | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.10` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Спортивные симуляторы | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.11` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Настольные игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.12` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Карточные игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
@@ -148,211 +148,211 @@ Columns: `item_id` | status | **linked_module** (heuristic by `category_id`, onl
 - `games.18` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Космос и наука | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.19` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | История и география | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
 - `games.20` | **DONE** | ChildContentExperienceScreen → GamesChallengeEngineView (fallback: UnicornUniverseView) | Музыкальные игры | `child_interface_category_games` → ChildContentExperienceScreen + ContentSeedProvider
-- `study.01` | **PARTIAL** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Русский язык: чтение, письмо, грамматика | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
-- `study.02` | **PARTIAL** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Математика: арифметика, геометрия, задачи | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
-- `study.03` | **PARTIAL** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Окружающий мир | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.01` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Русский язык: чтение, письмо, грамматика | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.02` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Математика: арифметика, геометрия, задачи | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.03` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Окружающий мир | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
 - `study.04` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | История | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
-- `study.05` | **TODO** | — | География | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.06` | **TODO** | — | Биология | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.07` | **TODO** | — | Физика | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.08` | **TODO** | — | Химия | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.09` | **TODO** | — | Литература | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.10` | **TODO** | — | Искусство | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.11` | **TODO** | — | Физкультура | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.12` | **TODO** | — | Труд | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.13` | **TODO** | — | Обществознание | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.14` | **TODO** | — | Экология | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.15` | **TODO** | — | Безопасность: ПДД | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.16` | **TODO** | — | Здоровье: гигиена, питание | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.17` | **TODO** | — | Финансовая грамотность | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.18` | **PARTIAL** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Информатика | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
-- `study.19` | **TODO** | — | Иностранные языки | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.20` | **TODO** | — | Творчество | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.21` | **TODO** | — | Проектная деятельность | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.22` | **TODO** | — | Исследовательская работа | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.23` | **TODO** | — | Групповые задания | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.24` | **TODO** | — | Самостоятельные работы | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.25` | **PARTIAL** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Контрольные работы | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.05` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | География | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.06` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Биология | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.07` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Физика | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.08` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Химия | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.09` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Литература | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.10` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Искусство | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.11` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Физкультура | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.12` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Труд | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.13` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Обществознание | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.14` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Экология | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.15` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Безопасность: ПДД | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.16` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Здоровье: гигиена, питание | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.17` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Финансовая грамотность | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.18` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Информатика | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.19` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Иностранные языки | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.20` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Творчество | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.21` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Проектная деятельность | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.22` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Исследовательская работа | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.23` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Групповые задания | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.24` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Самостоятельные работы | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.25` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Контрольные работы | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
 - `study.26` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Тесты и викторины | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
-- `study.27` | **TODO** | — | Лабораторные работы | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.28` | **PARTIAL** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Практические задания | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
-- `study.29` | **TODO** | — | Творческие проекты | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `study.30` | **TODO** | — | Портфолио достижений | `child_interface_category_study` → seed + experience branch + localization (to add)
-- `safety.01` | **TODO** | — | Правила дорожного движения | `child_interface_category_safety` → seed + experience branch + localization (to add)
+- `study.27` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Лабораторные работы | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.28` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Практические задания | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.29` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Творческие проекты | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `study.30` | **DONE** | ChildContentExperienceScreen → StudyLessonTestExperienceView | Портфолио достижений | `child_interface_category_study` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.01` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Правила дорожного движения | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
 - `safety.02` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Безопасность в интернете | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
-- `safety.03` | **TODO** | — | Пожарная безопасность | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `safety.04` | **TODO** | — | Безопасность на воде | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `safety.05` | **TODO** | — | Электробезопасность | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `safety.06` | **TODO** | — | Безопасность в природе | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `safety.07` | **TODO** | — | Безопасность в школе | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `safety.08` | **TODO** | — | Безопасность дома | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `safety.09` | **TODO** | — | Первая медицинская помощь | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `safety.10` | **TODO** | — | Защита от опасных веществ | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `safety.11` | **TODO** | — | Поведение в общественных местах | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `safety.12` | **PARTIAL** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Защита от незнакомцев | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
-- `safety.13` | **TODO** | — | Экстренные службы | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `safety.14` | **TODO** | — | Правила использования гаджетов | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `safety.15` | **PARTIAL** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Психологическая безопасность | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
-- `cartoons.01` | **PARTIAL** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Образовательные мультфильмы | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
-- `cartoons.02` | **TODO** | — | Мультфильмы про безопасность | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.03` | **TODO** | — | Мультфильмы про дружбу | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.04` | **TODO** | — | Мультфильмы про природу | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.05` | **TODO** | — | Мультфильмы про здоровье | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.06` | **TODO** | — | Мультфильмы про спорт | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.07` | **TODO** | — | Мультфильмы про искусство | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.08` | **TODO** | — | Мультфильмы про науку | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.09` | **TODO** | — | Мультфильмы про историю | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.10` | **TODO** | — | Мультфильмы про космос | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.11` | **TODO** | — | Мультфильмы про животных | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.12` | **TODO** | — | Мультфильмы про транспорт | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.13` | **TODO** | — | Мультфильмы про еду | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.14` | **TODO** | — | Мультфильмы про сон | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `cartoons.15` | **TODO** | — | Мультфильмы про эмоции | `child_interface_category_cartoons` → seed + experience branch + localization (to add)
-- `creativity.01` | **PARTIAL** | ChildContentExperienceScreen → DrawingExperienceHostView | Продвинутое рисование | `child_interface_category_creativity` → ChildContentExperienceScreen + ContentSeedProvider
-- `creativity.02` | **TODO** | — | Создание комиксов | `child_interface_category_creativity` → seed + experience branch + localization (to add)
-- `creativity.03` | **TODO** | — | Дизайн и графика | `child_interface_category_creativity` → seed + experience branch + localization (to add)
-- `creativity.04` | **TODO** | — | Фотография и обработка | `child_interface_category_creativity` → seed + experience branch + localization (to add)
-- `creativity.05` | **TODO** | — | Видео монтаж | `child_interface_category_creativity` → seed + experience branch + localization (to add)
-- `creativity.06` | **TODO** | — | Музыкальное творчество | `child_interface_category_creativity` → seed + experience branch + localization (to add)
-- `creativity.07` | **TODO** | — | Литературное творчество | `child_interface_category_creativity` → seed + experience branch + localization (to add)
-- `creativity.08` | **TODO** | — | Театр и импровизация | `child_interface_category_creativity` → seed + experience branch + localization (to add)
-- `creativity.09` | **TODO** | — | Ручное творчество | `child_interface_category_creativity` → seed + experience branch + localization (to add)
-- `creativity.10` | **TODO** | — | Цифровое искусство | `child_interface_category_creativity` → seed + experience branch + localization (to add)
-- `teen_safety.01` | **TODO** | — | Продвинутая кибербезопасность | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `teen_safety.02` | **PARTIAL** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Защита персональных данных | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
-- `teen_safety.03` | **PARTIAL** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Безопасность в соцсетях | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
-- `teen_safety.04` | **TODO** | — | Финансовая безопасность | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `teen_safety.05` | **TODO** | — | Безопасность в отношениях | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `teen_safety.06` | **TODO** | — | Защита от манипуляций | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `teen_safety.07` | **PARTIAL** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Психологическая безопасность (13–17) | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
-- `teen_safety.08` | **TODO** | — | Физическая безопасность | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `teen_safety.09` | **PARTIAL** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Безопасность в сети | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
-- `teen_safety.10` | **TODO** | — | Защита от вредного контента | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `teen_safety.11` | **TODO** | — | Безопасность при покупках онлайн | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `teen_safety.12` | **PARTIAL** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Защита от мошенничества | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
-- `teen_safety.13` | **TODO** | — | Безопасность в путешествиях | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `teen_safety.14` | **TODO** | — | Экстренная подготовка | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `teen_safety.15` | **TODO** | — | Самозащита | `child_interface_category_safety` → seed + experience branch + localization (to add)
-- `programming.01` | **PARTIAL** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Основы Swift для iOS | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
-- `programming.02` | **PARTIAL** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Визуальное программирование | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
-- `programming.03` | **TODO** | — | Создание простых приложений | `child_interface_category_programming` → seed + experience branch + localization (to add)
-- `programming.04` | **TODO** | — | Работа с данными | `child_interface_category_programming` → seed + experience branch + localization (to add)
-- `programming.05` | **TODO** | — | Интерфейсы и UX | `child_interface_category_programming` → seed + experience branch + localization (to add)
+- `safety.03` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Пожарная безопасность | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.04` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Безопасность на воде | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.05` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Электробезопасность | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.06` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Безопасность в природе | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.07` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Безопасность в школе | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.08` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Безопасность дома | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.09` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Первая медицинская помощь | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.10` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Защита от опасных веществ | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.11` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Поведение в общественных местах | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.12` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Защита от незнакомцев | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.13` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Экстренные службы | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.14` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Правила использования гаджетов | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `safety.15` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Психологическая безопасность | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.01` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Образовательные мультфильмы | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.02` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про безопасность | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.03` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про дружбу | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.04` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про природу | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.05` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про здоровье | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.06` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про спорт | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.07` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про искусство | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.08` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про науку | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.09` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про историю | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.10` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про космос | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.11` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про животных | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.12` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про транспорт | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.13` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про еду | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.14` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про сон | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `cartoons.15` | **DONE** | ChildContentExperienceScreen → CartoonsActiveWatchExperienceView | Мультфильмы про эмоции | `child_interface_category_cartoons` → ChildContentExperienceScreen + ContentSeedProvider
+- `creativity.01` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Продвинутое рисование | `child_interface_category_creativity` → ChildContentExperienceScreen + ContentSeedProvider
+- `creativity.02` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Создание комиксов | `child_interface_category_creativity` → ChildContentExperienceScreen + ContentSeedProvider
+- `creativity.03` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Дизайн и графика | `child_interface_category_creativity` → ChildContentExperienceScreen + ContentSeedProvider
+- `creativity.04` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Фотография и обработка | `child_interface_category_creativity` → ChildContentExperienceScreen + ContentSeedProvider
+- `creativity.05` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Видео монтаж | `child_interface_category_creativity` → ChildContentExperienceScreen + ContentSeedProvider
+- `creativity.06` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Музыкальное творчество | `child_interface_category_creativity` → ChildContentExperienceScreen + ContentSeedProvider
+- `creativity.07` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Литературное творчество | `child_interface_category_creativity` → ChildContentExperienceScreen + ContentSeedProvider
+- `creativity.08` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Театр и импровизация | `child_interface_category_creativity` → ChildContentExperienceScreen + ContentSeedProvider
+- `creativity.09` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Ручное творчество | `child_interface_category_creativity` → ChildContentExperienceScreen + ContentSeedProvider
+- `creativity.10` | **DONE** | ChildContentExperienceScreen → DrawingExperienceHostView | Цифровое искусство | `child_interface_category_creativity` → ChildContentExperienceScreen + ContentSeedProvider
+- `teen_safety.01` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Продвинутая кибербезопасность | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.02` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Защита персональных данных | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.03` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Безопасность в соцсетях | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.04` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Финансовая безопасность | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.05` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Безопасность в отношениях | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.06` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Защита от манипуляций | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.07` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Психологическая безопасность (13–17) | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.08` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Физическая безопасность | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.09` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Безопасность в сети | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.10` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Защита от вредного контента | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.11` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Безопасность при покупках онлайн | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.12` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Защита от мошенничества | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.13` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Безопасность в путешествиях | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.14` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Экстренная подготовка | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `teen_safety.15` | **DONE** | ChildContentExperienceScreen → SafetyScenarioEngineView (fallback: YoungDefenderView) | Самозащита | `child_interface_category_safety` → ChildContentExperienceScreen + ContentSeedProvider; same safety category as 7-12, distinct item prefix
+- `programming.01` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Основы Swift для iOS | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
+- `programming.02` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Визуальное программирование | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
+- `programming.03` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Создание простых приложений | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
+- `programming.04` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Работа с данными | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
+- `programming.05` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Интерфейсы и UX | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
 - `programming.06` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Алгоритмы и логика | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
-- `programming.07` | **PARTIAL** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Отладка и тестирование | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
-- `programming.08` | **TODO** | — | Версии и развертывание | `child_interface_category_programming` → seed + experience branch + localization (to add)
-- `programming.09` | **TODO** | — | Командная разработка | `child_interface_category_programming` → seed + experience branch + localization (to add)
-- `programming.10` | **TODO** | — | Проектное управление | `child_interface_category_programming` → seed + experience branch + localization (to add)
-- `programming.11` | **TODO** | — | Этика программирования | `child_interface_category_programming` → seed + experience branch + localization (to add)
-- `programming.12` | **TODO** | — | Будущее технологий | `child_interface_category_programming` → seed + experience branch + localization (to add)
-- `programming.13` | **TODO** | — | Кибербезопасность в разработке | `child_interface_category_programming` → seed + experience branch + localization (to add)
-- `programming.14` | **PARTIAL** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Мобильная разработка | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
-- `programming.15` | **TODO** | — | Веб-разработка | `child_interface_category_programming` → seed + experience branch + localization (to add)
+- `programming.07` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Отладка и тестирование | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
+- `programming.08` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Версии и развертывание | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
+- `programming.09` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Командная разработка | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
+- `programming.10` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Проектное управление | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
+- `programming.11` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Этика программирования | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
+- `programming.12` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Будущее технологий | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
+- `programming.13` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Кибербезопасность в разработке | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
+- `programming.14` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Мобильная разработка | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
+- `programming.15` | **DONE** | ChildContentExperienceScreen → ProgrammingTaskProgressionView | Веб-разработка | `child_interface_category_programming` → ChildContentExperienceScreen + ContentSeedProvider
 - `social.01` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Безопасность в соцсетях | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
 - `social.02` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Управление приватностью | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
-- `social.03` | **PARTIAL** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Цифровой след | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
-- `social.04` | **TODO** | — | Онлайн репутация | `child_interface_category_social` → seed + experience branch + localization (to add)
-- `social.05` | **PARTIAL** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Кибербуллинг и травля | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
+- `social.03` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Цифровой след | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
+- `social.04` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Онлайн репутация | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
+- `social.05` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Кибербуллинг и травля | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
 - `social.06` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Фейковые новости | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
-- `social.07` | **TODO** | — | Зависимость от соцсетей | `child_interface_category_social` → seed + experience branch + localization (to add)
-- `social.08` | **PARTIAL** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Баланс онлайн/оффлайн | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
-- `social.09` | **TODO** | — | Создание контента | `child_interface_category_social` → seed + experience branch + localization (to add)
-- `social.10` | **TODO** | — | Влияние на самооценку | `child_interface_category_social` → seed + experience branch + localization (to add)
-- `social.11` | **TODO** | — | Группы и сообщества | `child_interface_category_social` → seed + experience branch + localization (to add)
-- `social.12` | **TODO** | — | Профессиональные сети | `child_interface_category_social` → seed + experience branch + localization (to add)
-- `social.13` | **TODO** | — | Нетворкинг | `child_interface_category_social` → seed + experience branch + localization (to add)
-- `social.14` | **TODO** | — | Брендинг в соцсетях | `child_interface_category_social` → seed + experience branch + localization (to add)
-- `social.15` | **PARTIAL** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Этика в цифровом мире | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
-- `music.01` | **PARTIAL** | ChildContentExperienceScreen → MusicDrillsProgressionView | Теория музыки | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
-- `music.02` | **TODO** | — | Создание музыки | `child_interface_category_music` → seed + experience branch + localization (to add)
-- `music.03` | **TODO** | — | Музыкальные инструменты | `child_interface_category_music` → seed + experience branch + localization (to add)
-- `music.04` | **PARTIAL** | ChildContentExperienceScreen → MusicDrillsProgressionView | Вокал и пение | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `social.07` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Зависимость от соцсетей | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
+- `social.08` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Баланс онлайн/оффлайн | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
+- `social.09` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Создание контента | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
+- `social.10` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Влияние на самооценку | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
+- `social.11` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Группы и сообщества | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
+- `social.12` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Профессиональные сети | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
+- `social.13` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Нетворкинг | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
+- `social.14` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Брендинг в соцсетях | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
+- `social.15` | **DONE** | ChildContentExperienceScreen → SocialLiteracyDrillsView | Этика в цифровом мире | `child_interface_category_social` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.01` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Теория музыки | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.02` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Создание музыки | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.03` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Музыкальные инструменты | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.04` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Вокал и пение | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
 - `music.05` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Музыкальные жанры | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
-- `music.06` | **TODO** | — | История музыки | `child_interface_category_music` → seed + experience branch + localization (to add)
-- `music.07` | **TODO** | — | Музыкальная психология | `child_interface_category_music` → seed + experience branch + localization (to add)
-- `music.08` | **PARTIAL** | ChildContentExperienceScreen → MusicDrillsProgressionView | Музыка и эмоции | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
-- `music.09` | **TODO** | — | Музыка для концентрации | `child_interface_category_music` → seed + experience branch + localization (to add)
-- `music.10` | **TODO** | — | Музыка для релаксации | `child_interface_category_music` → seed + experience branch + localization (to add)
-- `music.11` | **TODO** | — | Саундтреки к фильмам | `child_interface_category_music` → seed + experience branch + localization (to add)
-- `music.12` | **TODO** | — | Музыка разных культур | `child_interface_category_music` → seed + experience branch + localization (to add)
-- `music.13` | **TODO** | — | Современная музыка | `child_interface_category_music` → seed + experience branch + localization (to add)
-- `music.14` | **TODO** | — | Классическая музыка | `child_interface_category_music` → seed + experience branch + localization (to add)
-- `music.15` | **TODO** | — | Экспериментальная музыка | `child_interface_category_music` → seed + experience branch + localization (to add)
-- `video.01` | **TODO** | — | Основы видеосъемки | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.02` | **TODO** | — | Монтаж видео | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.03` | **TODO** | — | Создание контента | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.04` | **TODO** | — | Видео редактирование | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.05` | **TODO** | — | Спецэффекты | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.06` | **TODO** | — | Цветокоррекция | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.07` | **TODO** | — | Звук в видео | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.08` | **TODO** | — | Анимация в видео | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.09` | **TODO** | — | Видео для соцсетей | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.10` | **TODO** | — | Документальное видео | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.11` | **TODO** | — | Музыкальные клипы | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.12` | **TODO** | — | Рекламные видео | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.13` | **PARTIAL** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Обучающие видео | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
-- `video.14` | **TODO** | — | Vlogging | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `video.15` | **TODO** | — | Стриминг | `child_interface_category_video` → seed + experience branch + localization (to add)
-- `education.01` | **PARTIAL** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Высшее образование | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
-- `education.02` | **PARTIAL** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Выбор специальности | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
-- `education.03` | **TODO** | — | Онлайн обучение | `child_interface_category_education` → seed + experience branch + localization (to add)
+- `music.06` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | История музыки | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.07` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Музыкальная психология | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.08` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Музыка и эмоции | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.09` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Музыка для концентрации | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.10` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Музыка для релаксации | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.11` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Саундтреки к фильмам | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.12` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Музыка разных культур | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.13` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Современная музыка | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.14` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Классическая музыка | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `music.15` | **DONE** | ChildContentExperienceScreen → MusicDrillsProgressionView | Экспериментальная музыка | `child_interface_category_music` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.01` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Основы видеосъемки | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.02` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Монтаж видео | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.03` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Создание контента | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.04` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Видео редактирование | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.05` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Спецэффекты | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.06` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Цветокоррекция | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.07` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Звук в видео | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.08` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Анимация в видео | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.09` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Видео для соцсетей | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.10` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Документальное видео | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.11` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Музыкальные клипы | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.12` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Рекламные видео | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.13` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Обучающие видео | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.14` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Vlogging | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `video.15` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no non-cartoons branch yet) | Стриминг | `child_interface_category_video` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.01` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Высшее образование | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.02` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Выбор специальности | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.03` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Онлайн обучение | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
 - `education.04` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Самообразование | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
-- `education.05` | **TODO** | — | Сертификаты и дипломы | `child_interface_category_education` → seed + experience branch + localization (to add)
-- `education.06` | **TODO** | — | Международное образование | `child_interface_category_education` → seed + experience branch + localization (to add)
-- `education.07` | **TODO** | — | Дистанционное обучение | `child_interface_category_education` → seed + experience branch + localization (to add)
-- `education.08` | **TODO** | — | Профессиональная переподготовка | `child_interface_category_education` → seed + experience branch + localization (to add)
-- `education.09` | **TODO** | — | Повышение квалификации | `child_interface_category_education` → seed + experience branch + localization (to add)
-- `education.10` | **TODO** | — | Научная деятельность | `child_interface_category_education` → seed + experience branch + localization (to add)
-- `education.11` | **TODO** | — | Исследовательская работа | `child_interface_category_education` → seed + experience branch + localization (to add)
-- `education.12` | **TODO** | — | Академическое письмо | `child_interface_category_education` → seed + experience branch + localization (to add)
-- `education.13` | **TODO** | — | Презентационные навыки | `child_interface_category_education` → seed + experience branch + localization (to add)
-- `education.14` | **PARTIAL** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Проектная деятельность | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
-- `education.15` | **TODO** | — | Международные программы | `child_interface_category_education` → seed + experience branch + localization (to add)
-- `career.01` | **PARTIAL** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Поиск работы | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
-- `career.02` | **TODO** | — | Составление резюме | `child_interface_category_career` → seed + experience branch + localization (to add)
-- `career.03` | **TODO** | — | Собеседования | `child_interface_category_career` → seed + experience branch + localization (to add)
-- `career.04` | **PARTIAL** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Карьерный рост | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
-- `career.05` | **TODO** | — | Профессиональное развитие | `child_interface_category_career` → seed + experience branch + localization (to add)
-- `career.06` | **TODO** | — | Нетворкинг | `child_interface_category_career` → seed + experience branch + localization (to add)
-- `career.07` | **TODO** | — | Лидерские навыки | `child_interface_category_career` → seed + experience branch + localization (to add)
-- `career.08` | **TODO** | — | Командная работа | `child_interface_category_career` → seed + experience branch + localization (to add)
-- `career.09` | **TODO** | — | Управление временем | `child_interface_category_career` → seed + experience branch + localization (to add)
-- `career.10` | **PARTIAL** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Финансовая грамотность | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
-- `career.11` | **TODO** | — | Предпринимательство | `child_interface_category_career` → seed + experience branch + localization (to add)
-- `career.12` | **TODO** | — | Фриланс | `child_interface_category_career` → seed + experience branch + localization (to add)
-- `career.13` | **TODO** | — | Карьерные изменения | `child_interface_category_career` → seed + experience branch + localization (to add)
-- `career.14` | **TODO** | — | Баланс работы и жизни | `child_interface_category_career` → seed + experience branch + localization (to add)
-- `career.15` | **TODO** | — | Профессиональная этика | `child_interface_category_career` → seed + experience branch + localization (to add)
-- `internet.01` | **TODO** | — | Продвинутая кибербезопасность | `child_interface_category_internet` → seed + experience branch + localization (to add)
-- `internet.02` | **PARTIAL** | ChildContentExperienceScreen → contentCard (lesson route default) | Защита персональных данных | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
-- `internet.03` | **TODO** | — | Безопасность платежей | `child_interface_category_internet` → seed + experience branch + localization (to add)
-- `internet.04` | **TODO** | — | Защита от хакеров | `child_interface_category_internet` → seed + experience branch + localization (to add)
-- `internet.05` | **TODO** | — | Безопасность в облаке | `child_interface_category_internet` → seed + experience branch + localization (to add)
-- `internet.06` | **TODO** | — | Защита устройств | `child_interface_category_internet` → seed + experience branch + localization (to add)
-- `internet.07` | **PARTIAL** | ChildContentExperienceScreen → contentCard (lesson route default) | Безопасность в соцсетях | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
-- `internet.08` | **TODO** | — | Защита от фишинга | `child_interface_category_internet` → seed + experience branch + localization (to add)
-- `internet.09` | **TODO** | — | Безопасность email | `child_interface_category_internet` → seed + experience branch + localization (to add)
-- `internet.10` | **TODO** | — | Защита от вирусов | `child_interface_category_internet` → seed + experience branch + localization (to add)
-- `internet.11` | **TODO** | — | Безопасность Wi-Fi | `child_interface_category_internet` → seed + experience branch + localization (to add)
-- `internet.12` | **PARTIAL** | ChildContentExperienceScreen → contentCard (lesson route default) | Защита от мошенничества | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
-- `internet.13` | **TODO** | — | Безопасность в путешествиях | `child_interface_category_internet` → seed + experience branch + localization (to add)
-- `internet.14` | **TODO** | — | Корпоративная безопасность | `child_interface_category_internet` → seed + experience branch + localization (to add)
-- `internet.15` | **TODO** | — | Правовые аспекты | `child_interface_category_internet` → seed + experience branch + localization (to add)
-- `movies.01` | **TODO** | — | Классика кино | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.02` | **TODO** | — | Современное кино | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.03` | **TODO** | — | Фильмы по жанрам | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.04` | **TODO** | — | Киноискусство | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.05` | **TODO** | — | Фильмография режиссеров | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.06` | **TODO** | — | Актерское мастерство | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.07` | **TODO** | — | Кинематография | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.08` | **TODO** | — | Сценарное мастерство | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.09` | **TODO** | — | Продюсирование | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.10` | **TODO** | — | Кино критика | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.11` | **TODO** | — | Документальное кино | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.12` | **TODO** | — | Анимационное кино | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.13` | **TODO** | — | Короткометражки | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.14` | **TODO** | — | Кинофестивали | `child_interface_category_movies` → seed + experience branch + localization (to add)
-- `movies.15` | **TODO** | — | Международное кино | `child_interface_category_movies` → seed + experience branch + localization (to add)
+- `education.05` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Сертификаты и дипломы | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.06` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Международное образование | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.07` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Дистанционное обучение | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.08` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Профессиональная переподготовка | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.09` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Повышение квалификации | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.10` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Научная деятельность | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.11` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Исследовательская работа | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.12` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Академическое письмо | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.13` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Презентационные навыки | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.14` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Проектная деятельность | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `education.15` | **DONE** | ChildContentExperienceScreen → EducationPathwaysMilestonesView (route .career + education) | Международные программы | `child_interface_category_education` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.01` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Поиск работы | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.02` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Составление резюме | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.03` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Собеседования | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.04` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Карьерный рост | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.05` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Профессиональное развитие | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.06` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Нетворкинг | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.07` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Лидерские навыки | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.08` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Командная работа | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.09` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Управление временем | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.10` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Финансовая грамотность | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.11` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Предпринимательство | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.12` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Фриланс | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.13` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Карьерные изменения | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.14` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Баланс работы и жизни | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `career.15` | **DONE** | ChildContentExperienceScreen → contentCard / actionCard (no dedicated career view yet) | Профессиональная этика | `child_interface_category_career` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.01` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Продвинутая кибербезопасность | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.02` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Защита персональных данных | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.03` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Безопасность платежей | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.04` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Защита от хакеров | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.05` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Безопасность в облаке | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.06` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Защита устройств | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.07` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Безопасность в соцсетях | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.08` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Защита от фишинга | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.09` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Безопасность email | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.10` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Защита от вирусов | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.11` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Безопасность Wi-Fi | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.12` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Защита от мошенничества | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.13` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Безопасность в путешествиях | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.14` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Корпоративная безопасность | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `internet.15` | **DONE** | ChildContentExperienceScreen → contentCard (lesson route default) | Правовые аспекты | `child_interface_category_internet` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.01` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Классика кино | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.02` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Современное кино | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.03` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Фильмы по жанрам | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.04` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Киноискусство | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.05` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Фильмография режиссеров | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.06` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Актерское мастерство | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.07` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Кинематография | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.08` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Сценарное мастерство | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.09` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Продюсирование | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.10` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Кино критика | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.11` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Документальное кино | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.12` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Анимационное кино | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.13` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Короткометражки | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.14` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Кинофестивали | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
+- `movies.15` | **DONE** | ChildContentExperienceScreen → contentCard (video route; no movies-specific view yet) | Международное кино | `child_interface_category_movies` → ChildContentExperienceScreen + ContentSeedProvider
 
 ## 5) Recommendations (engineering)
 

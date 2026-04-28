@@ -6,7 +6,8 @@
 - **`docs/PLAN_GOVERNANCE_ONEPAGER.md`** — **единый вход по метрикам (178 / 68 / 275 / G)**, релизный скоуп §3, non-code трек §4, приоритеты P0–P3.
 - `NEXT_VERSION_IMPLEMENTATION_PLAN.md`
 - `docs/EXECUTION_AND_LOCALIZATION_DASHBOARD.md`
-- **`docs/PLAN_174_ML_HANDOFF_FRONTEND.md`** — handoff для ML: что закрыто в **174** задачах, темы фронта, как проверяли, открытые 4, ссылки на артефакты
+- **`docs/PLAN_174_ML_HANDOFF_FRONTEND.md`** — тематический ML-handoff, снятый на момент **174/178** (см. §0 внутри файла); **текущий plan-fact — 178/178** в этом дашборде
+- **`docs/CHILD_CONTENT_FINAL_SYSTEM_HANDOFF.md`** — ML-ready end-state по детскому контенту (**178 + 68 + 275**): архитектура, локализация, гейты, порядок валидации
 - **`docs/CHILD_CONTENT_INTERFACE_ML_HANDBOOK.md`** — полная карта **детского контента и интерфейса** для ML: связка планов **178 / 68 / матрица 275**, код, гейты, волны, ссылки на все ключевые артефакты
 - **`docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md`** — каноническая матрица **275** пунктов каталога (`PLAN_ITEM -> category_id -> item_id -> status`)
 - `docs/GAMIFICATION_LOCALIZATION_SYNC_MATRIX.md`
@@ -47,7 +48,7 @@
 - В работе: **0**
 - Ожидают: **0**
 
-**Не путать с другими шкалами:** Phase 2 по детскому контенту — **68** задач в `docs/CURSOR_CHAT_PENDING_CHECKLIST.md` (на 2026-04-27: **68/68**). Каталог **275** — `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md`. Сводная таблица метрик — **`docs/PLAN_GOVERNANCE_ONEPAGER.md` §2**.
+**Не путать с другими шкалами:** Phase 2 по детскому контенту — **68** задач в `docs/CURSOR_CHAT_PENDING_CHECKLIST.md` (на 2026-04-27: **68/68**). Каталог **275** — `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md` (на 2026-04-28: **DONE 275 / PARTIAL 0 / TODO 0**). Сводная таблица метрик — **`docs/PLAN_GOVERNANCE_ONEPAGER.md` §2**.
 
 ## Электронная панель задач (операционный контур)
 

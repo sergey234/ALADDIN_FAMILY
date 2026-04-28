@@ -1,6 +1,6 @@
 # Phase 2 Live TODO Tracker (Child Content 100%)
 
-_Last update: 2026-04-27 (integrated: canonical plan + six hats + independent analysis)._
+_Last update: 2026-04-29 (synced “Current Baseline” with final category + 275 matrix closure; task checklist below remains the historical execution log)._
 
 ## How To Track In Real Time
 
@@ -15,10 +15,12 @@ _Last update: 2026-04-27 (integrated: canonical plan + six hats + independent an
 
 ## Current Baseline (Fact)
 
+- **Canonical ML handoff (end-state narrative):** `docs/CHILD_CONTENT_FINAL_SYSTEM_HANDOFF.md`
 - Category readiness snapshot (`docs/PHASE2_CATEGORY_ACCEPTANCE_STATUS_ALL.md`):
-  - `READY`: 0
-  - `READY WITH CONDITIONS`: 8
-  - `NOT READY`: 4 (`toys`, `drawing`, `songs`, `stories`)
+  - `READY`: **12 / 12**
+  - `READY WITH CONDITIONS`: **0**
+  - `NOT READY`: **0**
+- **275-item matrix:** `DONE 275 / PARTIAL 0 / TODO 0` (canonical: `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md`; open rows: `docs/PLAN_ITEM_OPEN_TASKS.md`)
 - Gate status at latest run:
   - [x] `localization_lint` PASS
   - [x] `phase7_content_qa_matrix_smoke` PASS

@@ -48,16 +48,32 @@ struct ChildContentExperienceScreen: View {
                             .environmentObject(localizationManager)
                             .accessibilityIdentifier("child_experience_category_social")
                             .accessibilityLabel(localizationManager.localized("child_accessibility_category_social"))
+                    } else if route == .lesson, item.categoryId == ChildCategoryKey.internet {
+                        EducationPathwaysMilestonesView(item: item, onComplete: onComplete)
+                            .environmentObject(localizationManager)
+                            .accessibilityIdentifier("child_experience_category_internet")
+                            .accessibilityLabel(localizationManager.localized("child_accessibility_category_internet"))
                     } else if route == .song, item.categoryId == ChildCategoryKey.music {
                         MusicDrillsProgressionView(item: item, onComplete: onComplete)
                             .environmentObject(localizationManager)
                             .accessibilityIdentifier("child_experience_category_music")
                             .accessibilityLabel(localizationManager.localized("child_accessibility_category_music"))
-                    } else if route == .career, item.categoryId == ChildCategoryKey.education {
+                    } else if route == .career,
+                              (item.categoryId == ChildCategoryKey.education || item.categoryId == ChildCategoryKey.career) {
                         EducationPathwaysMilestonesView(item: item, onComplete: onComplete)
                             .environmentObject(localizationManager)
-                            .accessibilityIdentifier("child_experience_category_education")
-                            .accessibilityLabel(localizationManager.localized("child_accessibility_category_education"))
+                            .accessibilityIdentifier(
+                                item.categoryId == ChildCategoryKey.career
+                                ? "child_experience_category_career"
+                                : "child_experience_category_education"
+                            )
+                            .accessibilityLabel(
+                                localizationManager.localized(
+                                    item.categoryId == ChildCategoryKey.career
+                                    ? "child_accessibility_category_career"
+                                    : "child_accessibility_category_education"
+                                )
+                            )
                     } else if route == .lesson, item.categoryId == ChildCategoryKey.study {
                         StudyLessonTestExperienceView(item: item, onComplete: onComplete)
                             .environmentObject(localizationManager)
@@ -84,6 +100,16 @@ struct ChildContentExperienceScreen: View {
                             .environmentObject(localizationManager)
                             .accessibilityIdentifier("child_experience_category_cartoons")
                             .accessibilityLabel(localizationManager.localized("child_accessibility_category_cartoons"))
+                    } else if route == .video, item.categoryId == ChildCategoryKey.movies {
+                        MovieLiteracyExperienceView(item: item, onComplete: onComplete)
+                            .environmentObject(localizationManager)
+                            .accessibilityIdentifier("child_experience_category_movies")
+                            .accessibilityLabel(localizationManager.localized("child_accessibility_category_movies"))
+                    } else if route == .video, item.categoryId == ChildCategoryKey.video {
+                        VideoProductionExperienceView(item: item, onComplete: onComplete)
+                            .environmentObject(localizationManager)
+                            .accessibilityIdentifier("child_experience_category_video")
+                            .accessibilityLabel(localizationManager.localized("child_accessibility_category_video"))
                     } else {
                         contentCard
                         actionCard
@@ -227,29 +253,368 @@ private struct ProgrammingTaskProgressionView: View {
     @State private var isFinished: Bool = false
 
     private var steps: [ProgrammingTaskStep] {
-        [
-            ProgrammingTaskStep(
-                titleKey: "child_programming_task_title_1",
-                promptKey: "child_programming_task_prompt_1",
-                placeholderKey: "child_programming_task_placeholder_1",
-                expectedAnswer: "print(\"ALADDIN\")",
-                successKey: "child_programming_task_success_1"
-            ),
-            ProgrammingTaskStep(
-                titleKey: "child_programming_task_title_2",
-                promptKey: "child_programming_task_prompt_2",
-                placeholderKey: "child_programming_task_placeholder_2",
-                expectedAnswer: "let x = 5",
-                successKey: "child_programming_task_success_2"
-            ),
-            ProgrammingTaskStep(
-                titleKey: "child_programming_task_title_3",
-                promptKey: "child_programming_task_prompt_3",
-                placeholderKey: "child_programming_task_placeholder_3",
-                expectedAnswer: "if age >= 13",
-                successKey: "child_programming_task_success_3"
-            )
-        ]
+        switch item.id {
+        case "programming.01":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_swift_title_1",
+                    promptKey: "child_programming_swift_prompt_1",
+                    placeholderKey: "child_programming_swift_placeholder_1",
+                    expectedAnswer: "import SwiftUI",
+                    successKey: "child_programming_swift_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_swift_title_2",
+                    promptKey: "child_programming_swift_prompt_2",
+                    placeholderKey: "child_programming_swift_placeholder_2",
+                    expectedAnswer: "struct ContentView: View",
+                    successKey: "child_programming_swift_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_swift_title_3",
+                    promptKey: "child_programming_swift_prompt_3",
+                    placeholderKey: "child_programming_swift_placeholder_3",
+                    expectedAnswer: "var body: some View",
+                    successKey: "child_programming_swift_success_3"
+                )
+            ]
+        case "programming.02":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_visual_title_1",
+                    promptKey: "child_programming_visual_prompt_1",
+                    placeholderKey: "child_programming_visual_placeholder_1",
+                    expectedAnswer: "drag block",
+                    successKey: "child_programming_visual_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_visual_title_2",
+                    promptKey: "child_programming_visual_prompt_2",
+                    placeholderKey: "child_programming_visual_placeholder_2",
+                    expectedAnswer: "if condition",
+                    successKey: "child_programming_visual_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_visual_title_3",
+                    promptKey: "child_programming_visual_prompt_3",
+                    placeholderKey: "child_programming_visual_placeholder_3",
+                    expectedAnswer: "repeat loop",
+                    successKey: "child_programming_visual_success_3"
+                )
+            ]
+        case "programming.03":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_apps_title_1",
+                    promptKey: "child_programming_apps_prompt_1",
+                    placeholderKey: "child_programming_apps_placeholder_1",
+                    expectedAnswer: "Button(\"Start\")",
+                    successKey: "child_programming_apps_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_apps_title_2",
+                    promptKey: "child_programming_apps_prompt_2",
+                    placeholderKey: "child_programming_apps_placeholder_2",
+                    expectedAnswer: "Text(\"Hello\")",
+                    successKey: "child_programming_apps_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_apps_title_3",
+                    promptKey: "child_programming_apps_prompt_3",
+                    placeholderKey: "child_programming_apps_placeholder_3",
+                    expectedAnswer: "Image(systemName: \"star\")",
+                    successKey: "child_programming_apps_success_3"
+                )
+            ]
+        case "programming.04":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_data_title_1",
+                    promptKey: "child_programming_data_prompt_1",
+                    placeholderKey: "child_programming_data_placeholder_1",
+                    expectedAnswer: "let ages = [12, 13, 14]",
+                    successKey: "child_programming_data_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_data_title_2",
+                    promptKey: "child_programming_data_prompt_2",
+                    placeholderKey: "child_programming_data_placeholder_2",
+                    expectedAnswer: "ages.count",
+                    successKey: "child_programming_data_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_data_title_3",
+                    promptKey: "child_programming_data_prompt_3",
+                    placeholderKey: "child_programming_data_placeholder_3",
+                    expectedAnswer: "ages.first",
+                    successKey: "child_programming_data_success_3"
+                )
+            ]
+        case "programming.05":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_ux_title_1",
+                    promptKey: "child_programming_ux_prompt_1",
+                    placeholderKey: "child_programming_ux_placeholder_1",
+                    expectedAnswer: "padding()",
+                    successKey: "child_programming_ux_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_ux_title_2",
+                    promptKey: "child_programming_ux_prompt_2",
+                    placeholderKey: "child_programming_ux_placeholder_2",
+                    expectedAnswer: "foregroundColor(.blue)",
+                    successKey: "child_programming_ux_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_ux_title_3",
+                    promptKey: "child_programming_ux_prompt_3",
+                    placeholderKey: "child_programming_ux_placeholder_3",
+                    expectedAnswer: "font(.headline)",
+                    successKey: "child_programming_ux_success_3"
+                )
+            ]
+        case "programming.07":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_debug_title_1",
+                    promptKey: "child_programming_debug_prompt_1",
+                    placeholderKey: "child_programming_debug_placeholder_1",
+                    expectedAnswer: "print(state)",
+                    successKey: "child_programming_debug_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_debug_title_2",
+                    promptKey: "child_programming_debug_prompt_2",
+                    placeholderKey: "child_programming_debug_placeholder_2",
+                    expectedAnswer: "breakpoint",
+                    successKey: "child_programming_debug_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_debug_title_3",
+                    promptKey: "child_programming_debug_prompt_3",
+                    placeholderKey: "child_programming_debug_placeholder_3",
+                    expectedAnswer: "XCTest",
+                    successKey: "child_programming_debug_success_3"
+                )
+            ]
+        case "programming.08":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_versions_title_1",
+                    promptKey: "child_programming_versions_prompt_1",
+                    placeholderKey: "child_programming_versions_placeholder_1",
+                    expectedAnswer: "git status",
+                    successKey: "child_programming_versions_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_versions_title_2",
+                    promptKey: "child_programming_versions_prompt_2",
+                    placeholderKey: "child_programming_versions_placeholder_2",
+                    expectedAnswer: "git commit -m \"init\"",
+                    successKey: "child_programming_versions_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_versions_title_3",
+                    promptKey: "child_programming_versions_prompt_3",
+                    placeholderKey: "child_programming_versions_placeholder_3",
+                    expectedAnswer: "git push",
+                    successKey: "child_programming_versions_success_3"
+                )
+            ]
+        case "programming.09":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_team_title_1",
+                    promptKey: "child_programming_team_prompt_1",
+                    placeholderKey: "child_programming_team_placeholder_1",
+                    expectedAnswer: "git checkout -b feature",
+                    successKey: "child_programming_team_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_team_title_2",
+                    promptKey: "child_programming_team_prompt_2",
+                    placeholderKey: "child_programming_team_placeholder_2",
+                    expectedAnswer: "git merge feature",
+                    successKey: "child_programming_team_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_team_title_3",
+                    promptKey: "child_programming_team_prompt_3",
+                    placeholderKey: "child_programming_team_placeholder_3",
+                    expectedAnswer: "code review",
+                    successKey: "child_programming_team_success_3"
+                )
+            ]
+        case "programming.10":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_management_title_1",
+                    promptKey: "child_programming_management_prompt_1",
+                    placeholderKey: "child_programming_management_placeholder_1",
+                    expectedAnswer: "backlog",
+                    successKey: "child_programming_management_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_management_title_2",
+                    promptKey: "child_programming_management_prompt_2",
+                    placeholderKey: "child_programming_management_placeholder_2",
+                    expectedAnswer: "sprint",
+                    successKey: "child_programming_management_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_management_title_3",
+                    promptKey: "child_programming_management_prompt_3",
+                    placeholderKey: "child_programming_management_placeholder_3",
+                    expectedAnswer: "retrospective",
+                    successKey: "child_programming_management_success_3"
+                )
+            ]
+        case "programming.11":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_ethics_title_1",
+                    promptKey: "child_programming_ethics_prompt_1",
+                    placeholderKey: "child_programming_ethics_placeholder_1",
+                    expectedAnswer: "privacy",
+                    successKey: "child_programming_ethics_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_ethics_title_2",
+                    promptKey: "child_programming_ethics_prompt_2",
+                    placeholderKey: "child_programming_ethics_placeholder_2",
+                    expectedAnswer: "fairness",
+                    successKey: "child_programming_ethics_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_ethics_title_3",
+                    promptKey: "child_programming_ethics_prompt_3",
+                    placeholderKey: "child_programming_ethics_placeholder_3",
+                    expectedAnswer: "accessibility",
+                    successKey: "child_programming_ethics_success_3"
+                )
+            ]
+        case "programming.12":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_future_title_1",
+                    promptKey: "child_programming_future_prompt_1",
+                    placeholderKey: "child_programming_future_placeholder_1",
+                    expectedAnswer: "ai assistant",
+                    successKey: "child_programming_future_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_future_title_2",
+                    promptKey: "child_programming_future_prompt_2",
+                    placeholderKey: "child_programming_future_placeholder_2",
+                    expectedAnswer: "robotics",
+                    successKey: "child_programming_future_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_future_title_3",
+                    promptKey: "child_programming_future_prompt_3",
+                    placeholderKey: "child_programming_future_placeholder_3",
+                    expectedAnswer: "green tech",
+                    successKey: "child_programming_future_success_3"
+                )
+            ]
+        case "programming.13":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_security_title_1",
+                    promptKey: "child_programming_security_prompt_1",
+                    placeholderKey: "child_programming_security_placeholder_1",
+                    expectedAnswer: "input validation",
+                    successKey: "child_programming_security_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_security_title_2",
+                    promptKey: "child_programming_security_prompt_2",
+                    placeholderKey: "child_programming_security_placeholder_2",
+                    expectedAnswer: "least privilege",
+                    successKey: "child_programming_security_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_security_title_3",
+                    promptKey: "child_programming_security_prompt_3",
+                    placeholderKey: "child_programming_security_placeholder_3",
+                    expectedAnswer: "dependency update",
+                    successKey: "child_programming_security_success_3"
+                )
+            ]
+        case "programming.14":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_mobile_title_1",
+                    promptKey: "child_programming_mobile_prompt_1",
+                    placeholderKey: "child_programming_mobile_placeholder_1",
+                    expectedAnswer: "NavigationStack",
+                    successKey: "child_programming_mobile_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_mobile_title_2",
+                    promptKey: "child_programming_mobile_prompt_2",
+                    placeholderKey: "child_programming_mobile_placeholder_2",
+                    expectedAnswer: "@State",
+                    successKey: "child_programming_mobile_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_mobile_title_3",
+                    promptKey: "child_programming_mobile_prompt_3",
+                    placeholderKey: "child_programming_mobile_placeholder_3",
+                    expectedAnswer: "onAppear",
+                    successKey: "child_programming_mobile_success_3"
+                )
+            ]
+        case "programming.15":
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_web_title_1",
+                    promptKey: "child_programming_web_prompt_1",
+                    placeholderKey: "child_programming_web_placeholder_1",
+                    expectedAnswer: "HTML",
+                    successKey: "child_programming_web_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_web_title_2",
+                    promptKey: "child_programming_web_prompt_2",
+                    placeholderKey: "child_programming_web_placeholder_2",
+                    expectedAnswer: "CSS",
+                    successKey: "child_programming_web_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_web_title_3",
+                    promptKey: "child_programming_web_prompt_3",
+                    placeholderKey: "child_programming_web_placeholder_3",
+                    expectedAnswer: "JavaScript",
+                    successKey: "child_programming_web_success_3"
+                )
+            ]
+        default:
+            return [
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_task_title_1",
+                    promptKey: "child_programming_task_prompt_1",
+                    placeholderKey: "child_programming_task_placeholder_1",
+                    expectedAnswer: "print(\"ALADDIN\")",
+                    successKey: "child_programming_task_success_1"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_task_title_2",
+                    promptKey: "child_programming_task_prompt_2",
+                    placeholderKey: "child_programming_task_placeholder_2",
+                    expectedAnswer: "let x = 5",
+                    successKey: "child_programming_task_success_2"
+                ),
+                ProgrammingTaskStep(
+                    titleKey: "child_programming_task_title_3",
+                    promptKey: "child_programming_task_prompt_3",
+                    placeholderKey: "child_programming_task_placeholder_3",
+                    expectedAnswer: "if age >= 13",
+                    successKey: "child_programming_task_success_3"
+                )
+            ]
+        }
     }
 
     private var step: ProgrammingTaskStep {
@@ -387,23 +752,124 @@ private struct EducationPathwaysMilestonesView: View {
     @State private var finished: Bool = false
 
     private var milestones: [EducationPathwayMilestone] {
-        [
+        switch item.id {
+        case "education.01":
+            return makeEducationMilestones(prefix: "child_education_online")
+        case "education.02":
+            return makeEducationMilestones(prefix: "child_education_certificates")
+        case "education.03":
+            return makeEducationMilestones(prefix: "child_education_online")
+        case "education.05":
+            return makeEducationMilestones(prefix: "child_education_certificates")
+        case "education.06":
+            return makeEducationMilestones(prefix: "child_education_international")
+        case "education.07":
+            return makeEducationMilestones(prefix: "child_education_distance")
+        case "education.08":
+            return makeEducationMilestones(prefix: "child_education_reskilling")
+        case "education.09":
+            return makeEducationMilestones(prefix: "child_education_upskilling")
+        case "education.10":
+            return makeEducationMilestones(prefix: "child_education_science")
+        case "education.11":
+            return makeEducationMilestones(prefix: "child_education_research")
+        case "education.12":
+            return makeEducationMilestones(prefix: "child_education_academic_writing")
+        case "education.13":
+            return makeEducationMilestones(prefix: "child_education_presentation")
+        case "education.14":
+            return makeEducationMilestones(prefix: "child_education_presentation")
+        case "education.15":
+            return makeEducationMilestones(prefix: "child_education_global_programs")
+        case "career.01":
+            return makeEducationMilestones(prefix: "child_career_resume")
+        case "career.02":
+            return makeEducationMilestones(prefix: "child_career_resume")
+        case "career.03":
+            return makeEducationMilestones(prefix: "child_career_interview")
+        case "career.04":
+            return makeEducationMilestones(prefix: "child_career_growth")
+        case "career.05":
+            return makeEducationMilestones(prefix: "child_career_growth")
+        case "career.06":
+            return makeEducationMilestones(prefix: "child_career_networking")
+        case "career.07":
+            return makeEducationMilestones(prefix: "child_career_leadership")
+        case "career.08":
+            return makeEducationMilestones(prefix: "child_career_teamwork")
+        case "career.09":
+            return makeEducationMilestones(prefix: "child_career_time_management")
+        case "career.10":
+            return makeEducationMilestones(prefix: "child_career_time_management")
+        case "career.11":
+            return makeEducationMilestones(prefix: "child_career_entrepreneurship")
+        case "career.12":
+            return makeEducationMilestones(prefix: "child_career_freelance")
+        case "career.13":
+            return makeEducationMilestones(prefix: "child_career_change")
+        case "career.14":
+            return makeEducationMilestones(prefix: "child_career_work_life")
+        case "career.15":
+            return makeEducationMilestones(prefix: "child_career_ethics")
+        case "internet.01":
+            return makeEducationMilestones(prefix: "child_internet_cyber")
+        case "internet.02":
+            return makeEducationMilestones(prefix: "child_internet_cyber")
+        case "internet.03":
+            return makeEducationMilestones(prefix: "child_internet_payments")
+        case "internet.04":
+            return makeEducationMilestones(prefix: "child_internet_hacker_defense")
+        case "internet.05":
+            return makeEducationMilestones(prefix: "child_internet_cloud_security")
+        case "internet.06":
+            return makeEducationMilestones(prefix: "child_internet_device_security")
+        case "internet.07":
+            return makeEducationMilestones(prefix: "child_internet_phishing")
+        case "internet.08":
+            return makeEducationMilestones(prefix: "child_internet_phishing")
+        case "internet.09":
+            return makeEducationMilestones(prefix: "child_internet_email_security")
+        case "internet.10":
+            return makeEducationMilestones(prefix: "child_internet_virus")
+        case "internet.11":
+            return makeEducationMilestones(prefix: "child_internet_wifi")
+        case "internet.12":
+            return makeEducationMilestones(prefix: "child_internet_payments")
+        case "internet.13":
+            return makeEducationMilestones(prefix: "child_internet_travel_security")
+        case "internet.14":
+            return makeEducationMilestones(prefix: "child_internet_corporate")
+        case "internet.15":
+            return makeEducationMilestones(prefix: "child_internet_legal")
+        default:
+            return [
+                EducationPathwayMilestone(
+                    titleKey: "child_education_milestone_title_1",
+                    briefKey: "child_education_milestone_brief_1",
+                    actionKey: "child_education_milestone_action_1"
+                ),
+                EducationPathwayMilestone(
+                    titleKey: "child_education_milestone_title_2",
+                    briefKey: "child_education_milestone_brief_2",
+                    actionKey: "child_education_milestone_action_2"
+                ),
+                EducationPathwayMilestone(
+                    titleKey: "child_education_milestone_title_3",
+                    briefKey: "child_education_milestone_brief_3",
+                    actionKey: "child_education_milestone_action_3"
+                )
+            ]
+        }
+    }
+
+    private func makeEducationMilestones(prefix: String) -> [EducationPathwayMilestone] {
+        (1...3).map { i in
             EducationPathwayMilestone(
-                titleKey: "child_education_milestone_title_1",
-                briefKey: "child_education_milestone_brief_1",
-                actionKey: "child_education_milestone_action_1"
-            ),
-            EducationPathwayMilestone(
-                titleKey: "child_education_milestone_title_2",
-                briefKey: "child_education_milestone_brief_2",
-                actionKey: "child_education_milestone_action_2"
-            ),
-            EducationPathwayMilestone(
-                titleKey: "child_education_milestone_title_3",
-                briefKey: "child_education_milestone_brief_3",
-                actionKey: "child_education_milestone_action_3"
+                titleKey: "\(prefix)_title_\(i)",
+                briefKey: "\(prefix)_brief_\(i)",
+                actionKey: "\(prefix)_action_\(i)"
             )
-        ]
+        }
     }
 
     private var completionPercent: Int {
@@ -511,38 +977,84 @@ private struct MusicDrillsProgressionView: View {
     @State private var finished: Bool = false
 
     private var drills: [MusicDrill] {
-        [
+        switch item.id {
+        case "music.01":
+            return makeMusicDrillSet(prefix: "child_music_creation_drill", correct: [0, 2, 1])
+        case "music.02":
+            return makeMusicDrillSet(prefix: "child_music_creation_drill", correct: [2, 1, 0])
+        case "music.03":
+            return makeMusicDrillSet(prefix: "child_music_instruments_drill", correct: [0, 2, 1])
+        case "music.04":
+            return makeMusicDrillSet(prefix: "child_music_instruments_drill", correct: [1, 0, 2])
+        case "music.06":
+            return makeMusicDrillSet(prefix: "child_music_history_drill", correct: [1, 0, 2])
+        case "music.07":
+            return makeMusicDrillSet(prefix: "child_music_psychology_drill", correct: [2, 0, 1])
+        case "music.08":
+            return makeMusicDrillSet(prefix: "child_music_psychology_drill", correct: [2, 1, 0])
+        case "music.09":
+            return makeMusicDrillSet(prefix: "child_music_focus_drill", correct: [1, 2, 0])
+        case "music.10":
+            return makeMusicDrillSet(prefix: "child_music_relax_drill", correct: [1, 2, 0])
+        case "music.11":
+            return makeMusicDrillSet(prefix: "child_music_soundtrack_drill", correct: [2, 1, 0])
+        case "music.12":
+            return makeMusicDrillSet(prefix: "child_music_cultures_drill", correct: [0, 2, 1])
+        case "music.13":
+            return makeMusicDrillSet(prefix: "child_music_modern_drill", correct: [1, 0, 2])
+        case "music.14":
+            return makeMusicDrillSet(prefix: "child_music_classic_drill", correct: [2, 0, 1])
+        case "music.15":
+            return makeMusicDrillSet(prefix: "child_music_experimental_drill", correct: [1, 0, 2])
+        default:
+            return [
+                MusicDrill(
+                    titleKey: "child_music_drill_title_1",
+                    promptKey: "child_music_drill_prompt_1",
+                    options: [
+                        localizationManager.localized("child_music_drill_option_1a"),
+                        localizationManager.localized("child_music_drill_option_1b"),
+                        localizationManager.localized("child_music_drill_option_1c")
+                    ],
+                    correctIndex: 1
+                ),
+                MusicDrill(
+                    titleKey: "child_music_drill_title_2",
+                    promptKey: "child_music_drill_prompt_2",
+                    options: [
+                        localizationManager.localized("child_music_drill_option_2a"),
+                        localizationManager.localized("child_music_drill_option_2b"),
+                        localizationManager.localized("child_music_drill_option_2c")
+                    ],
+                    correctIndex: 0
+                ),
+                MusicDrill(
+                    titleKey: "child_music_drill_title_3",
+                    promptKey: "child_music_drill_prompt_3",
+                    options: [
+                        localizationManager.localized("child_music_drill_option_3a"),
+                        localizationManager.localized("child_music_drill_option_3b"),
+                        localizationManager.localized("child_music_drill_option_3c")
+                    ],
+                    correctIndex: 2
+                )
+            ]
+        }
+    }
+
+    private func makeMusicDrillSet(prefix: String, correct: [Int]) -> [MusicDrill] {
+        (1...3).map { i in
             MusicDrill(
-                titleKey: "child_music_drill_title_1",
-                promptKey: "child_music_drill_prompt_1",
+                titleKey: "\(prefix)_title_\(i)",
+                promptKey: "\(prefix)_prompt_\(i)",
                 options: [
-                    localizationManager.localized("child_music_drill_option_1a"),
-                    localizationManager.localized("child_music_drill_option_1b"),
-                    localizationManager.localized("child_music_drill_option_1c")
+                    localizationManager.localized("\(prefix)_option_\(i)a"),
+                    localizationManager.localized("\(prefix)_option_\(i)b"),
+                    localizationManager.localized("\(prefix)_option_\(i)c")
                 ],
-                correctIndex: 1
-            ),
-            MusicDrill(
-                titleKey: "child_music_drill_title_2",
-                promptKey: "child_music_drill_prompt_2",
-                options: [
-                    localizationManager.localized("child_music_drill_option_2a"),
-                    localizationManager.localized("child_music_drill_option_2b"),
-                    localizationManager.localized("child_music_drill_option_2c")
-                ],
-                correctIndex: 0
-            ),
-            MusicDrill(
-                titleKey: "child_music_drill_title_3",
-                promptKey: "child_music_drill_prompt_3",
-                options: [
-                    localizationManager.localized("child_music_drill_option_3a"),
-                    localizationManager.localized("child_music_drill_option_3b"),
-                    localizationManager.localized("child_music_drill_option_3c")
-                ],
-                correctIndex: 2
+                correctIndex: correct[i - 1]
             )
-        ]
+        }
     }
 
     private var drill: MusicDrill {
@@ -675,38 +1187,80 @@ private struct SocialLiteracyDrillsView: View {
     @State private var explanationText: String = ""
 
     private var scenarios: [SocialDrillScenario] {
-        [
+        switch item.id {
+        case "social.03":
+            return makeSocialDrillSet(prefix: "child_social_reputation_drill", safeIndexes: [1, 0, 2])
+        case "social.04":
+            return makeSocialDrillSet(prefix: "child_social_reputation_drill", safeIndexes: [1, 2, 0])
+        case "social.05":
+            return makeSocialDrillSet(prefix: "child_social_addiction_drill", safeIndexes: [2, 1, 0])
+        case "social.07":
+            return makeSocialDrillSet(prefix: "child_social_addiction_drill", safeIndexes: [2, 1, 0])
+        case "social.08":
+            return makeSocialDrillSet(prefix: "child_social_content_drill", safeIndexes: [1, 2, 0])
+        case "social.09":
+            return makeSocialDrillSet(prefix: "child_social_content_drill", safeIndexes: [1, 0, 2])
+        case "social.10":
+            return makeSocialDrillSet(prefix: "child_social_selfesteem_drill", safeIndexes: [1, 2, 0])
+        case "social.11":
+            return makeSocialDrillSet(prefix: "child_social_community_drill", safeIndexes: [2, 1, 0])
+        case "social.12":
+            return makeSocialDrillSet(prefix: "child_social_profnet_drill", safeIndexes: [1, 0, 2])
+        case "social.13":
+            return makeSocialDrillSet(prefix: "child_social_networking_drill", safeIndexes: [0, 2, 1])
+        case "social.14":
+            return makeSocialDrillSet(prefix: "child_social_branding_drill", safeIndexes: [2, 1, 0])
+        case "social.15":
+            return makeSocialDrillSet(prefix: "child_social_branding_drill", safeIndexes: [0, 2, 1])
+        default:
+            return [
+                SocialDrillScenario(
+                    promptKey: "child_social_drill_prompt_1",
+                    options: [
+                        localizationManager.localized("child_social_drill_option_1a"),
+                        localizationManager.localized("child_social_drill_option_1b"),
+                        localizationManager.localized("child_social_drill_option_1c")
+                    ],
+                    safeIndex: 1,
+                    explanationKey: "child_social_drill_explanation_1"
+                ),
+                SocialDrillScenario(
+                    promptKey: "child_social_drill_prompt_2",
+                    options: [
+                        localizationManager.localized("child_social_drill_option_2a"),
+                        localizationManager.localized("child_social_drill_option_2b"),
+                        localizationManager.localized("child_social_drill_option_2c")
+                    ],
+                    safeIndex: 2,
+                    explanationKey: "child_social_drill_explanation_2"
+                ),
+                SocialDrillScenario(
+                    promptKey: "child_social_drill_prompt_3",
+                    options: [
+                        localizationManager.localized("child_social_drill_option_3a"),
+                        localizationManager.localized("child_social_drill_option_3b"),
+                        localizationManager.localized("child_social_drill_option_3c")
+                    ],
+                    safeIndex: 0,
+                    explanationKey: "child_social_drill_explanation_3"
+                )
+            ]
+        }
+    }
+
+    private func makeSocialDrillSet(prefix: String, safeIndexes: [Int]) -> [SocialDrillScenario] {
+        (1...3).map { i in
             SocialDrillScenario(
-                promptKey: "child_social_drill_prompt_1",
+                promptKey: "\(prefix)_prompt_\(i)",
                 options: [
-                    localizationManager.localized("child_social_drill_option_1a"),
-                    localizationManager.localized("child_social_drill_option_1b"),
-                    localizationManager.localized("child_social_drill_option_1c")
+                    localizationManager.localized("\(prefix)_option_\(i)a"),
+                    localizationManager.localized("\(prefix)_option_\(i)b"),
+                    localizationManager.localized("\(prefix)_option_\(i)c")
                 ],
-                safeIndex: 1,
-                explanationKey: "child_social_drill_explanation_1"
-            ),
-            SocialDrillScenario(
-                promptKey: "child_social_drill_prompt_2",
-                options: [
-                    localizationManager.localized("child_social_drill_option_2a"),
-                    localizationManager.localized("child_social_drill_option_2b"),
-                    localizationManager.localized("child_social_drill_option_2c")
-                ],
-                safeIndex: 2,
-                explanationKey: "child_social_drill_explanation_2"
-            ),
-            SocialDrillScenario(
-                promptKey: "child_social_drill_prompt_3",
-                options: [
-                    localizationManager.localized("child_social_drill_option_3a"),
-                    localizationManager.localized("child_social_drill_option_3b"),
-                    localizationManager.localized("child_social_drill_option_3c")
-                ],
-                safeIndex: 0,
-                explanationKey: "child_social_drill_explanation_3"
+                safeIndex: safeIndexes[i - 1],
+                explanationKey: "\(prefix)_explanation_\(i)"
             )
-        ]
+        }
     }
 
     private var scenario: SocialDrillScenario {
@@ -816,6 +1370,160 @@ private struct SocialLiteracyDrillsView: View {
     }
 }
 
+private struct VideoProductionExperienceView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
+    let item: ContentItem
+    let onComplete: () async -> Void
+
+    @State private var progressValue: Int = 0
+
+    private var cardPrefix: String {
+        switch item.id {
+        case "video.01": return "child_video_filming"
+        case "video.02": return "child_video_editing"
+        case "video.03": return "child_video_content"
+        case "video.04": return "child_video_post"
+        case "video.05": return "child_video_fx"
+        case "video.06": return "child_video_color"
+        case "video.07": return "child_video_sound"
+        case "video.08": return "child_video_animation"
+        case "video.09": return "child_video_social"
+        case "video.10": return "child_video_documentary"
+        case "video.11": return "child_video_clip"
+        case "video.12": return "child_video_ad"
+        case "video.13": return "child_video_content"
+        case "video.14": return "child_video_vlog"
+        case "video.15": return "child_video_stream"
+        default: return "child_video_universal"
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("\(cardPrefix)_title"))
+                .font(.system(size: 17, weight: .bold))
+
+            Text(localizationManager.localized("\(cardPrefix)_prompt"))
+                .font(.system(size: 15, weight: .semibold))
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.orange.opacity(0.1)))
+
+            Text(localizationManager.localized("\(cardPrefix)_progress") + " \(progressValue)%")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+
+            ProgressView(value: Double(progressValue), total: 100)
+                .tint(.orange)
+
+            HStack(spacing: 10) {
+                Button(localizationManager.localized("\(cardPrefix)_action_step")) {
+                    progressValue = min(progressValue + 20, 100)
+                    SoundEffectPlayer.shared.play(.success, priority: .low)
+                }
+                .buttonStyle(.bordered)
+
+                Button(localizationManager.localized("\(cardPrefix)_action_reset")) {
+                    progressValue = 0
+                    SoundEffectPlayer.shared.play(.warning, priority: .low)
+                }
+                .buttonStyle(.bordered)
+            }
+
+            if progressValue >= 100 {
+                Text(localizationManager.localized("\(cardPrefix)_done"))
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.green)
+
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+}
+
+private struct MovieLiteracyExperienceView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
+    let item: ContentItem
+    let onComplete: () async -> Void
+
+    @State private var progressValue: Int = 0
+
+    private var cardPrefix: String {
+        switch item.id {
+        case "movies.01": return "child_movies_classic"
+        case "movies.02": return "child_movies_modern"
+        case "movies.03": return "child_movies_genres"
+        case "movies.04": return "child_movies_art"
+        case "movies.05": return "child_movies_directors"
+        case "movies.06": return "child_movies_acting"
+        case "movies.07": return "child_movies_cinematography"
+        case "movies.08": return "child_movies_screenwriting"
+        case "movies.09": return "child_movies_producing"
+        case "movies.10": return "child_movies_criticism"
+        case "movies.11": return "child_movies_documentary"
+        case "movies.12": return "child_movies_animation"
+        case "movies.13": return "child_movies_shorts"
+        case "movies.14": return "child_movies_festivals"
+        case "movies.15": return "child_movies_international"
+        default: return "child_movies_universal"
+        }
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("\(cardPrefix)_title"))
+                .font(.system(size: 17, weight: .bold))
+
+            Text(localizationManager.localized("\(cardPrefix)_prompt"))
+                .font(.system(size: 15, weight: .semibold))
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(RoundedRectangle(cornerRadius: 10).fill(Color.indigo.opacity(0.1)))
+
+            Text(localizationManager.localized("\(cardPrefix)_progress") + " \(progressValue)%")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+
+            ProgressView(value: Double(progressValue), total: 100)
+                .tint(.indigo)
+
+            HStack(spacing: 10) {
+                Button(localizationManager.localized("\(cardPrefix)_action_step")) {
+                    progressValue = min(progressValue + 20, 100)
+                    SoundEffectPlayer.shared.play(.success, priority: .low)
+                }
+                .buttonStyle(.bordered)
+
+                Button(localizationManager.localized("\(cardPrefix)_action_reset")) {
+                    progressValue = 0
+                    SoundEffectPlayer.shared.play(.warning, priority: .low)
+                }
+                .buttonStyle(.bordered)
+            }
+
+            if progressValue >= 100 {
+                Text(localizationManager.localized("\(cardPrefix)_done"))
+                    .font(.system(size: 14, weight: .bold))
+                    .foregroundColor(.green)
+
+                Button(localizationManager.localized("child_interface_done")) {
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+    }
+}
+
 private struct CartoonRecallQuestion: Identifiable {
     let id = UUID()
     let promptKey: String
@@ -840,33 +1548,126 @@ private struct CartoonsActiveWatchExperienceView: View {
     private let ticker = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
 
     private var questions: [CartoonRecallQuestion] {
+        switch item.id {
+        case "cartoons.01":
+            return makeCartoonRecallSet(prefix: "child_cartoons_educational_recall", correct: [0, 2, 1])
+        case "cartoons.02":
+            return [
+                CartoonRecallQuestion(
+                    promptKey: "child_cartoons_safety_recall_prompt_1",
+                    options: [
+                        localizationManager.localized("child_cartoons_safety_recall_option_1a"),
+                        localizationManager.localized("child_cartoons_safety_recall_option_1b"),
+                        localizationManager.localized("child_cartoons_safety_recall_option_1c")
+                    ],
+                    correctIndex: 0
+                ),
+                CartoonRecallQuestion(
+                    promptKey: "child_cartoons_safety_recall_prompt_2",
+                    options: [
+                        localizationManager.localized("child_cartoons_safety_recall_option_2a"),
+                        localizationManager.localized("child_cartoons_safety_recall_option_2b"),
+                        localizationManager.localized("child_cartoons_safety_recall_option_2c")
+                    ],
+                    correctIndex: 1
+                ),
+                CartoonRecallQuestion(
+                    promptKey: "child_cartoons_safety_recall_prompt_3",
+                    options: [
+                        localizationManager.localized("child_cartoons_safety_recall_option_3a"),
+                        localizationManager.localized("child_cartoons_safety_recall_option_3b"),
+                        localizationManager.localized("child_cartoons_safety_recall_option_3c")
+                    ],
+                    correctIndex: 2
+                )
+            ]
+        case "cartoons.03":
+            return makeCartoonRecallSet(prefix: "child_cartoons_friendship_recall", correct: [1, 0, 2])
+        case "cartoons.04":
+            return makeCartoonRecallSet(prefix: "child_cartoons_nature_recall", correct: [2, 1, 0])
+        case "cartoons.05":
+            return makeCartoonRecallSet(prefix: "child_cartoons_health_recall", correct: [0, 2, 1])
+        case "cartoons.06":
+            return makeCartoonRecallSet(prefix: "child_cartoons_sport_recall", correct: [1, 2, 0])
+        case "cartoons.07":
+            return makeCartoonRecallSet(prefix: "child_cartoons_art_recall", correct: [2, 0, 1])
+        case "cartoons.08":
+            return makeCartoonRecallSet(prefix: "child_cartoons_science_recall", correct: [1, 2, 0])
+        case "cartoons.09":
+            return makeCartoonRecallSet(prefix: "child_cartoons_history_recall", correct: [0, 1, 2])
+        case "cartoons.10":
+            return makeCartoonRecallSet(prefix: "child_cartoons_space_recall", correct: [2, 0, 1])
+        case "cartoons.11":
+            return makeCartoonRecallSet(prefix: "child_cartoons_animals_recall", correct: [1, 0, 2])
+        case "cartoons.12":
+            return makeCartoonRecallSet(prefix: "child_cartoons_transport_recall", correct: [0, 2, 1])
+        case "cartoons.13":
+            return makeCartoonRecallSet(prefix: "child_cartoons_food_recall", correct: [2, 1, 0])
+        case "cartoons.14":
+            return makeCartoonRecallSet(prefix: "child_cartoons_sleep_recall", correct: [1, 0, 2])
+        case "cartoons.15":
+            return makeCartoonRecallSet(prefix: "child_cartoons_emotions_recall", correct: [0, 2, 1])
+        default:
+            return [
+                CartoonRecallQuestion(
+                    promptKey: "child_cartoons_recall_prompt_1",
+                    options: [
+                        localizationManager.localized("child_cartoons_recall_option_1a"),
+                        localizationManager.localized("child_cartoons_recall_option_1b"),
+                        localizationManager.localized("child_cartoons_recall_option_1c")
+                    ],
+                    correctIndex: 0
+                ),
+                CartoonRecallQuestion(
+                    promptKey: "child_cartoons_recall_prompt_2",
+                    options: [
+                        localizationManager.localized("child_cartoons_recall_option_2a"),
+                        localizationManager.localized("child_cartoons_recall_option_2b"),
+                        localizationManager.localized("child_cartoons_recall_option_2c")
+                    ],
+                    correctIndex: 2
+                ),
+                CartoonRecallQuestion(
+                    promptKey: "child_cartoons_recall_prompt_3",
+                    options: [
+                        localizationManager.localized("child_cartoons_recall_option_3a"),
+                        localizationManager.localized("child_cartoons_recall_option_3b"),
+                        localizationManager.localized("child_cartoons_recall_option_3c")
+                    ],
+                    correctIndex: 1
+                )
+            ]
+        }
+    }
+
+    private func makeCartoonRecallSet(prefix: String, correct: [Int]) -> [CartoonRecallQuestion] {
         [
             CartoonRecallQuestion(
-                promptKey: "child_cartoons_recall_prompt_1",
+                promptKey: "\(prefix)_prompt_1",
                 options: [
-                    localizationManager.localized("child_cartoons_recall_option_1a"),
-                    localizationManager.localized("child_cartoons_recall_option_1b"),
-                    localizationManager.localized("child_cartoons_recall_option_1c")
+                    localizationManager.localized("\(prefix)_option_1a"),
+                    localizationManager.localized("\(prefix)_option_1b"),
+                    localizationManager.localized("\(prefix)_option_1c")
                 ],
-                correctIndex: 0
+                correctIndex: correct[0]
             ),
             CartoonRecallQuestion(
-                promptKey: "child_cartoons_recall_prompt_2",
+                promptKey: "\(prefix)_prompt_2",
                 options: [
-                    localizationManager.localized("child_cartoons_recall_option_2a"),
-                    localizationManager.localized("child_cartoons_recall_option_2b"),
-                    localizationManager.localized("child_cartoons_recall_option_2c")
+                    localizationManager.localized("\(prefix)_option_2a"),
+                    localizationManager.localized("\(prefix)_option_2b"),
+                    localizationManager.localized("\(prefix)_option_2c")
                 ],
-                correctIndex: 2
+                correctIndex: correct[1]
             ),
             CartoonRecallQuestion(
-                promptKey: "child_cartoons_recall_prompt_3",
+                promptKey: "\(prefix)_prompt_3",
                 options: [
-                    localizationManager.localized("child_cartoons_recall_option_3a"),
-                    localizationManager.localized("child_cartoons_recall_option_3b"),
-                    localizationManager.localized("child_cartoons_recall_option_3c")
+                    localizationManager.localized("\(prefix)_option_3a"),
+                    localizationManager.localized("\(prefix)_option_3b"),
+                    localizationManager.localized("\(prefix)_option_3c")
                 ],
-                correctIndex: 1
+                correctIndex: correct[2]
             )
         ]
     }
@@ -1029,32 +1830,68 @@ private struct SafetyScenarioEngineView: View {
     @State private var finished: Bool = false
 
     private var scenarios: [SafetyScenario] {
-        [
-            SafetyScenario(
-                promptKey: "child_safety_scenario_prompt_1",
-                choices: [
-                    SafetyScenarioChoice(title: localizationManager.localized("child_safety_scenario_option_1a"), isSafe: true, feedbackKey: "child_safety_scenario_feedback_1a"),
-                    SafetyScenarioChoice(title: localizationManager.localized("child_safety_scenario_option_1b"), isSafe: false, feedbackKey: "child_safety_scenario_feedback_1b"),
-                    SafetyScenarioChoice(title: localizationManager.localized("child_safety_scenario_option_1c"), isSafe: false, feedbackKey: "child_safety_scenario_feedback_1c")
-                ]
-            ),
-            SafetyScenario(
-                promptKey: "child_safety_scenario_prompt_2",
-                choices: [
-                    SafetyScenarioChoice(title: localizationManager.localized("child_safety_scenario_option_2a"), isSafe: false, feedbackKey: "child_safety_scenario_feedback_2a"),
-                    SafetyScenarioChoice(title: localizationManager.localized("child_safety_scenario_option_2b"), isSafe: true, feedbackKey: "child_safety_scenario_feedback_2b"),
-                    SafetyScenarioChoice(title: localizationManager.localized("child_safety_scenario_option_2c"), isSafe: false, feedbackKey: "child_safety_scenario_feedback_2c")
-                ]
-            ),
-            SafetyScenario(
-                promptKey: "child_safety_scenario_prompt_3",
-                choices: [
-                    SafetyScenarioChoice(title: localizationManager.localized("child_safety_scenario_option_3a"), isSafe: false, feedbackKey: "child_safety_scenario_feedback_3a"),
-                    SafetyScenarioChoice(title: localizationManager.localized("child_safety_scenario_option_3b"), isSafe: true, feedbackKey: "child_safety_scenario_feedback_3b"),
-                    SafetyScenarioChoice(title: localizationManager.localized("child_safety_scenario_option_3c"), isSafe: false, feedbackKey: "child_safety_scenario_feedback_3c")
-                ]
-            )
-        ]
+        switch item.id {
+        case "safety.01":
+            return makeScenarioSet(prefix: "child_safety_traffic")
+        case "safety.15":
+            return makeScenarioSet(prefix: "child_safety_psychological")
+        case "safety.12":
+            return makeScenarioSet(prefix: "child_safety_strangers")
+        case "safety.03":
+            return makeScenarioSet(prefix: "child_safety_fire")
+        case "safety.04":
+            return makeScenarioSet(prefix: "child_safety_water")
+        case "safety.05":
+            return makeScenarioSet(prefix: "child_safety_electric")
+        case "safety.06":
+            return makeScenarioSet(prefix: "child_safety_nature")
+        case "safety.07":
+            return makeScenarioSet(prefix: "child_safety_school")
+        case "safety.08":
+            return makeScenarioSet(prefix: "child_safety_home")
+        case "safety.09":
+            return makeScenarioSet(prefix: "child_safety_first_aid")
+        case "safety.10":
+            return makeScenarioSet(prefix: "child_safety_hazard")
+        case "safety.11":
+            return makeScenarioSet(prefix: "child_safety_public")
+        case "safety.13":
+            return makeScenarioSet(prefix: "child_safety_emergency")
+        case "safety.14":
+            return makeScenarioSet(prefix: "child_safety_gadget")
+        case "teen_safety.01":
+            return makeScenarioSet(prefix: "child_teen_safety_cyber")
+        case "teen_safety.02":
+            return makeScenarioSet(prefix: "child_teen_safety_data")
+        case "teen_safety.03":
+            return makeScenarioSet(prefix: "child_teen_safety_social")
+        case "teen_safety.07":
+            return makeScenarioSet(prefix: "child_teen_safety_psychological")
+        case "teen_safety.09":
+            return makeScenarioSet(prefix: "child_teen_safety_network")
+        case "teen_safety.12":
+            return makeScenarioSet(prefix: "child_teen_safety_fraud")
+        case "teen_safety.04":
+            return makeScenarioSet(prefix: "child_teen_safety_finance")
+        case "teen_safety.05":
+            return makeScenarioSet(prefix: "child_teen_safety_relationship")
+        case "teen_safety.06":
+            return makeScenarioSet(prefix: "child_teen_safety_manipulation")
+        case "teen_safety.08":
+            return makeScenarioSet(prefix: "child_teen_safety_physical")
+        case "teen_safety.10":
+            return makeScenarioSet(prefix: "child_teen_safety_harmful_content")
+        case "teen_safety.11":
+            return makeScenarioSet(prefix: "child_teen_safety_online_shopping")
+        case "teen_safety.13":
+            return makeScenarioSet(prefix: "child_teen_safety_travel")
+        case "teen_safety.14":
+            return makeScenarioSet(prefix: "child_teen_safety_emergency")
+        case "teen_safety.15":
+            return makeScenarioSet(prefix: "child_teen_safety_self_defense")
+        default:
+            return makeScenarioSet(prefix: "child_safety_scenario")
+        }
     }
 
     private var scenario: SafetyScenario {
@@ -1158,6 +1995,35 @@ private struct SafetyScenarioEngineView: View {
         }
         return Color.gray.opacity(0.45)
     }
+
+    private func makeScenarioSet(prefix: String) -> [SafetyScenario] {
+        [
+            SafetyScenario(
+                promptKey: "\(prefix)_prompt_1",
+                choices: [
+                    SafetyScenarioChoice(title: localizationManager.localized("\(prefix)_option_1a"), isSafe: true, feedbackKey: "\(prefix)_feedback_1a"),
+                    SafetyScenarioChoice(title: localizationManager.localized("\(prefix)_option_1b"), isSafe: false, feedbackKey: "\(prefix)_feedback_1b"),
+                    SafetyScenarioChoice(title: localizationManager.localized("\(prefix)_option_1c"), isSafe: false, feedbackKey: "\(prefix)_feedback_1c")
+                ]
+            ),
+            SafetyScenario(
+                promptKey: "\(prefix)_prompt_2",
+                choices: [
+                    SafetyScenarioChoice(title: localizationManager.localized("\(prefix)_option_2a"), isSafe: false, feedbackKey: "\(prefix)_feedback_2a"),
+                    SafetyScenarioChoice(title: localizationManager.localized("\(prefix)_option_2b"), isSafe: true, feedbackKey: "\(prefix)_feedback_2b"),
+                    SafetyScenarioChoice(title: localizationManager.localized("\(prefix)_option_2c"), isSafe: false, feedbackKey: "\(prefix)_feedback_2c")
+                ]
+            ),
+            SafetyScenario(
+                promptKey: "\(prefix)_prompt_3",
+                choices: [
+                    SafetyScenarioChoice(title: localizationManager.localized("\(prefix)_option_3a"), isSafe: false, feedbackKey: "\(prefix)_feedback_3a"),
+                    SafetyScenarioChoice(title: localizationManager.localized("\(prefix)_option_3b"), isSafe: true, feedbackKey: "\(prefix)_feedback_3b"),
+                    SafetyScenarioChoice(title: localizationManager.localized("\(prefix)_option_3c"), isSafe: false, feedbackKey: "\(prefix)_feedback_3c")
+                ]
+            )
+        ]
+    }
 }
 
 private struct StudyQuestion: Identifiable {
@@ -1181,15 +2047,261 @@ private struct StudyLessonTestExperienceView: View {
     @State private var testFinished: Bool = false
     @State private var passed: Bool = false
 
-    private var isHistoryStudy: Bool { item.id == "study.04" }
+    private struct StudyQuestionTemplate {
+        let promptKey: String
+        let optionKeys: [String]
+        let correctIndex: Int
+    }
+
+    private var specializedLessonPageKeys: [String]? {
+        switch item.id {
+        case "study.01":
+            return ["child_study_russian_page_1", "child_study_russian_page_2", "child_study_russian_page_3"]
+        case "study.02":
+            return ["child_study_math_page_1", "child_study_math_page_2", "child_study_math_page_3"]
+        case "study.03":
+            return ["child_study_world_page_1", "child_study_world_page_2", "child_study_world_page_3"]
+        case "study.18":
+            return ["child_study_informatics_page_1", "child_study_informatics_page_2", "child_study_informatics_page_3"]
+        case "study.25":
+            return ["child_study_exams_page_1", "child_study_exams_page_2", "child_study_exams_page_3"]
+        case "study.28":
+            return ["child_study_practice_page_1", "child_study_practice_page_2", "child_study_practice_page_3"]
+        case "study.04":
+            return ["child_study_history_page_1", "child_study_history_page_2", "child_study_history_page_3"]
+        case "study.05":
+            return ["child_study_geography_page_1", "child_study_geography_page_2", "child_study_geography_page_3"]
+        case "study.06":
+            return ["child_study_biology_page_1", "child_study_biology_page_2", "child_study_biology_page_3"]
+        case "study.07":
+            return ["child_study_physics_page_1", "child_study_physics_page_2", "child_study_physics_page_3"]
+        case "study.08":
+            return ["child_study_chemistry_page_1", "child_study_chemistry_page_2", "child_study_chemistry_page_3"]
+        case "study.09":
+            return ["child_study_literature_page_1", "child_study_literature_page_2", "child_study_literature_page_3"]
+        case "study.10":
+            return ["child_study_art_page_1", "child_study_art_page_2", "child_study_art_page_3"]
+        case "study.11":
+            return ["child_study_sport_page_1", "child_study_sport_page_2", "child_study_sport_page_3"]
+        case "study.12":
+            return ["child_study_labor_page_1", "child_study_labor_page_2", "child_study_labor_page_3"]
+        case "study.13":
+            return ["child_study_social_page_1", "child_study_social_page_2", "child_study_social_page_3"]
+        case "study.14":
+            return ["child_study_ecology_page_1", "child_study_ecology_page_2", "child_study_ecology_page_3"]
+        case "study.15":
+            return ["child_study_traffic_page_1", "child_study_traffic_page_2", "child_study_traffic_page_3"]
+        case "study.16":
+            return ["child_study_health_page_1", "child_study_health_page_2", "child_study_health_page_3"]
+        case "study.17":
+            return ["child_study_finance_page_1", "child_study_finance_page_2", "child_study_finance_page_3"]
+        case "study.19":
+            return ["child_study_language_page_1", "child_study_language_page_2", "child_study_language_page_3"]
+        case "study.20":
+            return ["child_study_creativity_page_1", "child_study_creativity_page_2", "child_study_creativity_page_3"]
+        case "study.21":
+            return ["child_study_project_page_1", "child_study_project_page_2", "child_study_project_page_3"]
+        case "study.22":
+            return ["child_study_research_page_1", "child_study_research_page_2", "child_study_research_page_3"]
+        case "study.23":
+            return ["child_study_groupwork_page_1", "child_study_groupwork_page_2", "child_study_groupwork_page_3"]
+        case "study.24":
+            return ["child_study_selfwork_page_1", "child_study_selfwork_page_2", "child_study_selfwork_page_3"]
+        case "study.27":
+            return ["child_study_lab_page_1", "child_study_lab_page_2", "child_study_lab_page_3"]
+        case "study.29":
+            return ["child_study_creative_project_page_1", "child_study_creative_project_page_2", "child_study_creative_project_page_3"]
+        case "study.30":
+            return ["child_study_portfolio_page_1", "child_study_portfolio_page_2", "child_study_portfolio_page_3"]
+        default:
+            return nil
+        }
+    }
+
+    private var specializedQuestions: [StudyQuestionTemplate]? {
+        switch item.id {
+        case "study.01":
+            return [
+                .init(promptKey: "child_study_russian_test_prompt_1", optionKeys: ["child_study_russian_test_option_1a", "child_study_russian_test_option_1b", "child_study_russian_test_option_1c"], correctIndex: 1),
+                .init(promptKey: "child_study_russian_test_prompt_2", optionKeys: ["child_study_russian_test_option_2a", "child_study_russian_test_option_2b", "child_study_russian_test_option_2c"], correctIndex: 0),
+                .init(promptKey: "child_study_russian_test_prompt_3", optionKeys: ["child_study_russian_test_option_3a", "child_study_russian_test_option_3b", "child_study_russian_test_option_3c"], correctIndex: 2)
+            ]
+        case "study.02":
+            return [
+                .init(promptKey: "child_study_math_test_prompt_1", optionKeys: ["child_study_math_test_option_1a", "child_study_math_test_option_1b", "child_study_math_test_option_1c"], correctIndex: 2),
+                .init(promptKey: "child_study_math_test_prompt_2", optionKeys: ["child_study_math_test_option_2a", "child_study_math_test_option_2b", "child_study_math_test_option_2c"], correctIndex: 1),
+                .init(promptKey: "child_study_math_test_prompt_3", optionKeys: ["child_study_math_test_option_3a", "child_study_math_test_option_3b", "child_study_math_test_option_3c"], correctIndex: 0)
+            ]
+        case "study.03":
+            return [
+                .init(promptKey: "child_study_world_test_prompt_1", optionKeys: ["child_study_world_test_option_1a", "child_study_world_test_option_1b", "child_study_world_test_option_1c"], correctIndex: 1),
+                .init(promptKey: "child_study_world_test_prompt_2", optionKeys: ["child_study_world_test_option_2a", "child_study_world_test_option_2b", "child_study_world_test_option_2c"], correctIndex: 0),
+                .init(promptKey: "child_study_world_test_prompt_3", optionKeys: ["child_study_world_test_option_3a", "child_study_world_test_option_3b", "child_study_world_test_option_3c"], correctIndex: 2)
+            ]
+        case "study.18":
+            return [
+                .init(promptKey: "child_study_informatics_test_prompt_1", optionKeys: ["child_study_informatics_test_option_1a", "child_study_informatics_test_option_1b", "child_study_informatics_test_option_1c"], correctIndex: 0),
+                .init(promptKey: "child_study_informatics_test_prompt_2", optionKeys: ["child_study_informatics_test_option_2a", "child_study_informatics_test_option_2b", "child_study_informatics_test_option_2c"], correctIndex: 2),
+                .init(promptKey: "child_study_informatics_test_prompt_3", optionKeys: ["child_study_informatics_test_option_3a", "child_study_informatics_test_option_3b", "child_study_informatics_test_option_3c"], correctIndex: 1)
+            ]
+        case "study.25":
+            return [
+                .init(promptKey: "child_study_exams_test_prompt_1", optionKeys: ["child_study_exams_test_option_1a", "child_study_exams_test_option_1b", "child_study_exams_test_option_1c"], correctIndex: 2),
+                .init(promptKey: "child_study_exams_test_prompt_2", optionKeys: ["child_study_exams_test_option_2a", "child_study_exams_test_option_2b", "child_study_exams_test_option_2c"], correctIndex: 1),
+                .init(promptKey: "child_study_exams_test_prompt_3", optionKeys: ["child_study_exams_test_option_3a", "child_study_exams_test_option_3b", "child_study_exams_test_option_3c"], correctIndex: 0)
+            ]
+        case "study.28":
+            return [
+                .init(promptKey: "child_study_practice_test_prompt_1", optionKeys: ["child_study_practice_test_option_1a", "child_study_practice_test_option_1b", "child_study_practice_test_option_1c"], correctIndex: 1),
+                .init(promptKey: "child_study_practice_test_prompt_2", optionKeys: ["child_study_practice_test_option_2a", "child_study_practice_test_option_2b", "child_study_practice_test_option_2c"], correctIndex: 2),
+                .init(promptKey: "child_study_practice_test_prompt_3", optionKeys: ["child_study_practice_test_option_3a", "child_study_practice_test_option_3b", "child_study_practice_test_option_3c"], correctIndex: 0)
+            ]
+        case "study.04":
+            return [
+                .init(promptKey: "child_study_history_test_prompt_1", optionKeys: ["child_study_history_test_option_1a", "child_study_history_test_option_1b", "child_study_history_test_option_1c"], correctIndex: 0),
+                .init(promptKey: "child_study_history_test_prompt_2", optionKeys: ["child_study_history_test_option_2a", "child_study_history_test_option_2b", "child_study_history_test_option_2c"], correctIndex: 1),
+                .init(promptKey: "child_study_history_test_prompt_3", optionKeys: ["child_study_history_test_option_3a", "child_study_history_test_option_3b", "child_study_history_test_option_3c"], correctIndex: 2)
+            ]
+        case "study.05":
+            return [
+                .init(promptKey: "child_study_geography_test_prompt_1", optionKeys: ["child_study_geography_test_option_1a", "child_study_geography_test_option_1b", "child_study_geography_test_option_1c"], correctIndex: 1),
+                .init(promptKey: "child_study_geography_test_prompt_2", optionKeys: ["child_study_geography_test_option_2a", "child_study_geography_test_option_2b", "child_study_geography_test_option_2c"], correctIndex: 0),
+                .init(promptKey: "child_study_geography_test_prompt_3", optionKeys: ["child_study_geography_test_option_3a", "child_study_geography_test_option_3b", "child_study_geography_test_option_3c"], correctIndex: 2)
+            ]
+        case "study.06":
+            return [
+                .init(promptKey: "child_study_biology_test_prompt_1", optionKeys: ["child_study_biology_test_option_1a", "child_study_biology_test_option_1b", "child_study_biology_test_option_1c"], correctIndex: 2),
+                .init(promptKey: "child_study_biology_test_prompt_2", optionKeys: ["child_study_biology_test_option_2a", "child_study_biology_test_option_2b", "child_study_biology_test_option_2c"], correctIndex: 1),
+                .init(promptKey: "child_study_biology_test_prompt_3", optionKeys: ["child_study_biology_test_option_3a", "child_study_biology_test_option_3b", "child_study_biology_test_option_3c"], correctIndex: 0)
+            ]
+        case "study.07":
+            return [
+                .init(promptKey: "child_study_physics_test_prompt_1", optionKeys: ["child_study_physics_test_option_1a", "child_study_physics_test_option_1b", "child_study_physics_test_option_1c"], correctIndex: 0),
+                .init(promptKey: "child_study_physics_test_prompt_2", optionKeys: ["child_study_physics_test_option_2a", "child_study_physics_test_option_2b", "child_study_physics_test_option_2c"], correctIndex: 2),
+                .init(promptKey: "child_study_physics_test_prompt_3", optionKeys: ["child_study_physics_test_option_3a", "child_study_physics_test_option_3b", "child_study_physics_test_option_3c"], correctIndex: 1)
+            ]
+        case "study.08":
+            return [
+                .init(promptKey: "child_study_chemistry_test_prompt_1", optionKeys: ["child_study_chemistry_test_option_1a", "child_study_chemistry_test_option_1b", "child_study_chemistry_test_option_1c"], correctIndex: 1),
+                .init(promptKey: "child_study_chemistry_test_prompt_2", optionKeys: ["child_study_chemistry_test_option_2a", "child_study_chemistry_test_option_2b", "child_study_chemistry_test_option_2c"], correctIndex: 0),
+                .init(promptKey: "child_study_chemistry_test_prompt_3", optionKeys: ["child_study_chemistry_test_option_3a", "child_study_chemistry_test_option_3b", "child_study_chemistry_test_option_3c"], correctIndex: 2)
+            ]
+        case "study.09":
+            return [
+                .init(promptKey: "child_study_literature_test_prompt_1", optionKeys: ["child_study_literature_test_option_1a", "child_study_literature_test_option_1b", "child_study_literature_test_option_1c"], correctIndex: 2),
+                .init(promptKey: "child_study_literature_test_prompt_2", optionKeys: ["child_study_literature_test_option_2a", "child_study_literature_test_option_2b", "child_study_literature_test_option_2c"], correctIndex: 1),
+                .init(promptKey: "child_study_literature_test_prompt_3", optionKeys: ["child_study_literature_test_option_3a", "child_study_literature_test_option_3b", "child_study_literature_test_option_3c"], correctIndex: 0)
+            ]
+        case "study.10":
+            return [
+                .init(promptKey: "child_study_art_test_prompt_1", optionKeys: ["child_study_art_test_option_1a", "child_study_art_test_option_1b", "child_study_art_test_option_1c"], correctIndex: 1),
+                .init(promptKey: "child_study_art_test_prompt_2", optionKeys: ["child_study_art_test_option_2a", "child_study_art_test_option_2b", "child_study_art_test_option_2c"], correctIndex: 0),
+                .init(promptKey: "child_study_art_test_prompt_3", optionKeys: ["child_study_art_test_option_3a", "child_study_art_test_option_3b", "child_study_art_test_option_3c"], correctIndex: 2)
+            ]
+        case "study.11":
+            return [
+                .init(promptKey: "child_study_sport_test_prompt_1", optionKeys: ["child_study_sport_test_option_1a", "child_study_sport_test_option_1b", "child_study_sport_test_option_1c"], correctIndex: 2),
+                .init(promptKey: "child_study_sport_test_prompt_2", optionKeys: ["child_study_sport_test_option_2a", "child_study_sport_test_option_2b", "child_study_sport_test_option_2c"], correctIndex: 1),
+                .init(promptKey: "child_study_sport_test_prompt_3", optionKeys: ["child_study_sport_test_option_3a", "child_study_sport_test_option_3b", "child_study_sport_test_option_3c"], correctIndex: 0)
+            ]
+        case "study.12":
+            return [
+                .init(promptKey: "child_study_labor_test_prompt_1", optionKeys: ["child_study_labor_test_option_1a", "child_study_labor_test_option_1b", "child_study_labor_test_option_1c"], correctIndex: 0),
+                .init(promptKey: "child_study_labor_test_prompt_2", optionKeys: ["child_study_labor_test_option_2a", "child_study_labor_test_option_2b", "child_study_labor_test_option_2c"], correctIndex: 2),
+                .init(promptKey: "child_study_labor_test_prompt_3", optionKeys: ["child_study_labor_test_option_3a", "child_study_labor_test_option_3b", "child_study_labor_test_option_3c"], correctIndex: 1)
+            ]
+        case "study.13":
+            return [
+                .init(promptKey: "child_study_social_test_prompt_1", optionKeys: ["child_study_social_test_option_1a", "child_study_social_test_option_1b", "child_study_social_test_option_1c"], correctIndex: 1),
+                .init(promptKey: "child_study_social_test_prompt_2", optionKeys: ["child_study_social_test_option_2a", "child_study_social_test_option_2b", "child_study_social_test_option_2c"], correctIndex: 0),
+                .init(promptKey: "child_study_social_test_prompt_3", optionKeys: ["child_study_social_test_option_3a", "child_study_social_test_option_3b", "child_study_social_test_option_3c"], correctIndex: 2)
+            ]
+        case "study.14":
+            return [
+                .init(promptKey: "child_study_ecology_test_prompt_1", optionKeys: ["child_study_ecology_test_option_1a", "child_study_ecology_test_option_1b", "child_study_ecology_test_option_1c"], correctIndex: 2),
+                .init(promptKey: "child_study_ecology_test_prompt_2", optionKeys: ["child_study_ecology_test_option_2a", "child_study_ecology_test_option_2b", "child_study_ecology_test_option_2c"], correctIndex: 1),
+                .init(promptKey: "child_study_ecology_test_prompt_3", optionKeys: ["child_study_ecology_test_option_3a", "child_study_ecology_test_option_3b", "child_study_ecology_test_option_3c"], correctIndex: 0)
+            ]
+        case "study.15":
+            return [
+                .init(promptKey: "child_study_traffic_test_prompt_1", optionKeys: ["child_study_traffic_test_option_1a", "child_study_traffic_test_option_1b", "child_study_traffic_test_option_1c"], correctIndex: 1),
+                .init(promptKey: "child_study_traffic_test_prompt_2", optionKeys: ["child_study_traffic_test_option_2a", "child_study_traffic_test_option_2b", "child_study_traffic_test_option_2c"], correctIndex: 0),
+                .init(promptKey: "child_study_traffic_test_prompt_3", optionKeys: ["child_study_traffic_test_option_3a", "child_study_traffic_test_option_3b", "child_study_traffic_test_option_3c"], correctIndex: 2)
+            ]
+        case "study.16":
+            return [
+                .init(promptKey: "child_study_health_test_prompt_1", optionKeys: ["child_study_health_test_option_1a", "child_study_health_test_option_1b", "child_study_health_test_option_1c"], correctIndex: 0),
+                .init(promptKey: "child_study_health_test_prompt_2", optionKeys: ["child_study_health_test_option_2a", "child_study_health_test_option_2b", "child_study_health_test_option_2c"], correctIndex: 2),
+                .init(promptKey: "child_study_health_test_prompt_3", optionKeys: ["child_study_health_test_option_3a", "child_study_health_test_option_3b", "child_study_health_test_option_3c"], correctIndex: 1)
+            ]
+        case "study.17":
+            return [
+                .init(promptKey: "child_study_finance_test_prompt_1", optionKeys: ["child_study_finance_test_option_1a", "child_study_finance_test_option_1b", "child_study_finance_test_option_1c"], correctIndex: 2),
+                .init(promptKey: "child_study_finance_test_prompt_2", optionKeys: ["child_study_finance_test_option_2a", "child_study_finance_test_option_2b", "child_study_finance_test_option_2c"], correctIndex: 1),
+                .init(promptKey: "child_study_finance_test_prompt_3", optionKeys: ["child_study_finance_test_option_3a", "child_study_finance_test_option_3b", "child_study_finance_test_option_3c"], correctIndex: 0)
+            ]
+        case "study.19":
+            return [
+                .init(promptKey: "child_study_language_test_prompt_1", optionKeys: ["child_study_language_test_option_1a", "child_study_language_test_option_1b", "child_study_language_test_option_1c"], correctIndex: 1),
+                .init(promptKey: "child_study_language_test_prompt_2", optionKeys: ["child_study_language_test_option_2a", "child_study_language_test_option_2b", "child_study_language_test_option_2c"], correctIndex: 0),
+                .init(promptKey: "child_study_language_test_prompt_3", optionKeys: ["child_study_language_test_option_3a", "child_study_language_test_option_3b", "child_study_language_test_option_3c"], correctIndex: 2)
+            ]
+        case "study.20":
+            return [
+                .init(promptKey: "child_study_creativity_test_prompt_1", optionKeys: ["child_study_creativity_test_option_1a", "child_study_creativity_test_option_1b", "child_study_creativity_test_option_1c"], correctIndex: 0),
+                .init(promptKey: "child_study_creativity_test_prompt_2", optionKeys: ["child_study_creativity_test_option_2a", "child_study_creativity_test_option_2b", "child_study_creativity_test_option_2c"], correctIndex: 2),
+                .init(promptKey: "child_study_creativity_test_prompt_3", optionKeys: ["child_study_creativity_test_option_3a", "child_study_creativity_test_option_3b", "child_study_creativity_test_option_3c"], correctIndex: 1)
+            ]
+        case "study.21":
+            return [
+                .init(promptKey: "child_study_project_test_prompt_1", optionKeys: ["child_study_project_test_option_1a", "child_study_project_test_option_1b", "child_study_project_test_option_1c"], correctIndex: 2),
+                .init(promptKey: "child_study_project_test_prompt_2", optionKeys: ["child_study_project_test_option_2a", "child_study_project_test_option_2b", "child_study_project_test_option_2c"], correctIndex: 0),
+                .init(promptKey: "child_study_project_test_prompt_3", optionKeys: ["child_study_project_test_option_3a", "child_study_project_test_option_3b", "child_study_project_test_option_3c"], correctIndex: 1)
+            ]
+        case "study.22":
+            return [
+                .init(promptKey: "child_study_research_test_prompt_1", optionKeys: ["child_study_research_test_option_1a", "child_study_research_test_option_1b", "child_study_research_test_option_1c"], correctIndex: 1),
+                .init(promptKey: "child_study_research_test_prompt_2", optionKeys: ["child_study_research_test_option_2a", "child_study_research_test_option_2b", "child_study_research_test_option_2c"], correctIndex: 2),
+                .init(promptKey: "child_study_research_test_prompt_3", optionKeys: ["child_study_research_test_option_3a", "child_study_research_test_option_3b", "child_study_research_test_option_3c"], correctIndex: 0)
+            ]
+        case "study.23":
+            return [
+                .init(promptKey: "child_study_groupwork_test_prompt_1", optionKeys: ["child_study_groupwork_test_option_1a", "child_study_groupwork_test_option_1b", "child_study_groupwork_test_option_1c"], correctIndex: 0),
+                .init(promptKey: "child_study_groupwork_test_prompt_2", optionKeys: ["child_study_groupwork_test_option_2a", "child_study_groupwork_test_option_2b", "child_study_groupwork_test_option_2c"], correctIndex: 1),
+                .init(promptKey: "child_study_groupwork_test_prompt_3", optionKeys: ["child_study_groupwork_test_option_3a", "child_study_groupwork_test_option_3b", "child_study_groupwork_test_option_3c"], correctIndex: 2)
+            ]
+        case "study.24":
+            return [
+                .init(promptKey: "child_study_selfwork_test_prompt_1", optionKeys: ["child_study_selfwork_test_option_1a", "child_study_selfwork_test_option_1b", "child_study_selfwork_test_option_1c"], correctIndex: 2),
+                .init(promptKey: "child_study_selfwork_test_prompt_2", optionKeys: ["child_study_selfwork_test_option_2a", "child_study_selfwork_test_option_2b", "child_study_selfwork_test_option_2c"], correctIndex: 1),
+                .init(promptKey: "child_study_selfwork_test_prompt_3", optionKeys: ["child_study_selfwork_test_option_3a", "child_study_selfwork_test_option_3b", "child_study_selfwork_test_option_3c"], correctIndex: 0)
+            ]
+        case "study.27":
+            return [
+                .init(promptKey: "child_study_lab_test_prompt_1", optionKeys: ["child_study_lab_test_option_1a", "child_study_lab_test_option_1b", "child_study_lab_test_option_1c"], correctIndex: 1),
+                .init(promptKey: "child_study_lab_test_prompt_2", optionKeys: ["child_study_lab_test_option_2a", "child_study_lab_test_option_2b", "child_study_lab_test_option_2c"], correctIndex: 0),
+                .init(promptKey: "child_study_lab_test_prompt_3", optionKeys: ["child_study_lab_test_option_3a", "child_study_lab_test_option_3b", "child_study_lab_test_option_3c"], correctIndex: 2)
+            ]
+        case "study.29":
+            return [
+                .init(promptKey: "child_study_creative_project_test_prompt_1", optionKeys: ["child_study_creative_project_test_option_1a", "child_study_creative_project_test_option_1b", "child_study_creative_project_test_option_1c"], correctIndex: 0),
+                .init(promptKey: "child_study_creative_project_test_prompt_2", optionKeys: ["child_study_creative_project_test_option_2a", "child_study_creative_project_test_option_2b", "child_study_creative_project_test_option_2c"], correctIndex: 2),
+                .init(promptKey: "child_study_creative_project_test_prompt_3", optionKeys: ["child_study_creative_project_test_option_3a", "child_study_creative_project_test_option_3b", "child_study_creative_project_test_option_3c"], correctIndex: 1)
+            ]
+        case "study.30":
+            return [
+                .init(promptKey: "child_study_portfolio_test_prompt_1", optionKeys: ["child_study_portfolio_test_option_1a", "child_study_portfolio_test_option_1b", "child_study_portfolio_test_option_1c"], correctIndex: 1),
+                .init(promptKey: "child_study_portfolio_test_prompt_2", optionKeys: ["child_study_portfolio_test_option_2a", "child_study_portfolio_test_option_2b", "child_study_portfolio_test_option_2c"], correctIndex: 0),
+                .init(promptKey: "child_study_portfolio_test_prompt_3", optionKeys: ["child_study_portfolio_test_option_3a", "child_study_portfolio_test_option_3b", "child_study_portfolio_test_option_3c"], correctIndex: 2)
+            ]
+        default:
+            return nil
+        }
+    }
 
     private var lessonPages: [String] {
-        if isHistoryStudy {
-            return [
-                localizationManager.localized("child_study_history_page_1"),
-                localizationManager.localized("child_study_history_page_2"),
-                localizationManager.localized("child_study_history_page_3")
-            ]
+        if let specializedLessonPageKeys {
+            return specializedLessonPageKeys.map { localizationManager.localized($0) }
         }
         return [
             localizationManager.localized("child_study_lesson_page_1"),
@@ -1199,36 +2311,14 @@ private struct StudyLessonTestExperienceView: View {
     }
 
     private var questions: [StudyQuestion] {
-        if isHistoryStudy {
-            return [
+        if let specializedQuestions {
+            return specializedQuestions.map { template in
                 StudyQuestion(
-                    prompt: localizationManager.localized("child_study_history_test_prompt_1"),
-                    options: [
-                        localizationManager.localized("child_study_history_test_option_1a"),
-                        localizationManager.localized("child_study_history_test_option_1b"),
-                        localizationManager.localized("child_study_history_test_option_1c")
-                    ],
-                    correctIndex: 0
-                ),
-                StudyQuestion(
-                    prompt: localizationManager.localized("child_study_history_test_prompt_2"),
-                    options: [
-                        localizationManager.localized("child_study_history_test_option_2a"),
-                        localizationManager.localized("child_study_history_test_option_2b"),
-                        localizationManager.localized("child_study_history_test_option_2c")
-                    ],
-                    correctIndex: 1
-                ),
-                StudyQuestion(
-                    prompt: localizationManager.localized("child_study_history_test_prompt_3"),
-                    options: [
-                        localizationManager.localized("child_study_history_test_option_3a"),
-                        localizationManager.localized("child_study_history_test_option_3b"),
-                        localizationManager.localized("child_study_history_test_option_3c")
-                    ],
-                    correctIndex: 2
+                    prompt: localizationManager.localized(template.promptKey),
+                    options: template.optionKeys.map { localizationManager.localized($0) },
+                    correctIndex: template.correctIndex
                 )
-            ]
+            }
         }
         return [
             StudyQuestion(
@@ -1437,6 +2527,13 @@ private struct GamesChallengeTask: Identifiable {
     let hint: String
 }
 
+private struct GamesChallengeTemplate {
+    let promptKey: String
+    let optionKeys: [String]
+    let correctIndex: Int
+    let hintKey: String
+}
+
 private struct GamesChallengeEngineView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
 
@@ -1479,7 +2576,59 @@ private struct GamesChallengeEngineView: View {
     @State private var mapProgress: Int = 0
     @State private var musicCombo: Int = 0
 
+    private var specializedChallengePrefix: String? {
+        switch item.id {
+        case "games.01":
+            return "child_games_math_focus"
+        case "games.02":
+            return "child_games_language_focus"
+        case "games.09":
+            return "child_games_adventure_quest"
+        default:
+            return nil
+        }
+    }
+
+    private var specializedChallengeTitleKey: String? {
+        guard let prefix = specializedChallengePrefix else { return nil }
+        return "\(prefix)_title"
+    }
+
+    private var specializedChallengeTemplates: [GamesChallengeTemplate]? {
+        guard let prefix = specializedChallengePrefix else { return nil }
+        return [
+            .init(
+                promptKey: "\(prefix)_prompt_1",
+                optionKeys: ["\(prefix)_option_1a", "\(prefix)_option_1b", "\(prefix)_option_1c"],
+                correctIndex: 0,
+                hintKey: "\(prefix)_hint_1"
+            ),
+            .init(
+                promptKey: "\(prefix)_prompt_2",
+                optionKeys: ["\(prefix)_option_2a", "\(prefix)_option_2b", "\(prefix)_option_2c"],
+                correctIndex: 1,
+                hintKey: "\(prefix)_hint_2"
+            ),
+            .init(
+                promptKey: "\(prefix)_prompt_3",
+                optionKeys: ["\(prefix)_option_3a", "\(prefix)_option_3b", "\(prefix)_option_3c"],
+                correctIndex: 2,
+                hintKey: "\(prefix)_hint_3"
+            )
+        ]
+    }
+
     private var tasks: [GamesChallengeTask] {
+        if let specializedChallengeTemplates {
+            return specializedChallengeTemplates.map { template in
+                GamesChallengeTask(
+                    prompt: localizationManager.localized(template.promptKey),
+                    options: template.optionKeys.map { localizationManager.localized($0) },
+                    correctIndex: template.correctIndex,
+                    hint: localizationManager.localized(template.hintKey)
+                )
+            }
+        }
         switch domain {
         case .math:
             return [
@@ -1609,13 +2758,19 @@ private struct GamesChallengeEngineView: View {
             Text(localizationManager.localized("child_games_challenge_title"))
                 .font(.system(size: 17, weight: .bold))
 
-            Picker("", selection: $domain) {
-                Text(localizationManager.localized("child_games_challenge_domain_math")).tag(GamesChallengeDomain.math)
-                Text(localizationManager.localized("child_games_challenge_domain_language")).tag(GamesChallengeDomain.language)
-            }
-            .pickerStyle(.segmented)
-            .onChange(of: domain) { _ in
-                resetChallenge()
+            if let specializedChallengeTitleKey {
+                Text(localizationManager.localized(specializedChallengeTitleKey))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.secondary)
+            } else {
+                Picker("", selection: $domain) {
+                    Text(localizationManager.localized("child_games_challenge_domain_math")).tag(GamesChallengeDomain.math)
+                    Text(localizationManager.localized("child_games_challenge_domain_language")).tag(GamesChallengeDomain.language)
+                }
+                .pickerStyle(.segmented)
+                .onChange(of: domain) { _ in
+                    resetChallenge()
+                }
             }
 
             HStack {
@@ -3698,6 +4853,15 @@ private struct DrawingExperienceHostView: View {
     @State private var coloringTemplate: ChildDrawingColoringTemplate = .none
     @State private var savedItems: [ChildSavedDrawing] = []
     @State private var selectedDrawingID: UUID?
+    @State private var comicPanelIndex: Int = 0
+    @State private var designScore: Int = 0
+    @State private var photoShots: Int = 0
+    @State private var videoClips: Int = 0
+    @State private var musicBeats: Int = 0
+    @State private var storyLines: Int = 0
+    @State private var theaterScenes: Int = 0
+    @State private var craftItems: Int = 0
+    @State private var digitalLayers: Int = 0
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -3784,6 +4948,28 @@ private struct DrawingExperienceHostView: View {
                     drawing = PKDrawing()
                 }
                 .buttonStyle(.bordered)
+            }
+
+            if item.id == "creativity.01" {
+                advancedDrawingCard
+            } else if item.id == "creativity.02" {
+                comicsCard
+            } else if item.id == "creativity.03" {
+                designCard
+            } else if item.id == "creativity.04" {
+                photoCard
+            } else if item.id == "creativity.05" {
+                videoCard
+            } else if item.id == "creativity.06" {
+                musicCard
+            } else if item.id == "creativity.07" {
+                literatureCard
+            } else if item.id == "creativity.08" {
+                theaterCard
+            } else if item.id == "creativity.09" {
+                handmadeCard
+            } else if item.id == "creativity.10" {
+                digitalArtCard
             }
 
             if savedItems.isEmpty {
@@ -3882,6 +5068,156 @@ private struct DrawingExperienceHostView: View {
         let key = "active_child_profile_server_id"
         let raw = UserDefaults.standard.string(forKey: key)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return raw.isEmpty ? "local-default-child" : raw
+    }
+
+    private var comicsCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_creativity_comics_title"))
+                .font(.system(size: 14, weight: .bold))
+            Text(localizationManager.localized("child_creativity_comics_panel") + " \(comicPanelIndex + 1)/4")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_creativity_comics_next_panel")) {
+                comicPanelIndex = min(3, comicPanelIndex + 1)
+            }
+            .buttonStyle(.bordered)
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.purple.opacity(0.08)))
+    }
+
+    private var advancedDrawingCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_creativity_advanced_title"))
+                .font(.system(size: 14, weight: .bold))
+            Text(localizationManager.localized("child_creativity_advanced_layers") + " \(digitalLayers)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            HStack(spacing: 8) {
+                Button(localizationManager.localized("child_creativity_advanced_action_detail")) { digitalLayers += 1 }
+                    .buttonStyle(.bordered)
+                Button(localizationManager.localized("child_creativity_advanced_action_shading")) { digitalLayers += 1 }
+                    .buttonStyle(.bordered)
+            }
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.teal.opacity(0.08)))
+    }
+
+    private var designCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_creativity_design_title"))
+                .font(.system(size: 14, weight: .bold))
+            Text(localizationManager.localized("child_creativity_design_score") + " \(designScore)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            HStack(spacing: 8) {
+                Button(localizationManager.localized("child_creativity_design_action_palette")) { designScore += 1 }
+                    .buttonStyle(.bordered)
+                Button(localizationManager.localized("child_creativity_design_action_layout")) { designScore += 1 }
+                    .buttonStyle(.bordered)
+            }
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.blue.opacity(0.08)))
+    }
+
+    private var photoCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_creativity_photo_title"))
+                .font(.system(size: 14, weight: .bold))
+            Text(localizationManager.localized("child_creativity_photo_shots") + " \(photoShots)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_creativity_photo_action_capture")) { photoShots += 1 }
+                .buttonStyle(.bordered)
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.green.opacity(0.08)))
+    }
+
+    private var videoCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_creativity_video_title"))
+                .font(.system(size: 14, weight: .bold))
+            Text(localizationManager.localized("child_creativity_video_clips") + " \(videoClips)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_creativity_video_action_add_clip")) { videoClips += 1 }
+                .buttonStyle(.bordered)
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.red.opacity(0.08)))
+    }
+
+    private var musicCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_creativity_music_title"))
+                .font(.system(size: 14, weight: .bold))
+            Text(localizationManager.localized("child_creativity_music_beats") + " \(musicBeats)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_creativity_music_action_add_beat")) { musicBeats += 1 }
+                .buttonStyle(.bordered)
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.orange.opacity(0.08)))
+    }
+
+    private var literatureCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_creativity_literature_title"))
+                .font(.system(size: 14, weight: .bold))
+            Text(localizationManager.localized("child_creativity_literature_lines") + " \(storyLines)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_creativity_literature_action_add_line")) { storyLines += 1 }
+                .buttonStyle(.bordered)
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.indigo.opacity(0.08)))
+    }
+
+    private var theaterCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_creativity_theater_title"))
+                .font(.system(size: 14, weight: .bold))
+            Text(localizationManager.localized("child_creativity_theater_scenes") + " \(theaterScenes)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_creativity_theater_action_add_scene")) { theaterScenes += 1 }
+                .buttonStyle(.bordered)
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.pink.opacity(0.08)))
+    }
+
+    private var handmadeCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_creativity_handmade_title"))
+                .font(.system(size: 14, weight: .bold))
+            Text(localizationManager.localized("child_creativity_handmade_items") + " \(craftItems)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_creativity_handmade_action_add_item")) { craftItems += 1 }
+                .buttonStyle(.bordered)
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.teal.opacity(0.08)))
+    }
+
+    private var digitalArtCard: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("child_creativity_digital_title"))
+                .font(.system(size: 14, weight: .bold))
+            Text(localizationManager.localized("child_creativity_digital_layers") + " \(digitalLayers)")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.secondary)
+            Button(localizationManager.localized("child_creativity_digital_action_add_layer")) { digitalLayers += 1 }
+                .buttonStyle(.bordered)
+        }
+        .padding(10)
+        .background(RoundedRectangle(cornerRadius: 10).fill(Color.cyan.opacity(0.08)))
     }
 }
 

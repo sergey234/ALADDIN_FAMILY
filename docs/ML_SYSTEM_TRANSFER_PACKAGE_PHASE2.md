@@ -7,6 +7,7 @@ Use this file as the single entry point for another ML system.
 ## 1) Read In This Order
 
 1. **`docs/PLAN_GOVERNANCE_ONEPAGER.md`** — **178 / 68 / 275 / G** disambiguation, release scope rows **R0–R3**, non-code G19/G21+ table.
+1a. **`docs/CHILD_CONTENT_FINAL_SYSTEM_HANDOFF.md`** — **ML-ready end-state:** layers 178 + 68 + 275, architecture map, localization policy, mandatory validation commands, operational notes (read this if you only open one child-content doc).
 2. **`docs/CHILD_CONTENT_INTERFACE_ML_HANDBOOK.md`** — full picture: 178 vs 68 vs **275** matrix, code map, gates, waves, document index.
 3. **`docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md`** — canonical **275-row** `PLAN_ITEM -> category_id -> item_id -> status` catalog (baseline gates include **`localization_lint`** per matrix header).
 3a. **`docs/PLAN_ITEM_275_OPERATING_RHYTHM.md`** — **постоянный порядок:** сверка с каноном, волны, DoD, таблица соответствия возраст/категория, скрипты после правок.
@@ -55,7 +56,7 @@ Use this file as the single entry point for another ML system.
 
 - System architecture and governance: mature.
 - Phase 2 **68-task** program: closed per `docs/CURSOR_CHAT_PENDING_CHECKLIST.md` with evidence in `docs/TASK_*_DONE.md` and `docs/PHASE2_FINAL_VERIFICATION_RUN.md`.
-- **275-item** catalog matrix: tracks product completeness; many rows remain `TODO` / `PARTIAL` — see `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md`.
+- **275-item** catalog matrix: **DONE 275 / PARTIAL 0 / TODO 0** as of **2026-04-28** (canonical: `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md`; open-row drill-down should be empty: `docs/PLAN_ITEM_OPEN_TASKS.md`).
 - Category-level readiness baseline captured in:
   - `docs/PHASE2_CATEGORY_ACCEPTANCE_STATUS_ALL.md`
 
@@ -72,7 +73,7 @@ Use this file as the single entry point for another ML system.
 
 ## 6) First Execution Steps For Next ML System
 
-**If you are continuing from the current repo baseline:** P2-001..P2-604 and exit criteria 56–68 are already delivered; start from the **275 matrix** and `docs/PLAN_ITEM_WAVE_1.md`.
+**If you are continuing from the current repo baseline:** P2-001..P2-604 and exit criteria 56–68 are already delivered; the **275 matrix** is closed at the product row level — use **`docs/CHILD_CONTENT_FINAL_SYSTEM_HANDOFF.md`** § “Next ML system” for the recommended verification order, then maintain parity via `docs/PLAN_ITEM_275_OPERATING_RHYTHM.md` whenever the catalog changes.
 
 **If you are bootstrapping from an older snapshot:**
 
@@ -85,7 +86,7 @@ Use this file as the single entry point for another ML system.
 ## 7) Completion Definition
 
 - **Phase 2 engineering transfer:** all **12** child categories `READY`, hard gates and evidence pack pass — see `docs/PHASE2_CATEGORY_ACCEPTANCE_STATUS_ALL.md` and `docs/PHASE2_FINAL_VERIFICATION_RUN.md`.
-- **275 catalog completeness:** separate bar — track in `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md` until all product rows are `DONE` (or explicitly deferred with rationale).
+- **275 catalog completeness:** **met** for the current matrix revision — all rows `DONE` in `docs/PLAN_ITEM_TRACEABILITY_MATRIX_FULL.md`. Future product changes should add/retire rows explicitly and rerun `scripts/plan_item_traceability_smoke.py` + `scripts/plan_item_275_audit.py`.
 
 ## 8) Phase 2 gate scripts (reference)
 
