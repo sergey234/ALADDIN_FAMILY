@@ -8,7 +8,7 @@ on:
 
 jobs:
   build:
-    runs-on: macos-14
+    runs-on: macos-15
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -16,10 +16,12 @@ jobs:
       - name: Setup Xcode
         uses: maxim-lobanov/setup-xcode@v1
         with:
-          xcode-version: '16.2.0'  # Исправлено: 16.0 не существует, используем 16.2.0
+          xcode-version: '26.x'  # Required by App Store Connect (iOS 26 SDK+)
       
       - name: Show Xcode version
-        run: xcodebuild -version
+        run: |
+        xcodebuild -version
+        xcrun --sdk iphoneos --show-sdk-version
       
       - name: Build Archive
         run: |

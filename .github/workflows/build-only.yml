@@ -15,7 +15,7 @@ on:
 jobs:
   build-only:
     name: Build Archive Only (No Upload)
-    runs-on: macos-14  # Используем macOS 14 для поддержки Xcode 16
+    runs-on: macos-15  # Xcode 26 runner for App Store SDK policy
     
     steps:
     - name: Checkout code
@@ -24,10 +24,12 @@ jobs:
     - name: Setup Xcode
       uses: maxim-lobanov/setup-xcode@v1
       with:
-        xcode-version: '16.2.0'  # Используем Xcode 16.2.0 для iOS 18 SDK (доступна на GitHub Actions)
+        xcode-version: '26.x'  # Required by App Store Connect (iOS 26 SDK+) (доступна на GitHub Actions)
         
     - name: Show Xcode version
-      run: xcodebuild -version
+      run: |
+        xcodebuild -version
+        xcrun --sdk iphoneos --show-sdk-version
       
     - name: Show environment info
       run: |
