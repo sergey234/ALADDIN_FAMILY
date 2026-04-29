@@ -178,7 +178,7 @@ struct ChildContentExperienceScreen: View {
             }
 
             if item.isOfflineAvailable {
-                Label("Offline ready", systemImage: "checkmark.icloud")
+                Label(localizationManager.localized("child_experience_offline_ready"), systemImage: "checkmark.icloud")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.green)
             }
@@ -206,7 +206,7 @@ struct ChildContentExperienceScreen: View {
 
             if let url = item.payloadURL {
                 Link(destination: url) {
-                    Label("Open source", systemImage: "arrow.up.right.square")
+                    Label(localizationManager.localized("child_experience_open_source"), systemImage: "arrow.up.right.square")
                         .font(.system(size: 14, weight: .semibold))
                 }
             }
@@ -5475,7 +5475,7 @@ private struct Toys3DSceneHostView: View {
                 Text(localizationManager.localized("child_game_zone"))
                     .font(.system(size: 17, weight: .bold))
                 Spacer()
-                Text("\(localizationManager.localized("parent_dashboard_metric_opens")): \(interactionCount)")
+                Text("\(localizationManager.localized("child_toys_metric_opens")): \(interactionCount)")
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(.secondary)
             }

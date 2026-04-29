@@ -109,12 +109,57 @@ final class ContentManager: ObservableObject {
     }
 
     func bootstrapLocalContentIfNeeded() async throws {
-        if await database.loadManifest() != nil {
+        if let existing = await database.loadManifest(),
+           !shouldReseedManifest(existing) {
             return
         }
         let manifest = ContentSeedProvider.shared.initialManifest()
         try await database.saveManifest(manifest)
         await cacheManager.cacheManifest(manifest)
+    }
+
+    private func shouldReseedManifest(_ manifest: ContentManifest) -> Bool {
+        if !ContentValidator.shared.validateManifest(manifest) {
+            return true
+        }
+
+        let requiredCoreCategories: Set<String> = [
+            ChildCategoryKey.toys,
+            ChildCategoryKey.drawing,
+            ChildCategoryKey.songs,
+            ChildCategoryKey.stories,
+            ChildCategoryKey.games,
+            ChildCategoryKey.study,
+            ChildCategoryKey.cartoons,
+            ChildCategoryKey.creativity,
+            ChildCategoryKey.programming,
+            ChildCategoryKey.social,
+            ChildCategoryKey.music,
+            ChildCategoryKey.video,
+            ChildCategoryKey.education,
+            ChildCategoryKey.career,
+            ChildCategoryKey.internet,
+            ChildCategoryKey.movies
+        ]
+
+        // Reseed when at least one required category is missing.
+        let existingCategories = Set(manifest.categories.map(\.id))
+        if !requiredCoreCategories.isSubset(of: existingCategories) {
+            return true
+        }
+
+        // Reseed when required categories exist but have no actual content items.
+        let itemCategories = Set(manifest.items.map(\.categoryId))
+        if !requiredCoreCategories.isSubset(of: itemCategories) {
+            return true
+        }
+
+        // Force migration from legacy local seed snapshots.
+        if manifest.checksumSHA256 == "seed-manifest-v1" {
+            return true
+        }
+
+        return false
     }
 
     func getContent(contentId: String) async -> ContentItem? {

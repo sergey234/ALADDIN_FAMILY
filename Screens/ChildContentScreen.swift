@@ -129,13 +129,46 @@ struct ChildContentScreen: View {
 
     private func loadDataDrivenContent() async {
         await MainActor.run { loadPhase = .loading }
-        do {
-            try await ContentManager.shared.bootstrapLocalContentIfNeeded()
-        } catch {
+        let firstPass = await loadContentPass(forceRefresh: false)
+        if firstPass == nil {
             await MainActor.run { loadPhase = .error }
             return
         }
-        await ContentManager.shared.runUnifiedLifecycle(forceRefresh: false)
+
+        var finalItems = firstPass?.items ?? []
+        var finalProgress = firstPass?.progressById ?? [:]
+
+        // UX fix: do not flash empty state immediately.
+        // If first pass returns empty, keep loading and run one forced refresh pass.
+        if finalItems.isEmpty {
+            try? await Task.sleep(nanoseconds: 900_000_000)
+            if let secondPass = await loadContentPass(forceRefresh: true) {
+                finalItems = secondPass.items
+                finalProgress = secondPass.progressById
+            }
+        }
+
+        await MainActor.run {
+            contentItems = finalItems
+            progressById = finalProgress
+            loadPhase = finalItems.isEmpty ? .empty : .ready
+            refreshDailyJourneyStep()
+            loadDailyRewardPoints()
+            loadSurpriseState()
+            loadCreativeOutputState()
+            loadTeenJourneyState()
+            loadTeenCreativeOutputState()
+        }
+    }
+
+    private func loadContentPass(forceRefresh: Bool) async -> (items: [ContentItem], progressById: [String: ContentProgress])? {
+        do {
+            try await ContentManager.shared.bootstrapLocalContentIfNeeded()
+        } catch {
+            return nil
+        }
+
+        await ContentManager.shared.runUnifiedLifecycle(forceRefresh: forceRefresh)
         let items = await ContentManager.shared.loadPersonalizedContent(
             for: category,
             ageBand: ageGroup.contentAgeBand
@@ -146,17 +179,7 @@ struct ChildContentScreen: View {
                 map[item.id] = progress
             }
         }
-        await MainActor.run {
-            contentItems = items
-            progressById = map
-            loadPhase = items.isEmpty ? .empty : .ready
-            refreshDailyJourneyStep()
-            loadDailyRewardPoints()
-            loadSurpriseState()
-            loadCreativeOutputState()
-            loadTeenJourneyState()
-            loadTeenCreativeOutputState()
-        }
+        return (items: items, progressById: map)
     }
 
     // MARK: - Header
@@ -763,6 +786,7 @@ struct ChildContentScreen: View {
         VStack(spacing: 12) {
             ForEach(displayedContentItems, id: \.id) { item in
                 let pct = min(100, max(0, progressById[item.id]?.completionPercent ?? 0))
+                let resolvedTitle = localizedContentTitle(for: item)
                 AnimatedButton(tone: animatedTone(for: item), haptics: true, playsSound: true) {
                     let result = await trackContentOpen(item)
                     await MainActor.run {
@@ -794,7 +818,7 @@ struct ChildContentScreen: View {
                 } label: {
                     HStack(alignment: .top, spacing: 12) {
                         VStack(alignment: .leading, spacing: 6) {
-                            Text(item.metadata.title)
+                            Text(resolvedTitle)
                                 .font(.system(size: 16, weight: .semibold))
                                 .foregroundColor(.white)
                             Text(item.type.rawValue.capitalized)
@@ -828,7 +852,7 @@ struct ChildContentScreen: View {
                             .fill(Color.white.opacity(0.16))
                     )
                 }
-                .accessibilityLabel(item.metadata.title)
+                .accessibilityLabel(resolvedTitle)
                 .accessibilityValue([progressText(for: item.id), lastOpenedDescription(for: item.id)].joined(separator: " · "))
                 .accessibilityIdentifier("child_content_row_\(item.id)")
                 .contextMenu {
@@ -840,6 +864,11 @@ struct ChildContentScreen: View {
                 }
             }
         }
+    }
+
+    private func localizedContentTitle(for item: ContentItem) -> String {
+        let localized = localizationManager.localized(item.metadata.title)
+        return localized == item.metadata.title ? item.metadata.title : localized
     }
 
     private var displayedContentItems: [ContentItem] {

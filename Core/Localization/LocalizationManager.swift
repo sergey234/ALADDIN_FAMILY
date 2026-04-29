@@ -14671,6 +14671,7 @@ Settings
     // ✅ BUILD 113: Добавляем Lock для защиты гигантского словаря (9000+ строк)
     // Доступ к Dictionary в Swift не потокобезопасен, что вызывает Dictionary.resize краш.
     private let lock = NSLock()
+    private var bundleTableCache: [Language: [String: String]] = [:]
 
     /**
      * Получить локализованную строку из словаря переводов
@@ -14720,11 +14721,56 @@ Settings
     }
 
     private func localizedFromBundle(key: String, language: Language) -> String? {
-        guard let path = Bundle.main.path(forResource: language.rawValue, ofType: "lproj"),
-              let bundle = Bundle(path: path) else {
-            return nil
+        let bundles: [Bundle] = [Bundle.main, Bundle(for: LocalizationManager.self)]
+        for container in bundles {
+            let directSubdirs = [
+                "\(language.rawValue).lproj",
+                "Localization/\(language.rawValue).lproj",
+                "Resources/Localization/\(language.rawValue).lproj"
+            ]
+            for subdir in directSubdirs {
+                if let value = container.path(forResource: "Localizable", ofType: "strings", inDirectory: subdir)
+                    .flatMap({ NSDictionary(contentsOfFile: $0) as? [String: String] })?[key] {
+                    return value
+                }
+            }
+
+            if let path = container.path(forResource: language.rawValue, ofType: "lproj"),
+               let bundle = Bundle(path: path) {
+                let value = NSLocalizedString(key, tableName: "Localizable", bundle: bundle, value: key, comment: "")
+                if value != key {
+                    return value
+                }
+            }
+
+            if let cached = loadLocalizedTableFromAnyBundlePath(language: language, container: container),
+               let value = cached[key] {
+                return value
+            }
         }
-        return NSLocalizedString(key, tableName: "Localizable", bundle: bundle, value: key, comment: "")
+        return nil
+    }
+
+    private func loadLocalizedTableFromAnyBundlePath(language: Language, container: Bundle) -> [String: String]? {
+        if let cached = bundleTableCache[language] {
+            return cached
+        }
+
+        let languageSegment = "/\(language.rawValue).lproj/"
+        let stringURLs = container.urls(forResourcesWithExtension: "strings", subdirectory: nil) ?? []
+        for url in stringURLs {
+            let path = url.path
+            if path.contains(languageSegment),
+               url.lastPathComponent == "Localizable.strings",
+               let dict = NSDictionary(contentsOf: url) as? [String: String] {
+                bundleTableCache[language] = dict
+                return dict
+            }
+        }
+
+        // Cache negative lookup to avoid repeated full scans.
+        bundleTableCache[language] = [:]
+        return nil
     }
     /**
      * Получить локализованную строку с параметрами
@@ -14750,9 +14796,26 @@ enum LocalizationDiagnostics {
         "child_rewards_settings_info_title",
         "child_rewards_settings_info_text"
     ]
+
+    private static let childDailyJourneyGuardKeys = [
+        "child_daily_journey_title",
+        "child_daily_journey_subtitle",
+        "child_daily_journey_step_discover",
+        "child_daily_journey_step_practice",
+        "child_daily_journey_step_reflect",
+        "child_daily_journey_v2_title",
+        "child_daily_journey_v2_pacing_fast",
+        "child_daily_journey_v2_pacing_steady",
+        "child_daily_journey_v2_pacing_support",
+        "child_daily_journey_v3_title",
+        "child_daily_journey_v3_focus_explore",
+        "child_daily_journey_v3_focus_build",
+        "child_daily_journey_v3_focus_lead"
+    ]
     
     static func runInitialChecks(with manager: LocalizationManager) {
         verifyChildRewardsSettingsKeys(using: manager)
+        verifyChildDailyJourneyResolution(using: manager)
     }
     
     private static func verifyChildRewardsSettingsKeys(using manager: LocalizationManager) {
@@ -14771,6 +14834,28 @@ enum LocalizationDiagnostics {
             if !missingEN.isEmpty {
                 print("⚠️ LocalizationDiagnostics: отсутствуют EN ключи: \(missingEN.joined(separator: ", "))")
             }
+        }
+    }
+
+    private static func verifyChildDailyJourneyResolution(using manager: LocalizationManager) {
+        let initialLanguage = manager.currentLanguage
+        defer { manager.currentLanguage = initialLanguage }
+
+        var failures: [String] = []
+        for language in [LocalizationManager.Language.russian, .english] {
+            manager.currentLanguage = language
+            for key in childDailyJourneyGuardKeys {
+                let resolved = manager.localized(key)
+                if resolved == key || resolved.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    failures.append("\(language.rawValue):\(key)")
+                }
+            }
+        }
+
+        if failures.isEmpty {
+            print("✅ LocalizationDiagnostics: child_daily_journey_* guard passed for RU/EN")
+        } else {
+            print("❌ LocalizationDiagnostics: child_daily_journey_* guard failed: \(failures.joined(separator: ", "))")
         }
     }
 }

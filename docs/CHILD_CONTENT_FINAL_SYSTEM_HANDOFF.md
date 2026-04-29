@@ -161,6 +161,7 @@ Run these to re-confirm end-state integrity:
 - `python3 scripts/plan_item_275_audit.py`
 - `python3 scripts/localization_lint.py`
 - `python3 scripts/child_localization_gate.py`
+- `python3 scripts/child_runtime_localization_integrity.py`
 - `python3 scripts/phase2_content_qa_matrix_smoke.py`
 - `python3 scripts/generate_plan_item_275_mirror.py`
 - `python3 scripts/plan_item_275_age_checklist.py`
@@ -216,6 +217,12 @@ This allows:
   - `docs/EXECUTION_AND_LOCALIZATION_DASHBOARD.md` (doc index + 275 status line)
 - Some historical docs may still contain older wording in *other* files — if a sentence disagrees with the three layers above, treat it as a **snapshot** unless it cites a fresh gate output.
 - The canonical truth for current catalog completion is the 275 matrix + gate outputs.
+- **Runtime localization integrity (child):**
+  - Verify `child_daily_journey_*` keys resolve to human-readable strings in RU/EN (not raw key output).
+  - Verify child screens do not render raw `child_*` key literals through direct `Text("child_...")`/`Label("child_...")`/`Button("child_...")`.
+  - Run: `python3 scripts/child_runtime_localization_integrity.py`.
+  - If raw keys appear in simulator UI, run bundle recovery steps from:
+    - `docs/CHILD_LOCALIZATION_BUNDLE_RECOVERY_RUNBOOK.md`
 - For future ML systems, always prioritize:
   1) matrix status,
   2) gate outputs,

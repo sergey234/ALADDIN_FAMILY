@@ -928,7 +928,16 @@ extension ALADDINApp {
         // ✅ BUILD 95: Используем переданное значение hasCompletedOnboarding
         // КРИТИЧНО: НЕ используем UserDefaults напрямую здесь - может вызвать рекурсию!
         // Если значение не передано, используем false (безопасное значение по умолчанию)
-        let onboardingDone = hasCompletedOnboarding ?? false
+        var onboardingDone = hasCompletedOnboarding ?? false
+#if targetEnvironment(simulator)
+        // Keep simulator auth/onboarding flow on stable runtimes (e.g. iOS 15.2).
+        // Apply bypass only for problematic 18.4 simulator runtime.
+        let runtime = ProcessInfo.processInfo.environment["SIMULATOR_RUNTIME_VERSION"] ?? ""
+        if runtime.hasPrefix("18.4") {
+            onboardingDone = true
+            print("🟡 Simulator onboarding bypass enabled for runtime \(runtime)")
+        }
+#endif
         print("🛠️ [ALADDINApp.initializeNavigation] onboardingDone = \(onboardingDone)")
         print("🛠️ [ALADDINApp.initializeNavigation] Текущий экран ДО проверки: \(navigationManager.currentScreen)")
 

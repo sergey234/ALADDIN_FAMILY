@@ -354,6 +354,7 @@
 		W5B20010 /* BackgroundMusicController.swift in Sources */ = {isa = PBXBuildFile; fileRef = W5B20000 /* BackgroundMusicController.swift */; };
 		W5B20011 /* AudioOneShotPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = W5B20001 /* AudioOneShotPlayer.swift */; };
 		W5F20010 /* Audio in Resources */ = {isa = PBXBuildFile; fileRef = W5F20000 /* Audio */; };
+		W5F20020 /* Localization in Resources */ = {isa = PBXBuildFile; fileRef = W5F20021 /* Localization */; };
 		E7B800012F730012 /* ParentDashboardReportExporterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7B800012F730011 /* ParentDashboardReportExporterTests.swift */; };
 		A11204002F900221A1120413 /* ContentManifestSigningTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11204002F900221A1120403 /* ContentManifestSigningTests.swift */; };
 		A11204002F900221A1120414 /* ContentPayloadDiskCachePolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A11204002F900221A1120404 /* ContentPayloadDiskCachePolicyTests.swift */; };
@@ -721,6 +722,7 @@
 		W5B20000 /* BackgroundMusicController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BackgroundMusicController.swift; path = Core/Audio/BackgroundMusicController.swift; sourceTree = "<group>"; };
 		W5B20001 /* AudioOneShotPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AudioOneShotPlayer.swift; path = Core/Audio/AudioOneShotPlayer.swift; sourceTree = "<group>"; };
 		W5F20000 /* Audio */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Audio; path = Resources/Audio; sourceTree = "<group>"; };
+		W5F20021 /* Localization */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Localization; path = Resources/Localization; sourceTree = "<group>"; };
 		E7B800012F730011 /* ParentDashboardReportExporterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentDashboardReportExporterTests.swift; sourceTree = "<group>"; };
 		A11204002F900221A1120403 /* ContentManifestSigningTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentManifestSigningTests.swift; sourceTree = "<group>"; };
 		A11204002F900221A1120404 /* ContentPayloadDiskCachePolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentPayloadDiskCachePolicyTests.swift; sourceTree = "<group>"; };
@@ -1134,6 +1136,7 @@
 				A1000002 /* ContentView.swift */,
 				A1000004 /* Assets.xcassets */,
 				W5F20000 /* Audio */,
+				W5F20021 /* Localization */,
 				A1000006 /* Preview Content */,
 				A3000000 /* ViewModels/MainViewModel.swift */,
 				A3000004 /* Core/Models/APIModels.swift */,
@@ -1433,6 +1436,7 @@
 				62A51F3024E64580A0C842B2 /* aladdin_cert.cer in Resources */,
 				378E2880F83D48D7BE7D5737 /* aladdin_cert_backup.cer in Resources */,
 				W5F20010 /* Audio in Resources */,
+				W5F20020 /* Localization in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

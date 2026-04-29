@@ -63,6 +63,7 @@ final class ContentSeedProvider {
             .init(id: ChildCategoryKey.stories, titleKey: ChildCategoryKey.stories, icon: "📖", ageBand: .kids_1_6),
             .init(id: ChildCategoryKey.games, titleKey: ChildCategoryKey.games, icon: "🎮", ageBand: .school_7_12),
             .init(id: ChildCategoryKey.study, titleKey: ChildCategoryKey.study, icon: "📚", ageBand: .school_7_12),
+            .init(id: ChildCategoryKey.safety, titleKey: ChildCategoryKey.safety, icon: "🛡️", ageBand: .school_7_12),
             .init(id: ChildCategoryKey.creativity, titleKey: ChildCategoryKey.creativity, icon: "🎨", ageBand: .school_7_12),
             .init(id: ChildCategoryKey.cartoons, titleKey: ChildCategoryKey.cartoons, icon: "📺", ageBand: .school_7_12),
             .init(id: ChildCategoryKey.programming, titleKey: ChildCategoryKey.programming, icon: "💻", ageBand: .teen_13_17),
@@ -107,10 +108,10 @@ final class ContentSeedProvider {
         }
 
         return ContentManifest(
-            manifestVersion: 1,
+            manifestVersion: 2,
             generatedAt: Date(),
             minSupportedAppVersion: "1.0.0",
-            checksumSHA256: "seed-manifest-v1",
+            checksumSHA256: "seed-manifest-v2",
             signature: nil,
             categories: categories,
             items: items
@@ -141,39 +142,39 @@ final class ContentSeedProvider {
     private func seedTitles(for category: String) -> [String] {
         switch category {
         case ChildCategoryKey.toys:
-            return ["Умные игрушки", "Логическая мозаика", "Игра Найди форму"]
+            return ["child_seed_toys_1", "child_seed_toys_2", "child_seed_toys_3"]
         case ChildCategoryKey.drawing:
-            return ["Рисуем животных", "Цветные фигуры", "Мой первый альбом"]
+            return ["child_seed_drawing_1", "child_seed_drawing_2", "child_seed_drawing_3"]
         case ChildCategoryKey.songs:
-            return ["Песенка про буквы", "Считалочка", "Добрая колыбельная"]
+            return ["child_seed_songs_1", "child_seed_songs_2", "child_seed_songs_3"]
         case ChildCategoryKey.stories:
-            return ["Сказка про дружбу", "Лесные приключения", "Маленький герой"]
+            return ["child_seed_stories_1", "child_seed_stories_2", "child_seed_stories_3"]
         case ChildCategoryKey.games:
-            return ["Математический квест", "Словесный лабиринт", "Логический спринт"]
+            return ["child_seed_games_1", "child_seed_games_2", "child_seed_games_3"]
         case ChildCategoryKey.study:
-            return ["Русский язык: основы", "Математика: базовый уровень", "Окружающий мир"]
+            return ["child_seed_study_1", "child_seed_study_2", "child_seed_study_3"]
         case ChildCategoryKey.safety:
-            return ["Безопасный интернет", "Как не доверять незнакомцам", "Проверка ссылок"]
+            return ["child_seed_safety_1", "child_seed_safety_2", "child_seed_safety_3"]
         case ChildCategoryKey.cartoons:
-            return ["Обучающий мультфильм 1", "Обучающий мультфильм 2", "Научный мини-сериал"]
+            return ["child_seed_cartoons_1", "child_seed_cartoons_2", "child_seed_cartoons_3"]
         case ChildCategoryKey.creativity:
-            return ["Творческая мастерская", "Цвет и композиция", "Мини-проект своими руками"]
+            return ["child_seed_creativity_1", "child_seed_creativity_2", "child_seed_creativity_3"]
         case ChildCategoryKey.programming:
-            return ["Логика алгоритмов", "Swift Start", "Визуальное программирование"]
+            return ["child_seed_programming_1", "child_seed_programming_2", "child_seed_programming_3"]
         case ChildCategoryKey.social:
-            return ["Безопасное общение", "Цифровой этикет", "Контроль приватности"]
+            return ["child_seed_social_1", "child_seed_social_2", "child_seed_social_3"]
         case ChildCategoryKey.music:
-            return ["Музыкальные жанры", "Ритм и мелодия", "Практика слуха"]
+            return ["child_seed_music_1", "child_seed_music_2", "child_seed_music_3"]
         case ChildCategoryKey.video:
-            return ["Образовательное видео 1", "Образовательное видео 2", "Видео-разбор темы"]
+            return ["child_seed_video_1", "child_seed_video_2", "child_seed_video_3"]
         case ChildCategoryKey.education:
-            return ["Финансовая грамотность", "Навыки самообучения", "Подготовка к экзаменам"]
+            return ["child_seed_education_1", "child_seed_education_2", "child_seed_education_3"]
         case ChildCategoryKey.career:
-            return ["Профессии будущего", "Карьерные треки", "Портфолио и навыки"]
+            return ["child_seed_career_1", "child_seed_career_2", "child_seed_career_3"]
         case ChildCategoryKey.internet:
-            return ["Работа с источниками", "Критическое мышление онлайн", "Цифровая гигиена"]
+            return ["child_seed_internet_1", "child_seed_internet_2", "child_seed_internet_3"]
         case ChildCategoryKey.movies:
-            return ["Кино и анализ сюжета", "Документальные форматы", "Кино-клуб"]
+            return ["child_seed_movies_1", "child_seed_movies_2", "child_seed_movies_3"]
         case ElderlyCategoryKey.health:
             return ["Памятка по лекарствам", "Ежедневный контроль давления", "План визита к врачу"]
         case ElderlyCategoryKey.safety:

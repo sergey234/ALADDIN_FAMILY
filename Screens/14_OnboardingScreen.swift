@@ -81,7 +81,21 @@ struct OnboardingScreen: View {
     @State private var showPrivacyPolicy: Bool = false
 
     // ✅ НОВОЕ: Stored property вместо computed для устранения race condition
-    @State private var pages: [OnboardingPage] = []
+    // Стартуем не с пустого массива, чтобы исключить гонку первого кадра TabView(.page).
+    @State private var pages: [OnboardingPage] = [
+        OnboardingPage(
+            icon: "🛡️",
+            title: "Защита семьи",
+            description: "Комплексная система защиты от киберугроз",
+            color: Color.primaryBlue
+        ),
+        OnboardingPage(
+            icon: "🦄",
+            title: "ALADDIN",
+            description: "Присоединяйтесь к системе безопасности",
+            color: Color.secondaryGold
+        )
+    ]
     
     // @StateObject private var registrationVM = FamilyRegistrationViewModel()
     
@@ -154,6 +168,21 @@ struct OnboardingScreen: View {
             // Graceful degradation - используем минимальные страницы
             pages = createMinimalPages()
             print("❌ OnboardingScreen: Error loading pages: \(error.localizedDescription), using \(pages.count) minimal pages")
+        }
+        clampCurrentPageIfNeeded()
+    }
+
+    private func clampCurrentPageIfNeeded() {
+        guard !pages.isEmpty else {
+            currentPage = 0
+            return
+        }
+
+        let maxPage = pages.count - 1
+        if currentPage > maxPage {
+            currentPage = maxPage
+        } else if currentPage < 0 {
+            currentPage = 0
         }
     }
 
@@ -380,29 +409,38 @@ struct OnboardingScreen: View {
                 .padding(Spacing.m)
 
                 // Контент страниц
-                TabView(selection: $currentPage) {
-                    ForEach(0..<pages.count, id: \.self) { index in
-                        onboardingPage(pages[index], index: index)
-                            .tag(index)
+                if pages.isEmpty {
+                    ProgressView()
+                        .progressViewStyle(.circular)
+                        .tint(.white)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                } else {
+                    TabView(selection: $currentPage) {
+                        ForEach(0..<pages.count, id: \.self) { index in
+                            onboardingPage(pages[index], index: index)
+                                .tag(index)
+                        }
                     }
+                    .tabViewStyle(.page(indexDisplayMode: .never))
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel("Страница \(currentPage + 1) из \(pages.count)")
                 }
-                .tabViewStyle(.page(indexDisplayMode: .never))
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel("Страница \(currentPage + 1) из \(pages.count)")
 
                 // Индикаторы страниц
-                HStack(spacing: Spacing.sm) {
-                    ForEach(0..<pages.count, id: \.self) { index in
-                        Circle()
-                            .fill(currentPage == index ? Color.primaryBlue : Color.textSecondary.opacity(0.3))
-                            .frame(width: currentPage == index ? 12 : 8, height: currentPage == index ? 12 : 8)
-                            .animation(.spring(), value: currentPage)
-                            .accessibilityLabel(currentPage == index ? "Текущая страница \(index + 1)" : "Страница \(index + 1)")
+                if !pages.isEmpty {
+                    HStack(spacing: Spacing.sm) {
+                        ForEach(0..<pages.count, id: \.self) { index in
+                            Circle()
+                                .fill(currentPage == index ? Color.primaryBlue : Color.textSecondary.opacity(0.3))
+                                .frame(width: currentPage == index ? 12 : 8, height: currentPage == index ? 12 : 8)
+                                .animation(.spring(), value: currentPage)
+                                .accessibilityLabel(currentPage == index ? "Текущая страница \(index + 1)" : "Страница \(index + 1)")
+                        }
                     }
+                    .padding(.vertical, Spacing.l)
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel("Индикаторы страниц")
                 }
-                .padding(.vertical, Spacing.l)
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel("Индикаторы страниц")
 
                 // Кнопки (на последнем слайде показываем дополнительные)
                 VStack(spacing: Spacing.m) {
