@@ -26,12 +26,12 @@ struct JoinDeviceScreen: View {
                     subtitle: localizationManager.localized("join_device_subtitle"),
                     showBackButton: true,
                     onBack: {
-                        navigationManager.goBack(reason: "JoinDeviceScreen cancel")
+                        leaveToSettings(reason: "JoinDeviceScreen cancel")
                     }
                 )
 
                 ScrollView {
-                    VStack(spacing: Spacing.xl) {
+                    VStack(alignment: .leading, spacing: Spacing.xl) {
                         Button(action: {
                             let gen = UIImpactFeedbackGenerator(style: .medium)
                             gen.impactOccurred()
@@ -61,10 +61,11 @@ struct JoinDeviceScreen: View {
                             .font(.bodyBold)
                             .foregroundColor(.textSecondary)
 
-                        VStack(spacing: Spacing.m) {
+                        VStack(alignment: .leading, spacing: Spacing.m) {
                             Text(localizationManager.localized("join_device_manual_title"))
                                 .font(.h4)
                                 .foregroundColor(.textPrimary)
+                                .frame(maxWidth: .infinity, alignment: .leading)
 
                             TextField(localizationManager.localized("join_device_placeholder"), text: $pinCode)
                                 .textFieldStyle(ALADDINTextFieldStyle())
@@ -190,6 +191,14 @@ struct JoinDeviceScreen: View {
     private func notifyRefreshAndLeave() {
         UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
         NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
-        navigationManager.goBack(reason: "JoinDeviceScreen completed")
+        leaveToSettings(reason: "JoinDeviceScreen completed")
+    }
+
+    private func leaveToSettings(reason: String) {
+        if navigationManager.previousScreen == .settings {
+            navigationManager.goBack(reason: reason)
+        } else {
+            navigationManager.navigateToRoot(.settings)
+        }
     }
 }
