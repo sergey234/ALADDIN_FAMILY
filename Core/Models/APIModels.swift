@@ -383,12 +383,22 @@ struct ChatMessageRequest: Codable {
     let context: String?
     let userId: String?
     let timestamp: Date?
+    let responseLanguage: String?
 
-    init(message: String, context: String? = nil, userId: String? = nil, timestamp: Date? = nil) {
+    enum CodingKeys: String, CodingKey {
+        case message
+        case context
+        case userId
+        case timestamp
+        case responseLanguage = "response_language"
+    }
+
+    init(message: String, context: String? = nil, userId: String? = nil, timestamp: Date? = nil, responseLanguage: String? = nil) {
         self.message = message
         self.context = context
         self.userId = userId
         self.timestamp = timestamp ?? Date()
+        self.responseLanguage = responseLanguage
     }
 }
 

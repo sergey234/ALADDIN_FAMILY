@@ -67,8 +67,8 @@ struct NotificationSettingsScreen: View {
             VStack(spacing: 0) {
                 // Navigation Bar
                 ALADDINNavigationBar(
-                    title: "НАСТРОЙКИ УВЕДОМЛЕНИЙ",
-                    subtitle: "Управление режимами и приоритетами",
+                    title: localizationManager.localized("notification_settings_nav_title"),
+                    subtitle: localizationManager.localized("notification_settings_nav_subtitle"),
                     showBackButton: true,
                     showProfileButton: false,
                     showListButton: false,
@@ -172,36 +172,36 @@ struct NotificationSettingsScreen: View {
             
             VStack(spacing: 12) {
                 NotificationToggle(
-                    title: "Безопасность",
-                    subtitle: "Уведомления об угрозах и блокировках",
+                    title: localizationManager.localized("notification_type_security_title"),
+                    subtitle: localizationManager.localized("notification_type_security_subtitle"),
                     icon: "🛡️",
                     isOn: $securityEnabled
                 )
                 
                 NotificationToggle(
-                    title: "Семья",
-                    subtitle: "Уведомления о действиях членов семьи",
+                    title: localizationManager.localized("notification_type_family_title"),
+                    subtitle: localizationManager.localized("notification_type_family_subtitle"),
                     icon: "👨‍👩‍👧‍👦",
                     isOn: $familyEnabled
                 )
                 
                 NotificationToggle(
-                    title: "Защита сети",
-                    subtitle: "Уведомления о подключении защиты сети",
+                    title: localizationManager.localized("notification_type_network_title"),
+                    subtitle: localizationManager.localized("notification_type_network_subtitle"),
                     icon: "🔒",
                     isOn: $networkProtectionEnabled
                 )
                 
                 NotificationToggle(
-                    title: "AI Помощник",
-                    subtitle: "Уведомления от AI помощника",
+                    title: localizationManager.localized("notification_type_ai_title"),
+                    subtitle: localizationManager.localized("notification_type_ai_subtitle"),
                     icon: "🤖",
                     isOn: $aiEnabled
                 )
                 
                 NotificationToggle(
-                    title: "Попытки обхода",
-                    subtitle: "Уведомления о заблокированных попытках обхода",
+                    title: localizationManager.localized("notification_type_bypass_title"),
+                    subtitle: localizationManager.localized("notification_type_bypass_subtitle"),
                     icon: "🚨",
                     isOn: $bypassEnabled
                 )
@@ -225,23 +225,23 @@ struct NotificationSettingsScreen: View {
             
             VStack(spacing: 12) {
                 NotificationToggle(
-                    title: "Звук",
-                    subtitle: "Звуковые уведомления",
+                    title: localizationManager.localized("notification_sound_title"),
+                    subtitle: localizationManager.localized("notification_sound_subtitle"),
                     icon: "🔊",
                     isOn: $soundEnabled
                 )
                 
                 NotificationToggle(
-                    title: "Badge",
-                    subtitle: "Счетчик непрочитанных на иконке",
+                    title: localizationManager.localized("notification_badge_title"),
+                    subtitle: localizationManager.localized("notification_badge_subtitle"),
                     icon: "🔴",
                     isOn: $badgeEnabled
                 )
                 
                 // Тихий режим
                 NotificationToggle(
-                    title: "Тихий режим",
-                    subtitle: "Уведомления без звука и баннера, только badge",
+                    title: localizationManager.localized("notification_quiet_mode_title"),
+                    subtitle: localizationManager.localized("notification_quiet_mode_subtitle"),
                     icon: "🔇",
                     isOn: $quietModeEnabled
                 )
@@ -266,8 +266,8 @@ struct NotificationSettingsScreen: View {
             VStack(spacing: 12) {
                 // Режим "Только важные"
                 NotificationToggle(
-                    title: "Только важные",
-                    subtitle: "Только угрозы безопасности, остальные в тихий режим",
+                    title: localizationManager.localized("notification_important_only_title"),
+                    subtitle: localizationManager.localized("notification_important_only_subtitle"),
                     icon: "🎯",
                     isOn: $importantOnlyMode
                 )
@@ -275,15 +275,15 @@ struct NotificationSettingsScreen: View {
                 // Режим "Не беспокоить"
                 VStack(alignment: .leading, spacing: 8) {
                     NotificationToggle(
-                        title: "Не беспокоить",
-                        subtitle: "Полностью отключает уведомления на время",
+                        title: localizationManager.localized("notification_dnd_title"),
+                        subtitle: localizationManager.localized("notification_dnd_subtitle"),
                         icon: "🔕",
                         isOn: $doNotDisturbMode
                     )
                     
                     if doNotDisturbMode {
                         DatePicker(
-                            "Отключить до",
+                            localizationManager.localized("notification_dnd_until"),
                             selection: Binding(
                                 get: { doNotDisturbUntil ?? Date().addingTimeInterval(3600) },
                                 set: { setDoNotDisturbUntil($0) }
@@ -303,8 +303,8 @@ struct NotificationSettingsScreen: View {
                 
                 // Только высокий приоритет
                 NotificationToggle(
-                    title: "Только высокий приоритет",
-                    subtitle: "Показывать только уведомления высокого приоритета",
+                    title: localizationManager.localized("notification_high_priority_title"),
+                    subtitle: localizationManager.localized("notification_high_priority_subtitle"),
                     icon: "⭐",
                     isOn: $highPriorityOnly
                 )
@@ -337,7 +337,7 @@ struct NotificationSettingsScreen: View {
                     
                     if maxNotificationsPerHourEnabled && maxNotificationsPerHour > 0 {
                         VStack(alignment: .leading, spacing: 4) {
-                            Text("Максимум уведомлений в час: \(maxNotificationsPerHour)")
+                            Text(String(format: localizationManager.localized("notification_rate_limit_value"), maxNotificationsPerHour))
                                 .font(.system(size: 12))
                                 .foregroundColor(.white.opacity(0.8))
                                 .lineLimit(2)
@@ -380,8 +380,8 @@ struct NotificationSettingsScreen: View {
             
             VStack(spacing: 12) {
                 NotificationToggle(
-                    title: "Включить тихие часы",
-                    subtitle: "Отключить звук и баннер в указанное время",
+                    title: localizationManager.localized("notification_quiet_hours_enable_title"),
+                    subtitle: localizationManager.localized("notification_quiet_hours_enable_subtitle"),
                     icon: "🌙",
                     isOn: $quietHoursEnabled
                 )

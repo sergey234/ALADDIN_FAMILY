@@ -71,7 +71,7 @@ struct UserSelectorView: View {
                     ForEach(users) { user in
                         UserChip(
                             id: user.id,
-                            name: user.displayName,
+                            name: localizedDisplayName(for: user),
                             icon: user.icon,
                             isSelected: selectedUserId == user.id,
                             onTap: {
@@ -85,6 +85,44 @@ struct UserSelectorView: View {
                 .padding(.horizontal, Spacing.screenPadding)
             }
         }
+    }
+
+    private func localizedDisplayName(for user: UserOption) -> String {
+        let trimmed = user.displayName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return user.displayName }
+
+        let localizedRolePrefix: String?
+        switch user.role.lowercased() {
+        case "parent":
+            localizedRolePrefix = localizationManager.localized("family.role.parent")
+        case "child":
+            localizedRolePrefix = localizationManager.localized("family.role.child")
+        case "teenager":
+            localizedRolePrefix = localizationManager.localized("family.role.teenager")
+        case "elderly":
+            localizedRolePrefix = localizationManager.localized("family.role.elderly")
+        default:
+            localizedRolePrefix = nil
+        }
+
+        guard let prefix = localizedRolePrefix else { return user.displayName }
+
+        let knownPrefixes = [
+            "Родитель", "Ребенок", "Ребёнок", "Подросток", "Пожилой",
+            "Parent", "Child", "Teenager", "Elderly"
+        ]
+
+        for known in knownPrefixes {
+            if trimmed == known {
+                return prefix
+            }
+            if trimmed.hasPrefix("\(known) ") {
+                let suffix = String(trimmed.dropFirst(known.count + 1))
+                return "\(prefix) \(suffix)"
+            }
+        }
+
+        return user.displayName
     }
 }
 

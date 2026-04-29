@@ -595,7 +595,7 @@ struct MainScreen: View {
                                 Text("👨‍👩‍👧‍👦")
                                     .font(.system(size: 18))
                                 
-                                Text(localizationManager.localized("main_family_title"))
+                                Text(localizationManager.localized("main_family_header_title"))
                                     .font(.system(size: 14, weight: .bold))
                                     .foregroundColor(.black)
                                 
@@ -670,7 +670,7 @@ struct MainScreen: View {
                                     .foregroundColor(.black)
                                 
                                 // Сообщение статуса (из API или fallback)
-                                Text(mainViewModel.familyProtectionStatusMessage ?? localizationManager.localized(mainViewModel.familyProtectionStatus.messageLocalizationKey))
+                                Text(localizationManager.localized(mainViewModel.familyProtectionStatus.messageLocalizationKey))
                                     .font(.system(size: 9))
                                     .foregroundColor(.black)
                                 

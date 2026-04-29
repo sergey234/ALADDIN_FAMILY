@@ -904,12 +904,18 @@ class APIService: ObservableObject {
     // MARK: - AI Assistant API
 
     // Основной чат с AI
-    func sendMessageToAI(message: String, context: String = "general", completion: @escaping (Result<ChatMessageResponse, Error>) -> Void) {
+    func sendMessageToAI(
+        message: String,
+        context: String = "general",
+        responseLanguage: String? = nil,
+        completion: @escaping (Result<ChatMessageResponse, Error>) -> Void
+    ) {
         let request = ChatMessageRequest(
             message: message,
             context: context,
             userId: AppConfig.authToken ?? "guest",
-            timestamp: Date()
+            timestamp: Date(),
+            responseLanguage: responseLanguage
         )
         // ✅ AI Assistant - публичный эндпоинт (демонстрация возможностей)
         networkManager.post(endpoint: AppConfig.Endpoint.aiAssistantChat, body: request, requiresAuth: false, completion: completion)

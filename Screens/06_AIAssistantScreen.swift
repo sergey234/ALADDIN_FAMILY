@@ -144,7 +144,7 @@ struct AIAssistantScreen: View {
 
                         // Индикатор загрузки
                         if isLoading {
-                            TypingIndicatorView(typingUsers: ["AI Assistant"])
+                    TypingIndicatorView(typingUsers: [localizationManager.localized("ai_assistant_title")])
                         }
 
                         // Spacer для клавиатуры
@@ -374,10 +374,13 @@ struct AIAssistantScreen: View {
                 case .failure(let error):
                     logger.error("❌ AI Assistant: Failed to send feedback", error: error)
                     showError = true
-                    errorMessage = "Не удалось отправить отзыв: \(error.localizedDescription)"
+                    errorMessage = String(
+                        format: localizationManager.localized("ai_assistant_error_feedback_failed"),
+                        error.localizedDescription
+                    )
 
                     let errorResponse = ChatMessage(
-                        text: "Извините, не удалось отправить ваш отзыв. Попробуйте позже через раздел обратной связи.",
+                        text: localizationManager.localized("ai_assistant_error_feedback_retry"),
                         isUser: false,
                         time: currentTime()
                     )
@@ -536,7 +539,8 @@ struct AIAssistantScreen: View {
 
         // Отправляем обычное сообщение AI
         logger.network("🤖 AI Assistant: Making API call to AI service")
-        apiService.sendMessageToAI(message: message, context: context) { [self] result in
+        let responseLanguage = localizationManager.currentLanguage == .english ? "en" : "ru"
+        apiService.sendMessageToAI(message: message, context: context, responseLanguage: responseLanguage) { [self] result in
             DispatchQueue.main.async {
                 isLoading = false
 
@@ -580,10 +584,13 @@ struct AIAssistantScreen: View {
                     #endif
                     
                     showError = true
-                    errorMessage = "Не удалось получить ответ от AI: \(error.localizedDescription)"
+                    errorMessage = String(
+                        format: localizationManager.localized("ai_assistant_error_response_failed"),
+                        error.localizedDescription
+                    )
 
                     let errorResponse = ChatMessage(
-                        text: "Извините, произошла ошибка. Попробуйте позже.",
+                        text: localizationManager.localized("ai_assistant_error_generic_retry"),
                         isUser: false,
                         time: currentTime()
                     )
@@ -739,17 +746,17 @@ struct AIAssistantScreen: View {
         let message: String
         switch action {
         case .protectionStatus:
-            message = "Какой статус моей защиты ALADDIN?"
+            message = localizationManager.localized("ai_assistant_quick_prompt_protection_status")
         case .analyzeThreats:
-            message = "Проанализируй возможные угрозы для моей семьи"
+            message = localizationManager.localized("ai_assistant_quick_prompt_analyze_threats")
         case .securityTips:
-            message = "Дай советы по улучшению безопасности"
+            message = localizationManager.localized("ai_assistant_quick_prompt_security_tips")
         case .help:
-            message = "Помоги настроить приложение"
+            message = localizationManager.localized("ai_assistant_quick_prompt_help")
         case .familySetup:
-            message = "Как настроить семейную защиту?"
+            message = localizationManager.localized("ai_assistant_quick_prompt_family_setup")
         case .reportIncident:
-            message = "Я заметил подозрительную активность"
+            message = localizationManager.localized("ai_assistant_quick_prompt_report_incident")
         }
 
         messageText = message
@@ -806,16 +813,19 @@ struct QuickAction: Identifiable {
 }
 
 struct QuickActionsView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let onActionSelected: (QuickActionType) -> Void
 
-    private let actions = [
-        QuickAction(type: .protectionStatus, icon: "🛡️", title: "Статус защиты"),
-        QuickAction(type: .analyzeThreats, icon: "🔍", title: "Анализ угроз"),
-        QuickAction(type: .securityTips, icon: "💡", title: "Советы"),
-        QuickAction(type: .help, icon: "❓", title: "Помощь"),
-        QuickAction(type: .familySetup, icon: "👨‍👩‍👧‍👦", title: "Семья"),
-        QuickAction(type: .reportIncident, icon: "🚨", title: "Инцидент")
-    ]
+    private var actions: [QuickAction] {
+        [
+            QuickAction(type: .protectionStatus, icon: "🛡️", title: localizationManager.localized("ai_assistant_quick_action_protection_status")),
+            QuickAction(type: .analyzeThreats, icon: "🔍", title: localizationManager.localized("ai_assistant_quick_action_analyze_threats")),
+            QuickAction(type: .securityTips, icon: "💡", title: localizationManager.localized("ai_assistant_quick_action_security_tips")),
+            QuickAction(type: .help, icon: "❓", title: localizationManager.localized("ai_assistant_quick_action_help")),
+            QuickAction(type: .familySetup, icon: "👨‍👩‍👧‍👦", title: localizationManager.localized("ai_assistant_quick_action_family")),
+            QuickAction(type: .reportIncident, icon: "🚨", title: localizationManager.localized("ai_assistant_quick_action_incident"))
+        ]
+    }
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
@@ -1042,7 +1052,7 @@ struct AIFeedbackSheet: View {
 
                 // Кнопки
                 HStack(spacing: 12) {
-                    Button("Отмена") {
+                    Button(localizationManager.localized("common_cancel")) {
                         isPresented = false
                     }
                     .buttonStyle(.bordered)
