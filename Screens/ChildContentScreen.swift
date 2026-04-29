@@ -49,12 +49,14 @@ struct ChildContentScreen: View {
     @State private var schoolCorrectiveFeedbackKey: String = "child_daily_journey_v2_feedback_keep_going"
     @State private var frustrationLevel: Int = 0
     @State private var frustrationPlanVisible: Bool = false
+    @State private var recoveryBonusAttempts: Int = 0
     @State private var teenAutonomyFocusKey: String = "child_daily_journey_v3_focus_explore"
     @State private var teenReflectionPromptVisible: Bool = false
     @State private var teenReflectionCompleted: Bool = false
     @State private var teenArtifactCount: Int = 0
     @State private var teenArtifactTarget: Int = 2
     @State private var teenLastArtifactKey: String = "child_creative_output_v2_none"
+    @State private var extensionRequestStatus: String?
     
     // MARK: - Body
     
@@ -73,6 +75,10 @@ struct ChildContentScreen: View {
                     VStack(spacing: 20) {
                         // Приветствие
                         greetingSection
+
+                        if shouldShowTimeLimitBanner {
+                            timeLimitBannerCard
+                        }
                         
                         // Специфичный контент для каждой категории
                         categoryContent
@@ -782,6 +788,62 @@ struct ChildContentScreen: View {
         return "\(category)|\(ageGroup)|\(String(describing: loadPhase))|\(contentItems.count)|\(adaptiveHintVisible)|\(simplifiedModeEnabled)|\(schoolPacingKey)|\(schoolCorrectiveFeedbackVisible)|\(teenArtifactCount)|\(teenLastArtifactKey)"
     }
 
+    private var shouldShowTimeLimitBanner: Bool {
+        TimeTracker.shared.remainingSecondsToday <= 0
+    }
+
+    private var timeLimitBannerCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("child_content_time_limit_title"))
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.white)
+            Text(localizationManager.localized("child_content_time_limit_subtitle"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white.opacity(0.9))
+            Text(String(format: localizationManager.localized("child_content_time_limit_remaining"), max(0, TimeTracker.shared.remainingSecondsToday / 60)))
+                .font(.system(size: 12, weight: .semibold))
+                .foregroundColor(.white.opacity(0.85))
+            Button {
+                if ChildTimeExtensionRequestStore.shared.pendingRequest() == nil {
+                    ChildTimeExtensionRequestStore.shared.submitRequest(
+                        childId: activeChildID(),
+                        requestedExtraMinutes: 15
+                    )
+                    extensionRequestStatus = localizationManager.localized("child_content_request_sent_status")
+                    SoundEffectPlayer.shared.play(.success, priority: .medium)
+                } else {
+                    extensionRequestStatus = localizationManager.localized("child_content_request_already_pending_status")
+                    SoundEffectPlayer.shared.play(.warning, priority: .medium)
+                }
+            } label: {
+                Text(localizationManager.localized("child_content_request_more_time"))
+                    .font(.system(size: 14, weight: .semibold))
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(
+                        RoundedRectangle(cornerRadius: 10)
+                            .fill(Color.cyan.opacity(0.45))
+                    )
+            }
+            .accessibilityLabel(localizationManager.localized("child_content_request_more_time"))
+            .accessibilityIdentifier("child_content_request_more_time")
+            if let extensionRequestStatus, !extensionRequestStatus.isEmpty {
+                Text(extensionRequestStatus)
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white.opacity(0.85))
+            }
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.red.opacity(0.25))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("child_content_time_limit_banner")
+    }
+
     private var dataDrivenContent: some View {
         VStack(spacing: 12) {
             ForEach(displayedContentItems, id: \.id) { item in
@@ -839,11 +901,23 @@ struct ChildContentScreen: View {
                                     .font(.system(size: 13, weight: .semibold))
                                     .foregroundColor(.white.opacity(0.9))
                             }
+                            HStack(spacing: 6) {
+                                Image(systemName: "hand.tap.fill")
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(.cyan)
+                                Text(localizationManager.localized("child_content_tap_to_open"))
+                                    .font(.system(size: 11, weight: .semibold))
+                                    .foregroundColor(.cyan)
+                            }
                         }
                         VStack(alignment: .trailing) {
                             Image(systemName: "checkmark.circle.fill")
                                 .font(.system(size: 22))
                                 .foregroundColor(isCompleted(item.id) ? .green : .white.opacity(0.4))
+                            Image(systemName: "chevron.right.circle.fill")
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.cyan.opacity(0.9))
+                                .padding(.top, 8)
                         }
                     }
                     .padding()
@@ -895,6 +969,8 @@ struct ChildContentScreen: View {
                 .foregroundColor(.white.opacity(0.9))
             Button {
                 simplifiedModeEnabled = true
+                recoveryBonusAttempts = max(recoveryBonusAttempts, 2)
+                frustrationPlanVisible = false
                 SoundEffectPlayer.shared.play(.success, priority: .medium)
             } label: {
                 Text(localizationManager.localized("child_adaptive_loop_simplify_action"))
@@ -972,11 +1048,19 @@ struct ChildContentScreen: View {
     }
 
     private func trackContentOpen(_ item: ContentItem) async -> AnimatedButtonFlash {
-        guard TimeTracker.shared.canStartSession() else {
-            await MainActor.run {
-                registerAdaptiveError()
+        if !TimeTracker.shared.canStartSession() {
+            if recoveryBonusAttempts > 0 {
+                await MainActor.run {
+                    recoveryBonusAttempts = max(0, recoveryBonusAttempts - 1)
+                    adaptiveHintVisible = false
+                    frustrationPlanVisible = false
+                }
+            } else {
+                await MainActor.run {
+                    registerAdaptiveError()
+                }
+                return .error
             }
-            return .error
         }
 
         var progress = await ContentManager.shared.loadProgress(contentId: item.id)
@@ -1344,6 +1428,7 @@ struct ChildContentScreen: View {
 
     private func applyFrustrationRecoveryPlan() {
         simplifiedModeEnabled = true
+        recoveryBonusAttempts = max(recoveryBonusAttempts, 3)
         frustrationLevel = 0
         frustrationPlanVisible = false
         adaptiveHintVisible = false

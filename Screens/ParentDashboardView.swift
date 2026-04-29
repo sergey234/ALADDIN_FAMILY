@@ -19,6 +19,7 @@ struct ParentDashboardView: View {
     @State private var masteryTopics: [ParentMasteryTopic] = []
     @State private var roiRows: [ParentROIRow] = []
     @State private var digestAutoLines: [String] = []
+    @State private var pendingExtensionRequestCount: Int = 0
 
     var body: some View {
         NavigationView {
@@ -46,6 +47,11 @@ struct ParentDashboardView: View {
                     .accessibilityHint(localizationManager.localized("parent_dashboard_open_unified_limits_hint"))
                     .font(.system(size: 14, weight: .semibold))
                     .padding(.top, 4)
+                    if pendingExtensionRequestCount > 0 {
+                        Text(localizationManager.localized("parent_dashboard_pending_extension_requests", pendingExtensionRequestCount))
+                            .font(.system(size: 12, weight: .semibold))
+                            .foregroundColor(.orange)
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
@@ -166,6 +172,7 @@ struct ParentDashboardView: View {
             }
             .onAppear {
                 Task { await reloadReports() }
+                pendingExtensionRequestCount = ChildTimeExtensionRequestStore.shared.pendingRequest() == nil ? 0 : 1
             }
             .onChange(of: trendWindow) { _ in
                 Task { await reloadReports() }
@@ -176,6 +183,11 @@ struct ParentDashboardView: View {
             .sheet(isPresented: $showUnifiedTimeLimits) {
                 UnifiedTimeLimitsScreen()
                     .environmentObject(localizationManager)
+            }
+            .onChange(of: showUnifiedTimeLimits) { isVisible in
+                if !isVisible {
+                    pendingExtensionRequestCount = ChildTimeExtensionRequestStore.shared.pendingRequest() == nil ? 0 : 1
+                }
             }
             .accessibilityIdentifier("ParentDashboardView")
         }

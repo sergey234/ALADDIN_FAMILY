@@ -9706,7 +9706,25 @@ Settings
             "system_components_retry": "Retry",
             "system_components_last_update": "Updated: %@",
             "system_component_description": "System component",
+            "language": "Language",
             "language_subtitle_select": "Select language",
+            "dark_theme": "Dark Theme",
+            "updates": "Updates",
+            "updates_subtitle": "Version 1.0.0",
+            "positioning_system_title": "Positioning System",
+            "positioning_system_subtitle": "Select a satellite navigation system",
+            "positioning_system_gps": "GPS",
+            "positioning_system_glonass": "GLONASS",
+            "positioning_system_galileo": "Galileo",
+            "positioning_system_beidou": "BeiDou",
+            "positioning_system_auto": "Automatic",
+            "positioning_system_auto_description": "Automatic selection based on region",
+            "positioning_system_gps_description": "Global Positioning System (USA)",
+            "positioning_system_glonass_description": "Global Navigation Satellite System (Russia)",
+            "positioning_system_galileo_description": "European satellite navigation system",
+            "positioning_system_beidou_description": "Chinese satellite navigation system",
+            "positioning_system_current": "Current system",
+            "positioning_system_recommended": "Recommended for your region:",
             "settings_join_device_title": "Join a family device",
             "settings_join_device_subtitle": "New phone or tablet: QR, link, or 6-digit code from parent",
             "join_device_title": "Join family device",
@@ -14690,30 +14708,32 @@ Settings
         lock.lock()
         defer { lock.unlock() }
 
-        // ✅ СНАЧАЛА проверяем словарь переводов для текущего языка
-        if let translation = translations[currentLanguage]?[key] {
-            return translation
-        }
-        
-        // Сразу пробуем таблицы .strings для выбранного языка приложения.
+        // ✅ СНАЧАЛА пробуем таблицы .strings для выбранного языка приложения.
+        // Это приоритетный источник, чтобы избежать регрессий от устаревших
+        // встроенных словарей при частичном обновлении ключей.
         if let fromCurrentBundle = localizedFromBundle(key: key, language: currentLanguage), fromCurrentBundle != key {
             return fromCurrentBundle
         }
 
-        // Принудительный fallback на русский словарь/ru.lproj.
-        if let russianTranslation = translations[.russian]?[key] {
-            return russianTranslation
+        // Затем fallback на встроенный словарь текущего языка.
+        if let translation = translations[currentLanguage]?[key] {
+            return translation
         }
+
+        // Принудительный fallback на русский словарь/ru.lproj.
         if let fromRussianBundle = localizedFromBundle(key: key, language: .russian), fromRussianBundle != key {
             return fromRussianBundle
         }
+        if let russianTranslation = translations[.russian]?[key] {
+            return russianTranslation
+        }
 
         // Дополнительный fallback на английский (для неполных RU наборов).
-        if let englishTranslation = translations[.english]?[key] {
-            return englishTranslation
-        }
         if let fromEnglishBundle = localizedFromBundle(key: key, language: .english), fromEnglishBundle != key {
             return fromEnglishBundle
+        }
+        if let englishTranslation = translations[.english]?[key] {
+            return englishTranslation
         }
         
         // Если ничего не найдено, возвращаем ключ

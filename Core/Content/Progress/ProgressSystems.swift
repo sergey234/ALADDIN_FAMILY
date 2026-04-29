@@ -280,3 +280,50 @@ final class TimeTracker {
     }
 }
 
+struct ChildTimeExtensionRequest: Codable {
+    let childId: String
+    let requestedAt: Date
+    let requestedExtraMinutes: Int
+}
+
+final class ChildTimeExtensionRequestStore {
+    static let shared = ChildTimeExtensionRequestStore()
+
+    private let defaults = UserDefaults.standard
+    private let requestKey = "child.time.extension.pending.request"
+    private let approvedUntilKey = "child.time.extension.approved.until"
+
+    private init() {}
+
+    func pendingRequest() -> ChildTimeExtensionRequest? {
+        guard let data = defaults.data(forKey: requestKey) else { return nil }
+        return try? JSONDecoder().decode(ChildTimeExtensionRequest.self, from: data)
+    }
+
+    func submitRequest(childId: String, requestedExtraMinutes: Int = 15) {
+        let normalizedChildId = childId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+            ? "local-default-child"
+            : childId
+        let request = ChildTimeExtensionRequest(
+            childId: normalizedChildId,
+            requestedAt: Date(),
+            requestedExtraMinutes: max(5, requestedExtraMinutes)
+        )
+        if let data = try? JSONEncoder().encode(request) {
+            defaults.set(data, forKey: requestKey)
+        }
+    }
+
+    func clearPendingRequest() {
+        defaults.removeObject(forKey: requestKey)
+    }
+
+    func approvePendingRequest(now: Date = Date()) -> ChildTimeExtensionRequest? {
+        guard let request = pendingRequest() else { return nil }
+        TimeTracker.shared.setDailyLimitMinutes((TimeTracker.shared.dailyLimitSec / 60) + request.requestedExtraMinutes, now: now)
+        defaults.set(now, forKey: approvedUntilKey)
+        clearPendingRequest()
+        return request
+    }
+}
+

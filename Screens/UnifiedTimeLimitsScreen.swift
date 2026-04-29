@@ -14,6 +14,8 @@ struct UnifiedTimeLimitsScreen: View {
     @State private var isLoadingServer = false
     @State private var isSavingServer = false
     @State private var childIdMissing = false
+    @State private var pendingExtensionRequest: ChildTimeExtensionRequest?
+    @State private var extensionRequestMessage: String?
 
     private let lastSyncDefaultsKey = "unified_time_limits_last_server_sync"
     private let lastErrorDefaultsKey = "unified_time_limits_last_server_error"
@@ -23,6 +25,7 @@ struct UnifiedTimeLimitsScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     localSection
+                    extensionRequestsSection
                     serverSection
                     syncSection
                 }
@@ -42,6 +45,7 @@ struct UnifiedTimeLimitsScreen: View {
                 localLimitMinutes = Double(max(5, TimeTracker.shared.dailyLimitSec / 60))
                 lastServerSync = UserDefaults.standard.object(forKey: lastSyncDefaultsKey) as? Date
                 lastServerError = UserDefaults.standard.string(forKey: lastErrorDefaultsKey)
+                pendingExtensionRequest = ChildTimeExtensionRequestStore.shared.pendingRequest()
                 refreshFromServer()
             }
         }
@@ -112,6 +116,59 @@ struct UnifiedTimeLimitsScreen: View {
                     Text(localizationManager.localized("unified_time_limits_server_bedtime_fmt", s, e))
                         .font(.caption)
                 }
+            }
+        }
+        .padding()
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+    }
+
+    private var extensionRequestsSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("unified_time_limits_extension_requests_title"))
+                .font(.headline)
+            if let request = pendingExtensionRequest {
+                Text(localizationManager.localized("unified_time_limits_extension_pending"))
+                    .font(.caption)
+                    .foregroundColor(.orange)
+                Text(
+                    localizationManager.localized(
+                        "unified_time_limits_extension_details",
+                        request.requestedExtraMinutes,
+                        request.childId
+                    )
+                )
+                .font(.caption)
+                HStack(spacing: 12) {
+                    Button(localizationManager.localized("unified_time_limits_extension_approve")) {
+                        if let approved = ChildTimeExtensionRequestStore.shared.approvePendingRequest() {
+                            localLimitMinutes = Double(max(5, TimeTracker.shared.dailyLimitSec / 60))
+                            pendingExtensionRequest = nil
+                            extensionRequestMessage = localizationManager.localized(
+                                "unified_time_limits_extension_approved_message",
+                                approved.requestedExtraMinutes
+                            )
+                        }
+                    }
+                    .buttonStyle(.borderedProminent)
+
+                    Button(localizationManager.localized("unified_time_limits_extension_decline")) {
+                        ChildTimeExtensionRequestStore.shared.clearPendingRequest()
+                        pendingExtensionRequest = nil
+                        extensionRequestMessage = localizationManager.localized("unified_time_limits_extension_declined_message")
+                    }
+                    .buttonStyle(.bordered)
+                }
+            } else {
+                Text(localizationManager.localized("unified_time_limits_extension_none"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+
+            if let extensionRequestMessage, !extensionRequestMessage.isEmpty {
+                Text(extensionRequestMessage)
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.9))
             }
         }
         .padding()

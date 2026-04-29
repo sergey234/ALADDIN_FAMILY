@@ -13,6 +13,23 @@ struct ChildContentExperienceScreen: View {
     let item: ContentItem
     let route: ContentExperienceRoute
     let onComplete: () async -> Void
+    
+    private var resolvedItemTitle: String {
+        let localized = localizationManager.localized(item.metadata.title)
+        return localized == item.metadata.title ? item.metadata.title : localized
+    }
+    
+    private var resolvedItemSubtitle: String? {
+        guard let subtitle = item.metadata.subtitle, !subtitle.isEmpty else { return nil }
+        let localized = localizationManager.localized(subtitle)
+        return localized == subtitle ? subtitle : localized
+    }
+    
+    private var resolvedItemDescription: String {
+        let raw = item.metadata.description ?? item.metadata.title
+        let localized = localizationManager.localized(raw)
+        return localized == raw ? raw : localized
+    }
 
     var body: some View {
         NavigationView {
@@ -119,7 +136,7 @@ struct ChildContentExperienceScreen: View {
             }
             .background(Color.black.opacity(0.03))
             .dynamicTypeSize(.small ... .accessibility3)
-            .navigationTitle(item.metadata.title)
+            .navigationTitle(resolvedItemTitle)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
@@ -127,6 +144,13 @@ struct ChildContentExperienceScreen: View {
                         dismiss()
                     }
                 }
+            }
+            .onAppear {
+#if DEBUG
+                if resolvedItemTitle.hasPrefix("child_") {
+                    print("❌ ChildContentExperienceScreen: unresolved title key rendered: \(resolvedItemTitle), itemId=\(item.id), category=\(item.categoryId)")
+                }
+#endif
             }
         }
     }
@@ -140,9 +164,9 @@ struct ChildContentExperienceScreen: View {
                 .background(Circle().fill(color(for: route)))
 
             VStack(alignment: .leading, spacing: 4) {
-                Text(item.metadata.title)
+                Text(resolvedItemTitle)
                     .font(.system(size: 18, weight: .bold))
-                if let subtitle = item.metadata.subtitle, !subtitle.isEmpty {
+                if let subtitle = resolvedItemSubtitle {
                     Text(subtitle)
                         .font(.system(size: 14, weight: .medium))
                         .foregroundColor(.secondary)
@@ -161,7 +185,7 @@ struct ChildContentExperienceScreen: View {
 
     private var contentCard: some View {
         VStack(alignment: .leading, spacing: 10) {
-            Text(item.metadata.description ?? item.metadata.title)
+            Text(resolvedItemDescription)
                 .font(.system(size: 16))
                 .fixedSize(horizontal: false, vertical: true)
 

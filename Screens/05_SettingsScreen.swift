@@ -560,22 +560,6 @@ struct SettingsScreen: View {
         }
     }
 
-    #if DEBUG
-    private var planItem275DebugSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.m) {
-            Text(localizationManager.localized("plan_275_debug_section_header"))
-                .font(.title2)
-                .fontWeight(.bold)
-                .foregroundColor(.textPrimary)
-                .accessibilityAddTraits(.isHeader)
-                .padding(.bottom, Spacing.xs)
-
-            PlanItem275CatalogWorkbenchCard()
-                .environmentObject(localizationManager)
-        }
-    }
-    #endif
-
     // MARK: - Body
         
         var body: some View {
@@ -604,10 +588,6 @@ struct SettingsScreen: View {
 
                         // App Section
                         appSection
-
-                        #if DEBUG
-                        planItem275DebugSection
-                        #endif
 
                         // System Components (только для админов)
                         if viewModel.isAdmin {

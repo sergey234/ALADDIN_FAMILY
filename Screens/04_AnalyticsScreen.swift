@@ -192,25 +192,25 @@ struct AnalyticsScreen: View {
             case .api:
                 Image(systemName: "checkmark.circle.fill")
                     .foregroundColor(.green)
-                Text(localizationManager.localized("analytics_data_source_api") ?? "Реальные данные")
+                Text(localizationManager.localized("analytics_data_source_api"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.textSecondary)
             case .cache:
                 Image(systemName: "clock.fill")
                     .foregroundColor(.orange)
-                Text(localizationManager.localized("analytics_data_source_cache") ?? "Данные из кэша")
+                Text(localizationManager.localized("analytics_data_source_cache"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.textSecondary)
             case .empty:
                 Image(systemName: "circle")
                     .foregroundColor(.gray)
-                Text(localizationManager.localized("analytics_data_source_empty") ?? "Нет данных")
+                Text(localizationManager.localized("analytics_data_source_empty"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.textSecondary)
             case .error:
                 Image(systemName: "exclamationmark.triangle.fill")
                     .foregroundColor(.red)
-                Text(localizationManager.localized("analytics_data_source_error") ?? "Ошибка загрузки")
+                Text(localizationManager.localized("analytics_data_source_error"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.textSecondary)
             }
@@ -272,7 +272,7 @@ struct AnalyticsScreen: View {
                         .padding(.vertical, Spacing.l)
                 } else if viewModel.threatCategories.isEmpty {
                     // ✅ ВАРИАНТ 4: Показываем сообщение "Нет данных" вместо бесконечной загрузки
-                    Text(localizationManager.localized("analytics_no_threats") ?? "Нет данных об угрозах")
+                    Text(localizationManager.localized("analytics_no_threats"))
                         .font(.body)
                         .foregroundColor(.textSecondary)
                         .frame(maxWidth: .infinity, alignment: .center)
@@ -484,9 +484,11 @@ struct AnalyticsScreen: View {
         case "personal_data_cleanup_agent":
             let freedGB = stats.getMetric(key: "freed_space_gb")
             let hoursAgo = stats.getIntMetric(key: "last_cleanup_hours_ago")
-            let timeAgo = hoursAgo > 0 ? "\(hoursAgo)ч назад" : "Недавно"
+            let timeAgo = hoursAgo > 0
+                ? String(format: localizationManager.localized("analytics_hours_ago_fmt"), hoursAgo)
+                : localizationManager.localized("analytics_recent")
             return [
-                (localizationManager.localized("component_data_cleanup_metric_freed"), "\(freedGB) ГБ"),
+                (localizationManager.localized("component_data_cleanup_metric_freed"), "\(freedGB) \(localizationManager.localized("analytics_unit_gb"))"),
                 (localizationManager.localized("component_data_cleanup_metric_last"), timeAgo)
             ]
         case "anti_tracker_agent":
@@ -547,12 +549,12 @@ struct AnalyticsScreen: View {
         case "location_bubble_agent":
             return [
                 (localizationManager.localized("component_location_bubble_metric_blocked"), "0"),
-                (localizationManager.localized("component_location_bubble_metric_accuracy"), "Нет данных")
+                (localizationManager.localized("component_location_bubble_metric_accuracy"), localizationManager.localized("analytics_data_source_empty"))
             ]
         case "personal_data_cleanup_agent":
             return [
-                (localizationManager.localized("component_data_cleanup_metric_freed"), "0.0 ГБ"),
-                (localizationManager.localized("component_data_cleanup_metric_last"), "Нет данных")
+                (localizationManager.localized("component_data_cleanup_metric_freed"), "0.0 \(localizationManager.localized("analytics_unit_gb"))"),
+                (localizationManager.localized("component_data_cleanup_metric_last"), localizationManager.localized("analytics_data_source_empty"))
             ]
         case "anti_tracker_agent":
             return [
@@ -706,22 +708,22 @@ private struct DebouncedDataSourceIndicator: View {
             switch displayed {
             case .api:
                 Image(systemName: "checkmark.circle.fill").foregroundColor(.green)
-                Text(localizationManager.localized("analytics_data_source_api") ?? "Реальные данные")
+                Text(localizationManager.localized("analytics_data_source_api"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.textSecondary)
             case .cache:
                 Image(systemName: "clock.fill").foregroundColor(.orange)
-                Text(localizationManager.localized("analytics_data_source_cache") ?? "Кэш")
+                Text(localizationManager.localized("analytics_data_source_cache"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.textSecondary)
             case .empty:
                 Image(systemName: "circle").foregroundColor(.gray)
-                Text(localizationManager.localized("analytics_data_source_empty") ?? "Нет данных")
+                Text(localizationManager.localized("analytics_data_source_empty"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.textSecondary)
             case .error:
                 Image(systemName: "exclamationmark.triangle.fill").foregroundColor(.red)
-                Text(localizationManager.localized("analytics_data_source_error") ?? "Ошибка загрузки")
+                Text(localizationManager.localized("analytics_data_source_error"))
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.textSecondary)
             }

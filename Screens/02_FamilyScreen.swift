@@ -18,10 +18,6 @@ struct FamilyScreen: View {
     @State private var removeMemberSuccessMessage: String? = nil
     /// Дружелюбное сообщение при 409 на загрузке списка (несовпадение сохранённой семьи и аккаунта).
     @State private var familySyncContextBanner: String? = nil
-    /// Диагностический статус reconcile child roster/profile (Phase 7.2 cross-device sync).
-    @State private var childRosterReconcileBanner: String? = nil
-    @State private var showFamilyRolesHelp: Bool = false
-    @State private var showFamilyControlsHelp: Bool = false
     @State private var pendingRemovalMember: FamilyMemberData? = nil
     @State private var deletingMemberIds: Set<String> = []
     // Quick-add sheet was removed; we use navigation to AddMemberOptionsScreen
@@ -551,10 +547,6 @@ struct FamilyScreen: View {
                         removeMissingServerLinkedChildren: !effectivePartialSubset && !members.isEmpty
                     )
                     if let summary = ProfileManager.shared.lastChildRosterReconcileSummary {
-                        let ru = self.localizationManager.currentLanguage == .russian
-                        self.childRosterReconcileBanner = ru
-                            ? "Синхронизация детских профилей: \(summary)"
-                            : "Child profile sync: \(summary)"
                         VisualLogger.shared.log("🔄 FAMILY/UI roster reconcile: \(summary)", level: .info, category: "FAMILY")
                     }
                     
@@ -1794,28 +1786,6 @@ struct FamilyScreen: View {
                                 .accessibilityLabel(localizationManager.localized("family_members_title"))
                                 .accessibilityAddTraits(.isHeader)
 
-                            familyRosterRulesInfoBanner
-                            HStack(spacing: 8) {
-                                Button(localizationManager.currentLanguage == .russian ? "Family роли и профили" : "Family roles & profiles") {
-                                    showFamilyRolesHelp = true
-                                }
-                                .font(.caption.weight(.semibold))
-                                .foregroundColor(.white)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 10)
-                                .background(Color.white.opacity(0.12))
-                                .cornerRadius(8)
-
-                                Button(localizationManager.currentLanguage == .russian ? "Family Controls и Screen Time" : "Family Controls & Screen Time") {
-                                    showFamilyControlsHelp = true
-                                }
-                                .font(.caption.weight(.semibold))
-                                .foregroundColor(.white)
-                                .padding(.vertical, 6)
-                                .padding(.horizontal, 10)
-                                .background(Color.white.opacity(0.12))
-                                .cornerRadius(8)
-                            }
                             rosterConflictResolutionBanner
                             
                             // ✅ ИСПРАВЛЕНИЕ: Всегда показываем карточки участников когда они есть
@@ -2062,14 +2032,6 @@ struct FamilyScreen: View {
             FamilyParentalControlSettingsModal(isPresented: $showParentalSettingsModal)
                 .environmentObject(localizationManager)
         }
-        .sheet(isPresented: $showFamilyRolesHelp) {
-            FamilyRolesHelpView()
-                .environmentObject(localizationManager)
-        }
-        .sheet(isPresented: $showFamilyControlsHelp) {
-            FamilyControlsGuideHelpView()
-                .environmentObject(localizationManager)
-        }
         // Removed quick add sheet; using navigation flow instead
         .overlay(alignment: .bottom) {
             if let message = removeMemberErrorMessage, !message.isEmpty {
@@ -2113,22 +2075,6 @@ struct FamilyScreen: View {
                     .padding(.horizontal, 12)
                     .padding(.bottom, 106)
                     .onTapGesture { familySyncContextBanner = nil }
-            }
-        }
-        .overlay(alignment: .bottom) {
-            if let message = childRosterReconcileBanner, !message.isEmpty {
-                Text(message)
-                    .font(.caption2)
-                    .foregroundColor(.white)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 12)
-                    .padding(.vertical, 9)
-                    .background(Color.blue.opacity(0.92))
-                    .clipShape(RoundedRectangle(cornerRadius: 10))
-                    .shadow(radius: 4)
-                    .padding(.horizontal, 12)
-                    .padding(.bottom, 150)
-                    .onTapGesture { childRosterReconcileBanner = nil }
             }
         }
         .confirmationDialog(
