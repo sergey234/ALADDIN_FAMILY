@@ -1,6 +1,18 @@
 import Foundation
 import CoreData
 
+// MARK: - Shared offline types (используются UnifiedOfflineStore + менеджеры)
+
+enum DataPriority: Int, Codable, Comparable {
+    case critical = 0
+    case important = 1
+    case normal = 2
+
+    static func < (lhs: DataPriority, rhs: DataPriority) -> Bool {
+        lhs.rawValue < rhs.rawValue
+    }
+}
+
 /**
  * Менеджер офлайн хранения для ALADDIN
  * Обеспечивает локальное хранение данных с Core Data
@@ -11,25 +23,12 @@ class OfflineStorageManager: ObservableObject {
     
     static let shared = OfflineStorageManager()
     
-    // MARK: - Core Data Stack
+    // MARK: - Unified Store (новый главный слой)
+    /// Теперь используем UnifiedOfflineStore вместо дублирования Core Data
+    let unifiedStore = UnifiedOfflineStore.shared
     
-    /// Основной контекст Core Data
-    lazy var persistentContainer: NSPersistentContainer = {
-        let container = NSPersistentContainer(name: "ALADDINOffline")
-        container.loadPersistentStores { _, error in
-            if let error = error as NSError? {
-                fatalError("❌ Core Data error: \(error), \(error.userInfo)")
-            }
-        }
-        return container
-    }()
-    
-    /// Контекст для фоновых операций
-    private var backgroundContext: NSManagedObjectContext {
-        let context = NSManagedObjectContext(concurrencyType: .privateQueueConcurrencyType)
-        context.parent = persistentContainer.viewContext
-        return context
-    }
+    // MARK: - Legacy Core Data Stack
+    // Удалён из рабочих путей: операции идут через UnifiedOfflineStore.
     
     // MARK: - Published Properties
     
@@ -42,82 +41,53 @@ class OfflineStorageManager: ObservableObject {
     // MARK: - Initialization
     
     private init() {
-        // Инициализация Core Data
-        _ = persistentContainer
+        // no-op
     }
     
-    // MARK: - Public Methods
-    
+    // MARK: - Public Methods (Delegated to UnifiedOfflineStore — 100% "из коробки")
+
     /**
-     * Сохраняет данные в офлайн хранилище
-     * - Parameter data: Данные для сохранения
-     * - Parameter type: Тип данных
-     * - Parameter priority: Приоритет данных (для синхронизации)
-     * - Returns: Результат сохранения
+     * Сохраняет данные через UnifiedOfflineStore (основной путь)
      */
     func save<T: Codable>(
         _ data: T,
         type: OfflineDataType,
         priority: DataPriority = .normal
     ) async -> Result<Void, NetworkError> {
-        
-        do {
-            let context = backgroundContext
-            
-            // Создаем новую запись
-            let offlineRecord = OfflineRecord(context: context)
-            offlineRecord.id = UUID()
-            offlineRecord.dataType = type.rawValue
-            offlineRecord.data = try JSONEncoder().encode(data)
-            offlineRecord.createdAt = Date()
-            offlineRecord.isSynced = false
-            offlineRecord.isModified = true  // Помечаем как изменённое
-            
-            // Сохраняем контекст
-            try context.save()
-            
-            // Обновляем основной контекст
+        let result = await unifiedStore.save(data, type: type, priority: priority)
+
+        switch result {
+        case .success:
             await MainActor.run {
-                try? self.persistentContainer.viewContext.save()
                 self.savedRecordsCount += 1
+                self.syncStatus = .completed
             }
-            
-            print("💾 OfflineStorage: Сохранено \(type) - \(offlineRecord.id?.uuidString ?? "unknown")")
+            print("💾 OfflineStorageManager: Delegated save of \(type) to UnifiedOfflineStore")
             return .success(())
-            
-        } catch {
-            print("❌ OfflineStorage: Ошибка сохранения \(type): \(error)")
+        case .failure(let error):
+            print("❌ OfflineStorageManager: Unified save failed for \(type): \(error)")
             return .failure(.fileSystemError(error))
         }
     }
     
     /**
-     * Получает данные из офлайн хранилища
-     * - Parameter type: Тип данных
-     * - Returns: Массив данных или ошибка
+     * Получает данные через UnifiedOfflineStore (реактивно и с merge)
      */
     func retrieve<T: Codable>(
         _ type: T.Type,
         dataType: OfflineDataType
     ) async -> Result<[T], NetworkError> {
-        
-        do {
-            let context = persistentContainer.viewContext
-            let request: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "OfflineRecord")
-            request.predicate = NSPredicate(format: "dataType == %@", dataType.rawValue)
-            request.sortDescriptors = [NSSortDescriptor(key: "createdAt", ascending: false)]
-            
-            let records = try context.fetch(request)
-            let data = try records.compactMap { record -> T? in
-                guard let data = record.data else { return nil }
-                return try JSONDecoder().decode(T.self, from: data)
+        let result = await unifiedStore.fetch(type: dataType) as Result<[T], Error>
+
+        switch result {
+        case .success(let data):
+            await MainActor.run {
+                self.savedRecordsCount = data.count
             }
-            
-            print("💾 OfflineStorage: Получено \(data.count) записей типа \(dataType)")
+            print("💾 OfflineStorageManager: Delegated retrieve of \(data.count) \(dataType) records via UnifiedOfflineStore")
             return .success(data)
-            
-        } catch {
-            print("❌ OfflineStorage: Ошибка получения \(dataType): \(error)")
+        case .failure(let error):
+            print("❌ OfflineStorageManager: Unified fetch failed for \(dataType): \(error)")
             return .failure(.fileSystemError(error))
         }
     }
@@ -130,27 +100,15 @@ class OfflineStorageManager: ObservableObject {
     func delete(
         dataType: OfflineDataType
     ) async -> Result<Void, NetworkError> {
-        
-        do {
-            let context = persistentContainer.viewContext
-            let request: NSFetchRequest<NSFetchRequestResult> = OfflineRecord.fetchRequest()
-            request.predicate = NSPredicate(format: "dataType == %@", dataType.rawValue)
-            
-            let deleteRequest = NSBatchDeleteRequest(fetchRequest: request)
-            try context.execute(deleteRequest)
-            
-            // Сохраняем изменения
-            try context.save()
-            
+        let result = await unifiedStore.delete(type: dataType)
+        switch result {
+        case .success:
+            let stats = unifiedStore.statistics()
             await MainActor.run {
-                self.savedRecordsCount = max(0, self.savedRecordsCount - 1)
+                self.savedRecordsCount = stats.totalRecords
             }
-            
-            print("💾 OfflineStorage: Удалены все записи типа \(dataType)")
             return .success(())
-            
-        } catch {
-            print("❌ OfflineStorage: Ошибка удаления \(dataType): \(error)")
+        case .failure(let error):
             return .failure(.fileSystemError(error))
         }
     }
@@ -159,195 +117,63 @@ class OfflineStorageManager: ObservableObject {
     
     /// Обнаруживает конфликты при синхронизации
     func detectConflicts() async -> [SyncConflict] {
-        let context = persistentContainer.viewContext
-        let request: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "OfflineRecord")
-        request.predicate = NSPredicate(format: "isSynced == NO")
-        
-        guard let unsyncedRecords = try? context.fetch(request) as? [OfflineRecord] else {
-            return []
-        }
-        
-        var conflicts: [SyncConflict] = []
-        
-        for record in unsyncedRecords {
-            // TODO: Сравнить с серверной версией
-            // Если на сервере есть более новая версия, создаём конфликт
-            // Пока создаём заглушку для демонстрации структуры
-            
-            if let recordId = record.id {
-                let conflict = SyncConflict(
-                    recordId: recordId,
-                    dataType: OfflineDataType(rawValue: record.dataType ?? "unknown") ?? .userProfile,
-                    clientVersion: record.createdAt ?? Date(),
-                    serverVersion: Date(), // TODO: Получить с сервера
-                    resolutionStrategy: .manual // По умолчанию требует ручного разрешения
-                )
-                conflicts.append(conflict)
-            }
-        }
-        
-        if !conflicts.isEmpty {
-            print("⚠️ OfflineStorage: Обнаружено \(conflicts.count) конфликтов при синхронизации")
-        }
-        
-        return conflicts
+        await unifiedStore.detectConflicts()
     }
     
     /// Автоматически разрешает конфликты
     func autoResolveConflicts(_ conflicts: [SyncConflict]) async {
         print("🔄 OfflineStorage: Автоматическое разрешение \(conflicts.count) конфликтов...")
-        
-        for conflict in conflicts {
-            switch conflict.resolutionStrategy {
-            case .serverWins:
-                // Используем версию с сервера
-                await applyServerVersion(conflict)
-                
-            case .clientWins:
-                // Используем локальную версию
-                await applyClientVersion(conflict)
-                
-            case .merge:
-                // Объединяем изменения
-                await mergeVersions(conflict)
-                
-            case .manual:
-                // Требуется ручное разрешение - уведомляем
-                await notifyManualResolution(conflict)
-            }
-        }
-        
+        let strategy = conflicts.first?.resolutionStrategy ?? .serverWins
+        await unifiedStore.resolveConflicts(strategy: strategy)
         print("✅ OfflineStorage: Конфликты разрешены")
     }
     
-    /// Применяет версию с сервера
-    private func applyServerVersion(_ conflict: SyncConflict) async {
-        // TODO: Загрузить данные с сервера и заменить локальные
-        print("   📥 Применяем версию с сервера для \(conflict.recordId)")
-    }
-    
-    /// Применяет локальную версию
-    private func applyClientVersion(_ conflict: SyncConflict) async {
-        // TODO: Отправить локальные данные на сервер
-        print("   📤 Применяем локальную версию для \(conflict.recordId)")
-    }
-    
-    /// Объединяет версии
-    private func mergeVersions(_ conflict: SyncConflict) async {
-        // TODO: Объединить изменения из обеих версий
-        print("   🔀 Объединяем версии для \(conflict.recordId)")
-    }
-    
-    /// Уведомляет о необходимости ручного разрешения
-    private func notifyManualResolution(_ conflict: SyncConflict) async {
-        // TODO: Отправить уведомление пользователю
-        print("   ⚠️ Требуется ручное разрешение конфликта для \(conflict.recordId)")
-    }
-    
     /**
-     * Синхронизирует данные с сервером
-     * - Parameter type: Тип данных для синхронизации
-     * - Parameter onlyChanged: Синхронизировать только изменённые данные
-     * - Returns: Результат синхронизации
+     * Синхронизация делегирована в UnifiedOfflineStore (центральный reactive слой)
      */
     func sync(
         dataType: OfflineDataType,
-        onlyChanged: Bool = true  // Синхронизировать только изменённые данные
+        onlyChanged: Bool = true
     ) async -> Result<Void, NetworkError> {
-        
         await MainActor.run {
             self.syncStatus = .syncing
         }
-        
-        do {
-            let context = persistentContainer.viewContext
-            let request: NSFetchRequest<NSFetchRequestResult> = NSFetchRequest(entityName: "OfflineRecord")
-            
-            // Если onlyChanged = true, синхронизируем только изменённые записи
-            if onlyChanged {
-                request.predicate = NSPredicate(format: "dataType == %@ AND isSynced == NO AND isModified == YES", dataType.rawValue)
-            } else {
-                request.predicate = NSPredicate(format: "dataType == %@ AND isSynced == NO", dataType.rawValue)
-            }
-            
-            let unsyncedRecords = try context.fetch(request)
-            
-            for record in unsyncedRecords {
-                // Здесь должна быть логика отправки на сервер
-                // Пока просто помечаем как синхронизированные
-                record.isSynced = true
-                record.syncedAt = Date()
-            }
-            
-            try context.save()
-            
-            await MainActor.run {
-                self.syncStatus = .completed
-            }
-            
-            print("💾 OfflineStorage: Синхронизировано \(unsyncedRecords.count) записей типа \(dataType)")
-            return .success(())
-            
-        } catch {
-            await MainActor.run {
-                self.syncStatus = .failed
-            }
-            
-            print("❌ OfflineStorage: Ошибка синхронизации \(dataType): \(error)")
-            return .failure(.fileSystemError(error))
+
+        // Delegate to unified store
+        await unifiedStore.syncAll()
+
+        // Resolve any conflicts
+        await unifiedStore.resolveConflicts(strategy: .serverWins)
+
+        await MainActor.run {
+            self.syncStatus = .completed
+            self.savedRecordsCount = 0 // reset after sync
         }
+
+        print("✅ OfflineStorageManager: Delegated full sync + conflict resolution for \(dataType) to UnifiedOfflineStore")
+        return .success(())
     }
     
     /**
      * Получает статистику офлайн хранилища
      */
     func getStorageStatistics() -> OfflineStorageStatistics {
-        let context = persistentContainer.viewContext
-        let request: NSFetchRequest<OfflineRecord> = OfflineRecord.fetchRequest()
-        
-        do {
-            let records = try context.fetch(request)
-            let syncedCount = records.filter { $0.isSynced }.count
-            let unsyncedCount = records.count - syncedCount
-            
-            return OfflineStorageStatistics(
-                totalRecords: records.count,
-                syncedRecords: syncedCount,
-                unsyncedRecords: unsyncedCount,
-                syncPercentage: records.count > 0 ? Double(syncedCount) / Double(records.count) : 0
-            )
-        } catch {
-            return OfflineStorageStatistics(
-                totalRecords: 0,
-                syncedRecords: 0,
-                unsyncedRecords: 0,
-                syncPercentage: 0
-            )
-        }
+        unifiedStore.statistics()
     }
     
     /**
      * Очищает все данные из офлайн хранилища
      */
     func clearAll() async -> Result<Void, NetworkError> {
-        do {
-            let context = persistentContainer.viewContext
-            let request: NSFetchRequest<NSFetchRequestResult> = OfflineRecord.fetchRequest()
-            
-            let deleteRequest = NSBatchDeleteRequest(fetchRequest: request)
-            try context.execute(deleteRequest)
-            try context.save()
-            
+        let result = await unifiedStore.clearAll()
+        switch result {
+        case .success:
             await MainActor.run {
                 self.savedRecordsCount = 0
                 self.syncStatus = .idle
             }
-            
-            print("💾 OfflineStorage: Все данные очищены")
             return .success(())
-            
-        } catch {
-            print("❌ OfflineStorage: Ошибка очистки: \(error)")
+        case .failure(let error):
             return .failure(.fileSystemError(error))
         }
     }
@@ -358,7 +184,7 @@ class OfflineStorageManager: ObservableObject {
 /**
  * Типы данных для офлайн хранения
  */
-enum OfflineDataType: String, CaseIterable {
+enum OfflineDataType: String, CaseIterable, Codable {
     case networkProtectionStatus = "network_protection_status"
     case familyMembers = "family_members"
     case analytics = "analytics"
@@ -367,6 +193,12 @@ enum OfflineDataType: String, CaseIterable {
     case deviceInfo = "device_info"
     case userProfile = "user_profile"
     case settings = "settings"
+    case familyChatMessage = "family_chat_message"
+    case aiInteraction = "ai_interaction"
+    case userSettings = "user_settings"
+    case gamificationProgress = "gamification_progress"
+    case mediaUpload = "media_upload"
+    case other = "other"
     
     var displayName: String {
         switch self {
@@ -386,6 +218,18 @@ enum OfflineDataType: String, CaseIterable {
             return "Профиль пользователя"
         case .settings:
             return "Настройки"
+        case .familyChatMessage:
+            return "Семейный чат"
+        case .aiInteraction:
+            return "AI"
+        case .userSettings:
+            return "Настройки пользователя"
+        case .gamificationProgress:
+            return "Геймификация"
+        case .mediaUpload:
+            return "Медиа"
+        case .other:
+            return "Прочее"
         }
     }
 }

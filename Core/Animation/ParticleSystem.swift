@@ -89,11 +89,7 @@ struct CelebrationParticleBurstView: View {
                 }
             }
             .onReceive(
-                Timer.publish(
-                    every: 1.0 / PerformanceBudget.celebrationParticleCanvasFPS,
-                    on: .main,
-                    in: .common
-                ).autoconnect()
+                Timer.publish(every: 1.0 / 30.0, on: .main, in: .common).autoconnect()
             ) { _ in
                 guard running else { return }
                 elapsed += 1.0 / CGFloat(PerformanceBudget.celebrationParticleCanvasFPS)

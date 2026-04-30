@@ -46,6 +46,7 @@ class PasswordGeneratorSettingsViewModel: ObservableObject {
     /// Загрузка настроек с fallback на дефолты
     func loadSettings() {
         isLoading = true
+        SyncEngine.shared.publish(domain: .settings, operation: "password_generator_vm_load_start", state: .syncing)
 
         Task {
             do {
@@ -67,6 +68,7 @@ class PasswordGeneratorSettingsViewModel: ObservableObject {
                     }
 
                     log("✅ Настройки password generator загружены из API")
+                    SyncEngine.shared.publish(domain: .settings, operation: "password_generator_vm_load_complete", state: .synced)
                 }
             } catch {
                 // 404 или ошибка сети - используем дефолты
@@ -77,6 +79,7 @@ class PasswordGeneratorSettingsViewModel: ObservableObject {
                 }
 
                 log("⚠️ Настройки password generator не найдены (404), используются дефолты: \(error.localizedDescription)")
+                SyncEngine.shared.publish(domain: .settings, operation: "password_generator_vm_load_local", state: .local)
             }
         }
     }
@@ -96,6 +99,7 @@ class PasswordGeneratorSettingsViewModel: ObservableObject {
         // Обновляем состояние
         state[keyPath: keyPath] = newValue
         hasChanges = true
+        SyncEngine.shared.publish(domain: .settings, operation: "password_generator_vm_change_pending", state: .pending)
 
         log("🔄 Password generator setting изменен: \(keyPath) = \(newValue)")
 
@@ -120,6 +124,7 @@ class PasswordGeneratorSettingsViewModel: ObservableObject {
         // Обновляем состояние
         state.passwordLength = newValue
         hasChanges = true
+        SyncEngine.shared.publish(domain: .settings, operation: "password_generator_vm_change_pending", state: .pending)
 
         log("🔄 Длина пароля изменена: \(newValue)")
 
@@ -165,6 +170,7 @@ class PasswordGeneratorSettingsViewModel: ObservableObject {
         }
 
         isApplyingState = true
+        SyncEngine.shared.publish(domain: .settings, operation: "password_generator_vm_save_start", state: .syncing)
 
         Task {
             do {
@@ -198,9 +204,11 @@ class PasswordGeneratorSettingsViewModel: ObservableObject {
                 }
 
                 log("✅ Настройки password generator успешно сохранены")
+                SyncEngine.shared.publish(domain: .settings, operation: "password_generator_vm_save_complete", state: .synced)
 
             } catch {
                 log("❌ Ошибка сохранения настроек password generator: \(error.localizedDescription)")
+                SyncEngine.shared.publish(domain: .settings, operation: "password_generator_vm_save_error", state: .error(error.localizedDescription))
 
                 // Rollback к последнему сохраненному состоянию
                 if let lastSaved = lastSavedState {

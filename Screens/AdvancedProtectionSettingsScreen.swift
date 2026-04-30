@@ -1123,6 +1123,7 @@ struct AdvancedProtectionSettingsScreen: View {
     }
 
     private func loadParentalMonitoringSettingsFromServer() {
+        SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_load_start", state: .syncing)
         Task {
             do {
                 let config = try await ComponentConfigurationService.shared.getConfiguration(for: "parental_control_bot")
@@ -1142,6 +1143,7 @@ struct AdvancedProtectionSettingsScreen: View {
                         level: .info,
                         category: "ADVANCED.API"
                     )
+                    SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_load_complete", state: .synced)
                 }
             } catch {
                 await MainActor.run {
@@ -1151,12 +1153,14 @@ struct AdvancedProtectionSettingsScreen: View {
                         category: "ADVANCED.API"
                     )
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_load_local", state: .local)
             }
         }
     }
 
     private func scheduleParentalMonitoringSync() {
         guard !isApplyingParentalMonitoringSettings else { return }
+        SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_change_pending", state: .pending)
         parentalMonitoringSyncTask?.cancel()
         parentalMonitoringSyncTask = Task {
             try? await Task.sleep(nanoseconds: 250_000_000)
@@ -1167,6 +1171,7 @@ struct AdvancedProtectionSettingsScreen: View {
 
     @MainActor
     private func syncParentalMonitoringSettingsToServer() async {
+        SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_save_start", state: .syncing)
         VisualLogger.shared.log(
             "🔵 ADVANCED.API parental POST start: messages=\(isMessagesMonitoringEnabled), screenshots=\(isScreenshotsEnabled)",
             level: .info,
@@ -1194,12 +1199,14 @@ struct AdvancedProtectionSettingsScreen: View {
                 level: .info,
                 category: "ADVANCED.API"
             )
+            SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_save_complete", state: .synced)
         } catch {
             VisualLogger.shared.log(
                 "❌ ADVANCED.API parental POST failed: \(error.localizedDescription)",
                 level: .error,
                 category: "ADVANCED.API"
             )
+            SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_save_error", state: .error(error.localizedDescription))
         }
     }
 }

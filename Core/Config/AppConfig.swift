@@ -127,7 +127,7 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "151"
+    static let buildNumber = "152"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -226,6 +226,7 @@ struct AppConfig {
 
         // AI Assistant (новые endpoints для полной интеграции)
         static let aiAssistantChat = "/api/ai/assistant/chat"
+        static let aiAssistantStream = "/api/ai/assistant/stream"        // ✅ Новый SSE streaming endpoint для токенов
         static let aiAssistantHistory = "/api/ai/assistant/history"
         static let aiAssistantFeedback = "/api/ai/assistant/feedback"
         static let aiAssistantCapabilities = "/api/ai/assistant/capabilities"
@@ -412,6 +413,9 @@ struct AppConfig {
         static let logout = "/api/auth/logout"
         static let register = "/api/auth/register"
         static let authRefresh = "/api/auth/refresh"
+        static let authApple = "/api/auth/apple"
+        static let authMagicLinkRequest = "/api/auth/magic-link/request"
+        static let authMagicLinkConsume = "/api/auth/magic-link/consume"
         static let registerDevice = "/api/auth/register-device"
         static let registerDeviceTrial = "/api/auth/register-device-trial"
         
@@ -593,6 +597,8 @@ extension AppConfig {
         static let pendingMainDashboardDevicesRefresh = "pending_main_dashboard_devices_refresh"
         /// Токен из `aladdin://bind?token=` / Universal Link, если пришёл до завершения онбординга или до открытия экрана присоединения.
         static let pendingDeviceBindToken = "pending_device_bind_token"
+        /// Magic-link токен для auth-потока (может прийти до завершения onboarding).
+        static let pendingMagicAuthToken = "pending_magic_auth_token"
         /// Рубильник серверного сканирования Dark Web (`false` = UI и API-вызовы скана отключены). По умолчанию включено.
         static let darkWebServerScanEnabled = "dark_web_server_scan_enabled"
     }

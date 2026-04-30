@@ -11,12 +11,15 @@ class AIAssistantViewModel: ObservableObject {
     @Published var messages: [ChatMessage] = []
     @Published var currentMessage: String = ""
     @Published var isAITyping: Bool = false
+    @Published var isStreaming: Bool = false
+    @Published var isResumingStream: Bool = false     // Индикатор восстановления после reconnect
     
     private let apiService = APIService.shared
+    private let streamingService = AIStreamingService.shared
     
     struct ChatMessage: Identifiable {
         let id = UUID()
-        let text: String
+        var text: String
         let isUser: Bool
         let timestamp: Date
         
@@ -86,40 +89,56 @@ class AIAssistantViewModel: ObservableObject {
 
     // ✅ ЗАДАЧА 67: Приватный метод для отправки санитизированного сообщения
     private func sendSanitizedMessage(_ sanitizedMessage: String) {
-
-        // ✅ ИСПРАВЛЕНО: Используем реальный API вместо симуляции
+        // ✅ НОВАЯ РЕАЛИЗАЦИЯ: Используем токен-стриминг (Phase 2026)
         isAITyping = true
+        isStreaming = true
 
-        // 🔍 ЛОГИРОВАНИЕ: Проверяем состояние токена перед отправкой
-        print("🤖 AIAssistantViewModel: About to call sendMessageToAI")
-        print("🤖 AIAssistantViewModel: AppConfig.authToken is nil = \(AppConfig.authToken == nil)")
-        if let token = AppConfig.authToken {
-            print("🤖 AIAssistantViewModel: Token exists, length = \(token.count)")
-        } else {
-            print("🤖 AIAssistantViewModel: No token available - this will cause 401 error")
-        }
+        logger.business("🤖 AIAssistantViewModel: Starting AI token streaming for message: \(sanitizedMessage.prefix(50))...")
 
-        apiService.sendMessageToAI(message: sanitizedMessage, context: "general") { [weak self] result in
-            DispatchQueue.main.async {
-                self?.isAITyping = false
-                
-                switch result {
-                case .success(let response):
-                    // ChatMessageResponse содержит поле "response" с текстом ответа AI
-                    let aiMessage = ChatMessage(
-                        text: response.response,
-                        isUser: false,
-                        timestamp: response.timestampDate ?? Date()  // ✅ ИСПРАВЛЕНО: Используем timestampDate вместо timestamp
-                    )
-                    self?.messages.append(aiMessage)
-                case .failure(let error):
-                    // При ошибке показываем сообщение об ошибке
+        // Добавляем временное сообщение AI, которое будет обновляться в реальном времени
+        let streamingMessage = ChatMessage(
+            text: "",
+            isUser: false,
+            timestamp: Date()
+        )
+        messages.append(streamingMessage)
+        let messageIndex = messages.count - 1
+
+        Task {
+            await streamingService.streamMessage(
+                message: sanitizedMessage,
+                context: "general"
+            ) { token in
+                // Каждое новое слово/токен
+                Task { @MainActor in
+                    if messageIndex < self.messages.count {
+                        var updatedMessage = self.messages[messageIndex]
+                        updatedMessage.text += token
+                        self.messages[messageIndex] = updatedMessage
+                    }
+                }
+            } onComplete: { fullResponse in
+                Task { @MainActor in
+                    self.isAITyping = false
+                    self.isStreaming = false
+                    logger.business("✅ AI streaming completed. Full response length: \(fullResponse.count)")
+                }
+            } onError: { error in
+                Task { @MainActor in
+                    self.isAITyping = false
+                    self.isStreaming = false
+                    
                     let errorMessage = ChatMessage(
-                        text: "Извините, произошла ошибка. Попробуйте позже.",
+                        text: "Извините, произошла ошибка при обработке ответа: \(error.localizedDescription)",
                         isUser: false,
                         timestamp: Date()
                     )
-                    self?.messages.append(errorMessage)
+                    if messageIndex < self.messages.count {
+                        self.messages[messageIndex] = errorMessage
+                    } else {
+                        self.messages.append(errorMessage)
+                    }
+                    logger.error("❌ AI streaming error: \(error.localizedDescription)")
                 }
             }
         }

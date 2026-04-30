@@ -90,7 +90,7 @@ struct ParentDashboardView: View {
                     Text(localizationManager.localized("parent_dashboard_data_rights"))
                         .font(.system(size: 18, weight: .semibold))
                     HStack(spacing: 10) {
-                        Button(localizationManager.localized("parent_dashboard_export_child_package")) {
+                        Button("Export child data") {
                             runSensitiveAction {
                                 do {
                                     _ = try ProfileManager.shared.exportChildDataRightsPackage(
@@ -106,8 +106,9 @@ struct ParentDashboardView: View {
                             }
                         }
                         .buttonStyle(.borderedProminent)
+                        .accessibilityLabel(localizationManager.localized("parent_dashboard_export_child_package"))
 
-                        Button(localizationManager.localized("parent_dashboard_delete_active_child")) {
+                        Button("Delete active child data") {
                             runSensitiveAction {
                                 let activeId = (UserDefaults.standard.string(forKey: "active_child_profile_server_id") ?? "")
                                     .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -122,6 +123,7 @@ struct ParentDashboardView: View {
                             }
                         }
                         .buttonStyle(.bordered)
+                        .accessibilityLabel(localizationManager.localized("parent_dashboard_delete_active_child"))
                     }
                     if let dsarMessage, !dsarMessage.isEmpty {
                         Text(dsarMessage)

@@ -176,6 +176,7 @@ struct AnalyticsSettingsModal: View {
     // MARK: - Methods
     
     private func loadSettings() {
+        SyncEngine.shared.publish(domain: .settings, operation: "analytics_modal_load_start", state: .syncing)
         // Загрузить из UserDefaults
         if let savedPeriod = UserDefaults.standard.string(forKey: periodKey) {
             selectedPeriod = savedPeriod
@@ -216,8 +217,10 @@ struct AnalyticsSettingsModal: View {
                         }
                     }
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "analytics_modal_load_complete", state: .synced)
             } catch {
                 // Игнорируем ошибку, используем значения из UserDefaults
+                SyncEngine.shared.publish(domain: .settings, operation: "analytics_modal_load_local", state: .local)
             }
         }
     }
@@ -225,6 +228,7 @@ struct AnalyticsSettingsModal: View {
     private func saveSettings() {
         VisualLogger.shared.log("💾 analytics_settings_save tapped", level: .info, category: "ANALYTICS.UI")
         isSaving = true
+        SyncEngine.shared.publish(domain: .settings, operation: "analytics_modal_save_start", state: .syncing)
         
         // Сохранить в UserDefaults
         UserDefaults.standard.set(selectedPeriod, forKey: periodKey)
@@ -261,6 +265,7 @@ struct AnalyticsSettingsModal: View {
                     isSaving = false
                     dismiss()
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "analytics_modal_save_complete", state: .synced)
             } catch {
                 // Даже при ошибке сохранили в UserDefaults, показываем успех
                 await MainActor.run {
@@ -269,6 +274,7 @@ struct AnalyticsSettingsModal: View {
                     isSaving = false
                     dismiss()
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "analytics_modal_save_error", state: .error(error.localizedDescription))
             }
         }
     }

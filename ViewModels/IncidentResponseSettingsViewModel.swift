@@ -41,6 +41,7 @@ class IncidentResponseSettingsViewModel: ObservableObject {
     /// Загрузка настроек с fallback на дефолты
     func loadSettings() {
         isLoading = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_load_start", state: .syncing)
 
         Task {
             do {
@@ -61,6 +62,7 @@ class IncidentResponseSettingsViewModel: ObservableObject {
                     }
 
                     log("✅ Настройки incident response загружены из API")
+                    SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_load_complete", state: .synced)
                 }
             } catch {
                 // 404 или ошибка сети - используем дефолты
@@ -71,6 +73,7 @@ class IncidentResponseSettingsViewModel: ObservableObject {
                 }
 
                 log("⚠️ Настройки incident response не найдены (404), используются дефолты: \(error.localizedDescription)")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_load_local", state: .local)
             }
         }
     }
@@ -90,6 +93,7 @@ class IncidentResponseSettingsViewModel: ObservableObject {
         // Обновляем состояние
         state[keyPath: keyPath] = newValue
         hasChanges = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_change_pending", state: .pending)
 
         log("🔄 Incident response setting изменен: \(keyPath) = \(newValue)")
 
@@ -111,6 +115,7 @@ class IncidentResponseSettingsViewModel: ObservableObject {
         // Обновляем состояние
         state.slaTime = newValue
         hasChanges = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_change_pending", state: .pending)
 
         log("🔄 SLA время изменено: \(newValue)")
 
@@ -131,6 +136,7 @@ class IncidentResponseSettingsViewModel: ObservableObject {
         }
 
         isApplyingState = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_save_start", state: .syncing)
 
         Task {
             do {
@@ -163,9 +169,11 @@ class IncidentResponseSettingsViewModel: ObservableObject {
                 }
 
                 log("✅ Настройки incident response успешно сохранены")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_save_complete", state: .synced)
 
             } catch {
                 log("❌ Ошибка сохранения настроек incident response: \(error.localizedDescription)")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_save_error", state: .error(error.localizedDescription))
 
                 // Rollback к последнему сохраненному состоянию
                 if let lastSaved = lastSavedState {

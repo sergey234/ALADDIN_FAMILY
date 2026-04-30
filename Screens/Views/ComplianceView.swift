@@ -76,6 +76,24 @@ struct ComplianceView: View {
         .onAppear {
             loadSettings()
         }
+        .onChange(of: childLegalProfile) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "compliance_change_pending", state: .pending)
+        }
+        .onChange(of: selectedRegions) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "compliance_change_pending", state: .pending)
+        }
+        .onChange(of: deletionPolicy) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "compliance_change_pending", state: .pending)
+        }
+        .onChange(of: dataSelectedRegions) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "compliance_change_pending", state: .pending)
+        }
+        .onChange(of: dataDeletionPolicy) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "compliance_change_pending", state: .pending)
+        }
+        .onChange(of: encryptionEnabled) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "compliance_change_pending", state: .pending)
+        }
     }
     
     // MARK: - Child Protection Content
@@ -317,6 +335,7 @@ struct ComplianceView: View {
     
     // ✅ Загрузка настроек при открытии
     private func loadSettings() {
+        SyncEngine.shared.publish(domain: .settings, operation: "compliance_load_start", state: .syncing)
         Task {
             do {
                 let componentId = section == .childProtection 
@@ -347,8 +366,10 @@ struct ComplianceView: View {
                         }
                     }
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "compliance_load_complete", state: .synced)
             } catch {
                 print("⚠️ ComplianceView: Ошибка загрузки настроек: \(error)")
+                SyncEngine.shared.publish(domain: .settings, operation: "compliance_load_local", state: .local)
             }
         }
     }
@@ -357,6 +378,7 @@ struct ComplianceView: View {
     private func saveSettings() {
         // Тактильная обратная связь
         HapticFeedback.impact(.medium)
+        SyncEngine.shared.publish(domain: .settings, operation: "compliance_save_start", state: .syncing)
         
         Task {
             do {
@@ -404,6 +426,7 @@ struct ComplianceView: View {
                         dismiss()
                     }
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "compliance_save_complete", state: .synced)
             } catch {
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
@@ -411,6 +434,7 @@ struct ComplianceView: View {
                         dismiss()
                     }
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "compliance_save_error", state: .error(error.localizedDescription))
             }
         }
     }

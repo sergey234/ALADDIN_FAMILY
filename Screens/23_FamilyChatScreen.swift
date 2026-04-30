@@ -1,6 +1,11 @@
 import SwiftUI
 import AVFoundation
 import UserNotifications
+import UIKit
+import UniformTypeIdentifiers
+import Contacts
+import ContactsUI
+import CoreLocation
 
 /**
  * 💬 Family Chat Screen
@@ -28,11 +33,15 @@ struct FamilyChatScreen: View {
     @State private var errorMessage: String? = nil
     @State private var refreshTimer: Timer? = nil
     @State private var onlineMembersCount: Int = 0
+    @State private var onlineUsers: Set<String> = []
+    @State private var wsConnectionStatus: FamilyChatWebSocket.ConnectionStatus = .disconnected
     
     // Extended features state
     @StateObject private var voiceRecorder = VoiceMessageRecorder()
     @StateObject private var offlineManager = FamilyChatOfflineManager.shared
+    @StateObject private var mediaUploadManager = MediaUploadManager.shared
     @StateObject private var pushService = PushNotificationService.shared
+    @StateObject private var syncEngine = SyncEngine.shared
     @State private var webSocket: FamilyChatWebSocket?
     @State private var isRecordingVoice: Bool = false
     @State private var recordingURL: URL? = nil
@@ -49,12 +58,24 @@ struct FamilyChatScreen: View {
     @State private var selectedMedia: UIImage? = nil
     @State private var showThemeSettings: Bool = false
     @State private var chatTheme: ChatTheme = .auto
+    @State private var showCamera: Bool = false
+    @State private var showComposerActions: Bool = false
+    @State private var showQuickReactionPicker: Bool = false
+    @State private var showFileImporter: Bool = false
+    @State private var showContactPicker: Bool = false
+    @State private var isResolvingLocation: Bool = false
+    @State private var typingStopWorkItem: DispatchWorkItem? = nil
+    @State private var lastTypingSignalAt: Date = .distantPast
+    @State private var typingExpiryByUser: [String: Date] = [:]
+    @State private var presencePruneTimer: Timer? = nil
     
     // UserDefaults ключи
     private let familyIdKey = "family_id"
     private let familyMembersKey = "family_members_list"
     
     private let apiService = APIService.shared
+    private let homeChatLastFamilyActivityKey = "home_chat_last_family_activity_at"
+    @StateObject private var locationShareManager = LocationShareManager()
     
     enum ChatTheme: String, CaseIterable {
         case light = "light"
@@ -67,7 +88,7 @@ struct FamilyChatScreen: View {
         VStack(spacing: 0) {
             ALADDINNavigationBar(
                 title: localizationManager.localized("family_chat_title"),
-                subtitle: String(format: localizationManager.localized("family_chat_subtitle"), onlineMembersCount),
+                subtitle: presenceSubtitle,
                 showBackButton: true,
                 showProfileButton: false,
                 showListButton: false,
@@ -84,6 +105,50 @@ struct FamilyChatScreen: View {
             )
             .accessibilityElement(children: .combine)
             .accessibilityLabel(localizationManager.localized("family_chat_nav_accessibility"))
+
+            HStack {
+                Text(connectionStatusTitle)
+                    .font(.caption2)
+                    .foregroundColor(connectionStatusColor)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(connectionStatusColor.opacity(0.18))
+                    .clipShape(Capsule())
+                Spacer()
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+            .padding(.top, 6)
+
+            HStack {
+                Text(chatSyncStatusTitle)
+                    .font(.caption2)
+                    .foregroundColor(chatSyncStatusColor)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(chatSyncStatusColor.opacity(0.16))
+                    .clipShape(Capsule())
+                Spacer()
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+            .padding(.top, 4)
+
+            if !onlineUsers.isEmpty {
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(Array(onlineUsers).sorted(), id: \.self) { user in
+                            Text(user)
+                                .font(.caption2)
+                                .foregroundColor(.white.opacity(0.9))
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color.green.opacity(0.22))
+                                .clipShape(Capsule())
+                        }
+                    }
+                    .padding(.horizontal, Spacing.screenPadding)
+                }
+                .padding(.top, 6)
+            }
             
             // Search Bar
             if isSearching {
@@ -99,8 +164,8 @@ struct FamilyChatScreen: View {
             }
             
             // Typing Indicator
-            if !typingUsers.isEmpty {
-                TypingIndicatorView(typingUsers: typingUsers)
+            if !normalizedTypingUsers.isEmpty {
+                TypingIndicatorView(typingUsers: normalizedTypingUsers)
             }
             
             // Messages List with ScrollViewReader
@@ -117,28 +182,49 @@ struct FamilyChatScreen: View {
                         
                         // Messages
                         ForEach(displayMessages) { message in
-                            MessageBubbleView(
-                                message: message,
-                                allMessages: messages,
-                                onLongPress: {
-                                    selectedMessage = message
-                                    showMessageActions = true
-                                },
-                                onReaction: { emoji in
-                                    addReaction(to: message, emoji: emoji)
-                                }
-                            )
-                            .id(message.id)
-                            .contextMenu {
-                                MessageContextMenu(
+                            if message.mediaType != nil || message.messageType == .image || message.messageType == .video || message.messageType == .voice {
+                                // Используем специализированный MediaMessageBubble для всех медиа
+                                MediaMessageBubble(
                                     message: message,
-                                    onDelete: { deleteMessage(message) },
-                                    onEdit: { startEditing(message) },
-                                    onReply: { replyToMessage = message },
-                                    onCopy: { copyMessage(message) },
-                                    onForward: { forwardMessage(message) },
-                                    onAddReaction: { showReactionPicker(for: message) }
+                                    isCurrentUser: message.isCurrentUser,
+                                    uploadProgress: message.uploadProgress
                                 )
+                                .id(message.id)
+                                .contextMenu {
+                                    MessageContextMenu(
+                                        message: message,
+                                        onDelete: { deleteMessage(message) },
+                                        onEdit: { startEditing(message) },
+                                        onReply: { replyToMessage = message },
+                                        onCopy: { copyMessage(message) },
+                                        onForward: { forwardMessage(message) },
+                                        onAddReaction: { showReactionPicker(for: message) }
+                                    )
+                                }
+                            } else {
+                                MessageBubbleView(
+                                    message: message,
+                                    allMessages: messages,
+                                    onLongPress: {
+                                        selectedMessage = message
+                                        showMessageActions = true
+                                    },
+                                    onReaction: { emoji in
+                                        addReaction(to: message, emoji: emoji)
+                                    }
+                                )
+                                .id(message.id)
+                                .contextMenu {
+                                    MessageContextMenu(
+                                        message: message,
+                                        onDelete: { deleteMessage(message) },
+                                        onEdit: { startEditing(message) },
+                                        onReply: { replyToMessage = message },
+                                        onCopy: { copyMessage(message) },
+                                        onForward: { forwardMessage(message) },
+                                        onAddReaction: { showReactionPicker(for: message) }
+                                    )
+                                }
                             }
                         }
                     }
@@ -162,101 +248,6 @@ struct FamilyChatScreen: View {
                 .accessibilityLabel(localizationManager.localized("family_chat_messages_list"))
             }
             
-            // Input Field
-            HStack(spacing: Spacing.s) {
-                TextField(localizationManager.localized("family_chat_input_placeholder"), text: $messageText)
-                    .padding(Spacing.m)
-                    .background(Color.backgroundMedium)
-                    .cornerRadius(CornerRadius.md)
-                    .foregroundColor(.textPrimary)
-                    .font(.body)
-                    .disabled(isSending)
-                    .accessibilityLabel(localizationManager.localized("family_chat_input_accessibility"))
-                    .accessibilityHint(localizationManager.localized("family_chat_input_hint"))
-                    .onSubmit {
-                        if !messageText.isEmpty && !isSending {
-                            sendMessage()
-                        }
-                    }
-                
-                // Send Button
-                Button(action: {
-                    sendMessage()
-                }) {
-                    if isSending {
-                        ProgressView()
-                            .scaleEffect(0.8)
-                            .frame(width: Size.navButtonSize, height: Size.navButtonSize)
-                    } else {
-                        Image(systemName: "paperplane.fill")
-                            .font(.body)
-                            .foregroundColor(.backgroundDark)
-                            .frame(width: Size.navButtonSize, height: Size.navButtonSize)
-                            .background(messageText.isEmpty ? Color.surfaceDark.opacity(0.5) : Color.secondaryGold)
-                            .cornerRadius(CornerRadius.medium)
-                    }
-                }
-                .disabled(messageText.isEmpty || isSending)
-                .accessibilityLabel(localizationManager.localized("family_chat_send_button"))
-                .accessibilityHint(localizationManager.localized("family_chat_send_hint"))
-                
-                // Voice message button
-                Button(action: {
-                    if isRecordingVoice {
-                        if let url = voiceRecorder.stopRecording() {
-                            recordingURL = url
-                            sendVoiceMessage(url: url)
-                        }
-                        isRecordingVoice = false
-                    } else {
-                        if voiceRecorder.startRecording() != nil {
-                            isRecordingVoice = true
-                        }
-                    }
-                }) {
-                    Image(systemName: isRecordingVoice ? "stop.circle.fill" : "mic.fill")
-                        .font(.body)
-                        .foregroundColor(isRecordingVoice ? .red : .textPrimary)
-                        .frame(width: Size.navButtonSize, height: Size.navButtonSize)
-                        .background(isRecordingVoice ? Color.red.opacity(0.3) : Color.surfaceDark.opacity(0.6))
-                        .cornerRadius(CornerRadius.medium)
-                }
-                .accessibilityLabel(localizationManager.localized("family_chat_voice_button"))
-                .accessibilityHint(localizationManager.localized("family_chat_voice_hint"))
-                
-                // Media button
-                Button(action: {
-                    showMediaPicker = true
-                }) {
-                    Image(systemName: "photo")
-                        .font(.body)
-                        .foregroundColor(.textPrimary)
-                        .frame(width: Size.navButtonSize, height: Size.navButtonSize)
-                        .background(Color.surfaceDark.opacity(0.6))
-                        .cornerRadius(CornerRadius.medium)
-                }
-                
-                // Search button
-                Button(action: {
-                    isSearching.toggle()
-                    if !isSearching {
-                        searchText = ""
-                        filteredMessages = messages
-                    }
-                }) {
-                    Image(systemName: isSearching ? "xmark" : "magnifyingglass")
-                        .font(.body)
-                        .foregroundColor(.textPrimary)
-                        .frame(width: Size.navButtonSize, height: Size.navButtonSize)
-                        .background(Color.surfaceDark.opacity(0.6))
-                        .cornerRadius(CornerRadius.medium)
-                }
-            }
-            .padding(Spacing.screenPadding)
-            .background(
-                LinearGradient.cardGradient
-                    .appGlassmorphism()
-            )
         }
         .background(LinearGradient.backgroundGradient.ignoresSafeArea())
         .accessibilityElement(children: .contain)
@@ -265,24 +256,38 @@ struct FamilyChatScreen: View {
         .safeAreaInset(edge: .top) {
             Color.clear.frame(height: Spacing.m)
         }
+        .safeAreaInset(edge: .bottom) {
+            composerBar
+        }
         .task {
             print("🚨 FamilyChatScreen загружен!")
+            markFamilyActivity()
             updateOnlineMembersCount()
             loadMessages()
             startAutoRefresh()
             setupWebSocket()
             setupPushNotifications()
             loadCachedMessages()
+            startPresencePruneTimer()
         }
         .onDisappear {
             stopAutoRefresh()
+            stopPresencePruneTimer()
+            typingStopWorkItem?.cancel()
+            webSocket?.sendStopTyping()
             webSocket?.disconnect()
         }
         .sheet(isPresented: $showMediaPicker) {
-            MediaPickerView(onSelect: { image in
+            ImagePickerView(sourceType: .photoLibrary) { image in
                 selectedMedia = image
                 sendMediaMessage(image: image)
-            })
+            }
+        }
+        .sheet(isPresented: $showCamera) {
+            ImagePickerView(sourceType: .camera) { image in
+                selectedMedia = image
+                sendMediaMessage(image: image)
+            }
         }
         .sheet(isPresented: $showMessageActions) {
             if let message = selectedMessage {
@@ -296,6 +301,90 @@ struct FamilyChatScreen: View {
                     onAddReaction: { showReactionPicker(for: message) }
                 )
             }
+        }
+        .confirmationDialog(
+            localizationManager.localized("family_chat_title"),
+            isPresented: $showComposerActions
+        ) {
+            Button(localizationManager.localized("family_chat_action_emoji")) {
+                showQuickReactionPicker = true
+            }
+            Button(localizationManager.localized("family_chat_action_quick_reply")) {
+                applyQuickReplyFromMenu()
+            }
+            Button(localizationManager.localized("family_chat_voice_button")) {
+                if isRecordingVoice {
+                    if let url = voiceRecorder.stopRecording() {
+                        recordingURL = url
+                        sendVoiceMessage(url: url)
+                    }
+                    isRecordingVoice = false
+                } else if voiceRecorder.startRecording() != nil {
+                    isRecordingVoice = true
+                }
+            }
+            Button(localizationManager.localized("family_chat_action_camera")) {
+                showCamera = true
+            }
+            Button(localizationManager.localized("family_chat_action_gallery")) {
+                showMediaPicker = true
+            }
+            Button(localizationManager.localized("family_chat_action_file")) {
+                showFileImporter = true
+            }
+            Button(localizationManager.localized("family_chat_action_location")) {
+                shareCurrentLocation()
+            }
+            Button(localizationManager.localized("family_chat_action_contact")) {
+                showContactPicker = true
+            }
+            Button(localizationManager.localized(isSearching ? "family_chat_action_hide_search" : "family_chat_action_search")) {
+                isSearching.toggle()
+                if !isSearching {
+                    searchText = ""
+                    filteredMessages = messages
+                }
+            }
+            Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {}
+        }
+        .confirmationDialog(
+            localizationManager.localized("family_chat_action_choose_reaction"),
+            isPresented: $showQuickReactionPicker
+        ) {
+            ForEach(["👍", "❤️", "🔥", "😂", "👏", "🙏", "😮", "🎉"], id: \.self) { emoji in
+                Button(emoji) {
+                    applyQuickReactionFromMenu(emoji: emoji)
+                }
+            }
+            Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {}
+        }
+        .fileImporter(
+            isPresented: $showFileImporter,
+            allowedContentTypes: [.data, .content],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                let text = String(
+                    format: localizationManager.localized("family_chat_action_file_attached_format"),
+                    url.lastPathComponent
+                )
+                messageText = text
+                sendMessage()
+            case .failure(let error):
+                errorMessage = error.localizedDescription
+            }
+        }
+        .sheet(isPresented: $showContactPicker) {
+            ContactPickerView(
+                onSelect: { contact in
+                    sendContactCard(contact)
+                },
+                onCancel: {
+                    showContactPicker = false
+                }
+            )
         }
         .overlay {
             if isRecordingVoice {
@@ -312,6 +401,13 @@ struct FamilyChatScreen: View {
                     }
                 )
                 .padding()
+            }
+            if isResolvingLocation {
+                ProgressView(localizationManager.localized("family_chat_action_location_fetching"))
+                    .padding()
+                    .background(Color.black.opacity(0.75))
+                    .foregroundColor(.white)
+                    .cornerRadius(12)
             }
         }
         .onChange(of: messageText) { _ in
@@ -340,6 +436,88 @@ struct FamilyChatScreen: View {
     }
     
     // MARK: - Helper Methods
+
+    private var presenceSubtitle: String {
+        if wsConnectionStatus == .reconnecting || wsConnectionStatus == .connecting {
+            return localizationManager.localized("family_chat_websocket_reconnecting")
+        }
+        if onlineUsers.isEmpty {
+            return String(format: localizationManager.localized("family_chat_subtitle"), onlineMembersCount)
+        }
+        let sorted = Array(onlineUsers).sorted()
+        let preview = sorted.prefix(2).joined(separator: ", ")
+        if sorted.count > 2 {
+            let more = sorted.count - 2
+            return "\(preview) +\(more)"
+        }
+        return preview
+    }
+
+    private var normalizedTypingUsers: [String] {
+        Array(Set(typingUsers.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }))
+            .filter { !$0.isEmpty }
+            .sorted()
+    }
+
+    private var connectionStatusTitle: String {
+        switch wsConnectionStatus {
+        case .connected:
+            return localizationManager.localized("family_chat_online")
+        case .connecting, .reconnecting:
+            return localizationManager.localized("family_chat_websocket_reconnecting")
+        case .disconnected, .error:
+            return localizationManager.localized("family_chat_offline_status")
+        }
+    }
+
+    private var connectionStatusColor: Color {
+        switch wsConnectionStatus {
+        case .connected:
+            return .green
+        case .connecting, .reconnecting:
+            return .orange
+        case .disconnected, .error:
+            return .gray
+        }
+    }
+
+    private var chatSyncState: SyncState {
+        syncEngine.latestStateByDomain[.familyChat] ?? .idle
+    }
+
+    private var chatSyncStatusTitle: String {
+        switch chatSyncState {
+        case .idle:
+            return "Chat idle"
+        case .local:
+            return "Local update"
+        case .pending:
+            return "Pending sync"
+        case .syncing:
+            return "Syncing chat..."
+        case .synced:
+            return "Chat synced"
+        case .conflict:
+            return "Chat conflict"
+        case .error:
+            return "Chat sync error"
+        }
+    }
+
+    private var chatSyncStatusColor: Color {
+        switch chatSyncState {
+        case .idle:
+            return .gray
+        case .local, .pending:
+            return .orange
+        case .syncing:
+            return .blue
+        case .synced:
+            return .green
+        case .conflict, .error:
+            return .red
+        }
+    }
     
     /// Получает familyId из UserDefaults
     private func getFamilyId() -> String? {
@@ -351,9 +529,11 @@ struct FamilyChatScreen: View {
         guard let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
               let members = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
             onlineMembersCount = 0
+            onlineUsers = []
             return
         }
-        onlineMembersCount = members.count
+        onlineUsers = Set(members.map(\.name))
+        onlineMembersCount = onlineUsers.count
         print("✅ FamilyChatScreen: Обновлено количество участников: \(onlineMembersCount)")
     }
     
@@ -404,6 +584,9 @@ struct FamilyChatScreen: View {
                 case .success(let responses):
                     messages = responses.map { response in
                         convertToMessage(response)
+                    }
+                    if !messages.isEmpty {
+                        markFamilyActivity()
                     }
                     errorMessage = nil
                     
@@ -497,6 +680,11 @@ struct FamilyChatScreen: View {
     
     private func convertToMessage(_ response: FamilyChatMessageResponse) -> FamilyChatMessage {
         let timeString = formatTimestamp(response.timestamp)
+        let msgType = MessageType(rawValue: response.messageType ?? "text") ?? .text
+        var mediaKind: MediaType? = response.mediaType.flatMap { MediaType(rawValue: $0) }
+        if mediaKind == nil, msgType == .voice || msgType == .audio {
+            mediaKind = msgType == .audio ? .audio : .voice
+        }
         
         return FamilyChatMessage(
             id: UUID(uuidString: response.id) ?? UUID(),
@@ -504,11 +692,12 @@ struct FamilyChatScreen: View {
             text: response.text,
             time: timeString,
             isCurrentUser: response.isCurrentUser,
-            messageType: response.messageType,
+            messageType: msgType,
             voiceUrl: response.voiceUrl,
             voiceDuration: response.voiceDuration,
             mediaUrl: response.mediaUrl,
-            mediaType: response.mediaType,
+            mediaThumbnailUrl: response.mediaThumbnailUrl,
+            mediaType: mediaKind,
             replyToMessageId: response.replyToMessageId,
             reactions: response.reactions ?? [],
             readStatus: response.readStatus,
@@ -565,6 +754,84 @@ struct FamilyChatScreen: View {
         }
         return messages
     }
+
+    private var composerBar: some View {
+        VStack(spacing: 8) {
+            HStack(alignment: .bottom, spacing: 10) {
+                Button(action: {
+                    showComposerActions = true
+                }) {
+                    Image(systemName: isRecordingVoice ? "stop.circle.fill" : "plus.circle.fill")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(isRecordingVoice ? .red : .textPrimary)
+                        .frame(width: 42, height: 42)
+                        .background(Color.surfaceDark.opacity(0.55))
+                        .cornerRadius(12)
+                }
+                .accessibilityLabel(localizationManager.localized("family_chat_voice_button"))
+                .accessibilityHint(localizationManager.localized("family_chat_action_open_menu"))
+
+                ZStack(alignment: .topLeading) {
+                    if messageText.isEmpty {
+                        Text(localizationManager.localized("family_chat_input_placeholder"))
+                            .foregroundColor(Color.black.opacity(0.55))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .allowsHitTesting(false)
+                    }
+
+                    TextEditor(text: $messageText)
+                        .font(.system(size: 16))
+                        .foregroundColor(.black)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 8)
+                        .frame(minHeight: 44, maxHeight: composerHeight(for: messageText))
+                        .background(Color.clear)
+                        .disabled(isSending)
+                        .accessibilityLabel(localizationManager.localized("family_chat_input_accessibility"))
+                        .accessibilityHint(localizationManager.localized("family_chat_input_hint"))
+                }
+                .background(Color.white.opacity(0.96))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color.black.opacity(0.18), lineWidth: 1)
+                )
+                .cornerRadius(14)
+
+                Button(action: {
+                    sendMessage()
+                }) {
+                    if isSending {
+                        ProgressView()
+                            .scaleEffect(0.85)
+                            .frame(width: 42, height: 42)
+                    } else {
+                        Image(systemName: "paperplane.fill")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.backgroundDark)
+                            .frame(width: 42, height: 42)
+                            .background(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.surfaceDark.opacity(0.5) : Color.secondaryGold)
+                            .cornerRadius(12)
+                    }
+                }
+                .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending)
+                .accessibilityLabel(localizationManager.localized("family_chat_send_button"))
+                .accessibilityHint(localizationManager.localized("family_chat_send_hint"))
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+            .padding(.top, 8)
+            .padding(.bottom, 8)
+        }
+        .background(LinearGradient.cardGradient.appGlassmorphism())
+    }
+
+    private func composerHeight(for text: String) -> CGFloat {
+        let lineBreakCount = text.components(separatedBy: .newlines).count
+        let estimatedWrappedLines = max(1, Int(ceil(Double(text.count) / 34.0)))
+        let lineCount = max(lineBreakCount, estimatedWrappedLines)
+        let clampedLines = min(max(lineCount, 1), 5)
+        return CGFloat(clampedLines * 24 + 20)
+    }
     
     /// Фильтрация сообщений по поисковому запросу
     private func filterMessages(_ query: String) {
@@ -590,13 +857,43 @@ struct FamilyChatScreen: View {
             }
         }
         
-        webSocket?.onTyping = { [self] userName in
-            if !typingUsers.contains(userName) {
-                typingUsers.append(userName)
-                // Автоматически убираем через 5 секунд
-                DispatchQueue.main.asyncAfter(deadline: .now() + 5.0) {
-                    typingUsers.removeAll { $0 == userName }
+        webSocket?.onTyping = { [self] userName, isTyping in
+            if isTyping {
+                if !typingUsers.contains(userName) {
+                    typingUsers.append(userName)
                 }
+                typingExpiryByUser[userName] = Date().addingTimeInterval(6.0)
+            } else {
+                typingUsers.removeAll { $0 == userName }
+                typingExpiryByUser.removeValue(forKey: userName)
+            }
+        }
+
+        webSocket?.onPresence = { [self] userName, isOnline in
+            if isOnline {
+                onlineUsers.insert(userName)
+            } else {
+                onlineUsers.remove(userName)
+                typingUsers.removeAll { $0 == userName }
+                typingExpiryByUser.removeValue(forKey: userName)
+            }
+            onlineMembersCount = onlineUsers.count
+        }
+
+        webSocket?.onConnectionStatus = { [self] status in
+            wsConnectionStatus = status
+            switch status {
+            case .connected:
+                break
+            case .connecting, .reconnecting:
+                typingUsers.removeAll()
+                typingExpiryByUser.removeAll()
+            case .disconnected, .error:
+                // Не держим stale presence во время разрыва канала.
+                typingUsers.removeAll()
+                typingExpiryByUser.removeAll()
+                onlineUsers.removeAll()
+                onlineMembersCount = 0
             }
         }
         
@@ -618,6 +915,7 @@ struct FamilyChatScreen: View {
                     voiceUrl: updatedMessage.voiceUrl,
                     voiceDuration: updatedMessage.voiceDuration,
                     mediaUrl: updatedMessage.mediaUrl,
+                    mediaThumbnailUrl: updatedMessage.mediaThumbnailUrl,
                     mediaType: updatedMessage.mediaType,
                     replyToMessageId: updatedMessage.replyToMessageId,
                     reactions: updatedMessage.reactions,
@@ -644,58 +942,175 @@ struct FamilyChatScreen: View {
         }
     }
     
-    /// Отправка голосового сообщения
+    /// Отправка голосового: загрузка через MediaUploadManager, затем регистрация сообщения на сервере
     private func sendVoiceMessage(url: URL) {
-        let familyId = getFamilyId()
+        guard let familyId = getFamilyId(), !familyId.isEmpty else {
+            errorMessage = localizationManager.localized("family_chat_error_loading")
+            return
+        }
+        guard let data = try? Data(contentsOf: url), !data.isEmpty else {
+            errorMessage = localizationManager.localized("family_chat_error_loading")
+            return
+        }
+        
         let duration = voiceRecorder.recordingDuration
+        let messageId = UUID().uuidString
+        let localPreviewUrl = url.absoluteString
         
-        // TODO: Загрузить файл на сервер и получить URL
-        // Пока используем локальный URL
-        let voiceUrl = url.absoluteString
-        
-        apiService.sendFamilyChatMessage(
-            message: nil,
-            familyId: familyId,
-            messageType: "voice",
-            voiceUrl: voiceUrl,
+        let newMessage = FamilyChatMessage(
+            id: UUID(uuidString: messageId)!,
+            sender: localizationManager.localized("family_chat_you"),
+            text: nil,
+            time: getCurrentTime(),
+            isCurrentUser: true,
+            messageType: .voice,
+            voiceUrl: localPreviewUrl,
             voiceDuration: duration,
             mediaUrl: nil,
-            mediaType: nil,
-            replyToMessageId: replyToMessage?.id.uuidString
+            mediaType: .voice,
+            uploadProgress: 0.0
+        )
+        messages.append(newMessage)
+        
+        mediaUploadManager.uploadMedia(
+            data: data,
+            type: .voice,
+            forMessageId: messageId
         ) { [self] result in
             DispatchQueue.main.async {
                 switch result {
-                case .success(_):
-                    replyToMessage = nil
-                    // ✅ ИСПРАВЛЕНО: Используем silent: true, чтобы не показывать ошибку при неудачной загрузке
-                    loadMessages(silent: true)
+                case .success(let uploadedUrl):
+                    if let idx = messages.firstIndex(where: { $0.id.uuidString == messageId }) {
+                        var m = messages[idx]
+                        m = FamilyChatMessage(
+                            id: m.id,
+                            sender: m.sender,
+                            text: m.text,
+                            time: m.time,
+                            isCurrentUser: m.isCurrentUser,
+                            messageType: .voice,
+                            voiceUrl: uploadedUrl,
+                            voiceDuration: duration,
+                            mediaUrl: uploadedUrl,
+                            mediaThumbnailUrl: m.mediaThumbnailUrl,
+                            mediaType: .voice,
+                            replyToMessageId: m.replyToMessageId,
+                            reactions: m.reactions,
+                            readStatus: m.readStatus,
+                            readAt: m.readAt,
+                            editedAt: m.editedAt,
+                            uploadProgress: 1.0
+                        )
+                        messages[idx] = m
+                    }
+                    
+                    self.apiService.sendFamilyChatMessage(
+                        message: nil,
+                        familyId: familyId,
+                        messageType: "voice",
+                        voiceUrl: uploadedUrl,
+                        voiceDuration: duration,
+                        mediaUrl: uploadedUrl,
+                        mediaType: "voice",
+                        replyToMessageId: self.replyToMessage?.id.uuidString
+                    ) { sendResult in
+                        DispatchQueue.main.async {
+                            switch sendResult {
+                            case .success:
+                                self.replyToMessage = nil
+                                self.loadMessages(silent: true)
+                            case .failure(let err):
+                                self.errorMessage = err.localizedDescription
+                                self.offlineManager.addPendingMessage(PendingChatMessage(
+                                    id: UUID(uuidString: messageId)!,
+                                    text: nil,
+                                    familyId: familyId,
+                                    messageType: "voice",
+                                    voiceUrl: uploadedUrl,
+                                    voiceDuration: duration,
+                                    mediaUrl: uploadedUrl,
+                                    mediaType: "voice",
+                                    replyToMessageId: self.replyToMessage?.id.uuidString
+                                ))
+                            }
+                        }
+                    }
+                    
                 case .failure(let error):
                     errorMessage = error.localizedDescription
-                    // Добавляем в очередь офлайн
                     offlineManager.addPendingMessage(PendingChatMessage(
+                        id: UUID(uuidString: messageId)!,
                         text: nil,
                         familyId: familyId,
                         messageType: "voice",
-                        voiceUrl: voiceUrl,
-                        voiceDuration: duration
+                        voiceUrl: localPreviewUrl,
+                        voiceDuration: duration,
+                        mediaUrl: nil,
+                        mediaType: "voice",
+                        replyToMessageId: replyToMessage?.id.uuidString
                     ))
                 }
             }
         }
     }
     
-    /// Отправка медиа сообщения
+    /// ✅ Отправка изображения: upload → регистрация сообщения на сервере
     private func sendMediaMessage(image: UIImage) {
         guard let imageData = image.jpegData(compressionQuality: 0.8) else { return }
+        guard let familyId = getFamilyId(), !familyId.isEmpty else {
+            errorMessage = localizationManager.localized("family_chat_error_loading")
+            return
+        }
         
-        let familyId = getFamilyId()
+        let messageId = UUID().uuidString
+        let mid = UUID(uuidString: messageId)!
         
-        // TODO: Загрузить на сервер
-        apiService.uploadMedia(data: imageData, type: "image") { [self] result in
+        let newMessage = FamilyChatMessage(
+            id: mid,
+            sender: localizationManager.localized("family_chat_you"),
+            text: nil,
+            time: getCurrentTime(),
+            isCurrentUser: true,
+            messageType: .image,
+            mediaUrl: nil,
+            mediaType: .image,
+            uploadProgress: 0.0
+        )
+        
+        messages.append(newMessage)
+        
+        mediaUploadManager.uploadMedia(
+            data: imageData,
+            type: .image,
+            forMessageId: messageId
+        ) { [self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let mediaUrl):
-                    apiService.sendFamilyChatMessage(
+                    if let index = messages.firstIndex(where: { $0.id == mid }) {
+                        let prev = messages[index]
+                        messages[index] = FamilyChatMessage(
+                            id: prev.id,
+                            sender: prev.sender,
+                            text: prev.text,
+                            time: prev.time,
+                            isCurrentUser: prev.isCurrentUser,
+                            messageType: .image,
+                            voiceUrl: prev.voiceUrl,
+                            voiceDuration: prev.voiceDuration,
+                            mediaUrl: mediaUrl,
+                            mediaThumbnailUrl: prev.mediaThumbnailUrl,
+                            mediaType: .image,
+                            replyToMessageId: prev.replyToMessageId,
+                            reactions: prev.reactions,
+                            readStatus: prev.readStatus,
+                            readAt: prev.readAt,
+                            editedAt: prev.editedAt,
+                            uploadProgress: 1.0
+                        )
+                    }
+                    
+                    self.apiService.sendFamilyChatMessage(
                         message: nil,
                         familyId: familyId,
                         messageType: "image",
@@ -703,19 +1118,39 @@ struct FamilyChatScreen: View {
                         voiceDuration: nil,
                         mediaUrl: mediaUrl,
                         mediaType: "image",
-                        replyToMessageId: replyToMessage?.id.uuidString
-                    ) { result in
-                        switch result {
-                        case .success(_):
-                            replyToMessage = nil
-                            // ✅ ИСПРАВЛЕНО: Используем silent: true, чтобы не показывать ошибку при неудачной загрузке
-                            loadMessages(silent: true)
-                        case .failure(let error):
-                            errorMessage = error.localizedDescription
+                        replyToMessageId: self.replyToMessage?.id.uuidString
+                    ) { sendResult in
+                        DispatchQueue.main.async {
+                            switch sendResult {
+                            case .success:
+                                self.replyToMessage = nil
+                                self.loadMessages(silent: true)
+                            case .failure(let err):
+                                self.errorMessage = err.localizedDescription
+                                self.offlineManager.addPendingMessage(PendingChatMessage(
+                                    id: mid,
+                                    text: nil,
+                                    familyId: familyId,
+                                    messageType: "image",
+                                    mediaUrl: mediaUrl,
+                                    mediaType: "image",
+                                    replyToMessageId: self.replyToMessage?.id.uuidString
+                                ))
+                            }
                         }
                     }
+                    
                 case .failure(let error):
                     errorMessage = error.localizedDescription
+                    offlineManager.addPendingMessage(PendingChatMessage(
+                        id: mid,
+                        text: nil,
+                        familyId: familyId,
+                        messageType: "image",
+                        mediaUrl: nil,
+                        mediaType: "image",
+                        replyToMessageId: replyToMessage?.id.uuidString
+                    ))
                 }
             }
         }
@@ -723,9 +1158,53 @@ struct FamilyChatScreen: View {
     
     /// Отправка индикатора "печатает..."
     private func sendTypingIndicator() {
-        guard !messageText.isEmpty else { return }
-        webSocket?.sendTyping()
+        let trimmed = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            typingStopWorkItem?.cancel()
+            webSocket?.sendStopTyping()
+            return
+        }
+
+        let now = Date()
+        if now.timeIntervalSince(lastTypingSignalAt) >= 1.2 {
+            webSocket?.sendTyping()
+            lastTypingSignalAt = now
+        }
         apiService.sendTypingIndicator(familyId: getFamilyId()) { _ in }
+
+        typingStopWorkItem?.cancel()
+        let stopTask = DispatchWorkItem {
+            webSocket?.sendStopTyping()
+        }
+        typingStopWorkItem = stopTask
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: stopTask)
+    }
+
+    private func startPresencePruneTimer() {
+        stopPresencePruneTimer()
+        presencePruneTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [self] _ in
+            pruneStaleTypingIndicators()
+        }
+        if let timer = presencePruneTimer {
+            RunLoop.current.add(timer, forMode: .common)
+        }
+    }
+
+    private func stopPresencePruneTimer() {
+        presencePruneTimer?.invalidate()
+        presencePruneTimer = nil
+    }
+
+    private func pruneStaleTypingIndicators() {
+        let now = Date()
+        let staleUsers = typingExpiryByUser.compactMap { user, expiresAt in
+            expiresAt < now ? user : nil
+        }
+        guard !staleUsers.isEmpty else { return }
+        staleUsers.forEach { user in
+            typingExpiryByUser.removeValue(forKey: user)
+            typingUsers.removeAll { $0 == user }
+        }
     }
     
     /// Удаление сообщения
@@ -769,6 +1248,7 @@ struct FamilyChatScreen: View {
                             voiceUrl: updated.voiceUrl,
                             voiceDuration: updated.voiceDuration,
                             mediaUrl: updated.mediaUrl,
+                            mediaThumbnailUrl: updated.mediaThumbnailUrl,
                             mediaType: updated.mediaType,
                             replyToMessageId: updated.replyToMessageId,
                             reactions: updated.reactions,
@@ -820,6 +1300,7 @@ struct FamilyChatScreen: View {
                             voiceUrl: updated.voiceUrl,
                             voiceDuration: updated.voiceDuration,
                             mediaUrl: updated.mediaUrl,
+                            mediaThumbnailUrl: updated.mediaThumbnailUrl,
                             mediaType: updated.mediaType,
                             replyToMessageId: updated.replyToMessageId,
                             reactions: reactions,
@@ -858,7 +1339,10 @@ struct FamilyChatScreen: View {
         
         let familyId = getFamilyId()
         isSending = true
+        markFamilyActivity()
         messageText = ""
+        typingStopWorkItem?.cancel()
+        webSocket?.sendStopTyping()
         
         let impactFeedback = UIImpactFeedbackGenerator(style: .light)
         impactFeedback.impactOccurred()
@@ -912,10 +1396,161 @@ struct FamilyChatScreen: View {
             }
         }
     }
+
+    private func markFamilyActivity() {
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: homeChatLastFamilyActivityKey)
+    }
+
+    private func quickActionTargetMessage() -> FamilyChatMessage? {
+        if let selectedMessage {
+            return selectedMessage
+        }
+        return messages.last
+    }
+
+    private func applyQuickReplyFromMenu() {
+        guard let target = quickActionTargetMessage() else { return }
+        replyToMessage = target
+    }
+
+    private func applyQuickReactionFromMenu(emoji: String) {
+        guard let target = quickActionTargetMessage() else { return }
+        addReaction(to: target, emoji: emoji)
+    }
+
+    private func shareCurrentLocation() {
+        isResolvingLocation = true
+        locationShareManager.requestCurrentLocation { result in
+            DispatchQueue.main.async {
+                isResolvingLocation = false
+                switch result {
+                case .success(let location):
+                    let coordinates = String(format: "%.5f, %.5f", location.coordinate.latitude, location.coordinate.longitude)
+                    let mapURL = "https://maps.apple.com/?ll=\(location.coordinate.latitude),\(location.coordinate.longitude)"
+                    messageText = String(
+                        format: localizationManager.localized("family_chat_action_location_card_format"),
+                        coordinates,
+                        mapURL
+                    )
+                    sendMessage()
+                case .failure:
+                    errorMessage = localizationManager.localized("family_chat_action_location_error")
+                }
+            }
+        }
+    }
+
+    private func sendContactCard(_ contact: CNContact) {
+        let formatter = CNContactFormatter()
+        formatter.style = .fullName
+        let fullName = formatter.string(from: contact)?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let displayName = (fullName?.isEmpty == false ? fullName! : localizationManager.localized("family_chat_you"))
+        let phone = contact.phoneNumbers.first?.value.stringValue ?? localizationManager.localized("family_chat_action_contact_no_phone")
+        messageText = String(
+            format: localizationManager.localized("family_chat_action_contact_card_format"),
+            displayName,
+            phone
+        )
+        sendMessage()
+    }
 }
 
-// MARK: - Family Chat Message
+private final class LocationShareManager: NSObject, ObservableObject, CLLocationManagerDelegate {
+    private let manager = CLLocationManager()
+    private var completion: ((Result<CLLocation, Error>) -> Void)?
 
+    override init() {
+        super.init()
+        manager.delegate = self
+        manager.desiredAccuracy = kCLLocationAccuracyHundredMeters
+    }
+
+    func requestCurrentLocation(completion: @escaping (Result<CLLocation, Error>) -> Void) {
+        self.completion = completion
+        guard CLLocationManager.locationServicesEnabled() else {
+            completion(.failure(NSError(domain: "Location", code: 1, userInfo: nil)))
+            return
+        }
+        switch manager.authorizationStatus {
+        case .authorizedWhenInUse, .authorizedAlways:
+            manager.requestLocation()
+        case .notDetermined:
+            manager.requestWhenInUseAuthorization()
+        case .restricted, .denied:
+            completion(.failure(NSError(domain: "Location", code: 2, userInfo: nil)))
+        @unknown default:
+            completion(.failure(NSError(domain: "Location", code: 3, userInfo: nil)))
+        }
+    }
+
+    func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
+        switch manager.authorizationStatus {
+        case .authorizedWhenInUse, .authorizedAlways:
+            manager.requestLocation()
+        case .restricted, .denied:
+            completion?(.failure(NSError(domain: "Location", code: 2, userInfo: nil)))
+            completion = nil
+        default:
+            break
+        }
+    }
+
+    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+        guard let location = locations.first else {
+            completion?(.failure(NSError(domain: "Location", code: 4, userInfo: nil)))
+            completion = nil
+            return
+        }
+        completion?(.success(location))
+        completion = nil
+    }
+
+    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        completion?(.failure(error))
+        completion = nil
+    }
+}
+
+private struct ContactPickerView: UIViewControllerRepresentable {
+    let onSelect: (CNContact) -> Void
+    let onCancel: () -> Void
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator(onSelect: onSelect, onCancel: onCancel)
+    }
+
+    func makeUIViewController(context: Context) -> CNContactPickerViewController {
+        let picker = CNContactPickerViewController()
+        picker.delegate = context.coordinator
+        picker.displayedPropertyKeys = [CNContactGivenNameKey, CNContactFamilyNameKey, CNContactPhoneNumbersKey]
+        return picker
+    }
+
+    func updateUIViewController(_ uiViewController: CNContactPickerViewController, context: Context) {}
+
+    final class Coordinator: NSObject, CNContactPickerDelegate {
+        let onSelect: (CNContact) -> Void
+        let onCancel: () -> Void
+
+        init(onSelect: @escaping (CNContact) -> Void, onCancel: @escaping () -> Void) {
+            self.onSelect = onSelect
+            self.onCancel = onCancel
+        }
+
+        func contactPicker(_ picker: CNContactPickerViewController, didSelect contact: CNContact) {
+            onSelect(contact)
+            onCancel()
+        }
+
+        func contactPickerDidCancel(_ picker: CNContactPickerViewController) {
+            onCancel()
+        }
+    }
+}
+
+// MARK: - Family Chat Message (обновлено для полноценной медиа-поддержки)
+
+/// ✅ Обновлённая модель с чёткой типизацией медиа (Phase 2026)
 struct FamilyChatMessage: Identifiable {
     let id: UUID
     let sender: String
@@ -923,35 +1558,44 @@ struct FamilyChatMessage: Identifiable {
     let time: String
     let isCurrentUser: Bool
     
-    // Extended fields
-    let messageType: String? // "text", "voice", "image", "video"
+    // Тип сообщения
+    let messageType: MessageType
+    
+    // Медиа контент
     let voiceUrl: String?
     let voiceDuration: Double?
     let mediaUrl: String?
-    let mediaType: String?
+    /// Превью кадра (видео / лёгкий URL для списка), если сервер прислал отдельно от `mediaUrl`
+    let mediaThumbnailUrl: String?
+    let mediaType: MediaType?
+    
     let replyToMessageId: String?
     let reactions: [MessageReaction]
-    let readStatus: String? // "sent", "delivered", "read"
+    let readStatus: String?
     let readAt: String?
     let editedAt: String?
     
-    init(
-        id: UUID = UUID(),
-        sender: String,
-        text: String?,
-        time: String,
-        isCurrentUser: Bool,
-        messageType: String? = "text",
-        voiceUrl: String? = nil,
-        voiceDuration: Double? = nil,
-        mediaUrl: String? = nil,
-        mediaType: String? = nil,
-        replyToMessageId: String? = nil,
-        reactions: [MessageReaction] = [],
-        readStatus: String? = nil,
-        readAt: String? = nil,
-        editedAt: String? = nil
-    ) {
+    // Локальное состояние для UI
+    var uploadProgress: Double? = nil // 0.0...1.0 для отображения прогресса
+    
+    init(id: UUID = UUID(), 
+         sender: String, 
+         text: String? = nil, 
+         time: String, 
+         isCurrentUser: Bool,
+         messageType: MessageType = .text,
+         voiceUrl: String? = nil,
+         voiceDuration: Double? = nil,
+         mediaUrl: String? = nil,
+         mediaThumbnailUrl: String? = nil,
+         mediaType: MediaType? = nil,
+         replyToMessageId: String? = nil,
+         reactions: [MessageReaction] = [],
+         readStatus: String? = nil,
+         readAt: String? = nil,
+         editedAt: String? = nil,
+         uploadProgress: Double? = nil) {
+        
         self.id = id
         self.sender = sender
         self.text = text
@@ -961,13 +1605,31 @@ struct FamilyChatMessage: Identifiable {
         self.voiceUrl = voiceUrl
         self.voiceDuration = voiceDuration
         self.mediaUrl = mediaUrl
+        self.mediaThumbnailUrl = mediaThumbnailUrl
         self.mediaType = mediaType
         self.replyToMessageId = replyToMessageId
         self.reactions = reactions
         self.readStatus = readStatus
         self.readAt = readAt
         self.editedAt = editedAt
+        self.uploadProgress = uploadProgress
     }
+}
+
+enum MessageType: String {
+    case text = "text"
+    case image = "image"
+    case video = "video"
+    case voice = "voice"
+    case audio = "audio"
+    case file = "file"
+}
+
+enum MediaType: String {
+    case image = "image"
+    case video = "video"
+    case voice = "voice"
+    case audio = "audio"
 }
 
 // MARK: - Message Bubble View (Extended)
@@ -998,10 +1660,14 @@ struct MessageBubbleView: View {
             // Message Content
             Group {
                 switch message.messageType {
-                case "voice":
+                case .voice, .audio:
                     VoiceMessageBubble(message: message)
-                case "image", "video", "media":
-                    MediaMessageBubble(message: message)
+                case .image, .video:
+                    MediaMessageBubble(
+                        message: message,
+                        isCurrentUser: message.isCurrentUser,
+                        uploadProgress: message.uploadProgress
+                    )
                 default:
                     // Text message
                     HStack {
@@ -1139,7 +1805,7 @@ struct MessageContextMenu: View {
                 Label(localizationManager.localized("family_chat_reaction_add"), systemImage: "face.smiling")
             }
             
-            if message.isCurrentUser && message.messageType == "text" {
+            if message.isCurrentUser && message.messageType == .text {
                 Button(action: onEdit) {
                     Label(localizationManager.localized("family_chat_message_edit"), systemImage: "pencil")
                 }
@@ -1154,16 +1820,17 @@ struct MessageContextMenu: View {
     }
 }
 
-// MARK: - Media Picker View
+// MARK: - Image Picker (gallery / camera)
 
-struct MediaPickerView: UIViewControllerRepresentable {
+struct ImagePickerView: UIViewControllerRepresentable {
+    let sourceType: UIImagePickerController.SourceType
     let onSelect: (UIImage) -> Void
-    @Environment(\.dismiss) var dismiss
+    @Environment(\.dismiss) private var dismiss
     
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.delegate = context.coordinator
-        picker.sourceType = .photoLibrary
+        picker.sourceType = resolvedSourceType()
         picker.allowsEditing = true
         return picker
     }
@@ -1173,15 +1840,29 @@ struct MediaPickerView: UIViewControllerRepresentable {
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
+
+    private func resolvedSourceType() -> UIImagePickerController.SourceType {
+        if UIImagePickerController.isSourceTypeAvailable(sourceType) {
+            return sourceType
+        }
+
+        let fallbackCandidates: [UIImagePickerController.SourceType] = [.photoLibrary, .savedPhotosAlbum]
+        for candidate in fallbackCandidates where UIImagePickerController.isSourceTypeAvailable(candidate) {
+            return candidate
+        }
+
+        // Last-resort safe default; avoids crashing on unavailable camera in simulator.
+        return .photoLibrary
+    }
     
-    class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-        let parent: MediaPickerView
+    final class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
+        let parent: ImagePickerView
         
-        init(_ parent: MediaPickerView) {
+        init(_ parent: ImagePickerView) {
             self.parent = parent
         }
         
-        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
+        func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey: Any]) {
             if let image = info[.editedImage] as? UIImage ?? info[.originalImage] as? UIImage {
                 parent.onSelect(image)
             }

@@ -53,6 +53,15 @@ struct EmergencyNotificationsView: View {
         .onAppear {
             loadSettings()
         }
+        .onChange(of: messageTemplates) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "emergency_notifications_change_pending", state: .pending)
+        }
+        .onChange(of: deliveryChannels) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "emergency_notifications_change_pending", state: .pending)
+        }
+        .onChange(of: repeatFrequency) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "emergency_notifications_change_pending", state: .pending)
+        }
     }
     
     // MARK: - Sections
@@ -155,6 +164,7 @@ struct EmergencyNotificationsView: View {
     
     // ✅ Загрузка настроек при открытии
     private func loadSettings() {
+        SyncEngine.shared.publish(domain: .settings, operation: "emergency_notifications_load_start", state: .syncing)
         Task {
             do {
                 let config = try await configurationService.getConfiguration(for: "emergency_notifications_manager")
@@ -169,14 +179,17 @@ struct EmergencyNotificationsView: View {
                         repeatFrequency = frequency
                     }
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "emergency_notifications_load_complete", state: .synced)
             } catch {
                 print("⚠️ EmergencyNotificationsView: Ошибка загрузки настроек: \(error)")
+                SyncEngine.shared.publish(domain: .settings, operation: "emergency_notifications_load_local", state: .local)
             }
         }
     }
     
     // ✅ Сохранение настроек через ComponentConfigurationService
     private func saveSettings() {
+        SyncEngine.shared.publish(domain: .settings, operation: "emergency_notifications_save_start", state: .syncing)
         Task {
             do {
                 // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
@@ -203,11 +216,13 @@ struct EmergencyNotificationsView: View {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     dismiss()
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "emergency_notifications_save_complete", state: .synced)
             } catch {
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     dismiss()
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "emergency_notifications_save_error", state: .error(error.localizedDescription))
             }
         }
     }

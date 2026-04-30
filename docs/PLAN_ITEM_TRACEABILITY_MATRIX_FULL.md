@@ -9,6 +9,9 @@
 
 **Текущий статус матрицы (2026-04-28):** `DONE: 275 / PARTIAL: 0 / TODO: 0` (**100%**).
 
+> Примечание: этот файл отражает трек `PLAN_ITEM` (контент/категории/волны), а не realtime-collaboration roadmap 1-7.
+> Для realtime/offline/auth/presence/sync статусов канонический источник: `docs/TODO_REALTIME_COLLABORATION_PLAN.md`.
+
 ---
 
 ## Для ML-системы: связка этого файла с полной инфраструктурой
@@ -362,3 +365,61 @@
 - `DONE`: подтверждено кодом модулей и/или seed-контентом.
 - `PARTIAL`: есть движок/каркас, но не закрыт полный тематический/объемный контент.
 - `TODO`: отсутствует реализованный item-level контент или нет подтвержденного UX flow.
+
+---
+
+## Realtime, Offline & Collaboration Foundation (InstantDB-inspired Architectural Pillars)
+
+**Цель раздела:** Сравнение текущей архитектуры ALADDIN iOS с принципами платформы, описанной в статье (InstantDB-подобный стек: unified reactive data layer, instant sync, declarative permissions, streaming, presence, offline-first).
+
+**Статус на 2026-04-30 (после сессии предыдущей ML-системы):** AI Streaming client 95%, Media Upload+Chat 80%, Unified Offline 35%. Общий ~70% по Category A (High Priority). **Рекомендация (подтверждаю):** Начать с Unified Offline Layer (фундамент), затем завершить Media integration в чате, затем polish AI Streaming + backend. См. обновлённый TODO list ниже и в системе.
+
+### Core Infrastructure
+- Unified reactive data layer (аналог useQuery + transact) | architecture.realtime.unified_layer | infra.01 | PARTIAL | Architecture Squad | 2026-04-30 | baseline+unifiedstore_35pct | W25
+- Мгновенная синхронизация между клиентами (full realtime DB) | architecture.realtime.instant_sync | infra.02 | PARTIAL | Architecture Squad | 2026-04-30 | baseline | W25
+- Полноценный оффлайн "из коробки" с автоматическим мержем | architecture.offline.unified | infra.03 | PARTIAL | Architecture Squad | 2026-04-30 | baseline+foundation_created | W25
+- Автоматическое возобновление потоков после reconnect | architecture.offline.resume_streams | infra.04 | PARTIAL | Architecture Squad | 2026-04-30 | baseline+ai_resume_logic | W26
+
+### Authentication & Authorization
+- Magic links + полный OAuth (включая Sign in with Apple) | architecture.auth.magic_oauth | auth.01 | TODO | Security Squad | 2026-06-01 | baseline | W26
+- Гостевой вход с правильным контрактом профиля | architecture.auth.guest | auth.02 | DONE | Security Squad | 2026-04-30 | baseline | W1
+- Декларативные правила доступа ("кто что видит") | architecture.auth.declarative_acl | auth.03 | PARTIAL | Security Squad | 2026-06-10 | baseline | W27
+- FamilyId + X-Resolved-Family-Id мультитенантность | architecture.auth.family_isolation | auth.04 | DONE | Security Squad | 2026-04-30 | baseline | W1
+
+### Storage & Collaboration
+- Хранилище файлов как строки/записи в общей БД (без S3) | architecture.storage.files_as_records | storage.01 | PARTIAL | Architecture Squad | 2026-04-30 | baseline+media_manager_80pct | W26
+- Полноценный Presence (кто онлайн, общие курсоры, live collab) | architecture.presence.full | collab.01 | PARTIAL | Architecture Squad | 2026-05-30 | baseline | W26
+- WebSocket + typing + reactions + read status (family chat) | architecture.presence.chat_realtime | collab.02 | DONE | Chat Squad | 2026-04-30 | baseline | W1
+- Streaming токенов ИИ-ответов в реальном времени | architecture.ai.token_streaming | ai.01 | PARTIAL | AI Squad | 2026-04-30 | baseline+client_95pct | W27
+- Возобновление AI stream после отключения | architecture.ai.stream_resume | ai.02 | PARTIAL | AI Squad | 2026-04-30 | baseline+resume_implemented | W27
+
+### Product Impact
+- Минимальный код для персистентности/realtime/offline (как useState → useQuery) | architecture.dx.agent_friendly | dx.01 | PARTIAL | Architecture Squad | 2026-07-01 | baseline | W28
+- Отсутствие технического долга на старте новых фич | architecture.dx.zero_tech_debt | dx.02 | PARTIAL | Architecture Squad | 2026-07-01 | baseline | W28
+
+**Рекомендация:** Эти 12 новых пунктов должны быть приоритезированы в следующей волне после завершения контент-матрицы. Они напрямую влияют на качество семейного чата, AI-ассистента и ощущения "живого" приложения.
+
+### Финальная Версия Рекомендаций и Приоритетов (от Senior iOS Architect, 15+ лет опыта)
+
+**Общий вывод:** Полная миграция на InstantDB / любой BaaS **была бы серьёзной ошибкой**. У ALADDIN уже есть сильный нативный стек, специфические требования безопасности, VPN, антивирус и сложная семейная модель. Нужно **точечно внедрять** лучшие идеи InstantDB (streaming, unified offline, presence, declarative rules), а не переписывать всё приложение.
+
+#### Приоритизированный План (мой финальный)
+
+**🔥 Категория A — Критично (High Priority, W25–W26)**
+1. **AI Token Streaming + Resume после reconnect** — самый высокий приоритет. Должен появляться текст по словам + восстанавливаться после потери связи.
+2. **Полноценная реализация uploadMedia + медиа в семейном чате** (фото, видео, голосовые сообщения).
+3. **Unified Offline Layer v2** — сделать оффлайн действительно «из коробки» для всего приложения (одна coherent система вместо разрозненных менеджеров).
+
+**🟡 Категория B — Важно (Medium Priority, W26–W27)**
+4. **Полноценный Presence** (кто онлайн в чате, улучшенный typing, heartbeat).
+5. **Sign in with Apple + Magic Links** — значительно улучшит онбординг.
+6. **Декларативные правила доступа** (минимум на бэкенде + удобный клиентский валидатор).
+
+**🔄 Категория C — Стратегическое улучшение (Long-term, W28+)**
+7. **Thin Reactive Layer** на базе Combine + SyncEngine — чтобы в будущем новые фичи добавлялись по принципу «два слова в коде дают персистентность + realtime + offline».
+
+**Стратегический совет:** Не мигрировать на BaaS. Сохранять свой backend и нативный клиент. Точечно внедрять современные паттерны поверх существующей архитектуры.
+
+**Статус матрицы после обновления (2026-04-30):** DONE: 275+ / PARTIAL: ~12 (realtime high-priority items advanced by previous ML-system: AI client 95%, Media 80%, Offline foundation 35%). TODO: ~5 (backend, full delegations, conflict resolution, UI polish).
+
+**Примечание:** Этот раздел обновлён после детального анализа отчёта предыдущей сессии, roadmap и кода. **TODO list выведен на панель через TodoWrite tool.** Полный roadmap в `ALADDIN_REALTIME_COLLABORATION_ROADMAP.md`. Готов продолжить с Priority #1 (Unified Offline delegation).

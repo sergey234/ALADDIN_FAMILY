@@ -910,6 +910,30 @@ struct LoginResponse: Codable {
     let expiresAt: Date
 }
 
+struct AuthSessionResponse: Codable {
+    let token: String
+    let refreshToken: String?
+    let userId: String?
+    let expiresAt: String?
+}
+
+struct AppleLoginRequest: Codable {
+    let identityToken: String
+    let authorizationCode: String
+    let email: String?
+    let givenName: String?
+    let familyName: String?
+}
+
+struct RequestMagicLinkRequest: Codable {
+    let email: String
+    let redirectUrl: String?
+}
+
+struct ConsumeMagicLinkRequest: Codable {
+    let token: String
+}
+
 struct RegisterRequest: Codable {
     let name: String
     let email: String
@@ -1303,6 +1327,7 @@ struct FamilyChatMessageResponse: Codable, Identifiable {
     let voiceUrl: String? // URL голосового сообщения
     let voiceDuration: Double? // Длительность в секундах
     let mediaUrl: String? // URL медиа файла
+    let mediaThumbnailUrl: String? // превью (видео / тяжёлое изображение)
     let mediaType: String? // Тип медиа
     let replyToMessageId: String? // ID сообщения, на которое отвечают
     let reactions: [MessageReaction]? // Реакции

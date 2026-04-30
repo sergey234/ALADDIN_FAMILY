@@ -43,6 +43,7 @@ class MobileSecuritySettingsViewModel: ObservableObject {
     /// Загрузка настроек с fallback на дефолты
     func loadSettings() {
         isLoading = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "mobile_security_load_start", state: .syncing)
 
         Task {
             do {
@@ -65,6 +66,7 @@ class MobileSecuritySettingsViewModel: ObservableObject {
                     }
 
                     log("✅ Настройки mobile security загружены из API")
+                    SyncEngine.shared.publish(domain: .networkProtection, operation: "mobile_security_load_complete", state: .synced)
                 }
             } catch {
                 // 404 или ошибка сети - используем дефолты
@@ -75,6 +77,7 @@ class MobileSecuritySettingsViewModel: ObservableObject {
                 }
 
                 log("⚠️ Настройки mobile security не найдены (404), используются дефолты: \(error.localizedDescription)")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "mobile_security_load_local", state: .local)
             }
         }
     }
@@ -94,6 +97,7 @@ class MobileSecuritySettingsViewModel: ObservableObject {
         // Обновляем состояние
         state[keyPath: keyPath] = newValue
         hasChanges = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "mobile_security_change_pending", state: .pending)
 
         log("🔄 Mobile security setting изменен: \(keyPath) = \(newValue)")
 
@@ -114,6 +118,7 @@ class MobileSecuritySettingsViewModel: ObservableObject {
         }
 
         isApplyingState = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "mobile_security_save_start", state: .syncing)
 
         Task {
             do {
@@ -148,9 +153,11 @@ class MobileSecuritySettingsViewModel: ObservableObject {
                 }
 
                 log("✅ Настройки mobile security успешно сохранены")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "mobile_security_save_complete", state: .synced)
 
             } catch {
                 log("❌ Ошибка сохранения настроек mobile security: \(error.localizedDescription)")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "mobile_security_save_error", state: .error(error.localizedDescription))
 
                 // Rollback к последнему сохраненному состоянию
                 if let lastSaved = lastSavedState {

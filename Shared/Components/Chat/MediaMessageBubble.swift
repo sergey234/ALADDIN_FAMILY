@@ -1,188 +1,212 @@
 import SwiftUI
-import PhotosUI
 
-/**
- * 📷 Media Message Bubble
- * UI для отображения медиа сообщений (фото, видео)
- */
-
+/// 🖼️ MediaMessageBubble
+/// Красивый универсальный компонент для отображения всех типов медиа в семейном чате
+/// Поддерживает: изображения, видео, голосовые сообщения, прогресс загрузки
 struct MediaMessageBubble: View {
+    
     let message: FamilyChatMessage
+    let isCurrentUser: Bool
+    let uploadProgress: Double? // 0.0...1.0 для отображения прогресса
+    
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @State private var showFullscreen: Bool = false
-    @State private var image: UIImage? = nil
+    @State private var showFullImage = false
+    @State private var isPlayingVoice = false
     
     var body: some View {
-        HStack {
-            if message.isCurrentUser {
-                Spacer()
+        VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 6) {
+            // Тип медиа
+            switch message.mediaType {
+            case .image:
+                imageView
+            case .video:
+                videoThumbnailView
+            case .voice, .audio:
+                voiceMessageView
+            default:
+                placeholderView
             }
             
-            VStack(alignment: message.isCurrentUser ? .trailing : .leading, spacing: Spacing.xxs) {
-                if !message.isCurrentUser {
-                    Text(message.sender)
-                        .font(.captionBold)
-                        .foregroundColor(.secondaryGold)
-                }
-                
-                // Медиа контент
-                Group {
-                    if let mediaUrl = message.mediaUrl, let url = URL(string: mediaUrl) {
-                        if message.mediaType == "image" || message.mediaType == "photo" {
-                            AsyncImage(url: url) { phase in
-                                switch phase {
-                                case .empty:
-                                    ProgressView()
-                                        .frame(width: 200, height: 200)
-                                case .success(let image):
-                                    image
-                                        .resizable()
-                                        .aspectRatio(contentMode: .fill)
-                                        .frame(maxWidth: 200, maxHeight: 200)
-                                        .clipped()
-                                        .cornerRadius(CornerRadius.medium)
-                                        .onTapGesture {
-                                            showFullscreen = true
-                                        }
-                                case .failure:
-                                    Image(systemName: "photo")
-                                        .font(.largeTitle)
-                                        .foregroundColor(.textTertiary)
-                                        .frame(width: 200, height: 200)
-                                @unknown default:
-                                    EmptyView()
-                                }
-                            }
-                        } else if message.mediaType == "video" {
-                            VideoThumbnailView(url: url)
-                                .frame(maxWidth: 200, maxHeight: 200)
-                                .cornerRadius(CornerRadius.medium)
-                                .onTapGesture {
-                                    showFullscreen = true
-                                }
-                        }
-                    } else if let image = image {
-                        // Локальное изображение
-                        Image(uiImage: image)
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(maxWidth: 200, maxHeight: 200)
-                            .clipped()
-                            .cornerRadius(CornerRadius.medium)
-                            .onTapGesture {
-                                showFullscreen = true
-                            }
-                    }
-                }
-                .padding(Spacing.xxs)
-                .background(
-                    message.isCurrentUser
-                        ? Color.primaryBlue
-                        : Color.surfaceDark
-                )
-                .cornerRadius(CornerRadius.medium)
-                
-                // Время
-                Text(message.time)
-                    .font(.captionSmall)
-                    .foregroundColor(.textTertiary)
+            // Прогресс загрузки
+            if let progress = uploadProgress, progress < 1.0 {
+                ProgressView(value: progress)
+                    .progressViewStyle(.linear)
+                    .tint(isCurrentUser ? .blue : .white)
+                    .frame(width: 180)
             }
-            .frame(maxWidth: UIScreen.main.bounds.width * 0.7, alignment: message.isCurrentUser ? .trailing : .leading)
             
-            if !message.isCurrentUser {
-                Spacer()
+            // Подпись (если есть текст вместе с медиа)
+            if let text = message.text, !text.isEmpty {
+                Text(text)
+                    .font(.caption)
+                    .foregroundColor(isCurrentUser ? .white.opacity(0.9) : .primary)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 4)
             }
         }
-        .sheet(isPresented: $showFullscreen) {
-            if let mediaUrl = message.mediaUrl, let url = URL(string: mediaUrl) {
-                FullscreenMediaView(url: url, mediaType: message.mediaType ?? "image")
-            }
-        }
+        .padding(8)
+        .background(
+            isCurrentUser 
+            ? Color.blue.opacity(0.9) 
+            : Color(.systemGray5)
+        )
+        .cornerRadius(18)
+        .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 2)
     }
-}
-
-// MARK: - Video Thumbnail View
-
-struct VideoThumbnailView: View {
-    let url: URL
-    @State private var thumbnail: UIImage? = nil
-    @EnvironmentObject private var localizationManager: LocalizationManager
     
-    var body: some View {
+    /// Превью от сервера или полный URL медиа
+    private var displayImageURLString: String? {
+        message.mediaThumbnailUrl ?? message.mediaUrl
+    }
+    
+    private var imageView: some View {
         Group {
-            if let thumbnail = thumbnail {
-                Image(uiImage: thumbnail)
-                    .resizable()
-                    .aspectRatio(contentMode: .fill)
-            } else {
-                ZStack {
-                    Color.surfaceDark
-                    VStack {
-                        Image(systemName: "play.circle.fill")
-                            .font(.largeTitle)
-                            .foregroundColor(.secondaryGold)
-                        Text(localizationManager.localized("media.video"))
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                    }
+            if let urlString = displayImageURLString, let url = URL(string: urlString) {
+                AsyncImage(url: url) { image in
+                    image
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 220, maxHeight: 280)
+                        .cornerRadius(12)
+                } placeholder: {
+                    Rectangle()
+                        .fill(Color.gray.opacity(0.3))
+                        .frame(width: 180, height: 180)
+                        .overlay(ProgressView())
                 }
+                .onTapGesture {
+                    showFullImage = true
+                }
+            } else {
+                placeholderImage
             }
         }
-        .onAppear {
-            generateThumbnail()
+        .fullScreenCover(isPresented: $showFullImage) {
+            if let urlString = message.mediaUrl, let url = URL(string: urlString) {
+                FullScreenImageView(url: url, isPresented: $showFullImage)
+                    .environmentObject(localizationManager)
+            }
         }
     }
     
-    private func generateThumbnail() {
-        // Генерация thumbnail для видео
-        // TODO: Реализовать генерацию thumbnail
+    private var videoThumbnailView: some View {
+        ZStack {
+            Group {
+                if let urlString = displayImageURLString, let url = URL(string: urlString) {
+                    AsyncImage(url: url) { phase in
+                        switch phase {
+                        case .success(let image):
+                            image
+                                .resizable()
+                                .scaledToFill()
+                        default:
+                            placeholderImage
+                        }
+                    }
+                } else {
+                    placeholderImage
+                }
+            }
+            .frame(width: 200, height: 160)
+            .clipped()
+            .cornerRadius(12)
+            .overlay(
+                Image(systemName: "play.circle.fill")
+                    .font(.system(size: 44))
+                    .foregroundColor(.white)
+            )
+            Text(localizationManager.localized("family_chat_media_video"))
+                .font(.caption2)
+                .foregroundColor(.white)
+                .padding(6)
+                .background(Color.black.opacity(0.6))
+                .cornerRadius(8)
+        }
+        .frame(width: 200, height: 160)
+    }
+    
+    private var voiceMessageView: some View {
+        HStack(spacing: 12) {
+            Button(action: {
+                isPlayingVoice.toggle()
+                // Здесь будет вызов VoiceMessagePlayer
+                print("🎤 Playing voice message: \(message.voiceUrl ?? "unknown")")
+            }) {
+                Image(systemName: isPlayingVoice ? "pause.circle.fill" : "play.circle.fill")
+                    .font(.system(size: 32))
+                    .foregroundColor(isCurrentUser ? .white : .blue)
+            }
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(Self.formatVoiceDuration(message.voiceDuration))
+                    .font(.caption)
+                    .foregroundColor(isCurrentUser ? .white.opacity(0.8) : .secondary)
+                
+                if let urlString = message.voiceUrl {
+                    Text(URL(string: urlString)?.lastPathComponent ?? urlString)
+                        .font(.caption2)
+                        .foregroundColor(isCurrentUser ? .white.opacity(0.6) : .secondary)
+                        .lineLimit(1)
+                }
+            }
+        }
+        .padding(.horizontal, 8)
+        .frame(minWidth: 160)
+    }
+    
+    private var placeholderImage: some View {
+        Rectangle()
+            .fill(Color.gray.opacity(0.2))
+            .frame(width: 180, height: 180)
+            .overlay(
+                Image(systemName: "photo.on.rectangle")
+                    .font(.largeTitle)
+                    .foregroundColor(.gray)
+            )
+    }
+    
+    private var placeholderView: some View {
+        Text(localizationManager.localized("family_chat_media_generic"))
+            .padding()
+            .foregroundColor(.gray)
+    }
+    
+    private static func formatVoiceDuration(_ seconds: Double?) -> String {
+        guard let s = seconds, s >= 0 else { return "0:00" }
+        let m = Int(s) / 60
+        let r = Int(s) % 60
+        return String(format: "%d:%02d", m, r)
     }
 }
 
-// MARK: - Fullscreen Media View
-
-struct FullscreenMediaView: View {
+// MARK: - Full Screen Image Viewer
+struct FullScreenImageView: View {
     let url: URL
-    let mediaType: String
-    @Environment(\.dismiss) var dismiss
+    @Binding var isPresented: Bool
+    
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
-        ZStack {
-            Color.black.ignoresSafeArea()
-            
-            if mediaType == "image" || mediaType == "photo" {
-                AsyncImage(url: url) { phase in
-                    switch phase {
-                    case .empty:
-                        ProgressView()
-                            .tint(.white)
-                    case .success(let image):
-                        image
-                            .resizable()
-                            .aspectRatio(contentMode: .fit)
-                    case .failure:
-                        Text(localizationManager.localized("media.load_error"))
-                            .foregroundColor(.white)
-                    @unknown default:
-                        EmptyView()
-                    }
-                }
+        NavigationView {
+            AsyncImage(url: url) { image in
+                image
+                    .resizable()
+                    .scaledToFit()
+                    .background(Color.black)
+            } placeholder: {
+                ProgressView()
+                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
             }
-            
-            VStack {
-                HStack {
-                    Spacer()
-                    Button(action: { dismiss() }) {
-                        Image(systemName: "xmark.circle.fill")
-                            .font(.title)
-                            .foregroundColor(.white)
+            .navigationTitle(localizationManager.localized("family_chat_media_image_viewer_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(localizationManager.localized("close")) {
+                        isPresented = false
                     }
-                    .padding()
+                    .foregroundColor(.white)
                 }
-                Spacer()
             }
         }
     }
 }
-

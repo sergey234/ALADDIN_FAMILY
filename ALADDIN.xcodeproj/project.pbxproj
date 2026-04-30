@@ -260,6 +260,12 @@
 		E911CD0619397C5E293C41AA /* ContentDatabase.swift in Sources */ = {isa = PBXBuildFile; fileRef = 627E46FE2FE392C1B09B7E47 /* ContentDatabase.swift */; };
 		BD26C5125CFE96566C6937C6 /* ContentSyncManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 02521A3B3B04A48D3E4FBF41 /* ContentSyncManager.swift */; };
 		C0FFEE01B2C3D4E5F607080B /* OfflineManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0FFEE01B2C3D4E5F607080A /* OfflineManager.swift */; };
+		A1DEAD01B2C3D4E5F607090B /* UnifiedOfflineStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1DEAD01B2C3D4E5F607090A /* UnifiedOfflineStore.swift */; };
+		A1DEAD02B2C3D4E5F607090B /* OfflineStorageManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1DEAD02B2C3D4E5F607090A /* OfflineStorageManager.swift */; };
+		A1DEAD03B2C3D4E5F607090B /* MediaUploadManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1DEAD03B2C3D4E5F607090A /* MediaUploadManager.swift */; };
+		A1DEAD04B2C3D4E5F607090B /* AIStreamingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1DEAD04B2C3D4E5F607090A /* AIStreamingService.swift */; };
+		A1DEAD05B2C3D4E5F607090B /* UnifiedOfflineRecord.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1DEAD05B2C3D4E5F607090A /* UnifiedOfflineRecord.swift */; };
+		A1DEAD06B2C3D4E5F607090B /* UnifiedOfflineManagedObjectModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1DEAD06B2C3D4E5F607090A /* UnifiedOfflineManagedObjectModel.swift */; };
 		F9300B2CF304E25461E26B17 /* ContentDownloader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 04BFCC641FBD9CCE8D91BA6B /* ContentDownloader.swift */; };
 		982C0A743E1AD4CABAE37153 /* NetworkContentAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9A6B88637A9A2AC34B47CCD9 /* NetworkContentAPIClient.swift */; };
 		76368BEC87AB2EB85AC93CE1 /* DefaultContentAPIClient.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E52F96E2327006C6FF7CB3D /* DefaultContentAPIClient.swift */; };
@@ -743,6 +749,12 @@
 		627E46FE2FE392C1B09B7E47 /* ContentDatabase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentDatabase.swift; path = Core/Content/Storage/ContentDatabase.swift; sourceTree = "<group>"; };
 		02521A3B3B04A48D3E4FBF41 /* ContentSyncManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentSyncManager.swift; path = Core/Content/Sync/ContentSyncManager.swift; sourceTree = "<group>"; };
 		C0FFEE01B2C3D4E5F607080A /* OfflineManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OfflineManager.swift; path = Core/Offline/OfflineManager.swift; sourceTree = "<group>"; };
+		A1DEAD01B2C3D4E5F607090A /* UnifiedOfflineStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UnifiedOfflineStore.swift; path = Core/Offline/UnifiedOfflineStore.swift; sourceTree = "<group>"; };
+		A1DEAD02B2C3D4E5F607090A /* OfflineStorageManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OfflineStorageManager.swift; path = Core/Offline/OfflineStorageManager.swift; sourceTree = "<group>"; };
+		A1DEAD03B2C3D4E5F607090A /* MediaUploadManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MediaUploadManager.swift; path = Core/Media/MediaUploadManager.swift; sourceTree = "<group>"; };
+		A1DEAD04B2C3D4E5F607090A /* AIStreamingService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIStreamingService.swift; path = Core/Network/AIStreamingService.swift; sourceTree = "<group>"; };
+		A1DEAD05B2C3D4E5F607090A /* UnifiedOfflineRecord.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UnifiedOfflineRecord.swift; path = Core/Offline/UnifiedOfflineRecord.swift; sourceTree = "<group>"; };
+		A1DEAD06B2C3D4E5F607090A /* UnifiedOfflineManagedObjectModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = UnifiedOfflineManagedObjectModel.swift; path = Core/Offline/UnifiedOfflineManagedObjectModel.swift; sourceTree = "<group>"; };
 		04BFCC641FBD9CCE8D91BA6B /* ContentDownloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentDownloader.swift; path = Core/Content/Sync/ContentDownloader.swift; sourceTree = "<group>"; };
 		9A6B88637A9A2AC34B47CCD9 /* NetworkContentAPIClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkContentAPIClient.swift; path = Core/Content/Sync/NetworkContentAPIClient.swift; sourceTree = "<group>"; };
 		5E52F96E2327006C6FF7CB3D /* DefaultContentAPIClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DefaultContentAPIClient.swift; path = Core/Content/Sync/DefaultContentAPIClient.swift; sourceTree = "<group>"; };
@@ -1165,6 +1177,12 @@
 				627E46FE2FE392C1B09B7E47 /* ContentDatabase.swift */,
 				02521A3B3B04A48D3E4FBF41 /* ContentSyncManager.swift */,
 				C0FFEE01B2C3D4E5F607080A /* OfflineManager.swift */,
+				A1DEAD01B2C3D4E5F607090A /* UnifiedOfflineStore.swift */,
+				A1DEAD02B2C3D4E5F607090A /* OfflineStorageManager.swift */,
+				A1DEAD03B2C3D4E5F607090A /* MediaUploadManager.swift */,
+				A1DEAD04B2C3D4E5F607090A /* AIStreamingService.swift */,
+				A1DEAD05B2C3D4E5F607090A /* UnifiedOfflineRecord.swift */,
+				A1DEAD06B2C3D4E5F607090A /* UnifiedOfflineManagedObjectModel.swift */,
 				04BFCC641FBD9CCE8D91BA6B /* ContentDownloader.swift */,
 				9A6B88637A9A2AC34B47CCD9 /* NetworkContentAPIClient.swift */,
 				5E52F96E2327006C6FF7CB3D /* DefaultContentAPIClient.swift */,
@@ -1566,6 +1584,12 @@
 				E911CD0619397C5E293C41AA /* ContentDatabase.swift in Sources */,
 				BD26C5125CFE96566C6937C6 /* ContentSyncManager.swift in Sources */,
 				C0FFEE01B2C3D4E5F607080B /* OfflineManager.swift in Sources */,
+				A1DEAD01B2C3D4E5F607090B /* UnifiedOfflineStore.swift in Sources */,
+				A1DEAD02B2C3D4E5F607090B /* OfflineStorageManager.swift in Sources */,
+				A1DEAD03B2C3D4E5F607090B /* MediaUploadManager.swift in Sources */,
+				A1DEAD04B2C3D4E5F607090B /* AIStreamingService.swift in Sources */,
+				A1DEAD05B2C3D4E5F607090B /* UnifiedOfflineRecord.swift in Sources */,
+				A1DEAD06B2C3D4E5F607090B /* UnifiedOfflineManagedObjectModel.swift in Sources */,
 				F9300B2CF304E25461E26B17 /* ContentDownloader.swift in Sources */,
 				982C0A743E1AD4CABAE37153 /* NetworkContentAPIClient.swift in Sources */,
 				76368BEC87AB2EB85AC93CE1 /* DefaultContentAPIClient.swift in Sources */,
@@ -1850,7 +1874,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 151;
+				CURRENT_PROJECT_VERSION = 152;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1883,7 +1907,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 151;
+				CURRENT_PROJECT_VERSION = 152;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2040,7 +2064,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 151;
+				CURRENT_PROJECT_VERSION = 152;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2073,7 +2097,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 151;
+				CURRENT_PROJECT_VERSION = 152;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2105,7 +2129,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 151;
+				CURRENT_PROJECT_VERSION = 152;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2131,7 +2155,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 151;
+				CURRENT_PROJECT_VERSION = 152;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2155,7 +2179,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 151;
+				CURRENT_PROJECT_VERSION = 152;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2180,7 +2204,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 151;
+				CURRENT_PROJECT_VERSION = 152;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

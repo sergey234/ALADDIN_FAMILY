@@ -14,6 +14,9 @@ class FamilyChatOfflineManager: ObservableObject {
     @Published var pendingMessagesCount: Int = 0
     @Published var isSyncing: Bool = false
     
+    // MARK: - Unified Store
+    let unifiedStore = UnifiedOfflineStore.shared
+    
     // MARK: - Singleton
     
     static let shared = FamilyChatOfflineManager()
@@ -30,32 +33,40 @@ class FamilyChatOfflineManager: ObservableObject {
     
     private init() {
         _ = loadPendingMessages()
-        observeNetworkStatus()
+        observeOfflineManager()
     }
     
     // MARK: - Cache Methods
     
-    /// Сохраняет сообщения в кэш
+    /// Сохраняет сообщения через UnifiedOfflineStore (реактивно и с приоритетами)
     func cacheMessages(_ messages: [FamilyChatMessageResponse]) {
-        guard let encoded = try? JSONEncoder().encode(messages) else {
-            print("❌ FamilyChatOfflineManager: Ошибка кодирования сообщений")
-            return
+        Task {
+            for message in messages {
+                let _ = await unifiedStore.saveChatMessage(message, isPending: false)
+            }
+            UserDefaults.standard.set(Date(), forKey: lastSyncKey)
+            if let encoded = try? JSONEncoder().encode(messages) {
+                UserDefaults.standard.set(encoded, forKey: messagesCacheKey)
+            }
+            print("✅ FamilyChatOfflineManager: Cached \(messages.count) messages (UnifiedOfflineStore + UserDefaults)")
         }
-        
-        UserDefaults.standard.set(encoded, forKey: messagesCacheKey)
-        UserDefaults.standard.set(Date(), forKey: lastSyncKey)
-        
-        print("✅ FamilyChatOfflineManager: Сохранено \(messages.count) сообщений в кэш")
     }
     
-    /// Загружает сообщения из кэша
+    /// Загружает сообщения из UnifiedOfflineStore (реактивно)
     func loadCachedMessages() -> [FamilyChatMessageResponse] {
+        // Async nature of unifiedStore requires Task, but for backward compatibility we return cached or empty
+        // In full reactive version this would return a publisher
+        Task {
+            let result = await unifiedStore.fetchChatMessages()
+            if case .success(let messages) = result {
+                print("✅ FamilyChatOfflineManager: Loaded \(messages.count) messages from UnifiedOfflineStore")
+            }
+        }
+        // Return from legacy cache for immediate compatibility during transition
         guard let data = UserDefaults.standard.data(forKey: messagesCacheKey),
               let messages = try? JSONDecoder().decode([FamilyChatMessageResponse].self, from: data) else {
             return []
         }
-        
-        print("✅ FamilyChatOfflineManager: Загружено \(messages.count) сообщений из кэша")
         return messages
     }
     
@@ -178,29 +189,15 @@ class FamilyChatOfflineManager: ObservableObject {
         }
     }
     
-    // MARK: - Network Status
+    // MARK: - Network Status (единый источник — OfflineManager)
     
-    private func observeNetworkStatus() {
-        // Используем существующий NetworkingManager если есть
-        // Или простую проверку через URLSession
-        Timer.scheduledTimer(withTimeInterval: 5.0, repeats: true) { [weak self] _ in
-            self?.checkNetworkStatus()
-        }
-    }
-    
-    private func checkNetworkStatus() {
-        // Простая проверка доступности сети
-        let url = URL(string: "https://www.google.com")!
-        let task = URLSession.shared.dataTask(with: url) { [weak self] _, response, _ in
-            DispatchQueue.main.async {
-                if let httpResponse = response as? HTTPURLResponse {
-                    self?.isOffline = httpResponse.statusCode != 200
-                } else {
-                    self?.isOffline = true
-                }
+    private func observeOfflineManager() {
+        OfflineManager.shared.$isOnline
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] online in
+                self?.isOffline = !online
             }
-        }
-        task.resume()
+            .store(in: &cancellables)
     }
 }
 

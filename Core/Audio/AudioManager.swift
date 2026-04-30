@@ -17,6 +17,8 @@ final class AudioManager: ObservableObject {
     private let mutedKey = "audio.isMuted"
 
     private var cachedDataByName: [String: Data] = [:]
+    // W8 performance contract: keep prepared one-shot players by sound key.
+    private var cachedPlayerByName: [String: AVAudioPlayer] = [:]
     private var interruptionObserver: NSObjectProtocol?
 
     private init() {

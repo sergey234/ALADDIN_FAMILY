@@ -13,6 +13,17 @@ private var isUpdatingExpirationTextGlobal: Bool = false
 private let expirationTextUpdateLock = NSLock()
 
 struct MainScreen: View {
+    private enum HomeChatDestination: String, CaseIterable {
+        case family
+        case ai
+    }
+    private enum HomeChatDefaultMode: String, CaseIterable {
+        case family
+        case ai
+        case last
+        case smart
+    }
+
     @State private var aiQuestion: String = ""
     @StateObject private var mainViewModel: MainViewModel
     @State private var hasAppeared = false
@@ -23,6 +34,10 @@ struct MainScreen: View {
     @State private var profileImage: UIImage? = nil
     @AppStorage("subscription_expires_at_iso") private var subscriptionExpiresAtIso: String = ""
     @AppStorage("antivirusEnabled") private var antivirusEnabled = true
+    @AppStorage("home_chat_destination") private var homeChatDestinationRaw: String = HomeChatDestination.family.rawValue
+    @AppStorage("home_chat_default_mode") private var homeChatDefaultModeRaw: String = HomeChatDefaultMode.last.rawValue
+    @AppStorage("home_chat_last_family_activity_at") private var lastFamilyActivityAt: Double = 0
+    @AppStorage("home_chat_last_ai_activity_at") private var lastAIActivityAt: Double = 0
     // ✅ ИСПРАВЛЕНИЕ BUILD 92: Используем @AppStorage для onboarding вместо UserDefaults.standard
     // Это безопасно, так как мы НЕ используем его в .id() или computed properties
     @AppStorage(AppConfig.UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
@@ -762,20 +777,62 @@ struct MainScreen: View {
                         .shadow(color: currentTariffColor.opacity(0.4), radius: 10, x: 0, y: 4)
                         .padding(.horizontal, 20)
                         
-                        // AI помощник
-                        Button(action: {
-                            navigationManager.navigateTo(.aiAssistant)
-                        }) {
+                        // Chat switcher + contextual quick entry (ненавязчиво рядом с чатом)
+                        VStack(alignment: .leading, spacing: 8) {
+                            HStack(spacing: 8) {
+                                ForEach(HomeChatDestination.allCases, id: \.rawValue) { destination in
+                                    let isSelected = (HomeChatDestination(rawValue: homeChatDestinationRaw) ?? .family) == destination
+                                    Button(action: {
+                                        homeChatDestinationRaw = destination.rawValue
+                                    }) {
+                                        Text(destination == .family ? "Семейный чат" : "AI чат")
+                                            .font(.system(size: 11, weight: .semibold))
+                                            .foregroundColor(isSelected ? .black : .white.opacity(0.82))
+                                            .frame(maxWidth: .infinity)
+                                            .padding(.vertical, 8)
+                                            .background(
+                                                RoundedRectangle(cornerRadius: 10)
+                                                    .fill(isSelected ? currentTariffColor.opacity(0.88) : Color.black.opacity(0.16))
+                                            )
+                                            .overlay(
+                                                RoundedRectangle(cornerRadius: 10)
+                                                    .stroke(isSelected ? Color.black.opacity(0.24) : Color.white.opacity(0.18), lineWidth: 1)
+                                            )
+                                    }
+                                    .buttonStyle(.plain)
+                                }
+                            }
+                            .padding(.horizontal, 4)
+
+                            Button(action: {
+                                let current = HomeChatDestination(rawValue: homeChatDestinationRaw) ?? .family
+                                switch current {
+                                case .family:
+                                    navigationManager.navigateTo(.familyChat)
+                                case .ai:
+                                    navigationManager.navigateTo(.aiAssistant)
+                                }
+                            }) {
                             VStack(alignment: .leading, spacing: 8) {
-                                Text(localizationManager.localized("main_ai_assistant_title"))
+                                let current = HomeChatDestination(rawValue: homeChatDestinationRaw) ?? .family
+                                Text(current == .family ? "Семейный чат" : localizationManager.localized("main_ai_assistant_title"))
                                     .font(.system(size: 12, weight: .bold))
                                     .foregroundColor(.secondaryGold)
                                 
-                                Text(localizationManager.localized("main_ai_assistant_greeting"))
+                                Text(
+                                    current == .family
+                                    ? "Быстрый вход в семейный чат"
+                                    : localizationManager.localized("main_ai_assistant_greeting")
+                                )
                                     .font(.system(size: 10))
                                     .foregroundColor(.white.opacity(0.9))
                                 
-                                TextField(localizationManager.localized("main_ai_assistant_placeholder"), text: $aiQuestion)
+                                TextField(
+                                    current == .family
+                                    ? "Напишите в семейный чат..."
+                                    : localizationManager.localized("main_ai_assistant_placeholder"),
+                                    text: $aiQuestion
+                                )
                                     .font(.system(size: 11))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 12)
@@ -799,6 +856,7 @@ struct MainScreen: View {
                                     )
                             )
                         }
+                        }
                         .accessibilityIdentifier("main_nav_ai_assistant")
                         .padding(.horizontal, 20)
                         
@@ -806,6 +864,9 @@ struct MainScreen: View {
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Основной контент приложения")
+                .onAppear {
+                    applyHomeChatDefaultModeIfNeeded()
+                }
                 // Production-safe: обновляем Family stats/тариф сразу после подтверждённого удаления участника
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("MainFamilyStatsForceRefresh"))) { _ in
                     // Debounce через orchestrator ViewModel (коалесим внешние триггеры)
@@ -950,6 +1011,28 @@ struct MainScreen: View {
         }
         .frame(maxWidth: .infinity)
         .padding(.vertical, 4)
+    }
+
+    private func applyHomeChatDefaultModeIfNeeded() {
+        let mode = HomeChatDefaultMode(rawValue: homeChatDefaultModeRaw) ?? .last
+        switch mode {
+        case .family:
+            homeChatDestinationRaw = HomeChatDestination.family.rawValue
+        case .ai:
+            homeChatDestinationRaw = HomeChatDestination.ai.rawValue
+        case .last:
+            break
+        case .smart:
+            let now = Date().timeIntervalSince1970
+            let familyIsFresh = (now - lastFamilyActivityAt) <= 10 * 60
+            let aiIsFresh = (now - lastAIActivityAt) <= 10 * 60
+
+            if familyIsFresh && (lastFamilyActivityAt >= lastAIActivityAt + 30) {
+                homeChatDestinationRaw = HomeChatDestination.family.rawValue
+            } else if aiIsFresh && (lastAIActivityAt >= lastFamilyActivityAt + 30) {
+                homeChatDestinationRaw = HomeChatDestination.ai.rawValue
+            }
+        }
     }
 }
 

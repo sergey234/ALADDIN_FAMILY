@@ -42,6 +42,7 @@ struct NetworkSecuritySettingsModal: View {
                         isOn: $blockUnsafeNetworks
                     )
                     .onChange(of: blockUnsafeNetworks) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_modal_change_pending", state: .pending)
                         DispatchQueue.main.async { [componentAnalytics, componentId] in
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
@@ -57,6 +58,7 @@ struct NetworkSecuritySettingsModal: View {
                         isOn: $warnOnPublicWiFi
                     )
                     .onChange(of: warnOnPublicWiFi) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_modal_change_pending", state: .pending)
                         DispatchQueue.main.async { [componentAnalytics, componentId] in
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
@@ -72,6 +74,7 @@ struct NetworkSecuritySettingsModal: View {
                         isOn: $autoConnectVPN
                     )
                     .onChange(of: autoConnectVPN) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_modal_change_pending", state: .pending)
                         DispatchQueue.main.async { [componentAnalytics, componentId] in
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
@@ -87,6 +90,7 @@ struct NetworkSecuritySettingsModal: View {
                         isOn: $blockTracking
                     )
                     .onChange(of: blockTracking) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_modal_change_pending", state: .pending)
                         DispatchQueue.main.async { [componentAnalytics, componentId] in
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
@@ -102,6 +106,7 @@ struct NetworkSecuritySettingsModal: View {
                         isOn: $encryptTraffic
                     )
                     .onChange(of: encryptTraffic) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_modal_change_pending", state: .pending)
                         DispatchQueue.main.async { [componentAnalytics, componentId] in
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
@@ -117,6 +122,7 @@ struct NetworkSecuritySettingsModal: View {
                         isOn: $firewallEnabled
                     )
                     .onChange(of: firewallEnabled) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_modal_change_pending", state: .pending)
                         DispatchQueue.main.async { [componentAnalytics, componentId] in
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
@@ -140,6 +146,7 @@ struct NetworkSecuritySettingsModal: View {
     // ✅ BUILD 103: Task { @MainActor in } для гарантии выполнения на main thread
     private func loadSettings() {
         isLoading = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_modal_load_start", state: .syncing)
         Task { @MainActor in
             do {
                 let config = try await configurationService.getConfiguration(for: componentId)
@@ -160,11 +167,13 @@ struct NetworkSecuritySettingsModal: View {
                     firewallEnabled = newFirewallEnabled
 
                     vLog("✅ Settings loaded from API", level: .success)
+                    SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_modal_load_complete", state: .synced)
                 }
             } catch {
                 // 404 или ошибка сети - используем дефолты
                 // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 vLog("⚠️ Load failed, defaults are used: \(error.localizedDescription)", level: .warning)
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_modal_load_local", state: .local)
             }
             // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
             isLoading = false
@@ -176,6 +185,7 @@ struct NetworkSecuritySettingsModal: View {
     private func saveSettings() {
         // Сначала закрываем окно для отзывчивости UI
         isPresented = false
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_modal_save_start", state: .syncing)
         vLog("💾 Save requested")
         
         // Затем выполняем сохранение асинхронно
@@ -203,9 +213,11 @@ struct NetworkSecuritySettingsModal: View {
 
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
                 vLog("✅ Settings saved via API", level: .success)
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_modal_save_complete", state: .synced)
             } catch {
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
                 vLog("⚠️ Save failed, local cache kept: \(error.localizedDescription)", level: .warning)
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_modal_save_error", state: .error(error.localizedDescription))
             }
         }
     }

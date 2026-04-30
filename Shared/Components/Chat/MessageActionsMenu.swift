@@ -44,7 +44,7 @@ struct MessageActionsMenu: View {
             )
             
             // Редактировать (только свои сообщения)
-            if message.isCurrentUser && message.messageType == "text" {
+            if message.isCurrentUser && message.messageType == .text {
                 ActionButton(
                     icon: "pencil",
                     title: localizationManager.localized("family_chat_message_edit"),

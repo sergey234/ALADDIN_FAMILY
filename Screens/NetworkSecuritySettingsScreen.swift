@@ -5,7 +5,34 @@ import SwiftUI
 struct NetworkSecuritySettingsScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @StateObject private var syncEngine = SyncEngine.shared
     @StateObject private var viewModel = NetworkSecuritySettingsViewModel()
+
+    private var syncState: SyncState {
+        syncEngine.latestStateByDomain[.networkProtection] ?? .idle
+    }
+
+    private var syncStatusTitle: String {
+        switch syncState {
+        case .idle: return "Idle"
+        case .local: return "Local"
+        case .pending: return "Pending"
+        case .syncing: return "Syncing"
+        case .synced: return "Synced"
+        case .conflict: return "Conflict"
+        case .error: return "Error"
+        }
+    }
+
+    private var syncStatusColor: Color {
+        switch syncState {
+        case .idle, .local: return .gray
+        case .pending: return .orange
+        case .syncing: return .blue
+        case .synced: return .green
+        case .conflict, .error: return .red
+        }
+    }
 
     var body: some View {
         ZStack {
@@ -21,6 +48,19 @@ struct NetworkSecuritySettingsScreen: View {
                         navigationManager.goBack()
                     }
                 )
+
+                HStack {
+                    Spacer()
+                    Text(syncStatusTitle)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundColor(syncStatusColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(syncStatusColor.opacity(0.15))
+                        .clipShape(Capsule())
+                }
+                .padding(.horizontal, Spacing.screenPadding)
+                .padding(.top, Spacing.xs)
 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {

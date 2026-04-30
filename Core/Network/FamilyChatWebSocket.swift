@@ -17,7 +17,9 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
     // MARK: - Callbacks
     
     var onNewMessage: ((FamilyChatMessageResponse) -> Void)?
-    var onTyping: ((String) -> Void)? // Имя пользователя
+    var onTyping: ((String, Bool) -> Void)? // Имя пользователя, печатает ли сейчас
+    var onPresence: ((String, Bool) -> Void)? // Имя пользователя, online/offline
+    var onConnectionStatus: ((ConnectionStatus) -> Void)?
     var onMessageDeleted: ((String) -> Void)? // ID сообщения
     var onMessageEdited: ((String, String) -> Void)? // ID сообщения, новый текст
     var onReaction: ((String, MessageReaction) -> Void)? // ID сообщения, реакция
@@ -35,6 +37,13 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
     
     private let familyId: String?
     private let baseURL: String
+    
+    /// WS часто отдаёт snake_case; REST может быть camelCase — пробуем оба декодера.
+    private static let snakeCaseMessageDecoder: JSONDecoder = {
+        let d = JSONDecoder()
+        d.keyDecodingStrategy = .convertFromSnakeCase
+        return d
+    }()
     
     enum ConnectionStatus {
         case disconnected
@@ -60,12 +69,13 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
             return
         }
         
-        connectionStatus = .connecting
+        setConnectionStatus(.connecting)
+        SyncEngine.shared.publish(domain: .familyChat, operation: "ws_connect", state: .syncing)
         isConnected = false
         
         let wsURL = "\(baseURL)/ws/family/chat"
         guard let url = URL(string: wsURL) else {
-            connectionStatus = .error
+            setConnectionStatus(.error)
             lastError = "Неверный URL WebSocket"
             return
         }
@@ -89,6 +99,9 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
     }
     
     func disconnect() {
+        if connectionStatus == .connected {
+            sendMessage(type: "presence", data: ["status": "offline"])
+        }
         stopPingTimer()
         stopReconnectTimer()
         webSocketTask?.cancel(with: .goingAway, reason: nil)
@@ -96,7 +109,8 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
         urlSession?.invalidateAndCancel()
         urlSession = nil
         
-        connectionStatus = .disconnected
+        setConnectionStatus(.disconnected)
+        SyncEngine.shared.publish(domain: .familyChat, operation: "ws_disconnect", state: .idle)
         isConnected = false
         
         print("✅ FamilyChatWebSocket: Отключено")
@@ -105,7 +119,11 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
     // MARK: - Send Methods
     
     func sendTyping() {
-        sendMessage(type: "typing", data: [:])
+        sendMessage(type: "typing", data: ["is_typing": true])
+    }
+
+    func sendStopTyping() {
+        sendMessage(type: "typing", data: ["is_typing": false])
     }
     
     func sendMessage(type: String, data: [String: Any]) {
@@ -169,18 +187,51 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
         
         switch type {
         case "new_message":
-            if let messageData = json["message"] as? [String: Any],
-               let jsonData = try? JSONSerialization.data(withJSONObject: messageData),
-               let message = try? JSONDecoder().decode(FamilyChatMessageResponse.self, from: jsonData) {
-                DispatchQueue.main.async {
-                    self.onNewMessage?(message)
+            let blob: [String: Any]? = (json["message"] as? [String: Any]) ?? (json["payload"] as? [String: Any])
+            if let messageData = blob,
+               let jsonData = try? JSONSerialization.data(withJSONObject: messageData) {
+                let message =
+                    (try? Self.snakeCaseMessageDecoder.decode(FamilyChatMessageResponse.self, from: jsonData))
+                    ?? (try? JSONDecoder().decode(FamilyChatMessageResponse.self, from: jsonData))
+                if let message {
+                    DispatchQueue.main.async {
+                        self.onNewMessage?(message)
+                        SyncEngine.shared.publish(
+                            domain: .familyChat,
+                            operation: "ws_new_message",
+                            state: .synced,
+                            recordId: message.id
+                        )
+                    }
                 }
             }
             
         case "typing":
-            if let userName = json["user"] as? String {
+            let userName = (json["user"] as? String)
+                ?? (json["user_name"] as? String)
+                ?? (json["sender"] as? String)
+            let isTyping = (json["is_typing"] as? Bool) ?? true
+            if let userName, !userName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
                 DispatchQueue.main.async {
-                    self.onTyping?(userName)
+                    self.onTyping?(userName, isTyping)
+                }
+            }
+
+        case "presence", "presence_update", "member_presence":
+            let userName = (json["user"] as? String)
+                ?? (json["user_name"] as? String)
+                ?? (json["member"] as? String)
+            let isOnline: Bool = {
+                if let flag = json["is_online"] as? Bool { return flag }
+                if let flag = json["online"] as? Bool { return flag }
+                if let status = (json["status"] as? String)?.lowercased() {
+                    return status == "online"
+                }
+                return true
+            }()
+            if let userName, !userName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                DispatchQueue.main.async {
+                    self.onPresence?(userName, isOnline)
                 }
             }
             
@@ -246,18 +297,20 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
     // MARK: - Reconnection
     
     private func handleDisconnection() {
-        guard connectionStatus == .connected else { return }
+        if connectionStatus == .disconnected || connectionStatus == .error {
+            return
+        }
         
-        connectionStatus = .disconnected
+        setConnectionStatus(.disconnected)
         isConnected = false
         stopPingTimer()
         
         if reconnectAttempts < maxReconnectAttempts {
             reconnectAttempts += 1
-            connectionStatus = .reconnecting
+            setConnectionStatus(.reconnecting)
             startReconnectTimer()
         } else {
-            connectionStatus = .error
+            setConnectionStatus(.error)
             lastError = "Превышено количество попыток переподключения"
         }
     }
@@ -278,10 +331,11 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didOpenWithProtocol protocol: String?) {
         DispatchQueue.main.async {
-            self.connectionStatus = .connected
+            self.setConnectionStatus(.connected)
             self.isConnected = true
             self.reconnectAttempts = 0
             self.lastError = nil
+            self.sendMessage(type: "presence", data: ["status": "online"])
             print("✅ FamilyChatWebSocket: Подключено успешно")
         }
     }
@@ -290,6 +344,27 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
         DispatchQueue.main.async {
             self.handleDisconnection()
             print("⚠️ FamilyChatWebSocket: Соединение закрыто: \(closeCode)")
+        }
+    }
+
+    private func setConnectionStatus(_ status: ConnectionStatus) {
+        connectionStatus = status
+        switch status {
+        case .connected:
+            SyncEngine.shared.publish(domain: .familyChat, operation: "ws_status", state: .synced)
+        case .connecting, .reconnecting:
+            SyncEngine.shared.publish(domain: .familyChat, operation: "ws_status", state: .syncing)
+        case .disconnected:
+            SyncEngine.shared.publish(domain: .familyChat, operation: "ws_status", state: .idle)
+        case .error:
+            SyncEngine.shared.publish(domain: .familyChat, operation: "ws_status", state: .error(lastError ?? "websocket_error"))
+        }
+        if Thread.isMainThread {
+            onConnectionStatus?(status)
+        } else {
+            DispatchQueue.main.async {
+                self.onConnectionStatus?(status)
+            }
         }
     }
 }

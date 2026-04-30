@@ -58,6 +58,18 @@ struct VoiceControlView: View {
         .onAppear {
             loadSettings()
         }
+        .onChange(of: activationWord) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "voice_control_change_pending", state: .pending)
+        }
+        .onChange(of: selectedLanguage) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "voice_control_change_pending", state: .pending)
+        }
+        .onChange(of: sensitivity) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "voice_control_change_pending", state: .pending)
+        }
+        .onChange(of: isOnlineMode) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "voice_control_change_pending", state: .pending)
+        }
     }
     
     // MARK: - Sections
@@ -163,6 +175,7 @@ struct VoiceControlView: View {
     // MARK: - Methods
     
     private func loadSettings() {
+        SyncEngine.shared.publish(domain: .settings, operation: "voice_control_load_start", state: .syncing)
         Task {
             do {
                 let config = try await configurationService.getConfiguration(for: "voice_control_manager")
@@ -182,13 +195,16 @@ struct VoiceControlView: View {
                         }
                     }
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "voice_control_load_complete", state: .synced)
             } catch {
                 // Использовать значения по умолчанию
+                SyncEngine.shared.publish(domain: .settings, operation: "voice_control_load_local", state: .local)
             }
         }
     }
     
     private func saveSettings() {
+        SyncEngine.shared.publish(domain: .settings, operation: "voice_control_save_start", state: .syncing)
         Task {
             do {
                 // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
@@ -216,11 +232,13 @@ struct VoiceControlView: View {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     dismiss()
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "voice_control_save_complete", state: .synced)
             } catch {
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     dismiss()
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "voice_control_save_error", state: .error(error.localizedDescription))
             }
         }
     }

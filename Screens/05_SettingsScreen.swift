@@ -14,12 +14,30 @@ typealias Language = String
 /// Экран настроек - управление приложением и профилем
 /// Источник дизайна: /mobile/wireframes/05_settings_screen.html
 struct SettingsScreen: View {
+    private enum HomeChatDefaultMode: String, CaseIterable {
+        case family
+        case ai
+        case last
+        case smart
+
+        var title: String {
+            switch self {
+            case .family: return "Семейный чат"
+            case .ai: return "AI чат"
+            case .last: return "Последний выбранный"
+            case .smart: return "Умный выбор"
+            }
+        }
+    }
+
     @StateObject private var viewModel: SettingsViewModel
+    @StateObject private var syncEngine = SyncEngine.shared
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
 
     // ✅ BUILD 95: Встроенный просмотр логов крашей/диагностики прямо на устройстве
     @State private var showCrashLogsView: Bool = false
+    @AppStorage("home_chat_default_mode") private var homeChatDefaultModeRaw: String = HomeChatDefaultMode.last.rawValue
 
     // ✅ BUILD 100: Убран testLogger из struct - логирование перемещено в .onAppear
     // Это предотвращает избыточное логирование при пересоздании View
@@ -38,6 +56,32 @@ struct SettingsScreen: View {
     // MARK: - Environment
 
     @Environment(\.dismiss) private var dismiss
+
+    private var settingsSyncState: SyncState {
+        syncEngine.latestStateByDomain[.settings] ?? .idle
+    }
+
+    private var settingsSyncStatusTitle: String {
+        switch settingsSyncState {
+        case .idle: return "Idle"
+        case .local: return "Local"
+        case .pending: return "Pending"
+        case .syncing: return "Syncing"
+        case .synced: return "Synced"
+        case .conflict: return "Conflict"
+        case .error: return "Error"
+        }
+    }
+
+    private var settingsSyncStatusColor: Color {
+        switch settingsSyncState {
+        case .idle, .local: return .gray
+        case .pending: return .orange
+        case .syncing: return .blue
+        case .synced: return .green
+        case .conflict, .error: return .red
+        }
+    }
 
     // MARK: - UI Sections
 
@@ -346,6 +390,40 @@ struct SettingsScreen: View {
 
                 Divider()
 
+                // Default chat destination on Home
+                HStack {
+                    Image(systemName: "bubble.left.and.bubble.right")
+                        .foregroundColor(.secondary)
+                        .frame(width: 24)
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text("Чат по умолчанию")
+                            .foregroundColor(.primary)
+                        Text("Какой чат открывать первым на главном экране")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    Spacer()
+                }
+                .padding(.horizontal, Spacing.m)
+                .padding(.top, Spacing.s)
+
+                Picker(
+                    "Чат по умолчанию",
+                    selection: Binding<HomeChatDefaultMode>(
+                        get: { HomeChatDefaultMode(rawValue: homeChatDefaultModeRaw) ?? .last },
+                        set: { homeChatDefaultModeRaw = $0.rawValue }
+                    )
+                ) {
+                    ForEach(HomeChatDefaultMode.allCases, id: \.rawValue) { mode in
+                        Text(mode.title).tag(mode)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .padding(.horizontal, Spacing.m)
+                .padding(.bottom, Spacing.s)
+
+                Divider()
+
                 // Updates
                 Button(action: {
                     logger.buttonTap("Check Updates", screen: "Settings")
@@ -573,6 +651,19 @@ struct SettingsScreen: View {
             VStack(spacing: 0) {
                 // Навигационная панель
                 navigationHeader
+
+                HStack {
+                    Spacer()
+                    Text(settingsSyncStatusTitle)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundColor(settingsSyncStatusColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(settingsSyncStatusColor.opacity(0.15))
+                        .clipShape(Capsule())
+                }
+                .padding(.horizontal, Spacing.screenPadding)
+                .padding(.top, Spacing.xs)
 
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {

@@ -43,6 +43,7 @@ class PhishingSettingsViewModel: ObservableObject {
     /// Загрузка настроек с fallback на дефолты
     func loadSettings() {
         isLoading = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_settings_load_start", state: .syncing)
 
         Task {
             do {
@@ -65,6 +66,7 @@ class PhishingSettingsViewModel: ObservableObject {
                     }
 
                     log("✅ Настройки phishing protection загружены из API")
+                    SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_settings_load_complete", state: .synced)
                 }
             } catch {
                 // 404 или ошибка сети - используем дефолты
@@ -75,6 +77,7 @@ class PhishingSettingsViewModel: ObservableObject {
                 }
 
                 log("⚠️ Настройки phishing protection не найдены (404), используются дефолты: \(error.localizedDescription)")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_settings_load_local", state: .local)
             }
         }
     }
@@ -94,6 +97,7 @@ class PhishingSettingsViewModel: ObservableObject {
         // Обновляем состояние
         state[keyPath: keyPath] = newValue
         hasChanges = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_settings_change_pending", state: .pending)
 
         log("🔄 Phishing setting изменен: \(keyPath) = \(newValue)")
 
@@ -115,6 +119,7 @@ class PhishingSettingsViewModel: ObservableObject {
         // Обновляем состояние
         state.sensitivityLevel = newValue
         hasChanges = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_settings_change_pending", state: .pending)
 
         log("🔄 Уровень чувствительности изменен: \(newValue)")
 
@@ -135,6 +140,7 @@ class PhishingSettingsViewModel: ObservableObject {
         }
 
         isApplyingState = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_settings_save_start", state: .syncing)
 
         // ✅ BUILD 103: Task { @MainActor in } для гарантии создания Dictionary на main thread
         Task { @MainActor in
@@ -170,9 +176,11 @@ class PhishingSettingsViewModel: ObservableObject {
                 toastManager.showSuccess("Настройки сохранены")
 
                 log("✅ Настройки phishing protection успешно сохранены")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_settings_save_complete", state: .synced)
 
             } catch {
                 log("❌ Ошибка сохранения настроек phishing protection: \(error.localizedDescription)")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_settings_save_error", state: .error(error.localizedDescription))
 
                 // Rollback к последнему сохраненному состоянию
                 // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread

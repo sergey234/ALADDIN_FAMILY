@@ -70,6 +70,7 @@ struct PasswordGeneratorModal: View {
                         ), in: 8...64, step: 1)
                             .tint(.blue)
                             .onChange(of: passwordLengthInt) { newValue in
+                                SyncEngine.shared.publish(domain: .settings, operation: "password_modal_change_pending", state: .pending)
                                 componentAnalytics.trackSettingToggle(
                                     componentId: componentId,
                                     settingKey: "passwordLength",
@@ -91,6 +92,7 @@ struct PasswordGeneratorModal: View {
                             isOn: $includeUppercase
                         )
                         .onChange(of: includeUppercase) { newValue in
+                            SyncEngine.shared.publish(domain: .settings, operation: "password_modal_change_pending", state: .pending)
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
                                 settingKey: "includeUppercase",
@@ -104,6 +106,7 @@ struct PasswordGeneratorModal: View {
                             isOn: $includeLowercase
                         )
                         .onChange(of: includeLowercase) { newValue in
+                            SyncEngine.shared.publish(domain: .settings, operation: "password_modal_change_pending", state: .pending)
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
                                 settingKey: "includeLowercase",
@@ -117,6 +120,7 @@ struct PasswordGeneratorModal: View {
                             isOn: $includeNumbers
                         )
                         .onChange(of: includeNumbers) { newValue in
+                            SyncEngine.shared.publish(domain: .settings, operation: "password_modal_change_pending", state: .pending)
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
                                 settingKey: "includeNumbers",
@@ -130,6 +134,7 @@ struct PasswordGeneratorModal: View {
                             isOn: $includeSpecial
                         )
                         .onChange(of: includeSpecial) { newValue in
+                            SyncEngine.shared.publish(domain: .settings, operation: "password_modal_change_pending", state: .pending)
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
                                 settingKey: "includeSpecial",
@@ -254,6 +259,7 @@ struct PasswordGeneratorModal: View {
     // ✅ Загрузка настроек при открытии (синхронизация с ComponentConfigurationService)
     private func loadSettings() {
         isLoading = true
+        SyncEngine.shared.publish(domain: .settings, operation: "password_modal_load_start", state: .syncing)
         Task {
             do {
                 let config = try await configurationService.getConfiguration(for: componentId)
@@ -275,8 +281,10 @@ struct PasswordGeneratorModal: View {
                         includeSpecial = value
                     }
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "password_modal_load_complete", state: .synced)
             } catch {
                 vLog("⚠️ Load failed: \(error.localizedDescription)", level: .warning)
+                SyncEngine.shared.publish(domain: .settings, operation: "password_modal_load_local", state: .local)
             }
             await MainActor.run {
                 isLoading = false
@@ -287,6 +295,7 @@ struct PasswordGeneratorModal: View {
     // ✅ Сохранение настроек через ComponentConfigurationService
     private func saveSettings() {
         vLog("💾 Save requested")
+        SyncEngine.shared.publish(domain: .settings, operation: "password_modal_save_start", state: .syncing)
         Task {
             do {
                 // Получить текущий статус компонента через метод (правильный доступ к @MainActor)
@@ -316,12 +325,14 @@ struct PasswordGeneratorModal: View {
                     isPresented = false
                 }
                 vLog("✅ Settings saved via API", level: .success)
+                SyncEngine.shared.publish(domain: .settings, operation: "password_modal_save_complete", state: .synced)
             } catch {
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     isPresented = false
                 }
                 vLog("⚠️ Save failed, UI closed with cached values", level: .warning)
+                SyncEngine.shared.publish(domain: .settings, operation: "password_modal_save_error", state: .error(error.localizedDescription))
             }
         }
     }

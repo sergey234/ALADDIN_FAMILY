@@ -101,11 +101,14 @@ struct CrashDetectionSettingsModal: View {
     }
 
     private func loadCurrentSettings() {
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_load_start", state: .syncing)
         sensitivity = crashDetectionManager.getSensitivity()
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_load_complete", state: .synced)
     }
 
     private func saveSettings() {
         isLoading = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_start", state: .syncing)
 
         Task {
             do {
@@ -133,12 +136,14 @@ struct CrashDetectionSettingsModal: View {
                     toastManager.showSuccess("Настройки сохранены")
                     isPresented = false
                 }
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_complete", state: .synced)
 
             } catch {
                 await MainActor.run {
                     toastManager.showError("Ошибка сохранения настроек")
                 }
                 print("❌ CrashDetectionSettingsModal: Ошибка сохранения: \(error.localizedDescription)")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_error", state: .error(error.localizedDescription))
             }
 
             await MainActor.run {

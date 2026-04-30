@@ -43,6 +43,7 @@ class NetworkSecuritySettingsViewModel: ObservableObject {
     /// Загрузка настроек с fallback на дефолты
     func loadSettings() {
         isLoading = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_load_start", state: .syncing)
 
         Task {
             do {
@@ -65,6 +66,7 @@ class NetworkSecuritySettingsViewModel: ObservableObject {
                     }
 
                     log("✅ Настройки network security загружены из API")
+                    SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_load_complete", state: .synced)
                 }
             } catch {
                 // 404 или ошибка сети - используем дефолты
@@ -75,6 +77,7 @@ class NetworkSecuritySettingsViewModel: ObservableObject {
                 }
 
                 log("⚠️ Настройки network security не найдены (404), используются дефолты: \(error.localizedDescription)")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_load_local", state: .local)
             }
         }
     }
@@ -94,6 +97,7 @@ class NetworkSecuritySettingsViewModel: ObservableObject {
         // Обновляем состояние
         state[keyPath: keyPath] = newValue
         hasChanges = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_change_pending", state: .pending)
 
         log("🔄 Network security setting изменен: \(keyPath) = \(newValue)")
 
@@ -114,6 +118,7 @@ class NetworkSecuritySettingsViewModel: ObservableObject {
         }
 
         isApplyingState = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_save_start", state: .syncing)
 
         // ✅ BUILD 103: Task { @MainActor in } для гарантии создания Dictionary на main thread
         Task { @MainActor in
@@ -149,9 +154,11 @@ class NetworkSecuritySettingsViewModel: ObservableObject {
                 toastManager.showSuccess("Настройки сохранены")
 
                 log("✅ Настройки network security успешно сохранены")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_save_complete", state: .synced)
 
             } catch {
                 log("❌ Ошибка сохранения настроек network security: \(error.localizedDescription)")
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "network_security_save_error", state: .error(error.localizedDescription))
 
                 // Rollback к последнему сохраненному состоянию
                 // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread

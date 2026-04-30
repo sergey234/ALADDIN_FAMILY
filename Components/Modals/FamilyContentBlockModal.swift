@@ -278,6 +278,7 @@ struct FamilyContentBlockModal: View {
     // MARK: - Methods
     
     private func loadSettings() {
+        SyncEngine.shared.publish(domain: .settings, operation: "family_content_block_modal_load_start", state: .syncing)
         contentBlockerManager.loadActiveCategories()
         if let initialSelectedCategories = initialSelectedCategories {
             selectedCategories = Set(initialSelectedCategories)
@@ -287,12 +288,14 @@ struct FamilyContentBlockModal: View {
         
         Task {
             await contentBlockerManager.checkBlockingStatus()
+            SyncEngine.shared.publish(domain: .settings, operation: "family_content_block_modal_load_complete", state: .synced)
         }
     }
     
     private func saveSettings() {
         isLoading = true
         errorMessage = nil
+        SyncEngine.shared.publish(domain: .settings, operation: "family_content_block_modal_save_start", state: .syncing)
         VisualLogger.shared.log(
             "🌐 SAFARI APPLY start categories=\(selectedCategories.count)",
             level: .info,
@@ -337,6 +340,7 @@ struct FamilyContentBlockModal: View {
                     HapticFeedback.notification(.success)
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "family_content_block_modal_save_complete", state: .synced)
                 
                 // Обновить статус
                 await contentBlockerManager.checkBlockingStatus()
@@ -365,6 +369,7 @@ struct FamilyContentBlockModal: View {
                         toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     }
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "family_content_block_modal_save_error", state: .error(error.localizedDescription))
             }
         }
     }

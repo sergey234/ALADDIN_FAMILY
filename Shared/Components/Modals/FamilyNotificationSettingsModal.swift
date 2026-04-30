@@ -239,6 +239,7 @@ struct FamilyNotificationSettingsModal: View {
     
     // ✅ Загрузка настроек при открытии
     private func loadSettings() {
+        SyncEngine.shared.publish(domain: .settings, operation: "family_notifications_modal_load_start", state: .syncing)
         Task {
             do {
                 let config = try await configurationService.getConfiguration(for: "family_notification_manager")
@@ -262,14 +263,17 @@ struct FamilyNotificationSettingsModal: View {
                         topicPriorities = value
                     }
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "family_notifications_modal_load_complete", state: .synced)
             } catch {
                 print("⚠️ FamilyNotificationSettingsModal: Ошибка загрузки настроек: \(error)")
+                SyncEngine.shared.publish(domain: .settings, operation: "family_notifications_modal_load_local", state: .local)
             }
         }
     }
     
     // ✅ Сохранение настроек через ComponentConfigurationService
     private func saveSettings() {
+        SyncEngine.shared.publish(domain: .settings, operation: "family_notifications_modal_save_start", state: .syncing)
         Task {
             do {
                 // Получить текущий статус компонента
@@ -299,11 +303,13 @@ struct FamilyNotificationSettingsModal: View {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     dismiss()
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "family_notifications_modal_save_complete", state: .synced)
             } catch {
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                     dismiss()
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "family_notifications_modal_save_error", state: .error(error.localizedDescription))
             }
         }
     }

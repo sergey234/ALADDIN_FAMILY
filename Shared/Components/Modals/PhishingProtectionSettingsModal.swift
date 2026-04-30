@@ -42,6 +42,7 @@ struct PhishingProtectionSettingsModal: View {
                         isOn: $blockSuspiciousLinks
                     )
                     .onChange(of: blockSuspiciousLinks) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_change_pending", state: .pending)
                         DispatchQueue.main.async { [componentAnalytics, componentId] in
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
@@ -57,6 +58,7 @@ struct PhishingProtectionSettingsModal: View {
                         isOn: $warnBeforeOpening
                     )
                     .onChange(of: warnBeforeOpening) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_change_pending", state: .pending)
                         DispatchQueue.main.async { [componentAnalytics, componentId] in
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
@@ -72,6 +74,7 @@ struct PhishingProtectionSettingsModal: View {
                         isOn: $checkEmailLinks
                     )
                     .onChange(of: checkEmailLinks) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_change_pending", state: .pending)
                         DispatchQueue.main.async { [componentAnalytics, componentId] in
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
@@ -87,6 +90,7 @@ struct PhishingProtectionSettingsModal: View {
                         isOn: $checkSMSLinks
                     )
                     .onChange(of: checkSMSLinks) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_change_pending", state: .pending)
                         DispatchQueue.main.async { [componentAnalytics, componentId] in
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
@@ -102,6 +106,7 @@ struct PhishingProtectionSettingsModal: View {
                         isOn: $blockKnownPhishingDomains
                     )
                     .onChange(of: blockKnownPhishingDomains) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_change_pending", state: .pending)
                         DispatchQueue.main.async { [componentAnalytics, componentId] in
                             componentAnalytics.trackSettingToggle(
                                 componentId: componentId,
@@ -139,6 +144,7 @@ struct PhishingProtectionSettingsModal: View {
     // ✅ BUILD 103: Task { @MainActor in } для гарантии выполнения на main thread
     private func loadSettings() {
         isLoading = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_load_start", state: .syncing)
         Task { @MainActor in
             // Загружаем через API
             do {
@@ -160,8 +166,10 @@ struct PhishingProtectionSettingsModal: View {
                     sensitivityLevel = newSensitivityLevel
                 }
                 vLog("✅ Settings loaded from API", level: .success)
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_load_complete", state: .synced)
             } catch {
                 vLog("⚠️ Load failed: \(error.localizedDescription)", level: .warning)
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_load_local", state: .local)
             }
             // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
             isLoading = false
@@ -173,6 +181,7 @@ struct PhishingProtectionSettingsModal: View {
     private func saveSettings() {
         // Сначала закрываем окно для отзывчивости UI
         isPresented = false
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_save_start", state: .syncing)
         vLog("💾 Save requested")
         
         // Затем выполняем сохранение асинхронно
@@ -201,9 +210,11 @@ struct PhishingProtectionSettingsModal: View {
 
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
                 vLog("✅ Settings saved via API", level: .success)
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_save_complete", state: .synced)
             } catch {
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
                 vLog("⚠️ Save failed: \(error.localizedDescription)", level: .warning)
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "phishing_modal_save_error", state: .error(error.localizedDescription))
             }
         }
     }

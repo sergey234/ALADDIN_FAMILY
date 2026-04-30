@@ -8,6 +8,28 @@ import Foundation
 // - Синхронный сброс в defer предотвращает race condition
 private var isHandlingSessionExpiredGlobal: Bool = false
 
+private enum MagicAuthLinkParser {
+    private static let tokenKeys = ["magic_token", "token", "auth_token", "code"]
+
+    static func extractToken(from url: URL) -> String? {
+        let path = url.path.lowercased()
+        let host = url.host?.lowercased() ?? ""
+        let looksLikeAuthLink = path.contains("magic") || path.contains("auth") || host.contains("auth")
+        guard looksLikeAuthLink else { return nil }
+
+        if let components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            for item in components.queryItems ?? [] {
+                let name = item.name.lowercased()
+                guard tokenKeys.contains(name),
+                      let value = item.value?.trimmingCharacters(in: .whitespacesAndNewlines),
+                      !value.isEmpty else { continue }
+                return value
+            }
+        }
+        return nil
+    }
+}
+
 /// 👤 User Profile Manager
 /// Singleton класс для управления профилем пользователя
 /// Предоставляет быстрый доступ к данным пользователя из кеша
@@ -163,6 +185,7 @@ struct ALADDINApp: App {
     // ✅ Состояние навигации
     @State private var navigationInitialized: Bool = false
     @State private var didRunDeferredBootstrap: Bool = false
+    @State private var isConsumingMagicLinkToken: Bool = false
     
     // ✅ BUILD 113: Защита от повторных вызовов onAppear
     // SwiftUI может вызывать onAppear несколько раз при пересоздании View
@@ -264,6 +287,7 @@ struct ALADDINApp: App {
                     if ProcessInfo.processInfo.arguments.contains("-UITestChildContentW4_4") {
                         navManager.currentScreen = .childContent
                     }
+                    consumePendingMagicAuthTokenIfNeeded()
                     LaunchDiagnostics.appendStartupTrace("initializeNavigation finished; currentScreen=\(navigationManager.currentScreen.rawValue)")
                 }
                 .task {
@@ -274,24 +298,35 @@ struct ALADDINApp: App {
                     LaunchDiagnostics.appendLifecycleTrace("WindowGroup.task END deferred bootstrap")
                 }
                 .onOpenURL { url in
-                    guard let token = DevicePairingLinkParser.extractToken(from: url)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                          !token.isEmpty else { return }
-                    UserDefaults.standard.set(token, forKey: AppConfig.UserDefaultsKeys.pendingDeviceBindToken)
-                    if hasCompletedOnboarding {
-                        navigationManager.pendingDeviceBindToken = token
-                        navigationManager.navigateTo(.joinDevice)
+                    if let token = DevicePairingLinkParser.extractToken(from: url)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                       !token.isEmpty {
+                        UserDefaults.standard.set(token, forKey: AppConfig.UserDefaultsKeys.pendingDeviceBindToken)
+                        if hasCompletedOnboarding {
+                            navigationManager.pendingDeviceBindToken = token
+                            navigationManager.navigateTo(.joinDevice)
+                        }
+                        return
+                    }
+
+                    if let token = MagicAuthLinkParser.extractToken(from: url)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                       !token.isEmpty {
+                        UserDefaults.standard.set(token, forKey: AppConfig.UserDefaultsKeys.pendingMagicAuthToken)
+                        consumePendingMagicAuthTokenIfNeeded()
                     }
                 }
                 .onChange(of: hasCompletedOnboarding) { completed in
                     guard completed else { return }
                     let key = AppConfig.UserDefaultsKeys.pendingDeviceBindToken
-                    guard let raw = UserDefaults.standard.string(forKey: key)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                          !raw.isEmpty else { return }
-                    let token = DevicePairingLinkParser.extractToken(fromScannedString: raw)
-                        ?? URL(string: raw).flatMap { DevicePairingLinkParser.extractToken(from: $0) }
-                    guard let token, !token.isEmpty else { return }
-                    navigationManager.pendingDeviceBindToken = token
-                    navigationManager.navigateTo(.joinDevice)
+                    if let raw = UserDefaults.standard.string(forKey: key)?.trimmingCharacters(in: .whitespacesAndNewlines),
+                       !raw.isEmpty {
+                        let token = DevicePairingLinkParser.extractToken(fromScannedString: raw)
+                            ?? URL(string: raw).flatMap { DevicePairingLinkParser.extractToken(from: $0) }
+                        if let token, !token.isEmpty {
+                            navigationManager.pendingDeviceBindToken = token
+                            navigationManager.navigateTo(.joinDevice)
+                        }
+                    }
+                    consumePendingMagicAuthTokenIfNeeded()
                 }
         }
     }
@@ -396,6 +431,36 @@ struct ALADDINApp: App {
 #endif
         LaunchDiagnostics.appendStartupTrace("runDeferredLaunchBootstrapIfNeeded END")
         LaunchDiagnostics.appendLifecycleTrace("runDeferredLaunchBootstrapIfNeeded END")
+    }
+
+    @MainActor
+    private func consumePendingMagicAuthTokenIfNeeded() {
+        guard hasCompletedOnboarding else { return }
+        guard !isConsumingMagicLinkToken else { return }
+        let key = AppConfig.UserDefaultsKeys.pendingMagicAuthToken
+        guard let token = UserDefaults.standard.string(forKey: key)?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !token.isEmpty else { return }
+
+        isConsumingMagicLinkToken = true
+        APIService.shared.consumeMagicLink(token: token) { result in
+            DispatchQueue.main.async {
+                defer { isConsumingMagicLinkToken = false }
+                switch result {
+                case .success(let session):
+                    AppConfig.authToken = session.token
+                    if let refresh = session.refreshToken, !refresh.isEmpty {
+                        KeychainManager.shared.save(refresh, forKey: .refreshToken)
+                    }
+                    if let userId = session.userId, !userId.isEmpty {
+                        UserDefaults.standard.set(userId, forKey: "user_id")
+                    }
+                    UserDefaults.standard.removeObject(forKey: key)
+                    navigationManager.currentScreen = .main
+                case .failure(let error):
+                    print("⚠️ Magic-link auth failed: \(error.localizedDescription)")
+                }
+            }
+        }
     }
 
     // ✅ НОВОЕ: Основное содержимое приложения

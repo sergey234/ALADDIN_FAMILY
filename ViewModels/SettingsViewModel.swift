@@ -605,6 +605,15 @@ class SettingsViewModel: ObservableObject {
         }
         if let index = components.firstIndex(where: { $0.componentId == component.componentId }) {
             components[index].isEnabled.toggle()
+            SyncEngine.shared.publish(
+                domain: .settings,
+                operation: "component_toggle",
+                state: .pending,
+                metadata: [
+                    "componentId": component.componentId,
+                    "enabled": components[index].isEnabled ? "true" : "false"
+                ]
+            )
             logger.toggleChanged("Component \(component.componentId)", newValue: components[index].isEnabled, screen: "Settings")
         } else {
             logger.error("Component \(component.componentId) not found for toggling")
@@ -726,6 +735,12 @@ extension SettingsViewModel {
     }
 
     private func syncNetworkProtectionToggleToServer(enabled: Bool) {
+        SyncEngine.shared.publish(
+            domain: .settings,
+            operation: "network_protection_toggle_start",
+            state: .syncing,
+            metadata: ["antivirusEnabled": enabled ? "true" : "false"]
+        )
         VisualLogger.shared.log(
             "🌐 Settings networkProtection API start (antivirusEnabled=\(enabled))",
             level: .info,
@@ -753,6 +768,12 @@ extension SettingsViewModel {
         ) { result in
             switch result {
             case .success:
+                SyncEngine.shared.publish(
+                    domain: .settings,
+                    operation: "network_protection_toggle_success",
+                    state: .synced,
+                    metadata: ["antivirusEnabled": enabled ? "true" : "false"]
+                )
                 VisualLogger.shared.log(
                     "✅ Settings networkProtection synced (antivirusEnabled=\(enabled))",
                     level: .success,
@@ -760,6 +781,11 @@ extension SettingsViewModel {
                 )
                 self.runNetworkProtectionVerifyGetIfEnabled(expectedAntivirusEnabled: enabled)
             case .failure(let error):
+                SyncEngine.shared.publish(
+                    domain: .settings,
+                    operation: "network_protection_toggle_error",
+                    state: .error(error.localizedDescription)
+                )
                 VisualLogger.shared.log(
                     "❌ Settings networkProtection sync failed: \(error.localizedDescription)",
                     level: .error,

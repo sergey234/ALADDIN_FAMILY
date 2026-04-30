@@ -9,6 +9,7 @@ struct FamilyScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var subscriptionManager: SubscriptionManager // For single-source family limits
     @Environment(\.dismiss) private var dismiss
+    @StateObject private var syncEngine = SyncEngine.shared
     
     // ✅ ИСПРАВЛЕНИЕ #7: Убрали @State showAddMemberModal - теперь используем NavigationManager
     // @State private var showAddMemberModal = false
@@ -339,6 +340,7 @@ struct FamilyScreen: View {
         }
         
         isFamilySyncInProgress = true
+        syncEngine.publish(domain: .family, operation: "family_sync_start", state: .syncing)
         print("🔄 [syncFamilyMembersFromAPI] Начинаем синхронизацию участников семьи с сервером")
         VisualLogger.shared.log("🔄 FAMILY SYNC: start", level: .info, category: "FAMILY")
         let apiService = APIService.shared
@@ -613,6 +615,12 @@ struct FamilyScreen: View {
 
                     print("✅ [syncFamilyMembersFromAPI] Синхронизация завершена: \(convertedMembers.count) участников сохранено")
                     VisualLogger.shared.log("✅ FAMILY SYNC: completed", level: .success, category: "FAMILY")
+                    self.syncEngine.publish(
+                        domain: .family,
+                        operation: "family_sync_complete",
+                        state: .synced,
+                        metadata: ["memberCount": String(convertedMembers.count)]
+                    )
                     self.updateAdminStatus()  // ✅ OPTIMIZATION: Refresh cached admin status after sync
                     self.clearDeleteButtonCache(reason: "after_sync")  // Invalidate only after real data change
                     
@@ -628,6 +636,11 @@ struct FamilyScreen: View {
                     } else {
                         VisualLogger.shared.log("❌ FAMILY SYNC: error \(error.localizedDescription)", level: .error, category: "FAMILY")
                     }
+                    self.syncEngine.publish(
+                        domain: .family,
+                        operation: "family_sync_error",
+                        state: .error(error.localizedDescription)
+                    )
                     // При ошибке продолжаем использовать локальные данные
                 }
             }
@@ -1566,6 +1579,32 @@ struct FamilyScreen: View {
     private var firstChildName: String {
         childrenNames.first ?? ""
     }
+
+    private var familySyncState: SyncState {
+        syncEngine.latestStateByDomain[.family] ?? .idle
+    }
+
+    private var familySyncStatusTitle: String {
+        switch familySyncState {
+        case .idle: return "Idle"
+        case .local: return "Local"
+        case .pending: return "Pending"
+        case .syncing: return "Syncing"
+        case .synced: return "Synced"
+        case .conflict: return "Conflict"
+        case .error: return "Error"
+        }
+    }
+
+    private var familySyncStatusColor: Color {
+        switch familySyncState {
+        case .idle, .local: return .gray
+        case .pending: return .orange
+        case .syncing: return .blue
+        case .synced: return .green
+        case .conflict, .error: return .red
+        }
+    }
     
     var body: some View {
         ZStack {
@@ -1651,6 +1690,19 @@ struct FamilyScreen: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 20)
+
+                HStack {
+                    Spacer()
+                    Text(familySyncStatusTitle)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundColor(familySyncStatusColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(familySyncStatusColor.opacity(0.15))
+                        .clipShape(Capsule())
+                }
+                .padding(.horizontal, 20)
+                .padding(.top, 6)
                 
                 ScrollView {
                     VStack(spacing: 20) {

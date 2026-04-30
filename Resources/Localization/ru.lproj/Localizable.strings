@@ -1750,7 +1750,6 @@
 "dark_web_scans_history" = "История сканирований";
 "dark_web_no_leaks" = "Утечек не найдено";
 "dark_web_no_scans" = "Нет истории сканирований";
-"dark_web_retry_scan" = "Повторить сканирование";
 "dark_web_scan_data_input_title" = "Введите данные для сканирования";
 "dark_web_scan_data_email" = "Email";
 "dark_web_scan_data_password" = "Пароль";

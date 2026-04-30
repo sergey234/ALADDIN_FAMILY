@@ -27,6 +27,7 @@ struct NetworkProtectionScreen: View {
     @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
     @ObservedObject private var antivirusManager = AntivirusManager.shared
     @StateObject private var viewModel = NetworkProtectionViewModel()
+    @StateObject private var syncEngine = SyncEngine.shared
     private let configurationService = ComponentConfigurationService.shared
     @State private var showingSettings = false
     @State private var showPasswordGenerator = false
@@ -89,6 +90,32 @@ struct NetworkProtectionScreen: View {
                     .stroke(Color.white.opacity(0.1), lineWidth: 1)
             )
     }
+
+    private var networkSyncState: SyncState {
+        syncEngine.latestStateByDomain[.networkProtection] ?? .idle
+    }
+
+    private var networkSyncStatusTitle: String {
+        switch networkSyncState {
+        case .idle: return "Idle"
+        case .local: return "Local"
+        case .pending: return "Pending"
+        case .syncing: return "Syncing"
+        case .synced: return "Synced"
+        case .conflict: return "Conflict"
+        case .error: return "Error"
+        }
+    }
+
+    private var networkSyncStatusColor: Color {
+        switch networkSyncState {
+        case .idle, .local: return .gray
+        case .pending: return .orange
+        case .syncing: return .blue
+        case .synced: return .green
+        case .conflict, .error: return .red
+        }
+    }
     
     // MARK: - Body
     
@@ -117,6 +144,19 @@ struct NetworkProtectionScreen: View {
                 )
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel(localizationManager.localized("network_protection_nav_panel"))
+
+                HStack {
+                    Spacer()
+                    Text(networkSyncStatusTitle)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundColor(networkSyncStatusColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(networkSyncStatusColor.opacity(0.15))
+                        .clipShape(Capsule())
+                }
+                .padding(.horizontal, Spacing.screenPadding)
+                .padding(.top, Spacing.xs)
                 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
@@ -1189,6 +1229,12 @@ struct NetworkProtectionScreen: View {
         let currentScanDownloads = scanDownloads
         let currentQuarantine = quarantineThreats
 
+        syncEngine.publish(
+            domain: .networkProtection,
+            operation: "antivirus_quick_settings_sync_start",
+            state: .syncing
+        )
+
         Task {
             do {
                 let existing = try await configurationService.getConfiguration(for: "malware_detection_agent")
@@ -1217,11 +1263,21 @@ struct NetworkProtectionScreen: View {
                     level: .success,
                     category: "ANTIVIRUS.API"
                 )
+                syncEngine.publish(
+                    domain: .networkProtection,
+                    operation: "antivirus_quick_settings_sync_complete",
+                    state: .synced
+                )
             } catch {
                 VisualLogger.shared.log(
                     "❌ Antivirus quick settings sync failed: \(error.localizedDescription)",
                     level: .error,
                     category: "ANTIVIRUS.API"
+                )
+                syncEngine.publish(
+                    domain: .networkProtection,
+                    operation: "antivirus_quick_settings_sync_error",
+                    state: .error(error.localizedDescription)
                 )
             }
         }
@@ -1932,6 +1988,7 @@ struct NetworkProtectionSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
+    @StateObject private var syncEngine = SyncEngine.shared
     private let apiService = APIService.shared
     private let toastManager = ToastManager.shared
     
@@ -2023,6 +2080,7 @@ struct NetworkProtectionSettingsView: View {
     
     /// Загружает настройки сетевой защиты с сервера
     private func loadNetworkProtectionSettingsFromServer() {
+        syncEngine.publish(domain: .networkProtection, operation: "settings_load_start", state: .syncing)
         Task {
             do {
                 let settings = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<NetworkProtectionSettingsResponse, Error>) in
@@ -2042,8 +2100,14 @@ struct NetworkProtectionSettingsView: View {
                     antivirusEnabled = settings.antivirusEnabled
                     isApplyingServerSettings = false
                 }
+                syncEngine.publish(domain: .networkProtection, operation: "settings_load_complete", state: .synced)
             } catch {
                 print("⚠️ NetworkProtectionSettingsView: Ошибка загрузки настроек с сервера: \(error)")
+                syncEngine.publish(
+                    domain: .networkProtection,
+                    operation: "settings_load_error",
+                    state: .error(error.localizedDescription)
+                )
                 // Используем локальные значения из @AppStorage
             }
         }
@@ -2051,6 +2115,7 @@ struct NetworkProtectionSettingsView: View {
     
     /// Синхронизирует настройки сетевой защиты с сервером
     private func syncNetworkProtectionSettingsToServer() {
+        syncEngine.publish(domain: .networkProtection, operation: "settings_sync_start", state: .syncing)
         Task {
             do {
                 _ = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<APIResponse<Bool>, Error>) in
@@ -2068,8 +2133,14 @@ struct NetworkProtectionSettingsView: View {
                 }
                 
                 print("✅ NetworkProtectionSettingsView: Настройки синхронизированы с сервером")
+                syncEngine.publish(domain: .networkProtection, operation: "settings_sync_complete", state: .synced)
             } catch {
                 print("⚠️ NetworkProtectionSettingsView: Ошибка синхронизации настроек: \(error)")
+                syncEngine.publish(
+                    domain: .networkProtection,
+                    operation: "settings_sync_error",
+                    state: .error(error.localizedDescription)
+                )
                 // Не показываем ошибку пользователю - локальное сохранение работает
             }
         }

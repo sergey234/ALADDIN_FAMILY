@@ -55,6 +55,9 @@ struct EmergencyContactsView: View {
         .onAppear {
             loadContacts()
         }
+        .onChange(of: contacts) { _ in
+            SyncEngine.shared.publish(domain: .settings, operation: "emergency_contacts_change_pending", state: .pending)
+        }
         .sheet(isPresented: $showAddContact) {
             AddEmergencyContactView(
                 onSave: { contact in
@@ -140,6 +143,7 @@ struct EmergencyContactsView: View {
     
     private func loadContacts() {
         isLoading = true
+        SyncEngine.shared.publish(domain: .settings, operation: "emergency_contacts_load_start", state: .syncing)
         Task {
             // ✅ Загрузить из UserDefaults
             if let data = UserDefaults.standard.data(forKey: "component_emergency_contact_manager_contacts"),
@@ -171,15 +175,18 @@ struct EmergencyContactsView: View {
                             contacts = loadedContacts
                             isLoading = false
                         }
+                        SyncEngine.shared.publish(domain: .settings, operation: "emergency_contacts_load_complete", state: .synced)
                     } else {
                         await MainActor.run {
                             isLoading = false
                         }
+                        SyncEngine.shared.publish(domain: .settings, operation: "emergency_contacts_load_local", state: .local)
                     }
                 } catch {
                     await MainActor.run {
                         isLoading = false
                     }
+                    SyncEngine.shared.publish(domain: .settings, operation: "emergency_contacts_load_local", state: .local)
                 }
             }
         }
@@ -187,6 +194,7 @@ struct EmergencyContactsView: View {
     
     // ✅ Сохранение контактов через ComponentConfigurationService и UserDefaults
     private func saveContacts() {
+        SyncEngine.shared.publish(domain: .settings, operation: "emergency_contacts_save_start", state: .syncing)
         Task {
             // 1. Сохранить в UserDefaults (локально, мгновенно)
             if let encoded = try? JSONEncoder().encode(contacts) {
@@ -227,11 +235,13 @@ struct EmergencyContactsView: View {
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "emergency_contacts_save_complete", state: .synced)
             } catch {
                 // Настройки уже сохранены локально в UserDefaults
                 await MainActor.run {
                     toastManager.showSuccess(localizationManager.localized("settings_saved"))
                 }
+                SyncEngine.shared.publish(domain: .settings, operation: "emergency_contacts_save_error", state: .error(error.localizedDescription))
             }
         }
     }
@@ -244,7 +254,7 @@ struct EmergencyContactsView: View {
 
 // MARK: - Emergency Contact Model
 
-struct EmergencyContact: Identifiable, Codable {
+struct EmergencyContact: Identifiable, Codable, Equatable {
     var id: UUID
     var name: String
     var phone: String

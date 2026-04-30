@@ -27,6 +27,7 @@ struct AIAssistantScreen: View {
     // Сервисы
     @StateObject private var apiService = APIService.shared
     @StateObject private var speechManager = SpeechManager()
+    @StateObject private var syncEngine = SyncEngine.shared
 
     // Ключ для сохранения истории сообщений
     private let messagesKey = "ai_assistant_messages_list"
@@ -94,6 +95,13 @@ struct AIAssistantScreen: View {
                         Text(localizationManager.localized("ai_assistant_subtitle"))
                             .font(.system(size: 14, weight: .regular))
                             .foregroundColor(.white.opacity(0.8))
+                        Text(aiSyncStatusTitle)
+                            .font(.system(size: 11, weight: .semibold))
+                            .foregroundColor(aiSyncStatusColor)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(aiSyncStatusColor.opacity(0.2))
+                            .clipShape(Capsule())
                     }
                     
                     Spacer()
@@ -177,6 +185,13 @@ struct AIAssistantScreen: View {
                 logger.business("🤖 AI Assistant: Showing welcome message for new user")
             }
         }
+        .onReceive(syncEngine.events) { event in
+            guard event.domain == .aiStreaming else { return }
+            if case .error(let message) = event.state {
+                showError = true
+                errorMessage = message
+            }
+        }
         .onDisappear {
             removeNotifications()
         }
@@ -184,6 +199,44 @@ struct AIAssistantScreen: View {
         .id("ai_assistant_lang_\(localizationManager.currentLanguage.rawValue)")
         .sheet(isPresented: $showFeedbackSheet) {
             AIFeedbackSheet(isPresented: $showFeedbackSheet, apiService: apiService)
+        }
+    }
+
+    private var aiSyncState: SyncState {
+        syncEngine.latestStateByDomain[.aiStreaming] ?? .idle
+    }
+
+    private var aiSyncStatusTitle: String {
+        switch aiSyncState {
+        case .idle:
+            return "AI idle"
+        case .local:
+            return "Local"
+        case .pending:
+            return "Pending"
+        case .syncing:
+            return "Streaming..."
+        case .synced:
+            return "Synced"
+        case .conflict:
+            return "Conflict"
+        case .error:
+            return "Stream error"
+        }
+    }
+
+    private var aiSyncStatusColor: Color {
+        switch aiSyncState {
+        case .idle:
+            return .gray
+        case .local, .pending:
+            return .orange
+        case .syncing:
+            return .blue
+        case .synced:
+            return .green
+        case .conflict, .error:
+            return .red
         }
     }
     

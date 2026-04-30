@@ -133,6 +133,7 @@ struct IncidentResponseSettingsModal: View {
                         isOn: $blockEnabled
                     )
                     .onChange(of: blockEnabled) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_modal_change_pending", state: .pending)
                         componentAnalytics.trackSettingToggle(
                             componentId: componentId,
                             settingKey: "autoActions_block",
@@ -147,6 +148,7 @@ struct IncidentResponseSettingsModal: View {
                         isOn: $notifyEnabled
                     )
                     .onChange(of: notifyEnabled) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_modal_change_pending", state: .pending)
                         componentAnalytics.trackSettingToggle(
                             componentId: componentId,
                             settingKey: "autoActions_notify",
@@ -161,6 +163,7 @@ struct IncidentResponseSettingsModal: View {
                         isOn: $escalateEnabled
                     )
                     .onChange(of: escalateEnabled) { newValue in
+                        SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_modal_change_pending", state: .pending)
                         componentAnalytics.trackSettingToggle(
                             componentId: componentId,
                             settingKey: "autoActions_escalate",
@@ -184,6 +187,7 @@ struct IncidentResponseSettingsModal: View {
     // ✅ BUILD 103: Task { @MainActor in } для гарантии выполнения на main thread
     private func loadSettings() {
         isLoading = true
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_modal_load_start", state: .syncing)
         Task { @MainActor in
             do {
                 let config = try await configurationService.getConfiguration(for: componentId)
@@ -206,6 +210,7 @@ struct IncidentResponseSettingsModal: View {
                         escalateEnabled = value["escalate"] ?? true
                     }
                 }
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_modal_load_complete", state: .synced)
             } catch {
                 vLog("⚠️ Load failed: \(error.localizedDescription)", level: .warning)
                 // Использовать дефолтные значения
@@ -213,6 +218,7 @@ struct IncidentResponseSettingsModal: View {
                 blockEnabled = autoActions["block"] ?? false
                 notifyEnabled = autoActions["notify"] ?? true
                 escalateEnabled = autoActions["escalate"] ?? true
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_modal_load_local", state: .local)
             }
             // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
             isLoading = false
@@ -223,6 +229,7 @@ struct IncidentResponseSettingsModal: View {
     // ✅ BUILD 103: Task { @MainActor in } для гарантии создания Dictionary на main thread
     private func saveSettings() {
         vLog("💾 Save requested")
+        SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_modal_save_start", state: .syncing)
         Task { @MainActor in
             do {
                 // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
@@ -249,11 +256,13 @@ struct IncidentResponseSettingsModal: View {
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
                 isPresented = false
                 vLog("✅ Settings saved via API", level: .success)
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_modal_save_complete", state: .synced)
             } catch {
                 // ✅ BUILD 103: Убрали await MainActor.run - весь Task уже на main thread
                 toastManager.showSuccess(localizationManager.localized("settings_saved"))
                 isPresented = false
                 vLog("⚠️ Save failed, UI closed with cached values", level: .warning)
+                SyncEngine.shared.publish(domain: .networkProtection, operation: "incident_response_modal_save_error", state: .error(error.localizedDescription))
             }
         }
     }

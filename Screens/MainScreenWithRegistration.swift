@@ -1,4 +1,5 @@
 import SwiftUI
+import AuthenticationServices
 
 /**
  * 📱 Main Screen with Progressive Registration
@@ -16,8 +17,14 @@ struct MainScreenWithRegistration: View {
     
     @StateObject var registrationVM: FamilyRegistrationViewModel
     @State private var showTip: Bool = false
+    @State private var isAppleAuthInProgress: Bool = false
+    @State private var isMagicLinkInProgress: Bool = false
+    @State private var appleAuthErrorMessage: String? = nil
+    @State private var magicLinkEmail: String = ""
+    @State private var magicLinkStatusMessage: String? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
+    private let apiService = APIService.shared
     
     /// Closure для завершения регистрации (используется в preview и старых вызовах)
     var onComplete: (() -> Void)? = nil
@@ -39,6 +46,24 @@ struct MainScreenWithRegistration: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak navigationManager] in
             navigationManager?.switchToFamilyScreen()
             print("✅ [MainScreenWithRegistration] Вызван switchToFamilyScreen()")
+        }
+    }
+
+    private func completeAuthLogin() {
+        UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        UserDefaults.standard.synchronize()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak navigationManager] in
+            navigationManager?.switchToFamilyScreen()
+        }
+    }
+
+    private func persistSession(_ session: AuthSessionResponse) {
+        AppConfig.authToken = session.token
+        if let refresh = session.refreshToken, !refresh.isEmpty {
+            KeychainManager.shared.save(refresh, forKey: .refreshToken)
+        }
+        if let userId = session.userId, !userId.isEmpty {
+            UserDefaults.standard.set(userId, forKey: "user_id")
         }
     }
     
@@ -68,8 +93,67 @@ struct MainScreenWithRegistration: View {
             .padding(.top, 20)
             .padding(.trailing, 20)
         }
+        .overlay(alignment: .topLeading) {
+            VStack(alignment: .leading, spacing: 8) {
+                SignInWithAppleButton(.signIn, onRequest: { request in
+                    request.requestedScopes = [.fullName, .email]
+                }, onCompletion: handleAppleSignInResult)
+                .signInWithAppleButtonStyle(.white)
+                .frame(width: 220, height: 44)
+                .disabled(isAppleAuthInProgress)
+
+                if isAppleAuthInProgress {
+                    ProgressView()
+                        .tint(.white)
+                }
+
+                VStack(alignment: .leading, spacing: 6) {
+                    TextField("Email for Magic Link", text: $magicLinkEmail)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled(true)
+                        .keyboardType(.emailAddress)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 10)
+                        .background(Color.white.opacity(0.95))
+                        .foregroundColor(.black)
+                        .cornerRadius(10)
+                        .frame(width: 220)
+
+                    Button(isMagicLinkInProgress ? "Sending..." : "Send Magic Link") {
+                        requestMagicLink()
+                    }
+                    .disabled(isMagicLinkInProgress || magicLinkEmail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 12)
+                    .padding(.vertical, 8)
+                    .background(Color.blue.opacity(0.85))
+                    .cornerRadius(10)
+                }
+
+                if let magicLinkStatusMessage, !magicLinkStatusMessage.isEmpty {
+                    Text(magicLinkStatusMessage)
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.9))
+                        .frame(width: 220, alignment: .leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .padding(.top, 20)
+            .padding(.leading, 20)
+        }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Экран регистрации семьи")
+        .alert(localizationManager.localized("family_chat_error_title"), isPresented: Binding(
+            get: { appleAuthErrorMessage != nil },
+            set: { if !$0 { appleAuthErrorMessage = nil } }
+        )) {
+            Button(localizationManager.localized("family_chat_error_ok")) {
+                appleAuthErrorMessage = nil
+            }
+        } message: {
+            Text(appleAuthErrorMessage ?? "")
+        }
         .task {
             print("🚨 MainScreenWithRegistration загружен!")
             // Start registration immediately without checking
@@ -354,6 +438,72 @@ struct MainScreenWithRegistration: View {
         // Check UserDefaults for family_id
         // TODO: В будущем заменить на Keychain для безопасности
         return UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.familyId) != nil
+    }
+
+    private func handleAppleSignInResult(_ result: Result<ASAuthorization, Error>) {
+        switch result {
+        case .failure(let error):
+            appleAuthErrorMessage = error.localizedDescription
+        case .success(let authorization):
+            guard let credential = authorization.credential as? ASAuthorizationAppleIDCredential else {
+                appleAuthErrorMessage = "Apple credential is missing"
+                return
+            }
+            guard let identityTokenData = credential.identityToken,
+                  let identityToken = String(data: identityTokenData, encoding: .utf8),
+                  let authorizationCodeData = credential.authorizationCode,
+                  let authorizationCode = String(data: authorizationCodeData, encoding: .utf8)
+            else {
+                appleAuthErrorMessage = "Apple token conversion failed"
+                return
+            }
+
+            let givenName = credential.fullName?.givenName
+            let familyName = credential.fullName?.familyName
+            let email = credential.email
+
+            isAppleAuthInProgress = true
+            apiService.loginWithApple(
+                identityToken: identityToken,
+                authorizationCode: authorizationCode,
+                email: email,
+                givenName: givenName,
+                familyName: familyName
+            ) { apiResult in
+                DispatchQueue.main.async {
+                    isAppleAuthInProgress = false
+                    switch apiResult {
+                    case .success(let session):
+                        persistSession(session)
+                        completeAuthLogin()
+                    case .failure(let error):
+                        appleAuthErrorMessage = error.localizedDescription
+                    }
+                }
+            }
+        }
+    }
+
+    private func requestMagicLink() {
+        let email = magicLinkEmail.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        guard !email.isEmpty, email.contains("@") else {
+            magicLinkStatusMessage = "Введите корректный email."
+            return
+        }
+
+        isMagicLinkInProgress = true
+        magicLinkStatusMessage = nil
+        apiService.requestMagicLink(email: email, redirectUrl: "aladdin://auth/magic") { result in
+            DispatchQueue.main.async {
+                isMagicLinkInProgress = false
+                switch result {
+                case .success:
+                    magicLinkStatusMessage = "Ссылка отправлена. Проверьте почту и откройте её на этом устройстве."
+                case .failure(let error):
+                    magicLinkStatusMessage = error.localizedDescription
+                }
+            }
+        }
     }
     
     // MARK: - Age Groups Helpers
