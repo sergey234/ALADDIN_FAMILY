@@ -14,6 +14,7 @@ struct ProfileScreen: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var mainViewModel: MainViewModel
     @StateObject private var tariffManager = TariffManager.shared
     @State private var showImagePicker: Bool = false
     @State private var selectedImage: UIImage?
@@ -21,6 +22,8 @@ struct ProfileScreen: View {
     @State private var showActiveSessions: Bool = false
     @State private var showDeleteAccount: Bool = false
     @State private var showEditProfile: Bool = false
+    /// Сброс пароля показываем с родителя: второй `.sheet` внутри уже открытого листа редактирования часто не появляется (SwiftUI).
+    @State private var showPasswordResetSheet: Bool = false
     @State private var showAdultSafetyInstructions: Bool = false
     @State private var showReferralScreen: Bool = false
     @State private var registrationDate: String = ""
@@ -105,8 +108,15 @@ struct ProfileScreen: View {
                         // Шапка профиля
                         profileHeader
                         
-                        // Статистика
+                        // Статистика (данные с главной / MainViewModel)
                         profileStats
+                        if let err = mainViewModel.errorMessage, !err.isEmpty {
+                            Text(err)
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, Spacing.screenPadding)
+                        }
                         
                         // Информация
                         profileInfo
@@ -134,6 +144,7 @@ struct ProfileScreen: View {
         .onAppear {
             loadRegistrationDate()
             loadProfileImage()
+            mainViewModel.requestRefreshDebounced()
         }
         .sheet(isPresented: $showImagePicker) {
             ProfileImagePicker(selectedImage: $selectedImage)
@@ -267,11 +278,19 @@ struct ProfileScreen: View {
     
     private var profileStats: some View {
         HStack(spacing: Spacing.m) {
-            statCard(icon: "🛡️", value: "47", label: localizationManager.localized("profile_threats_blocked"))
-            statCard(icon: "👥", value: "4", label: localizationManager.localized("profile_family_members"))
-            statCard(icon: "📱", value: "8", label: localizationManager.localized("profile_devices"))
+            statCard(icon: "🛡️", value: profileStatString(for: mainViewModel.threatsBlocked), label: localizationManager.localized("profile_threats_blocked"))
+            statCard(icon: "👥", value: profileStatString(for: mainViewModel.familyMembers), label: localizationManager.localized("profile_family_members"))
+            statCard(icon: "📱", value: profileStatString(for: mainViewModel.devicesProtected), label: localizationManager.localized("profile_devices"))
         }
         .padding(.horizontal, Spacing.screenPadding)
+    }
+
+    /// Показывает «—», пока ни разу не успели подтянуть дашборд и идёт загрузка (избегаем ложных нулей при первом открытии).
+    private func profileStatString(for value: Int) -> String {
+        if mainViewModel.isLoading, mainViewModel.lastUpdateTime == nil {
+            return "—"
+        }
+        return "\(value)"
     }
     
     private func statCard(icon: String, value: String, label: String) -> some View {
@@ -1004,6 +1023,7 @@ struct EditProfileView: View {
     @State private var name: String = ""
     @State private var alias: String = ""
     @State private var pin: String = ""
+    @State private var showPasswordResetSheet = false
     
     var body: some View {
         NavigationView {
@@ -1032,7 +1052,7 @@ struct EditProfileView: View {
                 
                 Section {
                     Button(localizationManager.localized("edit_profile_reset_password")) {
-                        // TODO: Реализовать сброс пароля
+                        showPasswordResetSheet = true
                     }
                     .foregroundColor(.blue)
                 }
@@ -1062,6 +1082,10 @@ struct EditProfileView: View {
                 name = storedName
                 alias = storedAlias
                 pin = storedPIN
+            }
+            .sheet(isPresented: $showPasswordResetSheet) {
+                PasswordResetSheet(initialEmail: PasswordResetEmailResolver.resolved(storedAlias: alias))
+                    .environmentObject(localizationManager)
             }
             .id("edit_profile_lang_\(localizationManager.currentLanguage.rawValue)")
         }
@@ -1223,6 +1247,9 @@ struct AdultSafetyInstructionsModal: View {
 struct ProfileScreen_Previews: PreviewProvider {
     static var previews: some View {
         ProfileScreen()
+            .environmentObject(MainViewModel())
+            .environmentObject(NavigationManager())
+            .environmentObject(LocalizationManager.shared)
     }
 }
 

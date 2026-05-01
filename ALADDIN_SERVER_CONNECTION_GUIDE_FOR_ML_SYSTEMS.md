@@ -113,6 +113,36 @@ ssh root@149.154.65.180
 
 ---
 
+### **WebSocket семейного чата (`wss://aladdin-ai.ru/ws/...`) — май 2026**
+
+Бэкенд FastAPI объявляет `@app.websocket("/ws/family/chat")` на **`127.0.0.1:8002`** (uvicorn). Без отдельного `location` в nginx запросы **`/ws/*`** попадали в `location /` и отдавались как статика — на клиенте iOS это давало **`NSURLError -1011`** (неверный ответ при Upgrade).
+
+**Сделано на проде:**
+
+1. **`/etc/nginx/conf.d/00-websocket-upgrade-map.conf`** — `map $http_upgrade $connection_upgrade` (штатный паттерн nginx для WebSocket).
+2. В **`/etc/nginx/sites-enabled/aladdin-ai.ru`** добавлен блок **`location /ws/`** с `proxy_pass http://127.0.0.1:8002`, `proxy_http_version 1.1`, заголовки **`Upgrade`** и **`Connection`**, увеличенные **`proxy_read_timeout` / `proxy_send_timeout`** (долгое соединение). Блок стоит **выше** `location /`, чтобы не перехватывался статикой.
+3. Резервные копии vhost не хранить внутри **`sites-enabled/`** (иначе дубликат `server_name` и один из конфигов игнорируется nginx).
+
+**Проверки:**
+
+```bash
+# Локально на сервере — ожидается HTTP 101
+curl -sS -m 5 -i \
+  -H "Connection: Upgrade" -H "Upgrade: websocket" \
+  -H "Sec-WebSocket-Version: 13" -H "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==" \
+  http://127.0.0.1:8002/ws/family/chat | head -5
+
+# Снаружи через домен — нужен HTTP/1.1 к nginx (иначе curl может выбрать HTTP/2 и показать не тот ответ)
+curl -sS -m 8 --http1.1 -i \
+  -H "Connection: Upgrade" -H "Upgrade: websocket" \
+  -H "Sec-WebSocket-Version: 13" -H "Sec-WebSocket-Key: dGhlIHNhbXBsZSBub25jZQ==" \
+  https://aladdin-ai.ru/ws/family/chat | head -8
+```
+
+Клиент iOS (`URLSessionWebSocketTask`) выполняет handshake по **HTTP/1.1**; после правки nginx канал должен открываться без `-1011`.
+
+---
+
 ### **2. SFTP (ПЕРЕДАЧА ФАЙЛОВ)**
 Используйте клиент (FileZilla, Cyberduck, WinSCP) для загрузки файлов.
 

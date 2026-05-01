@@ -148,6 +148,12 @@ except ImportError:
     misc_other_compat_available = False
 
 try:
+    from app.routers import content_compat
+    content_compat_available = True
+except ImportError:
+    content_compat_available = False
+
+try:
     from app.routers import antivirus
     antivirus_router_available = True
 except ImportError:
@@ -812,6 +818,15 @@ if misc_other_compat_available:
         print(f"⚠️ Не удалось подключить роутер Misc Other compat: {e}")
 else:
     print("⚠️ Роутер Misc Other compat недоступен")
+
+if content_compat_available:
+    try:
+        app.include_router(content_compat.router, tags=["content-compat"])
+        print("✅ Роутер Content compat подключен: /api/content/manifest, /api/content/delta")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер Content compat: {e}")
+else:
+    print("⚠️ Роутер Content compat недоступен")
 
 if antivirus_router_available:
     try:

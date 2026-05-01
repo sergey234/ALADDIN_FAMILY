@@ -67,6 +67,7 @@ struct FamilyChatScreen: View {
     @State private var lastTypingSignalAt: Date = .distantPast
     @State private var typingExpiryByUser: [String: Date] = [:]
     @State private var presencePruneTimer: Timer? = nil
+    @State private var wsRealtimeUnavailable: Bool = false
     
     private let familyMembersKey = "family_members_list"
     
@@ -102,6 +103,25 @@ struct FamilyChatScreen: View {
             )
             .accessibilityElement(children: .combine)
             .accessibilityLabel(localizationManager.localized("family_chat_nav_accessibility"))
+
+            if wsRealtimeUnavailable {
+                HStack(spacing: Spacing.s) {
+                    Image(systemName: "antenna.radiowaves.left.and.right.slash")
+                        .foregroundColor(.orange)
+                    Text(localizationManager.localized("family_chat_ws_offline_hint"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Spacer(minLength: 0)
+                    Button(localizationManager.localized("family_chat_reconnect")) {
+                        webSocket?.reconnectNow()
+                    }
+                    .font(.caption.weight(.semibold))
+                }
+                .padding(.horizontal, Spacing.screenPadding)
+                .padding(.vertical, Spacing.s)
+                .background(Color.orange.opacity(0.12))
+            }
 
             if !onlineUsers.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -241,6 +261,12 @@ struct FamilyChatScreen: View {
             setupWebSocket()
             setupPushNotifications()
             startPresencePruneTimer()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+            // Реальное устройство: WS часто рвётся в фоне; при возврате — повторить connect.
+            if let ws = webSocket, !ws.isConnected, ws.connectionStatus != .connecting {
+                ws.connect()
+            }
         }
         .onDisappear {
             stopAutoRefresh()
@@ -438,6 +464,18 @@ struct FamilyChatScreen: View {
         guard let raw, !raw.isEmpty else { return nil }
         return raw
     }
+
+    /// Отличить ошибку декодирования/контракта от реальной сетевой недоступности (разный текст для пользователя).
+    private static func isSendDecodingOrPayloadMismatch(_ error: Error) -> Bool {
+        if let ne = error as? NetworkError {
+            if case .decodingError = ne { return true }
+        }
+        let s = error.localizedDescription.lowercased()
+        if s.contains("mock") || s.contains("fallback") || s.contains("sfm_") { return true }
+        return s.contains("couldn't be read")
+            || s.contains("could not be read")
+            || (s.contains("missing") && s.contains("key"))
+    }
     
     /// Обновляет количество участников онлайн
     private func updateOnlineMembersCount() {
@@ -486,9 +524,11 @@ struct FamilyChatScreen: View {
     private func loadMessages(silent: Bool = false) {
         if !silent {
             isLoading = true
+            errorMessage = nil
         }
-        errorMessage = nil
-        
+        // Не сбрасываем errorMessage при silent-опросе: иначе гонка с таймером/после failed send
+        // затирает алерт до завершения запроса и даёт ложное «сбросилось само».
+
         apiService.getFamilyChatMessages { [self] result in
             DispatchQueue.main.async {
                 if !silent {
@@ -808,12 +848,13 @@ struct FamilyChatScreen: View {
         webSocket?.onConnectionStatus = { [self] status in
             switch status {
             case .connected:
-                break
-            case .connecting, .reconnecting:
+                wsRealtimeUnavailable = false
+            case .connecting:
+                wsRealtimeUnavailable = false
                 typingUsers.removeAll()
                 typingExpiryByUser.removeAll()
-            case .disconnected, .error:
-                // Не держим stale presence во время разрыва канала.
+            case .reconnecting, .disconnected, .error:
+                wsRealtimeUnavailable = true
                 typingUsers.removeAll()
                 typingExpiryByUser.removeAll()
                 onlineUsers.removeAll()
@@ -1294,23 +1335,46 @@ struct FamilyChatScreen: View {
                 isSending = false
                 
                 switch result {
-                case .success(_):
+                case .success(let sendResponse):
+                    let capturedReplyId = replyToMessage?.id
                     replyToMessage = nil
-                    // ✅ ИСПРАВЛЕНО: Используем silent: true, чтобы не показывать ошибку при неудачной загрузке
-                    // Сообщение уже отправлено успешно, оно появится при следующем автообновлении
+                    errorMessage = nil
+                    // Оптимистичное отображение сразу на девайсе, даже если следующий silent-poll задержится.
+                    let sid = sendResponse.messageId.trimmingCharacters(in: .whitespacesAndNewlines)
+                    let optimisticId = sid.isEmpty ? "pending-\(UUID().uuidString)" : sid
+                    let optimistic = FamilyChatMessage(
+                        id: optimisticId,
+                        sender: localizationManager.localized("family_chat_you"),
+                        text: messageToSend,
+                        time: getCurrentTime(),
+                        isCurrentUser: true,
+                        messageType: .text,
+                        voiceUrl: nil,
+                        voiceDuration: nil,
+                        mediaUrl: nil,
+                        mediaThumbnailUrl: nil,
+                        mediaType: nil,
+                        replyToMessageId: capturedReplyId,
+                        reactions: [],
+                        readStatus: nil,
+                        readAt: nil,
+                        editedAt: nil,
+                        uploadProgress: nil
+                    )
+                    if !messages.contains(where: { $0.id == optimisticId }) {
+                        messages.append(optimistic)
+                    }
                     loadMessages(silent: true)
-                    
-                    // Отправляем push-уведомление другим участникам
+
                     pushService.sendChatNotification(
                         message: messageToSend,
                         sender: "You", // TODO: Получить реальное имя
                         familyId: familyId
                     )
-                    
+
                 case .failure(let error):
                     messageText = messageToSend
-                    
-                    // Добавляем в очередь офлайн
+
                     if offlineManager.isOffline {
                         offlineManager.addPendingMessage(PendingChatMessage(
                             text: messageToSend,
@@ -1318,10 +1382,9 @@ struct FamilyChatScreen: View {
                             replyToMessageId: replyToMessage?.id
                         ))
                     }
-                    
-                    let errorDesc = error.localizedDescription
-                    if errorDesc.contains("network") || errorDesc.contains("connection") {
-                        errorMessage = localizationManager.localized("family_chat_error_loading")
+
+                    if Self.isSendDecodingOrPayloadMismatch(error) {
+                        errorMessage = localizationManager.localized("family_chat_error_send_response")
                     } else {
                         errorMessage = localizationManager.localized("family_chat_error_loading")
                     }

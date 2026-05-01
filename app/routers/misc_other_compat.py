@@ -139,6 +139,21 @@ def _ensure_family_devices_table(db: Session) -> None:
             ),
             {"h": h, "id": rid},
         )
+    db.execute(
+        text(
+            "ALTER TABLE aladdin_family_devices ADD COLUMN IF NOT EXISTS owner_member_id TEXT;"
+        )
+    )
+    db.execute(
+        text(
+            "ALTER TABLE aladdin_family_devices ADD COLUMN IF NOT EXISTS is_protection_on BOOLEAN NOT NULL DEFAULT TRUE;"
+        )
+    )
+    db.execute(
+        text(
+            "ALTER TABLE aladdin_family_devices ADD COLUMN IF NOT EXISTS is_scanning_enabled BOOLEAN NOT NULL DEFAULT TRUE;"
+        )
+    )
     db.commit()
     _devices_ddl_checked = True
 
@@ -147,6 +162,17 @@ class AddDeviceBody(BaseModel):
     name: str = Field(..., min_length=1, max_length=200)
     type: str = Field(..., min_length=1, max_length=32)
     owner: str = Field(..., min_length=1, max_length=200)
+    owner_member_id: Optional[str] = Field(None, max_length=128)
+
+
+class DeviceSettingsUpdateBody(BaseModel):
+    """Тело iOS `DeviceSettingsRequest` (camelCase)."""
+
+    isProtectionOn: bool
+    isScanningEnabled: bool
+
+    class Config:
+        allow_population_by_field_name = True
 
 
 class BindDeviceBody(BaseModel):
@@ -315,7 +341,7 @@ def devices_list(
             text(
                 """
                 SELECT id, name, owner_label AS owner, type, status, last_active,
-                       pairing_token, short_pin
+                       pairing_token, short_pin, owner_member_id
                 FROM aladdin_family_devices
                 WHERE user_id = :uid
                 ORDER BY created_at DESC
@@ -326,6 +352,10 @@ def devices_list(
         out: List[Dict[str, Any]] = []
         for row in result.mappings().all():
             item = dict(row)
+            # camelCase для iOS (`ownerMemberId`)
+            om = item.pop("owner_member_id", None)
+            if om:
+                item["ownerMemberId"] = om
             if item.get("pairing_token") is None:
                 item.pop("pairing_token", None)
             if item.get("short_pin") is None:
@@ -361,14 +391,15 @@ def devices_create(
             status.HTTP_422_UNPROCESSABLE_ENTITY,
             detail="Invalid device type",
         )
+    owner_mid = (body.owner_member_id or "").strip() or None
     try:
         _ensure_family_devices_table(db)
         db.execute(
             text(
                 """
                 INSERT INTO aladdin_family_devices
-                (id, user_id, name, type, owner_label, status, last_active, pairing_token, short_pin, pairing_token_sha256)
-                VALUES (:id, :uid, :name, :type, :owner, 'protected', :now, :ptoken, :spin, :ptoken_sha)
+                (id, user_id, name, type, owner_label, status, last_active, pairing_token, short_pin, pairing_token_sha256, owner_member_id)
+                VALUES (:id, :uid, :name, :type, :owner, 'protected', :now, :ptoken, :spin, :ptoken_sha, :omid)
                 """
             ),
             {
@@ -381,6 +412,7 @@ def devices_create(
                 "ptoken": pairing_token,
                 "spin": short_pin,
                 "ptoken_sha": token_sha,
+                "omid": owner_mid,
             },
         )
         db.commit()
@@ -391,7 +423,7 @@ def devices_create(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             detail="Could not save device",
         )
-    return {
+    out_create: Dict[str, Any] = {
         "id": dev_id,
         "name": body.name.strip(),
         "owner": body.owner.strip(),
@@ -401,6 +433,9 @@ def devices_create(
         "pairing_token": pairing_token,
         "short_pin": short_pin,
     }
+    if owner_mid:
+        out_create["ownerMemberId"] = owner_mid
+    return out_create
 
 
 @router.post("/api/devices/bind", response_model=Dict[str, Any])
@@ -544,7 +579,9 @@ def _fetch_device_row(db: Session, uid: str, device_id: str) -> Optional[Dict[st
         text(
             """
             SELECT id, name, owner_label AS owner, type, status, last_active,
-                   pairing_token, short_pin
+                   pairing_token, short_pin,
+                   owner_member_id,
+                   is_protection_on, is_scanning_enabled
             FROM aladdin_family_devices
             WHERE id = :id AND user_id = :uid
             """
@@ -567,11 +604,68 @@ def devices_one_settings(
     row = _fetch_device_row(db, uid, device_id)
     if not row:
         raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Device not found")
+    iprot = row.get("is_protection_on")
+    iscan = row.get("is_scanning_enabled")
+    if iprot is None:
+        iprot = True
+    if iscan is None:
+        iscan = True
     return {
-        "isProtectionOn": True,
-        "isScanningEnabled": True,
+        "isProtectionOn": bool(iprot),
+        "isScanningEnabled": bool(iscan),
         "lastUpdated": None,
     }
+
+
+@router.api_route(
+    "/api/devices/{device_id}/settings",
+    methods=["PATCH", "PUT"],
+    response_model=Dict[str, Any],
+)
+def devices_update_settings(
+    device_id: str,
+    body: DeviceSettingsUpdateBody,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """Обновление флагов защиты/сканирования (iOS `APIService.updateDeviceSettings`)."""
+    uid = _uid_str(current_user)
+    if not uid:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
+    try:
+        _ensure_family_devices_table(db)
+        now = _now_iso()
+        res = db.execute(
+            text(
+                """
+                UPDATE aladdin_family_devices
+                SET is_protection_on = :prot,
+                    is_scanning_enabled = :scan,
+                    last_active = :now
+                WHERE id = :id AND user_id = :uid
+                """
+            ),
+            {
+                "id": device_id.strip(),
+                "uid": uid,
+                "now": now,
+                "prot": body.isProtectionOn,
+                "scan": body.isScanningEnabled,
+            },
+        )
+        db.commit()
+        if res.rowcount == 0:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Device not found")
+        return _api_response_bool(True, "Settings saved")
+    except HTTPException:
+        raise
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.exception("devices_update_settings_failed: %s", e)
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Settings update unavailable",
+        )
 
 
 @router.post("/api/devices/{device_id}/block", response_model=Dict[str, Any])
@@ -694,7 +788,8 @@ def devices_get_one(
     last_raw = row.get("last_active") or ""
     st = (row.get("status") or "protected").strip().lower()
     is_protected = st in ("protected", "warning", "blocked")
-    return {
+    omid = row.get("owner_member_id")
+    detail: Dict[str, Any] = {
         "id": row["id"],
         "name": row["name"],
         "owner": row["owner"],
@@ -709,6 +804,9 @@ def devices_get_one(
         "batteryLevel": None,
         "isProtected": is_protected,
     }
+    if omid:
+        detail["ownerMemberId"] = omid
+    return detail
 
 
 @router.get("/api/location/geofences", response_model=List[Dict[str, Any]])

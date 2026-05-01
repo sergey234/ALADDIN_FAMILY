@@ -125,6 +125,9 @@ enum NetworkError: Error, LocalizedError {
     /// Шлюз/прод: маршрут отключён до «живого» бэкенда (см. `detail` на API).
     case endpointFeatureUnavailable
 
+    /// Шлюз вернул SFM/mock envelope вместо контракта `/api/content/*` — клиент использует кэш.
+    case contentSyncGatewayEnvelope
+
     /// Неизвестная ошибка
     case unknown(Error?)
     
@@ -217,6 +220,9 @@ enum NetworkError: Error, LocalizedError {
         case .endpointFeatureUnavailable:
             return LocalizationManager.shared.localized("api_error_endpoint_feature_unavailable")
 
+        case .contentSyncGatewayEnvelope:
+            return "Контент-синхронизация временно недоступна (ответ шлюза). Используется локальный кэш."
+
         case .unknown(let error):
             return "Неизвестная ошибка: \(error?.localizedDescription ?? "Попробуйте позже")"
         }
@@ -236,6 +242,8 @@ enum NetworkError: Error, LocalizedError {
             return "Подождите несколько минут"
         case .endpointFeatureUnavailable:
             return LocalizationManager.shared.localized("api_error_endpoint_feature_unavailable_reason")
+        case .contentSyncGatewayEnvelope:
+            return "Ожидается JSON манифеста или дельты; получена служебная обёртка шлюза."
         default:
             return "Обратитесь в поддержку"
         }
@@ -257,6 +265,8 @@ enum NetworkError: Error, LocalizedError {
             return "Подождите 5-10 минут"
         case .endpointFeatureUnavailable:
             return LocalizationManager.shared.localized("api_error_endpoint_feature_unavailable_recovery")
+        case .contentSyncGatewayEnvelope:
+            return "Работа продолжается с сохранённым контентом."
         default:
             return "Перезапустите приложение"
         }
@@ -396,7 +406,8 @@ extension NetworkError: Equatable {
              (.invalidToken, .invalidToken),
              (.reauthenticationRequired, .reauthenticationRequired),
              (.outOfMemory, .outOfMemory),
-             (.endpointFeatureUnavailable, .endpointFeatureUnavailable):
+             (.endpointFeatureUnavailable, .endpointFeatureUnavailable),
+             (.contentSyncGatewayEnvelope, .contentSyncGatewayEnvelope):
             return true
         case (.invalidStatusCode(let lhsCode), .invalidStatusCode(let rhsCode)):
             return lhsCode == rhsCode

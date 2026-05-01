@@ -244,6 +244,7 @@ struct DeviceDetailScreen: View {
                 case .success:
                     // Успешная блокировка - показать сообщение и вернуться
                     print("✅ Device blocked successfully")
+                    NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
                     self.dismiss()
                 case .failure(let error):
                     let networkError = NetworkError.from(error)
@@ -269,6 +270,7 @@ struct DeviceDetailScreen: View {
                 case .success:
                     // Успешное удаление - показать сообщение и вернуться
                     print("✅ Device removed successfully")
+                    NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
                     self.dismiss()
                 case .failure(let error):
                     let networkError = NetworkError.from(error)
@@ -321,10 +323,15 @@ struct DeviceDetailScreen: View {
         }
     }
     
-    /// Сохраняет настройки устройства в UserDefaults и синхронизирует с сервером
-    private func saveDeviceSettings() {
+    /// Только локальный кэш (без PATCH) — после загрузки с сервера не шлём обратно те же значения.
+    private func persistDeviceSettingsLocally() {
         UserDefaults.standard.set(isProtectionOn, forKey: protectionKey)
         UserDefaults.standard.set(isScanningEnabled, forKey: scanningKey)
+    }
+
+    /// Сохраняет настройки устройства в UserDefaults и синхронизирует с сервером (действия пользователя на вкладке «Настройки»).
+    private func saveDeviceSettings() {
+        persistDeviceSettingsLocally()
         syncDeviceSettingsToServer()
     }
     
@@ -345,8 +352,7 @@ struct DeviceDetailScreen: View {
                 await MainActor.run {
                     isProtectionOn = settings.isProtectionOn
                     isScanningEnabled = settings.isScanningEnabled
-                    // Сохранить в UserDefaults для локального кэширования
-                    saveDeviceSettings()
+                    persistDeviceSettingsLocally()
                 }
             } catch {
                 print("⚠️ DeviceDetailScreen: Ошибка загрузки настроек устройства: \(error)")

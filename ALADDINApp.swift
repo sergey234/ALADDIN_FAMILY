@@ -170,6 +170,8 @@ struct ALADDINApp: App {
     @StateObject private var navigationManager = NavigationManager()
     // ✅ BUILD 112: Используем Singleton для LocalizationManager
     @StateObject private var localizationManager = LocalizationManager.shared
+    /// Единый источник статистики главной / профиля (семья, устройства, угрозы).
+    @StateObject private var mainViewModel = MainViewModel()
     @AppStorage("selected_theme") private var selectedTheme: String = "system"
     // ✅ BUILD 95: Показ VisualLogger overlay в RELEASE/TestFlight по флагу
     @AppStorage("enable_visual_logging_release") private var enableVisualLoggingRelease: Bool = false
@@ -808,6 +810,7 @@ struct ALADDINApp: App {
             .environmentObject(FeedbackSystem.shared)
             // ✅ SubscriptionManager: FamilyScreen, AddMemberOptionsScreen, FeatureGateView используют @EnvironmentObject
             .environmentObject(SubscriptionManager.shared)
+            .environmentObject(mainViewModel)
             // ✅ Применяем локализацию через environment
             .environment(\.locale, localizationManager.locale)
             // ✅ ИСПРАВЛЕНИЕ BUILD 93: УБРАН .id() с localizationManager - вызывает рекурсию

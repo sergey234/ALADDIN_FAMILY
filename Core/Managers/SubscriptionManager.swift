@@ -198,44 +198,27 @@ final class SubscriptionManager: ObservableObject {
         SubscriptionManager.hasInitialized = true
         SubscriptionManager.initializationLock.unlock()
         
+        #if DEBUG
         print("🚀🚀🚀 INITIALIZE_ON_APP_START: Method called")
-        logger.business("🚀 SubscriptionManager.initializeOnAppStart() called")
         VisualLogger.shared.log("🚀 SubscriptionManager.initializeOnAppStart() called", level: .info)
+        #endif
 
-        // Логируем состояние приложения при запуске
-        logger.business("📊 ИНИЦИАЛИЗАЦИЯ ПОДПИСКИ - ПРОВЕРКА ТЕКУЩЕГО СОСТОЯНИЯ")
-        logger.business("📱 Устройство: \(UIDevice.current.model) (\(UIDevice.current.systemVersion))")
-        logger.business("🌐 Режим сети: \(isOfflineMode ? "ОФФЛАЙН" : "ОНЛАЙН")")
-        logger.business("⏰ Время запуска: \(Date())")
-
-        // 🚀🚀🚀 DEFENSIVE JWT: ИНТЕЛЛЕКТУАЛЬНАЯ ПРОВЕРКА ТОКЕНОВ 🚀🚀🚀
-        logger.business("🚀 DEFENSIVE JWT: Начинаем интеллектуальную проверку токена")
-
-        // ШАГ 1: Используем TokenValidator для комплексного анализа
         let tokenStatus = TokenValidator.validateCurrentToken()
-        logger.business("🔍 DEFENSIVE JWT: Статус токена: \(tokenStatus.description)")
 
-        // ШАГ 2: Выполняем действия в зависимости от статуса токена
         switch tokenStatus {
         case .none:
-            logger.business("📱 DEFENSIVE JWT: Токена нет - запускаем первичную регистрацию")
             await performDeviceRegistration()
 
         case .valid:
-            logger.business("✅ DEFENSIVE JWT: Токен валиден - используем существующий")
-            // Ничего не делаем, токен рабочий
+            break
 
         case .expired, .invalid:
-            logger.business("⏰ DEFENSIVE JWT: Токен истек/невалиден - очищаем и регистрируем заново")
-            await clearToken()  // Очищаем проблемный токен
-            await performDeviceRegistration()  // Регистрируем заново
+            await clearToken()
+            await performDeviceRegistration()
 
         case .needsRefresh:
-            logger.business("🔄 DEFENSIVE JWT: Токен скоро истечет - запускаем silent refresh")
             await refreshTokenSilently()
         }
-
-        logger.business("🎉 DEFENSIVE JWT: Инициализация завершена успешно")
 
         // ✅ BUILD 123: Проверка синхронизации токена с AppConfig
         if let token = currentToken {
@@ -254,14 +237,31 @@ final class SubscriptionManager: ObservableObject {
 
         await performThrottledTrialExpiryCheckIfNeeded()
 
-        // Log initialization completion
         JWTEventLogger.logEvent(.healthCheckPerformed(
             tokenExists: currentToken != nil,
             timeToExpiry: currentToken?.expiresAt.timeIntervalSinceNow,
             nextCheckIn: 60
         ))
 
-        logger.security("🚀 SubscriptionManager: App start initialization completed")
+        logSubscriptionReconcileSummary(tokenStatus: tokenStatus)
+        isInitialized = true
+        #if DEBUG
+        logger.business("✅ SubscriptionManager async startup complete")
+        #endif
+    }
+
+    /// Один компактный снимок после reconcile старта (меньше дублирующихся строк из слоёв).
+    private func logSubscriptionReconcileSummary(tokenStatus: TokenValidator.TokenStatus) {
+        let trialLine: String = {
+            guard let t = trialStatus else { return "trial=nil" }
+            return "trial_active=\(t.isActive)"
+        }()
+        let plan = currentSubscription?.level.rawValue ?? "nil"
+        let tokenOk = currentToken != nil
+        let effective = getCurrentLevel().rawValue
+        logger.business(
+            "📋 subscription_reconcile jwt=\(tokenStatus.description) token_present=\(tokenOk) plan=\(plan) effective=\(effective) \(trialLine) family_limit=\(currentFamilyLimit)"
+        )
     }
 
     /// Check if current token is expired
@@ -494,8 +494,7 @@ final class SubscriptionManager: ObservableObject {
         logger.business("💾 Persisted data loading completed")
         print("💾💾💾 PERSISTED_DATA_LOADED: Completed")
 
-        self.isInitialized = true
-        logger.business("✅ SubscriptionManager.isInitialized = true")
+        // isInitialized выставляется только после async initializeOnAppStart() (JWT / регистрация).
 
         // Log what was loaded
         if currentToken != nil {

@@ -19,7 +19,7 @@ struct ProfileEditView: View {
     @State private var pin: String = ""
     @State private var showImagePicker: Bool = false
     @State private var selectedImage: UIImage?
-    @State private var showResetAlert: Bool = false
+    @State private var showPasswordResetSheet: Bool = false
     
     // MARK: - Body
     
@@ -82,13 +82,9 @@ struct ProfileEditView: View {
         .sheet(isPresented: $showImagePicker) {
             ImagePicker(selectedImage: $selectedImage)
         }
-        .alert(
-            localizationManager.localized("profile_edit_reset_password_title"),
-            isPresented: $showResetAlert
-        ) {
-            Button(localizationManager.localized("profile_edit_ok"), role: .cancel) { }
-        } message: {
-            Text(localizationManager.localized("profile_edit_reset_password_message"))
+        .sheet(isPresented: $showPasswordResetSheet) {
+            PasswordResetSheet(initialEmail: PasswordResetEmailResolver.resolved(storedAlias: storedAlias))
+                .environmentObject(localizationManager)
         }
         .onAppear {
             // Загружаем сохраненное фото при открытии
@@ -334,8 +330,7 @@ struct ProfileEditView: View {
     }
     
     private func resetPassword() {
-        showResetAlert = true
-        print("Reset password requested")
+        showPasswordResetSheet = true
     }
     
     private var avatarInitial: String {

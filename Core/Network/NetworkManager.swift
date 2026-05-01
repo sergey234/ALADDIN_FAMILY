@@ -81,6 +81,16 @@ class NetworkManager: NSObject, ObservableObject {
         return lower.contains("endpoint unavailable") && lower.contains("explicit real backend flow")
     }
 
+    /// Ответ шлюза с полями вроде `function` / `version` вместо контракта manifest/delta для `/api/content/*`.
+    private static func isContentSyncGatewayEnvelope(path: String, json: [String: Any]) -> Bool {
+        guard path.contains("/api/content/") else { return false }
+        if json["manifest_version"] != nil || json["manifest"] != nil { return false }
+        if json["from_version"] != nil || json["delta"] != nil { return false }
+        if let ver = json["version"] as? String, ver.lowercased().contains("mock") { return true }
+        if json["function"] != nil { return true }
+        return false
+    }
+
     // ✅ ЗАДАЧА 62: Rate Limiting
     /// Rate limiter для защиты от перегрузки API
     private let rateLimiter = RateLimiter(maxRequests: 100, timeWindow: 60.0) // 100 запросов в минуту
@@ -117,7 +127,6 @@ class NetworkManager: NSObject, ObservableObject {
         // ✅ ИСПРАВЛЕНИЕ #3: Инициализируем все свойства ПЕРЕД super.init()
         // Но для NSObject можно инициализировать после, если использовать временные значения
         self.baseURL = baseURL
-        self.isSSLPinningEnabled = enableSSLPinning
         
         // Домены для SSL Pinning (реальные домены ALADDIN)
         self.pinnedDomains = Set([
@@ -235,7 +244,9 @@ class NetworkManager: NSObject, ObservableObject {
         print("🚀 Performance optimizations applied:")
         print("   - HTTP/2 enabled")
         print("   - Connection pooling: \(config.httpMaximumConnectionsPerHost)")
-        print("   - Caching: \(config.urlCache?.memoryCapacity ?? 0)MB memory, \(config.urlCache?.diskCapacity ?? 0)MB disk")
+        let memB = config.urlCache?.memoryCapacity ?? 0
+        let diskB = config.urlCache?.diskCapacity ?? 0
+        print("   - Caching: \(memB / (1024 * 1024))MB memory, \(diskB / (1024 * 1024))MB disk")
         print("   - Compression: enabled")
 
         return config
@@ -1379,6 +1390,17 @@ class NetworkManager: NSObject, ObservableObject {
                         return
                     }
                 }
+
+                let reqPath = request.url?.path ?? ""
+                if let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+                   Self.isContentSyncGatewayEnvelope(path: reqPath, json: json) {
+                    logger.network("ℹ️ content_sync: ответ шлюза не по контракту \(reqPath) — используем локальный кэш")
+                    #if DEBUG
+                    print("ℹ️ NetworkManager: content sync gateway envelope \(reqPath)")
+                    #endif
+                    completion(.failure(NetworkError.contentSyncGatewayEnvelope))
+                    return
+                }
                 
                 // Декодирование
                 do {
@@ -1387,19 +1409,23 @@ class NetworkManager: NSObject, ObservableObject {
                     do {
                         decoded = try JSONDecoder().decode(T.self, from: data)
                     } catch let decodingError {
-                        // Логируем детали ошибки декодирования
                         let responseString = String(data: data, encoding: .utf8) ?? "Unable to convert to string"
-                        logger.error("❌ NetworkManager: Decoding error for \(T.self)")
-                        logger.error("   - Response body: \(responseString.prefix(500))")
-                        logger.error("   - Error: \(decodingError.localizedDescription)")
-                        
-                        #if DEBUG
-                        print("❌ NetworkManager: Decoding failed")
-                        print("   - Type: \(T.self)")
-                        print("   - Response: \(responseString.prefix(500))")
-                        print("   - Error: \(decodingError)")
-                        #endif
-                        
+                        if reqPath.contains("/api/content/") {
+                            logger.network("ℹ️ content_sync: декод \(T.self) не удалился для \(reqPath) — используем кэш. \(decodingError.localizedDescription)")
+                            #if DEBUG
+                            print("ℹ️ NetworkManager content_sync decode: \(responseString.prefix(400))")
+                            #endif
+                        } else {
+                            logger.error("❌ NetworkManager: Decoding error for \(T.self)")
+                            logger.error("   - Response body: \(responseString.prefix(500))")
+                            logger.error("   - Error: \(decodingError.localizedDescription)")
+                            #if DEBUG
+                            print("❌ NetworkManager: Decoding failed")
+                            print("   - Type: \(T.self)")
+                            print("   - Response: \(responseString.prefix(500))")
+                            print("   - Error: \(decodingError)")
+                            #endif
+                        }
                         completion(.failure(NetworkError.decodingError(decodingError)))
                         return
                     }

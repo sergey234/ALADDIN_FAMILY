@@ -127,7 +127,7 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "154"
+    static let buildNumber = "155"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -416,6 +416,7 @@ struct AppConfig {
         static let authApple = "/api/auth/apple"
         static let authMagicLinkRequest = "/api/auth/magic-link/request"
         static let authMagicLinkConsume = "/api/auth/magic-link/consume"
+        static let authForgotPassword = "/api/auth/forgot_password"
         static let registerDevice = "/api/auth/register-device"
         static let registerDeviceTrial = "/api/auth/register-device-trial"
         

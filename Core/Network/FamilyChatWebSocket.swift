@@ -99,6 +99,16 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
         print("✅ FamilyChatWebSocket: Подключение к \(wsURL)")
     }
     
+    /// Сбрасывает счётчик попыток и переподключается (ручная кнопка в UI).
+    func reconnectNow() {
+        reconnectAttempts = 0
+        stopReconnectTimer()
+        disconnect()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.2) { [weak self] in
+            self?.connect()
+        }
+    }
+
     func disconnect() {
         if connectionStatus == .connected {
             sendMessage(type: "presence", data: ["status": "offline"])
@@ -348,8 +358,9 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
     
     func urlSession(_ session: URLSession, webSocketTask: URLSessionWebSocketTask, didCloseWith closeCode: URLSessionWebSocketTask.CloseCode, reason: Data?) {
         DispatchQueue.main.async {
+            let reasonStr = reason.flatMap { String(data: $0, encoding: .utf8) } ?? ""
+            print("⚠️ FamilyChatWebSocket: Соединение закрыто code=\(closeCode.rawValue) reason=\(reasonStr)")
             self.handleDisconnection()
-            print("⚠️ FamilyChatWebSocket: Соединение закрыто: \(closeCode)")
         }
     }
 

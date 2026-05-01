@@ -2361,6 +2361,28 @@ class APIService: ObservableObject {
             completion: completion
         )
     }
+
+    /// Запрос ссылки/instructions на email для сброса пароля (без авторизации).
+    func requestPasswordReset(email: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        struct ForgotBody: Codable { let email: String }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.authForgotPassword,
+            body: ForgotBody(email: email),
+            requiresAuth: false
+        ) { (result: Result<APIResponse<Bool>, Error>) in
+            switch result {
+            case .success(let response):
+                if response.success {
+                    completion(.success(()))
+                } else {
+                    let msg = response.message ?? response.error ?? "forgot_password_failed"
+                    completion(.failure(NetworkError.badRequest(msg)))
+                }
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
     
     // MARK: - Token Refresh API
     
@@ -2420,10 +2442,32 @@ class APIService: ObservableObject {
         let name: String
         let type: String // "iphone", "ipad", "mac", "android"
         let owner: String
+        let ownerMemberId: String?
+        
+        enum CodingKeys: String, CodingKey {
+            case name, type, owner
+            case ownerMemberId = "owner_member_id"
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var c = encoder.container(keyedBy: CodingKeys.self)
+            try c.encode(name, forKey: .name)
+            try c.encode(type, forKey: .type)
+            try c.encode(owner, forKey: .owner)
+            if let mid = ownerMemberId?.trimmingCharacters(in: .whitespacesAndNewlines), !mid.isEmpty {
+                try c.encode(mid, forKey: .ownerMemberId)
+            }
+        }
     }
     
-    func addDevice(name: String, type: String, owner: String, completion: @escaping (Result<DeviceResponse, Error>) -> Void) {
-        let request = AddDeviceRequest(name: name, type: type, owner: owner)
+    func addDevice(
+        name: String,
+        type: String,
+        owner: String,
+        ownerMemberId: String? = nil,
+        completion: @escaping (Result<DeviceResponse, Error>) -> Void
+    ) {
+        let request = AddDeviceRequest(name: name, type: type, owner: owner, ownerMemberId: ownerMemberId)
         networkManager.post(endpoint: AppConfig.Endpoint.devices, body: request, completion: completion)
     }
     
@@ -2487,7 +2531,27 @@ class APIService: ObservableObject {
             isScanningEnabled: isScanningEnabled
         )
         
-        networkManager.patch(endpoint: "\(AppConfig.Endpoint.deviceSettings)/\(deviceId)/settings", body: request, completion: completion)
+        let path = "\(AppConfig.Endpoint.deviceSettings)/\(deviceId)/settings"
+        networkManager.patch(endpoint: path, body: request) { (result: Result<APIResponse<Bool>, Error>) in
+            switch result {
+            case .success(let ok):
+                completion(.success(ok))
+            case .failure(let err):
+                if Self.isHttpMethodNotAllowed(err) {
+                    self.networkManager.put(endpoint: path, body: request, completion: completion)
+                } else {
+                    completion(.failure(err))
+                }
+            }
+        }
+    }
+
+    private static func isHttpMethodNotAllowed(_ error: Error) -> Bool {
+        if let ne = error as? NetworkError {
+            if case .httpError(let code) = ne { return code == 405 }
+        }
+        let msg = error.localizedDescription
+        return msg.contains("405") || msg.contains("Method Not Allowed")
     }
 
     // MARK: - Payment API

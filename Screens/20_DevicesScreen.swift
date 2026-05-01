@@ -17,6 +17,7 @@ struct DevicesScreen: View {
     @State private var showAddDevice: Bool = false
     @State private var selectedFilter: DeviceFilter = .all
     @State private var expandedFilters: Set<DeviceFilter> = []
+    @State private var scheduledLoadWorkItem: DispatchWorkItem?
     
     private let apiService = APIService.shared
     
@@ -92,7 +93,10 @@ struct DevicesScreen: View {
             await loadDevicesAsync()
         }
         .onAppear {
-            loadDevices()
+            scheduleLoadDevices()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyDevicesDidChange"))) { _ in
+            scheduleLoadDevices()
         }
         .alert(localizationManager.localized("common_error"), isPresented: .constant(errorMessage != nil)) {
             Button(localizationManager.localized("common_ok")) {
@@ -382,7 +386,20 @@ struct DevicesScreen: View {
     
     // MARK: - Functions
     
+    private func scheduleLoadDevices() {
+        scheduledLoadWorkItem?.cancel()
+        let item = DispatchWorkItem {
+            loadDevicesImmediate()
+        }
+        scheduledLoadWorkItem = item
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.45, execute: item)
+    }
+    
     private func loadDevices() {
+        scheduleLoadDevices()
+    }
+    
+    private func loadDevicesImmediate() {
         isLoading = true
         errorMessage = nil
         
@@ -392,7 +409,9 @@ struct DevicesScreen: View {
                 
                 switch result {
                 case .success(let deviceResponses):
-                    devices = deviceResponses.map { convertToDevice($0) }
+                    let mapped = deviceResponses.map { convertToDevice($0) }
+                    var seen = Set<String>()
+                    devices = mapped.filter { seen.insert($0.id).inserted }
                     errorMessage = nil
                 case .failure(let error):
                     devices = []
@@ -414,7 +433,9 @@ struct DevicesScreen: View {
                 DispatchQueue.main.async {
                     switch result {
                     case .success(let deviceResponses):
-                        devices = deviceResponses.map { convertToDevice($0) }
+                        let mapped = deviceResponses.map { convertToDevice($0) }
+                        var seen = Set<String>()
+                        devices = mapped.filter { seen.insert($0.id).inserted }
                         errorMessage = nil
                     case .failure(let error):
                         devices = []
@@ -639,6 +660,13 @@ enum DeviceStatus: String, CaseIterable {
 // MARK: - Add Device View
 
 struct AddDeviceView: View {
+    
+    /// Участник для привязки устройства: стабильный `id` (`MEM_*`) и имя для UI.
+    private struct OwnerPick: Identifiable, Equatable, Hashable {
+        let id: String
+        let displayName: String
+    }
+    
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
     
@@ -646,10 +674,11 @@ struct AddDeviceView: View {
     
     @State private var deviceName: String = ""
     @State private var selectedDeviceType: DeviceType = .iphone
-    @State private var selectedOwner: String = ""
+    /// Выбранный участник по идентификатору из API (`MEM_*`) или fallback-префикс `fallback_*`.
+    @State private var selectedOwnerPickId: String = ""
     @State private var isLoading: Bool = false
     @State private var errorMessage: String? = nil
-    @State private var familyMembers: [String] = []
+    @State private var ownerPicks: [OwnerPick] = []
     /// Только фоновое обновление списка с сервера; форма не блокируется (сначала кэш/`Вы`).
     @State private var isLoadingFamilyMembers: Bool = false
     @State private var showPairingModal: Bool = false
@@ -728,16 +757,16 @@ struct AddDeviceView: View {
                                     .font(.body)
                                     .foregroundColor(.textPrimary)
                                 
-                                if isLoadingFamilyMembers && familyMembers.isEmpty {
+                                if isLoadingFamilyMembers && ownerPicks.isEmpty {
                                     Text(localizationManager.localized("devices_loading_members"))
                                         .font(.caption)
                                         .foregroundColor(.textSecondary)
                                         .padding()
-                                } else if !familyMembers.isEmpty {
-                                    Picker(localizationManager.localized("devices_owner"), selection: $selectedOwner) {
-                                        ForEach(familyMembers, id: \.self) { member in
-                                            Text(member)
-                                                .tag(member)
+                                } else if !ownerPicks.isEmpty {
+                                    Picker(localizationManager.localized("devices_owner"), selection: $selectedOwnerPickId) {
+                                        ForEach(ownerPicks) { pick in
+                                            Text(pick.displayName)
+                                                .tag(pick.id)
                                         }
                                     }
                                     .pickerStyle(MenuPickerStyle())
@@ -745,7 +774,7 @@ struct AddDeviceView: View {
                                     .background(Color.backgroundMedium.opacity(0.3))
                                     .cornerRadius(CornerRadius.medium)
                                     .accessibilityLabel(localizationManager.localized("devices_owner"))
-                                    .onChange(of: selectedOwner) { _ in
+                                    .onChange(of: selectedOwnerPickId) { _ in
                                         deviceName = makeSuggestedDeviceName()
                                     }
                                 } else {
@@ -829,7 +858,7 @@ struct AddDeviceView: View {
             .sheet(isPresented: $showPairingModal) {
                 DevicePairingModal(
                     deviceName: effectiveDeviceName,
-                    ownerName: selectedOwner,
+                    ownerName: selectedOwnerDisplayName,
                     qrToken: pairingQrToken,
                     shortPin: pairingShortPin
                 )
@@ -860,24 +889,28 @@ struct AddDeviceView: View {
         return makeSuggestedDeviceName().trimmingCharacters(in: .whitespacesAndNewlines)
     }
     
+    private var selectedOwnerDisplayName: String {
+        ownerPicks.first(where: { $0.id == selectedOwnerPickId })?.displayName ?? ""
+    }
+    
     private var isFormValid: Bool {
         !effectiveDeviceName.isEmpty &&
-        !selectedOwner.isEmpty &&
-        !familyMembers.isEmpty
+        !selectedOwnerPickId.isEmpty &&
+        !ownerPicks.isEmpty
     }
     
     /// Почему кнопка серая (`.disabled`) — подсказка без тапа по кнопке.
     private var addDeviceFormValidationHint: String {
-        if isLoadingFamilyMembers && familyMembers.isEmpty {
+        if isLoadingFamilyMembers && ownerPicks.isEmpty {
             return localizationManager.localized("devices_form_hint_syncing_owners")
         }
-        if familyMembers.isEmpty {
+        if ownerPicks.isEmpty {
             return localizationManager.localized("devices_form_hint_no_owners")
         }
         if effectiveDeviceName.isEmpty {
             return localizationManager.localized("devices_form_hint_enter_name")
         }
-        if selectedOwner.isEmpty {
+        if selectedOwnerPickId.isEmpty {
             return localizationManager.localized("devices_form_hint_select_owner")
         }
         return localizationManager.localized("devices_add_device_hint_disabled")
@@ -891,23 +924,23 @@ struct AddDeviceView: View {
         syncSelectedOwnerWithMembersList()
         deviceName = makeSuggestedDeviceName()
         #if DEBUG
-        print("AddDeviceView.setup: members=\(familyMembers.count) owner='\(selectedOwner)' effectiveName='\(effectiveDeviceName)' isFormValid=\(isFormValid)")
+        print("AddDeviceView.setup: members=\(ownerPicks.count) owner='\(selectedOwnerDisplayName)' effectiveName='\(effectiveDeviceName)' isFormValid=\(isFormValid)")
         #endif
         fetchFamilyMembersFromServer()
     }
     
     /// Удобное имя по умолчанию: тип устройства и владелец (пользователь может отредактировать поле).
     private func makeSuggestedDeviceName() -> String {
-        let owner = selectedOwner.trimmingCharacters(in: .whitespacesAndNewlines)
+        let owner = selectedOwnerDisplayName.trimmingCharacters(in: .whitespacesAndNewlines)
         let type = selectedDeviceType.rawValue
         if owner.isEmpty { return type }
         return "\(type) · \(owner)"
     }
     
     private func syncSelectedOwnerWithMembersList() {
-        guard !familyMembers.isEmpty else { return }
-        if selectedOwner.isEmpty || !familyMembers.contains(selectedOwner) {
-            selectedOwner = familyMembers[0]
+        guard !ownerPicks.isEmpty else { return }
+        if selectedOwnerPickId.isEmpty || !ownerPicks.contains(where: { $0.id == selectedOwnerPickId }) {
+            selectedOwnerPickId = ownerPicks[0].id
         }
     }
     
@@ -918,11 +951,14 @@ struct AddDeviceView: View {
                 defer { isLoadingFamilyMembers = false }
                 switch result {
                 case .success(let members):
-                    let names = members
-                        .map { $0.name.trimmingCharacters(in: .whitespacesAndNewlines) }
-                        .filter { !$0.isEmpty }
-                    guard !names.isEmpty else { return }
-                    familyMembers = names
+                    let picks: [OwnerPick] = members.compactMap { m in
+                        let name = m.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                        let sid = m.id.trimmingCharacters(in: .whitespacesAndNewlines)
+                        guard !name.isEmpty, !sid.isEmpty else { return nil }
+                        return OwnerPick(id: sid, displayName: name)
+                    }
+                    guard !picks.isEmpty else { return }
+                    ownerPicks = picks
                     syncSelectedOwnerWithMembersList()
                     deviceName = makeSuggestedDeviceName()
                 case .failure:
@@ -937,29 +973,33 @@ struct AddDeviceView: View {
         let familyMembersKey = "family_members_list"
         if let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
            let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) {
-            let names = decoded
-                .map { $0.name }
-                .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
-                .filter { !$0.isEmpty }
-            if !names.isEmpty {
-                familyMembers = names
-                if selectedOwner.isEmpty, let firstMember = names.first {
-                    selectedOwner = firstMember
+            let picks = decoded.compactMap { m -> OwnerPick? in
+                let name = m.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                guard !name.isEmpty else { return nil }
+                let sid = m.canonicalId.trimmingCharacters(in: .whitespacesAndNewlines)
+                let rid = sid.isEmpty ? "fallback_\(name)" : sid
+                return OwnerPick(id: rid, displayName: name)
+            }
+            if !picks.isEmpty {
+                ownerPicks = picks
+                if selectedOwnerPickId.isEmpty, let first = picks.first {
+                    selectedOwnerPickId = first.id
                 }
                 return
             }
         }
         if let currentUserName = UserDefaults.standard.string(forKey: "current_user_name"),
            !currentUserName.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            familyMembers = [currentUserName]
-            selectedOwner = currentUserName
+            let nm = currentUserName.trimmingCharacters(in: .whitespacesAndNewlines)
+            ownerPicks = [OwnerPick(id: "fallback_local_user", displayName: nm)]
+            selectedOwnerPickId = "fallback_local_user"
         } else {
             let you = localizationManager.localized("devices_owner_you").trimmingCharacters(in: .whitespacesAndNewlines)
             let youResolved = you.isEmpty
                 ? (localizationManager.currentLanguage == .english ? "You" : "Вы")
                 : you
-            familyMembers = [youResolved]
-            selectedOwner = youResolved
+            ownerPicks = [OwnerPick(id: "fallback_you", displayName: youResolved)]
+            selectedOwnerPickId = "fallback_you"
         }
     }
     
@@ -981,7 +1021,8 @@ struct AddDeviceView: View {
         apiService.addDevice(
             name: effectiveDeviceName,
             type: deviceTypeString,
-            owner: selectedOwner
+            owner: selectedOwnerDisplayName,
+            ownerMemberId: ownerMemberIdForAPI()
         ) { result in
             DispatchQueue.main.async {
                 isLoading = false
@@ -1002,6 +1043,14 @@ struct AddDeviceView: View {
                 }
             }
         }
+    }
+    
+    /// В API передаём `owner_member_id` только для реальных идентификаторов с сервера (не локальные fallback).
+    private func ownerMemberIdForAPI() -> String? {
+        guard let pick = ownerPicks.first(where: { $0.id == selectedOwnerPickId }) else { return nil }
+        let id = pick.id
+        if id.hasPrefix("fallback_") { return nil }
+        return id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : id
     }
 }
 

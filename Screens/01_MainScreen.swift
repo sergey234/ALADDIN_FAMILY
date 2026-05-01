@@ -25,7 +25,7 @@ struct MainScreen: View {
     }
 
     @State private var aiQuestion: String = ""
-    @StateObject private var mainViewModel: MainViewModel
+    @EnvironmentObject private var mainViewModel: MainViewModel
     @State private var hasAppeared = false
     @ObservedObject private var subscriptionManager = SubscriptionManager.shared
     @ObservedObject private var antivirusManager = AntivirusManager.shared
@@ -52,15 +52,6 @@ struct MainScreen: View {
     
     // ✅ BUILD 99: Защита от рекурсии теперь через глобальный флаг (см. выше)
     // @State не работает при пересоздании View, поэтому используем глобальный флаг
-    
-    // MARK: - Init
-    
-    init() {
-        // ✅ BUILD 109: Конструктор теперь абсолютно бесшумный. 
-        // Логирование перенесено в .task {}, когда экран уже создан.
-        let viewModel = MainViewModel()
-        _mainViewModel = StateObject(wrappedValue: viewModel)
-    }
     
     var body: some View {
         ZStack {
@@ -340,6 +331,10 @@ struct MainScreen: View {
             Task {
                 saveDebugLog(logCopy)
             }
+        }
+        .onAppear {
+            // Счётчик устройств в жёлтом блоке = `GET /api/devices` (при возврате с других экранов без повторного .task).
+            mainViewModel.refreshDevicesCountFromAPI()
         }
         // ✅ ИСПРАВЛЕНИЕ BUILD 92: УБРАН .id() с localizationManager - может вызывать рекурсию с @AppStorage
         // localizationManager.currentLanguage читает из UserDefaults, что может вызвать рекурсию
@@ -887,6 +882,7 @@ struct MainScreen: View {
                     mainViewModel.refreshFamilyMembersCountFromStorage()
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyDevicesDidChange"))) { _ in
+                    // Один коалесцированный проход дашборда (внутри уже есть GET /api/devices).
                     mainViewModel.requestRefreshDebounced()
                 }
                 // ✅ NEW: React to tariff changes from TariffsScreen, SubscriptionManager, or forceSync
@@ -1093,6 +1089,9 @@ extension FamilyProtectionStatus {
 struct MainScreen_Previews: PreviewProvider {
     static var previews: some View {
         MainScreen()
+            .environmentObject(MainViewModel())
+            .environmentObject(NavigationManager())
+            .environmentObject(LocalizationManager.shared)
     }
 }
 

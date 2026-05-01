@@ -417,8 +417,8 @@ async def get_family_stats(
             member_devices_sum = int(agg[1] or 0)
             total_threats = int(agg[2] or 0)
 
-            # Источник правды для списка устройств — aladdin_family_devices (GET/POST /api/devices).
-            # SUM(family_members.devices) остаётся fallback, если таблица ещё не развёрнута или запрос недоступен.
+            # Источник правды для числа устройств = тот же фильтр, что GET /api/devices (строка user_id владельца токена).
+            # Так `family/stats.totalDevices` совпадает по смыслу с длиной списка устройств на главном экране.
             total_devices = member_devices_sum
             try:
                 drow = db.execute(
@@ -426,18 +426,10 @@ async def get_family_stats(
                         """
                         SELECT COUNT(*)::int
                         FROM aladdin_family_devices d
-                        WHERE d.user_id IN (
-                            SELECT CAST(fm.user_id AS TEXT)
-                            FROM family_members fm
-                            WHERE fm.family_id = :family_id AND fm.user_id IS NOT NULL
-                            UNION
-                            SELECT CAST(f.owner_user_id AS TEXT)
-                            FROM families f
-                            WHERE f.id = :family_id
-                        )
+                        WHERE d.user_id = :uid_text
                         """
                     ),
-                    {"family_id": family_id},
+                    {"uid_text": str(user_id)},
                 ).fetchone()
                 total_devices = int(drow[0] or 0) if drow else 0
             except Exception as e:

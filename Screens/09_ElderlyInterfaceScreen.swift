@@ -3072,7 +3072,7 @@ struct HealthJournalModal: View {
                 // Список записей
                 ScrollView {
                     LazyVStack(spacing: Spacing.s) {
-                        ForEach(healthEntries.isEmpty ? getMockHealthEntries() : healthEntries) { entry in
+                        ForEach(healthEntriesForDisplay) { entry in
                             HStack {
                                 VStack(alignment: .leading, spacing: Spacing.xs) {
                                     Text(entry.date)
@@ -3151,6 +3151,13 @@ struct HealthJournalModal: View {
         }
     }
     
+    private var healthEntriesForDisplay: [HealthEntry] {
+        #if DEBUG
+        if healthEntries.isEmpty { return getMockHealthEntries() }
+        #endif
+        return healthEntries
+    }
+
     private func getMockHealthEntries() -> [HealthEntry] {
         return [
             HealthEntry(date: "08.10", text: localizationManager.localized("elderly_health_journal_default_entry_aspirin")),

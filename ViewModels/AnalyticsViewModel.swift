@@ -32,6 +32,11 @@ class AnalyticsViewModel: ObservableObject {
         case loadFailed
     }
 
+    /// Процент защиты показываем только после реального ответа API или кэша (не «ложный 0%» при старте).
+    var canDisplayProtectionLevel: Bool {
+        dataSource == .api || dataSource == .cache
+    }
+    
     /// `nil`, если есть строки категорий или идёт загрузка.
     var threatBreakdownEmptyKind: ThreatBreakdownEmptyKind? {
         guard threatCategories.isEmpty, !isLoading else { return nil }

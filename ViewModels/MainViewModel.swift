@@ -89,6 +89,9 @@ enum FamilyProtectionStatus: String, Codable {
 /// Управляет состоянием защиты сети, функций, статистикой
 @MainActor
 class MainViewModel: ObservableObject {
+
+    /// Якорь для коалесцирования обновлений в первые секунды после запуска процесса.
+    private static let processLaunchDate = Date()
     
     // MARK: - Published Properties
     
@@ -121,6 +124,9 @@ class MainViewModel: ObservableObject {
     private let failuresThreshold: Int = 2
     /// Debounce для внешних запросов обновления (мс)
     private let refreshDebounceMs: Int = 700
+    /// На холодном старте увеличиваем окно, чтобы слить SubscriptionUpdated / MainScreen / устройства в один кадр загрузки.
+    private let refreshDebounceColdStartMs: Int = 950
+    private let coldStartCoalesceWindowSec: TimeInterval = 1.25
     private var refreshDebounceWorkItem: DispatchWorkItem?
     
     // MARK: - Public Orchestrator API
@@ -132,8 +138,36 @@ class MainViewModel: ObservableObject {
             }
         }
         refreshDebounceWorkItem = work
-        let delay = DispatchTimeInterval.milliseconds(refreshDebounceMs)
+        let elapsed = Date().timeIntervalSince(Self.processLaunchDate)
+        let ms = elapsed < coldStartCoalesceWindowSec ? refreshDebounceColdStartMs : refreshDebounceMs
+        let delay = DispatchTimeInterval.milliseconds(ms)
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
+    }
+
+    /// Счётчик устройств на главной/профиле = тот же `GET /api/devices` и та же дедупликация по `id`, что на экране «Устройства».
+    private static func deduplicatedDeviceCount(_ list: [DeviceResponse]) -> Int {
+        var seen = Set<String>()
+        return list.filter { seen.insert($0.id).inserted }.count
+    }
+
+    /// Мгновенно подтянуть число устройств (без ожидания debounce полного дашборда) — устраняет рассинхрон 1 vs 2 после добавления/удаления.
+    func refreshDevicesCountFromAPI() {
+        if isLoadingDashboard {
+            #if DEBUG
+            print("ℹ️ MainViewModel.refreshDevicesCountFromAPI: пропуск — уже идёт loadDashboardData (будет dedupe GET /api/devices)")
+            #endif
+            return
+        }
+        apiService.getDevices { [weak self] result in
+            Task { @MainActor in
+                guard let self = self else { return }
+                if case .success(let list) = result {
+                    self.devicesProtected = Self.deduplicatedDeviceCount(list)
+                }
+                UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
+                NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+            }
+        }
     }
     
     // ✅ ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЦИКЛОВ
@@ -308,8 +342,8 @@ class MainViewModel: ObservableObject {
                         Task { @MainActor in
                             switch devicesResult {
                             case .success(let list):
-                                self.devicesProtected = list.count
-                                print("   - Устройства (из /api/devices): \(self.devicesProtected)")
+                                self.devicesProtected = Self.deduplicatedDeviceCount(list)
+                                print("   - Устройства (из /api/devices, dedupe): \(self.devicesProtected)")
                             case .failure(let err):
                                 self.devicesProtected = fallbackDevices
                                 print("   - Устройства: список API недоступен, используем family/stats: \(fallbackDevices) (\(err.localizedDescription))")

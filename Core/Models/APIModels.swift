@@ -1308,12 +1308,16 @@ struct DeviceResponse: Decodable, Identifiable {
     let type: String // "iphone", "mac", "ipad", "android"
     let status: String // "protected", "warning", "danger", "inactive"
     let lastActive: String
+    /// Привязка к участнику семьи (`MEM_*`), если бэкенд отдал поле.
+    let ownerMemberId: String?
     /// Если бэкенд возвращает данные для экрана сопряжения после `POST /api/devices`.
     let pairingToken: String?
     let shortPin: String?
     
     enum CodingKeys: String, CodingKey {
         case id, name, owner, type, status
+        case ownerMemberIdCamel = "ownerMemberId"
+        case ownerMemberIdSnake = "owner_member_id"
         case lastActiveSnake = "last_active"
         case lastActiveCamel = "lastActive"
         case pairingTokenSnake = "pairing_token"
@@ -1329,6 +1333,9 @@ struct DeviceResponse: Decodable, Identifiable {
         owner = try c.decode(String.self, forKey: .owner)
         type = try c.decode(String.self, forKey: .type)
         status = try c.decode(String.self, forKey: .status)
+        let omCamel = try c.decodeIfPresent(String.self, forKey: .ownerMemberIdCamel)
+        let omSnake = try c.decodeIfPresent(String.self, forKey: .ownerMemberIdSnake)
+        ownerMemberId = [omCamel, omSnake].compactMap { $0 }.first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty }
         let lastSnake = try c.decodeIfPresent(String.self, forKey: .lastActiveSnake)
         let lastCamel = try c.decodeIfPresent(String.self, forKey: .lastActiveCamel)
         lastActive = [lastSnake, lastCamel].compactMap { $0 }.first { !$0.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty } ?? ""
@@ -1349,6 +1356,8 @@ struct DeviceDetailResponse: Codable {
     let type: String
     let status: String
     let lastActive: String
+    /// Опционально: стабильная связь с участником семьи (`ownerMemberId` в JSON).
+    let ownerMemberId: String?
     let ipAddress: String?
     let osVersion: String?
     let appVersion: String?
@@ -1406,6 +1415,36 @@ struct SendFamilyChatMessageRequest: Codable {
 struct SendFamilyChatMessageResponse: Codable {
     let success: Bool
     let messageId: String
+
+    enum CodingKeys: String, CodingKey {
+        case success
+        case messageId
+        case message_id
+    }
+
+    /// Для offline-фолбэка и тестов, когда JSON-декодер не используется.
+    init(success: Bool = true, messageId: String) {
+        self.success = success
+        self.messageId = messageId
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        success = try c.decodeIfPresent(Bool.self, forKey: .success) ?? true
+        if let id = try c.decodeIfPresent(String.self, forKey: .messageId)?.trimmingCharacters(in: .whitespacesAndNewlines), !id.isEmpty {
+            messageId = id
+        } else if let id = try c.decodeIfPresent(String.self, forKey: .message_id)?.trimmingCharacters(in: .whitespacesAndNewlines), !id.isEmpty {
+            messageId = id
+        } else {
+            messageId = ""
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(success, forKey: .success)
+        try c.encode(messageId, forKey: .messageId)
+    }
 }
 
 // MARK: - Referral Models

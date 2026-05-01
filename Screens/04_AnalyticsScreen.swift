@@ -17,6 +17,7 @@ struct AnalyticsScreen: View {
     
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @ObservedObject private var tariffManager = TariffManager.shared
     @StateObject private var viewModel = AnalyticsScreen.makeViewModel()
     @State private var showAnalyticsSettings: Bool = false
     @State private var didStartInitialLoad: Bool = false
@@ -51,6 +52,9 @@ struct AnalyticsScreen: View {
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
+                        if tariffManager.currentTariff == .trial {
+                            trialModeBanner
+                        }
                         // ✅ ЗАДАЧА 64: Индикатор офлайн режима
                         if viewModel.isOfflineMode {
                             HStack(spacing: Spacing.s) {
@@ -312,6 +316,21 @@ struct AnalyticsScreen: View {
         }
     }
     
+    private var trialModeBanner: some View {
+        HStack(alignment: .top, spacing: Spacing.s) {
+            Image(systemName: "hourglass")
+                .foregroundColor(.primaryBlue)
+            Text(localizationManager.localized("analytics_trial_mode_notice"))
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.textPrimary)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, Spacing.m)
+        .padding(.vertical, Spacing.s)
+        .background(Color.primaryBlue.opacity(0.12))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+    }
+    
     // MARK: - Protection Block
 
     private var protectionBlock: some View {
@@ -322,18 +341,30 @@ struct AnalyticsScreen: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             VStack(alignment: .leading, spacing: Spacing.s) {
-                ProgressView(value: min(max(viewModel.protectionLevel / 100.0, 0), 1))
-                    .progressViewStyle(.linear)
-                    .tint(.primaryBlue)
-
-                HStack {
-                    Text(localizationManager.localized("analytics_protected"))
+                if viewModel.isLoading && !viewModel.canDisplayProtectionLevel {
+                    ProgressView()
+                        .frame(maxWidth: .infinity, alignment: .center)
+                } else if !viewModel.canDisplayProtectionLevel {
+                    Text(localizationManager.localized("analytics_protection_level_pending"))
                         .font(.body)
                         .foregroundColor(.textSecondary)
-                    Spacer()
-                    Text("\(Int(viewModel.protectionLevel))%")
-                        .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
+                    ProgressView(value: 0)
+                        .progressViewStyle(.linear)
+                        .tint(Color.gray.opacity(0.4))
+                } else {
+                    ProgressView(value: min(max(viewModel.protectionLevel / 100.0, 0), 1))
+                        .progressViewStyle(.linear)
+                        .tint(.primaryBlue)
+
+                    HStack {
+                        Text(localizationManager.localized("analytics_protected"))
+                            .font(.body)
+                            .foregroundColor(.textSecondary)
+                        Spacer()
+                        Text("\(Int(viewModel.protectionLevel))%")
+                            .font(.bodyBold)
+                            .foregroundColor(.textPrimary)
+                    }
                 }
             }
             .padding()
