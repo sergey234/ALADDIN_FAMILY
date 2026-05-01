@@ -12,7 +12,7 @@ class VoiceMessagePlayer: NSObject, ObservableObject {
     // MARK: - Published Properties
     
     @Published var isPlaying: Bool = false
-    @Published var currentMessageId: UUID? = nil
+    @Published var currentMessageId: String? = nil
     @Published var playbackProgress: Double = 0.0
     @Published var playbackDuration: TimeInterval = 0.0
     @Published var playbackError: String? = nil
@@ -49,7 +49,7 @@ class VoiceMessagePlayer: NSObject, ObservableObject {
     // MARK: - Playback Methods
     
     /// Воспроизводит голосовое сообщение
-    func play(url: URL, messageId: UUID) {
+    func play(url: URL, messageId: String) {
         // Останавливаем предыдущее воспроизведение, если есть
         if isPlaying {
             stop()

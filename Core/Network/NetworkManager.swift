@@ -591,6 +591,7 @@ class NetworkManager: NSObject, ObservableObject {
     func delete<T: Decodable, B: Encodable>(
         endpoint: String,
         body: B,
+        additionalHeaders: [String: String]? = nil,
         completion: @escaping (Result<T, Error>) -> Void
     ) {
         // Проверяем и обновляем токен если нужно
@@ -624,6 +625,11 @@ class NetworkManager: NSObject, ObservableObject {
             
             if let token = AppConfig.authToken {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+            if let additionalHeaders = additionalHeaders {
+                for (field, value) in additionalHeaders {
+                    request.setValue(value, forHTTPHeaderField: field)
+                }
             }
             
             // Encode body

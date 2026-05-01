@@ -34,14 +34,13 @@ struct FamilyChatScreen: View {
     @State private var refreshTimer: Timer? = nil
     @State private var onlineMembersCount: Int = 0
     @State private var onlineUsers: Set<String> = []
-    @State private var wsConnectionStatus: FamilyChatWebSocket.ConnectionStatus = .disconnected
     
     // Extended features state
     @StateObject private var voiceRecorder = VoiceMessageRecorder()
-    @StateObject private var offlineManager = FamilyChatOfflineManager.shared
-    @StateObject private var mediaUploadManager = MediaUploadManager.shared
-    @StateObject private var pushService = PushNotificationService.shared
-    @StateObject private var syncEngine = SyncEngine.shared
+    /// Синглтоны: `@ObservedObject`, не `@StateObject` (иначе конфликт владения и риск реентрантности с Combine).
+    @ObservedObject private var offlineManager = FamilyChatOfflineManager.shared
+    @ObservedObject private var mediaUploadManager = MediaUploadManager.shared
+    @ObservedObject private var pushService = PushNotificationService.shared
     @State private var webSocket: FamilyChatWebSocket?
     @State private var isRecordingVoice: Bool = false
     @State private var recordingURL: URL? = nil
@@ -69,8 +68,6 @@ struct FamilyChatScreen: View {
     @State private var typingExpiryByUser: [String: Date] = [:]
     @State private var presencePruneTimer: Timer? = nil
     
-    // UserDefaults ключи
-    private let familyIdKey = "family_id"
     private let familyMembersKey = "family_members_list"
     
     private let apiService = APIService.shared
@@ -105,32 +102,6 @@ struct FamilyChatScreen: View {
             )
             .accessibilityElement(children: .combine)
             .accessibilityLabel(localizationManager.localized("family_chat_nav_accessibility"))
-
-            HStack {
-                Text(connectionStatusTitle)
-                    .font(.caption2)
-                    .foregroundColor(connectionStatusColor)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(connectionStatusColor.opacity(0.18))
-                    .clipShape(Capsule())
-                Spacer()
-            }
-            .padding(.horizontal, Spacing.screenPadding)
-            .padding(.top, 6)
-
-            HStack {
-                Text(chatSyncStatusTitle)
-                    .font(.caption2)
-                    .foregroundColor(chatSyncStatusColor)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(chatSyncStatusColor.opacity(0.16))
-                    .clipShape(Capsule())
-                Spacer()
-            }
-            .padding(.horizontal, Spacing.screenPadding)
-            .padding(.top, 4)
 
             if !onlineUsers.isEmpty {
                 ScrollView(.horizontal, showsIndicators: false) {
@@ -263,11 +234,12 @@ struct FamilyChatScreen: View {
             print("🚨 FamilyChatScreen загружен!")
             markFamilyActivity()
             updateOnlineMembersCount()
-            loadMessages()
+            loadCachedMessages()
+            let hadCachedSnapshot = !messages.isEmpty
+            loadMessages(silent: hadCachedSnapshot)
             startAutoRefresh()
             setupWebSocket()
             setupPushNotifications()
-            loadCachedMessages()
             startPresencePruneTimer()
         }
         .onDisappear {
@@ -438,9 +410,6 @@ struct FamilyChatScreen: View {
     // MARK: - Helper Methods
 
     private var presenceSubtitle: String {
-        if wsConnectionStatus == .reconnecting || wsConnectionStatus == .connecting {
-            return localizationManager.localized("family_chat_websocket_reconnecting")
-        }
         if onlineUsers.isEmpty {
             return String(format: localizationManager.localized("family_chat_subtitle"), onlineMembersCount)
         }
@@ -459,69 +428,12 @@ struct FamilyChatScreen: View {
             .sorted()
     }
 
-    private var connectionStatusTitle: String {
-        switch wsConnectionStatus {
-        case .connected:
-            return localizationManager.localized("family_chat_online")
-        case .connecting, .reconnecting:
-            return localizationManager.localized("family_chat_websocket_reconnecting")
-        case .disconnected, .error:
-            return localizationManager.localized("family_chat_offline_status")
-        }
-    }
-
-    private var connectionStatusColor: Color {
-        switch wsConnectionStatus {
-        case .connected:
-            return .green
-        case .connecting, .reconnecting:
-            return .orange
-        case .disconnected, .error:
-            return .gray
-        }
-    }
-
-    private var chatSyncState: SyncState {
-        syncEngine.latestStateByDomain[.familyChat] ?? .idle
-    }
-
-    private var chatSyncStatusTitle: String {
-        switch chatSyncState {
-        case .idle:
-            return "Chat idle"
-        case .local:
-            return "Local update"
-        case .pending:
-            return "Pending sync"
-        case .syncing:
-            return "Syncing chat..."
-        case .synced:
-            return "Chat synced"
-        case .conflict:
-            return "Chat conflict"
-        case .error:
-            return "Chat sync error"
-        }
-    }
-
-    private var chatSyncStatusColor: Color {
-        switch chatSyncState {
-        case .idle:
-            return .gray
-        case .local, .pending:
-            return .orange
-        case .syncing:
-            return .blue
-        case .synced:
-            return .green
-        case .conflict, .error:
-            return .red
-        }
-    }
-    
-    /// Получает familyId из UserDefaults
+    /// Получает familyId из UserDefaults (канонический ключ — `FamilyLocalStore.familyIdKey`).
     private func getFamilyId() -> String? {
-        return UserDefaults.standard.string(forKey: familyIdKey)
+        let raw = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard let raw, !raw.isEmpty else { return nil }
+        return raw
     }
     
     /// Обновляет количество участников онлайн
@@ -621,7 +533,7 @@ struct FamilyChatScreen: View {
     
     
     /// Прокручивает к указанному сообщению
-    private func scrollToMessage(_ messageId: UUID, proxy: ScrollViewProxy) {
+    private func scrollToMessage(_ messageId: String, proxy: ScrollViewProxy) {
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             withAnimation(.easeInOut(duration: 0.3)) {
                 proxy.scrollTo(messageId, anchor: .bottom)
@@ -638,36 +550,42 @@ struct FamilyChatScreen: View {
         let now = Date()
         return [
             FamilyChatMessage(
+                id: "mock_1",
                 sender: "Сергей",
                 text: "Всем привет! Как дела?",
                 time: formatter.string(from: now.addingTimeInterval(-3600)),
                 isCurrentUser: true
             ),
             FamilyChatMessage(
+                id: "mock_2",
                 sender: "Мария",
                 text: "Привет! У нас всё хорошо 😊",
                 time: formatter.string(from: now.addingTimeInterval(-3540)),
                 isCurrentUser: false
             ),
             FamilyChatMessage(
+                id: "mock_3",
                 sender: "Маша",
                 text: "Папа, можно мне ещё 30 минут?",
                 time: formatter.string(from: now.addingTimeInterval(-3480)),
                 isCurrentUser: false
             ),
             FamilyChatMessage(
+                id: "mock_4",
                 sender: "Сергей",
                 text: "Конечно, дочка!",
                 time: formatter.string(from: now.addingTimeInterval(-3420)),
                 isCurrentUser: true
             ),
             FamilyChatMessage(
+                id: "mock_5",
                 sender: "Бабушка",
                 text: "Как мне настроить VPN?",
                 time: formatter.string(from: now.addingTimeInterval(-3300)),
                 isCurrentUser: false
             ),
             FamilyChatMessage(
+                id: "mock_6",
                 sender: "Сергей",
                 text: "Сейчас помогу! Открой настройки...",
                 time: formatter.string(from: now.addingTimeInterval(-3240)),
@@ -687,7 +605,9 @@ struct FamilyChatScreen: View {
         }
         
         return FamilyChatMessage(
-            id: UUID(uuidString: response.id) ?? UUID(),
+            id: response.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? UUID().uuidString
+                : response.id,
             sender: response.sender,
             text: response.text,
             time: timeString,
@@ -881,7 +801,6 @@ struct FamilyChatScreen: View {
         }
 
         webSocket?.onConnectionStatus = { [self] status in
-            wsConnectionStatus = status
             switch status {
             case .connected:
                 break
@@ -898,11 +817,11 @@ struct FamilyChatScreen: View {
         }
         
         webSocket?.onMessageDeleted = { [self] messageId in
-            messages.removeAll { $0.id.uuidString == messageId }
+            messages.removeAll { $0.id == messageId }
         }
         
         webSocket?.onMessageEdited = { [self] messageId, newText in
-            if let index = messages.firstIndex(where: { $0.id.uuidString == messageId }) {
+            if let index = messages.firstIndex(where: { $0.id == messageId }) {
                 let updatedMessage = messages[index]
                 // Обновляем текст сообщения
                 messages[index] = FamilyChatMessage(
@@ -958,7 +877,7 @@ struct FamilyChatScreen: View {
         let localPreviewUrl = url.absoluteString
         
         let newMessage = FamilyChatMessage(
-            id: UUID(uuidString: messageId)!,
+            id: messageId,
             sender: localizationManager.localized("family_chat_you"),
             text: nil,
             time: getCurrentTime(),
@@ -975,12 +894,13 @@ struct FamilyChatScreen: View {
         mediaUploadManager.uploadMedia(
             data: data,
             type: .voice,
-            forMessageId: messageId
+            forMessageId: messageId,
+            familyId: familyId
         ) { [self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let uploadedUrl):
-                    if let idx = messages.firstIndex(where: { $0.id.uuidString == messageId }) {
+                    if let idx = messages.firstIndex(where: { $0.id == messageId }) {
                         var m = messages[idx]
                         m = FamilyChatMessage(
                             id: m.id,
@@ -1012,7 +932,7 @@ struct FamilyChatScreen: View {
                         voiceDuration: duration,
                         mediaUrl: uploadedUrl,
                         mediaType: "voice",
-                        replyToMessageId: self.replyToMessage?.id.uuidString
+                        replyToMessageId: self.replyToMessage?.id
                     ) { sendResult in
                         DispatchQueue.main.async {
                             switch sendResult {
@@ -1030,7 +950,7 @@ struct FamilyChatScreen: View {
                                     voiceDuration: duration,
                                     mediaUrl: uploadedUrl,
                                     mediaType: "voice",
-                                    replyToMessageId: self.replyToMessage?.id.uuidString
+                                    replyToMessageId: self.replyToMessage?.id
                                 ))
                             }
                         }
@@ -1047,7 +967,7 @@ struct FamilyChatScreen: View {
                         voiceDuration: duration,
                         mediaUrl: nil,
                         mediaType: "voice",
-                        replyToMessageId: replyToMessage?.id.uuidString
+                        replyToMessageId: replyToMessage?.id
                     ))
                 }
             }
@@ -1063,10 +983,9 @@ struct FamilyChatScreen: View {
         }
         
         let messageId = UUID().uuidString
-        let mid = UUID(uuidString: messageId)!
         
         let newMessage = FamilyChatMessage(
-            id: mid,
+            id: messageId,
             sender: localizationManager.localized("family_chat_you"),
             text: nil,
             time: getCurrentTime(),
@@ -1082,12 +1001,13 @@ struct FamilyChatScreen: View {
         mediaUploadManager.uploadMedia(
             data: imageData,
             type: .image,
-            forMessageId: messageId
+            forMessageId: messageId,
+            familyId: familyId
         ) { [self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let mediaUrl):
-                    if let index = messages.firstIndex(where: { $0.id == mid }) {
+                    if let index = messages.firstIndex(where: { $0.id == messageId }) {
                         let prev = messages[index]
                         messages[index] = FamilyChatMessage(
                             id: prev.id,
@@ -1118,7 +1038,7 @@ struct FamilyChatScreen: View {
                         voiceDuration: nil,
                         mediaUrl: mediaUrl,
                         mediaType: "image",
-                        replyToMessageId: self.replyToMessage?.id.uuidString
+                        replyToMessageId: self.replyToMessage?.id
                     ) { sendResult in
                         DispatchQueue.main.async {
                             switch sendResult {
@@ -1128,13 +1048,13 @@ struct FamilyChatScreen: View {
                             case .failure(let err):
                                 self.errorMessage = err.localizedDescription
                                 self.offlineManager.addPendingMessage(PendingChatMessage(
-                                    id: mid,
+                                    id: UUID(uuidString: messageId)!,
                                     text: nil,
                                     familyId: familyId,
                                     messageType: "image",
                                     mediaUrl: mediaUrl,
                                     mediaType: "image",
-                                    replyToMessageId: self.replyToMessage?.id.uuidString
+                                    replyToMessageId: self.replyToMessage?.id
                                 ))
                             }
                         }
@@ -1143,13 +1063,13 @@ struct FamilyChatScreen: View {
                 case .failure(let error):
                     errorMessage = error.localizedDescription
                     offlineManager.addPendingMessage(PendingChatMessage(
-                        id: mid,
+                        id: UUID(uuidString: messageId)!,
                         text: nil,
                         familyId: familyId,
                         messageType: "image",
                         mediaUrl: nil,
                         mediaType: "image",
-                        replyToMessageId: replyToMessage?.id.uuidString
+                        replyToMessageId: replyToMessage?.id
                     ))
                 }
             }
@@ -1209,13 +1129,18 @@ struct FamilyChatScreen: View {
     
     /// Удаление сообщения
     private func deleteMessage(_ message: FamilyChatMessage) {
-        apiService.deleteFamilyChatMessage(messageId: message.id.uuidString) { [self] result in
+        apiService.deleteFamilyChatMessage(messageId: message.id) { [self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(_):
                     messages.removeAll { $0.id == message.id }
                 case .failure(let error):
-                    errorMessage = error.localizedDescription
+                    let description = error.localizedDescription.lowercased()
+                    if description.contains("invalid user_id") || description.contains("invalid user id") {
+                        errorMessage = "Не удалось подтвердить профиль по токену. Выйдите из аккаунта и войдите снова."
+                    } else {
+                        errorMessage = error.localizedDescription
+                    }
                 }
             }
         }
@@ -1232,7 +1157,7 @@ struct FamilyChatScreen: View {
     private func saveEdit() {
         guard let message = editingMessage else { return }
         
-        apiService.editFamilyChatMessage(messageId: message.id.uuidString, newText: editText) { [self] result in
+        apiService.editFamilyChatMessage(messageId: message.id, newText: editText) { [self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(_):
@@ -1281,7 +1206,7 @@ struct FamilyChatScreen: View {
     
     /// Добавление реакции
     private func addReaction(to message: FamilyChatMessage, emoji: String) {
-        apiService.addReaction(messageId: message.id.uuidString, emoji: emoji) { [self] result in
+        apiService.addReaction(messageId: message.id, emoji: emoji) { [self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(_):
@@ -1337,7 +1262,10 @@ struct FamilyChatScreen: View {
             return
         }
         
-        let familyId = getFamilyId()
+        guard let familyId = getFamilyId(), !familyId.isEmpty else {
+            errorMessage = localizationManager.localized("family_chat_error_loading")
+            return
+        }
         isSending = true
         markFamilyActivity()
         messageText = ""
@@ -1355,7 +1283,7 @@ struct FamilyChatScreen: View {
             voiceDuration: nil,
             mediaUrl: nil,
             mediaType: nil,
-            replyToMessageId: replyToMessage?.id.uuidString
+            replyToMessageId: replyToMessage?.id
         ) { [self] result in
             DispatchQueue.main.async {
                 isSending = false
@@ -1382,7 +1310,7 @@ struct FamilyChatScreen: View {
                         offlineManager.addPendingMessage(PendingChatMessage(
                             text: messageToSend,
                             familyId: familyId,
-                            replyToMessageId: replyToMessage?.id.uuidString
+                            replyToMessageId: replyToMessage?.id
                         ))
                     }
                     
@@ -1414,8 +1342,11 @@ struct FamilyChatScreen: View {
     }
 
     private func applyQuickReactionFromMenu(emoji: String) {
-        guard let target = quickActionTargetMessage() else { return }
-        addReaction(to: target, emoji: emoji)
+        if messageText.isEmpty {
+            messageText = emoji
+        } else {
+            messageText.append(emoji)
+        }
     }
 
     private func shareCurrentLocation() {
@@ -1552,7 +1483,8 @@ private struct ContactPickerView: UIViewControllerRepresentable {
 
 /// ✅ Обновлённая модель с чёткой типизацией медиа (Phase 2026)
 struct FamilyChatMessage: Identifiable {
-    let id: UUID
+    /// Серверный идентификатор (`MSG_…`), не случайный UUID — нужен для реакций/удаления/ответов.
+    let id: String
     let sender: String
     let text: String?
     let time: String
@@ -1578,7 +1510,7 @@ struct FamilyChatMessage: Identifiable {
     // Локальное состояние для UI
     var uploadProgress: Double? = nil // 0.0...1.0 для отображения прогресса
     
-    init(id: UUID = UUID(), 
+    init(id: String = UUID().uuidString, 
          sender: String, 
          text: String? = nil, 
          time: String, 
@@ -1652,7 +1584,7 @@ struct MessageBubbleView: View {
         VStack(alignment: message.isCurrentUser ? .trailing : .leading, spacing: Spacing.xxs) {
             // Reply Preview
             if let replyToId = message.replyToMessageId,
-               let replyTo = allMessages.first(where: { $0.id.uuidString == replyToId }) {
+               let replyTo = allMessages.first(where: { $0.id == replyToId }) {
                 ReplyBubbleView(replyTo: replyTo) {}
                     .padding(.bottom, Spacing.xxs)
             }

@@ -644,7 +644,14 @@ class APIService: ObservableObject {
     // MARK: - Family Chat API
     
     func getFamilyChatMessages(completion: @escaping (Result<[FamilyChatMessageResponse], Error>) -> Void) {
-        networkManager.get(endpoint: AppConfig.Endpoint.familyChatMessages, completion: completion)
+        let stored = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let query: [String: String]? = stored.isEmpty ? nil : ["familyId": stored]
+        networkManager.get(
+            endpoint: AppConfig.Endpoint.familyChatMessages,
+            queryParams: query,
+            completion: completion
+        )
     }
     
     func sendFamilyChatMessage(message: String?, familyId: String?, messageType: String?, voiceUrl: String?, voiceDuration: Double?, mediaUrl: String?, mediaType: String?, replyToMessageId: String?, completion: @escaping (Result<SendFamilyChatMessageResponse, Error>) -> Void) {
@@ -683,7 +690,14 @@ class APIService: ObservableObject {
         struct DeleteRequest: Codable {
             let messageId: String
         }
-        networkManager.delete(endpoint: "\(AppConfig.Endpoint.familyChatSend)/\(messageId)", body: DeleteRequest(messageId: messageId)) { (result: Result<APIResponse<Bool>, Error>) in
+        let trimmedFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let extraHeaders: [String: String]? = trimmedFamilyId.isEmpty ? nil : ["X-Family-Id": trimmedFamilyId]
+        networkManager.delete(
+            endpoint: "\(AppConfig.Endpoint.familyChatSend)/\(messageId)",
+            body: DeleteRequest(messageId: messageId),
+            additionalHeaders: extraHeaders
+        ) { (result: Result<APIResponse<Bool>, Error>) in
             switch result {
             case .success(let response):
                 completion(.success(response.data ?? false))
@@ -757,17 +771,24 @@ class APIService: ObservableObject {
         data: Data,
         type: String,
         filename: String? = nil,
+        familyId: String? = nil,
         progress: ((Double) -> Void)? = nil,
         completion: @escaping (Result<String, Error>) -> Void
     ) {
         let mediaType = type.lowercased()
         let defaultFilename = filename ?? "media_\(Date().timeIntervalSince1970).\(mediaType == "image" ? "jpg" : mediaType == "video" ? "mp4" : "m4a")"
+        let resolvedFamily = (familyId ?? UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey))?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if resolvedFamily.isEmpty {
+            completion(.failure(NetworkError.badRequest("familyId is required for chat media upload")))
+            return
+        }
         
         print("📤 APIService: Starting media upload - type: \(mediaType), size: \(data.count) bytes, filename: \(defaultFilename)")
         
         let uploadCandidates = [
-            "/api/chat/upload-media",
-            "/api/family/chat/upload-media"
+            "/api/family/chat/upload-media",
+            "/api/chat/upload-media"
         ]
         
         uploadMediaUsingCandidates(
@@ -775,6 +796,7 @@ class APIService: ObservableObject {
             fileData: data,
             mediaType: mediaType,
             filename: defaultFilename,
+            familyContextId: resolvedFamily,
             completion: completion
         )
         
@@ -867,6 +889,7 @@ class APIService: ObservableObject {
         fileData: Data,
         mediaType: String,
         filename: String,
+        familyContextId: String,
         completion: @escaping (Result<String, Error>) -> Void
     ) {
         guard let endpoint = endpoints.first else {
@@ -886,6 +909,7 @@ class APIService: ObservableObject {
         if let token = AppConfig.authToken {
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
         }
+        request.setValue(familyContextId, forHTTPHeaderField: "X-Family-Id")
         
         var body = Data()
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
@@ -896,6 +920,9 @@ class APIService: ObservableObject {
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"type\"\r\n\r\n".data(using: .utf8)!)
         body.append("\(mediaType)\r\n".data(using: .utf8)!)
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"familyId\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(familyContextId)\r\n".data(using: .utf8)!)
         body.append("--\(boundary)--\r\n".data(using: .utf8)!)
         request.httpBody = body
         
@@ -929,6 +956,7 @@ class APIService: ObservableObject {
                         fileData: fileData,
                         mediaType: mediaType,
                         filename: filename,
+                        familyContextId: familyContextId,
                         completion: completion
                     )
                     return
@@ -952,6 +980,7 @@ class APIService: ObservableObject {
                     fileData: fileData,
                     mediaType: mediaType,
                     filename: filename,
+                    familyContextId: familyContextId,
                     completion: completion
                 )
                 return

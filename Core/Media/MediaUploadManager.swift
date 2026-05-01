@@ -5,6 +5,10 @@ import UIKit
 /// 📤 MediaUploadManager
 /// Центральный менеджер загрузки медиа в семейный чат
 /// Поддерживает: progress, offline queue, retry, thumbnails, integration with OfflineManager
+///
+/// Все мутации `@Published` только на главном акторе; колбэки UI и цепочка загрузок
+/// откладываются на следующий цикл run loop, чтобы не ловить реентрантность SwiftUI/Combine (watchdog 0x8BADF00D).
+@MainActor
 final class MediaUploadManager: ObservableObject {
     
     static let shared = MediaUploadManager()
@@ -32,13 +36,15 @@ final class MediaUploadManager: ObservableObject {
         data: Data,
         type: UploadMediaType,
         forMessageId messageId: String,
+        familyId: String? = nil,
         completion: @escaping (Result<String, Error>) -> Void
     ) {
         let pending = PendingMediaUpload(
             id: messageId,
             data: data,
             type: type,
-            createdAt: Date()
+            createdAt: Date(),
+            familyId: familyId
         )
         
         pendingUploads.append(pending)
@@ -63,6 +69,7 @@ final class MediaUploadManager: ObservableObject {
             data: pending.data,
             type: pending.type.rawValue,
             filename: pending.filename,
+            familyId: pending.familyId,
             progress: { [weak self] progress in
                 DispatchQueue.main.async {
                     self?.uploadProgress[pending.id] = progress
@@ -91,14 +98,13 @@ final class MediaUploadManager: ObservableObject {
         savePendingUploads()
         uploadProgress.removeValue(forKey: pending.id)
         
-        // Сохраняем в offline cache как успешно загруженное
-        // Сообщение уже обновлено в UI; при необходимости здесь — синхронизация с FamilyChatOfflineManager
-        
-        completion(.success(url))
-        
-        // Загружаем следующее, если есть
-        if !pendingUploads.isEmpty {
-            uploadNextPending(completion: { _ in })
+        let hasMore = !pendingUploads.isEmpty
+        // Откладываем колбэк и следующую загрузку: иначе обновление сообщений в SwiftUI
+        // может реентрантно зайти в Combine во время текущего objectWillChange.
+        DispatchQueue.main.async { [weak self] in
+            completion(.success(url))
+            guard let self, hasMore else { return }
+            self.uploadNextPending(completion: { _ in })
         }
     }
     
@@ -115,7 +121,9 @@ final class MediaUploadManager: ObservableObject {
             error: NetworkError.unknown(error)
         )
         
-        completion(.failure(error))
+        DispatchQueue.main.async {
+            completion(.failure(error))
+        }
     }
     
     private func retryUpload(pending: PendingMediaUpload) async throws {
@@ -126,9 +134,11 @@ final class MediaUploadManager: ObservableObject {
     
     private func setupOfflineObserver() {
         offlineManager.$isOnline
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] isOnline in
-                if isOnline && !(self?.pendingUploads.isEmpty ?? true) {
-                    self?.processPendingUploads()
+                guard let self else { return }
+                if isOnline && !self.pendingUploads.isEmpty {
+                    self.processPendingUploads()
                 }
             }
             .store(in: &cancellables)
@@ -168,6 +178,7 @@ struct PendingMediaUpload: Codable, Identifiable {
     let data: Data
     let type: UploadMediaType
     let createdAt: Date
+    var familyId: String?
     
     var filename: String {
         switch type {
