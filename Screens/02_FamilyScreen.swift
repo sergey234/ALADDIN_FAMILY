@@ -2357,7 +2357,7 @@ extension FamilyScreen {
                     title: localizationManager.localized("parental_geofence"),
                     statusBadge: "🏠",
                     statusText: "🏠 \(locationStatus.isEmpty ? localizationManager.localized("parental_location_home") : locationStatus)",
-                    metric: "Точность: 50м • " + locationLastUpdate,
+                    metric: localizationManager.localized("parental_location_accuracy_50m") + " • " + locationLastUpdate,
                     cardColor: .green.opacity(0.2),
                     borderColor: .green.opacity(0.4),
                     badgeColor: .successGreen,
@@ -2418,8 +2418,14 @@ extension FamilyScreen {
                 FamilyParentalControlCard(
                     icon: "🚨",
                     title: localizationManager.localized("parental_bypass_protection"),
-                    statusBadge: bypassAttemptsToday > 0 ? "🚨 \(bypassAttemptsToday)" : (DNSProtectionManager.shared.isEnabled ? "🔒 SECURE" : "⚠️ OFF"),
-                    statusText: DNSProtectionManager.shared.isEnabled ? "Smart DNS Активен" : "Фильтр DNS отключен",
+                    statusBadge: bypassAttemptsToday > 0
+                        ? "🚨 \(bypassAttemptsToday)"
+                        : (DNSProtectionManager.shared.isEnabled
+                            ? localizationManager.localized("parental_dns_secure")
+                            : localizationManager.localized("parental_dns_off")),
+                    statusText: DNSProtectionManager.shared.isEnabled
+                        ? localizationManager.localized("parental_dns_status_active")
+                        : localizationManager.localized("parental_dns_status_inactive"),
                     metric: "\(bypassDetectionActive)/3 \(localizationManager.localized("parental_detection_active"))",
                     cardColor: Color.warningOrange.opacity(0.2),
                     borderColor: Color.warningOrange.opacity(0.4),
@@ -7571,47 +7577,6 @@ struct FamilyRolesHelpView: View {
             }
             .background(LinearGradient.backgroundGradient.ignoresSafeArea())
             .navigationTitle(localizationManager.currentLanguage == .russian ? "Роли и профили" : "Roles & Profiles")
-            .toolbar {
-                ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(localizationManager.currentLanguage == .russian ? "Готово" : "Done") { dismiss() }
-                }
-            }
-        }
-    }
-}
-
-struct FamilyControlsGuideHelpView: View {
-    @EnvironmentObject private var localizationManager: LocalizationManager
-    @Environment(\.dismiss) private var dismiss
-
-    var body: some View {
-        NavigationView {
-            ScrollView {
-                let ru = localizationManager.currentLanguage == .russian
-                VStack(alignment: .leading, spacing: 14) {
-                    Text(ru ? "FamilyControls + Screen Time" : "FamilyControls + Screen Time")
-                        .font(.headline)
-                        .foregroundColor(.textPrimary)
-                    Text(ru
-                         ? "Системный FamilyControls (AuthorizationCenter/ManagedSettings/DeviceActivity) — это iOS-контур экранного времени."
-                         : "System FamilyControls (AuthorizationCenter/ManagedSettings/DeviceActivity) is the iOS Screen Time layer.")
-                        .font(.body)
-                        .foregroundColor(.textSecondary)
-                    Text(ru
-                         ? "ALADDIN использует его при доступности, а при недоступности продолжает серверный fallback. Это не снимает родительские правила в приложении."
-                         : "ALADDIN uses it when available, and falls back to server-side controls when unavailable. This does not bypass app parent rules.")
-                        .font(.body)
-                        .foregroundColor(.textSecondary)
-                    Text(ru
-                         ? "Практика: сначала назначьте роли в Family, затем настройте лимиты и мониторинг в Parental Control."
-                         : "Best practice: assign family roles first, then configure limits and monitoring in Parental Control.")
-                        .font(.body)
-                        .foregroundColor(.textSecondary)
-                }
-                .padding(Spacing.m)
-            }
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
-            .navigationTitle(localizationManager.currentLanguage == .russian ? "FamilyControls и лимиты" : "FamilyControls & Limits")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.currentLanguage == .russian ? "Готово" : "Done") { dismiss() }

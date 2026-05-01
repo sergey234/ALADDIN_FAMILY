@@ -2,7 +2,7 @@
 ALADDIN Backend - FastAPI приложение
 Главный файл для запуска API сервера
 """
-from fastapi import FastAPI, Request, Response
+from fastapi import FastAPI, Request, Response, WebSocket, WebSocketDisconnect
 from fastapi.responses import JSONResponse
 import time
 from fastapi.middleware.cors import CORSMiddleware
@@ -17,6 +17,7 @@ from prometheus_client import Gauge, Counter, Histogram, generate_latest, CONTEN
 import logging
 import re
 from sqlalchemy import text
+from collections import defaultdict
 from security.api.routers.location_bubble_router import router as location_router
 from security.api.routers.identity_theft_protection_router import router as identity_router
 from security.api.routers.driving_reports_router import router as driving_router
@@ -397,6 +398,44 @@ app = FastAPI(
     version="1.0.0",
     description="Backend API для приложения ALADDIN"
 )
+
+
+class FamilyChatWSManager:
+    def __init__(self):
+        self._rooms = defaultdict(set)
+
+    async def connect(self, family_id: str, websocket: WebSocket):
+        await websocket.accept()
+        self._rooms[family_id].add(websocket)
+        await self.broadcast(
+            family_id,
+            {
+                "type": "presence",
+                "status": "online",
+                "family_id": family_id,
+            },
+        )
+
+    def disconnect(self, family_id: str, websocket: WebSocket):
+        room = self._rooms.get(family_id)
+        if not room:
+            return
+        room.discard(websocket)
+        if not room:
+            self._rooms.pop(family_id, None)
+
+    async def broadcast(self, family_id: str, payload: dict):
+        stale = []
+        for socket in list(self._rooms.get(family_id, set())):
+            try:
+                await socket.send_json(payload)
+            except Exception:
+                stale.append(socket)
+        for socket in stale:
+            self.disconnect(family_id, socket)
+
+
+family_ws_manager = FamilyChatWSManager()
 
 # Настройка CORS (разрешить запросы с любых доменов)
 app.add_middleware(
@@ -984,6 +1023,31 @@ async def root():
 @app.get("/api/health")
 async def health():
     return {"status": "ok"}
+
+
+@app.websocket("/ws/family/chat")
+async def family_chat_websocket(websocket: WebSocket):
+    family_id = websocket.query_params.get("family_id", "default")
+    await family_ws_manager.connect(family_id, websocket)
+    try:
+        while True:
+            payload = await websocket.receive_json()
+            message_type = payload.get("type", "message")
+            outbound = {
+                "type": message_type,
+                "family_id": family_id,
+                "user_id": payload.get("user_id"),
+                "message": payload.get("message"),
+                "typing": bool(payload.get("typing", False)),
+                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+            }
+            await family_ws_manager.broadcast(family_id, outbound)
+    except WebSocketDisconnect:
+        family_ws_manager.disconnect(family_id, websocket)
+        await family_ws_manager.broadcast(
+            family_id,
+            {"type": "presence", "status": "offline", "family_id": family_id},
+        )
 
 # ✅ ВАРИАНТ 5: ФИНАЛЬНЫЙ СЛОЙ: Wildcard Proxy (Global Safety Net)
 # Подключен ПОСЛЕДНИМ - обрабатывает только endpoints без конкретных роутеров

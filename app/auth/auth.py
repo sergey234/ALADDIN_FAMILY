@@ -119,13 +119,13 @@ def get_current_user(
     
     # ✅ BUILD 121: Нормализуем user_id (может быть "user_id", "id" или "sub")
     # Приоритет: user_id > id > sub (для обратной совместимости)
-    user_id = payload.get("user_id") or payload.get("id") or payload.get("sub")
-    
-    return {
-        "id": user_id,
-        "email": payload.get("email"),
-        **payload  # Включаем все остальные поля из токена
-    }
+    canonical_id = payload.get("user_id") or payload.get("id") or payload.get("sub")
+    # Важно: **payload после canonical — иначе поле `id` из токена перезаписывает нормализованный id.
+    merged = dict(payload)
+    merged["id"] = canonical_id
+    if payload.get("email") is not None:
+        merged["email"] = payload.get("email")
+    return merged
 
 
 # Альтернативная версия для случаев, когда токен может быть необязательным

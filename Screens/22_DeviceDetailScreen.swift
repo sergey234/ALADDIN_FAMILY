@@ -521,7 +521,7 @@ struct DeviceThreatsView: View {
                     self.threats = threatItems
                     self.isLoadingThreats = false
                 case .failure(let error):
-                    self.threatsError = error.localizedDescription
+                    self.threatsError = self.localizationManager.localized("device_threats_list_load_failed")
                     self.isLoadingThreats = false
                     print("⚠️ DeviceThreatsView: Ошибка загрузки угроз: \(error)")
                 }

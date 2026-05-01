@@ -88,7 +88,11 @@ class ParentalControlManager: ObservableObject {
     @Published var familyAuthStatus: AuthorizationStatus = .notDetermined
 
     // Anti-spam guards for parental stats polling in UI cycles.
+    /// Throttle for `/parental-control/stats` only.
     private var lastStatsRequestAt: Date?
+    /// Separate throttle for bypass stats — must not share `lastStatsRequestAt` or back-to-back
+    /// `getStats` + `getBypassStats` on screen load always trips the 10s window.
+    private var lastBypassStatsRequestAt: Date?
     private var statsBackoffUntil: Date?
     private let statsMinInterval: TimeInterval = 10
     private let statsContractBackoff: TimeInterval = 90
@@ -747,18 +751,18 @@ class ParentalControlManager: ObservableObject {
         completion: @escaping (Result<BypassStatsResponse, Error>) -> Void
     ) {
         let now = Date()
-        if let lastRequest = lastStatsRequestAt, now.timeIntervalSince(lastRequest) < statsMinInterval {
+        if let lastRequest = lastBypassStatsRequestAt, now.timeIntervalSince(lastRequest) < statsMinInterval {
             DispatchQueue.main.async {
                 self.isLoading = false
                 completion(.failure(NSError(domain: "ParentalControlManager", code: 429, userInfo: [NSLocalizedDescriptionKey: "Слишком частые запросы (throttle). Повторите позже."])))
             }
             return
         }
-        
+        lastBypassStatsRequestAt = now
+
         isLoading = true
         errorMessage = nil
-        errorMessage = nil
-        
+
         apiService.getBypassStats(childId: childId) { [weak self] result in
             DispatchQueue.main.async {
                 self?.isLoading = false

@@ -211,7 +211,8 @@ final class AIStreamingService: ObservableObject {
                 "context": context,
                 "resumeFromIndex": resumeFromIndex,
                 "messageId": messageId ?? UUID().uuidString,
-                "stream": true
+                "stream": true,
+                "response_language": LocalizationManager.shared.aiResponseLanguageCode
             ]
             
             do {

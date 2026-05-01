@@ -122,9 +122,6 @@ struct ParentalControlScreen: View {
     @State private var showBypassProtectionModal: Bool = false
     @State private var showRewardsModal: Bool = false
     @State private var showParentDashboardModal: Bool = false
-    @State private var showFamilyControlsGuideHelp: Bool = false
-    @State private var familyControlsReadiness: FamilyControlsReadiness?
-    @State private var familyControlsFallbackMessage: String?
     @State private var elderlySyncReportBanner: String?
     
     // MARK: - Rewards Storage
@@ -190,8 +187,6 @@ struct ParentalControlScreen: View {
                         // Выбор ребёнка
                         childSelector
 
-                        familyControlsReadinessBanner
-                        familyControlsScopeHintBanner
                         elderlySyncAuditBanner
                         
                         // Сетка карточек родительского контроля
@@ -269,10 +264,6 @@ struct ParentalControlScreen: View {
             ParentDashboardView(isPresented: $showParentDashboardModal)
                 .environmentObject(localizationManager)
         }
-        .sheet(isPresented: $showFamilyControlsGuideHelp) {
-            FamilyControlsGuideHelpView()
-                .environmentObject(localizationManager)
-        }
         .onAppear {
             // ✅ КРИТИЧНО: Устанавливаем роль родителя при входе в экран
             // ДОЛЖНО БЫТЬ В САМОМ НАЧАЛЕ .onAppear!
@@ -305,7 +296,7 @@ struct ParentalControlScreen: View {
             // ✅ РОДИТЕЛЬСКИЙ КОНТРОЛЬ: Синхронизация с сервером
             Task {
                 await syncParentalControlData()
-                await refreshFamilyControlsReadiness()
+                _ = await manager.applyFamilyControlsPipelineIfPossible()
                 refreshElderlySyncReport()
             }
         }
@@ -426,73 +417,6 @@ struct ParentalControlScreen: View {
         .padding(Spacing.m)
         .background(cardBackground)
         .cardShadow()
-    }
-
-    private var familyControlsReadinessBanner: some View {
-        let ready = familyControlsReadiness?.isPipelineReady ?? false
-        let statusText: String = {
-            if ready {
-                return localizationManager.currentLanguage == .russian
-                    ? "Family Controls pipeline активен: Authorization + ManagedSettings + DeviceActivity."
-                    : "Family Controls pipeline is active: Authorization + ManagedSettings + DeviceActivity."
-            }
-            return familyControlsFallbackMessage ?? (localizationManager.currentLanguage == .russian
-                ? "Системный Family Controls недоступен. Используется серверный fallback."
-                : "System Family Controls is unavailable. Server-side fallback is active.")
-        }()
-
-        return VStack(alignment: .leading, spacing: 8) {
-            Text(localizationManager.currentLanguage == .russian ? "Screen Time readiness" : "Screen Time readiness")
-                .font(.caption.weight(.semibold))
-                .foregroundColor(.white.opacity(0.9))
-            Text(statusText)
-                .font(.caption2)
-                .foregroundColor(.white)
-                .fixedSize(horizontal: false, vertical: true)
-            if !ready {
-                Button(localizationManager.currentLanguage == .russian ? "Повторить инициализацию Family Controls" : "Retry Family Controls initialization") {
-                    Task { await refreshFamilyControlsReadiness() }
-                }
-                .font(.caption.weight(.semibold))
-                .foregroundColor(Color.secondaryGold)
-            }
-        }
-        .padding(Spacing.s)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background((ready ? Color.successGreen : Color.orange).opacity(0.22))
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .stroke((ready ? Color.successGreen : Color.orange).opacity(0.45), lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
-    }
-
-    private var familyControlsScopeHintBanner: some View {
-        let ru = localizationManager.currentLanguage == .russian
-        return VStack(alignment: .leading, spacing: 8) {
-            Text(ru ? "Граница системного и app-контуров" : "System vs app boundaries")
-                .font(.caption.weight(.semibold))
-                .foregroundColor(.white.opacity(0.92))
-            Text(ru
-                 ? "FamilyControls/Screen Time регулируют устройство на уровне iOS, а права ролей и семейные правила ALADDIN работают отдельно внутри приложения."
-                 : "FamilyControls/Screen Time governs device-level iOS behavior, while ALADDIN role permissions and family rules are enforced separately in-app.")
-                .font(.caption2)
-                .foregroundColor(.white)
-                .fixedSize(horizontal: false, vertical: true)
-            Button(ru ? "Открыть краткий гайд" : "Open quick guide") {
-                showFamilyControlsGuideHelp = true
-            }
-            .font(.caption.weight(.semibold))
-            .foregroundColor(Color.secondaryGold)
-        }
-        .padding(Spacing.s)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.blue.opacity(0.2))
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .stroke(Color.blue.opacity(0.45), lineWidth: 1)
-        )
-        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
     }
 
     private var elderlySyncAuditBanner: some View {
@@ -1367,22 +1291,6 @@ struct ParentalControlScreen: View {
                 print("⚠️ Ошибка загрузки блокировок приложений: \(error.localizedDescription)")
             }
         }
-    }
-
-    @MainActor
-    private func refreshFamilyControlsReadiness() async {
-        let readiness = await manager.applyFamilyControlsPipelineIfPossible()
-        familyControlsReadiness = readiness
-
-        guard !readiness.isPipelineReady else {
-            familyControlsFallbackMessage = nil
-            return
-        }
-
-        let reason = readiness.fallbackReason ?? "unknown"
-        familyControlsFallbackMessage = localizationManager.currentLanguage == .russian
-            ? "Системный контур Family Controls недоступен (\(reason)). Продолжаем через серверный fallback."
-            : "System Family Controls pipeline is unavailable (\(reason)). Continuing with server-side fallback."
     }
 
     private func refreshElderlySyncReport() {

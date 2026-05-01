@@ -8,11 +8,15 @@ FAMILY API: Endpoints для семейной статистики
 API для получения статистики семьи
 """
 
-from fastapi import APIRouter, HTTPException, Request, Depends, status, Query, Response
+from fastapi import APIRouter, HTTPException, Request, Depends, status, Query, Response, File, UploadFile, Form, Header
+from fastapi.responses import FileResponse
 import asyncio
+import os
+import re
+from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
-from typing import Optional
+from typing import Optional, Any, Dict, List, Annotated
 from datetime import datetime
 import uuid
 from pydantic import BaseModel
@@ -45,6 +49,14 @@ logger = structlog.get_logger()
 
 _family_indexes_initialized = False
 
+_FAMILY_CHAT_UPLOAD_ROOT = Path(os.environ.get("ALADDIN_FAMILY_CHAT_UPLOAD_DIR", "/tmp/aladdin_family_chat_media"))
+_SAFE_CHAT_MEDIA_FILENAME = re.compile(r"^[a-f0-9]{32}\.[A-Za-z0-9]{1,12}$")
+
+
+def _ensure_family_chat_upload_root() -> Path:
+    _FAMILY_CHAT_UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
+    return _FAMILY_CHAT_UPLOAD_ROOT
+
 def _ensure_family_indexes(db) -> None:
     global _family_indexes_initialized
     if _family_indexes_initialized:
@@ -64,22 +76,27 @@ def _resolve_user_id_from_claim(current_user: dict) -> int:
     - direct int id
     - numeric string id
     - legacy device-id tokens by mapping users.device_id -> users.id
+    - lookup by email when present in claims
     """
-    raw_id = current_user.get("id")
+    raw_id = current_user.get("user_id")
+    if raw_id is None:
+        raw_id = current_user.get("id")
+    if raw_id is None:
+        raw_id = current_user.get("sub")
+
     if isinstance(raw_id, int):
         return raw_id
-    if isinstance(raw_id, str) and raw_id.isdigit():
-        return int(raw_id)
+    if isinstance(raw_id, str) and raw_id.strip().isdigit():
+        return int(raw_id.strip())
 
     # Legacy compatibility path:
     # token might carry non-numeric id, while device identifier may be in `device_id` or `sub`.
     candidate_device_ids = []
-    if isinstance(raw_id, str) and raw_id:
-        candidate_device_ids.append(raw_id)
-    for key in ("device_id", "sub"):
-        val = current_user.get(key)
-        if isinstance(val, str) and val and val not in candidate_device_ids:
-            candidate_device_ids.append(val)
+    for val in (raw_id, current_user.get("device_id"), current_user.get("sub")):
+        if isinstance(val, str) and val.strip():
+            v = val.strip()
+            if v not in candidate_device_ids:
+                candidate_device_ids.append(v)
 
     if candidate_device_ids and get_postgres_db:
         gen = get_postgres_db()
@@ -92,6 +109,20 @@ def _resolve_user_id_from_claim(current_user: dict) -> int:
                 ).fetchone()
                 if row and row[0] is not None:
                     return int(row[0])
+        finally:
+            gen.close()
+
+    email = current_user.get("email")
+    if isinstance(email, str) and email.strip() and get_postgres_db:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            row = db.execute(
+                text("SELECT id FROM users WHERE lower(trim(email)) = lower(trim(:email)) ORDER BY id DESC LIMIT 1"),
+                {"email": email.strip()},
+            ).fetchone()
+            if row and row[0] is not None:
+                return int(row[0])
         finally:
             gen.close()
 
@@ -152,6 +183,24 @@ def _resolve_primary_family_id_for_actor(db, user_id: int, current_user: dict) -
     if fam_row and fam_row[0] is not None:
         return str(fam_row[0]).strip()
     return None
+
+
+def _actor_belongs_to_family(db, user_id: int, family_id: str) -> bool:
+    """Участник семьи или владелец записи в `families`."""
+    fid = str(family_id or "").strip()
+    if not fid:
+        return False
+    m = db.execute(
+        text("SELECT 1 FROM family_members WHERE family_id = :fid AND user_id = :uid LIMIT 1"),
+        {"fid": fid, "uid": user_id},
+    ).fetchone()
+    if m:
+        return True
+    o = db.execute(
+        text("SELECT 1 FROM families WHERE id = :fid AND owner_user_id = :uid LIMIT 1"),
+        {"fid": fid, "uid": user_id},
+    ).fetchone()
+    return bool(o)
 
 
 # ============================================
@@ -480,6 +529,39 @@ class FamilyCompatBoolResponse(BaseModel):
     data: bool
     message: Optional[str] = None
 
+class SendFamilyChatMessageRequest(BaseModel):
+    message: Optional[str] = None
+    familyId: Optional[str] = None
+    messageType: Optional[str] = None
+    voiceUrl: Optional[str] = None
+    voiceDuration: Optional[float] = None
+    mediaUrl: Optional[str] = None
+    mediaType: Optional[str] = None
+    replyToMessageId: Optional[str] = None
+
+
+class SendFamilyChatMessageResponse(BaseModel):
+    success: bool
+    messageId: str
+
+
+class TypingIndicatorRequest(BaseModel):
+    familyId: Optional[str] = None
+
+
+class EditFamilyChatMessageRequest(BaseModel):
+    messageId: str
+    text: str
+
+
+class ReactionRequest(BaseModel):
+    messageId: str
+    emoji: str
+
+
+class ReadRequest(BaseModel):
+    messageId: str
+
 
 class FamilyMemberCompat(BaseModel):
     id: str
@@ -518,6 +600,57 @@ class RemoveFamilyMemberRequest(BaseModel):
     source: Optional[str] = None
     reason: Optional[str] = None
     familyId: Optional[str] = None
+
+
+def _ensure_family_chat_table(db) -> None:
+    db.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS family_chat_messages (
+                id TEXT PRIMARY KEY,
+                family_id TEXT NOT NULL,
+                sender_user_id INTEGER,
+                sender_name TEXT NOT NULL,
+                text TEXT,
+                timestamp TEXT NOT NULL,
+                message_type TEXT,
+                voice_url TEXT,
+                voice_duration DOUBLE PRECISION,
+                media_url TEXT,
+                media_thumbnail_url TEXT,
+                media_type TEXT,
+                reply_to_message_id TEXT,
+                edited_at TEXT,
+                read_status TEXT,
+                read_at TEXT
+            )
+            """
+        )
+    )
+    db.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS family_chat_reactions (
+                id TEXT PRIMARY KEY,
+                message_id TEXT NOT NULL,
+                user_id INTEGER,
+                user_name TEXT NOT NULL,
+                emoji TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+    )
+    db.execute(
+        text(
+            "CREATE INDEX IF NOT EXISTS idx_family_chat_messages_family_time ON family_chat_messages (family_id, timestamp DESC)"
+        )
+    )
+    db.execute(
+        text(
+            "CREATE INDEX IF NOT EXISTS idx_family_chat_reactions_message_id ON family_chat_reactions (message_id)"
+        )
+    )
 
 @router.post("/create", response_model=CreateFamilyResponse)
 @limiter.limit("10/minute")  # ✅ RATE LIMITING: 10 запросов в минуту на IP
@@ -1293,10 +1426,405 @@ async def recover_family_compat(
 
 @router.get("/chat/messages", response_model=list[dict])
 async def family_chat_messages_compat(
-    current_user: dict = Depends(get_current_user)
+    current_user: dict = Depends(get_current_user),
+    familyId: Optional[str] = Query(None, alias="familyId"),
+):
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    def load_messages_sync() -> List[Dict[str, Any]]:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            _ensure_family_chat_table(db)
+            resolved_family_id = _resolve_primary_family_id_for_actor(db, user_id, current_user)
+            if not resolved_family_id:
+                return []
+            if familyId is not None and familyId.strip() and familyId.strip() != resolved_family_id:
+                raise HTTPException(status_code=409, detail="Family context mismatch")
+
+            rows = db.execute(
+                text(
+                    """
+                    SELECT id, sender_name, text, timestamp, message_type, voice_url, voice_duration,
+                           media_url, media_thumbnail_url, media_type, reply_to_message_id, edited_at, read_status, read_at
+                    FROM family_chat_messages
+                    WHERE family_id = :family_id
+                    ORDER BY timestamp ASC
+                    LIMIT 300
+                    """
+                ),
+                {"family_id": resolved_family_id},
+            ).fetchall() or []
+
+            reaction_rows = db.execute(
+                text(
+                    """
+                    SELECT message_id, emoji, COALESCE(user_id, 0) AS user_id, user_name
+                    FROM family_chat_reactions
+                    WHERE message_id IN (SELECT id FROM family_chat_messages WHERE family_id = :family_id)
+                    ORDER BY created_at ASC
+                    """
+                ),
+                {"family_id": resolved_family_id},
+            ).fetchall() or []
+
+            reactions_by_message: Dict[str, List[Dict[str, Any]]] = {}
+            for rr in reaction_rows:
+                mid = str(rr[0])
+                reactions_by_message.setdefault(mid, []).append(
+                    {
+                        "emoji": str(rr[1]),
+                        "userId": str(rr[2]),
+                        "userName": str(rr[3]),
+                    }
+                )
+
+            messages: List[Dict[str, Any]] = []
+            for r in rows:
+                sender_name = str(r[1] or "User")
+                messages.append(
+                    {
+                        "id": str(r[0]),
+                        "sender": sender_name,
+                        "text": r[2],
+                        "timestamp": str(r[3]),
+                        "isCurrentUser": sender_name == str(current_user.get("name") or "You"),
+                        "messageType": r[4],
+                        "voiceUrl": r[5],
+                        "voiceDuration": float(r[6]) if r[6] is not None else None,
+                        "mediaUrl": r[7],
+                        "mediaThumbnailUrl": r[8],
+                        "mediaType": r[9],
+                        "replyToMessageId": r[10],
+                        "reactions": reactions_by_message.get(str(r[0]), []),
+                        "readStatus": r[12],
+                        "readAt": r[13],
+                        "editedAt": r[11],
+                    }
+                )
+            return messages
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(load_messages_sync)
+
+
+@router.post("/chat/upload-media")
+async def family_chat_upload_media(
+    request: Request,
+    file: UploadFile = File(...),
+    media_kind: Annotated[str, Form(alias="type")] = "image",
+    family_id_form: Annotated[Optional[str], Form(alias="familyId")] = None,
+    current_user: dict = Depends(get_current_user),
+    x_family_id: Annotated[Optional[str], Header(alias="X-Family-Id")] = None,
+):
+    """Multipart загрузка медиа для семейного чата (голос / фото / видео).
+
+    Требуется контекст семьи: заголовок X-Family-Id и/или поле формы familyId.
+    Пользователь должен быть участником этой семьи (или владельцем).
+    Лимит размера: переменная окружения ALADDIN_FAMILY_CHAT_UPLOAD_MAX_BYTES (по умолчанию 25 MiB).
+    """
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+    fid = (x_family_id or family_id_form or "").strip()
+    if not fid:
+        raise HTTPException(
+            status_code=400,
+            detail="familyId is required (header X-Family-Id or form field familyId)",
+        )
+    _ = media_kind
+    suffix = Path(file.filename or "").suffix.lower()
+    allowed_suffixes = {
+        ".jpg",
+        ".jpeg",
+        ".png",
+        ".gif",
+        ".webp",
+        ".heic",
+        ".mp4",
+        ".mov",
+        ".m4a",
+        ".aac",
+        ".caf",
+        ".pdf",
+        ".bin",
+    }
+    if suffix not in allowed_suffixes:
+        suffix = ".bin"
+    name = f"{uuid.uuid4().hex}{suffix}"
+    content = await file.read()
+    max_bytes = int(os.environ.get("ALADDIN_FAMILY_CHAT_UPLOAD_MAX_BYTES", str(25 * 1024 * 1024)))
+    if len(content) > max_bytes:
+        raise HTTPException(status_code=413, detail="File too large")
+    base = str(request.base_url).rstrip("/")
+
+    def persist() -> dict:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            if not _actor_belongs_to_family(db, user_id, fid):
+                raise HTTPException(status_code=403, detail="Not a member of this family")
+        finally:
+            gen.close()
+        root = _ensure_family_chat_upload_root()
+        dest = root / name
+        dest.write_bytes(content)
+        url = f"{base}/api/family/chat/media/{name}"
+        logger.info("family_chat_media_upload", saved=name, bytes=len(content), family_id=fid)
+        return {"success": True, "url": url, "mediaUrl": url}
+
+    return await asyncio.to_thread(persist)
+
+
+@router.get("/chat/media/{filename}")
+async def family_chat_get_media(filename: str):
+    if not _SAFE_CHAT_MEDIA_FILENAME.match(filename):
+        raise HTTPException(status_code=404, detail="Not found")
+    path = _ensure_family_chat_upload_root() / filename
+    if not path.is_file():
+        raise HTTPException(status_code=404, detail="Not found")
+    return FileResponse(path)
+
+
+@router.post("/chat/send", response_model=SendFamilyChatMessageResponse)
+async def family_chat_send(
+    payload: SendFamilyChatMessageRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    def send_sync() -> SendFamilyChatMessageResponse:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            _ensure_family_chat_table(db)
+            family_id = (payload.familyId or "").strip() or (_resolve_primary_family_id_for_actor(db, user_id, current_user) or "")
+            if not family_id:
+                raise HTTPException(status_code=404, detail="Family not found")
+
+            message_id = f"MSG_{uuid.uuid4().hex[:12].upper()}"
+            timestamp = _iso_utc_timestamp()
+            sender_name = str(current_user.get("name") or "You")
+            text_value = (payload.message or "").strip()
+            if not text_value and not (payload.mediaUrl or payload.voiceUrl):
+                raise HTTPException(status_code=400, detail="Empty message payload")
+
+            db.execute(
+                text(
+                    """
+                    INSERT INTO family_chat_messages (
+                        id, family_id, sender_user_id, sender_name, text, timestamp,
+                        message_type, voice_url, voice_duration, media_url, media_thumbnail_url,
+                        media_type, reply_to_message_id, read_status
+                    ) VALUES (
+                        :id, :family_id, :sender_user_id, :sender_name, :text, :timestamp,
+                        :message_type, :voice_url, :voice_duration, :media_url, :media_thumbnail_url,
+                        :media_type, :reply_to_message_id, :read_status
+                    )
+                    """
+                ),
+                {
+                    "id": message_id,
+                    "family_id": family_id,
+                    "sender_user_id": user_id,
+                    "sender_name": sender_name,
+                    "text": text_value if text_value else None,
+                    "timestamp": timestamp,
+                    "message_type": payload.messageType or ("media" if payload.mediaUrl else "text"),
+                    "voice_url": payload.voiceUrl,
+                    "voice_duration": payload.voiceDuration,
+                    "media_url": payload.mediaUrl,
+                    "media_thumbnail_url": payload.mediaUrl,
+                    "media_type": payload.mediaType,
+                    "reply_to_message_id": payload.replyToMessageId,
+                    "read_status": "sent",
+                },
+            )
+            db.commit()
+            return SendFamilyChatMessageResponse(success=True, messageId=message_id)
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(send_sync)
+
+
+@router.post("/chat/send/typing", response_model=FamilyCompatBoolResponse)
+async def family_chat_send_typing(
+    payload: TypingIndicatorRequest,
+    current_user: dict = Depends(get_current_user),
 ):
     _ = current_user.get("id")
-    return []
+    _ = payload.familyId
+    return FamilyCompatBoolResponse(success=True, data=True, message="Typing accepted")
+
+
+@router.post("/chat/send/edit", response_model=FamilyCompatBoolResponse)
+async def family_chat_edit_message(
+    payload: EditFamilyChatMessageRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    def edit_sync() -> FamilyCompatBoolResponse:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            _ensure_family_chat_table(db)
+            now = _iso_utc_timestamp()
+            updated = db.execute(
+                text(
+                    """
+                    UPDATE family_chat_messages
+                    SET text = :text, edited_at = :edited_at
+                    WHERE id = :message_id AND sender_user_id = :sender_user_id
+                    """
+                ),
+                {"text": payload.text, "edited_at": now, "message_id": payload.messageId, "sender_user_id": user_id},
+            )
+            db.commit()
+            if getattr(updated, "rowcount", 0) == 0:
+                raise HTTPException(status_code=404, detail="Message not found")
+            return FamilyCompatBoolResponse(success=True, data=True, message="Message edited")
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(edit_sync)
+
+
+@router.post("/chat/send/reaction", response_model=FamilyCompatBoolResponse)
+async def family_chat_add_reaction(
+    payload: ReactionRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    def reaction_sync() -> FamilyCompatBoolResponse:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            _ensure_family_chat_table(db)
+            reaction_id = f"REA_{uuid.uuid4().hex[:12].upper()}"
+            db.execute(
+                text(
+                    """
+                    INSERT INTO family_chat_reactions (id, message_id, user_id, user_name, emoji, created_at)
+                    VALUES (:id, :message_id, :user_id, :user_name, :emoji, :created_at)
+                    """
+                ),
+                {
+                    "id": reaction_id,
+                    "message_id": payload.messageId,
+                    "user_id": user_id,
+                    "user_name": str(current_user.get("name") or "You"),
+                    "emoji": payload.emoji,
+                    "created_at": _iso_utc_timestamp(),
+                },
+            )
+            db.commit()
+            return FamilyCompatBoolResponse(success=True, data=True, message="Reaction added")
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(reaction_sync)
+
+
+@router.post("/chat/send/read", response_model=FamilyCompatBoolResponse)
+async def family_chat_mark_read(
+    payload: ReadRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    def read_sync() -> FamilyCompatBoolResponse:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            _ensure_family_chat_table(db)
+            row = db.execute(
+                text("SELECT family_id FROM family_chat_messages WHERE id = :message_id LIMIT 1"),
+                {"message_id": payload.messageId},
+            ).fetchone()
+            if not row or row[0] is None:
+                raise HTTPException(status_code=404, detail="Message not found")
+            msg_family = str(row[0]).strip()
+            if not _actor_belongs_to_family(db, user_id, msg_family):
+                raise HTTPException(status_code=403, detail="Not a member of this message's family")
+            updated = db.execute(
+                text(
+                    """
+                    UPDATE family_chat_messages
+                    SET read_status = 'read', read_at = :read_at
+                    WHERE id = :message_id AND family_id = :family_id
+                    """
+                ),
+                {
+                    "message_id": payload.messageId,
+                    "read_at": _iso_utc_timestamp(),
+                    "family_id": msg_family,
+                },
+            )
+            db.commit()
+            if getattr(updated, "rowcount", 0) == 0:
+                raise HTTPException(status_code=404, detail="Message not found")
+            return FamilyCompatBoolResponse(success=True, data=True, message="Read status updated")
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(read_sync)
+
+
+@router.delete("/chat/send/{message_id}", response_model=FamilyCompatBoolResponse)
+async def family_chat_delete_message(
+    message_id: str,
+    current_user: dict = Depends(get_current_user),
+    x_family_id: Annotated[Optional[str], Header(alias="X-Family-Id")] = None,
+):
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    fid = (x_family_id or "").strip() or None
+
+    def delete_sync() -> FamilyCompatBoolResponse:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            _ensure_family_chat_table(db)
+            sql = """
+                    DELETE FROM family_chat_messages
+                    WHERE id = :message_id AND sender_user_id = :sender_user_id
+                    """
+            params: Dict[str, Any] = {"message_id": message_id, "sender_user_id": user_id}
+            if fid:
+                sql += " AND family_id = :family_id"
+                params["family_id"] = fid
+            deleted = db.execute(
+                text(sql),
+                params,
+            )
+            db.execute(
+                text("DELETE FROM family_chat_reactions WHERE message_id = :message_id"),
+                {"message_id": message_id},
+            )
+            db.commit()
+            if getattr(deleted, "rowcount", 0) == 0:
+                raise HTTPException(status_code=404, detail="Message not found")
+            return FamilyCompatBoolResponse(success=True, data=True, message="Message deleted")
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(delete_sync)
 
 
 @router.get("/chat/send", response_model=FamilyCompatBoolResponse)

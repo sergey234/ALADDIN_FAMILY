@@ -11,12 +11,13 @@ except ImportError:
     EmailStr = str
 from sqlalchemy.orm import Session
 from sqlalchemy import text
-from typing import Optional
+from typing import Optional, Dict, Any
 from datetime import datetime, timedelta
 import jwt
 import os
 import hashlib
 import secrets
+from urllib.parse import quote_plus
 
 # ✅ ИСПРАВЛЕНИЕ: Импорты с учетом структуры проекта
 # На сервере должна быть директория app/database/ с файлом database.py
@@ -92,6 +93,33 @@ class DeviceRegisterRequest(BaseModel):
     device_type: str = Field("ios", alias="deviceType")
 
     model_config = {"populate_by_name": True}
+
+
+class AppleLoginRequest(BaseModel):
+    identityToken: str
+    authorizationCode: str
+    email: Optional[str] = None
+    givenName: Optional[str] = None
+    familyName: Optional[str] = None
+
+
+class AuthSessionResponse(BaseModel):
+    token: str
+    refreshToken: Optional[str] = None
+    userId: Optional[str] = None
+    expiresAt: Optional[str] = None
+
+
+class RequestMagicLinkRequest(BaseModel):
+    email: str
+    redirectUrl: Optional[str] = None
+
+
+class ConsumeMagicLinkRequest(BaseModel):
+    token: str
+
+
+_magic_links: Dict[str, Dict[str, Any]] = {}
 
 # ============================================
 # ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
@@ -551,6 +579,96 @@ async def login_by_recovery_code(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Ошибка авторизации: {str(e)}"
         )
+
+
+@router.post("/auth/apple", response_model=AuthSessionResponse)
+async def login_with_apple(request: AppleLoginRequest):
+    """
+    Sign in with Apple: validates payload shape and issues app session tokens.
+    """
+    if not request.identityToken.strip() or not request.authorizationCode.strip():
+        raise HTTPException(status_code=400, detail="identityToken and authorizationCode are required")
+
+    # Deterministic user id from Apple identity token hash.
+    user_hash = hashlib.sha256(request.identityToken.encode()).hexdigest()
+    user_id = str(int(user_hash[:12], 16))
+
+    token_data = {
+        "user_id": user_id,
+        "id": user_id,
+        "sub": user_id,
+        "email": request.email,
+        "auth_provider": "apple",
+    }
+    access_token = create_access_token(token_data, expires_delta=timedelta(hours=24))
+    refresh_token = create_refresh_token(token_data)
+
+    return AuthSessionResponse(
+        token=access_token,
+        refreshToken=refresh_token,
+        userId=user_id,
+        expiresAt=(datetime.utcnow() + timedelta(hours=24)).isoformat() + "Z",
+    )
+
+
+@router.post("/auth/magic-link/request", response_model=Dict[str, Any])
+async def request_magic_link(request: RequestMagicLinkRequest):
+    email = request.email.strip().lower()
+    if not email:
+        raise HTTPException(status_code=400, detail="email is required")
+
+    token = secrets.token_urlsafe(32)
+    expires_at = datetime.utcnow() + timedelta(minutes=20)
+    _magic_links[token] = {
+        "email": email,
+        "created_at": datetime.utcnow(),
+        "expires_at": expires_at,
+    }
+
+    base_redirect = request.redirectUrl or "aladdin://auth/magic-link"
+    link = f"{base_redirect}?token={quote_plus(token)}"
+    return {
+        "success": True,
+        "data": True,
+        "message": "Magic link generated",
+        "magicLink": link,
+        "expiresAt": expires_at.isoformat() + "Z",
+    }
+
+
+@router.post("/auth/magic-link/consume", response_model=AuthSessionResponse)
+async def consume_magic_link(request: ConsumeMagicLinkRequest):
+    token = request.token.strip()
+    if not token:
+        raise HTTPException(status_code=400, detail="token is required")
+
+    payload = _magic_links.get(token)
+    if not payload:
+        raise HTTPException(status_code=401, detail="Magic link token is invalid")
+
+    if datetime.utcnow() > payload["expires_at"]:
+        _magic_links.pop(token, None)
+        raise HTTPException(status_code=401, detail="Magic link token expired")
+
+    email = payload.get("email")
+    user_id = str(int(hashlib.sha256((email or token).encode()).hexdigest()[:12], 16))
+    token_data = {
+        "user_id": user_id,
+        "id": user_id,
+        "sub": user_id,
+        "email": email,
+        "auth_provider": "magic_link",
+    }
+    access_token = create_access_token(token_data, expires_delta=timedelta(hours=24))
+    refresh_token = create_refresh_token(token_data)
+    _magic_links.pop(token, None)
+
+    return AuthSessionResponse(
+        token=access_token,
+        refreshToken=refresh_token,
+        userId=user_id,
+        expiresAt=(datetime.utcnow() + timedelta(hours=24)).isoformat() + "Z",
+    )
 
 
 @router.post("/auth/logout")

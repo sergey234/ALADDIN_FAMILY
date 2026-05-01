@@ -23,6 +23,26 @@ class AnalyticsViewModel: ObservableObject {
     // ✅ ВАРИАНТ 4: Данные компонентов
     @Published private(set) var componentsAnalytics: ComponentsAnalytics?
     @Published private(set) var componentsDataSource: DataSource = .empty
+
+    /// Состояние пустой детализации угроз (текст и цвет задаются в UI по `DataSource` и ошибке).
+    enum ThreatBreakdownEmptyKind: Equatable {
+        case successEmpty
+        case cacheEmpty
+        case noDatasourceEmpty
+        case loadFailed
+    }
+
+    /// `nil`, если есть строки категорий или идёт загрузка.
+    var threatBreakdownEmptyKind: ThreatBreakdownEmptyKind? {
+        guard threatCategories.isEmpty, !isLoading else { return nil }
+        if errorMessage != nil { return .loadFailed }
+        switch dataSource {
+        case .api: return .successEmpty
+        case .cache: return .cacheEmpty
+        case .empty: return .noDatasourceEmpty
+        case .error: return .loadFailed
+        }
+    }
     
     private let service: AnalyticsService
     private var watchdogTask: Task<Void, Never>?
@@ -132,7 +152,7 @@ class AnalyticsViewModel: ObservableObject {
                     VisualLogger.shared.log("⚠️ AnalyticsViewModel: Токен не загрузился, показываем ошибку", level: .warning, category: "ANALYTICS")
                     print("⚠️ AnalyticsViewModel: Токен не загрузился, показываем ошибку")
                     #endif
-                    errorMessage = "Не удалось загрузить данные аналитики. Проверьте подключение к интернету."
+                    errorMessage = LocalizationManager.shared.localized("analytics_err_load_token")
                     VisualLogger.shared.log("❌ analytics_load_fail id=\(loadId) reason=token_wait_timeout", level: .error, category: "ANALYTICS.API")
                     isLoading = false
                     isOfflineMode = false
@@ -147,7 +167,7 @@ class AnalyticsViewModel: ObservableObject {
                 VisualLogger.shared.log("⚠️ AnalyticsViewModel: Токен отсутствует, показываем ошибку", level: .warning, category: "ANALYTICS")
                 print("⚠️ AnalyticsViewModel: Токен отсутствует, показываем ошибку")
                 #endif
-                errorMessage = "Не удалось загрузить данные аналитики. Проверьте подключение к интернету."
+                errorMessage = LocalizationManager.shared.localized("analytics_err_load_token")
                 VisualLogger.shared.log("❌ analytics_load_fail id=\(loadId) reason=token_absent", level: .error, category: "ANALYTICS.API")
                 isLoading = false
                 isOfflineMode = false
@@ -249,7 +269,12 @@ class AnalyticsViewModel: ObservableObject {
             // ✅ ЭТАП 3: Обработка unauthorized
             let networkError = NetworkError.from(error)
             if case .unauthorized(let message) = networkError {
-                let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
+                let errorMessage: String
+                if let message = message, !message.isEmpty {
+                    errorMessage = LocalizationManager.shared.localized("analytics_err_unauthorized_detail", message)
+                } else {
+                    errorMessage = LocalizationManager.shared.localized("analytics_err_session_expired")
+                }
                 self.errorMessage = errorMessage
                 resetState()
                 if isOfflineMode {
@@ -305,7 +330,7 @@ class AnalyticsViewModel: ObservableObject {
         guard isLoading else { return }
         let loadId = currentLoadId ?? "unknown"
         isLoading = false
-        errorMessage = "Загрузка аналитики заняла слишком много времени. Попробуйте снова."
+        errorMessage = LocalizationManager.shared.localized("analytics_err_watchdog")
         if dataSource == .empty {
             dataSource = .error
         }
@@ -372,63 +397,63 @@ class AnalyticsViewModel: ObservableObject {
     
     // ✅ УЛУЧШЕНИЕ: Функция для получения понятного сообщения об ошибке
     private func getErrorMessage(from error: Error) -> String {
+        let loc = LocalizationManager.shared
         if let networkError = error as? NetworkError {
             switch networkError {
             case .noConnection:
-                return "Нет подключения к интернету. Проверьте соединение и попробуйте снова."
+                return loc.localized("analytics_err_no_connection")
             case .timeout:
-                return "Превышено время ожидания. Проверьте соединение и попробуйте снова."
+                return loc.localized("analytics_err_timeout")
             case .serverUnavailable:
-                return "Сервер временно недоступен. Попробуйте позже."
+                return loc.localized("analytics_err_server_unavailable")
             case .badRequest(let message):
                 if let msg = message {
-                    return "Ошибка в данных: \(msg)"
+                    return loc.localized("analytics_err_bad_request_detail", msg)
                 }
-                return "Проверьте правильность запроса."
+                return loc.localized("analytics_err_bad_request")
             case .unauthorized(let message):
                 if let msg = message {
-                    return "Ошибка авторизации: \(msg)"
+                    return loc.localized("analytics_err_unauthorized_detail", msg)
                 }
-                return "Требуется авторизация. Войдите в аккаунт."
+                return loc.localized("analytics_err_auth_required")
             case .forbidden:
-                return "Недостаточно прав для просмотра аналитики."
+                return loc.localized("analytics_err_forbidden")
             case .notFound:
-                return "Ресурс не найден. Возможно, endpoint не существует."
+                return loc.localized("analytics_err_not_found")
             case .internalServerError(let message):
                 if let msg = message {
-                    return "Ошибка сервера: \(msg)"
+                    return loc.localized("analytics_err_server_detail", msg)
                 }
-                return "Ошибка сервера. Попробуйте позже."
+                return loc.localized("analytics_err_server_generic")
             case .invalidResponse:
-                return "Некорректный ответ от сервера."
+                return loc.localized("analytics_err_invalid_response")
             case .decodingError(let error):
-                return "Ошибка обработки данных: \(error.localizedDescription)"
+                return loc.localized("analytics_err_decoding", error.localizedDescription)
             default:
-                return "Не удалось загрузить аналитику. Попробуйте позже."
+                return loc.localized("analytics_err_generic")
             }
         }
         
-        // Общая обработка ошибок
         if error.localizedDescription.contains("URL") {
-            return "Некорректный URL запроса."
+            return loc.localized("analytics_err_invalid_url")
         } else if error.localizedDescription.contains("response") {
-            return "Некорректный ответ от сервера."
+            return loc.localized("analytics_err_bad_response_generic")
         } else if error.localizedDescription.contains("status") {
-            return "Ошибка сервера. Попробуйте позже."
+            return loc.localized("analytics_err_server_generic")
         } else if error.localizedDescription.contains("decoding") {
-            return "Ошибка обработки данных: \(error.localizedDescription)"
+            return loc.localized("analytics_err_decoding", error.localizedDescription)
         } else if let urlError = error as? URLError {
             switch urlError.code {
             case .notConnectedToInternet:
-                return "Нет подключения к интернету. Проверьте соединение."
+                return loc.localized("analytics_err_no_connection")
             case .timedOut:
-                return "Превышено время ожидания. Попробуйте позже."
+                return loc.localized("analytics_err_timeout")
             default:
-                return "Ошибка сети: \(urlError.localizedDescription)"
+                return loc.localized("analytics_err_network_detail", urlError.localizedDescription)
             }
         }
         
-        return error.localizedDescription.isEmpty ? "Не удалось загрузить аналитику. Попробуйте позже." : error.localizedDescription
+        return error.localizedDescription.isEmpty ? loc.localized("analytics_err_generic") : error.localizedDescription
     }
     
     // MARK: - Private helpers

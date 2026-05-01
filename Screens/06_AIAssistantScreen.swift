@@ -581,7 +581,7 @@ struct AIAssistantScreen: View {
             logger.business("📚 AI Assistant: FAQ match found id=\(faqMatch.id)")
             isLoading = false
             let faqResponse = ChatMessage(
-                text: "\(faqMatch.answer)\n\n📚 Источник: FAQ (\(faqMatch.id))",
+                text: localizationManager.localized("ai_assistant_faq_footer", faqMatch.answer, faqMatch.id),
                 isUser: false,
                 time: currentTime()
             )
@@ -592,7 +592,7 @@ struct AIAssistantScreen: View {
 
         // Отправляем обычное сообщение AI
         logger.network("🤖 AI Assistant: Making API call to AI service")
-        let responseLanguage = localizationManager.currentLanguage == .english ? "en" : "ru"
+        let responseLanguage = localizationManager.aiResponseLanguageCode
         apiService.sendMessageToAI(message: message, context: context, responseLanguage: responseLanguage) { [self] result in
             DispatchQueue.main.async {
                 isLoading = false
@@ -780,17 +780,11 @@ struct AIAssistantScreen: View {
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
     }
     
-    // ✅ ИСПРАВЛЕНИЕ BUILD 90: Статический форматтер для предотвращения рекурсии
-    private static let timeFormatter: DateFormatter = {
+    private func currentTime() -> String {
         let formatter = DateFormatter()
         formatter.dateFormat = "HH:mm"
-        formatter.locale = Locale(identifier: "ru_RU") // Статический locale
-        return formatter
-    }()
-    
-    private func currentTime() -> String {
-        // ✅ Используем статический formatter вместо создания нового каждый раз
-        return Self.timeFormatter.string(from: Date())
+        formatter.locale = localizationManager.locale
+        return formatter.string(from: Date())
     }
 
     private func handleQuickAction(_ action: QuickActionType) {
@@ -919,7 +913,6 @@ class SpeechManager: ObservableObject {
     @Published var isRecording = false
     @Published var recognizedText: String?
 
-    private let speechRecognizer = SFSpeechRecognizer(locale: Locale(identifier: "ru-RU"))
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
@@ -972,8 +965,14 @@ class SpeechManager: ObservableObject {
 
             recognitionRequest.shouldReportPartialResults = true
 
-            // Создаем задачу распознавания
-            recognitionTask = speechRecognizer?.recognitionTask(with: recognitionRequest) { result, error in
+            let speechLocale = LocalizationManager.shared.speechRecognitionLocale
+            guard let speechRecognizer = SFSpeechRecognizer(locale: speechLocale), speechRecognizer.isAvailable else {
+                logger.warn("🎤 SpeechManager: Recognizer unavailable for locale \(speechLocale.identifier)")
+                completion(nil)
+                return
+            }
+
+            recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
                 if let result = result {
                     let text = result.bestTranscription.formattedString
                     DispatchQueue.main.async {

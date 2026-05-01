@@ -23,16 +23,11 @@ class AIAssistantViewModel: ObservableObject {
         let isUser: Bool
         let timestamp: Date
         
-        // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Статический форматтер для предотвращения рекурсии
-        private static let timeFormatter: DateFormatter = {
+        var timeString: String {
             let formatter = DateFormatter()
             formatter.dateFormat = "HH:mm"
-            formatter.locale = Locale(identifier: "ru_RU")
-            return formatter
-        }()
-        
-        var timeString: String {
-            return Self.timeFormatter.string(from: timestamp)
+            formatter.locale = LocalizationManager.shared.locale
+            return formatter.string(from: timestamp)
         }
     }
     
@@ -42,10 +37,11 @@ class AIAssistantViewModel: ObservableObject {
     }
     
     func loadInitialMessages() {
+        let loc = LocalizationManager.shared
         messages = [
-            ChatMessage(text: "Здравствуйте! Я AI помощник ALADDIN. Чем могу помочь?", isUser: false, timestamp: Date().addingTimeInterval(-3600)),
-            ChatMessage(text: "Покажи статистику защиты", isUser: true, timestamp: Date().addingTimeInterval(-3540)),
-            ChatMessage(text: "За эту неделю заблокировано 47 угроз:\n• Вредоносные сайты: 23\n• Фишинг: 12\n• Трекеры: 8\n• Вирусы: 4\n\nВаша семья под надёжной защитой! 🛡️", isUser: false, timestamp: Date().addingTimeInterval(-3530))
+            ChatMessage(text: loc.localized("ai_chat_seed_greeting"), isUser: false, timestamp: Date().addingTimeInterval(-3600)),
+            ChatMessage(text: loc.localized("ai_chat_seed_user"), isUser: true, timestamp: Date().addingTimeInterval(-3540)),
+            ChatMessage(text: loc.localized("ai_chat_seed_assistant"), isUser: false, timestamp: Date().addingTimeInterval(-3530))
         ]
     }
     
@@ -65,9 +61,8 @@ class AIAssistantViewModel: ObservableObject {
             sendSanitizedMessage(sanitizedMessage)
 
         } catch let error as InputSanitizer.SanitizationError {
-            // Показываем ошибку валидации пользователю
             let errorMessage = ChatMessage(
-                text: "Ошибка: \(error.localizedDescription)",
+                text: LocalizationManager.shared.localized("ai_assistant_error_sanitization", error.localizedDescription),
                 isUser: false,
                 timestamp: Date()
             )
@@ -79,7 +74,7 @@ class AIAssistantViewModel: ObservableObject {
 
         } catch {
             let errorMessage = ChatMessage(
-                text: "Произошла неизвестная ошибка при обработке сообщения.",
+                text: LocalizationManager.shared.localized("ai_assistant_error_unknown_processing"),
                 isUser: false,
                 timestamp: Date()
             )
@@ -129,7 +124,7 @@ class AIAssistantViewModel: ObservableObject {
                     self.isStreaming = false
                     
                     let errorMessage = ChatMessage(
-                        text: "Извините, произошла ошибка при обработке ответа: \(error.localizedDescription)",
+                        text: LocalizationManager.shared.localized("ai_assistant_error_stream", error.localizedDescription),
                         isUser: false,
                         timestamp: Date()
                     )

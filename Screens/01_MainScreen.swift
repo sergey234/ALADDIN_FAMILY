@@ -785,7 +785,11 @@ struct MainScreen: View {
                                     Button(action: {
                                         homeChatDestinationRaw = destination.rawValue
                                     }) {
-                                        Text(destination == .family ? "Семейный чат" : "AI чат")
+                                        Text(
+                                            destination == .family
+                                            ? localizationManager.localized("main_home_chat_segment_family")
+                                            : localizationManager.localized("main_home_chat_segment_ai")
+                                        )
                                             .font(.system(size: 11, weight: .semibold))
                                             .foregroundColor(isSelected ? .black : .white.opacity(0.82))
                                             .frame(maxWidth: .infinity)
@@ -815,13 +819,17 @@ struct MainScreen: View {
                             }) {
                             VStack(alignment: .leading, spacing: 8) {
                                 let current = HomeChatDestination(rawValue: homeChatDestinationRaw) ?? .family
-                                Text(current == .family ? "Семейный чат" : localizationManager.localized("main_ai_assistant_title"))
+                                Text(
+                                    current == .family
+                                    ? localizationManager.localized("main_home_chat_segment_family")
+                                    : localizationManager.localized("main_ai_assistant_title")
+                                )
                                     .font(.system(size: 12, weight: .bold))
                                     .foregroundColor(.secondaryGold)
                                 
                                 Text(
                                     current == .family
-                                    ? "Быстрый вход в семейный чат"
+                                    ? localizationManager.localized("main_home_quick_entry_family")
                                     : localizationManager.localized("main_ai_assistant_greeting")
                                 )
                                     .font(.system(size: 10))
@@ -829,7 +837,7 @@ struct MainScreen: View {
                                 
                                 TextField(
                                     current == .family
-                                    ? "Напишите в семейный чат..."
+                                    ? localizationManager.localized("main_home_chat_placeholder_family")
                                     : localizationManager.localized("main_ai_assistant_placeholder"),
                                     text: $aiQuestion
                                 )
@@ -899,6 +907,7 @@ struct MainScreen: View {
                 .onChange(of: subscriptionManager.currentSubscription) { _ in
                     mainViewModel.requestRefreshDebounced()
                 }
+                .id("main_lang_\(localizationManager.currentLanguage.rawValue)")
     }
 
     /// Стабильный идентификатор строки тарифа: при смене уровня/триала/языка SwiftUI пересобирает блок (важно для девайса после async `forceSync`).

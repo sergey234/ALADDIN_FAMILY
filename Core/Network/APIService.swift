@@ -1035,7 +1035,14 @@ class APIService: ObservableObject {
     }
     
     func getTopThreats(completion: @escaping (Result<[ThreatItem], Error>) -> Void) {
-        networkManager.get(endpoint: AppConfig.Endpoint.topThreats, completion: completion)
+        networkManager.get(endpoint: AppConfig.Endpoint.topThreats) { (result: Result<TopThreatsAPIEnvelope, Error>) in
+            switch result {
+            case .success(let envelope):
+                completion(.success(envelope.topThreats))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
     
     // MARK: - Component Stats API

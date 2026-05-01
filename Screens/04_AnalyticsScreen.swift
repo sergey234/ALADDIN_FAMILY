@@ -270,11 +270,10 @@ struct AnalyticsScreen: View {
                         .progressViewStyle(CircularProgressViewStyle(tint: .primaryBlue))
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.vertical, Spacing.l)
-                } else if viewModel.threatCategories.isEmpty {
-                    // ✅ ВАРИАНТ 4: Показываем сообщение "Нет данных" вместо бесконечной загрузки
-                    Text(localizationManager.localized("analytics_no_threats"))
+                } else if viewModel.threatCategories.isEmpty, let emptyKind = viewModel.threatBreakdownEmptyKind {
+                    Text(threatBreakdownEmptyText(emptyKind))
                         .font(.body)
-                        .foregroundColor(.textSecondary)
+                        .foregroundColor(threatBreakdownEmptyColor(emptyKind))
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.vertical, Spacing.l)
                 } else {
@@ -287,6 +286,30 @@ struct AnalyticsScreen: View {
         .padding(Spacing.cardPadding)
         .background(cardBackground)
         .cardShadow()
+    }
+
+    private func threatBreakdownEmptyText(_ kind: AnalyticsViewModel.ThreatBreakdownEmptyKind) -> String {
+        switch kind {
+        case .successEmpty:
+            return localizationManager.localized("analytics_threat_breakdown_empty_ok")
+        case .cacheEmpty:
+            return localizationManager.localized("analytics_threat_breakdown_empty_cache")
+        case .noDatasourceEmpty:
+            return localizationManager.localized("analytics_threat_breakdown_no_data")
+        case .loadFailed:
+            return localizationManager.localized("analytics_threat_breakdown_failed")
+        }
+    }
+
+    private func threatBreakdownEmptyColor(_ kind: AnalyticsViewModel.ThreatBreakdownEmptyKind) -> Color {
+        switch kind {
+        case .successEmpty, .noDatasourceEmpty:
+            return .textSecondary
+        case .cacheEmpty:
+            return .orange
+        case .loadFailed:
+            return .red
+        }
     }
     
     // MARK: - Protection Block

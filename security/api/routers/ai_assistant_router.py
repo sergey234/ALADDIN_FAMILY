@@ -17,12 +17,15 @@ from datetime import datetime
 from typing import Dict, List, Optional, Any
 
 from fastapi import APIRouter, HTTPException, Query, Depends, Request
+from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from pydantic import BaseModel, Field
 import jwt
 import logging
 import sys
 import os
+import asyncio
+import json
 
 # SFM Adapter import
 backend_path = "/opt/aladdin-backend"
@@ -123,6 +126,15 @@ class ChatMessageRequest(BaseModel):
     context: str = Field("general", description="Контекст разговора", example="general")
     user_id: Optional[str] = Field(None, description="ID пользователя")
     timestamp: Optional[datetime] = Field(None, description="Временная метка")
+
+
+class StreamRequest(BaseModel):
+    message: str = Field("", description="Сообщение пользователя или пусто для resume", max_length=4000)
+    context: str = Field("general", description="Контекст стрима")
+    resumeFromIndex: int = Field(0, ge=0)
+    messageId: Optional[str] = None
+    stream: bool = True
+    response_language: Optional[str] = Field(None, description="Предпочитаемый язык ответа (en, ru, …)")
 
 
 class ChatMessageResponse(BaseModel):
@@ -286,6 +298,56 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
         logger.error(f"Ошибка при обработке сообщения: {e}")
         fallback = _get_fallback_response(request.context)
         return ChatMessageResponse(**fallback)
+
+
+@router.post("/stream")
+async def ai_assistant_stream(request: StreamRequest):
+    """
+    SSE stream endpoint for iOS token-by-token rendering.
+    """
+    if not request.stream:
+        raise HTTPException(status_code=400, detail="stream flag must be true")
+
+    response_text = ""
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        data = {
+            "message": request.message,
+            "context": request.context,
+            "message_id": request.messageId,
+            "resume_from_index": request.resumeFromIndex,
+            "stream": True,
+        }
+        if request.response_language:
+            data["response_language"] = request.response_language
+        success, result, message = sfm_adapter.execute_function("ai_assistant_chat", data)
+        if not success:
+            raise HTTPException(status_code=502, detail=f"AI backend failed: {message}")
+        response_text = str(result.get("response") or "").strip()
+    else:
+        # Keep endpoint operational for mobile streaming flows even when adapter is down.
+        response_text = _get_fallback_response(request.context)["response"]
+
+    tokens = response_text.split()
+    start_index = min(request.resumeFromIndex, len(tokens))
+    stream_tokens = tokens[start_index:]
+
+    async def _event_generator():
+        for token in stream_tokens:
+            payload = {"token": f"{token} ", "done": False, "messageId": request.messageId}
+            yield f"data: {json.dumps(payload, ensure_ascii=False)}\n\n"
+            await asyncio.sleep(0.02)
+        yield "data: {\"done\": true}\n\n"
+        yield "data: [DONE]\n\n"
+
+    return StreamingResponse(
+        _event_generator(),
+        media_type="text/event-stream",
+        headers={
+            "Cache-Control": "no-cache",
+            "Connection": "keep-alive",
+            "X-Accel-Buffering": "no",
+        },
+    )
 
 
 # 2. GET /api/ai/assistant/history - История разговоров

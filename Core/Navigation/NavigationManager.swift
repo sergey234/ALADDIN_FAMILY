@@ -203,6 +203,23 @@ class NavigationManager: ObservableObject {
             case .invitationCode: return "keyboard"
             }
         }
+
+        /// Выпадающий список экранов в шапке (`ALADDINNavigationBar`). В **Release** скрываем отладочные и модальные маршруты без полноценного стека.
+        var isListedInProductionQuickNavigationMenu: Bool {
+            switch self {
+            case .notificationSettings, .rewardsModal, .rewardsQuickModal:
+                return false
+            case .loading, .settingsTest, .settingsTestSuite, .settingsFallback,
+                 .mainWithRegistration, .qrCode, .invitationCode:
+                #if DEBUG
+                return true
+                #else
+                return false
+                #endif
+            default:
+                return true
+            }
+        }
     }
     
     // MARK: - Модальные окна

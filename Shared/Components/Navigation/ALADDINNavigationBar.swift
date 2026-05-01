@@ -206,15 +206,10 @@ struct ALADDINNavigationBar: View {
             if showingScreenList {
                 ScrollView {
                     LazyVStack(spacing: 8) {
-                        ForEach(NavigationManager.ALADDINScreen.allCases.filter { screen in
-                            // Скрываем модальные окна и служебные экраны из навигации
-                            switch screen {
-                            case .notificationSettings, .rewardsModal, .rewardsQuickModal:
-                                return false
-                            default:
-                                return true
-                            }
-                        }, id: \.self) { screen in
+                        ForEach(
+                            NavigationManager.ALADDINScreen.allCases.filter { $0.isListedInProductionQuickNavigationMenu },
+                            id: \.self
+                        ) { screen in
                             let localizedTitle = screen.localizedTitle(using: localizationManager)
                             NavigationScreenButton(
                                 screen: screen,
@@ -354,7 +349,10 @@ private extension NavigationManager.ALADDINScreen {
         case .threatProtectionSettings: return "nav_screen_threat_settings"
         case .iotSecurity: return "nav_screen_iot_security"
         case .advancedProtection: return "nav_screen_advanced_protection"
-        default: return "nav_screen_unknown"
+        case .loading: return "nav_screen_loading"
+        case .joinDevice: return "nav_screen_join_device"
+        case .invitationCode: return "nav_screen_invitation_code"
+        case .qrCode: return "nav_screen_qr_code"
         }
     }
     

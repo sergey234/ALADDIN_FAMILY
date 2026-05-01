@@ -362,12 +362,62 @@ struct AnalyticsResponse: Codable {
     let threatsByType: [ThreatByType]
 }
 
+/// Элемент топа угроз. Сервер (`TopThreatsResponse`) может не присылать `severity` — подставляем `medium`.
 struct ThreatItem: Codable, Identifiable {
     let id: String
     let name: String
     let count: Int
     let icon: String
     let severity: String // "low", "medium", "high", "critical"
+
+    init(id: String, name: String, count: Int, icon: String, severity: String) {
+        self.id = id
+        self.name = name
+        self.count = count
+        self.icon = icon
+        self.severity = severity
+    }
+
+    enum CodingKeys: String, CodingKey {
+        case id, name, count, icon, severity
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        if let s = try? c.decode(String.self, forKey: .id) {
+            id = s
+        } else if let i = try? c.decode(Int.self, forKey: .id) {
+            id = String(i)
+        } else {
+            id = UUID().uuidString
+        }
+        name = (try? c.decode(String.self, forKey: .name)) ?? ""
+        if let n = try? c.decode(Int.self, forKey: .count) {
+            count = n
+        } else if let s = try? c.decode(String.self, forKey: .count), let n = Int(s) {
+            count = n
+        } else {
+            count = 0
+        }
+        icon = (try? c.decode(String.self, forKey: .icon)) ?? "⚠️"
+        severity = (try? c.decode(String.self, forKey: .severity)) ?? "medium"
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(name, forKey: .name)
+        try c.encode(count, forKey: .count)
+        try c.encode(icon, forKey: .icon)
+        try c.encode(severity, forKey: .severity)
+    }
+}
+
+/// Ответ `GET /api/analytics/top-threats` (обёртка, не голый массив).
+struct TopThreatsAPIEnvelope: Codable {
+    let topThreats: [ThreatItem]
+    let total: Int
+    let source: String?
 }
 
 struct ThreatByType: Codable {

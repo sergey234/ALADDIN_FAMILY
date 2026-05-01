@@ -149,6 +149,26 @@ class LocalizationManager: ObservableObject {
     var locale: Locale {
         Locale(identifier: currentLanguage.rawValue)
     }
+
+    /// Код языка ответа AI (REST и SSE), согласован с `ChatMessageRequest.response_language`.
+    var aiResponseLanguageCode: String {
+        switch currentLanguage {
+        case .russian: return "ru"
+        case .english: return "en"
+        case .chinese: return "zh"
+        case .arabic: return "ar"
+        }
+    }
+
+    /// Локаль для `SFSpeechRecognizer` (BCP 47).
+    var speechRecognitionLocale: Locale {
+        switch currentLanguage {
+        case .russian: return Locale(identifier: "ru-RU")
+        case .english: return Locale(identifier: "en-US")
+        case .chinese: return Locale(identifier: "zh-Hans")
+        case .arabic: return Locale(identifier: "ar-SA")
+        }
+    }
     
     // MARK: - Translations Dictionary
     
@@ -315,6 +335,13 @@ class LocalizationManager: ObservableObject {
             "nav_screen_threat_settings": "Настройки защиты",
             "nav_screen_iot_security": "IoT безопасность",
             "nav_screen_advanced_protection": "Расширенная защита",
+            "nav_screen_loading": "Загрузка",
+            "nav_screen_settings_test": "Тест настроек",
+            "nav_screen_settings_test_suite": "Набор тестов",
+            "nav_screen_settings_fallback": "Запасные настройки",
+            "nav_screen_join_device": "Присоединить устройство",
+            "nav_screen_invitation_code": "Ввод кода приглашения",
+            "nav_screen_qr_code": "QR-код",
             "iot_security_status_title": "Статус безопасности",
             "iot_security_devices_label": "Устройств",
             "iot_security_threats_label": "Угроз",
@@ -1808,11 +1835,35 @@ class LocalizationManager: ObservableObject {
             "analytics_period_week": "Неделя",
             "analytics_period_month": "Месяц",
             "analytics_offline_mode": "Offline mode - showing cached data",
-            "analytics_data_source_api": "Real data",
-            "analytics_data_source_cache": "Cached data",
-            "analytics_data_source_empty": "No data",
-            "analytics_data_source_error": "Loading error",
-            "analytics_no_threats": "No threats detected",
+            "analytics_data_source_api": "Актуальные данные",
+            "analytics_data_source_cache": "Данные из кэша",
+            "analytics_data_source_empty": "Нет данных",
+            "analytics_data_source_error": "Ошибка загрузки",
+            "analytics_no_threats": "Нет заблокированных угроз за период",
+            "analytics_threat_breakdown_empty_ok": "За выбранный период нет событий по категориям угроз.",
+            "analytics_threat_breakdown_empty_cache": "Кэш: детализация может быть неполной. Подключитесь к сети для актуальных данных.",
+            "analytics_threat_breakdown_no_data": "Детализация недоступна.",
+            "analytics_threat_breakdown_failed": "Не удалось загрузить разбивку. См. сообщение ниже или обновите экран.",
+            "analytics_err_load_token": "Не удалось загрузить данные аналитики. Проверьте подключение к интернету.",
+            "analytics_err_watchdog": "Загрузка аналитики заняла слишком много времени. Попробуйте снова.",
+            "analytics_err_session_expired": "Сессия истекла. Пожалуйста, войдите снова.",
+            "analytics_err_no_connection": "Нет подключения к интернету. Проверьте соединение и попробуйте снова.",
+            "analytics_err_timeout": "Превышено время ожидания. Проверьте соединение и попробуйте снова.",
+            "analytics_err_server_unavailable": "Сервер временно недоступен. Попробуйте позже.",
+            "analytics_err_bad_request": "Проверьте правильность запроса.",
+            "analytics_err_bad_request_detail": "Ошибка в данных: %@",
+            "analytics_err_unauthorized_detail": "Ошибка авторизации: %@",
+            "analytics_err_auth_required": "Требуется авторизация. Войдите в аккаунт.",
+            "analytics_err_forbidden": "Недостаточно прав для просмотра аналитики.",
+            "analytics_err_not_found": "Ресурс не найден. Возможно, endpoint не существует.",
+            "analytics_err_server_detail": "Ошибка сервера: %@",
+            "analytics_err_server_generic": "Ошибка сервера. Попробуйте позже.",
+            "analytics_err_invalid_response": "Некорректный ответ от сервера.",
+            "analytics_err_decoding": "Ошибка обработки данных: %@",
+            "analytics_err_generic": "Не удалось загрузить аналитику. Попробуйте позже.",
+            "analytics_err_invalid_url": "Некорректный URL запроса.",
+            "analytics_err_bad_response_generic": "Некорректный ответ от сервера.",
+            "analytics_err_network_detail": "Ошибка сети: %@",
             "analytics_hour": "ч",
             "analytics_min": "мин",
 
@@ -2388,6 +2439,13 @@ class LocalizationManager: ObservableObject {
             "ai_assistant_placeholder": "Ask your question...",
             "ai_assistant_welcome": "Hi! I am your AI assistant. I can help with security settings and explain protection status.",
             "ai_assistant_development": "🚧 AI Помощник в разработке. Скоро будет подключен к реальному API!\n\nПриложение сейчас работает в демо-режиме с тестовыми данными.",
+            "ai_chat_seed_greeting": "Здравствуйте! Я AI помощник ALADDIN. Чем могу помочь?",
+            "ai_chat_seed_user": "Покажи статистику защиты",
+            "ai_chat_seed_assistant": "За эту неделю заблокировано 47 угроз:\n• Вредоносные сайты: 23\n• Фишинг: 12\n• Трекеры: 8\n• Вирусы: 4\n\nВаша семья под надёжной защитой! 🛡️",
+            "ai_assistant_error_sanitization": "Ошибка: %@",
+            "ai_assistant_error_unknown_processing": "Произошла неизвестная ошибка при обработке сообщения.",
+            "ai_assistant_error_stream": "Извините, произошла ошибка при обработке ответа: %@",
+            "ai_assistant_faq_footer": "%@\n\n📚 Источник: FAQ (%@)",
             "role_selection_title": "Выберите роль",
             "role_selection_subtitle": "Это поможет настроить интерфейс под ваши потребности",
             "family_role_parent_name": "Родитель",
@@ -5406,6 +5464,7 @@ class LocalizationManager: ObservableObject {
             "referral_rewards_view_title": "Все награды",
             "referral_rewards_view_subtitle": "Оплативших друзей: %d",
             "referral_text_template": "🎁 Присоединяйся к ALADDIN! Мы оба получим скидку -20% на 1 месяц после тестового периода!\n\nИспользуй мой код: %@\n\nСкачай: https://aladdin-ai.ru/invite/%@\n\nС тобой на защите! 🛡️",
+            "device_threats_list_load_failed": "Не удалось загрузить список угроз. Попробуйте позже.",
             
             // Device Detail Screen
             "device_detail_tab_info": "Info",
@@ -5491,6 +5550,10 @@ class LocalizationManager: ObservableObject {
             "family_chat_error_not_found": "Чат временно недоступен. Используются тестовые данные.",
             "family_chat_error_loading": "Не удалось загрузить сообщения. Проверьте подключение к интернету.",
             "family_chat_you": "Вы",
+            "main_home_chat_segment_family": "Семейный чат",
+            "main_home_chat_segment_ai": "AI чат",
+            "main_home_quick_entry_family": "Быстрый вход в семейный чат",
+            "main_home_chat_placeholder_family": "Напишите в семейный чат...",
             
             // Child Goal Editor
             "child_goal_editor_title": "🎯 Моя цель",
@@ -8088,6 +8151,13 @@ class LocalizationManager: ObservableObject {
             "nav_screen_threat_settings": "Threat settings",
             "nav_screen_iot_security": "IoT security",
             "nav_screen_advanced_protection": "Advanced protection",
+            "nav_screen_loading": "Loading",
+            "nav_screen_settings_test": "Settings test",
+            "nav_screen_settings_test_suite": "Test suite",
+            "nav_screen_settings_fallback": "Fallback settings",
+            "nav_screen_join_device": "Join device",
+            "nav_screen_invitation_code": "Invitation code",
+            "nav_screen_qr_code": "QR code",
             "iot_security_status_title": "Security status",
             "iot_security_devices_label": "Devices",
             "iot_security_threats_label": "Threats",
@@ -9132,6 +9202,10 @@ class LocalizationManager: ObservableObject {
             "main_ai_assistant_title": "AI Assistant",
             "main_ai_assistant_greeting": "Ask anything about your family protection.",
             "main_ai_assistant_placeholder": "Type your question...",
+            "main_home_chat_segment_family": "Family chat",
+            "main_home_chat_segment_ai": "AI chat",
+            "main_home_quick_entry_family": "Quick entry to family chat",
+            "main_home_chat_placeholder_family": "Write to family chat...",
             
             // Family Screen
             "family_top_5_contacts": "Top-5 contacts for the week",
@@ -9638,7 +9712,31 @@ class LocalizationManager: ObservableObject {
             "analytics_data_source_cache": "Cached data",
             "analytics_data_source_empty": "No data",
             "analytics_data_source_error": "Loading error",
-            "analytics_no_threats": "No threats detected",
+            "analytics_no_threats": "No blocked threats in this period",
+            "analytics_threat_breakdown_empty_ok": "No threat category events for the selected period.",
+            "analytics_threat_breakdown_empty_cache": "Cached data: breakdown may be incomplete. Connect to the network for live data.",
+            "analytics_threat_breakdown_no_data": "Breakdown is not available.",
+            "analytics_threat_breakdown_failed": "Could not load the breakdown. See the message below or refresh.",
+            "analytics_err_load_token": "Could not load analytics. Check your internet connection.",
+            "analytics_err_watchdog": "Analytics took too long to load. Please try again.",
+            "analytics_err_session_expired": "Session expired. Please sign in again.",
+            "analytics_err_no_connection": "No internet connection. Check your network and try again.",
+            "analytics_err_timeout": "Request timed out. Check your connection and try again.",
+            "analytics_err_server_unavailable": "Server is temporarily unavailable. Try again later.",
+            "analytics_err_bad_request": "Please check your request.",
+            "analytics_err_bad_request_detail": "Invalid data: %@",
+            "analytics_err_unauthorized_detail": "Authorization error: %@",
+            "analytics_err_auth_required": "Sign-in required.",
+            "analytics_err_forbidden": "You don't have permission to view analytics.",
+            "analytics_err_not_found": "Resource not found. The endpoint may not exist.",
+            "analytics_err_server_detail": "Server error: %@",
+            "analytics_err_server_generic": "Server error. Try again later.",
+            "analytics_err_invalid_response": "Invalid response from server.",
+            "analytics_err_decoding": "Could not parse data: %@",
+            "analytics_err_generic": "Could not load analytics. Try again later.",
+            "analytics_err_invalid_url": "Invalid request URL.",
+            "analytics_err_bad_response_generic": "Invalid response from server.",
+            "analytics_err_network_detail": "Network error: %@",
             // ARCHIVED 2025-11-10: "analytics_filters": "Filters",
             // ARCHIVED 2025-11-10: "analytics_stats_security": "Security",
             // ARCHIVED 2025-11-10: "analytics_stats_family": "Family",
@@ -10061,6 +10159,13 @@ Settings
             "ai_assistant_placeholder": "Ask your question...",
             "ai_assistant_welcome": "Hi! I am your AI assistant. I can help with security settings and explain protection status.",
             "ai_assistant_development": "🚧 AI Assistant under development. Will connect to real API soon!\\n\\nThe app is currently running in demo mode with mock data.",
+            "ai_chat_seed_greeting": "Hello! I'm the ALADDIN AI assistant. How can I help?",
+            "ai_chat_seed_user": "Show my protection stats",
+            "ai_chat_seed_assistant": "This week, 47 threats were blocked:\n• Malicious sites: 23\n• Phishing: 12\n• Trackers: 8\n• Viruses: 4\n\nYour family is well protected! 🛡️",
+            "ai_assistant_error_sanitization": "Error: %@",
+            "ai_assistant_error_unknown_processing": "An unknown error occurred while processing the message.",
+            "ai_assistant_error_stream": "Sorry, something went wrong while loading the reply: %@",
+            "ai_assistant_faq_footer": "%@\\n\\n📚 Source: FAQ (%@)",
             // Child Interface Screen
             "child_interface_background": "Child interface background",
             "child_interface_content": "Child interface content",
@@ -12875,6 +12980,7 @@ Settings
             "referral_rewards_view_title": "All rewards",
             "referral_rewards_view_subtitle": "Paid friends: %d",
             "referral_text_template": "🎁 Join ALADDIN! We both get -20% discount for 1 month after trial period!\n\nUse my code: %@\n\nDownload: https://aladdin-ai.ru/invite/%@\n\nStay protected! 🛡️",
+            "device_threats_list_load_failed": "Couldn’t load threats. Please try again.",
             
             // Device Detail Screen
             "device_detail_tab_info": "Info",

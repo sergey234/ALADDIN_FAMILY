@@ -509,11 +509,13 @@ struct FamilyChatScreen: View {
                 case .failure(let error):
                     print("❌ FamilyChatScreen: Ошибка загрузки сообщений: \(error.localizedDescription)")
                     
-                    // Fallback на mock данные только при первой загрузке
+                    // Mock только в DEBUG: в Release при ошибке не подставляем русскоязычный фейковый чат.
+                    #if DEBUG
                     if messages.isEmpty && !silent {
-                        print("ℹ️ FamilyChatScreen: Используем mock данные для отображения")
+                        print("ℹ️ FamilyChatScreen: Используем mock данные для отображения (DEBUG)")
                         messages = getMockMessages()
                     }
+                    #endif
                     
                     // Показываем ошибку только если это не silent обновление и нет данных
                     if !silent && messages.isEmpty {
