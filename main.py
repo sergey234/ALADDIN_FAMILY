@@ -1139,6 +1139,8 @@ async def wildcard_handler(request: Request, path: str):
         "auth/",
         "metrics/",
         "subscription/",
+        # Не отдавать суб-пути /api/devices/* через SFM mock (деталка/настройки/delete — только явные роутеры).
+        "devices/",
     )
     if normalized_path.startswith(critical_prefixes):
         return JSONResponse(

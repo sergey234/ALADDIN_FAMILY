@@ -528,6 +528,189 @@ def devices_bind(
     return {"success": True, "data": True, "message": "Device bound", "error": None}
 
 
+def _api_response_bool(ok: bool, message: Optional[str] = None) -> Dict[str, Any]:
+    """Контракт iOS `APIResponse<Bool>` для block/unblock/delete."""
+    return {
+        "success": ok,
+        "data": ok,
+        "message": message,
+        "error": None if ok else (message or "Operation failed"),
+    }
+
+
+def _fetch_device_row(db: Session, uid: str, device_id: str) -> Optional[Dict[str, Any]]:
+    _ensure_family_devices_table(db)
+    row = db.execute(
+        text(
+            """
+            SELECT id, name, owner_label AS owner, type, status, last_active,
+                   pairing_token, short_pin
+            FROM aladdin_family_devices
+            WHERE id = :id AND user_id = :uid
+            """
+        ),
+        {"id": device_id.strip(), "uid": uid},
+    ).mappings().first()
+    return dict(row) if row else None
+
+
+@router.get("/api/devices/{device_id}/settings", response_model=Dict[str, Any])
+def devices_one_settings(
+    device_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """iOS `DeviceSettingsResponse`: camelCase, lastUpdated опционален (null безопаснее для декодера Date)."""
+    uid = _uid_str(current_user)
+    if not uid:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
+    row = _fetch_device_row(db, uid, device_id)
+    if not row:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Device not found")
+    return {
+        "isProtectionOn": True,
+        "isScanningEnabled": True,
+        "lastUpdated": None,
+    }
+
+
+@router.post("/api/devices/{device_id}/block", response_model=Dict[str, Any])
+def devices_block(
+    device_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    uid = _uid_str(current_user)
+    if not uid:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
+    try:
+        _ensure_family_devices_table(db)
+        res = db.execute(
+            text(
+                """
+                UPDATE aladdin_family_devices
+                SET status = 'blocked', last_active = :now
+                WHERE id = :id AND user_id = :uid
+                """
+            ),
+            {"id": device_id.strip(), "uid": uid, "now": _now_iso()},
+        )
+        db.commit()
+        if res.rowcount == 0:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Device not found")
+        return _api_response_bool(True, "Device blocked")
+    except HTTPException:
+        raise
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.exception("devices_block_failed: %s", e)
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Block unavailable",
+        )
+
+
+@router.post("/api/devices/{device_id}/unblock", response_model=Dict[str, Any])
+def devices_unblock(
+    device_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    uid = _uid_str(current_user)
+    if not uid:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
+    try:
+        _ensure_family_devices_table(db)
+        res = db.execute(
+            text(
+                """
+                UPDATE aladdin_family_devices
+                SET status = 'protected', last_active = :now
+                WHERE id = :id AND user_id = :uid
+                """
+            ),
+            {"id": device_id.strip(), "uid": uid, "now": _now_iso()},
+        )
+        db.commit()
+        if res.rowcount == 0:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Device not found")
+        return _api_response_bool(True, "Device unblocked")
+    except HTTPException:
+        raise
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.exception("devices_unblock_failed: %s", e)
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Unblock unavailable",
+        )
+
+
+@router.delete("/api/devices/{device_id}", response_model=Dict[str, Any])
+def devices_delete(
+    device_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    uid = _uid_str(current_user)
+    if not uid:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
+    try:
+        _ensure_family_devices_table(db)
+        res = db.execute(
+            text(
+                "DELETE FROM aladdin_family_devices WHERE id = :id AND user_id = :uid"
+            ),
+            {"id": device_id.strip(), "uid": uid},
+        )
+        db.commit()
+        if res.rowcount == 0:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Device not found")
+        return _api_response_bool(True, "Device removed")
+    except HTTPException:
+        raise
+    except SQLAlchemyError as e:
+        db.rollback()
+        logger.exception("devices_delete_failed: %s", e)
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            detail="Delete unavailable",
+        )
+
+
+@router.get("/api/devices/{device_id}", response_model=Dict[str, Any])
+def devices_get_one(
+    device_id: str,
+    current_user: dict = Depends(get_current_user),
+    db: Session = Depends(get_db),
+) -> Dict[str, Any]:
+    """iOS `DeviceDetailResponse` — camelCase; метрики без отдельной таблицы → нули/дефолты."""
+    uid = _uid_str(current_user)
+    if not uid:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, detail="Invalid user context")
+    row = _fetch_device_row(db, uid, device_id)
+    if not row:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, detail="Device not found")
+    last_raw = row.get("last_active") or ""
+    st = (row.get("status") or "protected").strip().lower()
+    is_protected = st in ("protected", "warning", "blocked")
+    return {
+        "id": row["id"],
+        "name": row["name"],
+        "owner": row["owner"],
+        "type": row["type"],
+        "status": row["status"],
+        "lastActive": last_raw if isinstance(last_raw, str) else str(last_raw),
+        "ipAddress": None,
+        "osVersion": None,
+        "appVersion": None,
+        "threatsBlocked": 0,
+        "dataUsage": 0,
+        "batteryLevel": None,
+        "isProtected": is_protected,
+    }
+
+
 @router.get("/api/location/geofences", response_model=List[Dict[str, Any]])
 async def location_geofences(
     current_user: dict = Depends(get_current_user),
