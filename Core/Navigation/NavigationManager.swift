@@ -209,8 +209,10 @@ class NavigationManager: ObservableObject {
             switch self {
             case .notificationSettings, .rewardsModal, .rewardsQuickModal:
                 return false
-            case .loading, .settingsTest, .settingsTestSuite, .settingsFallback,
-                 .mainWithRegistration, .qrCode, .invitationCode:
+            // Служебные экраны настроек — никогда в быстром меню (и в Debug тоже).
+            case .settingsTest, .settingsTestSuite, .settingsFallback:
+                return false
+            case .loading, .mainWithRegistration, .qrCode, .invitationCode:
                 #if DEBUG
                 return true
                 #else

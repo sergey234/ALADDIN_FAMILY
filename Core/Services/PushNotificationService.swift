@@ -59,7 +59,7 @@ class PushNotificationService: NSObject, ObservableObject {
         guard isEnabled && isAuthorized else { return }
         
         let content = UNMutableNotificationContent()
-        content.title = String(format: LocalizationManager().localized("family_chat_notification_new_message"), sender)
+        content.title = String(format: LocalizationManager.shared.localized("family_chat_notification_new_message"), sender)
         content.body = message
         content.sound = .default
         content.badge = 1

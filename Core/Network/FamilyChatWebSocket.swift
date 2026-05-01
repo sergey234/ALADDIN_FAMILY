@@ -88,7 +88,8 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
             request.setValue(familyId, forHTTPHeaderField: "X-Family-Id")
         }
         
-        urlSession = URLSession(configuration: .default, delegate: self, delegateQueue: nil)
+        // Главная очередь: таймеры ping/reconnect должны жить в RunLoop.main (иначе на девайсе WS не поднимается стабильно).
+        urlSession = URLSession(configuration: .default, delegate: self, delegateQueue: .main)
         webSocketTask = urlSession?.webSocketTask(with: request)
         webSocketTask?.resume()
         
@@ -276,9 +277,12 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
     // MARK: - Ping/Pong
     
     private func startPingTimer() {
-        pingTimer = Timer.scheduledTimer(withTimeInterval: 30.0, repeats: true) { [weak self] _ in
+        stopPingTimer()
+        let timer = Timer(timeInterval: 30.0, repeats: true) { [weak self] _ in
             self?.sendPing()
         }
+        RunLoop.main.add(timer, forMode: .common)
+        pingTimer = timer
     }
     
     private func stopPingTimer() {
@@ -317,9 +321,11 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
     
     private func startReconnectTimer() {
         stopReconnectTimer()
-        reconnectTimer = Timer.scheduledTimer(withTimeInterval: reconnectDelay, repeats: false) { [weak self] _ in
+        let timer = Timer(timeInterval: reconnectDelay, repeats: false) { [weak self] _ in
             self?.connect()
         }
+        RunLoop.main.add(timer, forMode: .common)
+        reconnectTimer = timer
     }
     
     private func stopReconnectTimer() {

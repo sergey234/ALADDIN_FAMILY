@@ -2227,6 +2227,7 @@ struct FamilyScreen: View {
             updateAdminStatus()  // ✅ OPTIMIZATION: Update cached admin status once on appear
             clearDeleteButtonCache(reason: "onAppear")  // Clear only on major screen updates
             loadParentalRules()  // ✅ BUILD 96: Загружаем ParentalControlRules асинхронно
+            refreshParentalControlDemoStrings()
 
             // ✅ NEW: Explicit desync check on every appear
             if !familyMembers.isEmpty {
@@ -2248,6 +2249,13 @@ struct FamilyScreen: View {
 // MARK: - Parental Controls Section
 
 extension FamilyScreen {
+
+    /// Демо-строки карточек родительского контроля — всегда из `localizationManager`, не из «замороженного» init `@State`.
+    fileprivate func refreshParentalControlDemoStrings() {
+        timeRemaining = localizationManager.localized("family_time_remaining_placeholder")
+        locationStatus = localizationManager.localized("parental_location_home")
+        locationLastUpdate = localizationManager.localized("family_location_last_update_placeholder")
+    }
     
     private var parentalControlsSection: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {

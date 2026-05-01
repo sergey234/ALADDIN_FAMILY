@@ -396,7 +396,10 @@ struct FamilyChatScreen: View {
                     .background(Color.black.opacity(0.3))
             }
         }
-        .alert(localizationManager.localized("family_chat_error_title"), isPresented: .constant(errorMessage != nil)) {
+        .alert(localizationManager.localized("family_chat_error_title"), isPresented: Binding(
+            get: { errorMessage != nil },
+            set: { if !$0 { errorMessage = nil } }
+        )) {
             Button(localizationManager.localized("family_chat_error_ok")) {
                 errorMessage = nil
             }
