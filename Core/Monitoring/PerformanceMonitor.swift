@@ -32,6 +32,7 @@ class PerformanceMonitor {
     private var frameCount: Int = 0
     private var lastFrameTime: CFTimeInterval = 0
     private var currentFPS: Double = 0
+    private var lastFPSMetricSentAt: CFTimeInterval = 0
 
     // Memory monitoring
     private var memoryTimer: Timer?
@@ -249,8 +250,9 @@ class PerformanceMonitor {
             frameCount = 0
             lastFrameTime = currentTime
 
-            // Отправляем метрику FPS каждые 10 секунд
-            if Int(currentTime) % 10 == 0 {
+            // Не чаще одного раза за ~15 с по медиавремени (раньше было ненадёжное `Int(time) % 10`).
+            if currentTime - lastFPSMetricSentAt >= 15.0 {
+                lastFPSMetricSentAt = currentTime
                 sendFPSMetric()
             }
         }

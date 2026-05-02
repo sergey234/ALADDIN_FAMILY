@@ -328,7 +328,7 @@ struct DevicesScreen: View {
         case .protected: return devices.filter { $0.status == .protected }.count
         case .warning: return devices.filter { $0.status == .warning }.count
         case .danger: return devices.filter { $0.status == .danger }.count
-        case .inactive: return devices.filter { $0.status == .inactive }.count
+        case .inactive: return devices.filter { $0.status == .inactive || $0.status == .blocked }.count
         }
     }
     
@@ -470,6 +470,7 @@ struct DevicesScreen: View {
         case "warning": deviceStatus = .warning
         case "danger": deviceStatus = .danger
         case "inactive": deviceStatus = .inactive
+        case "blocked": deviceStatus = .blocked
         default: deviceStatus = .inactive
         }
         
@@ -496,7 +497,7 @@ struct DevicesScreen: View {
         case .danger:
             return devices.filter { $0.status == .danger }
         case .inactive:
-            return devices.filter { $0.status == .inactive }
+            return devices.filter { $0.status == .inactive || $0.status == .blocked }
         }
     }
     
@@ -634,6 +635,7 @@ enum DeviceStatus: String, CaseIterable {
     case warning = "warning"
     case danger = "danger"
     case inactive = "inactive"
+    case blocked = "blocked"
     case pending = "pending"
     
     var color: Color {
@@ -642,6 +644,7 @@ enum DeviceStatus: String, CaseIterable {
         case .warning: return .warningOrange
         case .danger: return .dangerRed
         case .inactive: return .textSecondary
+        case .blocked: return .dangerRed
         case .pending: return .gray
         }
     }
@@ -652,6 +655,7 @@ enum DeviceStatus: String, CaseIterable {
         case .warning: return localizationManager.localized("devices_status_warning")
         case .danger: return localizationManager.localized("devices_status_danger")
         case .inactive: return localizationManager.localized("devices_status_inactive")
+        case .blocked: return localizationManager.localized("devices_status_blocked")
         case .pending: return "Ожидает привязки"
         }
     }

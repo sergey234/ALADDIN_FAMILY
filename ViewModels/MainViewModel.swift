@@ -118,10 +118,10 @@ class MainViewModel: ObservableObject {
     private var lastSuccessAt: Date? = nil
     /// Количество подряд неуспешных попыток загрузки
     private var consecutiveFailures: Int = 0
-    /// Минимальное время удержания подтвержденного статуса (сек)
-    private let statusTTLSec: TimeInterval = 15
-    /// Порог неуспехов для перехода в networkUnavailable
-    private let failuresThreshold: Int = 2
+    /// Минимальное время удержания подтвержденного статуса (сек) — меньше ложных перекрасок при единичных сбоях.
+    private let statusTTLSec: TimeInterval = 18
+    /// Порог неуспехов для перехода в networkUnavailable (после полевых логов MAIN.STATUS).
+    private let failuresThreshold: Int = 3
     /// Debounce для внешних запросов обновления (мс)
     private let refreshDebounceMs: Int = 700
     /// На холодном старте увеличиваем окно, чтобы слить SubscriptionUpdated / MainScreen / устройства в один кадр загрузки.
@@ -276,6 +276,7 @@ class MainViewModel: ObservableObject {
                     print("⚠️ MainViewModel: Таймаут загрузки данных (10 секунд) на попытке \(currentAttempt)")
                     #endif
                     self.isLoading = false
+                    self.isLoadingDashboard = false
                     // Показываем баннер только если исчерпаны попытки
                     if currentAttempt >= maxAttempts {
                         self.errorMessage = "Таймаут загрузки данных. Проверьте подключение к интернету."
@@ -308,11 +309,8 @@ class MainViewModel: ObservableObject {
                 
                 switch result {
                 case .success(let stats):
-                    self.isLoading = false
-                    self.isLoadingDashboard = false
-
-                    // ✅ ЗАДАЧА 66: Завершаем отслеживание производительности загрузки дашборда
-                    PerformanceMonitor.shared.endScreenLoad("MainDashboard")
+                    // Не снимаем isLoadingDashboard до завершения GET /api/devices: иначе debounced
+                    // SubscriptionUpdated/onChange запускают второй loadDashboardData параллельно (лишние GET /api/devices).
                     // ✅ BUILD 115: ОБНОВЛЯЕМ ДАННЫЕ ИЗ API с диагностикой
                     print("📊 MainViewModel: Обновление данных из API:")
                     print("   - Члены семьи: \(self.familyMembers) → \(stats.totalMembers)")
@@ -323,7 +321,6 @@ class MainViewModel: ObservableObject {
                     // Члены: источник правды — ответ `family/stats` (избегаем рассинхрона с локальным списком до обновления экрана «Семья»).
                     self.familyMembers = stats.totalMembers
                     self.threatsBlocked = stats.totalThreats
-                    self.lastUpdateTime = Date()
                     self.errorMessage = nil // Авто-очистка баннера при успехе
                     
                     // Подтверждаем статус по успешному API
@@ -348,6 +345,10 @@ class MainViewModel: ObservableObject {
                                 self.devicesProtected = fallbackDevices
                                 print("   - Устройства: список API недоступен, используем family/stats: \(fallbackDevices) (\(err.localizedDescription))")
                             }
+                            self.isLoading = false
+                            self.isLoadingDashboard = false
+                            self.lastUpdateTime = Date()
+                            PerformanceMonitor.shared.endScreenLoad("MainDashboard")
                             print("✅ MainViewModel: Данные успешно обновлены из API")
                             NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
                         }
@@ -659,6 +660,7 @@ class MainViewModel: ObservableObject {
     func refreshFamilyMembersCountFromStorage() {
         // Число членей на главной берётся из `GET /api/family/stats` (см. `loadDashboardDataWithRetry`),
         // а не из `family_members_list`, чтобы не было рассинхрона «2 → 1» при устаревшем локальном кэше.
+        // После изменений состава семьи экран `MainScreen` вызывает `requestRefreshDebounced()` по `FamilyMembersUpdated`.
     }
     
     // MARK: - Private Methods

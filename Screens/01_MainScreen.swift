@@ -333,8 +333,11 @@ struct MainScreen: View {
             }
         }
         .onAppear {
-            // Счётчик устройств в жёлтом блоке = `GET /api/devices` (при возврате с других экранов без повторного .task).
-            mainViewModel.refreshDevicesCountFromAPI()
+            // Холодный старт: счётчик подтянет полный loadDashboardData из .task (без лишнего GET /api/devices).
+            // После первого успешного дашборда lastUpdateTime ≠ nil — при возврате на главную обновляем только девайсы.
+            if mainViewModel.lastUpdateTime != nil {
+                mainViewModel.refreshDevicesCountFromAPI()
+            }
         }
         // ✅ ИСПРАВЛЕНИЕ BUILD 92: УБРАН .id() с localizationManager - может вызывать рекурсию с @AppStorage
         // localizationManager.currentLanguage читает из UserDefaults, что может вызвать рекурсию
@@ -650,14 +653,26 @@ struct MainScreen: View {
                                 }
                                 
                                 Spacer()
-                                
-                                // Капсула статуса (вместо тумблера)
-                                FamilyStatusBadge(
-                                    status: mainViewModel.familyProtectionStatus,
-                                    localizationManager: localizationManager,
-                                    action: {
-                                        navigationManager.navigateTo(.family)
-                                    }
+
+                                // Капсула = статус защиты семьи (API), не путать с тарифом подписи ниже.
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text(localizationManager.localized("main_family_protection_badge_caption"))
+                                        .font(.system(size: 7, weight: .medium))
+                                        .foregroundColor(.black.opacity(0.55))
+                                        .multilineTextAlignment(.trailing)
+                                        .accessibilityHidden(true)
+
+                                    FamilyStatusBadge(
+                                        status: mainViewModel.familyProtectionStatus,
+                                        localizationManager: localizationManager,
+                                        action: {
+                                            navigationManager.navigateTo(.family)
+                                        }
+                                    )
+                                }
+                                .accessibilityElement(children: .combine)
+                                .accessibilityLabel(
+                                    "\(localizationManager.localized("main_family_protection_badge_caption")). \(localizationManager.localized(mainViewModel.familyProtectionStatus.titleLocalizationKey))"
                                 )
                             }
                             .onAppear {
@@ -878,8 +893,9 @@ struct MainScreen: View {
                     Task { await subscriptionManager.forceSync() }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyMembersUpdated"))) { _ in
-                    // Синхронизируем счетчик на главной с тем же storage, что и FamilyScreen.
-                    mainViewModel.refreshFamilyMembersCountFromStorage()
+                    // После сохранения списка участников на экране «Семья» обязательно перезапрашиваем `/api/family/stats`,
+                    // иначе на главной остаётся старый totalMembers (типичный кейс: на Семье уже 1 участник, на главной «0»).
+                    mainViewModel.requestRefreshDebounced()
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyDevicesDidChange"))) { _ in
                     // Один коалесцированный проход дашборда (внутри уже есть GET /api/devices).
@@ -936,7 +952,11 @@ struct MainScreen: View {
     private var currentTariffColor: Color {
         let level = subscriptionManager.getCurrentLevel()
         switch level {
-        case .free, .trial: return .secondaryGold
+        case .free:
+            return .secondaryGold
+        case .trial:
+            // Отличие от бесплатного: пробный период — бирюзово-золотой акцент.
+            return Color(red: 0.22, green: 0.78, blue: 0.72)
         case .personal: return .blue
         case .family: return .purple
         case .premium: return .orange

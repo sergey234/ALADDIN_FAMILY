@@ -117,8 +117,9 @@ class TariffManager: ObservableObject {
     
     // MARK: - Save Tariff
     
-    /// Сохранить тариф
-    func saveTariff(_ tariffType: TariffType) {
+    /// Сохранить тариф.
+    /// - Parameter pullServerAfterSave: если `true` (покупка/IAP/QR локально), подтягиваем `/api/subscription/status`, чтобы **сервер оставался источником правды** для UI главной (B6).
+    func saveTariff(_ tariffType: TariffType, pullServerAfterSave: Bool = true) {
         currentTariff = tariffType
         userDefaults.set(tariffType.rawValue, forKey: tariffKey)
 
@@ -159,6 +160,12 @@ class TariffManager: ObservableObject {
 
         print("✅ TariffManager: Тариф сохранён: \(tariffType.rawValue)")
         print("🎯 TariffManager: Запущена активация всех функций (ожидается ~184)")
+
+        if pullServerAfterSave {
+            Task {
+                await SubscriptionManager.shared.pullSubscriptionAfterLocalTariffSave()
+            }
+        }
     }
     
     // MARK: - Check Availability

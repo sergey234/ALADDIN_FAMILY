@@ -30,7 +30,7 @@ class JWTTokenManager {
             return true // Если не можем декодировать, считаем истёкшим
         }
         
-        guard let exp = payload["exp"] as? TimeInterval else {
+        guard let exp = Self.expirationUnixSeconds(from: payload) else {
             jwtDiag("⚠️ JWT: Нет поля exp в токене - считаем истёкшим")
             return true // Если нет поля exp, считаем истёкшим
         }
@@ -43,7 +43,15 @@ class JWTTokenManager {
             jwtDiag("⚠️ JWT Token истёк \(Int(timeSinceExpiration)) секунд назад (истёк: \(expirationDate))")
         } else {
             let timeUntilExpiration = expirationDate.timeIntervalSinceNow
-            jwtDiag("✅ JWT Token действителен ещё \(Int(timeUntilExpiration)) секунд (истекает: \(expirationDate))")
+            if timeUntilExpiration > 86400 * 2 {
+                let days = max(1, Int(timeUntilExpiration / 86400))
+                jwtDiag("✅ JWT действителен ещё ~\(days) дн. (истекает: \(expirationDate))")
+            } else if timeUntilExpiration > 3600 {
+                let hours = Int(timeUntilExpiration / 3600)
+                jwtDiag("✅ JWT действителен ещё ~\(hours) ч (истекает: \(expirationDate))")
+            } else {
+                jwtDiag("✅ JWT действителен ещё \(Int(timeUntilExpiration)) с (истекает: \(expirationDate))")
+            }
         }
         
         return isExpired
@@ -322,11 +330,19 @@ class JWTTokenManager {
     /// Получает время истечения токена
     func getTokenExpirationDate(_ token: String) -> Date? {
         guard let payload = decodeJWTPayload(token),
-              let exp = payload["exp"] as? TimeInterval else {
+              let exp = Self.expirationUnixSeconds(from: payload) else {
             return nil
         }
         
         return Date(timeIntervalSince1970: exp)
+    }
+
+    /// `exp` в JWT — целое секунд с 1970; JSONSerialization отдаёт Int/NSNumber, не всегда `TimeInterval`.
+    private static func expirationUnixSeconds(from payload: [String: Any]) -> TimeInterval? {
+        if let d = payload["exp"] as? Double { return d }
+        if let i = payload["exp"] as? Int { return TimeInterval(i) }
+        if let n = payload["exp"] as? NSNumber { return n.doubleValue }
+        return nil
     }
     
     /// Получает время до истечения токена в секундах

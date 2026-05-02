@@ -34,7 +34,15 @@ struct DeviceDetailScreen: View {
     @State private var isLoadingAction: Bool = false
     @State private var actionErrorMessage: String? = nil
     @State private var showBlockConfirmation: Bool = false
+    @State private var showUnblockConfirmation: Bool = false
     @State private var showRemoveConfirmation: Bool = false
+    
+    /// Заблокированное устройство: статус в списке или детальный ответ API (`blocked`).
+    private var isDeviceBlocked: Bool {
+        if device.status == .blocked { return true }
+        let s = deviceDetail?.status.lowercased() ?? ""
+        return s == "blocked"
+    }
     
     // ✅ ИСПРАВЛЕНО: Данные устройства из API вместо mock
     @State private var deviceDetail: DeviceDetailResponse? = nil
@@ -152,11 +160,19 @@ struct DeviceDetailScreen: View {
                 
                 // Action Buttons
                 VStack(spacing: Spacing.m) {
-                    SecondaryButton(localizationManager.localized("device_detail_block_device")) {
-                        blockDevice()
+                    if isDeviceBlocked {
+                        SecondaryButton(localizationManager.localized("device_detail_unblock_device")) {
+                            showUnblockConfirmation = true
+                        }
+                        .accessibilityLabel(localizationManager.localized("device_detail_unblock_device"))
+                        .accessibilityHint(localizationManager.localized("device_detail_unblock_device_hint"))
+                    } else {
+                        SecondaryButton(localizationManager.localized("device_detail_block_device")) {
+                            blockDevice()
+                        }
+                        .accessibilityLabel(localizationManager.localized("device_detail_block_device"))
+                        .accessibilityHint(localizationManager.localized("device_detail_block_device_hint"))
                     }
-                    .accessibilityLabel(localizationManager.localized("device_detail_block_device"))
-                    .accessibilityHint(localizationManager.localized("device_detail_block_device_hint"))
 
                     SecondaryButton(localizationManager.localized("device_detail_remove_device")) {
                         removeDevice()
@@ -179,6 +195,14 @@ struct DeviceDetailScreen: View {
             }
         } message: {
             Text(String(format: localizationManager.localized("device_detail_block_confirmation_message"), device.name))
+        }
+        .alert(localizationManager.localized("device_detail_unblock_confirmation_title"), isPresented: $showUnblockConfirmation) {
+            Button(localizationManager.localized("common_cancel"), role: .cancel) { }
+            Button(localizationManager.localized("device_detail_unblock_device")) {
+                confirmUnblockDevice()
+            }
+        } message: {
+            Text(String(format: localizationManager.localized("device_detail_unblock_confirmation_message"), device.name))
         }
         .alert(localizationManager.localized("device_detail_remove_confirmation_title"), isPresented: $showRemoveConfirmation) {
             Button(localizationManager.localized("common_cancel"), role: .cancel) { }
@@ -222,6 +246,7 @@ struct DeviceDetailScreen: View {
         case .warning: return localizationManager.localized("device_detail_status_warning")
         case .danger: return localizationManager.localized("device_detail_status_danger")
         case .inactive: return localizationManager.localized("device_detail_status_inactive")
+        case .blocked: return localizationManager.localized("devices_status_blocked")
         case .pending: return "Ожидает привязки"
         }
     }
@@ -244,6 +269,27 @@ struct DeviceDetailScreen: View {
                 case .success:
                     // Успешная блокировка - показать сообщение и вернуться
                     print("✅ Device blocked successfully")
+                    NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
+                    self.dismiss()
+                case .failure(let error):
+                    let networkError = NetworkError.from(error)
+                    self.actionErrorMessage = networkError.localizedDescription
+                }
+            }
+        }
+    }
+
+    private func confirmUnblockDevice() {
+        isLoadingAction = true
+        actionErrorMessage = nil
+
+        apiService.unblockDevice(deviceId: device.id) { result in
+            DispatchQueue.main.async {
+                self.isLoadingAction = false
+
+                switch result {
+                case .success:
+                    print("✅ Device unblocked successfully")
                     NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
                     self.dismiss()
                 case .failure(let error):

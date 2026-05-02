@@ -16,6 +16,11 @@ class MetricsService {
         category: "MetricsService"
     )
 
+    /// Глобально для всех экземпляров: реже слать тяжёлые user_action с главного потока (FPS/память), см. план C2.
+    private static let throttleLock = NSLock()
+    private static var lastHeavyUserActionAt: [String: Date] = [:]
+    private static let heavyUserActionMinInterval: TimeInterval = 45
+
     // MARK: - Properties
 
     private let apiService: APIService
@@ -81,6 +86,18 @@ class MetricsService {
      */
     /// Параметры не должны содержать секреты; перед отправкой ключи вроде password/token скрываются.
     func trackUserAction(action: String, parameters: [String: Any]? = nil) {
+        let heavyThrottled = ["fps_measurement", "memory_usage_check"]
+        if heavyThrottled.contains(action) {
+            let now = Date()
+            Self.throttleLock.lock()
+            defer { Self.throttleLock.unlock() }
+            if let last = Self.lastHeavyUserActionAt[action],
+               now.timeIntervalSince(last) < Self.heavyUserActionMinInterval {
+                return
+            }
+            Self.lastHeavyUserActionAt[action] = now
+        }
+
         let metric = UserActionMetric(
             timestamp: Date(),
             action: action,

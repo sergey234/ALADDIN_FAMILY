@@ -358,8 +358,10 @@
 "device_detail_status" = "Статус: %@";
 "device_detail_last_activity" = "Последняя активность: %@";
 "device_detail_block_device" = "Заблокировать устройство";
+"device_detail_unblock_device" = "Разблокировать устройство";
 "device_detail_remove_device" = "Удалить устройство";
 "device_detail_block_device_hint" = "Двойное нажатие для блокировки устройства";
+"device_detail_unblock_device_hint" = "Двойное нажатие для разблокировки устройства";
 "device_detail_remove_device_hint" = "Двойное нажатие для удаления устройства";
 "device_detail_nav_accessibility" = "Навигация деталей устройства";
 "device_detail_stats_threats_blocked" = "Заблокировано угроз";
@@ -776,6 +778,8 @@
 "child_game_content_coming_soon" = "Контент скоро появится...";
 "device_detail_block_confirmation_title" = "Блокировка устройства";
 "device_detail_block_confirmation_message" = "Вы уверены, что хотите заблокировать %@? Доступ к устройству будет ограничен.";
+"device_detail_unblock_confirmation_title" = "Разблокировка устройства";
+"device_detail_unblock_confirmation_message" = "Снять блокировку с %@? Доступ к устройству будет восстановлен.";
 "device_detail_remove_confirmation_title" = "Удаление устройства";
 "device_detail_remove_confirmation_message" = "Вы уверены, что хотите удалить %@? Это действие нельзя отменить.";
 "device_detail_action_success" = "Действие выполнено успешно";

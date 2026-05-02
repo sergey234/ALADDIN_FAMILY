@@ -14,6 +14,9 @@ import AuthenticationServices
  */
 
 struct MainScreenWithRegistration: View {
+
+    /// В DEBUG: можно поставить `true`, чтобы вернуть блок Apple/Magic для внутренних тестов. В Release блок **не компилируется** в разметку (согласие / добавление участника без лишнего входа).
+    private static let isAlternativeRegistrationAuthVisible = false
     
     @StateObject var registrationVM: FamilyRegistrationViewModel
     @State private var showTip: Bool = false
@@ -68,100 +71,117 @@ struct MainScreenWithRegistration: View {
     }
     
     var body: some View {
+        registrationZStack
+            .overlay(alignment: .topTrailing) { registrationCancelOverlay }
+            .overlay(alignment: .topLeading) { registrationAlternativeAuthOverlay }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel("Экран регистрации семьи")
+            .alert(localizationManager.localized("family_chat_error_title"), isPresented: Binding(
+                get: { appleAuthErrorMessage != nil },
+                set: { if !$0 { appleAuthErrorMessage = nil } }
+            )) {
+                Button(localizationManager.localized("family_chat_error_ok")) {
+                    appleAuthErrorMessage = nil
+                }
+            } message: {
+                Text(appleAuthErrorMessage ?? "")
+            }
+            .task {
+                print("🚨 MainScreenWithRegistration загружен!")
+                try? await Task.sleep(nanoseconds: 500_000_000)
+                print("🚨 Вызываю startRegistration()...")
+                registrationVM.startRegistration()
+                print("✅ Регистрация запущена, showRoleModal = \(registrationVM.showRoleModal)")
+            }
+    }
+
+    /// Разбивка тела: ускоряет type-check компилятора SwiftUI.
+    private var registrationZStack: some View {
         ZStack {
             backgroundView
-
             registrationModalsView
             loadingOrErrorView
             recoveryCodeModalView
             successModalView
             tipNotificationView
         }
-        // «Отмена» только в углу — без полноэкранного Spacer, иначе перехватывались нажатия по модалу успеха / Продолжить
-        .overlay(alignment: .topTrailing) {
-            Button(localizationManager.localized("common_cancel")) {
-                print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем completeRegistration()")
-                completeRegistration(isSuccess: false)
-            }
-            .font(.system(size: 16, weight: .medium))
-            .foregroundColor(.white)
-            .padding(.horizontal, 16)
-            .padding(.vertical, 8)
-            .background(Color.black.opacity(0.35))
-            .cornerRadius(20)
-            .accessibilityLabel(localizationManager.localized("common_cancel"))
-            .padding(.top, 20)
-            .padding(.trailing, 20)
+    }
+
+    /// «Отмена» только в углу — без полноэкранного Spacer.
+    private var registrationCancelOverlay: some View {
+        Button(localizationManager.localized("common_cancel")) {
+            print("✅ [MainScreenWithRegistration] Кнопка 'Отмена' нажата, вызываем completeRegistration()")
+            completeRegistration(isSuccess: false)
         }
-        .overlay(alignment: .topLeading) {
-            VStack(alignment: .leading, spacing: 8) {
-                SignInWithAppleButton(.signIn, onRequest: { request in
-                    request.requestedScopes = [.fullName, .email]
-                }, onCompletion: handleAppleSignInResult)
-                .signInWithAppleButtonStyle(.white)
-                .frame(width: 220, height: 44)
-                .disabled(isAppleAuthInProgress)
+        .font(.system(size: 16, weight: .medium))
+        .foregroundColor(.white)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 8)
+        .background(Color.black.opacity(0.35))
+        .cornerRadius(20)
+        .accessibilityLabel(localizationManager.localized("common_cancel"))
+        .padding(.top, 20)
+        .padding(.trailing, 20)
+    }
 
-                if isAppleAuthInProgress {
-                    ProgressView()
-                        .tint(.white)
-                }
+    @ViewBuilder
+    private var registrationAlternativeAuthOverlay: some View {
+        #if DEBUG
+        if Self.isAlternativeRegistrationAuthVisible, !registrationVM.showConsentModal {
+            appleAndMagicLinkAuthPanel
+        }
+        #endif
+    }
 
-                VStack(alignment: .leading, spacing: 6) {
-                    TextField("Email for Magic Link", text: $magicLinkEmail)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled(true)
-                        .keyboardType(.emailAddress)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 10)
-                        .background(Color.white.opacity(0.95))
-                        .foregroundColor(.black)
-                        .cornerRadius(10)
-                        .frame(width: 220)
+    /// Не показываем поверх модалки согласия (`registrationAlternativeAuthOverlay` уже проверяет `showConsentModal`).
+    private var appleAndMagicLinkAuthPanel: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            SignInWithAppleButton(.signIn, onRequest: { request in
+                request.requestedScopes = [.fullName, .email]
+            }, onCompletion: handleAppleSignInResult)
+            .signInWithAppleButtonStyle(.white)
+            .frame(width: 220, height: 44)
+            .disabled(isAppleAuthInProgress)
 
-                    Button(isMagicLinkInProgress ? "Sending..." : "Send Magic Link") {
-                        requestMagicLink()
-                    }
-                    .disabled(isMagicLinkInProgress || magicLinkEmail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.white)
+            if isAppleAuthInProgress {
+                ProgressView()
+                    .tint(.white)
+            }
+
+            VStack(alignment: .leading, spacing: 6) {
+                TextField(localizationManager.localized("registration_magic_link_email_placeholder"), text: $magicLinkEmail)
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled(true)
+                    .keyboardType(.emailAddress)
                     .padding(.horizontal, 12)
-                    .padding(.vertical, 8)
-                    .background(Color.blue.opacity(0.85))
+                    .padding(.vertical, 10)
+                    .background(Color.white.opacity(0.95))
+                    .foregroundColor(.black)
                     .cornerRadius(10)
-                }
+                    .frame(width: 220)
 
-                if let magicLinkStatusMessage, !magicLinkStatusMessage.isEmpty {
-                    Text(magicLinkStatusMessage)
-                        .font(.caption2)
-                        .foregroundColor(.white.opacity(0.9))
-                        .frame(width: 220, alignment: .leading)
-                        .fixedSize(horizontal: false, vertical: true)
+                Button(isMagicLinkInProgress ? localizationManager.localized("registration_magic_link_sending") : localizationManager.localized("registration_magic_link_send")) {
+                    requestMagicLink()
                 }
+                .disabled(isMagicLinkInProgress || magicLinkEmail.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundColor(.white)
+                .padding(.horizontal, 12)
+                .padding(.vertical, 8)
+                .background(Color.blue.opacity(0.85))
+                .cornerRadius(10)
             }
-            .padding(.top, 20)
-            .padding(.leading, 20)
-        }
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel("Экран регистрации семьи")
-        .alert(localizationManager.localized("family_chat_error_title"), isPresented: Binding(
-            get: { appleAuthErrorMessage != nil },
-            set: { if !$0 { appleAuthErrorMessage = nil } }
-        )) {
-            Button(localizationManager.localized("family_chat_error_ok")) {
-                appleAuthErrorMessage = nil
+
+            if let magicLinkStatusMessage, !magicLinkStatusMessage.isEmpty {
+                Text(magicLinkStatusMessage)
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.9))
+                    .frame(width: 220, alignment: .leading)
+                    .fixedSize(horizontal: false, vertical: true)
             }
-        } message: {
-            Text(appleAuthErrorMessage ?? "")
         }
-        .task {
-            print("🚨 MainScreenWithRegistration загружен!")
-            // Start registration immediately without checking
-            try? await Task.sleep(nanoseconds: 500_000_000) // 0.5 seconds
-            print("🚨 Вызываю startRegistration()...")
-            registrationVM.startRegistration()
-            print("✅ Регистрация запущена, showRoleModal = \(registrationVM.showRoleModal)")
-        }
+        .padding(.top, 20)
+        .padding(.leading, 20)
     }
     
     // MARK: - Helper Views
@@ -487,7 +507,7 @@ struct MainScreenWithRegistration: View {
     private func requestMagicLink() {
         let email = magicLinkEmail.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard !email.isEmpty, email.contains("@") else {
-            magicLinkStatusMessage = "Введите корректный email."
+            magicLinkStatusMessage = localizationManager.localized("registration_magic_link_invalid_email")
             return
         }
 
@@ -498,7 +518,7 @@ struct MainScreenWithRegistration: View {
                 isMagicLinkInProgress = false
                 switch result {
                 case .success:
-                    magicLinkStatusMessage = "Ссылка отправлена. Проверьте почту и откройте её на этом устройстве."
+                    magicLinkStatusMessage = localizationManager.localized("registration_magic_link_sent_success")
                 case .failure(let error):
                     magicLinkStatusMessage = error.localizedDescription
                 }

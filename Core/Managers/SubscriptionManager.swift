@@ -243,6 +243,7 @@ final class SubscriptionManager: ObservableObject {
             nextCheckIn: 60
         ))
 
+        reconcileTariffManagerWithSubscription(reason: "initializeOnAppStart")
         logSubscriptionReconcileSummary(tokenStatus: tokenStatus)
         isInitialized = true
         #if DEBUG
@@ -259,8 +260,9 @@ final class SubscriptionManager: ObservableObject {
         let plan = currentSubscription?.level.rawValue ?? "nil"
         let tokenOk = currentToken != nil
         let effective = getCurrentLevel().rawValue
+        let tariffMgr = TariffManager.shared.currentTariff.rawValue
         logger.business(
-            "📋 subscription_reconcile jwt=\(tokenStatus.description) token_present=\(tokenOk) plan=\(plan) effective=\(effective) \(trialLine) family_limit=\(currentFamilyLimit)"
+            "📋 subscription_reconcile jwt=\(tokenStatus.description) token_present=\(tokenOk) plan=\(plan) effective=\(effective) \(trialLine) family_limit=\(currentFamilyLimit) tariff_mgr=\(tariffMgr)"
         )
     }
 
@@ -472,6 +474,7 @@ final class SubscriptionManager: ObservableObject {
         logger.business("💾 DEFENSIVE JWT: Очищены UserDefaults")
 
         logger.business("✅ DEFENSIVE JWT: Токен полностью очищен")
+        reconcileTariffManagerWithSubscription(reason: "clearToken")
     }
 
     #if DEBUG
@@ -771,6 +774,7 @@ final class SubscriptionManager: ObservableObject {
                     ])
                     NotificationManager.shared.scheduleTrialNotifications(trialEndDate: serverTrial.endDate)
                     logger.business("✅ Trial activated from server: \(serverTrial.daysRemaining) days remaining + notifications scheduled")
+                    logger.business("📊 TRIAL_TARIFF_PIPELINE trial_activated plan=\(currentSubscription?.level.rawValue ?? "nil") effective=\(getCurrentLevel().rawValue) trial_end=\(serverTrial.endDate)")
                 } else {
                     logger.business("ℹ️ Server trial is not active anymore. App should behave as free/paid.")
                 }
@@ -1237,6 +1241,9 @@ final class SubscriptionManager: ObservableObject {
     /// ✅ ИСПРАВЛЕНО: Изменено с private на internal для использования в TokenHealthMonitor
     @MainActor
     func updateSubscriptionStatus(_ status: SubscriptionStatus) {
+        let previousSubscription = currentSubscription
+        let previousFamilyLimit = currentFamilyLimit
+
         currentSubscription = status
         persistSubscriptionStatus(status)
         logger.business("📊 Subscription updated: \(status.level)")
@@ -1260,12 +1267,22 @@ final class SubscriptionManager: ObservableObject {
         VisualLogger.shared.log("🔄 TARIFF→FAMILY SYNC: plan_level=\(status.level), cap_level=\(levelForFamilyCap), family_limit=\(tariffBasedLimit), remaining=\(calculatedRemaining) (published + UserDefaults)", level: .info, category: "FAMILY")
         logger.business("🔄 Tariff sync: family_limit=\(tariffBasedLimit) for cap_level=\(levelForFamilyCap.rawValue) (plan_level=\(status.level.rawValue))")
 
-        // ✅ NEW: Broadcast subscription update so MainScreen and other views can react immediately
-        NotificationCenter.default.post(
-            name: Notification.Name("SubscriptionUpdated"),
-            object: nil,
-            userInfo: ["level": status.level.rawValue, "limit": tariffBasedLimit]
-        )
+        let subscriptionMeaningfullyChanged =
+            previousSubscription?.level != status.level
+            || previousSubscription?.expiresAt != status.expiresAt
+            || previousSubscription?.trialInfo != status.trialInfo
+            || previousFamilyLimit != tariffBasedLimit
+
+        // Не шлём уведомление при идентичном снимке — иначе MainScreen коалесцирует лишний loadDashboardData и дубли GET /api/devices.
+        if subscriptionMeaningfullyChanged {
+            NotificationCenter.default.post(
+                name: Notification.Name("SubscriptionUpdated"),
+                object: nil,
+                userInfo: ["level": status.level.rawValue, "limit": tariffBasedLimit]
+            )
+        }
+
+        reconcileTariffManagerWithSubscription(reason: "updateSubscriptionStatus")
     }
 
     /// 🎁 Update trial status
@@ -1280,6 +1297,7 @@ final class SubscriptionManager: ObservableObject {
         trialStatus = trial
         persistTrialStatus(trial)
         logger.business("🎁 Trial updated: \(trial.daysRemaining) days remaining")
+        reconcileTariffManagerWithSubscription(reason: "updateTrialStatus")
     }
 
 
@@ -1635,6 +1653,29 @@ final class SubscriptionManager: ObservableObject {
 
 extension SubscriptionManager {
 
+    // MARK: - Tariff pipeline (B5 / B6)
+
+    /// Выровнять `TariffManager` под эффективный уровень подписки/триала (`getCurrentLevel`). Сервер уже отражён в `SubscriptionManager`; здесь только защита и каталог функций.
+    private func reconcileTariffManagerWithSubscription(reason: String) {
+        let effective = getCurrentLevel()
+        let trialActive = trialStatus?.isActive ?? false
+        let plan = currentSubscription?.level.rawValue ?? "nil"
+        let target = TariffType.fromSubscriptionLevel(effective)
+        let tm = TariffManager.shared
+        if tm.currentTariff == target {
+            logger.business("📊 TRIAL_TARIFF_PIPELINE ok reason=\(reason) plan=\(plan) trial_active=\(trialActive) effective=\(effective.rawValue) tariff_mgr=\(target.rawValue)")
+            return
+        }
+        logger.business("📊 TRIAL_TARIFF_PIPELINE sync reason=\(reason) plan=\(plan) trial_active=\(trialActive) effective=\(effective.rawValue) \(tm.currentTariff.rawValue)→\(target.rawValue)")
+        tm.saveTariff(target, pullServerAfterSave: false)
+    }
+
+    /// После локального `TariffManager.saveTariff` (покупка, QR, код) подтягиваем статус с сервера — единый источник правды для главной и JWT.
+    func pullSubscriptionAfterLocalTariffSave() async {
+        logger.business("📊 TRIAL_TARIFF_PIPELINE: local TariffManager.save → pullSubscriptionAfterLocalTariffSave → forceSync")
+        await forceSync()
+    }
+
     /// 🌐 Setup network connectivity monitoring
     private func setupNetworkMonitoring() {
         // Monitor network changes and sync when online
@@ -1786,6 +1827,7 @@ extension SubscriptionManager {
         }
 
         logger.business("📥 Updated subscription from server: \(subscriptionLevel.rawValue)")
+        reconcileTariffManagerWithSubscription(reason: "updateFromServerStatus")
     }
 
     /// ⏰ Setup periodic sync when online

@@ -5,6 +5,13 @@ import Foundation
 /// Тип тарифа (для совместимости с TariffsScreen)
 typealias TariffType = TariffsScreen.TariffType
 
+extension TariffType {
+    /// Согласованный маппинг с `SubscriptionLevel` (единые rawValue: trial, free, personal, family, premium).
+    static func fromSubscriptionLevel(_ level: SubscriptionLevel) -> TariffType {
+        TariffType(rawValue: level.rawValue) ?? .free
+    }
+}
+
 /// Модель категории угроз для каталога «100 видов защиты».
 /// Используется на экранах тарифов и защите.
 enum ThreatProtectionCategory: String, CaseIterable, Identifiable {

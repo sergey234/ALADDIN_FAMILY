@@ -320,6 +320,14 @@ struct TariffsScreen: View {
                 if tariff == .trial {
                     Task { @MainActor in
                         await SubscriptionManager.shared.activateTrialIfNeeded()
+                        // Подтянуть `/api/subscription/status` и разослать обновление — иначе главная может остаться на «Базовый», пока пользователь не перезапустит приложение.
+                        await SubscriptionManager.shared.forceSync()
+                        let level = SubscriptionManager.shared.getCurrentLevel().rawValue
+                        NotificationCenter.default.post(
+                            name: NSNotification.Name("SubscriptionUpdated"),
+                            object: nil,
+                            userInfo: ["level": level, "source": "tariffs_trial_selected"]
+                        )
                     }
                     return
                 }

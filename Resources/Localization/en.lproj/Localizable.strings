@@ -257,8 +257,10 @@
 "device_detail_status" = "Status: %@";
 "device_detail_last_activity" = "Last activity: %@";
 "device_detail_block_device" = "Block Device";
+"device_detail_unblock_device" = "Unblock Device";
 "device_detail_remove_device" = "Remove Device";
 "device_detail_block_device_hint" = "Double tap to block this device";
+"device_detail_unblock_device_hint" = "Double tap to unblock this device";
 "device_detail_remove_device_hint" = "Double tap to remove this device";
 "device_detail_nav_accessibility" = "Device details navigation";
 "device_detail_stats_threats_blocked" = "Threats Blocked";
@@ -675,6 +677,8 @@
 "child_game_content_coming_soon" = "Content coming soon...";
 "device_detail_block_confirmation_title" = "Block Device";
 "device_detail_block_confirmation_message" = "Are you sure you want to block %@? Access to the device will be restricted.";
+"device_detail_unblock_confirmation_title" = "Unblock Device";
+"device_detail_unblock_confirmation_message" = "Unblock %@? Access to the device will be restored.";
 "device_detail_remove_confirmation_title" = "Remove Device";
 "device_detail_remove_confirmation_message" = "Are you sure you want to remove %@? This action cannot be undone.";
 "device_detail_action_success" = "Action completed successfully";

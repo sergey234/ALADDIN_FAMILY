@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 import Contacts
 import ContactsUI
 import CoreLocation
+import Combine
 
 /**
  * 💬 Family Chat Screen
@@ -21,6 +22,12 @@ import CoreLocation
  * - Автопрокрутка к новым сообщениям
  */
 
+/// Алерт ошибок чата: отдельный `Identifiable`, чтобы не плодить циклы SwiftUI через `errorMessage` + `message { if let }`.
+private struct FamilyChatUserErrorAlert: Identifiable {
+    let id = UUID()
+    let message: String
+}
+
 struct FamilyChatScreen: View {
     
     @Environment(\.dismiss) var dismiss
@@ -30,8 +37,9 @@ struct FamilyChatScreen: View {
     @State private var messages: [FamilyChatMessage] = []
     @State private var isLoading: Bool = false
     @State private var isSending: Bool = false
-    @State private var errorMessage: String? = nil
-    @State private var refreshTimer: Timer? = nil
+    @State private var chatUserErrorAlert: FamilyChatUserErrorAlert? = nil
+    /// Поколение silent-запроса списка: устаревшие ответы не перезаписывают `messages` (гонки polling + после send).
+    @State private var silentMessagesFetchGeneration: UInt64 = 0
     @State private var onlineMembersCount: Int = 0
     @State private var onlineUsers: Set<String> = []
     
@@ -64,9 +72,10 @@ struct FamilyChatScreen: View {
     @State private var showContactPicker: Bool = false
     @State private var isResolvingLocation: Bool = false
     @State private var typingStopWorkItem: DispatchWorkItem? = nil
+    /// Debounce typing: `Task` на MainActor, чтобы не дергать сеть синхронно из `onChange` и не захватывать устаревший `struct View`.
+    @State private var typingTextDebounceTask: Task<Void, Never>?
     @State private var lastTypingSignalAt: Date = .distantPast
     @State private var typingExpiryByUser: [String: Date] = [:]
-    @State private var presencePruneTimer: Timer? = nil
     @State private var wsRealtimeUnavailable: Bool = false
     
     private let familyMembersKey = "family_members_list"
@@ -83,6 +92,11 @@ struct FamilyChatScreen: View {
     
     
     var body: some View {
+        familyChatRootDecorated
+    }
+
+    /// Основная колонка: навбар, баннеры, список сообщений (без модификаторов жизненного цикла).
+    private var familyChatMainColumn: some View {
         VStack(spacing: 0) {
             ALADDINNavigationBar(
                 title: localizationManager.localized("family_chat_title"),
@@ -91,9 +105,8 @@ struct FamilyChatScreen: View {
                 showProfileButton: false,
                 showListButton: false,
                 onBack: {
-                    stopAutoRefresh()
                     dismiss()
-                    
+
                     DispatchQueue.main.async {
                         if navigationManager.canGoBack {
                             navigationManager.goBack()
@@ -105,43 +118,13 @@ struct FamilyChatScreen: View {
             .accessibilityLabel(localizationManager.localized("family_chat_nav_accessibility"))
 
             if wsRealtimeUnavailable {
-                HStack(spacing: Spacing.s) {
-                    Image(systemName: "antenna.radiowaves.left.and.right.slash")
-                        .foregroundColor(.orange)
-                    Text(localizationManager.localized("family_chat_ws_offline_hint"))
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Spacer(minLength: 0)
-                    Button(localizationManager.localized("family_chat_reconnect")) {
-                        webSocket?.reconnectNow()
-                    }
-                    .font(.caption.weight(.semibold))
-                }
-                .padding(.horizontal, Spacing.screenPadding)
-                .padding(.vertical, Spacing.s)
-                .background(Color.orange.opacity(0.12))
+                familyChatWebSocketBanner
             }
 
             if !onlineUsers.isEmpty {
-                ScrollView(.horizontal, showsIndicators: false) {
-                    HStack(spacing: 6) {
-                        ForEach(Array(onlineUsers).sorted(), id: \.self) { user in
-                            Text(user)
-                                .font(.caption2)
-                                .foregroundColor(.white.opacity(0.9))
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color.green.opacity(0.22))
-                                .clipShape(Capsule())
-                        }
-                    }
-                    .padding(.horizontal, Spacing.screenPadding)
-                }
-                .padding(.top, 6)
+                familyChatOnlineMembersStrip
             }
-            
-            // Search Bar
+
             if isSearching {
                 ChatSearchBar(
                     searchText: $searchText,
@@ -153,143 +136,122 @@ struct FamilyChatScreen: View {
                 )
                 .padding(Spacing.screenPadding)
             }
-            
-            // Typing Indicator
+
             if !normalizedTypingUsers.isEmpty {
                 TypingIndicatorView(typingUsers: normalizedTypingUsers)
             }
-            
-            // Messages List with ScrollViewReader
-            ScrollViewReader { proxy in
-                ScrollView {
-                    VStack(spacing: Spacing.m) {
-                        // Reply Preview
-                        if let replyTo = replyToMessage {
-                            ReplyBubbleView(replyTo: replyTo) {
-                                replyToMessage = nil
-                            }
-                            .padding(.horizontal, Spacing.screenPadding)
-                        }
-                        
-                        // Messages
-                        ForEach(displayMessages) { message in
-                            if message.mediaType != nil || message.messageType == .image || message.messageType == .video || message.messageType == .voice {
-                                // Используем специализированный MediaMessageBubble для всех медиа
-                                MediaMessageBubble(
-                                    message: message,
-                                    isCurrentUser: message.isCurrentUser,
-                                    uploadProgress: message.uploadProgress
-                                )
-                                .id(message.id)
-                                .contextMenu {
-                                    MessageContextMenu(
-                                        message: message,
-                                        onDelete: { deleteMessage(message) },
-                                        onEdit: { startEditing(message) },
-                                        onReply: { replyToMessage = message },
-                                        onCopy: { copyMessage(message) },
-                                        onForward: { forwardMessage(message) },
-                                        onAddReaction: { showReactionPicker(for: message) }
-                                    )
-                                }
-                            } else {
-                                MessageBubbleView(
-                                    message: message,
-                                    allMessages: messages,
-                                    onLongPress: {
-                                        selectedMessage = message
-                                        showMessageActions = true
-                                    },
-                                    onReaction: { emoji in
-                                        addReaction(to: message, emoji: emoji)
-                                    }
-                                )
-                                .id(message.id)
-                                .contextMenu {
-                                    MessageContextMenu(
-                                        message: message,
-                                        onDelete: { deleteMessage(message) },
-                                        onEdit: { startEditing(message) },
-                                        onReply: { replyToMessage = message },
-                                        onCopy: { copyMessage(message) },
-                                        onForward: { forwardMessage(message) },
-                                        onAddReaction: { showReactionPicker(for: message) }
-                                    )
-                                }
-                            }
-                        }
-                    }
-                    .padding(Spacing.screenPadding)
+
+            familyChatMessagesScrollArea
+        }
+    }
+
+    private var familyChatWebSocketBanner: some View {
+        HStack(spacing: Spacing.s) {
+            Image(systemName: "antenna.radiowaves.left.and.right.slash")
+                .foregroundColor(.orange)
+            Text(localizationManager.localized("family_chat_ws_offline_hint"))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+            Button(localizationManager.localized("family_chat_reconnect")) {
+                webSocket?.reconnectNow()
+            }
+            .font(.caption.weight(.semibold))
+        }
+        .padding(.horizontal, Spacing.screenPadding)
+        .padding(.vertical, Spacing.s)
+        .background(Color.orange.opacity(0.12))
+    }
+
+    private var familyChatOnlineMembersStrip: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                ForEach(Array(onlineUsers).sorted(), id: \.self) { user in
+                    Text(user)
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.9))
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.green.opacity(0.22))
+                        .clipShape(Capsule())
                 }
-                .onAppear {
-                    // Сохраняем proxy для использования в методах
-                    DispatchQueue.main.async {
-                        if let lastMessage = messages.last {
-                            scrollToMessage(lastMessage.id, proxy: proxy)
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+        }
+        .padding(.top, 6)
+    }
+
+    private var familyChatMessagesScrollArea: some View {
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: Spacing.m) {
+                    if let replyTo = replyToMessage {
+                        ReplyBubbleView(replyTo: replyTo) {
+                            replyToMessage = nil
                         }
+                        .padding(.horizontal, Spacing.screenPadding)
+                    }
+
+                    ForEach(displayMessages) { message in
+                        familyChatMessageRow(message)
                     }
                 }
-                .onChange(of: messages.count) { _ in
-                    // Автопрокрутка при появлении новых сообщений
+                .padding(Spacing.screenPadding)
+            }
+            .onAppear {
+                DispatchQueue.main.async {
                     if let lastMessage = messages.last {
                         scrollToMessage(lastMessage.id, proxy: proxy)
                     }
                 }
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel(localizationManager.localized("family_chat_messages_list"))
             }
-            
-        }
-        .background(LinearGradient.backgroundGradient.ignoresSafeArea())
-        .accessibilityElement(children: .contain)
-        .accessibilityLabel(localizationManager.localized("family_chat_accessibility"))
-        .navigationBarHidden(true)
-        .safeAreaInset(edge: .top) {
-            Color.clear.frame(height: Spacing.m)
-        }
-        .safeAreaInset(edge: .bottom) {
-            composerBar
-        }
-        .task {
-            print("🚨 FamilyChatScreen загружен!")
-            markFamilyActivity()
-            updateOnlineMembersCount()
-            loadCachedMessages()
-            let hadCachedSnapshot = !messages.isEmpty
-            loadMessages(silent: hadCachedSnapshot)
-            startAutoRefresh()
-            setupWebSocket()
-            setupPushNotifications()
-            startPresencePruneTimer()
-        }
-        .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
-            // Реальное устройство: WS часто рвётся в фоне; при возврате — повторить connect.
-            if let ws = webSocket, !ws.isConnected, ws.connectionStatus != .connecting {
-                ws.connect()
+            .onChange(of: messages.count) { _ in
+                if let lastMessage = messages.last {
+                    scrollToMessage(lastMessage.id, proxy: proxy)
+                }
             }
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(localizationManager.localized("family_chat_messages_list"))
         }
-        .onDisappear {
-            stopAutoRefresh()
-            stopPresencePruneTimer()
-            typingStopWorkItem?.cancel()
-            webSocket?.sendStopTyping()
-            webSocket?.disconnect()
-        }
-        .sheet(isPresented: $showMediaPicker) {
-            ImagePickerView(sourceType: .photoLibrary) { image in
-                selectedMedia = image
-                sendMediaMessage(image: image)
+    }
+
+    @ViewBuilder
+    private func familyChatMessageRow(_ message: FamilyChatMessage) -> some View {
+        if message.mediaType != nil || message.messageType == .image || message.messageType == .video || message.messageType == .voice {
+            MediaMessageBubble(
+                message: message,
+                isCurrentUser: message.isCurrentUser,
+                uploadProgress: message.uploadProgress
+            )
+            .id(message.id)
+            .contextMenu {
+                MessageContextMenu(
+                    message: message,
+                    onDelete: { deleteMessage(message) },
+                    onEdit: { startEditing(message) },
+                    onReply: { replyToMessage = message },
+                    onCopy: { copyMessage(message) },
+                    onForward: { forwardMessage(message) },
+                    onAddReaction: { showReactionPicker(for: message) }
+                )
             }
-        }
-        .sheet(isPresented: $showCamera) {
-            ImagePickerView(sourceType: .camera) { image in
-                selectedMedia = image
-                sendMediaMessage(image: image)
-            }
-        }
-        .sheet(isPresented: $showMessageActions) {
-            if let message = selectedMessage {
-                MessageActionsMenu(
+        } else {
+            MessageBubbleView(
+                message: message,
+                replyPreview: replyPreview(for: message),
+                allMessages: [],
+                onLongPress: {
+                    selectedMessage = message
+                    showMessageActions = true
+                },
+                onReaction: { emoji in
+                    addReaction(to: message, emoji: emoji)
+                }
+            )
+            .id(message.id)
+            .contextMenu {
+                MessageContextMenu(
                     message: message,
                     onDelete: { deleteMessage(message) },
                     onEdit: { startEditing(message) },
@@ -300,140 +262,227 @@ struct FamilyChatScreen: View {
                 )
             }
         }
-        .confirmationDialog(
-            localizationManager.localized("family_chat_title"),
-            isPresented: $showComposerActions
-        ) {
-            Button(localizationManager.localized("family_chat_action_emoji")) {
-                showQuickReactionPicker = true
-            }
-            Button(localizationManager.localized("family_chat_action_quick_reply")) {
-                applyQuickReplyFromMenu()
-            }
-            Button(localizationManager.localized("family_chat_voice_button")) {
-                if isRecordingVoice {
-                    if let url = voiceRecorder.stopRecording() {
-                        recordingURL = url
-                        sendVoiceMessage(url: url)
-                    }
-                    isRecordingVoice = false
-                } else if voiceRecorder.startRecording() != nil {
-                    isRecordingVoice = true
+    }
+
+    private var familyChatCoreChrome: some View {
+        familyChatMainColumn
+            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .onReceive(Timer.publish(every: 8.0, on: .main, in: .common).autoconnect()) { _ in
+                if !isLoading && !isSending {
+                    loadMessages(silent: true)
                 }
             }
-            Button(localizationManager.localized("family_chat_action_camera")) {
-                showCamera = true
+            .onReceive(Timer.publish(every: 1.0, on: .main, in: .common).autoconnect()) { _ in
+                pruneStaleTypingIndicators()
             }
-            Button(localizationManager.localized("family_chat_action_gallery")) {
-                showMediaPicker = true
+            .accessibilityElement(children: .contain)
+            .accessibilityLabel(localizationManager.localized("family_chat_accessibility"))
+            .navigationBarHidden(true)
+            .safeAreaInset(edge: .top) {
+                Color.clear.frame(height: Spacing.m)
             }
-            Button(localizationManager.localized("family_chat_action_file")) {
-                showFileImporter = true
+            .safeAreaInset(edge: .bottom) {
+                composerBar
             }
-            Button(localizationManager.localized("family_chat_action_location")) {
-                shareCurrentLocation()
+    }
+
+    private var familyChatLifecycleAttached: some View {
+        familyChatCoreChrome
+            .task {
+                print("🚨 FamilyChatScreen загружен!")
+                markFamilyActivity()
+                updateOnlineMembersCount()
+                loadCachedMessages()
+                let hadCachedSnapshot = !messages.isEmpty
+                loadMessages(silent: hadCachedSnapshot)
+                setupWebSocket()
+                setupPushNotifications()
             }
-            Button(localizationManager.localized("family_chat_action_contact")) {
-                showContactPicker = true
-            }
-            Button(localizationManager.localized(isSearching ? "family_chat_action_hide_search" : "family_chat_action_search")) {
-                isSearching.toggle()
-                if !isSearching {
-                    searchText = ""
-                    filteredMessages = messages
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.didBecomeActiveNotification)) { _ in
+                if let ws = webSocket, !ws.isConnected, ws.connectionStatus != .connecting {
+                    ws.connect()
                 }
             }
-            Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {}
-        }
-        .confirmationDialog(
-            localizationManager.localized("family_chat_action_choose_reaction"),
-            isPresented: $showQuickReactionPicker
-        ) {
-            ForEach(["👍", "❤️", "🔥", "😂", "👏", "🙏", "😮", "🎉"], id: \.self) { emoji in
-                Button(emoji) {
-                    applyQuickReactionFromMenu(emoji: emoji)
+            .onDisappear {
+                typingTextDebounceTask?.cancel()
+                typingStopWorkItem?.cancel()
+                webSocket?.sendStopTyping()
+                webSocket?.disconnect()
+            }
+    }
+
+    private var familyChatSheetsLayer: some View {
+        familyChatLifecycleAttached
+            .sheet(isPresented: $showMediaPicker) {
+                ImagePickerView(sourceType: .photoLibrary) { image in
+                    selectedMedia = image
+                    sendMediaMessage(image: image)
                 }
             }
-            Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {}
-        }
-        .fileImporter(
-            isPresented: $showFileImporter,
-            allowedContentTypes: [.data, .content],
-            allowsMultipleSelection: false
-        ) { result in
-            switch result {
-            case .success(let urls):
-                guard let url = urls.first else { return }
-                let text = String(
-                    format: localizationManager.localized("family_chat_action_file_attached_format"),
-                    url.lastPathComponent
-                )
-                messageText = text
-                sendMessage()
-            case .failure(let error):
-                errorMessage = error.localizedDescription
-            }
-        }
-        .sheet(isPresented: $showContactPicker) {
-            ContactPickerView(
-                onSelect: { contact in
-                    sendContactCard(contact)
-                },
-                onCancel: {
-                    showContactPicker = false
+            .sheet(isPresented: $showCamera) {
+                ImagePickerView(sourceType: .camera) { image in
+                    selectedMedia = image
+                    sendMediaMessage(image: image)
                 }
-            )
-        }
-        .overlay {
-            if isRecordingVoice {
-                VoiceRecordingView(
-                    recorder: voiceRecorder,
-                    onSend: { url in
-                        recordingURL = url
-                        sendVoiceMessage(url: url)
+            }
+            .sheet(isPresented: $showMessageActions) {
+                if let message = selectedMessage {
+                    MessageActionsMenu(
+                        message: message,
+                        onDelete: { deleteMessage(message) },
+                        onEdit: { startEditing(message) },
+                        onReply: { replyToMessage = message },
+                        onCopy: { copyMessage(message) },
+                        onForward: { forwardMessage(message) },
+                        onAddReaction: { showReactionPicker(for: message) }
+                    )
+                }
+            }
+    }
+
+    private var familyChatDialogsLayer: some View {
+        familyChatSheetsLayer
+            .confirmationDialog(
+                localizationManager.localized("family_chat_title"),
+                isPresented: $showComposerActions
+            ) {
+                Button(localizationManager.localized("family_chat_action_emoji")) {
+                    showQuickReactionPicker = true
+                }
+                Button(localizationManager.localized("family_chat_action_quick_reply")) {
+                    applyQuickReplyFromMenu()
+                }
+                Button(localizationManager.localized("family_chat_voice_button")) {
+                    if isRecordingVoice {
+                        if let url = voiceRecorder.stopRecording() {
+                            recordingURL = url
+                            sendVoiceMessage(url: url)
+                        }
                         isRecordingVoice = false
+                    } else if voiceRecorder.startRecording() != nil {
+                        isRecordingVoice = true
+                    }
+                }
+                Button(localizationManager.localized("family_chat_action_camera")) {
+                    showCamera = true
+                }
+                Button(localizationManager.localized("family_chat_action_gallery")) {
+                    showMediaPicker = true
+                }
+                Button(localizationManager.localized("family_chat_action_file")) {
+                    showFileImporter = true
+                }
+                Button(localizationManager.localized("family_chat_action_location")) {
+                    shareCurrentLocation()
+                }
+                Button(localizationManager.localized("family_chat_action_contact")) {
+                    showContactPicker = true
+                }
+                Button(localizationManager.localized(isSearching ? "family_chat_action_hide_search" : "family_chat_action_search")) {
+                    isSearching.toggle()
+                    if !isSearching {
+                        searchText = ""
+                        filteredMessages = messages
+                    }
+                }
+                Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {}
+            }
+            .confirmationDialog(
+                localizationManager.localized("family_chat_action_choose_reaction"),
+                isPresented: $showQuickReactionPicker
+            ) {
+                ForEach(["👍", "❤️", "🔥", "😂", "👏", "🙏", "😮", "🎉"], id: \.self) { emoji in
+                    Button(emoji) {
+                        applyQuickReactionFromMenu(emoji: emoji)
+                    }
+                }
+                Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {}
+            }
+            .fileImporter(
+                isPresented: $showFileImporter,
+                allowedContentTypes: [.data, .content],
+                allowsMultipleSelection: false
+            ) { result in
+                switch result {
+                case .success(let urls):
+                    guard let url = urls.first else { return }
+                    let text = String(
+                        format: localizationManager.localized("family_chat_action_file_attached_format"),
+                        url.lastPathComponent
+                    )
+                    messageText = text
+                    sendMessage()
+                case .failure(let error):
+                    presentChatError(error.localizedDescription, context: "fileImporter", underlying: error)
+                }
+            }
+            .sheet(isPresented: $showContactPicker) {
+                ContactPickerView(
+                    onSelect: { contact in
+                        sendContactCard(contact)
                     },
                     onCancel: {
-                        voiceRecorder.cancelRecording()
-                        isRecordingVoice = false
+                        showContactPicker = false
                     }
                 )
-                .padding()
             }
-            if isResolvingLocation {
-                ProgressView(localizationManager.localized("family_chat_action_location_fetching"))
-                    .padding()
-                    .background(Color.black.opacity(0.75))
-                    .foregroundColor(.white)
-                    .cornerRadius(12)
+    }
+
+    private var familyChatInteractionOverlays: some View {
+        familyChatDialogsLayer
+            .overlay {
+                Group {
+                    if isRecordingVoice {
+                        VoiceRecordingView(
+                            recorder: voiceRecorder,
+                            onSend: { url in
+                                recordingURL = url
+                                sendVoiceMessage(url: url)
+                                isRecordingVoice = false
+                            },
+                            onCancel: {
+                                voiceRecorder.cancelRecording()
+                                isRecordingVoice = false
+                            }
+                        )
+                        .padding()
+                    }
+                    if isResolvingLocation {
+                        ProgressView(localizationManager.localized("family_chat_action_location_fetching"))
+                            .padding()
+                            .background(Color.black.opacity(0.75))
+                            .foregroundColor(.white)
+                            .cornerRadius(12)
+                    }
+                }
             }
-        }
-        .onChange(of: messageText) { _ in
-            sendTypingIndicator()
-        }
-        .onChange(of: searchText) { newValue in
-            filterMessages(newValue)
-        }
-        .overlay {
-            if isLoading {
-                ProgressView()
-                    .scaleEffect(1.5)
-                    .frame(maxWidth: .infinity, maxHeight: .infinity)
-                    .background(Color.black.opacity(0.3))
+            .onChange(of: messageText) { newValue in
+                scheduleTypingSideEffects(for: newValue)
             }
-        }
-        .alert(localizationManager.localized("family_chat_error_title"), isPresented: Binding(
-            get: { errorMessage != nil },
-            set: { if !$0 { errorMessage = nil } }
-        )) {
-            Button(localizationManager.localized("family_chat_error_ok")) {
-                errorMessage = nil
+            .onChange(of: searchText) { newValue in
+                filterMessages(newValue)
             }
-        } message: {
-            if let error = errorMessage {
-                Text(error)
+            .overlay {
+                if isLoading {
+                    ProgressView()
+                        .scaleEffect(1.5)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
+                        .background(Color.black.opacity(0.3))
+                }
             }
-        }
+    }
+
+    private var familyChatRootDecorated: some View {
+        familyChatInteractionOverlays
+            .alert(item: $chatUserErrorAlert) { item in
+                SwiftUI.Alert(
+                    title: Text(localizationManager.localized("family_chat_error_title")),
+                    message: Text(item.message),
+                    dismissButton: .default(Text(localizationManager.localized("family_chat_error_ok"))) {
+                        chatUserErrorAlert = nil
+                    }
+                )
+            }
     }
     
     // MARK: - Helper Methods
@@ -476,6 +525,64 @@ struct FamilyChatScreen: View {
             || s.contains("could not be read")
             || (s.contains("missing") && s.contains("key"))
     }
+
+    private func dismissChatError() {
+        chatUserErrorAlert = nil
+    }
+
+    /// Диагностика в консоль при показе алерта (endpoint HTTP сюда не передаём — его нет в колбэке APIService без доработки сетевого слоя).
+    private func presentChatError(_ message: String, context: String, underlying: Error? = nil, silent: Bool? = nil) {
+        let u = underlying.map { "\(Swift.type(of: $0)): \($0.localizedDescription)" } ?? "—"
+        let s = silent.map { $0 ? "да" : "нет" } ?? "—"
+        print("🔎 Семейный чат [\(context)] алерт: «\(message.prefix(160))» | underlying=\(u) | silentPoll=\(s)")
+        chatUserErrorAlert = FamilyChatUserErrorAlert(message: message)
+    }
+
+    /// Текст для пользователя при ошибке загрузки ленты (не вешаем всё на «интернет»).
+    private func localizedLoadFailureMessage(for error: Error) -> String {
+        guard let ne = error as? NetworkError else {
+            let d = error.localizedDescription.lowercased()
+            if d.contains("network") || d.contains("internet") || d.contains("connection") || d.contains("timed out") || d.contains("could not connect") {
+                return localizationManager.localized("family_chat_error_network")
+            }
+            return localizationManager.localized("family_chat_error_data")
+        }
+        switch ne {
+        case .noConnection, .timeout, .dnsResolutionFailed, .serverUnavailable,
+             .sslPinningFailed, .invalidCertificate, .encryptionError:
+            return localizationManager.localized("family_chat_error_network")
+        case .unauthorized, .forbidden, .tokenExpired, .invalidToken, .reauthenticationRequired:
+            return localizationManager.localized("family_chat_error_auth")
+        default:
+            return localizationManager.localized("family_chat_error_data")
+        }
+    }
+
+    private func replyPreview(for message: FamilyChatMessage) -> FamilyChatMessage? {
+        guard let rid = message.replyToMessageId?.trimmingCharacters(in: .whitespacesAndNewlines), !rid.isEmpty else { return nil }
+        return messages.first(where: { $0.id == rid })
+    }
+
+    /// Не вызывать REST/WS typing синхронно из тела `onChange` — debounce через Task на MainActor.
+    private func scheduleTypingSideEffects(for newValue: String) {
+        typingTextDebounceTask?.cancel()
+        let trimmed = newValue.trimmingCharacters(in: .whitespacesAndNewlines)
+        if trimmed.isEmpty {
+            typingStopWorkItem?.cancel()
+            webSocket?.sendStopTyping()
+            return
+        }
+        typingTextDebounceTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 350_000_000)
+            guard !Task.isCancelled else { return }
+            let current = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !current.isEmpty else {
+                webSocket?.sendStopTyping()
+                return
+            }
+            sendTypingIndicator()
+        }
+    }
     
     /// Обновляет количество участников онлайн
     private func updateOnlineMembersCount() {
@@ -490,51 +597,37 @@ struct FamilyChatScreen: View {
         print("✅ FamilyChatScreen: Обновлено количество участников: \(onlineMembersCount)")
     }
     
-    // MARK: - Auto Refresh
-    
-    /// Запускает автоматическое обновление сообщений
-    private func startAutoRefresh() {
-        stopAutoRefresh() // Останавливаем предыдущий таймер, если есть
-        
-        refreshTimer = Timer.scheduledTimer(withTimeInterval: 8.0, repeats: true) { [self] _ in
-            // Обновляем только если экран активен и нет активной загрузки
-            if !isLoading && !isSending {
-                loadMessages(silent: true)
-            }
-        }
-        
-        // Добавляем таймер в RunLoop для работы в фоне
-        if let timer = refreshTimer {
-            RunLoop.current.add(timer, forMode: .common)
-        }
-        
-        print("✅ FamilyChatScreen: Автообновление запущено (интервал: 8 секунд)")
-    }
-    
-    /// Останавливает автоматическое обновление
-    private func stopAutoRefresh() {
-        refreshTimer?.invalidate()
-        refreshTimer = nil
-        print("✅ FamilyChatScreen: Автообновление остановлено")
-    }
-    
     // MARK: - Actions
     
-    /// Загружает сообщения из API
+    /// Загружает сообщения из API. Для `silent` отбрасываются устаревшие ответы при гонках с polling/после отправки.
     private func loadMessages(silent: Bool = false) {
         if !silent {
+            // Любой полноэкранный запрос устаревает уже ушедшие silent — иначе старый polling перезапишет свежую ленту.
+            silentMessagesFetchGeneration += 1
             isLoading = true
-            errorMessage = nil
+            dismissChatError()
         }
-        // Не сбрасываем errorMessage при silent-опросе: иначе гонка с таймером/после failed send
+        // Не сбрасываем алерт при silent-опросе: иначе гонка с таймером/после failed send
         // затирает алерт до завершения запроса и даёт ложное «сбросилось само».
+
+        let silentToken: UInt64?
+        if silent {
+            silentMessagesFetchGeneration += 1
+            silentToken = silentMessagesFetchGeneration
+        } else {
+            silentToken = nil
+        }
 
         apiService.getFamilyChatMessages { [self] result in
             DispatchQueue.main.async {
+                if let token = silentToken, token != silentMessagesFetchGeneration {
+                    print("ℹ️ FamilyChatScreen: отброшен устаревший silent-ответ загрузки сообщений (token=\(token))")
+                    return
+                }
                 if !silent {
                     isLoading = false
                 }
-                
+
                 switch result {
                 case .success(let responses):
                     messages = responses.map { response in
@@ -543,33 +636,39 @@ struct FamilyChatScreen: View {
                     if !messages.isEmpty {
                         markFamilyActivity()
                     }
-                    errorMessage = nil
-                    
-                    // Автопрокрутка будет выполнена через onChange
-                    
+                    dismissChatError()
+
                     print("✅ FamilyChatScreen: Сообщения загружены успешно (\(messages.count) сообщений)")
-                    
+
                 case .failure(let error):
                     print("❌ FamilyChatScreen: Ошибка загрузки сообщений: \(error.localizedDescription)")
-                    
-                    // Mock только в DEBUG: в Release при ошибке не подставляем русскоязычный фейковый чат.
+
                     #if DEBUG
                     if messages.isEmpty && !silent {
                         print("ℹ️ FamilyChatScreen: Используем mock данные для отображения (DEBUG)")
                         messages = getMockMessages()
                     }
                     #endif
-                    
-                    // Показываем ошибку только если это не silent обновление и нет данных
+
                     if !silent && messages.isEmpty {
                         let errorDesc = error.localizedDescription
                         if errorDesc.contains("404") || errorDesc.contains("not found") || errorDesc.contains("ресурс не найден") {
-                            errorMessage = localizationManager.localized("family_chat_error_not_found")
-                        } else if errorDesc.contains("network") || errorDesc.contains("connection") {
-                            errorMessage = localizationManager.localized("family_chat_error_loading")
+                            presentChatError(
+                                localizationManager.localized("family_chat_error_not_found"),
+                                context: "loadMessages.notFound",
+                                underlying: error,
+                                silent: silent
+                            )
                         } else {
-                            errorMessage = localizationManager.localized("family_chat_error_loading")
+                            presentChatError(
+                                localizedLoadFailureMessage(for: error),
+                                context: "loadMessages",
+                                underlying: error,
+                                silent: silent
+                            )
                         }
+                    } else if silent {
+                        print("🔎 FamilyChatScreen: silent loadMessages завершился ошибкой (алерт не показываем): \(error.localizedDescription)")
                     }
                 }
             }
@@ -910,11 +1009,11 @@ struct FamilyChatScreen: View {
     /// Отправка голосового: загрузка через MediaUploadManager, затем регистрация сообщения на сервере
     private func sendVoiceMessage(url: URL) {
         guard let familyId = getFamilyId(), !familyId.isEmpty else {
-            errorMessage = localizationManager.localized("family_chat_error_loading")
+            presentChatError(localizationManager.localized("family_chat_error_family_missing"), context: "sendVoiceMessage.noFamilyId")
             return
         }
         guard let data = try? Data(contentsOf: url), !data.isEmpty else {
-            errorMessage = localizationManager.localized("family_chat_error_loading")
+            presentChatError(localizationManager.localized("family_chat_error_data"), context: "sendVoiceMessage.emptyFile")
             return
         }
         
@@ -986,7 +1085,11 @@ struct FamilyChatScreen: View {
                                 self.replyToMessage = nil
                                 self.loadMessages(silent: true)
                             case .failure(let err):
-                                self.errorMessage = err.localizedDescription
+                                self.presentChatError(
+                                    self.localizedLoadFailureMessage(for: err),
+                                    context: "sendVoiceMessage.apiSend",
+                                    underlying: err
+                                )
                                 self.offlineManager.addPendingMessage(PendingChatMessage(
                                     id: UUID(uuidString: messageId)!,
                                     text: nil,
@@ -1003,7 +1106,11 @@ struct FamilyChatScreen: View {
                     }
                     
                 case .failure(let error):
-                    errorMessage = error.localizedDescription
+                    presentChatError(
+                        localizedLoadFailureMessage(for: error),
+                        context: "sendVoiceMessage.upload",
+                        underlying: error
+                    )
                     offlineManager.addPendingMessage(PendingChatMessage(
                         id: UUID(uuidString: messageId)!,
                         text: nil,
@@ -1024,7 +1131,7 @@ struct FamilyChatScreen: View {
     private func sendMediaMessage(image: UIImage) {
         guard let imageData = image.jpegData(compressionQuality: 0.8) else { return }
         guard let familyId = getFamilyId(), !familyId.isEmpty else {
-            errorMessage = localizationManager.localized("family_chat_error_loading")
+            presentChatError(localizationManager.localized("family_chat_error_family_missing"), context: "sendMediaMessage.noFamilyId")
             return
         }
         
@@ -1092,7 +1199,11 @@ struct FamilyChatScreen: View {
                                 self.replyToMessage = nil
                                 self.loadMessages(silent: true)
                             case .failure(let err):
-                                self.errorMessage = err.localizedDescription
+                                self.presentChatError(
+                                    self.localizedLoadFailureMessage(for: err),
+                                    context: "sendMediaMessage.apiSend",
+                                    underlying: err
+                                )
                                 self.offlineManager.addPendingMessage(PendingChatMessage(
                                     id: UUID(uuidString: messageId)!,
                                     text: nil,
@@ -1107,7 +1218,11 @@ struct FamilyChatScreen: View {
                     }
                     
                 case .failure(let error):
-                    errorMessage = error.localizedDescription
+                    presentChatError(
+                        localizedLoadFailureMessage(for: error),
+                        context: "sendMediaMessage.upload",
+                        underlying: error
+                    )
                     offlineManager.addPendingMessage(PendingChatMessage(
                         id: UUID(uuidString: messageId)!,
                         text: nil,
@@ -1146,21 +1261,6 @@ struct FamilyChatScreen: View {
         DispatchQueue.main.asyncAfter(deadline: .now() + 2.0, execute: stopTask)
     }
 
-    private func startPresencePruneTimer() {
-        stopPresencePruneTimer()
-        presencePruneTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: true) { [self] _ in
-            pruneStaleTypingIndicators()
-        }
-        if let timer = presencePruneTimer {
-            RunLoop.current.add(timer, forMode: .common)
-        }
-    }
-
-    private func stopPresencePruneTimer() {
-        presencePruneTimer?.invalidate()
-        presencePruneTimer = nil
-    }
-
     private func pruneStaleTypingIndicators() {
         let now = Date()
         let staleUsers = typingExpiryByUser.compactMap { user, expiresAt in
@@ -1183,9 +1283,17 @@ struct FamilyChatScreen: View {
                 case .failure(let error):
                     let description = error.localizedDescription.lowercased()
                     if description.contains("invalid user_id") || description.contains("invalid user id") {
-                        errorMessage = "Не удалось подтвердить профиль по токену. Выйдите из аккаунта и войдите снова."
+                        presentChatError(
+                            localizationManager.localized("family_chat_error_auth"),
+                            context: "deleteMessage.invalidUser",
+                            underlying: error
+                        )
                     } else {
-                        errorMessage = error.localizedDescription
+                        presentChatError(
+                            localizedLoadFailureMessage(for: error),
+                            context: "deleteMessage",
+                            underlying: error
+                        )
                     }
                 }
             }
@@ -1231,7 +1339,11 @@ struct FamilyChatScreen: View {
                     editingMessage = nil
                     editText = ""
                 case .failure(let error):
-                    errorMessage = error.localizedDescription
+                    presentChatError(
+                        localizedLoadFailureMessage(for: error),
+                        context: "saveEdit",
+                        underlying: error
+                    )
                 }
             }
         }
@@ -1281,7 +1393,11 @@ struct FamilyChatScreen: View {
                         )
                     }
                 case .failure(let error):
-                    errorMessage = error.localizedDescription
+                    presentChatError(
+                        localizedLoadFailureMessage(for: error),
+                        context: "addReaction",
+                        underlying: error
+                    )
                 }
             }
         }
@@ -1309,11 +1425,12 @@ struct FamilyChatScreen: View {
         }
         
         guard let familyId = getFamilyId(), !familyId.isEmpty else {
-            errorMessage = localizationManager.localized("family_chat_error_loading")
+            presentChatError(localizationManager.localized("family_chat_error_family_missing"), context: "sendMessage.noFamilyId")
             return
         }
         isSending = true
         markFamilyActivity()
+        typingTextDebounceTask?.cancel()
         messageText = ""
         typingStopWorkItem?.cancel()
         webSocket?.sendStopTyping()
@@ -1338,7 +1455,7 @@ struct FamilyChatScreen: View {
                 case .success(let sendResponse):
                     let capturedReplyId = replyToMessage?.id
                     replyToMessage = nil
-                    errorMessage = nil
+                    dismissChatError()
                     // Оптимистичное отображение сразу на девайсе, даже если следующий silent-poll задержится.
                     let sid = sendResponse.messageId.trimmingCharacters(in: .whitespacesAndNewlines)
                     let optimisticId = sid.isEmpty ? "pending-\(UUID().uuidString)" : sid
@@ -1384,9 +1501,17 @@ struct FamilyChatScreen: View {
                     }
 
                     if Self.isSendDecodingOrPayloadMismatch(error) {
-                        errorMessage = localizationManager.localized("family_chat_error_send_response")
+                        presentChatError(
+                            localizationManager.localized("family_chat_error_send_response"),
+                            context: "sendMessage.decodeOrContract",
+                            underlying: error
+                        )
                     } else {
-                        errorMessage = localizationManager.localized("family_chat_error_loading")
+                        presentChatError(
+                            localizedLoadFailureMessage(for: error),
+                            context: "sendMessage",
+                            underlying: error
+                        )
                     }
                 }
             }
@@ -1433,7 +1558,10 @@ struct FamilyChatScreen: View {
                     )
                     sendMessage()
                 case .failure:
-                    errorMessage = localizationManager.localized("family_chat_action_location_error")
+                    presentChatError(
+                        localizationManager.localized("family_chat_action_location_error"),
+                        context: "shareCurrentLocation"
+                    )
                 }
             }
         }
@@ -1636,23 +1764,37 @@ enum MediaType: String {
 
 struct MessageBubbleView: View {
     let message: FamilyChatMessage
+    /// Если задан — показываем цитату ответа без зависимости от всего массива `messages` (меньше перерисовок / циклов SwiftUI).
+    let replyPreview: FamilyChatMessage?
     let allMessages: [FamilyChatMessage]
     let onLongPress: () -> Void
     let onReaction: (String) -> Void
     @EnvironmentObject private var localizationManager: LocalizationManager
     
-    init(message: FamilyChatMessage, allMessages: [FamilyChatMessage] = [], onLongPress: @escaping () -> Void, onReaction: @escaping (String) -> Void) {
+    init(
+        message: FamilyChatMessage,
+        replyPreview: FamilyChatMessage? = nil,
+        allMessages: [FamilyChatMessage] = [],
+        onLongPress: @escaping () -> Void,
+        onReaction: @escaping (String) -> Void
+    ) {
         self.message = message
+        self.replyPreview = replyPreview
         self.allMessages = allMessages
         self.onLongPress = onLongPress
         self.onReaction = onReaction
+    }
+
+    private var resolvedReplyTo: FamilyChatMessage? {
+        if let replyPreview, !replyPreview.id.isEmpty { return replyPreview }
+        guard let replyToId = message.replyToMessageId?.trimmingCharacters(in: .whitespacesAndNewlines), !replyToId.isEmpty else { return nil }
+        return allMessages.first(where: { $0.id == replyToId })
     }
     
     var body: some View {
         VStack(alignment: message.isCurrentUser ? .trailing : .leading, spacing: Spacing.xxs) {
             // Reply Preview
-            if let replyToId = message.replyToMessageId,
-               let replyTo = allMessages.first(where: { $0.id == replyToId }) {
+            if let replyTo = resolvedReplyTo {
                 ReplyBubbleView(replyTo: replyTo) {}
                     .padding(.bottom, Spacing.xxs)
             }
@@ -1770,6 +1912,7 @@ struct ChatBubbleView: View {
     var body: some View {
         MessageBubbleView(
             message: message,
+            replyPreview: nil,
             allMessages: [],
             onLongPress: {},
             onReaction: { _ in }
