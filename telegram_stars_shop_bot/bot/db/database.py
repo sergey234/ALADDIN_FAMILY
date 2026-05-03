@@ -50,6 +50,18 @@ CREATE TABLE IF NOT EXISTS orders (
     external_ref TEXT,
     created_at TEXT NOT NULL DEFAULT (datetime('now')),
     updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    buyer_username TEXT,
+    product_kind TEXT NOT NULL DEFAULT '',
+    stars_qty INTEGER,
+    premium_months INTEGER,
+    completed_at TEXT,
+    payment_gateway_fee_rub REAL NOT NULL DEFAULT 0,
+    cogs_rub REAL NOT NULL DEFAULT 0,
+    manual_cogs_rub REAL,
+    net_profit_rub REAL NOT NULL DEFAULT 0,
+    profit_snapshot_at TEXT,
+    referral_discount_percent REAL NOT NULL DEFAULT 0,
+    usd_rub_rate_snapshot REAL,
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );
 
@@ -64,6 +76,16 @@ CREATE TABLE IF NOT EXISTS admin_audit_log (
     payload_json TEXT
 );
 CREATE INDEX IF NOT EXISTS idx_admin_audit_created ON admin_audit_log(created_at);
+
+CREATE TABLE IF NOT EXISTS analytics_events (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    event_type TEXT NOT NULL,
+    meta_json TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_analytics_user_time ON analytics_events(user_id, created_at);
+CREATE INDEX IF NOT EXISTS idx_analytics_type_time ON analytics_events(event_type, created_at);
 
 CREATE TABLE IF NOT EXISTS api_clients (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -145,6 +167,42 @@ async def _ensure_column(conn: aiosqlite.Connection, table: str, column: str, dd
     return False
 
 
+async def _backfill_orders_product_fields(conn: aiosqlite.Connection) -> None:
+    """Проставить product_kind / stars_qty / premium_months и completed_at для старых строк."""
+    try:
+        from bot.services.catalog import load_products, products_by_id
+    except Exception:
+        return
+    yaml_path = Path(__file__).resolve().parents[1] / "products.yaml"
+    if not yaml_path.exists():
+        return
+    try:
+        pmap = products_by_id(load_products(yaml_path))
+    except Exception:
+        return
+    cur = await conn.execute(
+        "SELECT id, product_id FROM orders WHERE TRIM(COALESCE(product_kind, '')) = ''"
+    )
+    rows = await cur.fetchall()
+    for r in rows:
+        p = pmap.get(str(r["product_id"]))
+        if not p:
+            continue
+        kind = str(p.kind or "").strip().lower()
+        sq = int(p.stars) if kind in ("stars", "gift") and p.stars is not None else None
+        pm = int(p.duration_months) if kind == "premium" and p.duration_months is not None else None
+        await conn.execute(
+            "UPDATE orders SET product_kind = ?, stars_qty = ?, premium_months = ? WHERE id = ?",
+            (kind, sq, pm, int(r["id"])),
+        )
+    await conn.execute(
+        """
+        UPDATE orders SET completed_at = COALESCE(fulfillment_applied_at, updated_at)
+        WHERE status = 'completed' AND completed_at IS NULL
+        """
+    )
+
+
 async def migrate_legacy(conn: aiosqlite.Connection) -> None:
     """Добавляет колонки/таблицы к старым БД без balance_rub и т.д."""
     await _ensure_column(conn, "users", "balance_rub", "balance_rub REAL NOT NULL DEFAULT 0")
@@ -157,6 +215,34 @@ async def migrate_legacy(conn: aiosqlite.Connection) -> None:
     if ack_col_added:
         # Старым пользователям не показываем повторно служебный экран «доступ уже есть».
         await conn.execute("UPDATE users SET channel_member_ack_shown = 1")
+    locale_added = await _ensure_column(conn, "users", "locale", "locale TEXT")
+    if locale_added:
+        # Уже существовавшие на момент миграции пользователи — без повторного выбора языка.
+        await conn.execute("UPDATE users SET locale = 'ru' WHERE locale IS NULL")
+    terms_added = await _ensure_column(conn, "users", "terms_accepted_at", "terms_accepted_at TEXT")
+    onboard_added = await _ensure_column(conn, "users", "onboarding_completed_at", "onboarding_completed_at TEXT")
+    await _ensure_column(conn, "users", "checkout_captcha_ok_until", "checkout_captcha_ok_until INTEGER")
+    await _ensure_column(conn, "users", "last_start_command_at", "last_start_command_at INTEGER")
+    if terms_added or onboard_added:
+        await conn.execute(
+            "UPDATE users SET terms_accepted_at = COALESCE(terms_accepted_at, datetime('now')) WHERE terms_accepted_at IS NULL"
+        )
+        await conn.execute(
+            "UPDATE users SET onboarding_completed_at = COALESCE(onboarding_completed_at, datetime('now')) WHERE onboarding_completed_at IS NULL"
+        )
+    await conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS captcha_challenges (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            purpose TEXT NOT NULL,
+            correct_idx INTEGER NOT NULL,
+            options_json TEXT NOT NULL,
+            expires_at INTEGER NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_captcha_challenges_user ON captcha_challenges(user_id);
+        """
+    )
     await _ensure_column(conn, "orders", "balance_applied_rub", "balance_applied_rub REAL NOT NULL DEFAULT 0")
     await _ensure_column(conn, "orders", "source", "source TEXT NOT NULL DEFAULT 'telegram'")
     await _ensure_column(conn, "orders", "api_client_id", "api_client_id INTEGER")
@@ -276,6 +362,48 @@ async def migrate_legacy(conn: aiosqlite.Connection) -> None:
     )
     await _ensure_column(conn, "api_clients", "webhook_url", "webhook_url TEXT")
     await _ensure_column(conn, "api_clients", "webhook_secret", "webhook_secret TEXT")
+
+    await _ensure_column(conn, "orders", "buyer_username", "buyer_username TEXT")
+    await _ensure_column(conn, "orders", "product_kind", "product_kind TEXT NOT NULL DEFAULT ''")
+    await _ensure_column(conn, "orders", "stars_qty", "stars_qty INTEGER")
+    await _ensure_column(conn, "orders", "premium_months", "premium_months INTEGER")
+    await _ensure_column(conn, "orders", "completed_at", "completed_at TEXT")
+    await _ensure_column(conn, "orders", "payment_gateway_fee_rub", "payment_gateway_fee_rub REAL NOT NULL DEFAULT 0")
+    await _ensure_column(conn, "orders", "cogs_rub", "cogs_rub REAL NOT NULL DEFAULT 0")
+    await _ensure_column(conn, "orders", "manual_cogs_rub", "manual_cogs_rub REAL")
+    await _ensure_column(conn, "orders", "net_profit_rub", "net_profit_rub REAL NOT NULL DEFAULT 0")
+    await _ensure_column(conn, "orders", "profit_snapshot_at", "profit_snapshot_at TEXT")
+    await _ensure_column(
+        conn, "orders", "referral_discount_percent", "referral_discount_percent REAL NOT NULL DEFAULT 0"
+    )
+    await _ensure_column(conn, "orders", "usd_rub_rate_snapshot", "usd_rub_rate_snapshot REAL")
+
+    await conn.executescript(
+        """
+        CREATE TABLE IF NOT EXISTS analytics_events (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            event_type TEXT NOT NULL,
+            meta_json TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_analytics_user_time ON analytics_events(user_id, created_at);
+        CREATE INDEX IF NOT EXISTS idx_analytics_type_time ON analytics_events(event_type, created_at);
+        """
+    )
+    await conn.execute(
+        """
+        UPDATE orders
+        SET referral_discount_percent = ROUND(
+            100.0 * referral_discount_rub / NULLIF(rub_before_discounts, 0), 4
+        )
+        WHERE referral_discount_rub > 0.009
+          AND rub_before_discounts > 0.009
+          AND referral_discount_percent <= 0
+        """
+    )
+
+    await _backfill_orders_product_fields(conn)
     await conn.executescript(
         """
         CREATE TABLE IF NOT EXISTS partner_contests (

@@ -16,7 +16,7 @@ import re
 from pathlib import Path
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import text
-from typing import Optional, Any, Dict, List, Annotated
+from typing import Optional, Any, Dict, List, Tuple, Annotated
 from datetime import datetime
 import uuid
 from pydantic import BaseModel
@@ -201,6 +201,22 @@ def _actor_belongs_to_family(db, user_id: int, family_id: str) -> bool:
         {"fid": fid, "uid": user_id},
     ).fetchone()
     return bool(o)
+
+
+def _resolve_effective_family_id_for_chat(
+    db,
+    user_id: int,
+    current_user: dict,
+    requested_family_id: Optional[str],
+) -> Optional[str]:
+    """Единый выбор семьи для чата: как GET /chat/messages — query/body учитывается только при членстве."""
+    family_query = (requested_family_id or "").strip() or None
+    effective: Optional[str] = None
+    if family_query and _actor_belongs_to_family(db, user_id, family_query):
+        effective = family_query
+    if not effective:
+        effective = _resolve_primary_family_id_for_actor(db, user_id, current_user)
+    return effective
 
 
 # ============================================
@@ -980,14 +996,12 @@ async def get_family_members_compat(
     ✅ Production rule: no mock/fake.
     Если БД не подключена — отдаём 503, чтобы клиент не принимал пустые/фейковые данные как "успех".
 
-    Согласование контекста семьи:
-    - Сервер вычисляет `family_id` по JWT: приоритет claim `family_id` (если авторизован для этой семьи),
-      затем последнее членство по `updated_at`, затем владелец семьи.
-    - Если клиент передал query `familyId`, он **должен** совпадать с вычисленным id — иначе 409
-      (защита от смешения локального кэша другой семьи с данными актора).
-    - Заголовок `X-Resolved-Family-Id` — явная «правда сервера» для этой выдачи (полный список строк этой семьи).
-    - Заголовок `X-Current-Member-Id` — `family_members.id` строки членства JWT-актора в этой семье (детерминированное
-      выравнивание `your_member_id` на iOS без угадывания по JWT payload).
+    Согласование контекста семьи (матрица ответов):
+    - Есть primary family для JWT → 200, тело = ростер, заголовок `X-Resolved-Family-Id`.
+    - Нет primary, query `familyId` **не** передан → 200 `[]`, заголовок `X-Family-Context: none` (клиент сбрасывает локальный кэш).
+    - Нет primary, query `familyId` передан (устаревший/чужой кэш) → **404** `No family registered for this account (invalid familyId query)`.
+    - Primary есть, query не совпадает с primary → **409** `familyId does not match...`.
+    - Заголовок `X-Current-Member-Id` — `family_members.id` JWT-актора в этой семье (если есть строка членства).
     """
     user_id = _resolve_user_id_from_claim(current_user)
     if not get_postgres_db:
@@ -1000,6 +1014,17 @@ async def get_family_members_compat(
             _ensure_family_indexes(db)
             resolved_primary = _resolve_primary_family_id_for_actor(db, user_id, current_user)
             if not resolved_primary:
+                qfid_early = (familyId or "").strip()
+                if qfid_early:
+                    logger.warning(
+                        "family_members_invalid_query_no_primary",
+                        user_id=user_id,
+                        query_family_id=qfid_early,
+                    )
+                    raise HTTPException(
+                        status_code=404,
+                        detail="No family registered for this account (invalid familyId query)",
+                    )
                 logger.warning("family_members_no_family_for_actor", user_id=user_id)
                 return [], None, None
             family_id = resolved_primary
@@ -1071,6 +1096,9 @@ async def get_family_members_compat(
                 family_id=resolved_fid,
                 count=len(members),
             )
+        elif not (familyId or "").strip():
+            # Явный сигнал клиенту: у аккаунта нет семьи в БД — не интерпретировать `[]` как «неизвестно».
+            response.headers["X-Family-Context"] = "none"
         if current_member_id:
             response.headers["X-Current-Member-Id"] = current_member_id
             logger.info(
@@ -1441,6 +1469,7 @@ async def recover_family_compat(
 
 @router.get("/chat/messages", response_model=list[dict])
 async def family_chat_messages_compat(
+    response: Response,
     current_user: dict = Depends(get_current_user),
     familyId: Optional[str] = Query(None, alias="familyId"),
 ):
@@ -1448,20 +1477,20 @@ async def family_chat_messages_compat(
     if not get_postgres_db:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
 
-    def load_messages_sync() -> List[Dict[str, Any]]:
+    def load_messages_sync() -> Tuple[List[Dict[str, Any]], Optional[str]]:
         gen = get_postgres_db()
         db = next(gen)
         try:
             _ensure_family_chat_table(db)
-            # Тот же выбор семьи, что GET /api/family/stats: query familyId при членстве, иначе primary из JWT/БД.
-            family_query = (familyId or "").strip() or None
-            effective_family_id: Optional[str] = None
-            if family_query and _actor_belongs_to_family(db, user_id, family_query):
-                effective_family_id = family_query
+            effective_family_id = _resolve_effective_family_id_for_chat(db, user_id, current_user, familyId)
+            fq = (familyId or "").strip()
+            if fq and not effective_family_id:
+                raise HTTPException(
+                    status_code=404,
+                    detail="No family context for requested familyId",
+                )
             if not effective_family_id:
-                effective_family_id = _resolve_primary_family_id_for_actor(db, user_id, current_user)
-            if not effective_family_id:
-                return []
+                return [], None
 
             rows = db.execute(
                 text(
@@ -1523,11 +1552,14 @@ async def family_chat_messages_compat(
                         "editedAt": r[11],
                     }
                 )
-            return messages
+            return messages, effective_family_id
         finally:
             gen.close()
 
-    return await asyncio.to_thread(load_messages_sync)
+    messages, eff_fid = await asyncio.to_thread(load_messages_sync)
+    if eff_fid:
+        response.headers["X-Resolved-Family-Id"] = str(eff_fid)
+    return messages
 
 
 @router.post("/chat/upload-media")
@@ -1643,7 +1675,7 @@ async def family_chat_send(
         db = next(gen)
         try:
             _ensure_family_chat_table(db)
-            family_id = (payload.familyId or "").strip() or (_resolve_primary_family_id_for_actor(db, user_id, current_user) or "")
+            family_id = _resolve_effective_family_id_for_chat(db, user_id, current_user, payload.familyId)
             if not family_id:
                 raise HTTPException(status_code=404, detail="Family not found")
 
@@ -1698,8 +1730,23 @@ async def family_chat_send_typing(
     payload: TypingIndicatorRequest,
     current_user: dict = Depends(get_current_user),
 ):
-    _ = current_user.get("id")
-    _ = payload.familyId
+    """Тот же резолв семьи, что и `POST /chat/send` — без фиктивного 200 при отсутствии семьи."""
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    def typing_sync() -> None:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            _ensure_family_chat_table(db)
+            family_id = _resolve_effective_family_id_for_chat(db, user_id, current_user, payload.familyId)
+            if not family_id:
+                raise HTTPException(status_code=404, detail="Family not found")
+        finally:
+            gen.close()
+
+    await asyncio.to_thread(typing_sync)
     return FamilyCompatBoolResponse(success=True, data=True, message="Typing accepted")
 
 

@@ -1,0 +1,10 @@
+-- Пример заполнения UI: одна строка weekly в parental_reports для числового user_id ребёнка.
+-- Подставьте :uid (INTEGER) и при необходимости скорректируйте имя таблицы/колонок под вашу схему.
+--
+-- INSERT INTO parental_reports (user_id, type, content, created_at)
+-- VALUES (
+--   :uid,
+--   'weekly',
+--   '{"monitoring_summary":{"browser_sites_week":42,"apps_used_week":8,"contacts_active":3},"sites_count":42,"apps_count":8,"warnings_count":1,"top_sites":[{"site":"example.com","visits":24,"hours":1,"minutes":10,"category":"search"}],"top_apps":[{"name":"Safari","usage_minutes":120,"limit_minutes":180,"exceeded":false}]}'::jsonb,
+--   NOW()
+-- );

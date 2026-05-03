@@ -5,11 +5,11 @@ import json
 
 from aiogram import F, Router
 from aiogram.filters import Command, CommandObject
-from aiogram.types import CallbackQuery, InlineKeyboardMarkup, Message
+from aiogram.types import BufferedInputFile, CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 
 from bot.config import Settings
 from bot.keyboards.shop_kb import admin_order_kb, admin_sell_kb, admin_topup_kb
-from bot.services import admin_audit_repo, balance_repo, contest_repo, marketing, orders_repo
+from bot.services import admin_audit_repo, admin_charts, admin_stats_repo, balance_repo, contest_repo, marketing, orders_repo
 from bot.services.admin_crypto_paid_gate import crypto_manual_paid_gate_applies
 from bot.services.admin_order_ff import ff_context_from_order_row, format_fulfillment_admin_block
 from bot.services.alerts import send_alert
@@ -37,13 +37,199 @@ async def _audit_admin(conn, admin_id: int, action: str, **parts: object) -> Non
 def _admin_order_message_text(order_row, order_id: int, *, status_for_header: str | None = None) -> str:
     lbl = status_for_header or str(order_row["status"])
     amt = float(order_row["rub_after_discounts"])
+    profit_block = ""
+    if str(order_row["status"] or "").strip().lower() == "completed":
+        try:
+            np = float(order_row["net_profit_rub"] or 0)
+            fee = float(order_row["payment_gateway_fee_rub"] or 0)
+            cogs = float(order_row["cogs_rub"] or 0)
+            profit_block = (
+                f"\n\n<i>Чистая прибыль (снимок):</i> <b>{esc(f'{np:.2f}')} ₽</b>\n"
+                f"<i>Себестоимость:</i> <code>{esc(f'{cogs:.2f}')}</code> · "
+                f"<i>ЭПС:</i> <code>{esc(f'{fee:.2f}')}</code>"
+            )
+            try:
+                rdp = float(order_row["referral_discount_percent"] or 0)
+                rd_rub = float(order_row["referral_discount_rub"] or 0)
+                if rdp > 0.0001 or rd_rub > 0.009:
+                    profit_block += (
+                        f"\n<i>Реф. скидка:</i> <code>{esc(f'{rdp:.2f}')}%</code> "
+                        f"(−{esc(f'{rd_rub:.2f}')} ₽)"
+                    )
+            except (KeyError, TypeError, ValueError):
+                pass
+        except (KeyError, TypeError, ValueError):
+            pass
     return (
         f"<b>#{esc(order_id)}</b> → <code>{esc(lbl)}</code>\n\n"
         f"{esc(order_row['product_title'])}\n"
         f"user: <code>{esc(order_row['user_id'])}</code>\n"
         f"сумма: <b>{esc(f'{amt:.2f}')} ₽</b>"
         f"{format_fulfillment_admin_block(order_row)}"
+        f"{profit_block}"
     )
+
+
+def _period_arg_to_days(arg: str) -> int | None:
+    a = (arg or "").strip().lower()
+    if a in ("all", "*", "full"):
+        return None
+    if a in ("today", "0d", "day"):
+        return -1
+    return int(a)
+
+
+def _period_human(days: int | None) -> str:
+    if days is None:
+        return "всё время"
+    if days in (-1, 0):
+        return "сегодня"
+    return f"{days} дн."
+
+
+def _admin_stats_main_kb() -> InlineKeyboardMarkup:
+    return InlineKeyboardMarkup(
+        inline_keyboard=[
+            [
+                InlineKeyboardButton(text="Сегодня", callback_data="ast:d:today"),
+                InlineKeyboardButton(text="7 дн.", callback_data="ast:d:7"),
+            ],
+            [
+                InlineKeyboardButton(text="30 дн.", callback_data="ast:d:30"),
+                InlineKeyboardButton(text="Всё время", callback_data="ast:d:all"),
+            ],
+            [
+                InlineKeyboardButton(text="Продажи (7д)", callback_data="ast:sales:7"),
+                InlineKeyboardButton(text="Продажи (30д)", callback_data="ast:sales:30"),
+            ],
+            [
+                InlineKeyboardButton(text="Топ по прибыли", callback_data="ast:top:30"),
+                InlineKeyboardButton(text="Динамика 14д", callback_data="ast:dyn:14"),
+            ],
+            [
+                InlineKeyboardButton(text="График 30д", callback_data="ast:chart:30"),
+                InlineKeyboardButton(text="Недели 12", callback_data="ast:week:12"),
+            ],
+            [
+                InlineKeyboardButton(text="CSV 30д", callback_data="ast:csv:30"),
+                InlineKeyboardButton(text="CSV всё", callback_data="ast:csv:all"),
+            ],
+        ]
+    )
+
+
+def _format_dashboard_html(
+    *,
+    period_label: str,
+    agg: admin_stats_repo.DashboardAgg,
+    top_refs: list,
+    rm: dict[str, float | int],
+    funnel: dict[str, float | int] | None = None,
+) -> str:
+    avg = (agg.revenue_rub / agg.orders_count) if agg.orders_count else 0.0
+    ref_bonus_total = float(rm.get("total_referral_bonus_rub", 0))
+    lines = [
+        f"<b>Дашборд</b> <i>({esc(period_label)})</i>\n",
+        f"Выручка: <b>{esc(f'{agg.revenue_rub:.2f}')} ₽</b>",
+        f"Заказов (выдано): <b>{esc(str(agg.orders_count))}</b>",
+        f"Чистая прибыль: <b>{esc(f'{agg.net_profit_rub:.2f}')} ₽</b>",
+        f"Средний чек: <b>{esc(f'{avg:.2f}')} ₽</b>\n",
+        "<b>Stars</b> (штуки / ₽): "
+        f"<code>{esc(str(agg.stars_units_sold))}</code> / "
+        f"<b>{esc(f'{agg.stars_revenue_rub:.2f}')} ₽</b>",
+        "<b>Premium</b> (покупок / ₽): "
+        f"<code>{esc(str(agg.premium_units_sold))}</code> / "
+        f"<b>{esc(f'{agg.premium_revenue_rub:.2f}')} ₽</b>\n",
+        f"Уникальных рефереров (с выданными): <code>{esc(str(agg.distinct_referrers))}</code>",
+    ]
+    if funnel is not None:
+        fv = int(funnel.get("funnel_visitors", 0) or 0)
+        fc = int(funnel.get("funnel_converted", 0) or 0)
+        fp = funnel.get("funnel_conversion_pct", 0)
+        if fv > 0:
+            lines.append(
+                f"Воронка: визиты — <code>{esc(str(fv))}</code>, покупка после визита — "
+                f"<code>{esc(str(fc))}</code> (<b>{esc(str(fp))}%</b>)"
+            )
+        else:
+            lines.append("<i>Воронка: нет событий входа (/start, /menu) за период.</i>")
+    lines += [
+        f"Реф. скидка в заказах: <code>{esc(str(rm.get('orders_with_ref_discount', 0)))}</code> "
+        f"из <code>{esc(str(rm.get('completed_orders', 0)))}</code> "
+        f"({esc(str(rm.get('ref_discount_pct', 0)))}%)",
+        f"Бонусы реферерам (начислено в заказах): <b>{esc(f'{ref_bonus_total:.2f}')} ₽</b>\n",
+        "<b>Топ рефереров</b> (по сумме бонуса):",
+    ]
+    if not top_refs:
+        lines.append("<i>нет данных</i>")
+    else:
+        for i, r in enumerate(top_refs[:3], start=1):
+            rid = int(r["rid"])
+            bonus = float(r["bonus_rub"] or 0)
+            lines.append(f"{i}. <code>{esc(str(rid))}</code> — <b>{esc(f'{bonus:.2f}')} ₽</b>")
+    return "\n".join(lines)
+
+
+async def _build_sales_report_html(conn, days: int | None) -> str:
+    stars = await admin_stats_repo.stars_by_package(conn, days=days)
+    prem = await admin_stats_repo.premium_by_term(conn, days=days)
+    label = _period_human(days)
+    lines = [f"<b>Продажи</b> <i>({esc(label)})</i>\n", "<b>Stars / подарки</b> (пакет ⭐ → шт / ₽):"]
+    if not stars:
+        lines.append("<i>нет</i>")
+    else:
+        for r in stars:
+            pack = int(r["pack"] or 0)
+            n = int(r["n"] or 0)
+            rev = float(r["rev"] or 0)
+            lines.append(f"· <code>{esc(str(pack))}</code> ⭐: <b>{esc(str(n))}</b> × {esc(f'{rev:.2f}')} ₽")
+    lines.append("\n<b>Premium</b> (месяцы → шт / ₽):")
+    if not prem:
+        lines.append("<i>нет</i>")
+    else:
+        for r in prem:
+            m = int(r["months"] or 0)
+            n = int(r["n"] or 0)
+            rev = float(r["rev"] or 0)
+            lines.append(f"· <code>{esc(str(m))}</code> мес: <b>{esc(str(n))}</b> × {esc(f'{rev:.2f}')} ₽")
+    return "\n".join(lines)
+
+
+async def _build_dyn_html(conn, days: int) -> str:
+    rows = await admin_stats_repo.sales_by_day(conn, days=days)
+    lines = [f"<b>По дням</b> (последние {esc(str(days))} дн., выданные)\n"]
+    if not rows:
+        lines.append("<i>нет данных</i>")
+    else:
+        for r in rows:
+            d = str(r["d"] or "")
+            n = int(r["n"] or 0)
+            rev = float(r["rev"] or 0)
+            netp = float(r["netp"] or 0)
+            lines.append(
+                f"<code>{esc(d)}</code>: {esc(str(n))} зак. · "
+                f"{esc(f'{rev:.2f}')} ₽ · прибыль {esc(f'{netp:.2f}')} ₽"
+            )
+    return "\n".join(lines)
+
+
+async def _build_week_html(conn, weeks: int) -> str:
+    w = max(2, min(52, int(weeks)))
+    rows = await admin_stats_repo.sales_by_week(conn, days=w * 7)
+    lines = [f"<b>По неделям</b> (≈{esc(str(w))} нед., выданные)\n"]
+    if not rows:
+        lines.append("<i>нет данных</i>")
+    else:
+        for r in rows:
+            wlabel = str(r["wk"] or "")
+            n = int(r["n"] or 0)
+            rev = float(r["rev"] or 0)
+            netp = float(r["netp"] or 0)
+            lines.append(
+                f"<code>{esc(wlabel)}</code>: {esc(str(n))} зак. · "
+                f"{esc(f'{rev:.2f}')} ₽ · прибыль {esc(f'{netp:.2f}')} ₽"
+            )
+    return "\n".join(lines)
 
 
 @router.callback_query(F.data.startswith("adm:ff"))
@@ -123,22 +309,190 @@ async def admin_fulfill_controls(cb: CallbackQuery, settings: Settings, conn) ->
 async def cmd_admin(message: Message, settings: Settings, conn) -> None:
     if not _is_admin(message.from_user.id, settings):
         return
-    rows = await orders_repo.list_recent_orders(conn, limit=12)
+    agg = await admin_stats_repo.aggregate_dashboard(conn, days=7)
+    top = await admin_stats_repo.top_referrers(conn, days=7, limit=3)
+    rm = await admin_stats_repo.referral_metrics(conn, days=7)
+    funnel = await admin_stats_repo.funnel_metrics(conn, days=7)
+    dash = _format_dashboard_html(period_label="7 дней", agg=agg, top_refs=top, rm=rm, funnel=funnel)
+    rows = await orders_repo.list_recent_orders(conn, limit=8)
+    recent_lines = ["\n<b>Последние заказы</b>\n"]
     if not rows:
-        await message.answer("<b>Админ</b>: заказов нет.")
-        return
-    lines = ["<b>Последние заказы</b>\n"]
-    for r in rows:
-        amt = float(r["rub_after_discounts"])
-        lines.append(
-            f"#{esc(r['id'])} {esc(r['product_title'])} - <code>{esc(r['status'])}</code> - "
-            f"<b>{esc(f'{amt:.2f}')} ₽</b>"
-        )
-    foot = "\n\n<i>Конкурсы партнёров: команда /contest</i>"
-    foot += "\n<i>Текст для закрепа канала (оплата по ссылке bc): /channel_checkout_pin</i>"
+        recent_lines.append("<i>нет</i>")
+    else:
+        for r in rows:
+            amt = float(r["rub_after_discounts"])
+            recent_lines.append(
+                f"#{esc(r['id'])} {esc(r['product_title'])} - <code>{esc(r['status'])}</code> - "
+                f"<b>{esc(f'{amt:.2f}')} ₽</b>"
+            )
+    foot = "\n\n<i>Конкурсы: /contest · Закреп bc: /channel_checkout_pin · Экспорт: /admin_export</i>"
     if settings.admin_roles_restricted():
-        foot += "\n<i>Роли: зачисление топапа / «Оплачен» / «Выдан» и правки конкурсов - только у SUPER_ADMIN_IDS.</i>"
-    await message.answer("\n".join(lines) + foot)
+        foot += "\n<i>Роли: финансы и «Выдан» — SUPER_ADMIN_IDS.</i>"
+    await message.answer(
+        dash + "\n".join(recent_lines) + foot,
+        reply_markup=_admin_stats_main_kb(),
+    )
+
+
+@router.callback_query(F.data.startswith("ast:"))
+async def admin_stats_callbacks(cb: CallbackQuery, settings: Settings, conn) -> None:
+    if not _is_admin(cb.from_user.id, settings):
+        await cb.answer("Нет доступа", show_alert=True)
+        return
+    parts = cb.data.split(":")
+    if len(parts) < 3:
+        await cb.answer()
+        return
+    _, kind, arg = parts[0], parts[1], parts[2]
+    try:
+        if kind == "d":
+            days = _period_arg_to_days(arg)
+            agg = await admin_stats_repo.aggregate_dashboard(conn, days=days)
+            top = await admin_stats_repo.top_referrers(conn, days=days, limit=3)
+            rm = await admin_stats_repo.referral_metrics(conn, days=days)
+            funnel = await admin_stats_repo.funnel_metrics(conn, days=days)
+            top_prof = await admin_stats_repo.top_products_by_profit(conn, days=days, limit=5)
+            tlines = ["\n<b>Топ товаров по прибыли</b>\n"]
+            if not top_prof:
+                tlines.append("<i>нет</i>")
+            else:
+                for r in top_prof:
+                    netp_v = float(r["netp"] or 0)
+                    n_v = int(r["n"] or 0)
+                    tlines.append(
+                        f"· {esc(str(r['product_title'] or '')[:40])} — "
+                        f"<b>{esc(f'{netp_v:.2f}')} ₽</b> ({esc(str(n_v))} шт.)"
+                    )
+            text = (
+                _format_dashboard_html(
+                    period_label=_period_human(days),
+                    agg=agg,
+                    top_refs=top,
+                    rm=rm,
+                    funnel=funnel,
+                )
+                + "\n".join(tlines)
+            )
+            await cb.message.edit_text(text, reply_markup=_admin_stats_main_kb())
+            await cb.answer()
+            return
+        if kind == "sales":
+            days = int(arg) if arg.isdigit() else 7
+            rep = await _build_sales_report_html(conn, days=days)
+            await cb.message.edit_text(rep + "\n\n<i>Назад: выберите период дашборда.</i>", reply_markup=_admin_stats_main_kb())
+            await cb.answer()
+            return
+        if kind == "top":
+            days = int(arg) if arg.isdigit() else 30
+            rows = await admin_stats_repo.top_products_by_profit(conn, days=days, limit=12)
+            lines = [f"<b>Топ по чистой прибыли</b> ({esc(_period_human(days))})\n"]
+            if not rows:
+                lines.append("<i>нет данных</i>")
+            else:
+                for i, r in enumerate(rows, start=1):
+                    netp_v = float(r["netp"] or 0)
+                    n_v = int(r["n"] or 0)
+                    lines.append(
+                        f"{i}. {esc(str(r['product_title'] or '')[:44])}\n"
+                        f"   прибыль <b>{esc(f'{netp_v:.2f}')} ₽</b> · "
+                        f"{esc(str(n_v))} шт."
+                    )
+            await cb.message.edit_text("\n".join(lines), reply_markup=_admin_stats_main_kb())
+            await cb.answer()
+            return
+        if kind == "dyn":
+            d = int(arg) if arg.isdigit() else 14
+            txt = await _build_dyn_html(conn, days=max(1, min(90, d)))
+            await cb.message.edit_text(txt, reply_markup=_admin_stats_main_kb())
+            await cb.answer()
+            return
+        if kind == "chart":
+            days_c = int(arg) if arg.isdigit() else 30
+            days_c = max(7, min(120, days_c))
+            daily = await admin_stats_repo.sales_by_day(conn, days=days_c)
+            weekly = await admin_stats_repo.sales_by_week(conn, days=max(56, days_c))
+            png = admin_charts.sales_trend_charts_png(
+                daily_rows=list(daily),
+                weekly_rows=list(weekly),
+                title_suffix=f"{days_c} дн.",
+            )
+            if png:
+                await cb.message.answer_photo(
+                    BufferedInputFile(png, filename="sales_trend.png"),
+                    caption=f"Выручка (выдано): по дням и по неделям · окно {days_c} дн.",
+                )
+                await cb.answer("График отправлен")
+            else:
+                await cb.answer("Matplotlib недоступен на сервере", show_alert=True)
+            return
+        if kind == "week":
+            wk = int(arg) if arg.isdigit() else 12
+            txt = await _build_week_html(conn, weeks=wk)
+            await cb.message.edit_text(txt + "\n\n<i>PNG: кнопка «График».</i>", reply_markup=_admin_stats_main_kb())
+            await cb.answer()
+            return
+        if kind == "csv":
+            if arg in ("all", "full"):
+                days = None
+            else:
+                days = int(arg) if arg.isdigit() else 30
+            raw = await admin_stats_repo.export_completed_csv(conn, days=days)
+            tag = "all" if days is None else f"{days}d"
+            await cb.message.answer_document(
+                BufferedInputFile(raw, filename=f"orders_completed_{tag}.csv"),
+                caption=f"Выданные заказы ({esc(_period_human(days))})",
+            )
+            await cb.answer("Файл отправлен")
+            return
+    except Exception:
+        await cb.answer("Ошибка", show_alert=True)
+        raise
+    await cb.answer()
+
+
+@router.message(Command("admin_export"))
+async def cmd_admin_export(message: Message, command: CommandObject, settings: Settings, conn) -> None:
+    if not _is_admin(message.from_user.id, settings):
+        return
+    raw = (command.args or "").strip().lower()
+    if raw in ("", "all", "*", "full"):
+        days = None
+    else:
+        try:
+            days = int(raw)
+        except ValueError:
+            await message.answer("Пример: <code>/admin_export 30</code> или <code>/admin_export all</code>")
+            return
+    data = await admin_stats_repo.export_completed_csv(conn, days=days)
+    tag = "all" if days is None else f"{days}d"
+    await message.answer_document(
+        BufferedInputFile(data, filename=f"orders_completed_{tag}.csv"),
+        caption=f"Выданные заказы ({_period_human(days)})",
+    )
+
+
+@router.message(Command("admin_cogs"))
+async def cmd_admin_cogs(message: Message, command: CommandObject, settings: Settings, conn) -> None:
+    if not _is_admin(message.from_user.id, settings):
+        return
+    if not settings.is_super_admin(message.from_user.id):
+        await message.answer("Только супер-админ может править себестоимость.")
+        return
+    parts = (command.args or "").split()
+    if len(parts) != 2:
+        await message.answer(
+            "Укажите: <code>/admin_cogs ORDER_ID COGS_RUB</code>\n"
+            "Пересчитает чистую прибыль для заказа в статусе <code>completed</code>."
+        )
+        return
+    try:
+        oid = int(parts[0])
+        amt = float(parts[1].replace(",", "."))
+    except ValueError:
+        await message.answer("Некорректные числа.")
+        return
+    ok = await orders_repo.set_manual_cogs_and_recalc(conn, oid, settings, manual_cogs_rub=amt)
+    await message.answer("Обновлено." if ok else "Заказ не найден или не выдан (completed).")
 
 
 @router.message(Command("channel_checkout_pin"))

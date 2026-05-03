@@ -31,6 +31,34 @@ def channel_member_open_menu_kb(settings: Settings) -> InlineKeyboardMarkup:
     return b.as_markup()
 
 
+def onboarding_language_kb() -> InlineKeyboardMarkup:
+    """Шаг 0 онбординга: язык (фото — тот же START_PHOTO_FILE_ID, что и для hero)."""
+    b = InlineKeyboardBuilder()
+    b.row(
+        InlineKeyboardButton(text="🇷🇺 Русский", callback_data="onb:lang:ru"),
+        InlineKeyboardButton(text="🇬🇧 English", callback_data="onb:lang:en"),
+    )
+    return b.as_markup()
+
+
+def onboarding_terms_kb() -> InlineKeyboardMarkup:
+    b = InlineKeyboardBuilder()
+    b.row(InlineKeyboardButton(text="✅ Принять", callback_data="onb:terms:yes"))
+    b.row(InlineKeyboardButton(text="❌ Отклонить", callback_data="onb:terms:no"))
+    return b.as_markup()
+
+
+def onboarding_channel_kb(settings: Settings) -> InlineKeyboardMarkup:
+    """Подписка на канал внутри онбординга (до капчи и хаба)."""
+    b = InlineKeyboardBuilder()
+    inv = (settings.required_channel_invite_url or "").strip()
+    disp = (settings.required_channel_display_name or "").strip() or "Monkey Stars | Premium"
+    if inv:
+        b.row(InlineKeyboardButton(text=f"📺 {disp}", url=inv))
+    b.row(InlineKeyboardButton(text="✅ Проверить подписку", callback_data="onb:ch:check"))
+    return b.as_markup()
+
+
 def onboarding_step1_kb(settings: Settings) -> InlineKeyboardMarkup:
     b = InlineKeyboardBuilder()
     inv = (settings.required_channel_invite_url or "").strip()

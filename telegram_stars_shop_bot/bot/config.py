@@ -50,6 +50,11 @@ class Settings(BaseSettings):
         default=15.0, validation_alias="REF_REFERRER_COMMISSION_FIRST_ORDER_PERCENT"
     )
 
+    # Админ-аналитика / чистая прибыль (LAVA и др.): % от суммы оплаты покупателя.
+    payment_gateway_fee_percent: float = Field(default=3.0, validation_alias="PAYMENT_GATEWAY_FEE_PERCENT")
+    # Доля каталожного USD в ₽ как оценка себестоимости Fragment (0..1); 0.85 ≈ «~85% от номинала в ₽».
+    auto_cogs_usd_fraction: float = Field(default=0.85, validation_alias="AUTO_COGS_USD_FRACTION")
+
     # Маркетинг «до X%» на экране 1 (согласуйте с реальной макс. скидкой по акциям).
     marketing_max_discount_percent: float = Field(
         default=47.0, validation_alias="MARKETING_MAX_DISCOUNT_PERCENT"
@@ -84,18 +89,18 @@ class Settings(BaseSettings):
     sell_min_stars: int = Field(default=100, validation_alias="SELL_MIN_STARS")
     sell_max_stars: int = Field(default=50_000, validation_alias="SELL_MAX_STARS")
 
-    # Опционально: file_id картинки для /start (получите через бота и вставьте в .env).
+    # Опционально: file_id вместо локального assets/branding/monkey_stars_logo.png (основной hero).
     start_photo_file_id: str = Field(default="", validation_alias="START_PHOTO_FILE_ID")
     # Опционально: file_id картинки для второго экрана онбординга («Почему выбирают нас»).
     start_photo_file_id_2: str = Field(default="", validation_alias="START_PHOTO_FILE_ID_2")
 
-    # Публичные юридические страницы (Telegraph и др.). Пусто = не показывать кнопку в боте.
+    # Публичные юридические страницы (HTTPS Partner API /v1/legal/*). Пусто = не показывать кнопку в боте.
     privacy_policy_url: str = Field(
-        default="https://telegra.ph/Politika-konfidencialnosti-03-24-56",
+        default="https://aladdin-ai.ru/v1/legal/privacy",
         validation_alias="PRIVACY_POLICY_URL",
     )
     terms_of_service_url: str = Field(
-        default="https://telegra.ph/Polzovatelskoe-soglashenie-03-24-40",
+        default="https://aladdin-ai.ru/v1/legal/terms",
         validation_alias="TERMS_OF_SERVICE_URL",
     )
 
@@ -104,6 +109,11 @@ class Settings(BaseSettings):
     required_channel_id: str = Field(default="", validation_alias="REQUIRED_CHANNEL_ID")
     # Ссылка-приглашение t.me/… для кнопки «Подписаться».
     required_channel_invite_url: str = Field(default="", validation_alias="REQUIRED_CHANNEL_INVITE_URL")
+    # Запасная ссылка на канал для текста оферты / юридических подсказок, если REQUIRED_CHANNEL_INVITE_URL пуст.
+    official_channel_invite_url: str = Field(
+        default="https://t.me/+xwj4zZo4bNphZjVi",
+        validation_alias="OFFICIAL_CHANNEL_INVITE_URL",
+    )
     # Заголовок экрана «жёсткой стены» (/start, /menu без подписки). Пусто = «Канал магазина».
     required_channel_display_name: str = Field(default="", validation_alias="REQUIRED_CHANNEL_DISPLAY_NAME")
     # Сколько маркетинга до подписки: full | short (wow+скидки) | title_only. По умолчанию short.
@@ -112,6 +122,16 @@ class Settings(BaseSettings):
     ui_show_api: bool = Field(default=True, validation_alias="UI_SHOW_API")
     ui_show_partners: bool = Field(default=True, validation_alias="UI_SHOW_PARTNERS")
     ui_show_receipts: bool = Field(default=True, validation_alias="UI_SHOW_RECEIPTS")
+
+    # Анти-спам: минимальный интервал между /start и между созданием заказов (секунды).
+    start_command_min_interval_seconds: int = Field(
+        default=2, validation_alias="START_COMMAND_MIN_INTERVAL_SECONDS"
+    )
+    order_create_min_interval_seconds: int = Field(
+        default=3, validation_alias="ORDER_CREATE_MIN_INTERVAL_SECONDS"
+    )
+    # После успешной капчи на чек-ауте заказ можно подтверждать столько секунд.
+    checkout_captcha_ttl_seconds: int = Field(default=900, validation_alias="CHECKOUT_CAPTCHA_TTL_SECONDS")
 
     # Sentry (бот и Partner API; пустой DSN = выключено).
     sentry_dsn: str = Field(default="", validation_alias="SENTRY_DSN")

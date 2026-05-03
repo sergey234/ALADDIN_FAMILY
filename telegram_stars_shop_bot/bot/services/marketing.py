@@ -114,6 +114,45 @@ def onboarding_screen_1_html(settings: Settings) -> str:
     )
 
 
+def onboarding_terms_caption_html(settings: Settings) -> str:
+    """Экран оферты (после выбора языка): маркетинг + юридические ссылки."""
+    pu = (settings.privacy_policy_url or "").strip()
+    tu = (settings.terms_of_service_url or "").strip()
+    hero = (
+        "<b>⭐ Telegram Stars и Premium — быстро и выгодно!</b>\n"
+        "Оформляйте заказ в пару кликов прямо в Telegram.\n"
+        "Надёжно. Удобно. Быстро.\n\n"
+        "Используя бота, совершая в нём покупки и вводя персональные данные, вы соглашаетесь "
+        "с публичной офертой:\n\n"
+    )
+    links: list[str] = []
+    if pu:
+        links.append(f'📜 <a href="{pu}">Политика конфиденциальности</a>')
+    if tu:
+        links.append(f'‼️ <a href="{tu}">Правила использования</a>')
+    if links:
+        hero += "\n".join(links) + "\n\n"
+    hero += "Ссылки 🔗 кликабельны."
+    ch_url = (settings.required_channel_invite_url or settings.official_channel_invite_url or "").strip()
+    if ch_url:
+        dn = (settings.required_channel_display_name or "").strip() or "Monkey Stars | Premium"
+        hero += f'\n\n📢 <b>Официальный канал магазина:</b> <a href="{ch_url}">{esc(dn)}</a>'
+    return hero
+
+
+def onboarding_channel_caption_html(settings: Settings) -> str:
+    """Экран подписки на канал внутри онбординга."""
+    raw = (settings.required_channel_display_name or "").strip()
+    name = esc(raw) if raw else "Monkey Stars"
+    return (
+        "<b>Что умеет этот бот?</b>\n"
+        "Я помогу купить звёзды ⭐, подписку Telegram Premium со скидкой, подарки и пополнение — "
+        "быстро и без лишних шагов.\n\n"
+        f"📺 <b>Для использования бота необходимо подписаться на канал:</b> {name}\n"
+        "Нажмите кнопку ниже, затем «✅ Проверить подписку»."
+    )
+
+
 def partner_onboarding_html(settings: Settings) -> str:
     """Короткий онбординг: реф-ссылка vs API для своего бота/сайта."""
     api = (settings.api_docs_url or "").strip()

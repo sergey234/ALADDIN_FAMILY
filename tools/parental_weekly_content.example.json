@@ -1,0 +1,36 @@
+{
+  "monitoring_summary": {
+    "browser_sites_week": 42,
+    "apps_used_week": 8,
+    "contacts_active": 3
+  },
+  "sites_count": 42,
+  "apps_count": 8,
+  "warnings_count": 1,
+  "top_sites": [
+    {
+      "site": "example.com",
+      "visits": 24,
+      "hours": 1,
+      "minutes": 10,
+      "category": "search"
+    }
+  ],
+  "top_apps": [
+    {
+      "name": "Safari",
+      "usage_minutes": 120,
+      "limit_minutes": 180,
+      "exceeded": false
+    }
+  ],
+  "peak_hours": [
+    { "label": "18:00–21:00", "usage_percent": 35 }
+  ],
+  "suspicious": [
+    { "text": "Позднее использование экрана", "level": "medium", "time": "23:10" }
+  ],
+  "contacts": [
+    { "name": "Алекс", "messages": 3, "calls": 1, "last_contact": "2026-05-01" }
+  ]
+}

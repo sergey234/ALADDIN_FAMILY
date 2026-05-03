@@ -8,7 +8,7 @@ from aiogram.utils.keyboard import InlineKeyboardBuilder
 
 from bot.config import Settings
 from bot.keyboards.shop_kb import hub_menu_kb, order_detail_kb, products_kb
-from bot.services import api_clients_repo, balance_repo, contest_repo, orders_repo, users_repo
+from bot.services import api_clients_repo, balance_repo, contest_repo, onboarding_gate, orders_repo, users_repo
 from bot.services.api_repo import create_api_key_request
 from bot.services.catalog import Product, sort_for_display
 from bot.services.channel_gate import channel_gate_enabled, user_is_channel_member
@@ -187,7 +187,17 @@ async def _sells_page_html(conn, user_id: int, page: int) -> tuple[str, bool, bo
 
 
 @router.callback_query(F.data == "start:hub")
-async def onboarding_continue(cb: CallbackQuery, settings: Settings) -> None:
+async def onboarding_continue(cb: CallbackQuery, settings: Settings, conn) -> None:
+    if not await users_repo.is_onboarding_completed(conn, cb.from_user.id):
+        await cb.answer()
+        try:
+            await cb.message.delete()
+        except Exception:
+            pass
+        await onboarding_gate.resume_onboarding_pipeline(
+            cb.bot, cb.message.chat.id, cb.from_user.id, settings, conn
+        )
+        return
     if channel_gate_enabled(settings) and not await user_is_channel_member(
         cb.bot, settings, cb.from_user.id
     ):
@@ -200,15 +210,15 @@ async def onboarding_continue(cb: CallbackQuery, settings: Settings) -> None:
     if fid2:
         # Keep hub controls on a text message so downstream handlers can safely use edit_text.
         await cb.message.answer_photo(fid2)
-        await cb.message.answer(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb())
+        await cb.message.answer(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb(settings))
     else:
-        await cb.message.edit_text(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb())
+        await cb.message.edit_text(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb(settings))
     await cb.answer()
 
 
 @router.callback_query(F.data == "nav:hub")
-async def nav_hub(cb: CallbackQuery) -> None:
-    await cb.message.edit_text(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb())
+async def nav_hub(cb: CallbackQuery, settings: Settings) -> None:
+    await cb.message.edit_text(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb(settings))
     await cb.answer()
 
 
@@ -881,6 +891,3 @@ async def orders_first_page_html(conn, user_id: int) -> str:
     return text
 
 
-@router.message(Command("menu"))
-async def cmd_menu(message: Message) -> None:
-    await message.answer(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb())

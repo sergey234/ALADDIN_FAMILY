@@ -44,6 +44,14 @@ def quote_product(
     )
 
 
+def referral_discount_percent_snapshot(*, rub_list: float, rub_referral_discount: float) -> float:
+    """Доля реф. скидки от базовой цены в ₽ до скидок (для снимка в БД)."""
+    base = max(0.0, float(rub_list))
+    if base <= 1e-9:
+        return 0.0
+    return round(100.0 * max(0.0, float(rub_referral_discount)) / base, 4)
+
+
 def commission_for_first_order(rub_paid: float, settings: Settings) -> float:
     """Комиссия рефереру за первый выданный (completed) заказ приглашённого; % от суммы заказа в ₽."""
     return round(rub_paid * (settings.ref_commission_percent / 100.0), 2)

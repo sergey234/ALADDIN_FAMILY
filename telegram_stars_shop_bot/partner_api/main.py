@@ -18,6 +18,7 @@ from partner_api.routers import payment_provider as payment_r
 from partner_api.routers import xrocket_webhook as xrocket_r
 from partner_api.routers import profile as profile_r
 from partner_api.routers import topups as topups_r
+from partner_api.routers import legal_pages as legal_r
 from partner_api.routers import webhooks_partner as webhooks_r
 from partner_api.rate_limit_middleware import PartnerRateLimitMiddleware
 from partner_api.rate_limit_store import build_rate_limit_store
@@ -72,6 +73,7 @@ def create_app() -> FastAPI:
     app.add_middleware(PartnerRateLimitMiddleware, store=build_rate_limit_store(settings))
 
     v1 = "/v1"
+    app.include_router(legal_r.router, prefix=v1)
     app.include_router(profile_r.router, prefix=v1)
     app.include_router(orders_r.router, prefix=v1)
     app.include_router(topups_r.router, prefix=v1)

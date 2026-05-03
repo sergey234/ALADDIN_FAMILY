@@ -5,6 +5,86 @@ import sqlite3
 import aiosqlite
 
 from bot.config import Settings
+from bot.services.profit_compute import auto_cogs_rub, net_profit_rub, payment_gateway_fee_rub
+
+
+async def write_profit_snapshot(
+    conn: aiosqlite.Connection,
+    order_id: int,
+    settings: Settings,
+) -> None:
+    """Заполняет payment fee, COGS, net_profit, completed_at после выдачи (completed)."""
+    row = await get_order(conn, order_id)
+    if row is None or str(row["status"] or "").strip().lower() != "completed":
+        return
+    sale = float(row["rub_after_discounts"] or 0)
+    usd_base = float(row["usd_base"] or 0)
+    referral_disc = float(row["referral_discount_rub"] or 0)
+    ref_bonus = float(row["commission_rub"] or 0)
+    fee = payment_gateway_fee_rub(sale, settings.payment_gateway_fee_percent)
+    try:
+        manual_v = row["manual_cogs_rub"]
+    except (KeyError, IndexError, TypeError):
+        manual_v = None
+    manual: float | None
+    try:
+        manual = float(manual_v) if manual_v is not None else None
+    except (TypeError, ValueError):
+        manual = None
+    rate = float(settings.usd_rub_rate)
+    try:
+        snap = row["usd_rub_rate_snapshot"]
+        if snap is not None:
+            rate = float(snap)
+    except (KeyError, IndexError, TypeError, ValueError):
+        pass
+    if manual is not None:
+        cogs = round(max(0.0, manual), 2)
+    else:
+        cogs = auto_cogs_rub(usd_base, rate, settings.auto_cogs_usd_fraction)
+    net = net_profit_rub(
+        sale_rub=sale,
+        cogs_rub=cogs,
+        payment_fee_rub=fee,
+        referral_bonus_rub=ref_bonus,
+        referral_discount_rub=referral_disc,
+    )
+    await conn.execute(
+        """
+        UPDATE orders SET
+          buyer_username = (SELECT u.username FROM users u WHERE u.user_id = orders.user_id),
+          completed_at = COALESCE(completed_at, datetime('now')),
+          payment_gateway_fee_rub = ?,
+          cogs_rub = ?,
+          net_profit_rub = ?,
+          profit_snapshot_at = datetime('now'),
+          updated_at = datetime('now')
+        WHERE id = ?
+        """,
+        (fee, cogs, net, order_id),
+    )
+
+
+async def set_manual_cogs_and_recalc(
+    conn: aiosqlite.Connection,
+    order_id: int,
+    settings: Settings,
+    *,
+    manual_cogs_rub: float,
+) -> bool:
+    row = await get_order(conn, order_id)
+    if row is None or str(row["status"] or "").strip().lower() != "completed":
+        return False
+    await conn.execute(
+        """
+        UPDATE orders SET manual_cogs_rub = ?, updated_at = datetime('now')
+        WHERE id = ?
+        """,
+        (round(max(0.0, float(manual_cogs_rub)), 2), order_id),
+    )
+    await write_profit_snapshot(conn, order_id, settings)
+    await conn.commit()
+    return True
 
 
 async def create_order(
@@ -24,6 +104,11 @@ async def create_order(
     user_note: str | None,
     status: str = "pending_payment",
     balance_applied_rub: float = 0.0,
+    product_kind: str = "",
+    stars_qty: int | None = None,
+    premium_months: int | None = None,
+    referral_discount_percent: float = 0.0,
+    usd_rub_rate_snapshot: float | None = None,
 ) -> int:
     cur = await conn.execute(
         """
@@ -31,8 +116,10 @@ async def create_order(
             user_id, product_id, product_title, payment_method, status,
             usd_base, rub_before_discounts, rub_after_discounts,
             referral_discount_rub, wholesale_discount_rub,
-            referrer_id, commission_rub, user_note, balance_applied_rub
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            referrer_id, commission_rub, user_note, balance_applied_rub,
+            product_kind, stars_qty, premium_months,
+            referral_discount_percent, usd_rub_rate_snapshot
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             user_id,
@@ -49,6 +136,11 @@ async def create_order(
             commission_rub,
             user_note,
             balance_applied_rub,
+            (product_kind or "").strip().lower(),
+            stars_qty,
+            premium_months,
+            round(max(0.0, float(referral_discount_percent)), 4),
+            usd_rub_rate_snapshot,
         ),
     )
     await conn.commit()
@@ -374,6 +466,11 @@ async def create_paid_order_from_balance(
     wholesale_discount_rub: float,
     referrer_id: int | None,
     user_note: str | None,
+    product_kind: str = "",
+    stars_qty: int | None = None,
+    premium_months: int | None = None,
+    referral_discount_percent: float = 0.0,
+    usd_rub_rate_snapshot: float | None = None,
 ) -> int:
     """Атомарно: списание баланса + заказ со статусом paid + запись в ledger."""
     from bot.services import balance_repo
@@ -403,8 +500,10 @@ async def create_paid_order_from_balance(
                 user_id, product_id, product_title, payment_method, status,
                 usd_base, rub_before_discounts, rub_after_discounts,
                 referral_discount_rub, wholesale_discount_rub,
-                referrer_id, commission_rub, user_note, balance_applied_rub
-            ) VALUES (?, ?, ?, 'balance', 'paid', ?, ?, ?, ?, ?, ?, 0, ?, ?)
+                referrer_id, commission_rub, user_note, balance_applied_rub,
+                product_kind, stars_qty, premium_months,
+                referral_discount_percent, usd_rub_rate_snapshot
+            ) VALUES (?, ?, ?, 'balance', 'paid', ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 user_id,
@@ -418,6 +517,11 @@ async def create_paid_order_from_balance(
                 referrer_id,
                 user_note,
                 rub_after,
+                (product_kind or "").strip().lower(),
+                stars_qty,
+                premium_months,
+                round(max(0.0, float(referral_discount_percent)), 4),
+                usd_rub_rate_snapshot,
             ),
         )
         oid = int(cur.lastrowid)
@@ -451,6 +555,11 @@ async def create_order_with_balance_partial(
     user_note: str | None,
     balance_apply: float,
     settings: Settings,
+    product_kind: str = "",
+    stars_qty: int | None = None,
+    premium_months: int | None = None,
+    referral_discount_percent: float = 0.0,
+    usd_rub_rate_snapshot: float | None = None,
 ) -> int:
     """
     Списывает balance_apply с кошелька, создаёт заказ.
@@ -498,8 +607,10 @@ async def create_order_with_balance_partial(
                 user_id, product_id, product_title, payment_method, status,
                 usd_base, rub_before_discounts, rub_after_discounts,
                 referral_discount_rub, wholesale_discount_rub,
-                referrer_id, commission_rub, user_note, balance_applied_rub
-            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?)
+                referrer_id, commission_rub, user_note, balance_applied_rub,
+                product_kind, stars_qty, premium_months,
+                referral_discount_percent, usd_rub_rate_snapshot
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, ?, ?)
             """,
             (
                 user_id,
@@ -515,6 +626,11 @@ async def create_order_with_balance_partial(
                 referrer_id,
                 user_note,
                 balance_apply,
+                (product_kind or "").strip().lower(),
+                stars_qty,
+                premium_months,
+                round(max(0.0, float(referral_discount_percent)), 4),
+                usd_rub_rate_snapshot,
             ),
         )
         oid = int(cur.lastrowid)
@@ -573,6 +689,11 @@ async def create_order_partner_api(
     referrer_id: int | None,
     user_note: str,
     settings: Settings,
+    product_kind: str = "",
+    stars_qty: int | None = None,
+    premium_months: int | None = None,
+    referral_discount_percent: float = 0.0,
+    usd_rub_rate_snapshot: float | None = None,
 ) -> tuple[int, bool]:
     """
     Атомарно: идемпотентность + вставка заказа source=api.
@@ -602,8 +723,10 @@ async def create_order_partner_api(
                     usd_base, rub_before_discounts, rub_after_discounts,
                     referral_discount_rub, wholesale_discount_rub,
                     referrer_id, commission_rub, user_note, balance_applied_rub,
-                    source, api_client_id, idempotency_key, external_ref
-                ) VALUES (?, ?, ?, ?, 'pending_payment', ?, ?, ?, ?, ?, ?, 0, ?, 0, 'api', ?, ?, ?)
+                    source, api_client_id, idempotency_key, external_ref,
+                    product_kind, stars_qty, premium_months,
+                    referral_discount_percent, usd_rub_rate_snapshot
+                ) VALUES (?, ?, ?, ?, 'pending_payment', ?, ?, ?, ?, ?, ?, 0, ?, 0, 'api', ?, ?, ?, ?, ?, ?, ?, ?)
                 """,
                 (
                     owner_user_id,
@@ -620,6 +743,11 @@ async def create_order_partner_api(
                     api_client_id,
                     idempotency_key,
                     external_ref,
+                    (product_kind or "").strip().lower(),
+                    stars_qty,
+                    premium_months,
+                    round(max(0.0, float(referral_discount_percent)), 4),
+                    usd_rub_rate_snapshot,
                 ),
             )
             oid = int(cur.lastrowid)
@@ -936,3 +1064,34 @@ async def list_orders_operator_attention_queue(
     )
     rows = await cur.fetchall()
     return list(rows)
+
+
+async def allow_order_create_interval(
+    conn: aiosqlite.Connection,
+    user_id: int,
+    min_seconds: float,
+) -> bool:
+    """Не чаще одного нового заказа за min_seconds (по MAX(created_at))."""
+    if min_seconds <= 0:
+        return True
+    cur = await conn.execute(
+        "SELECT MAX(created_at) AS m FROM orders WHERE user_id = ?",
+        (user_id,),
+    )
+    row = await cur.fetchone()
+    if not row or row["m"] is None:
+        return True
+    from datetime import datetime, timezone
+
+    raw = str(row["m"]).strip()
+    try:
+        if "T" in raw:
+            last = datetime.fromisoformat(raw.replace("Z", "+00:00"))
+            if last.tzinfo is None:
+                last = last.replace(tzinfo=timezone.utc)
+        else:
+            last = datetime.strptime(raw[:19], "%Y-%m-%d %H:%M:%S").replace(tzinfo=timezone.utc)
+    except ValueError:
+        return True
+    delta = (datetime.now(timezone.utc) - last).total_seconds()
+    return delta >= float(min_seconds) - 1e-6

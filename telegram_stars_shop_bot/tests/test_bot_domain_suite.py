@@ -249,22 +249,33 @@ def test_partner_api_health_and_openapi(partner_api_http_client: TestClient) -> 
     assert any("/v1/orders" in p for p in data["paths"])
 
 
+def test_legal_static_pages(partner_api_http_client: TestClient) -> None:
+    r = partner_api_http_client.get("/v1/legal/privacy")
+    assert r.status_code == 200
+    assert "StarBridge" in r.text
+    assert "ZERGRUSH" in r.text
+    r2 = partner_api_http_client.get("/v1/legal/terms")
+    assert r2.status_code == 200
+    assert "Пользовательское соглашение" in r2.text
+    assert "Республики Молдова" in r2.text
+
+
 def test_privacy_screen_includes_policy_links(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("BOT_TOKEN", "9:leg")
     monkeypatch.setenv("ADMIN_IDS", "1")
     monkeypatch.setenv("API_KEY_PEPPER", "leg_test_pepper_minimum_32_chars_____")
     monkeypatch.setenv(
         "PRIVACY_POLICY_URL",
-        "https://telegra.ph/Politika-konfidencialnosti-03-24-56",
+        "https://aladdin-ai.ru/v1/legal/privacy",
     )
     monkeypatch.setenv(
         "TERMS_OF_SERVICE_URL",
-        "https://telegra.ph/Polzovatelskoe-soglashenie-03-24-40",
+        "https://aladdin-ai.ru/v1/legal/terms",
     )
     s = load_settings()
     html = marketing.privacy_screen_html(s)
-    assert "Politika-konfidencialnosti" in html
-    assert "Polzovatelskoe-soglashenie" in html
+    assert "legal/privacy" in html
+    assert "legal/terms" in html
     assert "Поддержка" in html
 
 

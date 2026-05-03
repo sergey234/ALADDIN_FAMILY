@@ -1,6 +1,10 @@
 from pathlib import Path
 
-router_path = Path('/opt/aladdin-backend/app/security/api/routers/parental_control_router.py')
+# SSOT: main.py подключает `security.api.routers.parental_control_router` из дерева security/.
+# Патчить нужно канонический файл на сервере; путь app/security/... — legacy и не должен быть целью деплоя.
+_canonical = Path('/opt/aladdin-backend/security/api/routers/parental_control_router.py')
+_legacy_wrong = Path('/opt/aladdin-backend/app/security/api/routers/parental_control_router.py')
+router_path = _canonical if _canonical.is_file() else _legacy_wrong
 main_path = Path('/opt/aladdin-backend/main.py')
 
 text = router_path.read_text(encoding='utf-8')

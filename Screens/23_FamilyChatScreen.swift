@@ -22,12 +22,6 @@ import Combine
  * - Автопрокрутка к новым сообщениям
  */
 
-/// Алерт ошибок чата: отдельный `Identifiable`, чтобы не плодить циклы SwiftUI через `errorMessage` + `message { if let }`.
-private struct FamilyChatUserErrorAlert: Identifiable {
-    let id = UUID()
-    let message: String
-}
-
 struct FamilyChatScreen: View {
     
     @Environment(\.dismiss) var dismiss
@@ -37,7 +31,10 @@ struct FamilyChatScreen: View {
     @State private var messages: [FamilyChatMessage] = []
     @State private var isLoading: Bool = false
     @State private var isSending: Bool = false
-    @State private var chatUserErrorAlert: FamilyChatUserErrorAlert? = nil
+    /// Текст алерта ошибки (без `alert(item:)` с `Identifiable`, чтобы снизить риск циклов AttributeGraph).
+    @State private var chatErrorMessage: String? = nil
+    /// После `GET /members` / заголовков сервера: нет семьи — не слать typing/send с устаревшим `family_id`.
+    @State private var chatFamilyContextInvalid: Bool = false
     /// Поколение silent-запроса списка: устаревшие ответы не перезаписывают `messages` (гонки polling + после send).
     @State private var silentMessagesFetchGeneration: UInt64 = 0
     @State private var onlineMembersCount: Int = 0
@@ -293,6 +290,7 @@ struct FamilyChatScreen: View {
             .task {
                 print("🚨 FamilyChatScreen загружен!")
                 markFamilyActivity()
+                await refreshFamilyContextFromMembersAPI()
                 updateOnlineMembersCount()
                 loadCachedMessages()
                 let hadCachedSnapshot = !messages.isEmpty
@@ -476,15 +474,21 @@ struct FamilyChatScreen: View {
 
     private var familyChatRootDecorated: some View {
         familyChatInteractionOverlays
-            .alert(item: $chatUserErrorAlert) { item in
-                SwiftUI.Alert(
-                    title: Text(localizationManager.localized("family_chat_error_title")),
-                    message: Text(item.message),
-                    dismissButton: .default(Text(localizationManager.localized("family_chat_error_ok"))) {
-                        chatUserErrorAlert = nil
+            .alert(
+                localizationManager.localized("family_chat_error_title"),
+                isPresented: Binding(
+                    get: { chatErrorMessage != nil },
+                    set: { if !$0 { chatErrorMessage = nil } }
+                ),
+                actions: {
+                    Button(localizationManager.localized("family_chat_error_ok")) {
+                        chatErrorMessage = nil
                     }
-                )
-            }
+                },
+                message: {
+                    Text(chatErrorMessage ?? "")
+                }
+            )
     }
     
     // MARK: - Helper Methods
@@ -522,14 +526,21 @@ struct FamilyChatScreen: View {
             if case .decodingError = ne { return true }
         }
         let s = error.localizedDescription.lowercased()
-        if s.contains("mock") || s.contains("fallback") || s.contains("sfm_") { return true }
+        // Не считать «offline fallback» и прочие сетевые тексты несоответствием контракта (иначе ложный алерт при 404 send).
+        if s.contains("mock") || s.contains("mock_fallback") || s.contains("sfm_mock") || s.contains("sfm_") { return true }
         return s.contains("couldn't be read")
             || s.contains("could not be read")
             || (s.contains("missing") && s.contains("key"))
     }
 
     private func dismissChatError() {
-        chatUserErrorAlert = nil
+        chatErrorMessage = nil
+    }
+
+    /// Сервер должен вернуть `success: true` и непустой `messageId`; иначе декодирование могло «проглотить» пустой контракт.
+    private func isSuccessfulSendResponse(_ r: SendFamilyChatMessageResponse) -> Bool {
+        let sid = r.messageId.trimmingCharacters(in: .whitespacesAndNewlines)
+        return r.success && !sid.isEmpty
     }
 
     /// Диагностика в консоль при показе алерта (endpoint HTTP сюда не передаём — его нет в колбэке APIService без доработки сетевого слоя).
@@ -537,7 +548,19 @@ struct FamilyChatScreen: View {
         let u = underlying.map { "\(Swift.type(of: $0)): \($0.localizedDescription)" } ?? "—"
         let s = silent.map { $0 ? "да" : "нет" } ?? "—"
         print("🔎 Семейный чат [\(context)] алерт: «\(message.prefix(160))» | underlying=\(u) | silentPoll=\(s)")
-        chatUserErrorAlert = FamilyChatUserErrorAlert(message: message)
+        chatErrorMessage = message
+    }
+
+    /// 404 после выравнивания семьи на сервере: нет членства / нет primary — не путать с декодированием.
+    private func isFamilyNotFoundForChat(_ error: Error) -> Bool {
+        guard let ne = error as? NetworkError else { return false }
+        if case .notFound(let msg) = ne {
+            let m = (msg ?? "").lowercased()
+            return m.contains("family not found")
+                || m.contains("family context")
+                || m.contains("no family context")
+        }
+        return false
     }
 
     /// Текст для пользователя при ошибке загрузки ленты (не вешаем всё на «интернет»).
@@ -561,9 +584,90 @@ struct FamilyChatScreen: View {
             return localizationManager.localized("family_chat_error_auth")
         case .unauthorized, .tokenExpired, .invalidToken, .reauthenticationRequired:
             return localizationManager.localized("family_chat_error_auth")
+        case .notFound(let msg):
+            let m = (msg ?? "").lowercased()
+            if m.contains("family not found") || m.contains("family context") || m.contains("no family context") {
+                return localizationManager.localized("family_chat_error_no_server_family")
+            }
+            return localizationManager.localized("family_chat_error_not_found")
         default:
             return localizationManager.localized("family_chat_error_data")
         }
+    }
+
+    /// `GET /api/family/members` подтягивает `X-Resolved-Family-Id` / `X-Family-Context` до ленты и синхронизирует чипы с сервером.
+    private func refreshFamilyContextFromMembersAPI() async {
+        let loc = localizationManager
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            apiService.getFamilyMembersWithSyncContext { result in
+                Task { @MainActor in
+                    defer { continuation.resume() }
+                    switch result {
+                    case .success(let ctx):
+                        if ctx.members.isEmpty {
+                            chatFamilyContextInvalid = true
+                            updateOnlineMembersCount()
+                            return
+                        }
+                        chatFamilyContextInvalid = false
+                        if let data = Self.encodeFamilyMembersListData(from: ctx.members, localizationManager: loc) {
+                            UserDefaults.standard.set(data, forKey: familyMembersKey)
+                            UserDefaults.standard.synchronize()
+                        }
+                        updateOnlineMembersCount()
+                    case .failure:
+                        chatFamilyContextInvalid = true
+                        updateOnlineMembersCount()
+                    }
+                }
+            }
+        }
+    }
+
+    /// Сохраняем ростер из API в `family_members_list`, чтобы чипы совпадали с сервером.
+    private static func encodeFamilyMembersListData(from members: [FamilyMemberResponse], localizationManager: LocalizationManager) -> Data? {
+        let converted: [FamilyMemberData] = members.map { member in
+            let normalizedRole = member.role.lowercased()
+            let role: FamilyMemberCard.FamilyRole
+            let parentLabels = Set(["parent", localizationManager.localized("family_role_parent_label").lowercased()])
+            let childLabels = Set(["child", localizationManager.localized("family_role_child_label").lowercased()])
+            let teenLabels = Set(["teenager", "teen", localizationManager.localized("family_role_teen_label").lowercased()])
+            let elderlyLabels = Set(["elderly", "grandparent", localizationManager.localized("family_role_elderly_label").lowercased()])
+            switch normalizedRole {
+            case _ where parentLabels.contains(normalizedRole): role = .parent
+            case _ where childLabels.contains(normalizedRole): role = .child
+            case _ where teenLabels.contains(normalizedRole): role = .teenager
+            case _ where elderlyLabels.contains(normalizedRole): role = .elderly
+            default: role = .parent
+            }
+            let avatar: String
+            switch role {
+            case .parent: avatar = "👨"
+            case .child: avatar = "👧"
+            case .teenager: avatar = "🧒"
+            case .elderly: avatar = "👵"
+            }
+            let protectionStatus: FamilyMemberCard.ProtectionStatus
+            switch (member.status ?? "protected").lowercased() {
+            case "protected": protectionStatus = .protected
+            case "warning": protectionStatus = .warning
+            case "danger": protectionStatus = .danger
+            case "offline": protectionStatus = .offline
+            default: protectionStatus = .protected
+            }
+            return FamilyMemberData(
+                id: member.id,
+                serverMemberId: member.id,
+                localOnly: false,
+                name: member.name,
+                role: role,
+                avatar: avatar,
+                status: protectionStatus,
+                threatsBlocked: member.threatsBlocked ?? 0,
+                lastActive: member.lastActive ?? ""
+            )
+        }
+        return try? JSONEncoder().encode(converted)
     }
 
     private func replyPreview(for message: FamilyChatMessage) -> FamilyChatMessage? {
@@ -665,8 +769,13 @@ struct FamilyChatScreen: View {
                 case .failure(let error):
                     print("❌ FamilyChatScreen: Ошибка загрузки сообщений: \(error.localizedDescription)")
 
+                    if isFamilyNotFoundForChat(error) {
+                        chatFamilyContextInvalid = true
+                        FamilyLocalStore.clearPersistedFamilyContextWhenServerReportsNoFamily()
+                    }
+
                     #if DEBUG
-                    if messages.isEmpty && !silent {
+                    if messages.isEmpty && !silent && !chatFamilyContextInvalid {
                         print("ℹ️ FamilyChatScreen: Используем mock данные для отображения (DEBUG)")
                         messages = getMockMessages()
                     }
@@ -674,7 +783,14 @@ struct FamilyChatScreen: View {
 
                     if !silent && messages.isEmpty {
                         let errorDesc = error.localizedDescription
-                        if errorDesc.contains("404") || errorDesc.contains("not found") || errorDesc.contains("ресурс не найден") {
+                        if isFamilyNotFoundForChat(error) {
+                            presentChatError(
+                                localizationManager.localized("family_chat_error_no_server_family"),
+                                context: "loadMessages.noFamilyContext",
+                                underlying: error,
+                                silent: silent
+                            )
+                        } else if errorDesc.contains("404") || errorDesc.contains("not found") || errorDesc.contains("ресурс не найден") {
                             presentChatError(
                                 localizationManager.localized("family_chat_error_not_found"),
                                 context: "loadMessages.notFound",
@@ -843,6 +959,17 @@ struct FamilyChatScreen: View {
 
     private var composerBar: some View {
         VStack(spacing: 8) {
+            if chatFamilyContextInvalid {
+                Text(localizationManager.localized("family_chat_banner_no_family"))
+                    .font(.footnote)
+                    .foregroundColor(Color(UIColor.secondaryLabel))
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, Spacing.screenPadding)
+                    .padding(.vertical, 6)
+                    .background(Color.orange.opacity(0.15))
+                    .cornerRadius(10)
+            }
             HStack(alignment: .bottom, spacing: 10) {
                 Button(action: {
                     showComposerActions = true
@@ -854,6 +981,7 @@ struct FamilyChatScreen: View {
                         .background(Color.surfaceDark.opacity(0.55))
                         .cornerRadius(12)
                 }
+                .disabled(chatFamilyContextInvalid)
                 .accessibilityLabel(localizationManager.localized("family_chat_voice_button"))
                 .accessibilityHint(localizationManager.localized("family_chat_action_open_menu"))
 
@@ -873,7 +1001,7 @@ struct FamilyChatScreen: View {
                         .padding(.vertical, 8)
                         .frame(minHeight: 44, maxHeight: composerHeight(for: messageText))
                         .background(Color.clear)
-                        .disabled(isSending)
+                        .disabled(isSending || chatFamilyContextInvalid)
                         .accessibilityLabel(localizationManager.localized("family_chat_input_accessibility"))
                         .accessibilityHint(localizationManager.localized("family_chat_input_hint"))
                 }
@@ -900,7 +1028,7 @@ struct FamilyChatScreen: View {
                             .cornerRadius(12)
                     }
                 }
-                .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending)
+                .disabled(chatFamilyContextInvalid || messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending)
                 .accessibilityLabel(localizationManager.localized("family_chat_send_button"))
                 .accessibilityHint(localizationManager.localized("family_chat_send_hint"))
             }
@@ -1030,6 +1158,10 @@ struct FamilyChatScreen: View {
     
     /// Отправка голосового: загрузка через MediaUploadManager, затем регистрация сообщения на сервере
     private func sendVoiceMessage(url: URL) {
+        guard !chatFamilyContextInvalid else {
+            presentChatError(localizationManager.localized("family_chat_error_no_server_family"), context: "sendVoiceMessage.contextInvalid")
+            return
+        }
         guard let familyId = getFamilyId(), !familyId.isEmpty else {
             presentChatError(localizationManager.localized("family_chat_error_family_missing"), context: "sendVoiceMessage.noFamilyId")
             return
@@ -1103,16 +1235,33 @@ struct FamilyChatScreen: View {
                     ) { sendResult in
                         DispatchQueue.main.async {
                             switch sendResult {
-                            case .success:
+                            case .success(let r):
+                                guard self.isSuccessfulSendResponse(r) else {
+                                    self.presentChatError(
+                                        self.localizationManager.localized("family_chat_error_send_response"),
+                                        context: "sendVoiceMessage.apiSend.contract",
+                                        underlying: nil
+                                    )
+                                    return
+                                }
                                 self.replyToMessage = nil
                                 self.lastOutboundChatCompletedAt = Date()
                                 self.loadMessages(silent: true)
                             case .failure(let err):
-                                self.presentChatError(
-                                    self.localizedLoadFailureMessage(for: err),
-                                    context: "sendVoiceMessage.apiSend",
-                                    underlying: err
-                                )
+                                if self.isFamilyNotFoundForChat(err) {
+                                    self.chatFamilyContextInvalid = true
+                                    self.presentChatError(
+                                        self.localizationManager.localized("family_chat_error_no_server_family"),
+                                        context: "sendVoiceMessage.apiSend.familyNotResolved",
+                                        underlying: err
+                                    )
+                                } else {
+                                    self.presentChatError(
+                                        self.localizedLoadFailureMessage(for: err),
+                                        context: "sendVoiceMessage.apiSend",
+                                        underlying: err
+                                    )
+                                }
                                 self.offlineManager.addPendingMessage(PendingChatMessage(
                                     id: UUID(uuidString: messageId)!,
                                     text: nil,
@@ -1153,6 +1302,10 @@ struct FamilyChatScreen: View {
     /// ✅ Отправка изображения: upload → регистрация сообщения на сервере
     private func sendMediaMessage(image: UIImage) {
         guard let imageData = image.jpegData(compressionQuality: 0.8) else { return }
+        guard !chatFamilyContextInvalid else {
+            presentChatError(localizationManager.localized("family_chat_error_no_server_family"), context: "sendMediaMessage.contextInvalid")
+            return
+        }
         guard let familyId = getFamilyId(), !familyId.isEmpty else {
             presentChatError(localizationManager.localized("family_chat_error_family_missing"), context: "sendMediaMessage.noFamilyId")
             return
@@ -1218,16 +1371,33 @@ struct FamilyChatScreen: View {
                     ) { sendResult in
                         DispatchQueue.main.async {
                             switch sendResult {
-                            case .success:
+                            case .success(let r):
+                                guard self.isSuccessfulSendResponse(r) else {
+                                    self.presentChatError(
+                                        self.localizationManager.localized("family_chat_error_send_response"),
+                                        context: "sendMediaMessage.apiSend.contract",
+                                        underlying: nil
+                                    )
+                                    return
+                                }
                                 self.replyToMessage = nil
                                 self.lastOutboundChatCompletedAt = Date()
                                 self.loadMessages(silent: true)
                             case .failure(let err):
-                                self.presentChatError(
-                                    self.localizedLoadFailureMessage(for: err),
-                                    context: "sendMediaMessage.apiSend",
-                                    underlying: err
-                                )
+                                if self.isFamilyNotFoundForChat(err) {
+                                    self.chatFamilyContextInvalid = true
+                                    self.presentChatError(
+                                        self.localizationManager.localized("family_chat_error_no_server_family"),
+                                        context: "sendMediaMessage.apiSend.familyNotResolved",
+                                        underlying: err
+                                    )
+                                } else {
+                                    self.presentChatError(
+                                        self.localizedLoadFailureMessage(for: err),
+                                        context: "sendMediaMessage.apiSend",
+                                        underlying: err
+                                    )
+                                }
                                 self.offlineManager.addPendingMessage(PendingChatMessage(
                                     id: UUID(uuidString: messageId)!,
                                     text: nil,
@@ -1263,6 +1433,7 @@ struct FamilyChatScreen: View {
     
     /// Отправка индикатора "печатает..."
     private func sendTypingIndicator() {
+        guard !chatFamilyContextInvalid else { return }
         let trimmed = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
         if trimmed.isEmpty {
             typingStopWorkItem?.cancel()
@@ -1441,6 +1612,14 @@ struct FamilyChatScreen: View {
     /// Обновление отправки сообщения для поддержки ответов
     private func sendMessage() {
         guard !messageText.isEmpty && !isSending else { return }
+
+        guard !chatFamilyContextInvalid else {
+            presentChatError(
+                localizationManager.localized("family_chat_error_no_server_family"),
+                context: "sendMessage.contextInvalid"
+            )
+            return
+        }
         
         let messageToSend = messageText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !messageToSend.isEmpty else {
@@ -1477,6 +1656,15 @@ struct FamilyChatScreen: View {
                 
                 switch result {
                 case .success(let sendResponse):
+                    guard isSuccessfulSendResponse(sendResponse) else {
+                        messageText = messageToSend
+                        presentChatError(
+                            localizationManager.localized("family_chat_error_send_response"),
+                            context: "sendMessage.contract",
+                            underlying: nil
+                        )
+                        return
+                    }
                     let capturedReplyId = replyToMessage?.id
                     replyToMessage = nil
                     dismissChatError()
@@ -1525,7 +1713,14 @@ struct FamilyChatScreen: View {
                         ))
                     }
 
-                    if Self.isSendDecodingOrPayloadMismatch(error) {
+                    if isFamilyNotFoundForChat(error) {
+                        chatFamilyContextInvalid = true
+                        presentChatError(
+                            localizationManager.localized("family_chat_error_no_server_family"),
+                            context: "sendMessage.familyNotResolved",
+                            underlying: error
+                        )
+                    } else if Self.isSendDecodingOrPayloadMismatch(error) {
                         presentChatError(
                             localizationManager.localized("family_chat_error_send_response"),
                             context: "sendMessage.decodeOrContract",

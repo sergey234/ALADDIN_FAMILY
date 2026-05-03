@@ -167,4 +167,30 @@ enum FamilyLocalStore {
             )
         }
     }
+
+    /// Сервер явно сообщил, что у аккаунта нет семьи (`X-Family-Context: none`) или 404 на `GET /members` с устаревшим `familyId`.
+    static func clearPersistedFamilyContextWhenServerReportsNoFamily() {
+        let defaults = UserDefaults.standard
+        defaults.removeObject(forKey: familyIdKey)
+        defaults.removeObject(forKey: familyMembersKey)
+        defaults.removeObject(forKey: lastResolvedFamilyIdKey)
+        defaults.removeObject(forKey: familyAdditionOrderKey)
+        defaults.removeObject(forKey: partialSyncRetryCountKey)
+        defaults.removeObject(forKey: familyMemberSeededKey)
+        defaults.removeObject(forKey: familyCreatorMemberIdKey)
+        defaults.removeObject(forKey: yourMemberIdUserDefaultsKey)
+        defaults.synchronize()
+        NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+    }
+
+    /// 404 от `GET /api/family/members` при «нет семьи / неверный query» (после смены контракта бэкенда).
+    static func shouldClearFamilyCacheAfterMembersRequestFailure(_ error: Error) -> Bool {
+        switch NetworkError.from(error) {
+        case .notFound(let msg):
+            let m = (msg ?? "").lowercased()
+            return m.contains("no family registered") || m.contains("invalid familyid")
+        default:
+            return false
+        }
+    }
 }

@@ -80,7 +80,8 @@ class APIService: ObservableObject {
     /// Результат `GET /api/family/members` с метаданными для безопасного merge (без смешивания двух семей).
     struct FamilyMembersSyncContext {
         let members: [FamilyMemberResponse]
-        /// Успешный повтор после 409 `familyId does not match ...` (запрос без `familyId` в query).
+        /// Сервер сменил канонический контекст семьи: повтор без `?familyId=` после 409 **или** после пустого `[]` при явном query (устаревший локальный `family_id`).
+        /// Для UI/merge то же правило, что и для 409: не смешивать старый локальный ростер с ответом «другой» семьи.
         let recoveredFromFamilyContextConflict: Bool
         /// Значение `family_id` в UserDefaults до сетевого запроса (снимок цепочки coalesce).
         let familyIdSnapshotBeforeFetch: String
@@ -116,7 +117,8 @@ class APIService: ObservableObject {
             hasRetriedAfterFamilyContextConflict: false,
             familyContextConflictRecovered: false,
             mergeFamilyIdSnapshot: mergeSnapshot,
-            omitFamilyIdQuery: false
+            omitFamilyIdQuery: false,
+            hasRetriedAfterEmptyExplicitFamilyQuery: false
         ) { [weak self] result in
             self?.deliverCoalescedFamilyMembersResult(result)
         }
@@ -371,6 +373,14 @@ class APIService: ObservableObject {
             return nil
         }
 
+        let familyContextCandidates = ["X-Family-Context", "x-family-context", "X-FAMILY-CONTEXT"]
+        if let ctx = headerValue(for: familyContextCandidates)?
+            .trimmingCharacters(in: .whitespacesAndNewlines).lowercased(),
+           ctx == "none" {
+            FamilyLocalStore.clearPersistedFamilyContextWhenServerReportsNoFamily()
+            return
+        }
+
         if let limitStr = headerValue(for: limitKeyCandidates), let limit = Int(limitStr) {
             UserDefaults.standard.set(limit, forKey: "family_limit")
         }
@@ -394,6 +404,7 @@ class APIService: ObservableObject {
         familyContextConflictRecovered: Bool = false,
         mergeFamilyIdSnapshot: String,
         omitFamilyIdQuery: Bool = false,
+        hasRetriedAfterEmptyExplicitFamilyQuery: Bool = false,
         completion: @escaping (Result<FamilyMembersSyncContext, Error>) -> Void
     ) {
         let wrapSuccess: ([FamilyMemberResponse]) -> FamilyMembersSyncContext = { members in
@@ -416,14 +427,52 @@ class APIService: ObservableObject {
             }
             return nil
         }()
+        /// Явный `?familyId=` в URL: для устаревшего локального id сервер может вернуть `[]`, тогда один раз запрашиваем без query — JWT + `X-Resolved-Family-Id`.
+        let hadExplicitFamilyQuery = query != nil
+        let handleMembersSuccess: ([FamilyMemberResponse]) -> Void = { members in
+            if members.isEmpty, hadExplicitFamilyQuery, !hasRetriedAfterEmptyExplicitFamilyQuery {
+                self.performGetFamilyMembers(
+                    hasRetriedAfterTokenBootstrap: hasRetriedAfterTokenBootstrap,
+                    hasRetriedAfterFamilyContextConflict: hasRetriedAfterFamilyContextConflict,
+                    familyContextConflictRecovered: true,
+                    mergeFamilyIdSnapshot: mergeFamilyIdSnapshot,
+                    omitFamilyIdQuery: true,
+                    hasRetriedAfterEmptyExplicitFamilyQuery: true,
+                    completion: completion
+                )
+                return
+            }
+            completion(.success(wrapSuccess(members)))
+        }
         networkManager.get(endpoint: AppConfig.Endpoint.familyMembers, queryParams: query, requiresAuth: true, onHeaders: { [weak self] headers in
             self?.applyFamilyMembersListHeaders(headers)
         }) { (result: Result<[FamilyMemberResponse], Error>) in
             switch result {
             case .success(let members):
-                completion(.success(wrapSuccess(members)))
+                handleMembersSuccess(members)
             case .failure(let error):
                 if case .notFound = NetworkError.from(error) {
+                    // Новый контракт: 404 при устаревшем `?familyId=` без primary — как пустой `[]`, один раз перезапрашиваем без query после сброса кэша.
+                    if FamilyLocalStore.shouldClearFamilyCacheAfterMembersRequestFailure(error),
+                       hadExplicitFamilyQuery,
+                       !hasRetriedAfterEmptyExplicitFamilyQuery {
+                        FamilyLocalStore.clearPersistedFamilyContextWhenServerReportsNoFamily()
+                        self.performGetFamilyMembers(
+                            hasRetriedAfterTokenBootstrap: hasRetriedAfterTokenBootstrap,
+                            hasRetriedAfterFamilyContextConflict: hasRetriedAfterFamilyContextConflict,
+                            familyContextConflictRecovered: true,
+                            mergeFamilyIdSnapshot: mergeFamilyIdSnapshot,
+                            omitFamilyIdQuery: true,
+                            hasRetriedAfterEmptyExplicitFamilyQuery: true,
+                            completion: completion
+                        )
+                        return
+                    }
+                    if FamilyLocalStore.shouldClearFamilyCacheAfterMembersRequestFailure(error) {
+                        FamilyLocalStore.clearPersistedFamilyContextWhenServerReportsNoFamily()
+                        completion(.failure(error))
+                        return
+                    }
                     // Backward-compat fallback for environments where gateway exposes legacy family paths.
                     self.networkManager.get(
                         endpoint: "/family/members",
@@ -435,8 +484,26 @@ class APIService: ObservableObject {
                         completion: { (legacyResult: Result<[FamilyMemberResponse], Error>) in
                             switch legacyResult {
                             case .success(let members):
-                                completion(.success(wrapSuccess(members)))
+                                handleMembersSuccess(members)
                             case .failure(let legacyError):
+                                if FamilyLocalStore.shouldClearFamilyCacheAfterMembersRequestFailure(legacyError),
+                                   hadExplicitFamilyQuery,
+                                   !hasRetriedAfterEmptyExplicitFamilyQuery {
+                                    FamilyLocalStore.clearPersistedFamilyContextWhenServerReportsNoFamily()
+                                    self.performGetFamilyMembers(
+                                        hasRetriedAfterTokenBootstrap: hasRetriedAfterTokenBootstrap,
+                                        hasRetriedAfterFamilyContextConflict: hasRetriedAfterFamilyContextConflict,
+                                        familyContextConflictRecovered: true,
+                                        mergeFamilyIdSnapshot: mergeFamilyIdSnapshot,
+                                        omitFamilyIdQuery: true,
+                                        hasRetriedAfterEmptyExplicitFamilyQuery: true,
+                                        completion: completion
+                                    )
+                                    return
+                                }
+                                if FamilyLocalStore.shouldClearFamilyCacheAfterMembersRequestFailure(legacyError) {
+                                    FamilyLocalStore.clearPersistedFamilyContextWhenServerReportsNoFamily()
+                                }
                                 completion(.failure(legacyError))
                             }
                         }
@@ -451,6 +518,7 @@ class APIService: ObservableObject {
                         familyContextConflictRecovered: true,
                         mergeFamilyIdSnapshot: mergeFamilyIdSnapshot,
                         omitFamilyIdQuery: true,
+                        hasRetriedAfterEmptyExplicitFamilyQuery: hasRetriedAfterEmptyExplicitFamilyQuery,
                         completion: completion
                     )
                     return
@@ -475,6 +543,7 @@ class APIService: ObservableObject {
                             familyContextConflictRecovered: familyContextConflictRecovered,
                             mergeFamilyIdSnapshot: mergeFamilyIdSnapshot,
                             omitFamilyIdQuery: omitFamilyIdQuery,
+                            hasRetriedAfterEmptyExplicitFamilyQuery: hasRetriedAfterEmptyExplicitFamilyQuery,
                             completion: completion
                         )
                     case .failure(let bootstrapError):
@@ -660,6 +729,9 @@ class APIService: ObservableObject {
             endpoint: AppConfig.Endpoint.familyChatMessages,
             queryParams: query,
             additionalHeaders: headers,
+            onHeaders: { [weak self] hdr in
+                self?.applyFamilyMembersListHeaders(hdr)
+            },
             completion: completion
         )
     }
@@ -883,7 +955,10 @@ class APIService: ObservableObject {
     private func isCriticalEndpointNotFound(_ error: Error) -> Bool {
         if let networkError = error as? NetworkError {
             switch networkError {
-            case .notFound:
+            case .notFound(let msg):
+                let m = (msg ?? "").lowercased()
+                // Семантический 404 FastAPI (семья не резолвится для JWT) — не путать с «маршрута нет на шлюзе».
+                if m.contains("family not found") { return false }
                 return true
             case .httpError(let code):
                 return code == 404

@@ -52,6 +52,7 @@ async def apply_completed_side_effects(conn: aiosqlite.Connection, order_id: int
                 """,
                 (order_id,),
             )
+            await orders_repo.write_profit_snapshot(conn, order_id, settings)
             await conn.commit()
             return
 
@@ -90,6 +91,7 @@ async def apply_completed_side_effects(conn: aiosqlite.Connection, order_id: int
                 """,
                 (order_id,),
             )
+        await orders_repo.write_profit_snapshot(conn, order_id, settings)
         await conn.commit()
     except Exception:
         await conn.rollback()

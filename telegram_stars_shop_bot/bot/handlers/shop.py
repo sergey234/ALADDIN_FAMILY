@@ -22,10 +22,10 @@ from bot.keyboards.shop_kb import (
     premium_dest_kb,
     verify_username_kb,
 )
-from bot.services import balance_repo, orders_repo, users_repo
+from bot.services import analytics_repo, balance_repo, emoji_captcha, orders_repo, users_repo
 from bot.services.operator_payment_memo import operator_bc_manual_checklist_html
 from bot.services.invoice_checkout_cooldown import allow_checkout_invoice_attempt
-from bot.services.catalog import Product, products_by_id
+from bot.services.catalog import Product, product_order_columns, products_by_id
 from bot.services.crypto_pay_api import (
     create_crypto_pay_invoice_checkout_meta,
     crypto_pay_invoice_api_ready,
@@ -35,7 +35,12 @@ from bot.services.lava_api import create_invoice_payment_meta, lava_checkout_con
 from bot.services.xrocket_pay_api import create_xrocket_invoice_checkout_meta, xrocket_invoice_api_ready
 from bot.services.payments_stub import crypto_payment_block_html, fiat_placeholder_html
 from bot.services.fx_display import fx_payment_hints_html
-from bot.services.pricing import format_shop_quote_money_html, quote_product, rub_per_100_stars_display
+from bot.services.pricing import (
+    format_shop_quote_money_html,
+    quote_product,
+    referral_discount_percent_snapshot,
+    rub_per_100_stars_display,
+)
 from bot.states.checkout import CheckoutStates
 from bot.support_links import support_order_question_url
 from bot.util_html import esc
@@ -490,6 +495,12 @@ async def open_product(cb: CallbackQuery, products: list[Product], settings: Set
             text,
             reply_markup=_payment_kb(p.id, bal, q.rub_final),
         )
+    try:
+        await analytics_repo.log_event(
+            conn, user_id=cb.from_user.id, event_type="product_view", meta={"product_id": pid}
+        )
+    except Exception:
+        pass
     await cb.answer()
 
 
@@ -510,6 +521,12 @@ async def premium_pick_dest(cb: CallbackQuery, products: list[Product], settings
         text,
         reply_markup=_payment_kb(pid, bal, q.rub_final),
     )
+    try:
+        await analytics_repo.log_event(
+            conn, user_id=cb.from_user.id, event_type="product_view", meta={"product_id": pid}
+        )
+    except Exception:
+        pass
     await cb.answer()
 
 
@@ -655,9 +672,9 @@ async def verify_username_edit(cb: CallbackQuery, state: FSMContext) -> None:
 
 
 @router.callback_query(F.data == "order:cancel")
-async def order_cancel(cb: CallbackQuery, state: FSMContext) -> None:
+async def order_cancel(cb: CallbackQuery, state: FSMContext, settings: Settings) -> None:
     await state.clear()
-    await cb.message.edit_text("<b>Оформление отменено.</b>", reply_markup=hub_menu_kb())
+    await cb.message.edit_text("<b>Оформление отменено.</b>", reply_markup=hub_menu_kb(settings))
     await cb.answer()
 
 
@@ -676,9 +693,23 @@ async def order_submit(
     recipient = data.get("recipient")
     pmap = products_by_id(products)
     p = pmap.get(pid or "")
+    pk, sq, pm = product_order_columns(p) if p else ("", None, None)
     if not p or payment not in ("fiat", "crypto", "bal", "mixfi", "mixcr") or not recipient:
         await cb.answer("Сессия устарела", show_alert=True)
         await state.clear()
+        return
+
+    if not await users_repo.is_onboarding_completed(conn, cb.from_user.id):
+        await cb.answer("Сначала завершите вход в бота: отправьте /start", show_alert=True)
+        return
+    if not await users_repo.checkout_captcha_valid(conn, cb.from_user.id):
+        await emoji_captcha.prompt_checkout_captcha(cb, conn, settings)
+        await cb.answer()
+        return
+    if not await orders_repo.allow_order_create_interval(
+        conn, cb.from_user.id, float(settings.order_create_min_interval_seconds)
+    ):
+        await cb.answer("Слишком частые заказы. Подождите несколько секунд.", show_alert=True)
         return
 
     is_first = await _is_first_purchase(conn, cb.from_user.id)
@@ -686,6 +717,8 @@ async def order_submit(
     row = await users_repo.get_user(conn, cb.from_user.id)
     referrer_id = int(row["referrer_id"]) if row and row["referrer_id"] is not None else None
     rub = q.rub_final
+    ref_pct = referral_discount_percent_snapshot(rub_list=q.rub_list, rub_referral_discount=q.rub_referral_discount)
+    rate_snap = float(settings.usd_rub_rate)
 
     if payment == "bal":
         try:
@@ -701,10 +734,24 @@ async def order_submit(
                 wholesale_discount_rub=q.rub_wholesale_discount,
                 referrer_id=referrer_id,
                 user_note=str(recipient),
+                product_kind=pk,
+                stars_qty=sq,
+                premium_months=pm,
+                referral_discount_percent=ref_pct,
+                usd_rub_rate_snapshot=rate_snap,
             )
         except ValueError:
             await cb.answer("Недостаточно средств на балансе", show_alert=True)
             return
+        try:
+            await analytics_repo.log_event(
+                conn,
+                user_id=cb.from_user.id,
+                event_type="order_created",
+                meta={"order_id": order_id, "product_id": p.id},
+            )
+        except Exception:
+            pass
         await state.clear()
         body = (
             f"<b>Заказ оплачен с баланса</b>\n"
@@ -741,6 +788,11 @@ async def order_submit(
                 user_note=str(recipient),
                 balance_apply=apply,
                 settings=settings,
+                product_kind=pk,
+                stars_qty=sq,
+                premium_months=pm,
+                referral_discount_percent=ref_pct,
+                usd_rub_rate_snapshot=rate_snap,
             )
         except ValueError as e:
             if str(e) == "order_pending_cap":
@@ -751,6 +803,15 @@ async def order_submit(
                 return
             await cb.answer("Не удалось списать баланс", show_alert=True)
             return
+        try:
+            await analytics_repo.log_event(
+                conn,
+                user_id=cb.from_user.id,
+                event_type="order_created",
+                meta={"order_id": order_id, "product_id": p.id},
+            )
+        except Exception:
+            pass
         await state.clear()
         row = await orders_repo.get_order(conn, order_id)
         due = orders_repo.amount_due_external(row)
@@ -823,7 +884,21 @@ async def order_submit(
         commission_rub=0.0,
         user_note=str(recipient),
         status="pending_payment",
+        product_kind=pk,
+        stars_qty=sq,
+        premium_months=pm,
+        referral_discount_percent=ref_pct,
+        usd_rub_rate_snapshot=rate_snap,
     )
+    try:
+        await analytics_repo.log_event(
+            conn,
+            user_id=cb.from_user.id,
+            event_type="order_created",
+            meta={"order_id": order_id, "product_id": p.id},
+        )
+    except Exception:
+        pass
 
     await state.clear()
 

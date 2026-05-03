@@ -141,6 +141,11 @@ curl -sS -m 8 --http1.1 -i \
 
 Клиент iOS (`URLSessionWebSocketTask`) выполняет handshake по **HTTP/1.1**; после правки nginx канал должен открываться без `-1011`.
 
+**Семейный чат: загрузка медиа (`POST /api/family/chat/upload-media`)**
+
+- В vhost для API нужен **`client_max_body_size`** не ниже лимита бэкенда (переменная **`ALADDIN_FAMILY_CHAT_UPLOAD_MAX_BYTES`**, по умолчанию **25 MiB**). Иначе nginx может ответить **413** или страницей ошибки (**не JSON**), что на клиенте не следует путать с **403** и телом `{"detail":"Not a member of this family"}` от FastAPI.
+- Отдельный `location` с жёстким `deny`/ACL для этого пути нежелателен: лучше тот же `proxy_pass` на `127.0.0.1:8002`, что и для остального `/api/`.
+
 ---
 
 ### **2. SFTP (ПЕРЕДАЧА ФАЙЛОВ)**
@@ -598,6 +603,30 @@ chmod +x scripts/aladdin_server_connect_and_setup.sh
 
 4. **Быстрая проверка снаружи (после рестарта):**  
    `curl -s -S -m 20 http://149.154.65.180:8002/openapi.json` → в `paths["/api/gamification/balance"]` есть и `get`, и `post`; всего путей с `/api/gamification` — **26**.
+
+---
+
+### **12.1) Parental Control: мониторинг и отчёты (telemetry, не путать с `/api/reports/*`)**
+
+**Канонический runtime (см. `ALADDIN_JWT_API_ARCHITECTURE_COMPLETE.md`, блок SSOT):** роутер из дерева `security/api/routers/parental_control_router.py` (подключение через `main.py` → `security.api.routers.parental_control_router`). В репозитории не должен оставаться «второй» урезанный/mock-вариант под тем же контрактом в `app/security/api/routers/parental_control_router.py` без явного исключения из деплоя — иначе на сервере можно случайно выкатить не тот файл.
+
+**Семейство URL (родительский контроль ALADDIN, не privacy-reports):**
+
+- `GET /api/parental-control/stats?childId=` — агрегаты для карточек (часть полей уже из БД: локация, геозоны; блок `monitoring` на стороне сервера нужно наполнять из реальных таблиц телеметрии, а не нулями).
+- `GET /api/parental-control/reports/daily|weekly?childId=` — чтение таблицы `parental_reports` (пустой список — норма, если нет строк или `childId` не резолвится в numeric `user_id`).
+- `POST /api/parental-control/location/report` — приём координат (история в `location_history` для `user_id` из JWT).
+- `GET /api/parental/bypass/stats` — см. `parental_compat` / bypass-роутер в том же контуре; после правок — смоук с JWT.
+
+**Не смешивать:** префикс **`/api/reports/*`** в документе относится к **другому продуктовому домену** (identity-theft, privacy, dark-web и т.д.), а не к модалке «Отчёты» внутри семейного родительского контроля на iOS.
+
+**Чеклист выката (аналогично §12 / §13):**
+
+1. Снаружи: `curl -s -S -m 8 http://149.154.65.180:8002/api/health` → `200`.
+2. Бэкап на сервере целевого файла роутера (и при смене `main.py` — отдельный бэкап).
+3. `scp` канонического `security/api/routers/parental_control_router.py` → `/opt/aladdin-backend/security/api/routers/` (путь выровнять под дерево на хосте).
+4. `python3 -m py_compile` для изменённых модулей + `systemctl restart aladdin-backend.service` → `active`.
+5. OpenAPI: наличие `GET /api/parental-control/stats`, `GET /api/parental-control/reports/daily`, `GET /api/parental-control/reports/weekly`, `POST /api/parental-control/location/report`.
+6. С валидным Bearer: пробный `GET` к `/api/parental-control/reports/weekly?childId=<ID>` — ожидаемо JSON-массив (возможно пустой); не HTML от nginx.
 
 ---
 

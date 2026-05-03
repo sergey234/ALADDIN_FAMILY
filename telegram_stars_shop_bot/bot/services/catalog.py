@@ -47,6 +47,14 @@ def products_by_id(products: list[Product]) -> dict[str, Product]:
     return {p.id: p for p in products}
 
 
+def product_order_columns(product: Product) -> tuple[str, int | None, int | None]:
+    """Поля для строки заказа: kind, количество Stars (для stars/gift), срок Premium в месяцах."""
+    kind = str(product.kind or "").strip().lower()
+    stars = int(product.stars) if kind in ("stars", "gift") and product.stars is not None else None
+    months = int(product.duration_months) if kind == "premium" and product.duration_months is not None else None
+    return kind, stars, months
+
+
 def sort_for_display(items: list[Product]) -> list[Product]:
     """
     Сортировка для витрины без «прыжков»:

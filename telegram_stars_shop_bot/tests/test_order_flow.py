@@ -62,6 +62,11 @@ async def test_referrer_commission_on_first_completed(conn, monkeypatch) -> None
     ref = await users_repo.get_user(conn, 8002)
     assert float(ref["ref_balance_rub"] or 0) == pytest.approx(15.0, rel=1e-3)
 
+    order = await orders_repo.get_order(conn, oid)
+    assert order is not None
+    # sale 100; fee 3%; cogs auto: 1 USD * 90 * 0.85 = 76.5; ref bonus 15; ref discount 0 → 100 - 76.5 - 3 - 15
+    assert float(order["net_profit_rub"] or 0) == pytest.approx(5.5, rel=1e-2)
+
     await apply_completed_side_effects(conn, oid, settings)
     ref2 = await users_repo.get_user(conn, 8002)
     assert float(ref2["ref_balance_rub"] or 0) == pytest.approx(15.0, rel=1e-3)

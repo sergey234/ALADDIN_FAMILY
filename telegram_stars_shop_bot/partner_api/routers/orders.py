@@ -10,8 +10,8 @@ from bot.logutil import slog
 
 from bot.config import Settings
 from bot.services import orders_repo, users_repo
-from bot.services.catalog import products_by_id
-from bot.services.pricing import quote_product
+from bot.services.catalog import product_order_columns, products_by_id
+from bot.services.pricing import quote_product, referral_discount_percent_snapshot
 from partner_api.deps import PartnerCtx, normalize_recipient, validate_idempotency_key
 from partner_api.notify import notify_admins_new_api_order
 from partner_api.schemas import OrderCreateBody, OrderCreateResponse, OrderListOut, OrderOut
@@ -79,6 +79,11 @@ async def create_order(
 
     recipient = normalize_recipient(body.recipient)
     title = f"{p.emoji} {p.title}"
+    pk, sq, pm = product_order_columns(p)
+    ref_pct = referral_discount_percent_snapshot(
+        rub_list=q.rub_list, rub_referral_discount=q.rub_referral_discount
+    )
+    rate_snap = float(settings.usd_rub_rate)
 
     try:
         oid, created = await orders_repo.create_order_partner_api(
@@ -98,6 +103,11 @@ async def create_order(
             referrer_id=referrer_id,
             user_note=recipient,
             settings=settings,
+            product_kind=pk,
+            stars_qty=sq,
+            premium_months=pm,
+            referral_discount_percent=ref_pct,
+            usd_rub_rate_snapshot=rate_snap,
         )
     except ValueError as e:
         if str(e) == "order_pending_cap":
