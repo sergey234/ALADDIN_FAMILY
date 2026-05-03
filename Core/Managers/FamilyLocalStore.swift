@@ -125,8 +125,42 @@ enum FamilyLocalStore {
         VisualLogger.shared.log("✅ FAMILY ID: your_member_id из заголовка ответа members: \(raw.prefix(12))…", level: .success, category: "FAMILY")
     }
 
-    /// После успешного sync: если `your_member_id` не входит в ростер — пробуем JWT; иначе оставляем как есть.
-    static func reconcileYourMemberIdWithServerRoster(serverMemberIds: Set<String>) {
+    /// MEM_* из ответа сервера плюс все MEM_* из локального ростера (память) — reconcile не ломается при неполном GET.
+    static func unionServerMemberIdsWithLocalMEM(
+        serverResponseIds: [String],
+        inMemoryRoster: [FamilyMemberData]
+    ) -> Set<String> {
+        var u = Set(serverResponseIds)
+        for m in inMemoryRoster {
+            let id = m.id.trimmingCharacters(in: .whitespacesAndNewlines)
+            if id.hasPrefix("MEM_") { u.insert(id) }
+            if let sid = m.serverMemberId?.trimmingCharacters(in: .whitespacesAndNewlines), sid.hasPrefix("MEM_") {
+                u.insert(sid)
+            }
+        }
+        return u
+    }
+
+    private static func persistedFamilyMembersDecoded() -> [FamilyMemberData] {
+        guard let data = UserDefaults.standard.data(forKey: familyMembersKey),
+              let list = try? JSONDecoder().decode([FamilyMemberData].self, from: data) else { return [] }
+        return list
+    }
+
+    /// После `GET /api/family/members`: union id + выравнивание `your_member_id`.
+    static func reconcileYourMemberIdAfterFamilyMembersResponse(
+        serverResponseIds: [String],
+        inMemoryRoster: [FamilyMemberData]
+    ) {
+        let ids = unionServerMemberIdsWithLocalMEM(serverResponseIds: serverResponseIds, inMemoryRoster: inMemoryRoster)
+        reconcileYourMemberIdWithServerRoster(serverMemberIds: ids, localRosterForRoleFallback: inMemoryRoster)
+    }
+
+    /// После успешного sync: если `your_member_id` не входит в множество id — JWT; затем один родитель/пожилой из ростера при роли parent/elderly в UD.
+    static func reconcileYourMemberIdWithServerRoster(
+        serverMemberIds: Set<String>,
+        localRosterForRoleFallback: [FamilyMemberData]? = nil
+    ) {
         guard !serverMemberIds.isEmpty else { return }
 
         let current = UserDefaults.standard.string(forKey: yourMemberIdUserDefaultsKey)?
@@ -137,6 +171,9 @@ enum FamilyLocalStore {
         }
 
         guard let jwt = AppConfig.authToken, !jwt.isEmpty else {
+            if tryRosterRoleFallback(serverMemberIds: serverMemberIds, localRosterForRoleFallback: localRosterForRoleFallback) {
+                return
+            }
             if !current.isEmpty {
                 VisualLogger.shared.log(
                     "⚠️ FAMILY ID: your_member_id=\(current.prefix(8))… не в ростере; JWT отсутствует — требуется повторный вход или заголовок X-Current-Member-Id",
@@ -159,6 +196,10 @@ enum FamilyLocalStore {
             return
         }
 
+        if tryRosterRoleFallback(serverMemberIds: serverMemberIds, localRosterForRoleFallback: localRosterForRoleFallback) {
+            return
+        }
+
         if !current.isEmpty {
             VisualLogger.shared.log(
                 "⚠️ FAMILY ID: your_member_id=\(current.prefix(8))… не в ростере; JWT не содержит подходящего MEM_* — проверьте токен на сервере",
@@ -166,6 +207,87 @@ enum FamilyLocalStore {
                 category: "FAMILY"
             )
         }
+    }
+
+    /// - Returns: `true`, если выставили `your_member_id`.
+    @discardableResult
+    private static func tryRosterRoleFallback(
+        serverMemberIds: Set<String>,
+        localRosterForRoleFallback: [FamilyMemberData]?
+    ) -> Bool {
+        let roster = localRosterForRoleFallback ?? persistedFamilyMembersDecoded()
+        let roleFallback = (UserDefaults.standard.string(forKey: "current_user_role") ?? "").lowercased()
+        guard roleFallback == "parent" || roleFallback == "elderly" else { return false }
+
+        var candidates: [String] = []
+        for m in roster where m.role == .parent || m.role == .elderly {
+            let cid = (m.serverMemberId ?? m.id).trimmingCharacters(in: .whitespacesAndNewlines)
+            guard cid.hasPrefix("MEM_"), serverMemberIds.contains(cid) else { continue }
+            candidates.append(cid)
+        }
+        let unique = Array(Set(candidates))
+        guard unique.count == 1, let pick = unique.first else { return false }
+
+        UserDefaults.standard.set(pick, forKey: yourMemberIdUserDefaultsKey)
+        UserDefaults.standard.synchronize()
+        VisualLogger.shared.log(
+            "✅ FAMILY ID: your_member_id выровнен по ростеру+роли (единственный parent/elderly в union): \(pick.prefix(12))…",
+            level: .success,
+            category: "FAMILY"
+        )
+        return true
+    }
+
+    private static func memberRowMatchesYourMemberId(_ row: FamilyMemberData, myMemberId: String) -> Bool {
+        let my = myMemberId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !my.isEmpty else { return false }
+        let sid = row.serverMemberId?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let rid = row.id.trimmingCharacters(in: .whitespacesAndNewlines)
+        let canon = row.canonicalId.trimmingCharacters(in: .whitespacesAndNewlines)
+        return rid == my || (!sid.isEmpty && sid == my) || (!canon.isEmpty && canon == my)
+    }
+
+    /// fam-7: показывать CTA «Восстановить» — семья есть, но `your_member_id` не сходится с ростром или заявлен родитель/пожилой при `canManageAppProfiles == false`.
+    static func needsFamilyIdentityRepairHeuristic(members: [FamilyMemberData], canManageAppProfiles: Bool) -> Bool {
+        let fid = (UserDefaults.standard.string(forKey: familyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !fid.isEmpty, !members.isEmpty else { return false }
+
+        let my = (UserDefaults.standard.string(forKey: yourMemberIdUserDefaultsKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let inRoster = !my.isEmpty && members.contains { memberRowMatchesYourMemberId($0, myMemberId: my) }
+
+        if my.isEmpty || !inRoster { return true }
+        if canManageAppProfiles { return false }
+
+        let role = (UserDefaults.standard.string(forKey: "current_user_role") ?? "").lowercased()
+        if role.contains("parent") || role.contains("elderly") { return true }
+        if role.contains("родит") || role.contains("пожил") { return true }
+        return false
+    }
+
+    /// Выравнивает `current_user_role` по строке ростера для текущего `your_member_id` (после reconcile / repair).
+    static func alignCurrentUserRoleFromPersistedRoster(_ members: [FamilyMemberData]) {
+        let my = (UserDefaults.standard.string(forKey: yourMemberIdUserDefaultsKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !my.isEmpty else { return }
+        guard let me = members.first(where: { memberRowMatchesYourMemberId($0, myMemberId: my) }) else { return }
+
+        let raw = me.role.rawValue
+        let prev = (UserDefaults.standard.string(forKey: "current_user_role") ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard prev.lowercased() != raw.lowercased() else { return }
+
+        UserDefaults.standard.set(raw, forKey: "current_user_role")
+        UserDefaults.standard.synchronize()
+        VisualLogger.shared.log("✅ FAMILY ID: current_user_role синхронизирован с ростром: \(raw)", level: .info, category: "FAMILY")
+    }
+
+    /// fam-7: явный repair — union MEM_* из локального ростера + JWT reconcile + роль из ростера.
+    static func repairFamilyIdentityFromLocalRoster(_ members: [FamilyMemberData]) {
+        let ids = unionServerMemberIdsWithLocalMEM(serverResponseIds: [], inMemoryRoster: members)
+        guard !ids.isEmpty else {
+            VisualLogger.shared.log("⚠️ FAMILY ID repair: нет MEM_* в ростере", level: .warning, category: "FAMILY")
+            return
+        }
+        reconcileYourMemberIdWithServerRoster(serverMemberIds: ids, localRosterForRoleFallback: members)
+        alignCurrentUserRoleFromPersistedRoster(members)
     }
 
     /// Сервер явно сообщил, что у аккаунта нет семьи (`X-Family-Context: none`) или 404 на `GET /members` с устаревшим `familyId`.

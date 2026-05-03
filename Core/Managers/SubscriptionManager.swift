@@ -152,6 +152,10 @@ final class SubscriptionManager: ObservableObject {
     /// Монотонно растёт при любых изменениях уровня/триала/токена — чтобы SwiftUI гарантированно перерисовал строку тарифа на главной (в т.ч. после возврата с экрана тарифов на устройстве).
     @Published private(set) var subscriptionDisplayEpoch: UInt64 = 0
 
+    /// Throttle для повторных синков при каждом показе главной / `scenePhase` (избегаем лишних GET).
+    private var lastVisibilitySubscriptionSyncAt: Date?
+    private let minVisibilitySubscriptionSyncInterval: TimeInterval = 1.2
+
     /// Events tracking
     private let eventsQueue = DispatchQueue(label: "com.aladdin.subscription.events")
     private var pendingEvents: [SubscriptionEventData] = []
@@ -633,7 +637,35 @@ final class SubscriptionManager: ObservableObject {
         if let trial = trialStatus, trial.isActive {
             return .trial
         }
-        return currentSubscription?.level ?? .free
+        // После `/api/subscription/cancel` снимок `currentSubscription` уже `free`, а JWT может ещё
+        // содержать старый `subscription_level` (trial) до перевыпуска токена — иначе UI показывает
+        // «Пробный» и зелёный градиент при выборе «Базовый» (см. TRIAL_TARIFF_PIPELINE: plan=free, effective=trial).
+        if currentSubscription?.level == .free, trialStatus?.isActive != true {
+            return .free
+        }
+        let subLevel = currentSubscription?.level
+        let tokenLevel = currentToken?.subscriptionLevel
+        // Апгрейд: JWT обновился раньше Keychain `subscription_status` — доверяем токену, если триал не активен.
+        if let s = subLevel, let t = tokenLevel, s != t {
+            if s == .free && t != .free { return t }
+            if s != .free && t == .free { return s }
+            return s
+        }
+        if let s = subLevel { return s }
+        if let t = tokenLevel { return t }
+        return .free
+    }
+
+    /// Повторный синк при возврате на главную / из фона. `.task` на MainScreen выполняется только один раз (`hasAppeared`).
+    func syncSubscriptionOnMainScreenAppear() async {
+        let now = Date()
+        if let last = lastVisibilitySubscriptionSyncAt,
+           now.timeIntervalSince(last) < minVisibilitySubscriptionSyncInterval {
+            return
+        }
+        lastVisibilitySubscriptionSyncAt = now
+        await forceSync()
+        bumpSubscriptionDisplayEpoch()
     }
 
     /// Family member limit by tariff level (confirmed mapping: free=1, trial/personal=3, family=6, premium=10)

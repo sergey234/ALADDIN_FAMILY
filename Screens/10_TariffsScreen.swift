@@ -180,6 +180,11 @@ struct TariffsScreen: View {
             }
         }
         .navigationBarHidden(true)
+        .onDisappear {
+            // После выбора тарифа/триала пользователь возвращается на главную — подтягиваем `/api/subscription/status`
+            // (на устройстве без этого блок тарифа часто остаётся на «Базовый», пока не перезапустишь приложение).
+            Task { await SubscriptionManager.shared.syncSubscriptionOnMainScreenAppear() }
+        }
         .id("tariffs_lang_\(localizationManager.currentLanguage.rawValue)")
         // ✅ КРИТИЧНО: Загружаем продукты при открытии экрана тарифов
         .task {

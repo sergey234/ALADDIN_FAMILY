@@ -347,6 +347,8 @@ struct OnboardingScreen: View {
                 showJoinFamily = false
                 // Можно добавить логику обработки кода
             }
+            .environmentObject(navigationManager)
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showBackupRecovery) {
             BackupRecoveryModal(
@@ -374,6 +376,8 @@ struct OnboardingScreen: View {
                 showQRScanner = false
                 // Можно добавить логику обработки кода
             }
+            .environmentObject(navigationManager)
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showPrivacyPolicy) {
             PrivacyPolicyScreen()

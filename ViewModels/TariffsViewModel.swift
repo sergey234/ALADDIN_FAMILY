@@ -340,6 +340,7 @@ class TariffsViewModel: ObservableObject {
                             userInfo: ["tariff": tariffType]
                         )
                     }
+                    await SubscriptionManager.shared.pullSubscriptionAfterLocalTariffSave()
                     
                     // ✅ ПЛАНИРОВАНИЕ УВЕДОМЛЕНИЙ О ПОДПИСКЕ
                     // Вычисляем дату окончания подписки (30 дней от текущей даты)
@@ -419,6 +420,7 @@ class TariffsViewModel: ObservableObject {
                                 userInfo: ["tariff": tariffType]
                             )
                         }
+                        await SubscriptionManager.shared.pullSubscriptionAfterLocalTariffSave()
                         
                         // ✅ ПЛАНИРОВАНИЕ УВЕДОМЛЕНИЙ О ПОДПИСКЕ (при продлении)
                         // Вычисляем дату окончания подписки (30 дней от текущей даты)

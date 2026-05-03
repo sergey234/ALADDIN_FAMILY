@@ -46,6 +46,7 @@ struct FamilyScreen: View {
     @State private var familyMembers: [FamilyMemberData] = []
     @State private var isFamilyLoadInProgress: Bool = false
     @State private var isFamilySyncInProgress: Bool = false
+    @State private var isFamilyIdentityRepairing: Bool = false
     // ✅ NEW: Debounce protection against sub-second save/reload cycles (main fix for infinite loop)
     @State private var lastFamilyOperationTime: Date = .distantPast
     // ✅ OPTIMIZATION: Cached admin status to prevent expensive computed property spam on every render
@@ -324,6 +325,20 @@ struct FamilyScreen: View {
             #endif
         }
     }
+
+    /// fam-7: явный repair по текущему ростеру на экране + уведомление (перезагрузка storage и отложенный GET).
+    private func runFamilyIdentityRepairFromCurrentRoster() {
+        guard !familyMembers.isEmpty else { return }
+        guard !isFamilyIdentityRepairing else { return }
+        isFamilyIdentityRepairing = true
+        FamilyLocalStore.repairFamilyIdentityFromLocalRoster(familyMembers)
+        UserDefaults.standard.synchronize()
+        NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            isFamilyIdentityRepairing = false
+            updateAdminStatus()
+        }
+    }
     
     // ✅ ИСПРАВЛЕНИЕ ПРОБЛЕМЫ #2: Синхронизация участников семьи с сервером
     private func syncFamilyMembersFromAPI() {
@@ -378,7 +393,10 @@ struct FamilyScreen: View {
                     VisualLogger.shared.log("🧩 IDs local(before): \(localIdsBeforeStr)", level: .debug, category: "FAMILY")
                     // Сохраняем последний набор серверных ID для валидации удаления
                     self.serverMemberIdsLatest = Set(serverIds)
-                    FamilyLocalStore.reconcileYourMemberIdWithServerRoster(serverMemberIds: Set(serverIds))
+                    FamilyLocalStore.reconcileYourMemberIdAfterFamilyMembersResponse(
+                        serverResponseIds: serverIds,
+                        inMemoryRoster: self.familyMembers
+                    )
                     
                     // Обновление счётчиков not-seen теперь выполняется НИЖЕ и только при полном ответе, не при partial subset
 
@@ -497,15 +515,25 @@ struct FamilyScreen: View {
                     let serverIdSet = Set(convertedMembers.map { $0.id })
                     let localIdSet = Set(localBefore.map { $0.id })
                     let hasKnownServerMembers = localBefore.contains { ($0.serverMemberId != nil) || $0.id.hasPrefix("MEM_") }
-                    let isServerSubset = serverIdSet.isSubset(of: localIdSet) && serverIdSet.count < localIdSet.count && !convertedMembers.isEmpty
-                    // Гибрид: «осторожный» partial-subset только если сервер не подтвердил тот же family_id (заголовок + UserDefaults).
                     let storedFid = familyId.trimmingCharacters(in: .whitespacesAndNewlines)
                     let lastResolved = (UserDefaults.standard.string(forKey: FamilyLocalStore.lastResolvedFamilyIdKey) ?? "")
                         .trimmingCharacters(in: .whitespacesAndNewlines)
-                    let serverFamilyContextConfirmed = !storedFid.isEmpty && !lastResolved.isEmpty && storedFid == lastResolved
-                    let effectivePartialSubset = isServerSubset && !serverFamilyContextConfirmed
+                    let syncFlags = FamilyRosterSyncMergePolicy.computeFlags(
+                        serverIds: serverIdSet,
+                        localIds: localIdSet,
+                        serverListNonEmpty: !convertedMembers.isEmpty,
+                        storedFamilyId: storedFid,
+                        lastResolvedFamilyId: lastResolved
+                    )
+                    let isServerSubset = syncFlags.isServerSubset
+                    let serverFamilyContextConfirmed = syncFlags.serverFamilyContextConfirmed
+                    let effectivePartialSubset = syncFlags.effectivePartialSubset
                     if serverFamilyContextConfirmed && isServerSubset {
-                        VisualLogger.shared.log("✅ FAMILY SYNC: server subset accepted (resolved family_id matches app — pruning path)", level: .info, category: "FAMILY")
+                        VisualLogger.shared.log(
+                            "🛡️ FAMILY SYNC: server returned fewer ids than local while family context matches — keeping merged roster (no server-only prune; GET may be transient/partial)",
+                            level: .warning,
+                            category: "FAMILY"
+                        )
                     }
 
                     if effectivePartialSubset {
@@ -517,18 +545,18 @@ struct FamilyScreen: View {
                     let oldIds = Set(self.familyMembers.map { $0.id })
                     let newIds = Set(mergedMembers.map { $0.id })
                     
-                    var finalMembers = mergedMembers
                     let currentRetryCount = UserDefaults.standard.integer(forKey: "family_sync_partial_retry_count")
-                    
-                    // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Никогда не урезаем список до server truth, если у нас есть известные serverMemberId
-                    if effectivePartialSubset && currentRetryCount >= 3 && !hasKnownServerMembers {
-                        finalMembers = convertedMembers
+                    let mergePick = FamilyRosterSyncMergePolicy.chooseFinalSource(
+                        flags: syncFlags,
+                        partialRetryCount: currentRetryCount,
+                        hasKnownServerMembersInLocal: hasKnownServerMembers
+                    )
+                    var finalMembers = mergePick.source == .merged ? mergedMembers : convertedMembers
+                    var mergeOutcome = mergePick.mergeOutcome
+                    if mergeOutcome == "server_truth_after_retries_no_known_server_ids" {
                         VisualLogger.shared.log("⚠️ FAMILY SYNC: accepting server truth after 3 retries (NO known server IDs)", level: .warning, category: "FAMILY")
-                    } else if effectivePartialSubset {
-                        finalMembers = mergedMembers
+                    } else if mergeOutcome == "keep_merged_partial_subset" {
                         print("🛡️ [partial subset] Защита сработала: сохраняем \(mergedMembers.count) участников вместо \(convertedMembers.count) от сервера")
-                    } else if isServerSubset && serverFamilyContextConfirmed {
-                        finalMembers = convertedMembers
                     }
 
                     // 🔥 НОВОЕ: Агрессивная дедупликация ВСЕГДА (даже при partial subset) — теперь local=9 → ~2
@@ -546,7 +574,10 @@ struct FamilyScreen: View {
                     ProfileManager.shared.syncChildRosterFromServer(
                         members: members,
                         familyId: rosterFamilyId.isEmpty ? nil : rosterFamilyId,
-                        removeMissingServerLinkedChildren: !effectivePartialSubset && !members.isEmpty
+                        removeMissingServerLinkedChildren: FamilyRosterSyncMergePolicy.shouldRemoveMissingServerLinkedChildren(
+                            serverMemberIds: members.map(\.id),
+                            localMemberIds: localBefore.map(\.id)
+                        )
                     )
                     if let summary = ProfileManager.shared.lastChildRosterReconcileSummary {
                         VisualLogger.shared.log("🔄 FAMILY/UI roster reconcile: \(summary)", level: .info, category: "FAMILY")
@@ -612,6 +643,29 @@ struct FamilyScreen: View {
                             print("🛡️ [syncFamilyMembersFromAPI] notSeenCounters сброшены, pruning предотвращён (count=\(self.familyMembers.count))")
                         }
                     }
+
+                    FamilyLocalStore.reconcileYourMemberIdAfterFamilyMembersResponse(
+                        serverResponseIds: members.map(\.id),
+                        inMemoryRoster: self.familyMembers
+                    )
+
+                    let snapFlags = FamilySyncDebugSnapshot.Flags(
+                        skipCrossFamilyMerge: skipCrossFamilyMerge,
+                        effectivePartialSubset: effectivePartialSubset,
+                        isServerSubset: isServerSubset,
+                        serverFamilyContextConfirmed: serverFamilyContextConfirmed,
+                        mergeOutcome: mergeOutcome,
+                        partialRetryCountAtDecision: currentRetryCount,
+                        storedFamilyId: familyId.trimmingCharacters(in: .whitespacesAndNewlines),
+                        lastResolvedFamilyId: (UserDefaults.standard.string(forKey: FamilyLocalStore.lastResolvedFamilyIdKey) ?? "")
+                            .trimmingCharacters(in: .whitespacesAndNewlines)
+                    )
+                    FamilySyncDebugSnapshot.writeAfterFamilyMembersSync(
+                        serverMembers: members,
+                        localBefore: localBefore,
+                        localAfter: self.familyMembers,
+                        flags: snapFlags
+                    )
 
                     print("✅ [syncFamilyMembersFromAPI] Синхронизация завершена: \(convertedMembers.count) участников сохранено")
                     VisualLogger.shared.log("✅ FAMILY SYNC: completed", level: .success, category: "FAMILY")
@@ -1703,6 +1757,64 @@ struct FamilyScreen: View {
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 6)
+
+                if FamilyLocalStore.needsFamilyIdentityRepairHeuristic(
+                    members: familyMembers,
+                    canManageAppProfiles: canManageFamilyRoster
+                ) {
+                    HStack(alignment: .top, spacing: 10) {
+                        Image(systemName: "exclamationmark.triangle.fill")
+                            .foregroundColor(Color.orange)
+                            .font(.system(size: 18, weight: .semibold))
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(localizationManager.localized("family_identity_repair_banner_title"))
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.white)
+                            Text(localizationManager.localized("family_identity_repair_banner_body"))
+                                .font(.caption2)
+                                .foregroundColor(.white.opacity(0.88))
+                                .fixedSize(horizontal: false, vertical: true)
+                            Button(action: {
+                                runFamilyIdentityRepairFromCurrentRoster()
+                            }) {
+                                HStack(spacing: 6) {
+                                    if isFamilyIdentityRepairing {
+                                        ProgressView()
+                                            .progressViewStyle(CircularProgressViewStyle(tint: .orange))
+                                            .scaleEffect(0.85)
+                                    }
+                                    Text(localizationManager.localized("family_identity_repair_button"))
+                                        .font(.caption.weight(.semibold))
+                                }
+                                .foregroundColor(.orange)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 7)
+                                .background(Color.white.opacity(0.95))
+                                .cornerRadius(8)
+                            }
+                            .disabled(isFamilyIdentityRepairing || familyMembers.isEmpty)
+                            .buttonStyle(.plain)
+                        }
+                        Spacer(minLength: 0)
+                    }
+                    .padding(12)
+                    .background(Color.orange.opacity(0.22))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(Color.orange.opacity(0.45), lineWidth: 1)
+                    )
+                    .cornerRadius(12)
+                    .padding(.horizontal, 20)
+                    .padding(.top, 8)
+                    .accessibilityElement(children: .combine)
+                    .accessibilityLabel(
+                        localizationManager.localized("family_identity_repair_banner_title")
+                            + ". "
+                            + localizationManager.localized("family_identity_repair_banner_body")
+                            + ". "
+                            + localizationManager.localized("family_identity_repair_button")
+                    )
+                }
                 
                 ScrollView {
                     VStack(spacing: 20) {

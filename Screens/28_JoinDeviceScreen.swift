@@ -116,6 +116,7 @@ struct JoinDeviceScreen: View {
                     errorMessage = localizationManager.localized("join_device_error_title")
                 }
             })
+            .environmentObject(navigationManager)
             .environmentObject(localizationManager)
         }
         .alert(localizationManager.localized("join_device_success_title"), isPresented: $showSuccessAlert) {

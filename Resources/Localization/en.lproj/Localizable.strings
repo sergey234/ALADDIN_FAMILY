@@ -1769,9 +1769,17 @@
 "main_family_info" = "Members: %d • Devices: %d";
 "main_family_network_protection_info" = "Threats blocked: %d";
 "main_family_tariff_label" = "Plan:";
+"main_family_header_member_slots" = "%d of %d";
 "main_family_subscription_valid_until" = "Valid until:";
 "main_family_manage" = "Manage";
 "main_family_add_member" = "Add member";
+"family_roster_manage_denied_banner_title" = "Roster management unavailable";
+"family_roster_manage_denied_banner_body" = "The app doesn’t recognize you as a parent or elderly member in this list. Sign out and sign in again, reopen Family, or wait for sync to finish. If it persists, contact support.";
+"family_identity_repair_banner_title" = "Family identity on this device";
+"family_identity_repair_banner_body" = "Your place in the family list may be out of sync with this account. Tap Restore to align your member ID and role from the list on this device, then the app will refresh from the server.";
+"family_identity_repair_button" = "Restore";
+"family_identity_repair_section_title" = "Family";
+"family_identity_repair_section_body" = "If you have family members but Family behaves oddly, align your membership on this device.";
 "main_ai_assistant_title" = "AI Assistant";
 "main_ai_assistant_greeting" = "Ask anything about your family protection.";
 "main_ai_assistant_placeholder" = "Type your question...";

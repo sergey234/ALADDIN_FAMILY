@@ -25,6 +25,7 @@ struct MainScreen: View {
     }
 
     @State private var aiQuestion: String = ""
+    @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var mainViewModel: MainViewModel
     @State private var hasAppeared = false
     @ObservedObject private var subscriptionManager = SubscriptionManager.shared
@@ -319,7 +320,7 @@ struct MainScreen: View {
             // ✅ BUILD 100: Асинхронное обновление кеша expiration text для предотвращения рекурсии
             // Читаем значение один раз и передаем в функцию, чтобы избежать повторного чтения @AppStorage
             // ✅ ИСПРАВЛЕНИЕ: Убран избыточный Task { @MainActor in }, так как .task {} уже выполняется на MainActor
-            Task { await subscriptionManager.forceSync() }
+            Task { await subscriptionManager.syncSubscriptionOnMainScreenAppear() }
             let currentExpiresAt = subscriptionExpiresAtIso
             await updateExpirationTextCache(from: currentExpiresAt)
             debugLog.append("✅ cachedExpirationText инициализирован")
@@ -338,6 +339,15 @@ struct MainScreen: View {
             if mainViewModel.lastUpdateTime != nil {
                 mainViewModel.refreshDevicesCountFromAPI()
             }
+            // Критично для реального устройства: .task с forceSync выполняется один раз (hasAppeared).
+            // После экрана «Тарифы»/оплаты в Safari подписка на сервере уже другая — без синка главная остаётся на free/жёлтом.
+            Task { await subscriptionManager.syncSubscriptionOnMainScreenAppear() }
+            mainViewModel.requestRefreshDebounced()
+        }
+        .onChange(of: scenePhase) { newPhase in
+            guard newPhase == .active else { return }
+            Task { await subscriptionManager.syncSubscriptionOnMainScreenAppear() }
+            mainViewModel.requestRefreshDebounced()
         }
         // ✅ ИСПРАВЛЕНИЕ BUILD 92: УБРАН .id() с localizationManager - может вызывать рекурсию с @AppStorage
         // localizationManager.currentLanguage читает из UserDefaults, что может вызвать рекурсию
@@ -604,13 +614,32 @@ struct MainScreen: View {
                         // FAMILY статус - большая карточка
                         VStack(spacing: 12) {
                             // Заголовок с капсулой статуса
-                            HStack {
+                            HStack(alignment: .top) {
                                 Text("👨‍👩‍👧‍👦")
                                     .font(.system(size: 18))
                                 
-                                Text(localizationManager.localized("main_family_header_title"))
-                                    .font(.system(size: 14, weight: .bold))
-                                    .foregroundColor(.black)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(localizationManager.localized("main_family_header_title"))
+                                        .font(.system(size: 14, weight: .bold))
+                                        .foregroundColor(.black)
+                                    // Лимит по тарифу (как «3 из 5» в семейной защите): сколько уже в семье / максимум по плану.
+                                    Text(
+                                        localizationManager.localized(
+                                            "main_family_header_member_slots",
+                                            min(mainViewModel.familyMembers, max(0, subscriptionManager.currentFamilyLimit)),
+                                            max(0, subscriptionManager.currentFamilyLimit)
+                                        )
+                                    )
+                                    .font(.system(size: 10, weight: .semibold))
+                                    .foregroundColor(.black.opacity(0.82))
+                                    .accessibilityLabel(
+                                        localizationManager.localized(
+                                            "main_family_header_member_slots",
+                                            min(mainViewModel.familyMembers, max(0, subscriptionManager.currentFamilyLimit)),
+                                            max(0, subscriptionManager.currentFamilyLimit)
+                                        )
+                                    )
+                                }
                                 
                                 // ✅ BUILD 115: Восстановлен ID пользователя из бэкапа от 6 марта
                                 Group {

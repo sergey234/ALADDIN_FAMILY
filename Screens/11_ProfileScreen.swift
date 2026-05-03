@@ -35,6 +35,8 @@ struct ProfileScreen: View {
     @AppStorage("personal_data_consent_accepted") private var consentAccepted: Bool = false
     @AppStorage("personal_data_consent_date") private var consentDate: String = ""
     @State private var showConsentRevokeAlert: Bool = false
+    @State private var isFamilyIdentityRepairingProfile: Bool = false
+    @State private var familyIdentityRepairStamp: Int = 0
     
     // MARK: - Computed Properties
     
@@ -52,6 +54,21 @@ struct ProfileScreen: View {
         case .premium:
             return localizationManager.localized("tariffs_premium")
         }
+    }
+
+    private var cachedFamilyMembersForRepair: [FamilyMemberData] {
+        guard let data = UserDefaults.standard.data(forKey: FamilyLocalStore.familyMembersKey),
+              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: data) else {
+            return []
+        }
+        return decoded
+    }
+
+    private var needsFamilyIdentityRepairOnProfile: Bool {
+        let members = cachedFamilyMembersForRepair
+        guard !members.isEmpty else { return false }
+        let canManage = FamilyAccessPolicy.canManageAppProfiles(members: members)
+        return FamilyLocalStore.needsFamilyIdentityRepairHeuristic(members: members, canManageAppProfiles: canManage)
     }
     
     // MARK: - Body
@@ -120,6 +137,8 @@ struct ProfileScreen: View {
                         
                         // Информация
                         profileInfo
+
+                        familyIdentityRepairSection
                         
                         // Безопасность
                         securitySection
@@ -370,6 +389,60 @@ struct ProfileScreen: View {
                 infoRow(icon: "calendar", label: localizationManager.localized("profile_registration_date"), value: registrationDate.isEmpty ? localizationManager.localized("profile_not_set") : registrationDate)
             }
             .padding(.horizontal, Spacing.screenPadding)
+        }
+    }
+
+    @ViewBuilder
+    private var familyIdentityRepairSection: some View {
+        if needsFamilyIdentityRepairOnProfile {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                sectionTitle(localizationManager.localized("family_identity_repair_section_title"))
+                VStack(alignment: .leading, spacing: Spacing.m) {
+                    Text(localizationManager.localized("family_identity_repair_section_body"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button(action: runFamilyIdentityRepairFromProfile) {
+                        HStack(spacing: Spacing.m) {
+                            Image(systemName: "arrow.triangle.2.circlepath")
+                                .font(.system(size: 18))
+                                .foregroundColor(.primaryBlue)
+                            Text(localizationManager.localized("family_identity_repair_button"))
+                                .font(.body)
+                                .foregroundColor(.textPrimary)
+                            Spacer()
+                            if isFamilyIdentityRepairingProfile {
+                                ProgressView()
+                                    .scaleEffect(0.9)
+                            }
+                        }
+                        .padding(Spacing.m)
+                        .background(
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .fill(Color.backgroundMedium.opacity(0.3))
+                        )
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .disabled(isFamilyIdentityRepairingProfile)
+                }
+                .padding(.horizontal, Spacing.screenPadding)
+            }
+            .id(familyIdentityRepairStamp)
+        }
+    }
+
+    private func runFamilyIdentityRepairFromProfile() {
+        let members = cachedFamilyMembersForRepair
+        guard !members.isEmpty else { return }
+        guard !isFamilyIdentityRepairingProfile else { return }
+        isFamilyIdentityRepairingProfile = true
+        FamilyLocalStore.repairFamilyIdentityFromLocalRoster(members)
+        UserDefaults.standard.synchronize()
+        NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+        familyIdentityRepairStamp += 1
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+            isFamilyIdentityRepairingProfile = false
+            familyIdentityRepairStamp += 1
         }
     }
     

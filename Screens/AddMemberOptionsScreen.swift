@@ -58,34 +58,33 @@ struct AddMemberOptionsScreen: View {
     // MARK: - Body
     
     var body: some View {
-        ZStack {
-            // Фон
-            LinearGradient(
-                colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            
-            VStack(spacing: 20) {
-                // Кнопка назад
-                HStack {
-                    Button(action: {
-                        // ✅ ИСПРАВЛЕНИЕ: Используем navigationManager.goBack() для правильной навигации
-                        // как на других экранах, открытых через NavigationManager
-                        navigationManager.goBack()
-                    }) {
-                        HStack {
-                            Image(systemName: "chevron.left")
-                                .foregroundColor(.white)
-                            Text(localizationManager.localized("common_back"))
-                                .foregroundColor(.white)
+        GeometryReader { proxy in
+            ZStack {
+                // Фон
+                LinearGradient(
+                    colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+
+                VStack(spacing: 20) {
+                    // Кнопка назад — отступ с учётом safe area (Dynamic Island / чёлка)
+                    HStack {
+                        Button(action: {
+                            navigationManager.goBack()
+                        }) {
+                            HStack {
+                                Image(systemName: "chevron.left")
+                                    .foregroundColor(.white)
+                                Text(localizationManager.localized("common_back"))
+                                    .foregroundColor(.white)
+                            }
                         }
+                        Spacer()
                     }
-                    Spacer()
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 20)
+                    .padding(.horizontal, 20)
+                    .padding(.top, max(20, proxy.safeAreaInsets.top + 12))
                 
                 // Заголовок + Limit Banner (consistent with FamilyScreen)
                 VStack(spacing: 8) {
@@ -216,7 +215,8 @@ struct AddMemberOptionsScreen: View {
             }
             .padding(.horizontal, 20)
             .id("add_member_screen_lang_\(localizationManager.currentLanguage.rawValue)")
-        }
+            }
+            }
         // ✅ FIXED: Removed all internal .fullScreenCover and .sheet to prevent "single sheet is supported" warning
         // Now uses pure NavigationManager navigation (no nested presentation)
         .onChange(of: showCreateFamily) { newValue in

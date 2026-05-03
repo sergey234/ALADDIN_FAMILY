@@ -1656,9 +1656,17 @@
 "main_family_info" = "Участников: %d • Устройств: %d";
 "main_family_network_protection_info" = "Угроз заблокировано: %d";
 "main_family_tariff_label" = "Тариф:";
+"main_family_header_member_slots" = "%d из %d";
 "main_family_subscription_valid_until" = "Действует до:";
 "main_family_manage" = "Управлять";
 "main_family_add_member" = "Добавить участника";
+"family_roster_manage_denied_banner_title" = "Управление составом недоступно";
+"family_roster_manage_denied_banner_body" = "Приложение не видит вас как родителя или пожилого участника в этом списке. Выйдите из аккаунта и войдите снова, откройте раздел «Семья» повторно или дождитесь окончания синхронизации. Если проблема останется — обратитесь в поддержку.";
+"family_identity_repair_banner_title" = "Профиль в семье на этом устройстве";
+"family_identity_repair_banner_body" = "Ваше место в списке семьи могло разойтись с аккаунтом. Нажмите «Восстановить», чтобы выровнять member ID и роль по локальному списку, затем приложение обновит данные с сервера.";
+"family_identity_repair_button" = "Восстановить";
+"family_identity_repair_section_title" = "Семья";
+"family_identity_repair_section_body" = "Если участники есть, но раздел «Семья» ведёт себя странно — выровняйте привязку на этом устройстве.";
 "main_ai_assistant_title" = "AI Помощник";
 "main_ai_assistant_greeting" = "Задайте вопрос по защите семьи.";
 "main_ai_assistant_placeholder" = "Введите вопрос...";

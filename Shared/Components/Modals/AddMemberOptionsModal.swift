@@ -315,6 +315,8 @@ struct AddMemberOptionsModal: View {
                 scannedCode = code
                 showCodeInput = true
             }
+            .environmentObject(navigationManager)
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showCodeInput) {
             InvitationCodeInputModal(
