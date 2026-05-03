@@ -1,6 +1,7 @@
 import Foundation
 import Combine
 import UIKit
+import CryptoKit
 import FamilyControls
 import ManagedSettings
 import DeviceActivity
@@ -408,6 +409,7 @@ class ParentalControlManager: ObservableObject {
                 case .success(let response):
                     if response.success {
                         print("✅ Правила применены для \(childId), возраст: \(ageGroup)")
+                        self?.postAppRulesMonitoringIngest(childId: childId, ageGroup: ageGroup, rules: rules)
                         self?.errorMessage = nil
                         completion?(true, nil)
                     } else {
@@ -422,6 +424,33 @@ class ParentalControlManager: ObservableObject {
                 }
             }
         }
+    }
+
+    /// pc-05: снимок правил (SHA256 JSON), без полного списка сайтов в payload.
+    private func postAppRulesMonitoringIngest(childId: String, ageGroup: String, rules: ParentalControlRules) {
+        guard let data = try? JSONEncoder().encode(rules) else { return }
+        let digest = SHA256.hash(data: data)
+        let hashHex = digest.map { String(format: "%02x", $0) }.joined()
+        let payload: [String: Any] = [
+            "child_id": childId,
+            "age_group": ageGroup,
+            "rules_snapshot_sha256": hashHex
+        ]
+        let ev = ParentalMonitoringEventInDTO(kind: "app_rules", payload: payload)
+        apiService.postParentalMonitoringEvents(events: [ev]) { _ in }
+    }
+
+    /// pc-05: хост в нижнем регистре + SHA256 для `GET …/monitoring/detail` (JWT должен быть ребёнка, `user_id` числовой).
+    func postChildUrlVisitMonitoring(host: String) {
+        let normalized = host.lowercased().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalized.isEmpty else { return }
+        let digest = SHA256.hash(data: Data(normalized.utf8))
+        let hashHex = digest.map { String(format: "%02x", $0) }.joined()
+        let ev = ParentalMonitoringEventInDTO(
+            kind: "url_visit",
+            payload: ["url_sha256": hashHex]
+        )
+        apiService.postParentalMonitoringEvents(events: [ev]) { _ in }
     }
     
     // MARK: - Access Requests

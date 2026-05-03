@@ -3073,6 +3073,9 @@ struct FamilyMonitoringModal: View {
     @Binding var isEnabled: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
     
+    @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
+    @AppStorage("parental_selected_child") private var legacySelectedChild: String = ""
+    
     // Состояния для toggle-элементов с сохранением в UserDefaults
     @AppStorage("parental_messages_monitoring") private var isMessagesMonitoringEnabled: Bool = false
     @AppStorage("parental_screenshots_enabled") private var isScreenshotsEnabled: Bool = false
@@ -3082,20 +3085,24 @@ struct FamilyMonitoringModal: View {
     @State private var showAppHistory = false
     @State private var showContacts = false
     
-    // Mock-данные (загружаются из UserDefaults)
-    @State private var browserSitesCount: Int = 342
-    @State private var appsUsedCount: Int = 28
-    @State private var contactsCount: Int = 47
+    @State private var browserSitesCount: Int = 0
+    @State private var appsUsedCount: Int = 0
+    @State private var contactsCount: Int = 0
     
-    // Статистика (загружается из UserDefaults)
-    @State private var topSite: String = "YouTube.com"
-    @State private var topSiteVisits: Int = 142
-    @State private var topApp: String = "Instagram"
-    @State private var topAppTime: String = "8h 24m"
-    @State private var activeContacts: Int = 47
+    @State private var topSite: String = "—"
+    @State private var topSiteVisits: Int = 0
+    @State private var topApp: String = "—"
+    @State private var topAppTime: String = "—"
+    @State private var activeContacts: Int = 0
     
-    // Ключ для статистики мониторинга
-    private let statsKey = "parental_monitoring_stats"
+    @State private var isLoadingMonitoringDetail = false
+    @State private var parentalMonitoringSyncTask: Task<Void, Never>?
+    @State private var isApplyingParentalMonitoringSettings = false
+    
+    private var effectiveChildId: String {
+        if !selectedChildId.isEmpty { return selectedChildId }
+        return legacySelectedChild
+    }
     
     var body: some View {
         FamilyModalBaseView(
@@ -3198,38 +3205,116 @@ struct FamilyMonitoringModal: View {
         }
         // Детальные модалы просмотра (создадим полноценные ниже)
         .sheet(isPresented: $showBrowserHistory) {
-            BrowserHistoryDetailModal(isPresented: $showBrowserHistory)
-                .environmentObject(localizationManager)
+            BrowserHistoryDetailModal(
+                isPresented: $showBrowserHistory,
+                childId: effectiveChildId.isEmpty ? nil : effectiveChildId
+            )
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showAppHistory) {
-            AppHistoryDetailModal(isPresented: $showAppHistory)
-                .environmentObject(localizationManager)
+            AppHistoryDetailModal(
+                isPresented: $showAppHistory,
+                childId: effectiveChildId.isEmpty ? nil : effectiveChildId
+            )
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showContacts) {
-            ContactsDetailModal(isPresented: $showContacts)
-                .environmentObject(localizationManager)
+            ContactsDetailModal(
+                isPresented: $showContacts,
+                childId: effectiveChildId.isEmpty ? nil : effectiveChildId
+            )
+            .environmentObject(localizationManager)
         }
         .onAppear {
-            // Загружаем статистику при открытии модала
-            loadMonitoringStatistics()
+            refreshMonitoringSummaryFromServer()
+            loadParentalMonitoringTogglesFromServerForModal()
+        }
+        .onChange(of: isMessagesMonitoringEnabled) { _ in
+            scheduleParentalMonitoringSyncFromFamilyModal()
+        }
+        .onChange(of: isScreenshotsEnabled) { _ in
+            scheduleParentalMonitoringSyncFromFamilyModal()
         }
         // UI-логи parental toggles централизованы в AdvancedProtectionSettingsScreen,
         // чтобы не дублировать одинаковые записи в mini-log.
         .withVisualLogger()
     }
-    
-    // Загрузка статистики мониторинга из UserDefaults
-    private func loadMonitoringStatistics() {
-        if let stats = UserDefaults.standard.dictionary(forKey: statsKey) {
-            browserSitesCount = stats["browserSitesCount"] as? Int ?? 342
-            appsUsedCount = stats["appsUsedCount"] as? Int ?? 28
-            contactsCount = stats["contactsCount"] as? Int ?? 47
-            topSite = stats["topSite"] as? String ?? "YouTube.com"
-            topSiteVisits = stats["topSiteVisits"] as? Int ?? 142
-            topApp = stats["topApp"] as? String ?? "Instagram"
-            topAppTime = stats["topAppTime"] as? String ?? "8h 24m"
-            activeContacts = stats["activeContacts"] as? Int ?? 47
+
+    private func loadParentalMonitoringTogglesFromServerForModal() {
+        Task { @MainActor in
+            isApplyingParentalMonitoringSettings = true
+            let flags = await ComponentConfigurationService.shared.loadParentalMonitoringTogglesFromServer()
+            if let m = flags.messages { isMessagesMonitoringEnabled = m }
+            if let s = flags.screenshots { isScreenshotsEnabled = s }
+            isApplyingParentalMonitoringSettings = false
         }
+    }
+
+    private func scheduleParentalMonitoringSyncFromFamilyModal() {
+        guard !isApplyingParentalMonitoringSettings else { return }
+        parentalMonitoringSyncTask?.cancel()
+        parentalMonitoringSyncTask = Task {
+            try? await Task.sleep(nanoseconds: 250_000_000)
+            if Task.isCancelled { return }
+            await syncParentalMonitoringTogglesToServerFromFamilyModal()
+        }
+    }
+
+    @MainActor
+    private func syncParentalMonitoringTogglesToServerFromFamilyModal() async {
+        do {
+            try await ComponentConfigurationService.shared.saveParentalMonitoringTogglesToServer(
+                messagesEnabled: isMessagesMonitoringEnabled,
+                screenshotsEnabled: isScreenshotsEnabled
+            )
+        } catch {
+            // Ошибка уже в логах компонента; модалка не блокирует UX.
+        }
+    }
+    
+    private func refreshMonitoringSummaryFromServer() {
+        guard !isLoadingMonitoringDetail else { return }
+        isLoadingMonitoringDetail = true
+        let cid = effectiveChildId.isEmpty ? nil : effectiveChildId
+        APIService.shared.getParentalMonitoringDetail(childId: cid) { result in
+            DispatchQueue.main.async {
+                isLoadingMonitoringDetail = false
+                switch result {
+                case .success(let detail):
+                    let s = detail.summary
+                    browserSitesCount = s.browserSitesWeek
+                    appsUsedCount = s.appsUsedWeek
+                    contactsCount = s.contactsActive
+                    activeContacts = s.contactsActive
+                    if let first = detail.topSites.first {
+                        topSite = first.site
+                        topSiteVisits = first.visits
+                    } else {
+                        topSite = "—"
+                        topSiteVisits = 0
+                    }
+                    if let app = detail.topApps.first {
+                        topApp = app.name
+                        topAppTime = formatMonitoringUsageMinutes(app.usageMinutes)
+                    } else {
+                        topApp = "—"
+                        topAppTime = "—"
+                    }
+                case .failure:
+                    break
+                }
+            }
+        }
+    }
+    
+    private func formatMonitoringUsageMinutes(_ minutes: Int) -> String {
+        let h = minutes / 60
+        let m = minutes % 60
+        let hourUnit = localizationManager.localized("analytics_hour")
+        let minuteUnit = localizationManager.localized("analytics_min")
+        if h == 0 { return "\(m) \(minuteUnit)" }
+        if m == 0 { return "\(h) \(hourUnit)" }
+        return "\(h) \(hourUnit) \(m) \(minuteUnit)"
     }
 }
 
@@ -3557,8 +3642,7 @@ struct FamilyReportsModal: View {
     @State private var showUsageHours = false
     @State private var showBypassAttempts = false
     
-    // Mock-данные (загружаются из UserDefaults)
-    @State private var suspiciousActivityCount: Int = 2
+    @State private var suspiciousActivityCount: Int = 0
     @State private var bypassAttemptsCount: Int = 0
     
     // Статистика предупреждений (загружается из UserDefaults)
@@ -3659,24 +3743,39 @@ struct FamilyReportsModal: View {
             }
         }
         .sheet(isPresented: $showWeeklyReport) {
-            WeeklyReportDetailModal(isPresented: $showWeeklyReport)
-                .environmentObject(localizationManager)
+            WeeklyReportDetailModal(
+                isPresented: $showWeeklyReport,
+                childId: effectiveChildId.isEmpty ? nil : effectiveChildId
+            )
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showSuspiciousActivity) {
-            SuspiciousActivityDetailModal(isPresented: $showSuspiciousActivity)
-                .environmentObject(localizationManager)
+            SuspiciousActivityDetailModal(
+                isPresented: $showSuspiciousActivity,
+                childId: effectiveChildId.isEmpty ? nil : effectiveChildId
+            )
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showTopSites) {
-            TopSitesDetailModal(isPresented: $showTopSites)
-                .environmentObject(localizationManager)
+            TopSitesDetailModal(
+                isPresented: $showTopSites,
+                childId: effectiveChildId.isEmpty ? nil : effectiveChildId
+            )
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showTopApps) {
-            TopAppsDetailModal(isPresented: $showTopApps)
-                .environmentObject(localizationManager)
+            TopAppsDetailModal(
+                isPresented: $showTopApps,
+                childId: effectiveChildId.isEmpty ? nil : effectiveChildId
+            )
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showUsageHours) {
-            UsageHoursDetailModal(isPresented: $showUsageHours)
-                .environmentObject(localizationManager)
+            UsageHoursDetailModal(
+                isPresented: $showUsageHours,
+                childId: effectiveChildId.isEmpty ? nil : effectiveChildId
+            )
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showBypassAttempts) {
             BypassAttemptsDetailModal(isPresented: $showBypassAttempts)
@@ -3711,36 +3810,45 @@ struct FamilyReportsModal: View {
     
     // Загрузка статистики отчётов из UserDefaults и API
     private func loadReportsStatistics() {
-        // Загружаем из UserDefaults (локальный кэш)
         if let stats = UserDefaults.standard.dictionary(forKey: statsKey) {
-            suspiciousActivityCount = stats["suspiciousActivityCount"] as? Int ?? 2
             bypassAttemptsCount = stats["bypassAttemptsCount"] as? Int ?? 0
         }
         
-        // Загружаем статистику обхода через API
+        let cid = effectiveChildId.isEmpty ? nil : effectiveChildId
+        APIService.shared.getParentalMonitoringDetail(childId: cid) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let detail):
+                    suspiciousActivityCount = detail.suspicious.count
+                    warnings = detail.suspicious.prefix(5).map { row in
+                        ReportWarning(
+                            text: row.text,
+                            color: row.level == "high" ? .dangerRed : .warningOrange
+                        )
+                    }
+                    var cachedStats = UserDefaults.standard.dictionary(forKey: self.statsKey) ?? [:]
+                    cachedStats["suspiciousActivityCount"] = detail.suspicious.count
+                    UserDefaults.standard.set(cachedStats, forKey: self.statsKey)
+                case .failure:
+                    suspiciousActivityCount = 0
+                    warnings = []
+                }
+            }
+        }
+        
         let manager = ParentalControlManager.shared
         manager.getBypassStats(childId: effectiveChildId) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let stats):
                     self.bypassAttemptsCount = stats.week
-                    // Сохраняем в UserDefaults для кэширования
                     var cachedStats = UserDefaults.standard.dictionary(forKey: self.statsKey) ?? [:]
                     cachedStats["bypassAttemptsCount"] = stats.week
                     UserDefaults.standard.set(cachedStats, forKey: self.statsKey)
                 case .failure(let error):
                     print("⚠️ Failed to load bypass statistics: \(error.localizedDescription)")
-                    // Оставляем значения по умолчанию
                 }
             }
-        }
-        
-        // Загружаем предупреждения (по умолчанию примерные)
-        if warnings.isEmpty {
-            warnings = [
-                ReportWarning(text: localizationManager.localized("family_warning_blocked_site"), color: .dangerRed),
-                ReportWarning(text: localizationManager.localized("family_warning_screen_time"), color: .warningOrange)
-            ]
         }
     }
 }
@@ -4468,26 +4576,21 @@ struct AccessRequestsModal: View {
 
 struct BrowserHistoryDetailModal: View {
     @Binding var isPresented: Bool
+    var childId: String? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
     
-    @State private var browserHistory: [BrowserHistoryItem] = [
-        BrowserHistoryItem(site: "youtube.com", visits: 142, hours: 8, minutes: 24, categoryKey: "browser_history_category_video", color: .red),
-        BrowserHistoryItem(site: "instagram.com", visits: 89, hours: 4, minutes: 12, categoryKey: "browser_history_category_social", color: .purple),
-        BrowserHistoryItem(site: "vk.com", visits: 67, hours: 2, minutes: 45, categoryKey: "browser_history_category_social", color: .blue),
-        BrowserHistoryItem(site: "google.com", visits: 45, hours: 1, minutes: 15, categoryKey: "browser_history_category_search", color: .blue),
-        BrowserHistoryItem(site: "tiktok.com", visits: 34, hours: 3, minutes: 20, categoryKey: "browser_history_category_video", color: .black)
-    ]
+    @State private var browserHistory: [BrowserHistoryItem] = []
     
     var body: some View {
         FamilyModalBaseView(
-            title: localizationManager.localized("browser_history_title"),
+            title: localizationManager.localized("family_monitoring_browser_title"),
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.m) {
                 // Статистика
                 HStack(spacing: Spacing.m) {
                     VStack(alignment: .leading) {
-                        Text(localizationManager.localized("browser_history_total_sites"))
+                        Text(localizationManager.localized("family_monitoring_browser_total_sites"))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                         Text("\(browserHistory.count)")
@@ -4498,7 +4601,7 @@ struct BrowserHistoryDetailModal: View {
                     Spacer()
                     
                     VStack(alignment: .trailing) {
-                        Text(localizationManager.localized("browser_history_total_time"))
+                        Text(localizationManager.localized("family_monitoring_browser_total_time"))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                         Text(formatDuration(totalBrowserDuration.hours, minutes: totalBrowserDuration.minutes))
@@ -4511,7 +4614,7 @@ struct BrowserHistoryDetailModal: View {
                 .cornerRadius(CornerRadius.medium)
                 
                 // Топ-5 сайтов
-                Text(localizationManager.localized("browser_history_top_5_week"))
+                Text(localizationManager.localized("family_monitoring_browser_top_week"))
                     .font(.bodyBold)
                     .foregroundColor(.secondaryGold)
                     .frame(maxWidth: .infinity, alignment: .leading)
@@ -4532,7 +4635,7 @@ struct BrowserHistoryDetailModal: View {
                                 .foregroundColor(.textPrimary)
                             
                             HStack(spacing: Spacing.s) {
-                                Text("\(item.visits) \(localizationManager.localized("browser_history_visits"))")
+                                Text("\(item.visits) \(localizationManager.localized("family_monitoring_browser_visits"))")
                                     .font(.caption)
                                     .foregroundColor(.textSecondary)
                                 
@@ -4562,7 +4665,50 @@ struct BrowserHistoryDetailModal: View {
                 }
             }
         }
-        .id("browser_history_lang_\(localizationManager.currentLanguage.rawValue)")
+        .id("family_monitoring_browser_lang_\(localizationManager.currentLanguage.rawValue)")
+        .onAppear {
+            loadBrowserHistoryFromServer()
+        }
+    }
+    
+    private func browserCategoryKey(for apiCategory: String) -> String {
+        switch apiCategory.lowercased() {
+        case "video": return "family_monitoring_browser_category_video"
+        case "social": return "family_monitoring_browser_category_social"
+        case "search": return "family_monitoring_browser_category_search"
+        default: return "family_monitoring_browser_category_search"
+        }
+    }
+    
+    private func browserCategoryColor(for apiCategory: String) -> Color {
+        switch apiCategory.lowercased() {
+        case "video": return .red
+        case "social": return .purple
+        case "search": return .blue
+        default: return .blue
+        }
+    }
+    
+    private func loadBrowserHistoryFromServer() {
+        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let detail):
+                    browserHistory = detail.browserHistory.map { row in
+                        BrowserHistoryItem(
+                            site: row.site,
+                            visits: row.visits,
+                            hours: row.hours,
+                            minutes: row.minutes,
+                            categoryKey: browserCategoryKey(for: row.category),
+                            color: browserCategoryColor(for: row.category)
+                        )
+                    }
+                case .failure:
+                    browserHistory = []
+                }
+            }
+        }
     }
     
     private var totalBrowserDuration: (hours: Int, minutes: Int) {
@@ -4589,28 +4735,33 @@ struct BrowserHistoryDetailModal: View {
 }
 
 struct BrowserHistoryItem: Identifiable {
-    let id = UUID()
+    let id: UUID
     let site: String
     let visits: Int
     let hours: Int
     let minutes: Int
     let categoryKey: String
     let color: Color
+    
+    init(id: UUID = UUID(), site: String, visits: Int, hours: Int, minutes: Int, categoryKey: String, color: Color) {
+        self.id = id
+        self.site = site
+        self.visits = visits
+        self.hours = hours
+        self.minutes = minutes
+        self.categoryKey = categoryKey
+        self.color = color
+    }
 }
 
 // MARK: 4. История приложений
 
 struct AppHistoryDetailModal: View {
     @Binding var isPresented: Bool
+    var childId: String? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
     
-    @State private var appHistory: [AppHistoryItem] = [
-        AppHistoryItem(app: "Instagram", usageMinutes: 504, limitMinutes: 30, exceeded: true, exceededByMinutes: 474, color: .purple),
-        AppHistoryItem(app: "TikTok", usageMinutes: 252, limitMinutes: 20, exceeded: true, exceededByMinutes: 232, color: .black),
-        AppHistoryItem(app: "YouTube", usageMinutes: 225, limitMinutes: 45, exceeded: true, exceededByMinutes: 180, color: .red),
-        AppHistoryItem(app: "WhatsApp", usageMinutes: 90, limitMinutes: 60, exceeded: false, exceededByMinutes: nil, color: .green),
-        AppHistoryItem(app: "VK", usageMinutes: 45, limitMinutes: 30, exceeded: true, exceededByMinutes: 15, color: .blue)
-    ]
+    @State private var appHistory: [AppHistoryItem] = []
     
     var body: some View {
         FamilyModalBaseView(
@@ -4725,6 +4876,45 @@ struct AppHistoryDetailModal: View {
             }
         }
         .id("app_history_lang_\(localizationManager.currentLanguage.rawValue)")
+        .onAppear {
+            loadAppHistoryFromServer()
+        }
+    }
+    
+    private func loadAppHistoryFromServer() {
+        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let detail):
+                    appHistory = detail.appHistory.map { row in
+                        let exceededBy: Int? = {
+                            guard row.limitMinutes > 0, row.usageMinutes > row.limitMinutes else { return nil }
+                            return row.usageMinutes - row.limitMinutes
+                        }()
+                        return AppHistoryItem(
+                            app: row.name,
+                            usageMinutes: row.usageMinutes,
+                            limitMinutes: row.limitMinutes,
+                            exceeded: row.exceeded,
+                            exceededByMinutes: exceededBy,
+                            color: appHistoryColor(for: row.name)
+                        )
+                    }
+                case .failure:
+                    appHistory = []
+                }
+            }
+        }
+    }
+    
+    private func appHistoryColor(for name: String) -> Color {
+        let lower = name.lowercased()
+        if lower.contains("instagram") { return .purple }
+        if lower.contains("tiktok") { return .black }
+        if lower.contains("youtube") { return .red }
+        if lower.contains("whatsapp") { return .green }
+        if lower.contains("vk") { return .blue }
+        return .blue
     }
     
     private func formatDurationFromMinutes(_ minutes: Int) -> String {
@@ -4754,19 +4944,30 @@ struct AppHistoryDetailModal: View {
 }
 
 struct AppHistoryItem: Identifiable {
-    let id = UUID()
+    let id: UUID
     let app: String
     let usageMinutes: Int
     let limitMinutes: Int
     let exceeded: Bool
     let exceededByMinutes: Int?
     let color: Color
+    
+    init(id: UUID = UUID(), app: String, usageMinutes: Int, limitMinutes: Int, exceeded: Bool, exceededByMinutes: Int?, color: Color) {
+        self.id = id
+        self.app = app
+        self.usageMinutes = usageMinutes
+        self.limitMinutes = limitMinutes
+        self.exceeded = exceeded
+        self.exceededByMinutes = exceededByMinutes
+        self.color = color
+    }
 }
 
 // MARK: 5. Контакты
 
 struct ContactsDetailModal: View {
     @Binding var isPresented: Bool
+    var childId: String? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     @State private var contacts: [ContactItem] = []
@@ -4874,55 +5075,83 @@ struct ContactsDetailModal: View {
         }
     }
     
-    // Загрузка контактов из UserDefaults (child_family_contacts_list) или создание из family_members_list
     private func loadContacts() {
-        // Попытка загрузить из child_family_contacts_list (если есть сохранённые контакты)
+        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let detail):
+                    if !detail.contacts.isEmpty {
+                        contacts = detail.contacts.map { row in
+                            let last = row.lastContact.trimmingCharacters(in: .whitespacesAndNewlines)
+                            return ContactItem(
+                                name: row.name,
+                                messages: row.messages,
+                                calls: row.calls,
+                                lastContact: last.isEmpty ? localizationManager.localized("family_last_contact_recently") : last,
+                                color: .successGreen
+                            )
+                        }
+                        return
+                    }
+                case .failure:
+                    break
+                }
+                loadContactsFromLocalCacheOnly()
+            }
+        }
+    }
+    
+    private func loadContactsFromLocalCacheOnly() {
         if let savedData = UserDefaults.standard.data(forKey: "child_family_contacts_list"),
            let decoded = try? JSONDecoder().decode([ChildFamilyContact].self, from: savedData),
            !decoded.isEmpty {
-            // Преобразуем ChildFamilyContact в ContactItem
             contacts = decoded.prefix(5).map { contact in
                 ContactItem(
                     name: contact.name,
-                    messages: 0, // TODO: Загрузить из API мониторинга
-                    calls: 0, // TODO: Загрузить из API мониторинга
-                    lastContact: localizationManager.localized("family_last_contact_recently"), // TODO: Загрузить из API мониторинга
+                    messages: 0,
+                    calls: 0,
+                    lastContact: localizationManager.localized("family_last_contact_recently"),
                     color: .successGreen
                 )
             }
             return
         }
         
-        // Если нет сохранённых контактов, пробуем создать из family_members_list
         if let savedData = UserDefaults.standard.data(forKey: "family_members_list"),
            let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData),
            !decoded.isEmpty {
             contacts = decoded.prefix(5).map { member in
                 ContactItem(
                     name: member.name,
-                    messages: 0, // TODO: Загрузить из API мониторинга
-                    calls: 0, // TODO: Загрузить из API мониторинга
-                    lastContact: localizationManager.localized("family_last_contact_recently"), // TODO: Загрузить из API мониторинга
+                    messages: 0,
+                    calls: 0,
+                    lastContact: localizationManager.localized("family_last_contact_recently"),
                     color: .successGreen
                 )
             }
             return
         }
         
-        // Если ничего не найдено - пустой список
         contacts = []
-        
-        print("✅ Loaded contacts: \(contacts.count)")
     }
 }
 
 struct ContactItem: Identifiable {
-    let id = UUID()
+    let id: UUID
     let name: String
     let messages: Int
     let calls: Int
     let lastContact: String
     let color: Color
+    
+    init(id: UUID = UUID(), name: String, messages: Int, calls: Int, lastContact: String, color: Color) {
+        self.id = id
+        self.name = name
+        self.messages = messages
+        self.calls = calls
+        self.lastContact = lastContact
+        self.color = color
+    }
 }
 
 // MARK: 6. Остальные настройки и просмотры
@@ -5944,21 +6173,202 @@ struct FrequentPlace: Identifiable {
 
 struct WeeklyReportDetailModal: View {
     @Binding var isPresented: Bool
+    /// Идентификатор ребёнка для query `childId` на `GET /api/parental-control/reports/weekly`; `nil` — отчёты целевого пользователя токена.
+    var childId: String? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
+    
+    @State private var reports: [ParentalReportItem] = []
+    @State private var isLoading = true
+    @State private var loadError: String?
     
     var body: some View {
         FamilyModalBaseView(
             title: "📅 \(localizationManager.localized("family_weekly_report"))",
             isPresented: $isPresented
         ) {
-            VStack(spacing: Spacing.m) {
-                // Статистика по категориям
-                ReportStatCard(icon: "🌐", title: localizationManager.localized("family_web_activity"), value: "342 \(localizationManager.localized("family_sites"))", color: .blue)
-                ReportStatCard(icon: "📱", title: localizationManager.localized("family_applications"), value: "28 \(localizationManager.localized("family_apps"))", color: .purple)
-                ReportStatCard(icon: "⏰", title: localizationManager.localized("family_screen_time"), value: "45h 23m", color: .orange)
-                ReportStatCard(icon: "🚫", title: localizationManager.localized("family_blocked_attempts"), value: "1245 \(localizationManager.localized("family_attempts"))", color: .red)
-                ReportStatCard(icon: "📍", title: localizationManager.localized("family_movements"), value: "32 \(localizationManager.localized("family_events"))", color: .green)
-                ReportStatCard(icon: "⚠️", title: localizationManager.localized("family_warnings_new"), value: "2 \(localizationManager.localized("family_new"))", color: .warningOrange)
+            Group {
+                if isLoading {
+                    ProgressView()
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, Spacing.l)
+                } else if let loadError {
+                    Text(loadError)
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(Spacing.m)
+                } else if let latest = reports.first {
+                    weeklyReportDetailBody(latest: latest)
+                } else {
+                    VStack(spacing: Spacing.s) {
+                        Text(localizationManager.localized("family_reports_empty_title"))
+                            .font(.bodyBold)
+                            .foregroundColor(.textPrimary)
+                            .multilineTextAlignment(.center)
+                        Text(localizationManager.localized("family_reports_empty_hint_jwt"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(Spacing.m)
+                }
+            }
+        }
+        .onAppear {
+            fetchWeeklyReports()
+        }
+    }
+    
+    private var emDash: String { "—" }
+    
+    private func weeklyReportDetailBody(latest: ParentalReportItem) -> some View {
+        let content = latest.content
+        let extraKeys = content.keys.filter { !knownWeeklyContentKeys.contains($0) }.sorted()
+        let extraLines: [String] = extraKeys.compactMap { kvLine(key: $0, value: content[$0]?.value) }
+        return VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(latest.createdAt.formatted(date: .abbreviated, time: .shortened))
+                .font(.caption)
+                .foregroundColor(.textTertiary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+            
+            ReportStatCard(
+                icon: "🌐",
+                title: localizationManager.localized("family_web_activity"),
+                value: weeklyValue(
+                    scalar: firstScalarString(in: content, keys: ["sites_count", "web_sites_count", "total_sites", "sites", "web_sites"]),
+                    suffix: localizationManager.localized("family_sites")
+                ),
+                color: .blue
+            )
+            ReportStatCard(
+                icon: "📱",
+                title: localizationManager.localized("family_applications"),
+                value: weeklyValue(
+                    scalar: firstScalarString(in: content, keys: ["apps_count", "applications_count", "apps", "applications"]),
+                    suffix: localizationManager.localized("family_apps")
+                ),
+                color: .purple
+            )
+            ReportStatCard(
+                icon: "⏰",
+                title: localizationManager.localized("family_screen_time"),
+                value: screenTimeDisplay(content) ?? emDash,
+                color: .orange
+            )
+            ReportStatCard(
+                icon: "🚫",
+                title: localizationManager.localized("family_blocked_attempts"),
+                value: weeklyValue(
+                    scalar: firstScalarString(in: content, keys: ["blocked_attempts", "blocked_count", "blocked", "blocks"]),
+                    suffix: localizationManager.localized("family_attempts")
+                ),
+                color: .red
+            )
+            ReportStatCard(
+                icon: "📍",
+                title: localizationManager.localized("family_movements"),
+                value: weeklyValue(
+                    scalar: firstScalarString(in: content, keys: ["movements", "location_events", "locations_count"]),
+                    suffix: localizationManager.localized("family_events")
+                ),
+                color: .green
+            )
+            ReportStatCard(
+                icon: "⚠️",
+                title: localizationManager.localized("family_warnings_new"),
+                value: weeklyValue(
+                    scalar: firstScalarString(in: content, keys: ["warnings_count", "warnings", "suspicious_count", "new_warnings"]),
+                    suffix: localizationManager.localized("family_new")
+                ),
+                color: .warningOrange
+            )
+            
+            if !extraLines.isEmpty {
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    Text(localizationManager.localized("family_statistics_week_detailed"))
+                        .font(.captionBold)
+                        .foregroundColor(.textSecondary)
+                    ForEach(Array(extraLines.enumerated()), id: \.offset) { _, line in
+                        Text(line)
+                            .font(.caption)
+                            .foregroundColor(.textTertiary)
+                    }
+                }
+                .padding(Spacing.s)
+                .background(Color.backgroundMedium.opacity(0.2))
+                .cornerRadius(CornerRadius.small)
+            }
+        }
+    }
+    
+    private var knownWeeklyContentKeys: Set<String> {
+        [
+            "sites_count", "web_sites_count", "total_sites", "sites", "web_sites",
+            "apps_count", "applications_count", "apps", "applications",
+            "screen_time", "screenTime", "total_screen_time", "screen_time_hours", "screen_time_minutes", "hours", "minutes",
+            "blocked_attempts", "blocked_count", "blocked", "blocks",
+            "movements", "location_events", "locations_count",
+            "warnings_count", "warnings", "suspicious_count", "new_warnings"
+        ]
+    }
+    
+    private func weeklyValue(scalar: String?, suffix: String) -> String {
+        guard let scalar, !scalar.isEmpty else { return emDash }
+        return "\(scalar) \(suffix)"
+    }
+    
+    private func screenTimeDisplay(_ content: [String: AnyCodable]) -> String? {
+        if let s = firstScalarString(in: content, keys: ["screen_time", "screenTime", "total_screen_time"]), !s.isEmpty {
+            return s
+        }
+        let hours = firstInt(in: content, keys: ["screen_time_hours", "hours"])
+        let minutes = firstInt(in: content, keys: ["screen_time_minutes", "minutes"])
+        if hours != nil || minutes != nil {
+            return "\(hours ?? 0)h \(minutes ?? 0)m"
+        }
+        return nil
+    }
+    
+    private func firstScalarString(in content: [String: AnyCodable], keys: [String]) -> String? {
+        for key in keys {
+            guard let any = content[key]?.value else { continue }
+            if let i = any as? Int { return String(i) }
+            if let d = any as? Double { return String(Int(d)) }
+            if let s = any as? String, !s.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty { return s }
+            if let b = any as? Bool { return b ? "1" : "0" }
+        }
+        return nil
+    }
+    
+    private func firstInt(in content: [String: AnyCodable], keys: [String]) -> Int? {
+        for key in keys {
+            guard let any = content[key]?.value else { continue }
+            if let i = any as? Int { return i }
+            if let d = any as? Double { return Int(d) }
+            if let s = any as? String, let v = Int(s.trimmingCharacters(in: .whitespaces)) { return v }
+        }
+        return nil
+    }
+    
+    private func kvLine(key: String, value: Any?) -> String? {
+        guard let value else { return nil }
+        if let arr = value as? [Any] { return "\(key): \(arr.count) items" }
+        if let dict = value as? [String: Any] { return "\(key): \(dict.count) keys" }
+        return "\(key): \(value)"
+    }
+    
+    private func fetchWeeklyReports() {
+        isLoading = true
+        loadError = nil
+        APIService.shared.getWeeklyReports(childId: childId) { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let items):
+                    reports = items.sorted { $0.createdAt > $1.createdAt }
+                case .failure(let error):
+                    loadError = error.localizedDescription
+                }
             }
         }
     }
@@ -5998,6 +6408,7 @@ struct ReportStatCard: View {
 
 struct SuspiciousActivityDetailModal: View {
     @Binding var isPresented: Bool
+    var childId: String? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     @State private var warnings: [SuspiciousWarning] = []
@@ -6008,6 +6419,13 @@ struct SuspiciousActivityDetailModal: View {
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.m) {
+                if warnings.isEmpty {
+                    Text(localizationManager.localized("parental_usage_no_data"))
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(Spacing.m)
+                }
                 ForEach(warnings) { warning in
                     HStack(spacing: Spacing.m) {
                         Image(systemName: warning.level == .high ? "exclamationmark.triangle.fill" : "exclamationmark.circle.fill")
@@ -6019,7 +6437,7 @@ struct SuspiciousActivityDetailModal: View {
                                 .font(.body)
                                 .foregroundColor(.textPrimary)
                             
-                            Text(warning.time)
+                            Text(warning.time.isEmpty ? "—" : warning.time)
                                 .font(.caption)
                                 .foregroundColor(.textSecondary)
                         }
@@ -6038,20 +6456,29 @@ struct SuspiciousActivityDetailModal: View {
         }
         .id("suspicious_activity_lang_\(localizationManager.currentLanguage.rawValue)")
         .onAppear {
-            if warnings.isEmpty {
-                warnings = [
-                    SuspiciousWarning(text: localizationManager.localized("family_warning_blocked_site"), level: .high, time: String(format: localizationManager.localized("family_hours_ago_format"), 2)),
-                    SuspiciousWarning(text: localizationManager.localized("family_warning_screen_time"), level: .medium, time: String(format: localizationManager.localized("family_hours_ago_format"), 5)),
-                    SuspiciousWarning(text: localizationManager.localized("family_warning_unknown_contact"), level: .high, time: String(format: localizationManager.localized("family_days_ago_format"), 1)),
-                    SuspiciousWarning(text: localizationManager.localized("family_warning_restricted_app"), level: .high, time: String(format: localizationManager.localized("family_days_ago_format"), 2))
-                ]
+            loadSuspiciousFromServer()
+        }
+    }
+    
+    private func loadSuspiciousFromServer() {
+        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let detail):
+                    warnings = detail.suspicious.map { row in
+                        let lvl: SuspiciousWarning.WarningLevel = row.level == "high" ? .high : .medium
+                        return SuspiciousWarning(text: row.text, level: lvl, time: row.time)
+                    }
+                case .failure:
+                    warnings = []
+                }
             }
         }
     }
 }
 
 struct SuspiciousWarning: Identifiable {
-    let id = UUID()
+    let id: UUID
     let text: String
     let level: WarningLevel
     let time: String
@@ -6059,10 +6486,18 @@ struct SuspiciousWarning: Identifiable {
     enum WarningLevel {
         case high, medium
     }
+    
+    init(id: UUID = UUID(), text: String, level: WarningLevel, time: String) {
+        self.id = id
+        self.text = text
+        self.level = level
+        self.time = time
+    }
 }
 
 struct TopSitesDetailModal: View {
     @Binding var isPresented: Bool
+    var childId: String? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     @State private var topSites: [TopSiteItem] = []
@@ -6124,14 +6559,44 @@ struct TopSitesDetailModal: View {
         }
     }
     
+    private func topSitesCategoryKey(for apiCategory: String) -> String {
+        switch apiCategory.lowercased() {
+        case "video": return "top_sites_category_video"
+        case "social": return "top_sites_category_social"
+        case "search": return "top_sites_category_search"
+        default: return "top_sites_category_search"
+        }
+    }
+    
+    private func topSitesCategoryColor(for apiCategory: String) -> Color {
+        switch apiCategory.lowercased() {
+        case "video": return .red
+        case "social": return .purple
+        case "search": return .blue
+        default: return .blue
+        }
+    }
+    
     private func loadTopSites() {
-        topSites = [
-            TopSiteItem(site: "youtube.com", visits: 142, hours: 8, minutes: 24, categoryKey: "top_sites_category_video", color: .red),
-            TopSiteItem(site: "instagram.com", visits: 89, hours: 4, minutes: 12, categoryKey: "top_sites_category_social", color: .purple),
-            TopSiteItem(site: "vk.com", visits: 67, hours: 2, minutes: 45, categoryKey: "top_sites_category_social", color: .blue),
-            TopSiteItem(site: "google.com", visits: 45, hours: 1, minutes: 15, categoryKey: "top_sites_category_search", color: .blue),
-            TopSiteItem(site: "tiktok.com", visits: 34, hours: 3, minutes: 20, categoryKey: "top_sites_category_video", color: .black)
-        ]
+        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let detail):
+                    topSites = detail.topSites.map { row in
+                        TopSiteItem(
+                            site: row.site,
+                            visits: row.visits,
+                            hours: row.hours,
+                            minutes: row.minutes,
+                            categoryKey: topSitesCategoryKey(for: row.category),
+                            color: topSitesCategoryColor(for: row.category)
+                        )
+                    }
+                case .failure:
+                    topSites = []
+                }
+            }
+        }
     }
     
     private func formatDuration(hours: Int, minutes: Int) -> String {
@@ -6151,17 +6616,28 @@ struct TopSitesDetailModal: View {
 }
 
 struct TopSiteItem: Identifiable {
-    let id = UUID()
+    let id: UUID
     let site: String
     let visits: Int
     let hours: Int
     let minutes: Int
     let categoryKey: String
     let color: Color
+    
+    init(id: UUID = UUID(), site: String, visits: Int, hours: Int, minutes: Int, categoryKey: String, color: Color) {
+        self.id = id
+        self.site = site
+        self.visits = visits
+        self.hours = hours
+        self.minutes = minutes
+        self.categoryKey = categoryKey
+        self.color = color
+    }
 }
 
 struct TopAppsDetailModal: View {
     @Binding var isPresented: Bool
+    var childId: String? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     @State private var topApps: [TopAppItem] = []
@@ -6237,13 +6713,34 @@ struct TopAppsDetailModal: View {
     }
     
     private func loadTopApps() {
-        topApps = [
-            TopAppItem(app: "Instagram", usageMinutes: 8 * 60 + 24, limitMinutes: 30, exceeded: true, color: .purple),
-            TopAppItem(app: "TikTok", usageMinutes: 4 * 60 + 12, limitMinutes: 20, exceeded: true, color: .black),
-            TopAppItem(app: "YouTube", usageMinutes: 3 * 60 + 45, limitMinutes: 45, exceeded: true, color: .red),
-            TopAppItem(app: "WhatsApp", usageMinutes: 90, limitMinutes: 60, exceeded: false, color: .green),
-            TopAppItem(app: "VK", usageMinutes: 45, limitMinutes: 30, exceeded: true, color: .blue)
-        ]
+        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let detail):
+                    topApps = detail.topApps.map { row in
+                        TopAppItem(
+                            app: row.name,
+                            usageMinutes: row.usageMinutes,
+                            limitMinutes: row.limitMinutes,
+                            exceeded: row.exceeded,
+                            color: topAppsRowColor(for: row.name)
+                        )
+                    }
+                case .failure:
+                    topApps = []
+                }
+            }
+        }
+    }
+    
+    private func topAppsRowColor(for name: String) -> Color {
+        let lower = name.lowercased()
+        if lower.contains("instagram") { return .purple }
+        if lower.contains("tiktok") { return .black }
+        if lower.contains("youtube") { return .red }
+        if lower.contains("whatsapp") { return .green }
+        if lower.contains("vk") { return .blue }
+        return .blue
     }
     
     private func formatDurationFromMinutes(_ minutes: Int) -> String {
@@ -6269,27 +6766,29 @@ struct TopAppsDetailModal: View {
 }
 
 struct TopAppItem: Identifiable {
-    let id = UUID()
+    let id: UUID
     let app: String
     let usageMinutes: Int
     let limitMinutes: Int
     let exceeded: Bool
     let color: Color
+    
+    init(id: UUID = UUID(), app: String, usageMinutes: Int, limitMinutes: Int, exceeded: Bool, color: Color) {
+        self.id = id
+        self.app = app
+        self.usageMinutes = usageMinutes
+        self.limitMinutes = limitMinutes
+        self.exceeded = exceeded
+        self.color = color
+    }
 }
 
 struct UsageHoursDetailModal: View {
     @Binding var isPresented: Bool
+    var childId: String? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
     
-    @State private var usageHours: [UsageHourItem] = [
-        UsageHourItem(hour: "06:00-08:00", usage: 15, level: .low, color: .blue),
-        UsageHourItem(hour: "08:00-12:00", usage: 35, level: .medium, color: .green),
-        UsageHourItem(hour: "12:00-16:00", usage: 45, level: .high, color: .orange),
-        UsageHourItem(hour: "16:00-20:00", usage: 80, level: .veryHigh, color: .red),
-        UsageHourItem(hour: "20:00-22:00", usage: 60, level: .high, color: .orange),
-        UsageHourItem(hour: "22:00-00:00", usage: 25, level: .medium, color: .green),
-        UsageHourItem(hour: "00:00-06:00", usage: 5, level: .low, color: .blue)
-    ]
+    @State private var usageHours: [UsageHourItem] = []
     
     var body: some View {
         FamilyModalBaseView(
@@ -6331,11 +6830,46 @@ struct UsageHoursDetailModal: View {
             }
         }
         .id("peak_hours_lang_\(localizationManager.currentLanguage.rawValue)")
+        .onAppear {
+            loadPeakHoursFromServer()
+        }
+    }
+    
+    private func loadPeakHoursFromServer() {
+        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let detail):
+                    usageHours = detail.peakHours.map { row in
+                        let pct = max(0, min(100, row.usagePercent))
+                        let level: UsageHourItem.UsageLevel
+                        let color: Color
+                        switch pct {
+                        case ..<25:
+                            level = .low
+                            color = .blue
+                        case ..<50:
+                            level = .medium
+                            color = .green
+                        case ..<75:
+                            level = .high
+                            color = .orange
+                        default:
+                            level = .veryHigh
+                            color = .red
+                        }
+                        return UsageHourItem(hour: row.label, usage: pct, level: level, color: color)
+                    }
+                case .failure:
+                    usageHours = []
+                }
+            }
+        }
     }
 }
 
 struct UsageHourItem: Identifiable {
-    let id = UUID()
+    let id: UUID
     let hour: String
     let usage: Int
     let level: UsageLevel
@@ -6343,6 +6877,14 @@ struct UsageHourItem: Identifiable {
     
     enum UsageLevel {
         case low, medium, high, veryHigh
+    }
+    
+    init(id: UUID = UUID(), hour: String, usage: Int, level: UsageLevel, color: Color) {
+        self.id = id
+        self.hour = hour
+        self.usage = usage
+        self.level = level
+        self.color = color
     }
 }
 

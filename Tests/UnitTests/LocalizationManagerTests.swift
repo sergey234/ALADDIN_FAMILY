@@ -26,9 +26,11 @@ final class LocalizationManagerTests: XCTestCase {
     func testSupportedLanguages() {
         let supportedLanguages = LocalizationManager.Language.allCases
         
-        XCTAssertEqual(supportedLanguages.count, 2)
+        XCTAssertEqual(supportedLanguages.count, 4)
         XCTAssertTrue(supportedLanguages.contains(.russian))
         XCTAssertTrue(supportedLanguages.contains(.english))
+        XCTAssertTrue(supportedLanguages.contains(.chinese))
+        XCTAssertTrue(supportedLanguages.contains(.arabic))
     }
     
     func testLanguageDisplayNames() {
@@ -117,5 +119,29 @@ final class LocalizationManagerTests: XCTestCase {
         
         wait(for: [expectation1, expectation2], timeout: 1.0)
         XCTAssertTrue(LocalizationManager.Language.allCases.contains(localizationManager.currentLanguage))
+    }
+
+    /// pc-15: семейные ключи мониторинга и пустых отчётов должны резолвиться из `en.lproj` / `ru.lproj`, а не возвращаться как сырой ключ.
+    func testFamilyMonitoringAndReportsEmptyKeysResolveFromBundle() {
+        let keys = [
+            "family_monitoring_browser_title",
+            "family_monitoring_browser_total_sites",
+            "family_monitoring_browser_total_time",
+            "family_monitoring_browser_top_week",
+            "family_monitoring_browser_visits",
+            "family_monitoring_browser_category_video",
+            "family_reports_empty_title",
+            "family_reports_empty_hint_jwt"
+        ]
+        localizationManager.changeLanguage(to: .russian)
+        for k in keys {
+            let v = localizationManager.localized(k)
+            XCTAssertNotEqual(v, k, "RU: expected Localizable.strings value for \(k)")
+        }
+        localizationManager.changeLanguage(to: .english)
+        for k in keys {
+            let v = localizationManager.localized(k)
+            XCTAssertNotEqual(v, k, "EN: expected Localizable.strings value for \(k)")
+        }
     }
 }

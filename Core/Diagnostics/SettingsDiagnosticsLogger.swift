@@ -116,15 +116,17 @@ class SettingsDiagnosticsLogger {
     
     // MARK: - String Sanitization
     
-    /// Удаляет эмодзи из строки для безопасного использования в os_log
-    /// Эмодзи могут вызывать рекурсию в os_log при обработке UTF-16
+    /// Удаляет эмодзи из строки для безопасного использования в os_log.
+    /// Весь ASCII (включая цифры в URL, HTTP status, UUID) всегда сохраняем: на части SDK `isEmoji`
+    /// давал ложные срабатывания и в Console исчезали цифры (`status=`, `FAM_…` без hex).
     private func removeEmoji(_ string: String) -> String {
-        return string.unicodeScalars
+        string.unicodeScalars
             .filter { scalar in
-                // Удаляем все эмодзи и связанные символы
-                !scalar.properties.isEmoji &&
-                !scalar.properties.isEmojiPresentation &&
-                scalar.value != 0xFE0F // Variation Selector-16 (emoji modifier)
+                let v = scalar.value
+                if v <= 0x7F { return true }
+                if scalar.properties.isEmoji || scalar.properties.isEmojiPresentation { return false }
+                if v == 0xFE0F { return false }
+                return true
             }
             .reduce("") { $0 + String($1) }
     }

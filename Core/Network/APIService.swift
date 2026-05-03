@@ -47,6 +47,11 @@ class APIService: ObservableObject {
     // ✅ ИСПРАВЛЕНИЕ: Кешируем APIService для избежания повторного создания
     private static var _sharedAPIService: APIService?
 
+    /// Параллельные вызовы `monitoring/detail` для одного `childId` → один HTTP-запрос (burst SwiftUI).
+    private static let parentalMonitoringDetailCoalesceLock = NSLock()
+    private static var parentalMonitoringDetailWaiters: [String: [(Result<ParentalMonitoringDetailResponse, Error>) -> Void]] = [:]
+    private static var parentalMonitoringDetailInflight = Set<String>()
+
     static var shared: APIService {
         #if DEBUG
         if AppConfig.useMockAPI {
@@ -638,7 +643,10 @@ class APIService: ObservableObject {
     }
     
     func getFamilyStats(completion: @escaping (Result<FamilyStatsResponse, Error>) -> Void) {
-        networkManager.get(endpoint: AppConfig.Endpoint.familyStats, completion: completion)
+        let stored = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let headers: [String: String]? = stored.isEmpty ? nil : ["X-Family-Id": stored]
+        networkManager.get(endpoint: AppConfig.Endpoint.familyStats, additionalHeaders: headers, completion: completion)
     }
     
     // MARK: - Family Chat API
@@ -647,9 +655,11 @@ class APIService: ObservableObject {
         let stored = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let query: [String: String]? = stored.isEmpty ? nil : ["familyId": stored]
+        let headers: [String: String]? = stored.isEmpty ? nil : ["X-Family-Id": stored]
         networkManager.get(
             endpoint: AppConfig.Endpoint.familyChatMessages,
             queryParams: query,
+            additionalHeaders: headers,
             completion: completion
         )
     }
@@ -883,6 +893,60 @@ class APIService: ObservableObject {
         }
         return error.localizedDescription.localizedCaseInsensitiveContains("critical endpoint not found")
     }
+
+    /// Текст `detail` из ответа FastAPI (строка или массив validation errors); иначе `nil`.
+    private static func parseFastAPIErrorDetail(from data: Data) -> String? {
+        guard let obj = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else { return nil }
+        if let s = obj["detail"] as? String {
+            let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+            return t.isEmpty ? nil : t
+        }
+        if let arr = obj["detail"] as? [[String: Any]] {
+            let parts = arr.compactMap { $0["msg"] as? String }.map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }.filter { !$0.isEmpty }
+            return parts.isEmpty ? nil : parts.joined(separator: "; ")
+        }
+        if let s = obj["message"] as? String {
+            let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+            return t.isEmpty ? nil : t
+        }
+        return nil
+    }
+
+    private static func bodyLooksLikeHTML(_ text: String) -> Bool {
+        let lower = text.lowercased()
+        return lower.hasPrefix("<!doctype") || lower.contains("<html") || lower.contains("<body")
+    }
+
+    private static func networkErrorForUploadHTTPStatus(
+        _ code: Int,
+        parsedDetail: String?
+    ) -> NetworkError {
+        switch code {
+        case 400:
+            return .badRequest(parsedDetail)
+        case 401:
+            return .unauthorized(parsedDetail)
+        case 403:
+            if let d = parsedDetail, !d.isEmpty, !bodyLooksLikeHTML(d) {
+                return .forbidden(d)
+            }
+            return .forbidden(nil)
+        case 404:
+            return .notFound(parsedDetail)
+        case 413:
+            return .badRequest(parsedDetail ?? "File too large")
+        case 429:
+            return .tooManyRequests(parsedDetail)
+        case 500:
+            return .internalServerError(parsedDetail)
+        case 502:
+            return .badGateway(parsedDetail)
+        case 503:
+            return .serviceUnavailable(parsedDetail)
+        default:
+            return .httpError(code)
+        }
+    }
     
     private func uploadMediaUsingCandidates(
         endpoints: [String],
@@ -961,8 +1025,17 @@ class APIService: ObservableObject {
                     )
                     return
                 }
+                let parsedDetail = Self.parseFastAPIErrorDetail(from: data)
+                let bodyPreview = String(data: data.prefix(768), encoding: .utf8) ?? "<non-UTF8 \(data.count) B>"
+                #if DEBUG
+                print("📤 APIService upload-media HTTP \(httpResponse.statusCode) \(endpoint) detail=\(parsedDetail ?? "—") body.prefix=\(bodyPreview.prefix(400))")
+                #endif
                 DispatchQueue.main.async {
-                    completion(.failure(NetworkError.httpError(httpResponse.statusCode)))
+                    let failure: NetworkError = Self.networkErrorForUploadHTTPStatus(
+                        httpResponse.statusCode,
+                        parsedDetail: parsedDetail
+                    )
+                    completion(.failure(failure))
                 }
                 return
             }
@@ -2798,6 +2871,50 @@ class APIService: ObservableObject {
         // ✅ РЕАЛЬНЫЙ ЗАПРОС
         let endpoint = childId != nil ? "\(AppConfig.Endpoint.getStats)?childId=\(childId!)" : AppConfig.Endpoint.getStats
         networkManager.get(endpoint: endpoint, completion: completion)
+    }
+    
+    /// Детальные списки мониторинга / отчётов (только данные с сервера).
+    func getParentalMonitoringDetail(
+        childId: String? = nil,
+        completion: @escaping (Result<ParentalMonitoringDetailResponse, Error>) -> Void
+    ) {
+        let key: String = (childId?.isEmpty == false) ? childId! : "__none__"
+        Self.parentalMonitoringDetailCoalesceLock.lock()
+        Self.parentalMonitoringDetailWaiters[key, default: []].append(completion)
+        let shouldStart = !Self.parentalMonitoringDetailInflight.contains(key)
+        if shouldStart {
+            Self.parentalMonitoringDetailInflight.insert(key)
+        }
+        Self.parentalMonitoringDetailCoalesceLock.unlock()
+        guard shouldStart else { return }
+
+        var endpoint = AppConfig.Endpoint.parentalMonitoringDetail
+        if let childId, !childId.isEmpty,
+           let encoded = childId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
+            endpoint += "?childId=\(encoded)"
+        }
+        networkManager.get(endpoint: endpoint) { result in
+            Self.parentalMonitoringDetailCoalesceLock.lock()
+            Self.parentalMonitoringDetailInflight.remove(key)
+            let callbacks = Self.parentalMonitoringDetailWaiters.removeValue(forKey: key) ?? []
+            Self.parentalMonitoringDetailCoalesceLock.unlock()
+            for cb in callbacks {
+                cb(result)
+            }
+        }
+    }
+
+    /// Детское устройство: запись событий мониторинга (DNS / приложения / хэши URL). Требуется JWT с числовым `user_id` ребёнка.
+    func postParentalMonitoringEvents(
+        events: [ParentalMonitoringEventInDTO],
+        completion: @escaping (Result<ParentalMonitoringIngestResponseBody, Error>) -> Void
+    ) {
+        let body = ParentalMonitoringIngestRequestBody(events: events)
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.parentalMonitoringEvents,
+            body: body,
+            completion: completion
+        )
     }
     
     /**

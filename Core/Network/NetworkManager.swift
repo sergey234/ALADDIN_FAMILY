@@ -91,6 +91,72 @@ class NetworkManager: NSObject, ObservableObject {
         return false
     }
 
+    /// Экран мониторинга может дергать `detail` из нескольких SwiftUI-view; даём больший bucket, чем дефолт 100/мин.
+    private static func effectiveMaxRequestsPerWindow(for path: String) -> Int? {
+        if path.contains("/api/parental-control/monitoring/detail") { return 400 }
+        return nil
+    }
+
+    /// Шлюз `aladdin-ai.ru` иногда отдаёт `{ "function", "result", ... }` вместо тела контракта; вытаскиваем JSON для декодера.
+    private static func dataPreparingForJSONDecode<T>(path: String, original data: Data, decodeType: T.Type) -> Data {
+        guard let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any] else {
+            return data
+        }
+        let parentalPath = path.contains("/api/parental-control/") || path.contains("/api/parental/")
+        guard parentalPath, json["function"] != nil, json.keys.contains("result") else {
+            return data
+        }
+        guard let result = json["result"], !(result is NSNull) else {
+            if decodeType == ParentalMonitoringDetailResponse.self,
+               path.contains("monitoring/detail") {
+                return emptyParentalMonitoringDetailPayload()
+            }
+            return data
+        }
+        if let dict = result as? [String: Any] {
+            return (try? JSONSerialization.data(withJSONObject: dict)) ?? data
+        }
+        if let s = (result as? String) ?? (result as? NSString).map({ $0 as String }) {
+            let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !t.isEmpty, let inner = t.data(using: .utf8) {
+                return inner
+            }
+            if t.isEmpty,
+               decodeType == ParentalMonitoringDetailResponse.self,
+               path.contains("monitoring/detail") {
+                return emptyParentalMonitoringDetailPayload()
+            }
+        }
+        // Шлюз с `function`/`result`, но `result` не строка и не объект — не даём декодеру падать по корню.
+        if decodeType == ParentalMonitoringDetailResponse.self,
+           path.contains("monitoring/detail"),
+           json["top_sites"] == nil,
+           json["function"] != nil,
+           json.keys.contains("result") {
+            return emptyParentalMonitoringDetailPayload()
+        }
+        return data
+    }
+
+    private static func emptyParentalMonitoringDetailPayload() -> Data {
+        let summary: [String: Any] = [
+            "browser_sites_week": 0,
+            "apps_used_week": 0,
+            "contacts_active": 0
+        ]
+        let o: [String: Any] = [
+            "top_sites": [],
+            "top_apps": [],
+            "browser_history": [],
+            "app_history": [],
+            "peak_hours": [],
+            "suspicious": [],
+            "contacts": [],
+            "summary": summary
+        ]
+        return (try? JSONSerialization.data(withJSONObject: o)) ?? Data()
+    }
+
     // ✅ ЗАДАЧА 62: Rate Limiting
     /// Rate limiter для защиты от перегрузки API
     private let rateLimiter = RateLimiter(maxRequests: 100, timeWindow: 60.0) // 100 запросов в минуту
@@ -262,6 +328,7 @@ class NetworkManager: NSObject, ObservableObject {
         endpoint: String,
         queryParams: [String: String]? = nil,
         requiresAuth: Bool = true,  // ✅ По умолчанию авторизация обязательна
+        additionalHeaders: [String: String]? = nil,
         onHeaders: (([AnyHashable: Any]) -> Void)? = nil,
         completion: @escaping (Result<T, Error>) -> Void
     ) {
@@ -320,6 +387,12 @@ class NetworkManager: NSObject, ObservableObject {
                 // Для публичных endpoint'ов токен опциональный
                 if let token = AppConfig.authToken {
                     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+                }
+            }
+
+            if let additionalHeaders = additionalHeaders {
+                for (field, value) in additionalHeaders {
+                    request.setValue(value, forHTTPHeaderField: field)
                 }
             }
             
@@ -821,8 +894,9 @@ class NetworkManager: NSObject, ObservableObject {
 
         // ✅ ЗАДАЧА 62: Проверка rate limit перед запросом
         let endpoint = request.url?.path ?? "unknown"
+        let rateCap = Self.effectiveMaxRequestsPerWindow(for: endpoint)
 
-        guard rateLimiter.canMakeRequest(to: endpoint) else {
+        guard rateLimiter.canMakeRequest(to: endpoint, maxRequestsOverride: rateCap) else {
             // Лимит превышен - возвращаем ошибку
             let timeUntilReset = rateLimiter.getTimeUntilReset(for: endpoint) ?? 60.0
             let errorMessage = String(format: "Слишком много запросов. Повторите через %.0f секунд", timeUntilReset)
@@ -861,7 +935,7 @@ class NetworkManager: NSObject, ObservableObject {
         print("🔵 NetworkManager.performRequest: Начало")
         print("   - URL: \(safeURLString)")
         print("   - Method: \(request.httpMethod ?? "unknown")")
-        print("   - Rate limit: OK (\(rateLimiter.getRequestCount(for: endpoint))/100)")
+        print("   - Rate limit: OK (\(rateLimiter.getRequestCount(for: endpoint))/\(rateCap ?? 100))")
         print("   - Is Retry: \(isRetry)")
         #endif
         
@@ -1407,7 +1481,8 @@ class NetworkManager: NSObject, ObservableObject {
                     // ✅ BUILD 115: Детальное логирование ошибок декодирования для диагностики
                     let decoded: T
                     do {
-                        decoded = try JSONDecoder().decode(T.self, from: data)
+                        let decodePayload = Self.dataPreparingForJSONDecode(path: reqPath, original: data, decodeType: T.self)
+                        decoded = try JSONDecoder().decode(T.self, from: decodePayload)
                     } catch let decodingError {
                         let responseString = String(data: data, encoding: .utf8) ?? "Unable to convert to string"
                         if reqPath.contains("/api/content/") {

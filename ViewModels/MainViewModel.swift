@@ -181,6 +181,15 @@ class MainViewModel: ObservableObject {
         // ✅ BUILD 109: Полная изоляция конструктора. Никаких логов или системных вызовов.
         self.apiService = apiService
         self.keychainManager = keychainManager
+
+        // Пока пользователь на другом экране (например «Тарифы»), `MainScreen.onReceive(SubscriptionUpdated)` не подписан —
+        // иначе дашборд не перезапрашивается при смене плана, а `onAppear` может пропустить из‑за TTL.
+        NotificationCenter.default.publisher(for: NSNotification.Name("SubscriptionUpdated"))
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.requestRefreshDebounced()
+            }
+            .store(in: &cancellables)
     }
     
     // MARK: - Public Methods

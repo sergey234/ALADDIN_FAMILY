@@ -132,6 +132,7 @@ final class MockNetworkManager: NetworkManager {
         endpoint: String,
         queryParams: [String: String]? = nil,
         requiresAuth: Bool = true,
+        additionalHeaders: [String: String]? = nil,
         onHeaders: (([AnyHashable: Any]) -> Void)? = nil,
         completion: @escaping (Result<T, Error>) -> Void
     ) {

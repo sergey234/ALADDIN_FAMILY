@@ -1797,4 +1797,18 @@
 "dark_web_explanation_recommendation_2" = "Если есть риск активной утечки, используйте быстрое сканирование.";
 "dark_web_explanation_recommendation_3" = "После обнаружения утечки сразу смените скомпрометированные пароли.";
 
+/* Family monitoring browser modal (канонические ключи; pc-15) */
+"family_monitoring_browser_title" = "История браузера";
+"family_monitoring_browser_total_sites" = "Всего сайтов";
+"family_monitoring_browser_total_time" = "Общее время";
+"family_monitoring_browser_top_week" = "Топ сайтов за неделю";
+"family_monitoring_browser_visits" = "посещений";
+"family_monitoring_browser_category_video" = "Видео";
+"family_monitoring_browser_category_social" = "Социальные сети";
+"family_monitoring_browser_category_search" = "Поиск";
+
+/* Пустое состояние недельных отчётов (pc-16) */
+"family_reports_empty_title" = "Пока нет сохранённых недельных отчётов";
+"family_reports_empty_hint_jwt" = "Отчёты привязаны к числовому аккаунту ребёнка. Привяжите ребёнка в семье и проверьте ответ GET /api/parental-control/reports/weekly, либо заполните parental_reports / события мониторинга на сервере.";
+
 

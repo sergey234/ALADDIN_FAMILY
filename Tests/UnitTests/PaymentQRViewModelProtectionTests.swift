@@ -19,8 +19,8 @@ final class PaymentQRViewModelProtectionTests: XCTestCase {
     private var viewModel: PaymentQRViewModel!
     private var testTariff: Tariff!
     
-    @MainActor
-    override func setUpWithError() throws {
+    override func setUp() async throws {
+        try await super.setUp()
         testTariff = Tariff(
             id: "test_tariff_001",
             title: "Test Tariff",
@@ -33,8 +33,8 @@ final class PaymentQRViewModelProtectionTests: XCTestCase {
         viewModel = PaymentQRViewModel(tariff: testTariff)
     }
     
-    @MainActor
-    override func tearDownWithError() throws {
+    override func tearDown() async throws {
+        try await super.tearDown()
         viewModel = nil
         testTariff = nil
     }

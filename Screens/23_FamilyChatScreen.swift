@@ -77,7 +77,9 @@ struct FamilyChatScreen: View {
     @State private var lastTypingSignalAt: Date = .distantPast
     @State private var typingExpiryByUser: [String: Date] = [:]
     @State private var wsRealtimeUnavailable: Bool = false
-    
+    /// После успешной отправки (текст/медиа/голос): защита silent-poll от пустого GET, пока бэкенд не отдал сообщения в ленту.
+    @State private var lastOutboundChatCompletedAt: Date?
+
     private let familyMembersKey = "family_members_list"
     
     private let apiService = APIService.shared
@@ -551,7 +553,13 @@ struct FamilyChatScreen: View {
         case .noConnection, .timeout, .dnsResolutionFailed, .serverUnavailable,
              .sslPinningFailed, .invalidCertificate, .encryptionError:
             return localizationManager.localized("family_chat_error_network")
-        case .unauthorized, .forbidden, .tokenExpired, .invalidToken, .reauthenticationRequired:
+        case .forbidden(let msg):
+            let m = (msg ?? "").lowercased()
+            if m.contains("not a member") {
+                return localizationManager.localized("family_chat_error_upload_not_member")
+            }
+            return localizationManager.localized("family_chat_error_auth")
+        case .unauthorized, .tokenExpired, .invalidToken, .reauthenticationRequired:
             return localizationManager.localized("family_chat_error_auth")
         default:
             return localizationManager.localized("family_chat_error_data")
@@ -630,8 +638,22 @@ struct FamilyChatScreen: View {
 
                 switch result {
                 case .success(let responses):
-                    messages = responses.map { response in
-                        convertToMessage(response)
+                    let serverList = responses.map { convertToMessage($0) }
+                    if silent {
+                        // Пустой ответ после отправки часто затирал оптимистичные пузыри (сервер ещё не отдал запись в GET).
+                        if serverList.isEmpty, !messages.isEmpty {
+                            let hasPending = messages.contains { $0.id.hasPrefix("pending-") }
+                            let recentOutbound = lastOutboundChatCompletedAt.map { Date().timeIntervalSince($0) < 45 } ?? false
+                            if hasPending || recentOutbound {
+                                print("ℹ️ FamilyChatScreen: silent GET messages=[] — сохраняем ленту (\(messages.count)) pending=\(hasPending) recentOutbound=\(recentOutbound)")
+                                return
+                            }
+                        }
+                        let serverIds = Set(serverList.map(\.id))
+                        let pendingExtras = messages.filter { $0.id.hasPrefix("pending-") && !serverIds.contains($0.id) }
+                        messages = serverList + pendingExtras
+                    } else {
+                        messages = serverList
                     }
                     if !messages.isEmpty {
                         markFamilyActivity()
@@ -838,7 +860,7 @@ struct FamilyChatScreen: View {
                 ZStack(alignment: .topLeading) {
                     if messageText.isEmpty {
                         Text(localizationManager.localized("family_chat_input_placeholder"))
-                            .foregroundColor(Color.black.opacity(0.55))
+                            .foregroundColor(Color(UIColor.secondaryLabel))
                             .padding(.horizontal, 14)
                             .padding(.vertical, 12)
                             .allowsHitTesting(false)
@@ -846,7 +868,7 @@ struct FamilyChatScreen: View {
 
                     TextEditor(text: $messageText)
                         .font(.system(size: 16))
-                        .foregroundColor(.black)
+                        .foregroundColor(Color(UIColor.label))
                         .padding(.horizontal, 10)
                         .padding(.vertical, 8)
                         .frame(minHeight: 44, maxHeight: composerHeight(for: messageText))
@@ -855,10 +877,10 @@ struct FamilyChatScreen: View {
                         .accessibilityLabel(localizationManager.localized("family_chat_input_accessibility"))
                         .accessibilityHint(localizationManager.localized("family_chat_input_hint"))
                 }
-                .background(Color.white.opacity(0.96))
+                .background(Color(UIColor.secondarySystemGroupedBackground))
                 .overlay(
                     RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color.black.opacity(0.18), lineWidth: 1)
+                        .stroke(Color(UIColor.separator), lineWidth: 1)
                 )
                 .cornerRadius(14)
 
@@ -1083,6 +1105,7 @@ struct FamilyChatScreen: View {
                             switch sendResult {
                             case .success:
                                 self.replyToMessage = nil
+                                self.lastOutboundChatCompletedAt = Date()
                                 self.loadMessages(silent: true)
                             case .failure(let err):
                                 self.presentChatError(
@@ -1197,6 +1220,7 @@ struct FamilyChatScreen: View {
                             switch sendResult {
                             case .success:
                                 self.replyToMessage = nil
+                                self.lastOutboundChatCompletedAt = Date()
                                 self.loadMessages(silent: true)
                             case .failure(let err):
                                 self.presentChatError(
@@ -1481,6 +1505,7 @@ struct FamilyChatScreen: View {
                     if !messages.contains(where: { $0.id == optimisticId }) {
                         messages.append(optimistic)
                     }
+                    lastOutboundChatCompletedAt = Date()
                     loadMessages(silent: true)
 
                     pushService.sendChatNotification(
@@ -1827,12 +1852,12 @@ struct MessageBubbleView: View {
                             if let text = message.text {
                                 Text(text)
                                     .font(.body)
-                                    .foregroundColor(.textPrimary)
+                                    .foregroundColor(message.isCurrentUser ? Color.white : Color(UIColor.label))
                                     .padding(Spacing.m)
                                     .background(
                                         message.isCurrentUser
                                             ? Color.primaryBlue
-                                            : Color.surfaceDark
+                                            : Color(UIColor.secondarySystemBackground)
                                     )
                                     .cornerRadius(CornerRadius.medium)
                             }

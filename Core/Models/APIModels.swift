@@ -132,6 +132,38 @@ struct ParentalReportItem: Codable, Identifiable {
         case content
         case createdAt = "created_at"
     }
+    
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(Int.self, forKey: .id)
+        userId = try c.decode(Int.self, forKey: .userId)
+        type = try c.decode(String.self, forKey: .type)
+        content = try c.decode([String: AnyCodable].self, forKey: .content)
+        if let s = try? c.decode(String.self, forKey: .createdAt) {
+            let isoFrac = ISO8601DateFormatter()
+            isoFrac.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let d = isoFrac.date(from: s) {
+                createdAt = d
+            } else {
+                let iso = ISO8601DateFormatter()
+                iso.formatOptions = [.withInternetDateTime]
+                createdAt = iso.date(from: s) ?? Date(timeIntervalSince1970: 0)
+            }
+        } else {
+            createdAt = try c.decode(Date.self, forKey: .createdAt)
+        }
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(userId, forKey: .userId)
+        try c.encode(type, forKey: .type)
+        try c.encode(content, forKey: .content)
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        try c.encode(iso.string(from: createdAt), forKey: .createdAt)
+    }
 }
 
 // MARK: - Family Models
@@ -1172,12 +1204,133 @@ struct HandleAccessRequestRequest: Codable {
     let reason: String? // опциональная причина отклонения
 }
 
+/// Сводка по семейным отчётам (`parental_reports`), не смешивать с `monitoring.*` (pc-04).
+struct ParentalControlReportsStats: Codable {
+    let weeklyCount: Int
+    let dailyCount: Int
+    let alertsCount: Int
+    let hasDailyToday: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case weeklyCount = "weekly_count"
+        case dailyCount = "daily_count"
+        case alertsCount = "alerts_count"
+        case hasDailyToday = "has_daily_today"
+    }
+}
+
+// MARK: - Parental monitoring detail (`GET /api/parental-control/monitoring/detail`)
+
+struct ParentalMonitoringSummaryBlock: Codable {
+    let browserSitesWeek: Int
+    let appsUsedWeek: Int
+    let contactsActive: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case browserSitesWeek = "browser_sites_week"
+        case appsUsedWeek = "apps_used_week"
+        case contactsActive = "contacts_active"
+    }
+}
+
+struct ParentalMonitoringTopSiteRow: Codable {
+    let site: String
+    let visits: Int
+    let hours: Int
+    let minutes: Int
+    let category: String
+}
+
+struct ParentalMonitoringTopAppRow: Codable {
+    let name: String
+    let usageMinutes: Int
+    let limitMinutes: Int
+    let exceeded: Bool
+    
+    enum CodingKeys: String, CodingKey {
+        case name
+        case usageMinutes = "usage_minutes"
+        case limitMinutes = "limit_minutes"
+        case exceeded
+    }
+}
+
+struct ParentalMonitoringPeakHourRow: Codable {
+    let label: String
+    let usagePercent: Int
+    
+    enum CodingKeys: String, CodingKey {
+        case label
+        case usagePercent = "usage_percent"
+    }
+}
+
+struct ParentalMonitoringSuspiciousRow: Codable {
+    let text: String
+    let level: String
+    let time: String
+}
+
+struct ParentalMonitoringContactRow: Codable {
+    let name: String
+    let messages: Int
+    let calls: Int
+    let lastContact: String
+    
+    enum CodingKeys: String, CodingKey {
+        case name, messages, calls
+        case lastContact = "last_contact"
+    }
+}
+
+struct ParentalMonitoringDetailResponse: Codable {
+    let topSites: [ParentalMonitoringTopSiteRow]
+    let topApps: [ParentalMonitoringTopAppRow]
+    let browserHistory: [ParentalMonitoringTopSiteRow]
+    let appHistory: [ParentalMonitoringTopAppRow]
+    let peakHours: [ParentalMonitoringPeakHourRow]
+    let suspicious: [ParentalMonitoringSuspiciousRow]
+    let contacts: [ParentalMonitoringContactRow]
+    let summary: ParentalMonitoringSummaryBlock
+    
+    enum CodingKeys: String, CodingKey {
+        case topSites = "top_sites"
+        case topApps = "top_apps"
+        case browserHistory = "browser_history"
+        case appHistory = "app_history"
+        case peakHours = "peak_hours"
+        case suspicious, contacts, summary
+    }
+}
+
+/// Одно событие для `POST /api/parental-control/monitoring/events` (JWT ребёнка → `user_id` на сервере).
+struct ParentalMonitoringEventInDTO: Codable {
+    let kind: String
+    let payload: [String: AnyCodable]
+
+    init(kind: String, payload: [String: Any] = [:]) {
+        self.kind = kind
+        self.payload = payload.mapValues { AnyCodable($0) }
+    }
+}
+
+struct ParentalMonitoringIngestRequestBody: Codable {
+    let events: [ParentalMonitoringEventInDTO]
+}
+
+struct ParentalMonitoringIngestResponseBody: Codable {
+    let success: Bool?
+    let inserted: Int?
+}
+
 // Статистика родительского контроля
 struct ParentalControlStatsResponse: Codable {
     let contentBlocked: ContentBlockedStats
     let screenTime: ScreenTimeStats
     let location: ParentalControlLocationStats
     let monitoring: MonitoringStats
+    /// Опционально для старых бэкендов без поля `reports` в `/stats`.
+    let reports: ParentalControlReportsStats?
     
     // ✅ ИСПРАВЛЕНО: CodingKeys для маппинга snake_case → camelCase
     enum CodingKeys: String, CodingKey {
@@ -1185,6 +1338,7 @@ struct ParentalControlStatsResponse: Codable {
         case screenTime = "screen_time"
         case location
         case monitoring
+        case reports
     }
 }
 

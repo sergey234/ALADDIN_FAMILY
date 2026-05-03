@@ -1,11 +1,16 @@
 # -*- coding: utf-8 -*-
 """
-Parental Control API Router
---------------------------
-Временные (mock + light integration) endpoints, обеспечивающие мобильные приложения
-данными по родительскому контролю до полноценной интеграции с бекендом.
-    """
-    
+DEPRECATED / NON-SSOT — не подключать в FastAPI `main.py`.
+
+Канонический runtime-роутер родительского API: `security/api/routers/parental_control_router.py`
+(импорт `security.api.routers.parental_control_router`). Этот файл — исторический mock/in-memory;
+при деплое на прод **нельзя** подменять им канонический путь и **нельзя** копировать в
+`/opt/aladdin-backend/security/...` вместо дерева `security/`. Задача контроля: pc-02-router-ssot.
+
+Временные (mock + light integration) endpoints оставлены в репозитории только для совместимости
+со старыми скриптами/доками; новые изменения вносить в `security/api/routers/parental_control_router.py`.
+"""
+
 from datetime import datetime
 from typing import Dict, Optional
 

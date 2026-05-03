@@ -717,7 +717,8 @@ struct MainScreen: View {
                                         .multilineTextAlignment(.leading)
                                         .layoutPriority(1)
                                 }
-                                .id(tariffRowViewIdentity)
+                                // epoch: гарантированный refresh строки тарифа после trial/IAP/синка на реальном устройстве
+                                .id("tariff_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
 
                                 if let expirationText = cachedExpirationText {
                                     Text("\(localizationManager.localized("main_family_subscription_valid_until")) \(expirationText)")
@@ -785,6 +786,8 @@ struct MainScreen: View {
                                 )
                         )
                         .shadow(color: currentTariffColor.opacity(0.4), radius: 10, x: 0, y: 4)
+                        // Тот же epoch, что у строки тарифа: на девайсе SwiftUI иначе не пересобирает градиент/тень по `currentTariffColor`.
+                        .id("family_tariff_card_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
                         .padding(.horizontal, 20)
                         
                         // Chat switcher + contextual quick entry (ненавязчиво рядом с чатом)
@@ -875,6 +878,7 @@ struct MainScreen: View {
                             )
                         }
                         }
+                        .id("home_chat_segments_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
                         .accessibilityIdentifier("main_nav_ai_assistant")
                         .padding(.horizontal, 20)
                         

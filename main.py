@@ -1150,6 +1150,8 @@ async def wildcard_handler(request: Request, path: str):
         "reports/",
         "family/",
         "parental/",
+        # /api/parental-control/* — отдельный префикс от /api/parental/* (bypass); без явного роутера не отдавать SFM-mock.
+        "parental-control/",
         "components/",
         "auth/",
         "metrics/",

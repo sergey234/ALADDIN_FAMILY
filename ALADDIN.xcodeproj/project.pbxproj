@@ -222,6 +222,7 @@
 		5EC309392EA6CF0600C7D34B /* ALADDINNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */; };
 		5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */; };
 		A3C000012F740002 /* ActivityDigestService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C000012F740001 /* ActivityDigestService.swift */; };
+		A3C000012F740042 /* NotificationNames.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C000012F740041 /* NotificationNames.swift */; };
 		A3C000012F740012 /* UnifiedTimeLimitsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C000012F740011 /* UnifiedTimeLimitsScreen.swift */; };
 		A3C000012F740022 /* W3W4DigestAndLimitsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C000012F740021 /* W3W4DigestAndLimitsTests.swift */; };
 		5EC309432EA793A000C7D34B /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309422EA793A000C7D34B /* HapticFeedback.swift */; };
@@ -639,6 +640,7 @@
 		5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINNavigationBar.swift; path = Shared/Components/Navigation/ALADDINNavigationBar.swift; sourceTree = "<group>"; };
 		5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = Core/Notifications/NotificationManager.swift; sourceTree = "<group>"; };
 		A3C000012F740001 /* ActivityDigestService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ActivityDigestService.swift; path = Core/Notifications/ActivityDigestService.swift; sourceTree = "<group>"; };
+		A3C000012F740041 /* NotificationNames.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationNames.swift; path = Core/Notifications/NotificationNames.swift; sourceTree = "<group>"; };
 		A3C000012F740011 /* UnifiedTimeLimitsScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = UnifiedTimeLimitsScreen.swift; sourceTree = "<group>"; };
 		A3C000012F740021 /* W3W4DigestAndLimitsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = W3W4DigestAndLimitsTests.swift; sourceTree = "<group>"; };
 		5EC309422EA793A000C7D34B /* HapticFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HapticFeedback.swift; path = Shared/Components/HapticFeedback.swift; sourceTree = "<group>"; };
@@ -1226,6 +1228,7 @@
 				B6000100 /* IoT */,
 				5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */,
 				5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */,
+				A3C000012F740041 /* NotificationNames.swift */,
 				A3C000012F740001 /* ActivityDigestService.swift */,
 				5EC309422EA793A000C7D34B /* HapticFeedback.swift */,
 				5EC309442EA793AE00C7D34B /* ALADDINToggle.swift */,
@@ -1739,6 +1742,7 @@
 				5E6F39342F15AF9100CEC103 /* ComponentToggleCard.swift in Sources */,
 				A3000053 /* ViewModels/TariffsViewModel.swift in Sources */,
 				5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */,
+				A3C000012F740042 /* NotificationNames.swift in Sources */,
 				A3C000012F740002 /* ActivityDigestService.swift in Sources */,
 				A3C000012F740012 /* UnifiedTimeLimitsScreen.swift in Sources */,
 				5E0058132EC4A66600024F7E /* ProtectionSettings.swift in Sources */,
@@ -1878,7 +1882,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 156;
+				CURRENT_PROJECT_VERSION = 157;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1911,7 +1915,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 156;
+				CURRENT_PROJECT_VERSION = 157;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2068,7 +2072,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 156;
+				CURRENT_PROJECT_VERSION = 157;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2101,7 +2105,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 156;
+				CURRENT_PROJECT_VERSION = 157;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2133,7 +2137,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 156;
+				CURRENT_PROJECT_VERSION = 157;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2159,7 +2163,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 156;
+				CURRENT_PROJECT_VERSION = 157;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2183,7 +2187,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 156;
+				CURRENT_PROJECT_VERSION = 157;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2208,7 +2212,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 156;
+				CURRENT_PROJECT_VERSION = 157;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

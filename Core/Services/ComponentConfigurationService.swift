@@ -104,5 +104,40 @@ class ComponentConfigurationService: ObservableObject {
         }
     }
 
+    // MARK: - Parental monitoring bot (`parental_control_bot`)
+
+    private var parentalMonitoringBotComponentId: String { "parental_control_bot" }
+
+    /// Загрузка флагов `parental_messages_monitoring` / `parental_screenshots_enabled` с сервера (компонентная конфигурация).
+    func loadParentalMonitoringTogglesFromServer() async -> (messages: Bool?, screenshots: Bool?) {
+        do {
+            let config = try await getConfiguration(for: parentalMonitoringBotComponentId)
+            let settings = config.additionalSettings ?? [:]
+            let messages =
+                (settings["messagesMonitoringEnabled"]?.value as? Bool)
+                ?? (settings["parental_messages_monitoring"]?.value as? Bool)
+            let screenshots =
+                (settings["screenshotsEnabled"]?.value as? Bool)
+                ?? (settings["parental_screenshots_enabled"]?.value as? Bool)
+            return (messages, screenshots)
+        } catch {
+            return (nil, nil)
+        }
+    }
+
+    func saveParentalMonitoringTogglesToServer(messagesEnabled: Bool, screenshotsEnabled: Bool) async throws {
+        let configuration = ComponentConfiguration(
+            isEnabled: true,
+            priority: .normal,
+            additionalSettings: [
+                "messagesMonitoringEnabled": AnyCodable(messagesEnabled),
+                "screenshotsEnabled": AnyCodable(screenshotsEnabled),
+                "parental_messages_monitoring": AnyCodable(messagesEnabled),
+                "parental_screenshots_enabled": AnyCodable(screenshotsEnabled)
+            ]
+        )
+        try await saveConfiguration(componentId: parentalMonitoringBotComponentId, configuration: configuration)
+    }
+
 }
 

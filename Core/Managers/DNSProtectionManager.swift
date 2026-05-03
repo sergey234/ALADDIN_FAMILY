@@ -1,6 +1,7 @@
 import Foundation
 import NetworkExtension
 import Combine
+import CryptoKit
 
 /**
  * 🌐 DNS Protection Manager (План 2026)
@@ -45,7 +46,7 @@ class DNSProtectionManager: ObservableObject {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let config):
-                    self?.setupDNSProfile(config: config)
+                    self?.setupDNSProfile(config: config, childId: childId)
                 case .failure(let error):
                     self?.isLoading = false
                     self?.lastError = "Ошибка получения конфига: \(error.localizedDescription)"
@@ -81,7 +82,7 @@ class DNSProtectionManager: ObservableObject {
     
     // MARK: - Private Methods
     
-    private func setupDNSProfile(config: DNSConfigResponse) {
+    private func setupDNSProfile(config: DNSConfigResponse, childId: String?) {
         dnsSettingsManager.loadFromPreferences { [weak self] error in
             if let error = error {
                 self?.handleError(error)
@@ -106,10 +107,28 @@ class DNSProtectionManager: ObservableObject {
                         self?.isEnabled = true
                         self?.lastError = nil
                         print("✅ DNS Manager: DoH Profile active (\(config.dohUrl))")
+                        self?.postDnsMonitoringIngest(config: config, childId: childId)
                     }
                 }
             }
         }
+    }
+
+    /// pc-05: агрегат в `parental_monitoring_events` (хэш DoH URL, без полного URL в явном виде).
+    private func postDnsMonitoringIngest(config: DNSConfigResponse, childId: String?) {
+        let digest = SHA256.hash(data: Data(config.dohUrl.utf8))
+        let hashHex = digest.map { String(format: "%02x", $0) }.joined()
+        var payload: [String: Any] = [
+            "doh_url_sha256": hashHex,
+            "blocking_enabled": config.blockingEnabled,
+            "server_name": config.serverName,
+            "site": config.serverName
+        ]
+        if let childId, !childId.isEmpty {
+            payload["child_id"] = childId
+        }
+        let event = ParentalMonitoringEventInDTO(kind: "dns", payload: payload)
+        APIService.shared.postParentalMonitoringEvents(events: [event]) { _ in }
     }
     
     private func handleError(_ error: Error) {

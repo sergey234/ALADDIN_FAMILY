@@ -34,6 +34,9 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
     private var reconnectAttempts: Int = 0
     private let maxReconnectAttempts: Int = 5
     private let reconnectDelay: TimeInterval = 3.0
+
+    /// Переподключение после `JWTTokenManager` / refresh — `connect()` читает Bearer только один раз.
+    private var authTokenChangeCancellable: AnyCancellable?
     
     private let familyId: String?
     private let baseURL: String
@@ -95,8 +98,26 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
         
         receiveMessage()
         startPingTimer()
+        installAuthTokenReconnectObserver()
         
         print("✅ FamilyChatWebSocket: Подключение к \(wsURL)")
+    }
+
+    private func installAuthTokenReconnectObserver() {
+        authTokenChangeCancellable?.cancel()
+        authTokenChangeCancellable = NotificationCenter.default.publisher(for: .appAuthAccessTokenDidChange)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                guard self.webSocketTask != nil || self.urlSession != nil else { return }
+                print("🔄 FamilyChatWebSocket: access token обновлён — переподключение")
+                self.reconnectNow()
+            }
+    }
+
+    private func removeAuthTokenReconnectObserver() {
+        authTokenChangeCancellable?.cancel()
+        authTokenChangeCancellable = nil
     }
     
     /// Сбрасывает счётчик попыток и переподключается (ручная кнопка в UI).
@@ -110,6 +131,7 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
     }
 
     func disconnect() {
+        removeAuthTokenReconnectObserver()
         if connectionStatus == .connected {
             sendMessage(type: "presence", data: ["status": "offline"])
         }

@@ -1125,35 +1125,27 @@ struct AdvancedProtectionSettingsScreen: View {
     private func loadParentalMonitoringSettingsFromServer() {
         SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_load_start", state: .syncing)
         Task {
-            do {
-                let config = try await ComponentConfigurationService.shared.getConfiguration(for: "parental_control_bot")
-                let settings = config.additionalSettings ?? [:]
-                let messagesEnabled = (settings["messagesMonitoringEnabled"]?.value as? Bool)
-                    ?? (settings["parental_messages_monitoring"]?.value as? Bool)
-                let screenshotsEnabled = (settings["screenshotsEnabled"]?.value as? Bool)
-                    ?? (settings["parental_screenshots_enabled"]?.value as? Bool)
-
-                await MainActor.run {
-                    isApplyingParentalMonitoringSettings = true
-                    if let messagesEnabled = messagesEnabled { isMessagesMonitoringEnabled = messagesEnabled }
-                    if let screenshotsEnabled = screenshotsEnabled { isScreenshotsEnabled = screenshotsEnabled }
-                    isApplyingParentalMonitoringSettings = false
+            let flags = await ComponentConfigurationService.shared.loadParentalMonitoringTogglesFromServer()
+            await MainActor.run {
+                isApplyingParentalMonitoringSettings = true
+                if let messagesEnabled = flags.messages { isMessagesMonitoringEnabled = messagesEnabled }
+                if let screenshotsEnabled = flags.screenshots { isScreenshotsEnabled = screenshotsEnabled }
+                isApplyingParentalMonitoringSettings = false
+                if flags.messages != nil || flags.screenshots != nil {
                     VisualLogger.shared.log(
                         "✅ ADVANCED.API parental GET sync: messages=\(isMessagesMonitoringEnabled), screenshots=\(isScreenshotsEnabled)",
                         level: .info,
                         category: "ADVANCED.API"
                     )
                     SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_load_complete", state: .synced)
-                }
-            } catch {
-                await MainActor.run {
+                } else {
                     VisualLogger.shared.log(
-                        "⚠️ ADVANCED.API parental GET failed: \(error.localizedDescription)",
+                        "⚠️ ADVANCED.API parental GET: no remote flags (using local)",
                         level: .warning,
                         category: "ADVANCED.API"
                     )
+                    SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_load_local", state: .local)
                 }
-                SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_load_local", state: .local)
             }
         }
     }
@@ -1178,21 +1170,10 @@ struct AdvancedProtectionSettingsScreen: View {
             category: "ADVANCED.API"
         )
 
-        let config = ComponentConfiguration(
-            isEnabled: true,
-            priority: .normal,
-            additionalSettings: [
-                "messagesMonitoringEnabled": AnyCodable(isMessagesMonitoringEnabled),
-                "screenshotsEnabled": AnyCodable(isScreenshotsEnabled),
-                "parental_messages_monitoring": AnyCodable(isMessagesMonitoringEnabled),
-                "parental_screenshots_enabled": AnyCodable(isScreenshotsEnabled)
-            ]
-        )
-
         do {
-            try await ComponentConfigurationService.shared.saveConfiguration(
-                componentId: "parental_control_bot",
-                configuration: config
+            try await ComponentConfigurationService.shared.saveParentalMonitoringTogglesToServer(
+                messagesEnabled: isMessagesMonitoringEnabled,
+                screenshotsEnabled: isScreenshotsEnabled
             )
             VisualLogger.shared.log(
                 "✅ ADVANCED.API parental POST ok",

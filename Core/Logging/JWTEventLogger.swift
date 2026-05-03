@@ -27,6 +27,23 @@ import UIKit
 ///
 struct JWTEventLogger {
 
+    /// Остаток до истечения токена для логов (секунды из `timeIntervalSinceNow`).
+    static func describeTimeLeft(seconds: TimeInterval) -> String {
+        let s = seconds
+        guard s > 0 else { return "expired" }
+        if s >= 86_400 {
+            let d = Int(s / 86_400)
+            let h = Int((s.truncatingRemainder(dividingBy: 86_400)) / 3600)
+            return "\(d)d \(h)h"
+        }
+        if s >= 3600 {
+            let h = Int(s / 3600)
+            let m = Int((s.truncatingRemainder(dividingBy: 3600)) / 60)
+            return "\(h)h \(m)m"
+        }
+        return "\(max(1, Int(s / 60)))m"
+    }
+
     // MARK: - JWT Events
 
     /// 📊 JWT Event Types
@@ -88,7 +105,7 @@ struct JWTEventLogger {
             logEntry += """
             \n🔍 TOKEN VALIDATION
             Valid: \(isValid)
-            Time to Expiry: \(Int(timeToExpiry/60)) minutes
+            Time to Expiry: \(Self.describeTimeLeft(seconds: timeToExpiry)) (~\(Int(timeToExpiry))s)
             Status: \(tokenStatus)
             """
 
@@ -137,7 +154,7 @@ struct JWTEventLogger {
             Next Check: \(Int(nextCheckIn)) seconds
             """
             if let timeToExpiry = timeToExpiry {
-                logEntry += "\nTime to Expiry: \(Int(timeToExpiry/60)) minutes\n"
+                logEntry += "\nTime to Expiry: \(Self.describeTimeLeft(seconds: timeToExpiry)) (~\(Int(timeToExpiry))s)\n"
             }
 
         case .offlineModeActivated(let reason, let willRetry):

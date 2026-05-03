@@ -14,6 +14,14 @@ class JWTTokenManager {
     
     private init() {}
 
+    /// Keychain обновлён напрямую (без `SubscriptionManager.storeToken`) — синхронизируем in-memory токен для REST/WS.
+    private func publishAccessTokenRefreshToClients(_ accessToken: String) {
+        DispatchQueue.main.async {
+            AppConfig.authToken = accessToken
+            NotificationCenter.default.post(name: .appAuthAccessTokenDidChange, object: nil)
+        }
+    }
+
     /// Диагностика JWT только в DEBUG (в Release не светим сроки/ветки в системный лог).
     private func jwtDiag(_ message: @autoclosure () -> String) {
         #if DEBUG
@@ -251,6 +259,8 @@ class JWTTokenManager {
                             self.keychainManager.save(newRefreshToken, forKey: .refreshToken)
                         }
 
+                        self.publishAccessTokenRefreshToClients(response.access_token)
+
                         self.jwtDiag("✅ JWT: Токен успешно обновлён через прямой запрос")
                         continuation.resume(returning: true)
 
@@ -297,6 +307,8 @@ class JWTTokenManager {
                     if let newRefreshToken = response.refresh_token {
                         self.keychainManager.save(newRefreshToken, forKey: .refreshToken)
                     }
+
+                    self.publishAccessTokenRefreshToClients(response.access_token)
 
                     self.jwtDiag("✅ JWT: Токен успешно обновлён")
                     continuation.resume(returning: true)

@@ -60,8 +60,9 @@ class RateLimiter {
      * - Parameter endpoint: Путь endpoint'а (например "/api/analytics")
      * - Returns: true если запрос разрешен, false если лимит превышен
      */
-    func canMakeRequest(to endpoint: String) -> Bool {
+    func canMakeRequest(to endpoint: String, maxRequestsOverride: Int? = nil) -> Bool {
         return queue.sync {
+            let cap = maxRequestsOverride ?? self.maxRequests
             let cutoffDate = Date().addingTimeInterval(-timeWindow)
             var currentRequests = self.requestCounts[endpoint] ?? []
             currentRequests = currentRequests.filter { $0 > cutoffDate }
@@ -72,11 +73,11 @@ class RateLimiter {
             }
             
             // Проверяем лимит
-            if currentRequests.count >= self.maxRequests {
+            if currentRequests.count >= cap {
                 let countForLog = currentRequests.count
                 // Логируем БЕЗ nested sync (вызываем getTimeUntilReset вне блока)
                 DispatchQueue.global().async { [weak self] in
-                    self?.logRateLimitExceeded(endpoint: endpoint, currentCount: countForLog)
+                    self?.logRateLimitExceeded(endpoint: endpoint, currentCount: countForLog, cap: cap)
                 }
                 return false
             }
@@ -196,7 +197,7 @@ class RateLimiter {
      *   - endpoint: Путь endpoint'а
      *   - currentCount: Текущее количество запросов
      */
-    private func logRateLimitExceeded(endpoint: String, currentCount: Int) {
+    private func logRateLimitExceeded(endpoint: String, currentCount: Int, cap: Int) {
         // Avoid calling sync methods from inside other sync blocks (was causing nested sync + crash)
         let timeUntilReset = 60.0 // safe default to prevent reentrancy
         
@@ -204,7 +205,7 @@ class RateLimiter {
         #if DEBUG
         print("🚫 RateLimiter: ЛИМИТ ПРЕВЫШЕН для \(endpoint)")
         print("   - Текущих запросов: \(currentCount)")
-        print("   - Максимум: \(self.maxRequests)")
+        print("   - Максимум: \(cap)")
         print("   - Время до сброса: \(String(format: "%.1f", timeUntilReset)) сек")
         print("   - Окно: \(self.timeWindow) сек")
         #endif
@@ -215,7 +216,7 @@ class RateLimiter {
                type: .error,
                endpoint,
                currentCount,
-               self.maxRequests,
+               cap,
                timeUntilReset)
     }
     

@@ -149,6 +149,9 @@ final class SubscriptionManager: ObservableObject {
     /// Remaining family member slots (synced from headers or calculated)
     @Published private(set) var currentFamilyRemaining: Int = 2
 
+    /// Монотонно растёт при любых изменениях уровня/триала/токена — чтобы SwiftUI гарантированно перерисовал строку тарифа на главной (в т.ч. после возврата с экрана тарифов на устройстве).
+    @Published private(set) var subscriptionDisplayEpoch: UInt64 = 0
+
     /// Events tracking
     private let eventsQueue = DispatchQueue(label: "com.aladdin.subscription.events")
     private var pendingEvents: [SubscriptionEventData] = []
@@ -475,6 +478,7 @@ final class SubscriptionManager: ObservableObject {
 
         logger.business("✅ DEFENSIVE JWT: Токен полностью очищен")
         reconcileTariffManagerWithSubscription(reason: "clearToken")
+        bumpSubscriptionDisplayEpoch()
     }
 
     #if DEBUG
@@ -1283,6 +1287,7 @@ final class SubscriptionManager: ObservableObject {
         }
 
         reconcileTariffManagerWithSubscription(reason: "updateSubscriptionStatus")
+        bumpSubscriptionDisplayEpoch()
     }
 
     /// 🎁 Update trial status
@@ -1298,6 +1303,11 @@ final class SubscriptionManager: ObservableObject {
         persistTrialStatus(trial)
         logger.business("🎁 Trial updated: \(trial.daysRemaining) days remaining")
         reconcileTariffManagerWithSubscription(reason: "updateTrialStatus")
+        bumpSubscriptionDisplayEpoch()
+    }
+
+    private func bumpSubscriptionDisplayEpoch() {
+        subscriptionDisplayEpoch &+= 1
     }
 
 
@@ -1395,6 +1405,7 @@ final class SubscriptionManager: ObservableObject {
         #endif
 
         logger.business("💾 Persisted data loaded")
+        bumpSubscriptionDisplayEpoch()
     }
 
     #if DEBUG
@@ -1455,6 +1466,7 @@ final class SubscriptionManager: ObservableObject {
         logger.business("🏥 DEFENSIVE JWT: Monitoring запущен для нового токена")
 
         print("💾💾💾 STORE_TOKEN: Completed")
+        bumpSubscriptionDisplayEpoch()
     }
 
     /// 💾 Persist subscription status
@@ -1828,6 +1840,7 @@ extension SubscriptionManager {
 
         logger.business("📥 Updated subscription from server: \(subscriptionLevel.rawValue)")
         reconcileTariffManagerWithSubscription(reason: "updateFromServerStatus")
+        bumpSubscriptionDisplayEpoch()
     }
 
     /// ⏰ Setup periodic sync when online

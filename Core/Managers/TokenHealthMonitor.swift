@@ -116,18 +116,19 @@ class TokenHealthMonitor {
         }
 
         let timeToExpiryValue = token.expiresAt.timeIntervalSinceNow
-        logger.business("⏰ DEFENSIVE JWT: Token health check - \(Int(timeToExpiryValue/60)) minutes until expiry")
+        logger.business("⏰ DEFENSIVE JWT: Token health check — \(JWTEventLogger.describeTimeLeft(seconds: timeToExpiryValue)) until expiry (~\(Int(timeToExpiryValue))s)")
 
         // Decision tree based on token state
         if timeToExpiryValue < 0 {
             // CRITICAL: Token has expired
-            logger.error("🚨 DEFENSIVE JWT: CRITICAL - Token has expired (\(Int(abs(timeToExpiryValue)/60)) minutes ago)")
+            let past = abs(timeToExpiryValue)
+            logger.error("🚨 DEFENSIVE JWT: CRITICAL - Token has expired (\(JWTEventLogger.describeTimeLeft(seconds: past)) ago, ~\(Int(past))s)")
             await performEmergencyReRegistration()
             return
 
         } else if timeToExpiryValue < refreshThreshold {
             // WARNING: Token expiring soon - proactive refresh
-            logger.business("⚠️ DEFENSIVE JWT: WARNING - Token expires soon (\(Int(timeToExpiryValue/60)) min) - triggering proactive refresh")
+            logger.business("⚠️ DEFENSIVE JWT: WARNING - Token expires soon (\(JWTEventLogger.describeTimeLeft(seconds: timeToExpiryValue))) - proactive refresh")
 
             // Log refresh attempt
             JWTEventLogger.logEvent(.tokenRefreshAttempted(reason: "Token expiring soon"))

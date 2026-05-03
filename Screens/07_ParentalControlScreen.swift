@@ -1132,8 +1132,13 @@ struct ParentalControlScreen: View {
         locationWarnings = stats.location.eventsToday
         // ✅ ИСПРАВЛЕНО: Не перезаписываем isLocationEnabled из статистики - это пользовательская настройка через @AppStorage
         
-        reportsAlerts = stats.monitoring.contactsTracked
-        reportsToday = stats.monitoring.messagesMonitored
+        if let rep = stats.reports {
+            reportsAlerts = rep.alertsCount
+            reportsToday = rep.hasDailyToday
+        } else {
+            reportsAlerts = 0
+            reportsToday = false
+        }
         // ✅ ИСПРАВЛЕНО: Не перезаписываем isReportsEnabled из статистики - это пользовательская настройка через @AppStorage
         
         additionalRequests = stats.location.geofencesCount

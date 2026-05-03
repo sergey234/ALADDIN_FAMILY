@@ -10,5 +10,8 @@ extension Notification.Name {
     
     /// Уведомление об успешной оплате через QR
     static let paymentQRSuccess = Notification.Name("paymentQRSuccess")
+
+    /// Access JWT обновлён (refresh / keychain) — WebSocket и долгоживущие сессии должны перечитать `AppConfig.authToken`.
+    static let appAuthAccessTokenDidChange = Notification.Name("appAuthAccessTokenDidChange")
 }
 

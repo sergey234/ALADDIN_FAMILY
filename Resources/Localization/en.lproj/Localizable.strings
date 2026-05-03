@@ -1889,3 +1889,17 @@
 "dark_web_explanation_recommendation_1" = "Use Secure scan for routine privacy checks.";
 "dark_web_explanation_recommendation_2" = "Use Fast scan when you suspect an active leak.";
 "dark_web_explanation_recommendation_3" = "Change compromised passwords immediately after any positive match.";
+
+/* Family monitoring browser modal (canonical keys; pc-15) */
+"family_monitoring_browser_title" = "Browser history";
+"family_monitoring_browser_total_sites" = "Total sites";
+"family_monitoring_browser_total_time" = "Total time";
+"family_monitoring_browser_top_week" = "Top sites this week";
+"family_monitoring_browser_visits" = "visits";
+"family_monitoring_browser_category_video" = "Video";
+"family_monitoring_browser_category_social" = "Social networks";
+"family_monitoring_browser_category_search" = "Search";
+
+/* Family weekly reports empty state (pc-16) */
+"family_reports_empty_title" = "No saved weekly reports yet";
+"family_reports_empty_hint_jwt" = "Reports are tied to the child numeric account. Link the child in the family and ensure the API returns rows for GET /api/parental-control/reports/weekly, or fill parental_reports / monitoring events on the server.";

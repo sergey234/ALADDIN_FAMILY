@@ -347,6 +347,8 @@ async def get_family_stats_from_db(
 @limiter.limit("60/minute")  # ✅ RATE LIMITING: 60 запросов в минуту на IP
 async def get_family_stats(
     request: Request,
+    response: Response,
+    x_family_id: Annotated[Optional[str], Header(alias="X-Family-Id")] = None,
     current_user: dict = Depends(get_current_user)  # ✅ Авторизация: реальный пользователь из токена
 ):
     """
@@ -369,6 +371,7 @@ async def get_family_stats(
     logger.info(
         "family_stats_requested",
         user_id=user_id,
+        x_family_id_header_present=bool((x_family_id or "").strip()),
         timestamp=datetime.now().isoformat()
     )
     
@@ -376,29 +379,35 @@ async def get_family_stats(
     if not get_postgres_db:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
 
+    header_fid = (x_family_id or "").strip() or None
+
     def load_stats_sync():
         gen = get_postgres_db()
         db = next(gen)
         try:
-            # Determine family_id for this user
-            fam_row = db.execute(
-                text("SELECT id FROM families WHERE owner_user_id = :user_id ORDER BY created_at DESC LIMIT 1"),
-                {"user_id": user_id},
-            ).fetchone()
-            if not fam_row:
-                # No family yet -> real empty stats
-                return FamilyStatsResponse(
-                    totalMembers=0,
-                    totalDevices=0,
-                    totalThreats=0,
-                    protectionLevel=0,
-                    familyStatus="danger",
-                    familyStatusMessage="Семья не создана",
+            # Тот же выбор семьи, что и GET /api/family/members (`_resolve_primary_family_id_for_actor`),
+            # с опциональным override из заголовка X-Family-Id (канонический id клиента из UserDefaults).
+            _ensure_family_indexes(db)
+            family_id: Optional[str] = None
+            if header_fid and _actor_belongs_to_family(db, user_id, header_fid):
+                family_id = header_fid
+            if not family_id:
+                family_id = _resolve_primary_family_id_for_actor(db, user_id, current_user)
+            if not family_id:
+                return (
+                    FamilyStatsResponse(
+                        totalMembers=0,
+                        totalDevices=0,
+                        totalThreats=0,
+                        protectionLevel=0,
+                        familyStatus="danger",
+                        familyStatusMessage="Семья не создана",
+                    ),
+                    None,
                 )
 
-            family_id = fam_row[0]
-
-            # Aggregate from family_members table (source of truth)
+            # Агрегат по тем же строкам, что отдаёт GET /members:
+            # COUNT(*) по family_id == len(GET /api/family/members).
             agg = db.execute(
                 text(
                     """
@@ -453,19 +462,30 @@ async def get_family_stats(
                 family_status = "danger"
                 family_status_message = "Требуется активация защиты"
 
-            return FamilyStatsResponse(
-                totalMembers=total_members,
-                totalDevices=total_devices,
-                totalThreats=total_threats,
-                protectionLevel=protection_level,
-                familyStatus=family_status,
-                familyStatusMessage=family_status_message,
+            logger.info(
+                "family_stats_aligned_with_members",
+                user_id=user_id,
+                family_id=str(family_id),
+                total_members=total_members,
+                note="totalMembers equals COUNT(family_members) for same family_id as GET /members",
+            )
+
+            return (
+                FamilyStatsResponse(
+                    totalMembers=total_members,
+                    totalDevices=total_devices,
+                    totalThreats=total_threats,
+                    protectionLevel=protection_level,
+                    familyStatus=family_status,
+                    familyStatusMessage=family_status_message,
+                ),
+                str(family_id),
             )
         finally:
             gen.close()
 
     try:
-        stats = await asyncio.to_thread(load_stats_sync)
+        stats, resolved_family_id = await asyncio.to_thread(load_stats_sync)
     except HTTPException:
         raise
     except Exception as e:
@@ -487,6 +507,9 @@ async def get_family_stats(
         protection_level=stats.protectionLevel,
         timestamp=datetime.now().isoformat()
     )
+
+    if resolved_family_id:
+        response.headers["X-Resolved-Family-Id"] = resolved_family_id
     
     return stats
 
@@ -1430,11 +1453,15 @@ async def family_chat_messages_compat(
         db = next(gen)
         try:
             _ensure_family_chat_table(db)
-            resolved_family_id = _resolve_primary_family_id_for_actor(db, user_id, current_user)
-            if not resolved_family_id:
+            # Тот же выбор семьи, что GET /api/family/stats: query familyId при членстве, иначе primary из JWT/БД.
+            family_query = (familyId or "").strip() or None
+            effective_family_id: Optional[str] = None
+            if family_query and _actor_belongs_to_family(db, user_id, family_query):
+                effective_family_id = family_query
+            if not effective_family_id:
+                effective_family_id = _resolve_primary_family_id_for_actor(db, user_id, current_user)
+            if not effective_family_id:
                 return []
-            if familyId is not None and familyId.strip() and familyId.strip() != resolved_family_id:
-                raise HTTPException(status_code=409, detail="Family context mismatch")
 
             rows = db.execute(
                 text(
@@ -1447,7 +1474,7 @@ async def family_chat_messages_compat(
                     LIMIT 300
                     """
                 ),
-                {"family_id": resolved_family_id},
+                {"family_id": effective_family_id},
             ).fetchall() or []
 
             reaction_rows = db.execute(
@@ -1459,7 +1486,7 @@ async def family_chat_messages_compat(
                     ORDER BY created_at ASC
                     """
                 ),
-                {"family_id": resolved_family_id},
+                {"family_id": effective_family_id},
             ).fetchall() or []
 
             reactions_by_message: Dict[str, List[Dict[str, Any]]] = {}
@@ -1515,14 +1542,17 @@ async def family_chat_upload_media(
     """Multipart загрузка медиа для семейного чата (голос / фото / видео).
 
     Требуется контекст семьи: заголовок X-Family-Id и/или поле формы familyId.
-    Пользователь должен быть участником этой семьи (или владельцем).
+    Пользователь должен быть участником выбранной семьи (или владельцем); выбор семьи согласован с GET /stats:
+    при членстве в переданной семье используем её, иначе primary из JWT/БД (как при неверном X-Family-Id в stats).
     Лимит размера: переменная окружения ALADDIN_FAMILY_CHAT_UPLOAD_MAX_BYTES (по умолчанию 25 MiB).
+
+    Nginx: для этого пути нужен `client_max_body_size` не ниже лимита (по умолчанию 25 MiB); иначе возможен не-JSON 413/502, не путать с 403 JSON от FastAPI.
     """
     user_id = _resolve_user_id_from_claim(current_user)
     if not get_postgres_db:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
-    fid = (x_family_id or family_id_form or "").strip()
-    if not fid:
+    requested_fid = (x_family_id or family_id_form or "").strip()
+    if not requested_fid:
         raise HTTPException(
             status_code=400,
             detail="familyId is required (header X-Family-Id or form field familyId)",
@@ -1557,15 +1587,33 @@ async def family_chat_upload_media(
         gen = get_postgres_db()
         db = next(gen)
         try:
-            if not _actor_belongs_to_family(db, user_id, fid):
+            effective: Optional[str] = None
+            if requested_fid and _actor_belongs_to_family(db, user_id, requested_fid):
+                effective = requested_fid
+            if not effective:
+                effective = _resolve_primary_family_id_for_actor(db, user_id, current_user)
+            if not effective or not _actor_belongs_to_family(db, user_id, effective):
+                logger.warning(
+                    "family_chat_upload_denied",
+                    user_id=user_id,
+                    requested_fid=requested_fid,
+                    effective=str(effective or ""),
+                )
                 raise HTTPException(status_code=403, detail="Not a member of this family")
+            family_id_used = effective
         finally:
             gen.close()
         root = _ensure_family_chat_upload_root()
         dest = root / name
         dest.write_bytes(content)
         url = f"{base}/api/family/chat/media/{name}"
-        logger.info("family_chat_media_upload", saved=name, bytes=len(content), family_id=fid)
+        logger.info(
+            "family_chat_media_upload",
+            saved=name,
+            bytes=len(content),
+            family_id=family_id_used,
+            requested_fid=requested_fid,
+        )
         return {"success": True, "url": url, "mediaUrl": url}
 
     return await asyncio.to_thread(persist)
