@@ -715,6 +715,8 @@ struct ALADDINApp: App {
                         .id("mainWithRegistration")
                         .environmentObject(navigationManager)
                         .environmentObject(localizationManager)
+                        // Полноэкранный флоу без стека: скрываем системный bar, иначе Auto Layout ругается на width == 0 у `_UINavigationBarModernContentView`.
+                        .navigationBarHidden(true)
                         .onDisappear {
                             print("🔄 MainScreenWithRegistration disappeared — registration flow completed")
                         })

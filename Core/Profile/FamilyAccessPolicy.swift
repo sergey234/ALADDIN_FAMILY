@@ -56,6 +56,28 @@ enum FamilyAccessPolicy {
         if fallback.contains("elderly") || fallback.contains("пожил") { return .elderly }
         if fallback.contains("teen") || fallback.contains("подрост") { return .teenager }
         if fallback.contains("child") || fallback.contains("реб") { return .child }
+
+        let familyId = (defaults.string(forKey: FamilyLocalStore.familyIdKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Нет семьи на сервере и нет `your_member_id` (часто после «пропустить онбординг» без выбора роли):
+        // владелец аккаунта ведёт себя как родитель до `POST /family/create` и выравнивания id.
+        if myMemberId.isEmpty, familyId.isEmpty {
+            return .parent
+        }
+
+        // `family_id` уже есть, но `your_member_id` ещё не схлопнут (reconcile/repair). Если в ростере
+        // нет детей/подростков и не более одной взрослой карточки — это взрослый контур; иначе остаёмся unknown.
+        if myMemberId.isEmpty, !familyId.isEmpty {
+            let hasMinor = members.contains { $0.role == .child || $0.role == .teenager }
+            if !hasMinor {
+                let adults = members.filter { $0.role == .parent || $0.role == .elderly }
+                if members.isEmpty || adults.count <= 1 {
+                    return .parent
+                }
+            }
+        }
+
         return .unknown
     }
 

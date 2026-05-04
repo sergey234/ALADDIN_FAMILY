@@ -181,9 +181,8 @@ struct TariffsScreen: View {
         }
         .navigationBarHidden(true)
         .onDisappear {
-            // После выбора тарифа/триала пользователь возвращается на главную — подтягиваем `/api/subscription/status`
-            // (на устройстве без этого блок тарифа часто остаётся на «Базовый», пока не перезапустишь приложение).
-            Task { await SubscriptionManager.shared.syncSubscriptionOnMainScreenAppear() }
+            // После тарифов — синк без 1.2s троттлинга `syncSubscriptionOnMainScreenAppear`, иначе быстрый возврат на главную не подтягивает лимиты/цвет.
+            Task { await SubscriptionManager.shared.syncSubscriptionAfterTariffsDismiss() }
         }
         .id("tariffs_lang_\(localizationManager.currentLanguage.rawValue)")
         // ✅ КРИТИЧНО: Загружаем продукты при открытии экрана тарифов

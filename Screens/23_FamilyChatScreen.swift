@@ -612,6 +612,8 @@ struct FamilyChatScreen: View {
                         chatFamilyContextInvalid = false
                         if let data = Self.encodeFamilyMembersListData(from: ctx.members, localizationManager: loc) {
                             UserDefaults.standard.set(data, forKey: familyMembersKey)
+                            let fid = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                            FamilyLocalStore.persistRosterSnapshotFamilyId(fid)
                             UserDefaults.standard.synchronize()
                         }
                         updateOnlineMembersCount()

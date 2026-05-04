@@ -668,6 +668,13 @@ final class SubscriptionManager: ObservableObject {
         bumpSubscriptionDisplayEpoch()
     }
 
+    /// Без троттлинга: после экрана тарифов главная должна сразу подтянуть `/api/subscription/status` (иначе 1.2s коалесинг пропускает синк).
+    @MainActor
+    func syncSubscriptionAfterTariffsDismiss() async {
+        await forceSync()
+        bumpSubscriptionDisplayEpoch()
+    }
+
     /// Family member limit by tariff level (confirmed mapping: free=1, trial/personal=3, family=6, premium=10)
     /// Single source of truth used by all add flows
     func familyMemberLimit(for level: SubscriptionLevel) -> Int {
@@ -715,6 +722,16 @@ final class SubscriptionManager: ObservableObject {
         return currentToken?.token
     }
 
+    /// Идентификатор для тел cancel/downgrade: не `your_member_id` (MEM_…), а тот же контракт, что GET `/api/subscription/status` (`"current"` + Bearer).
+    private func userIdForSubscriptionCancelRequest() -> String {
+        if currentToken?.token != nil {
+            return "current"
+        }
+        let d = (currentToken?.deviceId ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if !d.isEmpty { return d }
+        return "anonymous"
+    }
+
     /// ⬇️ Downgrade to Free (Cancel Trial/Subscription)
     @MainActor
     func downgradeToFree() async {
@@ -723,8 +740,7 @@ final class SubscriptionManager: ObservableObject {
         do {
             isLoading = true
             
-            // Получаем userId из UserDefaults или генерируем fallback
-            let userId = UserDefaults.standard.string(forKey: "your_member_id") ?? "anonymous"
+            let userId = userIdForSubscriptionCancelRequest()
             let deviceId = self.currentToken?.deviceId
             
             let response: SubscriptionCancelResponse = try await withCheckedThrowingContinuation { continuation in
@@ -741,32 +757,34 @@ final class SubscriptionManager: ObservableObject {
             if response.success {
                 logger.business("✅ Successfully downgraded to FREE on server")
                 
-                // Update local token (если сервер прислал новый токен)
                 if let newToken = response.newToken,
                    let jwtToken = self.parseJWTToken(newToken) {
                     await self.storeToken(jwtToken)
-                } else {
-                    // Если токен не пришел, запрашиваем синхронизацию в фоне
-                    Task {
-                        await self.syncWithServer()
-                    }
                 }
-                
-                // Clear trial status if it was active
+
                 if trialStatus != nil {
                     NotificationManager.shared.cancelTrialNotifications()
-                    trialStatus = nil
-                    
-                    let freeSubscription = self.createSubscriptionStatus(
-                        level: .free,
-                        isActive: true,
-                        expiresAt: nil,
-                        trialInfo: nil,
-                        limits: SubscriptionLimits.freeLimits,
-                        components: ["mobile_security_agent", "network_security_agent"]
-                    )
-                    await updateSubscriptionStatus(freeSubscription)
                 }
+                trialStatus = nil
+                deleteFromKeychain(key: trialKey)
+
+                let freeSubscription = self.createSubscriptionStatus(
+                    level: .free,
+                    isActive: true,
+                    expiresAt: nil,
+                    trialInfo: nil,
+                    limits: SubscriptionLimits.freeLimits,
+                    components: ["mobile_security_agent", "network_security_agent"]
+                )
+                await updateSubscriptionStatus(freeSubscription)
+
+                await self.forceSync()
+
+                NotificationCenter.default.post(
+                    name: Notification.Name("SubscriptionUpdated"),
+                    object: nil,
+                    userInfo: ["level": SubscriptionLevel.free.rawValue, "source": "downgrade_to_free"]
+                )
             } else {
                 logger.error("❌ Failed to downgrade to free on server")
             }
@@ -784,6 +802,11 @@ final class SubscriptionManager: ObservableObject {
         // If trial is already active locally - do nothing.
         if let trial = trialStatus, trial.isActive {
             logger.business("✅ Trial already active")
+            // Повторный тап «Пробный» на тарифах: всё равно пересчитать лимиты/UI (см. updateTrialStatus + family cap).
+            if let sub = currentSubscription {
+                updateSubscriptionStatus(sub)
+            }
+            bumpSubscriptionDisplayEpoch()
             return
         }
 
@@ -1334,6 +1357,11 @@ final class SubscriptionManager: ObservableObject {
         trialStatus = trial
         persistTrialStatus(trial)
         logger.business("🎁 Trial updated: \(trial.daysRemaining) days remaining")
+        // Лимит семьи и градиент главной завязаны на `subscriptionLevelForFamilyMemberCap`, который смотрит и на `trialStatus`.
+        // Раньше `registerDeviceWithTrial` вызывал `updateSubscriptionStatus` до присвоения `trialStatus` — кап оставался free (1) и цвет «золотой».
+        if let sub = currentSubscription {
+            updateSubscriptionStatus(sub)
+        }
         reconcileTariffManagerWithSubscription(reason: "updateTrialStatus")
         bumpSubscriptionDisplayEpoch()
     }
@@ -1533,6 +1561,15 @@ final class SubscriptionManager: ObservableObject {
         if status != errSecSuccess {
             logger.error("❌ Failed to save to keychain: \(key)")
         }
+    }
+
+    private func deleteFromKeychain(key: String) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: keychainService,
+            kSecAttrAccount as String: key,
+        ]
+        SecItemDelete(query as CFDictionary)
     }
 
     private func loadFromKeychain(key: String) -> Data? {

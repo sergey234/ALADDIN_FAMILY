@@ -165,8 +165,8 @@ class PerformanceMonitor {
     func trackActionPerformance(_ action: String, duration: TimeInterval, additionalParams: [String: Any]? = nil) {
         var parameters: [String: Any] = [
             "action": action,
-            "duration": duration,
-            "fps": currentFPS,
+            "duration": max(duration, 0),
+            "fps": Self.clampFPS(currentFPS),
             "memory_mb": getMemoryUsageMB(),
             "timestamp": Date().timeIntervalSince1970
         ]
@@ -239,14 +239,21 @@ class PerformanceMonitor {
      * Обновление FPS (вызывается CADisplayLink)
      */
     @objc private func updateFPS() {
-        frameCount += 1
-
         let currentTime = CACurrentMediaTime()
+        // Первый тик: `lastFrameTime == 0` давал интервал «с нуля медиавремени» → микроскопический FPS в аналитике.
+        if lastFrameTime <= 0 {
+            lastFrameTime = currentTime
+            frameCount = 0
+            return
+        }
+
+        frameCount += 1
         let deltaTime = currentTime - lastFrameTime
 
         // Обновляем FPS каждую секунду
         if deltaTime >= 1.0 {
-            currentFPS = Double(frameCount) / deltaTime
+            let raw = Double(frameCount) / deltaTime
+            currentFPS = Self.clampFPS(raw)
             frameCount = 0
             lastFrameTime = currentTime
 
@@ -258,6 +265,11 @@ class PerformanceMonitor {
         }
     }
 
+    /// Отсекаем артефакты таймера и мусорные значения до отправки в метрики.
+    private static func clampFPS(_ value: Double) -> Double {
+        min(max(value, 0), 240)
+    }
+
     /**
      * Проверка использования памяти
      */
@@ -267,7 +279,7 @@ class PerformanceMonitor {
         // Отправляем метрику памяти
         let parameters: [String: Any] = [
             "memory_mb": memoryUsageMB,
-            "fps": currentFPS,
+            "fps": Self.clampFPS(currentFPS),
             "timestamp": Date().timeIntervalSince1970
         ]
 
@@ -289,7 +301,7 @@ class PerformanceMonitor {
      */
     private func sendFPSMetric() {
         let parameters: [String: Any] = [
-            "fps": currentFPS,
+            "fps": Self.clampFPS(currentFPS),
             "memory_mb": getMemoryUsageMB(),
             "timestamp": Date().timeIntervalSince1970
         ]

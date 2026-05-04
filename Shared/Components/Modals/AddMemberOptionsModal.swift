@@ -323,6 +323,8 @@ struct AddMemberOptionsModal: View {
                 isPresented: $showCodeInput,
                 initialCode: scannedCode.isEmpty ? nil : scannedCode
             )
+            .environmentObject(navigationManager)
+            .environmentObject(localizationManager)
         }
         .onChange(of: showCodeInput) { newValue in
             if !newValue {

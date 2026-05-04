@@ -116,6 +116,10 @@ struct APIResponseValidator {
                 try validateDeviceResponse(device)
             case let eventsBatch as SubscriptionEventsBatchResponse:
                 try validateSubscriptionEventsBatchResponse(eventsBatch)
+            case let userProfile as UserProfile:
+                try validateUserProfile(userProfile)
+            case let deltaContract as DeltaContractDTO:
+                try validateDeltaContractDTO(deltaContract)
             default:
                 // Для типов без явных правил валидации оставляем мягкий режим:
                 // либо тихо пропускаем (известные безопасные DTO), либо логируем warning.
@@ -269,6 +273,24 @@ struct APIResponseValidator {
         }
         #if DEBUG
         print("✅ SubscriptionEventsBatchResponse validated")
+        #endif
+    }
+
+    private static func validateUserProfile(_ response: UserProfile) throws {
+        guard !response.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw ValidationError.emptyField(field: "id")
+        }
+        #if DEBUG
+        print("✅ UserProfile validated: id=\(response.id.prefix(8))…")
+        #endif
+    }
+
+    private static func validateDeltaContractDTO(_ response: DeltaContractDTO) throws {
+        guard response.toVersion >= 0, response.fromVersion >= 0 else {
+            throw ValidationError.invalidValue(field: "versions", value: "\(response.fromVersion)→\(response.toVersion)", reason: "версии должны быть >= 0")
+        }
+        #if DEBUG
+        print("✅ DeltaContractDTO validated: \(response.fromVersion) → \(response.toVersion)")
         #endif
     }
     

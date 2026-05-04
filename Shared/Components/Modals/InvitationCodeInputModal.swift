@@ -15,6 +15,7 @@ struct InvitationCodeInputModal: View {
     @Binding var isPresented: Bool
     let initialCode: String?
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
     
     @State private var code: String = ""
     @State private var isLoading: Bool = false
@@ -117,7 +118,7 @@ struct InvitationCodeInputModal: View {
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button("Отмена") {
-                        isPresented = false
+                        dismissInvitationFlow()
                     }
                 }
             }
@@ -131,6 +132,15 @@ struct InvitationCodeInputModal: View {
             if let initialCode = initialCode {
                 code = initialCode
             }
+        }
+    }
+
+    /// При маршруте через `NavigationManager` (`.invitationCode` + `isPresented: .constant(true)`) binding не закрывает экран — нужен `goBack()`.
+    private func dismissInvitationFlow() {
+        if navigationManager.currentScreen == .invitationCode {
+            navigationManager.goBack(reason: "invitation_code_cancel")
+        } else {
+            isPresented = false
         }
     }
     
@@ -174,7 +184,7 @@ struct InvitationCodeInputModal: View {
             }
             NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
             NotificationCenter.default.post(name: NSNotification.Name("MainFamilyStatsForceRefresh"), object: nil)
-            isPresented = false
+            dismissInvitationFlow()
         } else {
             self.isLoading = false
             self.errorMessage = "Не удалось присоединиться к семье"
@@ -199,5 +209,7 @@ struct InvitationCodeInputModal_Previews: PreviewProvider {
     
     static var previews: some View {
         InvitationCodeInputModal(isPresented: $isPresented)
+            .environmentObject(NavigationManager())
+            .environmentObject(LocalizationManager.shared)
     }
 }

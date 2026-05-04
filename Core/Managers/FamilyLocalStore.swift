@@ -12,6 +12,8 @@ enum FamilyLocalStore {
     /// Создатель семьи (`creator_member_id` из `POST /api/family/create`) — не путать с `your_member_id` присоединившегося.
     static let familyCreatorMemberIdKey = "family_creator_member_id"
     static let yourMemberIdUserDefaultsKey = "your_member_id"
+    /// Последний `family_id`, с которым был сохранён `family_members_list` (защита от «чужого» кэша с другого аккаунта/чата).
+    static let rosterSnapshotFamilyIdKey = "family_members_roster_snapshot_family_id"
 
     /// Сбрасывает сохранённый ростер и связанные ключи, если новый `family_id` отличается от уже сохранённого.
     /// Не трогает `your_member_id` и токены — вызывающий код обновляет их отдельно.
@@ -31,8 +33,82 @@ enum FamilyLocalStore {
         defaults.removeObject(forKey: familyMemberSeededKey)
         defaults.removeObject(forKey: lastResolvedFamilyIdKey)
         defaults.removeObject(forKey: familyCreatorMemberIdKey)
+        defaults.removeObject(forKey: rosterSnapshotFamilyIdKey)
         defaults.synchronize()
         NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+        return true
+    }
+
+    /// Записать снимок семьи для текущего кэша ростера (вызывать вместе с сохранением `family_members_list`).
+    static func persistRosterSnapshotFamilyId(_ familyId: String, defaults: UserDefaults = .standard) {
+        let v = familyId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if v.isEmpty {
+            defaults.removeObject(forKey: rosterSnapshotFamilyIdKey)
+        } else {
+            defaults.set(v, forKey: rosterSnapshotFamilyIdKey)
+        }
+        defaults.synchronize()
+    }
+
+    /// Удалить только локальный ростер и метаданные слияния (не трогает `family_id` / токены).
+    private static func clearPersistedRosterListAndMergeMeta(defaults: UserDefaults = .standard) {
+        defaults.removeObject(forKey: familyMembersKey)
+        defaults.removeObject(forKey: rosterSnapshotFamilyIdKey)
+        defaults.removeObject(forKey: familyAdditionOrderKey)
+        defaults.removeObject(forKey: partialSyncRetryCountKey)
+        defaults.removeObject(forKey: familyMemberSeededKey)
+        defaults.synchronize()
+    }
+
+    /// Ручной сброс локального кэша списка участников (как кнопка «Очистить кэш» на экране Семья).
+    /// Не удаляет семью на сервере, не трогает `family_id`, JWT, `your_member_id`, детские профили в `ProfileManager`.
+    static func clearLocalFamilyRosterCacheForManualReset(defaults: UserDefaults = .standard) {
+        defaults.removeObject(forKey: familyMembersKey)
+        defaults.removeObject(forKey: rosterSnapshotFamilyIdKey)
+        defaults.removeObject(forKey: familyAdditionOrderKey)
+        defaults.removeObject(forKey: partialSyncRetryCountKey)
+        defaults.removeObject(forKey: familyMemberSeededKey)
+        defaults.removeObject(forKey: "family_not_seen_counters")
+        defaults.synchronize()
+    }
+
+    /// Перед чтением `family_members_list`: отбрасываем кэш, если он не относится к текущему `family_id` или при пустом `family_id` содержит серверные MEM_*.
+    @discardableResult
+    static func validatePersistedRosterAgainstCurrentFamily(defaults: UserDefaults = .standard) -> Bool {
+        let fid = (defaults.string(forKey: familyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let snap = (defaults.string(forKey: rosterSnapshotFamilyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+
+        guard let data = defaults.data(forKey: familyMembersKey),
+              let list = try? JSONDecoder().decode([FamilyMemberData].self, from: data),
+              !list.isEmpty else {
+            return true
+        }
+
+        let hasServerLinked = list.contains { row in
+            let id = (row.serverMemberId ?? row.id).trimmingCharacters(in: .whitespacesAndNewlines)
+            return id.hasPrefix("MEM_")
+        }
+
+        if fid.isEmpty {
+            if hasServerLinked {
+                clearPersistedRosterListAndMergeMeta(defaults: defaults)
+                NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+                return false
+            }
+            return true
+        }
+
+        if !snap.isEmpty && snap != fid {
+            clearPersistedRosterListAndMergeMeta(defaults: defaults)
+            NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+            return false
+        }
+
+        // Миграция: впервые фиксируем снимок для уже сохранённого ростера под текущим `family_id`.
+        if !fid.isEmpty && snap.isEmpty {
+            persistRosterSnapshotFamilyId(fid, defaults: defaults)
+        }
+
         return true
     }
 
@@ -300,6 +376,7 @@ enum FamilyLocalStore {
         defaults.removeObject(forKey: partialSyncRetryCountKey)
         defaults.removeObject(forKey: familyMemberSeededKey)
         defaults.removeObject(forKey: familyCreatorMemberIdKey)
+        defaults.removeObject(forKey: rosterSnapshotFamilyIdKey)
         defaults.removeObject(forKey: yourMemberIdUserDefaultsKey)
         defaults.synchronize()
         NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)

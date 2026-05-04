@@ -1209,6 +1209,8 @@ class FamilyRegistrationViewModel: ObservableObject {
             // Сохраняем обновленный список
             if let encoded = try? JSONEncoder().encode(existingMembers) {
                 UserDefaults.standard.set(encoded, forKey: "family_members_list")
+                let fid = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                FamilyLocalStore.persistRosterSnapshotFamilyId(fid)
                 // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительная синхронизация UserDefaults
                 UserDefaults.standard.synchronize()
                 print("✅ Создатель семьи добавлен к списку участников: \(userName) (\(cardRole)). Всего участников: \(existingMembers.count)")
@@ -1349,6 +1351,8 @@ class FamilyRegistrationViewModel: ObservableObject {
             // Сохраняем обновленный список
             if let encoded = try? JSONEncoder().encode(existingMembers) {
                 UserDefaults.standard.set(encoded, forKey: "family_members_list")
+                let fid = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                FamilyLocalStore.persistRosterSnapshotFamilyId(fid)
                 // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительная синхронизация UserDefaults
                 UserDefaults.standard.synchronize()
                 print("✅ Присоединившийся участник добавлен к списку: \(userName) (\(cardRole)). Всего участников: \(existingMembers.count)")

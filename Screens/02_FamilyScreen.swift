@@ -61,6 +61,7 @@ struct FamilyScreen: View {
     @AppStorage("family_remaining") private var familyRemaining: Int = 0
     // Banner for sync status during partial subset
     @State private var showSyncBanner: Bool = false
+    @State private var showClearLocalFamilyCacheConfirmation: Bool = false
     // Lightweight log de-duplication
     @State private var lastLogTimestamps: [String: TimeInterval] = [:]
     @State private var notSeenCounters: [String: Int] = [:]
@@ -210,6 +211,11 @@ struct FamilyScreen: View {
         logger.business("Loading family members from storage")
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Синхронизируем UserDefaults перед чтением
         UserDefaults.standard.synchronize()
+
+        // Кэш ростера мог остаться от другой семьи / экрана чата при пустом `family_id` — иначе на 1–5 с показывается «чужой» ребёнок, пока не придёт sync.
+        if !FamilyLocalStore.validatePersistedRosterAgainstCurrentFamily() {
+            familyMembers = []
+        }
         
         // ✅ OPTIMIZATION: Update admin status early
         updateAdminStatus()
@@ -249,57 +255,36 @@ struct FamilyScreen: View {
                 return
             }
 
-            if let currentRoleString = UserDefaults.standard.string(forKey: currentUserRoleKey) {
-                let normalizedRole = currentRoleString.lowercased()
-                let role: FamilyMemberCard.FamilyRole
-                let parentLabels = Set(["parent", localizationManager.localized("family_role_parent_label").lowercased()])
-                let childLabels = Set(["child", localizationManager.localized("family_role_child_label").lowercased()])
-                let teenLabels = Set(["teenager", "teen", localizationManager.localized("family_role_teen_label").lowercased()])
-                let elderlyLabels = Set(["elderly", "grandparent", localizationManager.localized("family_role_elderly_label").lowercased()])
-                switch normalizedRole {
-                case _ where parentLabels.contains(normalizedRole):
-                    role = .parent
-                case _ where childLabels.contains(normalizedRole):
-                    role = .child
-                case _ where teenLabels.contains(normalizedRole):
-                    role = .teenager
-                case _ where elderlyLabels.contains(normalizedRole):
-                    role = .elderly
-                default:
-                    role = .parent
-                }
-                let userName = UserDefaults.standard.string(forKey: currentUserNameKey) ?? localizationManager.localized("family_you")
-                
-                familyMembers = [
-                    FamilyMemberData(
-                        name: userName,
-                        role: role,
-                        avatar: getAvatarForRole(role),
-                        status: .protected,
-                        threatsBlocked: 0,
-                        lastActive: localizationManager.localized("family_now")
-                    )
-                ]
-                print("✅ Created family member for current user: \(userName)")
-            } else {
-                // 3. Если даже роли нет - создаём участника по умолчанию (родитель)
-                familyMembers = [
-                    FamilyMemberData(
-                        name: localizationManager.localized("family_you"),
-                        role: .parent,
-                        avatar: "👨‍💼",
-                        status: .protected,
-                        threatsBlocked: 0,
-                        lastActive: localizationManager.localized("family_now")
-                    )
-                ]
-                print("⚠️ No data found; created default family member")
-            }
+            // Без `family_id` на сервере это только плейсхолдер «владелец устройства» — всегда родитель.
+            // Иначе случайный `current_user_role=child` (детский режим / старый UD) рисовал «ребёнка» в блоке «Участники семьи».
+            let userName = UserDefaults.standard.string(forKey: currentUserNameKey) ?? localizationManager.localized("family_you")
+            let role: FamilyMemberCard.FamilyRole = .parent
+            familyMembers = [
+                FamilyMemberData(
+                    name: userName,
+                    role: role,
+                    avatar: getAvatarForRole(role),
+                    status: .protected,
+                    threatsBlocked: 0,
+                    lastActive: localizationManager.localized("family_now")
+                )
+            ]
+            print("✅ Created default family placeholder (parent): \(userName)")
             
             // Сохраняем созданный список только если он был пуст
             saveFamilyMembers()
             UserDefaults.standard.set(true, forKey: familyMemberSeededKey)
         }
+    }
+
+    /// Ручная очистка локального кэша списка участников (кнопка под блоком «Участники семьи»). Семья на сервере не удаляется.
+    private func performClearLocalFamilyRosterCacheAndReload() {
+        FamilyLocalStore.clearLocalFamilyRosterCacheForManualReset()
+        familyMembers.removeAll()
+        notSeenCounters.removeAll()
+        serverMemberIdsLatest = []
+        VisualLogger.shared.log("🧹 FAMILY: user cleared local roster cache (manual)", level: .info, category: "FAMILY")
+        loadFamilyMembers()
     }
 
     /// Лёгкая перезагрузка только из локального storage без API sync.
@@ -314,6 +299,11 @@ struct FamilyScreen: View {
             return
         }
         lastFamilyOperationTime = now
+
+        if !FamilyLocalStore.validatePersistedRosterAgainstCurrentFamily() {
+            familyMembers = []
+            return
+        }
 
         guard let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
               let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
@@ -1170,6 +1160,8 @@ struct FamilyScreen: View {
         }
 
         UserDefaults.standard.set(encoded, forKey: familyMembersKey)
+        let fid = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        FamilyLocalStore.persistRosterSnapshotFamilyId(fid)
         // Persist not-seen counters
         if let countersData = try? JSONEncoder().encode(notSeenCounters) {
             UserDefaults.standard.set(countersData, forKey: "family_not_seen_counters")
@@ -2070,27 +2062,29 @@ struct FamilyScreen: View {
                                         )
                                     }
                                     
-                                    // Dev-only: очистка локального кэша семьи (C11)
-                                    #if DEBUG
                                     Button {
-                                        UserDefaults.standard.removeObject(forKey: familyMembersKey)
-                                        UserDefaults.standard.removeObject(forKey: "family_not_seen_counters")
-                                        UserDefaults.standard.synchronize()
-                                        self.familyMembers.removeAll()
-                                        self.notSeenCounters.removeAll()
-                                        VisualLogger.shared.log("🧹 FAMILY: local cache cleared (dev)", level: .info, category: "FAMILY")
-                                        // Жёсткий ресинк
-                                        syncFamilyMembersFromAPI()
+                                        showClearLocalFamilyCacheConfirmation = true
                                     } label: {
-                                        Text(localizationManager.currentLanguage == .russian ? "Очистить локальный кэш семьи (DEV)" : "Clear local family cache (DEV)")
-                                            .font(.footnote)
-                                            .foregroundColor(.red)
-                                            .padding(.vertical, 6)
+                                        Text(localizationManager.localized("family_clear_local_cache_button"))
+                                            .font(.caption)
+                                            .foregroundColor(.white.opacity(0.65))
+                                            .underline()
+                                            .padding(.top, 4)
                                             .frame(maxWidth: .infinity)
-                                            .background(Color.red.opacity(0.1))
-                                            .cornerRadius(8)
                                     }
-                                    #endif
+                                    .buttonStyle(.plain)
+                                    .confirmationDialog(
+                                        localizationManager.localized("family_clear_local_cache_title"),
+                                        isPresented: $showClearLocalFamilyCacheConfirmation,
+                                        titleVisibility: .visible
+                                    ) {
+                                        Button(localizationManager.localized("family_clear_local_cache_confirm"), role: .destructive) {
+                                            performClearLocalFamilyRosterCacheAndReload()
+                                        }
+                                        Button(localizationManager.localized("common_cancel"), role: .cancel) {}
+                                    } message: {
+                                        Text(localizationManager.localized("family_clear_local_cache_message"))
+                                    }
                                 }
                             }
                             // Пустое состояние - показываем WelcomeCardForCreator только если список пуст

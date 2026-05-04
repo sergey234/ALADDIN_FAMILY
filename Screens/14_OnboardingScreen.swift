@@ -151,6 +151,13 @@ struct OnboardingScreen: View {
         return fallback ?? fallbackTexts[key] ?? key
     }
 
+    /// Без шага выбора роли `current_user_role` пуст — `FamilyAccessPolicy` блокирует ростер («только для родителя»).
+    private func markPrimaryUserRoleParentIfUnset() {
+        let existing = (UserDefaults.standard.string(forKey: "current_user_role") ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard existing.isEmpty else { return }
+        UserDefaults.standard.set("parent", forKey: "current_user_role")
+    }
+
     // ✅ НОВОЕ: Функция безопасной загрузки страниц с fallback
     private func loadPages() {
         print("🔄 OnboardingScreen.loadPages: Starting, localizationManager.isReady = \(localizationManager.isReady)")
@@ -358,6 +365,7 @@ struct OnboardingScreen: View {
                     // Обновить UI или перейти на главный экран
                     // ✅ BUILD 98: Устанавливаем hasCompletedOnboarding асинхронно для предотвращения рекурсии
                     hasCompletedOnboarding = true
+                    markPrimaryUserRoleParentIfUnset()
                     Task { @MainActor in
                         UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
                     }
@@ -369,6 +377,8 @@ struct OnboardingScreen: View {
             InvitationCodeInputModal(
                 isPresented: $showInvitationCodeInput
             )
+            .environmentObject(navigationManager)
+            .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showQRScanner) {
             QRScannerModal { code in
@@ -397,6 +407,7 @@ struct OnboardingScreen: View {
                     hasCompletedOnboarding = true
                     // ✅ BUILD 98: Устанавливаем hasCompletedOnboarding асинхронно для предотвращения рекурсии
                     hasCompletedOnboarding = true
+                    markPrimaryUserRoleParentIfUnset()
                     Task { @MainActor in
                         UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
                     }
@@ -461,6 +472,7 @@ struct OnboardingScreen: View {
                             
                             // ✅ BUILD 98: Устанавливаем hasCompletedOnboarding асинхронно для предотвращения рекурсии
                             hasCompletedOnboarding = true
+                            markPrimaryUserRoleParentIfUnset()
                             Task { @MainActor in
                                 UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
                             }
