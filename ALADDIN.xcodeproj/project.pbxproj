@@ -243,6 +243,8 @@
 		A3000007 /* Core/NetworkProtection/NetworkProtectionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000006 /* Core/NetworkProtection/NetworkProtectionManager.swift */; };
 		A3000009 /* Core/Network/APIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000008 /* Core/Network/APIService.swift */; };
 		A3000011 /* Core/Network/NetworkManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000010 /* Core/Network/NetworkManager.swift */; };
+		E7F8B0112FA13000065BDCC /* Core/Network/DeleteAccountResponseParser.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F8B0102FA13000065BDCC /* Core/Network/DeleteAccountResponseParser.swift */; };
+		E7F8B0132FA13000065BDCD /* DeleteAccountResponseParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F8B0122FA13000065BDCD /* DeleteAccountResponseParserTests.swift */; };
 		A3000013 /* Core/Config/AppConfig.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000012 /* Core/Config/AppConfig.swift */; };
 		A3000017 /* ViewModels/FamilyViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000016 /* ViewModels/FamilyViewModel.swift */; };
 		A3000019 /* ViewModels/AIAssistantViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000018 /* ViewModels/AIAssistantViewModel.swift */; };
@@ -667,6 +669,8 @@
 		A3000006 /* Core/NetworkProtection/NetworkProtectionManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/NetworkProtection/NetworkProtectionManager.swift; sourceTree = "<group>"; };
 		A3000008 /* Core/Network/APIService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Network/APIService.swift; sourceTree = "<group>"; };
 		A3000010 /* Core/Network/NetworkManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Network/NetworkManager.swift; sourceTree = "<group>"; };
+		E7F8B0102FA13000065BDCC /* Core/Network/DeleteAccountResponseParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Network/DeleteAccountResponseParser.swift; sourceTree = "<group>"; };
+		E7F8B0122FA13000065BDCD /* DeleteAccountResponseParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeleteAccountResponseParserTests.swift; sourceTree = "<group>"; };
 		A3000012 /* Core/Config/AppConfig.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Config/AppConfig.swift; sourceTree = "<group>"; };
 		A3000016 /* ViewModels/FamilyViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/FamilyViewModel.swift; sourceTree = "<group>"; };
 		A3000018 /* ViewModels/AIAssistantViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/AIAssistantViewModel.swift; sourceTree = "<group>"; };
@@ -1168,6 +1172,7 @@
 				A3000006 /* Core/NetworkProtection/NetworkProtectionManager.swift */,
 				A3000008 /* Core/Network/APIService.swift */,
 				A3000010 /* Core/Network/NetworkManager.swift */,
+				E7F8B0102FA13000065BDCC /* Core/Network/DeleteAccountResponseParser.swift */,
 				A3000012 /* Core/Config/AppConfig.swift */,
 				A3000016 /* ViewModels/FamilyViewModel.swift */,
 				A3000018 /* ViewModels/AIAssistantViewModel.swift */,
@@ -1282,6 +1287,7 @@
 				B5001110 /* MockAPIServiceTests.swift */,
 				B5001111 /* ChildRosterReconcilePolicyTests.swift */,
 				E7F8B0032FA12A050065BDC4 /* FamilyRosterSyncMergePolicyTests.swift */,
+				E7F8B0122FA13000065BDCD /* DeleteAccountResponseParserTests.swift */,
 				B5001112 /* ContentValidatorTests.swift */,
 				B5001113 /* ContentManifestPayloadHydrationTests.swift */,
 				B5001114 /* ParentActivityDailyAggregatorTests.swift */,
@@ -1541,6 +1547,7 @@
 				5E7056B72F5478430065BDC4 /* TrialFlowTestView.swift in Sources */,
 				5EC309132EA6B62100C7D34B /* 11_ProfileScreen.swift in Sources */,
 				A3000011 /* Core/Network/NetworkManager.swift in Sources */,
+				E7F8B0112FA13000065BDCC /* Core/Network/DeleteAccountResponseParser.swift in Sources */,
 				5EC309182EA6B63100C7D34B /* 19_TermsOfServiceScreen.swift in Sources */,
 				5E7056BC2F547AA00065BDC4 /* SubscriptionManager.swift in Sources */,
 				5E7057032FA12A010065BDC4 /* FamilyLocalStore.swift in Sources */,
@@ -1833,6 +1840,7 @@
 				B5001210 /* MockAPIServiceTests.swift in Sources */,
 				B5001211 /* ChildRosterReconcilePolicyTests.swift in Sources */,
 				E7F8B0042FA12A050065BDC4 /* FamilyRosterSyncMergePolicyTests.swift in Sources */,
+				E7F8B0132FA13000065BDCD /* DeleteAccountResponseParserTests.swift in Sources */,
 				B5001212 /* ContentValidatorTests.swift in Sources */,
 				B5001213 /* ContentManifestPayloadHydrationTests.swift in Sources */,
 				B5001214 /* ParentActivityDailyAggregatorTests.swift in Sources */,

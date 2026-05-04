@@ -32,6 +32,11 @@ try:
 except ImportError:
     get_postgres_db = None
 
+try:
+    from app.services.family_roster_reconcile import reconcile_sole_child_roster_for_owner
+except ImportError:
+    reconcile_sole_child_roster_for_owner = None  # type: ignore[misc, assignment]
+
 # ✅ RATE LIMITING: Импорт slowapi для защиты от злоупотреблений
 from slowapi import Limiter
 from slowapi.util import get_remote_address
@@ -201,6 +206,35 @@ def _actor_belongs_to_family(db, user_id: int, family_id: str) -> bool:
         {"fid": fid, "uid": user_id},
     ).fetchone()
     return bool(o)
+
+
+def _actor_can_manage_family_roster(db, user_id: int, family_id: str) -> bool:
+    """
+    Who may add/remove roster rows for this family.
+
+    - Owner (`families.owner_user_id`) for `family_id`, even without a `family_members` row.
+    - Or a `parent` row in `family_members` for this `family_id` and `user_id`.
+    """
+    fid = str(family_id or "").strip()
+    if not fid:
+        return False
+    o = db.execute(
+        text("SELECT 1 FROM families WHERE id = :fid AND owner_user_id = :uid LIMIT 1"),
+        {"fid": fid, "uid": user_id},
+    ).fetchone()
+    if o:
+        return True
+    p = db.execute(
+        text(
+            """
+            SELECT 1 FROM family_members
+            WHERE family_id = :fid AND user_id = :uid AND lower(trim(role)) = 'parent'
+            LIMIT 1
+            """
+        ),
+        {"fid": fid, "uid": user_id},
+    ).fetchone()
+    return bool(p)
 
 
 def _resolve_effective_family_id_for_chat(
@@ -881,7 +915,6 @@ async def add_family_member(
                 {"user_id": user_id},
             ).fetchone()
             actor_family_id = actor_row[0] if actor_row else None
-            actor_role = str(actor_row[1]).lower() if actor_row and actor_row[1] is not None else "unknown"
 
             # 2) Выбираем целевой family_id
             if payload.familyId is not None:
@@ -902,11 +935,15 @@ async def add_family_member(
                     logger.warning("family_not_found_for_actor", user_id=user_id)
                     raise HTTPException(status_code=404, detail="Family not found")
                 family_id = fam_row[0]
-                actor_role = "parent"
 
-            # Политика доступа: добавлять может только администратор (родитель)
-            if actor_role != "parent":
-                logger.warning("family_add_denied_not_admin", user_id=user_id, actor_role=actor_role, family_id=str(family_id))
+            # Политика доступа: владелец семьи или parent-строка в этой семье (не «последняя роль в другой семье»).
+            if not _actor_can_manage_family_roster(db, user_id, str(family_id)):
+                logger.warning(
+                    "family_add_denied_not_admin",
+                    user_id=user_id,
+                    family_id=str(family_id),
+                    actor_family_id=str(actor_family_id) if actor_family_id is not None else None,
+                )
                 raise HTTPException(status_code=403, detail="Only administrators can add members")
 
             member_id = f"MEM_{uuid.uuid4().hex[:12].upper()}"
@@ -945,7 +982,6 @@ async def add_family_member(
                 family_id=str(family_id),
                 member_id=member_id,
                 role=role,
-                actor_role=actor_role,
                 name=name,
                 timestamp=datetime.now().isoformat(),
             )
@@ -1048,6 +1084,22 @@ async def get_family_members_compat(
                     status_code=409,
                     detail="familyId does not match the authenticated user's family context",
                 )
+
+            if reconcile_sole_child_roster_for_owner is not None:
+                try:
+                    reconcile_sole_child_roster_for_owner(
+                        db,
+                        family_id=str(family_id),
+                        actor_user_id=user_id,
+                        log=logger,
+                    )
+                except Exception as exc:
+                    logger.warning(
+                        "family_roster_reconcile_failed",
+                        error=str(exc),
+                        family_id=str(family_id),
+                        user_id=user_id,
+                    )
 
             res = db.execute(
                 text("SELECT id, name, role FROM family_members WHERE family_id = :family_id ORDER BY id ASC"),
@@ -1215,8 +1267,13 @@ async def remove_family_member(
             actor_member_id = str(actor_row[0]) if actor_row else None
             actor_role = str(actor_row[1]).lower() if actor_row and actor_row[1] is not None else "unknown"
 
-            # Политика доступа: удалять может только администратор (родитель)
-            if actor_role != "parent":
+            if not _actor_can_manage_family_roster(db, user_id, str(family_id)):
+                logger.warning(
+                    "family_remove_denied_not_admin",
+                    user_id=user_id,
+                    family_id=str(family_id),
+                    actor_role=actor_role,
+                )
                 raise HTTPException(status_code=403, detail="Only administrators can remove members")
 
             if actor_member_id and actor_member_id == str(payload.memberId):
@@ -1371,6 +1428,22 @@ async def reconcile_family(
                 if resolved is None:
                     raise HTTPException(status_code=404, detail="Family not found")
                 family_id = resolved
+
+            if reconcile_sole_child_roster_for_owner is not None:
+                try:
+                    reconcile_sole_child_roster_for_owner(
+                        db,
+                        family_id=str(family_id),
+                        actor_user_id=user_id,
+                        log=logger,
+                    )
+                except Exception as exc:
+                    logger.warning(
+                        "family_roster_reconcile_post_failed",
+                        error=str(exc),
+                        family_id=str(family_id),
+                        user_id=user_id,
+                    )
 
             rows = db.execute(
                 text(

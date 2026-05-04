@@ -129,6 +129,14 @@ struct FamilyScreen: View {
     private var canAddFamilyMemberUnderTariff: Bool {
         subscriptionManager.canAddFamilyMember(currentCount: familyMembers.count).allowed
     }
+
+    /// Подсказка, если тариф позволяет больше участников, а с сервера пришёл одиночный ростер и у пользователя нет прав управления (часто child).
+    private var incompleteFamilyServerDataBannerText: String? {
+        guard familyMembers.count == 1 else { return nil }
+        guard subscriptionManager.currentFamilyLimit > 1 else { return nil }
+        guard !canManageFamilyRoster else { return nil }
+        return localizationManager.localized("family.incomplete_server_roster_hint")
+    }
     
     // MARK: - Log dedup helper
     private func logOnce(_ key: String, ttl: TimeInterval, _ block: () -> Void) {
@@ -546,10 +554,19 @@ struct FamilyScreen: View {
                     let newIds = Set(mergedMembers.map { $0.id })
                     
                     let currentRetryCount = UserDefaults.standard.integer(forKey: "family_sync_partial_retry_count")
+                    let parentOrElderMissingFromServer = localBefore.contains { m in
+                        guard m.role == .parent || m.role == .elderly else { return false }
+                        let keys: [String] = [m.id, m.serverMemberId]
+                            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+                            .filter { !$0.isEmpty }
+                        guard !keys.isEmpty else { return false }
+                        return !keys.contains { serverIdSet.contains($0) }
+                    }
                     let mergePick = FamilyRosterSyncMergePolicy.chooseFinalSource(
                         flags: syncFlags,
                         partialRetryCount: currentRetryCount,
-                        hasKnownServerMembersInLocal: hasKnownServerMembers
+                        hasKnownServerMembersInLocal: hasKnownServerMembers,
+                        localParentOrElderMissingFromServer: parentOrElderMissingFromServer
                     )
                     var finalMembers = mergePick.source == .merged ? mergedMembers : convertedMembers
                     var mergeOutcome = mergePick.mergeOutcome
@@ -1228,19 +1245,7 @@ struct FamilyScreen: View {
 
         let beforeCount = familyMembers.count
         var cleaned = deduplicateFamilyMembers(familyMembers)
-
-        // Protect creator role (Golden Rule)
-        let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
-        if !myMemberId.isEmpty {
-            if let idx = cleaned.firstIndex(where: { $0.id == myMemberId || ($0.serverMemberId != nil && $0.serverMemberId == myMemberId) }) {
-                if cleaned[idx].role != .parent {
-                    var updated = cleaned[idx]
-                    updated.role = .parent
-                    cleaned[idx] = updated
-                    VisualLogger.shared.log("🛡️ PROTECTED creator role for \(myMemberId.prefix(8))", level: .info, category: "FAMILY")
-                }
-            }
-        }
+        let myMemberId = UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey) ?? ""
 
         // Simple local-only cleanup - only if we have fresh server list
         if !serverIds.isEmpty {
@@ -2239,6 +2244,21 @@ struct FamilyScreen: View {
                     .padding(.horizontal, 12)
                     .padding(.bottom, 106)
                     .onTapGesture { familySyncContextBanner = nil }
+            }
+        }
+        .overlay(alignment: .bottom) {
+            if let hint = incompleteFamilyServerDataBannerText, !hint.isEmpty {
+                Text(hint)
+                    .font(.footnote)
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 14)
+                    .padding(.vertical, 12)
+                    .background(Color.purple.opacity(0.92))
+                    .clipShape(RoundedRectangle(cornerRadius: 12))
+                    .shadow(radius: 6)
+                    .padding(.horizontal, 12)
+                    .padding(.bottom, 150)
             }
         }
         .confirmationDialog(

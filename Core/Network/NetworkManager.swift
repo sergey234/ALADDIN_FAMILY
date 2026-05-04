@@ -91,6 +91,16 @@ class NetworkManager: NSObject, ObservableObject {
         return false
     }
 
+    /// Удаление аккаунта (`DELETE /api/user/delete`): шлюз может вернуть envelope вместо `APIResponse<Bool>`.
+    private static func isUserDeleteAccountPath(_ path: String) -> Bool {
+        path.contains("/api/user/delete") || path.contains("/user/delete")
+    }
+
+    /// Разбор ответа удаления аккаунта: см. `DeleteAccountResponseParser`.
+    private static func tryParseDeleteAccountFlexible(path: String, data: Data?, statusCode: Int) -> APIResponse<Bool>? {
+        DeleteAccountResponseParser.parse(path: path, data: data, statusCode: statusCode)
+    }
+
     /// Экран мониторинга может дергать `detail` из нескольких SwiftUI-view; даём больший bucket, чем дефолт 100/мин.
     private static func effectiveMaxRequestsPerWindow(for path: String) -> Int? {
         if path.contains("/api/parental-control/monitoring/detail") { return 400 }
@@ -1417,7 +1427,26 @@ class NetworkManager: NSObject, ObservableObject {
                 }
                 
                 // Проверка данных
+                let pathForBody = request.url?.path ?? ""
                 guard let data = data else {
+                    if Self.isUserDeleteAccountPath(pathForBody), (200...299).contains(httpResponse.statusCode),
+                       let bridged = Self.tryParseDeleteAccountFlexible(path: pathForBody, data: nil, statusCode: httpResponse.statusCode),
+                       let asT = bridged as? T {
+                        do {
+                            try APIResponseValidator.validate(asT, type: T.self)
+                            if requiresAuth {
+                                JWTCircuitBreaker.shared.recordSuccess(for: determineCategory(for: endpoint))
+                                logger.network("✅ DEFENSIVE JWT: Circuit breaker success recorded")
+                            }
+                            completion(.success(asT))
+                        } catch let validationError as ValidationError {
+                            self?.lastError = validationError.localizedDescription
+                            completion(.failure(validationError))
+                        } catch {
+                            completion(.failure(error))
+                        }
+                        return
+                    }
                     // ✅ Production логирование отсутствия данных
                     os_log("No data in response: %{public}@", 
                            log: Self.networkLogger, 
@@ -1484,6 +1513,11 @@ class NetworkManager: NSObject, ObservableObject {
                         let decodePayload = Self.dataPreparingForJSONDecode(path: reqPath, original: data, decodeType: T.self)
                         decoded = try JSONDecoder().decode(T.self, from: decodePayload)
                     } catch let decodingError {
+                        if Self.isUserDeleteAccountPath(reqPath),
+                           let bridged = Self.tryParseDeleteAccountFlexible(path: reqPath, data: data, statusCode: httpResponse.statusCode),
+                           let asT = bridged as? T {
+                            decoded = asT
+                        } else {
                         let responseString = String(data: data, encoding: .utf8) ?? "Unable to convert to string"
                         if reqPath.contains("/api/content/") {
                             logger.network("ℹ️ content_sync: декод \(T.self) не удалился для \(reqPath) — используем кэш. \(decodingError.localizedDescription)")
@@ -1503,6 +1537,7 @@ class NetworkManager: NSObject, ObservableObject {
                         }
                         completion(.failure(NetworkError.decodingError(decodingError)))
                         return
+                        }
                     }
 
                     #if DEBUG

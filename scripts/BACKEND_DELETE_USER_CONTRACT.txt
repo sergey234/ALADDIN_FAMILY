@@ -1,0 +1,15 @@
+Contract for DELETE /api/user/delete (mobile ALADDIN iOS expects APIResponse<Bool>).
+
+Canonical JSON body on HTTP 200:
+{"success":true,"data":true,"message":"Account deleted","error":null}
+
+Alternative: HTTP 204 with empty body (iOS treats as success).
+
+Do NOT return SFM gateway envelope without success for real deletion, e.g.:
+{"function":"delete_user_delete","result":"","version":"3.0.0-mock-real-protection"}
+iOS maps mock-real-protection to a blocked deletion (gateway_envelope) until backend returns the canonical shape.
+
+Deploy log (operator):
+- 2026-05-04: app/routers/user.py on prod gained DELETE /api/user/delete returning UserCompatBoolResponse (success/data/message/error); backup user.py.bak_* on host; py_compile + systemctl restart aladdin-backend.service; OpenAPI shows delete+get on /api/user/delete.
+- 2026-05-04: pg_dump data-only `family_members` + `families` → `/opt/aladdin-backend/backups/aladdin_family_tables_*.sql` (via /tmp then mv).
+- 2026-05-04: GET /api/family/members reconcile: `app/services/family_roster_reconcile.py` + `app/routers/family.py` deployed; sole child + owner + tariff multi-slot → promote row to parent before SELECT.

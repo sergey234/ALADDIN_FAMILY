@@ -92,6 +92,8 @@
 "family.role.child" = "Child";
 "family.role.teenager" = "Teenager";
 "family.role.elderly" = "Elderly";
+"family.incomplete_server_roster_hint" = "Your plan allows more members, but the server only returned one — family data looks incomplete. Contact support or wait for a server-side fix.";
+"delete_account_error_gateway" = "The server returned a protection wrapper without confirming deletion (mock-real-protection). Deletion was not confirmed — the DELETE /api/user/delete response must be fixed on the backend.";
 
 /* ═══════════════════════════════════════════════════════════════
  * Network Protection

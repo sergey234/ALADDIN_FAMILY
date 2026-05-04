@@ -4958,6 +4958,8 @@ class LocalizationManager: ObservableObject {
             "delete_account_error_unauthorized": "Сессия истекла. Войдите снова и повторите попытку.",
             "delete_account_error_server": "Ошибка сервера. Попробуйте позже.",
             "delete_account_error_generic": "Не удалось удалить аккаунт. Попробуйте ещё раз.",
+            "delete_account_error_gateway": "Сервер вернул защитную оболочку без подтверждения удаления (mock-real-protection). Удаление не подтверждено — нужно исправить ответ DELETE /api/user/delete на бэкенде.",
+            "family.incomplete_server_roster_hint": "По тарифу можно больше участников, а с сервера пришёл один — данные семьи неполные. Обратитесь в поддержку или дождитесь исправления на сервере.",
 
             // Edit Profile
             "edit_profile_title": "Редактирование профиля",
@@ -8059,6 +8061,8 @@ class LocalizationManager: ObservableObject {
             "delete_account_error_unauthorized": "Your session has expired. Please sign in again and retry.",
             "delete_account_error_server": "Server error. Please try again later.",
             "delete_account_error_generic": "Failed to delete account. Please try again.",
+            "delete_account_error_gateway": "The server returned a protection wrapper without confirming deletion (mock-real-protection). Deletion was not confirmed — the DELETE /api/user/delete response must be fixed on the backend.",
+            "family.incomplete_server_roster_hint": "Your plan allows more members, but the server only returned one — family data looks incomplete. Contact support or wait for a server-side fix.",
             
             // ═══════════════════════════════════════════════════════════════
             // MODAL SETTINGS - LOCALIZATION

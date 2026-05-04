@@ -1033,7 +1033,11 @@ struct DeleteAccountView: View {
                         clearLocalData()
                         showSuccessAlert = true
                     } else {
-                        errorMessage = response.message ?? localizationManager.localized("delete_account_error_generic")
+                        if response.error == "gateway_envelope" {
+                            errorMessage = localizationManager.localized("delete_account_error_gateway")
+                        } else {
+                            errorMessage = response.message ?? localizationManager.localized("delete_account_error_generic")
+                        }
                     }
                     
                 case .failure(let error):

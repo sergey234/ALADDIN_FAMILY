@@ -20,7 +20,8 @@ final class FamilyRosterSyncMergePolicyTests: XCTestCase {
         let (source, outcome) = FamilyRosterSyncMergePolicy.chooseFinalSource(
             flags: flags,
             partialRetryCount: 0,
-            hasKnownServerMembersInLocal: true
+            hasKnownServerMembersInLocal: true,
+            localParentOrElderMissingFromServer: false
         )
         XCTAssertEqual(source, .merged)
         XCTAssertEqual(outcome, "keep_merged_subset_confirmed_context_no_server_only_prune")
@@ -41,7 +42,8 @@ final class FamilyRosterSyncMergePolicyTests: XCTestCase {
         let (source, outcome) = FamilyRosterSyncMergePolicy.chooseFinalSource(
             flags: flags,
             partialRetryCount: 0,
-            hasKnownServerMembersInLocal: true
+            hasKnownServerMembersInLocal: true,
+            localParentOrElderMissingFromServer: false
         )
         XCTAssertEqual(source, .merged)
         XCTAssertEqual(outcome, "keep_merged_partial_subset")
@@ -62,10 +64,33 @@ final class FamilyRosterSyncMergePolicyTests: XCTestCase {
         let (source, outcome) = FamilyRosterSyncMergePolicy.chooseFinalSource(
             flags: flags,
             partialRetryCount: 3,
-            hasKnownServerMembersInLocal: false
+            hasKnownServerMembersInLocal: false,
+            localParentOrElderMissingFromServer: false
         )
         XCTAssertEqual(source, .convertedOnly)
         XCTAssertEqual(outcome, "server_truth_after_retries_no_known_server_ids")
+    }
+
+    func test_partialSubset_parentMissingFromServer_neverConvertedOnlyEvenAfterRetries() {
+        let server = ["MEM_CHILD"]
+        let local = ["MEM_PARENT", "MEM_CHILD"]
+        let flags = FamilyRosterSyncMergePolicy.computeFlags(
+            serverIds: Set(server),
+            localIds: Set(local),
+            serverListNonEmpty: true,
+            storedFamilyId: "fam_1",
+            lastResolvedFamilyId: ""
+        )
+        XCTAssertTrue(flags.effectivePartialSubset)
+
+        let (source, outcome) = FamilyRosterSyncMergePolicy.chooseFinalSource(
+            flags: flags,
+            partialRetryCount: 3,
+            hasKnownServerMembersInLocal: false,
+            localParentOrElderMissingFromServer: true
+        )
+        XCTAssertEqual(source, .merged)
+        XCTAssertEqual(outcome, "keep_merged_parent_elder_missing_from_server_subset")
     }
 
     func test_shouldRemoveMissingServerLinkedChildren_falseWhenServerSubset() {

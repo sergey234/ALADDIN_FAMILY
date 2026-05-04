@@ -41,8 +41,13 @@ enum FamilyRosterSyncMergePolicy {
     static func chooseFinalSource(
         flags: ComputedFlags,
         partialRetryCount: Int,
-        hasKnownServerMembersInLocal: Bool
+        hasKnownServerMembersInLocal: Bool,
+        /// Локально есть родитель/пожилой, но ни один из его id не пришёл в текущем ответе сервера — нельзя схлопывать ростер до «только сервер».
+        localParentOrElderMissingFromServer: Bool = false
     ) -> (source: FinalSource, mergeOutcome: String) {
+        if localParentOrElderMissingFromServer {
+            return (.merged, "keep_merged_parent_elder_missing_from_server_subset")
+        }
         if flags.effectivePartialSubset && partialRetryCount >= 3 && !hasKnownServerMembersInLocal {
             return (.convertedOnly, "server_truth_after_retries_no_known_server_ids")
         }
