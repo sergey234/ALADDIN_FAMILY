@@ -28,7 +28,7 @@ struct MainScreen: View {
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var mainViewModel: MainViewModel
     @State private var hasAppeared = false
-    @ObservedObject private var subscriptionManager = SubscriptionManager.shared
+    @EnvironmentObject private var subscriptionManager: SubscriptionManager
     @ObservedObject private var antivirusManager = AntivirusManager.shared
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
@@ -319,8 +319,7 @@ struct MainScreen: View {
             
             // ✅ BUILD 100: Асинхронное обновление кеша expiration text для предотвращения рекурсии
             // Читаем значение один раз и передаем в функцию, чтобы избежать повторного чтения @AppStorage
-            // ✅ ИСПРАВЛЕНИЕ: Убран избыточный Task { @MainActor in }, так как .task {} уже выполняется на MainActor
-            Task { await subscriptionManager.syncSubscriptionOnMainScreenAppear() }
+            // Sync intentionally happens via .onAppear/.scenePhase to avoid duplicate startup bursts.
             let currentExpiresAt = subscriptionExpiresAtIso
             await updateExpirationTextCache(from: currentExpiresAt)
             debugLog.append("✅ cachedExpirationText инициализирован")
@@ -334,13 +333,7 @@ struct MainScreen: View {
             }
         }
         .onAppear {
-            // Холодный старт: счётчик подтянет полный loadDashboardData из .task (без лишнего GET /api/devices).
-            // После первого успешного дашборда lastUpdateTime ≠ nil — при возврате на главную обновляем только девайсы.
-            if mainViewModel.lastUpdateTime != nil {
-                mainViewModel.refreshDevicesCountFromAPI()
-            }
-            // Критично для реального устройства: .task с forceSync выполняется один раз (hasAppeared).
-            // После экрана «Тарифы»/оплаты в Safari подписка на сервере уже другая — без синка главная остаётся на free/жёлтом.
+            // Primary trigger: единый onAppear-проход синка и коалесцированного обновления дашборда.
             Task { await subscriptionManager.syncSubscriptionOnMainScreenAppear() }
             mainViewModel.requestRefreshDebounced()
         }
@@ -923,7 +916,6 @@ struct MainScreen: View {
                     // Debounce через orchestrator ViewModel (коалесим внешние триггеры)
                     mainViewModel.refreshFamilyMembersCountFromStorage()
                     mainViewModel.requestRefreshDebounced()
-                    Task { await subscriptionManager.forceSync() }
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyMembersUpdated"))) { _ in
                     // После сохранения списка участников на экране «Семья» обязательно перезапрашиваем `/api/family/stats`,
@@ -946,7 +938,6 @@ struct MainScreen: View {
                     if let tariffType = notification.userInfo?["tariff"] as? String {
                         print("   Tariff: \(tariffType)")
                     }
-                    Task { await subscriptionManager.forceSync() }
                     mainViewModel.requestRefreshDebounced()
                 }
                 .onChange(of: subscriptionManager.currentSubscription) { _ in
@@ -1145,6 +1136,7 @@ struct MainScreen_Previews: PreviewProvider {
             .environmentObject(MainViewModel())
             .environmentObject(NavigationManager())
             .environmentObject(LocalizationManager.shared)
+            .environmentObject(SubscriptionManager.shared)
     }
 }
 

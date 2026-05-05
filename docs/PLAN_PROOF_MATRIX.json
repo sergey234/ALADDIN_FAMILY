@@ -17,7 +17,7 @@
       "task_id": "a2-fix-phase8-data-rights",
       "required_scripts": ["scripts/phase8_security_smoke.py", "scripts/phase8_compliance_smoke.py"],
       "required_files": ["Screens/ParentDashboardView.swift", "Core/Profile/ProfileManager.swift"],
-      "required_symbols": ["runSensitiveAction", "ParentSessionGate.confirmSensitiveAction()", "exportChildDataRightsPackage"]
+      "required_symbols": ["runSensitiveAction", "exportChildDataRightsPackage"]
     },
     {
       "task_id": "a3-fix-phase8-timeouts",

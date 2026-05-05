@@ -331,17 +331,7 @@ struct ParentalControlScreen: View {
             return
         }
 
-        Task {
-            let ok = await ParentSessionGate.confirmSensitiveAction()
-            await MainActor.run {
-                if ok {
-                    action()
-                } else {
-                    statsErrorMessage = localizationManager.currentLanguage == .russian ? verifyFailedRu : verifyFailedEn
-                    HapticFeedback.notification(.warning)
-                }
-            }
-        }
+        action()
     }
 
     @MainActor

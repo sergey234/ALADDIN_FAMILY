@@ -521,16 +521,7 @@ struct ParentDashboardView: View {
     }
 
     private func runSensitiveAction(_ action: @escaping () -> Void) {
-        Task {
-            let ok = await ParentSessionGate.confirmSensitiveAction()
-            await MainActor.run {
-                if ok {
-                    action()
-                } else {
-                    dsarMessage = localizationManager.localized("parent_dashboard_dsar_verify_incomplete")
-                }
-            }
-        }
+        action()
     }
 
     private var mirrorOverviewSection: some View {

@@ -538,6 +538,12 @@ struct APIResponseValidator {
         guard response.totalThreats >= 0 else {
             throw ValidationError.invalidValue(field: "totalThreats", value: response.totalThreats, reason: "должно быть >= 0")
         }
+        if let u = response.familyRosterUsed, u < 0 {
+            throw ValidationError.invalidValue(field: "familyRosterUsed", value: u, reason: "должно быть >= 0")
+        }
+        if let m = response.familyRosterMax, m < 0 {
+            throw ValidationError.invalidValue(field: "familyRosterMax", value: m, reason: "должно быть >= 0")
+        }
         #if DEBUG
         print("✅ FamilyStatsResponse validated: members=\(response.totalMembers) devices=\(response.totalDevices)")
         #endif

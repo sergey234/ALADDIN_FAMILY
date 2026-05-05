@@ -569,6 +569,40 @@ class APIService: ObservableObject {
         }
     }
 
+    /// `true` только для лимита ростера (`family_roster_full` и т.п.), не для context mismatch.
+    private func isFamilyAddRosterLimit409(_ networkError: NetworkError) -> Bool {
+        switch networkError {
+        case .conflict(let detail):
+            let d = (detail ?? "").lowercased()
+            if d.contains("context mismatch") { return false }
+            return d.contains("family_roster")
+        case .invalidStatusCode(let code), .httpError(let code):
+            return code == 409
+        default:
+            return false
+        }
+    }
+
+    private func familyAddRosterLimitUserMessage(networkError: NetworkError) -> String {
+        let limit = SubscriptionManager.currentFamilyLimit
+        if case .conflict(let detail) = networkError,
+           let d = detail?.lowercased(),
+           d.contains("family_roster") {
+            let used = UserDefaults.standard.integer(forKey: "family_roster_used_last")
+            if used > 0, limit > 0 {
+                return "Семья уже заполнена по тарифу владельца на сервере (\(used)/\(limit)). Обновите тариф или удалите участника."
+            }
+            if limit > 0 {
+                return "Лимит участников для вашего тарифа на сервере (\(limit)) достигнут. Обновите тариф, чтобы добавить больше участников."
+            }
+            return "Нельзя добавить участника: ростер заполнен по данным сервера."
+        }
+        if limit > 0 {
+            return "Лимит участников для вашего тарифа (\(limit)) достигнут. Обновите тариф, чтобы добавить больше участников."
+        }
+        return "Нельзя добавить участника: достигнут лимит для текущего тарифа."
+    }
+
     private func performAddFamilyMember(
         request: AddMemberRequest,
         hasRetriedAfterTokenBootstrap: Bool,
@@ -610,24 +644,13 @@ class APIService: ObservableObject {
                     return
                 }
                 
-                // Enhanced 409 handling: uses single source SubscriptionManager for consistent tariff messages
-                // Distinguishes tariff limit from other 409 cases (e.g. context mismatch). Improved localization.
-                switch networkError {
-                case .invalidStatusCode(let code), .httpError(let code):
-                    if code == 409 {
-                        let limit = SubscriptionManager.currentFamilyLimit
-                        let msg: String
-                        if limit > 0 {
-                            msg = "Лимит участников для вашего тарифа (\(limit)) достигнут. Обновите тариф, чтобы добавить больше участников."
-                        } else {
-                            msg = "Нельзя добавить участника: достигнут лимит для текущего тарифа."
-                        }
-                        VisualLogger.shared.log("⚠️ FAMILY ADD(limit) 409: \(msg) (limit=\(limit))", level: .warning, category: "FAMILY")
-                        completion(.failure(NetworkError.businessLogicError(msg)))
-                        return
-                    }
-                default:
-                    break
+                // 409: `NetworkManager` отдаёт `.conflict(detail)`, не `.httpError(409)` — обрабатываем оба и отделяем лимит ростера от прочих конфликтов.
+                if self.isFamilyAddRosterLimit409(networkError) {
+                    let msg = self.familyAddRosterLimitUserMessage(networkError: networkError)
+                    let limit = SubscriptionManager.currentFamilyLimit
+                    VisualLogger.shared.log("⚠️ FAMILY ADD(limit) 409: \(msg) (limit=\(limit))", level: .warning, category: "FAMILY")
+                    completion(.failure(NetworkError.businessLogicError(msg)))
+                    return
                 }
                 
                 let shouldBootstrapToken: Bool
@@ -678,7 +701,11 @@ class APIService: ObservableObject {
             }
             let activeFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
             let request = RemoveMemberRequest(memberId: memberId, source: source, reason: reason, familyId: activeFamilyId)
-            VisualLogger.shared.log("➡️ FAMILY REMOVE(server) id=\(memberId)", level: .info, category: "FAMILY")
+            VisualLogger.shared.log(
+                "➡️ HTTP DELETE \(AppConfig.Endpoint.removeFamilyMember) memberId=\(memberId) source=\(source)",
+                level: .info,
+                category: "FAMILY"
+            )
             networkManager.delete(endpoint: AppConfig.Endpoint.removeFamilyMember, body: request) { (result: Result<FamilyMemberResponse, Error>) in
                 guard !hasResumed else {
                     logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in removeFamilyMember()!")

@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """
-Track B gate: mandatory in-app parental confirmation on sensitive surfaces.
+Track B gate: simplified no-PIN parental flows on sensitive surfaces.
 
-Static checks only (no simulator): verifies ParentSessionGate wiring in Swift sources.
+Static checks only (no simulator): verifies runtime no longer depends on ParentSessionGate.
 """
 
 from __future__ import annotations
@@ -24,54 +24,53 @@ def file_contains(path: pathlib.Path, *needles: str) -> bool:
 
 
 def main() -> int:
-    print("TRACK B MANDATORY PARENTAL CONTROL (static wiring smoke)")
-    gate = ROOT / "Core/Profile/ParentSessionGate.swift"
-    require(gate.exists(), f"Missing {gate}")
-    require(
-        file_contains(gate, "confirmSensitiveAction", "hasConfiguredParentalPIN", "verifyParentalPIN"),
-        "ParentSessionGate must expose confirmSensitiveAction and PIN APIs",
-    )
+    print("TRACK B SIMPLIFIED PARENTAL CONTROL (static wiring smoke)")
 
     checks: list[tuple[str, pathlib.Path, tuple[str, ...]]] = [
         (
             "Rewards modal (parent actions)",
             ROOT / "Screens/RewardsModalView.swift",
-            ("ParentSessionGate", "confirmSensitiveAction", "runWithParentConfirmation"),
+            ("runWithParentConfirmation",),
         ),
         (
             "Rewards quick modal",
             ROOT / "Screens/RewardsQuickModal.swift",
-            ("ParentSessionGate", "confirmSensitiveAction"),
+            ("rewardChild()", "punishChild()"),
         ),
         (
             "Child rewards screen",
             ROOT / "Screens/ChildRewardsScreen.swift",
-            ("ParentSessionGate", "confirmSensitiveAction"),
+            ("showRewardInput = true", "showPunishInput = true"),
         ),
         (
             "Parental control screen",
             ROOT / "Screens/07_ParentalControlScreen.swift",
-            ("ParentSessionGate", "requireSensitiveParentSession"),
+            ("requireSensitiveParentSession",),
         ),
         (
             "Games parental screen",
             ROOT / "Screens/GamesParentalControlScreen.swift",
-            ("ParentSessionGate", "confirmSensitiveAction"),
+            ("requestParentSessionForSettingChange",),
         ),
         (
             "Family roster sensitive branch",
             ROOT / "Screens/02_FamilyScreen.swift",
-            ("ParentSessionGate", "confirmSensitiveAction"),
+            ("removeFamilyMember(target)",),
         ),
         (
             "Parent dashboard",
             ROOT / "Screens/ParentDashboardView.swift",
-            ("ParentSessionGate", "confirmSensitiveAction"),
+            ("runSensitiveAction",),
         ),
     ]
     for label, path, needles in checks:
         require(path.exists(), f"Missing {path.relative_to(ROOT)}")
         require(file_contains(path, *needles), f"{label}: expected substrings in {path.name}: {needles}")
+        body = path.read_text(encoding="utf-8")
+        require(
+            "ParentSessionGate.confirmSensitiveAction(" not in body,
+            f"{label}: ParentSessionGate runtime challenge must be removed",
+        )
 
     print("SMOKE RESULT: PASS")
     return 0

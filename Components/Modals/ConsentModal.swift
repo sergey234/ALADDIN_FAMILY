@@ -10,6 +10,15 @@ struct ConsentModal: View {
         NavigationView {
             ScrollView {
                 VStack(spacing: 20) {
+                    HStack {
+                        Spacer()
+                        Button(localizationManager.localized("consent_modal_close")) {
+                            isPresented = false
+                        }
+                        .font(.system(size: 14, weight: .semibold))
+                        .foregroundColor(.blue)
+                    }
+
                     // Заголовок
                     VStack(spacing: 12) {
                         Image(systemName: "hand.raised.fill")
@@ -121,15 +130,7 @@ struct ConsentModal: View {
                 }
                 .padding(20)
             }
-            .navigationTitle(localizationManager.localized("consent_modal_nav_title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .navigationBarLeading) {
-                    Button(localizationManager.localized("consent_modal_close")) {
-                        isPresented = false
-                    }
-                }
-            }
+            .navigationBarHidden(true)
             .id("consent_modal_lang_\(localizationManager.currentLanguage.rawValue)")
         }
     }

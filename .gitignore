@@ -26,6 +26,9 @@ fastlane/test_output
 *.dSYM.zip
 *.dSYM
 
+# Локальные снимки семейных исходников (scripts/snapshot_family_mobile_sources.sh)
+docs/backup/family-mobile-snapshot-*/
+
 # Backups
 BACKUPS/
 *.zip

@@ -37,6 +37,21 @@ class SubscriptionService:
     """Main subscription management service with DB persistence"""
 
     @staticmethod
+    def _sync_user_subscription_level(db: Session, user_id: Optional[str], level: str) -> None:
+        """Keep `users.subscription_level` aligned with subscription rows (family roster gate reads this)."""
+        if user_id is None:
+            return
+        s = str(user_id).strip()
+        if not s.isdigit():
+            return
+        lvl = (level or "free").strip().lower() or "free"
+        db.execute(
+            text("UPDATE users SET subscription_level = :lvl WHERE id = :uid"),
+            {"lvl": lvl, "uid": int(s)},
+        )
+        db.commit()
+
+    @staticmethod
     def _ensure_user_for_device(db: Session, device_id: str, device_type: Optional[str] = None) -> str:
         """Ensure a real user row exists for a device and return stable user_id (as string for JWT payload compatibility)."""
         # users table exists in prod; we keep this logic DB-driven (no mocks).
@@ -69,6 +84,7 @@ class SubscriptionService:
         # Check if already exists
         existing = repo.get_subscription_by_device(request.device_id)
         if existing:
+            SubscriptionService._sync_user_subscription_level(db, existing.user_id, existing.level)
             return SubscriptionService._map_to_payload(existing)
 
         # Create free subscription data
@@ -85,6 +101,7 @@ class SubscriptionService:
         }
 
         db_sub = repo.create_subscription(sub_data)
+        SubscriptionService._sync_user_subscription_level(db, db_sub.user_id, db_sub.level)
         return SubscriptionService._map_to_payload(db_sub)
 
     @staticmethod
@@ -101,12 +118,14 @@ class SubscriptionService:
             SubscriptionLevel.FAMILY.value,
             SubscriptionLevel.PREMIUM.value
         ]:
+            SubscriptionService._sync_user_subscription_level(db, existing.user_id, existing.level)
             return SubscriptionService._map_to_payload(existing)
 
         # If we have an existing trial record (or at least a stored trial_end_date), use it as an anti-abuse ledger.
         if existing and existing.trial_end_date:
             # Trial is still active -> idempotent: do not extend/re-issue.
             if now < existing.trial_end_date:
+                SubscriptionService._sync_user_subscription_level(db, existing.user_id, existing.level)
                 return SubscriptionService._map_to_payload(existing)
 
             # Trial has expired -> downgrade to free, but KEEP trial_end_date as history to prevent re-issuing.
@@ -119,6 +138,7 @@ class SubscriptionService:
                 "features": []
             }
             db_sub = repo.update_subscription(existing, updates)
+            SubscriptionService._sync_user_subscription_level(db, db_sub.user_id, SubscriptionLevel.FREE.value)
             return SubscriptionService._map_to_payload(db_sub)
 
         # No existing trial ledger -> create a new trial (server-side source of truth).
@@ -144,6 +164,7 @@ class SubscriptionService:
         else:
             db_sub = repo.create_subscription(sub_data)
 
+        SubscriptionService._sync_user_subscription_level(db, db_sub.user_id, db_sub.level)
         return SubscriptionService._map_to_payload(db_sub)
 
     @staticmethod
@@ -204,7 +225,34 @@ class SubscriptionService:
         }
 
         updated_db_sub = repo.update_subscription(db_sub, updates)
+        SubscriptionService._sync_user_subscription_level(db, updated_db_sub.user_id, new_level.value)
         return SubscriptionService._map_to_payload(updated_db_sub)
+
+    @staticmethod
+    def cancel_subscription(db: Session, device_id: str) -> bool:
+        """Downgrade subscription to free; sync `users.subscription_level`. Preserves `trial_end_date` for trial rows."""
+        repo = SubscriptionRepository(db)
+        db_sub = repo.get_subscription_by_device(device_id)
+        if not db_sub:
+            return False
+
+        now = datetime.utcnow()
+        updates: Dict[str, Any] = {
+            "level": SubscriptionLevel.FREE.value,
+            "status": "active",
+            "start_date": now,
+            "end_date": None,
+            "limits": SubscriptionLimits.free_limits().dict(),
+            "features": [],
+            "updated_at": now,
+        }
+
+        if str(db_sub.level or "").strip().lower() != SubscriptionLevel.TRIAL.value:
+            updates["trial_end_date"] = None
+
+        updated = repo.update_subscription(db_sub, updates)
+        SubscriptionService._sync_user_subscription_level(db, updated.user_id, SubscriptionLevel.FREE.value)
+        return True
 
     @staticmethod
     def get_subscription(db: Session, device_id: str) -> Optional[SubscriptionPayload]:

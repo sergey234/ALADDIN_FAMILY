@@ -49,6 +49,7 @@ struct FamilyScreen: View {
     @State private var isFamilyIdentityRepairing: Bool = false
     // ✅ NEW: Debounce protection against sub-second save/reload cycles (main fix for infinite loop)
     @State private var lastFamilyOperationTime: Date = .distantPast
+    @State private var lastCoalescedFamilySyncAt: Date = .distantPast
     // ✅ OPTIMIZATION: Cached admin status to prevent expensive computed property spam on every render
     @State private var isCurrentUserCreator: Bool = true
     @State private var isCurrentUserParent: Bool = true
@@ -828,6 +829,7 @@ struct FamilyScreen: View {
     // ✅ НОВАЯ ФУНКЦИЯ: Удаление участника семьи
     private func requestRemoveFamilyMember(_ member: FamilyMemberData) {
         removeMemberErrorMessage = nil
+        VisualLogger.shared.log("🗑️ REMOVE TAP: request for \(member.name) id=\(member.id)", level: .info, category: "FAMILY")
         removeMemberSuccessMessage = nil
 
         // Блокируем удаление для локальных-only участников, которых ещё нет на сервере
@@ -876,6 +878,7 @@ struct FamilyScreen: View {
         }
 
         pendingRemovalMember = member
+        VisualLogger.shared.log("🗑️ REMOVE DIALOG: opened for \(member.name) id=\(member.id)", level: .info, category: "FAMILY")
     }
 
     private func removeFamilyMember(_ member: FamilyMemberData) {
@@ -1031,6 +1034,16 @@ struct FamilyScreen: View {
         if localCount > 0 {
             VisualLogger.shared.log("🔍 Desync check onAppear (local=\(localCount))", level: .debug, category: "FAMILY")
             reconcileOrSyncAfterRemove()
+        }
+    }
+
+    private func scheduleCoalescedFamilySync(delay: TimeInterval = 0.8, minInterval: TimeInterval = 2.0) {
+        let now = Date()
+        guard !isFamilySyncInProgress else { return }
+        guard now.timeIntervalSince(lastCoalescedFamilySyncAt) >= minInterval else { return }
+        lastCoalescedFamilySyncAt = now
+        DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            self.syncFamilyMembersFromAPI()
         }
     }
 
@@ -2274,19 +2287,9 @@ struct FamilyScreen: View {
                 ) {
                     let target = member
                     pendingRemovalMember = nil
-                    Task {
-                        let ok = await ParentSessionGate.confirmSensitiveAction()
-                        await MainActor.run {
-                            if ok {
-                                removeFamilyMember(target)
-                            } else {
-                                removeMemberErrorMessage = localizationManager.currentLanguage == .russian
-                                    ? "Подтверждение не выполнено. Участник не удалён."
-                                    : "Verification was not completed. The member was not removed."
-                                HapticFeedback.notification(.warning)
-                            }
-                        }
-                    }
+                    VisualLogger.shared.log("🗑️ REMOVE DIALOG: confirm tapped for \(target.name) id=\(target.id)", level: .info, category: "FAMILY")
+                    VisualLogger.shared.log("🗑️ REMOVE GATE: bypassed (simplified flow)", level: .info, category: "FAMILY")
+                    removeFamilyMember(target)
                 }
             }
             Button(localizationManager.localized("common_cancel"), role: .cancel) {
@@ -2318,11 +2321,7 @@ struct FamilyScreen: View {
                 return
             }
             reloadFamilyMembersFromStorageOnly()
-
-            // Delayed server sync (gives time for backend propagation)
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                syncFamilyMembersFromAPI()
-            }
+            scheduleCoalescedFamilySync()
         }
         .onAppear {
             logger.screenLoad("FamilyScreen")
@@ -2346,21 +2345,12 @@ struct FamilyScreen: View {
             } else {
                 print("🔄 [FamilyScreen.onAppear] Список уже загружен (\(familyMembers.count) участников). Проверяем статус админа...")
                 // Лёгкая фоновая синхронизация для актуальности delete button и canManageFamilyRoster
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) {
-                    self.syncFamilyMembersFromAPI()
-                }
+                scheduleCoalescedFamilySync()
             }
             updateAdminStatus()  // ✅ OPTIMIZATION: Update cached admin status once on appear
             clearDeleteButtonCache(reason: "onAppear")  // Clear only on major screen updates
             loadParentalRules()  // ✅ BUILD 96: Загружаем ParentalControlRules асинхронно
             refreshParentalControlDemoStrings()
-
-            // ✅ NEW: Explicit desync check on every appear
-            if !familyMembers.isEmpty {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
-                    self.checkForDesyncAndReconcile()
-                }
-            }
         }
         // ✅ ИСПРАВЛЕНИЕ #6: Убрали onChange для showAddMemberModal - теперь используем NavigationManager
         // При возврате с AddMemberOptionsScreen список обновится автоматически через onAppear

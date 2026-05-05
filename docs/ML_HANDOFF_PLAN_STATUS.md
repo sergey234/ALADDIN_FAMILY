@@ -127,7 +127,7 @@ Iteration 2 — Permissions hardening + cross-device sync:
 Progress note (current):
 - Centralized permission map introduced in `Core/Profile/FamilyAccessPolicy.swift` (`Permission`, `hasPermission(...)`).
 - `Screens/02_FamilyScreen.swift` moved to `hasPermission(...)` for roster/family-sharing checks.
-- `Screens/07_ParentalControlScreen.swift` now gates sensitive parental modals via permission check + `ParentSessionGate.confirmSensitiveAction()`.
+- `Screens/07_ParentalControlScreen.swift` now gates sensitive parental modals via permission check (without PIN/biometric challenge).
 - `ProfileManager.syncChildRosterFromServer(...)` switched to deterministic reconcile flow (server-authoritative for server-linked fields) with diagnostics:
   - `lastChildRosterReconcileSummary`
   - log format: `serverChildren / inserted / updated / removed / conflicts`.

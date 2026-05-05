@@ -29,7 +29,6 @@ struct ProfileScreen: View {
     @State private var registrationDate: String = ""
     @AppStorage("profile_name") private var profileName: String = ""
     @AppStorage("profile_alias") private var profileAlias: String = ""
-    @AppStorage("profile_pin") private var profilePIN: String = ""
     
     // ✅ Согласие на обработку ПДн (152-ФЗ)
     @AppStorage("personal_data_consent_accepted") private var consentAccepted: Bool = false
@@ -344,7 +343,6 @@ struct ProfileScreen: View {
             VStack(spacing: Spacing.s) {
                 infoRow(icon: "person", label: localizationManager.localized("profile_name"), value: profileName.isEmpty ? "" : profileName, optional: profileName.isEmpty)
                 infoRow(icon: "envelope", label: localizationManager.localized("profile_email"), value: profileAlias.isEmpty ? "" : profileAlias, optional: profileAlias.isEmpty)
-                infoRow(icon: "key", label: localizationManager.localized("profile_phone"), value: profilePIN.isEmpty ? "" : String(repeating: "•", count: max(4, profilePIN.count)), optional: profilePIN.isEmpty)
                 
                 // ✅ НОВОЕ: ID пользователя с кнопкой копирования
                 if let memberId = UserDefaults.standard.string(forKey: "your_member_id"), !memberId.isEmpty {
@@ -1096,10 +1094,8 @@ struct EditProfileView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @AppStorage("profile_name") private var storedName: String = ""
     @AppStorage("profile_alias") private var storedAlias: String = ""
-    @AppStorage("profile_pin") private var storedPIN: String = ""
     @State private var name: String = ""
     @State private var alias: String = ""
-    @State private var pin: String = ""
     @State private var showPasswordResetSheet = false
     
     var body: some View {
@@ -1124,7 +1120,6 @@ struct EditProfileView: View {
                 Section(header: Text(localizationManager.localized("edit_profile_info"))) {
                     TextField(localizationManager.localized("edit_profile_name"), text: $name)
                     TextField(localizationManager.localized("edit_profile_email"), text: $alias)
-                    TextField(localizationManager.localized("edit_profile_phone"), text: $pin)
                 }
                 
                 Section {
@@ -1158,7 +1153,6 @@ struct EditProfileView: View {
             .onAppear {
                 name = storedName
                 alias = storedAlias
-                pin = storedPIN
             }
             .sheet(isPresented: $showPasswordResetSheet) {
                 PasswordResetSheet(initialEmail: PasswordResetEmailResolver.resolved(storedAlias: alias))
@@ -1173,7 +1167,6 @@ struct EditProfileView: View {
     private func saveProfile() {
         storedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         storedAlias = alias.trimmingCharacters(in: .whitespacesAndNewlines)
-        storedPIN = pin.trimmingCharacters(in: .whitespacesAndNewlines)
         isPresented = false
     }
 }

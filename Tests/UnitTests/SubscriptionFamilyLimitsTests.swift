@@ -21,7 +21,7 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
     func testFamilyMemberLimitForAllTiers() {
         XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .free), 1)
         XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .trial), 3)
-        XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .personal), 3)
+        XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .personal), 2)
         XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .family), 6)
         XCTAssertEqual(subscriptionManager.familyMemberLimit(for: .premium), 10)
     }

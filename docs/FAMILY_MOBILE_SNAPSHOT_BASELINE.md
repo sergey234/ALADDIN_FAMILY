@@ -1,0 +1,27 @@
+# Базовые отпечатки файлов (семья / join / главная)
+
+Формат: **`SHA256` + два пробела + относительный путь`** от корня репозитория iOS.  
+После правок по этим путям обновите блок ниже (`shasum -a 256` по каждому файлу) или пересоздайте через цикл в `docs/FAMILY_MOBILE_SNAPSHOT_README.md`.
+
+Полные копии: **`./scripts/snapshot_family_mobile_sources.sh`** → `docs/backup/family-mobile-snapshot-*` (в `.gitignore`). Этот файл **не** входит в список хешей (иначе меняется при каждом обновлении списка).
+
+```
+40f2025966f05a788ad5241d0d80d605c59fcd257cad56fea74c3156748ad00d  Core/Network/APIService.swift
+45fa0d824140c5d78296a4df9c1565511ee8e8dedb9ecc4d0549578479e99dc1  Core/Config/AppConfig.swift
+cbabf305e3ee845b3209493c3a784b8866e665136b4b4a6712d338cc167784db  Core/Network/NetworkManager.swift
+01b9e023b9e6af1669b22ce2c222c5422b218bee1e93b960226cebaac984f8f7  ViewModels/FamilyRegistrationViewModel.swift
+6e3c1ceca9ce63a274ad1c5dfd81fd26f466350546f2f470229c270ea6c2a1c3  Shared/Components/Modals/InvitationCodeInputModal.swift
+884927e043baa6b18b84c252fbbbebc9348d8033d115f30263addaa932e57ae0  Core/Managers/SubscriptionManager.swift
+a68c33b7c13719c50f9ccb2fb248a8804c79711380459f33e700cb7c60bd5ea3  Screens/02_FamilyScreen.swift
+be0f18bb5fbb7d42446db6c899882811094b23ec606e0af6ef15b5b423240878  Screens/01_MainScreen.swift
+d6f50755c4cabe112089fac6004059421072f8ba008bd9adb4ef067ff3caa350  ViewModels/MainViewModel.swift
+4adcc87a2de3075962eef6282dc222c4f38cb8f34d5c9570af443ac59814ad57  Core/Managers/FamilyLocalStore.swift
+5421ea44f10a1e471511f233ae3bc7e45fad0783ec3f86c1833deaf000559b45  Tests/UnitTests/SubscriptionFamilyLimitsTests.swift
+17ea3abfbeccadf965ad1940fce5194e336043109554964b87faaa9e90acbfd0  docs/server/BACKEND_FAMILY_JOIN_AND_ADD_GATE.md
+90eed0bc2cc23b3b9b757f3d046d410ca2bddd3b62d06e13fa1ce4e088ac5a74  docs/FAMILY_API_SMOKE_REGIMEN.md
+1de6b17fb33ddbb09e7b05261c9f340ecfc7b4e2b3b7e8aad33b182e9c81a390  docs/BACKEND_FAMILY_ROLLOUT_SAVEPOINT_AND_PLAN.md
+b0f741de44cb1a31e330cd6aa98dde1f59fb2df117874e226948091581aa1fa1  docs/REGISTRATION_AND_TARIFF_MAIN_SCREEN_ML_REFERENCE.md
+2a72a0c966e61c4fa70abf3351c6a5d849e090c248daaa71ad934e152c926ca6  docs/REGISTRATION_AND_MAIN_TARIFF_CARD.md
+98b54f08c0e765d647f4557cdf02380de6b8f4f675d38fafd8ff83194f35d139  docs/release/current/openapi.json
+e7f4dac440c6b28bf15a9fc53f19b7c1658af8f54f5cdc21481546697e65f4f9  docs/FAMILY_MOBILE_SNAPSHOT_README.md
+```

@@ -23,7 +23,7 @@ final class RemoteAnalyticsService: AnalyticsService {
     private let cacheLifetime: TimeInterval = 300
 
     // ✅ ЗАДАЧА 65: Metrics service для отправки метрик на сервер
-    private let metricsService = MetricsService()
+    private let metricsService = MetricsService.shared
 
     init(apiService: APIService = .shared) {
         self.apiService = apiService

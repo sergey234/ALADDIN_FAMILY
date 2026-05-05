@@ -380,6 +380,10 @@ struct FamilyStatsResponse: Codable {
     let protectionLevel: Int
     let familyStatus: String?
     let familyStatusMessage: String?
+    /// Заполнено на сервере тем же правилом, что gate на `POST /api/family/add` (квота владельца).
+    let familyRosterUsed: Int?
+    let familyRosterMax: Int?
+    let ownerSubscriptionTier: String?
 }
 
 // MARK: - Analytics Models

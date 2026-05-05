@@ -8,6 +8,7 @@ import os.log
  * Для мониторинга продакшен приложения
  */
 class MetricsService {
+    static let shared = MetricsService()
 
     // MARK: - Logger
 

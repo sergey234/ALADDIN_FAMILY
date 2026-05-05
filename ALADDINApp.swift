@@ -234,6 +234,14 @@ struct ALADDINApp: App {
             print("🌍 BUILD 115: RESET_ONBOARDING активирован — ключ сброшен")
             #endif
         }
+
+        // One-time cleanup: legacy profile PIN field is removed from UI/flow.
+        // Keep it out of UserDefaults to avoid user confusion.
+        let profilePinCleanupMarkerKey = "migration_profile_pin_removed_v1"
+        if !UserDefaults.standard.bool(forKey: profilePinCleanupMarkerKey) {
+            UserDefaults.standard.removeObject(forKey: "profile_pin")
+            UserDefaults.standard.set(true, forKey: profilePinCleanupMarkerKey)
+        }
         
         // ✅ BUILD 115: Диагностика значения hasCompletedOnboarding при старте
         #if DEBUG
@@ -465,14 +473,120 @@ struct ALADDINApp: App {
         }
     }
 
+    /// Общие `environmentObject`, тема, сцена и оверлеи — и для регистрации (вне `NavigationView`), и для основного стека.
+    @ViewBuilder
+    private func applyRootChrome<Content: View>(_ content: Content) -> some View {
+        content
+            .environmentObject(navigationManager)
+            .environmentObject(localizationManager)
+            .environmentObject(FeedbackSystem.shared)
+            .environmentObject(SubscriptionManager.shared)
+            .environmentObject(mainViewModel)
+            .environment(\.locale, localizationManager.locale)
+            .id("nav_\(navigationManager.currentScreen.rawValue)")
+            .onAppear {
+                // ✅ BUILD 114: Убрано дублирование вызова initializeNavigation
+                // Этот вызов уже происходит в основном WindowGroup.onAppear (линия 315)
+                /*
+                let navManager = navigationManager
+                let locManager = localizationManager
+                Self.initializeNavigation(navigationManager: navManager, localizationManager: locManager, hasCompletedOnboarding: hasCompletedOnboarding)
+                */
+            }
+            .onChange(of: scenePhase) { newPhase in
+                UserDefaults.standard.set(newPhase == .active ? "active" : newPhase == .inactive ? "inactive" : "background", forKey: LifecycleKeys.lastScenePhase)
+                LaunchDiagnostics.appendLifecycleTrace("scenePhase changed -> \(newPhase)")
+                if newPhase == .active {
+                    print("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
+                    Task { @MainActor in
+                        await SubscriptionManager.shared.performThrottledTrialExpiryCheckIfNeeded()
+                    }
+                    ContentBackgroundSyncScheduler.shared.triggerForegroundRefresh()
+                } else if newPhase == .background {
+                    ContentBackgroundSyncScheduler.shared.scheduleNextRefresh()
+                }
+            }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
+                UserDefaults.standard.set(true, forKey: LifecycleKeys.gracefulTerminateMarker)
+                UserDefaults.standard.synchronize()
+                LaunchDiagnostics.appendLifecycleTrace("UIApplication.willTerminateNotification received -> graceful terminate marker set")
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SessionExpired"))) { notification in
+                guard !isHandlingSessionExpiredGlobal else {
+                    #if DEBUG
+                    print("⚠️ ALADDINApp: SessionExpired уже обрабатывается, пропускаем")
+                    #endif
+                    return
+                }
+                isHandlingSessionExpiredGlobal = true
+                Task { @MainActor in
+                    defer {
+                        isHandlingSessionExpiredGlobal = false
+                    }
+                    let message = notification.userInfo?["message"] as? String ?? "Сессия истекла. Пожалуйста, войдите снова."
+                    #if DEBUG
+                    let stackTrace = Thread.callStackSymbols.prefix(10).joined(separator: "\n")
+                    print("⚠️ ALADDINApp: Получено уведомление SessionExpired: \(message)")
+                    print("   - Call stack (отправитель):")
+                    print(stackTrace)
+                    VisualLogger.shared.log("⚠️ ALADDINApp: SessionExpired получено: \(message)", level: .warning, category: "SESSION")
+                    MasterLogger.shared.log(.warn, category: .business, message: "⚠️ ALADDINApp: SessionExpired notification received: \(message)")
+                    #endif
+                    let tokenStatus = TokenValidator.validateCurrentToken()
+                    if case .valid = tokenStatus {
+                        #if DEBUG
+                        print("⚠️ ALADDINApp: SessionExpired получено, но токен валиден - НЕ удаляем токен")
+                        VisualLogger.shared.log("⚠️ ALADDINApp: SessionExpired игнорировано - токен валиден", level: .warning, category: "SESSION")
+                        MasterLogger.shared.log(.warn, category: .business, message: "⚠️ ALADDINApp: SessionExpired ignored - token is valid")
+                        #endif
+                        return
+                    }
+                    #if DEBUG
+                    print("⚠️ ALADDINApp: Токен действительно невалиден - удаляем токены")
+                    #endif
+                    Task { @MainActor in
+                        KeychainManager.shared.delete(forKey: .authToken)
+                        KeychainManager.shared.delete(forKey: .refreshToken)
+                    }
+                    navigationManager.navigateToRoot(.onboarding)
+                }
+            }
+            .preferredColorScheme(preferredColorScheme)
+            .overlay(
+                Group {
+                    #if DEBUG
+                    visualLoggerOverlay()
+                    #else
+                    if enableVisualLoggingRelease {
+                        visualLoggerOverlay()
+                    }
+                    #endif
+                }
+            )
+            .overlay {
+                FeedbackParticleOverlay()
+            }
+    }
+
     // ✅ НОВОЕ: Основное содержимое приложения
     private func mainAppContent() -> some View {
         if !Self.loggedMainAppContentFirstInvocation {
             Self.loggedMainAppContentFirstInvocation = true
             LaunchDiagnostics.appendStartupTrace("mainAppContent() FIRST invocation; currentScreen=\(navigationManager.currentScreen.rawValue) hasCompletedOnboarding=\(hasCompletedOnboarding)")
         }
-        // КРИТИЧНО: NavigationView для работы навигации
-        return NavigationView {
+        if navigationManager.currentScreen == .mainWithRegistration {
+            return AnyView(applyRootChrome(
+                MainScreenWithRegistration(registrationVM: FamilyRegistrationViewModel())
+                    .id("mainWithRegistration")
+                    .onDisappear {
+                        print("🔄 MainScreenWithRegistration disappeared — registration flow completed")
+                    }
+                    .withVisualLogger()
+            ))
+        }
+        // КРИТИЧНО: NavigationView для основного приложения (регистрация показывается отдельным корнем выше)
+        return AnyView(applyRootChrome(
+        NavigationView {
                 // ✅ КРИТИЧНО: Используем AnyView для каждого case - это заставит SwiftUI пересчитать
                 Group {
                     switch navigationManager.currentScreen {
@@ -709,17 +823,7 @@ struct ALADDINApp: App {
                     case .widgetConfiguration:
                         AnyView(WidgetConfigurationScreen().id("widgetConfiguration").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .mainWithRegistration:
-                        AnyView(MainScreenWithRegistration(
-                            registrationVM: FamilyRegistrationViewModel()
-                        )
-                        .id("mainWithRegistration")
-                        .environmentObject(navigationManager)
-                        .environmentObject(localizationManager)
-                        // Полноэкранный флоу без стека: скрываем системный bar, иначе Auto Layout ругается на width == 0 у `_UINavigationBarModernContentView`.
-                        .navigationBarHidden(true)
-                        .onDisappear {
-                            print("🔄 MainScreenWithRegistration disappeared — registration flow completed")
-                        })
+                        AnyView(EmptyView())
                     case .childContent:
                         AnyView(ChildContentScreen(
                             category: ChildCategoryKey.games,
@@ -804,130 +908,7 @@ struct ALADDINApp: App {
                 .withVisualLogger()
             }
             .navigationViewStyle(StackNavigationViewStyle())
-            // КРИТИЧНО: Передача NavigationManager через EnvironmentObject
-            .environmentObject(navigationManager)
-            // ✅ Передаём LocalizationManager через EnvironmentObject
-            .environmentObject(localizationManager)
-            // W4-3 G12: единая обратная связь (haptic, звук, частицы, VoiceOver)
-            .environmentObject(FeedbackSystem.shared)
-            // ✅ SubscriptionManager: FamilyScreen, AddMemberOptionsScreen, FeatureGateView используют @EnvironmentObject
-            .environmentObject(SubscriptionManager.shared)
-            .environmentObject(mainViewModel)
-            // ✅ Применяем локализацию через environment
-            .environment(\.locale, localizationManager.locale)
-            // ✅ ИСПРАВЛЕНИЕ BUILD 93: УБРАН .id() с localizationManager - вызывает рекурсию
-            // localizationManager.currentLanguage читает из UserDefaults, что может вызвать рекурсию с @AppStorage
-            // View будет обновляться автоматически через @EnvironmentObject
-            .id("nav_\(navigationManager.currentScreen.rawValue)")
-            // ✅ Инициализация навигации при первом появлении
-            .onAppear {
-                // ✅ BUILD 114: Убрано дублирование вызова initializeNavigation
-                // Этот вызов уже происходит в основном WindowGroup.onAppear (линия 315)
-                /*
-                let navManager = navigationManager
-                let locManager = localizationManager
-                Self.initializeNavigation(navigationManager: navManager, localizationManager: locManager, hasCompletedOnboarding: hasCompletedOnboarding)
-                */
-            }
-            // ✅ ИСПРАВЛЕНИЕ: Упрощенная обработка возврата из фона - без лишних проверок
-            .onChange(of: scenePhase) { newPhase in
-                UserDefaults.standard.set(newPhase == .active ? "active" : newPhase == .inactive ? "inactive" : "background", forKey: LifecycleKeys.lastScenePhase)
-                LaunchDiagnostics.appendLifecycleTrace("scenePhase changed -> \(newPhase)")
-                if newPhase == .active {
-                    // Приложение стало активным (вернулись из Safari/фона)
-                    print("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
-                    // НЕ вызываем initializeNavigation - это может вызвать двойную загрузку
-                    Task { @MainActor in
-                        await SubscriptionManager.shared.performThrottledTrialExpiryCheckIfNeeded()
-                    }
-                    ContentBackgroundSyncScheduler.shared.triggerForegroundRefresh()
-                } else if newPhase == .background {
-                    ContentBackgroundSyncScheduler.shared.scheduleNextRefresh()
-                }
-            }
-            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
-                UserDefaults.standard.set(true, forKey: LifecycleKeys.gracefulTerminateMarker)
-                UserDefaults.standard.synchronize()
-                LaunchDiagnostics.appendLifecycleTrace("UIApplication.willTerminateNotification received -> graceful terminate marker set")
-            }
-            // ✅ ЭТАП 1: Обработка уведомления SessionExpired
-            // ✅ BUILD 114: Используем принципы из ПОЛНАЯ_ИСТОРИЯ_ИСПРАВЛЕНИЙ_BUILD_77_99.md
-            // - Асинхронность операций с Keychain
-            // - Защита от рекурсии через глобальные флаги с NSLock
-            // - Изоляция диагностики (не используем logger внутри)
-            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SessionExpired"))) { notification in
-                // ✅ Защита от множественных обработок (UI callbacks are MainActor-serialized)
-                guard !isHandlingSessionExpiredGlobal else {
-                    #if DEBUG
-                    print("⚠️ ALADDINApp: SessionExpired уже обрабатывается, пропускаем")
-                    #endif
-                    return
-                }
-                isHandlingSessionExpiredGlobal = true
-                
-                // ✅ Асинхронная обработка (разрыв связи с UI циклом)
-                Task { @MainActor in
-                    defer {
-                        isHandlingSessionExpiredGlobal = false
-                    }
-                    
-                    let message = notification.userInfo?["message"] as? String ?? "Сессия истекла. Пожалуйста, войдите снова."
-                    
-                    // ✅ BUILD 121: Детальное логирование для диагностики
-                    #if DEBUG
-                    let stackTrace = Thread.callStackSymbols.prefix(10).joined(separator: "\n")
-                    print("⚠️ ALADDINApp: Получено уведомление SessionExpired: \(message)")
-                    print("   - Call stack (отправитель):")
-                    print(stackTrace)
-                    VisualLogger.shared.log("⚠️ ALADDINApp: SessionExpired получено: \(message)", level: .warning, category: "SESSION")
-                    MasterLogger.shared.log(.warn, category: .business, message: "⚠️ ALADDINApp: SessionExpired notification received: \(message)")
-                    #endif
-                    
-                    // ✅ BUILD 121: Проверяем, действительно ли токен истёк
-                    // НЕ удаляем токен, если он валиден (возможно, это ложное срабатывание)
-                    let tokenStatus = TokenValidator.validateCurrentToken()
-                    if case .valid = tokenStatus {
-                        #if DEBUG
-                        print("⚠️ ALADDINApp: SessionExpired получено, но токен валиден - НЕ удаляем токен")
-                        VisualLogger.shared.log("⚠️ ALADDINApp: SessionExpired игнорировано - токен валиден", level: .warning, category: "SESSION")
-                        MasterLogger.shared.log(.warn, category: .business, message: "⚠️ ALADDINApp: SessionExpired ignored - token is valid")
-                        #endif
-                        return // Не удаляем токен и не перенаправляем на онбординг
-                    }
-                    
-                    #if DEBUG
-                    print("⚠️ ALADDINApp: Токен действительно невалиден - удаляем токены")
-                    #endif
-                    
-                    // ✅ Асинхронная очистка токенов (Keychain операции)
-                    Task { @MainActor in
-                        KeychainManager.shared.delete(forKey: .authToken)
-                        KeychainManager.shared.delete(forKey: .refreshToken)
-                    }
-                    
-                    // ✅ Перенаправление на экран онбординга
-                    navigationManager.navigateToRoot(.onboarding)
-                }
-            }
-            // 🌓 ПРИМЕНЯЕМ ТЕМУ
-            .preferredColorScheme(preferredColorScheme)
-
-            // 🔍 VISUAL LOGGING: Добавляем визуальное логирование в DEBUG режиме
-            .overlay(
-                Group {
-                    #if DEBUG
-                    visualLoggerOverlay()
-                    #else
-                    if enableVisualLoggingRelease {
-                        visualLoggerOverlay()
-                    }
-                    #endif
-                }
-            )
-            .overlay {
-                FeedbackParticleOverlay()
-            }
-        }
+        ))
     }
 
     // MARK: - Visual Logger Overlay
@@ -945,9 +926,8 @@ struct ALADDINApp: App {
         }
     }
 
+}
 
-
-    // MARK: - Static Helper Functions
 // MARK: - Static Helper Functions
 
 extension ALADDINApp {

@@ -193,7 +193,10 @@ class MockAPIService: APIService {
                 totalThreats: 47,
                 protectionLevel: 95,
                 familyStatus: "active",
-                familyStatusMessage: "Все члены семьи защищены"
+                familyStatusMessage: "Все члены семьи защищены",
+                familyRosterUsed: 4,
+                familyRosterMax: 6,
+                ownerSubscriptionTier: "family"
             )
             completion(.success(stats))
         }

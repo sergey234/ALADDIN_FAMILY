@@ -1220,14 +1220,7 @@ struct ChildRewardsScreen: View {
                 Button(action: {
                     print("🔍 DEBUG: Нажата кнопка 'Вознаградить' в ChildRewardsScreen")
                     HapticFeedback.impact(.medium)
-                    Task { @MainActor in
-                        let allowed = await ParentSessionGate.confirmSensitiveAction(forceReauth: true)
-                        guard allowed else {
-                            loadErrorMessage = localizationManager.localized("child_rewards_parent_auth_required")
-                            return
-                        }
-                        showRewardInput = true
-                    }
+                    showRewardInput = true
                 }) {
                     VStack(spacing: Spacing.xs) {
                         Text("✅")
@@ -1253,14 +1246,7 @@ struct ChildRewardsScreen: View {
                 Button(action: {
                     print("🔍 DEBUG: Нажата кнопка 'Наказать' в ChildRewardsScreen")
                     HapticFeedback.impact(.medium)
-                    Task { @MainActor in
-                        let allowed = await ParentSessionGate.confirmSensitiveAction(forceReauth: true)
-                        guard allowed else {
-                            loadErrorMessage = localizationManager.localized("child_rewards_parent_auth_required")
-                            return
-                        }
-                        showPunishInput = true
-                    }
+                    showPunishInput = true
                 }) {
                     VStack(spacing: Spacing.xs) {
                         Text("❌")

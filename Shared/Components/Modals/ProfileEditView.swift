@@ -12,11 +12,9 @@ struct ProfileEditView: View {
     
     @AppStorage("profile_name") private var storedName: String = ""
     @AppStorage("profile_alias") private var storedAlias: String = ""
-    @AppStorage("profile_pin") private var storedPIN: String = ""
     
     @State private var name: String = ""
     @State private var alias: String = ""
-    @State private var pin: String = ""
     @State private var showImagePicker: Bool = false
     @State private var selectedImage: UIImage?
     @State private var showPasswordResetSheet: Bool = false
@@ -93,7 +91,6 @@ struct ProfileEditView: View {
             // Загружаем сохраненные значения из @AppStorage
             name = storedName
             alias = storedAlias
-            pin = storedPIN
         }
     }
     
@@ -189,13 +186,6 @@ struct ProfileEditView: View {
                     icon: "character.textbox"
                 )
                 
-                editField(
-                    title: localizationManager.localized("profile_edit_phone_label"),
-                    text: $pin,
-                    placeholder: localizationManager.localized("profile_edit_phone_placeholder"),
-                    icon: "key.fill",
-                    keyboardType: .numberPad
-                )
             }
         }
         .padding(16)
@@ -316,9 +306,8 @@ struct ProfileEditView: View {
         // Сохранение профиля в @AppStorage
         storedName = name.trimmingCharacters(in: .whitespacesAndNewlines)
         storedAlias = alias.trimmingCharacters(in: .whitespacesAndNewlines)
-        storedPIN = pin.trimmingCharacters(in: .whitespacesAndNewlines)
         
-        print("✅ Profile saved: name=\(storedName), alias=\(storedAlias), pin=\(storedPIN)")
+        print("✅ Profile saved: name=\(storedName), alias=\(storedAlias)")
         
         // Сохраняем фото профиля, если оно было выбрано
         if let image = selectedImage {

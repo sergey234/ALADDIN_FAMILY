@@ -33,9 +33,15 @@ except ImportError:
     get_postgres_db = None
 
 try:
-    from app.services.family_roster_reconcile import reconcile_sole_child_roster_for_owner
+    from app.services.family_roster_reconcile import (
+        reconcile_sole_child_roster_for_owner,
+        max_family_slots_for_subscription_level,
+    )
 except ImportError:
     reconcile_sole_child_roster_for_owner = None  # type: ignore[misc, assignment]
+
+    def max_family_slots_for_subscription_level(level: Optional[str]) -> int:  # type: ignore[misc]
+        return 1
 
 # ✅ RATE LIMITING: Импорт slowapi для защиты от злоупотреблений
 from slowapi import Limiter
@@ -237,6 +243,90 @@ def _actor_can_manage_family_roster(db, user_id: int, family_id: str) -> bool:
     return bool(p)
 
 
+def _normalize_client_family_id(raw: Optional[str]) -> str:
+    """
+    Приводит family_id от клиента (FAM-…, FAM_…, FAM…) к канону `FAM_` + 12 hex,
+    как в генераторе create_family / extractFamilyID на iOS.
+    """
+    s = (raw or "").strip().upper()
+    if not s:
+        return ""
+    alnum = re.sub(r"[^A-Z0-9]", "", s)
+    if not alnum.startswith("FAM"):
+        return s
+    body = alnum[3:]
+    if len(body) < 12:
+        return ""
+    return "FAM_" + body[:12]
+
+
+def _owner_subscription_level_for_family(db, family_id: str) -> str:
+    row = db.execute(
+        text(
+            """
+            SELECT COALESCE(
+                NULLIF(lower(trim(u.subscription_level)), ''),
+                NULLIF(lower(trim(s.level)), ''),
+                'free'
+            )
+            FROM families f
+            LEFT JOIN users u ON u.id = f.owner_user_id
+            LEFT JOIN LATERAL (
+                SELECT level
+                FROM subscriptions
+                WHERE user_id = f.owner_user_id::text
+                ORDER BY updated_at DESC NULLS LAST, id DESC
+                LIMIT 1
+            ) s ON TRUE
+            WHERE f.id = :fid
+            LIMIT 1
+            """
+        ),
+        {"fid": str(family_id)},
+    ).fetchone()
+    return str(row[0]) if row and row[0] is not None else "free"
+
+
+def _actor_subscription_level(db, user_id: int) -> str:
+    row = db.execute(
+        text(
+            """
+            SELECT COALESCE(subscription_level, 'free')
+            FROM users
+            WHERE id = :uid
+            LIMIT 1
+            """
+        ),
+        {"uid": int(user_id)},
+    ).fetchone()
+    if not row or row[0] is None:
+        return "free"
+    return str(row[0]).strip().lower() or "free"
+
+
+def _count_family_members(db, family_id: str) -> int:
+    row = db.execute(
+        text("SELECT COUNT(*) FROM family_members WHERE family_id = :fid"),
+        {"fid": str(family_id)},
+    ).fetchone()
+    return int(row[0] or 0) if row else 0
+
+
+def _fetch_family_member_rows(db, family_id: str) -> List[Any]:
+    res = db.execute(
+        text(
+            """
+            SELECT id, name, role, status, threats_blocked, last_active, devices
+            FROM family_members
+            WHERE family_id = :family_id
+            ORDER BY id ASC
+            """
+        ),
+        {"family_id": str(family_id)},
+    )
+    return list(res.fetchall() or [])
+
+
 def _resolve_effective_family_id_for_chat(
     db,
     user_id: int,
@@ -264,6 +354,10 @@ class FamilyStatsResponse(BaseModel):
     protectionLevel: int
     familyStatus: Optional[str] = None
     familyStatusMessage: Optional[str] = None
+    # Roster cap aligned with POST /api/family/add (owner `users.subscription_level` + max_family_slots_for_subscription_level).
+    familyRosterUsed: int = 0
+    familyRosterMax: int = 0
+    ownerSubscriptionTier: str = "free"
 
 
 # ============================================
@@ -371,7 +465,10 @@ async def get_family_stats_from_db(
                 totalThreats=total_threats,
                 protectionLevel=protection_level,
                 familyStatus=family_status,
-                familyStatusMessage=family_status_message
+                familyStatusMessage=family_status_message,
+                familyRosterUsed=0,
+                familyRosterMax=0,
+                ownerSubscriptionTier="free",
             )
             
         except Exception as e:
@@ -444,6 +541,8 @@ async def get_family_stats(
             if not family_id:
                 family_id = _resolve_primary_family_id_for_actor(db, user_id, current_user)
             if not family_id:
+                tier = _actor_subscription_level(db, user_id)
+                cap = max_family_slots_for_subscription_level(tier)
                 return (
                     FamilyStatsResponse(
                         totalMembers=0,
@@ -452,6 +551,9 @@ async def get_family_stats(
                         protectionLevel=0,
                         familyStatus="danger",
                         familyStatusMessage="Семья не создана",
+                        familyRosterUsed=0,
+                        familyRosterMax=cap,
+                        ownerSubscriptionTier=tier,
                     ),
                     None,
                 )
@@ -512,11 +614,16 @@ async def get_family_stats(
                 family_status = "danger"
                 family_status_message = "Требуется активация защиты"
 
+            owner_tier = _owner_subscription_level_for_family(db, str(family_id))
+            roster_cap = max_family_slots_for_subscription_level(owner_tier)
+
             logger.info(
                 "family_stats_aligned_with_members",
                 user_id=user_id,
                 family_id=str(family_id),
                 total_members=total_members,
+                roster_cap=roster_cap,
+                owner_subscription_tier=owner_tier,
                 note="totalMembers equals COUNT(family_members) for same family_id as GET /members",
             )
 
@@ -528,6 +635,9 @@ async def get_family_stats(
                     protectionLevel=protection_level,
                     familyStatus=family_status,
                     familyStatusMessage=family_status_message,
+                    familyRosterUsed=total_members,
+                    familyRosterMax=roster_cap,
+                    ownerSubscriptionTier=owner_tier,
                 ),
                 str(family_id),
             )
@@ -648,6 +758,20 @@ class FamilyMemberResponse(BaseModel):
     devices: int
 
 
+def _row_to_family_member_response(row: Any) -> FamilyMemberResponse:
+    member_id, name, role, status_val, threats_val, last_active, devices_val = row
+    return FamilyMemberResponse(
+        id=str(member_id),
+        name=str(name),
+        role=str(role),
+        avatar="👤",
+        status=str(status_val or "protected"),
+        threatsBlocked=int(threats_val or 0),
+        lastActive=str(last_active or ""),
+        devices=int(devices_val or 0),
+    )
+
+
 class AddFamilyMemberRequest(BaseModel):
     """
     Запрос на добавление участника семьи.
@@ -665,6 +789,32 @@ class RemoveFamilyMemberRequest(BaseModel):
     source: Optional[str] = None
     reason: Optional[str] = None
     familyId: Optional[str] = None
+
+
+class JoinFamilyRequest(BaseModel):
+    """Тело POST /api/family/join — как `JoinFamilyRequest` в iOS."""
+
+    family_id: str
+    role: str
+    age_group: str
+    personal_letter: str
+    device_type: str
+
+
+class FamilyJoinInnerResponse(BaseModel):
+    """Поле `data` в `APIResponse<FamilyResponse>` на клиенте."""
+
+    success: bool
+    family_id: str
+    members: List[FamilyMemberResponse]
+    your_member_id: str
+
+
+class FamilyJoinAPIResponse(BaseModel):
+    success: bool
+    data: Optional[FamilyJoinInnerResponse] = None
+    message: Optional[str] = None
+    error: Optional[str] = None
 
 
 def _ensure_family_chat_table(db) -> None:
@@ -946,6 +1096,20 @@ async def add_family_member(
                 )
                 raise HTTPException(status_code=403, detail="Only administrators can add members")
 
+            owner_level = _owner_subscription_level_for_family(db, str(family_id))
+            max_slots = max_family_slots_for_subscription_level(owner_level)
+            current_slots = _count_family_members(db, str(family_id))
+            if current_slots >= max_slots:
+                logger.warning(
+                    "family_add_roster_full",
+                    user_id=user_id,
+                    family_id=str(family_id),
+                    current_slots=current_slots,
+                    max_slots=max_slots,
+                    owner_subscription_level=owner_level,
+                )
+                raise HTTPException(status_code=409, detail="family_roster_full")
+
             member_id = f"MEM_{uuid.uuid4().hex[:12].upper()}"
             status_val = "protected"
             last_active = _iso_utc_timestamp()
@@ -1021,6 +1185,185 @@ async def add_family_member(
             gen.close()
 
     return await asyncio.to_thread(add_member_sync)
+
+
+@router.post("/join", response_model=FamilyJoinAPIResponse)
+@limiter.limit("10/minute")
+async def join_family_post(
+    request: Request,
+    body: JoinFamilyRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """
+    POST /api/family/join — контракт iOS `JoinFamilyRequest` / `APIResponse<FamilyResponse>`.
+    """
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    def join_sync() -> FamilyJoinAPIResponse:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            _ensure_family_indexes(db)
+            try:
+                db.execute(text("SET LOCAL synchronous_commit = on"))
+            except Exception:
+                pass
+
+            canonical_fid = _normalize_client_family_id(body.family_id)
+            if not canonical_fid:
+                raise HTTPException(status_code=400, detail="invalid family_id")
+
+            fam_exists = db.execute(
+                text("SELECT 1 FROM families WHERE id = :fid LIMIT 1"),
+                {"fid": canonical_fid},
+            ).fetchone()
+            if not fam_exists:
+                logger.warning("family_join_unknown_family", user_id=user_id, family_id=canonical_fid)
+                raise HTTPException(status_code=404, detail="family_not_found")
+
+            existing_same = db.execute(
+                text(
+                    """
+                    SELECT id FROM family_members
+                    WHERE family_id = :fid AND user_id = :uid
+                    ORDER BY updated_at DESC NULLS LAST, id DESC
+                    LIMIT 1
+                    """
+                ),
+                {"fid": canonical_fid, "uid": user_id},
+            ).fetchone()
+            if existing_same and existing_same[0] is not None:
+                your_mid = str(existing_same[0])
+                rows = _fetch_family_member_rows(db, canonical_fid)
+                members = [_row_to_family_member_response(r) for r in rows]
+                return FamilyJoinAPIResponse(
+                    success=True,
+                    data=FamilyJoinInnerResponse(
+                        success=True,
+                        family_id=canonical_fid,
+                        members=members,
+                        your_member_id=your_mid,
+                    ),
+                    message=None,
+                    error=None,
+                )
+
+            other_f = db.execute(
+                text(
+                    """
+                    SELECT family_id FROM family_members
+                    WHERE user_id = :uid AND family_id <> :fid
+                    LIMIT 1
+                    """
+                ),
+                {"uid": user_id, "fid": canonical_fid},
+            ).fetchone()
+            if other_f and other_f[0] is not None:
+                logger.warning(
+                    "family_join_already_in_another_family",
+                    user_id=user_id,
+                    target_family_id=canonical_fid,
+                    existing_family_id=str(other_f[0]),
+                )
+                raise HTTPException(status_code=409, detail="already_in_another_family")
+
+            role = (body.role or "").strip().lower()
+            allowed_roles = {"parent", "child", "teenager", "elderly", "other"}
+            if role not in allowed_roles:
+                raise HTTPException(status_code=400, detail="Invalid role")
+
+            letter = (body.personal_letter or "").strip().upper()
+            if len(letter) != 1 or not letter.isalpha():
+                raise HTTPException(status_code=400, detail="personal_letter must be a single letter")
+
+            display_name = f"{role.upper()} {letter}"
+
+            dup_name = db.execute(
+                text(
+                    """
+                    SELECT 1 FROM family_members
+                    WHERE family_id = :fid AND lower(trim(name)) = lower(:name)
+                    LIMIT 1
+                    """
+                ),
+                {"fid": canonical_fid, "name": display_name},
+            ).fetchone()
+            if dup_name:
+                raise HTTPException(status_code=409, detail="personal_letter_taken")
+
+            owner_level = _owner_subscription_level_for_family(db, canonical_fid)
+            max_slots = max_family_slots_for_subscription_level(owner_level)
+            current_slots = _count_family_members(db, canonical_fid)
+            if current_slots >= max_slots:
+                logger.warning(
+                    "family_join_roster_full",
+                    user_id=user_id,
+                    family_id=canonical_fid,
+                    current_slots=current_slots,
+                    max_slots=max_slots,
+                )
+                raise HTTPException(status_code=409, detail="family_roster_full")
+
+            member_id = f"MEM_{uuid.uuid4().hex[:12].upper()}"
+            last_active = _iso_utc_timestamp()
+            db.execute(
+                text(
+                    """
+                    INSERT INTO family_members (id, family_id, user_id, name, role, status, threats_blocked, last_active, devices)
+                    VALUES (:id, :family_id, :user_id, :name, :role, 'protected', 0, :last_active, 0)
+                    """
+                ),
+                {
+                    "id": member_id,
+                    "family_id": canonical_fid,
+                    "user_id": user_id,
+                    "name": display_name,
+                    "role": role,
+                    "last_active": last_active,
+                },
+            )
+            db.commit()
+
+            logger.info(
+                "family_joined",
+                user_id=user_id,
+                family_id=canonical_fid,
+                member_id=member_id,
+                role=role,
+                timestamp=datetime.now().isoformat(),
+            )
+
+            rows = _fetch_family_member_rows(db, canonical_fid)
+            members = [_row_to_family_member_response(r) for r in rows]
+            return FamilyJoinAPIResponse(
+                success=True,
+                data=FamilyJoinInnerResponse(
+                    success=True,
+                    family_id=canonical_fid,
+                    members=members,
+                    your_member_id=member_id,
+                ),
+                message=None,
+                error=None,
+            )
+        except HTTPException:
+            raise
+        except Exception as e:
+            db.rollback()
+            logger.error(
+                "family_join_db_error",
+                user_id=user_id,
+                error=str(e),
+                timestamp=datetime.now().isoformat(),
+            )
+            raise HTTPException(status_code=500, detail="Failed to join family")
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(join_sync)
+
 
 @router.get("/members", response_model=list[FamilyMemberCompat])
 async def get_family_members_compat(

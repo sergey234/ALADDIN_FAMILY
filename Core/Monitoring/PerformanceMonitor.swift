@@ -25,7 +25,7 @@ class PerformanceMonitor {
 
     // MARK: - Properties
 
-    private let metricsService = MetricsService()
+    private let metricsService = MetricsService.shared
 
     // FPS monitoring
     private var displayLink: CADisplayLink?
@@ -39,6 +39,8 @@ class PerformanceMonitor {
 
     // Screen load time tracking
     private var screenLoadStartTimes: [String: Date] = [:]
+    private var lastScreenLoadMetricAt: [String: Date] = [:]
+    private let minScreenLoadMetricInterval: TimeInterval = 8
 
     // Network performance tracking
     private var networkRequestStartTimes: [String: Date] = [:]
@@ -95,7 +97,16 @@ class PerformanceMonitor {
             "timestamp": Date().timeIntervalSince1970
         ]
 
-        metricsService.trackUserAction(action: "screen_load_complete", parameters: parameters)
+        let now = Date()
+        if let last = lastScreenLoadMetricAt[screenName],
+           now.timeIntervalSince(last) < minScreenLoadMetricInterval {
+            #if DEBUG
+            logger.performance("Screen load metric skipped by min interval for '\(screenName)'")
+            #endif
+        } else {
+            lastScreenLoadMetricAt[screenName] = now
+            metricsService.trackUserAction(action: "screen_load_complete", parameters: parameters)
+        }
 
         #if DEBUG
         logger.performance("Screen '\(screenName)' loaded in \(String(format: "%.3f", loadTime)) sec")

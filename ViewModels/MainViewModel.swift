@@ -174,6 +174,8 @@ class MainViewModel: ObservableObject {
     private var isLoadingDashboard = false
     private var lastOnAppearTime: Date?
     private var isLoadingFamilyStats = false // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Флаг для getFamilyStats
+    private var lastDashboardLoadStartedAt: Date?
+    private let minDashboardLoadIntervalSec: TimeInterval = 8
     
     // MARK: - Init
     
@@ -200,6 +202,15 @@ class MainViewModel: ObservableObject {
         print("🔄 MainViewModel.loadDashboardData: Начало загрузки данных")
         print("   - isLoadingDashboard: \(isLoadingDashboard)")
         print("   - Текущие значения: члены=\(familyMembers), устройства=\(devicesProtected), угрозы=\(threatsBlocked)")
+
+        if let last = lastDashboardLoadStartedAt,
+           Date().timeIntervalSince(last) < minDashboardLoadIntervalSec,
+           lastUpdateTime != nil {
+            #if DEBUG
+            print("⏱️ MainViewModel: loadDashboardData skipped by min interval (\(Int(minDashboardLoadIntervalSec))s)")
+            #endif
+            return
+        }
         
         // ✅ ЗАЩИТА ОТ БЕСКОНЕЧНЫХ ЦИКЛОВ: Если уже загружается, пропускаем
         guard !isLoadingDashboard else {
@@ -208,6 +219,7 @@ class MainViewModel: ObservableObject {
         }
 
         // ✅ ЗАДАЧА 66: Начинаем отслеживание производительности загрузки дашборда
+        lastDashboardLoadStartedAt = Date()
         PerformanceMonitor.shared.startScreenLoad("MainDashboard")
 
         loadDashboardDataWithRetry(maxAttempts: 3)
@@ -329,6 +341,7 @@ class MainViewModel: ObservableObject {
                     
                     // Члены: источник правды — ответ `family/stats` (избегаем рассинхрона с локальным списком до обновления экрана «Семья»).
                     self.familyMembers = stats.totalMembers
+                    SubscriptionManager.shared.applyFamilyRosterQuotaFromFamilyStats(stats)
                     self.threatsBlocked = stats.totalThreats
                     self.errorMessage = nil // Авто-очистка баннера при успехе
                     
@@ -589,13 +602,10 @@ class MainViewModel: ObservableObject {
         print("   - Subscription initialized: \(SubscriptionManager.shared.isInitialized)")
         
         let pendingDevicesRefresh = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
-        
-        // ✅ ЗАЩИТА ОТ ЧАСТЫХ ВЫЗОВОВ (не применяем, если ждём обновление после экрана «Устройства»)
-        if !pendingDevicesRefresh {
-            if let lastCall = lastOnAppearTime, Date().timeIntervalSince(lastCall) < 15 {
-                print("   - ⚠️ onAppear вызван слишком часто (<15 сек), пропускаем")
-                return
-            }
+        // Раньше: полный return при <15 с — блокировал refreshFamilyMembersCountFromStorage / ожидание
+        // SubscriptionManager и обновление после «Тарифы» при быстром возврате на главную (симулятор vs устройство).
+        if let lastCall = lastOnAppearTime, Date().timeIntervalSince(lastCall) < 15, !pendingDevicesRefresh {
+            print("   - ℹ️ onAppear частый (<15 с); TTL дашборда всё равно решает loadDashboardData")
         }
         lastOnAppearTime = Date()
         refreshFamilyMembersCountFromStorage()

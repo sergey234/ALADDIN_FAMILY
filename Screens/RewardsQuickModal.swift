@@ -68,25 +68,11 @@ struct RewardsQuickModal: View {
                         // Быстрые действия
                         HStack(spacing: Spacing.m) {
                             quickActionButton(icon: "✅", title: localizationManager.localized("rewards_quick_action_reward"), color: .successGreen) {
-                                Task { @MainActor in
-                                    let ok = await ParentSessionGate.confirmSensitiveAction(forceReauth: true)
-                                    if ok {
-                                        rewardChild()
-                                    } else {
-                                        showParentAuthDeniedAlert = true
-                                    }
-                                }
+                                rewardChild()
                             }
                             
                             quickActionButton(icon: "❌", title: localizationManager.localized("rewards_quick_action_punish"), color: .dangerRed) {
-                                Task { @MainActor in
-                                    let ok = await ParentSessionGate.confirmSensitiveAction(forceReauth: true)
-                                    if ok {
-                                        punishChild()
-                                    } else {
-                                        showParentAuthDeniedAlert = true
-                                    }
-                                }
+                                punishChild()
                             }
                         }
                         .padding(.horizontal, Spacing.screenPadding)

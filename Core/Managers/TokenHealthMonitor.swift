@@ -59,14 +59,14 @@ class TokenHealthMonitor {
 
     /// Start proactive monitoring
     func startMonitoring() {
-        logger.business("👀 DEFENSIVE JWT: Starting proactive token health monitoring")
-
-        // Cancel existing timer if any
-        stopMonitoring()
-
-        // Create new timer on main thread
+        // Create timer on main thread only if absent/invalid.
         DispatchQueue.main.async { [weak self] in
             guard let strongSelf = self else { return }
+            if let timer = strongSelf.monitoringTimer, timer.isValid {
+                strongSelf.logger.business("ℹ️ DEFENSIVE JWT: Health monitoring already active")
+                return
+            }
+            strongSelf.logger.business("👀 DEFENSIVE JWT: Starting proactive token health monitoring")
 
             strongSelf.monitoringTimer = Timer.scheduledTimer(
                 withTimeInterval: strongSelf.monitoringInterval,

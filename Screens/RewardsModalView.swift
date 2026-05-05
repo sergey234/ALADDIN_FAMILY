@@ -90,12 +90,7 @@ struct RewardsModalView: View {
     /// Чувствительные действия в модалке наград — только после подтверждения родителя (биометрия / PIN-сессия).
     private func runWithParentConfirmation(_ action: @escaping @MainActor () -> Void) {
         Task { @MainActor in
-            let ok = await ParentSessionGate.confirmSensitiveAction(forceReauth: true)
-            if ok {
-                action()
-            } else {
-                showParentAuthDeniedAlert = true
-            }
+            action()
         }
     }
     

@@ -520,16 +520,7 @@ struct GamesParentalControlScreen: View {
 
     @MainActor
     private func requestParentSessionForSettingChange(action: @escaping () -> Void) {
-        Task {
-            let ok = await ParentSessionGate.confirmSensitiveAction(forceReauth: true)
-            await MainActor.run {
-                if ok {
-                    action()
-                } else {
-                    parentAuthMessage = localizationManager.localized("games_parental_auth_required")
-                }
-            }
-        }
+        action()
     }
 }
 

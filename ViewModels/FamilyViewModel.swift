@@ -127,6 +127,7 @@ class FamilyViewModel: ObservableObject {
                 case .success(let stats):
                     self?.totalThreatsBlocked = stats.totalThreats
                     self?.totalDevices = stats.totalDevices
+                    SubscriptionManager.shared.applyFamilyRosterQuotaFromFamilyStats(stats)
                 case .failure(let error):
                     print("⚠️ FamilyViewModel: Ошибка загрузки статистики семьи: \(error)")
                     // Не показываем ошибку пользователю, статистика не критична

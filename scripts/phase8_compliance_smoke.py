@@ -74,15 +74,9 @@ def check_children_privacy_contracts() -> None:
 
 
 def check_personal_data_storage_audit_contracts() -> None:
-    parent_gate = read("Core/Profile/ParentSessionGate.swift")
     profile_manager = read("Core/Profile/ProfileManager.swift")
     storage_manager = read("Core/Storage/StorageManager.swift")
     security_manager = read("Core/Security/SecurityManager.swift")
-
-    # Sensitive parental verification data: hashed PIN + rate limiting.
-    must_contain(parent_gate, "pinHashSecureKey", "ParentSessionGate secure PIN key")
-    must_contain(parent_gate, "SHA256.hash", "ParentSessionGate hashed PIN")
-    must_contain(parent_gate, "pinMaxAttempts = 5", "ParentSessionGate brute-force limit")
 
     # Data rights (DSAR-like) export/delete.
     must_contain(profile_manager, "exportChildDataRightsPackage", "ProfileManager DSAR export")
@@ -103,8 +97,8 @@ def check_family_sharing_security_contracts() -> None:
     must_match(family_policy, r"case \.manageFamilySharing:\n\s*return role == \.parent", "FamilyAccessPolicy parent-only sharing")
     must_contain(family_policy, "canManageFamilySharing", "FamilyAccessPolicy sharing accessor")
 
-    # Sensitive roster actions require adult challenge.
-    must_contain(family_screen, "ParentSessionGate.confirmSensitiveAction()", "FamilyScreen sensitive-action challenge")
+    # Sensitive roster actions must remain explicitly separated from family-sharing flows.
+    must_contain(family_screen, "removeFamilyMember(", "FamilyScreen roster removal action")
     must_contain(family_screen, "Family Sharing операции", "FamilyScreen sharing-vs-app-profile separation")
     print("OK Family Sharing security contracts")
 

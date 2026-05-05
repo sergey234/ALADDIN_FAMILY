@@ -6,6 +6,7 @@ struct ContentView: View {
             .environmentObject(MainViewModel())
             .environmentObject(NavigationManager())
             .environmentObject(LocalizationManager.shared)
+            .environmentObject(SubscriptionManager.shared)
     }
 }
 

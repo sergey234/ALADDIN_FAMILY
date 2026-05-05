@@ -26,6 +26,15 @@ import UIKit
 /// - Offline mode activations
 ///
 struct JWTEventLogger {
+    private static var lastCompactHealthLogAt: Date?
+    private static let compactHealthLogInterval: TimeInterval = 10 * 60
+    private static var isVerboseJWTLogging: Bool {
+        #if DEBUG
+        return ProcessInfo.processInfo.environment["JWT_VERBOSE_LOGS"] == "1"
+        #else
+        return false
+        #endif
+    }
 
     /// Остаток до истечения токена для логов (секунды из `timeIntervalSinceNow`).
     static func describeTimeLeft(seconds: TimeInterval) -> String {
@@ -220,6 +229,28 @@ struct JWTEventLogger {
                 incrementCounter("jwt_ttl_anomaly_count")
             }
         }
+
+        // Production compact mode: suppress high-frequency multiline health logs.
+        if !isVerboseJWTLogging {
+            let now = Date()
+            let shouldLogCompact: Bool
+            if let ttl = timeToExpiry {
+                shouldLogCompact = ttl <= 3600 || !tokenExists ||
+                    lastCompactHealthLogAt == nil ||
+                    now.timeIntervalSince(lastCompactHealthLogAt!) >= compactHealthLogInterval
+            } else {
+                shouldLogCompact = !tokenExists ||
+                    lastCompactHealthLogAt == nil ||
+                    now.timeIntervalSince(lastCompactHealthLogAt!) >= compactHealthLogInterval
+            }
+
+            guard shouldLogCompact else { return }
+            lastCompactHealthLogAt = now
+            let ttlText = timeToExpiry.map { "\(describeTimeLeft(seconds: $0)) (~\(Int($0))s)" } ?? "n/a"
+            MasterLogger.shared.business("🏥 JWT HEALTH tokenExists=\(tokenExists) ttl=\(ttlText) next=\(Int(nextCheckIn))s")
+            return
+        }
+
         logEvent(.healthCheckPerformed(tokenExists: tokenExists, timeToExpiry: timeToExpiry, nextCheckIn: nextCheckIn))
     }
 
@@ -256,6 +287,9 @@ struct JWTEventLogger {
 
     /// 📊 Log to Analytics
     private static func logToAnalytics(_ event: JWTEvent) {
+        if case .healthCheckPerformed = event, !isVerboseJWTLogging {
+            return
+        }
         // TODO: Integrate with analytics service when available
         // For now, just log that analytics integration is pending
         let logger = MasterLogger.shared

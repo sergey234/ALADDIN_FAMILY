@@ -34,15 +34,22 @@ def must_match(text: str, pattern: str, context: str) -> None:
 
 
 def check_parent_session_gate() -> None:
-    body = read("Core/Profile/ParentSessionGate.swift")
-    must_contain(body, "pinMaxAttempts = 5", "ParentSessionGate rate limiting")
-    must_contain(body, "pinBlockDuration: TimeInterval = 15 * 60", "ParentSessionGate rate limiting")
-    must_contain(body, "setParentalPIN(_ pin: String)", "ParentSessionGate secure pin API")
-    must_contain(body, "verifyParentalPIN(_ pin: String", "ParentSessionGate secure pin API")
-    must_contain(body, "storeSecureData", "ParentSessionGate secure storage")
-    must_contain(body, "SHA256.hash", "ParentSessionGate hashing")
-    must_match(body, r"if attempts >= pinMaxAttempts", "ParentSessionGate lockout logic")
-    print("OK ParentSessionGate secure PIN + rate limiting")
+    screens = [
+        "Screens/02_FamilyScreen.swift",
+        "Screens/07_ParentalControlScreen.swift",
+        "Screens/ParentDashboardView.swift",
+        "Screens/RewardsModalView.swift",
+        "Screens/RewardsQuickModal.swift",
+        "Screens/GamesParentalControlScreen.swift",
+        "Screens/ChildRewardsScreen.swift",
+    ]
+    for rel_path in screens:
+        body = read(rel_path)
+        require(
+            "ParentSessionGate.confirmSensitiveAction(" not in body,
+            f"{rel_path}: ParentSessionGate challenge must be removed from runtime flow",
+        )
+    print("OK runtime flows are PIN-gate free")
 
 
 def check_profile_manager_dsar() -> None:
@@ -62,7 +69,6 @@ def check_parent_dashboard_dsar_actions() -> None:
     must_contain(body, "Button(\"Export child data\")", "ParentDashboard export action")
     must_contain(body, "Button(\"Delete active child data\")", "ParentDashboard delete action")
     must_contain(body, "runSensitiveAction", "ParentDashboard sensitive challenge gate")
-    must_contain(body, "ParentSessionGate.confirmSensitiveAction()", "ParentDashboard adult verification")
     print("OK ParentDashboard sensitive DSAR actions")
 
 

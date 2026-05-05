@@ -27,25 +27,41 @@ enum ParentSessionGate {
     /// - Если есть валидная взрослая сессия в пределах TTL, повторная биометрия не требуется.
     /// - Иначе запрашивается биометрическое подтверждение (когда доступно).
     static func confirmSensitiveAction(forceReauth: Bool = false) async -> Bool {
-        if !forceReauth, hasActiveSession() {
+        let activeSession = hasActiveSession()
+        let biometricAvailable = SecurityManager.shared.biometricAuthAvailable
+        let activePinSession = hasActivePinSession()
+        let configuredPin = hasConfiguredParentalPIN()
+        print("🔐 ParentSessionGate.confirmSensitiveAction start forceReauth=\(forceReauth) activeSession=\(activeSession) biometricAvailable=\(biometricAvailable) activePinSession=\(activePinSession) configuredPin=\(configuredPin)")
+
+        if !forceReauth, activeSession {
+            print("🔐 ParentSessionGate: allowed by active session TTL")
             return true
         }
 
-        if SecurityManager.shared.biometricAuthAvailable {
+        if biometricAvailable {
             let ok = await confirmBiometricIfAvailable()
             if ok {
                 markSessionConfirmed()
+                print("🔐 ParentSessionGate: biometric confirmation success")
+            } else {
+                print("🔐 ParentSessionGate: biometric confirmation failed/cancelled")
             }
             return ok
         }
 
         // Mandatory secure fallback when biometrics unavailable.
         // We intentionally require either active PIN session or explicit PIN verification via `verifyParentalPIN`.
-        if hasActivePinSession() {
+        if activePinSession {
             markSessionConfirmed()
+            print("🔐 ParentSessionGate: allowed by active PIN session TTL")
             return true
         }
 
+        if configuredPin {
+            print("🔐 ParentSessionGate: blocked, PIN is configured but no active PIN session (need explicit verifyParentalPIN call)")
+        } else {
+            print("🔐 ParentSessionGate: blocked, no biometrics and no configured parental PIN")
+        }
         let ok = false
         if ok {
             markSessionConfirmed()

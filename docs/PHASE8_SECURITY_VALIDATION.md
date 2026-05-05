@@ -27,7 +27,7 @@ What it verifies:
    - Diagnostic summary for audit flow exists
 3. `Screens/ParentDashboardView.swift`
    - Parent-only data-rights actions exist in UI (`Export child data`, `Delete active child data`)
-   - Sensitive flow is challenge-gated via `ParentSessionGate.confirmSensitiveAction()`
+   - Sensitive flow is routed through a dedicated action wrapper (`runSensitiveAction`) without PIN/biometric gate dependency
 
 ## Notes
 

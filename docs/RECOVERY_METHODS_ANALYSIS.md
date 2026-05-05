@@ -76,17 +76,17 @@
 
 ---
 
-### 2. Join Family по коду ✅ РАБОТАЕТ
+### 2. Join Family по коду — клиент готов, контракт с шлюзом проверять
 
-**Реализовано:**
+**Реализовано на iOS:**
 - ✅ `joinFamily(withCode:)` в `FamilyRegistrationViewModel`
 - ✅ `InvitationCodeInputModal` - ввод кода приглашения
 - ✅ Поддержка формата `FAM-A1B2-C3D4-E5F6`
+- ✅ Вызов **`POST /api/family/join`** (fallback `POST /family/join`) с телом `JoinFamilyRequest`
 
-**Backend API:**
-- ✅ `POST /api/family/join` - присоединение к семье
+**Backend / OpenAPI (актуально для репозитория):** в `docs/release/current/openapi.json` на `/api/family/join` описан только **GET** compat; боевой **`POST /api/family/join`** должен быть на API — см. **`docs/server/BACKEND_FAMILY_JOIN_AND_ADD_GATE.md`** и смоук **`docs/FAMILY_API_SMOKE_REGIMEN.md`**.
 
-**Как работает:**
+**Как работает (когда POST join доступен на сервере):**
 1. Пользователь вводит код приглашения
 2. Система извлекает `family_id` из кода
 3. Пользователь присоединяется к семье

@@ -155,12 +155,18 @@ final class SubscriptionManager: ObservableObject {
     /// Throttle для повторных синков при каждом показе главной / `scenePhase` (избегаем лишних GET).
     private var lastVisibilitySubscriptionSyncAt: Date?
     private let minVisibilitySubscriptionSyncInterval: TimeInterval = 1.2
+    /// После `10_TariffsScreen.onDisappear` следующий `syncSubscriptionOnMainScreenAppear` не должен отсечься 1.2s‑троттлингом (порядок с `MainScreen.onAppear` недетерминирован).
+    private var bypassVisibilitySubscriptionSyncThrottleOnce = false
 
     /// Events tracking
     private let eventsQueue = DispatchQueue(label: "com.aladdin.subscription.events")
     private var pendingEvents: [SubscriptionEventData] = []
     private var flushRetryCount = 0
     private var isFlushingEvents = false
+    private var isSyncInFlight = false
+    private var lastSyncCompletedEventAt: Date?
+    private var lastSyncCompletedFingerprint: String?
+    private let minSyncCompletedEventInterval: TimeInterval = 12
     private let maxEventBatchSize = 25
     private let pendingEventsStorageKey = "subscription_pending_events_v1"
     private let pendingEventsTTL: TimeInterval = 7 * 24 * 60 * 60 // 7 days
@@ -659,10 +665,12 @@ final class SubscriptionManager: ObservableObject {
     /// Повторный синк при возврате на главную / из фона. `.task` на MainScreen выполняется только один раз (`hasAppeared`).
     func syncSubscriptionOnMainScreenAppear() async {
         let now = Date()
-        if let last = lastVisibilitySubscriptionSyncAt,
+        if !bypassVisibilitySubscriptionSyncThrottleOnce,
+           let last = lastVisibilitySubscriptionSyncAt,
            now.timeIntervalSince(last) < minVisibilitySubscriptionSyncInterval {
             return
         }
+        bypassVisibilitySubscriptionSyncThrottleOnce = false
         lastVisibilitySubscriptionSyncAt = now
         await forceSync()
         bumpSubscriptionDisplayEpoch()
@@ -671,18 +679,21 @@ final class SubscriptionManager: ObservableObject {
     /// Без троттлинга: после экрана тарифов главная должна сразу подтянуть `/api/subscription/status` (иначе 1.2s коалесинг пропускает синк).
     @MainActor
     func syncSubscriptionAfterTariffsDismiss() async {
+        bypassVisibilitySubscriptionSyncThrottleOnce = true
         await forceSync()
         bumpSubscriptionDisplayEpoch()
     }
 
-    /// Family member limit by tariff level (confirmed mapping: free=1, trial/personal=3, family=6, premium=10)
+    /// Family member limit by tariff level (aligned with prod `subscription_limits.py` / `family_roster_reconcile.py`: free=1, trial=3, personal=2, family=6, premium=10)
     /// Single source of truth used by all add flows
     func familyMemberLimit(for level: SubscriptionLevel) -> Int {
         switch level {
         case .free:
             return 1
-        case .trial, .personal:
+        case .trial:
             return 3
+        case .personal:
+            return 2
         case .family:
             return 6
         case .premium:
@@ -707,6 +718,27 @@ final class SubscriptionManager: ObservableObject {
         }
 
         return (true, nil, false)
+    }
+
+    /// Выравнивает лимит ростера с `GET /api/family/stats` (кап владельца в БД), чтобы UI не расходился с gate на `add`.
+    func applyFamilyRosterQuotaFromFamilyStats(_ stats: FamilyStatsResponse) {
+        guard let cap = stats.familyRosterMax, cap > 0 else { return }
+        let used = stats.familyRosterUsed ?? stats.totalMembers
+        let remaining = max(0, cap - used)
+        UserDefaults.standard.set(cap, forKey: "family_limit")
+        UserDefaults.standard.set(remaining, forKey: "family_remaining")
+        UserDefaults.standard.set(used, forKey: "family_roster_used_last")
+        if let tier = stats.ownerSubscriptionTier?.trimmingCharacters(in: .whitespacesAndNewlines), !tier.isEmpty {
+            UserDefaults.standard.set(tier, forKey: "family_roster_owner_tier_last")
+        }
+        UserDefaults.standard.synchronize()
+        currentFamilyLimit = cap
+        currentFamilyRemaining = remaining
+        VisualLogger.shared.log(
+            "🔄 FAMILY STATS→LIMIT rosterUsed=\(used) rosterMax=\(cap) tier=\(stats.ownerSubscriptionTier ?? "?")",
+            level: .info,
+            category: "FAMILY"
+        )
     }
 
     /// Safe, non-isolated access to current family limit for use in completion handlers, error paths, and non-MainActor contexts.
@@ -1308,7 +1340,7 @@ final class SubscriptionManager: ObservableObject {
         logger.business("📊 Subscription updated: \(status.level)")
 
         // ✅ SINGLE SOURCE OF TRUTH: Update both UserDefaults (for legacy) and published properties
-        // Uses exact confirmed mapping: free=1, trial/personal=3, family=6, premium=10
+        // Uses mapping aligned with prod limits: free=1, trial=3, personal=2, family=6, premium=10
         // When JWT `plan_level` is still "free" but trial is active, cap must follow trial (3), not free (1).
         let levelForFamilyCap = subscriptionLevelForFamilyMemberCap(status)
         let tariffBasedLimit = familyMemberLimit(for: levelForFamilyCap)
@@ -1368,6 +1400,9 @@ final class SubscriptionManager: ObservableObject {
 
     private func bumpSubscriptionDisplayEpoch() {
         subscriptionDisplayEpoch &+= 1
+        // На части устройств/версий SwiftUI цепочка @Published для UInt64 + градиент по derived Color
+        // иногда не перерисовывает карточку; явный ping гарантирует инвалидацию дерева.
+        objectWillChange.send()
     }
 
 
@@ -1806,6 +1841,12 @@ extension SubscriptionManager {
             logger.network("📡 Skipping sync - offline mode")
             return
         }
+        guard !isSyncInFlight else {
+            logger.network("📡 Sync skipped - request already in flight")
+            return
+        }
+        isSyncInFlight = true
+        defer { isSyncInFlight = false }
 
         logger.network("📡 Starting subscription sync with server")
 
@@ -1839,8 +1880,14 @@ extension SubscriptionManager {
                 logger.network("📡 Local data is up to date")
             }
 
-            lastSyncDate = Date()
-            trackEvent(.syncCompleted)
+            let now = Date()
+            lastSyncDate = now
+            let fingerprint = subscriptionFingerprint(serverStatus)
+            if shouldTrackSyncCompletedEvent(now: now, fingerprint: fingerprint) {
+                trackEvent(.syncCompleted)
+                lastSyncCompletedEventAt = now
+                lastSyncCompletedFingerprint = fingerprint
+            }
 
         } catch {
             logger.error("❌ Failed to sync with server: \(error.localizedDescription)")
@@ -1857,6 +1904,23 @@ extension SubscriptionManager {
         return serverStatus.level != localSubscription.level ||
                serverStatus.expiresAt != localSubscription.expiresAt ||
                serverStatus.trialInfo != localSubscription.trialInfo
+    }
+
+    private func subscriptionFingerprint(_ status: SubscriptionStatus) -> String {
+        let expiryTs = Int(status.expiresAt?.timeIntervalSince1970 ?? 0)
+        let trialActive = status.trialInfo?.isActive == true
+        let trialDays = status.trialInfo?.daysRemaining ?? -1
+        return "\(status.level.rawValue)|\(status.isActive)|exp=\(expiryTs)|trial=\(trialActive)|days=\(trialDays)"
+    }
+
+    private func shouldTrackSyncCompletedEvent(now: Date, fingerprint: String) -> Bool {
+        if let lastAt = lastSyncCompletedEventAt,
+           now.timeIntervalSince(lastAt) < minSyncCompletedEventInterval,
+           lastSyncCompletedFingerprint == fingerprint {
+            logger.business("ℹ️ sync_completed skipped: unchanged subscription state within debounce window")
+            return false
+        }
+        return true
     }
 
     /// 📥 Update local subscription from server data
