@@ -74,6 +74,7 @@
 		5E32FFED2EAD1876000574C4 /* FamilyMemberCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFEC2EAD1876000574C4 /* FamilyMemberCard.swift */; };
 		5E32FFEF2EAD18B2000574C4 /* ProfileEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFEE2EAD18B2000574C4 /* ProfileEditView.swift */; };
 		5E6F394A2F15C20000CEC103 /* PasswordResetSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39492F15C20000CEC103 /* PasswordResetSheet.swift */; };
+		5E6F394C2F15C20000CEC104 /* AIFeedbackSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F394B2F15C20000CEC104 /* AIFeedbackSheet.swift */; };
 		5E32FFF12EAD18D4000574C4 /* QRScannerModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF02EAD18D4000574C4 /* QRScannerModal.swift */; };
 		5E32FFF32EAD1915000574C4 /* RecoveryOptionsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF22EAD1915000574C4 /* RecoveryOptionsModal.swift */; };
 		5E32FFF52EAD199B000574C4 /* AvatarSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF42EAD199B000574C4 /* AvatarSelector.swift */; };
@@ -493,6 +494,7 @@
 		5E32FFEC2EAD1876000574C4 /* FamilyMemberCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyMemberCard.swift; path = Shared/Components/Cards/FamilyMemberCard.swift; sourceTree = "<group>"; };
 		5E32FFEE2EAD18B2000574C4 /* ProfileEditView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProfileEditView.swift; path = Shared/Components/Modals/ProfileEditView.swift; sourceTree = "<group>"; };
 		5E6F39492F15C20000CEC103 /* PasswordResetSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PasswordResetSheet.swift; path = Shared/Components/PasswordResetSheet.swift; sourceTree = "<group>"; };
+		5E6F394B2F15C20000CEC104 /* AIFeedbackSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIFeedbackSheet.swift; path = Shared/Components/AIFeedbackSheet.swift; sourceTree = "<group>"; };
 		5E32FFF02EAD18D4000574C4 /* QRScannerModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = QRScannerModal.swift; path = Shared/Components/QRScannerModal.swift; sourceTree = "<group>"; };
 		5E32FFF22EAD1915000574C4 /* RecoveryOptionsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecoveryOptionsModal.swift; path = Shared/Components/RecoveryOptionsModal.swift; sourceTree = "<group>"; };
 		5E32FFF42EAD199B000574C4 /* AvatarSelector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AvatarSelector.swift; path = Shared/Components/AvatarSelector.swift; sourceTree = "<group>"; };
@@ -1139,6 +1141,7 @@
 				5E32FFF02EAD18D4000574C4 /* QRScannerModal.swift */,
 				5E32FFEE2EAD18B2000574C4 /* ProfileEditView.swift */,
 				5E6F39492F15C20000CEC103 /* PasswordResetSheet.swift */,
+				5E6F394B2F15C20000CEC104 /* AIFeedbackSheet.swift */,
 				5E32FFEC2EAD1876000574C4 /* FamilyMemberCard.swift */,
 				C3A100012F72B001A0000003 /* WelcomeCardForCreator.swift */,
 				B1000130B1000130B1000130 /* AddMoreMemberCard.swift */,
@@ -1753,6 +1756,7 @@
 				5E7056B52F5478170065BDC4 /* PaymentRecoveryView.swift in Sources */,
 				5E32FFEF2EAD18B2000574C4 /* ProfileEditView.swift in Sources */,
 				5E6F394A2F15C20000CEC103 /* PasswordResetSheet.swift in Sources */,
+				5E6F394C2F15C20000CEC104 /* AIFeedbackSheet.swift in Sources */,
 				5E6F39342F15AF9100CEC103 /* ComponentToggleCard.swift in Sources */,
 				A3000053 /* ViewModels/TariffsViewModel.swift in Sources */,
 				5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */,
@@ -1898,7 +1902,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 182;
+				CURRENT_PROJECT_VERSION = 183;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1931,7 +1935,7 @@
 				CLANG_CXX_LIBRARY = "libc++";
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 182;
+				CURRENT_PROJECT_VERSION = 183;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2088,7 +2092,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 182;
+				CURRENT_PROJECT_VERSION = 183;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2121,7 +2125,7 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 182;
+				CURRENT_PROJECT_VERSION = 183;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2153,7 +2157,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 182;
+				CURRENT_PROJECT_VERSION = 183;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2179,7 +2183,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 182;
+				CURRENT_PROJECT_VERSION = 183;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2203,7 +2207,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 182;
+				CURRENT_PROJECT_VERSION = 183;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2228,7 +2232,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 182;
+				CURRENT_PROJECT_VERSION = 183;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

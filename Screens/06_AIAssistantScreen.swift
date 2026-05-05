@@ -20,7 +20,6 @@ struct AIAssistantScreen: View {
     @State private var isLoading = false
     @State private var showError = false
     @State private var errorMessage = ""
-    @State private var isRecording = false
     @State private var showVoicePermissionAlert = false
     @State private var showFeedbackSheet = false
 
@@ -198,7 +197,8 @@ struct AIAssistantScreen: View {
         .navigationBarHidden(true)
         .id("ai_assistant_lang_\(localizationManager.currentLanguage.rawValue)")
         .sheet(isPresented: $showFeedbackSheet) {
-            AIFeedbackSheet(isPresented: $showFeedbackSheet, apiService: apiService)
+            AIFeedbackSheet(isPresented: $showFeedbackSheet, apiService: apiService, resolvedBy: "ai_assistant_feedback_sheet")
+                .environmentObject(localizationManager)
         }
     }
 
@@ -292,13 +292,13 @@ struct AIAssistantScreen: View {
         HStack(spacing: 8) {
             // Кнопка голосового ввода
             Button(action: toggleVoiceRecording) {
-                Image(systemName: isRecording ? "mic.fill" : "mic")
+                Image(systemName: speechManager.isRecording ? "mic.fill" : "mic")
                     .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(isRecording ? .red : .blue)
+                    .foregroundColor(speechManager.isRecording ? .red : .blue)
                     .frame(width: 44, height: 44)
                     .background(
                         Circle()
-                            .fill(isRecording ? Color.red.opacity(0.2) : Color.blue.opacity(0.2))
+                            .fill(speechManager.isRecording ? Color.red.opacity(0.2) : Color.blue.opacity(0.2))
                     )
             }
 
@@ -344,6 +344,7 @@ struct AIAssistantScreen: View {
                             .fill(Color.orange.opacity(0.2))
                     )
             }
+            .accessibilityLabel(localizationManager.localized("app_feedback_star_accessibility"))
         }
         .padding(12)
         .background(
@@ -916,6 +917,8 @@ class SpeechManager: ObservableObject {
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
     private var recognitionTask: SFSpeechRecognitionTask?
     private let audioEngine = AVAudioEngine()
+    /// Без снятия tap повторный `installTap` даёт NSException → SIGABRT (см. краш на `installTapOnBus`).
+    private var inputTapInstalled = false
 
     // Master Logger for speech recognition logging
     private let logger = MasterLogger.shared
@@ -923,43 +926,64 @@ class SpeechManager: ObservableObject {
     func startRecording(completion: @escaping (String?) -> Void) {
         logger.business("🎤 SpeechManager: Starting speech recognition process")
 
-        // Проверяем разрешение
-        SFSpeechRecognizer.requestAuthorization { status in
-            DispatchQueue.main.async {
-                switch status {
-                case .authorized:
-                    self.startRecordingInternal(completion: completion)
-                case .denied, .restricted:
-                    self.showPermissionAlert()
-                case .notDetermined:
-                    // Разрешение еще не запрошено
-                    break
-                @unknown default:
-                    break
-                }
-            }
+        guard !isRecording else {
+            logger.warn("🎤 SpeechManager: Already recording — ignoring duplicate start")
+            return
         }
 
-        // Запрашиваем разрешение на микрофон
+        // Сначала микрофон, затем Speech — иначе возможен старт до granted и неконсистентный tap (особенно на новых iOS).
         AVAudioSession.sharedInstance().requestRecordPermission { granted in
-            if !granted {
-                DispatchQueue.main.async {
+            DispatchQueue.main.async {
+                guard granted else {
                     self.showPermissionAlert()
+                    completion(nil)
+                    return
+                }
+                SFSpeechRecognizer.requestAuthorization { status in
+                    DispatchQueue.main.async {
+                        switch status {
+                        case .authorized:
+                            self.startRecordingInternal(completion: completion)
+                        case .denied, .restricted:
+                            self.showPermissionAlert()
+                            completion(nil)
+                        case .notDetermined:
+                            self.showPermissionAlert()
+                            completion(nil)
+                        @unknown default:
+                            self.showPermissionAlert()
+                            completion(nil)
+                        }
+                    }
                 }
             }
         }
     }
 
+    private func removeInputTapIfInstalled() {
+        guard inputTapInstalled else { return }
+        audioEngine.inputNode.removeTap(onBus: 0)
+        inputTapInstalled = false
+    }
+
+    /// Сброс состояния движка перед новой сессией (повторное нажатие микрофона, возврат на экран и т.д.).
+    private func resetEngineForNewRecordingSession() {
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+        removeInputTapIfInstalled()
+    }
+
     private func startRecordingInternal(completion: @escaping (String?) -> Void) {
         do {
-            // ✅ ИСПРАВЛЕНИЕ: Меняем режим с .measurement на .default для совместимости
+            resetEngineForNewRecordingSession()
+
             let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(.record, mode: .default, options: [])
+            try audioSession.setCategory(.record, mode: .measurement, options: [.duckOthers])
             try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
 
             logger.business("🎤 SpeechManager: Audio session configured successfully")
 
-            // Создаем запрос распознавания
             recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
             guard let recognitionRequest = recognitionRequest else { return }
 
@@ -988,21 +1012,16 @@ class SpeechManager: ObservableObject {
                 }
             }
 
-            // Настраиваем входной узел
             let inputNode = audioEngine.inputNode
-            let recordingFormat = inputNode.outputFormat(forBus: 0)
-
             logger.business("🎤 SpeechManager: Installing audio tap")
 
-            // ✅ Устанавливаем audio tap
-            inputNode.installTap(onBus: 0, bufferSize: 1024, format: recordingFormat) { buffer, _ in
+            // `format: nil` — канонический формат узла; избегает нулевого sampleRate на некоторых конфигурациях.
+            inputNode.installTap(onBus: 0, bufferSize: 1024, format: nil) { buffer, _ in
                 self.recognitionRequest?.append(buffer)
             }
+            inputTapInstalled = true
             logger.business("🎤 SpeechManager: Audio tap installed successfully")
 
-            logger.business("🎤 SpeechManager: Starting audio engine")
-
-            // Запускаем запись
             audioEngine.prepare()
             try audioEngine.start()
 
@@ -1011,7 +1030,11 @@ class SpeechManager: ObservableObject {
 
         } catch {
             print("🚨 SpeechManager: КРИТИЧЕСКАЯ ОШИБКА запуска записи: \(error.localizedDescription)")
-            print("🚨 SpeechManager: Детали ошибки: \(error)")
+            resetEngineForNewRecordingSession()
+            recognitionTask?.cancel()
+            recognitionTask = nil
+            recognitionRequest = nil
+            isRecording = false
             completion(nil)
         }
     }
@@ -1019,156 +1042,29 @@ class SpeechManager: ObservableObject {
     func stopRecording() {
         logger.business("🎤 SpeechManager: Stopping recording")
 
-        audioEngine.stop()
         recognitionRequest?.endAudio()
         recognitionTask?.cancel()
         recognitionTask = nil
         recognitionRequest = nil
-        isRecording = false
 
+        if audioEngine.isRunning {
+            audioEngine.stop()
+        }
+        removeInputTapIfInstalled()
+
+        isRecording = false
         logger.business("🎤 SpeechManager: Recording stopped")
 
-        // Восстанавливаем аудио сессию
         do {
-            try AVAudioSession.sharedInstance().setActive(false)
+            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
         } catch {
-            logger.error("🎤 SpeechManager: Failed to stop audio session", error: error)
+            logger.error("🎤 SpeechManager: Failed to deactivate audio session", error: error)
         }
     }
 
     private func showPermissionAlert() {
         // Показываем алерт через NotificationCenter
         NotificationCenter.default.post(name: NSNotification.Name("SpeechPermissionDenied"), object: nil)
-    }
-}
-
-// MARK: - AI Feedback Sheet
-
-struct AIFeedbackSheet: View {
-    @EnvironmentObject private var localizationManager: LocalizationManager
-    @Binding var isPresented: Bool
-    @State private var rating: Int = 5
-    @State private var comment: String = ""
-    @State private var isSubmitting = false
-    @State private var showSuccess = false
-
-    let apiService: APIService
-
-    var body: some View {
-        NavigationView {
-            VStack(spacing: 20) {
-                Text(localizationManager.localized("ai_assistant_feedback_title"))
-                    .font(.title2)
-                    .fontWeight(.bold)
-                    .multilineTextAlignment(.center)
-
-                Text(localizationManager.localized("ai_assistant_feedback_description"))
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                    .multilineTextAlignment(.center)
-
-                // Рейтинг
-                VStack(spacing: 12) {
-                    Text(localizationManager.localized("ai_assistant_feedback_rating"))
-                        .font(.headline)
-
-                    HStack(spacing: 8) {
-                        ForEach(1...5, id: \.self) { star in
-                            Image(systemName: star <= rating ? "star.fill" : "star")
-                                .font(.system(size: 30))
-                                .foregroundColor(star <= rating ? .yellow : .gray)
-                                .onTapGesture {
-                                    rating = star
-                                }
-                        }
-                    }
-                }
-
-                // Комментарий
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(localizationManager.localized("ai_assistant_feedback_comment"))
-                        .font(.headline)
-
-                    TextEditor(text: $comment)
-                        .frame(height: 100)
-                        .padding(8)
-                        .background(Color.gray.opacity(0.1))
-                        .cornerRadius(8)
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.gray.opacity(0.3), lineWidth: 1)
-                        )
-                }
-
-                Spacer()
-
-                // Кнопки
-                HStack(spacing: 12) {
-                    Button(localizationManager.localized("common_cancel")) {
-                        isPresented = false
-                    }
-                    .buttonStyle(.bordered)
-                    .tint(.gray)
-
-                    Button(action: submitFeedback) {
-                        if isSubmitting {
-                            ProgressView()
-                                .tint(.white)
-                        } else {
-                            Text(localizationManager.localized("ai_assistant_feedback_submit"))
-                        }
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .disabled(isSubmitting)
-                }
-            }
-            .padding()
-            .navigationBarHidden(true)
-            .alert(localizationManager.localized("ai_assistant_feedback_thanks_title"), isPresented: $showSuccess) {
-                Button(localizationManager.localized("common_ok")) {
-                    isPresented = false
-                }
-            } message: {
-                Text(localizationManager.localized("ai_assistant_feedback_success"))
-            }
-        }
-    }
-
-    private func submitFeedback() {
-        isSubmitting = true
-        let queryText = comment.isEmpty ? nil : comment
-
-        apiService.sendAIFeedback(
-            rating: rating,
-            comment: comment.isEmpty ? nil : comment,
-            messageId: nil,
-            queryText: queryText,
-            resolvedBy: "feedback_sheet",
-            faqId: nil,
-            confidence: nil,
-            sessionId: currentFeedbackSessionId()
-        ) { result in
-            DispatchQueue.main.async {
-                isSubmitting = false
-
-                switch result {
-                case .success:
-                    showSuccess = true
-                case .failure(let error):
-                    print("Ошибка отправки обратной связи: \(error)")
-                    // Показываем ошибку пользователю
-                }
-            }
-        }
-    }
-
-    private func currentFeedbackSessionId() -> String {
-        if let existing = UserDefaults.standard.string(forKey: "jwt_session_id"), !existing.isEmpty {
-            return existing
-        }
-        let generated = UUID().uuidString
-        UserDefaults.standard.set(generated, forKey: "jwt_session_id")
-        return generated
     }
 }
 

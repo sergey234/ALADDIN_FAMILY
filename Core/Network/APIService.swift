@@ -1444,7 +1444,8 @@ class APIService: ObservableObject {
             confidence: confidence,
             sessionId: sessionId
         )
-        networkManager.post(endpoint: AppConfig.Endpoint.aiAssistantFeedback, body: request, completion: completion)
+        // Как и чат AI — публичная отправка отзыва (без JWT), иначе гости/сбой токена дают «успех в UI» без доставки на сервер
+        networkManager.post(endpoint: AppConfig.Endpoint.aiAssistantFeedback, body: request, requiresAuth: false, completion: completion)
     }
 
     // Возможности AI

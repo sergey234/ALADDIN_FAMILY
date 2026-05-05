@@ -1737,13 +1737,14 @@
 "ai_assistant_error_feedback_retry" = "Извините, не удалось отправить ваш отзыв. Попробуйте позже.";
 "ai_assistant_error_response_failed" = "Не удалось получить ответ от AI: %@";
 "ai_assistant_error_generic_retry" = "Извините, произошла ошибка. Попробуйте позже.";
-"ai_assistant_feedback_title" = "Оцените AI Помощник";
-"ai_assistant_feedback_description" = "Ваш отзыв помогает улучшать ответы.";
+"ai_assistant_feedback_title" = "Мы стремимся стать лучше! Оцените приложение ALADDIN! Ваши рекомендации приветствуются";
+"ai_assistant_feedback_description" = "";
 "ai_assistant_feedback_rating" = "Оценка";
 "ai_assistant_feedback_comment" = "Комментарий";
 "ai_assistant_feedback_submit" = "Отправить";
 "ai_assistant_feedback_thanks_title" = "Спасибо!";
 "ai_assistant_feedback_success" = "Ваш отзыв отправлен.";
+"app_feedback_star_accessibility" = "Оценить приложение ALADDIN";
 "dark_web_modal_title" = "Мониторинг Dark Web";
 "dark_web_tab_leaks" = "Утечки";
 "dark_web_tab_scans" = "Сканирования";

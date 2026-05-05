@@ -5989,6 +5989,8 @@ class LocalizationManager: ObservableObject {
             "main_ai_protection": "AI family protection",
             "main_tab_home": "Главная",
             "main_tab_game": "Game",
+            "main_tab_aladdin_kids": "Аладдин Kids",
+            "main_tab_aladdin_kids_hint": "Открывает детский интерфейс с возрастными режимами и активностями",
             "main_tab_protection": "Protection",
             "main_tab_notifications": "Alerts",
             "main_tab_profile": "Profile",
@@ -6218,22 +6220,23 @@ class LocalizationManager: ObservableObject {
             "notification_status_new": "Новое",
             "notification_status_archived": "Архивировано",
             
-            // ✅ ЗАДАЧА 3: Локализация AI Assistant feedback
-            "ai_assistant_feedback_title": "Rate AI Assistant",
-            "ai_assistant_feedback_description": "Your feedback helps us improve answers.",
-            "ai_assistant_feedback_rating": "Rating",
+            // ✅ ЗАДАЧА 3: Локализация AI Assistant feedback (общий лист оценки приложения — AI и семейный чат)
+            "ai_assistant_feedback_title": "Мы стремимся стать лучше! Оцените приложение ALADDIN! Ваши рекомендации приветствуются",
+            "ai_assistant_feedback_description": "",
+            "ai_assistant_feedback_rating": "Оценка",
             "ai_assistant_feedback_rating_excellent": "Отлично",
             "ai_assistant_feedback_rating_good": "Хорошо",
             "ai_assistant_feedback_rating_fair": "Удовлетворительно",
             "ai_assistant_feedback_rating_poor": "Плохо",
-            "ai_assistant_feedback_comment": "Comment",
+            "ai_assistant_feedback_comment": "Комментарий",
             "ai_assistant_feedback_comment_placeholder": "Ваши предложения по улучшению...",
-            "ai_assistant_feedback_submit": "Send",
-            "ai_assistant_feedback_success": "Your feedback has been sent.",
-            "ai_assistant_feedback_thanks_title": "Thanks!",
+            "ai_assistant_feedback_submit": "Отправить",
+            "ai_assistant_feedback_success": "Ваш отзыв отправлен.",
+            "ai_assistant_feedback_thanks_title": "Спасибо!",
             "ai_assistant_feedback_error": "Ошибка при отправке отзыва",
             "ai_assistant_feedback_cancel": "Отмена",
             "ai_assistant_feedback_required": "Пожалуйста, выберите оценку",
+            "app_feedback_star_accessibility": "Оценить приложение ALADDIN",
             
             // ✅ ЗАДАЧА 22: Системные компоненты
             "system_components_loading": "Загрузка компонентов...",
@@ -9198,6 +9201,8 @@ class LocalizationManager: ObservableObject {
             "main_ai_protection": "AI family protection",
             "main_tab_home": "Home",
             "main_tab_game": "Game",
+            "main_tab_aladdin_kids": "Aladdin Kids",
+            "main_tab_aladdin_kids_hint": "Opens the child interface with age modes and activities",
             "main_tab_protection": "Protection",
             "main_tab_notifications": "Alerts",
             "main_tab_profile": "Profile",
@@ -12491,9 +12496,9 @@ Settings
             "notification_status_new": "New",
             "notification_status_archived": "Archived",
             
-            // ✅ ЗАДАЧА 3: AI Assistant feedback localization (English)
-            "ai_assistant_feedback_title": "Rate AI Assistant",
-            "ai_assistant_feedback_description": "Your feedback helps us improve answers.",
+            // ✅ ЗАДАЧА 3: AI Assistant feedback (English) — same app rating sheet as Russian locale
+            "ai_assistant_feedback_title": "We're working to get better! Rate the ALADDIN app! Your suggestions are welcome.",
+            "ai_assistant_feedback_description": "",
             "ai_assistant_feedback_rating": "Rating",
             "ai_assistant_feedback_rating_excellent": "Excellent",
             "ai_assistant_feedback_rating_good": "Good",
@@ -12507,6 +12512,7 @@ Settings
             "ai_assistant_feedback_error": "Error sending feedback",
             "ai_assistant_feedback_cancel": "Cancel",
             "ai_assistant_feedback_required": "Please select a rating",
+            "app_feedback_star_accessibility": "Rate the ALADDIN app",
             
             // ✅ ЗАДАЧА 22: System Components (English)
             "system_components_loading": "Loading components...",

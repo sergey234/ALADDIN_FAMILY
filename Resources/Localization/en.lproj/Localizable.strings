@@ -1850,13 +1850,14 @@
 "ai_assistant_error_feedback_retry" = "Sorry, feedback was not sent. Please try again later.";
 "ai_assistant_error_response_failed" = "Failed to get AI response: %@";
 "ai_assistant_error_generic_retry" = "Sorry, an error occurred. Please try again later.";
-"ai_assistant_feedback_title" = "Rate AI Assistant";
-"ai_assistant_feedback_description" = "Your feedback helps us improve answers.";
+"ai_assistant_feedback_title" = "We're working to get better! Rate the ALADDIN app! Your suggestions are welcome.";
+"ai_assistant_feedback_description" = "";
 "ai_assistant_feedback_rating" = "Rating";
 "ai_assistant_feedback_comment" = "Comment";
 "ai_assistant_feedback_submit" = "Send";
 "ai_assistant_feedback_thanks_title" = "Thanks!";
 "ai_assistant_feedback_success" = "Your feedback has been sent.";
+"app_feedback_star_accessibility" = "Rate the ALADDIN app";
 "dark_web_scan_data_input_title" = "Enter data for scanning";
 "dark_web_scan_data_email" = "Email";
 "dark_web_scan_data_password" = "Password";

@@ -68,6 +68,7 @@ struct FamilyChatScreen: View {
     @State private var showFileImporter: Bool = false
     @State private var showContactPicker: Bool = false
     @State private var isResolvingLocation: Bool = false
+    @State private var showFeedbackSheet: Bool = false
     @State private var typingStopWorkItem: DispatchWorkItem? = nil
     /// Debounce typing: `Task` на MainActor, чтобы не дергать сеть синхронно из `onChange` и не захватывать устаревший `struct View`.
     @State private var typingTextDebounceTask: Task<Void, Never>?
@@ -337,6 +338,14 @@ struct FamilyChatScreen: View {
                         onAddReaction: { showReactionPicker(for: message) }
                     )
                 }
+            }
+            .sheet(isPresented: $showFeedbackSheet) {
+                AIFeedbackSheet(
+                    isPresented: $showFeedbackSheet,
+                    apiService: apiService,
+                    resolvedBy: "family_chat_feedback_sheet"
+                )
+                .environmentObject(localizationManager)
             }
     }
 
@@ -1013,6 +1022,15 @@ struct FamilyChatScreen: View {
                         .stroke(Color(UIColor.separator), lineWidth: 1)
                 )
                 .cornerRadius(14)
+
+                Button(action: { showFeedbackSheet = true }) {
+                    Image(systemName: "star")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.orange)
+                        .frame(width: 42, height: 42)
+                        .background(Circle().fill(Color.orange.opacity(0.2)))
+                }
+                .accessibilityLabel(localizationManager.localized("app_feedback_star_accessibility"))
 
                 Button(action: {
                     sendMessage()
