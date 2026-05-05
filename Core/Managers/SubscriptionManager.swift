@@ -103,6 +103,20 @@ struct SubscriptionEventData: Codable {
     }
 }
 
+enum FamilyQuotaSource: String, Codable {
+    case serverStats
+    case tariffFallback
+    case persistedCache
+}
+
+struct FamilyQuotaSnapshot: Codable, Equatable {
+    let used: Int
+    let max: Int
+    let source: FamilyQuotaSource
+    let updatedAt: Date
+    let familyId: String?
+}
+
 // MARK: - Subscription Manager
 
 /// 🛡️ Subscription Manager - Core Security Component
@@ -148,6 +162,15 @@ final class SubscriptionManager: ObservableObject {
 
     /// Remaining family member slots (synced from headers or calculated)
     @Published private(set) var currentFamilyRemaining: Int = 2
+
+    /// Единый снимок квоты семьи для согласованного UI на всех экранах.
+    @Published private(set) var familyQuotaSnapshot = FamilyQuotaSnapshot(
+        used: 0,
+        max: 3,
+        source: .persistedCache,
+        updatedAt: Date.distantPast,
+        familyId: nil
+    )
 
     /// Монотонно растёт при любых изменениях уровня/триала/токена — чтобы SwiftUI гарантированно перерисовал строку тарифа на главной (в т.ч. после возврата с экрана тарифов на устройстве).
     @Published private(set) var subscriptionDisplayEpoch: UInt64 = 0
@@ -508,6 +531,7 @@ final class SubscriptionManager: ObservableObject {
         print("💾💾💾 LOADING_PERSISTED_DATA: About to load from Keychain")
         loadPersistedData()
         loadPendingEvents()
+        restoreFamilyQuotaSnapshotFromCache()
         logger.business("💾 Persisted data loading completed")
         print("💾💾💾 PERSISTED_DATA_LOADED: Completed")
 
@@ -704,8 +728,8 @@ final class SubscriptionManager: ObservableObject {
     /// Central guard for adding family members. Used by FamilyScreen, FamilyRegistrationViewModel, AddMemberOptionsScreen.
     /// Returns whether allowed, user-facing message if blocked, and whether upgrade is suggested.
     func canAddFamilyMember(currentCount: Int) -> (allowed: Bool, message: String?, upgradeSuggested: Bool) {
-        let limit = currentFamilyLimit
-        let remaining = currentFamilyRemaining
+        let limit = familyQuotaSnapshot.max
+        let remaining = max(0, limit - familyQuotaSnapshot.used)
 
         if limit > 0 && currentCount >= limit {
             let msg = "Лимит участников для вашего тарифа (\(limit)) достигнут. Обновите тариф чтобы добавить больше участников."
@@ -724,16 +748,11 @@ final class SubscriptionManager: ObservableObject {
     func applyFamilyRosterQuotaFromFamilyStats(_ stats: FamilyStatsResponse) {
         guard let cap = stats.familyRosterMax, cap > 0 else { return }
         let used = stats.familyRosterUsed ?? stats.totalMembers
-        let remaining = max(0, cap - used)
-        UserDefaults.standard.set(cap, forKey: "family_limit")
-        UserDefaults.standard.set(remaining, forKey: "family_remaining")
-        UserDefaults.standard.set(used, forKey: "family_roster_used_last")
-        if let tier = stats.ownerSubscriptionTier?.trimmingCharacters(in: .whitespacesAndNewlines), !tier.isEmpty {
-            UserDefaults.standard.set(tier, forKey: "family_roster_owner_tier_last")
-        }
-        UserDefaults.standard.synchronize()
-        currentFamilyLimit = cap
-        currentFamilyRemaining = remaining
+        let familyId = (
+            UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        )
+        publishFamilyQuotaSnapshot(used: used, maxSlots: cap, source: .serverStats, familyId: familyId)
         VisualLogger.shared.log(
             "🔄 FAMILY STATS→LIMIT rosterUsed=\(used) rosterMax=\(cap) tier=\(stats.ownerSubscriptionTier ?? "?")",
             level: .info,
@@ -1344,7 +1363,9 @@ final class SubscriptionManager: ObservableObject {
         // When JWT `plan_level` is still "free" but trial is active, cap must follow trial (3), not free (1).
         let levelForFamilyCap = subscriptionLevelForFamilyMemberCap(status)
         let tariffBasedLimit = familyMemberLimit(for: levelForFamilyCap)
-        let calculatedRemaining = max(0, tariffBasedLimit - (currentSubscription?.limits.currentUsage.devices ?? 1))
+        let currentUsed = familyQuotaSnapshot.used
+        let cappedUsed = max(0, min(currentUsed, tariffBasedLimit))
+        let calculatedRemaining = max(0, tariffBasedLimit - cappedUsed)
 
         // Update legacy storage for backward compatibility with FamilyScreen and VM
         UserDefaults.standard.set(tariffBasedLimit, forKey: "family_limit")
@@ -1352,8 +1373,11 @@ final class SubscriptionManager: ObservableObject {
         UserDefaults.standard.synchronize()
 
         // Update reactive published properties (new single source)
-        self.currentFamilyLimit = tariffBasedLimit
-        self.currentFamilyRemaining = calculatedRemaining
+        let familyId = (
+            UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        )
+        publishFamilyQuotaSnapshot(used: cappedUsed, maxSlots: tariffBasedLimit, source: .tariffFallback, familyId: familyId)
 
         VisualLogger.shared.log("🔄 TARIFF→FAMILY SYNC: plan_level=\(status.level), cap_level=\(levelForFamilyCap), family_limit=\(tariffBasedLimit), remaining=\(calculatedRemaining) (published + UserDefaults)", level: .info, category: "FAMILY")
         logger.business("🔄 Tariff sync: family_limit=\(tariffBasedLimit) for cap_level=\(levelForFamilyCap.rawValue) (plan_level=\(status.level.rawValue))")
@@ -1403,6 +1427,53 @@ final class SubscriptionManager: ObservableObject {
         // На части устройств/версий SwiftUI цепочка @Published для UInt64 + градиент по derived Color
         // иногда не перерисовывает карточку; явный ping гарантирует инвалидацию дерева.
         objectWillChange.send()
+    }
+
+    private func publishFamilyQuotaSnapshot(
+        used: Int,
+        maxSlots: Int,
+        source: FamilyQuotaSource,
+        familyId: String?
+    ) {
+        let sanitizedMax = max(0, maxSlots)
+        let sanitizedUsed = max(0, min(used, sanitizedMax))
+        let remaining = max(0, sanitizedMax - sanitizedUsed)
+
+        currentFamilyLimit = sanitizedMax
+        currentFamilyRemaining = remaining
+        familyQuotaSnapshot = FamilyQuotaSnapshot(
+            used: sanitizedUsed,
+            max: sanitizedMax,
+            source: source,
+            updatedAt: Date(),
+            familyId: familyId?.isEmpty == true ? nil : familyId
+        )
+
+        UserDefaults.standard.set(sanitizedMax, forKey: "family_limit")
+        UserDefaults.standard.set(remaining, forKey: "family_remaining")
+        UserDefaults.standard.set(sanitizedUsed, forKey: "family_roster_used_last")
+        UserDefaults.standard.set(source.rawValue, forKey: "family_quota_source_last")
+        if let familyId, !familyId.isEmpty {
+            UserDefaults.standard.set(familyId, forKey: "family_quota_family_id_last")
+        }
+        UserDefaults.standard.synchronize()
+    }
+
+    private func restoreFamilyQuotaSnapshotFromCache() {
+        let cachedMax = UserDefaults.standard.integer(forKey: "family_limit")
+        guard cachedMax > 0 else { return }
+
+        let cachedUsed = UserDefaults.standard.integer(forKey: "family_roster_used_last")
+        let cachedFamilyId = UserDefaults.standard.string(forKey: "family_quota_family_id_last")
+        let cachedSourceRaw = UserDefaults.standard.string(forKey: "family_quota_source_last")
+        let cachedSource = FamilyQuotaSource(rawValue: cachedSourceRaw ?? "") ?? .persistedCache
+
+        publishFamilyQuotaSnapshot(
+            used: cachedUsed,
+            maxSlots: cachedMax,
+            source: cachedSource == .serverStats ? .persistedCache : cachedSource,
+            familyId: cachedFamilyId
+        )
     }
 
 

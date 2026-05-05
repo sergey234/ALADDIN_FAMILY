@@ -616,11 +616,13 @@ struct MainScreen: View {
                                         .font(.system(size: 14, weight: .bold))
                                         .foregroundColor(.black)
                                     // Лимит по тарифу (как «3 из 5» в семейной защите): сколько уже в семье / максимум по плану.
+                                    let quotaUsed = max(0, subscriptionManager.familyQuotaSnapshot.used)
+                                    let quotaMax = max(0, subscriptionManager.familyQuotaSnapshot.max)
                                     Text(
                                         localizationManager.localized(
                                             "main_family_header_member_slots",
-                                            min(mainViewModel.familyMembers, max(0, subscriptionManager.currentFamilyLimit)),
-                                            max(0, subscriptionManager.currentFamilyLimit)
+                                            min(quotaUsed, quotaMax),
+                                            quotaMax
                                         )
                                     )
                                     .font(.system(size: 10, weight: .semibold))
@@ -628,8 +630,8 @@ struct MainScreen: View {
                                     .accessibilityLabel(
                                         localizationManager.localized(
                                             "main_family_header_member_slots",
-                                            min(mainViewModel.familyMembers, max(0, subscriptionManager.currentFamilyLimit)),
-                                            max(0, subscriptionManager.currentFamilyLimit)
+                                            min(quotaUsed, quotaMax),
+                                            quotaMax
                                         )
                                     )
                                 }

@@ -129,13 +129,14 @@ struct FamilyScreen: View {
 
     /// Единая проверка лимита тарифа для тулбара, кнопки «Добавить» и AddMoreMemberCard (без `let` внутри ViewBuilder).
     private var canAddFamilyMemberUnderTariff: Bool {
-        subscriptionManager.canAddFamilyMember(currentCount: familyMembers.count).allowed
+        let currentCount = max(familyMembers.count, subscriptionManager.familyQuotaSnapshot.used)
+        return subscriptionManager.canAddFamilyMember(currentCount: currentCount).allowed
     }
 
     /// Подсказка, если тариф позволяет больше участников, а с сервера пришёл одиночный ростер и у пользователя нет прав управления (часто child).
     private var incompleteFamilyServerDataBannerText: String? {
         guard familyMembers.count == 1 else { return nil }
-        guard subscriptionManager.currentFamilyLimit > 1 else { return nil }
+        guard subscriptionManager.familyQuotaSnapshot.max > 1 else { return nil }
         guard !canManageFamilyRoster else { return nil }
         return localizationManager.localized("family.incomplete_server_roster_hint")
     }
@@ -712,12 +713,12 @@ struct FamilyScreen: View {
     // ✅ UPDATED: Uses single source of truth from SubscriptionManager.canAddFamilyMember
     // Eliminates bypass and ensures consistent enforcement across all flows
     private func addFamilyMember(_ member: FamilyMemberData) {
-        let currentCount = familyMembers.count
+        let currentCount = max(familyMembers.count, subscriptionManager.familyQuotaSnapshot.used)
         let (allowed, message, _) = subscriptionManager.canAddFamilyMember(currentCount: currentCount)
 
         if !allowed {
-            print("🚫 [addFamilyMember] Tariff limit reached (\(currentCount)/\(subscriptionManager.currentFamilyLimit)). \(message ?? "")")
-            VisualLogger.shared.log("🚫 TARIFF LIMIT: reached \(currentCount)/\(subscriptionManager.currentFamilyLimit) — block add", level: .warning, category: "FAMILY")
+            print("🚫 [addFamilyMember] Tariff limit reached (\(currentCount)/\(subscriptionManager.familyQuotaSnapshot.max)). \(message ?? "")")
+            VisualLogger.shared.log("🚫 TARIFF LIMIT: reached \(currentCount)/\(subscriptionManager.familyQuotaSnapshot.max) — block add", level: .warning, category: "FAMILY")
             // TODO: Show user-facing alert with upgrade option (handled in UI layer)
             return
         }
@@ -1837,8 +1838,8 @@ struct FamilyScreen: View {
                                 .accessibilityAddTraits(.isHeader)
                             
                             // Improved stats: capacity "X of Y (Plan)" + progress. Single source from SubscriptionManager.
-                            let currentCount2 = familyMembers.count
-                            let limit2 = subscriptionManager.currentFamilyLimit
+                            let currentCount2 = max(familyMembers.count, subscriptionManager.familyQuotaSnapshot.used)
+                            let limit2 = subscriptionManager.familyQuotaSnapshot.max
                             let capacityText2 = "\(currentCount2) из \(limit2)"
                             let progress = limit2 > 0 ? Double(currentCount2) / Double(limit2) : 0.0
 
@@ -1873,8 +1874,8 @@ struct FamilyScreen: View {
                             
                             // Updated: Uses single source SubscriptionManager.canAddFamilyMember + capacity display
                             // Shows "X of Y members (Plan)" with progress. Consistent across all add paths.
-                            let currentCount3 = familyMembers.count
-                            let limit3 = subscriptionManager.currentFamilyLimit
+                            let currentCount3 = max(familyMembers.count, subscriptionManager.familyQuotaSnapshot.used)
+                            let limit3 = subscriptionManager.familyQuotaSnapshot.max
                             let capacityText3 = "\(currentCount3) из \(limit3) участников (Tariff)"
 
                             Group {

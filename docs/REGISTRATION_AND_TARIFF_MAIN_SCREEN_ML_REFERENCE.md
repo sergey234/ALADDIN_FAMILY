@@ -578,4 +578,26 @@ flowchart TD
 
 ---
 
+## 14. Май 2026: hardening family roster (anti-race + anti-tamper)
+
+### 14.1 Что добавлено на сервере
+
+- В `POST /api/family/add` и `POST /api/family/join` добавлен advisory lock (`pg_advisory_xact_lock`) до блока `COUNT(*) + INSERT`.
+- Решение gate журналируется как `family_roster_gate_decision` с полями: `decision`, `reason`, `roster_used`, `roster_max`, `owner_subscription_level`, `family_id`, `user_id`.
+- Контракт переполнения жёсткий: при достижении лимита сервер возвращает `409 family_roster_full`.
+
+### 14.2 Почему локальная подмена квоты в iOS не даёт обход
+
+- Клиентский `FamilyQuotaSnapshot` используется только для UX/отображения и локального pre-check.
+- Финальное разрешение add/join всегда принимается сервером по данным БД (owner level + фактический `COUNT(*)`).
+- Даже при параллельных запросах лимит не должен быть превышен из-за транзакционного lock вокруг gate.
+
+### 14.3 Обязательные smoke-проверки
+
+- `scripts/family_parallel_add_smoke.py`: 20 параллельных add, проверка `used <= max` и `409 family_roster_full` при overflow.
+- `scripts/family_client_tamper_guard_smoke.py`: статическая проверка, что клиентская подмена quota не участвует в server decision.
+- Регламент запуска и DoD зафиксированы в `docs/FAMILY_API_SMOKE_REGIMEN.md`.
+
+---
+
 *Документ объединяет iOS-репозиторий и снимок прода на дату в разделе 9. После изменений на сервере или в клиенте обновляйте разделы 5.6, 10–12 и переснимайте **`docs/release/current/openapi.json`** с **`http://149.154.65.180:8002/openapi.json`** (или канонического шлюза приложения).*

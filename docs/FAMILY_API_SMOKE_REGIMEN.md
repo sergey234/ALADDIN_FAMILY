@@ -95,6 +95,43 @@ curl -sS -m 15 -H "Authorization: Bearer ${ALADDIN_JWT}" \
 
 ---
 
+## 9. Anti-race stress smoke (20 parallel add)
+
+Цель: подтвердить, что при параллельных запросах лимит ростера не пробивается (лишние попытки получают `409 family_roster_full`).
+
+```bash
+python3 scripts/family_parallel_add_smoke.py \
+  --base "${ALADDIN_API_BASE}" \
+  --token "${ALADDIN_JWT}" \
+  --family-id "${ALADDIN_FAMILY_ID}" \
+  --attempts 20 \
+  --workers 20
+```
+
+DoD:
+- итоговый `familyRosterUsed <= familyRosterMax`;
+- `200` не превышает доступные места до старта;
+- переполнение возвращает `409 family_roster_full`;
+- нет неожиданных кодов ответа.
+
+---
+
+## 10. Client tamper guard smoke (static contract)
+
+Цель: гарантировать, что подмена локальных `max/used` на клиенте не влияет на решение сервера.
+
+```bash
+python3 scripts/family_client_tamper_guard_smoke.py
+```
+
+Проверяется:
+- `AddFamilyMemberRequest` не содержит клиентских quota-полей (`max/used/...`);
+- сервер принимает решение только по server-side owner level + `COUNT(*)`;
+- guard выполняется до `INSERT INTO family_members`;
+- anti-race lock присутствует в `/api/family/add` и `/api/family/join`.
+
+---
+
 ## Критерий «смоук пройден»
 
-Все шаги 2 → 3 → (4 или 5) → 6 → 7 выполняются на выбранной базе без расхождения чисел между **members**, **stats** и **главной**, без необоснованного **404** на join (если join в scope).
+Все шаги 2 → 3 → (4 или 5) → 6 → 7 + шаги 9/10 выполняются на выбранной базе без расхождения чисел между **members**, **stats** и **главной**, без необоснованного **404** на join (если join в scope), и без пробоя лимита при параллельных add.

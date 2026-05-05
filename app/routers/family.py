@@ -312,6 +312,31 @@ def _count_family_members(db, family_id: str) -> int:
     return int(row[0] or 0) if row else 0
 
 
+def _acquire_family_roster_write_lock(db, family_id: str) -> None:
+    """
+    Сериализует конкурентные add/join операции в рамках одной семьи.
+    Это закрывает race окно между COUNT(*) и INSERT.
+    """
+    lock_key = f"family_roster:{str(family_id)}"
+    try:
+        db.execute(text("SELECT pg_advisory_xact_lock(hashtextextended(:k, 0))"), {"k": lock_key})
+        return
+    except Exception:
+        # Совместимость с кластерами/версиями без hashtextextended.
+        try:
+            db.execute(text("SELECT pg_advisory_xact_lock(abs(hashtext(:k)))"), {"k": lock_key})
+            return
+        except Exception as e:
+            logger.error(
+                "family_roster_lock_failed",
+                family_id=str(family_id),
+                lock_key=lock_key,
+                error=str(e),
+            )
+            # Fail-closed: если lock не взяли, не выполняем write path.
+            raise HTTPException(status_code=503, detail="family_roster_lock_unavailable")
+
+
 def _fetch_family_member_rows(db, family_id: str) -> List[Any]:
     res = db.execute(
         text(
@@ -1097,9 +1122,21 @@ async def add_family_member(
                 raise HTTPException(status_code=403, detail="Only administrators can add members")
 
             owner_level = _owner_subscription_level_for_family(db, str(family_id))
+            _acquire_family_roster_write_lock(db, str(family_id))
             max_slots = max_family_slots_for_subscription_level(owner_level)
             current_slots = _count_family_members(db, str(family_id))
             if current_slots >= max_slots:
+                logger.info(
+                    "family_roster_gate_decision",
+                    endpoint="/api/family/add",
+                    decision="deny",
+                    reason="family_roster_full",
+                    family_id=str(family_id),
+                    roster_used=current_slots,
+                    roster_max=max_slots,
+                    owner_subscription_level=owner_level,
+                    user_id=user_id,
+                )
                 logger.warning(
                     "family_add_roster_full",
                     user_id=user_id,
@@ -1109,6 +1146,17 @@ async def add_family_member(
                     owner_subscription_level=owner_level,
                 )
                 raise HTTPException(status_code=409, detail="family_roster_full")
+            logger.info(
+                "family_roster_gate_decision",
+                endpoint="/api/family/add",
+                decision="allow",
+                reason="within_limit",
+                family_id=str(family_id),
+                roster_used=current_slots,
+                roster_max=max_slots,
+                owner_subscription_level=owner_level,
+                user_id=user_id,
+            )
 
             member_id = f"MEM_{uuid.uuid4().hex[:12].upper()}"
             status_val = "protected"
@@ -1294,9 +1342,21 @@ async def join_family_post(
                 raise HTTPException(status_code=409, detail="personal_letter_taken")
 
             owner_level = _owner_subscription_level_for_family(db, canonical_fid)
+            _acquire_family_roster_write_lock(db, canonical_fid)
             max_slots = max_family_slots_for_subscription_level(owner_level)
             current_slots = _count_family_members(db, canonical_fid)
             if current_slots >= max_slots:
+                logger.info(
+                    "family_roster_gate_decision",
+                    endpoint="/api/family/join",
+                    decision="deny",
+                    reason="family_roster_full",
+                    family_id=canonical_fid,
+                    roster_used=current_slots,
+                    roster_max=max_slots,
+                    owner_subscription_level=owner_level,
+                    user_id=user_id,
+                )
                 logger.warning(
                     "family_join_roster_full",
                     user_id=user_id,
@@ -1305,6 +1365,17 @@ async def join_family_post(
                     max_slots=max_slots,
                 )
                 raise HTTPException(status_code=409, detail="family_roster_full")
+            logger.info(
+                "family_roster_gate_decision",
+                endpoint="/api/family/join",
+                decision="allow",
+                reason="within_limit",
+                family_id=canonical_fid,
+                roster_used=current_slots,
+                roster_max=max_slots,
+                owner_subscription_level=owner_level,
+                user_id=user_id,
+            )
 
             member_id = f"MEM_{uuid.uuid4().hex[:12].upper()}"
             last_active = _iso_utc_timestamp()
