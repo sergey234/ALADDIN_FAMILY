@@ -6,6 +6,7 @@ private let logger = MasterLogger.shared
 
 /// 🤖 AI Assistant View Model
 /// Логика для AI чата
+@MainActor
 class AIAssistantViewModel: ObservableObject {
     
     @Published var messages: [ChatMessage] = []
@@ -14,7 +15,7 @@ class AIAssistantViewModel: ObservableObject {
     @Published var isStreaming: Bool = false
     @Published var isResumingStream: Bool = false     // Индикатор восстановления после reconnect
     
-    private let apiService = APIService.shared
+    private let apiService: APIService
     private let streamingService = AIStreamingService.shared
     
     struct ChatMessage: Identifiable {
@@ -31,7 +32,8 @@ class AIAssistantViewModel: ObservableObject {
         }
     }
     
-    init() {
+    init(apiService: APIService? = nil) {
+        self.apiService = apiService ?? APIService.shared
         logger.business("Initializing AI Assistant ViewModel")
         loadInitialMessages()
     }

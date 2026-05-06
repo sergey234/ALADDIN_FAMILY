@@ -34,7 +34,6 @@ class NotificationManager: NSObject, ObservableObject {
     // MARK: - Private Properties
     
     private let notificationCenter = UNUserNotificationCenter.current()
-    private let apiService = APIService.shared
     private let userDefaults = UserDefaults.standard
     private let settingsKey = "notificationSettings"
     
@@ -131,11 +130,13 @@ class NotificationManager: NSObject, ObservableObject {
     private func sendDeviceTokenToServer(token: String) async {
         logger.business("Sending device token to server: \(token.prefix(8))...")
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            apiService.registerDeviceToken(token) { result in
-                #if DEBUG
-                print("📱 Register device token result: \(result)")
-                #endif
-                continuation.resume()
+            Task { @MainActor in
+                APIService.shared.registerDeviceToken(token) { result in
+                    #if DEBUG
+                    print("📱 Register device token result: \(result)")
+                    #endif
+                    continuation.resume()
+                }
             }
         }
     }

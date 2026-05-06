@@ -179,9 +179,9 @@ class MainViewModel: ObservableObject {
     
     // MARK: - Init
     
-    init(apiService: APIService = .shared, keychainManager: KeychainManager = .shared) {
+    init(apiService: APIService? = nil, keychainManager: KeychainManager = .shared) {
         // ✅ BUILD 109: Полная изоляция конструктора. Никаких логов или системных вызовов.
-        self.apiService = apiService
+        self.apiService = apiService ?? APIService.shared
         self.keychainManager = keychainManager
 
         // Пока пользователь на другом экране (например «Тарифы»), `MainScreen.onReceive(SubscriptionUpdated)` не подписан —

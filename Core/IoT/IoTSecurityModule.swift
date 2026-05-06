@@ -3,6 +3,7 @@ import Combine
 
 /// 🏡 IoT Security Module
 /// ТОЛЬКО запросы к API, НИКАКОЙ бизнес-логики
+@MainActor
 class IoTSecurityModule: ObservableObject {
     
     // MARK: - Published Properties
@@ -20,8 +21,8 @@ class IoTSecurityModule: ObservableObject {
     
     // MARK: - Initialization
     
-    init(apiService: APIService = APIService.shared) {
-        self.apiService = apiService
+    init(apiService: APIService? = nil) {
+        self.apiService = apiService ?? APIService.shared
     }
     
     // MARK: - API Methods

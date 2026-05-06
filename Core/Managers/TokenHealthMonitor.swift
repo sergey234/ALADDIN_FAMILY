@@ -208,19 +208,21 @@ class TokenHealthMonitor {
         let merge = await MainActor.run { SubscriptionManager.shared.currentSubscription }
 
         return await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
-            APIService.shared.getSubscriptionStatus(userId: userId, merging: merge) { result in
-                switch result {
-                case .success(let updatedStatus):
-                    Task { @MainActor in
-                        await SubscriptionManager.shared.applySubscriptionPayloadFromServer(updatedStatus)
-                        self.logger.business("✅ DEFENSIVE JWT: Тариф обновлен с сервера: \(updatedStatus.level), isActive: \(updatedStatus.isActive)")
+            Task { @MainActor in
+                APIService.shared.getSubscriptionStatus(userId: userId, merging: merge) { result in
+                    switch result {
+                    case .success(let updatedStatus):
+                        Task { @MainActor in
+                            await SubscriptionManager.shared.applySubscriptionPayloadFromServer(updatedStatus)
+                            self.logger.business("✅ DEFENSIVE JWT: Тариф обновлен с сервера: \(updatedStatus.level), isActive: \(updatedStatus.isActive)")
+                            continuation.resume()
+                        }
+                    case .failure(let error):
+                        self.logger.error("❌ DEFENSIVE JWT: Ошибка запроса тарифа: \(error)")
+                        // Use current subscription from SubscriptionManager as fallback
+                        self.logger.business("⚠️ DEFENSIVE JWT: Используем текущий тариф из локального хранилища")
                         continuation.resume()
                     }
-                case .failure(let error):
-                    self.logger.error("❌ DEFENSIVE JWT: Ошибка запроса тарифа: \(error)")
-                    // Use current subscription from SubscriptionManager as fallback
-                    self.logger.business("⚠️ DEFENSIVE JWT: Используем текущий тариф из локального хранилища")
-                    continuation.resume()
                 }
             }
         }
@@ -235,8 +237,10 @@ class TokenHealthMonitor {
         logger.business("🔄 DEFENSIVE JWT: Попытка \(attempt): обновление через refresh_token")
         
         return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<RefreshTokenResponse, Error>) in
-            APIService.shared.refreshToken(refreshToken: refreshToken) { result in
-                continuation.resume(with: result)
+            Task { @MainActor in
+                APIService.shared.refreshToken(refreshToken: refreshToken) { result in
+                    continuation.resume(with: result)
+                }
             }
         }
     }

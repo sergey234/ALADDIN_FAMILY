@@ -1,13 +1,14 @@
 import Foundation
 
+@MainActor
 final class NetworkContentAPIClient: ContentAPIClient {
     static let shared = NetworkContentAPIClient()
 
     private let networkManager: NetworkManager
     private let maxAttempts = 3
 
-    private init(networkManager: NetworkManager = APIService.shared.networkManager) {
-        self.networkManager = networkManager
+    private init(networkManager: NetworkManager? = nil) {
+        self.networkManager = networkManager ?? APIService.shared.networkManager
     }
 
     func fetchManifest() async throws -> ContentManifest {

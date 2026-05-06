@@ -286,36 +286,38 @@ final class JWTTokenManager: @unchecked Sendable {
         jwtDiag("🔄 JWT: Отправляем запрос на обновление токена...")
         
         return await withCheckedContinuation { continuation in
-            // Используем NetworkManager из APIService, чтобы избежать создания лишних экземпляров
-            let networkManager = APIService.shared.networkManager
+            Task { @MainActor in
+                // Используем NetworkManager из APIService, чтобы избежать создания лишних экземпляров
+                let networkManager = APIService.shared.networkManager
 
-            struct RefreshTokenRequest: Codable {
-                let refresh_token: String
-            }
-
-            let request = RefreshTokenRequest(refresh_token: refreshToken)
-
-            networkManager.post(endpoint: AppConfig.Endpoint.authRefresh, body: request) { [weak self] (result: Result<RefreshTokenResponse, Error>) in
-                guard let self else {
-                    continuation.resume(returning: false)
-                    return
+                struct RefreshTokenRequest: Codable {
+                    let refresh_token: String
                 }
-                switch result {
-                case .success(let response):
-                    self.keychainManager.save(response.access_token, forKey: .authToken)
 
-                    if let newRefreshToken = response.refresh_token {
-                        self.keychainManager.save(newRefreshToken, forKey: .refreshToken)
+                let request = RefreshTokenRequest(refresh_token: refreshToken)
+
+                networkManager.post(endpoint: AppConfig.Endpoint.authRefresh, body: request) { [weak self] (result: Result<RefreshTokenResponse, Error>) in
+                    guard let self else {
+                        continuation.resume(returning: false)
+                        return
                     }
+                    switch result {
+                    case .success(let response):
+                        self.keychainManager.save(response.access_token, forKey: .authToken)
 
-                    self.publishAccessTokenRefreshToClients(response.access_token)
+                        if let newRefreshToken = response.refresh_token {
+                            self.keychainManager.save(newRefreshToken, forKey: .refreshToken)
+                        }
 
-                    self.jwtDiag("✅ JWT: Токен успешно обновлён")
-                    continuation.resume(returning: true)
+                        self.publishAccessTokenRefreshToClients(response.access_token)
 
-                case .failure(let error):
-                    self.jwtDiag("❌ JWT: Ошибка обновления токена: \(error.localizedDescription)")
-                    continuation.resume(returning: false)
+                        self.jwtDiag("✅ JWT: Токен успешно обновлён")
+                        continuation.resume(returning: true)
+
+                    case .failure(let error):
+                        self.jwtDiag("❌ JWT: Ошибка обновления токена: \(error.localizedDescription)")
+                        continuation.resume(returning: false)
+                    }
                 }
             }
         }

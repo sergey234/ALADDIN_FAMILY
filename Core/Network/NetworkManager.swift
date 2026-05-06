@@ -14,8 +14,8 @@ private let logger = MasterLogger.shared
 
 @MainActor class NetworkManager: NSObject, ObservableObject {
     
-    // ✅ ДОБАВЛЕНО: Logger для Production логирования
-    private static let networkLogger = OSLog(
+    // ✅ ДОБАВЛЕНО: Logger для Production логирования (nonisolated: доступ из nonisolated init)
+    nonisolated private static let networkLogger = OSLog(
         subsystem: "com.aladdin.network",
         category: "NetworkManager"
     )
@@ -184,7 +184,8 @@ private let logger = MasterLogger.shared
     
     // MARK: - Init
     
-    init(baseURL: String = AppConfig.apiBaseURL, enableSSLPinning: Bool = true) {
+    /// Создание менеджера допустимо с любого исполнителя (singleton APIService, тесты); состояние экземпляра по-прежнему изолировано на MainActor.
+    nonisolated init(baseURL: String = AppConfig.apiBaseURL, enableSSLPinning: Bool = true) {
         // 🟡 ОТКЛЮЧИТЬ SSL PINNING - проверить, связано ли с сертификатами
         // TEMPORARILY DISABLE SSL PINNING FOR TESTING CRASH CAUSE
         let shouldDisableSSLPinning = ProcessInfo.processInfo.environment["DISABLE_SSL_PINNING"] == "1"
@@ -283,7 +284,7 @@ private let logger = MasterLogger.shared
     /**
      * 🚀 Создает оптимизированную конфигурацию сессии для максимальной производительности
      */
-    private func createOptimizedConfiguration() -> URLSessionConfiguration {
+    nonisolated private func createOptimizedConfiguration() -> URLSessionConfiguration {
         let config = URLSessionConfiguration.default
 
         // 🚀 HTTP/2 включается автоматически для HTTPS
@@ -744,7 +745,7 @@ private let logger = MasterLogger.shared
      * Загружает сертификаты для SSL Pinning
      * В реальном приложении сертификаты должны быть в Bundle
      */
-    private func loadPinnedCertificates() -> [Data] {
+    nonisolated private func loadPinnedCertificates() -> [Data] {
         var certificates: [Data] = []
         
         // Загружаем основной сертификат
@@ -777,7 +778,7 @@ private let logger = MasterLogger.shared
     /**
      * Загружает конкретный сертификат по имени
      */
-    private func loadCertificate(named name: String) -> Data? {
+    nonisolated private func loadCertificate(named name: String) -> Data? {
         // Пытаемся загрузить сертификат из Bundle
         guard let path = Bundle.main.path(forResource: name, ofType: "cer") else {
             print("⚠️ SSL Pinning: Сертификат \(name).cer не найден в Bundle")

@@ -757,40 +757,42 @@ extension SettingsViewModel {
         let dnsLeakProtection = UserDefaults.standard.object(forKey: "network_protection_dns_leak_protection") as? Bool ?? true
         let batteryOptimizationEnabled = UserDefaults.standard.object(forKey: "network_protection_battery_optimization") as? Bool ?? true
 
-        APIService.shared.updateNetworkProtectionSettings(
-            autoSelectServer: autoSelectServer,
-            autoConnectWiFi: autoConnectWiFi,
-            autoConnectMobile: autoConnectMobile,
-            killSwitch: killSwitch,
-            dnsLeakProtection: dnsLeakProtection,
-            batteryOptimizationEnabled: batteryOptimizationEnabled,
-            antivirusEnabled: enabled
-        ) { result in
-            switch result {
-            case .success:
-                SyncEngine.shared.publish(
-                    domain: .settings,
-                    operation: "network_protection_toggle_success",
-                    state: .synced,
-                    metadata: ["antivirusEnabled": enabled ? "true" : "false"]
-                )
-                VisualLogger.shared.log(
-                    "✅ Settings networkProtection synced (antivirusEnabled=\(enabled))",
-                    level: .success,
-                    category: "SETTINGS.API"
-                )
-                self.runNetworkProtectionVerifyGetIfEnabled(expectedAntivirusEnabled: enabled)
-            case .failure(let error):
-                SyncEngine.shared.publish(
-                    domain: .settings,
-                    operation: "network_protection_toggle_error",
-                    state: .error(error.localizedDescription)
-                )
-                VisualLogger.shared.log(
-                    "❌ Settings networkProtection sync failed: \(error.localizedDescription)",
-                    level: .error,
-                    category: "SETTINGS.API"
-                )
+        Task { @MainActor in
+            APIService.shared.updateNetworkProtectionSettings(
+                autoSelectServer: autoSelectServer,
+                autoConnectWiFi: autoConnectWiFi,
+                autoConnectMobile: autoConnectMobile,
+                killSwitch: killSwitch,
+                dnsLeakProtection: dnsLeakProtection,
+                batteryOptimizationEnabled: batteryOptimizationEnabled,
+                antivirusEnabled: enabled
+            ) { result in
+                switch result {
+                case .success:
+                    SyncEngine.shared.publish(
+                        domain: .settings,
+                        operation: "network_protection_toggle_success",
+                        state: .synced,
+                        metadata: ["antivirusEnabled": enabled ? "true" : "false"]
+                    )
+                    VisualLogger.shared.log(
+                        "✅ Settings networkProtection synced (antivirusEnabled=\(enabled))",
+                        level: .success,
+                        category: "SETTINGS.API"
+                    )
+                    self.runNetworkProtectionVerifyGetIfEnabled(expectedAntivirusEnabled: enabled)
+                case .failure(let error):
+                    SyncEngine.shared.publish(
+                        domain: .settings,
+                        operation: "network_protection_toggle_error",
+                        state: .error(error.localizedDescription)
+                    )
+                    VisualLogger.shared.log(
+                        "❌ Settings networkProtection sync failed: \(error.localizedDescription)",
+                        level: .error,
+                        category: "SETTINGS.API"
+                    )
+                }
             }
         }
     }
@@ -805,23 +807,25 @@ extension SettingsViewModel {
             category: "SETTINGS.API"
         )
 
-        APIService.shared.getNetworkProtectionSettings { result in
-            switch result {
-            case .success(let settings):
-                let ok = settings.antivirusEnabled == expectedAntivirusEnabled
-                VisualLogger.shared.log(
-                    ok
-                        ? "✅ SETTINGS RC verify GET ok (antivirusEnabled=\(settings.antivirusEnabled))"
-                        : "⚠️ SETTINGS RC verify GET mismatch (expected=\(expectedAntivirusEnabled), actual=\(settings.antivirusEnabled))",
-                    level: ok ? .success : .warning,
-                    category: "SETTINGS.API"
-                )
-            case .failure(let error):
-                VisualLogger.shared.log(
-                    "❌ SETTINGS RC verify GET failed: \(error.localizedDescription)",
-                    level: .error,
-                    category: "SETTINGS.API"
-                )
+        Task { @MainActor in
+            APIService.shared.getNetworkProtectionSettings { result in
+                switch result {
+                case .success(let settings):
+                    let ok = settings.antivirusEnabled == expectedAntivirusEnabled
+                    VisualLogger.shared.log(
+                        ok
+                            ? "✅ SETTINGS RC verify GET ok (antivirusEnabled=\(settings.antivirusEnabled))"
+                            : "⚠️ SETTINGS RC verify GET mismatch (expected=\(expectedAntivirusEnabled), actual=\(settings.antivirusEnabled))",
+                        level: ok ? .success : .warning,
+                        category: "SETTINGS.API"
+                    )
+                case .failure(let error):
+                    VisualLogger.shared.log(
+                        "❌ SETTINGS RC verify GET failed: \(error.localizedDescription)",
+                        level: .error,
+                        category: "SETTINGS.API"
+                    )
+                }
             }
         }
     }

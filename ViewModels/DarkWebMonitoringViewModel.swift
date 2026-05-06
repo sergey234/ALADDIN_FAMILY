@@ -27,8 +27,8 @@ class DarkWebMonitoringViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(apiService: APIService = APIService.shared, localizationManager: LocalizationManager = LocalizationManager()) {
-        self.apiService = apiService
+    init(apiService: APIService? = nil, localizationManager: LocalizationManager = LocalizationManager()) {
+        self.apiService = apiService ?? APIService.shared
         self.localizationManager = localizationManager
     }
     
@@ -69,20 +69,26 @@ class DarkWebMonitoringViewModel: ObservableObject {
         do {
             // Загружаем статистику, утечки и сканирования параллельно
             async let statsTask: DarkWebStats = withCheckedThrowingContinuation { continuation in
-                apiService.getDarkWebStats { result in
-                    continuation.resume(with: result)
+                Task { @MainActor in
+                    self.apiService.getDarkWebStats { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
             
             async let leaksTask: [DarkWebLeak] = withCheckedThrowingContinuation { continuation in
-                apiService.getDarkWebLeaks(status: status, severity: severity) { result in
-                    continuation.resume(with: result)
+                Task { @MainActor in
+                    self.apiService.getDarkWebLeaks(status: status, severity: severity) { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
             
             async let scansTask: [DarkWebScan] = withCheckedThrowingContinuation { continuation in
-                apiService.getDarkWebScans(limit: 20) { result in
-                    continuation.resume(with: result)
+                Task { @MainActor in
+                    self.apiService.getDarkWebScans(limit: 20) { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
             

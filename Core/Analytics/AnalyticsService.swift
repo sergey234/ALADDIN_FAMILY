@@ -283,6 +283,7 @@ struct AnalyticsDeviceStatus: Codable {
 // MARK: - Service Protocol
 
 /// Протокол для получения аналитики
+@MainActor
 protocol AnalyticsService {
     func fetchSummary(period: String, filters: AnalyticsFilters) async throws -> (AnalyticsSummary, DataSource)
     func fetchSecurityAnalytics(period: String) async throws -> (SecurityAnalytics, DataSource)
@@ -301,6 +302,7 @@ protocol AnalyticsService {
 // MARK: - Local Implementation
 
 /// Локальный сервис аналитики с мок-данными
+@MainActor
 final class LocalAnalyticsService: AnalyticsService {
     
     // MARK: - Summary

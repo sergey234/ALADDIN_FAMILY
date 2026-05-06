@@ -122,11 +122,16 @@ struct FamilyResponse: Codable {
  * - Интеграция с family_registration.py backend
  */
 
+@MainActor
 class FamilyRegistrationViewModel: ObservableObject {
     
     // MARK: - Dependencies
     
-    private let apiService = APIService.shared
+    private let apiService: APIService
+
+    init(apiService: APIService? = nil) {
+        self.apiService = apiService ?? APIService.shared
+    }
     
     // MARK: - Published Properties
     

@@ -24,8 +24,8 @@ class IdentityTheftViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(apiService: APIService = APIService.shared, localizationManager: LocalizationManager = LocalizationManager()) {
-        self.apiService = apiService
+    init(apiService: APIService? = nil, localizationManager: LocalizationManager = LocalizationManager()) {
+        self.apiService = apiService ?? APIService.shared
         self.localizationManager = localizationManager
     }
     
@@ -45,14 +45,18 @@ class IdentityTheftViewModel: ObservableObject {
         do {
             // Загружаем статистику и попытки параллельно
             async let statsTask: IdentityTheftStats = withCheckedThrowingContinuation { continuation in
-                apiService.getIdentityTheftStats { result in
-                    continuation.resume(with: result)
+                Task { @MainActor in
+                    self.apiService.getIdentityTheftStats { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
             
             async let attemptsTask: [IdentityTheftAttempt] = withCheckedThrowingContinuation { continuation in
-                apiService.getIdentityTheftAttempts(action: action, severity: severity) { result in
-                    continuation.resume(with: result)
+                Task { @MainActor in
+                    self.apiService.getIdentityTheftAttempts(action: action, severity: severity) { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
             

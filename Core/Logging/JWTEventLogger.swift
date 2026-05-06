@@ -320,7 +320,9 @@ struct JWTEventLogger {
             severity: .warning,
             timestamp: Date()
         )
-        let analytics = RemoteAnalyticsService()
-        analytics.trackAlert(alert: alert)
+        Task { @MainActor in
+            let analytics = RemoteAnalyticsService()
+            analytics.trackAlert(alert: alert)
+        }
     }
 }

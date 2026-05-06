@@ -13,9 +13,9 @@ struct PasswordResetSheet: View {
 
     private let api: APIService
 
-    init(initialEmail: String, api: APIService = .shared) {
+    init(initialEmail: String, api: APIService? = nil) {
         _email = State(initialValue: initialEmail)
-        self.api = api
+        self.api = api ?? APIService.shared
     }
 
     var body: some View {

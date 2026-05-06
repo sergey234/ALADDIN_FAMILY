@@ -33,10 +33,11 @@ private enum MagicAuthLinkParser {
 /// 👤 User Profile Manager
 /// Singleton класс для управления профилем пользователя
 /// Предоставляет быстрый доступ к данным пользователя из кеша
+@MainActor
 class UserProfileManager {
     static let shared = UserProfileManager()
 
-    private let apiService = APIService.shared
+    private let apiService: APIService
     private let userDefaults = UserDefaults.standard
 
     private let displayNameKey = "user_display_name"
@@ -45,6 +46,7 @@ class UserProfileManager {
     private let lastUpdateKey = "user_profile_last_update"
 
     private init() {
+        self.apiService = APIService.shared
         // Загружаем профиль при инициализации
         loadProfileInBackground()
     }
@@ -1095,7 +1097,8 @@ func performRealLogin(email: String, password: String, completion: @escaping (Bo
     print("   - Base URL: \(AppConfig.apiBaseURL)")
     print("   - Full URL: \(AppConfig.apiBaseURL)\(AppConfig.Endpoint.login)")
     
-    APIService.shared.login(email: email, password: password) { result in
+    Task { @MainActor in
+        APIService.shared.login(email: email, password: password) { result in
         switch result {
         case .success(_):
             print("✅ Логин успешен! Токены сохранены в Keychain.")
@@ -1177,6 +1180,7 @@ func performRealLogin(email: String, password: String, completion: @escaping (Bo
             print("   4. Полный URL: \(AppConfig.apiBaseURL)\(AppConfig.Endpoint.login)")
             
             completion(false)
+        }
         }
     }
 }

@@ -8,6 +8,7 @@ import CryptoKit
  * Управление системным DoH (DNS-over-HTTPS) профилем
  * Использует NEDNSSettingsManager для защиты трафика без VPN
  */
+@MainActor
 class DNSProtectionManager: ObservableObject {
     
     static let shared = DNSProtectionManager()

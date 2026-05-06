@@ -75,7 +75,7 @@ struct FamilyControlsReadiness: Sendable {
     }
 }
 
-class ParentalControlManager: ObservableObject {
+@MainActor class ParentalControlManager: ObservableObject {
     
     // MARK: - Dependencies
     

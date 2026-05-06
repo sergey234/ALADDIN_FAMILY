@@ -7,6 +7,7 @@ import os.log
  * Отправка метрик производительности и ошибок на сервер
  * Для мониторинга продакшен приложения
  */
+@MainActor
 class MetricsService {
     static let shared = MetricsService()
 
@@ -36,8 +37,8 @@ class MetricsService {
 
     // MARK: - Init
 
-    init(apiService: APIService = .shared) {
-        self.apiService = apiService
+    init(apiService: APIService? = nil) {
+        self.apiService = apiService ?? APIService.shared
         startPeriodicUpload()
 
         #if DEBUG

@@ -22,7 +22,6 @@ final class UnifiedOfflineStore: ObservableObject {
     private let persistentContainer: NSPersistentContainer
     private let backgroundContext: NSManagedObjectContext
     private let viewContext: NSManagedObjectContext
-    private let apiService = APIService.shared
     private let userDefaults = UserDefaults.standard
     
     private var cancellables = Set<AnyCancellable>()
@@ -468,15 +467,17 @@ final class UnifiedOfflineStore: ObservableObject {
         }
         
         let _: OfflineDataResponse = try await withCheckedThrowingContinuation { continuation in
-            self.apiService.updateOfflineData(
-                userId: userId,
-                dataId: record.id?.uuidString,
-                dataType: dataType,
-                data: payload,
-                deviceId: deviceId,
-                version: version
-            ) { result in
-                continuation.resume(with: result)
+            Task { @MainActor in
+                APIService.shared.updateOfflineData(
+                    userId: userId,
+                    dataId: record.id?.uuidString,
+                    dataType: dataType,
+                    data: payload,
+                    deviceId: deviceId,
+                    version: version
+                ) { result in
+                    continuation.resume(with: result)
+                }
             }
         }
     }
@@ -487,13 +488,15 @@ final class UnifiedOfflineStore: ObservableObject {
         let timestamp = userDefaults.string(forKey: lastSyncTimestampKey)
         
         return try await withCheckedThrowingContinuation { continuation in
-            self.apiService.syncOfflineStorage(
-                userId: userId,
-                deviceId: deviceId,
-                lastSyncTimestamp: timestamp,
-                dataTypes: nil
-            ) { result in
-                continuation.resume(with: result)
+            Task { @MainActor in
+                APIService.shared.syncOfflineStorage(
+                    userId: userId,
+                    deviceId: deviceId,
+                    lastSyncTimestamp: timestamp,
+                    dataTypes: nil
+                ) { result in
+                    continuation.resume(with: result)
+                }
             }
         }
     }

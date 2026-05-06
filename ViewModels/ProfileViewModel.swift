@@ -6,6 +6,7 @@ private let logger = MasterLogger.shared
 
 /// 👤 Profile View Model
 /// Логика для экрана профиля
+@MainActor
 class ProfileViewModel: ObservableObject {
     
     @Published var userName: String = ""
@@ -24,7 +25,7 @@ class ProfileViewModel: ObservableObject {
     private let apiService: APIService
     private let networkManager: NetworkManager
     
-    @MainActor init(apiService: APIService? = nil) {
+    init(apiService: APIService? = nil) {
         logger.business("Initializing ProfileViewModel")
         self.networkManager = NetworkManager() // Для обратной совместимости, но не используется
         self.apiService = apiService ?? APIService.shared

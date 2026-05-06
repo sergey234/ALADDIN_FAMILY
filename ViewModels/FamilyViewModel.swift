@@ -7,11 +7,12 @@ private let logger = MasterLogger.shared
 /// 👨‍👩‍👧‍👦 Family View Model
 /// Логика для экрана семьи
 /// Управляет списком членов семьи, их статусом, устройствами
+@MainActor
 class FamilyViewModel: ObservableObject {
     
     // MARK: - Dependencies
     
-    private let apiService = APIService.shared
+    private let apiService: APIService
     
     // MARK: - Published Properties
     
@@ -37,7 +38,8 @@ class FamilyViewModel: ObservableObject {
     
     // MARK: - Init
     
-    init() {
+    init(apiService: APIService? = nil) {
+        self.apiService = apiService ?? APIService.shared
         logger.business("Initializing FamilyViewModel")
         loadFamilyMembers()
     }

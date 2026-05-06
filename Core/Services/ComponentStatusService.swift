@@ -30,10 +30,10 @@ class ComponentStatusService: ObservableObject {
     // MARK: - Initialization
     
     init(
-        apiService: APIService = APIService.shared,
+        apiService: APIService? = nil,
         cacheManager: ComponentCacheService = ComponentCacheService.shared
     ) {
-        self.apiService = apiService
+        self.apiService = apiService ?? APIService.shared
         self.cacheManager = cacheManager
         
         // Загрузить кэшированные данные при инициализации

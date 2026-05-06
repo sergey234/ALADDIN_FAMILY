@@ -20,8 +20,8 @@ final class ChildRewardsViewModel: ObservableObject {
     private let apiService: APIService
     private let requestTimeoutSeconds: UInt64 = 12
     
-    init(apiService: APIService = .shared) {
-        self.apiService = apiService
+    init(apiService: APIService? = nil) {
+        self.apiService = apiService ?? APIService.shared
     }
     
     func load(childId: String?) async {

@@ -8,6 +8,7 @@ import os.log
 /// ✅ ИСПРАВЛЕНО: Использует APIService для реальных API вызовов
 /// ✅ ЗАДАЧА 64: Добавлен graceful degradation с fallback на LocalAnalyticsService
 
+@MainActor
 final class RemoteAnalyticsService: AnalyticsService {
     private let apiService: APIService
 
@@ -25,8 +26,8 @@ final class RemoteAnalyticsService: AnalyticsService {
     // ✅ ЗАДАЧА 65: Metrics service для отправки метрик на сервер
     private let metricsService = MetricsService.shared
 
-    init(apiService: APIService = .shared) {
-        self.apiService = apiService
+    init(apiService: APIService? = nil) {
+        self.apiService = apiService ?? APIService.shared
 
         #if DEBUG
         print("🛡️ RemoteAnalyticsService: Инициализирован с graceful degradation")

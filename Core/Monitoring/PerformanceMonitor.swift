@@ -25,7 +25,6 @@ class PerformanceMonitor {
 
     // MARK: - Properties
 
-    private let metricsService = MetricsService.shared
 
     // FPS monitoring
     private var displayLink: CADisplayLink?
@@ -63,6 +62,13 @@ class PerformanceMonitor {
 
     deinit {
         stopMonitoring()
+    }
+
+    /// MetricsService живёт на MainActor — не вызывать с фоновых потоков напрямую (см. URLSession callbacks).
+    private func sendUserActionToMetrics(_ action: String, parameters: [String: Any]?) {
+        Task { @MainActor in
+            MetricsService.shared.trackUserAction(action: action, parameters: parameters)
+        }
     }
 
     // MARK: - Public Methods
@@ -105,7 +111,7 @@ class PerformanceMonitor {
             #endif
         } else {
             lastScreenLoadMetricAt[screenName] = now
-            metricsService.trackUserAction(action: "screen_load_complete", parameters: parameters)
+            sendUserActionToMetrics("screen_load_complete", parameters: parameters)
         }
 
         #if DEBUG
@@ -152,7 +158,7 @@ class PerformanceMonitor {
             "timestamp": Date().timeIntervalSince1970
         ]
 
-        metricsService.trackUserAction(action: "network_request_complete", parameters: parameters)
+        sendUserActionToMetrics("network_request_complete", parameters: parameters)
 
         #if DEBUG
         logger.performance("Network request '\(requestId)' completed in \(String(format: "%.3f", requestTime)) sec, \(bytesTransferred) bytes")
@@ -186,7 +192,7 @@ class PerformanceMonitor {
             parameters.merge(additionalParams) { _, new in new }
         }
 
-        metricsService.trackUserAction(action: "action_performance", parameters: parameters)
+        sendUserActionToMetrics("action_performance", parameters: parameters)
 
         #if DEBUG
         logger.performance("Action '\(action)' completed in \(String(format: "%.3f", duration)) sec (FPS: \(Int(currentFPS)), memory: \(String(format: "%.1f", getMemoryUsageMB())) MB)")
@@ -294,7 +300,7 @@ class PerformanceMonitor {
             "timestamp": Date().timeIntervalSince1970
         ]
 
-        metricsService.trackUserAction(action: "memory_usage_check", parameters: parameters)
+        sendUserActionToMetrics("memory_usage_check", parameters: parameters)
 
         #if DEBUG
         logger.performance("Memory usage: \(String(format: "%.1f", memoryUsageMB)) MB, FPS: \(Int(currentFPS))")
@@ -317,7 +323,7 @@ class PerformanceMonitor {
             "timestamp": Date().timeIntervalSince1970
         ]
 
-        metricsService.trackUserAction(action: "fps_measurement", parameters: parameters)
+        sendUserActionToMetrics("fps_measurement", parameters: parameters)
     }
 
     /**

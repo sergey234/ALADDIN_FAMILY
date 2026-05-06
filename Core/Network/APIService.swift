@@ -34,6 +34,7 @@ struct AddMemberRequest: Codable {
     let familyId: String?
 }
 
+@MainActor
 class APIService: ObservableObject {
 
     let networkManager: NetworkManager

@@ -37,8 +37,8 @@ class PrivacyReportsViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    @MainActor init(apiService: APIService = APIService.shared, localizationManager: LocalizationManager = LocalizationManager()) {
-        self.apiService = apiService
+    init(apiService: APIService? = nil, localizationManager: LocalizationManager = LocalizationManager()) {
+        self.apiService = apiService ?? APIService.shared
         self.localizationManager = localizationManager
     }
     
@@ -58,14 +58,18 @@ class PrivacyReportsViewModel: ObservableObject {
         do {
             // Загружаем статистику и запросы параллельно
             async let statsTask: LocationStats = withCheckedThrowingContinuation { continuation in
-                apiService.getLocationStats { result in
-                    continuation.resume(with: result)
+                Task { @MainActor in
+                    self.apiService.getLocationStats { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
             
             async let requestsTask: [LocationRequest] = withCheckedThrowingContinuation { continuation in
-                apiService.getLocationRequests(limit: 50) { result in
-                    continuation.resume(with: result)
+                Task { @MainActor in
+                    self.apiService.getLocationRequests(limit: 50) { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
             
@@ -133,14 +137,18 @@ class PrivacyReportsViewModel: ObservableObject {
         do {
             // Загружаем статистику и записи параллельно
             async let statsTask: DataCleanupStats = withCheckedThrowingContinuation { continuation in
-                apiService.getDataCleanupStats { result in
-                    continuation.resume(with: result)
+                Task { @MainActor in
+                    self.apiService.getDataCleanupStats { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
             
             async let recordsTask: [DataCleanupRecord] = withCheckedThrowingContinuation { continuation in
-                apiService.getDataCleanupRecords(limit: 20) { result in
-                    continuation.resume(with: result)
+                Task { @MainActor in
+                    self.apiService.getDataCleanupRecords(limit: 20) { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
             
@@ -208,14 +216,18 @@ class PrivacyReportsViewModel: ObservableObject {
         do {
             // Загружаем статистику и топ трекеров параллельно
             async let statsTask: AntiTrackerStats = withCheckedThrowingContinuation { continuation in
-                apiService.getAntiTrackerStats { result in
-                    continuation.resume(with: result)
+                Task { @MainActor in
+                    self.apiService.getAntiTrackerStats { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
             
             async let trackersTask: [TrackerBlock] = withCheckedThrowingContinuation { continuation in
-                apiService.getTopTrackers(limit: 10) { result in
-                    continuation.resume(with: result)
+                Task { @MainActor in
+                    self.apiService.getTopTrackers(limit: 10) { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
             

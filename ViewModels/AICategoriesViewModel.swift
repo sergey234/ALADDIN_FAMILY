@@ -25,8 +25,8 @@ class AICategoriesViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(apiService: APIService = APIService.shared, localizationManager: LocalizationManager = LocalizationManager()) {
-        self.apiService = apiService
+    init(apiService: APIService? = nil, localizationManager: LocalizationManager = LocalizationManager()) {
+        self.apiService = apiService ?? APIService.shared
         self.localizationManager = localizationManager
     }
     

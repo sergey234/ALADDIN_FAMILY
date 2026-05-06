@@ -7,6 +7,7 @@ import Combine
  * Менеджер дополнительных функций (10 функций: защита сети, AI, реклама и т.д.)
  * Автоматическая активация при покупке тарифа
  */
+@MainActor
 class AdditionalFeaturesManager: ObservableObject {
     static let shared = AdditionalFeaturesManager()
     // MARK: - Dependencies
@@ -20,10 +21,10 @@ class AdditionalFeaturesManager: ObservableObject {
     // MARK: - Initialization
     init(
         userDefaults: UserDefaults = .standard,
-        apiService: APIService = APIService.shared
+        apiService: APIService? = nil
     ) {
         self.userDefaults = userDefaults
-        self.apiService = apiService
+        self.apiService = apiService ?? APIService.shared
         // Загружаем активированные функции из UserDefaults
         loadActivatedFeatures()
     }

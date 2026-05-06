@@ -26,8 +26,9 @@ class MockAPIService: APIService {
     
     // Для тестов - создание экземпляра напрямую
     #if DEBUG
-    static func createForTesting(networkManager: NetworkManager = NetworkManager()) -> MockAPIService {
-        return MockAPIService(networkManager: networkManager)
+    static func createForTesting(networkManager: NetworkManager? = nil) -> MockAPIService {
+        let nm = networkManager ?? NetworkManager()
+        return MockAPIService(networkManager: nm)
     }
     #endif
     

@@ -28,8 +28,8 @@ final class ActivationCodeViewModel: ObservableObject {
         return formatter
     }()
     
-    init(apiService: APIService = APIService.shared) {
-        self.apiService = apiService
+    init(apiService: APIService? = nil) {
+        self.apiService = apiService ?? APIService.shared
     }
     
     func activateCode() {

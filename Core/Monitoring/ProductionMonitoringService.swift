@@ -7,6 +7,7 @@ import Combine
  * Отслеживает производительность, ошибки и алерты
  */
 
+@MainActor
 class ProductionMonitoringService {
     static let shared = ProductionMonitoringService()
 
@@ -25,8 +26,8 @@ class ProductionMonitoringService {
 
     // MARK: - Initialization
 
-    private init(analyticsService: AnalyticsService = AnalyticsService.shared) {
-        self.analyticsService = analyticsService
+    private init(analyticsService: AnalyticsService? = nil) {
+        self.analyticsService = analyticsService ?? RemoteAnalyticsService()
         setupPeriodicReporting()
     }
 

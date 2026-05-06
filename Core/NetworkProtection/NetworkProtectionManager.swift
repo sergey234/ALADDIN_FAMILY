@@ -6,6 +6,7 @@ import SwiftUI
 private let logger = MasterLogger.shared
 
 /// Менеджер защиты сети для ALADDIN
+@MainActor
 class NetworkProtectionManager: ObservableObject {
     static let shared = NetworkProtectionManager()
     
@@ -614,7 +615,12 @@ class NetworkProtectionManager: ObservableObject {
     }
     
     deinit {
-        stopConnectionTimer()
+        // Нельзя вызывать MainActor-изолированные методы из deinit — инвалидируем таймеры напрямую.
+        connectionTimer?.invalidate()
+        connectionTimer = nil
         batteryMonitorTimer?.invalidate()
+        batteryMonitorTimer = nil
+        pollingTimer?.invalidate()
+        pollingTimer = nil
     }
 }
