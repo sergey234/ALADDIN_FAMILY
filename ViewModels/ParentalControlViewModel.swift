@@ -51,7 +51,7 @@ class ParentalControlViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(
+    @MainActor init(
         statusService: ComponentStatusService = .shared,
         retryManager: RetryManager = .balanced()
     ) {

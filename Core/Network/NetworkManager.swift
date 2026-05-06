@@ -12,7 +12,7 @@ private let logger = MasterLogger.shared
  * Управляет всеми HTTP запросами
  */
 
-class NetworkManager: NSObject, ObservableObject {
+@MainActor class NetworkManager: NSObject, ObservableObject {
     
     // ✅ ДОБАВЛЕНО: Logger для Production логирования
     private static let networkLogger = OSLog(
@@ -1759,13 +1759,6 @@ extension NetworkManager: URLSessionDelegate {
         response: URLResponse?,
         error: Error?
     ) {
-        let statusCode: Int
-        if let httpResponse = response as? HTTPURLResponse {
-            statusCode = httpResponse.statusCode
-        } else {
-            statusCode = error != nil ? -1 : 0
-        }
-
         // Отправляем в production monitoring (закомментировано для совместимости)
         // ProductionMonitoringService.shared.trackAPIRequest(
         //     endpoint: endpoint,

@@ -50,58 +50,7 @@ struct DrivingReportsModal: View {
     
     var body: some View {
         NavigationView {
-            ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
-                
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: Spacing.l) {
-                        // Селектор пользователя
-                        if !users.isEmpty || currentUserId != "" {
-                            UserSelectorView(
-                                selectedUserId: Binding(
-                                    get: { selectedUserId.isEmpty ? nil : selectedUserId },
-                                    set: { newValue in
-                                        selectedUserId = newValue ?? currentUserId
-                                        loadReports()
-                                    }
-                                ),
-                                users: users,
-                                currentUserId: currentUserId,
-                                showCurrentUser: true
-                            )
-                            .padding(.horizontal, Spacing.screenPadding)
-                            .padding(.top, Spacing.m)
-                        }
-                        
-                        // Система позиционирования
-                        positioningSystemSelector
-                            .padding(.horizontal, Spacing.screenPadding)
-                        
-                        // Статистика
-                        if let stats = viewModel.stats {
-                            statsSection(stats: stats)
-                                .padding(.horizontal, Spacing.screenPadding)
-                        }
-                        
-                        // Фильтры
-                        filtersSection
-                            .padding(.horizontal, Spacing.screenPadding)
-                        
-                        // История поездок
-                        if !viewModel.reports.isEmpty {
-                            tripsHistorySection
-                                .padding(.horizontal, Spacing.screenPadding)
-                        } else if !viewModel.isLoading {
-                            emptyStateView
-                                .padding(.horizontal, Spacing.screenPadding)
-                        }
-                        
-                        Spacer(minLength: 100)
-                    }
-                    .padding(.top, Spacing.m)
-                }
-            }
+            modalContent
             .navigationTitle(localizationManager.localized("driving_reports_modal_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -131,41 +80,10 @@ struct DrivingReportsModal: View {
             viewModel.applyFrom(components: components, period: selectedPeriod)
         }
         .overlay(alignment: .center) {
-            if viewModel.isLoading {
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .primaryBlue))
-                    .padding()
-                    .background(Color.backgroundMedium.opacity(0.85))
-                    .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
-            }
+            loadingOverlay
         }
         .overlay(alignment: .bottom) {
-            if let error = viewModel.errorMessage {
-                HStack {
-                    Text(error)
-                        .font(.footnote)
-                        .foregroundColor(.white)
-                    Spacer()
-                    Button(action: {
-                        // Retry перезапускает общий orchestrator аналитики
-                        analyticsViewModel.startLoad()
-                    }) {
-                        Text(localizationManager.localized("common_retry"))
-                            .font(.caption)
-                            .foregroundColor(.primaryBlue)
-                            .padding(.horizontal, Spacing.s)
-                            .padding(.vertical, Spacing.xs)
-                            .background(Color.white.opacity(0.2))
-                            .clipShape(Capsule())
-                    }
-                }
-                .padding(.horizontal, Spacing.m)
-                .padding(.vertical, Spacing.s)
-                .background(Color.dangerRed.opacity(0.9))
-                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
-                .shadow(radius: 6)
-                .padding(.bottom, Spacing.l)
-            }
+            errorOverlay
         }
         // ✅ ИСПРАВЛЕНИЕ: Добавляем VisualLogView на модальное окно
         .withVisualLogger()
@@ -181,6 +99,101 @@ struct DrivingReportsModal: View {
                 currentRegion: positioningService.currentRegionName
             )
             .environmentObject(localizationManager)
+        }
+    }
+
+    private var selectedUserBinding: Binding<String?> {
+        Binding(
+            get: { selectedUserId.isEmpty ? nil : selectedUserId },
+            set: { newValue in
+                selectedUserId = newValue ?? currentUserId
+                loadReports()
+            }
+        )
+    }
+
+    private var modalContent: some View {
+        ZStack {
+            LinearGradient.backgroundGradient
+                .ignoresSafeArea()
+
+            ScrollView(.vertical, showsIndicators: false) {
+                VStack(spacing: Spacing.l) {
+                    if !users.isEmpty || currentUserId != "" {
+                        UserSelectorView(
+                            selectedUserId: selectedUserBinding,
+                            users: users,
+                            currentUserId: currentUserId,
+                            showCurrentUser: true
+                        )
+                        .padding(.horizontal, Spacing.screenPadding)
+                        .padding(.top, Spacing.m)
+                    }
+
+                    positioningSystemSelector
+                        .padding(.horizontal, Spacing.screenPadding)
+
+                    if let stats = viewModel.stats {
+                        statsSection(stats: stats)
+                            .padding(.horizontal, Spacing.screenPadding)
+                    }
+
+                    filtersSection
+                        .padding(.horizontal, Spacing.screenPadding)
+
+                    if !viewModel.reports.isEmpty {
+                        tripsHistorySection
+                            .padding(.horizontal, Spacing.screenPadding)
+                    } else if !viewModel.isLoading {
+                        emptyStateView
+                            .padding(.horizontal, Spacing.screenPadding)
+                    }
+
+                    Spacer(minLength: 100)
+                }
+                .padding(.top, Spacing.m)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var loadingOverlay: some View {
+        if viewModel.isLoading {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .primaryBlue))
+                .padding()
+                .background(Color.backgroundMedium.opacity(0.85))
+                .clipShape(RoundedRectangle(cornerRadius: CornerRadius.large))
+        }
+    }
+
+    @ViewBuilder
+    private var errorOverlay: some View {
+        if let error = viewModel.errorMessage {
+            HStack {
+                Text(error)
+                    .font(.footnote)
+                    .foregroundColor(.white)
+                Spacer()
+                Button(action: {
+                    // Retry перезапускает общий orchestrator аналитики
+                    analyticsViewModel.startLoad()
+                }) {
+                    Text(localizationManager.localized("common_retry"))
+                        .font(.caption)
+                        .foregroundColor(.primaryBlue)
+                        .padding(.horizontal, Spacing.s)
+                        .padding(.vertical, Spacing.xs)
+                        .background(Color.white.opacity(0.2))
+                        .clipShape(Capsule())
+                }
+            }
+            .padding(.horizontal, Spacing.m)
+            .padding(.vertical, Spacing.s)
+            .background(Color.dangerRed.opacity(0.9))
+            .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+            .shadow(radius: 6)
+            .padding(.bottom, Spacing.l)
         }
     }
     
@@ -493,7 +506,7 @@ struct DrivingReportsModal: View {
                     id: member.id,
                     name: member.name,
                     role: member.role,
-                    avatar: member.avatar ?? ""
+                    avatar: member.avatar
                 )
             }
             
@@ -580,12 +593,12 @@ struct DrivingReportsModal: View {
                     id: member.id,
                     name: member.name,
                     role: roleString,
-                    avatar: member.avatar ?? ""
+                    avatar: member.avatar
                 )
             }
             
             // Объединяем списки, избегая дубликатов по id
-            var existingIds = Set(users.map { $0.id })
+            let existingIds = Set(users.map { $0.id })
             let newUsers = userDefaultsUsers.filter { !existingIds.contains($0.id) }
             users.append(contentsOf: newUsers)
             

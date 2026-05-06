@@ -24,7 +24,7 @@ class ComponentTariffManager: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
 
     // MARK: - Initialization
-    init(
+    @MainActor init(
         componentStatusService: ComponentStatusService = ComponentStatusService.shared,
         userDefaults: UserDefaults = .standard
     ) {

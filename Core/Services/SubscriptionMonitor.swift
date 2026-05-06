@@ -9,7 +9,7 @@ private let logger = MasterLogger.shared
  * Мониторинг подписок и планирование уведомлений об истечении
  * Background task для периодической проверки состояния подписки
  */
-class SubscriptionMonitor: ObservableObject {
+@MainActor class SubscriptionMonitor: ObservableObject {
 
     // MARK: - Singleton
 

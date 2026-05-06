@@ -34,6 +34,7 @@ struct SettingsScreen: View {
     @StateObject private var syncEngine = SyncEngine.shared
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @State private var showVoiceNotesScreen: Bool = false
 
     // ✅ BUILD 95: Встроенный просмотр логов крашей/диагностики прямо на устройстве
     @State private var showCrashLogsView: Bool = false
@@ -348,6 +349,31 @@ struct SettingsScreen: View {
                             Text(viewModel.localizedStrings.settingsJoinDeviceTitle)
                                 .foregroundColor(.primary)
                             Text(viewModel.localizedStrings.settingsJoinDeviceSubtitle)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(Spacing.m)
+                }
+
+                Divider()
+
+                // Voice Notes
+                Button(action: {
+                    logger.buttonTap("Open Voice Notes", screen: "Settings")
+                    showVoiceNotesScreen = true
+                }) {
+                    HStack {
+                        Image(systemName: "waveform.badge.mic")
+                            .foregroundColor(.secondary)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(localizationManager.localized("voice_notes_title"))
+                                .foregroundColor(.primary)
+                            Text(localizationManager.localized("voice_notes_settings_entry_subtitle"))
                                 .font(.caption)
                                 .foregroundColor(.secondary)
                         }
@@ -768,6 +794,10 @@ struct SettingsScreen: View {
                 currentSystem: viewModel.currentPositioningSystem,
                 currentRegion: viewModel.currentRegionName
             )
+        }
+        .sheet(isPresented: $showVoiceNotesScreen) {
+            VoiceNotesScreen()
+                .environmentObject(localizationManager)
         }
     }
 

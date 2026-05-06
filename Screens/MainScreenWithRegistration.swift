@@ -430,8 +430,8 @@ struct MainScreenWithRegistration: View {
             
             Button(localizationManager.localized("common_retry")) {
                 // Повторяем создание семьи
-                if let role = registrationVM.selectedRole,
-                   let ageGroup = registrationVM.selectedAgeGroup,
+                if let _ = registrationVM.selectedRole,
+                   let _ = registrationVM.selectedAgeGroup,
                    let letter = registrationVM.selectedLetter {
                     registrationVM.errorMessage = nil
                     registrationVM.createFamily()

@@ -37,7 +37,7 @@ class PrivacyReportsViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(apiService: APIService = APIService.shared, localizationManager: LocalizationManager = LocalizationManager()) {
+    @MainActor init(apiService: APIService = APIService.shared, localizationManager: LocalizationManager = LocalizationManager()) {
         self.apiService = apiService
         self.localizationManager = localizationManager
     }

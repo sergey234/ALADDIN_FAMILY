@@ -225,14 +225,15 @@ final class SubscriptionManager: ObservableObject {
     /// Initialize on app start (async operations)
     /// ✅ BUILD 101: Добавлена защита от повторного вызова для предотвращения дублирования инициализации
     func initializeOnAppStart() async {
-        SubscriptionManager.initializationLock.lock()
+        
         guard !SubscriptionManager.hasInitialized else {
-            SubscriptionManager.initializationLock.unlock()
+            
             logger.business("⚠️ SubscriptionManager.initializeOnAppStart() уже вызван, пропускаем повторный вызов")
             return
         }
+
         SubscriptionManager.hasInitialized = true
-        SubscriptionManager.initializationLock.unlock()
+        
         
         #if DEBUG
         print("🚀🚀🚀 INITIALIZE_ON_APP_START: Method called")
@@ -344,21 +345,21 @@ final class SubscriptionManager: ObservableObject {
     ///
     func performDeviceRegistration() async {
         // ✅ BUILD 123: Проверка количества попыток
-        registrationLock.lock()
+        
         guard registrationAttempts < maxRegistrationAttempts else {
-            registrationLock.unlock()
+            
             logger.error("❌ BUILD 123: Превышено максимальное количество попыток регистрации (\(maxRegistrationAttempts))")
             return
         }
         registrationAttempts += 1
-        registrationLock.unlock()
+        
         
         let logger = MasterLogger.shared
         logger.business("📱 DEFENSIVE JWT: Выполняем регистрацию устройства (попытка \(registrationAttempts)/\(maxRegistrationAttempts))")
 
         do {
             logger.business("📱 DEFENSIVE JWT: Запуск registerDeviceAnonymously()...")
-            try await registerDeviceAnonymously()
+            _ = try await registerDeviceAnonymously()
             logger.business("✅ DEFENSIVE JWT: Регистрация устройства прошла успешно")
 
             // Проверяем, что токен был установлен
@@ -367,9 +368,9 @@ final class SubscriptionManager: ObservableObject {
                 JWTEventLogger.logDeviceRegistration(success: true, error: nil, deviceId: token.deviceId)
                 
                 // ✅ BUILD 123: Сброс счетчика при успехе
-                registrationLock.lock()
+                
                 registrationAttempts = 0
-                registrationLock.unlock()
+                
             } else {
                 logger.error("❌ DEFENSIVE JWT: Токен не был установлен после регистрации")
                 JWTEventLogger.logDeviceRegistration(success: false, error: "Token not set after registration", deviceId: "unknown")
@@ -384,11 +385,11 @@ final class SubscriptionManager: ObservableObject {
             JWTEventLogger.logDeviceRegistration(success: false, error: error.localizedDescription, deviceId: "unknown")
             
             // ✅ BUILD 123: Сброс счетчика при ошибке (чтобы не блокировать навсегда)
-            registrationLock.lock()
+            
             if registrationAttempts >= maxRegistrationAttempts {
                 registrationAttempts = 0  // Сброс для следующей попытки через время
             }
-            registrationLock.unlock()
+            
 
             // ✅ ИСПРАВЛЕНИЕ BUILD 121: Различаем типы ошибок
             // 422 (Validation Error) - это ошибка формата данных, НЕ сетевая ошибка
@@ -657,7 +658,7 @@ final class SubscriptionManager: ObservableObject {
         trackEvent(.resourceUsed, resourceType: resource.rawValue, amount: amount)
 
         // Update subscription
-        await updateSubscriptionStatus(subscription)
+        updateSubscriptionStatus(subscription)
 
         logger.business("📈 Resource usage updated: \(resource.rawValue) +\(amount)")
     }
@@ -827,7 +828,7 @@ final class SubscriptionManager: ObservableObject {
                     limits: SubscriptionLimits.freeLimits,
                     components: ["mobile_security_agent", "network_security_agent"]
                 )
-                await updateSubscriptionStatus(freeSubscription)
+                updateSubscriptionStatus(freeSubscription)
 
                 await self.forceSync()
 
@@ -875,7 +876,7 @@ final class SubscriptionManager: ObservableObject {
             let jwtToken = try await registerDeviceWithTrial(trialInfo: requestedTrialInfo)
 
             if let serverTrial = jwtToken.trialInfo {
-                await updateTrialStatus(serverTrial)
+                updateTrialStatus(serverTrial)
 
                 if serverTrial.isActive {
                     trackEvent(.trialActivated, metadata: [
@@ -1076,11 +1077,11 @@ final class SubscriptionManager: ObservableObject {
 
         // ✅ SOLUTION: Convert API model to internal SubscriptionStatus
         let newSubscriptionStatus = response.subscription.toSubscriptionStatus()
-        await updateSubscriptionStatus(newSubscriptionStatus)
+        updateSubscriptionStatus(newSubscriptionStatus)
 
         // Align Keychain `trialStatus` with server (same as registerDeviceWithTrial path).
         if let serverTrial = jwtToken.trialInfo {
-            await updateTrialStatus(serverTrial)
+            updateTrialStatus(serverTrial)
         }
 
         // Логирование после сохранения токена
@@ -1281,10 +1282,10 @@ final class SubscriptionManager: ObservableObject {
 
         // Sync subscription/limits and update trial status for UI.
         let newSubscriptionStatus = response.subscription.toSubscriptionStatus()
-        await updateSubscriptionStatus(newSubscriptionStatus)
+        updateSubscriptionStatus(newSubscriptionStatus)
 
         if let serverTrial = jwtToken.trialInfo {
-            await updateTrialStatus(serverTrial)
+            updateTrialStatus(serverTrial)
         }
 
         return jwtToken
@@ -1763,7 +1764,7 @@ final class SubscriptionManager: ObservableObject {
         #if DEBUG
         logger.business("🔬 DIAGNOSTICS: Testing SubscriptionStatus creation in sync context")
 
-        let testSyncSubscription = createSubscriptionStatus(
+        let _ = createSubscriptionStatus(
             level: .premium,  // Test with enum value
             isActive: true,
             expiresAt: Date(),  // Test with Date
@@ -1785,7 +1786,7 @@ final class SubscriptionManager: ObservableObject {
             lastUpdated: Date()
         )
 
-        await updateSubscriptionStatus(freeSubscription)
+        updateSubscriptionStatus(freeSubscription)
     }
 
     /// 📅 Check monthly reset
@@ -1800,7 +1801,7 @@ final class SubscriptionManager: ObservableObject {
         let lastResetMonth = UserDefaults.standard.integer(forKey: "last_usage_reset_month")
         if currentMonth != lastResetMonth {
             subscription.limits.currentUsage.resetMonthlyCounters()
-            await updateSubscriptionStatus(subscription)
+            updateSubscriptionStatus(subscription)
 
             UserDefaults.standard.set(currentMonth, forKey: "last_usage_reset_month")
             logger.business("📅 Monthly usage counters reset")
@@ -2000,14 +2001,14 @@ extension SubscriptionManager {
         let subscriptionLevel = serverStatus.level
 
         // Update family limits from server status (ensures sync after restore/sync)
-        await updateSubscriptionStatus(serverStatus)
+        updateSubscriptionStatus(serverStatus)
 
         // 🔬 DIAGNOSTICS: Testing in another sync context (updateFromServerStatus)
         #if DEBUG
         logger.business("🔬 DIAGNOSTICS: Testing SubscriptionStatus creation in updateFromServerStatus")
 
         do {
-            let testServerSubscription = SubscriptionStatus(
+            let _ = SubscriptionStatus(
                 level: subscriptionLevel,  // From server
                 isActive: serverStatus.isActive,  // From server
                 expiresAt: serverStatus.expiresAt,  // Date? from server
@@ -2018,7 +2019,7 @@ extension SubscriptionManager {
             )
             logger.business("✅ DIAGNOSTICS: SubscriptionStatus created successfully in updateFromServerStatus")
         } catch {
-            logger.business("❌ DIAGNOSTICS: Failed to create SubscriptionStatus in updateFromServerStatus: \(error)")
+            logger.business("❌ DIAGNOSTICS: Failed to create SubscriptionStatus in updateFromServerStatus")
         }
         #endif
 
@@ -2321,7 +2322,7 @@ extension SubscriptionManager {
             logger.business("🔄 Попытка \(attempt)/\(maxAttempts) регистрации устройства")
 
             do {
-                try await registerDeviceAnonymously()
+                _ = try await registerDeviceAnonymously()
                 logger.business("✅ Регистрация удалась на попытке \(attempt)")
                 return true
 

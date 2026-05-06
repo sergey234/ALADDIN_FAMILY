@@ -8,7 +8,7 @@ protocol ContentDatabaseProtocol {
     func loadAllItems() async -> [ContentItem]
 }
 
-final class ContentDatabase: ContentDatabaseProtocol {
+final class ContentDatabase: ContentDatabaseProtocol, @unchecked Sendable {
     static let shared = ContentDatabase()
 
     private let queue = DispatchQueue(label: "content.database.queue", qos: .userInitiated)

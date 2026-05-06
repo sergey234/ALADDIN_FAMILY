@@ -24,7 +24,7 @@ class ProfileViewModel: ObservableObject {
     private let apiService: APIService
     private let networkManager: NetworkManager
     
-    init(apiService: APIService? = nil) {
+    @MainActor init(apiService: APIService? = nil) {
         logger.business("Initializing ProfileViewModel")
         self.networkManager = NetworkManager() // Для обратной совместимости, но не используется
         self.apiService = apiService ?? APIService.shared

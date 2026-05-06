@@ -53,9 +53,9 @@ class NetworkProtectionViewModel: ObservableObject {
 
     // MARK: - Initialization
 
-    init(
-        statusService: ComponentStatusService = ComponentStatusService.shared,
-        configurationService: ComponentConfigurationService = ComponentConfigurationService.shared,
+    @MainActor init(
+        statusService: ComponentStatusService = .shared,
+        configurationService: ComponentConfigurationService = .shared,
         retryManager: RetryManager = RetryManager(),
         crashDetection: CrashDetectionControlling? = nil
     ) {

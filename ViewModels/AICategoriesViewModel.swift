@@ -83,7 +83,7 @@ class AICategoriesViewModel: ObservableObject {
                         id: member.id,
                         name: member.name,
                         role: member.role,
-                        avatar: member.avatar ?? ""
+                        avatar: member.avatar
                     )
                 }
             
@@ -141,7 +141,7 @@ class AICategoriesViewModel: ObservableObject {
                 }
             
             // Объединяем с существующими, избегая дубликатов по id
-            var existingIds = Set(self.children.map { $0.id })
+            let existingIds = Set(self.children.map { $0.id })
             let newChildren = userDefaultsChildren.filter { !existingIds.contains($0.id) }
             self.children.append(contentsOf: newChildren)
             

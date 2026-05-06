@@ -3,7 +3,7 @@ import Security
 
 /// 🔐 JWT Token Manager
 /// Управление JWT токенами: проверка истечения, автоматическое обновление
-class JWTTokenManager {
+final class JWTTokenManager: @unchecked Sendable {
     static let shared = JWTTokenManager()
     
     private let keychainManager = KeychainManager.shared

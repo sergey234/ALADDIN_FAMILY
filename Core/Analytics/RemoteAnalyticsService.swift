@@ -328,7 +328,7 @@ final class RemoteAnalyticsService: AnalyticsService {
         return try await withCheckedThrowingContinuation { continuation in
             apiService.getAnalytics(period: period) { result in
                 switch result {
-                case .success(let analyticsResponse):
+                case .success:
                     // Преобразуем AnalyticsResponse в UsageAnalytics
                     let usageAnalytics = UsageAnalytics(
                         activityByTime: [],

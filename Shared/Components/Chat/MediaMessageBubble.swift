@@ -34,6 +34,12 @@ struct MediaMessageBubble: View {
                     .tint(isCurrentUser ? .blue : .white)
                     .frame(width: 180)
             }
+
+            if message.mediaType == .voice || message.mediaType == .audio {
+                Text(voiceDeliveryStatusText)
+                    .font(.caption2)
+                    .foregroundColor(isCurrentUser ? .white.opacity(0.8) : .secondary)
+            }
             
             // Подпись (если есть текст вместе с медиа)
             if let text = message.text, !text.isEmpty {
@@ -129,8 +135,7 @@ struct MediaMessageBubble: View {
         HStack(spacing: 12) {
             Button(action: {
                 isPlayingVoice.toggle()
-                // Здесь будет вызов VoiceMessagePlayer
-                print("🎤 Playing voice message: \(message.voiceUrl ?? "unknown")")
+                // TODO: integrate shared voice player for waveform playback here.
             }) {
                 Image(systemName: isPlayingVoice ? "pause.circle.fill" : "play.circle.fill")
                     .font(.system(size: 32))
@@ -176,6 +181,19 @@ struct MediaMessageBubble: View {
         let m = Int(s) / 60
         let r = Int(s) % 60
         return String(format: "%d:%02d", m, r)
+    }
+
+    private var voiceDeliveryStatusText: String {
+        if let progress = uploadProgress, progress < 1.0 {
+            return "\(localizationManager.localized("family_chat_voice_status_uploading")) \(Int(progress * 100))%"
+        }
+        if let voiceUrl = message.voiceUrl, voiceUrl.hasPrefix("file://"), isCurrentUser {
+            return localizationManager.localized("family_chat_voice_status_upload_error")
+        }
+        if isCurrentUser, (message.readStatus ?? "").isEmpty {
+            return localizationManager.localized("family_chat_voice_status_transcribing")
+        }
+        return localizationManager.localized("family_chat_voice_status_ready")
     }
 }
 

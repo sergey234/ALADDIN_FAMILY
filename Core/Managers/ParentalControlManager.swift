@@ -2,7 +2,7 @@ import Foundation
 import Combine
 import UIKit
 import CryptoKit
-import FamilyControls
+@preconcurrency import FamilyControls
 import ManagedSettings
 import DeviceActivity
 

@@ -75,6 +75,13 @@
 		5E32FFEF2EAD18B2000574C4 /* ProfileEditView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFEE2EAD18B2000574C4 /* ProfileEditView.swift */; };
 		5E6F394A2F15C20000CEC103 /* PasswordResetSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F39492F15C20000CEC103 /* PasswordResetSheet.swift */; };
 		5E6F394C2F15C20000CEC104 /* AIFeedbackSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F394B2F15C20000CEC104 /* AIFeedbackSheet.swift */; };
+		B70001022F90000100ABC001 /* VoiceNotesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001012F90000100ABC001 /* VoiceNotesScreen.swift */; };
+		B70001042F90000100ABC001 /* VoiceNotesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001032F90000100ABC001 /* VoiceNotesViewModel.swift */; };
+		B70001062F90000100ABC001 /* QuickRecorderBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001052F90000100ABC001 /* QuickRecorderBar.swift */; };
+		B70001082F90000100ABC001 /* VoiceNoteCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001072F90000100ABC001 /* VoiceNoteCard.swift */; };
+		B70001102F90000100ABC001 /* VoiceNotesRecorderService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700010F2F90000100ABC001 /* VoiceNotesRecorderService.swift */; };
+		B70001122F90000100ABC001 /* VoiceNotesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001112F90000100ABC001 /* VoiceNotesStore.swift */; };
+		B70001142F90000100ABC001 /* VoiceNotesTranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001132F90000100ABC001 /* VoiceNotesTranscriptionService.swift */; };
 		5E32FFF12EAD18D4000574C4 /* QRScannerModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF02EAD18D4000574C4 /* QRScannerModal.swift */; };
 		5E32FFF32EAD1915000574C4 /* RecoveryOptionsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF22EAD1915000574C4 /* RecoveryOptionsModal.swift */; };
 		5E32FFF52EAD199B000574C4 /* AvatarSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF42EAD199B000574C4 /* AvatarSelector.swift */; };
@@ -495,6 +502,13 @@
 		5E32FFEE2EAD18B2000574C4 /* ProfileEditView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProfileEditView.swift; path = Shared/Components/Modals/ProfileEditView.swift; sourceTree = "<group>"; };
 		5E6F39492F15C20000CEC103 /* PasswordResetSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PasswordResetSheet.swift; path = Shared/Components/PasswordResetSheet.swift; sourceTree = "<group>"; };
 		5E6F394B2F15C20000CEC104 /* AIFeedbackSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIFeedbackSheet.swift; path = Shared/Components/AIFeedbackSheet.swift; sourceTree = "<group>"; };
+		B70001012F90000100ABC001 /* VoiceNotesScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Screens/VoiceNotesScreen.swift; sourceTree = "<group>"; };
+		B70001032F90000100ABC001 /* VoiceNotesViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewModels/VoiceNotesViewModel.swift; sourceTree = "<group>"; };
+		B70001052F90000100ABC001 /* QuickRecorderBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shared/Components/VoiceNotes/QuickRecorderBar.swift; sourceTree = "<group>"; };
+		B70001072F90000100ABC001 /* VoiceNoteCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shared/Components/VoiceNotes/VoiceNoteCard.swift; sourceTree = "<group>"; };
+		B700010F2F90000100ABC001 /* VoiceNotesRecorderService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/VoiceNotesRecorderService.swift; sourceTree = "<group>"; };
+		B70001112F90000100ABC001 /* VoiceNotesStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Storage/VoiceNotesStore.swift; sourceTree = "<group>"; };
+		B70001132F90000100ABC001 /* VoiceNotesTranscriptionService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/VoiceNotesTranscriptionService.swift; sourceTree = "<group>"; };
 		5E32FFF02EAD18D4000574C4 /* QRScannerModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = QRScannerModal.swift; path = Shared/Components/QRScannerModal.swift; sourceTree = "<group>"; };
 		5E32FFF22EAD1915000574C4 /* RecoveryOptionsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecoveryOptionsModal.swift; path = Shared/Components/RecoveryOptionsModal.swift; sourceTree = "<group>"; };
 		5E32FFF42EAD199B000574C4 /* AvatarSelector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AvatarSelector.swift; path = Shared/Components/AvatarSelector.swift; sourceTree = "<group>"; };
@@ -1077,6 +1091,13 @@
 				5E6F39042F151F2500CEC103 /* FamilyChatWebSocket.swift */,
 				5E6F39062F151F6000CEC103 /* VoiceMessageRecorder.swift */,
 				5E6F39082F151F7C00CEC103 /* VoiceMessagePlayer.swift */,
+				B70001012F90000100ABC001 /* VoiceNotesScreen.swift */,
+				B70001032F90000100ABC001 /* VoiceNotesViewModel.swift */,
+				B70001052F90000100ABC001 /* QuickRecorderBar.swift */,
+				B70001072F90000100ABC001 /* VoiceNoteCard.swift */,
+				B700010F2F90000100ABC001 /* VoiceNotesRecorderService.swift */,
+				B70001132F90000100ABC001 /* VoiceNotesTranscriptionService.swift */,
+				B70001112F90000100ABC001 /* VoiceNotesStore.swift */,
 				5E6F390A2F151FBF00CEC103 /* FamilyChatOfflineManager.swift */,
 				5E6F390C2F1520D600CEC103 /* PushNotificationService.swift */,
 				5E6F390E2F15211800CEC103 /* ChatSearchBar.swift */,
@@ -1711,6 +1732,13 @@
 				A3000047 /* Core/Localization/LocalizationManager.swift in Sources */,
 				5EC309152EA6B62800C7D34B /* 13_SupportScreen.swift in Sources */,
 				5E6F39072F151F6000CEC103 /* VoiceMessageRecorder.swift in Sources */,
+				B70001022F90000100ABC001 /* VoiceNotesScreen.swift in Sources */,
+				B70001042F90000100ABC001 /* VoiceNotesViewModel.swift in Sources */,
+				B70001062F90000100ABC001 /* QuickRecorderBar.swift in Sources */,
+				B70001082F90000100ABC001 /* VoiceNoteCard.swift in Sources */,
+				B70001102F90000100ABC001 /* VoiceNotesRecorderService.swift in Sources */,
+				B70001142F90000100ABC001 /* VoiceNotesTranscriptionService.swift in Sources */,
+				B70001122F90000100ABC001 /* VoiceNotesStore.swift in Sources */,
 				A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */,
 				5EC3090E2EA6B60F00C7D34B /* 07_ParentalControlScreen.swift in Sources */,
 				5EC3090F2EA6B60F00C7D34B /* 05_SettingsScreen.swift in Sources */,

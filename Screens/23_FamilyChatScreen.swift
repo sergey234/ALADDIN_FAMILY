@@ -387,6 +387,9 @@ struct FamilyChatScreen: View {
                 Button(localizationManager.localized("family_chat_action_contact")) {
                     showContactPicker = true
                 }
+                Button(localizationManager.localized("family_chat_action_feedback")) {
+                    showFeedbackSheet = true
+                }
                 Button(localizationManager.localized(isSearching ? "family_chat_action_hide_search" : "family_chat_action_search")) {
                     isSearching.toggle()
                     if !isSearching {
@@ -602,6 +605,14 @@ struct FamilyChatScreen: View {
         default:
             return localizationManager.localized("family_chat_error_data")
         }
+    }
+
+    private func isSecureRemoteMediaURL(_ raw: String) -> Bool {
+        guard let parsed = URL(string: raw), let scheme = parsed.scheme?.lowercased() else { return false }
+        if scheme == "https" { return true }
+        // Local preview URLs are allowed for pending/offline UI.
+        if scheme == "file" { return true }
+        return false
     }
 
     /// `GET /api/family/members` подтягивает `X-Resolved-Family-Id` / `X-Family-Context` до ленты и синхронизирует чипы с сервером.
@@ -1023,15 +1034,6 @@ struct FamilyChatScreen: View {
                 )
                 .cornerRadius(14)
 
-                Button(action: { showFeedbackSheet = true }) {
-                    Image(systemName: "star")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(.orange)
-                        .frame(width: 42, height: 42)
-                        .background(Circle().fill(Color.orange.opacity(0.2)))
-                }
-                .accessibilityLabel(localizationManager.localized("app_feedback_star_accessibility"))
-
                 Button(action: {
                     sendMessage()
                 }) {
@@ -1219,6 +1221,13 @@ struct FamilyChatScreen: View {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let uploadedUrl):
+                    guard isSecureRemoteMediaURL(uploadedUrl) else {
+                        presentChatError(
+                            localizationManager.localized("family_chat_error_upload_insecure_url"),
+                            context: "sendVoiceMessage.upload.insecureURL"
+                        )
+                        return
+                    }
                     if let idx = messages.firstIndex(where: { $0.id == messageId }) {
                         var m = messages[idx]
                         m = FamilyChatMessage(
@@ -1356,6 +1365,13 @@ struct FamilyChatScreen: View {
             DispatchQueue.main.async {
                 switch result {
                 case .success(let mediaUrl):
+                    guard isSecureRemoteMediaURL(mediaUrl) else {
+                        presentChatError(
+                            localizationManager.localized("family_chat_error_upload_insecure_url"),
+                            context: "sendMediaMessage.upload.insecureURL"
+                        )
+                        return
+                    }
                     if let index = messages.firstIndex(where: { $0.id == messageId }) {
                         let prev = messages[index]
                         messages[index] = FamilyChatMessage(

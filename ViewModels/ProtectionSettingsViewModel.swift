@@ -65,7 +65,7 @@ class ProtectionSettingsViewModel: ObservableObject {
     
     // MARK: - Initialization
     
-    init(
+    @MainActor init(
         statusService: ComponentStatusService = .shared,
         configurationService: ComponentConfigurationService = .shared,
         retryManager: RetryManager = .balanced()

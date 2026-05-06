@@ -97,9 +97,9 @@ class LocationManager: NSObject, ObservableObject {
     
     // MARK: - Initialization
     
-    nonisolated override init() {
+    override init() {
         super.init()
-        // Настройка locationManager (не требует MainActor)
+        // Настройка CLLocationManager на главном акторе
         locationManager.delegate = self
         
         // Настройки точности (экономия батареи)
@@ -553,133 +553,148 @@ class LocationManager: NSObject, ObservableObject {
 
 extension LocationManager: CLLocationManagerDelegate {
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        
-        currentLocation = location
-        print("📍 LocationManager: Обновление местоположения: \(location.coordinate.latitude), \(location.coordinate.longitude)")
-        
-        // ✅ План 2026: Отправляем на сервер
-        reportCurrentLocation(location)
-        
-        // ✅ BUILD 115: Если есть ожидающий continuation для one-time location
-        if let continuation = locationContinuation, !locationContinuationHasResumed {
-            locationContinuation = nil
-            locationContinuationHasResumed = true
-            continuation.resume(returning: location)
-        } else if locationContinuation != nil && locationContinuationHasResumed {
-            print("⚠️ CRITICAL: Attempted to resume location continuation twice in didUpdateLocations!")
-        }
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        print("❌ LocationManager: Ошибка: \(error.localizedDescription)")
-        
-        // ✅ BUILD 115: Если есть ожидающий continuation, передаем ошибку
-        if let continuation = locationContinuation, !locationContinuationHasResumed {
-            locationContinuation = nil
-            locationContinuationHasResumed = true
-            continuation.resume(throwing: error)
-        } else if locationContinuation != nil && locationContinuationHasResumed {
-            print("⚠️ CRITICAL: Attempted to resume location continuation twice in didFailWithError!")
-        }
-        
-        // Обработка специфичных ошибок
-        if let clError = error as? CLError {
-            switch clError.code {
-            case .denied:
-                lastError = .authorizationDenied
-            case .locationUnknown:
-                lastError = .locationUnavailable
-            default:
-                break
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            self.currentLocation = location
+            print("📍 LocationManager: Обновление местоположения: \(location.coordinate.latitude), \(location.coordinate.longitude)")
+            
+            // ✅ План 2026: Отправляем на сервер
+            self.reportCurrentLocation(location)
+            
+            // ✅ BUILD 115: Если есть ожидающий continuation для one-time location
+            if let continuation = self.locationContinuation, !self.locationContinuationHasResumed {
+                self.locationContinuation = nil
+                self.locationContinuationHasResumed = true
+                continuation.resume(returning: location)
+            } else if self.locationContinuation != nil && self.locationContinuationHasResumed {
+                print("⚠️ CRITICAL: Attempted to resume location continuation twice in didUpdateLocations!")
             }
         }
     }
     
-    func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
-        authorizationStatus = status
-        print("📍 LocationManager: Изменение статуса разрешения: \(authorizationStatusString)")
-        
-        // Если разрешение отозвано, останавливаем мониторинг
-        if status == .denied || status == .restricted {
-            stopSignificantLocationChanges()
-            stopMonitoringAllRegions()
-            lastError = status == .denied ? .authorizationDenied : .authorizationRestricted
+    nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            print("❌ LocationManager: Ошибка: \(error.localizedDescription)")
+            
+            // ✅ BUILD 115: Если есть ожидающий continuation, передаем ошибку
+            if let continuation = self.locationContinuation, !self.locationContinuationHasResumed {
+                self.locationContinuation = nil
+                self.locationContinuationHasResumed = true
+                continuation.resume(throwing: error)
+            } else if self.locationContinuation != nil && self.locationContinuationHasResumed {
+                print("⚠️ CRITICAL: Attempted to resume location continuation twice in didFailWithError!")
+            }
+            
+            // Обработка специфичных ошибок
+            if let clError = error as? CLError {
+                switch clError.code {
+                case .denied:
+                    self.lastError = .authorizationDenied
+                case .locationUnknown:
+                    self.lastError = .locationUnavailable
+                default:
+                    break
+                }
+            }
+        }
+    }
+    
+    nonisolated func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            self.authorizationStatus = status
+            print("📍 LocationManager: Изменение статуса разрешения: \(self.authorizationStatusString)")
+            
+            // Если разрешение отозвано, останавливаем мониторинг
+            if status == .denied || status == .restricted {
+                self.stopSignificantLocationChanges()
+                self.stopMonitoringAllRegions()
+                self.lastError = status == .denied ? .authorizationDenied : .authorizationRestricted
+            }
         }
     }
     
     // MARK: - Significant-Change Delegate
     
-    func locationManager(_ manager: CLLocationManager, didUpdateLocationsForSignificantChanges locations: [CLLocation]) {
+    nonisolated func locationManager(_ manager: CLLocationManager, didUpdateLocationsForSignificantChanges locations: [CLLocation]) {
         guard let location = locations.last else { return }
-        
-        currentLocation = location
-        print("📍 LocationManager: Significant-Change: перемещение на 500+ метров")
-        print("📍 LocationManager: Новое местоположение: \(location.coordinate.latitude), \(location.coordinate.longitude)")
-        
-        // ✅ План 2026: Проверяем близость к школам/дому для временного включения GPS
-        checkProximityAndBoostAccuracy(to: location)
-        
-        // ✅ План 2026: Отправляем на сервер
-        reportCurrentLocation(location)
-        
-        // Отправить уведомление о значительном изменении
-        NotificationCenter.default.post(
-            name: .locationSignificantChange,
-            object: nil,
-            userInfo: ["location": location]
-        )
+        Task { @MainActor [weak self] in
+            guard let self = self else { return }
+            self.currentLocation = location
+            print("📍 LocationManager: Significant-Change: перемещение на 500+ метров")
+            print("📍 LocationManager: Новое местоположение: \(location.coordinate.latitude), \(location.coordinate.longitude)")
+            
+            // ✅ План 2026: Проверяем близость к школам/дому для временного включения GPS
+            self.checkProximityAndBoostAccuracy(to: location)
+            
+            // ✅ План 2026: Отправляем на сервер
+            self.reportCurrentLocation(location)
+            
+            // Отправить уведомление о значительном изменении
+            NotificationCenter.default.post(
+                name: .locationSignificantChange,
+                object: nil,
+                userInfo: ["location": location]
+            )
+        }
     }
     
     // MARK: - Region Monitoring Delegate
     
-    func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
+    nonisolated func locationManager(_ manager: CLLocationManager, didEnterRegion region: CLRegion) {
         guard let circularRegion = region as? CLCircularRegion else { return }
-        
-        print("✅ LocationManager: Вход в геозону '\(region.identifier)'")
-        print("📍 LocationManager: Центр: \(circularRegion.center.latitude), \(circularRegion.center.longitude)")
-        
-        // Отправить уведомление о входе в геозону
-        NotificationCenter.default.post(
-            name: .locationDidEnterRegion,
-            object: nil,
-            userInfo: [
-                "region": region,
-                "center": circularRegion.center
-            ]
-        )
-    }
-    
-    func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
-        guard let circularRegion = region as? CLCircularRegion else { return }
-        
-        print("✅ LocationManager: Выход из геозоны '\(region.identifier)'")
-        print("📍 LocationManager: Центр: \(circularRegion.center.latitude), \(circularRegion.center.longitude)")
-        
-        // Отправить уведомление о выходе из геозоны
-        NotificationCenter.default.post(
-            name: .locationDidExitRegion,
-            object: nil,
-            userInfo: [
-                "region": region,
-                "center": circularRegion.center
-            ]
-        )
-    }
-    
-    func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {
-        if let region = region {
-            print("❌ LocationManager: Ошибка мониторинга геозоны '\(region.identifier)': \(error.localizedDescription)")
-            lastError = .regionMonitoringFailed(identifier: region.identifier)
+        Task { @MainActor in
+            print("✅ LocationManager: Вход в геозону '\(region.identifier)'")
+            print("📍 LocationManager: Центр: \(circularRegion.center.latitude), \(circularRegion.center.longitude)")
             
-            // Удалить из списка отслеживаемых
-            monitoredRegions.removeValue(forKey: region.identifier)
+            // Отправить уведомление о входе в геозону
+            NotificationCenter.default.post(
+                name: .locationDidEnterRegion,
+                object: nil,
+                userInfo: [
+                    "region": region,
+                    "center": circularRegion.center
+                ]
+            )
         }
     }
     
-    func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
-        print("✅ LocationManager: Мониторинг геозоны '\(region.identifier)' успешно запущен")
+    nonisolated func locationManager(_ manager: CLLocationManager, didExitRegion region: CLRegion) {
+        guard let circularRegion = region as? CLCircularRegion else { return }
+        Task { @MainActor in
+            print("✅ LocationManager: Выход из геозоны '\(region.identifier)'")
+            print("📍 LocationManager: Центр: \(circularRegion.center.latitude), \(circularRegion.center.longitude)")
+            
+            // Отправить уведомление о выходе из геозоны
+            NotificationCenter.default.post(
+                name: .locationDidExitRegion,
+                object: nil,
+                userInfo: [
+                    "region": region,
+                    "center": circularRegion.center
+                ]
+            )
+        }
+    }
+    
+    nonisolated func locationManager(_ manager: CLLocationManager, monitoringDidFailFor region: CLRegion?, withError error: Error) {
+        Task { @MainActor [weak self] in
+            guard let self = self, let region = region else { return }
+            print("❌ LocationManager: Ошибка мониторинга геозоны '\(region.identifier)': \(error.localizedDescription)")
+            self.lastError = .regionMonitoringFailed(identifier: region.identifier)
+            
+            // Удалить из списка отслеживаемых
+            self.monitoredRegions.removeValue(forKey: region.identifier)
+        }
+    }
+    
+    nonisolated func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
+        Task { @MainActor in
+            print("✅ LocationManager: Мониторинг геозоны '\(region.identifier)' успешно запущен")
+        }
     }
 }
 
