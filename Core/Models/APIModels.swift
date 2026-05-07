@@ -3769,15 +3769,37 @@ struct DeviceRegisterResponse: Codable {
 }
 
 /// 📱 Trial Device Registration Request
+struct TrialAntiAbuseSignals: Codable {
+    let installFingerprintHash: String
+    let velocity1h: Int
+    let velocity24h: Int
+    let cooldownSeconds: Int
+    let appVersion: String
+    let osVersion: String
+    let riskVersion: String
+
+    enum CodingKeys: String, CodingKey {
+        case installFingerprintHash = "install_fingerprint_hash"
+        case velocity1h = "velocity_1h"
+        case velocity24h = "velocity_24h"
+        case cooldownSeconds = "cooldown_seconds"
+        case appVersion = "app_version"
+        case osVersion = "os_version"
+        case riskVersion = "risk_version"
+    }
+}
+
 struct TrialDeviceRegisterRequest: Codable {
     let deviceId: String
     let deviceType: String
     let trialInfo: TrialInfo
+    let antiAbuse: TrialAntiAbuseSignals?
 
     enum CodingKeys: String, CodingKey {
         case deviceId = "device_id"
         case deviceType = "device_type"
         case trialInfo = "trial_info"
+        case antiAbuse = "anti_abuse"
     }
 }
 

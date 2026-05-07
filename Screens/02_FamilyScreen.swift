@@ -1650,25 +1650,11 @@ struct FamilyScreen: View {
     }
 
     private var familySyncStatusTitle: String {
-        switch familySyncState {
-        case .idle: return "Idle"
-        case .local: return "Local"
-        case .pending: return "Pending"
-        case .syncing: return "Syncing"
-        case .synced: return "Synced"
-        case .conflict: return "Conflict"
-        case .error: return "Error"
-        }
+        familySyncState.localizedTitle(using: localizationManager)
     }
 
     private var familySyncStatusColor: Color {
-        switch familySyncState {
-        case .idle, .local: return .gray
-        case .pending: return .orange
-        case .syncing: return .blue
-        case .synced: return .green
-        case .conflict, .error: return .red
-        }
+        familySyncState.statusColor
     }
     
     var body: some View {

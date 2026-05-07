@@ -78,7 +78,9 @@ struct OnboardingScreen: View {
     @State private var showQRScanner = false
     @State private var profileImage: UIImage? = nil
     @State private var dataConsentAccepted: Bool = false
+    @State private var termsConsentAccepted: Bool = false
     @State private var showPrivacyPolicy: Bool = false
+    @State private var showTermsOfService: Bool = false
 
     // ✅ НОВОЕ: Stored property вместо computed для устранения race condition
     // Стартуем не с пустого массива, чтобы исключить гонку первого кадра TabView(.page).
@@ -134,9 +136,40 @@ struct OnboardingScreen: View {
         "onboarding_recover": "ВОССТАНОВИТЬ",
         "onboarding_data_collection_info": "Мы собираем анонимную статистику использования для улучшения приложения",
         "onboarding_privacy_policy_link": "Политика конфиденциальности",
+        "onboarding_terms_of_service_link": "Пользовательское соглашение",
         "onboarding_data_consent": "Я согласен с обработкой данных",
+        "onboarding_terms_consent": "Я принимаю пользовательское соглашение",
         "onboarding_continue_hint": "Нажмите для перехода к следующей странице",
         "onboarding_start_hint": "Нажмите для начала использования приложения"
+    ]
+
+    private let fallbackTextsEnglish: [String: String] = [
+        "onboarding_page1_title": "Family protection in your pocket",
+        "onboarding_page1_desc": "A complete protection system against cyber threats",
+        "onboarding_page2_title": "Your personal security assistant",
+        "onboarding_page2_desc": "AI protects your family 24/7",
+        "onboarding_page3_title": "Parental control",
+        "onboarding_page3_desc": "See and protect your children's digital activity",
+        "onboarding_page4_title": "Risk analytics",
+        "onboarding_page4_desc": "ALADDIN AI predicts and prevents cyber threats",
+        "onboarding_page5_title": "Protection for kids",
+        "onboarding_page5_desc": "Block unsafe websites and risky content",
+        "onboarding_page6_title": "Protection for 23+ users",
+        "onboarding_page6_desc": "Detect fraud calls, fake news, and spoofed voices",
+        "onboarding_page7_title": "Join ALADDIN",
+        "onboarding_page7_desc": "Protect your loved ones starting today",
+        "onboarding_skip": "Skip",
+        "onboarding_continue": "CONTINUE",
+        "onboarding_start": "GET STARTED",
+        "onboarding_have_code": "I HAVE A CODE",
+        "onboarding_recover": "RECOVER",
+        "onboarding_data_collection_info": "We collect anonymous usage metrics to improve the app",
+        "onboarding_privacy_policy_link": "Privacy Policy",
+        "onboarding_terms_of_service_link": "Terms of Service",
+        "onboarding_data_consent": "I agree to the Privacy Policy",
+        "onboarding_terms_consent": "I agree to the Terms of Service",
+        "onboarding_continue_hint": "Tap to go to the next page",
+        "onboarding_start_hint": "Tap to start using the app"
     ]
 
     // ✅ НОВОЕ: Безопасная функция локализации с fallback
@@ -147,8 +180,23 @@ struct OnboardingScreen: View {
             return localized
         }
 
-        // Fallback к предоставленному тексту или из словаря
-        return fallback ?? fallbackTexts[key] ?? key
+        // Fallback к предоставленному тексту или словарю текущей локали
+        return fallback ?? localizedFallbackValue(for: key) ?? key
+    }
+
+    private func localizedFallbackValue(for key: String) -> String? {
+        if localizationManager.currentLanguage == .russian {
+            return fallbackTexts[key]
+        }
+        return fallbackTextsEnglish[key] ?? fallbackTexts[key]
+    }
+
+    private var isFinalOnboardingPage: Bool {
+        currentPage == pages.count - 1
+    }
+
+    private var finalRequiredConsentsAccepted: Bool {
+        dataConsentAccepted && termsConsentAccepted
     }
 
     /// Без шага выбора роли `current_user_role` пуст — `FamilyAccessPolicy` блокирует ростер («только для родителя»).
@@ -392,6 +440,9 @@ struct OnboardingScreen: View {
         .sheet(isPresented: $showPrivacyPolicy) {
             PrivacyPolicyScreen()
         }
+        .sheet(isPresented: $showTermsOfService) {
+            TermsOfServiceScreen()
+        }
     }
 
     // ✅ Основной контент онбординга
@@ -403,6 +454,10 @@ struct OnboardingScreen: View {
                 Spacer()
 
                 Button(action: {
+                    if isFinalOnboardingPage && !finalRequiredConsentsAccepted {
+                        HapticFeedback.notification(.warning)
+                        return
+                    }
                     // ✅ Сохраняем статус онбординга
                     hasCompletedOnboarding = true
                     // ✅ BUILD 98: Устанавливаем hasCompletedOnboarding асинхронно для предотвращения рекурсии
@@ -421,6 +476,7 @@ struct OnboardingScreen: View {
                     }
                     .accessibilityElement(label: "Пропустить онбординг", hint: "Нажмите для пропуска введения и перехода к главному экрану")
                 }
+                .disabled(isFinalOnboardingPage && !finalRequiredConsentsAccepted)
                 .padding(Spacing.m)
 
                 // Контент страниц
@@ -467,8 +523,15 @@ struct OnboardingScreen: View {
                             }
                         } else {
                             // ✅ Начать регистрацию - сохраняем статус и переходим через NavigationManager
-                            // Сохраняем согласие на обработку данных
+                            // Сохраняем подтверждение обязательных документов раздельно
+                            let now = Date()
+                            UserDefaults.standard.set(dataConsentAccepted, forKey: "onboarding_privacy_policy_accepted")
+                            UserDefaults.standard.set(termsConsentAccepted, forKey: "onboarding_terms_of_service_accepted")
                             UserDefaults.standard.set(dataConsentAccepted, forKey: "personal_data_consent_accepted")
+                            UserDefaults.standard.set(now, forKey: "onboarding_privacy_policy_accepted_at")
+                            UserDefaults.standard.set(now, forKey: "onboarding_terms_of_service_accepted_at")
+                            UserDefaults.standard.set("1.0", forKey: "onboarding_privacy_policy_version")
+                            UserDefaults.standard.set("1.0", forKey: "onboarding_terms_of_service_version")
                             
                             // ✅ BUILD 98: Устанавливаем hasCompletedOnboarding асинхронно для предотвращения рекурсии
                             hasCompletedOnboarding = true
@@ -491,7 +554,7 @@ struct OnboardingScreen: View {
                             .frame(height: 50)
                             .background(
                                 LinearGradient(
-                                    colors: currentPage == pages.count - 1 && !dataConsentAccepted
+                                    colors: currentPage == pages.count - 1 && !finalRequiredConsentsAccepted
                                         ? [Color.gray, Color.gray]
                                         : [Color.primaryBlue, Color.secondaryBlue],
                                     startPoint: .leading,
@@ -500,7 +563,7 @@ struct OnboardingScreen: View {
                             )
                             .cornerRadius(CornerRadius.large)
                     }
-                    .disabled(currentPage == pages.count - 1 && !dataConsentAccepted)
+                    .disabled(currentPage == pages.count - 1 && !finalRequiredConsentsAccepted)
                     .accessibilityElement(
                         label: currentPage < pages.count - 1 ? safeLocalized("onboarding_continue") : safeLocalized("onboarding_start"),
                         hint: currentPage < pages.count - 1 ? safeLocalized("onboarding_continue_hint") : safeLocalized("onboarding_start_hint")
@@ -534,7 +597,7 @@ struct OnboardingScreen: View {
                             }
                             .padding(.horizontal, Spacing.screenPadding)
 
-                            // Чекбокс согласия
+                            // Чекбокс согласия с Privacy Policy
                             HStack(spacing: Spacing.s) {
                                 Button(action: {
                                     withAnimation {
@@ -548,6 +611,41 @@ struct OnboardingScreen: View {
                                 }
 
                                 Text(safeLocalized("onboarding_data_consent"))
+                                    .font(.caption)
+                                    .foregroundColor(.textPrimary)
+
+                                Spacer()
+                            }
+                            .padding(.horizontal, Spacing.screenPadding)
+
+                            // Ссылка + чекбокс согласия с Terms of Service
+                            HStack(spacing: Spacing.s) {
+                                Button(action: {
+                                    showTermsOfService = true
+                                }) {
+                                    Text(safeLocalized("onboarding_terms_of_service_link"))
+                                        .font(.caption)
+                                        .foregroundColor(.primaryBlue)
+                                        .underline()
+                                }
+
+                                Spacer()
+                            }
+                            .padding(.horizontal, Spacing.screenPadding)
+
+                            HStack(spacing: Spacing.s) {
+                                Button(action: {
+                                    withAnimation {
+                                        termsConsentAccepted.toggle()
+                                    }
+                                    HapticFeedback.selection()
+                                }) {
+                                    Image(systemName: termsConsentAccepted ? "checkmark.square.fill" : "square")
+                                        .font(.system(size: 20))
+                                        .foregroundColor(termsConsentAccepted ? .primaryBlue : .textSecondary)
+                                }
+
+                                Text(safeLocalized("onboarding_terms_consent"))
                                     .font(.caption)
                                     .foregroundColor(.textPrimary)
 

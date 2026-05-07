@@ -18,6 +18,10 @@ struct SecurityEducationScreen: View {
     @State private var unicornsEarned: Int = 0
     @State private var showRewardAlert: Bool = false
     
+    private let cardBackgroundColor = Color(UIColor.systemBackground)
+    private let primaryTextColor = Color(UIColor.label)
+    private let secondaryTextColor = Color(UIColor.secondaryLabel)
+    
     // MARK: - Security Lessons
     
     struct SecurityLesson: Identifiable {
@@ -139,17 +143,17 @@ struct SecurityEducationScreen: View {
                 .font(.system(size: 50))
             Text(String(format: localizationManager.localized("security_education_greeting_name"), "Алексей"))
                 .font(.system(size: 24, weight: .bold))
-                .foregroundColor(.primary)
+                .foregroundColor(primaryTextColor)
             Text(localizationManager.localized("security_education_greeting_message"))
                 .font(.system(size: 16))
-                .foregroundColor(.secondary)
+                .foregroundColor(secondaryTextColor)
                 .multilineTextAlignment(.center)
         }
         .frame(maxWidth: .infinity)
         .padding(24)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white)
+                    .fill(cardBackgroundColor)
                 .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
         )
     }
@@ -164,10 +168,10 @@ struct SecurityEducationScreen: View {
                 VStack(alignment: .leading, spacing: 4) {
                     Text(String(format: localizationManager.localized("security_education_level"), securityLevel))
                         .font(.system(size: 18, weight: .bold))
-                        .foregroundColor(.primary)
+                        .foregroundColor(primaryTextColor)
                     Text(localizationManager.localized("security_education_level_title"))
                         .font(.system(size: 14))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(secondaryTextColor)
                 }
                 Spacer()
             }
@@ -193,17 +197,17 @@ struct SecurityEducationScreen: View {
             HStack {
                 Text(String(format: localizationManager.localized("security_education_xp"), securityXP))
                     .font(.system(size: 12))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(secondaryTextColor)
                 Spacer()
                 Text(String(format: localizationManager.localized("security_education_lessons_completed"), totalLessonsCompleted))
                     .font(.system(size: 12))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(secondaryTextColor)
             }
         }
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white)
+                .fill(cardBackgroundColor)
                 .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
         )
     }
@@ -232,7 +236,7 @@ struct SecurityEducationScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(localizationManager.localized("security_education_simple_rules_title"))
                 .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.primary)
+                .foregroundColor(primaryTextColor)
             
             VStack(alignment: .leading, spacing: 8) {
                 RuleRow(text: localizationManager.localized("security_education_rule_strangers"))
@@ -244,7 +248,7 @@ struct SecurityEducationScreen: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white)
+                .fill(cardBackgroundColor)
                 .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
         )
     }
@@ -255,7 +259,7 @@ struct SecurityEducationScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(localizationManager.localized("security_education_advanced_tips_title"))
                 .font(.system(size: 18, weight: .bold))
-                .foregroundColor(.primary)
+                .foregroundColor(primaryTextColor)
             
             VStack(alignment: .leading, spacing: 8) {
                 TipRow(text: localizationManager.localized("security_education_tip_2fa"))
@@ -269,7 +273,7 @@ struct SecurityEducationScreen: View {
         .padding(20)
         .background(
             RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white)
+                .fill(cardBackgroundColor)
                 .shadow(color: .black.opacity(0.1), radius: 10, x: 0, y: 4)
         )
     }
@@ -300,12 +304,12 @@ struct LessonCard: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(lesson.title)
                         .font(.system(size: 18, weight: .semibold))
-                        .foregroundColor(.primary)
+                        .foregroundColor(Color(UIColor.label))
                         .lineLimit(1)
                     
                     Text(lesson.description)
                         .font(.system(size: 14))
-                        .foregroundColor(.secondary)
+                        .foregroundColor(Color(UIColor.secondaryLabel))
                         .lineLimit(2)
                 }
                 
@@ -330,7 +334,7 @@ struct LessonCard: View {
             .padding(16)
             .background(
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.white)
+                    .fill(Color(UIColor.systemBackground))
                     .shadow(color: .black.opacity(0.1), radius: 8, x: 0, y: 2)
             )
         }
@@ -350,7 +354,7 @@ struct RuleRow: View {
                 .frame(width: 8, height: 8)
             Text(text)
                 .font(.system(size: 14))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.label))
         }
     }
 }
@@ -367,7 +371,7 @@ struct TipRow: View {
                 .foregroundColor(.blue)
             Text(text)
                 .font(.system(size: 14))
-                .foregroundColor(.primary)
+                .foregroundColor(Color(UIColor.label))
         }
     }
 }

@@ -58,8 +58,13 @@ class ContentBlockerManager: ObservableObject {
             SFContentBlockerManager.getStateOfContentBlocker(withIdentifier: extensionIdentifier) { state, error in
                 Task { @MainActor in
                     if let error = error {
-                        self.status = .error(error.localizedDescription)
-                        self.isEnabled = false
+                        if self.isExtensionMissingError(error) {
+                            self.status = .extensionMissing
+                            self.isEnabled = false
+                        } else {
+                            self.status = .error(error.localizedDescription)
+                            self.isEnabled = false
+                        }
                     } else if let state = state {
                         if state.isEnabled {
                             self.status = .enabled
@@ -105,6 +110,9 @@ class ContentBlockerManager: ObservableObject {
         // Если блокировка не активирована, показать инструкцию
         if case .needsActivation = status {
             throw ContentBlockerError.needsActivation
+        }
+        if case .extensionMissing = status {
+            throw ContentBlockerError.extensionMissing
         }
     }
     
@@ -241,6 +249,15 @@ class ContentBlockerManager: ObservableObject {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
     }
+
+    private func isExtensionMissingError(_ error: Error) -> Bool {
+        let nsError = error as NSError
+        if nsError.domain == "SFErrorDomain" && nsError.code == 1 {
+            return true
+        }
+        let text = nsError.localizedDescription.lowercased()
+        return text.contains("no extension found") || text.contains("extension") && text.contains("not found")
+    }
     
     /**
      * Загрузить активные категории
@@ -256,6 +273,7 @@ class ContentBlockerManager: ObservableObject {
 
 enum ContentBlockerError: LocalizedError {
     case needsActivation
+    case extensionMissing
     case rulesCreationFailed
     case saveFailed
     
@@ -263,6 +281,8 @@ enum ContentBlockerError: LocalizedError {
         switch self {
         case .needsActivation:
             return "Необходимо включить блокировку контента в Настройках iOS → Safari → Content Blockers"
+        case .extensionMissing:
+            return "Расширение Safari Content Blocker отсутствует в текущей сборке приложения"
         case .rulesCreationFailed:
             return "Не удалось создать правила блокировки"
         case .saveFailed:

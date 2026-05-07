@@ -270,6 +270,17 @@ struct FamilyContentBlockModal: View {
                         .foregroundColor(.warningOrange)
                 }
                 .padding(.top, Spacing.s)
+            } else if case .extensionMissing = contentBlockerManager.status {
+                HStack(spacing: Spacing.s) {
+                    Image(systemName: "xmark.octagon.fill")
+                        .foregroundColor(.dangerRed)
+                    Text(localizationManager.currentLanguage == .russian
+                         ? "Расширение Safari Content Blocker отсутствует в этой сборке"
+                         : "Safari Content Blocker extension is missing in this build")
+                        .font(.caption)
+                        .foregroundColor(.dangerRed)
+                }
+                .padding(.top, Spacing.s)
             }
         }
         .padding(.top, Spacing.l)
@@ -363,6 +374,11 @@ struct FamilyContentBlockModal: View {
                     if let blockerError = error as? ContentBlockerError,
                        blockerError == .needsActivation {
                         showSettingsAlert = true
+                    } else if let blockerError = error as? ContentBlockerError,
+                              blockerError == .extensionMissing {
+                        errorMessage = localizationManager.currentLanguage == .russian
+                            ? "Расширение Safari Content Blocker не найдено в текущей сборке"
+                            : "Safari Content Blocker extension is not found in this build"
                     } else {
                         // Показать успешное сообщение даже при ошибке (настройки сохранены локально)
                         HapticFeedback.notification(.success)

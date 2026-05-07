@@ -37,6 +37,28 @@ class SubscriptionService:
     """Main subscription management service with DB persistence"""
 
     @staticmethod
+    def _should_deny_trial_by_anti_abuse(request: TrialDeviceRegisterRequest) -> bool:
+        """
+        Privacy-safe anti-abuse gate.
+        Uses only technical signals from client payload (no PII).
+        """
+        signals = getattr(request, "anti_abuse", None) or {}
+        try:
+            cooldown_seconds = int(signals.get("cooldown_seconds", 0) or 0)
+            velocity_1h = int(signals.get("velocity_1h", 0) or 0)
+            velocity_24h = int(signals.get("velocity_24h", 0) or 0)
+        except Exception:
+            return False
+
+        if cooldown_seconds > 0:
+            return True
+        if velocity_1h >= 3:
+            return True
+        if velocity_24h >= 8:
+            return True
+        return False
+
+    @staticmethod
     def _sync_user_subscription_level(db: Session, user_id: Optional[str], level: str) -> None:
         """Keep `users.subscription_level` aligned with subscription rows (family roster gate reads this)."""
         if user_id is None:
@@ -138,6 +160,28 @@ class SubscriptionService:
                 "features": []
             }
             db_sub = repo.update_subscription(existing, updates)
+            SubscriptionService._sync_user_subscription_level(db, db_sub.user_id, SubscriptionLevel.FREE.value)
+            return SubscriptionService._map_to_payload(db_sub)
+
+        # Anti-abuse policy: suspicious velocity/cooldown => free plan (no trial grant).
+        if SubscriptionService._should_deny_trial_by_anti_abuse(request):
+            real_user_id = SubscriptionService._ensure_user_for_device(
+                db, request.device_id, getattr(request, "device_type", None)
+            )
+            free_data = {
+                "user_id": real_user_id,
+                "device_id": request.device_id,
+                "level": SubscriptionLevel.FREE.value,
+                "status": "active",
+                "start_date": now,
+                "end_date": None,
+                "limits": SubscriptionLimits.free_limits().dict(),
+                "features": []
+            }
+            if existing:
+                db_sub = repo.update_subscription(existing, free_data)
+            else:
+                db_sub = repo.create_subscription(free_data)
             SubscriptionService._sync_user_subscription_level(db, db_sub.user_id, SubscriptionLevel.FREE.value)
             return SubscriptionService._map_to_payload(db_sub)
 

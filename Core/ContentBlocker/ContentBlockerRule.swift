@@ -186,6 +186,7 @@ enum ContentBlockerStatus {
     case disabled
     case enabled
     case needsActivation // Пользователь должен включить в настройках iOS
+    case extensionMissing // Extension target отсутствует/не установлен в сборке
     case error(String)
 }
 

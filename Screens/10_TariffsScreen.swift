@@ -84,7 +84,7 @@ struct TariffsScreen: View {
             ]
             case .personal: return [
                 localizationManager.localized("tariffs_personal_features_1"),
-                localizationManager.localized("tariffs_personal_features_2"),
+                familyMemberLimitFeatureText(for: .personal, localizationManager: localizationManager),
                 localizationManager.localized("tariffs_personal_features_3"),
                 localizationManager.localized("tariffs_personal_features_4"),
                 localizationManager.localized("tariffs_personal_features_5"),
@@ -92,7 +92,7 @@ struct TariffsScreen: View {
             ]
             case .family: return [
                 localizationManager.localized("tariffs_family_features_1"),
-                localizationManager.localized("tariffs_family_features_2"),
+                familyMemberLimitFeatureText(for: .family, localizationManager: localizationManager),
                 localizationManager.localized("tariffs_family_features_3"),
                 localizationManager.localized("tariffs_family_features_4"),
                 localizationManager.localized("tariffs_family_features_5"),
@@ -100,7 +100,7 @@ struct TariffsScreen: View {
             ]
             case .premium: return [
                 localizationManager.localized("tariffs_premium_features_1"),
-                localizationManager.localized("tariffs_premium_features_2"),
+                familyMemberLimitFeatureText(for: .premium, localizationManager: localizationManager),
                 localizationManager.localized("tariffs_premium_features_3"),
                 localizationManager.localized("tariffs_premium_features_4"),
                 localizationManager.localized("tariffs_premium_features_5"),
@@ -123,6 +123,14 @@ struct TariffsScreen: View {
         
         var recommended: Bool {
             return self == .family
+        }
+
+        private func familyMemberLimitFeatureText(for level: SubscriptionLevel, localizationManager: LocalizationManager) -> String {
+            let limit = SubscriptionManager.familyMemberLimitStatic(for: level)
+            if localizationManager.currentLanguage == .russian {
+                return "До \(limit) участников в семейном доступе"
+            }
+            return "Up to \(limit) family members in shared access"
         }
     }
     

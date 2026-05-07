@@ -96,25 +96,11 @@ struct NetworkProtectionScreen: View {
     }
 
     private var networkSyncStatusTitle: String {
-        switch networkSyncState {
-        case .idle: return "Idle"
-        case .local: return "Local"
-        case .pending: return "Pending"
-        case .syncing: return "Syncing"
-        case .synced: return "Synced"
-        case .conflict: return "Conflict"
-        case .error: return "Error"
-        }
+        networkSyncState.localizedTitle(using: localizationManager)
     }
 
     private var networkSyncStatusColor: Color {
-        switch networkSyncState {
-        case .idle, .local: return .gray
-        case .pending: return .orange
-        case .syncing: return .blue
-        case .synced: return .green
-        case .conflict, .error: return .red
-        }
+        networkSyncState.statusColor
     }
     
     // MARK: - Body

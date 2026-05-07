@@ -970,6 +970,10 @@ struct AdvancedProtectionSettingsScreen: View {
                 )
             case .needsActivation:
                 return localizationManager.localized("content_block_status_needs_activation")
+            case .extensionMissing:
+                return localizationManager.currentLanguage == .russian
+                    ? "Расширение Safari Content Blocker отсутствует в сборке"
+                    : "Safari Content Blocker extension is missing in this build"
             case .disabled:
                 return localizationManager.localized("advanced_safari_status_disabled")
             case .error:
@@ -1101,6 +1105,13 @@ struct AdvancedProtectionSettingsScreen: View {
                     if trigger == .sites, safariSitesEnabled { safariSitesEnabled = false }
                     if trigger == .social, safariSocialEnabled { safariSocialEnabled = false }
                     safariSettingsSheet = trigger
+                }
+                return
+            }
+            if case .extensionMissing = contentBlockerManager.status {
+                await MainActor.run {
+                    if trigger == .sites, safariSitesEnabled { safariSitesEnabled = false }
+                    if trigger == .social, safariSocialEnabled { safariSocialEnabled = false }
                 }
                 return
             }

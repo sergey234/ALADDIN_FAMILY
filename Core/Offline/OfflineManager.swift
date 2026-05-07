@@ -1,6 +1,7 @@
 import Foundation
 import Network
 import Combine
+import SwiftUI
 
 /**
  * Менеджер офлайн режима для ALADDIN
@@ -333,6 +334,43 @@ enum SyncState: Equatable {
     case synced
     case conflict
     case error(String)
+}
+
+extension SyncState {
+    func localizedTitle(using localizationManager: LocalizationManager) -> String {
+        let isRussian = localizationManager.currentLanguage == .russian
+        switch self {
+        case .idle:
+            return isRussian ? "Ожидание" : "Idle"
+        case .local:
+            return isRussian ? "Локально" : "Local"
+        case .pending:
+            return isRussian ? "В очереди" : "Pending"
+        case .syncing:
+            return isRussian ? "Синхронизация" : "Syncing"
+        case .synced:
+            return isRussian ? "Синхронизировано" : "Synced"
+        case .conflict:
+            return isRussian ? "Конфликт" : "Conflict"
+        case .error:
+            return isRussian ? "Ошибка" : "Error"
+        }
+    }
+
+    var statusColor: Color {
+        switch self {
+        case .idle, .local:
+            return .gray
+        case .pending:
+            return .orange
+        case .syncing:
+            return .blue
+        case .synced:
+            return .green
+        case .conflict, .error:
+            return .red
+        }
+    }
 }
 
 struct SyncEvent: Identifiable {

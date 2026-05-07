@@ -134,6 +134,18 @@ class DeviceRegisterRequest(BaseModel):
 class TrialDeviceRegisterRequest(DeviceRegisterRequest):
     """Trial device registration request"""
     trial_info: TrialInfo = Field(..., alias="trialInfo")
+    anti_abuse: Optional[Dict[str, Any]] = Field(default=None, alias="antiAbuse")
+
+
+class TrialAntiAbuseSignals(BaseModel):
+    """Privacy-safe anti-abuse signals from client (no PII)."""
+    install_fingerprint_hash: str = Field(..., alias="installFingerprintHash")
+    velocity_1h: int = Field(0, alias="velocity1h")
+    velocity_24h: int = Field(0, alias="velocity24h")
+    cooldown_seconds: int = Field(0, alias="cooldownSeconds")
+    app_version: str = Field("unknown", alias="appVersion")
+    os_version: str = Field("unknown", alias="osVersion")
+    risk_version: str = Field("unknown", alias="riskVersion")
 
 
 class UpgradeRequest(BaseModel):

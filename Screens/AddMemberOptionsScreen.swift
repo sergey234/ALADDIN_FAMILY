@@ -68,7 +68,7 @@ struct AddMemberOptionsScreen: View {
                 )
                 .ignoresSafeArea()
 
-                VStack(spacing: 20) {
+                VStack(spacing: 16) {
                     // Кнопка назад — отступ с учётом safe area (Dynamic Island / чёлка)
                     HStack {
                         Button(action: {
@@ -85,138 +85,128 @@ struct AddMemberOptionsScreen: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, max(20, proxy.safeAreaInsets.top + 12))
-                
-                // Заголовок + Limit Banner (consistent with FamilyScreen)
-                VStack(spacing: 8) {
-                    Text(localizationManager.localized("add_member_title"))
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.white)
-                    
-                    Text(localizationManager.localized("add_member_subtitle"))
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.8))
-                }
-                .padding(.top, 10)
 
-                // Limit banner using single source of truth
-                let currentCount = cachedFamilyMemberCount
-                let (canAddHere, limitMessage, _) = subscriptionManager.canAddFamilyMember(currentCount: currentCount)
-                if !canAddHere, let msg = limitMessage {
-                    Text(msg)
-                        .font(.caption)
-                        .foregroundColor(.orange)
-                        .multilineTextAlignment(.center)
-                        .padding()
-                        .background(Color.orange.opacity(0.1))
-                        .cornerRadius(8)
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: 16) {
+                            // Заголовок + Limit Banner (consistent with FamilyScreen)
+                            VStack(spacing: 8) {
+                                Text(localizationManager.localized("add_member_title"))
+                                    .font(.system(size: 24, weight: .bold))
+                                    .foregroundColor(.white)
+
+                                Text(localizationManager.localized("add_member_subtitle"))
+                                    .font(.subheadline)
+                                    .foregroundColor(.white.opacity(0.8))
+                            }
+                            .padding(.top, 8)
+
+                            // Limit banner using single source of truth
+                            let currentCount = cachedFamilyMemberCount
+                            let (canAddHere, limitMessage, _) = subscriptionManager.canAddFamilyMember(currentCount: currentCount)
+                            if !canAddHere, let msg = limitMessage {
+                                Text(msg)
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                                    .multilineTextAlignment(.center)
+                                    .padding()
+                                    .background(Color.orange.opacity(0.1))
+                                    .cornerRadius(8)
+                            }
+
+                            // Варианты добавления
+                            VStack(spacing: 12) {
+                                // Вариант 1: новая семья ИЛИ добавление в текущую — только родитель/пожилой в ростере (QR/код ниже доступны всем для присоединения).
+                                VStack(alignment: .leading, spacing: 6) {
+                                    optionButton(
+                                        icon: "plus.circle.fill",
+                                        title: localizationManager.localized(
+                                            hasExistingFamilyOnDevice ? "add_member_to_current_family" : "add_member_create_family"
+                                        ),
+                                        description: localizationManager.localized(
+                                            hasExistingFamilyOnDevice ? "add_member_to_current_family_desc" : "add_member_create_family_desc"
+                                        ),
+                                        color: .orange,
+                                        enabled: canManageFamilyRosterFromCache
+                                    ) {
+                                        // ✅ FIXED: Pure navigation - no internal modals
+                                        guard !isProcessingCreateFamily else {
+                                            print("⚠️ AddMemberOptionsScreen: Already processing create family, ignoring duplicate tap")
+                                            return
+                                        }
+
+                                        isProcessingCreateFamily = true
+                                        if hasExistingFamilyOnDevice {
+                                            UserDefaults.standard.set(true, forKey: "admin_add_mode")
+                                            UserDefaults.standard.synchronize()
+                                            print("✅ AddMemberOptionsScreen: admin_add_mode ON → registration flow uses addFamilyMember for current family")
+                                        }
+                                        print("✅ AddMemberOptionsScreen: Navigating to registration (create or add-to-current)")
+
+                                        navigationManager.navigateTo(.mainWithRegistration)
+
+                                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                            isProcessingCreateFamily = false
+                                        }
+                                    }
+                                    if !canManageFamilyRosterFromCache {
+                                        Text(localizationManager.currentLanguage == .russian
+                                             ? "Этот пункт только для родителя (или пожилого) в семье. Присоединиться по QR или коду можно ниже."
+                                             : "This option is for a parent (or elderly member) in the family. Use QR or code below to join.")
+                                            .font(.caption2)
+                                            .foregroundColor(.orange.opacity(0.95))
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                }
+
+                                // Вариант 2: Сканировать QR-код
+                                optionButton(
+                                    icon: "qrcode.viewfinder",
+                                    title: localizationManager.localized("add_member_scan_qr"),
+                                    description: localizationManager.localized("add_member_scan_qr_desc"),
+                                    color: .blue
+                                ) {
+                                    navigationManager.navigateTo(.qrCode)
+                                }
+
+                                // Вариант 3: Ввести код приглашения
+                                optionButton(
+                                    icon: "textformat.123",
+                                    title: localizationManager.localized("add_member_enter_code"),
+                                    description: localizationManager.localized("add_member_enter_code_desc"),
+                                    color: .green
+                                ) {
+                                    navigationManager.navigateTo(.invitationCode)
+                                }
+                            }
+
+                            // Текст о конфиденциальности
+                            VStack(spacing: 8) {
+                                HStack {
+                                    Image(systemName: "lock.shield.fill")
+                                        .font(.system(size: 16))
+                                        .foregroundColor(.blue)
+                                    Text(localizationManager.localized("add_member_privacy_title"))
+                                        .font(.system(size: 14, weight: .semibold))
+                                        .foregroundColor(.primary)
+                                }
+
+                                Text(localizationManager.localized("add_member_privacy_text"))
+                                    .font(.system(size: 12))
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                            }
+                            .padding(16)
+                            .background(Color.blue.opacity(0.05))
+                            .cornerRadius(12)
+                            .padding(.bottom, 10)
+                        }
                         .padding(.horizontal, 20)
-                }
-                
-                // Варианты добавления
-                VStack(spacing: 12) {
-                    // Вариант 1: новая семья ИЛИ добавление в текущую — только родитель/пожилой в ростере (QR/код ниже доступны всем для присоединения).
-                    VStack(alignment: .leading, spacing: 6) {
-                        optionButton(
-                            icon: "plus.circle.fill",
-                            title: localizationManager.localized(
-                                hasExistingFamilyOnDevice ? "add_member_to_current_family" : "add_member_create_family"
-                            ),
-                            description: localizationManager.localized(
-                                hasExistingFamilyOnDevice ? "add_member_to_current_family_desc" : "add_member_create_family_desc"
-                            ),
-                            color: .orange,
-                            enabled: canManageFamilyRosterFromCache
-                        ) {
-                            // ✅ FIXED: Pure navigation - no internal modals
-                            guard !isProcessingCreateFamily else {
-                                print("⚠️ AddMemberOptionsScreen: Already processing create family, ignoring duplicate tap")
-                                return
-                            }
-
-                            isProcessingCreateFamily = true
-                            if hasExistingFamilyOnDevice {
-                                UserDefaults.standard.set(true, forKey: "admin_add_mode")
-                                UserDefaults.standard.synchronize()
-                                print("✅ AddMemberOptionsScreen: admin_add_mode ON → registration flow uses addFamilyMember for current family")
-                            }
-                            print("✅ AddMemberOptionsScreen: Navigating to registration (create or add-to-current)")
-
-                            navigationManager.navigateTo(.mainWithRegistration)
-
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
-                                isProcessingCreateFamily = false
-                            }
-                        }
-                        if !canManageFamilyRosterFromCache {
-                            Text(localizationManager.currentLanguage == .russian
-                                 ? "Этот пункт только для родителя (или пожилого) в семье. Присоединиться по QR или коду можно ниже."
-                                 : "This option is for a parent (or elderly member) in the family. Use QR or code below to join.")
-                                .font(.caption2)
-                                .foregroundColor(.orange.opacity(0.95))
-                                .fixedSize(horizontal: false, vertical: true)
-                        }
-                    }
-                    
-                    // Вариант 2: Сканировать QR-код
-                    optionButton(
-                        icon: "qrcode.viewfinder",
-                        title: localizationManager.localized("add_member_scan_qr"),
-                        description: localizationManager.localized("add_member_scan_qr_desc"),
-                        color: .blue
-                    ) {
-                        navigationManager.navigateTo(.qrCode)
-                    }
-                    
-                    // Вариант 3: Ввести код приглашения
-                    optionButton(
-                        icon: "textformat.123",
-                        title: localizationManager.localized("add_member_enter_code"),
-                        description: localizationManager.localized("add_member_enter_code_desc"),
-                        color: .green
-                    ) {
-                        navigationManager.navigateTo(.invitationCode)
+                        .padding(.bottom, 90)
                     }
                 }
-                
-                // Текст о конфиденциальности
-                VStack(spacing: 8) {
-                    HStack {
-                        Image(systemName: "lock.shield.fill")
-                            .font(.system(size: 16))
-                            .foregroundColor(.blue)
-                        Text(localizationManager.localized("add_member_privacy_title"))
-                            .font(.system(size: 14, weight: .semibold))
-                            .foregroundColor(.primary)
-                    }
-                    
-                    Text(localizationManager.localized("add_member_privacy_text"))
-                        .font(.system(size: 12))
-                        .foregroundColor(.secondary)
-                        .multilineTextAlignment(.center)
-                }
-                .padding(16)
-                .background(Color.blue.opacity(0.05))
-                .cornerRadius(12)
-                
-                Spacer()
-                
-                // Кнопка отмены
-                Button(localizationManager.localized("add_member_cancel")) {
-                    // ✅ ИСПРАВЛЕНИЕ: Используем navigationManager.goBack() для правильной навигации
-                    navigationManager.goBack()
-                }
-                .font(.system(size: 16, weight: .medium))
-                .foregroundColor(.secondary)
-                .frame(maxWidth: .infinity)
-                .frame(height: 44)
-                .background(Color.gray.opacity(0.1))
-                .cornerRadius(12)
-                .padding(.bottom, 20)
+                .id("add_member_screen_lang_\(localizationManager.currentLanguage.rawValue)")
             }
-            .padding(.horizontal, 20)
-            .id("add_member_screen_lang_\(localizationManager.currentLanguage.rawValue)")
-            }
-            }
+        }
         // ✅ FIXED: Removed all internal .fullScreenCover and .sheet to prevent "single sheet is supported" warning
         // Now uses pure NavigationManager navigation (no nested presentation)
         .onChange(of: showCreateFamily) { newValue in
@@ -237,6 +227,20 @@ struct AddMemberOptionsScreen: View {
                 showCodeInput = false
                 navigationManager.navigateTo(.invitationCode)
             }
+        }
+        .safeAreaInset(edge: .bottom) {
+            Button(localizationManager.localized("add_member_cancel")) {
+                navigationManager.goBack()
+            }
+            .font(.system(size: 16, weight: .medium))
+            .foregroundColor(.secondary)
+            .frame(maxWidth: .infinity)
+            .frame(height: 44)
+            .background(Color.gray.opacity(0.12))
+            .cornerRadius(12)
+            .padding(.horizontal, 20)
+            .padding(.vertical, 10)
+            .background(.ultraThinMaterial)
         }
     }
     

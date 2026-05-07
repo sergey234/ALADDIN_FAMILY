@@ -11,7 +11,7 @@ struct MediaMessageBubble: View {
     
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var showFullImage = false
-    @State private var isPlayingVoice = false
+    @ObservedObject private var voicePlayer = VoiceMessagePlayer.shared
     
     var body: some View {
         VStack(alignment: isCurrentUser ? .trailing : .leading, spacing: 6) {
@@ -133,11 +133,15 @@ struct MediaMessageBubble: View {
     
     private var voiceMessageView: some View {
         HStack(spacing: 12) {
+            let isPlayingCurrentVoice = voicePlayer.isPlaying && voicePlayer.currentMessageId == message.id
             Button(action: {
-                isPlayingVoice.toggle()
-                // TODO: integrate shared voice player for waveform playback here.
+                if isPlayingCurrentVoice {
+                    voicePlayer.togglePause()
+                } else if let voiceURLString = message.voiceUrl, let url = URL(string: voiceURLString) {
+                    voicePlayer.play(url: url, messageId: message.id)
+                }
             }) {
-                Image(systemName: isPlayingVoice ? "pause.circle.fill" : "play.circle.fill")
+                Image(systemName: isPlayingCurrentVoice ? "pause.circle.fill" : "play.circle.fill")
                     .font(.system(size: 32))
                     .foregroundColor(isCurrentUser ? .white : .blue)
             }
@@ -184,6 +188,11 @@ struct MediaMessageBubble: View {
     }
 
     private var voiceDeliveryStatusText: String {
+        if voicePlayer.currentMessageId == message.id,
+           let playbackError = voicePlayer.playbackError,
+           !playbackError.isEmpty {
+            return playbackError
+        }
         if let progress = uploadProgress, progress < 1.0 {
             return "\(localizationManager.localized("family_chat_voice_status_uploading")) \(Int(progress * 100))%"
         }

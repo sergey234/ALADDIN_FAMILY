@@ -13,6 +13,7 @@
 import Foundation
 import Combine
 import Security
+import CryptoKit
 
 // Notification system for trial expiry alerts
 import UserNotifications
@@ -204,6 +205,9 @@ final class SubscriptionManager: ObservableObject {
     private let tokenKey = "jwt_token"
     private let subscriptionKey = "subscription_status"
     private let trialKey = "trial_info"
+    private let trialAttemptTimestampsKey = "trial_attempt_timestamps_v1"
+    private let trialRiskSaltKey = "trial_risk_salt_v1"
+    private let trialRiskSaltCreatedAtKey = "trial_risk_salt_created_at_v1"
 
     private var cancellables = Set<AnyCancellable>()
     private let logger = MasterLogger.shared
@@ -711,7 +715,7 @@ final class SubscriptionManager: ObservableObject {
 
     /// Family member limit by tariff level (aligned with prod `subscription_limits.py` / `family_roster_reconcile.py`: free=1, trial=3, personal=2, family=6, premium=10)
     /// Single source of truth used by all add flows
-    func familyMemberLimit(for level: SubscriptionLevel) -> Int {
+    nonisolated static func familyMemberLimitStatic(for level: SubscriptionLevel) -> Int {
         switch level {
         case .free:
             return 1
@@ -724,6 +728,10 @@ final class SubscriptionManager: ObservableObject {
         case .premium:
             return 10
         }
+    }
+
+    func familyMemberLimit(for level: SubscriptionLevel) -> Int {
+        Self.familyMemberLimitStatic(for: level)
     }
 
     /// Central guard for adding family members. Used by FamilyScreen, FamilyRegistrationViewModel, AddMemberOptionsScreen.
@@ -864,6 +872,13 @@ final class SubscriptionManager: ObservableObject {
 
         logger.business("🎁 Requesting server-side 14-day trial")
 
+        let localCooldown = localTrialCooldownSeconds()
+        if localCooldown > 0 {
+            logger.business("⏳ Trial activation temporarily throttled: cooldown=\(localCooldown)s")
+            lastError = .serverError("Trial activation cooldown is active. Please try again later.")
+            return
+        }
+
         // We provide a requested window, but backend must be idempotent and the source of truth.
         let startDate = Date()
         let endDate = Calendar.current.date(byAdding: .day, value: 14, to: startDate)!
@@ -871,6 +886,7 @@ final class SubscriptionManager: ObservableObject {
 
         do {
             isLoading = true
+            recordTrialActivationAttempt()
 
             // Backend will return either: trial (active or not), free, or paid — without resetting trial endlessly.
             let jwtToken = try await registerDeviceWithTrial(trialInfo: requestedTrialInfo)
@@ -1163,7 +1179,8 @@ final class SubscriptionManager: ObservableObject {
                         let trialRequest = TrialDeviceRegisterRequest(
                             deviceId: request.deviceId,
                             deviceType: request.deviceType,
-                            trialInfo: trialInfo
+                            trialInfo: trialInfo,
+                            antiAbuse: nil
                         )
                         APIService.shared.registerDeviceWithTrial(request: trialRequest, completion: completion)
                     } else {
@@ -1212,8 +1229,14 @@ final class SubscriptionManager: ObservableObject {
 
         let deviceId = UIDevice.current.identifierForVendor?.uuidString ?? UUID().uuidString
         let deviceType = "ios"
+        let antiAbuseSignals = buildTrialAntiAbuseSignals(deviceId: deviceId)
 
-        let request = TrialDeviceRegisterRequest(deviceId: deviceId, deviceType: deviceType, trialInfo: trialInfo)
+        let request = TrialDeviceRegisterRequest(
+            deviceId: deviceId,
+            deviceType: deviceType,
+            trialInfo: trialInfo,
+            antiAbuse: antiAbuseSignals
+        )
 
         // ✅ ПРОДАКШН: Реальный API вызов через APIService
         logger.business("📡 ВЫЗОВ API: POST /api/auth/register-device-trial")
@@ -1289,6 +1312,82 @@ final class SubscriptionManager: ObservableObject {
         }
 
         return jwtToken
+    }
+
+    // MARK: - Privacy-safe trial anti-abuse
+
+    private func recordTrialActivationAttempt(now: Date = Date()) {
+        var timestamps = trialAttemptTimestamps()
+        timestamps.append(now.timeIntervalSince1970)
+        let minAllowed = now.addingTimeInterval(-24 * 3600).timeIntervalSince1970
+        timestamps = timestamps.filter { $0 >= minAllowed }
+        UserDefaults.standard.set(timestamps, forKey: trialAttemptTimestampsKey)
+    }
+
+    private func trialAttemptTimestamps(now: Date = Date()) -> [TimeInterval] {
+        let raw = UserDefaults.standard.array(forKey: trialAttemptTimestampsKey) as? [TimeInterval] ?? []
+        let minAllowed = now.addingTimeInterval(-24 * 3600).timeIntervalSince1970
+        return raw.filter { $0 >= minAllowed }
+    }
+
+    private func localTrialCooldownSeconds(now: Date = Date()) -> Int {
+        let timestamps = trialAttemptTimestamps(now: now)
+        let attemptsInHour = timestamps.filter { now.timeIntervalSince1970 - $0 <= 3600 }.count
+        guard attemptsInHour >= 3, let last = timestamps.max() else { return 0 }
+        let elapsed = now.timeIntervalSince1970 - last
+        let cooldown: TimeInterval = 15 * 60
+        let remaining = max(0, cooldown - elapsed)
+        return Int(remaining.rounded(.up))
+    }
+
+    private func buildTrialAntiAbuseSignals(deviceId: String, now: Date = Date()) -> TrialAntiAbuseSignals {
+        let timestamps = trialAttemptTimestamps(now: now)
+        let velocity1h = timestamps.filter { now.timeIntervalSince1970 - $0 <= 3600 }.count
+        let velocity24h = timestamps.count
+        let cooldown = localTrialCooldownSeconds(now: now)
+
+        let salt = loadOrRotateTrialRiskSalt(now: now)
+        let baseFingerprint = [
+            deviceId,
+            UIDevice.current.model,
+            UIDevice.current.systemVersion,
+            Bundle.main.bundleIdentifier ?? "unknown.bundle"
+        ].joined(separator: "|")
+
+        let fingerprintHash = sha256Hex("\(salt)|\(baseFingerprint)")
+        let appVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "unknown"
+
+        return TrialAntiAbuseSignals(
+            installFingerprintHash: fingerprintHash,
+            velocity1h: velocity1h,
+            velocity24h: velocity24h,
+            cooldownSeconds: cooldown,
+            appVersion: appVersion,
+            osVersion: UIDevice.current.systemVersion,
+            riskVersion: "ios-v1"
+        )
+    }
+
+    private func loadOrRotateTrialRiskSalt(now: Date = Date()) -> String {
+        let defaults = UserDefaults.standard
+        let createdAt = defaults.object(forKey: trialRiskSaltCreatedAtKey) as? Date
+        let existing = defaults.string(forKey: trialRiskSaltKey)
+        let shouldRotate: Bool = {
+            guard let createdAt else { return true }
+            return now.timeIntervalSince(createdAt) > 30 * 24 * 3600
+        }()
+        if let existing, !existing.isEmpty, !shouldRotate {
+            return existing
+        }
+        let fresh = UUID().uuidString.replacingOccurrences(of: "-", with: "")
+        defaults.set(fresh, forKey: trialRiskSaltKey)
+        defaults.set(now, forKey: trialRiskSaltCreatedAtKey)
+        return fresh
+    }
+
+    private func sha256Hex(_ input: String) -> String {
+        let digest = SHA256.hash(data: Data(input.utf8))
+        return digest.map { String(format: "%02x", $0) }.joined()
     }
 
     // MARK: - Private Methods

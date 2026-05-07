@@ -1,6 +1,7 @@
 import Foundation
 import AVFoundation
 import Combine
+import CryptoKit
 
 /**
  * 🔊 Voice Message Player
@@ -22,6 +23,11 @@ class VoiceMessagePlayer: NSObject, ObservableObject {
     private var audioPlayer: AVAudioPlayer?
     private var playbackTimer: Timer?
     private var audioSession: AVAudioSession = AVAudioSession.sharedInstance()
+    private var activeLoadMessageId: String?
+    private var cacheDirectoryURL: URL {
+        FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask)[0]
+            .appendingPathComponent("VoiceMessageCache", isDirectory: true)
+    }
     
     // MARK: - Singleton
     
@@ -54,31 +60,29 @@ class VoiceMessagePlayer: NSObject, ObservableObject {
         if isPlaying {
             stop()
         }
-        
-        do {
-            audioPlayer = try AVAudioPlayer(contentsOf: url)
-            audioPlayer?.delegate = self
-            audioPlayer?.prepareToPlay()
-            
-            guard let player = audioPlayer, player.play() else {
-                playbackError = "Не удалось начать воспроизведение"
-                return
+
+        currentMessageId = messageId
+        playbackError = nil
+        activeLoadMessageId = messageId
+
+        if url.isFileURL {
+            prepareAndStartPlayback(localURL: url, messageId: messageId)
+            return
+        }
+
+        resolveLocalURL(for: url, messageId: messageId) { [weak self] result in
+            DispatchQueue.main.async {
+                guard let self else { return }
+                guard self.activeLoadMessageId == messageId else { return }
+                switch result {
+                case .success(let localURL):
+                    self.prepareAndStartPlayback(localURL: localURL, messageId: messageId)
+                case .failure(let error):
+                    self.playbackError = error.localizedDescription
+                    self.isPlaying = false
+                    print("❌ VoiceMessagePlayer: Ошибка подготовки файла: \(error.localizedDescription)")
+                }
             }
-            
-            currentMessageId = messageId
-            isPlaying = true
-            playbackDuration = player.duration
-            playbackProgress = 0.0
-            playbackError = nil
-            
-            // Запускаем таймер для отслеживания прогресса
-            startPlaybackTimer()
-            
-            print("✅ VoiceMessagePlayer: Воспроизведение начато для сообщения \(messageId)")
-            
-        } catch {
-            print("❌ VoiceMessagePlayer: Ошибка воспроизведения: \(error.localizedDescription)")
-            playbackError = error.localizedDescription
         }
     }
     
@@ -86,6 +90,7 @@ class VoiceMessagePlayer: NSObject, ObservableObject {
     func stop() {
         audioPlayer?.stop()
         stopPlaybackTimer()
+        activeLoadMessageId = nil
         
         isPlaying = false
         currentMessageId = nil
@@ -102,10 +107,84 @@ class VoiceMessagePlayer: NSObject, ObservableObject {
         if player.isPlaying {
             player.pause()
             stopPlaybackTimer()
+            isPlaying = false
         } else {
             player.play()
             startPlaybackTimer()
+            isPlaying = true
         }
+    }
+
+    // MARK: - Local file preparation
+
+    private func prepareAndStartPlayback(localURL: URL, messageId: String) {
+        do {
+            audioPlayer = try AVAudioPlayer(contentsOf: localURL)
+            audioPlayer?.delegate = self
+            audioPlayer?.prepareToPlay()
+
+            guard let player = audioPlayer, player.play() else {
+                playbackError = "Не удалось начать воспроизведение"
+                isPlaying = false
+                return
+            }
+
+            currentMessageId = messageId
+            isPlaying = true
+            playbackDuration = player.duration
+            playbackProgress = 0.0
+            playbackError = nil
+            startPlaybackTimer()
+            print("✅ VoiceMessagePlayer: Воспроизведение начато для сообщения \(messageId)")
+        } catch {
+            print("❌ VoiceMessagePlayer: Ошибка воспроизведения: \(error.localizedDescription)")
+            playbackError = error.localizedDescription
+            isPlaying = false
+        }
+    }
+
+    private func resolveLocalURL(for remoteURL: URL, messageId: String, completion: @escaping (Result<URL, Error>) -> Void) {
+        do {
+            try FileManager.default.createDirectory(at: cacheDirectoryURL, withIntermediateDirectories: true, attributes: nil)
+        } catch {
+            completion(.failure(error))
+            return
+        }
+
+        let cacheFileName = makeCacheFileName(for: remoteURL)
+        let cachedURL = cacheDirectoryURL.appendingPathComponent(cacheFileName)
+        if FileManager.default.fileExists(atPath: cachedURL.path) {
+            completion(.success(cachedURL))
+            return
+        }
+
+        URLSession.shared.downloadTask(with: remoteURL) { tempURL, _, error in
+            if let error {
+                completion(.failure(error))
+                return
+            }
+            guard let tempURL else {
+                completion(.failure(NSError(domain: "VoiceMessagePlayer", code: -1, userInfo: [NSLocalizedDescriptionKey: "Файл не загружен"])))
+                return
+            }
+
+            do {
+                if FileManager.default.fileExists(atPath: cachedURL.path) {
+                    try FileManager.default.removeItem(at: cachedURL)
+                }
+                try FileManager.default.moveItem(at: tempURL, to: cachedURL)
+                completion(.success(cachedURL))
+            } catch {
+                completion(.failure(error))
+            }
+        }.resume()
+    }
+
+    private func makeCacheFileName(for remoteURL: URL) -> String {
+        let digest = SHA256.hash(data: Data(remoteURL.absoluteString.utf8))
+        let hash = digest.compactMap { String(format: "%02x", $0) }.joined()
+        let ext = remoteURL.pathExtension.isEmpty ? "m4a" : remoteURL.pathExtension
+        return "\(hash).\(ext)"
     }
     
     /// Перемотка к позиции
