@@ -47,54 +47,62 @@ struct ChildInterfaceScreen: View {
         }
     }
     
+    private func ageChipTitle(for age: AgeGroup) -> String {
+        switch age {
+        case .kids: return localizationManager.localized("child_interface_age_chip_kids")
+        case .school: return localizationManager.localized("child_interface_age_chip_school")
+        case .teen: return localizationManager.localized("child_interface_age_chip_teen")
+        case .youngAdult: return localizationManager.localized("child_interface_age_chip_young")
+        }
+    }
+    
     // MARK: - Body
     
     var body: some View {
-        ZStack {
-            // Фон (более яркий для детей)
-            LinearGradient(
-                colors: [
-                    Color.blue,
-                    Color.blue.opacity(0.8),
-                    Color.blue.opacity(0.6)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(localizationManager.localized("child_interface_background"))
-            
-            VStack(spacing: 0) {
-                // Простая навигация для детей
-                childHeader
+        GeometryReader { geometry in
+            let topCap = geometry.size.height * 0.25
+            ZStack {
+                // Фон (более яркий для детей)
+                LinearGradient(
+                    colors: [
+                        Color.blue,
+                        Color.blue.opacity(0.8),
+                        Color.blue.opacity(0.6)
+                    ],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+                .ignoresSafeArea()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(localizationManager.localized("child_interface_background"))
                 
-                // Основной контент
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 16) {
-                        // Приветствие
-                        greetingCard
-                        
-                        // НОВОЕ: Возрастные табы
-                        ageTabs
-                        
-                        // 🦄 Мои единороги
-                        unicornBalanceCard
-                        
-                        // Большие кнопки для детей
-                        bigButtonsGrid
-                        
-                        // Время экрана
-                        screenTimeCard
-                        
-                        // Адаптивный отступ (Apple HIG)
-                        Spacer(minLength: 0)
-                            .frame(maxHeight: 32)
+                VStack(spacing: 0) {
+                    // Верх: навигация + приветствие, не больше ~25% высоты экрана (реальные устройства)
+                    childHeader
+                        .frame(maxHeight: topCap, alignment: .top)
+                        .clipped()
+                    
+                    // Основной контент
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: 16) {
+                            greetingCard
+                            
+                            ageTabs
+                            
+                            unicornBalanceCard
+                            
+                            bigButtonsGrid
+                            
+                            screenTimeCard
+                            
+                            Spacer(minLength: 0)
+                                .frame(maxHeight: 32)
+                        }
+                        .padding(.top, 12)
                     }
-                    .padding(.top, 16)
+                    .accessibilityElement(children: .contain)
+                    .accessibilityLabel(localizationManager.localized("child_interface_content"))
                 }
-                .accessibilityElement(children: .contain)
-                .accessibilityLabel(localizationManager.localized("child_interface_content"))
             }
         }
         .id("child_interface_lang_\(localizationManager.currentLanguage.rawValue)")
@@ -135,7 +143,7 @@ struct ChildInterfaceScreen: View {
     // MARK: - Child Header
     
     private var childHeader: some View {
-        HStack(spacing: 12) {
+        HStack(alignment: .center, spacing: 10) {
             // Кнопка назад
             Button(action: {
                 // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
@@ -161,12 +169,12 @@ struct ChildInterfaceScreen: View {
                         Image(uiImage: selectedImage)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: 80, height: 80)
+                            .frame(width: 60, height: 60)
                             .clipShape(Circle())
                     } else {
                         Text("👧")
-                            .font(.system(size: 50))
-                            .frame(width: 80, height: 80)
+                            .font(.system(size: 40))
+                            .frame(width: 60, height: 60)
                             .background(
                                 Circle()
                                     .fill(Color.white.opacity(0.2))
@@ -193,15 +201,32 @@ struct ChildInterfaceScreen: View {
             }
             .buttonStyle(PlainButtonStyle())
             
-            // Приветствие
-            VStack(alignment: .leading, spacing: 2) {
-                Text(String(format: localizationManager.localized("child_interface_hello"), getUserName()))
-                    .font(.title)
+            // Приветствие (без имени; компактно для реальных экранов)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(localizationManager.localized("child_interface_greeting_hi"))
+                    .font(.title3.weight(.bold))
                     .foregroundColor(.white)
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.85)
                 
-                Text(localizationManager.localized("child_interface_protected"))
-                    .font(.body)
-                    .foregroundColor(.white.opacity(0.8))
+                HStack(alignment: .firstTextBaseline, spacing: 8) {
+                    Text(localizationManager.localized("child_interface_protected_line"))
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.92))
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.9)
+                    
+                    Text(ageChipTitle(for: selectedAge))
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(
+                            Capsule()
+                                .fill(Color.white.opacity(0.22))
+                        )
+                        .lineLimit(1)
+                }
             }
             
             Spacer()
@@ -232,19 +257,21 @@ struct ChildInterfaceScreen: View {
     // MARK: - Greeting Card
     
     private var greetingCard: some View {
-        VStack(spacing: 12) {
+        VStack(spacing: 10) {
             Text("🎮")
-                .font(.system(size: 64))
+                .font(.system(size: 36))
             
             Text(localizationManager.localized("child_interface_what_to_do"))
-                .font(.largeTitle)
+                .font(.title2.weight(.bold))
                 .foregroundColor(.white)
+                .minimumScaleFactor(0.85)
             
             Text(localizationManager.localized("child_interface_choose_activity"))
-                .font(.body)
-                .foregroundColor(.white.opacity(0.8))
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.85))
+                .multilineTextAlignment(.center)
         }
-        .padding(16)
+        .padding(14)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.white.opacity(0.15))

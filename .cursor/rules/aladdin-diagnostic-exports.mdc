@@ -8,6 +8,9 @@ alwaysApply: false
 
 # Диагностические экспорты ALADDIN (симулятор / устройство)
 
+Для задач по iOS мобильному приложению ALADDIN рабочий git-корень всегда:
+`/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`.
+
 После нажатия **«Экспорт»** в мини-логгере или **«Share Trace»** приложение записывает в каталог **Documents** приложения:
 
 1. **`aladdin_latest_export_manifest.json`** (стабильное имя, перезаписывается каждый раз) — **читать в первую очередь**. Поля:

@@ -1,0 +1,15 @@
+---
+description: iOS workspace root policy for all ALADDIN mobile work
+alwaysApply: true
+---
+
+# ALADDIN iOS Working Root (Mandatory)
+
+- For ALL iOS mobile app tasks, work only in this repository root:
+  - `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
+- Do not run project edits/commits from parent directories.
+- Before any changes, verify context:
+  - `git rev-parse --show-toplevel`
+  - `git branch --show-current`
+  - `git status --short`
+- If `show-toplevel` is not this iOS path, stop and switch to this repo first.

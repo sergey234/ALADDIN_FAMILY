@@ -186,7 +186,7 @@ struct MainScreen: View {
                         .padding(.vertical, 6)
                     }
                     
-                    // ✨ Аладдин Kids — полный детский интерфейс (маршрут .threatProtection не удалён, см. уведомления / расширенная защита)
+                    // ✨ Aladdin Kids — полный детский интерфейс (подпись всегда латиницей на всех языках)
                     Button(action: {
                         logger.buttonTap("Aladdin Kids Tab", screen: "Main")
                         navigationManager.navigateTo(.childInterface)
@@ -194,17 +194,19 @@ struct MainScreen: View {
                         VStack(spacing: 4) {
                             Text("✨")
                                 .font(.system(size: 20))
-                            Text(localizationManager.localized("main_tab_aladdin_kids"))
+                            Text("Aladdin Kids")
                                 .font(.system(size: 9, weight: .bold))
                                 .foregroundColor(.white.opacity(0.7))
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.72)
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity, alignment: .center)
                         }
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 6)
                     }
                     .accessibilityIdentifier("main_tab_aladdin_kids")
-                    .accessibilityLabel(localizationManager.localized("main_tab_aladdin_kids"))
+                    .accessibilityLabel("Aladdin Kids")
                     .accessibilityHint(localizationManager.localized("main_tab_aladdin_kids_hint"))
                     
                     // 🔔 Уведомления

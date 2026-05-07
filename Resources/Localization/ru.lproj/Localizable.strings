@@ -398,6 +398,12 @@
 "child_interface_background" = "Фон детского интерфейса";
 "child_interface_content" = "Содержимое детского интерфейса";
 "child_interface_hello" = "Привет, %s!";
+"child_interface_greeting_hi" = "Привет!";
+"child_interface_protected_line" = "Ты под защитой!";
+"child_interface_age_chip_kids" = "реб. 1-6";
+"child_interface_age_chip_school" = "реб. 7-12";
+"child_interface_age_chip_teen" = "13-17";
+"child_interface_age_chip_young" = "18-22";
 "child_interface_welcome_back" = "С возвращением!";
 "child_interface_time_left" = "Осталось времени";
 "child_interface_time_minutes" = "%d минут";
@@ -1673,6 +1679,8 @@
 "main_ai_assistant_greeting" = "Задайте вопрос по защите семьи.";
 "main_ai_assistant_placeholder" = "Введите вопрос...";
 "main_tab_game" = "Игра";
+"main_tab_aladdin_kids" = "Aladdin Kids";
+"main_tab_aladdin_kids_hint" = "Открывает детский интерфейс с возрастными режимами и активностями";
 "main_tab_protection" = "Защита";
 "main_tab_notifications" = "Уведомления";
 "main_tab_profile" = "Профиль";

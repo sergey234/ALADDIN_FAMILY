@@ -5,6 +5,12 @@ alwaysApply: true
 
 # Подключение и деплой на прод‑сервер ALADDIN
 
+## Рабочий корень репозитория (обязательно)
+
+Для задач по iOS мобильному приложению ALADDIN работать только из:
+`/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
+(проверка: `git rev-parse --show-toplevel`).
+
 Перед любыми действиями с хостом **`149.154.65.180`** (SSH `:22`, API **`:8002`**, корень бэкенда **`/opt/aladdin-backend`**) открой и следуй **`ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md`** (канонический алгоритм).
 
 ## Обязательный порядок (как в гайде)

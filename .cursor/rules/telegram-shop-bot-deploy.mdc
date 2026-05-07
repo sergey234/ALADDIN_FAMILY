@@ -6,6 +6,9 @@ alwaysApply: false
 
 # Деплой `telegram_stars_shop_bot` на production
 
+Для задач по iOS мобильному приложению ALADDIN рабочий git-корень всегда:
+`/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`.
+
 Полный канон, пути, исключения `rsync`, смоук: **`telegram_stars_shop_bot/docs/ML_SYSTEM_HANDOFF_FINAL.md`** (раздел 2, вариант A).
 
 Порядок с хостом **149.154.65.180** (SSH, при необходимости health `:8002`): корень репозитория **`ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md`**.

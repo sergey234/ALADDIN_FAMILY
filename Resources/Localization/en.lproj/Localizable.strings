@@ -297,6 +297,12 @@
 "child_interface_background" = "Child interface background";
 "child_interface_content" = "Child interface content";
 "child_interface_hello" = "Hello, %s!";
+"child_interface_greeting_hi" = "Hi!";
+"child_interface_protected_line" = "You're protected!";
+"child_interface_age_chip_kids" = "child 1-6";
+"child_interface_age_chip_school" = "child 7-12";
+"child_interface_age_chip_teen" = "13-17";
+"child_interface_age_chip_young" = "18-22";
 "child_interface_welcome_back" = "Welcome back!";
 "child_interface_time_left" = "Time left";
 "child_interface_time_minutes" = "%d minutes";
@@ -1786,6 +1792,8 @@
 "main_ai_assistant_greeting" = "Ask anything about your family protection.";
 "main_ai_assistant_placeholder" = "Type your question...";
 "main_tab_game" = "Game";
+"main_tab_aladdin_kids" = "Aladdin Kids";
+"main_tab_aladdin_kids_hint" = "Opens the child interface with age modes and activities";
 "main_tab_protection" = "Protection";
 "main_tab_notifications" = "Alerts";
 "main_tab_profile" = "Profile";

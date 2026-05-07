@@ -4,6 +4,9 @@ description: Production policy for parental bypass API: no mock/fallback respons
 ---
 # Production No-Mock Rule (Parental Bypass)
 
+For ALADDIN iOS mobile tasks, the working git root is always:
+`/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`.
+
 For production changes related to parental control bypass flow:
 
 - Never accept or ship backend responses containing `source: "sfm_mock"` or `result: "mock_fallback"`.
