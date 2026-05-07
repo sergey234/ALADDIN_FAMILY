@@ -2,6 +2,8 @@ import SwiftUI
 
 struct VoiceNoteCard: View {
     let note: VoiceNotesViewModel.VoiceNoteItem
+    /// Повторная генерация summary (вынесена из swipe у `List`, чтобы сохранить один общий скролл).
+    var onRegenerateSummary: (() -> Void)?
     @EnvironmentObject private var localizationManager: LocalizationManager
 
     var body: some View {
@@ -30,6 +32,17 @@ struct VoiceNoteCard: View {
                 Text("\(note.durationSec)s")
                     .font(.caption)
                     .foregroundColor(.secondary)
+            }
+
+            if let onRegenerateSummary {
+                Button(action: onRegenerateSummary) {
+                    Label(localizationManager.localized("voice_notes_summary_retry"), systemImage: "arrow.clockwise")
+                        .font(.caption.weight(.semibold))
+                        .frame(maxWidth: .infinity)
+                }
+                .buttonStyle(.bordered)
+                .controlSize(.small)
+                .tint(.orange)
             }
 
             if !note.tags.isEmpty {

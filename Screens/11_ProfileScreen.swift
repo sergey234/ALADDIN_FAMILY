@@ -15,6 +15,7 @@ struct ProfileScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var mainViewModel: MainViewModel
+    @EnvironmentObject private var subscriptionManager: SubscriptionManager
     @StateObject private var tariffManager = TariffManager.shared
     @State private var showImagePicker: Bool = false
     @State private var selectedImage: UIImage?
@@ -33,6 +34,10 @@ struct ProfileScreen: View {
     // ✅ Согласие на обработку ПДн (152-ФЗ)
     @AppStorage("personal_data_consent_accepted") private var consentAccepted: Bool = false
     @AppStorage("personal_data_consent_date") private var consentDate: String = ""
+    /// Тот же источник, что у главной (семейная карточка), чтобы дата в профиле не расходилась с MainScreen.
+    @AppStorage("subscription_expires_at_iso") private var subscriptionExpiresAtIso: String = ""
+
+    private let subscriptionExpiryFormatterService = DateFormatterService.shared
     @State private var showConsentRevokeAlert: Bool = false
     @State private var isFamilyIdentityRepairingProfile: Bool = false
     @State private var familyIdentityRepairStamp: Int = 0
@@ -163,6 +168,7 @@ struct ProfileScreen: View {
             loadRegistrationDate()
             loadProfileImage()
             mainViewModel.requestRefreshDebounced()
+            Task { await subscriptionManager.syncSubscriptionOnMainScreenAppear() }
         }
         .sheet(isPresented: $showImagePicker) {
             ProfileImagePicker(selectedImage: $selectedImage)
@@ -264,7 +270,7 @@ struct ProfileScreen: View {
                     .foregroundColor(.textSecondary)
             }
             
-            // Статус подписки (показываем только для платных тарифов)
+            // Статус подписки (не free): название тарифа + реальная дата окончания (как на главной)
             if tariffManager.currentTariff != .free {
                 HStack(spacing: Spacing.s) {
                     Text("⭐")
@@ -274,9 +280,11 @@ struct ProfileScreen: View {
                         .font(.body.bold())
                         .foregroundColor(.yellow)
                     
-                    Text(localizationManager.localized("profile_valid_until"))
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
+                    if let formattedExpiry = profileSubscriptionExpiryFormatted() {
+                        Text("\(localizationManager.localized("profile_subscription_valid_until_prefix")) \(formattedExpiry)")
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                    }
                 }
                 .padding(.horizontal, Spacing.l)
                 .padding(.vertical, Spacing.s)
@@ -288,6 +296,7 @@ struct ProfileScreen: View {
                                 .stroke(Color.yellow.opacity(0.5), lineWidth: 1)
                         )
                 )
+                .id("profile_tariff_capsule_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffManager.currentTariff.rawValue)")
             }
         }
     }
@@ -1088,6 +1097,33 @@ struct DeleteAccountView: View {
     }
 }
 
+// MARK: - Subscription expiry (совпадает с логикой семейной карточки на MainScreen)
+
+private extension ProfileScreen {
+    /// Окончание trial или платной подписки. `nil` — не показываем строку (free не сюда; ошибка парсинга / нет данных).
+    func profileSubscriptionExpiryFormatted() -> String? {
+        let tier = tariffManager.currentTariff
+        guard tier != .free else { return nil }
+
+        if tier == .trial {
+            if let trial = subscriptionManager.trialStatus, trial.isActive {
+                return subscriptionExpiryFormatterService.formatDisplayDate(trial.endDate)
+            }
+        }
+
+        if !subscriptionExpiresAtIso.isEmpty,
+           let fromIso = subscriptionExpiryFormatterService.formatExpirationDate(from: subscriptionExpiresAtIso) {
+            return fromIso
+        }
+
+        if let exp = subscriptionManager.currentSubscription?.expiresAt {
+            return subscriptionExpiryFormatterService.formatDisplayDate(exp)
+        }
+
+        return nil
+    }
+}
+
 struct EditProfileView: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var navigationManager: NavigationManager
@@ -1320,6 +1356,7 @@ struct ProfileScreen_Previews: PreviewProvider {
             .environmentObject(MainViewModel())
             .environmentObject(NavigationManager())
             .environmentObject(LocalizationManager.shared)
+            .environmentObject(SubscriptionManager.shared)
     }
 }
 

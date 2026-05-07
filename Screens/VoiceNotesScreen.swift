@@ -13,18 +13,21 @@ struct VoiceNotesScreen: View {
 
     var body: some View {
         NavigationView {
-            VStack(spacing: 12) {
-                QuickRecorderBar(viewModel: viewModel)
-                    .environmentObject(localizationManager)
-                    .padding(.horizontal)
+            ScrollView {
+                LazyVStack(alignment: .leading, spacing: 12) {
+                    QuickRecorderBar(viewModel: viewModel)
+                        .environmentObject(localizationManager)
+                        .padding(.horizontal)
 
-                privacyBanner
+                    privacyBanner
 
-                callAssistantSection
+                    callAssistantSection
 
-                notesContent
-                    .searchable(text: $viewModel.searchText, prompt: localizationManager.localized("voice_notes_search_placeholder"))
+                    notesContent
+                }
+                .padding(.bottom, 8)
             }
+            .searchable(text: $viewModel.searchText, prompt: localizationManager.localized("voice_notes_search_placeholder"))
             .safeAreaInset(edge: .bottom) {
                 if viewModel.canUndoDelete {
                     HStack {
@@ -98,8 +101,25 @@ private extension VoiceNotesScreen {
 
             if viewModel.groupedNotes.isEmpty {
                 emptyState
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 32)
             } else {
-                notesList
+                notesSectionsInScroll
+            }
+        }
+    }
+
+    /// Секции заметок вне `List`, чтобы общий экран прокручивался одним `ScrollView`.
+    private var notesSectionsInScroll: some View {
+        ForEach(viewModel.groupedNotes, id: \.titleKey) { section in
+            VStack(alignment: .leading, spacing: 10) {
+                Text(localizationManager.localized(section.titleKey))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal)
+                ForEach(section.items) { note in
+                    noteRow(note)
+                }
             }
         }
     }
@@ -117,27 +137,18 @@ private extension VoiceNotesScreen {
                 .multilineTextAlignment(.center)
         }
         .padding(.horizontal, 20)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-    }
-
-    var notesList: some View {
-        List {
-            ForEach(viewModel.groupedNotes, id: \.titleKey) { section in
-                Section(localizationManager.localized(section.titleKey)) {
-                    ForEach(section.items) { note in
-                        noteRow(note)
-                    }
-                }
-            }
-        }
-        .listStyle(.insetGrouped)
+        .frame(maxWidth: .infinity)
     }
 
     func noteRow(_ note: VoiceNotesViewModel.VoiceNoteItem) -> some View {
-        VoiceNoteCard(note: note)
+        VoiceNoteCard(
+            note: note,
+            onRegenerateSummary: {
+                viewModel.generateSummary(noteId: note.id, forceRegenerate: true)
+            }
+        )
             .environmentObject(localizationManager)
-            .listRowInsets(EdgeInsets(top: 6, leading: 12, bottom: 6, trailing: 12))
-            .listRowBackground(Color.clear)
+            .padding(.horizontal, 12)
             .contextMenu {
                 Button(localizationManager.localized("voice_notes_rename")) {
                     renameTargetId = note.id
@@ -147,15 +158,6 @@ private extension VoiceNotesScreen {
                 Button(localizationManager.localized("voice_notes_summarize")) {
                     viewModel.generateSummary(noteId: note.id, forceRegenerate: true)
                 }
-            }
-            .swipeActions(edge: .trailing, allowsFullSwipe: false) {
-                Button {
-                    viewModel.generateSummary(noteId: note.id, forceRegenerate: true)
-                } label: {
-                    Label(localizationManager.localized("voice_notes_summary_retry"), systemImage: "arrow.clockwise")
-                }
-                .tint(.orange)
-
                 Button(role: .destructive) {
                     viewModel.requestDelete(note: note)
                 } label: {

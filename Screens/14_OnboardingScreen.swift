@@ -174,14 +174,20 @@ struct OnboardingScreen: View {
 
     // ✅ НОВОЕ: Безопасная функция локализации с fallback
     private func safeLocalized(_ key: String, fallback: String? = nil) -> String {
-        // Сначала пробуем получить из LocalizationManager
         let localized = localizationManager.localized(key)
-        if !localized.isEmpty && localized != key { // Проверяем что это не fallback на ключ
-            return localized
+
+        if localized.isEmpty || localized == key {
+            return fallback ?? localizedFallbackValue(for: key) ?? key
         }
 
-        // Fallback к предоставленному тексту или словарю текущей локали
-        return fallback ?? localizedFallbackValue(for: key) ?? key
+        // EN UI must not show Russian from LocalizationManager's global RU fallback (e.g. missing en.lproj in older builds).
+        if localizationManager.currentLanguage == .english,
+           let ruRef = fallbackTexts[key],
+           localized == ruRef {
+            return fallback ?? fallbackTextsEnglish[key] ?? localized
+        }
+
+        return localized
     }
 
     private func localizedFallbackValue(for key: String) -> String? {
@@ -449,72 +455,65 @@ struct OnboardingScreen: View {
     private func mainOnboardingContent() -> some View {
         print("🎯 OnboardingScreen.mainOnboardingContent: showing \(pages.count) pages")
         return VStack(spacing: 0) {
-            // Кнопка пропустить
-            HStack {
-                Spacer()
+            // «Пропустить» только до финального шага: ведёт к экрану с 2 обязательными согласиями. На последнем шаге скрыта — иначе обход без галочек.
+            if !isFinalOnboardingPage {
+                HStack {
+                    Spacer()
 
-                Button(action: {
-                    if isFinalOnboardingPage && !finalRequiredConsentsAccepted {
-                        HapticFeedback.notification(.warning)
-                        return
-                    }
-                    // ✅ Сохраняем статус онбординга
-                    hasCompletedOnboarding = true
-                    // ✅ BUILD 98: Устанавливаем hasCompletedOnboarding асинхронно для предотвращения рекурсии
-                    hasCompletedOnboarding = true
-                    markPrimaryUserRoleParentIfUnset()
-                    Task { @MainActor in
-                        UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-                    }
-                    // ✅ Используем NavigationManager для перехода на главный экран
-                    navigationManager.navigateTo(.main)
-                    print("✅ OnboardingScreen: Пропущен, переход на главный экран")
-                }) {
-                    Text(safeLocalized("onboarding_skip"))
+                    Button(action: {
+                        guard !pages.isEmpty else { return }
+                        if currentPage < pages.count - 1 {
+                            withAnimation {
+                                currentPage = pages.count - 1
+                            }
+                            HapticFeedback.selection()
+                        }
+                    }) {
+                        Text(safeLocalized("onboarding_skip"))
                             .font(.body)
                             .foregroundColor(.textSecondary)
                     }
-                    .accessibilityElement(label: "Пропустить онбординг", hint: "Нажмите для пропуска введения и перехода к главному экрану")
+                    .accessibilityElement(label: safeLocalized("onboarding_skip"), hint: safeLocalized("onboarding_continue_hint"))
                 }
-                .disabled(isFinalOnboardingPage && !finalRequiredConsentsAccepted)
                 .padding(Spacing.m)
+            }
 
-                // Контент страниц
-                if pages.isEmpty {
-                    ProgressView()
-                        .progressViewStyle(.circular)
-                        .tint(.white)
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else {
-                    TabView(selection: $currentPage) {
-                        ForEach(0..<pages.count, id: \.self) { index in
-                            onboardingPage(pages[index], index: index)
-                                .tag(index)
-                        }
+            // Контент страниц
+            if pages.isEmpty {
+                ProgressView()
+                    .progressViewStyle(.circular)
+                    .tint(.white)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                TabView(selection: $currentPage) {
+                    ForEach(0..<pages.count, id: \.self) { index in
+                        onboardingPage(pages[index], index: index)
+                            .tag(index)
                     }
-                    .tabViewStyle(.page(indexDisplayMode: .never))
-                    .accessibilityElement(children: .contain)
-                    .accessibilityLabel("Страница \(currentPage + 1) из \(pages.count)")
                 }
+                .tabViewStyle(.page(indexDisplayMode: .never))
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Страница \(currentPage + 1) из \(pages.count)")
+            }
 
-                // Индикаторы страниц
-                if !pages.isEmpty {
-                    HStack(spacing: Spacing.sm) {
-                        ForEach(0..<pages.count, id: \.self) { index in
-                            Circle()
-                                .fill(currentPage == index ? Color.primaryBlue : Color.textSecondary.opacity(0.3))
-                                .frame(width: currentPage == index ? 12 : 8, height: currentPage == index ? 12 : 8)
-                                .animation(.spring(), value: currentPage)
-                                .accessibilityLabel(currentPage == index ? "Текущая страница \(index + 1)" : "Страница \(index + 1)")
-                        }
+            // Индикаторы страниц
+            if !pages.isEmpty {
+                HStack(spacing: Spacing.sm) {
+                    ForEach(0..<pages.count, id: \.self) { index in
+                        Circle()
+                            .fill(currentPage == index ? Color.primaryBlue : Color.textSecondary.opacity(0.3))
+                            .frame(width: currentPage == index ? 12 : 8, height: currentPage == index ? 12 : 8)
+                            .animation(.spring(), value: currentPage)
+                            .accessibilityLabel(currentPage == index ? "Текущая страница \(index + 1)" : "Страница \(index + 1)")
                     }
-                    .padding(.vertical, Spacing.l)
-                    .accessibilityElement(children: .contain)
-                    .accessibilityLabel("Индикаторы страниц")
                 }
+                .padding(.vertical, Spacing.l)
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel("Индикаторы страниц")
+            }
 
-                // Кнопки (на последнем слайде показываем дополнительные)
-                VStack(spacing: Spacing.m) {
+            // Кнопки (на последнем слайде показываем дополнительные)
+            VStack(spacing: Spacing.m) {
                     // Основная кнопка
                     Button(action: {
                         if currentPage < pages.count - 1 {
@@ -522,6 +521,10 @@ struct OnboardingScreen: View {
                                 currentPage += 1
                             }
                         } else {
+                            guard finalRequiredConsentsAccepted else {
+                                HapticFeedback.notification(.warning)
+                                return
+                            }
                             // ✅ Начать регистрацию - сохраняем статус и переходим через NavigationManager
                             // Сохраняем подтверждение обязательных документов раздельно
                             let now = Date()
@@ -716,7 +719,6 @@ struct OnboardingScreen: View {
                 }
                 .padding(.horizontal, Spacing.screenPadding)
                 .padding(.bottom, Spacing.l)
-            }
         }
     }
 
@@ -724,122 +726,119 @@ struct OnboardingScreen: View {
     // MARK: - Onboarding Page
     
     private func onboardingPage(_ page: OnboardingScreen.OnboardingPage, index: Int) -> some View {
-        VStack(spacing: Spacing.xxl) {
-            Spacer()
-            
-            // Иконка или логотип (для страницы 7 используем логотип приложения или изображение профиля)
-            if index == 6 { // Страница 7 (индекс 6)
-                // Логотип приложения или изображение профиля
-                // ✅ ТОЛЬКО ОДИН ЗОЛОТОЙ ОБОДОК вокруг логотипа!
-                // ✅ Опускаем логотип вниз на несколько мм, чтобы не заходил за края экрана
-                VStack(spacing: 0) {
-                    Spacer()
-                        .frame(height: 50) // Отступ сверху для кнопки SKIP (увеличено с 40 до 50)
-                    
-                    // Логотип приложения
-                    if UIImage(named: "app_icon") != nil || UIImage(named: "AppIcon") != nil {
-                        Image("app_icon")
-                            .resizable()
-                            .aspectRatio(contentMode: .fill)
-                            .frame(width: 140, height: 140)
-                            .clipShape(Circle())
-                            .overlay(
-                                Circle()
-                                    .stroke(Color.secondaryGold, lineWidth: 14) // ✅ ОДИН золотой ободок (14px)
-                            )
-                    } else {
-                        // Пробуем загрузить логотип из Assets или используем fallback
-                        if UIImage(named: "app_icon") != nil || UIImage(named: "AppIcon") != nil {
-                            Image("app_icon")
-                                .resizable()
-                                .aspectRatio(contentMode: .fill)
-                                .frame(width: 140, height: 140)
-                                .clipShape(Circle())
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.secondaryGold, lineWidth: 14) // ✅ ОДИН золотой ободок (14px)
-                                )
-                        } else {
-                            Text(page.icon)
-                                .font(.system(size: 80))
-                                .overlay(
-                                    Circle()
-                                        .stroke(Color.secondaryGold, lineWidth: 14) // ✅ ОДИН золотой ободок (14px)
-                                        .frame(width: 140, height: 140)
-                                )
+        Group {
+            if index == 6 {
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: Spacing.l) {
+                        Color.clear.frame(height: 8)
+
+                        VStack(spacing: 0) {
+                            if UIImage(named: "app_icon") != nil || UIImage(named: "AppIcon") != nil {
+                                Image("app_icon")
+                                    .resizable()
+                                    .aspectRatio(contentMode: .fill)
+                                    .frame(width: 140, height: 140)
+                                    .clipShape(Circle())
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.secondaryGold, lineWidth: 14)
+                                    )
+                            } else {
+                                Text(page.icon)
+                                    .font(.system(size: 80))
+                                    .overlay(
+                                        Circle()
+                                            .stroke(Color.secondaryGold, lineWidth: 14)
+                                            .frame(width: 140, height: 140)
+                                    )
+                            }
+                        }
+
+                        VStack(spacing: Spacing.m) {
+                            Text(page.title)
+                                .font(.system(size: 26, weight: .bold))
+                                .foregroundColor(.secondaryGold)
+                                .multilineTextAlignment(.center)
+                                .lineLimit(2)
+                                .minimumScaleFactor(0.7)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .padding(.horizontal, Spacing.m)
+                                .accessibilityLabel("Заголовок: \(page.title)")
+                                .accessibilityAddTraits(.isHeader)
+
+                            Text(page.description)
+                                .font(.system(size: 16))
+                                .foregroundColor(.textSecondary)
+                                .multilineTextAlignment(.center)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .lineSpacing(6)
+                                .padding(.horizontal, Spacing.l)
+                                .accessibilityLabel("Описание: \(page.description)")
                         }
                     }
+                    .frame(maxWidth: .infinity)
+                    .padding(.horizontal, Spacing.xs)
+                    .padding(.bottom, Spacing.m)
                 }
             } else {
-                // Обычная иконка для остальных страниц
-                VStack(spacing: Spacing.m) {
-                    // ✅ На странице 1 (index == 0) добавить стилизованный золотой "Aladdin" над щитом
-                    if index == 0 {
-                        OnboardingAladdinLogoView(size: 36, showSubtitle: false)
-                            .padding(.bottom, Spacing.s)
+                VStack(spacing: Spacing.xxl) {
+                    Spacer()
+                    
+                    VStack(spacing: Spacing.m) {
+                        if index == 0 {
+                            OnboardingAladdinLogoView(size: 36, showSubtitle: false)
+                                .padding(.bottom, Spacing.s)
+                        }
+                        
+                        ZStack {
+                            Circle()
+                                .fill(page.color.opacity(0.2))
+                                .frame(width: 200, height: 200)
+                            
+                            Circle()
+                                .fill(page.color.opacity(0.1))
+                                .frame(width: 160, height: 160)
+                            
+                            Text(page.icon)
+                                .font(.system(size: 80))
+                        }
+                        .accessibilityElement(children: .combine)
+                        .accessibilityLabel("Иконка: \(page.icon)")
                     }
                     
-                    ZStack {
-                        Circle()
-                            .fill(page.color.opacity(0.2))
-                            .frame(width: 200, height: 200)
+                    VStack(spacing: Spacing.m) {
+                        Text(page.title)
+                            .font(.system(size: 24, weight: .bold))
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.center)
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.7)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.horizontal, Spacing.m)
+                            .accessibilityLabel("Заголовок: \(page.title)")
+                            .accessibilityAddTraits(.isHeader)
                         
-                        Circle()
-                            .fill(page.color.opacity(0.1))
-                            .frame(width: 160, height: 160)
-                        
-                        Text(page.icon)
-                            .font(.system(size: 80))
+                        Text(page.description)
+                            .font(.system(size: 16))
+                            .foregroundColor(.textSecondary)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .lineSpacing(6)
+                            .padding(.horizontal, Spacing.l)
+                            .accessibilityLabel("Описание: \(page.description)")
                     }
                     .accessibilityElement(children: .combine)
-                    .accessibilityLabel("Иконка: \(page.icon)")
+                    .accessibilityLabel("\(page.title). \(page.description)")
+                    
+                    Spacer()
                 }
             }
-            
-            // Текст
-            VStack(spacing: Spacing.m) {
-                // ✅ На странице 7 (index == 6) название "ALADDIN" золотым цветом
-                if index == 6 {
-                    Text(page.title)
-                        .font(.system(size: 26, weight: .bold))
-                        .foregroundColor(.secondaryGold) // ✅ Золотой цвет для ALADDIN
-                        .multilineTextAlignment(.center)
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.7)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.horizontal, Spacing.m)
-                        .accessibilityLabel("Заголовок: \(page.title)")
-                        .accessibilityAddTraits(.isHeader)
-                } else {
-                    Text(page.title)
-                        .font(.system(size: 24, weight: .bold))
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.center)
-                        .lineLimit(3)
-                        .minimumScaleFactor(0.7)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.horizontal, Spacing.m)
-                        .accessibilityLabel("Заголовок: \(page.title)")
-                        .accessibilityAddTraits(.isHeader)
-                }
-                
-                Text(page.description)
-                    .font(.system(size: 16))
-                    .foregroundColor(.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(6)
-                    .padding(.horizontal, Spacing.l)
-                    .accessibilityLabel("Описание: \(page.description)")
-            }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("\(page.title). \(page.description)")
-            
-            Spacer()
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Страница онбординга: \(page.title)")
     }
+
+}
 
 // MARK: - Loading View
 

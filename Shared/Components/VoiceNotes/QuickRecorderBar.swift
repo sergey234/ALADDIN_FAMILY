@@ -20,30 +20,64 @@ struct QuickRecorderBar: View {
             ProgressView(value: viewModel.noiseLevel)
                 .tint(.orange)
 
-            HStack(spacing: 10) {
-                Button(localizationManager.localized("voice_notes_record")) {
+            LazyVGrid(
+                columns: [
+                    GridItem(.flexible(minimum: 0), spacing: 10),
+                    GridItem(.flexible(minimum: 0), spacing: 10)
+                ],
+                spacing: 10
+            ) {
+                Button {
                     viewModel.startRecording()
+                } label: {
+                    Text(localizationManager.localized("voice_notes_record"))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.75)
+                        .frame(maxWidth: .infinity, minHeight: 40)
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(viewModel.recordingState == .recording)
+                .accessibilityLabel(localizationManager.localized("voice_notes_record"))
 
-                Button(localizationManager.localized("voice_notes_pause")) {
+                Button {
                     viewModel.pauseRecording()
+                } label: {
+                    Text(localizationManager.localized("voice_notes_pause"))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.75)
+                        .frame(maxWidth: .infinity, minHeight: 40)
                 }
                 .buttonStyle(.bordered)
                 .disabled(viewModel.recordingState != .recording)
+                .accessibilityLabel(localizationManager.localized("voice_notes_pause"))
 
-                Button(localizationManager.localized("voice_notes_resume")) {
+                Button {
                     viewModel.resumeRecording()
+                } label: {
+                    Text(localizationManager.localized("voice_notes_resume"))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.75)
+                        .frame(maxWidth: .infinity, minHeight: 40)
                 }
                 .buttonStyle(.bordered)
                 .disabled(viewModel.recordingState != .paused)
+                .accessibilityLabel(localizationManager.localized("voice_notes_resume"))
 
-                Button(localizationManager.localized("voice_notes_stop")) {
+                Button {
                     viewModel.stopAndSaveRecording()
+                } label: {
+                    Text(localizationManager.localized("voice_notes_stop"))
+                        .lineLimit(2)
+                        .multilineTextAlignment(.center)
+                        .minimumScaleFactor(0.75)
+                        .frame(maxWidth: .infinity, minHeight: 40)
                 }
                 .buttonStyle(.bordered)
                 .disabled(!(viewModel.recordingState == .recording || viewModel.recordingState == .paused))
+                .accessibilityLabel(localizationManager.localized("voice_notes_stop"))
             }
         }
         .padding()

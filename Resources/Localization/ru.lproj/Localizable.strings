@@ -32,6 +32,34 @@
 "privacy_policy_title" = "Политика конфиденциальности";
 "privacy_policy_last_updated" = "Последнее обновление: 29 октября 2024";
 "onboarding.preparing_app" = "Подготовка приложения...";
+
+/* Onboarding Screen (14_OnboardingScreen) */
+"onboarding_skip" = "Пропустить";
+"onboarding_continue" = "Продолжить";
+"onboarding_continue_hint" = "Перейти к следующему шагу";
+"onboarding_start" = "Начать";
+"onboarding_start_hint" = "Открыть главный экран";
+"onboarding_page1_title" = "Защита всей семьи в кармане";
+"onboarding_page1_desc" = "Комплексная система защиты от более 100 видов киберугроз";
+"onboarding_page2_title" = "Ваш персональный агент безопасности";
+"onboarding_page2_desc" = "ИИ охраняет вашу семью 24/7 + Многоуровневая система защита ⭐⭐⭐⭐⭐! Военные технологии шифрования";
+"onboarding_page3_title" = "Родительский контроль";
+"onboarding_page3_desc" = "Система обучения детей безопасности. Вы видите всю активность детей в интернете. Самообучающаяся система защиты AI";
+"onboarding_page4_title" = "Аналитика рисков";
+"onboarding_page4_desc" = "Система ALADDIN AI предсказывает, обнаруживает и предотвращает киберугрозы, постоянно обучаясь и улучшаясь.";
+"onboarding_page5_title" = "Защита для детей!";
+"onboarding_page5_desc" = "Дети не смогут посещать опасные сайты, онлайн-казино, взрослые сайты или совершать покупки в играх и стриминговых сервисах";
+"onboarding_page6_title" = "Защита для людей 23+";
+"onboarding_page6_desc" = "AI распознает фейковые звонки, новости, сообщения и видео. Защита от поддельных голосов и номеров.";
+"onboarding_page7_title" = "Присоединяйтесь к ALADDIN";
+"onboarding_page7_desc" = "Спокойствие близких - бесценно. Защита начинается сегодня!";
+"onboarding_data_collection_info" = "Мы собираем только обезличенные данные для обеспечения безопасности. Подробнее в ";
+"onboarding_privacy_policy_link" = "Политика конфиденциальности";
+"onboarding_data_consent" = "Я согласен с обработкой данных";
+"onboarding_terms_of_service_link" = "Пользовательское соглашение";
+"onboarding_terms_consent" = "Я принимаю пользовательское соглашение";
+"onboarding_have_code" = "У МЕНЯ ЕСТЬ КОД";
+"onboarding_recover" = "ВОССТАНОВИТЬ";
 "child_content_retry_accessibility_hint" = "Повторить загрузку контента";
 "parent_dashboard_open_unified_limits_hint" = "Открывает единый экран дневных лимитов";
 "parent_dashboard_report_export_csv_hint" = "Экспортирует отчёт в формате CSV";

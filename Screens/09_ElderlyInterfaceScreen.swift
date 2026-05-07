@@ -77,48 +77,52 @@ struct ElderlyInterfaceScreen: View {
     // MARK: - Body
     
     var body: some View {
-        ZStack {
-            // Фон (зеленый как в wireframe для пожилых)
-            LinearGradient(
-                colors: elderlyBackgroundColors,
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
+        GeometryReader { geometry in
+            let topCap = geometry.size.height * 0.25
+            ZStack {
+                // Фон (зеленый как в wireframe для пожилых)
+                LinearGradient(
+                    colors: elderlyBackgroundColors,
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
                 .ignoresSafeArea()
-            
-            VStack(spacing: 0) {
-                // Простая навигация
-                elderlyHeader
                 
-                // Основной контент
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: Spacing.xl) {
-                        // Приветствие
-                        greetingCard
-                        
-                        // Секция здоровья
-                        healthSection
+                VStack(spacing: 0) {
+                    // Простая навигация (~25% высоты экрана, как в детском интерфейсе)
+                    elderlyHeader
+                        .frame(maxHeight: topCap, alignment: .top)
+                        .clipped()
+                    
+                    // Основной контент
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: Spacing.xl) {
+                            // Приветствие
+                            greetingCard
+                            
+                            // Секция здоровья
+                            healthSection
 
-                        // Рекомендованный контент 60+
-                        elderlyContentSection
-                        
-                        // Семейная панель
-                        familySection
-                        
-                        // Очень большие кнопки
-                        bigButtonsList
-                        
-                        // Экстренная помощь
-                        emergencySection
-                        
-                        // Защита от мошенников
-                        securitySection
-                        
-                        // Spacer
-                        Spacer()
-                            .frame(height: Spacing.xxl)
+                            // Рекомендованный контент 60+
+                            elderlyContentSection
+                            
+                            // Семейная панель
+                            familySection
+                            
+                            // Очень большие кнопки
+                            bigButtonsList
+                            
+                            // Экстренная помощь
+                            emergencySection
+                            
+                            // Защита от мошенников
+                            securitySection
+                            
+                            Spacer()
+                                .frame(height: Spacing.xxl)
+                        }
+                        .padding(.top, Spacing.l)
                     }
-                    .padding(.top, Spacing.l)
                 }
             }
         }
@@ -301,17 +305,20 @@ struct ElderlyInterfaceScreen: View {
                 Text(localizationManager.localized("elderly_interface_hello"))
                     .font(.system(size: 28, weight: .bold))
                     .foregroundColor(.white)
-                    .lineLimit(1)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
                     .fixedSize(horizontal: false, vertical: true)
-                    .minimumScaleFactor(0.6)
+                    .minimumScaleFactor(0.78)
                 
                 Text(localizationManager.localized("elderly_interface_protected"))
                     .font(.system(size: 20))
                     .foregroundColor(.white.opacity(0.8))
-                    .lineLimit(1)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .minimumScaleFactor(0.6)
+                    .lineLimit(2)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .minimumScaleFactor(0.78)
             }
+            .layoutPriority(1)
             
             Spacer()
             

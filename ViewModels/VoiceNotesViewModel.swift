@@ -172,6 +172,7 @@ final class VoiceNotesViewModel: ObservableObject {
         )
         notes.insert(newNote, at: 0)
         persistNotes()
+        showRecordingSavedToast(path: finishedURL?.path ?? "")
         recordingState = .saved
         currentStatusText = "voice_notes_status_saved"
         recordingStartedAt = nil
@@ -285,6 +286,16 @@ final class VoiceNotesViewModel: ObservableObject {
         )
         notes.insert(note, at: 0)
         persistNotes()
+        ToastManager.shared.showSuccess(
+            LocalizationManager.shared.localized("call_assistant_toast_saved")
+        )
+    }
+
+    private func showRecordingSavedToast(path: String) {
+        guard !path.isEmpty else { return }
+        let fileName = URL(fileURLWithPath: path).lastPathComponent
+        let message = LocalizationManager.shared.localized("voice_notes_toast_saved", fileName)
+        ToastManager.shared.showSuccess(message)
     }
 
     private func finalizeDelete() {
@@ -459,6 +470,7 @@ final class VoiceNotesViewModel: ObservableObject {
         )
         notes.insert(draft, at: 0)
         persistNotes()
+        showRecordingSavedToast(path: finishedURL?.path ?? "")
         recordingState = .saved
         currentStatusText = "voice_notes_status_autosaved"
         recordingStartedAt = nil

@@ -32,6 +32,34 @@
 "privacy_policy_title" = "Privacy Policy";
 "privacy_policy_last_updated" = "Last updated: October 29, 2024";
 "onboarding.preparing_app" = "Preparing the app...";
+
+/* Onboarding Screen (14_OnboardingScreen) — bundle overrides in-app dictionary */
+"onboarding_skip" = "Skip";
+"onboarding_continue" = "Continue";
+"onboarding_continue_hint" = "Go to the next onboarding step";
+"onboarding_start" = "Get Started";
+"onboarding_start_hint" = "Finish onboarding and open the app";
+"onboarding_page1_title" = "Family protection in your pocket";
+"onboarding_page1_desc" = "Comprehensive protection system against more than 100 types of cyber threats";
+"onboarding_page2_title" = "Your personal security agent";
+"onboarding_page2_desc" = "AI guards your family 24/7 + Multi-layer protection system ⭐⭐⭐⭐⭐! Military-grade encryption";
+"onboarding_page3_title" = "Parental control";
+"onboarding_page3_desc" = "Children's safety education system. You see all your children's internet activity. Self-learning AI protection system";
+"onboarding_page4_title" = "Risk analytics";
+"onboarding_page4_desc" = "ALADDIN AI system predicts, detects and prevents cyber threats, constantly learning and improving.";
+"onboarding_page5_title" = "Protection for children!";
+"onboarding_page5_desc" = "Children won't be able to visit dangerous sites, online casinos, adult sites, or make purchases in gaming and streaming services";
+"onboarding_page6_title" = "Protection for people 23+";
+"onboarding_page6_desc" = "AI recognizes fake calls, news, messages and videos. Protection from fake voices and numbers.";
+"onboarding_page7_title" = "Join ALADDIN";
+"onboarding_page7_desc" = "Peace of mind for loved ones is priceless. Protection starts today!";
+"onboarding_data_collection_info" = "We collect only anonymized data to ensure security. Learn more in ";
+"onboarding_privacy_policy_link" = "Privacy Policy";
+"onboarding_data_consent" = "I agree to data processing";
+"onboarding_terms_of_service_link" = "Terms of Service";
+"onboarding_terms_consent" = "I agree to the Terms of Service";
+"onboarding_have_code" = "I HAVE A CODE";
+"onboarding_recover" = "RECOVER";
 "child_content_retry_accessibility_hint" = "Retry loading child content";
 "parent_dashboard_open_unified_limits_hint" = "Opens the unified daily limits screen";
 "parent_dashboard_report_export_csv_hint" = "Exports the report as CSV";

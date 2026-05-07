@@ -46,7 +46,7 @@ class AppConfigTests: XCTestCase {
     }
     
     func testBuildNumber() throws {
-        XCTAssertEqual(AppConfig.buildNumber, "1")
+        XCTAssertEqual(AppConfig.buildNumber, "187")
     }
     
     func testBundleIdentifier() throws {

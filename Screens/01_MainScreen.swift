@@ -187,6 +187,7 @@ struct MainScreen: View {
                     }
                     
                     // ✨ Aladdin Kids — полный детский интерфейс (подпись всегда латиницей на всех языках)
+                    // Смещаем подпись ближе к «Игра», чтобы не прилипала к колонке «Уведомления»
                     Button(action: {
                         logger.buttonTap("Aladdin Kids Tab", screen: "Main")
                         navigationManager.navigateTo(.childInterface)
@@ -199,10 +200,11 @@ struct MainScreen: View {
                                 .foregroundColor(.white.opacity(0.7))
                                 .lineLimit(1)
                                 .minimumScaleFactor(0.72)
-                                .multilineTextAlignment(.center)
-                                .frame(maxWidth: .infinity, alignment: .center)
+                                .multilineTextAlignment(.leading)
                         }
-                        .frame(maxWidth: .infinity)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.leading, 10)
+                        .padding(.trailing, 2)
                         .padding(.vertical, 6)
                     }
                     .accessibilityIdentifier("main_tab_aladdin_kids")
