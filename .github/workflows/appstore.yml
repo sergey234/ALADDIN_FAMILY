@@ -1,11 +1,7 @@
-name: Build and Upload to App Store
+name: Legacy App Store Workflow (Manual Only)
 
 on:
   workflow_dispatch:
-  push:
-    branches: [ master, main ]
-    tags:
-      - 'v*'
 
 jobs:
   build-and-upload:

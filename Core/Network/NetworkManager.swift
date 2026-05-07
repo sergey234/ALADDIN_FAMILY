@@ -251,8 +251,9 @@ private let logger = MasterLogger.shared
         // ✅ ЗАДАЧА 61: Проверка SSL Pinning в продакшене
         #if !DEBUG
         // В продакшене SSL Pinning ОБЯЗАТЕЛЬНО должен быть включен!
-        assert(isSSLPinningEnabled, "🚨 КРИТИЧЕСКАЯ ОШИБКА: SSL Pinning должен быть включен в продакшене!")
-        if !isSSLPinningEnabled {
+        let sslPinningEnabledSnapshot = isSSLPinningEnabled
+        assert(sslPinningEnabledSnapshot, "🚨 КРИТИЧЕСКАЯ ОШИБКА: SSL Pinning должен быть включен в продакшене!")
+        if !sslPinningEnabledSnapshot {
             os_log("CRITICAL ERROR: SSL Pinning отключен в продакшене!", log: Self.networkLogger, type: .error)
         }
         #endif
