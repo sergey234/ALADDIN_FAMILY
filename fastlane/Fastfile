@@ -51,7 +51,7 @@ platform :ios do
       puts "   Content Blocker profile: #{extension_profile_file} (#{File.exist?(extension_profile_file) ? '✅' : '❌'})"
 
       expected_app_group = "group.com.aladdin.family"
-      validate_profile_app_group = lambda do |profile_path, profile_label|
+      validate_profile_app_group = lambda do |profile_path, profile_label, expected_bundle_id|
         unless File.exist?(profile_path)
           UI.user_error!("❌ #{profile_label}: provisioning profile не найден по пути #{profile_path}")
         end
@@ -62,18 +62,27 @@ platform :ios do
         end
 
         profile_name = profile_xml[/<key>Name<\/key>\s*<string>([^<]+)<\/string>/m, 1] || "unknown"
+        application_identifier = profile_xml[/<key>application-identifier<\/key>\s*<string>([^<]+)<\/string>/m, 1] || ""
         has_app_group = profile_xml.include?("<string>#{expected_app_group}</string>")
         puts "📋 #{profile_label} profile: #{profile_name}"
+        puts "📋 #{profile_label} application-identifier: #{application_identifier}"
         puts "📋 #{profile_label} App Group #{expected_app_group}: #{has_app_group ? '✅' : '❌'}"
+
+        unless application_identifier.end_with?(".#{expected_bundle_id}")
+          UI.user_error!("❌ #{profile_label}: provisioning profile '#{profile_name}' не соответствует bundle id #{expected_bundle_id}. " \
+                         "Фактический application-identifier: #{application_identifier}")
+        end
 
         unless has_app_group
           UI.user_error!("❌ #{profile_label}: provisioning profile '#{profile_name}' не содержит App Group #{expected_app_group}. " \
                          "Пересоздайте профиль в Apple Developer Portal и обновите GitHub secret.")
         end
+
+        profile_name
       end
 
-      validate_profile_app_group.call(app_profile_file, "App")
-      validate_profile_app_group.call(extension_profile_file, "Content Blocker")
+      app_profile_name = validate_profile_app_group.call(app_profile_file, "App", "family.aladdin.ios")
+      extension_profile_name = validate_profile_app_group.call(extension_profile_file, "Content Blocker", "family.aladdin.ios.ALADDINContentBlocker")
       
       # Создать xcconfig файл с полными путями
       xcconfig_path = "./build/Release.xcconfig"
@@ -91,8 +100,7 @@ platform :ios do
       ALADDIN_CODE_SIGN_STYLE = Manual
       ALADDIN_DEVELOPMENT_TEAM = #{team_id}
       // НЕ указываем ALADDIN_CODE_SIGN_IDENTITY - Xcode выберет из профиля
-      ALADDIN_PROVISIONING_PROFILE_SPECIFIER = #{app_profile_uuid}
-      ALADDIN_PROVISIONING_PROFILE = #{app_profile_file}
+      ALADDIN_PROVISIONING_PROFILE_SPECIFIER = "#{app_profile_name}"
       ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
       
       // Content Blocker Extension target - ПРИНУДИТЕЛЬНО Manual signing
@@ -100,8 +108,7 @@ platform :ios do
       ALADDINContentBlocker_CODE_SIGN_STYLE = Manual
       ALADDINContentBlocker_DEVELOPMENT_TEAM = #{team_id}
       // НЕ указываем ALADDINContentBlocker_CODE_SIGN_IDENTITY - Xcode выберет из профиля
-      ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = #{extension_profile_uuid}
-      ALADDINContentBlocker_PROVISIONING_PROFILE = #{extension_profile_file}
+      ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = "#{extension_profile_name}"
       ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker
     XCCONFIG
     
@@ -129,11 +136,9 @@ platform :ios do
         "DEVELOPMENT_TEAM=#{team_id}",
         # НЕ указываем CODE_SIGN_IDENTITY - Xcode выберет из профиля
         "ALADDIN_CODE_SIGN_STYLE=Manual",
-        "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
-        "ALADDIN_PROVISIONING_PROFILE='#{app_profile_file}'",
+        "ALADDIN_PROVISIONING_PROFILE_SPECIFIER='#{app_profile_name}'",
         "ALADDINContentBlocker_CODE_SIGN_STYLE=Manual",
-        "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER=#{extension_profile_uuid}",
-        "ALADDINContentBlocker_PROVISIONING_PROFILE='#{extension_profile_file}'",
+        "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER='#{extension_profile_name}'",
         "-allowProvisioningUpdates"
       ].join(" ")
       
