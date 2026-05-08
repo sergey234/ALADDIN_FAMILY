@@ -99,16 +99,14 @@ platform :ios do
       // App target - ПРИНУДИТЕЛЬНО Manual signing
       ALADDIN_CODE_SIGN_STYLE = Manual
       ALADDIN_DEVELOPMENT_TEAM = #{team_id}
-      // НЕ указываем ALADDIN_CODE_SIGN_IDENTITY - Xcode выберет из профиля
-      ALADDIN_PROVISIONING_PROFILE_SPECIFIER = "#{app_profile_name}"
+      // Не переопределяем PROVISIONING_PROFILE_SPECIFIER: используем значение из project.pbxproj
       ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
       
       // Content Blocker Extension target - ПРИНУДИТЕЛЬНО Manual signing
       // Используем ОТДЕЛЬНЫЙ профиль для extension (требуется отдельный App ID)
       ALADDINContentBlocker_CODE_SIGN_STYLE = Manual
       ALADDINContentBlocker_DEVELOPMENT_TEAM = #{team_id}
-      // НЕ указываем ALADDINContentBlocker_CODE_SIGN_IDENTITY - Xcode выберет из профиля
-      ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = "#{extension_profile_name}"
+      // Не переопределяем PROVISIONING_PROFILE_SPECIFIER: используем значение из project.pbxproj
       ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker
     XCCONFIG
     
@@ -136,9 +134,7 @@ platform :ios do
         "DEVELOPMENT_TEAM=#{team_id}",
         # НЕ указываем CODE_SIGN_IDENTITY - Xcode выберет из профиля
         "ALADDIN_CODE_SIGN_STYLE=Manual",
-        "ALADDIN_PROVISIONING_PROFILE_SPECIFIER='#{app_profile_name}'",
         "ALADDINContentBlocker_CODE_SIGN_STYLE=Manual",
-        "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER='#{extension_profile_name}'",
         "-allowProvisioningUpdates"
       ].join(" ")
       
