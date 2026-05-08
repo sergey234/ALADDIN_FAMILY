@@ -3,6 +3,7 @@
 # НЕ требует изменения project.pbxproj
 
 default_platform(:ios)
+require "open3"
 
 platform :ios do
   desc "Build archive for App Store with manual signing using existing certificates and profiles"
@@ -48,6 +49,31 @@ platform :ios do
       puts "📋 Проверка путей к профилям:"
       puts "   App profile: #{app_profile_file} (#{File.exist?(app_profile_file) ? '✅' : '❌'})"
       puts "   Content Blocker profile: #{extension_profile_file} (#{File.exist?(extension_profile_file) ? '✅' : '❌'})"
+
+      expected_app_group = "group.com.aladdin.family"
+      validate_profile_app_group = lambda do |profile_path, profile_label|
+        unless File.exist?(profile_path)
+          UI.user_error!("❌ #{profile_label}: provisioning profile не найден по пути #{profile_path}")
+        end
+
+        profile_xml, stderr, status = Open3.capture3("security", "cms", "-D", "-i", profile_path)
+        unless status.success?
+          UI.user_error!("❌ #{profile_label}: не удалось прочитать provisioning profile (security cms). #{stderr}")
+        end
+
+        profile_name = profile_xml[/<key>Name<\/key>\s*<string>([^<]+)<\/string>/m, 1] || "unknown"
+        has_app_group = profile_xml.include?("<string>#{expected_app_group}</string>")
+        puts "📋 #{profile_label} profile: #{profile_name}"
+        puts "📋 #{profile_label} App Group #{expected_app_group}: #{has_app_group ? '✅' : '❌'}"
+
+        unless has_app_group
+          UI.user_error!("❌ #{profile_label}: provisioning profile '#{profile_name}' не содержит App Group #{expected_app_group}. " \
+                         "Пересоздайте профиль в Apple Developer Portal и обновите GitHub secret.")
+        end
+      end
+
+      validate_profile_app_group.call(app_profile_file, "App")
+      validate_profile_app_group.call(extension_profile_file, "Content Blocker")
       
       # Создать xcconfig файл с полными путями
       xcconfig_path = "./build/Release.xcconfig"
