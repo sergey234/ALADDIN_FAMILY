@@ -308,6 +308,7 @@ class ContentBlockerManager: ObservableObject {
      */
     func runDiagnosticSelfTest() async -> DiagnosticSelfTestResult {
         let diagnostics = SettingsDiagnosticsLogger.shared
+        let localization = LocalizationManager.shared
         diagnostics.logSection("ContentBlocker", function: "runDiagnosticSelfTest", message: "START")
 
         let originalRules = loadRules()
@@ -326,29 +327,41 @@ class ContentBlockerManager: ObservableObject {
         }
 
         do {
-            details.append("Saved baseline: rules=\(originalRules.count), categories=\(originalCategories.count)")
+            details.append(
+                localization.localized(
+                    "content_block_diagnostics_detail_baseline",
+                    originalRules.count,
+                    originalCategories.count
+                )
+            )
 
             let testRules = createRules(from: [.socialMedia])
             saveRules(testRules)
-            details.append("Written test rules: \(testRules.count)")
+            details.append(localization.localized("content_block_diagnostics_detail_test_rules", testRules.count))
 
             try await reloadContentBlocker()
-            details.append("Reload content blocker: OK")
+            details.append(localization.localized("content_block_diagnostics_detail_reload_ok"))
 
             await checkBlockingStatus()
-            details.append("Status after reload: \(status)")
+            details.append(
+                localization.localized(
+                    "content_block_diagnostics_detail_status",
+                    localizedDiagnosticStatusDescription(localization: localization)
+                )
+            )
 
             let reloadedRulesCount = loadRules().count
-            details.append("Rules visible after reload: \(reloadedRulesCount)")
+            details.append(localization.localized("content_block_diagnostics_detail_rules_visible", reloadedRulesCount))
 
-            let extensionMissing: Bool = {
-                if case .extensionMissing = status { return true }
-                return false
-            }()
-            passed = reloadedRulesCount > 0 && !extensionMissing
+            switch status {
+            case .enabled:
+                passed = reloadedRulesCount > 0
+            default:
+                passed = false
+            }
             let summary = passed
-                ? "Safari self-test passed"
-                : "Safari self-test failed: rules/status mismatch"
+                ? localization.localized("content_block_diagnostics_summary_passed")
+                : localization.localized("content_block_diagnostics_summary_failed")
 
             if passed {
                 diagnostics.logFunction("runDiagnosticSelfTest", message: "PASS: \(summary)", section: "ContentBlocker")
@@ -358,13 +371,28 @@ class ContentBlockerManager: ObservableObject {
 
             return DiagnosticSelfTestResult(passed: passed, summary: summary, details: details)
         } catch {
-            details.append("Error: \(error.localizedDescription)")
+            details.append(localization.localized("content_block_diagnostics_detail_error", error.localizedDescription))
             diagnostics.logError("runDiagnosticSelfTest", message: "ERROR", section: "ContentBlocker", error: error)
             return DiagnosticSelfTestResult(
                 passed: false,
-                summary: "Safari self-test failed with error",
+                summary: localization.localized("content_block_diagnostics_summary_error"),
                 details: details
             )
+        }
+    }
+
+    private func localizedDiagnosticStatusDescription(localization: LocalizationManager) -> String {
+        switch status {
+        case .enabled:
+            return localization.localized("content_block_diagnostics_status_enabled")
+        case .needsActivation:
+            return localization.localized("content_block_diagnostics_status_needs_activation")
+        case .extensionMissing:
+            return localization.localized("content_block_diagnostics_status_extension_missing")
+        case .disabled:
+            return localization.localized("content_block_diagnostics_status_disabled")
+        case .error(let message):
+            return localization.localized("content_block_diagnostics_status_error", message)
         }
     }
 }
