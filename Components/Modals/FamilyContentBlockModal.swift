@@ -54,6 +54,8 @@ struct FamilyContentBlockModal: View {
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
     @State private var showSettingsAlert: Bool = false
+    @State private var showDiagnosticsResultAlert: Bool = false
+    @State private var diagnosticsResultMessage: String = ""
     private let safariSettingsComponentId = "browser_security_bot"
     
     // MARK: - Body
@@ -107,7 +109,12 @@ struct FamilyContentBlockModal: View {
             }
             Button(localizationManager.localized("content_block_alert_cancel"), role: .cancel) {}
         } message: {
-            Text("\(localizationManager.localized("content_block_alert_message"))\n\n📱 После открытия настроек:\n1. Нажмите Safari\n2. Выберите Content Blockers\n3. Включите ALADDIN")
+            Text("\(localizationManager.localized("content_block_alert_message"))\n\n\(localizationManager.localized("content_block_manual_path_note"))")
+        }
+        .alert(localizationManager.localized("content_block_diagnostics_title"), isPresented: $showDiagnosticsResultAlert) {
+            Button(localizationManager.localized("common_ok")) { }
+        } message: {
+            Text(diagnosticsResultMessage)
         }
         .withVisualLogger()
     }
@@ -224,6 +231,38 @@ struct FamilyContentBlockModal: View {
                 .frame(maxWidth: .infinity)
                 .padding(Spacing.m)
                 .background(Color.primaryBlue)
+                .cornerRadius(CornerRadius.medium)
+            }
+
+            Button(action: {
+                HapticFeedback.selection()
+                Task { await contentBlockerManager.checkBlockingStatus() }
+            }) {
+                HStack {
+                    Image(systemName: "arrow.clockwise")
+                    Text(localizationManager.localized("content_block_check_again"))
+                }
+                .font(.bodyBold)
+                .foregroundColor(.primaryBlue)
+                .frame(maxWidth: .infinity)
+                .padding(Spacing.m)
+                .background(Color.primaryBlue.opacity(0.12))
+                .cornerRadius(CornerRadius.medium)
+            }
+
+            Button(action: {
+                HapticFeedback.impact(.light)
+                runDiagnostics()
+            }) {
+                HStack {
+                    Image(systemName: "stethoscope")
+                    Text(localizationManager.localized("content_block_run_diagnostics"))
+                }
+                .font(.bodyBold)
+                .foregroundColor(.secondaryGold)
+                .frame(maxWidth: .infinity)
+                .padding(Spacing.m)
+                .background(Color.secondaryGold.opacity(0.12))
                 .cornerRadius(CornerRadius.medium)
             }
             
@@ -393,6 +432,24 @@ struct FamilyContentBlockModal: View {
     private func applyRules() {
         // Оставляем для обратной совместимости, но теперь используем saveSettings()
         saveSettings()
+    }
+
+    private func runDiagnostics() {
+        isLoading = true
+        Task {
+            let result = await contentBlockerManager.runDiagnosticSelfTest()
+            await MainActor.run {
+                isLoading = false
+                diagnosticsResultMessage = ([result.summary] + result.details).joined(separator: "\n• ")
+                diagnosticsResultMessage = "• " + diagnosticsResultMessage
+                showDiagnosticsResultAlert = true
+                if result.passed {
+                    toastManager.showSuccess(localizationManager.localized("content_block_diagnostics_passed"))
+                } else {
+                    toastManager.showWarning(localizationManager.localized("content_block_diagnostics_failed"))
+                }
+            }
+        }
     }
 }
 

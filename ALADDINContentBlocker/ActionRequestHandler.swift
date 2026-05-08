@@ -44,7 +44,7 @@ class ActionRequestHandler: NSObject, NSExtensionRequestHandling {
         guard let userDefaults = UserDefaults(suiteName: appGroupIdentifier),
               let data = userDefaults.data(forKey: rulesKey) else {
             print("⚠️ ActionRequestHandler: Правила не найдены в App Group")
-            return getDefaultRules()
+            return []
         }
         
         do {
@@ -54,39 +54,8 @@ class ActionRequestHandler: NSObject, NSExtensionRequestHandling {
             return rules
         } catch {
             print("❌ ActionRequestHandler: Ошибка загрузки правил: \(error)")
-            return getDefaultRules()
+            return []
         }
-    }
-    
-    /**
-     * Получить правила по умолчанию (если нет сохраненных)
-     */
-    private func getDefaultRules() -> [ContentBlockerRule] {
-        // Базовые правила для блокировки опасного контента
-        return [
-            ContentBlockerRule(
-                trigger: Trigger(
-                    urlFilter: ".*porn.*",
-                    ifDomain: nil,
-                    unlessDomain: nil,
-                    resourceType: nil,
-                    loadType: nil,
-                    ifTopUrl: nil
-                ),
-                action: Action(type: "block", selector: nil)
-            ),
-            ContentBlockerRule(
-                trigger: Trigger(
-                    urlFilter: ".*xxx.*",
-                    ifDomain: nil,
-                    unlessDomain: nil,
-                    resourceType: nil,
-                    loadType: nil,
-                    ifTopUrl: nil
-                ),
-                action: Action(type: "block", selector: nil)
-            )
-        ]
     }
     
     // MARK: - JSON Creation

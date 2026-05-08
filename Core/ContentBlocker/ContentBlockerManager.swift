@@ -104,6 +104,9 @@ class ContentBlockerManager: ObservableObject {
             self.activeCategories = categories
             UserDefaults.standard.set(categories.map { $0.rawValue }, forKey: "contentBlockerActiveCategories")
         }
+
+        // Важно: Safari применяет новые правила только после явной перезагрузки расширения.
+        try await reloadContentBlocker()
         
         // Проверить статус
         await checkBlockingStatus()
@@ -128,6 +131,12 @@ class ContentBlockerManager: ObservableObject {
         await MainActor.run {
             self.activeCategories = []
             UserDefaults.standard.removeObject(forKey: "contentBlockerActiveCategories")
+        }
+
+        do {
+            try await reloadContentBlocker()
+        } catch {
+            status = .error(error.localizedDescription)
         }
         
         // Обновить статус
@@ -231,6 +240,21 @@ class ContentBlockerManager: ObservableObject {
         let rules = loadRules()
         return rules.count
     }
+
+    /**
+     * Принудительно обновить правила в Safari после изменения App Group данных.
+     */
+    func reloadContentBlocker() async throws {
+        try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            SFContentBlockerManager.reloadContentBlocker(withIdentifier: extensionIdentifier) { error in
+                if let error {
+                    continuation.resume(throwing: error)
+                } else {
+                    continuation.resume()
+                }
+            }
+        }
+    }
     
     /**
      * Открыть настройки iOS для активации блокировки
@@ -244,8 +268,8 @@ class ContentBlockerManager: ObservableObject {
      * - App-Prefs:root=Safari&path=Content_Blockers (требует приватный API, отклоняется App Store)
      */
     func openSettings() {
-        // Открываем настройки приложения
-        // Пользователь увидит инструкцию в alert и сможет перейти в Safari → Content Blockers
+        // Открываем только настройки приложения ALADDIN.
+        // Прямой переход в Safari -> Content Blockers публичным API iOS не поддерживается.
         if let url = URL(string: UIApplication.openSettingsURLString) {
             UIApplication.shared.open(url, options: [:], completionHandler: nil)
         }
@@ -266,6 +290,81 @@ class ContentBlockerManager: ObservableObject {
     func loadActiveCategories() {
         if let categoriesData = UserDefaults.standard.array(forKey: "contentBlockerActiveCategories") as? [String] {
             activeCategories = categoriesData.compactMap { ContentBlockerCategory(rawValue: $0) }
+        }
+    }
+
+    struct DiagnosticSelfTestResult {
+        let passed: Bool
+        let summary: String
+        let details: [String]
+    }
+
+    /**
+     * Диагностический self-test:
+     * 1) сохраняет исходные правила
+     * 2) пишет тестовое правило
+     * 3) делает reload + status check
+     * 4) восстанавливает исходные правила
+     */
+    func runDiagnosticSelfTest() async -> DiagnosticSelfTestResult {
+        let diagnostics = SettingsDiagnosticsLogger.shared
+        diagnostics.logSection("ContentBlocker", function: "runDiagnosticSelfTest", message: "START")
+
+        let originalRules = loadRules()
+        let originalCategories = activeCategories
+        var details: [String] = []
+        var passed = false
+
+        defer {
+            saveRules(originalRules)
+            UserDefaults.standard.set(originalCategories.map { $0.rawValue }, forKey: "contentBlockerActiveCategories")
+            Task {
+                try? await reloadContentBlocker()
+                await checkBlockingStatus()
+                loadActiveCategories()
+            }
+        }
+
+        do {
+            details.append("Saved baseline: rules=\(originalRules.count), categories=\(originalCategories.count)")
+
+            let testRules = createRules(from: [.socialMedia])
+            saveRules(testRules)
+            details.append("Written test rules: \(testRules.count)")
+
+            try await reloadContentBlocker()
+            details.append("Reload content blocker: OK")
+
+            await checkBlockingStatus()
+            details.append("Status after reload: \(status)")
+
+            let reloadedRulesCount = loadRules().count
+            details.append("Rules visible after reload: \(reloadedRulesCount)")
+
+            let extensionMissing: Bool = {
+                if case .extensionMissing = status { return true }
+                return false
+            }()
+            passed = reloadedRulesCount > 0 && !extensionMissing
+            let summary = passed
+                ? "Safari self-test passed"
+                : "Safari self-test failed: rules/status mismatch"
+
+            if passed {
+                diagnostics.logFunction("runDiagnosticSelfTest", message: "PASS: \(summary)", section: "ContentBlocker")
+            } else {
+                diagnostics.logWarning("runDiagnosticSelfTest", message: "FAIL: \(summary)", section: "ContentBlocker")
+            }
+
+            return DiagnosticSelfTestResult(passed: passed, summary: summary, details: details)
+        } catch {
+            details.append("Error: \(error.localizedDescription)")
+            diagnostics.logError("runDiagnosticSelfTest", message: "ERROR", section: "ContentBlocker", error: error)
+            return DiagnosticSelfTestResult(
+                passed: false,
+                summary: "Safari self-test failed with error",
+                details: details
+            )
         }
     }
 }

@@ -39,6 +39,8 @@ struct MainScreenWithRegistration: View {
         // Онбординг завершён только при реальном успехе регистрации. Отмена не должна включать «первый вход» на Family.
         if isSuccess {
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            UserDefaults.standard.set(true, forKey: "post_registration_device_nudge_pending")
+            UserDefaults.standard.set(0, forKey: "post_registration_device_nudge_last_shown_ts")
             UserDefaults.standard.synchronize()
         }
         

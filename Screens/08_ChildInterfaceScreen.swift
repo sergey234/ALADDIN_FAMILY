@@ -47,15 +47,6 @@ struct ChildInterfaceScreen: View {
         }
     }
     
-    private func ageChipTitle(for age: AgeGroup) -> String {
-        switch age {
-        case .kids: return localizationManager.localized("child_interface_age_chip_kids")
-        case .school: return localizationManager.localized("child_interface_age_chip_school")
-        case .teen: return localizationManager.localized("child_interface_age_chip_teen")
-        case .youngAdult: return localizationManager.localized("child_interface_age_chip_young")
-        }
-    }
-    
     // MARK: - Body
     
     var body: some View {
@@ -209,24 +200,13 @@ struct ChildInterfaceScreen: View {
                     .lineLimit(1)
                     .minimumScaleFactor(0.85)
                 
-                HStack(alignment: .firstTextBaseline, spacing: 8) {
-                    Text(localizationManager.localized("child_interface_protected_line"))
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.92))
-                        .lineLimit(2)
-                        .minimumScaleFactor(0.9)
-                    
-                    Text(ageChipTitle(for: selectedAge))
-                        .font(.caption.weight(.semibold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(
-                            Capsule()
-                                .fill(Color.white.opacity(0.22))
-                        )
-                        .lineLimit(1)
-                }
+                Text(localizationManager.localized("child_interface_protected_line"))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white.opacity(0.92))
+                    .lineLimit(1)
+                    .minimumScaleFactor(0.7)
+                    .allowsTightening(true)
+                    .layoutPriority(1)
             }
             
             Spacer()

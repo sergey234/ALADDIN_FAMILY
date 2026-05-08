@@ -40,6 +40,7 @@ struct AdvancedProtectionSettingsScreen: View {
     // Safari sheets
     @State private var safariSettingsSheet: SafariSettingsSheet? = nil
     @State private var isApplyingSafariRules: Bool = false
+    @State private var safariApplyErrorMessage: String? = nil
 
     @AppStorage("advanced_safari_sites_enabled") private var safariSitesEnabled: Bool = false
     @AppStorage("advanced_safari_social_enabled") private var safariSocialEnabled: Bool = false
@@ -114,6 +115,19 @@ struct AdvancedProtectionSettingsScreen: View {
             loadParentalMonitoringSettingsFromServer()
         }
         .withVisualLogger()
+        .alert(localizationManager.localized("advanced_safari_status_error"), isPresented: Binding(
+            get: { safariApplyErrorMessage != nil },
+            set: { if !$0 { safariApplyErrorMessage = nil } }
+        )) {
+            Button(localizationManager.localized("content_block_alert_open_settings")) {
+                contentBlockerManager.openSettings()
+            }
+            Button(localizationManager.localized("content_block_alert_cancel"), role: .cancel) {
+                safariApplyErrorMessage = nil
+            }
+        } message: {
+            Text(safariApplyErrorMessage ?? "")
+        }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
                 refreshContentBlockerStatus()
@@ -630,7 +644,12 @@ struct AdvancedProtectionSettingsScreen: View {
             logger.logFunction("refreshContentBlockerStatus", message: "НАЧАЛО", section: "AdvancedProtection")
         }
         
+        contentBlockerManager.loadActiveCategories()
         Task {
+            // После возврата из Settings пытаемся перезагрузить extension, если правила уже существуют.
+            if !contentBlockerManager.activeCategories.isEmpty {
+                try? await contentBlockerManager.reloadContentBlocker()
+            }
             await contentBlockerManager.checkBlockingStatus()
             contentBlockerManager.loadActiveCategories()
             await MainActor.run {
@@ -1094,6 +1113,8 @@ struct AdvancedProtectionSettingsScreen: View {
     private func applySafariUnionRules(triggeredBy trigger: SafariSettingsSheet) {
         guard !isApplyingSafariRules else { return }
         isApplyingSafariRules = true
+        let previousSitesEnabled = safariSitesEnabled
+        let previousSocialEnabled = safariSocialEnabled
 
         Task {
             defer { Task { @MainActor in isApplyingSafariRules = false } }
@@ -1116,21 +1137,46 @@ struct AdvancedProtectionSettingsScreen: View {
                 return
             }
 
-            let sitesCategories = safariSitesEnabled ? getSafariSitesCategories() : []
-            let socialCategories: [ContentBlockerCategory] = safariSocialEnabled ? [.socialMedia] : []
-            let union = Array(Set(sitesCategories + socialCategories))
+            let union = Self.composeSafariCategories(
+                sitesEnabled: safariSitesEnabled,
+                socialEnabled: safariSocialEnabled,
+                sitesCategories: getSafariSitesCategories()
+            )
 
-            if union.isEmpty {
-                await contentBlockerManager.disableContentBlocker()
-            } else {
-                try? await contentBlockerManager.enableContentBlocker(categories: union)
-            }
+            do {
+                if union.isEmpty {
+                    await contentBlockerManager.disableContentBlocker()
+                } else {
+                    try await contentBlockerManager.enableContentBlocker(categories: union)
+                }
 
-            await contentBlockerManager.checkBlockingStatus()
-            await MainActor.run {
-                contentBlockerManager.loadActiveCategories()
+                await contentBlockerManager.checkBlockingStatus()
+                await MainActor.run {
+                    contentBlockerManager.loadActiveCategories()
+                    if case .error(let message) = contentBlockerManager.status {
+                        safariApplyErrorMessage = message
+                    } else {
+                        safariApplyErrorMessage = nil
+                    }
+                }
+            } catch {
+                await MainActor.run {
+                    safariSitesEnabled = previousSitesEnabled
+                    safariSocialEnabled = previousSocialEnabled
+                    safariApplyErrorMessage = error.localizedDescription
+                }
             }
         }
+    }
+
+    static func composeSafariCategories(
+        sitesEnabled: Bool,
+        socialEnabled: Bool,
+        sitesCategories: [ContentBlockerCategory]
+    ) -> [ContentBlockerCategory] {
+        let sites = sitesEnabled ? sitesCategories : []
+        let social: [ContentBlockerCategory] = socialEnabled ? [.socialMedia] : []
+        return Array(Set(sites + social))
     }
 
     private func loadParentalMonitoringSettingsFromServer() {

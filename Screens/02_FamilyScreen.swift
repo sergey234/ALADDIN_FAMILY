@@ -15,6 +15,7 @@ struct FamilyScreen: View {
     // @State private var showAddMemberModal = false
     @State private var showParentalSettingsModal = false
     @State private var showInvitationGuideModal: Bool = false
+    @State private var showPostRegistrationDeviceGuide: Bool = false
     @State private var removeMemberErrorMessage: String? = nil
     @State private var removeMemberSuccessMessage: String? = nil
     /// Дружелюбное сообщение при 409 на загрузке списка (несовпадение сохранённой семьи и аккаунта).
@@ -29,6 +30,9 @@ struct FamilyScreen: View {
     private let currentUserNameKey = "current_user_name"
     private let familyMemberSeededKey = "family_member_seeded_once"
     private let familyAdditionOrderKey = "family_addition_order"  // ✅ Stable addition order: new members ALWAYS at bottom. Preserved across syncs.
+    private let postRegistrationDeviceNudgePendingKey = "post_registration_device_nudge_pending"
+    private let postRegistrationDeviceNudgeLastShownKey = "post_registration_device_nudge_last_shown_ts"
+    private let postRegistrationDeviceNudgeCooldown: TimeInterval = 6 * 60 * 60
 
     // Computed property for stable addition order (persisted across app restarts and syncs)
     private var familyAdditionOrder: [String] {
@@ -197,6 +201,74 @@ struct FamilyScreen: View {
         
         print("🚨 navigateToMemberScreen: invoking navigationManager.navigateTo(\(targetScreen))")
         navigationManager.navigateTo(targetScreen)
+    }
+
+    private func evaluatePostRegistrationDeviceGuide() {
+        let defaults = UserDefaults.standard
+        guard defaults.bool(forKey: postRegistrationDeviceNudgePendingKey) else { return }
+
+        // После первого успешного расширения семьи подсказка больше не нужна.
+        if familyMembers.count > 1 {
+            defaults.set(false, forKey: postRegistrationDeviceNudgePendingKey)
+            defaults.synchronize()
+            return
+        }
+
+        let now = Date().timeIntervalSince1970
+        let lastShown = defaults.double(forKey: postRegistrationDeviceNudgeLastShownKey)
+        if lastShown > 0, (now - lastShown) < postRegistrationDeviceNudgeCooldown {
+            return
+        }
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+            VisualLogger.shared.log(
+                "📣 DEVICE_NUDGE shown (post-registration)",
+                level: .info,
+                category: "ONBOARDING"
+            )
+            showPostRegistrationDeviceGuide = true
+        }
+    }
+
+    private func routePostRegistrationDeviceGuideCTA() {
+        let role = UserDefaults.standard.string(forKey: currentUserRoleKey) ?? ""
+
+        if canManageFamilyRoster {
+            VisualLogger.shared.log(
+                "🧭 DEVICE_NUDGE route: addMemberOptions (manager role)",
+                level: .info,
+                category: "ONBOARDING"
+            )
+            navigationManager.navigateTo(.addMemberOptions)
+            return
+        }
+
+        if role == FamilyRole.child.rawValue || role == FamilyRole.teenager.rawValue {
+            VisualLogger.shared.log(
+                "🧭 DEVICE_NUDGE route: qrCode (child/teen)",
+                level: .info,
+                category: "ONBOARDING"
+            )
+            navigationManager.navigateTo(.qrCode)
+            return
+        }
+
+        if role == FamilyRole.elderly.rawValue {
+            VisualLogger.shared.log(
+                "🧭 DEVICE_NUDGE route: invitationCode (elderly)",
+                level: .info,
+                category: "ONBOARDING"
+            )
+            navigationManager.navigateTo(.invitationCode)
+            return
+        }
+
+        VisualLogger.shared.log(
+            "🧭 DEVICE_NUDGE route: addMemberOptions (fallback)",
+            level: .info,
+            category: "ONBOARDING"
+        )
+        navigationManager.navigateTo(.addMemberOptions)
     }
     
     // MARK: - Family Members Management
@@ -2195,6 +2267,34 @@ struct FamilyScreen: View {
             FamilyParentalControlSettingsModal(isPresented: $showParentalSettingsModal)
                 .environmentObject(localizationManager)
         }
+        .sheet(isPresented: $showPostRegistrationDeviceGuide) {
+            PostRegistrationDeviceGuideModal(
+                onAddDevice: {
+                    let now = Date().timeIntervalSince1970
+                    UserDefaults.standard.set(now, forKey: postRegistrationDeviceNudgeLastShownKey)
+                    UserDefaults.standard.synchronize()
+                    VisualLogger.shared.log(
+                        "👉 DEVICE_NUDGE CTA add_now tapped",
+                        level: .info,
+                        category: "ONBOARDING"
+                    )
+                    showPostRegistrationDeviceGuide = false
+                    routePostRegistrationDeviceGuideCTA()
+                },
+                onLater: {
+                    let now = Date().timeIntervalSince1970
+                    UserDefaults.standard.set(now, forKey: postRegistrationDeviceNudgeLastShownKey)
+                    UserDefaults.standard.synchronize()
+                    VisualLogger.shared.log(
+                        "⏰ DEVICE_NUDGE later tapped",
+                        level: .info,
+                        category: "ONBOARDING"
+                    )
+                    showPostRegistrationDeviceGuide = false
+                }
+            )
+            .environmentObject(localizationManager)
+        }
         // Removed quick add sheet; using navigation flow instead
         .overlay(alignment: .bottom) {
             if let message = removeMemberErrorMessage, !message.isEmpty {
@@ -2309,6 +2409,10 @@ struct FamilyScreen: View {
             }
             reloadFamilyMembersFromStorageOnly()
             scheduleCoalescedFamilySync()
+            if familyMembers.count > 1 {
+                UserDefaults.standard.set(false, forKey: postRegistrationDeviceNudgePendingKey)
+                UserDefaults.standard.synchronize()
+            }
         }
         .onAppear {
             logger.screenLoad("FamilyScreen")
@@ -2338,6 +2442,7 @@ struct FamilyScreen: View {
             clearDeleteButtonCache(reason: "onAppear")  // Clear only on major screen updates
             loadParentalRules()  // ✅ BUILD 96: Загружаем ParentalControlRules асинхронно
             refreshParentalControlDemoStrings()
+            evaluatePostRegistrationDeviceGuide()
         }
         // ✅ ИСПРАВЛЕНИЕ #6: Убрали onChange для showAddMemberModal - теперь используем NavigationManager
         // При возврате с AddMemberOptionsScreen список обновится автоматически через onAppear
@@ -2346,6 +2451,62 @@ struct FamilyScreen: View {
         //         print("🔄 [FamilyScreen] Модал добавления закрыт, обновляем список участников")
         //     }
         // }
+    }
+}
+
+private struct PostRegistrationDeviceGuideModal: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    let onAddDevice: () -> Void
+    let onLater: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("post_reg_device_title"))
+                .font(.h3)
+                .foregroundColor(.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+
+            Text(localizationManager.localized("post_reg_device_subtitle"))
+                .font(.body)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                Text("1. \(localizationManager.localized("post_reg_device_step_1"))")
+                Text("2. \(localizationManager.localized("post_reg_device_step_2"))")
+                Text("3. \(localizationManager.localized("post_reg_device_step_3"))")
+            }
+            .font(.body)
+            .foregroundColor(.textPrimary)
+
+            HStack(spacing: Spacing.s) {
+                Button(action: onLater) {
+                    Text(localizationManager.localized("post_reg_device_later"))
+                        .font(.bodyBold)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.textSecondary.opacity(0.15))
+                        .foregroundColor(.textPrimary)
+                        .cornerRadius(CornerRadius.medium)
+                }
+                .accessibilityLabel(localizationManager.localized("post_reg_device_later"))
+
+                Button(action: onAddDevice) {
+                    Text(localizationManager.localized("post_reg_device_add_now"))
+                        .font(.bodyBold)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.primaryBlue)
+                        .foregroundColor(.white)
+                        .cornerRadius(CornerRadius.medium)
+                }
+                .accessibilityLabel(localizationManager.localized("post_reg_device_add_now"))
+            }
+        }
+        .padding(Spacing.l)
+        .background(Color.backgroundMedium)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel(localizationManager.localized("post_reg_device_title"))
     }
 }
 
