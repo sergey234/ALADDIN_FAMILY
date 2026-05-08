@@ -23,6 +23,8 @@ class NotificationManager: NSObject, ObservableObject {
     @Published var isAuthorized: Bool = false
     @Published var deviceToken: String?
     @Published var notificationSettings: NotificationSettings = NotificationSettings()
+    @Published var pendingRequestsCount: Int = 0
+    @Published var deliveredNotificationsCount: Int = 0
     
     // Callback для добавления уведомления в список экрана
     var onNotificationReceived: ((UNNotification) -> Void)?
@@ -36,6 +38,9 @@ class NotificationManager: NSObject, ObservableObject {
     private let notificationCenter = UNUserNotificationCenter.current()
     private let userDefaults = UserDefaults.standard
     private let settingsKey = "notificationSettings"
+    private let persistedSecurityEventsKey = "persistedSecurityEventsV1"
+    private let persistedSecurityEventsMaxCount = 200
+    private let persistedSecurityEventsMaxAge: TimeInterval = 7 * 24 * 60 * 60
     
     // MARK: - Init
     
@@ -87,6 +92,24 @@ class NotificationManager: NSObject, ObservableObject {
             // ✅ ИСПРАВЛЕНО: Обновляем СРАЗУ (callback уже на main thread)
             DispatchQueue.main.async {
                 self.isAuthorized = settings.authorizationStatus == .authorized
+            }
+        }
+    }
+
+    var delegateOwnerLabel: String {
+        "NotificationManager"
+    }
+
+    /// Обновляет runtime-диагностику пайплайна уведомлений.
+    func refreshRuntimeDiagnostics() {
+        notificationCenter.getPendingNotificationRequests { requests in
+            DispatchQueue.main.async {
+                self.pendingRequestsCount = requests.count
+            }
+        }
+        notificationCenter.getDeliveredNotifications { notifications in
+            DispatchQueue.main.async {
+                self.deliveredNotificationsCount = notifications.count
             }
         }
     }
@@ -171,6 +194,9 @@ class NotificationManager: NSObject, ObservableObject {
             content.sound = .default
             content.categoryIdentifier = category.rawValue
             content.userInfo = userInfo
+
+            // Persist security events locally to survive temporary backend/API failures.
+            self.persistSecurityEventIfNeeded(title: title, body: body, category: category, userInfo: userInfo)
             
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)
             let request = UNNotificationRequest(
@@ -186,6 +212,94 @@ class NotificationManager: NSObject, ObservableObject {
                     print("✅ Local notification sent: \(title)")
                 }
             }
+        }
+    }
+
+    // MARK: - Local security event persistence
+
+    struct PersistedSecurityEvent: Codable {
+        let id: String
+        let title: String
+        let body: String
+        let type: String
+        let timestamp: Date
+        let correlationId: String
+        let metadata: [String: String]
+    }
+
+    func loadPersistedSecurityEvents() -> [PersistedSecurityEvent] {
+        guard let data = userDefaults.data(forKey: persistedSecurityEventsKey) else {
+            return []
+        }
+        do {
+            let decoder = JSONDecoder()
+            decoder.dateDecodingStrategy = .iso8601
+            let events = try decoder.decode([PersistedSecurityEvent].self, from: data)
+            let now = Date()
+            return events
+                .filter { now.timeIntervalSince($0.timestamp) <= persistedSecurityEventsMaxAge }
+                .sorted { $0.timestamp > $1.timestamp }
+        } catch {
+            print("❌ Failed to decode persisted security events: \(error)")
+            return []
+        }
+    }
+
+    func clearPersistedSecurityEvents() {
+        userDefaults.removeObject(forKey: persistedSecurityEventsKey)
+    }
+
+    private func persistSecurityEventIfNeeded(
+        title: String,
+        body: String,
+        category: NotificationCategory,
+        userInfo: [String: Any]
+    ) {
+        guard category == .security else { return }
+        let type = (userInfo["type"] as? String ?? "security_alert").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !type.isEmpty else { return }
+
+        let correlationId = (userInfo["correlation_id"] as? String)
+            ?? (userInfo["event_id"] as? String)
+            ?? "local-\(UUID().uuidString)"
+        let normalizedCorrelation = correlationId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !normalizedCorrelation.isEmpty else { return }
+
+        let metadata = userInfo.reduce(into: [String: String]()) { partial, pair in
+            guard let key = pair.key as? String else { return }
+            if let value = pair.value as? String {
+                partial[key] = value
+            } else if let value = pair.value as? NSNumber {
+                partial[key] = value.stringValue
+            }
+        }
+
+        var events = loadPersistedSecurityEvents()
+        if events.contains(where: { $0.correlationId == normalizedCorrelation }) {
+            return
+        }
+
+        let event = PersistedSecurityEvent(
+            id: UUID().uuidString,
+            title: title,
+            body: body,
+            type: type,
+            timestamp: Date(),
+            correlationId: normalizedCorrelation,
+            metadata: metadata
+        )
+        events.insert(event, at: 0)
+        if events.count > persistedSecurityEventsMaxCount {
+            events = Array(events.prefix(persistedSecurityEventsMaxCount))
+        }
+
+        do {
+            let encoder = JSONEncoder()
+            encoder.dateEncodingStrategy = .iso8601
+            let data = try encoder.encode(events)
+            userDefaults.set(data, forKey: persistedSecurityEventsKey)
+        } catch {
+            print("❌ Failed to persist security event: \(error)")
         }
     }
     
@@ -278,6 +392,24 @@ class NotificationManager: NSObject, ObservableObject {
             userInfo: [
                 "type": "upgrade_success",
                 "action": "subscription_activated"
+            ]
+        )
+    }
+
+    /// QA smoke scenario: принудительно создаёт тестовую угрозу
+    /// для проверки цепочки отображения уведомлений на устройстве.
+    func sendQATestThreatNotification() {
+        let correlationId = "qa-threat-\(UUID().uuidString)"
+        sendLocalNotification(
+            title: "🧪 Тестовая угроза (QA)",
+            body: "Сценарий smoke-test: проверка цепочки detect -> notifications UI",
+            category: .security,
+            userInfo: [
+                "type": "threat_detected",
+                "priority": "high",
+                "correlation_id": correlationId,
+                "event_id": correlationId,
+                "source": "qa_forced_scenario"
             ]
         )
     }
@@ -838,6 +970,17 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
     }
     
     private func handleDefaultAction(userInfo: [AnyHashable: Any]) {
+        // Специальная маршрутизация для семейного чата, чтобы сохранить поведение
+        // после централизации UNUserNotificationCenterDelegate в NotificationManager.
+        if let type = userInfo["type"] as? String, type == "family_chat" {
+            NotificationCenter.default.post(
+                name: NSNotification.Name("NavigateToFamilyChat"),
+                object: nil,
+                userInfo: userInfo as? [String: Any]
+            )
+            return
+        }
+        
         // TODO: Обработка обычного нажатия
         print("📱 Default notification action triggered")
     }

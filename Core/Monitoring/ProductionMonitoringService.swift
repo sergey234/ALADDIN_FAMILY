@@ -80,6 +80,26 @@ class ProductionMonitoringService {
         checkErrorAlertThresholds(errorInfo: errorInfo)
     }
 
+    /// Отследить аномалию в security notifications pipeline.
+    func trackSecurityNotificationAnomaly(
+        code: String,
+        message: String,
+        severity: AlertSeverity = .warning,
+        metadata: [String: Any] = [:]
+    ) {
+        var params = metadata
+        params["anomaly_code"] = code
+        params["message"] = message
+        params["severity"] = severity.rawValue
+        trackUserAction(action: "security_notifications_anomaly", parameters: params)
+
+        sendAlert(
+            type: .security,
+            message: "[\(code)] \(message)",
+            severity: severity
+        )
+    }
+
     /// Получить метрики производительности
     func getPerformanceMetrics() -> PerformanceMetrics {
         var metrics: [String: EndpointMetrics] = [:]

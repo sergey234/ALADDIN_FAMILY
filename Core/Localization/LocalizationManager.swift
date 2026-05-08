@@ -1381,8 +1381,8 @@ class LocalizationManager: ObservableObject {
             // MARK: - Content Blocking Modal - Instructions
             "content_block_instructions_title": "Для работы блокировки необходимо:",
             "content_block_step_1": "Открыть настройки приложения ALADDIN",
-            "content_block_step_2": "Перейти в Safari (в разделе Приложения)",
-            "content_block_step_3": "Выбрать Content Blockers",
+            "content_block_step_2": "Перейти в Safari (Настройки -> Приложения -> Safari)",
+            "content_block_step_3": "Открыть Extensions/Content Blockers и включить ALADDIN",
             "content_block_step_4": "Включить ALADDIN",
             // MARK: - Content Blocking Modal - Buttons
             "content_block_open_settings": "Открыть настройки приложения",
@@ -1411,7 +1411,7 @@ class LocalizationManager: ObservableObject {
             "content_block_alert_open_settings": "Открыть настройки",
             "content_block_alert_cancel": "Отмена",
             "content_block_alert_message": "iOS не позволяет открыть Safari Content Blockers напрямую из приложения. Сначала откроются настройки ALADDIN, затем перейдите вручную:",
-            "content_block_manual_path_note": "Настройки -> Приложения -> Safari -> Content Blockers -> ALADDIN",
+            "content_block_manual_path_note": "Настройки -> Приложения -> Safari -> Extensions (или Content Blockers) -> ALADDIN",
             // MARK: - Content Blocking Modal - Status
             "content_block_status_active": "Блокировка активна: %d сайтов",
             "content_block_status_needs_activation": "Требуется активация в настройках iOS",
@@ -13689,8 +13689,8 @@ Settings
             // MARK: - Content Blocking Modal - Instructions
             "content_block_instructions_title": "To enable blocking, you need to:",
             "content_block_step_1": "Open ALADDIN app settings",
-            "content_block_step_2": "Go to Safari (under Apps)",
-            "content_block_step_3": "Select Content Blockers",
+            "content_block_step_2": "Go to Safari (Settings -> Apps -> Safari)",
+            "content_block_step_3": "Open Extensions/Content Blockers and enable ALADDIN",
             "content_block_step_4": "Enable ALADDIN",
             // MARK: - Content Blocking Modal - Buttons
             "content_block_open_settings": "Open app settings",
@@ -13719,7 +13719,7 @@ Settings
             "content_block_alert_open_settings": "Open Settings",
             "content_block_alert_cancel": "Cancel",
             "content_block_alert_message": "iOS does not allow opening Safari Content Blockers directly from an app. We can open ALADDIN app settings first, then continue manually:",
-            "content_block_manual_path_note": "Settings -> Apps -> Safari -> Content Blockers -> ALADDIN",
+            "content_block_manual_path_note": "Settings -> Apps -> Safari -> Extensions (or Content Blockers) -> ALADDIN",
             // MARK: - Content Blocking Modal - Status
             "content_block_status_active": "Blocking active: %d sites",
             "content_block_status_needs_activation": "Activation required in iOS Settings",

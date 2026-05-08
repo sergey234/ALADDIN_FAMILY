@@ -18,14 +18,24 @@ struct NotificationItem: Identifiable {
     let time: String
     var isRead: Bool
     let type: NotificationType
+    let correlationId: String?
     
-    init(icon: String, title: String, message: String, time: String, isRead: Bool, type: NotificationType) {
+    init(
+        icon: String,
+        title: String,
+        message: String,
+        time: String,
+        isRead: Bool,
+        type: NotificationType,
+        correlationId: String? = nil
+    ) {
         self.icon = icon
         self.title = title
         self.message = message
         self.time = time
         self.isRead = isRead
         self.type = type
+        self.correlationId = correlationId
     }
 }
 

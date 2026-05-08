@@ -12,6 +12,7 @@ class NotificationsViewModel: ObservableObject {
     @Published var unreadCount: Int = 0
     @Published var isLoading: Bool = false
     @Published var errorMessage: String? = nil
+    @Published var lastSuccessfulSyncAt: Date? = nil
 
     private let service: NotificationsService
     private let notificationManager = NotificationManager.shared
@@ -40,6 +41,10 @@ class NotificationsViewModel: ObservableObject {
         let metadata: [String: String]
 
         init(from response: NotificationResponse) {
+            var metadata = response.metadata ?? [:]
+            if metadata["correlation_id"]?.isEmpty ?? true {
+                metadata["correlation_id"] = response.resolvedCorrelationId
+            }
             self.id = response.id
             self.icon = response.icon.isEmpty ? "🔔" : response.icon
             self.title = response.title
@@ -50,7 +55,7 @@ class NotificationsViewModel: ObservableObject {
             self.priority = response.defaultPriority
             self.actionRequired = response.actionRequired ?? false
             self.actionURL = response.actionUrl
-            self.metadata = response.metadata ?? [:]
+            self.metadata = metadata
         }
 
         init(id: String,
@@ -79,6 +84,34 @@ class NotificationsViewModel: ObservableObject {
 
         var isImportant: Bool {
             kind == .threat || kind == .warning || kind == .bypassAttempt
+        }
+
+        var correlationId: String {
+            if let metadataValue = metadata["correlation_id"], !metadataValue.isEmpty {
+                return metadataValue
+            }
+            if let metadataValue = metadata["event_id"], !metadataValue.isEmpty {
+                return metadataValue
+            }
+            return id
+        }
+
+        init(from persisted: NotificationManager.PersistedSecurityEvent) {
+            self.id = persisted.id
+            self.icon = "🛡️"
+            self.title = persisted.title
+            self.message = persisted.body
+            self.timestamp = persisted.timestamp
+            self.isRead = false
+            self.kind = NotificationKind(from: persisted.type)
+            self.priority = .high
+            self.actionRequired = false
+            self.actionURL = nil
+            var metadata = persisted.metadata
+            if metadata["correlation_id"]?.isEmpty ?? true {
+                metadata["correlation_id"] = persisted.correlationId
+            }
+            self.metadata = metadata
         }
     }
 
@@ -144,9 +177,35 @@ class NotificationsViewModel: ObservableObject {
             let mapped = envelope.notifications.map(AppNotification.init)
             await MainActor.run {
                 applyNotifications(mapped, unread: envelope.unreadCount)
+                lastSuccessfulSyncAt = Date()
+                if mapped.isEmpty {
+                    MetricsService.shared.trackUserAction(
+                        action: "security_notifications_anomaly",
+                        parameters: [
+                            "anomaly_code": "notifications_empty_payload",
+                            "message": "Notifications API returned empty payload",
+                            "severity": "warning",
+                            "include_read": includeRead,
+                            "unread_count": envelope.unreadCount
+                        ]
+                    )
+                }
             }
         } catch {
             await MainActor.run {
+                let persisted = self.notificationManager.loadPersistedSecurityEvents().map(AppNotification.init)
+                if !persisted.isEmpty {
+                    self.applyNotifications(persisted, unread: persisted.count)
+                    MetricsService.shared.trackUserAction(
+                        action: "security_notifications_anomaly",
+                        parameters: [
+                            "anomaly_code": "notifications_local_fallback_activated",
+                            "message": "Loaded persisted local security events due to API failure",
+                            "severity": "warning",
+                            "fallback_count": persisted.count
+                        ]
+                    )
+                }
                 // ✅ ИСПРАВЛЕНО: Убран fallback на mock данные
                 // При ошибке показываем только сообщение об ошибке
                 errorMessage = error.localizedDescription
@@ -167,6 +226,14 @@ class NotificationsViewModel: ObservableObject {
         let notificationId = userInfo["notification_id"] as? String ?? UUID().uuidString
         let typeString = userInfo["type"] as? String ?? "info"
         let icon = userInfo["icon"] as? String ?? "🔔"
+        let metadata: [String: String] = userInfo.reduce(into: [:]) { partial, pair in
+            guard let key = pair.key as? String else { return }
+            if let value = pair.value as? String {
+                partial[key] = value
+            } else if let value = pair.value as? NSNumber {
+                partial[key] = value.stringValue
+            }
+        }
 
         let newNotification = AppNotification(
             id: notificationId,
@@ -175,15 +242,21 @@ class NotificationsViewModel: ObservableObject {
             message: body,
             timestamp: Date(),
             isRead: false,
-            kind: NotificationKind(from: typeString)
+            kind: NotificationKind(from: typeString),
+            metadata: metadata
         )
 
         await MainActor.run {
             if !notifications.contains(where: { $0.id == notificationId }) {
+                // Push/local event ускоряет UX, но не является source-of-truth для истории.
+                // Источник истины для экрана — backend /api/notifications.
                 notifications.insert(newNotification, at: 0)
                 updateUnreadCount()
             }
         }
+
+        // Сразу синхронизируемся с сервером, чтобы список и счётчик опирались на backend store.
+        await loadNotifications(includeRead: true)
     }
 
     @MainActor
@@ -398,7 +471,8 @@ extension NotificationsViewModel.AppNotification {
             type: kind.toNotificationType(),
             timestamp: timestamp,
             actionRequired: actionRequired,
-            actionURL: actionURL
+            actionURL: actionURL,
+            correlationId: correlationId
         )
     }
 }

@@ -244,6 +244,13 @@ class AntivirusManager: ObservableObject {
             scanProgress = 1.0
             lastScanResult = offline
             threatsDetected = offline.detectedThreats
+            if let firstThreat = offline.detectedThreats.first {
+                emitSecurityThreatNotification(
+                    threatName: firstThreat.name,
+                    source: "antivirus_offline_scan",
+                    filePath: fileURL.path
+                )
+            }
             log("⚠️ Офлайн-скан: обнаружена угроза")
             return offline
         }
@@ -325,6 +332,13 @@ class AntivirusManager: ObservableObject {
             threatsDetected = serverResult.detectedThreats
             
             log("✅ Серверное сканирование завершено: \(serverResult.detectedThreats.count) угроз обнаружено")
+            if let firstThreat = serverResult.detectedThreats.first {
+                emitSecurityThreatNotification(
+                    threatName: firstThreat.name,
+                    source: "antivirus_server_scan",
+                    filePath: fileURL.path
+                )
+            }
 
             if !serverResult.detectedThreats.isEmpty {
                 Task {
@@ -361,6 +375,28 @@ class AntivirusManager: ObservableObject {
         log("⚠️ Серверное сканирование недоступно или завершилось ошибкой")
         
         return result
+    }
+
+    private func emitSecurityThreatNotification(
+        threatName: String,
+        source: String,
+        filePath: String
+    ) {
+        let correlationId = "malware-\(UUID().uuidString)"
+        NotificationManager.shared.sendLocalNotification(
+            title: "🛡️ Обнаружена угроза",
+            body: "\(threatName) заблокирован(а)",
+            category: .security,
+            userInfo: [
+                "type": "threat_detected",
+                "priority": "high",
+                "threat_type": threatName,
+                "file_path": filePath,
+                "source": source,
+                "correlation_id": correlationId,
+                "event_id": correlationId
+            ]
+        )
     }
     
     // MARK: - Server Upload

@@ -131,9 +131,16 @@ struct FamilyScreen: View {
         UnicornRewardsStore.readBalance(for: UnicornRewardsStore.resolveActiveChildId())
     }
 
+    private var effectiveQuotaUsedForUI: Int {
+        if subscriptionManager.familyQuotaSnapshot.source == .persistedCache {
+            return familyMembers.count
+        }
+        return subscriptionManager.familyQuotaSnapshot.used
+    }
+
     /// Единая проверка лимита тарифа для тулбара, кнопки «Добавить» и AddMoreMemberCard (без `let` внутри ViewBuilder).
     private var canAddFamilyMemberUnderTariff: Bool {
-        let currentCount = max(familyMembers.count, subscriptionManager.familyQuotaSnapshot.used)
+        let currentCount = max(familyMembers.count, effectiveQuotaUsedForUI)
         return subscriptionManager.canAddFamilyMember(currentCount: currentCount).allowed
     }
 
@@ -315,6 +322,24 @@ struct FamilyScreen: View {
                 #endif
             }
         }
+
+        // Auto-heal stale persisted quota snapshot: empty roster with non-zero used.
+        if familyMembers.isEmpty,
+           subscriptionManager.familyQuotaSnapshot.source == .persistedCache,
+           subscriptionManager.familyQuotaSnapshot.used > 0 {
+            UserDefaults.standard.set(0, forKey: "family_roster_used_last")
+            UserDefaults.standard.set(0, forKey: "family_remaining")
+            UserDefaults.standard.synchronize()
+            MetricsService.shared.trackUserAction(
+                action: "quota_vs_roster_mismatch",
+                parameters: [
+                    "condition": "roster_empty_used_gt_zero",
+                    "used": subscriptionManager.familyQuotaSnapshot.used,
+                    "max": subscriptionManager.familyQuotaSnapshot.max
+                ]
+            )
+            VisualLogger.shared.log("🩹 FAMILY AUTO-HEAL: reset stale persisted quota used to 0 (empty roster)", level: .warning, category: "FAMILY")
+        }
         
         // 2) Синхронизация с сервером (источник истины после merge в syncFamilyMembersFromAPI)
         syncFamilyMembersFromAPI()
@@ -354,11 +379,30 @@ struct FamilyScreen: View {
     /// Ручная очистка локального кэша списка участников (кнопка под блоком «Участники семьи»). Семья на сервере не удаляется.
     private func performClearLocalFamilyRosterCacheAndReload() {
         FamilyLocalStore.clearLocalFamilyRosterCacheForManualReset()
+        applyLocalFamilyResetAndForceReload(
+            logMessage: "🧹 FAMILY: user cleared local roster cache (manual soft reset)"
+        )
+    }
+
+    /// Полный локальный reset family-контекста на устройстве (без JWT/trial/subscription).
+    private func performFullLocalFamilyContextResetAndReload() {
+        FamilyLocalStore.clearLocalFamilyContextForManualReset()
+        applyLocalFamilyResetAndForceReload(
+            logMessage: "🧨 FAMILY: user performed full local family context reset"
+        )
+    }
+
+    private func applyLocalFamilyResetAndForceReload(logMessage: String) {
         familyMembers.removeAll()
         notSeenCounters.removeAll()
         serverMemberIdsLatest = []
-        VisualLogger.shared.log("🧹 FAMILY: user cleared local roster cache (manual)", level: .info, category: "FAMILY")
-        loadFamilyMembers()
+        VisualLogger.shared.log(logMessage, level: .info, category: "FAMILY")
+
+        // Force subscription sync after reset so quota snapshot is immediately re-aligned with backend.
+        Task { @MainActor in
+            await SubscriptionManager.shared.forceSync()
+            loadFamilyMembers()
+        }
     }
 
     /// Лёгкая перезагрузка только из локального storage без API sync.
@@ -785,7 +829,7 @@ struct FamilyScreen: View {
     // ✅ UPDATED: Uses single source of truth from SubscriptionManager.canAddFamilyMember
     // Eliminates bypass and ensures consistent enforcement across all flows
     private func addFamilyMember(_ member: FamilyMemberData) {
-        let currentCount = max(familyMembers.count, subscriptionManager.familyQuotaSnapshot.used)
+        let currentCount = max(familyMembers.count, effectiveQuotaUsedForUI)
         let (allowed, message, _) = subscriptionManager.canAddFamilyMember(currentCount: currentCount)
 
         if !allowed {
@@ -1896,7 +1940,10 @@ struct FamilyScreen: View {
                                 .accessibilityAddTraits(.isHeader)
                             
                             // Improved stats: capacity "X of Y (Plan)" + progress. Single source from SubscriptionManager.
-                            let currentCount2 = max(familyMembers.count, subscriptionManager.familyQuotaSnapshot.used)
+                            let quotaUsed2 = subscriptionManager.familyQuotaSnapshot.source == .persistedCache
+                                ? familyMembers.count
+                                : subscriptionManager.familyQuotaSnapshot.used
+                            let currentCount2 = max(familyMembers.count, quotaUsed2)
                             let limit2 = subscriptionManager.familyQuotaSnapshot.max
                             let capacityText2 = "\(currentCount2) из \(limit2)"
                             let progress = limit2 > 0 ? Double(currentCount2) / Double(limit2) : 0.0
@@ -1932,7 +1979,10 @@ struct FamilyScreen: View {
                             
                             // Updated: Uses single source SubscriptionManager.canAddFamilyMember + capacity display
                             // Shows "X of Y members (Plan)" with progress. Consistent across all add paths.
-                            let currentCount3 = max(familyMembers.count, subscriptionManager.familyQuotaSnapshot.used)
+                            let quotaUsed3 = subscriptionManager.familyQuotaSnapshot.source == .persistedCache
+                                ? familyMembers.count
+                                : subscriptionManager.familyQuotaSnapshot.used
+                            let currentCount3 = max(familyMembers.count, quotaUsed3)
                             let limit3 = subscriptionManager.familyQuotaSnapshot.max
                             let capacityText3 = "\(currentCount3) из \(limit3) участников (Tariff)"
 
@@ -2150,12 +2200,19 @@ struct FamilyScreen: View {
                                         isPresented: $showClearLocalFamilyCacheConfirmation,
                                         titleVisibility: .visible
                                     ) {
-                                        Button(localizationManager.localized("family_clear_local_cache_confirm"), role: .destructive) {
+                                        Button(localizationManager.currentLanguage == .russian ? "Мягкий сброс локального списка" : "Soft reset local list", role: .destructive) {
                                             performClearLocalFamilyRosterCacheAndReload()
+                                        }
+                                        Button(localizationManager.currentLanguage == .russian ? "Полный локальный сброс семьи (на этом устройстве)" : "Full local family reset (this device)", role: .destructive) {
+                                            performFullLocalFamilyContextResetAndReload()
                                         }
                                         Button(localizationManager.localized("common_cancel"), role: .cancel) {}
                                     } message: {
-                                        Text(localizationManager.localized("family_clear_local_cache_message"))
+                                        Text(
+                                            localizationManager.currentLanguage == .russian
+                                            ? "Выберите режим: мягкий сброс очищает только локальный список и счетчики. Полный локальный сброс дополнительно очищает локальный family context (family_id/role/your_member_id) на этом устройстве. Серверная семья, JWT, trial и подписка не изменяются."
+                                            : "Choose mode: soft reset clears only local list and counters. Full local reset also clears local family context (family_id/role/your_member_id) on this device. Server family, JWT, trial and subscription are not changed."
+                                        )
                                     }
                                 }
                             }
@@ -2485,8 +2542,12 @@ private struct PostRegistrationDeviceGuideModal: View {
                         .font(.bodyBold)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color.textSecondary.opacity(0.15))
-                        .foregroundColor(.textPrimary)
+                        .background(Color.secondaryGold.opacity(0.18))
+                        .foregroundColor(.secondaryGold)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1)
+                        )
                         .cornerRadius(CornerRadius.medium)
                 }
                 .accessibilityLabel(localizationManager.localized("post_reg_device_later"))
@@ -2496,7 +2557,13 @@ private struct PostRegistrationDeviceGuideModal: View {
                         .font(.bodyBold)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 12)
-                        .background(Color.primaryBlue)
+                        .background(
+                            LinearGradient(
+                                colors: [Color.primaryBlue, Color.primaryBlue.opacity(0.88)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
                         .foregroundColor(.white)
                         .cornerRadius(CornerRadius.medium)
                 }
@@ -2504,7 +2571,20 @@ private struct PostRegistrationDeviceGuideModal: View {
             }
         }
         .padding(Spacing.l)
-        .background(Color.backgroundMedium)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.backgroundDark, Color.primaryBlue.opacity(0.12)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.large)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
+        )
         .accessibilityElement(children: .contain)
         .accessibilityLabel(localizationManager.localized("post_reg_device_title"))
     }

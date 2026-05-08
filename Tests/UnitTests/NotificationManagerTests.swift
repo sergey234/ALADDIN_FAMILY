@@ -14,12 +14,14 @@ final class NotificationManagerTests: XCTestCase {
     override func setUpWithError() throws {
         notificationManager = NotificationManager.shared
         originalSettings = notificationManager.notificationSettings
+        notificationManager.clearPersistedSecurityEvents()
     }
     
     override func tearDownWithError() throws {
         if let originalSettings = originalSettings {
             notificationManager.updateNotificationSettings(originalSettings)
         }
+        notificationManager.clearPersistedSecurityEvents()
         notificationManager = nil
         originalSettings = nil
     }
@@ -55,5 +57,25 @@ final class NotificationManagerTests: XCTestCase {
     
     func testSetupNotificationCategoriesDoesNotThrow() {
         XCTAssertNoThrow(notificationManager.setupNotificationCategories())
+    }
+
+    func testPersistedSecurityEventIsStoredForSecurityCategory() async throws {
+        notificationManager.sendLocalNotification(
+            title: "Security Test",
+            body: "Threat detected",
+            category: .security,
+            userInfo: [
+                "type": "threat_detected",
+                "correlation_id": "test-correlation-id"
+            ],
+            delay: 0.1
+        )
+
+        try await Task.sleep(nanoseconds: 200_000_000)
+        let events = notificationManager.loadPersistedSecurityEvents()
+
+        XCTAssertFalse(events.isEmpty, "Security event should be persisted")
+        XCTAssertEqual(events.first?.correlationId, "test-correlation-id")
+        XCTAssertEqual(events.first?.type, "threat_detected")
     }
 }

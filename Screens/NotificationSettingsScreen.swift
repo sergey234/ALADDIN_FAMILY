@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /**
  * 🔔 Notification Settings Screen
@@ -100,6 +101,12 @@ struct NotificationSettingsScreen: View {
                         
                         // Quiet Hours
                         quietHoursSection
+
+#if DEBUG
+                        // QA тест-секция для проверки end-to-end цепочки уведомлений
+                        qaSmokeSection
+                        preflightChecklistSection
+#endif
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
@@ -432,6 +439,109 @@ struct NotificationSettingsScreen: View {
                 .fill(Color.white.opacity(0.1))
         )
     }
+
+#if DEBUG
+    private var qaSmokeSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("QA Smoke")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white)
+
+            Text("Тестовая инъекция угрозы для проверки цепочки уведомлений на реальном устройстве.")
+                .font(.system(size: 13))
+                .foregroundColor(.white.opacity(0.8))
+
+            Button {
+                notificationManager.sendQATestThreatNotification()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                    Text("Сгенерировать тестовую угрозу")
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.red.opacity(0.65))
+                )
+            }
+            .buttonStyle(.plain)
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white.opacity(0.1))
+        )
+    }
+
+    private var preflightChecklistSection: some View {
+        let checks: [(String, Bool)] = [
+            ("Разрешение iOS Notifications", notificationManager.isAuthorized),
+            ("Do Not Disturb выключен", !doNotDisturbMode),
+            ("Important Only выключен", !importantOnlyMode),
+            ("High Priority Only выключен", !highPriorityOnly),
+            ("Rate Limit выключен", !maxNotificationsPerHourEnabled),
+            ("Quiet Hours выключены", !quietHoursEnabled)
+        ]
+        let allPassed = checks.allSatisfy { $0.1 }
+
+        return VStack(alignment: .leading, spacing: 12) {
+            Text("Preflight перед E2E")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white)
+
+            Text("Перед проверкой цепочки убедитесь, что все пункты зелёные.")
+                .font(.system(size: 13))
+                .foregroundColor(.white.opacity(0.8))
+
+            ForEach(Array(checks.enumerated()), id: \.offset) { _, item in
+                HStack(spacing: 8) {
+                    Image(systemName: item.1 ? "checkmark.circle.fill" : "xmark.circle.fill")
+                        .foregroundColor(item.1 ? .green : .red)
+                    Text(item.0)
+                        .font(.system(size: 14))
+                        .foregroundColor(.white)
+                }
+            }
+
+            HStack(spacing: 8) {
+                Circle()
+                    .fill(allPassed ? Color.green : Color.orange)
+                    .frame(width: 8, height: 8)
+                Text(allPassed ? "Готово к E2E smoke" : "Есть блокирующие настройки")
+                    .font(.system(size: 13, weight: .medium))
+                    .foregroundColor(.white.opacity(0.9))
+            }
+            .padding(.top, 4)
+
+            if !notificationManager.isAuthorized {
+                Button {
+                    if let url = URL(string: UIApplication.openSettingsURLString) {
+                        UIApplication.shared.open(url)
+                    }
+                } label: {
+                    Text("Открыть настройки iOS")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.white)
+                        .padding(.vertical, 8)
+                        .padding(.horizontal, 12)
+                        .background(
+                            RoundedRectangle(cornerRadius: 10)
+                                .fill(Color.blue.opacity(0.7))
+                        )
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white.opacity(0.1))
+        )
+    }
+#endif
     
     // MARK: - Helper Methods
     

@@ -69,7 +69,30 @@ enum FamilyLocalStore {
         defaults.removeObject(forKey: partialSyncRetryCountKey)
         defaults.removeObject(forKey: familyMemberSeededKey)
         defaults.removeObject(forKey: "family_not_seen_counters")
+        // Also clear quota snapshot helpers to prevent stale "X of Y" lock after reinstall/manual cache clear.
+        defaults.removeObject(forKey: "family_roster_used_last")
+        defaults.removeObject(forKey: "family_quota_source_last")
+        defaults.removeObject(forKey: "family_quota_family_id_last")
+        defaults.removeObject(forKey: "family_remaining")
         defaults.synchronize()
+    }
+
+    /// Полный локальный reset family-контекста для текущего устройства.
+    /// ВАЖНО (guardrails anti-abuse):
+    /// - НЕ трогаем trial status / JWT / subscription payload.
+    /// - НЕ трогаем серверные данные семьи.
+    /// - Удаляем только локальный family roster/context cache, который будет восстановлен серверным sync.
+    static func clearLocalFamilyContextForManualReset(defaults: UserDefaults = .standard) {
+        clearLocalFamilyRosterCacheForManualReset(defaults: defaults)
+        defaults.removeObject(forKey: familyIdKey)
+        defaults.removeObject(forKey: lastResolvedFamilyIdKey)
+        defaults.removeObject(forKey: familyCreatorMemberIdKey)
+        defaults.removeObject(forKey: yourMemberIdUserDefaultsKey)
+        defaults.removeObject(forKey: "current_user_role")
+        defaults.removeObject(forKey: "admin_add_mode")
+        defaults.removeObject(forKey: "family_not_seen_counters")
+        defaults.synchronize()
+        NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
     }
 
     /// Перед чтением `family_members_list`: отбрасываем кэш, если он не относится к текущему `family_id` или при пустом `family_id` содержит серверные MEM_*.

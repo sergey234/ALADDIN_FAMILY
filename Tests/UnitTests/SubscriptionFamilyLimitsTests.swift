@@ -11,9 +11,25 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
         // Reset for clean tests
         UserDefaults.standard.removeObject(forKey: "family_limit")
         UserDefaults.standard.removeObject(forKey: "family_remaining")
+        UserDefaults.standard.removeObject(forKey: "family_roster_used_last")
+        UserDefaults.standard.removeObject(forKey: "family_quota_source_last")
+        UserDefaults.standard.removeObject(forKey: "family_quota_family_id_last")
+        UserDefaults.standard.removeObject(forKey: FamilyLocalStore.familyIdKey)
+        UserDefaults.standard.removeObject(forKey: FamilyLocalStore.lastResolvedFamilyIdKey)
+        UserDefaults.standard.removeObject(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey)
+        UserDefaults.standard.removeObject(forKey: "current_user_role")
     }
     
     override func tearDownWithError() throws {
+        UserDefaults.standard.removeObject(forKey: "family_limit")
+        UserDefaults.standard.removeObject(forKey: "family_remaining")
+        UserDefaults.standard.removeObject(forKey: "family_roster_used_last")
+        UserDefaults.standard.removeObject(forKey: "family_quota_source_last")
+        UserDefaults.standard.removeObject(forKey: "family_quota_family_id_last")
+        UserDefaults.standard.removeObject(forKey: FamilyLocalStore.familyIdKey)
+        UserDefaults.standard.removeObject(forKey: FamilyLocalStore.lastResolvedFamilyIdKey)
+        UserDefaults.standard.removeObject(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey)
+        UserDefaults.standard.removeObject(forKey: "current_user_role")
         subscriptionManager = nil
         try super.tearDownWithError()
     }
@@ -119,5 +135,66 @@ final class SubscriptionFamilyLimitsTests: XCTestCase {
         
         XCTAssertEqual(subscriptionManager.currentFamilyLimit, 6)
         XCTAssertGreaterThanOrEqual(subscriptionManager.currentFamilyRemaining, 5)
+    }
+
+    func testCanAddFamilyMemberIgnoresStalePersistedUsedWhenCurrentCountIsLower() {
+        let testStatus = SubscriptionStatus(
+            level: .trial,
+            isActive: true,
+            expiresAt: nil,
+            trialInfo: nil,
+            limits: SubscriptionLimits.trialLimits,
+            components: [],
+            lastUpdated: Date()
+        )
+        subscriptionManager.updateSubscriptionStatus(testStatus)
+        XCTAssertEqual(subscriptionManager.currentFamilyLimit, 3)
+
+        UserDefaults.standard.set(3, forKey: "family_roster_used_last")
+        UserDefaults.standard.set(FamilyQuotaSource.persistedCache.rawValue, forKey: "family_quota_source_last")
+        UserDefaults.standard.synchronize()
+
+        let (allowed, message, upgrade) = subscriptionManager.canAddFamilyMember(currentCount: 0)
+        XCTAssertTrue(allowed, "Persisted stale used should not block add when current roster is empty")
+        XCTAssertNil(message)
+        XCTAssertFalse(upgrade)
+    }
+
+    func testClearLocalFamilyRosterCacheForManualResetKeepsAuthAndTrialDataIntact() {
+        UserDefaults.standard.set("FAM_123", forKey: FamilyLocalStore.familyIdKey)
+        UserDefaults.standard.set("MEM_123", forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey)
+        UserDefaults.standard.set(3, forKey: "family_limit")
+        UserDefaults.standard.set(0, forKey: "family_remaining")
+        UserDefaults.standard.set(3, forKey: "family_roster_used_last")
+        UserDefaults.standard.set(FamilyQuotaSource.persistedCache.rawValue, forKey: "family_quota_source_last")
+        UserDefaults.standard.set("FAM_123", forKey: "family_quota_family_id_last")
+        UserDefaults.standard.set("token-placeholder", forKey: "auth_token")
+        UserDefaults.standard.set("trial-placeholder", forKey: "trial_status")
+        UserDefaults.standard.synchronize()
+
+        FamilyLocalStore.clearLocalFamilyRosterCacheForManualReset()
+
+        XCTAssertEqual(UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey), "FAM_123")
+        XCTAssertEqual(UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey), "MEM_123")
+        XCTAssertEqual(UserDefaults.standard.string(forKey: "auth_token"), "token-placeholder")
+        XCTAssertEqual(UserDefaults.standard.string(forKey: "trial_status"), "trial-placeholder")
+        XCTAssertEqual(UserDefaults.standard.integer(forKey: "family_roster_used_last"), 0)
+    }
+
+    func testClearLocalFamilyContextForManualResetDoesNotTouchAuthAndTrialData() {
+        UserDefaults.standard.set("FAM_999", forKey: FamilyLocalStore.familyIdKey)
+        UserDefaults.standard.set("MEM_999", forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey)
+        UserDefaults.standard.set("parent", forKey: "current_user_role")
+        UserDefaults.standard.set("jwt-keep", forKey: "auth_token")
+        UserDefaults.standard.set("trial-keep", forKey: "trial_status")
+        UserDefaults.standard.synchronize()
+
+        FamilyLocalStore.clearLocalFamilyContextForManualReset()
+
+        XCTAssertNil(UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey))
+        XCTAssertNil(UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey))
+        XCTAssertNil(UserDefaults.standard.string(forKey: "current_user_role"))
+        XCTAssertEqual(UserDefaults.standard.string(forKey: "auth_token"), "jwt-keep")
+        XCTAssertEqual(UserDefaults.standard.string(forKey: "trial_status"), "trial-keep")
     }
 }

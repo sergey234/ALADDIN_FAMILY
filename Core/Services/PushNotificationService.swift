@@ -25,7 +25,8 @@ class PushNotificationService: NSObject, ObservableObject {
     
     override init() {
         super.init()
-        notificationCenter.delegate = self
+        // Delegate notifications централизован в NotificationManager.
+        // Иначе возникает race: последний назначивший delegate перехватывает события.
         checkAuthorizationStatus()
     }
     

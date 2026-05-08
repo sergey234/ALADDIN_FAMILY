@@ -40,6 +40,10 @@ struct NotificationsScreen: View {
                         
                         // Список уведомлений
                         notificationList
+
+#if DEBUG
+                        pipelineHealthSection
+#endif
                     }
                     .padding(.horizontal, 20)
                     .padding(.bottom, 32)
@@ -60,6 +64,7 @@ struct NotificationsScreen: View {
             
             // Загружаем уведомления при открытии экрана
             await viewModel.loadNotifications()
+            notificationManager.refreshRuntimeDiagnostics()
         }
     }
     
@@ -312,6 +317,54 @@ struct NotificationsScreen: View {
                     .foregroundColor(.secondary)
             }
             
+            if let lastSync = viewModel.lastSuccessfulSyncAt {
+                Text("Последняя синхронизация: \(NotificationsViewModel.relativeTime(for: lastSync))")
+                    .font(.caption2)
+                    .foregroundColor(.textSecondary)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            
+            if viewModel.isLoading {
+                ProgressView("Загружаем уведомления...")
+                    .frame(maxWidth: .infinity, alignment: .center)
+                    .padding(.vertical, 12)
+            } else if let error = viewModel.errorMessage {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text("Не удалось загрузить уведомления")
+                        .font(.bodyBold)
+                        .foregroundColor(.dangerRed)
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                    Button("Повторить") {
+                        Task { await viewModel.loadNotifications() }
+                    }
+                    .font(.caption)
+                    .foregroundColor(.secondaryGold)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.warningOrange.opacity(0.15))
+                )
+            } else if viewModel.filteredNotifications(for: selectedFilter).isEmpty {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text("Пока пусто")
+                        .font(.bodyBold)
+                        .foregroundColor(.textPrimary)
+                    Text("Событий не найдено для выбранного фильтра. Проверьте настройки уведомлений и попробуйте позже.")
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                .padding(12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.backgroundMedium.opacity(0.4))
+                )
+            }
+            
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.filteredNotifications(for: selectedFilter)) { appNotification in
                     NotificationCard(
@@ -376,6 +429,46 @@ struct NotificationsScreen: View {
     private func filterCount(for filter: NotificationFilter) -> Int {
         viewModel.filterCount(for: filter)
     }
+
+#if DEBUG
+    private var pipelineHealthSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Notifications Pipeline Health")
+                .font(.title3)
+                .foregroundColor(.primary)
+
+            healthRow("Delegate owner", notificationManager.delegateOwnerLabel)
+            healthRow("iOS authorized", notificationManager.isAuthorized ? "yes" : "no")
+            healthRow("Pending local requests", "\(notificationManager.pendingRequestsCount)")
+            healthRow("Delivered notifications", "\(notificationManager.deliveredNotificationsCount)")
+            healthRow("Fetched notifications", "\(viewModel.notifications.count)")
+            healthRow("Unread count", "\(viewModel.unreadCount)")
+            healthRow("Last sync", viewModel.lastSuccessfulSyncAt.map { NotificationsViewModel.relativeTime(for: $0) } ?? "never")
+            healthRow("Last error", viewModel.errorMessage ?? "none")
+
+            Button("Refresh health snapshot") {
+                notificationManager.refreshRuntimeDiagnostics()
+            }
+            .font(.caption)
+            .foregroundColor(.secondaryGold)
+        }
+        .padding(16)
+        .background(cardBackground)
+        .cardShadow()
+    }
+
+    private func healthRow(_ title: String, _ value: String) -> some View {
+        HStack {
+            Text(title)
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+            Spacer()
+            Text(value)
+                .font(.caption)
+                .foregroundColor(.textPrimary)
+        }
+    }
+#endif
     
     // MARK: - Notification Navigation
     
@@ -459,6 +552,13 @@ struct NotificationCard: View {
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.leading)
                         .lineLimit(2)
+                    
+                    if let correlationId = notification.correlationId, !correlationId.isEmpty {
+                        Text("ID: \(correlationId)")
+                            .font(.caption2)
+                            .foregroundColor(.textTertiary)
+                            .lineLimit(1)
+                    }
                     
                     Text(notification.time)
                         .font(.caption)

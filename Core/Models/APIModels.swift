@@ -865,6 +865,41 @@ struct NotificationResponse: Codable, Identifiable {
     let actionRequired: Bool?
     let actionUrl: String?
     let metadata: [String: String]?
+    let correlationId: String?
+    let eventId: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case icon
+        case title
+        case message
+        case timestamp
+        case isRead
+        case type
+        case priority
+        case actionRequired
+        case actionUrl
+        case metadata
+        case correlationId
+        case eventId
+    }
+
+    /// Единый идентификатор трассировки события для UI/диагностики.
+    var resolvedCorrelationId: String {
+        if let value = correlationId?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty {
+            return value
+        }
+        if let value = eventId?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty {
+            return value
+        }
+        if let value = metadata?["correlation_id"]?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty {
+            return value
+        }
+        if let value = metadata?["event_id"]?.trimmingCharacters(in: .whitespacesAndNewlines), !value.isEmpty {
+            return value
+        }
+        return id
+    }
     
     // Приоритет по умолчанию на основе типа
     var defaultPriority: NotificationPriority {
@@ -1076,6 +1111,7 @@ struct NotificationItem: Identifiable {
     let timestamp: Date
     let actionRequired: Bool
     let actionURL: String?
+    let correlationId: String?
     
     init(id: String,
          icon: String,
@@ -1086,7 +1122,8 @@ struct NotificationItem: Identifiable {
          type: NotificationType,
          timestamp: Date,
          actionRequired: Bool = false,
-         actionURL: String? = nil) {
+         actionURL: String? = nil,
+         correlationId: String? = nil) {
         self.id = id
         self.icon = icon
         self.title = title
@@ -1097,6 +1134,7 @@ struct NotificationItem: Identifiable {
         self.timestamp = timestamp
         self.actionRequired = actionRequired
         self.actionURL = actionURL
+        self.correlationId = correlationId
     }
 }
 

@@ -505,7 +505,9 @@ class MockAPIService: APIService {
                     priority: "high",
                     actionRequired: false,
                     actionUrl: nil,
-                    metadata: ["category": "security"]
+                    metadata: ["category": "security"],
+                    correlationId: nil,
+                    eventId: nil
                 ),
                 NotificationResponse(
                     id: "notif_2",
@@ -518,7 +520,9 @@ class MockAPIService: APIService {
                     priority: "medium",
                     actionRequired: false,
                     actionUrl: nil,
-                    metadata: ["tariff": "family_pro"]
+                    metadata: ["tariff": "family_pro"],
+                    correlationId: nil,
+                    eventId: nil
                 ),
                 NotificationResponse(
                     id: "notif_3",
@@ -531,7 +535,9 @@ class MockAPIService: APIService {
                     priority: "low",
                     actionRequired: false,
                     actionUrl: nil,
-                    metadata: ["reward": "7_days"]
+                    metadata: ["reward": "7_days"],
+                    correlationId: nil,
+                    eventId: nil
                 )
             ]
             completion(.success(notifications))

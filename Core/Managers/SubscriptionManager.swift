@@ -738,7 +738,15 @@ final class SubscriptionManager: ObservableObject {
     /// Returns whether allowed, user-facing message if blocked, and whether upgrade is suggested.
     func canAddFamilyMember(currentCount: Int) -> (allowed: Bool, message: String?, upgradeSuggested: Bool) {
         let limit = familyQuotaSnapshot.max
-        let remaining = max(0, limit - familyQuotaSnapshot.used)
+        // Persisted cache can become stale after reinstall/login switch or partial sync.
+        // For local gating prefer current UI count when snapshot source is persisted cache.
+        let effectiveUsed: Int
+        if familyQuotaSnapshot.source == .persistedCache {
+            effectiveUsed = max(0, min(currentCount, limit))
+        } else {
+            effectiveUsed = max(currentCount, familyQuotaSnapshot.used)
+        }
+        let remaining = max(0, limit - effectiveUsed)
 
         if limit > 0 && currentCount >= limit {
             let msg = "Лимит участников для вашего тарифа (\(limit)) достигнут. Обновите тариф чтобы добавить больше участников."
@@ -1565,14 +1573,33 @@ final class SubscriptionManager: ObservableObject {
 
         let cachedUsed = UserDefaults.standard.integer(forKey: "family_roster_used_last")
         let cachedFamilyId = UserDefaults.standard.string(forKey: "family_quota_family_id_last")
+        let currentFamilyId = (
+            UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+        )
         let cachedSourceRaw = UserDefaults.standard.string(forKey: "family_quota_source_last")
         let cachedSource = FamilyQuotaSource(rawValue: cachedSourceRaw ?? "") ?? .persistedCache
+        let normalizedCachedFamilyId = cachedFamilyId?.trimmingCharacters(in: .whitespacesAndNewlines)
+
+        // Do not restore used slots from another family context.
+        let safeUsed: Int
+        if let cachedId = normalizedCachedFamilyId,
+           !cachedId.isEmpty,
+           let currentFamilyId,
+           !currentFamilyId.isEmpty,
+           cachedId != currentFamilyId {
+            safeUsed = 0
+        } else if currentFamilyId == nil || currentFamilyId?.isEmpty == true {
+            safeUsed = 0
+        } else {
+            safeUsed = cachedUsed
+        }
 
         publishFamilyQuotaSnapshot(
-            used: cachedUsed,
+            used: safeUsed,
             maxSlots: cachedMax,
             source: cachedSource == .serverStats ? .persistedCache : cachedSource,
-            familyId: cachedFamilyId
+            familyId: normalizedCachedFamilyId
         )
     }
 

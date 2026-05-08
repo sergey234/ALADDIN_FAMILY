@@ -857,8 +857,8 @@ struct FamilyControlsReadiness: Sendable {
                     if errorMsg.localizedCaseInsensitiveContains("mock response from sfm") ||
                         errorMsg.localizedCaseInsensitiveContains("sfm_mock") {
                         VisualLogger.shared.log(
-                            "⚠️ BYPASS APPLY backend mock_fallback: нужен реальный create_parental_bypass_apply",
-                            level: .warning,
+                            "🚫 BYPASS APPLY rejected: backend returned mock/fallback response; operation is NOT confirmed",
+                            level: .error,
                             category: "PARENTAL.API"
                         )
                     }
@@ -882,6 +882,7 @@ struct FamilyControlsReadiness: Sendable {
         childId: String,
         completion: ((Bool) -> Void)? = nil
     ) {
+        let correlationId = "bypass-\(UUID().uuidString)"
         // Сохраняем попытку обхода
         let attempt = BypassAttempt(
             id: UUID().uuidString,
@@ -903,7 +904,11 @@ struct FamilyControlsReadiness: Sendable {
             body: "\(type.displayName) заблокирован",
             category: .security,
             userInfo: [
-                "type": "bypass",
+                "type": "bypass_attempt",
+                "priority": "high",
+                "correlation_id": correlationId,
+                "event_id": correlationId,
+                "source": "parental_bypass_detection",
                 "bypass_type": type.rawValue,
                 "child_id": childId
             ],
