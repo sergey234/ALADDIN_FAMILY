@@ -270,34 +270,43 @@ struct ProfileScreen: View {
                     .foregroundColor(.textSecondary)
             }
             
-            // Статус подписки (не free): название тарифа + реальная дата окончания (как на главной)
-            if tariffManager.currentTariff != .free {
+            // Статус подписки: все тарифы (включая free) + дата регистрации + срок/пояснение
+            VStack(alignment: .leading, spacing: Spacing.s) {
                 HStack(spacing: Spacing.s) {
                     Text("⭐")
                         .font(.system(size: 20))
-                    
                     Text(currentTariffDisplayName)
                         .font(.body.bold())
                         .foregroundColor(.yellow)
-                    
-                    if let formattedExpiry = profileSubscriptionExpiryFormatted() {
-                        Text("\(localizationManager.localized("profile_subscription_valid_until_prefix")) \(formattedExpiry)")
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                    }
                 }
-                .padding(.horizontal, Spacing.l)
-                .padding(.vertical, Spacing.s)
-                .background(
-                    Capsule()
-                        .fill(Color.yellow.opacity(0.2))
-                        .overlay(
-                            Capsule()
-                                .stroke(Color.yellow.opacity(0.5), lineWidth: 1)
-                        )
+                Text(
+                    "\(localizationManager.localized("profile_capsule_registration_label")) \(registrationDate.isEmpty ? localizationManager.localized("profile_not_set") : registrationDate)"
                 )
-                .id("profile_tariff_capsule_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffManager.currentTariff.rawValue)")
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+                if let formattedExpiry = profileSubscriptionExpiryFormatted() {
+                    Text("\(localizationManager.localized("profile_subscription_valid_until_prefix")) \(formattedExpiry)")
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                } else {
+                    Text(localizationManager.localized(profileSubscriptionExpiryPlaceholderKey()))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
             }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, Spacing.l)
+            .padding(.vertical, Spacing.s)
+            .background(
+                RoundedRectangle(cornerRadius: 20)
+                    .fill(Color.yellow.opacity(0.2))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 20)
+                            .stroke(Color.yellow.opacity(0.5), lineWidth: 1)
+                    )
+            )
+            .id("profile_tariff_capsule_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffManager.currentTariff.rawValue)")
         }
     }
     
@@ -445,7 +454,7 @@ struct ProfileScreen: View {
         isFamilyIdentityRepairingProfile = true
         FamilyLocalStore.repairFamilyIdentityFromLocalRoster(members)
         UserDefaults.standard.synchronize()
-        NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+        FamilyLocalStore.notifyFamilyMembersUpdated()
         familyIdentityRepairStamp += 1
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
             isFamilyIdentityRepairingProfile = false
@@ -1121,6 +1130,16 @@ private extension ProfileScreen {
         }
 
         return nil
+    }
+
+    /// Подпись под блоком тарифа, когда даты окончания нет (free или данные ещё не пришли).
+    func profileSubscriptionExpiryPlaceholderKey() -> String {
+        switch tariffManager.currentTariff {
+        case .free:
+            return "profile_subscription_free_no_expiry"
+        default:
+            return "profile_subscription_end_pending_sync"
+        }
     }
 }
 

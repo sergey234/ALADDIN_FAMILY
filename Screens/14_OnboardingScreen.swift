@@ -82,6 +82,9 @@ struct OnboardingScreen: View {
     @State private var showPrivacyPolicy: Bool = false
     @State private var showTermsOfService: Bool = false
 
+    /// Выбранный на шаге 0 язык (кнопки шага 0 не зависят от `LocalizationManager.isReady`).
+    @State private var selectedLanguageForOnboarding: LocalizationManager.Language = .russian
+
     // ✅ НОВОЕ: Stored property вместо computed для устранения race condition
     // Стартуем не с пустого массива, чтобы исключить гонку первого кадра TabView(.page).
     @State private var pages: [OnboardingPage] = [
@@ -108,10 +111,19 @@ struct OnboardingScreen: View {
         let color: Color
     }
     
-    // ⚠️ КРИТИЧНО: ДОЛЖНО БЫТЬ РОВНО 7 СТРАНИЦ!
-    // Если количество страниц изменилось, это ошибка!
-    // НЕ ИЗМЕНЯТЬ БЕЗ ПОДТВЕРЖДЕНИЯ!
-    private static let EXPECTED_PAGES_COUNT = 7
+    // ⚠️ Контент онбординга (без шага 0 «Язык»): 7 полных или 2 минимальных.
+    private static let EXPECTED_CONTENT_PAGES_COUNT = 7
+    private static let MINIMAL_CONTENT_PAGES_COUNT = 2
+
+    /// Вкладки TabView: 0 = язык, 1…N = контент (`N == pages.count`).
+    private var lastTabIndex: Int {
+        guard !pages.isEmpty else { return 0 }
+        return pages.count
+    }
+
+    private var totalTabCount: Int {
+        pages.isEmpty ? 0 : pages.count + 1
+    }
 
     // ✅ НОВОЕ: Fallback тексты на случай проблем с локализацией
     private let fallbackTexts: [String: String] = [
@@ -198,7 +210,8 @@ struct OnboardingScreen: View {
     }
 
     private var isFinalOnboardingPage: Bool {
-        currentPage == pages.count - 1
+        guard !pages.isEmpty else { return false }
+        return currentPage == lastTabIndex
     }
 
     private var finalRequiredConsentsAccepted: Bool {
@@ -210,6 +223,100 @@ struct OnboardingScreen: View {
         let existing = (UserDefaults.standard.string(forKey: "current_user_role") ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         guard existing.isEmpty else { return }
         UserDefaults.standard.set("parent", forKey: "current_user_role")
+    }
+
+    // MARK: - Шаг 0: язык (без ожидания тяжёлого словаря)
+
+    /// Подпись кнопки «Продолжить» на шаге 0 — только фиксированные строки по языку.
+    private func languageStepContinueTitle(for language: LocalizationManager.Language) -> String {
+        switch language {
+        case .russian: return "Продолжить"
+        case .english: return "Continue"
+        case .chinese: return "继续"
+        case .arabic: return "متابعة"
+        }
+    }
+
+    /// Заголовок шага языка (минимальный набор фраз).
+    private func languageStepTitle(for language: LocalizationManager.Language) -> String {
+        switch language {
+        case .russian: return "Язык приложения"
+        case .english: return "App language"
+        case .chinese: return "应用语言"
+        case .arabic: return "لغة التطبيق"
+        }
+    }
+
+    /// Если язык уже сохранён (`appLanguage`), шаг 0 пропускаем — сразу вкладка 1.
+    private func applyStoredLanguageSkipIfNeeded() {
+        guard UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage) != nil else { return }
+        if let raw = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage),
+           let lang = LocalizationManager.Language(rawValue: raw) {
+            selectedLanguageForOnboarding = lang
+        } else {
+            selectedLanguageForOnboarding = localizationManager.currentLanguage
+        }
+        if currentPage == 0 {
+            currentPage = 1
+        }
+    }
+
+    @ViewBuilder
+    private func languageStepView() -> some View {
+        VStack(spacing: Spacing.xl) {
+            Spacer(minLength: 12)
+
+            Text("🌐")
+                .font(.system(size: 56))
+
+            Text(languageStepTitle(for: selectedLanguageForOnboarding))
+                .font(.system(size: 22, weight: .bold))
+                .foregroundColor(.white)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal, Spacing.l)
+
+            VStack(spacing: Spacing.m) {
+                ForEach(LocalizationManager.Language.allCases, id: \.rawValue) { lang in
+                    Button {
+                        selectedLanguageForOnboarding = lang
+                        HapticFeedback.selection()
+                    } label: {
+                        HStack(spacing: Spacing.m) {
+                            Text(lang.flag)
+                                .font(.system(size: 28))
+                            Text(lang.displayName)
+                                .font(.system(size: 18, weight: .semibold))
+                                .foregroundColor(.white)
+                            Spacer()
+                            if selectedLanguageForOnboarding == lang {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.primaryBlue)
+                            }
+                        }
+                        .padding(Spacing.m)
+                        .background(
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .fill(Color.white.opacity(selectedLanguageForOnboarding == lang ? 0.22 : 0.12))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                        .stroke(
+                                            selectedLanguageForOnboarding == lang ? Color.primaryBlue : Color.white.opacity(0.2),
+                                            lineWidth: selectedLanguageForOnboarding == lang ? 2 : 1
+                                        )
+                                )
+                        )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("\(lang.displayName)")
+                }
+            }
+            .padding(.horizontal, Spacing.screenPadding)
+
+            Spacer(minLength: 12)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement(children: .contain)
+        .accessibilityLabel("Выбор языка приложения")
     }
 
     // ✅ НОВОЕ: Функция безопасной загрузки страниц с fallback
@@ -231,6 +338,7 @@ struct OnboardingScreen: View {
             print("❌ OnboardingScreen: Error loading pages: \(error.localizedDescription), using \(pages.count) minimal pages")
         }
         clampCurrentPageIfNeeded()
+        applyStoredLanguageSkipIfNeeded()
     }
 
     private func clampCurrentPageIfNeeded() {
@@ -239,9 +347,9 @@ struct OnboardingScreen: View {
             return
         }
 
-        let maxPage = pages.count - 1
-        if currentPage > maxPage {
-            currentPage = maxPage
+        let maxTab = lastTabIndex
+        if currentPage > maxTab {
+            currentPage = maxTab
         } else if currentPage < 0 {
             currentPage = 0
         }
@@ -361,15 +469,15 @@ struct OnboardingScreen: View {
         }
 
         // Валидация количества страниц (только если это полные страницы)
-        if pages.count != Self.EXPECTED_PAGES_COUNT && pages.count != 2 {
-            // 2 страницы = минимальная версия, это нормально
-            print("⚠️ OnboardingScreen: Unexpected page count: \(pages.count) (expected \(Self.EXPECTED_PAGES_COUNT) or 2)")
+        if pages.count != Self.EXPECTED_CONTENT_PAGES_COUNT && pages.count != Self.MINIMAL_CONTENT_PAGES_COUNT {
+            // 2 контент-страницы = минимальная версия, это нормально
+            print("⚠️ OnboardingScreen: Unexpected page count: \(pages.count) (expected \(Self.EXPECTED_CONTENT_PAGES_COUNT) or \(Self.MINIMAL_CONTENT_PAGES_COUNT))")
             print("   This might indicate a configuration issue, but continuing gracefully")
 
             // Не выбрасываем ошибку, просто логируем предупреждение
             // Приложение продолжит работать с имеющимися страницами
         } else {
-            print("✅ OnboardingScreen: Page validation successful (\(pages.count) pages)")
+            print("✅ OnboardingScreen: Page validation successful (\(pages.count) content pages + шаг языка)")
         }
     }
 
@@ -389,6 +497,9 @@ struct OnboardingScreen: View {
         }
         .onAppear {
             print("🚨 OnboardingScreen.onAppear: localizationManager.isReady = \(localizationManager.isReady), pages.count = \(pages.count)")
+            if UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage) == nil {
+                selectedLanguageForOnboarding = localizationManager.currentLanguage
+            }
             // ✅ ВАРИАНТ 1: Загружаем страницы сразу при появлении экрана
             // loadPages() сама решит - показывать полные страницы или минимальные
             loadPages()
@@ -453,18 +564,19 @@ struct OnboardingScreen: View {
 
     // ✅ Основной контент онбординга
     private func mainOnboardingContent() -> some View {
-        print("🎯 OnboardingScreen.mainOnboardingContent: showing \(pages.count) pages")
+        print("🎯 OnboardingScreen.mainOnboardingContent: \(totalTabCount) вкладок (шаг языка + \(pages.count) контента)")
         return VStack(spacing: 0) {
             // «Пропустить» только до финального шага: ведёт к экрану с 2 обязательными согласиями. На последнем шаге скрыта — иначе обход без галочек.
-            if !isFinalOnboardingPage {
+            // Шаг 0 (язык) пропускать нельзя — без явного «Продолжить» и записи языка.
+            if currentPage > 0 && !isFinalOnboardingPage {
                 HStack {
                     Spacer()
 
                     Button(action: {
                         guard !pages.isEmpty else { return }
-                        if currentPage < pages.count - 1 {
+                        if currentPage < lastTabIndex {
                             withAnimation {
-                                currentPage = pages.count - 1
+                                currentPage = lastTabIndex
                             }
                             HapticFeedback.selection()
                         }
@@ -486,20 +598,24 @@ struct OnboardingScreen: View {
                     .frame(maxWidth: .infinity, maxHeight: .infinity)
             } else {
                 TabView(selection: $currentPage) {
-                    ForEach(0..<pages.count, id: \.self) { index in
-                        onboardingPage(pages[index], index: index)
-                            .tag(index)
+                    languageStepView()
+                        .tag(0)
+
+                    ForEach(Array(pages.enumerated()), id: \.offset) { contentIndex, page in
+                        let tabIndex = contentIndex + 1
+                        onboardingPage(page, tabIndex: tabIndex, contentIndex: contentIndex)
+                            .tag(tabIndex)
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .accessibilityElement(children: .contain)
-                .accessibilityLabel("Страница \(currentPage + 1) из \(pages.count)")
+                .accessibilityLabel("Страница \(currentPage + 1) из \(totalTabCount)")
             }
 
             // Индикаторы страниц
             if !pages.isEmpty {
                 HStack(spacing: Spacing.sm) {
-                    ForEach(0..<pages.count, id: \.self) { index in
+                    ForEach(0..<totalTabCount, id: \.self) { index in
                         Circle()
                             .fill(currentPage == index ? Color.primaryBlue : Color.textSecondary.opacity(0.3))
                             .frame(width: currentPage == index ? 12 : 8, height: currentPage == index ? 12 : 8)
@@ -516,11 +632,24 @@ struct OnboardingScreen: View {
             VStack(spacing: Spacing.m) {
                     // Основная кнопка
                     Button(action: {
-                        if currentPage < pages.count - 1 {
+                        if currentPage == 0 {
+                            localizationManager.changeLanguage(to: selectedLanguageForOnboarding)
+                            UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasChosenLanguageOnce)
+                            UserDefaults.standard.synchronize()
+                            withAnimation {
+                                currentPage = 1
+                            }
+                            HapticFeedback.selection()
+                            return
+                        }
+                        if currentPage < lastTabIndex {
                             withAnimation {
                                 currentPage += 1
                             }
-                        } else {
+                            HapticFeedback.selection()
+                            return
+                        }
+                        if isFinalOnboardingPage {
                             guard finalRequiredConsentsAccepted else {
                                 HapticFeedback.notification(.warning)
                                 return
@@ -550,14 +679,22 @@ struct OnboardingScreen: View {
                             print("✅ OnboardingScreen: Онбординг завершён, переход на главный экран")
                         }
                     }) {
-                        Text(currentPage < pages.count - 1 ? safeLocalized("onboarding_continue") : safeLocalized("onboarding_start"))
+                        Group {
+                            if currentPage == 0 {
+                                Text(languageStepContinueTitle(for: selectedLanguageForOnboarding))
+                            } else if currentPage < lastTabIndex {
+                                Text(safeLocalized("onboarding_continue"))
+                            } else {
+                                Text(safeLocalized("onboarding_start"))
+                            }
+                        }
                             .font(.buttonText)
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .frame(height: 50)
                             .background(
                                 LinearGradient(
-                                    colors: currentPage == pages.count - 1 && !finalRequiredConsentsAccepted
+                                    colors: isFinalOnboardingPage && !finalRequiredConsentsAccepted
                                         ? [Color.gray, Color.gray]
                                         : [Color.primaryBlue, Color.secondaryBlue],
                                     startPoint: .leading,
@@ -566,14 +703,18 @@ struct OnboardingScreen: View {
                             )
                             .cornerRadius(CornerRadius.large)
                     }
-                    .disabled(currentPage == pages.count - 1 && !finalRequiredConsentsAccepted)
+                    .disabled(isFinalOnboardingPage && !finalRequiredConsentsAccepted)
                     .accessibilityElement(
-                        label: currentPage < pages.count - 1 ? safeLocalized("onboarding_continue") : safeLocalized("onboarding_start"),
-                        hint: currentPage < pages.count - 1 ? safeLocalized("onboarding_continue_hint") : safeLocalized("onboarding_start_hint")
+                        label: currentPage == 0
+                            ? languageStepContinueTitle(for: selectedLanguageForOnboarding)
+                            : (currentPage < lastTabIndex ? safeLocalized("onboarding_continue") : safeLocalized("onboarding_start")),
+                        hint: currentPage == 0
+                            ? safeLocalized("onboarding_continue_hint")
+                            : (currentPage < lastTabIndex ? safeLocalized("onboarding_continue_hint") : safeLocalized("onboarding_start_hint"))
                     )
 
                     // Информация о данных и согласие на последней странице
-                    if currentPage == pages.count - 1 {
+                    if isFinalOnboardingPage {
                         VStack(spacing: Spacing.s) {
                             // Краткая информация о сборе данных
                             HStack(spacing: Spacing.xs) {
@@ -661,7 +802,7 @@ struct OnboardingScreen: View {
                     }
 
                     // Дополнительные кнопки на последнем слайде
-                    if currentPage == pages.count - 1 {
+                    if isFinalOnboardingPage {
                         HStack(spacing: Spacing.m) {
                             // У меня есть код
                             Button(action: {
@@ -725,9 +866,9 @@ struct OnboardingScreen: View {
 
     // MARK: - Onboarding Page
     
-    private func onboardingPage(_ page: OnboardingScreen.OnboardingPage, index: Int) -> some View {
+    private func onboardingPage(_ page: OnboardingScreen.OnboardingPage, tabIndex _: Int, contentIndex: Int) -> some View {
         Group {
-            if index == 6 {
+            if contentIndex == 6 {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
                         Color.clear.frame(height: 8)
@@ -785,7 +926,7 @@ struct OnboardingScreen: View {
                     Spacer()
                     
                     VStack(spacing: Spacing.m) {
-                        if index == 0 {
+                        if contentIndex == 0 {
                             OnboardingAladdinLogoView(size: 36, showSubtitle: false)
                                 .padding(.bottom, Spacing.s)
                         }

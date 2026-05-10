@@ -220,9 +220,11 @@ class MainViewModel: ObservableObject {
         print("   - isLoadingDashboard: \(isLoadingDashboard)")
         print("   - Текущие значения: члены=\(familyMembers), устройства=\(devicesProtected), угрозы=\(threatsBlocked)")
 
+        let pendingFamilyStatsRefresh = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.pendingMainFamilyStatsRefresh)
         if let last = lastDashboardLoadStartedAt,
            Date().timeIntervalSince(last) < minDashboardLoadIntervalSec,
-           lastUpdateTime != nil {
+           lastUpdateTime != nil,
+           !pendingFamilyStatsRefresh {
             #if DEBUG
             print("⏱️ MainViewModel: loadDashboardData skipped by min interval (\(Int(minDashboardLoadIntervalSec))s)")
             #endif
@@ -359,6 +361,7 @@ class MainViewModel: ObservableObject {
                     // Члены: источник правды — ответ `family/stats` (избегаем рассинхрона с локальным списком до обновления экрана «Семья»).
                     self.familyMembers = stats.totalMembers
                     SubscriptionManager.shared.applyFamilyRosterQuotaFromFamilyStats(stats)
+                    UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingMainFamilyStatsRefresh)
                     self.threatsBlocked = stats.totalThreats
                     self.errorMessage = nil // Авто-очистка баннера при успехе
                     
@@ -620,6 +623,7 @@ class MainViewModel: ObservableObject {
         print("   - Subscription initialized: \(SubscriptionManager.shared.isInitialized)")
         
         let pendingDevicesRefresh = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
+        let pendingFamilyStatsRefresh = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.pendingMainFamilyStatsRefresh)
         // Раньше: полный return при <15 с — блокировал refreshFamilyMembersCountFromStorage / ожидание
         // SubscriptionManager и обновление после «Тарифы» при быстром возврате на главную (симулятор vs устройство).
         if let lastCall = lastOnAppearTime, Date().timeIntervalSince(lastCall) < 15, !pendingDevicesRefresh {
@@ -650,10 +654,13 @@ class MainViewModel: ObservableObject {
             print("   - Данных нет — загружаем обязательно")
         }
         
-        if pendingDevicesRefresh || shouldRefresh {
+        if pendingDevicesRefresh || pendingFamilyStatsRefresh || shouldRefresh {
             if pendingDevicesRefresh {
                 UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
                 print("   - ✅ Принудительное обновление дашборда (изменился список устройств)")
+            }
+            if pendingFamilyStatsRefresh {
+                print("   - ✅ Принудительное обновление дашборда (изменился состав семьи — ждём /api/family/stats)")
             }
             print("   - ✅ Запускаем loadDashboardData()...")
             loadDashboardData()

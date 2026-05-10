@@ -622,8 +622,8 @@ struct MainScreen: View {
                                     Text(localizationManager.localized("main_family_header_title"))
                                         .font(.system(size: 14, weight: .bold))
                                         .foregroundColor(.black)
-                                    // Лимит по тарифу (как «3 из 5» в семейной защите): сколько уже в семье / максимум по плану.
-                                    let quotaUsed = max(0, subscriptionManager.familyQuotaSnapshot.used)
+                                    // Лимит по тарифу: snapshot может быть 0 до первого stats; не ниже числа из дашборда.
+                                    let quotaUsed = max(max(0, subscriptionManager.familyQuotaSnapshot.used), max(0, mainViewModel.familyMembers))
                                     let quotaMax = max(0, subscriptionManager.familyQuotaSnapshot.max)
                                     Text(
                                         localizationManager.localized(
@@ -733,18 +733,6 @@ struct MainScreen: View {
                                 Text(localizationManager.localized("main_family_network_protection_info", mainViewModel.threatsBlocked))
                                     .font(.system(size: 9))
                                     .foregroundColor(.black)
-                                
-                                Text(localizationManager.localized("main_family_network_protection_hint"))
-                                    .font(.system(size: 7))
-                                    .foregroundColor(.black.opacity(0.55))
-                                    .fixedSize(horizontal: false, vertical: true)
-
-                                let dnsShort = mainViewModel.smartDnsProfileActive
-                                    ? localizationManager.localized("main_toggle_short_on")
-                                    : localizationManager.localized("main_toggle_short_off")
-                                Text(localizationManager.localized("main_family_smart_dns_status", dnsShort))
-                                    .font(.system(size: 8))
-                                    .foregroundColor(.black.opacity(0.72))
 
                                 let safariShort = mainViewModel.safariContentBlockerActive
                                     ? localizationManager.localized("main_toggle_short_on")
@@ -752,11 +740,6 @@ struct MainScreen: View {
                                 Text(localizationManager.localized("main_family_safari_cb_status", safariShort))
                                     .font(.system(size: 8))
                                     .foregroundColor(.black.opacity(0.72))
-
-                                Text(localizationManager.localized("main_family_network_layers_hint"))
-                                    .font(.system(size: 7))
-                                    .foregroundColor(.black.opacity(0.5))
-                                    .fixedSize(horizontal: false, vertical: true)
 
                                 if let lu = mainViewModel.lastUpdateTime {
                                     Text(localizationManager.localized(

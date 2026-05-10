@@ -1705,8 +1705,14 @@
 "main_member_id_not_found_debug" = "member_id не найден";
 "main_family_info" = "Участников: %d • Устройств: %d";
 "main_family_network_protection_info" = "Угроз по данным защиты устройств: %d";
-"main_family_network_protection_hint" = "Не включает Safari (строка ниже) и не суммирует обход — см. Отчёты и фильтры уведомлений («Обход», «Угрозы»).";
-"notifications_statistics_subtitle" = "По списку уведомлений с сервера (последняя загрузка). Счётчик угроз — только события с типом «угроза» в ленте; это не число «Угроз по данным защиты устройств» на главной и не попытки обхода из отчётов.";
+"main_toggle_short_on" = "вкл.";
+"main_toggle_short_off" = "выкл.";
+"main_family_safari_cb_status" = "Safari Content Blocker: %@";
+"main_family_last_refresh_caption" = "Семья: обновлено %@";
+"main_family_network_protection_hint" = "Подробнее об отличиях счётчиков — в отчётах и уведомлениях.";
+"notifications_statistics_subtitle" = "Счётчики относятся к ленте уведомлений ниже (поддержка/справка).";
+"notifications_statistics_online_hint" = "Лента уведомлений обновляется онлайн при подключении к сети.";
+"notifications_feed_last_refresh_caption" = "Лента: обновлено %@";
 "notifications_stat_threat_typed" = "В ленте: тип «угроза»";
 "family_content_block_card_metric_hint" = "Детали — в Уведомлениях и Отчётах семьи";
 "family_content_block_card_badge_on" = "Вкл";

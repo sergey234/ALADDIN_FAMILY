@@ -487,7 +487,7 @@ struct FamilyScreen: View {
         isFamilyIdentityRepairing = true
         FamilyLocalStore.repairFamilyIdentityFromLocalRoster(familyMembers)
         UserDefaults.standard.synchronize()
-        NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+        FamilyLocalStore.notifyFamilyMembersUpdated()
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
             isFamilyIdentityRepairing = false
             updateAdminStatus()
@@ -1343,7 +1343,7 @@ struct FamilyScreen: View {
         #endif
 
         // Notify other screens (with guard in .onReceive to prevent loop)
-        NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+        FamilyLocalStore.notifyFamilyMembersUpdated()
     }
     
     // 🔥 FINAL v3: Агрессивная дедупликация + cleanup — server truth всегда

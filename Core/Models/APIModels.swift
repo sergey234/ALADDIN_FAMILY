@@ -3216,15 +3216,46 @@ struct NotificationSettingsAppResponse: Codable {
     let enabled: Bool
     let pushEnabled: Bool
     let emailEnabled: Bool
+    /// Звук для push (сервер может использовать при сборке payload; локально дублирует NotificationSettings.soundEnabled).
+    let soundEnabled: Bool
     let lastModified: String // ISO дата
     let deviceId: String?
     let version: Int
+
+    enum CodingKeys: String, CodingKey {
+        case userId, enabled, pushEnabled, emailEnabled, soundEnabled, lastModified, deviceId, version
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        userId = try c.decode(String.self, forKey: .userId)
+        enabled = try c.decodeIfPresent(Bool.self, forKey: .enabled) ?? true
+        pushEnabled = try c.decodeIfPresent(Bool.self, forKey: .pushEnabled) ?? true
+        emailEnabled = try c.decodeIfPresent(Bool.self, forKey: .emailEnabled) ?? false
+        soundEnabled = try c.decodeIfPresent(Bool.self, forKey: .soundEnabled) ?? true
+        lastModified = try c.decode(String.self, forKey: .lastModified)
+        deviceId = try c.decodeIfPresent(String.self, forKey: .deviceId)
+        version = try c.decodeIfPresent(Int.self, forKey: .version) ?? 1
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(userId, forKey: .userId)
+        try c.encode(enabled, forKey: .enabled)
+        try c.encode(pushEnabled, forKey: .pushEnabled)
+        try c.encode(emailEnabled, forKey: .emailEnabled)
+        try c.encode(soundEnabled, forKey: .soundEnabled)
+        try c.encode(lastModified, forKey: .lastModified)
+        try c.encodeIfPresent(deviceId, forKey: .deviceId)
+        try c.encode(version, forKey: .version)
+    }
 }
 
 struct UpdateNotificationSettingsAppRequest: Codable {
     let userId: String
     let enabled: Bool?
     let pushEnabled: Bool?
+    let soundEnabled: Bool?
     let emailEnabled: Bool?
     let deviceId: String?
     let version: Int?

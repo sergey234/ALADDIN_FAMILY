@@ -2064,8 +2064,8 @@ class APIService: ObservableObject {
         networkManager.get(endpoint: endpoint, completion: completion)
     }
     
-    func updateNotificationSettingsApp(userId: String, enabled: Bool? = nil, pushEnabled: Bool? = nil, emailEnabled: Bool? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<NotificationSettingsAppResponse, Error>) -> Void) {
-        let request = UpdateNotificationSettingsAppRequest(userId: userId, enabled: enabled, pushEnabled: pushEnabled, emailEnabled: emailEnabled, deviceId: deviceId, version: version)
+    func updateNotificationSettingsApp(userId: String, enabled: Bool? = nil, pushEnabled: Bool? = nil, soundEnabled: Bool? = nil, emailEnabled: Bool? = nil, deviceId: String? = nil, version: Int? = nil, completion: @escaping (Result<NotificationSettingsAppResponse, Error>) -> Void) {
+        let request = UpdateNotificationSettingsAppRequest(userId: userId, enabled: enabled, pushEnabled: pushEnabled, soundEnabled: soundEnabled, emailEnabled: emailEnabled, deviceId: deviceId, version: version)
         networkManager.post(endpoint: AppConfig.Endpoint.appSettingsNotificationsUpdate, body: request, completion: completion)
     }
     
@@ -2591,10 +2591,27 @@ class APIService: ObservableObject {
         let deviceToken: String
         let platform: String
         let appVersion: String
+        /// Совпадает с push routing на бэкенде (anon family id из FamilyLocalStore).
+        let familyId: String?
+
+        enum CodingKeys: String, CodingKey {
+            case deviceToken
+            case platform
+            case appVersion
+            case familyId
+        }
     }
     
     func registerDeviceToken(_ token: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
-        let body = DeviceTokenRequest(deviceToken: token, platform: "iOS", appVersion: AppConfig.appVersion)
+        let rawFamily = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let familyIdOpt: String? = rawFamily.isEmpty ? nil : rawFamily
+        let body = DeviceTokenRequest(
+            deviceToken: token,
+            platform: "iOS",
+            appVersion: AppConfig.appVersion,
+            familyId: familyIdOpt
+        )
         networkManager.post(endpoint: AppConfig.Endpoint.deviceRegister, body: body, completion: completion)
     }
     

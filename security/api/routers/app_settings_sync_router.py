@@ -37,6 +37,21 @@ except ImportError as e:
 
 logger = logging.getLogger(__name__)
 
+try:
+    from app.security.notifications.notification_app_settings_store import (
+        get_notification_settings as _notif_app_settings_get,
+        update_notification_settings as _notif_app_settings_update,
+    )
+except ImportError:
+    try:
+        from security.notifications.notification_app_settings_store import (
+            get_notification_settings as _notif_app_settings_get,
+            update_notification_settings as _notif_app_settings_update,
+        )
+    except ImportError:
+        _notif_app_settings_get = None  # type: ignore
+        _notif_app_settings_update = None  # type: ignore
+
 # Создаем FastAPI Router
 router = APIRouter(prefix="/api/settings", tags=["App Settings"])
 
@@ -123,6 +138,7 @@ class NotificationSettingsAppResponse(BaseModel):
     enabled: bool = Field(True, description="Уведомления включены")
     pushEnabled: bool = Field(True, description="Push-уведомления включены")
     emailEnabled: bool = Field(False, description="Email-уведомления включены")
+    soundEnabled: bool = Field(True, description="Звук для уведомлений (клиент/iOS)")
     lastModified: datetime = Field(..., description="Время последнего изменения")
     deviceId: Optional[str] = Field(None, description="ID устройства последнего изменения")
     version: int = Field(1, description="Версия для оптимистичной блокировки", ge=1)
@@ -134,6 +150,7 @@ class UpdateNotificationSettingsAppRequest(BaseModel):
     enabled: Optional[bool] = Field(None, description="Уведомления включены")
     pushEnabled: Optional[bool] = Field(None, description="Push-уведомления включены")
     emailEnabled: Optional[bool] = Field(None, description="Email-уведомления включены")
+    soundEnabled: Optional[bool] = Field(None, description="Звук для уведомлений")
     deviceId: Optional[str] = Field(None, description="ID устройства")
     version: Optional[int] = Field(None, description="Версия для оптимистичной блокировки", ge=1)
 
@@ -363,12 +380,14 @@ async def get_notification_settings(
             except Exception as e:
                 logger.warning(f"SFM Adapter error: {e}, using fallback")
         
-        # Fallback
+        if _notif_app_settings_get:
+            return NotificationSettingsAppResponse(**_notif_app_settings_get(userId))
         return NotificationSettingsAppResponse(
             userId=userId,
             enabled=True,
             pushEnabled=True,
             emailEnabled=False,
+            soundEnabled=True,
             lastModified=datetime.now(),
             deviceId=None,
             version=1
@@ -394,12 +413,23 @@ async def update_notification_settings(
             except Exception as e:
                 logger.warning(f"SFM Adapter error: {e}, using fallback")
         
-        # Fallback
+        if _notif_app_settings_update:
+            data = _notif_app_settings_update(
+                user_id=request.userId,
+                enabled=request.enabled,
+                push_enabled=request.pushEnabled,
+                email_enabled=request.emailEnabled,
+                sound_enabled=request.soundEnabled,
+                device_id=request.deviceId,
+                version=request.version,
+            )
+            return NotificationSettingsAppResponse(**data)
         return NotificationSettingsAppResponse(
             userId=request.userId,
             enabled=request.enabled if request.enabled is not None else True,
             pushEnabled=request.pushEnabled if request.pushEnabled is not None else True,
             emailEnabled=request.emailEnabled if request.emailEnabled is not None else False,
+            soundEnabled=request.soundEnabled if request.soundEnabled is not None else True,
             lastModified=datetime.now(),
             deviceId=request.deviceId,
             version=(request.version or 1) + 1

@@ -47,7 +47,7 @@ class AppConfigTests: XCTestCase {
     }
     
     func testBuildNumber() throws {
-        XCTAssertEqual(AppConfig.buildNumber, "190")
+        XCTAssertEqual(AppConfig.buildNumber, "181")
     }
 
     func testApiContractVersionNonEmpty() throws {
@@ -190,8 +190,12 @@ class AppConfigTests: XCTestCase {
         XCTAssertEqual(AppConfig.UserDefaultsKeys.consentDate, "consent_date")
         XCTAssertEqual(AppConfig.UserDefaultsKeys.consentVersion, "consent_version")
         XCTAssertEqual(AppConfig.UserDefaultsKeys.appLanguage, "appLanguage")
+        XCTAssertEqual(AppConfig.UserDefaultsKeys.hasChosenLanguageOnce, "hasChosenLanguageOnce")
         XCTAssertEqual(AppConfig.UserDefaultsKeys.hasCompletedOnboarding, "hasCompletedOnboarding")
         XCTAssertEqual(AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh, "pending_main_dashboard_devices_refresh")
+        XCTAssertEqual(AppConfig.UserDefaultsKeys.pendingMainFamilyStatsRefresh, "pending_main_family_stats_refresh")
+        XCTAssertEqual(AppConfig.UserDefaultsKeys.notificationAppSettingsRemoteVersion, "notification_app_settings_remote_version")
+        XCTAssertEqual(AppConfig.UserDefaultsKeys.notificationAppSettingsSyncPending, "notification_app_settings_sync_pending")
         XCTAssertEqual(AppConfig.UserDefaultsKeys.pendingDeviceBindToken, "pending_device_bind_token")
     }
     

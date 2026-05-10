@@ -106,8 +106,8 @@ struct NotificationsScreen: View {
                 .foregroundColor(.primary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
-            
-            Text(localizationManager.localized("notifications_statistics_subtitle"))
+
+            Text(localizationManager.localized("notifications_statistics_online_hint"))
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .frame(maxWidth: .infinity, alignment: .leading)

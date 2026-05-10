@@ -127,11 +127,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "190"
+    static let buildNumber = "181"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "190"
+    static let minimumClientBuildForApiContract = "181"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -599,9 +599,17 @@ extension AppConfig {
         static let consentDate = "consent_date"
         static let consentVersion = "consent_version"
         static let appLanguage = "appLanguage"
+        /// Явный выбор языка на шаге 0 онбординга (отличить от эвристики/дефолта).
+        static let hasChosenLanguageOnce = "hasChosenLanguageOnce"
         static let hasCompletedOnboarding = "hasCompletedOnboarding"
         /// После добавления устройства на другом экране — при следующем показе главной принудительно обновить дашборд.
         static let pendingMainDashboardDevicesRefresh = "pending_main_dashboard_devices_refresh"
+        /// После изменения локального ростера (`FamilyMembersUpdated`) — не откладывать `GET /api/family/stats` из‑за 8s throttle / TTL главной.
+        static let pendingMainFamilyStatsRefresh = "pending_main_family_stats_refresh"
+        /// Последняя известная `version` ответа `GET /api/settings/notifications` (оптимистичная синхронизация).
+        static let notificationAppSettingsRemoteVersion = "notification_app_settings_remote_version"
+        /// Локальный POST не дошёл — повторить при `didBecomeActive`.
+        static let notificationAppSettingsSyncPending = "notification_app_settings_sync_pending"
         /// Токен из `aladdin://bind?token=` / Universal Link, если пришёл до завершения онбординга или до открытия экрана присоединения.
         static let pendingDeviceBindToken = "pending_device_bind_token"
         /// Magic-link токен для auth-потока (может прийти до завершения onboarding).

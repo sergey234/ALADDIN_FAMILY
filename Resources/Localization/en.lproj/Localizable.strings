@@ -1818,8 +1818,14 @@
 "main_member_id_not_found_debug" = "member_id missing";
 "main_family_info" = "Members: %d • Devices: %d";
 "main_family_network_protection_info" = "Threats from device protection: %d";
-"main_family_network_protection_hint" = "Excludes Safari (row below). Bypass isn’t included — see Reports and Notifications filters (Bypass, Threats).";
-"notifications_statistics_subtitle" = "Based on the server notification list (last fetch). The threat counter only counts threat-type items in this feed — not the Home “device protection threats” number and not bypass attempts from Reports.";
+"main_toggle_short_on" = "on";
+"main_toggle_short_off" = "off";
+"main_family_safari_cb_status" = "Safari Content Blocker: %@";
+"main_family_last_refresh_caption" = "Family: updated %@";
+"main_family_network_protection_hint" = "For differences between counters, see Reports and Notifications.";
+"notifications_statistics_subtitle" = "Counts refer to the notification feed below (support/help).";
+"notifications_statistics_online_hint" = "The notification feed refreshes online when you’re connected.";
+"notifications_feed_last_refresh_caption" = "Feed: updated %@";
 "notifications_stat_threat_typed" = "In feed: threat type";
 "family_content_block_card_metric_hint" = "See Notifications and Family reports for details";
 "family_content_block_card_badge_on" = "On";

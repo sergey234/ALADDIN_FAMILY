@@ -1240,7 +1240,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                 
                 // Уведомляем другие экраны об изменении
                 NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
-                NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+                FamilyLocalStore.notifyFamilyMembersUpdated()
                 
                 if role == .teenager {
                     VisualLogger.shared.log("✅ ПОДРОСТОК: Отправлены уведомления об обновлении", level: .success, category: "FAMILY")
@@ -1381,7 +1381,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                 
                 // Уведомляем другие экраны об изменении
                 NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
-                NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+                FamilyLocalStore.notifyFamilyMembersUpdated()
                 
                 if role == .teenager {
                     VisualLogger.shared.log("✅ ПОДРОСТОК (JOINED): Отправлены уведомления об обновлении", level: .success, category: "FAMILY")

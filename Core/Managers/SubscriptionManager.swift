@@ -2172,6 +2172,32 @@ extension SubscriptionManager {
         logger.business("📥 Updated subscription from server: \(subscriptionLevel.rawValue)")
         reconcileTariffManagerWithSubscription(reason: "updateFromServerStatus")
         bumpSubscriptionDisplayEpoch()
+
+        await MainActor.run {
+            rescheduleLocalSubscriptionNotifications(afterSync: serverStatus)
+        }
+    }
+
+    /// Локальные напоминания (UNCalendar): trial 7/3/1 дня; платный тариф — за 3 и 1 день до `expiresAt`.
+    /// Серверные push (если настроены) — отдельный канал; здесь только клиентское планирование после синка.
+    private func rescheduleLocalSubscriptionNotifications(afterSync status: SubscriptionStatus) {
+        let now = Date()
+
+        if let trial = status.trialInfo, trial.isActive, trial.endDate > now {
+            NotificationManager.shared.scheduleTrialNotifications(trialEndDate: trial.endDate)
+        } else {
+            NotificationManager.shared.cancelTrialNotifications()
+        }
+
+        let paidTiers: Set<SubscriptionLevel> = [.personal, .family, .premium]
+        if paidTiers.contains(status.level),
+           status.isActive,
+           let exp = status.expiresAt,
+           exp > now {
+            NotificationManager.shared.scheduleRenewalNotifications(subscriptionEndDate: exp)
+        } else {
+            NotificationManager.shared.cancelRenewalNotifications()
+        }
     }
 
     /// ⏰ Setup periodic sync when online
