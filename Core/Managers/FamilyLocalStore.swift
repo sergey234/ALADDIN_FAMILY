@@ -39,6 +39,11 @@ enum FamilyLocalStore {
         return true
     }
 
+    /// Уведомляет подписчиков UI о необходимости обновить экраны семьи после изменения локального ростера.
+    static func notifyFamilyMembersUpdated() {
+        NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
+    }
+
     /// Записать снимок семьи для текущего кэша ростера (вызывать вместе с сохранением `family_members_list`).
     static func persistRosterSnapshotFamilyId(_ familyId: String, defaults: UserDefaults = .standard) {
         let v = familyId.trimmingCharacters(in: .whitespacesAndNewlines)
