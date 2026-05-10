@@ -827,11 +827,80 @@ class NotificationManager: NSObject, ObservableObject {
 // MARK: - UNUserNotificationCenterDelegate
 
 extension NotificationManager: UNUserNotificationCenterDelegate {
+
+    /// Читает/пишет `notificationSettings` и связанное состояние — вызывать **только с main thread**.
+    private func foregroundPresentationOptions(for notification: UNNotification, now: Date) -> UNNotificationPresentationOptions {
+        let userInfo = notification.request.content.userInfo
+        let notificationType = userInfo["type"] as? String ?? "info"
+
+        // Проверяем режим "Не беспокоить"
+        if notificationSettings.doNotDisturbMode {
+            if let until = notificationSettings.doNotDisturbUntil, now < until {
+                return []
+            } else {
+                notificationSettings.doNotDisturbMode = false
+                notificationSettings.doNotDisturbUntil = nil
+                saveSettings()
+            }
+        }
+
+        // Проверяем режим "Только важные"
+        if notificationSettings.importantOnlyMode {
+            let isImportant = notificationType == "threat"
+                || notificationType == "warning"
+                || notificationType == "bypass"
+                || notificationType == "bypass_attempt"
+            if !isImportant {
+                Task { @MainActor in
+                    self.onNotificationReceived?(notification)
+                }
+                return [.badge]
+            }
+        }
+
+        // Проверяем приоритет
+        if notificationSettings.highPriorityOnly {
+            let priorityString = userInfo["priority"] as? String
+            let priority = priorityString != nil ? NotificationPriority(from: priorityString!) : NotificationPriority.high
+            if priority != .high {
+                Task { @MainActor in
+                    self.onNotificationReceived?(notification)
+                }
+                return [.badge]
+            }
+        }
+
+        // Проверяем частоту уведомлений
+        if let maxPerHour = notificationSettings.maxNotificationsPerHour {
+            let notificationsInLastHour = countNotificationsInLastHour()
+            if notificationsInLastHour >= maxPerHour {
+                return []
+            }
+        }
+
+        recordNotificationSent()
+
+        let isQuietMode = notificationSettings.quietModeEnabled
+        let currentHour = Calendar.current.component(.hour, from: now)
+        let quietStart = Int(notificationSettings.quietHoursStart.split(separator: ":").first ?? "22") ?? 22
+        let quietEnd = Int(notificationSettings.quietHoursEnd.split(separator: ":").first ?? "8") ?? 8
+        let isQuietHours = isQuietMode && (currentHour >= quietStart || currentHour < quietEnd)
+
+        Task { @MainActor in
+            self.onNotificationReceived?(notification)
+        }
+
+        if isQuietHours {
+            return [.badge]
+        } else {
+            return notificationSettings.soundEnabled ? [.banner, .sound, .badge] : [.banner, .badge]
+        }
+    }
     
     /**
      * Обработка уведомления когда приложение в foreground
-     * ✅ nonisolated: методы делегата могут вызываться не на main thread
-     * ✅ ИСПРАВЛЕНО: Используем continuation для синхронного доступа к @MainActor свойствам
+     * ✅ nonisolated: методы делегата могут вызываться на любом потоке (в т.ч. на main — iOS 18+ / сцены).
+     * ⚠️ Никогда не вызывать `DispatchQueue.main.sync`, уже находясь на main — мгновенный deadlock (SIGTRAP libdispatch).
      */
     nonisolated func userNotificationCenter(
         _ center: UNUserNotificationCenter,
@@ -839,86 +908,15 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         withCompletionHandler completionHandler: @escaping (UNNotificationPresentationOptions) -> Void
     ) {
         let now = Date()
-        let userInfo = notification.request.content.userInfo
-        let notificationType = userInfo["type"] as? String ?? "info"
-        
-        // ✅ ИСПРАВЛЕНО: Используем DispatchQueue.main.sync для синхронного доступа к @MainActor свойствам
-        // Методы делегата могут вызываться не на main thread, поэтому используем sync
-        let options: UNNotificationPresentationOptions = DispatchQueue.main.sync {
-            // Проверяем режим "Не беспокоить"
-            if self.notificationSettings.doNotDisturbMode {
-                if let until = self.notificationSettings.doNotDisturbUntil, now < until {
-                    // Режим активен - не показываем ничего
-                    return [] as UNNotificationPresentationOptions
-                } else {
-                    // Время истекло - отключаем режим
-                    self.notificationSettings.doNotDisturbMode = false
-                    self.notificationSettings.doNotDisturbUntil = nil
-                    self.saveSettings() // Сохраняем изменение
-                }
-            }
-            
-            // Проверяем режим "Только важные"
-            if self.notificationSettings.importantOnlyMode {
-                let isImportant = notificationType == "threat"
-                    || notificationType == "warning"
-                    || notificationType == "bypass"
-                    || notificationType == "bypass_attempt"
-                if !isImportant {
-                    // Не важное уведомление - тихий режим
-                    Task { @MainActor in
-                        self.onNotificationReceived?(notification)
-                    }
-                    return [.badge] as UNNotificationPresentationOptions
-                }
-            }
-            
-            // Проверяем приоритет
-            if self.notificationSettings.highPriorityOnly {
-                let priorityString = userInfo["priority"] as? String
-                let priority = priorityString != nil ? NotificationPriority(from: priorityString!) : NotificationPriority.high
-                if priority != .high {
-                    // Не высокий приоритет - тихий режим
-                    Task { @MainActor in
-                        self.onNotificationReceived?(notification)
-                    }
-                    return [.badge] as UNNotificationPresentationOptions
-                }
-            }
-            
-            // Проверяем частоту уведомлений
-            if let maxPerHour = self.notificationSettings.maxNotificationsPerHour {
-                let notificationsInLastHour = self.countNotificationsInLastHour()
-                if notificationsInLastHour >= maxPerHour {
-                    // Превышен лимит - не показываем
-                    return [] as UNNotificationPresentationOptions
-                }
-            }
-            
-            // Обновляем историю
-            self.recordNotificationSent()
-            
-            // Проверяем тихий режим
-            let isQuietMode = self.notificationSettings.quietModeEnabled
-            let currentHour = Calendar.current.component(.hour, from: now)
-            let quietStart = Int(self.notificationSettings.quietHoursStart.split(separator: ":").first ?? "22") ?? 22
-            let quietEnd = Int(self.notificationSettings.quietHoursEnd.split(separator: ":").first ?? "8") ?? 8
-            let isQuietHours = isQuietMode && (currentHour >= quietStart || currentHour < quietEnd)
-            
-            // Уведомляем ViewModel о новом уведомлении
-            Task { @MainActor in
-                self.onNotificationReceived?(notification)
-            }
-            
-            // Если тихий режим - только badge, без звука и баннера
-            if isQuietHours {
-                return [.badge] as UNNotificationPresentationOptions
-            } else {
-                // Показывать уведомления даже когда приложение активно
-                return self.notificationSettings.soundEnabled ? [.banner, .sound, .badge] : [.banner, .badge]
+        let options: UNNotificationPresentationOptions
+        if Thread.isMainThread {
+            options = self.foregroundPresentationOptions(for: notification, now: now)
+        } else {
+            options = DispatchQueue.main.sync {
+                self.foregroundPresentationOptions(for: notification, now: now)
             }
         }
-        
+
         completionHandler(options)
 
         processRemoteBypassMonitoringIngestIfNeeded(notification)

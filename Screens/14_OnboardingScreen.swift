@@ -252,7 +252,7 @@ struct OnboardingScreen: View {
         guard UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage) != nil else { return }
         if let raw = UserDefaults.standard.string(forKey: AppConfig.UserDefaultsKeys.appLanguage),
            let lang = LocalizationManager.Language(rawValue: raw) {
-            selectedLanguageForOnboarding = lang
+            selectedLanguageForOnboarding = LocalizationManager.Language.userSelectableLanguages.contains(lang) ? lang : .english
         } else {
             selectedLanguageForOnboarding = localizationManager.currentLanguage
         }
@@ -276,9 +276,12 @@ struct OnboardingScreen: View {
                 .padding(.horizontal, Spacing.l)
 
             VStack(spacing: Spacing.m) {
-                ForEach(LocalizationManager.Language.allCases, id: \.rawValue) { lang in
+                ForEach(LocalizationManager.Language.userSelectableLanguages, id: \.rawValue) { lang in
                     Button {
                         selectedLanguageForOnboarding = lang
+                        // Тот же источник истины, что и LanguageSettingsScreen: `changeLanguage` пишет `appLanguage` + обновляет UI.
+                        localizationManager.changeLanguage(to: lang)
+                        loadPages()
                         HapticFeedback.selection()
                     } label: {
                         HStack(spacing: Spacing.m) {
@@ -505,6 +508,12 @@ struct OnboardingScreen: View {
             loadPages()
             print("✅ OnboardingScreen: Pages loaded (minimal or full depending on localization)")
         }
+        .onChange(of: localizationManager.currentLanguage) { newLang in
+            if LocalizationManager.Language.userSelectableLanguages.contains(newLang) {
+                selectedLanguageForOnboarding = newLang
+                loadPages()
+            }
+        }
         .onChange(of: localizationManager.isReady) { isReady in
             print("🔄 OnboardingScreen.onChange: localizationManager.isReady changed to \(isReady)")
             if isReady {
@@ -636,6 +645,8 @@ struct OnboardingScreen: View {
                             localizationManager.changeLanguage(to: selectedLanguageForOnboarding)
                             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasChosenLanguageOnce)
                             UserDefaults.standard.synchronize()
+                            // Страницы собираются через safeLocalized → currentLanguage; до этого шага был язык системы/дефолт.
+                            loadPages()
                             withAnimation {
                                 currentPage = 1
                             }

@@ -25,13 +25,15 @@ final class LocalizationManagerTests: XCTestCase {
     // MARK: - Language Support Tests
     
     func testSupportedLanguages() {
-        let supportedLanguages = LocalizationManager.Language.allCases
-        
-        XCTAssertEqual(supportedLanguages.count, 4)
-        XCTAssertTrue(supportedLanguages.contains(.russian))
-        XCTAssertTrue(supportedLanguages.contains(.english))
-        XCTAssertTrue(supportedLanguages.contains(.chinese))
-        XCTAssertTrue(supportedLanguages.contains(.arabic))
+        let selectable = LocalizationManager.Language.userSelectableLanguages
+        XCTAssertEqual(selectable.count, 2)
+        XCTAssertTrue(selectable.contains(.russian))
+        XCTAssertTrue(selectable.contains(.english))
+
+        let allCases = LocalizationManager.Language.allCases
+        XCTAssertEqual(allCases.count, 4)
+        XCTAssertTrue(allCases.contains(.chinese))
+        XCTAssertTrue(allCases.contains(.arabic))
     }
     
     func testLanguageDisplayNames() {

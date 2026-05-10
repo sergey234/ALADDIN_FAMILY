@@ -37,6 +37,9 @@ class LocalizationManager: ObservableObject {
         case english = "en"
         case chinese = "zh-Hans"
         case arabic = "ar"
+
+        /// Языки, доступные пользователю в онбординге и в переключателе приложения (только RU / EN).
+        static var userSelectableLanguages: [Language] { [.russian, .english] }
         
         var displayName: String {
             switch self {
@@ -82,6 +85,8 @@ class LocalizationManager: ObservableObject {
             currentLanguage = .russian
         }
 
+        normalizeDiscontinuedUserFacingLanguages()
+
 #if DEBUG
         // ✅ BUILD 115: LocalizationDiagnostics.runInitialChecks перенесен в ALADDINApp.onAppear
 #endif
@@ -114,13 +119,19 @@ class LocalizationManager: ObservableObject {
             return .english
         case "ru":
             return .russian
-        case "zh":
-            return .chinese
-        case "ar":
-            return .arabic
+        case "zh", "ar":
+            return nil
         default:
             return nil
         }
+    }
+
+    /// Китайский и арабский убраны из выбора в приложении; сохранённые значения переводим на английский.
+    private func normalizeDiscontinuedUserFacingLanguages() {
+        guard currentLanguage == .chinese || currentLanguage == .arabic else { return }
+        currentLanguage = .english
+        UserDefaults.standard.set(Language.english.rawValue, forKey: AppConfig.UserDefaultsKeys.appLanguage)
+        UserDefaults.standard.synchronize()
     }
 
     // MARK: - Change Language
@@ -129,18 +140,19 @@ class LocalizationManager: ObservableObject {
      * Сменить язык приложения
      */
     func changeLanguage(to language: Language) {
-        logger.business("Changing application language to: \(language.rawValue)")
+        let resolved = Language.userSelectableLanguages.contains(language) ? language : .english
+        logger.business("Changing application language to: \(resolved.rawValue)")
         // ✅ Обновляем текущий язык (это обновит UI через @Published)
-        currentLanguage = language
+        currentLanguage = resolved
         
         // Сохраняем язык
         // TODO: В будущем заменить на Keychain для безопасности
-        UserDefaults.standard.set(language.rawValue, forKey: AppConfig.UserDefaultsKeys.appLanguage)
+        UserDefaults.standard.set(resolved.rawValue, forKey: AppConfig.UserDefaultsKeys.appLanguage)
         
         // Синхронизируем с системой
         UserDefaults.standard.synchronize()
         
-        print("✅ Language changed to: \(language.displayName)")
+        print("✅ Language changed to: \(resolved.displayName)")
     }
     
     /**
@@ -289,7 +301,7 @@ class LocalizationManager: ObservableObject {
             "password_reset_error_title": "Не удалось отправить",
             "password_reset_error_network": "Проверьте подключение к интернету и попробуйте снова.",
             "password_reset_error_invalid_email": "Введите корректный адрес email.",
-            "analytics_trial_mode_notice": "Режим пробного периода: полная аналитика и лимиты соответствуют выбранному тарифу. Процент защиты ниже — отдельная метрика по данным сканирования, а не «остаток триала».",
+            "analytics_trial_mode_notice": "Пробный период — лимиты и аналитика как у выбранного тарифа.\nЗдесь — статистика работы защиты; срок триала смотрите в разделе «Тарифы».",
             "analytics_protection_level_pending": "Данные уровня защиты появятся после первой успешной синхронизации с сервером.",
             "settings_history_chart_title": "График уровня защиты",
             "settings_history_chart_empty": "Нет данных за выбранный период",
@@ -1888,7 +1900,6 @@ class LocalizationManager: ObservableObject {
             "analytics_data_source_cache": "Данные из кэша",
             "analytics_data_source_empty": "Данные ещё не загружены",
             "analytics_data_source_error": "Ошибка загрузки",
-            "analytics_vs_home_family_hint": "Показатели здесь — по периоду и фильтрам аналитики (компонентные отчёты). На главной «Угроз по данным защиты устройств» — отдельный снимок; числа могут различаться.",
             "analytics_no_threats": "Нет заблокированных угроз за период",
             "analytics_threat_breakdown_empty_ok": "За выбранный период нет событий по категориям угроз.",
             "analytics_threat_breakdown_empty_cache": "Кэш: детализация может быть неполной. Подключитесь к сети для актуальных данных.",
@@ -7970,7 +7981,7 @@ class LocalizationManager: ObservableObject {
             "password_reset_error_title": "Could not send",
             "password_reset_error_network": "Check your internet connection and try again.",
             "password_reset_error_invalid_email": "Enter a valid email address.",
-            "analytics_trial_mode_notice": "Trial mode: analytics limits follow your plan. The protection percentage below reflects scan data, not remaining trial time.",
+            "analytics_trial_mode_notice": "Trial uses your selected plan’s analytics limits.\nBelow is protection activity stats—your trial dates are under Tariffs.",
             "analytics_protection_level_pending": "Protection level will appear after the first successful sync with the server.",
             "settings_history_chart_title": "Protection level chart",
             "settings_history_chart_empty": "No data for the selected period",
@@ -9947,7 +9958,6 @@ class LocalizationManager: ObservableObject {
             "analytics_data_source_cache": "Cached data",
             "analytics_data_source_empty": "Data not loaded yet",
             "analytics_data_source_error": "Loading error",
-            "analytics_vs_home_family_hint": "Figures here follow Analytics period/filters (component reports). Home’s device-protection threat line is a separate snapshot; totals may differ.",
             "analytics_no_threats": "No blocked threats in this period",
             "analytics_threat_breakdown_empty_ok": "No threat category events for the selected period.",
             "analytics_threat_breakdown_empty_cache": "Cached data: breakdown may be incomplete. Connect to the network for live data.",

@@ -49,13 +49,6 @@ struct AnalyticsScreen: View {
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.top, Spacing.s)
 
-                Text(localizationManager.localized("analytics_vs_home_family_hint"))
-                    .font(.system(size: 11))
-                    .foregroundColor(.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .padding(.horizontal, Spacing.screenPadding)
-                    .padding(.top, Spacing.xs)
-                
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
@@ -330,6 +323,8 @@ struct AnalyticsScreen: View {
             Text(localizationManager.localized("analytics_trial_mode_notice"))
                 .font(.system(size: 14, weight: .medium))
                 .foregroundColor(.textPrimary)
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
         .padding(.horizontal, Spacing.m)

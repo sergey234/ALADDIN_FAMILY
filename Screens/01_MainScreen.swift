@@ -7,11 +7,6 @@ private let logger = MasterLogger.shared
 // Visual Logger for on-screen display
 private let visualLogger = VisualLogger.shared
 
-// ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Глобальные флаги для защиты от рекурсии
-// @State не работает при пересоздании View, поэтому используем глобальные флаги с NSLock
-private var isUpdatingExpirationTextGlobal: Bool = false
-private let expirationTextUpdateLock = NSLock()
-
 struct MainScreen: View {
     private enum HomeChatDestination: String, CaseIterable {
         case family
@@ -29,6 +24,7 @@ struct MainScreen: View {
     @EnvironmentObject private var mainViewModel: MainViewModel
     @State private var hasAppeared = false
     @EnvironmentObject private var subscriptionManager: SubscriptionManager
+    @StateObject private var tariffManager = TariffManager.shared
     @ObservedObject private var antivirusManager = AntivirusManager.shared
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
@@ -43,16 +39,6 @@ struct MainScreen: View {
     // Это безопасно, так как мы НЕ используем его в .id() или computed properties
     @AppStorage(AppConfig.UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
     
-    // ✅ ИСПРАВЛЕНИЕ BUILD 91+: Кешированное значение для предотвращения рекурсии
-    // Вместо computed property используем @State, который обновляется только при изменении subscriptionExpiresAtIso
-    @State private var cachedExpirationText: String? = nil
-    
-    // ✅ BUILD 100: Рефакторинг - используем DateFormatterService вместо статических форматтеров
-    // Централизованное управление форматтерами предотвращает рекурсию и упрощает поддержку
-    private let dateFormatterService = DateFormatterService.shared
-    
-    // ✅ BUILD 99: Защита от рекурсии теперь через глобальный флаг (см. выше)
-    // @State не работает при пересоздании View, поэтому используем глобальный флаг
     
     var body: some View {
         ZStack {
@@ -323,13 +309,6 @@ struct MainScreen: View {
             debugLog.append("✅ Вызов mainViewModel.onAppear()...")
             mainViewModel.onAppear()
             debugLog.append("✅ mainViewModel.onAppear() завершен")
-            
-            // ✅ BUILD 100: Асинхронное обновление кеша expiration text для предотвращения рекурсии
-            // Читаем значение один раз и передаем в функцию, чтобы избежать повторного чтения @AppStorage
-            // Sync intentionally happens via .onAppear/.scenePhase to avoid duplicate startup bursts.
-            let currentExpiresAt = subscriptionExpiresAtIso
-            await updateExpirationTextCache(from: currentExpiresAt)
-            debugLog.append("✅ cachedExpirationText инициализирован")
             
             let duration = Date().timeIntervalSince(startTime)
             debugLog.append("✅ \(logPrefix) COMPLETE - Duration: \(String(format: "%.3f", duration))s")
@@ -724,11 +703,32 @@ struct MainScreen: View {
                                 Text(localizationManager.localized("main_family_info", mainViewModel.familyMembers, mainViewModel.devicesProtected))
                                     .font(.system(size: 9))
                                     .foregroundColor(.black)
-                                
-                                // Сообщение статуса (из API или fallback)
-                                Text(localizationManager.localized(mainViewModel.familyProtectionStatus.messageLocalizationKey))
+
+                                Text(familyCardRegistrationLine)
                                     .font(.system(size: 9))
                                     .foregroundColor(.black)
+
+                                Group {
+                                    if let formattedExpiry = familyCardSubscriptionExpiryFormatted {
+                                        Text("\(localizationManager.localized("profile_subscription_valid_until_prefix")) \(formattedExpiry)")
+                                            .font(.system(size: 9))
+                                            .foregroundColor(.black)
+                                    } else {
+                                        Text(localizationManager.localized(
+                                            SubscriptionProfileCaption.subscriptionExpiryPlaceholderKey(tier: tariffManager.currentTariff)
+                                        ))
+                                        .font(.system(size: 9))
+                                        .foregroundColor(.black)
+                                    }
+                                }
+                                .id("main_family_reg_exp_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffManager.currentTariff.rawValue)_\(subscriptionExpiresAtIso)_\(String(describing: subscriptionManager.trialStatus?.isActive))")
+                                
+                                // Подпись статуса: для «активно» и «критично» дублирует бейдж и перегружает карточку; оставляем для паузы / внимания / сети.
+                                if [.attention, .paused, .networkUnavailable].contains(mainViewModel.familyProtectionStatus) {
+                                    Text(localizationManager.localized(mainViewModel.familyProtectionStatus.messageLocalizationKey))
+                                        .font(.system(size: 9))
+                                        .foregroundColor(.black)
+                                }
                                 
                                 Text(localizationManager.localized("main_family_network_protection_info", mainViewModel.threatsBlocked))
                                     .font(.system(size: 9))
@@ -767,12 +767,6 @@ struct MainScreen: View {
                                 }
                                 // epoch: гарантированный refresh строки тарифа после trial/IAP/синка на реальном устройстве
                                 .id("tariff_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")
-
-                                if let expirationText = cachedExpirationText {
-                                    Text("\(localizationManager.localized("main_family_subscription_valid_until")) \(expirationText)")
-                                        .font(.system(size: 9))
-                                        .foregroundColor(.black)
-                                }
                             }
                             
                             // Кнопки действий
@@ -972,12 +966,31 @@ struct MainScreen: View {
                 .id("main_lang_\(localizationManager.currentLanguage.rawValue)")
     }
 
+    /// Регистрация и срок подписки в семейной карточке — те же правила, что в ProfileScreen.
+    private var familyCardRegistrationLine: String {
+        let regDisplay = SubscriptionProfileCaption.registrationDateDisplay(
+            isRussian: localizationManager.currentLanguage == .russian
+        )
+        let core = regDisplay.isEmpty ? localizationManager.localized("profile_not_set") : regDisplay
+        return "\(localizationManager.localized("profile_capsule_registration_label")) \(core)"
+    }
+
+    private var familyCardSubscriptionExpiryFormatted: String? {
+        SubscriptionProfileCaption.subscriptionExpiryFormatted(
+            tier: tariffManager.currentTariff,
+            trialStatus: subscriptionManager.trialStatus,
+            subscriptionExpiresAtIso: subscriptionExpiresAtIso,
+            currentSubscriptionExpiresAt: subscriptionManager.currentSubscription?.expiresAt
+        )
+    }
+
     /// Стабильный идентификатор строки тарифа: при смене уровня/триала/языка SwiftUI пересобирает блок (важно для девайса после async `forceSync`).
     private var tariffRowViewIdentity: String {
         let level = subscriptionManager.getCurrentLevel()
         let trialOn = subscriptionManager.trialStatus?.isActive == true
         let lang = localizationManager.currentLanguage.rawValue
-        return "\(level.rawValue)|trial:\(trialOn)|\(lang)"
+        let tariffRaw = tariffManager.currentTariff.rawValue
+        return "\(level.rawValue)|trial:\(trialOn)|\(lang)|tm:\(tariffRaw)"
     }
     
     private var currentTariffDisplayName: String {
@@ -1024,54 +1037,6 @@ struct MainScreen: View {
         }
     }
 
-    // ✅ BUILD 100: Старые статические форматтеры удалены
-    // Теперь используется DateFormatterService для всех операций форматирования дат
-    // Это предотвращает рекурсию и упрощает поддержку кода
-    
-    // ✅ ИСПРАВЛЕНИЕ BUILD 92: Функция для обновления кеша БЕЗ чтения @AppStorage напрямую
-    // Принимает значение как параметр, чтобы избежать рекурсии через @AppStorage
-    // ✅ BUILD 99: Функция сделана асинхронной для предотвращения блокировки main thread и рекурсии
-    private func updateExpirationTextCache(from isoString: String) async {
-        // ✅ BUILD 99 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Глобальный флаг с NSLock для защиты от рекурсии
-        // @State не работает при пересоздании View, поэтому используем глобальный флаг
-        let callId = UUID().uuidString
-        print("🔍 [MainScreen] updateExpirationTextCache START - \(callId) - \(Date())")
-        
-        expirationTextUpdateLock.lock()
-        guard !isUpdatingExpirationTextGlobal else {
-            expirationTextUpdateLock.unlock()
-            print("⚠️ [MainScreen] updateExpirationTextCache уже выполняется, пропускаем - \(callId)")
-            return
-        }
-        isUpdatingExpirationTextGlobal = true
-        expirationTextUpdateLock.unlock()
-        
-        defer {
-            expirationTextUpdateLock.lock()
-            isUpdatingExpirationTextGlobal = false
-            expirationTextUpdateLock.unlock()
-            print("✅ [MainScreen] updateExpirationTextCache COMPLETE - \(callId) - \(Date())")
-        }
-        
-        guard !isoString.isEmpty else {
-            await MainActor.run {
-                cachedExpirationText = nil
-            }
-            return
-        }
-        
-        // ✅ BUILD 100 КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Используем DateFormatterService вместо старого кода
-        // DateFormatterService использует статический Calendar и предотвращает рекурсию
-        // Это исправляет краш в background thread (Thread 7)
-        let formattedText = await MainActor.run {
-            dateFormatterService.formatExpirationDate(from: isoString)
-        }
-        
-        await MainActor.run {
-            cachedExpirationText = formattedText
-        }
-    }
-    
     // MARK: - Navigation Button Content
     
     private func navButtonContent(icon: String, label: String, isActive: Bool = false) -> some View {

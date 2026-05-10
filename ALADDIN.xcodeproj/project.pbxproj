@@ -91,6 +91,7 @@
 		5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */; };
 		5E32FFFF2EAD25F5000574C4 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */; };
 		5E5978072F60A0BD00854BDE /* DateFormatterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E5978062F60A0BC00854BDE /* DateFormatterService.swift */; };
+		5E7057062FA12A070065BDC4 /* SubscriptionProfileCaption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7057052FA12A070065BDC4 /* SubscriptionProfileCaption.swift */; };
 		5E61A0A12EFB38ED0039093A /* blockerList.json in Resources */ = {isa = PBXBuildFile; fileRef = 5E61A0A02EFB38ED0039093A /* blockerList.json */; };
 		5E61A0A72EFB38ED0039093A /* ALADDINContentBlocker.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5E61A0AC2EFB38ED0039093A /* ActionRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E61A0AD2EFB38ED0039093A /* ActionRequestHandler.swift */; };
@@ -520,6 +521,7 @@
 		5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = KeychainManager.swift; path = Core/Security/KeychainManager.swift; sourceTree = "<group>"; };
 		5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CacheManager.swift; path = Core/Cache/CacheManager.swift; sourceTree = "<group>"; };
 		5E5978062F60A0BC00854BDE /* DateFormatterService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DateFormatterService.swift; path = Core/Services/DateFormatterService.swift; sourceTree = "<group>"; };
+		5E7057052FA12A070065BDC4 /* SubscriptionProfileCaption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SubscriptionProfileCaption.swift; path = Core/Services/SubscriptionProfileCaption.swift; sourceTree = "<group>"; };
 		5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINContentBlocker.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		5E61A0A02EFB38ED0039093A /* blockerList.json */ = {isa = PBXFileReference; lastKnownFileType = text.json; path = blockerList.json; sourceTree = "<group>"; };
 		5E61A0A42EFB38ED0039093A /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -986,6 +988,7 @@
 				5EB1A4A62F64B8050030F5C1 /* ComponentAnalyticsModels.swift */,
 				5EB1A4A42F6418CB0030F5C1 /* QuarantineManager.swift */,
 				5E5978062F60A0BC00854BDE /* DateFormatterService.swift */,
+				5E7057052FA12A070065BDC4 /* SubscriptionProfileCaption.swift */,
 				5E7056D42F597D610065BDC4 /* JWTCircuitBreaker.swift */,
 				5E7056D22F597D3F0065BDC4 /* JWTErrorRecovery.swift */,
 				5E7056D02F597D0B0065BDC4 /* DEFENSIVEJWTTests.swift */,
@@ -1735,6 +1738,7 @@
 				5EC3092B2EA6B67D00C7D34B /* WheelOfFortuneView.swift in Sources */,
 				5EC3092A2EA6B67B00C7D34B /* UnicornUniverseView.swift in Sources */,
 				5E5978072F60A0BD00854BDE /* DateFormatterService.swift in Sources */,
+				5E7057062FA12A070065BDC4 /* SubscriptionProfileCaption.swift in Sources */,
 				A4BBB001 /* YoungDefenderView.swift in Sources */,
 				A3000047 /* Core/Localization/LocalizationManager.swift in Sources */,
 				5EC309152EA6B62800C7D34B /* 13_SupportScreen.swift in Sources */,
@@ -1939,7 +1943,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 191;
+				CURRENT_PROJECT_VERSION = 192;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1973,7 +1977,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 191;
+				CURRENT_PROJECT_VERSION = 192;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2131,7 +2135,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 191;
+				CURRENT_PROJECT_VERSION = 192;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2165,7 +2169,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 191;
+				CURRENT_PROJECT_VERSION = 192;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2197,7 +2201,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 191;
+				CURRENT_PROJECT_VERSION = 192;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2223,7 +2227,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 191;
+				CURRENT_PROJECT_VERSION = 192;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2247,7 +2251,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 191;
+				CURRENT_PROJECT_VERSION = 192;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2272,7 +2276,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 191;
+				CURRENT_PROJECT_VERSION = 192;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

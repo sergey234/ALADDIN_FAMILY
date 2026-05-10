@@ -81,7 +81,12 @@ class ParallelLoader {
                 switch result {
                 case .success(let value):
                     results[id] = value
-                    onProgress?(id, value)
+                    // onProgress часто обновляет @Published / ObservableObject — только с MainActor
+                    if let onProgress {
+                        await MainActor.run {
+                            onProgress(id, value)
+                        }
+                    }
                 case .failure(let error):
                     errors[id] = error
                     print("⚠️ ParallelLoader: Ошибка загрузки \(id): \(error.localizedDescription)")

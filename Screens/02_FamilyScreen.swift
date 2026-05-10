@@ -4,6 +4,13 @@ import CoreLocation
 // Master Logger for UI logging
 private let logger = MasterLogger.shared
 
+/// Один sheet: сначала оффер, затем форма добавления устройства без промежуточного dismiss (устраняет гонки двух `.sheet`).
+private struct PostAdminDevicePending: Identifiable, Equatable {
+    let memberId: String
+    let displayName: String
+    var id: String { memberId }
+}
+
 struct FamilyScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -16,12 +23,8 @@ struct FamilyScreen: View {
     @State private var showParentalSettingsModal = false
     @State private var showInvitationGuideModal: Bool = false
     @State private var showPostRegistrationDeviceGuide: Bool = false
-    /// После admin-add: компактное предложение зарегистрировать устройство для нового участника.
-    @State private var showPostAdminAddDeviceOffer: Bool = false
-    @State private var showPostAdminAddDeviceForm: Bool = false
-    @State private var pendingOpenAddDeviceFormAfterOfferDismiss: Bool = false
-    @State private var postAdminAddPendingMemberId: String = ""
-    @State private var postAdminAddPendingMemberName: String = ""
+    /// После admin-add: один координатор sheet (оффер → AddDeviceView).
+    @State private var postAdminDevicePending: PostAdminDevicePending? = nil
     @State private var removeMemberErrorMessage: String? = nil
     @State private var removeMemberSuccessMessage: String? = nil
     /// Дружелюбное сообщение при 409 на загрузке списка (несовпадение сохранённой семьи и аккаунта).
@@ -258,11 +261,11 @@ struct FamilyScreen: View {
         let rawId = (UserDefaults.standard.string(forKey: FamilyLocalStore.pendingPostAdminAddDeviceMemberIdKey) ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         guard !rawId.isEmpty else { return }
+        guard postAdminDevicePending == nil else { return }
 
         let rawName = (UserDefaults.standard.string(forKey: FamilyLocalStore.pendingPostAdminAddDeviceMemberNameKey) ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        postAdminAddPendingMemberId = rawId
-        postAdminAddPendingMemberName = rawName.isEmpty
+        let displayName = rawName.isEmpty
             ? (localizationManager.currentLanguage == .russian ? "Новый участник" : "New member")
             : rawName
 
@@ -272,7 +275,7 @@ struct FamilyScreen: View {
                 level: .info,
                 category: "ONBOARDING"
             )
-            showPostAdminAddDeviceOffer = true
+            postAdminDevicePending = PostAdminDevicePending(memberId: rawId, displayName: displayName)
         }
     }
 
@@ -2428,61 +2431,34 @@ struct FamilyScreen: View {
             )
             .environmentObject(localizationManager)
         }
-        .sheet(isPresented: $showPostAdminAddDeviceOffer, onDismiss: {
-            if pendingOpenAddDeviceFormAfterOfferDismiss {
-                pendingOpenAddDeviceFormAfterOfferDismiss = false
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                    showPostAdminAddDeviceForm = true
-                }
-            }
-        }) {
-            PostAdminAddDeviceOfferSheet(
-                memberDisplayName: postAdminAddPendingMemberName,
-                onAddDevice: {
+        .sheet(item: $postAdminDevicePending, onDismiss: {
+            // Свайп вниз или системное закрытие: как «Позже» — не оставляем зависшие pending-ключи.
+            clearPendingPostAdminAddDeviceKeys()
+        }) { pending in
+            PostAdminAddDeviceCoordinatorSheet(
+                pending: pending,
+                onCloseFlow: {
                     VisualLogger.shared.log(
-                        "👉 POST_ADMIN_ADD_DEVICE CTA add_device tapped",
+                        "✅ POST_ADMIN_ADD_DEVICE flow closed",
                         level: .info,
                         category: "ONBOARDING"
                     )
                     clearPendingPostAdminAddDeviceKeys()
-                    pendingOpenAddDeviceFormAfterOfferDismiss = true
-                    showPostAdminAddDeviceOffer = false
+                    postAdminDevicePending = nil
                 },
-                onOpenDevicesTab: {
+                onNavigateDevicesTab: {
                     VisualLogger.shared.log(
                         "👉 POST_ADMIN_ADD_DEVICE CTA open devices tab",
                         level: .info,
                         category: "ONBOARDING"
                     )
                     clearPendingPostAdminAddDeviceKeys()
-                    showPostAdminAddDeviceOffer = false
+                    postAdminDevicePending = nil
                     navigationManager.navigateTo(.devices)
-                },
-                onLater: {
-                    VisualLogger.shared.log(
-                        "⏰ POST_ADMIN_ADD_DEVICE later tapped",
-                        level: .info,
-                        category: "ONBOARDING"
-                    )
-                    clearPendingPostAdminAddDeviceKeys()
-                    showPostAdminAddDeviceOffer = false
                 }
             )
             .environmentObject(localizationManager)
-        }
-        .sheet(isPresented: $showPostAdminAddDeviceForm) {
-            AddDeviceView(
-                preselectedOwnerMemberId: postAdminAddPendingMemberId.isEmpty ? nil : postAdminAddPendingMemberId,
-                preselectedOwnerDisplayName: postAdminAddPendingMemberName.isEmpty ? nil : postAdminAddPendingMemberName,
-                onDeviceAdded: {
-                    UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
-                    NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
-                    postAdminAddPendingMemberId = ""
-                    postAdminAddPendingMemberName = ""
-                    showPostAdminAddDeviceForm = false
-                }
-            )
-            .environmentObject(localizationManager)
+            .environmentObject(navigationManager)
         }
         // Removed quick add sheet; using navigation flow instead
         .overlay(alignment: .bottom) {
@@ -2647,6 +2623,56 @@ struct FamilyScreen: View {
         //         print("🔄 [FamilyScreen] Модал добавления закрыт, обновляем список участников")
         //     }
         // }
+    }
+}
+
+/// Внутри одного sheet: оффер → форма `AddDeviceView` с тем же `memberId` / именем (без второго модального окна).
+private struct PostAdminAddDeviceCoordinatorSheet: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
+    let pending: PostAdminDevicePending
+    let onCloseFlow: () -> Void
+    let onNavigateDevicesTab: () -> Void
+
+    @State private var showAddDeviceForm: Bool = false
+
+    var body: some View {
+        Group {
+            if showAddDeviceForm {
+                AddDeviceView(
+                    preselectedOwnerMemberId: pending.memberId,
+                    preselectedOwnerDisplayName: pending.displayName,
+                    onDeviceAdded: {
+                        UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
+                        NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
+                        onCloseFlow()
+                    }
+                )
+                .environmentObject(localizationManager)
+            } else {
+                PostAdminAddDeviceOfferSheet(
+                    memberDisplayName: pending.displayName,
+                    onAddDevice: {
+                        VisualLogger.shared.log(
+                            "👉 POST_ADMIN_ADD_DEVICE CTA add_device tapped",
+                            level: .info,
+                            category: "ONBOARDING"
+                        )
+                        showAddDeviceForm = true
+                    },
+                    onOpenDevicesTab: onNavigateDevicesTab,
+                    onLater: {
+                        VisualLogger.shared.log(
+                            "⏰ POST_ADMIN_ADD_DEVICE later tapped",
+                            level: .info,
+                            category: "ONBOARDING"
+                        )
+                        onCloseFlow()
+                    }
+                )
+                .environmentObject(localizationManager)
+            }
+        }
     }
 }
 

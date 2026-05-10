@@ -36,8 +36,6 @@ struct ProfileScreen: View {
     @AppStorage("personal_data_consent_date") private var consentDate: String = ""
     /// Тот же источник, что у главной (семейная карточка), чтобы дата в профиле не расходилась с MainScreen.
     @AppStorage("subscription_expires_at_iso") private var subscriptionExpiresAtIso: String = ""
-
-    private let subscriptionExpiryFormatterService = DateFormatterService.shared
     @State private var showConsentRevokeAlert: Bool = false
     @State private var isFamilyIdentityRepairingProfile: Bool = false
     @State private var familyIdentityRepairStamp: Int = 0
@@ -285,12 +283,19 @@ struct ProfileScreen: View {
                 .font(.caption)
                 .foregroundColor(.textSecondary)
                 .fixedSize(horizontal: false, vertical: true)
-                if let formattedExpiry = profileSubscriptionExpiryFormatted() {
+                if let formattedExpiry = SubscriptionProfileCaption.subscriptionExpiryFormatted(
+                    tier: tariffManager.currentTariff,
+                    trialStatus: subscriptionManager.trialStatus,
+                    subscriptionExpiresAtIso: subscriptionExpiresAtIso,
+                    currentSubscriptionExpiresAt: subscriptionManager.currentSubscription?.expiresAt
+                ) {
                     Text("\(localizationManager.localized("profile_subscription_valid_until_prefix")) \(formattedExpiry)")
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                 } else {
-                    Text(localizationManager.localized(profileSubscriptionExpiryPlaceholderKey()))
+                    Text(localizationManager.localized(
+                        SubscriptionProfileCaption.subscriptionExpiryPlaceholderKey(tier: tariffManager.currentTariff)
+                    ))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                 }
@@ -1102,43 +1107,6 @@ struct DeleteAccountView: View {
             
             // Отправляем уведомление о удалении аккаунта (для обработки в AppDelegate или главном экране)
             NotificationCenter.default.post(name: NSNotification.Name("UserAccountDeleted"), object: nil)
-        }
-    }
-}
-
-// MARK: - Subscription expiry (совпадает с логикой семейной карточки на MainScreen)
-
-private extension ProfileScreen {
-    /// Окончание trial или платной подписки. `nil` — не показываем строку (free не сюда; ошибка парсинга / нет данных).
-    func profileSubscriptionExpiryFormatted() -> String? {
-        let tier = tariffManager.currentTariff
-        guard tier != .free else { return nil }
-
-        if tier == .trial {
-            if let trial = subscriptionManager.trialStatus, trial.isActive {
-                return subscriptionExpiryFormatterService.formatDisplayDate(trial.endDate)
-            }
-        }
-
-        if !subscriptionExpiresAtIso.isEmpty,
-           let fromIso = subscriptionExpiryFormatterService.formatExpirationDate(from: subscriptionExpiresAtIso) {
-            return fromIso
-        }
-
-        if let exp = subscriptionManager.currentSubscription?.expiresAt {
-            return subscriptionExpiryFormatterService.formatDisplayDate(exp)
-        }
-
-        return nil
-    }
-
-    /// Подпись под блоком тарифа, когда даты окончания нет (free или данные ещё не пришли).
-    func profileSubscriptionExpiryPlaceholderKey() -> String {
-        switch tariffManager.currentTariff {
-        case .free:
-            return "profile_subscription_free_no_expiry"
-        default:
-            return "profile_subscription_end_pending_sync"
         }
     }
 }

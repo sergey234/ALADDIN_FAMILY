@@ -117,7 +117,7 @@ extension RewardText {
 
     static func formatted(key: String, argument: String, localizationManager: LocalizationManager) -> RewardText {
         var translations: [String: String] = [:]
-        for language in LocalizationManager.Language.allCases {
+        for language in LocalizationManager.Language.userSelectableLanguages {
             guard let template = localizationManager.translations[language]?[key] else { continue }
             let locale = Locale(identifier: language.rawValue)
             translations[language.rawValue] = String(format: template, locale: locale, argument)
