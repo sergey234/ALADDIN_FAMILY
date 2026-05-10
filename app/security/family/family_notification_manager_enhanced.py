@@ -34,6 +34,7 @@ class NotificationType(Enum):
     SECURITY_ALERT = "security_alert"           # Угроза безопасности
     FAMILY_STATUS = "family_status"             # Статус семьи
     THREAT_DETECTED = "threat_detected"         # Обнаружена угроза
+    BYPASS_ATTEMPT = "bypass_attempt"           # Попытка обхода родительского контроля (iOS: NotificationKind)
     DAILY_REPORT = "daily_report"               # Ежедневный отчет
     EMERGENCY = "emergency"                     # Экстренное уведомление
     SYSTEM_UPDATE = "system_update"             # Обновление системы

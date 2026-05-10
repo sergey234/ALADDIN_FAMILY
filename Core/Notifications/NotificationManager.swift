@@ -182,8 +182,9 @@ class NotificationManager: NSObject, ObservableObject {
         
         // ✅ Проверяем настройки на main thread асинхронно
         Task { @MainActor in
-            // Проверка для уведомлений о попытках обхода
-            if notificationType == "bypass" && !NotificationManager.shared.notificationSettings.bypassEnabled {
+            // Проверка для уведомлений о попытках обхода (локальные события используют bypass_attempt)
+            if (notificationType == "bypass" || notificationType == "bypass_attempt")
+                && !NotificationManager.shared.notificationSettings.bypassEnabled {
                 print("🔕 Уведомление о попытке обхода пропущено (отключено в настройках)")
                 return
             }
@@ -859,7 +860,10 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             
             // Проверяем режим "Только важные"
             if self.notificationSettings.importantOnlyMode {
-                let isImportant = notificationType == "threat" || notificationType == "warning"
+                let isImportant = notificationType == "threat"
+                    || notificationType == "warning"
+                    || notificationType == "bypass"
+                    || notificationType == "bypass_attempt"
                 if !isImportant {
                     // Не важное уведомление - тихий режим
                     Task { @MainActor in
@@ -916,6 +920,17 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         }
         
         completionHandler(options)
+
+        processRemoteBypassMonitoringIngestIfNeeded(notification)
+    }
+
+    /// int-3: APNs → echo `POST …/monitoring/events` на JWT текущего профиля (ребёнок ок, родитель — тихий отказ API).
+    private func processRemoteBypassMonitoringIngestIfNeeded(_ notification: UNNotification) {
+        guard notification.request.trigger is UNPushNotificationTrigger else { return }
+        let userInfo = notification.request.content.userInfo
+        Task { @MainActor in
+            ParentalControlManager.shared.ingestBypassMonitoringFromPushUserInfo(userInfo)
+        }
     }
     
     /**
@@ -927,6 +942,8 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         didReceive response: UNNotificationResponse,
         withCompletionHandler completionHandler: @escaping () -> Void
     ) {
+        processRemoteBypassMonitoringIngestIfNeeded(response.notification)
+
         let userInfo = response.notification.request.content.userInfo
         
         // ✅ Обработка действий на main thread

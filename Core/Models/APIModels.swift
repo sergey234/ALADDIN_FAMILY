@@ -818,7 +818,7 @@ struct ChildStatsResponse: Codable {
 
 // MARK: - Bypass Protection Models
 
-enum BypassType: String {
+enum BypassType: String, Codable {
     case incognito = "incognito"  // Внутренний код
     case tor = "tor"
     case proxy = "proxy"

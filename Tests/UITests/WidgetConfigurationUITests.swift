@@ -5,6 +5,7 @@ import XCTest
  * Тестирование экрана настройки виджетов
  */
 
+@MainActor
 final class WidgetConfigurationUITests: XCTestCase {
     
     var app: XCUIApplication!

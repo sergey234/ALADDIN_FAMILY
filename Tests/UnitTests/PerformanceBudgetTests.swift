@@ -1,6 +1,7 @@
 import XCTest
 @testable import ALADDIN
 
+@MainActor
 final class PerformanceBudgetTests: XCTestCase {
 
     func testCelebrationParticleCountNeverExceedsGlobalMax() {

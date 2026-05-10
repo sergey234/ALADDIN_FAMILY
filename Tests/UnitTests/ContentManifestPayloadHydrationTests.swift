@@ -8,6 +8,7 @@ private final class StubPayloadDownloader: ContentPayloadDownloading {
     func downloadPayload(from url: URL) async throws -> Data { data }
 }
 
+@MainActor
 final class ContentManifestPayloadHydrationTests: XCTestCase {
 
     func testHydrateSetsOfflineWhenChecksumMatches() async throws {

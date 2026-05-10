@@ -7,6 +7,7 @@ import XCTest
  * Цель: 60% code coverage
  */
 
+@MainActor
 class ALADDINUnitTests: XCTestCase {
     
     // MARK: - Setup & Teardown

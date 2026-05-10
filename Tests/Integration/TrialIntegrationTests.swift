@@ -6,6 +6,7 @@ import SwiftUI
  * 🧪 Trial Integration Tests
  * Комплексное тестирование trial flow от первого запуска до истечения
  */
+@MainActor
 class TrialIntegrationTests: XCTestCase {
 
     var subscriptionManager: SubscriptionManager!

@@ -6,6 +6,7 @@ import XCTest
  * Тестирование AppDelegate для обработки push уведомлений
  */
 
+@MainActor
 final class AppDelegateTests: XCTestCase {
     
     var appDelegate: AppDelegate!

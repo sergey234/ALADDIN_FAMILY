@@ -3,6 +3,7 @@
 import SwiftUI
 import XCTest
 
+@MainActor
 class QuickSettingsTest: XCTestCase {
     func testSettingsScreenCreation() {
         let screen = SettingsScreen()

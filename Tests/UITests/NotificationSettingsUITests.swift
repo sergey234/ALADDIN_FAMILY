@@ -5,6 +5,7 @@ import XCTest
  * Тестирование экрана настроек уведомлений
  */
 
+@MainActor
 final class NotificationSettingsUITests: XCTestCase {
     
     var app: XCUIApplication!

@@ -2,6 +2,7 @@ import XCTest
 @testable import ALADDIN
 
 /// Smoke tests for API wiring. Detailed mock flows belong in integration tests.
+@MainActor
 final class MockAPIServiceTests: XCTestCase {
 
     func testAPIServiceSharedIsReachable() {

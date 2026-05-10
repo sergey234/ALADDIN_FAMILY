@@ -7,6 +7,7 @@ import XCTest
  * Цель: Проверка полного цикла офлайн → онлайн
  */
 
+@MainActor
 class OfflineModeIntegrationTests: XCTestCase {
     
     var apiService: APIService!

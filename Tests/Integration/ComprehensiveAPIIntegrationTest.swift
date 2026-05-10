@@ -7,6 +7,7 @@ import XCTest
  * Проверяет работоспособность всех систем ALADDIN
  */
 
+@MainActor
 class ComprehensiveAPIIntegrationTest: XCTestCase {
 
     private var apiService: APIService!

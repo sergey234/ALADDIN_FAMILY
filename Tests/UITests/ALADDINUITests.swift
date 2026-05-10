@@ -6,6 +6,7 @@ import XCTest
  * Цель: Покрытие основных пользовательских сценариев
  */
 
+@MainActor
 class ALADDINUITests: XCTestCase {
     
     var app: XCUIApplication!

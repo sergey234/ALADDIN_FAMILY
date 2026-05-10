@@ -24,6 +24,7 @@ private final class StubPayloadDownloader: ContentPayloadDownloading {
     func downloadPayload(from url: URL) async throws -> Data { Data() }
 }
 
+@MainActor
 final class ContentSyncManagerApplyTests: XCTestCase {
 
     private func suiteDefaults() -> UserDefaults {

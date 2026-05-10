@@ -9,6 +9,7 @@ import XCTest
 import Combine
 @testable import ALADDIN
 
+@MainActor
 class SettingsViewModelTests: XCTestCase {
 
     // MARK: - Properties

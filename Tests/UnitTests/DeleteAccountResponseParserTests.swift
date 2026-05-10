@@ -1,6 +1,7 @@
 import XCTest
 @testable import ALADDIN
 
+@MainActor
 final class DeleteAccountResponseParserTests: XCTestCase {
 
     func test_canonicalAPIResponse_decodes() throws {

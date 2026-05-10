@@ -4,6 +4,7 @@ import XCTest
 
 /// Интеграционный тест Network Protection после всех изменений
 /// Проверяет работу NetworkProtectionManager
+@MainActor
 final class NetworkProtectionIntegrationTest: XCTestCase {
     
     var networkProtectionManager: NetworkProtectionManager!

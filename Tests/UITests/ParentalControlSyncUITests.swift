@@ -6,6 +6,7 @@ import XCTest
  * Цель: Покрытие всех экранов и функций синхронизации родительского контроля
  */
 
+@MainActor
 class ParentalControlSyncUITests: XCTestCase {
     
     var app: XCUIApplication!

@@ -6,6 +6,7 @@ import XCTest
  * Цель: Покрытие всех экранов и функций геймификации
  */
 
+@MainActor
 class GamificationUITests: XCTestCase {
     
     var app: XCUIApplication!

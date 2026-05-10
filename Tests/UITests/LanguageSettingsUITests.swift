@@ -5,6 +5,7 @@ import XCTest
  * Тестирование экрана выбора языка
  */
 
+@MainActor
 final class LanguageSettingsUITests: XCTestCase {
     
     var app: XCUIApplication!

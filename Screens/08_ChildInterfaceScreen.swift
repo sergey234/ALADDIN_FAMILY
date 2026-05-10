@@ -23,7 +23,9 @@ struct ChildInterfaceScreen: View {
     @State private var selectedImage: UIImage?
     @State private var showChildInstructions: Bool = false
     @State private var showChildSettings: Bool = false
-    
+    /// int-8: после `applyFamilyControlsPipelineIfPossible` на устройстве ребёнка.
+    @State private var familyControlsPipelineReady: Bool = false
+
     // MARK: - Navigation Function
     
     private func navigateToContent(category: String) {
@@ -111,9 +113,15 @@ struct ChildInterfaceScreen: View {
             ProfileImagePicker(selectedImage: $selectedImage)
         }
         .onAppear {
+            UserDefaults.standard.set("child", forKey: "current_user_role")
+            UserDefaults.standard.synchronize()
             loadProfileImage()
             Task {
                 await ContentManager.shared.runUnifiedLifecycle()
+                let readiness = await ParentalControlManager.shared.applyFamilyControlsPipelineIfPossible()
+                await MainActor.run {
+                    familyControlsPipelineReady = readiness.isPipelineReady
+                }
             }
         }
         .onChange(of: selectedImage) { newImage in
@@ -497,10 +505,18 @@ struct ChildInterfaceScreen: View {
                     
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color.green)
-                        .frame(width: geometry.size.width * 0.25, height: 12)
+                        .frame(width: geometry.size.width * (familyControlsPipelineReady ? 0.25 : 0.08), height: 12)
                 }
             }
             .frame(height: 12)
+
+            if !familyControlsPipelineReady {
+                Text(localizationManager.localized("child_family_controls_pipeline_pending"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.92))
+                    .multilineTextAlignment(.center)
+                    .padding(.top, 6)
+            }
         }
         .padding(16)
         .background(

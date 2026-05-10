@@ -107,6 +107,21 @@ struct NotificationsScreen: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
             
+            Text(localizationManager.localized("notifications_statistics_subtitle"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+
+            if let syncAt = viewModel.lastSuccessfulSyncAt {
+                Text(localizationManager.localized(
+                    "notifications_feed_last_refresh_caption",
+                    NotificationsViewModel.relativeTime(for: syncAt)
+                ))
+                .font(.caption2)
+                .foregroundColor(.secondary.opacity(0.92))
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            
             HStack(spacing: 12) {
                 statCard(
                     icon: "bell.fill",
@@ -124,7 +139,7 @@ struct NotificationsScreen: View {
                 
                 statCard(
                     icon: "shield.fill",
-                    title: localizationManager.localized("notifications_threats"),
+                    title: localizationManager.localized("notifications_stat_threat_typed"),
                     value: "\(threatCount)",
                     color: .red
                 )

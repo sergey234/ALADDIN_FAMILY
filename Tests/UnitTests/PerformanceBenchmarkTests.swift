@@ -7,6 +7,7 @@ import XCTest
  * Гарантирует <25мс для 95% запросов
  */
 
+@MainActor
 class PerformanceBenchmarkTests: XCTestCase {
 
     private var networkManager: NetworkManager!

@@ -6,6 +6,7 @@ import XCTest
  * Цель: Покрытие всех экранов и функций синхронизации
  */
 
+@MainActor
 class SyncUITests: XCTestCase {
     
     var app: XCUIApplication!

@@ -7,6 +7,7 @@ import XCTest
  * Цель: 100% покрытие AppConfig
  */
 
+@MainActor
 class AppConfigTests: XCTestCase {
     
     override func setUpWithError() throws {
@@ -46,7 +47,15 @@ class AppConfigTests: XCTestCase {
     }
     
     func testBuildNumber() throws {
-        XCTAssertEqual(AppConfig.buildNumber, "189")
+        XCTAssertEqual(AppConfig.buildNumber, "190")
+    }
+
+    func testApiContractVersionNonEmpty() throws {
+        XCTAssertFalse(AppConfig.apiContractVersion.isEmpty)
+    }
+
+    func testMinimumClientBuildForApiContractMatchesShippedBuild() throws {
+        XCTAssertEqual(AppConfig.minimumClientBuildForApiContract, AppConfig.buildNumber)
     }
     
     func testBundleIdentifier() throws {
@@ -270,6 +279,7 @@ class AppConfigTests: XCTestCase {
 
 // MARK: - APIResponseValidator (PR3)
 
+@MainActor
 final class APIResponseValidatorTests: XCTestCase {
 
     func testEnvelopeDecodeAndCanonicalPolicyOverridesBodyComponentId() throws {

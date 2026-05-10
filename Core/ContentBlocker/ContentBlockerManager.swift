@@ -1,5 +1,6 @@
 import Foundation
 import SafariServices
+import UIKit
 
 /**
  * 🔒 Content Blocker Manager
@@ -28,6 +29,9 @@ class ContentBlockerManager: ObservableObject {
     private let appGroupIdentifier = "group.com.aladdin.family"
     private let rulesKey = "contentBlockerRules"
     
+    /// int-9: не слать аналитику «смены состояния» на первом опросе SFContentBlockerManager (холодный старт).
+    private var didCompleteInitialBlockingStatusCheck = false
+    
     // MARK: - Private Properties
     
     private var userDefaults: UserDefaults? {
@@ -55,6 +59,7 @@ class ContentBlockerManager: ObservableObject {
      * Проверить статус блокировки
      */
     func checkBlockingStatus() async {
+        let previousEnabled = isEnabled
         await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
             SFContentBlockerManager.getStateOfContentBlocker(withIdentifier: extensionIdentifier) { state, error in
                 Task { @MainActor in
@@ -81,6 +86,23 @@ class ContentBlockerManager: ObservableObject {
                         self.status = .disabled
                         self.isEnabled = false
                     }
+
+                    let wasInitialPass = !self.didCompleteInitialBlockingStatusCheck
+                    self.didCompleteInitialBlockingStatusCheck = true
+                    if previousEnabled != self.isEnabled {
+                        NotificationCenter.default.post(name: Notification.Name.networkLayerIndicatorsRefresh, object: nil)
+                        if !wasInitialPass {
+                            MetricsService.shared.trackUserAction(
+                                action: "network_protection_safari_cb_state",
+                                parameters: [
+                                    "layer": "safari_content_blocker",
+                                    "active": self.isEnabled,
+                                    "source": "sf_content_blocker_state"
+                                ]
+                            )
+                        }
+                    }
+
                     continuation.resume()
                 }
             }
@@ -118,6 +140,15 @@ class ContentBlockerManager: ObservableObject {
         if case .extensionMissing = status {
             throw ContentBlockerError.extensionMissing
         }
+
+        MetricsService.shared.trackUserAction(
+            action: "safari_content_blocker_rules_changed",
+            parameters: [
+                "layer": "safari_content_blocker",
+                "categories_count": categories.count,
+                "rules_count": blockedSitesCount
+            ]
+        )
     }
     
     /**

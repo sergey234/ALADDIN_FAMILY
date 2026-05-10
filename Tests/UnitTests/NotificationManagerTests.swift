@@ -6,6 +6,7 @@ import XCTest
  * Тестирование менеджера уведомлений
  */
 
+@MainActor
 final class NotificationManagerTests: XCTestCase {
     
     private var notificationManager: NotificationManager!

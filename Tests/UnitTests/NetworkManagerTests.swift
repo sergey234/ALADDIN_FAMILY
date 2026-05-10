@@ -6,6 +6,7 @@ import XCTest
  * Тесты для сетевого менеджера
  */
 
+@MainActor
 class NetworkManagerTests: XCTestCase {
     
     var networkManager: NetworkManager!

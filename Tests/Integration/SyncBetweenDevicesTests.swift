@@ -7,6 +7,7 @@ import XCTest
  * Цель: Проверка синхронизации данных между iPhone и iPad
  */
 
+@MainActor
 class SyncBetweenDevicesTests: XCTestCase {
     
     var apiService: APIService!

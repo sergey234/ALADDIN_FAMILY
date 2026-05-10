@@ -1,6 +1,7 @@
 import XCTest
 @testable import ALADDIN
 
+@MainActor
 final class ContentPayloadDiskCachePolicyTests: XCTestCase {
 
     func testEnforceBudgetEvictsOldestByPayloadMtime() throws {

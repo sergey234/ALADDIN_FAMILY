@@ -105,6 +105,7 @@ def _notification_icon(notification: FamilyNotification) -> str:
     mapping = {
         NotificationType.SECURITY_ALERT: "🛡️",
         NotificationType.THREAT_DETECTED: "🚨",
+        NotificationType.BYPASS_ATTEMPT: "⚠️",
         NotificationType.EMERGENCY: "🚑",
         NotificationType.DAILY_REPORT: "📊",
         NotificationType.FAMILY_STATUS: "👨‍👩‍👧‍👦",

@@ -93,11 +93,10 @@ struct FamilyScreen: View {
     @AppStorage("family_reports_enabled") private var isReportsEnabled: Bool = true
     @AppStorage("family_additional_enabled") private var isAdditionalEnabled: Bool = true
     @AppStorage("family_bypass_protection_enabled") private var isBypassProtectionEnabled: Bool = true
+    @AppStorage("parental_selected_child_id") private var familyBypassSelectedChildId: String = ""
+    @AppStorage("parental_selected_child") private var familyBypassLegacyChild: String = ""
     
     // Данные для карточек (из wireframe)
-    @State private var contentBlockActive: Int = 3
-    @State private var contentBlockTotal: Int = 4
-    @State private var contentBlockedCount: Int = 1245
     
     @State private var timeRemaining: String = LocalizationManager.shared.localized("family_time_remaining_placeholder")
     @State private var timeSchedules: Int = 3
@@ -117,9 +116,9 @@ struct FamilyScreen: View {
     
     // State for the bypass protection card
     @State private var bypassAttemptsToday: Int = 0
-    @State private var bypassAttemptsWeek: Int = 47
-    @State private var bypassAttemptsBlocked: Int = 47
-    @State private var bypassDetectionActive: Int = 3  // 3 из 3 активно
+    @State private var bypassAttemptsWeek: Int = 0
+    @State private var bypassAttemptsBlocked: Int = 0
+    @State private var bypassDetectionActive: Int = 3  // обновляется из UserDefaults (тогглы антиобхода)
     
     @State private var unicornBalance: Int = 245
     
@@ -177,6 +176,45 @@ struct FamilyScreen: View {
                 geofences: nil
             )
         }
+    }
+
+    private var familyBypassEffectiveChildId: String {
+        let trimmedId = familyBypassSelectedChildId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !trimmedId.isEmpty { return trimmedId }
+        return familyBypassLegacyChild.trimmingCharacters(in: .whitespacesAndNewlines)
+    }
+
+    /// Карточка «Защита от обхода»: сервер — источник истины; при сбое API — локальный журнал `ParentalControlManager`.
+    private func refreshBypassCardFromServer() {
+        let raw = familyBypassEffectiveChildId
+        let childKey: String? = raw.isEmpty ? nil : raw
+        ParentalControlManager.shared.getBypassStats(childId: childKey) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let stats):
+                    bypassAttemptsToday = stats.today
+                    bypassAttemptsWeek = stats.week
+                    bypassAttemptsBlocked = stats.blocked
+                case .failure:
+                    let local = ParentalControlManager.shared.localBypassAggregates(for: childKey)
+                    bypassAttemptsToday = local.today
+                    bypassAttemptsWeek = local.week
+                    bypassAttemptsBlocked = local.blocked
+                }
+            }
+        }
+    }
+
+    private func refreshBypassDetectorsActiveCount() {
+        func triStateBool(forKey key: String) -> Bool {
+            if UserDefaults.standard.object(forKey: key) == nil { return true }
+            return UserDefaults.standard.bool(forKey: key)
+        }
+        var n = 0
+        if triStateBool(forKey: "bypass_incognito_enabled") { n += 1 }
+        if triStateBool(forKey: "bypass_tor_enabled") { n += 1 }
+        if triStateBool(forKey: "bypass_proxy_enabled") { n += 1 }
+        bypassDetectionActive = n
     }
     
     // MARK: - Navigation Helper
@@ -2500,6 +2538,12 @@ struct FamilyScreen: View {
             loadParentalRules()  // ✅ BUILD 96: Загружаем ParentalControlRules асинхронно
             refreshParentalControlDemoStrings()
             evaluatePostRegistrationDeviceGuide()
+            refreshBypassCardFromServer()
+            refreshBypassDetectorsActiveCount()
+        }
+        .onChange(of: familyBypassSelectedChildId) { _ in
+            refreshBypassCardFromServer()
+            refreshBypassDetectorsActiveCount()
         }
         // ✅ ИСПРАВЛЕНИЕ #6: Убрали onChange для showAddMemberModal - теперь используем NavigationManager
         // При возврате с AddMemberOptionsScreen список обновится автоматически через onAppear
@@ -2644,9 +2688,13 @@ extension FamilyScreen {
                 FamilyParentalControlCard(
                     icon: "🔒",
                     title: localizationManager.localized("parental_content_block"),
-                    statusBadge: "\(contentBlockActive)/\(contentBlockTotal)",
-                    statusText: "✅ \(contentBlockActive) \(localizationManager.localized("parental_active"))",
-                    metric: "\(contentBlockedCount) \(localizationManager.localized("parental_blocked"))",
+                    statusBadge: isContentBlockEnabled
+                        ? localizationManager.localized("family_content_block_card_badge_on")
+                        : localizationManager.localized("family_content_block_card_badge_off"),
+                    statusText: isContentBlockEnabled
+                        ? localizationManager.localized("family_content_block_card_status_on")
+                        : localizationManager.localized("family_content_block_card_status_off"),
+                    metric: localizationManager.localized("family_content_block_card_metric_hint"),
                     cardColor: .red.opacity(0.2),
                     borderColor: .red.opacity(0.4),
                     badgeColor: .successGreen,
@@ -3412,6 +3460,72 @@ struct FamilyTimeControlModal: View {
     }
 }
 
+// MARK: - Local network layers (Smart DNS / Safari CB on parent device, int-12 / int-13)
+
+private struct FamilyNetworkLayersLocalStatusBlock: View {
+    @ObservedObject private var dnsManager = DNSProtectionManager.shared
+    @ObservedObject private var contentBlockerManager = ContentBlockerManager.shared
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized("family_modal_network_layers_title"))
+                .font(.bodyBold)
+                .foregroundColor(.secondaryGold)
+
+            Text(localizationManager.localized("family_modal_network_layers_scope"))
+                .font(.captionSmall)
+                .foregroundColor(.textTertiary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(localizationManager.localized("family_modal_network_layers_p2_note"))
+                .font(.captionSmall)
+                .foregroundColor(.textTertiary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(localizationManager.localized("main_family_smart_dns_status", dnsShortLabel))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+
+            Text(localizationManager.localized("main_family_safari_cb_status", safariShortLabel))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+
+            Text(localizationManager.localized("main_family_network_layers_hint"))
+                .font(.captionSmall)
+                .foregroundColor(.textTertiary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(Spacing.m)
+        .background(Color.backgroundMedium.opacity(0.3))
+        .cornerRadius(CornerRadius.medium)
+        .onAppear {
+            dnsManager.loadStatus()
+            Task {
+                await contentBlockerManager.checkBlockingStatus()
+            }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: Notification.Name.networkLayerIndicatorsRefresh)) { _ in
+            dnsManager.loadStatus()
+            Task {
+                await contentBlockerManager.checkBlockingStatus()
+            }
+        }
+    }
+
+    private var dnsShortLabel: String {
+        dnsManager.isEnabled
+            ? localizationManager.localized("main_toggle_short_on")
+            : localizationManager.localized("main_toggle_short_off")
+    }
+
+    private var safariShortLabel: String {
+        contentBlockerManager.isEnabled
+            ? localizationManager.localized("main_toggle_short_on")
+            : localizationManager.localized("main_toggle_short_off")
+    }
+}
+
 struct FamilyMonitoringModal: View {
     @Binding var isPresented: Bool
     @Binding var isEnabled: Bool
@@ -3499,6 +3613,9 @@ struct FamilyMonitoringModal: View {
                     description: localizationManager.localized("family_screenshots_desc"),
                     isEnabled: $isScreenshotsEnabled
                 )
+
+                FamilyNetworkLayersLocalStatusBlock()
+                    .environmentObject(localizationManager)
                 
                 Divider()
                     .background(Color.white.opacity(0.2))
@@ -3573,6 +3690,10 @@ struct FamilyMonitoringModal: View {
             refreshMonitoringSummaryFromServer()
             loadParentalMonitoringTogglesFromServerForModal()
         }
+        .onChange(of: selectedChildId) { _ in
+            refreshMonitoringSummaryFromServer()
+            loadParentalMonitoringTogglesFromServerForModal()
+        }
         .onChange(of: isMessagesMonitoringEnabled) { _ in
             scheduleParentalMonitoringSyncFromFamilyModal()
         }
@@ -3620,7 +3741,7 @@ struct FamilyMonitoringModal: View {
         guard !isLoadingMonitoringDetail else { return }
         isLoadingMonitoringDetail = true
         let cid = effectiveChildId.isEmpty ? nil : effectiveChildId
-        APIService.shared.getParentalMonitoringDetail(childId: cid) { result in
+        ParentalControlManager.shared.getMonitoringDetail(childId: cid) { result in
             DispatchQueue.main.async {
                 isLoadingMonitoringDetail = false
                 switch result {
@@ -4061,6 +4182,9 @@ struct FamilyReportsModal: View {
                     badgeColor: .successGreen,
                     action: { showBypassAttempts = true }
                 )
+
+                FamilyNetworkLayersLocalStatusBlock()
+                    .environmentObject(localizationManager)
                 
                 Divider()
                     .background(Color.white.opacity(0.2))
@@ -4134,6 +4258,9 @@ struct FamilyReportsModal: View {
             // Загружаем статистику при открытии модала
             loadReportsStatistics()
         }
+        .onChange(of: selectedChildId) { _ in
+            loadReportsStatistics()
+        }
         .withVisualLogger()
     }
     
@@ -4159,7 +4286,7 @@ struct FamilyReportsModal: View {
         }
         
         let cid = effectiveChildId.isEmpty ? nil : effectiveChildId
-        APIService.shared.getParentalMonitoringDetail(childId: cid) { result in
+        ParentalControlManager.shared.getMonitoringDetail(childId: cid) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let detail):
@@ -4191,6 +4318,13 @@ struct FamilyReportsModal: View {
                     UserDefaults.standard.set(cachedStats, forKey: self.statsKey)
                 case .failure(let error):
                     print("⚠️ Failed to load bypass statistics: \(error.localizedDescription)")
+                    let local = ParentalControlManager.shared.localBypassAggregates(
+                        for: effectiveChildId.isEmpty ? nil : effectiveChildId
+                    )
+                    self.bypassAttemptsCount = local.week
+                    var cachedStats = UserDefaults.standard.dictionary(forKey: self.statsKey) ?? [:]
+                    cachedStats["bypassAttemptsCount"] = local.week
+                    UserDefaults.standard.set(cachedStats, forKey: self.statsKey)
                 }
             }
         }
@@ -5034,7 +5168,7 @@ struct BrowserHistoryDetailModal: View {
     }
     
     private func loadBrowserHistoryFromServer() {
-        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+        ParentalControlManager.shared.getMonitoringDetail(childId: childId) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let detail):
@@ -5226,7 +5360,7 @@ struct AppHistoryDetailModal: View {
     }
     
     private func loadAppHistoryFromServer() {
-        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+        ParentalControlManager.shared.getMonitoringDetail(childId: childId) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let detail):
@@ -5420,7 +5554,7 @@ struct ContactsDetailModal: View {
     }
     
     private func loadContacts() {
-        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+        ParentalControlManager.shared.getMonitoringDetail(childId: childId) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let detail):
@@ -6805,7 +6939,7 @@ struct SuspiciousActivityDetailModal: View {
     }
     
     private func loadSuspiciousFromServer() {
-        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+        ParentalControlManager.shared.getMonitoringDetail(childId: childId) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let detail):
@@ -6922,7 +7056,7 @@ struct TopSitesDetailModal: View {
     }
     
     private func loadTopSites() {
-        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+        ParentalControlManager.shared.getMonitoringDetail(childId: childId) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let detail):
@@ -7057,7 +7191,7 @@ struct TopAppsDetailModal: View {
     }
     
     private func loadTopApps() {
-        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+        ParentalControlManager.shared.getMonitoringDetail(childId: childId) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let detail):
@@ -7180,7 +7314,7 @@ struct UsageHoursDetailModal: View {
     }
     
     private func loadPeakHoursFromServer() {
-        APIService.shared.getParentalMonitoringDetail(childId: childId) { result in
+        ParentalControlManager.shared.getMonitoringDetail(childId: childId) { result in
             DispatchQueue.main.async {
                 switch result {
                 case .success(let detail):
@@ -7352,6 +7486,9 @@ struct BypassAttemptsDetailModal: View {
         .onAppear {
             loadBypassStatistics()
         }
+        .onChange(of: selectedChildId) { _ in
+            loadBypassStatistics()
+        }
     }
     
     private func loadBypassStatistics() {
@@ -7369,7 +7506,15 @@ struct BypassAttemptsDetailModal: View {
                     self.proxyCount = stats.proxy
                 case .failure(let error):
                     print("⚠️ Failed to load bypass statistics: \(error.localizedDescription)")
-                    // Оставляем значения по умолчанию
+                    let local = manager.localBypassAggregates(
+                        for: effectiveChildId.isEmpty ? nil : effectiveChildId
+                    )
+                    today = local.today
+                    week = local.week
+                    blocked = local.blocked
+                    incognitoCount = local.incognito
+                    torCount = local.tor
+                    proxyCount = local.proxy
                 }
             }
         }
@@ -8199,13 +8344,13 @@ struct FamilyBypassProtectionModal: View {
     
     // Статистика
     @State private var attemptsToday: Int = 0
-    @State private var attemptsWeek: Int = 47
-    @State private var attemptsBlocked: Int = 47
+    @State private var attemptsWeek: Int = 0
+    @State private var attemptsBlocked: Int = 0
     
     // Детализация по типам
-    @State private var incognitoAttempts: Int = 15
-    @State private var torAttempts: Int = 8
-    @State private var proxyAttempts: Int = 6
+    @State private var incognitoAttempts: Int = 0
+    @State private var torAttempts: Int = 0
+    @State private var proxyAttempts: Int = 0
     
     private var effectiveChildId: String {
         if !selectedChildId.isEmpty { return selectedChildId }
@@ -8376,6 +8521,10 @@ struct FamilyBypassProtectionModal: View {
             loadBypassStatistics()
             dnsProtectionManager.loadStatus()
         }
+        .onChange(of: selectedChildId) { _ in
+            loadBypassStatistics()
+            dnsProtectionManager.loadStatus()
+        }
         .onChange(of: isIncognitoDetectionEnabled) { newValue in
             VisualLogger.shared.log(
                 "🔄 bypass_incognito_enabled = \(newValue)",
@@ -8417,7 +8566,15 @@ struct FamilyBypassProtectionModal: View {
                     self.proxyAttempts = stats.proxy
                 case .failure(let error):
                     print("⚠️ Failed to load bypass statistics: \(error.localizedDescription)")
-                    // Оставляем значения по умолчанию
+                    let local = manager.localBypassAggregates(
+                        for: effectiveChildId.isEmpty ? nil : effectiveChildId
+                    )
+                    attemptsToday = local.today
+                    attemptsWeek = local.week
+                    attemptsBlocked = local.blocked
+                    incognitoAttempts = local.incognito
+                    torAttempts = local.tor
+                    proxyAttempts = local.proxy
                 }
             }
         }

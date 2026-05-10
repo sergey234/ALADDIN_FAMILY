@@ -98,6 +98,10 @@ class MainViewModel: ObservableObject {
     @Published var isNetworkProtectionEnabled: Bool = true
     @Published var familyMembers: Int = 0 // ✅ BUILD 115: Начальное значение 0 - будет обновлено из API
     @Published var threatsBlocked: Int = 0 // ✅ BUILD 115: Начальное значение 0 - будет обновлено из API
+    /// int-9: профиль DoH (Smart DNS) — не смешивать с `totalThreats` и не путать с Safari CB.
+    @Published var smartDnsProfileActive: Bool = false
+    /// int-9: расширение Safari Content Blocker — только браузер.
+    @Published var safariContentBlockerActive: Bool = false
     @Published var devicesProtected: Int = 0 // ✅ BUILD 115: Начальное значение 0 - будет обновлено из API
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
@@ -192,6 +196,19 @@ class MainViewModel: ObservableObject {
                 self?.requestRefreshDebounced()
             }
             .store(in: &cancellables)
+
+        NotificationCenter.default.publisher(for: Notification.Name.networkLayerIndicatorsRefresh)
+            .receive(on: RunLoop.main)
+            .sink { [weak self] _ in
+                self?.refreshNetworkLayerIndicators()
+            }
+            .store(in: &cancellables)
+    }
+
+    /// Синхронизация индикаторов DNS и Safari CB с менеджерами (главный экран не смешивает их с «угрозами» из API).
+    func refreshNetworkLayerIndicators() {
+        smartDnsProfileActive = DNSProtectionManager.shared.isEnabled
+        safariContentBlockerActive = ContentBlockerManager.shared.isEnabled
     }
     
     // MARK: - Public Methods
@@ -370,6 +387,7 @@ class MainViewModel: ObservableObject {
                             self.isLoading = false
                             self.isLoadingDashboard = false
                             self.lastUpdateTime = Date()
+                            self.refreshNetworkLayerIndicators()
                             PerformanceMonitor.shared.endScreenLoad("MainDashboard")
                             print("✅ MainViewModel: Данные успешно обновлены из API")
                             NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
@@ -699,6 +717,11 @@ class MainViewModel: ObservableObject {
         print("Disconnecting Network Protection...")
         #endif
     }
+}
+
+extension Notification.Name {
+    /// int-9: обновить строки Smart DNS / Safari CB на главном экране без смешения метрик.
+    static let networkLayerIndicatorsRefresh = Notification.Name("aladdin.networkLayerIndicatorsRefresh")
 }
 
 

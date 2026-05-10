@@ -6,6 +6,7 @@ import XCTest
  * Цель: 100% покрытие пользовательских сценариев
  */
 
+@MainActor
 class FamilyRegistrationUITests: XCTestCase {
     
     var app: XCUIApplication!

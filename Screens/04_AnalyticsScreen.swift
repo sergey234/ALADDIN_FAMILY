@@ -48,6 +48,13 @@ struct AnalyticsScreen: View {
                 DebouncedDataSourceIndicator(dataSource: viewModel.dataSource, localizationManager: localizationManager)
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.top, Spacing.s)
+
+                Text(localizationManager.localized("analytics_vs_home_family_hint"))
+                    .font(.system(size: 11))
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.horizontal, Spacing.screenPadding)
+                    .padding(.top, Spacing.xs)
                 
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {

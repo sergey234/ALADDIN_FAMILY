@@ -18,7 +18,17 @@ import logging
 from app.database.database import get_db
 from app.auth.auth import get_current_user
 
+from security.family.family_notification_manager_enhanced import (
+    NotificationChannel,
+    NotificationPriority,
+    NotificationType,
+    family_notification_manager_enhanced,
+)
+
 logger = logging.getLogger(__name__)
+
+# Fallback family bucket for in-app notifications when нет строки family_members (совпадает с notifications_router).
+_DEFAULT_NOTIFICATION_FAMILY_ID = "family_demo_001"
 
 # ═══════════════════════════════════════════════════════════════
 # Pydantic моделей для запросов и ответов
@@ -1060,6 +1070,195 @@ def _ensure_parental_monitoring_events_table(db: Session) -> None:
         db.rollback()
 
 
+def _is_bypass_monitoring_event(kind: str, payload: Optional[Dict[str, Any]]) -> bool:
+    k = (kind or "").lower()
+    if "bypass" in k:
+        return True
+    p = payload or {}
+    if str(p.get("category") or "").lower() in ("bypass", "bypass_attempt"):
+        return True
+    if p.get("bypass_type") or p.get("bypassType"):
+        return True
+    return False
+
+
+def _bypass_counter_deltas(kind: str, payload: Optional[Dict[str, Any]]) -> Tuple[int, int, int, int, int, int]:
+    """Дельты для parental_bypass_stats: today, week, blocked, incognito, tor, proxy."""
+    k = (kind or "").lower()
+    p = payload or {}
+    bt = (p.get("bypass_type") or p.get("bypassType") or p.get("type") or "").lower()
+    token = f"{k} {bt}"
+    today = week = blocked = 1
+    incognito = tor = proxy = 0
+    if "incognito" in token:
+        incognito = 1
+    elif "tor" in token:
+        tor = 1
+    elif "proxy" in token:
+        proxy = 1
+    return (today, week, blocked, incognito, tor, proxy)
+
+
+def _resolve_family_id_for_numeric_user(db: Session, numeric_user_id: int) -> Optional[str]:
+    try:
+        row = db.execute(
+            text(
+                """
+                SELECT family_id::text
+                FROM family_members
+                WHERE user_id = :uid
+                ORDER BY updated_at DESC NULLS LAST, id DESC
+                LIMIT 1
+                """
+            ),
+            {"uid": numeric_user_id},
+        ).fetchone()
+        if row and row[0]:
+            return str(row[0])
+    except Exception as exc:
+        logger.debug("resolve_family_id_for_user: %s", exc)
+        try:
+            db.rollback()
+        except Exception:
+            pass
+    return None
+
+
+def _resolve_parent_child_member_ids_for_bypass_stats(
+    db: Session, child_numeric_uid: int
+) -> Optional[Tuple[str, str]]:
+    """Ключ parental_bypass_stats (user_id, child_id): UUID family_members.id родителя и ребёнка."""
+    try:
+        row = db.execute(
+            text(
+                """
+                SELECT parent_fm.id::text, child_fm.id::text
+                FROM family_members child_fm
+                INNER JOIN family_members parent_fm
+                    ON parent_fm.family_id = child_fm.family_id
+                    AND LOWER(COALESCE(parent_fm.role, '')) = 'parent'
+                WHERE child_fm.user_id = :uid
+                LIMIT 1
+                """
+            ),
+            {"uid": child_numeric_uid},
+        ).fetchone()
+        if row and row[0] and row[1]:
+            return (str(row[0]), str(row[1]))
+    except Exception as exc:
+        logger.debug("resolve_parent_child_member_ids: %s", exc)
+        try:
+            db.rollback()
+        except Exception:
+            pass
+    return None
+
+
+def _increment_parental_bypass_stats(
+    db: Session,
+    parent_member_id: str,
+    child_member_id: str,
+    d_today: int,
+    d_week: int,
+    d_blocked: int,
+    d_inc: int,
+    d_tor: int,
+    d_proxy: int,
+) -> None:
+    q_upd = text(
+        """
+        UPDATE parental_bypass_stats
+        SET
+            today = today + :d_today,
+            week = week + :d_week,
+            blocked = blocked + :d_blocked,
+            incognito = incognito + :d_inc,
+            tor = tor + :d_tor,
+            proxy = proxy + :d_proxy,
+            updated_at = NOW()
+        WHERE user_id::text = :pid
+          AND child_id::text = :cid
+        """
+    )
+    res = db.execute(
+        q_upd,
+        {
+            "pid": parent_member_id,
+            "cid": child_member_id,
+            "d_today": d_today,
+            "d_week": d_week,
+            "d_blocked": d_blocked,
+            "d_inc": d_inc,
+            "d_tor": d_tor,
+            "d_proxy": d_proxy,
+        },
+    )
+    rowcount = getattr(res, "rowcount", None)
+    if rowcount:
+        return
+
+    db.execute(
+        text(
+            """
+            INSERT INTO parental_bypass_stats (
+                user_id, child_id,
+                today, week, blocked, incognito, tor, proxy, message,
+                created_at, updated_at
+            )
+            VALUES (
+                CAST(:pid AS uuid), CAST(:cid AS uuid),
+                :d_today, :d_week, :d_blocked, :d_inc, :d_tor, :d_proxy,
+                :msg,
+                NOW(), NOW()
+            )
+            """
+        ),
+        {
+            "pid": parent_member_id,
+            "cid": child_member_id,
+            "d_today": d_today,
+            "d_week": d_week,
+            "d_blocked": d_blocked,
+            "d_inc": d_inc,
+            "d_tor": d_tor,
+            "d_proxy": d_proxy,
+            "msg": "Защита активна.",
+        },
+    )
+
+
+async def _emit_bypass_notification_from_ingest(
+    family_id: str,
+    kind: str,
+    payload: Optional[Dict[str, Any]],
+    child_numeric_uid: int,
+) -> None:
+    p = payload or {}
+    correlation = str(p.get("correlation_id") or p.get("correlationId") or "").strip()
+    title = "Попытка обхода защиты"
+    body_bits = [f"Событие: {kind}"]
+    if correlation:
+        body_bits.append(f"id: {correlation}")
+    body = ". ".join(body_bits)
+    meta: Dict[str, Any] = {
+        "child_user_id": str(child_numeric_uid),
+        "kind": kind,
+        "source": "parental_monitoring_ingest",
+    }
+    if correlation:
+        meta["correlation_id"] = correlation
+    await family_notification_manager_enhanced.send_family_alert(
+        family_id=family_id,
+        notification_type=NotificationType.BYPASS_ATTEMPT,
+        priority=NotificationPriority.HIGH,
+        title=title,
+        message=body,
+        channels=[NotificationChannel.IN_APP],
+        metadata=meta,
+        action_required=False,
+    )
+
+
 # ═══════════════════════════════════════════════════════════════
 # ЭНДПОИНТЫ: СТАТИСТИКА
 # ═══════════════════════════════════════════════════════════════
@@ -1571,6 +1770,10 @@ async def ingest_parental_monitoring_events(
     """
     POST /api/parental-control/monitoring/events
     Детское устройство (JWT пользователя-ребёнка) пишет события в parental_monitoring_events.
+
+    События с признаками обхода (kind/payload «bypass») после успешной записи:
+    обновляют счётчики parental_bypass_stats (если найдена пара member-id в family_members)
+    и создают in-app уведомление семье (тип bypass_attempt).
     """
     raw_uid = current_user.get("id")
     if isinstance(raw_uid, int):
@@ -1598,11 +1801,37 @@ async def ingest_parental_monitoring_events(
                 {"uid": uid, "kind": kind, "payload": pjson},
             )
         db.commit()
-        return {"success": True, "inserted": len(payload.events)}
     except Exception as e:
         db.rollback()
         logger.error("monitoring ingest failed: %s", e)
         raise HTTPException(status_code=500, detail="Monitoring ingest failed")
+
+    # Отдельные транзакции: не блокируем ingest при ошибке stats / уведомления.
+    for ev in payload.events:
+        kind = (ev.kind or "event")[:64]
+        pl = ev.payload or {}
+        if not _is_bypass_monitoring_event(kind, pl):
+            continue
+        try:
+            pair = _resolve_parent_child_member_ids_for_bypass_stats(db, uid)
+            if pair:
+                deltas = _bypass_counter_deltas(kind, pl)
+                _increment_parental_bypass_stats(db, pair[0], pair[1], *deltas)
+                db.commit()
+        except Exception as exc:
+            logger.info("bypass stats update skipped: %s", exc)
+            try:
+                db.rollback()
+            except Exception:
+                pass
+
+        fam = _resolve_family_id_for_numeric_user(db, uid) or _DEFAULT_NOTIFICATION_FAMILY_ID
+        try:
+            await _emit_bypass_notification_from_ingest(fam, kind, pl, uid)
+        except Exception as exc:
+            logger.error("bypass notification emit failed: %s", exc)
+
+    return {"success": True, "inserted": len(payload.events)}
 
 
 # ═══════════════════════════════════════════════════════════════

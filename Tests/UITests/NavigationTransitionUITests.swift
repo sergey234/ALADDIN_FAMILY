@@ -1,6 +1,7 @@
 import XCTest
 
 /// W4-1: five stack transitions that exercise `NavigationManager.navigateTo` / `goBack` with root `appContentTransition` in `ALADDINApp`.
+@MainActor
 final class NavigationTransitionUITests: XCTestCase {
 
     private var app: XCUIApplication!

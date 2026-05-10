@@ -1,6 +1,7 @@
 import XCTest
 
 /// W4-4 G13: `ChildContentScreen` — progress / loading / empty / error и идентификаторы для визуальной проверки.
+@MainActor
 final class ChildContentProgressUITests: XCTestCase {
 
     private var app: XCUIApplication!

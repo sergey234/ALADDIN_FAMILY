@@ -2,6 +2,7 @@ import XCTest
 import CryptoKit
 @testable import ALADDIN
 
+@MainActor
 final class ContentValidatorTests: XCTestCase {
 
     func testVerifySignatureAcceptsDerAndRawSignatures() throws {

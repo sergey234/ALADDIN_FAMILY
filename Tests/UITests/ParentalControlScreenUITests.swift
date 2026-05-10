@@ -5,6 +5,7 @@ import XCTest
  * UI тесты для экрана родительского контроля с 5 компонентами
  */
 
+@MainActor
 class ParentalControlScreenUITests: XCTestCase {
     
     var app: XCUIApplication!

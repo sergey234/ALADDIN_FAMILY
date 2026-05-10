@@ -1,6 +1,7 @@
 import XCTest
 @testable import ALADDIN
 
+@MainActor
 final class FamilyRosterSyncMergePolicyTests: XCTestCase {
 
     func test_subsetWithConfirmedContext_keepsMerged_notServerOnly() {

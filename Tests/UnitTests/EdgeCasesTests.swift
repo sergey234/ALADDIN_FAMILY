@@ -7,6 +7,7 @@ import XCTest
  * Цель: Проверка обработки edge cases
  */
 
+@MainActor
 class EdgeCasesTests: XCTestCase {
     
     var apiService: APIService!

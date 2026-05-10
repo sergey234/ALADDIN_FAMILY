@@ -1,6 +1,7 @@
 import XCTest
 @testable import ALADDIN
 
+@MainActor
 final class ParentActivityDailyAggregatorTests: XCTestCase {
 
     func testBuildTrendPoints_sevenDays_oldestFirst_andTodayValues() {

@@ -25,6 +25,22 @@ logger = logging.getLogger(__name__)
 # Создаем FastAPI Router
 router = APIRouter(prefix="/api/metrics", tags=["Metrics"])
 
+# p0-4: канонические имена user_action с iOS (`MetricsService.trackUserAction`).
+# Неизвестные имена всё равно принимаются (совместимость), но логируются на DEBUG.
+METRICS_USER_ACTION_CANONICAL = frozenset(
+    {
+        "network_protection_smart_dns_state",
+        "network_protection_safari_cb_state",
+        "safari_content_blocker_rules_changed",
+        "security_notifications_anomaly",
+        "screen_load_complete",
+        "network_request_complete",
+        "action_performance",
+        "memory_usage_check",
+        "fps_measurement",
+    }
+)
+
 
 # =============================================================================
 # Pydantic модели для запросов и ответов
@@ -97,6 +113,22 @@ async def upload_metrics(request: MetricsUploadRequest) -> MetricsUploadResponse
         logger.info(
             f"📊 Получены метрики от устройства {request.deviceId}: {len(request.metrics)} метрик"
         )
+
+        unknown_user_actions: List[str] = []
+        for m in request.metrics:
+            if (m.type or "").lower() != "user_action":
+                continue
+            name = (m.action or "").strip()
+            if not name:
+                unknown_user_actions.append("<empty>")
+                continue
+            if name not in METRICS_USER_ACTION_CANONICAL:
+                unknown_user_actions.append(name)
+        if unknown_user_actions:
+            logger.debug(
+                "metrics upload: non-canonical or empty user_action (accepted): %s",
+                sorted(set(unknown_user_actions))[:50],
+            )
         
         # В будущем здесь можно добавить:
         # 1. Сохранение метрик в БД

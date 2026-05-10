@@ -6,6 +6,7 @@ import XCTest
  * Тестирование IoT Security Module
  */
 
+@MainActor
 class IoTSecurityModuleTests: XCTestCase {
     
     var module: IoTSecurityModule!

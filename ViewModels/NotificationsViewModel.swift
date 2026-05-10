@@ -5,6 +5,24 @@ import UserNotifications
 // Master Logger for notifications logging
 private let logger = MasterLogger.shared
 
+/*
+ Карта данных (экран Уведомления и связанные потоки) — int-1 / согласование с бэкендом:
+
+ - Список уведомлений: `GET /api/notifications` (query `familyId`, `includeRead`, `limit`) через `RemoteNotificationsService`.
+   Ответ: элементы с полями `type`, `metadata` (в т.ч. `correlation_id`), `timestamp`.
+ - При успешном `GET /api/notifications`: список мержится с локальными `PersistedSecurityEvent` без дубликатов по `correlation_id` (int-4).
+ - Локальный fallback только при ошибке API: `PersistedSecurityEvent` → те же `AppNotification`.
+ - Главный экран / семья: агрегаты угроз и семейной защиты — `GET /api/parental-control/stats` и связанные экраны;
+   подписи «угрозы» — про данные защиты устройств / CB, не про bypass и не сумма с Safari без пояснения.
+ - int-15 / p1-1: тексты главная ↔ уведомления ↔ отчёты согласованы в `LocalizationManager` (`main_family_network_protection_*`,
+   `notifications_statistics_subtitle`, `notifications_stat_threat_typed`, `reports_bypass_attempts_desc`, фильтр `notifications_filter_threats_subtitle`).
+ - Обход (bypass): счётчики — `GET /api/parental/bypass/stats` + локальный журнал при офлайне;
+   серверная запись событий — `POST /api/parental-control/monitoring/events` (kind/payload «bypass»)
+   → `parental_bypass_stats` + in-app уведомление (`bypass_attempt`).
+ - Мониторинг/отчёты РК: `GET /api/parental-control/monitoring/detail`, отчёты — `/reports/daily` и т.д.;
+   Safari Content Blocker — отдельный контур телеметрии, не смешивать с метрикой обхода.
+*/
+
 /// 🔔 Notifications View Model
 /// Логика для экрана уведомлений с интеграцией сервера
 class NotificationsViewModel: ObservableObject {
@@ -165,6 +183,26 @@ class NotificationsViewModel: ObservableObject {
         isLoading = false
     }
 
+    /// int-4: после успешной синхронизации добавляем офлайн-события, если их `correlation_id` ещё нет в ответе API.
+    internal static func mergeRemoteNotificationsWithPersistedLocal(
+        remote: [AppNotification],
+        persisted: [AppNotification]
+    ) -> [AppNotification] {
+        var seenCorrelation = Set<String>()
+        for n in remote {
+            let key = n.correlationId.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !key.isEmpty { seenCorrelation.insert(key) }
+        }
+        var merged = remote
+        for p in persisted {
+            let key = p.correlationId.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !key.isEmpty, seenCorrelation.contains(key) { continue }
+            if !key.isEmpty { seenCorrelation.insert(key) }
+            merged.append(p)
+        }
+        return merged.sorted { $0.timestamp > $1.timestamp }
+    }
+
     func loadNotifications(includeRead: Bool = true) async {
         logger.business("Loading notifications (includeRead: \(includeRead))")
         await MainActor.run {
@@ -174,11 +212,14 @@ class NotificationsViewModel: ObservableObject {
 
         do {
             let envelope = try await service.fetchNotifications(includeRead: includeRead, limit: 100)
-            let mapped = envelope.notifications.map(AppNotification.init)
+            let remoteMapped = envelope.notifications.map(AppNotification.init)
+            let persistedMapped = notificationManager.loadPersistedSecurityEvents().map(AppNotification.init)
+            let merged = Self.mergeRemoteNotificationsWithPersistedLocal(remote: remoteMapped, persisted: persistedMapped)
+            let mergedUnread = merged.filter { !$0.isRead }.count
             await MainActor.run {
-                applyNotifications(mapped, unread: envelope.unreadCount)
+                applyNotifications(merged, unread: mergedUnread)
                 lastSuccessfulSyncAt = Date()
-                if mapped.isEmpty {
+                if remoteMapped.isEmpty {
                     MetricsService.shared.trackUserAction(
                         action: "security_notifications_anomaly",
                         parameters: [
@@ -436,7 +477,7 @@ extension NotificationFilter {
         switch self {
         case .all: return "Все уведомления"
         case .unread: return "Требуют внимания"
-        case .threats: return "Заблокированные угрозы"
+        case .threats: return "Уведомления с типом «угроза»"
         case .bypass: return "Попытки обхода блокировок"
         case .success: return "Успешные действия"
         case .info: return "Информационные сообщения"

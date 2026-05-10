@@ -5,6 +5,7 @@ import XCTest
  * UI тесты для экрана защиты сети с 10 компонентами
  */
 
+@MainActor
 class NetworkProtectionScreenUITests: XCTestCase {
     
     var app: XCUIApplication!

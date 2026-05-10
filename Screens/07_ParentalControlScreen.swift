@@ -296,12 +296,22 @@ struct ParentalControlScreen: View {
             // ✅ РОДИТЕЛЬСКИЙ КОНТРОЛЬ: Синхронизация с сервером
             Task {
                 await syncParentalControlData()
-                _ = await manager.applyFamilyControlsPipelineIfPossible()
+                manager.refreshFamilyControlsReadinessForCurrentDevice()
                 refreshElderlySyncReport()
             }
         }
+        .onChange(of: selectedChildId) { newId in
+            let trimmed = newId.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return }
+            if selectedChild != trimmed {
+                selectedChild = trimmed
+            }
+            UserDefaults.standard.set(trimmed, forKey: "active_child_profile_server_id")
+            loadParentalControlData(for: trimmed)
+        }
         .refreshable {
             await syncParentalControlData()
+            manager.refreshFamilyControlsReadinessForCurrentDevice()
             refreshElderlySyncReport()
         }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
@@ -1146,6 +1156,12 @@ struct ParentalControlScreen: View {
                 subtitle: localizationManager.localized("component.child_protection.subtitle"),
                 isExpanded: $childProtectionExpanded
             ) {
+                Text(localizationManager.localized("parental_family_controls_child_device_hint"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .padding(.bottom, Spacing.xs)
+
                 // 4 компонента защиты детей
                 SecurityFeatureRow(
                     componentId: "self_harm_detection_agent",

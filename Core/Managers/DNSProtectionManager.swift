@@ -33,6 +33,7 @@ class DNSProtectionManager: ObservableObject {
                 }
                 self?.isEnabled = self?.dnsSettingsManager.dnsSettings != nil
                 print("🌐 DNS Manager: Status loaded (Enabled: \(self?.isEnabled ?? false))")
+                self?.postNetworkLayerIndicatorsChanged(trackAnalytics: false, source: "status_load")
             }
         }
     }
@@ -75,6 +76,7 @@ class DNSProtectionManager: ObservableObject {
                         self?.isEnabled = false
                         self?.lastError = nil
                         print("✅ DNS Manager: Profile removed")
+                        self?.postNetworkLayerIndicatorsChanged(trackAnalytics: true, source: "doh_profile_removed")
                     }
                 }
             }
@@ -109,6 +111,7 @@ class DNSProtectionManager: ObservableObject {
                         self?.lastError = nil
                         print("✅ DNS Manager: DoH Profile active (\(config.dohUrl))")
                         self?.postDnsMonitoringIngest(config: config, childId: childId)
+                        self?.postNetworkLayerIndicatorsChanged(trackAnalytics: true, source: "doh_profile_saved")
                     }
                 }
             }
@@ -138,5 +141,20 @@ class DNSProtectionManager: ObservableObject {
             self.lastError = error.localizedDescription
             print("❌ DNS Manager: Error: \(error.localizedDescription)")
         }
+    }
+
+    /// int-9: отдельная аналитика/индикаторы для Smart DNS, не смешивать с Safari CB и счётчиком угроз.
+    private func postNetworkLayerIndicatorsChanged(trackAnalytics: Bool, source: String) {
+        if trackAnalytics {
+            MetricsService.shared.trackUserAction(
+                action: "network_protection_smart_dns_state",
+                parameters: [
+                    "layer": "smart_dns",
+                    "active": isEnabled,
+                    "source": source
+                ]
+            )
+        }
+        NotificationCenter.default.post(name: Notification.Name.networkLayerIndicatorsRefresh, object: nil)
     }
 }

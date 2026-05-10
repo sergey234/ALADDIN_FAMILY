@@ -2,6 +2,7 @@ import XCTest
 import CryptoKit
 @testable import ALADDIN
 
+@MainActor
 final class ContentManifestSigningTests: XCTestCase {
 
     func testCanonicalSigningDataIsStableAcrossCalls() throws {

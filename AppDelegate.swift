@@ -370,6 +370,18 @@ class AppDelegate: NSObject, UIApplicationDelegate {
             }
         }
     }
+
+    /// int-3: фоновое получение push payload (в т.ч. content-available) — echo-ingest bypass на профиле ребёнка.
+    func application(
+        _ application: UIApplication,
+        didReceiveRemoteNotification userInfo: [AnyHashable: Any],
+        fetchCompletionHandler completionHandler: @escaping (UIBackgroundFetchResult) -> Void
+    ) {
+        Task { @MainActor in
+            ParentalControlManager.shared.ingestBypassMonitoringFromPushUserInfo(userInfo)
+        }
+        completionHandler(.noData)
+    }
 }
 
 

@@ -6,6 +6,7 @@ import XCTest
  * Тестирование менеджера локализации
  */
 
+@MainActor
 final class LocalizationManagerTests: XCTestCase {
     
     private var localizationManager: LocalizationManager!

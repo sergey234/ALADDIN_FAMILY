@@ -2,6 +2,7 @@ import XCTest
 @testable import ALADDIN
 
 /// W3-3 / W3-4: readback for local time cap + digest line formatting.
+@MainActor
 final class W3W4DigestAndLimitsTests: XCTestCase {
 
     private let dailyLimitKey = "content.time.dailyLimitSec"

@@ -1,6 +1,7 @@
 import XCTest
 @testable import ALADDIN
 
+@MainActor
 final class SharedDataManagerTests: XCTestCase {
 
     override func setUpWithError() throws {

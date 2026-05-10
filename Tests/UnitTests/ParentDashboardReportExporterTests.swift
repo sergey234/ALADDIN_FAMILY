@@ -1,6 +1,7 @@
 import XCTest
 @testable import ALADDIN
 
+@MainActor
 final class ParentDashboardReportExporterTests: XCTestCase {
 
     private func sampleModel() -> ParentDashboardReportModel {

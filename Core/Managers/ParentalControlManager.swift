@@ -87,6 +87,8 @@ struct FamilyControlsReadiness: Sendable {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var familyAuthStatus: AuthorizationStatus = .notDetermined
+    /// Последний снимок readiness для UI (на родительском устройстве — только локальный статус этого iPhone; не путать со статусом телефона ребёнка).
+    @Published var familyControlsReadinessSnapshot: FamilyControlsReadiness?
 
     // Anti-spam guards for parental stats polling in UI cycles.
     /// Throttle for `/parental-control/stats` only.
@@ -130,6 +132,18 @@ struct FamilyControlsReadiness: Sendable {
         
         // Проверяем текущий статус авторизации
         self.familyAuthStatus = AuthorizationCenter.shared.authorizationStatus
+        self.familyControlsReadinessSnapshot = assessFamilyControlsReadiness()
+    }
+
+    private func isChildRoleDeviceForFamilyControls() -> Bool {
+        let r = UserDefaults.standard.string(forKey: "current_user_role")?
+            .trimmingCharacters(in: .whitespacesAndNewlines).lowercased() ?? ""
+        return r == "child" || r == "teenager" || r == "teen"
+    }
+
+    /// Обновить снимок readiness без применения ManagedSettings (удобно для экрана родителя).
+    func refreshFamilyControlsReadinessForCurrentDevice() {
+        familyControlsReadinessSnapshot = assessFamilyControlsReadiness()
     }
     
     // MARK: - Screen Time Authorization
@@ -209,6 +223,16 @@ struct FamilyControlsReadiness: Sendable {
     @discardableResult
     func applyFamilyControlsPipelineIfPossible() async -> FamilyControlsReadiness {
         var readiness = assessFamilyControlsReadiness()
+        familyControlsReadinessSnapshot = readiness
+
+        // ManagedSettings / DeviceActivity действуют только на **текущем** устройстве — запускаем на профиле ребёнка.
+        guard isChildRoleDeviceForFamilyControls() else {
+            print(
+                "ℹ️ FamilyControls: skip local ManagedSettings/DeviceActivity on non-child profile " +
+                    "(current_user_role=\(UserDefaults.standard.string(forKey: "current_user_role") ?? ""))"
+            )
+            return readiness
+        }
 
         if !readiness.hasAuthorization {
             do {
@@ -217,6 +241,7 @@ struct FamilyControlsReadiness: Sendable {
                 print("⚠️ FamilyControls auth request failed: \(error.localizedDescription)")
             }
             readiness = assessFamilyControlsReadiness()
+            familyControlsReadinessSnapshot = readiness
         }
 
         guard readiness.isPipelineReady else {
@@ -233,7 +258,9 @@ struct FamilyControlsReadiness: Sendable {
             print("⚠️ DeviceActivity monitoring start failed: \(error.localizedDescription)")
         }
 
-        return assessFamilyControlsReadiness()
+        let finalReadiness = assessFamilyControlsReadiness()
+        familyControlsReadinessSnapshot = finalReadiness
+        return finalReadiness
     }
 
     private func startDefaultDeviceActivityMonitoring() throws {
@@ -769,6 +796,14 @@ struct FamilyControlsReadiness: Sendable {
             }
         }
     }
+
+    /// p1-2a/b: тот же путь данных, что для модалок семьи и экрана РК — коалесcing в `APIService`.
+    func getMonitoringDetail(
+        childId: String?,
+        completion: @escaping (Result<ParentalMonitoringDetailResponse, Error>) -> Void
+    ) {
+        apiService.getParentalMonitoringDetail(childId: childId, completion: completion)
+    }
     
     // MARK: - Bypass Protection
     
@@ -883,13 +918,16 @@ struct FamilyControlsReadiness: Sendable {
         completion: ((Bool) -> Void)? = nil
     ) {
         let correlationId = "bypass-\(UUID().uuidString)"
+        let trimmedChild = childId.trimmingCharacters(in: .whitespacesAndNewlines)
+        let resolvedChildId: String? = trimmedChild.isEmpty ? nil : trimmedChild
         // Сохраняем попытку обхода
         let attempt = BypassAttempt(
             id: UUID().uuidString,
             type: type,
             timestamp: Date(),
             blocked: true,
-            deviceName: "Устройство \(childId)"
+            deviceName: UIDevice.current.name,
+            childId: resolvedChildId
         )
         
         saveBypassAttempt(attempt)
@@ -910,25 +948,144 @@ struct FamilyControlsReadiness: Sendable {
                 "event_id": correlationId,
                 "source": "parental_bypass_detection",
                 "bypass_type": type.rawValue,
-                "child_id": childId
+                "child_id": trimmedChild
             ],
             delay: 0
         )
-        
+
+        postBypassMonitoringIngest(
+            type: type,
+            correlationId: correlationId,
+            childId: resolvedChildId
+        )
+
         // Push-уведомление отправляется ТОЛЬКО если включено в настройках
         // Проверка выполняется в NotificationManager.sendLocalNotification()
-        
+
         completion?(true)
+    }
+
+    /// Единый POST на `/api/parental-control/monitoring/events` (JWT ребёнка → ingest на сервере).
+    func postBypassMonitoringIngest(type: BypassType, correlationId: String, childId: String?) {
+        let kind = "bypass_\(type.rawValue)"
+        var payload: [String: Any] = [
+            "bypass_type": type.rawValue,
+            "correlation_id": correlationId,
+            "category": "bypass",
+            "source": "parental_bypass_detection",
+        ]
+        if let childId, !childId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+            payload["child_id"] = childId
+        }
+        let ev = ParentalMonitoringEventInDTO(kind: kind, payload: payload)
+        apiService.postParentalMonitoringEvents(events: [ev]) { result in
+            if case .failure(let error) = result {
+                VisualLogger.shared.log(
+                    "⚠️ bypass monitoring ingest failed: \(error.localizedDescription)",
+                    level: .warning,
+                    category: "PARENTAL.API"
+                )
+            }
+        }
+    }
+
+    /// Удалённый push (APNs) с типом bypass: пробуем echo-ingest на устройстве ребёнка (родительский JWT вернёт ошибку — лог).
+    func ingestBypassMonitoringFromPushUserInfo(_ userInfo: [AnyHashable: Any]) {
+        func stringValue(_ any: Any?) -> String {
+            if let s = any as? String { return s }
+            if let n = any as? NSNumber { return n.stringValue }
+            return ""
+        }
+
+        let dict = userInfo as? [String: Any] ?? [:]
+        let typeRaw = stringValue(dict["type"]).lowercased()
+        let bypassHintEarly = stringValue(dict["bypass_type"] ?? dict["bypassType"]).lowercased()
+        let looksBypass = typeRaw == "bypass"
+            || typeRaw == "bypass_attempt"
+            || typeRaw == "attempt_bypass"
+            || typeRaw.contains("bypass")
+            || !bypassHintEarly.isEmpty
+        guard looksBypass else { return }
+
+        let bypassRaw = bypassHintEarly
+        let type: BypassType
+        switch bypassRaw {
+        case "incognito": type = .incognito
+        case "tor": type = .tor
+        case "proxy": type = .proxy
+        default:
+            if typeRaw.contains("tor") { type = .tor }
+            else if typeRaw.contains("incognito") { type = .incognito }
+            else if typeRaw.contains("proxy") { type = .proxy }
+            else { type = .proxy }
+        }
+
+        let correlationCandidates = [stringValue(dict["correlation_id"]), stringValue(dict["correlationId"]), stringValue(dict["event_id"])]
+        let correlationId = correlationCandidates.first(where: { !$0.isEmpty }) ?? "push-\(UUID().uuidString)"
+
+        let childCandidates = [stringValue(dict["child_id"]), stringValue(dict["childId"])]
+        let childJoined = childCandidates.first(where: { !$0.isEmpty }) ?? ""
+        let childId: String? = childJoined.isEmpty ? nil : childJoined
+
+        postBypassMonitoringIngest(type: type, correlationId: correlationId, childId: childId)
     }
     
     /**
      * Сохранение попытки обхода
      */
+    private let bypassAttemptsLocalMaxCount = 200
+
+    private func bypassAttemptsStorageKey(for childId: String?) -> String {
+        let trimmed = childId?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let suffix = trimmed.isEmpty ? "all" : trimmed
+        return "parental_bypass_attempts_v1_\(suffix)"
+    }
+
+    /// Локальные агрегаты (офлайн / fallback при ошибке API). Неделя = последние 7 дней.
+    func localBypassAggregates(for childId: String?) -> BypassStatsResponse {
+        let attempts = loadBypassAttemptsFromStorage(for: childId)
+        let cal = Calendar.current
+        let now = Date()
+        let weekStart = cal.date(byAdding: .day, value: -7, to: now) ?? now
+
+        let todayAttempts = attempts.filter { cal.isDateInToday($0.timestamp) }
+        let weekAttempts = attempts.filter { $0.timestamp >= weekStart }
+
+        let incognito = weekAttempts.filter { $0.type == .incognito }.count
+        let tor = weekAttempts.filter { $0.type == .tor }.count
+        let proxy = weekAttempts.filter { $0.type == .proxy }.count
+
+        return BypassStatsResponse(
+            success: true,
+            today: todayAttempts.count,
+            week: weekAttempts.count,
+            blocked: weekAttempts.filter(\.blocked).count,
+            incognito: incognito,
+            tor: tor,
+            proxy: proxy,
+            message: nil
+        )
+    }
+
+    func loadBypassAttemptsFromStorage(for childId: String?) -> [BypassAttempt] {
+        let key = bypassAttemptsStorageKey(for: childId)
+        guard let data = UserDefaults.standard.data(forKey: key) else { return [] }
+        return (try? JSONDecoder().decode([BypassAttempt].self, from: data)) ?? []
+    }
+
     private func saveBypassAttempt(_ attempt: BypassAttempt) {
-        // Сохраняем в UserDefaults или отправляем на сервер
-        let _ = "bypass_attempts_\(attempt.childId ?? "all")"
-        // TODO: Реализовать сохранение в UserDefaults или API
-        print("💾 Сохранена попытка обхода: \(attempt.type.displayName) для \(attempt.childId ?? "всех")")
+        let key = bypassAttemptsStorageKey(for: attempt.childId)
+        var list = loadBypassAttemptsFromStorage(for: attempt.childId)
+        list.insert(attempt, at: 0)
+        if list.count > bypassAttemptsLocalMaxCount {
+            list = Array(list.prefix(bypassAttemptsLocalMaxCount))
+        }
+        if let data = try? JSONEncoder().encode(list) {
+            UserDefaults.standard.set(data, forKey: key)
+        }
+        #if DEBUG
+        print("💾 Сохранена попытка обхода: \(attempt.type.rawValue) для \(attempt.childId ?? "всех") (всего \(list.count))")
+        #endif
     }
     
     /**
@@ -1105,7 +1262,7 @@ extension ParentalControlManager {
 
 // MARK: - Bypass Attempt Model
 
-struct BypassAttempt {
+struct BypassAttempt: Codable, Identifiable, Sendable {
     let id: String
     let type: BypassType
     let timestamp: Date

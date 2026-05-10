@@ -6,6 +6,7 @@ import XCTest
  * Цель: Проверка поддержки VoiceOver, Dynamic Type и других accessibility функций
  */
 
+@MainActor
 class AccessibilityTests: XCTestCase {
     
     var app: XCUIApplication!

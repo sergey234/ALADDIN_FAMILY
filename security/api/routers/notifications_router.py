@@ -37,7 +37,13 @@ class NotificationItem(BaseModel):
     is_read: bool = Field(..., description="Признак прочитанности")
     action_required: bool = Field(..., description="Требуется ли действие")
     action_url: Optional[str] = Field(None, description="URL действия, если требуется")
-    metadata: Dict[str, Any] = Field(default_factory=dict, description="Дополнительные данные")
+    metadata: Dict[str, Any] = Field(
+        default_factory=dict,
+        description=(
+            "Доп. данные; для склейки с обходом/monitoring рекомендуется строковый ключ "
+            "`correlation_id` (или корень `correlationId` до сериализации), см. p0-1 / docs/P0_API_CONTRACTS.md"
+        ),
+    )
 
 
 class NotificationListResponse(BaseModel):
@@ -65,6 +71,7 @@ def _notification_icon(notification: FamilyNotification) -> str:
     mapping = {
         NotificationType.SECURITY_ALERT: "🛡️",
         NotificationType.THREAT_DETECTED: "🚨",
+        NotificationType.BYPASS_ATTEMPT: "⚠️",
         NotificationType.EMERGENCY: "🚑",
         NotificationType.DAILY_REPORT: "📊",
         NotificationType.FAMILY_STATUS: "👨‍👩‍👧‍👦",

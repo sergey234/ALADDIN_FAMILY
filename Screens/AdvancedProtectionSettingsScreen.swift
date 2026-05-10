@@ -41,6 +41,8 @@ struct AdvancedProtectionSettingsScreen: View {
     @State private var safariSettingsSheet: SafariSettingsSheet? = nil
     @State private var isApplyingSafariRules: Bool = false
     @State private var safariApplyErrorMessage: String? = nil
+    @State private var showSafariEnableGuide: Bool = false
+    @State private var safariCheckMessage: String? = nil
 
     @AppStorage("advanced_safari_sites_enabled") private var safariSitesEnabled: Bool = false
     @AppStorage("advanced_safari_social_enabled") private var safariSocialEnabled: Bool = false
@@ -119,14 +121,28 @@ struct AdvancedProtectionSettingsScreen: View {
             get: { safariApplyErrorMessage != nil },
             set: { if !$0 { safariApplyErrorMessage = nil } }
         )) {
-            Button(localizationManager.localized("content_block_alert_open_settings")) {
-                contentBlockerManager.openSettings()
+            Button(localizationManager.localized("content_block_guide_open_title")) {
+                showSafariEnableGuide = true
             }
             Button(localizationManager.localized("content_block_alert_cancel"), role: .cancel) {
                 safariApplyErrorMessage = nil
             }
         } message: {
             Text(safariApplyErrorMessage ?? "")
+        }
+        .alert(localizationManager.localized("content_block_check_result_title"), isPresented: Binding(
+            get: { safariCheckMessage != nil },
+            set: { if !$0 { safariCheckMessage = nil } }
+        )) {
+            Button(localizationManager.localized("content_block_alert_cancel"), role: .cancel) {
+                safariCheckMessage = nil
+            }
+        } message: {
+            Text(safariCheckMessage ?? "")
+        }
+        .sheet(isPresented: $showSafariEnableGuide) {
+            SafariEnableGuideSheet(isPresented: $showSafariEnableGuide)
+                .environmentObject(localizationManager)
         }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
@@ -1050,14 +1066,23 @@ struct AdvancedProtectionSettingsScreen: View {
                 
                 Spacer()
                 
-                if case .needsActivation = contentBlockerManager.status {
-                    Button {
-                        contentBlockerManager.openSettings()
-                    } label: {
-                        Text(localizationManager.localized("content_block_open_settings"))
-                            .font(.caption.bold())
-                            .foregroundColor(Color(hex: "#A855F7"))
-                    }
+                Button {
+                    showSafariEnableGuide = true
+                } label: {
+                    Text(localizationManager.localized("content_block_guide_open_title"))
+                        .font(.caption.bold())
+                        .foregroundColor(Color(hex: "#A855F7"))
+                }
+            }
+            
+            HStack {
+                Spacer()
+                Button {
+                    runSafariActivationCheck()
+                } label: {
+                    Text(localizationManager.localized("content_block_check_enabled_button"))
+                        .font(.caption.bold())
+                        .foregroundColor(.secondaryGold)
                 }
             }
         }
@@ -1165,6 +1190,21 @@ struct AdvancedProtectionSettingsScreen: View {
                     safariSocialEnabled = previousSocialEnabled
                     safariApplyErrorMessage = error.localizedDescription
                 }
+            }
+        }
+    }
+
+    private func runSafariActivationCheck() {
+        Task {
+            let result = await contentBlockerManager.runDiagnosticSelfTest()
+            await MainActor.run {
+                if result.passed {
+                    safariCheckMessage = localizationManager.localized("content_block_check_enabled_success")
+                } else {
+                    safariCheckMessage = localizationManager.localized("content_block_check_enabled_failed")
+                    showSafariEnableGuide = true
+                }
+                refreshContentBlockerStatus()
             }
         }
     }
@@ -1375,6 +1415,66 @@ private struct ThreatProtectionFlowSheet: View {
         .padding(Spacing.m)
         .background(Color.backgroundMedium.opacity(0.3))
         .cornerRadius(CornerRadius.medium)
+    }
+}
+
+private struct SafariEnableGuideSheet: View {
+    @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                LinearGradient.backgroundGradient
+                    .ignoresSafeArea()
+
+                VStack(alignment: .leading, spacing: Spacing.m) {
+                    Text(localizationManager.localized("content_block_guide_heading"))
+                        .font(.h3)
+                        .foregroundColor(.textPrimary)
+
+                    Text(localizationManager.localized("content_block_guide_subheading"))
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+
+                    VStack(alignment: .leading, spacing: Spacing.s) {
+                        guideStep(index: 1, key: "content_block_guide_step_1")
+                        guideStep(index: 2, key: "content_block_guide_step_2")
+                        guideStep(index: 3, key: "content_block_guide_step_3")
+                        guideStep(index: 4, key: "content_block_guide_step_4")
+                        Text(localizationManager.localized("content_block_guide_step_5"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .padding(.top, Spacing.s)
+                    }
+                    .padding(Spacing.m)
+                    .background(Color.backgroundMedium.opacity(0.35))
+                    .cornerRadius(CornerRadius.large)
+
+                    Spacer()
+                }
+                .padding(Spacing.screenPadding)
+            }
+            .toolbar {
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    Button(localizationManager.localized("content_block_alert_cancel")) {
+                        isPresented = false
+                    }
+                    .foregroundColor(.secondaryGold)
+                }
+            }
+        }
+    }
+
+    private func guideStep(index: Int, key: String) -> some View {
+        HStack(alignment: .top, spacing: Spacing.s) {
+            Text("\(index).")
+                .font(.caption.bold())
+                .foregroundColor(.secondaryGold)
+            Text(localizationManager.localized(key))
+                .font(.caption)
+                .foregroundColor(.textPrimary)
+        }
     }
 }
 

@@ -7,6 +7,7 @@ import XCTest
  * Цель: Проверка работы приложения без интернета
  */
 
+@MainActor
 class OfflineModeTests: XCTestCase {
     
     var apiService: APIService!

@@ -6,6 +6,7 @@ import XCTest
  * Проверка потокобезопасности и защиты от рекурсии
  */
 
+@MainActor
 class AnalyticsManagerTests: XCTestCase {
     
     var analyticsManager: AnalyticsManager!

@@ -371,6 +371,7 @@
 		B5001213 /* ContentManifestPayloadHydrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001113 /* ContentManifestPayloadHydrationTests.swift */; };
 		B5001214 /* ParentActivityDailyAggregatorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001114 /* ParentActivityDailyAggregatorTests.swift */; };
 		B5001215 /* AudioInterruptionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001115 /* AudioInterruptionTests.swift */; };
+		B5001216 /* NotificationsViewModelPipelineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001116 /* NotificationsViewModelPipelineTests.swift */; };
 		W5B20010 /* BackgroundMusicController.swift in Sources */ = {isa = PBXBuildFile; fileRef = W5B20000 /* BackgroundMusicController.swift */; };
 		W5B20011 /* AudioOneShotPlayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = W5B20001 /* AudioOneShotPlayer.swift */; };
 		W5F20010 /* Audio in Resources */ = {isa = PBXBuildFile; fileRef = W5F20000 /* Audio */; };
@@ -754,6 +755,7 @@
 		B5001113 /* ContentManifestPayloadHydrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ContentManifestPayloadHydrationTests.swift; sourceTree = "<group>"; };
 		B5001114 /* ParentActivityDailyAggregatorTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentActivityDailyAggregatorTests.swift; sourceTree = "<group>"; };
 		B5001115 /* AudioInterruptionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioInterruptionTests.swift; sourceTree = "<group>"; };
+		B5001116 /* NotificationsViewModelPipelineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationsViewModelPipelineTests.swift; sourceTree = "<group>"; };
 		W5B20000 /* BackgroundMusicController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = BackgroundMusicController.swift; path = Core/Audio/BackgroundMusicController.swift; sourceTree = "<group>"; };
 		W5B20001 /* AudioOneShotPlayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AudioOneShotPlayer.swift; path = Core/Audio/AudioOneShotPlayer.swift; sourceTree = "<group>"; };
 		W5F20000 /* Audio */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Audio; path = Resources/Audio; sourceTree = "<group>"; };
@@ -1306,6 +1308,7 @@
 				B5001108 /* NotificationManagerTests.swift */,
 				B5001109 /* SharedDataManagerTests.swift */,
 				B5001110 /* MockAPIServiceTests.swift */,
+				B5001116 /* NotificationsViewModelPipelineTests.swift */,
 				B5001111 /* ChildRosterReconcilePolicyTests.swift */,
 				E7F8B0032FA12A050065BDC4 /* FamilyRosterSyncMergePolicyTests.swift */,
 				E7F8B0122FA13000065BDCD /* DeleteAccountResponseParserTests.swift */,
@@ -1866,6 +1869,7 @@
 				B5001208 /* NotificationManagerTests.swift in Sources */,
 				B5001209 /* SharedDataManagerTests.swift in Sources */,
 				B5001210 /* MockAPIServiceTests.swift in Sources */,
+				B5001216 /* NotificationsViewModelPipelineTests.swift in Sources */,
 				B5001211 /* ChildRosterReconcilePolicyTests.swift in Sources */,
 				E7F8B0042FA12A050065BDC4 /* FamilyRosterSyncMergePolicyTests.swift in Sources */,
 				E7F8B0132FA13000065BDCD /* DeleteAccountResponseParserTests.swift in Sources */,
@@ -1931,7 +1935,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 189;
+				CURRENT_PROJECT_VERSION = 190;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -1965,7 +1969,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 189;
+				CURRENT_PROJECT_VERSION = 190;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2123,7 +2127,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 189;
+				CURRENT_PROJECT_VERSION = 190;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2157,7 +2161,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 189;
+				CURRENT_PROJECT_VERSION = 190;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2189,7 +2193,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 189;
+				CURRENT_PROJECT_VERSION = 190;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2215,7 +2219,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 189;
+				CURRENT_PROJECT_VERSION = 190;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2239,7 +2243,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 189;
+				CURRENT_PROJECT_VERSION = 190;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2264,7 +2268,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 189;
+				CURRENT_PROJECT_VERSION = 190;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

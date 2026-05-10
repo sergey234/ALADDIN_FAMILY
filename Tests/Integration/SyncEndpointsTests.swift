@@ -7,6 +7,7 @@ import XCTest
  * Цель: Проверка всех endpoint'ов синхронизации
  */
 
+@MainActor
 class SyncEndpointsTests: XCTestCase {
     
     var apiService: APIService!

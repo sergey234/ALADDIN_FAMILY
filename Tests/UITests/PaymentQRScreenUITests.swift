@@ -12,6 +12,7 @@ import XCTest
  * - Обработка ошибок
  */
 
+@MainActor
 class PaymentQRScreenUITests: XCTestCase {
     
     var app: XCUIApplication!

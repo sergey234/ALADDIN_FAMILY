@@ -3,8 +3,9 @@ import XCTest
 @testable import ALADDIN
 
 /// Интеграционный тест Network Protection после всех изменений
-/// Проверяет работу NetworkProtectionManager
-final class NetworkProtectionIntegrationTest: XCTestCase {
+/// Проверяет работу NetworkProtectionManager (уникальное имя — см. также `NetworkProtectionIntegrationTest.swift`).
+@MainActor
+final class VPNIntegrationTests: XCTestCase {
     
     var networkProtectionManager: NetworkProtectionManager!
     

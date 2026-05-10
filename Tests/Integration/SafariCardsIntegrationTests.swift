@@ -1,6 +1,7 @@
 import XCTest
 @testable import ALADDIN
 
+@MainActor
 final class SafariCardsIntegrationTests: XCTestCase {
 
     func testFlowSitesOnThenSocialOnProducesUnion() {
