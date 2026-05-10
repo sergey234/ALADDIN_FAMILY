@@ -14,6 +14,9 @@ enum FamilyLocalStore {
     static let yourMemberIdUserDefaultsKey = "your_member_id"
     /// Последний `family_id`, с которым был сохранён `family_members_list` (защита от «чужого» кэша с другого аккаунта/чата).
     static let rosterSnapshotFamilyIdKey = "family_members_roster_snapshot_family_id"
+    /// После «Добавить в текущую семью»: предложить зарегистрировать устройство для нового `MEM_*` (очищается после выбора пользователя).
+    static let pendingPostAdminAddDeviceMemberIdKey = "pending_post_admin_add_device_member_id"
+    static let pendingPostAdminAddDeviceMemberNameKey = "pending_post_admin_add_device_member_name"
 
     /// Сбрасывает сохранённый ростер и связанные ключи, если новый `family_id` отличается от уже сохранённого.
     /// Не трогает `your_member_id` и токены — вызывающий код обновляет их отдельно.
@@ -34,6 +37,8 @@ enum FamilyLocalStore {
         defaults.removeObject(forKey: lastResolvedFamilyIdKey)
         defaults.removeObject(forKey: familyCreatorMemberIdKey)
         defaults.removeObject(forKey: rosterSnapshotFamilyIdKey)
+        defaults.removeObject(forKey: pendingPostAdminAddDeviceMemberIdKey)
+        defaults.removeObject(forKey: pendingPostAdminAddDeviceMemberNameKey)
         defaults.synchronize()
         NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
         return true

@@ -674,7 +674,21 @@ struct AddDeviceView: View {
     @Environment(\.dismiss) var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
     
+    /// После admin-add: предвыбрать владельца (`MEM_*`), когда форма открыта с экрана семьи.
+    private let preselectedOwnerMemberId: String?
+    private let preselectedOwnerDisplayName: String?
+    
     let onDeviceAdded: () -> Void
+
+    init(
+        preselectedOwnerMemberId: String? = nil,
+        preselectedOwnerDisplayName: String? = nil,
+        onDeviceAdded: @escaping () -> Void
+    ) {
+        self.preselectedOwnerMemberId = preselectedOwnerMemberId
+        self.preselectedOwnerDisplayName = preselectedOwnerDisplayName
+        self.onDeviceAdded = onDeviceAdded
+    }
     
     @State private var deviceName: String = ""
     @State private var selectedDeviceType: DeviceType = .iphone
@@ -705,6 +719,14 @@ struct AddDeviceView: View {
                             .font(.h1)
                             .foregroundColor(.textPrimary)
                             .padding(.top, Spacing.l)
+
+                        if let hintName = preselectedOwnerDisplayName?.trimmingCharacters(in: .whitespacesAndNewlines), !hintName.isEmpty {
+                            Text(String(format: localizationManager.localized("devices_add_for_member_banner"), hintName))
+                                .font(.subheadline)
+                                .foregroundColor(.textSecondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, Spacing.screenPadding)
+                        }
                         
                         // Форма
                         VStack(spacing: Spacing.m) {
@@ -943,6 +965,11 @@ struct AddDeviceView: View {
     
     private func syncSelectedOwnerWithMembersList() {
         guard !ownerPicks.isEmpty else { return }
+        let pre = preselectedOwnerMemberId?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if !pre.isEmpty, ownerPicks.contains(where: { $0.id == pre }) {
+            selectedOwnerPickId = pre
+            return
+        }
         if selectedOwnerPickId.isEmpty || !ownerPicks.contains(where: { $0.id == selectedOwnerPickId }) {
             selectedOwnerPickId = ownerPicks[0].id
         }

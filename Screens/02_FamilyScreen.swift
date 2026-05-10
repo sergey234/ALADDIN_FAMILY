@@ -16,6 +16,12 @@ struct FamilyScreen: View {
     @State private var showParentalSettingsModal = false
     @State private var showInvitationGuideModal: Bool = false
     @State private var showPostRegistrationDeviceGuide: Bool = false
+    /// После admin-add: компактное предложение зарегистрировать устройство для нового участника.
+    @State private var showPostAdminAddDeviceOffer: Bool = false
+    @State private var showPostAdminAddDeviceForm: Bool = false
+    @State private var pendingOpenAddDeviceFormAfterOfferDismiss: Bool = false
+    @State private var postAdminAddPendingMemberId: String = ""
+    @State private var postAdminAddPendingMemberName: String = ""
     @State private var removeMemberErrorMessage: String? = nil
     @State private var removeMemberSuccessMessage: String? = nil
     /// Дружелюбное сообщение при 409 на загрузке списка (несовпадение сохранённой семьи и аккаунта).
@@ -248,8 +254,40 @@ struct FamilyScreen: View {
         navigationManager.navigateTo(targetScreen)
     }
 
+    private func evaluatePostAdminAddDeviceOffer() {
+        let rawId = (UserDefaults.standard.string(forKey: FamilyLocalStore.pendingPostAdminAddDeviceMemberIdKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !rawId.isEmpty else { return }
+
+        let rawName = (UserDefaults.standard.string(forKey: FamilyLocalStore.pendingPostAdminAddDeviceMemberNameKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        postAdminAddPendingMemberId = rawId
+        postAdminAddPendingMemberName = rawName.isEmpty
+            ? (localizationManager.currentLanguage == .russian ? "Новый участник" : "New member")
+            : rawName
+
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.55) {
+            VisualLogger.shared.log(
+                "📣 POST_ADMIN_ADD_DEVICE offer scheduled",
+                level: .info,
+                category: "ONBOARDING"
+            )
+            showPostAdminAddDeviceOffer = true
+        }
+    }
+
+    private func clearPendingPostAdminAddDeviceKeys() {
+        UserDefaults.standard.removeObject(forKey: FamilyLocalStore.pendingPostAdminAddDeviceMemberIdKey)
+        UserDefaults.standard.removeObject(forKey: FamilyLocalStore.pendingPostAdminAddDeviceMemberNameKey)
+        UserDefaults.standard.synchronize()
+    }
+
     private func evaluatePostRegistrationDeviceGuide() {
         let defaults = UserDefaults.standard
+        let adminOfferPending = !(defaults.string(forKey: FamilyLocalStore.pendingPostAdminAddDeviceMemberIdKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        if adminOfferPending { return }
+
         guard defaults.bool(forKey: postRegistrationDeviceNudgePendingKey) else { return }
 
         // После первого успешного расширения семьи подсказка больше не нужна.
@@ -280,11 +318,11 @@ struct FamilyScreen: View {
 
         if canManageFamilyRoster {
             VisualLogger.shared.log(
-                "🧭 DEVICE_NUDGE route: addMemberOptions (manager role)",
+                "🧭 DEVICE_NUDGE route: devices tab (manager role)",
                 level: .info,
                 category: "ONBOARDING"
             )
-            navigationManager.navigateTo(.addMemberOptions)
+            navigationManager.navigateTo(.devices)
             return
         }
 
@@ -309,11 +347,11 @@ struct FamilyScreen: View {
         }
 
         VisualLogger.shared.log(
-            "🧭 DEVICE_NUDGE route: addMemberOptions (fallback)",
+            "🧭 DEVICE_NUDGE route: devices tab (fallback)",
             level: .info,
             category: "ONBOARDING"
         )
-        navigationManager.navigateTo(.addMemberOptions)
+        navigationManager.navigateTo(.devices)
     }
     
     // MARK: - Family Members Management
@@ -2369,7 +2407,7 @@ struct FamilyScreen: View {
                     UserDefaults.standard.set(now, forKey: postRegistrationDeviceNudgeLastShownKey)
                     UserDefaults.standard.synchronize()
                     VisualLogger.shared.log(
-                        "👉 DEVICE_NUDGE CTA add_now tapped",
+                        "👉 DEVICE_NUDGE CTA open devices tapped",
                         level: .info,
                         category: "ONBOARDING"
                     )
@@ -2386,6 +2424,62 @@ struct FamilyScreen: View {
                         category: "ONBOARDING"
                     )
                     showPostRegistrationDeviceGuide = false
+                }
+            )
+            .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showPostAdminAddDeviceOffer, onDismiss: {
+            if pendingOpenAddDeviceFormAfterOfferDismiss {
+                pendingOpenAddDeviceFormAfterOfferDismiss = false
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+                    showPostAdminAddDeviceForm = true
+                }
+            }
+        }) {
+            PostAdminAddDeviceOfferSheet(
+                memberDisplayName: postAdminAddPendingMemberName,
+                onAddDevice: {
+                    VisualLogger.shared.log(
+                        "👉 POST_ADMIN_ADD_DEVICE CTA add_device tapped",
+                        level: .info,
+                        category: "ONBOARDING"
+                    )
+                    clearPendingPostAdminAddDeviceKeys()
+                    pendingOpenAddDeviceFormAfterOfferDismiss = true
+                    showPostAdminAddDeviceOffer = false
+                },
+                onOpenDevicesTab: {
+                    VisualLogger.shared.log(
+                        "👉 POST_ADMIN_ADD_DEVICE CTA open devices tab",
+                        level: .info,
+                        category: "ONBOARDING"
+                    )
+                    clearPendingPostAdminAddDeviceKeys()
+                    showPostAdminAddDeviceOffer = false
+                    navigationManager.navigateTo(.devices)
+                },
+                onLater: {
+                    VisualLogger.shared.log(
+                        "⏰ POST_ADMIN_ADD_DEVICE later tapped",
+                        level: .info,
+                        category: "ONBOARDING"
+                    )
+                    clearPendingPostAdminAddDeviceKeys()
+                    showPostAdminAddDeviceOffer = false
+                }
+            )
+            .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showPostAdminAddDeviceForm) {
+            AddDeviceView(
+                preselectedOwnerMemberId: postAdminAddPendingMemberId.isEmpty ? nil : postAdminAddPendingMemberId,
+                preselectedOwnerDisplayName: postAdminAddPendingMemberName.isEmpty ? nil : postAdminAddPendingMemberName,
+                onDeviceAdded: {
+                    UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
+                    NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
+                    postAdminAddPendingMemberId = ""
+                    postAdminAddPendingMemberName = ""
+                    showPostAdminAddDeviceForm = false
                 }
             )
             .environmentObject(localizationManager)
@@ -2538,6 +2632,7 @@ struct FamilyScreen: View {
             loadParentalRules()  // ✅ BUILD 96: Загружаем ParentalControlRules асинхронно
             refreshParentalControlDemoStrings()
             evaluatePostRegistrationDeviceGuide()
+            evaluatePostAdminAddDeviceOffer()
             refreshBypassCardFromServer()
             refreshBypassDetectorsActiveCount()
         }
@@ -2552,6 +2647,88 @@ struct FamilyScreen: View {
         //         print("🔄 [FamilyScreen] Модал добавления закрыт, обновляем список участников")
         //     }
         // }
+    }
+}
+
+/// Предложение сразу после admin-add: зарегистрировать устройство для только что добавленного участника.
+private struct PostAdminAddDeviceOfferSheet: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    let memberDisplayName: String
+    let onAddDevice: () -> Void
+    let onOpenDevicesTab: () -> Void
+    let onLater: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("post_admin_add_device_offer_title"))
+                .font(.h3)
+                .foregroundColor(.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+
+            Text(String(format: localizationManager.localized("post_admin_add_device_offer_subtitle"), memberDisplayName))
+                .font(.body)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+
+            VStack(spacing: Spacing.s) {
+                Button(action: onAddDevice) {
+                    Text(localizationManager.localized("post_admin_add_device_offer_primary"))
+                        .font(.bodyBold)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(
+                            LinearGradient(
+                                colors: [Color.primaryBlue, Color.primaryBlue.opacity(0.88)],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .foregroundColor(.white)
+                        .cornerRadius(CornerRadius.medium)
+                }
+                .accessibilityLabel(localizationManager.localized("post_admin_add_device_offer_primary"))
+
+                Button(action: onOpenDevicesTab) {
+                    Text(localizationManager.localized("post_admin_add_device_offer_open_devices"))
+                        .font(.bodyBold)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                        .background(Color.secondaryGold.opacity(0.18))
+                        .foregroundColor(.secondaryGold)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                .stroke(Color.secondaryGold.opacity(0.35), lineWidth: 1)
+                        )
+                        .cornerRadius(CornerRadius.medium)
+                }
+                .accessibilityLabel(localizationManager.localized("post_admin_add_device_offer_open_devices"))
+
+                Button(action: onLater) {
+                    Text(localizationManager.localized("post_admin_add_device_offer_secondary"))
+                        .font(.body)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 10)
+                        .foregroundColor(.textSecondary)
+                }
+                .accessibilityLabel(localizationManager.localized("post_admin_add_device_offer_secondary"))
+            }
+        }
+        .padding(Spacing.l)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.backgroundDark, Color.primaryBlue.opacity(0.12)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .overlay(
+                    RoundedRectangle(cornerRadius: CornerRadius.large)
+                        .stroke(Color.white.opacity(0.08), lineWidth: 1)
+                )
+        )
+        .padding(Spacing.l)
     }
 }
 

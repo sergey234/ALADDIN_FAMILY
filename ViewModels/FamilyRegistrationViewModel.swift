@@ -428,6 +428,13 @@ class FamilyRegistrationViewModel: ObservableObject {
                             serverMemberId: response.id,
                             explicitName: userName
                         )
+
+                        let newMemberId = response.id.trimmingCharacters(in: .whitespacesAndNewlines)
+                        if !newMemberId.isEmpty {
+                            UserDefaults.standard.set(newMemberId, forKey: FamilyLocalStore.pendingPostAdminAddDeviceMemberIdKey)
+                            UserDefaults.standard.set(userName, forKey: FamilyLocalStore.pendingPostAdminAddDeviceMemberNameKey)
+                            UserDefaults.standard.synchronize()
+                        }
                         
                         // Сброс флага
                         UserDefaults.standard.set(false, forKey: "admin_add_mode")
