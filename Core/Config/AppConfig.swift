@@ -136,6 +136,16 @@ struct AppConfig {
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
 
+    /// Маркетинговое имя в шапке/онбординге: ключ `app.name` в `Localizable.strings` (сейчас «ALADDIN AI»). Если таблица не подхватилась, не показываем сырой ключ `app.name`.
+    static var localizedAppMarketingName: String {
+        Bundle.main.localizedString(forKey: "app.name", value: "ALADDIN AI", table: nil)
+    }
+
+    /// Подзаголовок под логотипом: ключ `app.tagline` в `Localizable.strings`.
+    static var localizedAppMarketingTagline: String {
+        Bundle.main.localizedString(forKey: "app.tagline", value: "AI Family Protection", table: nil)
+    }
+
     // MARK: - Support (Telegram)
 
     /// Имя бота поддержки **без** `@`. Задаётся ключом `SUPPORT_TELEGRAM_BOT_USERNAME` в Info.plist; если ключ пуст — используется официальный бот @AladdinchatAI_bot.

@@ -9,7 +9,7 @@ struct AladdinLogoView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {
             // ✅ Стилизованный золотой текст "Aladdin"
-            Text(NSLocalizedString("app.name", comment: "App name"))
+            Text(AppConfig.localizedAppMarketingName)
                 .font(.system(size: size, weight: .bold, design: .rounded))
                 .foregroundStyle(
                     LinearGradient(
@@ -26,7 +26,7 @@ struct AladdinLogoView: View {
                 .shadow(color: Color(red: 0.85, green: 0.65, blue: 0.13).opacity(0.6), radius: 4, x: 0, y: 1)
                 .overlay(
                     // ✅ Блики для объёмного эффекта
-                    Text(NSLocalizedString("app.name", comment: "App name"))
+                    Text(AppConfig.localizedAppMarketingName)
                         .font(.system(size: size, weight: .bold, design: .rounded))
                         .foregroundStyle(
                             LinearGradient(
@@ -43,7 +43,7 @@ struct AladdinLogoView: View {
                 .accessibilityLabel("Название приложения Aladdin")
             
             if showSubtitle {
-                Text(NSLocalizedString("app.tagline", comment: "App tagline"))
+                Text(AppConfig.localizedAppMarketingTagline)
                     .font(.system(size: 12, weight: .medium))
                     .foregroundColor(.white.opacity(0.7))
                     .dynamicTypeSize(.small ... .medium)
