@@ -69,6 +69,7 @@
 		5E3200032EAD26CE000574C4 /* ConsentModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200022EAD26CE000574C4 /* ConsentModal.swift */; };
 		5E3200052EAD26FA000574C4 /* FamilyCreatedModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */; };
 		5E32FFD72EACFAA9000574C4 /* ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFD62EACFA62000574C4 /* ViewModifiers.swift */; };
+		5EA10D112F91A01100ABCD01 /* HeroAmbientPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EA10D102F91A01100ABCD01 /* HeroAmbientPresentation.swift */; };
 		5E32FFE92EAD1836000574C4 /* StatItem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFE82EAD1836000574C4 /* StatItem.swift */; };
 		5E32FFEB2EAD1852000574C4 /* NetworkError.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFEA2EAD1852000574C4 /* NetworkError.swift */; };
 		5E32FFED2EAD1876000574C4 /* FamilyMemberCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFEC2EAD1876000574C4 /* FamilyMemberCard.swift */; };
@@ -499,6 +500,7 @@
 		5E3200022EAD26CE000574C4 /* ConsentModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ConsentModal.swift; path = Components/Modals/ConsentModal.swift; sourceTree = "<group>"; };
 		5E3200042EAD26FA000574C4 /* FamilyCreatedModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyCreatedModal.swift; path = Components/Modals/FamilyCreatedModal.swift; sourceTree = "<group>"; };
 		5E32FFD62EACFA62000574C4 /* ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = ViewModifiers.swift; path = Shared/Components/ViewModifiers.swift; sourceTree = "<group>"; };
+		5EA10D102F91A01100ABCD01 /* HeroAmbientPresentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HeroAmbientPresentation.swift; path = Shared/Components/HeroAmbientPresentation.swift; sourceTree = "<group>"; };
 		5E32FFE82EAD1836000574C4 /* StatItem.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = StatItem.swift; path = Shared/Components/StatItem.swift; sourceTree = "<group>"; };
 		5E32FFEA2EAD1852000574C4 /* NetworkError.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkError.swift; path = Core/Network/NetworkError.swift; sourceTree = "<group>"; };
 		5E32FFEC2EAD1876000574C4 /* FamilyMemberCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyMemberCard.swift; path = Shared/Components/Cards/FamilyMemberCard.swift; sourceTree = "<group>"; };
@@ -1177,6 +1179,7 @@
 				5E32FFEA2EAD1852000574C4 /* NetworkError.swift */,
 				5E32FFE82EAD1836000574C4 /* StatItem.swift */,
 				5E32FFD62EACFA62000574C4 /* ViewModifiers.swift */,
+				5EA10D102F91A01100ABCD01 /* HeroAmbientPresentation.swift */,
 				5EC308E12EA6AB8B00C7D34B /* Screens */,
 				B5001300 /* Tests */,
 				A0FFFFFF,
@@ -1769,6 +1772,7 @@
 				5E6F39552F16C52100CEC103 /* PhishingProtectionSettingsModal.swift in Sources */,
 				5E13D35C2F46523A0010F7CE /* SettingsScreenFallback.swift in Sources */,
 				5E32FFD72EACFAA9000574C4 /* ViewModifiers.swift in Sources */,
+				5EA10D112F91A01100ABCD01 /* HeroAmbientPresentation.swift in Sources */,
 				B1000021 /* CollapsibleSection.swift in Sources */,
 				5EC309432EA793A000C7D34B /* HapticFeedback.swift in Sources */,
 				5EC309242EA6B66600C7D34B /* MainScreenWithRegistration.swift in Sources */,

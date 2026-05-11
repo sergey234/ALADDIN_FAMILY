@@ -484,6 +484,12 @@ struct OnboardingScreen: View {
         }
     }
 
+    /// Слот фонового героя: вкладка 0 = язык, 1…N = индекс контент-страницы `currentPage - 1`.
+    private var currentHeroSlot: HeroSlot {
+        if currentPage == 0 { return .onboardingLanguage }
+        return .onboardingContent(pageIndex: max(0, currentPage - 1))
+    }
+
     // MARK: - Body
     
     var body: some View {
@@ -493,6 +499,14 @@ struct OnboardingScreen: View {
                 .ignoresSafeArea()
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Фон экрана онбординга")
+
+            HeroAmbientLayerView(slot: currentHeroSlot)
+                .ignoresSafeArea()
+                .opacity(0.4)
+                .accessibilityHidden(true)
+
+            HeroBottomReadableGradient()
+                .ignoresSafeArea()
 
             // ✅ ВАРИАНТ 1: Показываем онбординг сразу, без проверки готовности локализации
             // (как в рабочем бэкапе - локализация загрузится позже и обновит тексты)
