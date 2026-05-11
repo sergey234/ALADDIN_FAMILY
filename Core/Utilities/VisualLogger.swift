@@ -640,7 +640,9 @@ struct VisualLogView: View {
         }
         .sheet(isPresented: $showShareSheet) {
             if let url = shareURL {
-                ActivityViewController(activityItems: [url])
+                ShareSheet(activityItems: [url]) {
+                    showShareSheet = false
+                }
             }
         }
         .overlay(alignment: .bottomLeading) {
@@ -653,16 +655,6 @@ struct VisualLogView: View {
             }
         }
     }
-}
-
-struct ActivityViewController: UIViewControllerRepresentable {
-    let activityItems: [Any]
-
-    func makeUIViewController(context: Context) -> UIActivityViewController {
-        UIActivityViewController(activityItems: activityItems, applicationActivities: nil)
-    }
-
-    func updateUIViewController(_ uiViewController: UIActivityViewController, context: Context) {}
 }
 
 // MARK: - View Modifier для добавления VisualLogView на любой экран

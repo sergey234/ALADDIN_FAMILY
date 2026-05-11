@@ -7,9 +7,8 @@ struct CrashLogsView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
 
     @State private var text: String = "Загрузка логов..."
-    @State private var showShare = false
-
-    private var shareItems: [Any] { [text] }
+    @State private var showShareFullScreen = false
+    @State private var shareExportURL: URL?
 
     var body: some View {
         NavigationView {
@@ -28,7 +27,7 @@ struct CrashLogsView: View {
                     .buttonStyle(.bordered)
 
                     Button("Поделиться") {
-                        showShare = true
+                        prepareShareExport()
                     }
                     .buttonStyle(.borderedProminent)
 
@@ -48,13 +47,29 @@ struct CrashLogsView: View {
                 }
             }
             .onAppear { loadLogs() }
-            .sheet(isPresented: $showShare) {
-                ShareSheet(activityItems: shareItems)
+            /// Вложенный `.sheet` поверх `.sheet` (Настройки → Логи) часто ломает `UIActivityViewController`.
+            /// `fullScreenCover` поднимает share над текущим модальным окном.
+            .fullScreenCover(isPresented: $showShareFullScreen, onDismiss: {
+                if let url = shareExportURL {
+                    try? FileManager.default.removeItem(at: url)
+                }
+                shareExportURL = nil
+            }) {
+                if let url = shareExportURL {
+                    ShareSheet(activityItems: [url]) {
+                        showShareFullScreen = false
+                    }
+                }
             }
         }
     }
 
     private func loadLogs() {
+        text = composeDiagnosticsText()
+    }
+
+    /// Полный текст для экрана и для экспорта (UTF-8 файл — надёжнее для Почты, чем огромное тело письма).
+    private func composeDiagnosticsText() -> String {
         var result = ""
 
         // 1) Собранный набор (UserDefaults + файлы crash_log/crash_stack)
@@ -80,7 +95,48 @@ struct CrashLogsView: View {
             result += settingsRing
         }
 
-        text = result.isEmpty ? "Логи не найдены." : result
+        // 5) Launch trace files (persist across SIGKILL / Xcode disconnect)
+        result += appendFileSection(
+            title: "STARTUP_TRACE (Documents/startup_trace.txt)",
+            fileName: "startup_trace.txt"
+        )
+        result += appendFileSection(
+            title: "LIFECYCLE_TRACE (Documents/app_lifecycle_trace.txt)",
+            fileName: "app_lifecycle_trace.txt"
+        )
+
+        // 6) Статус последней попытки авто-отправки (если когда-либо включали NSSetUncaughtExceptionHandler)
+        if let sendErr = UserDefaults.standard.string(forKey: "crash_log_send_error") {
+            result += "\n\n=== LAST CRASH AUTO-SEND ERROR (UserDefaults) ===\n\(sendErr)\n"
+        }
+        if let sendOk = UserDefaults.standard.string(forKey: "crash_log_send_status") {
+            result += "\n=== LAST CRASH AUTO-SEND STATUS (UserDefaults) ===\n\(sendOk)\n"
+        }
+
+        return result.isEmpty ? "Логи не найдены." : result
+    }
+
+    private func appendFileSection(title: String, fileName: String) -> String {
+        guard let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first else {
+            return ""
+        }
+        let url = documentsPath.appendingPathComponent(fileName)
+        guard let content = try? String(contentsOf: url, encoding: .utf8), !content.isEmpty else {
+            return ""
+        }
+        return "\n\n=== \(title) ===\n\(content)"
+    }
+
+    private func prepareShareExport() {
+        let payload = composeDiagnosticsText()
+        let name = "aladdin_diagnostics_\(Int(Date().timeIntervalSince1970)).txt"
+        let url = FileManager.default.temporaryDirectory.appendingPathComponent(name)
+        do {
+            try payload.write(to: url, atomically: true, encoding: .utf8)
+            shareExportURL = url
+            showShareFullScreen = true
+        } catch {
+            text = payload + "\n\n=== EXPORT ERROR ===\nНе удалось подготовить файл для отправки: \(error.localizedDescription)\n"
+        }
     }
 }
-
