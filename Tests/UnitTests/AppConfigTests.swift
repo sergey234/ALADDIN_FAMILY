@@ -47,7 +47,7 @@ class AppConfigTests: XCTestCase {
     }
     
     func testBuildNumber() throws {
-        XCTAssertEqual(AppConfig.buildNumber, "192")
+        XCTAssertEqual(AppConfig.buildNumber, "193")
     }
 
     func testApiContractVersionNonEmpty() throws {

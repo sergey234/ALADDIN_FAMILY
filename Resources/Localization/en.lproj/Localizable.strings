@@ -119,7 +119,7 @@
 "family.role.parent" = "Parent";
 "family.role.child" = "Child";
 "family.role.teenager" = "Teenager";
-"family.role.elderly" = "Elderly";
+"family.role.elderly" = "People 60+";
 "family.incomplete_server_roster_hint" = "Your plan allows more members, but the server only returned one — family data looks incomplete. Contact support or wait for a server-side fix.";
 "delete_account_error_gateway" = "The server returned a protection wrapper without confirming deletion (mock-real-protection). Deletion was not confirmed — the DELETE /api/user/delete response must be fixed on the backend.";
 
@@ -1064,7 +1064,7 @@
 "component.smart_notification_manager.desc" = "Intelligent notification system";
 "component.child_interface_manager.title" = "Child Interface";
 "component.child_interface_manager.desc" = "Manage child interface";
-"component.elderly_interface_manager.title" = "Elderly Interface";
+"component.elderly_interface_manager.title" = "Interface for people 60+";
 "component.elderly_interface_manager.desc" = "Simplified interface";
 "component.subscription_manager.title" = "Subscription Manager";
 "component.subscription_manager.desc" = "Tariff settings";
@@ -1483,9 +1483,9 @@
 "parent_dashboard_content_filters" = "Content Filters";
 "parent_dashboard_data_rights" = "Data rights";
 "parent_dashboard_mirror_title" = "Mirrored Family Overview";
-"parent_dashboard_mirror_subtitle" = "What the child sees and what is available for the 60+ participant in current settings.";
+"parent_dashboard_mirror_subtitle" = "What the child sees and what is available to the “People 60+” participant in current settings.";
 "parent_dashboard_mirror_child_title" = "Child: visible categories";
-"parent_dashboard_mirror_elderly_title" = "60+: available categories";
+"parent_dashboard_mirror_elderly_title" = "People 60+: available categories";
 "parent_dashboard_mirror_permissions_title" = "Family permissions";
 "parent_dashboard_perm_contacts" = "Contacts";
 "parent_dashboard_perm_limits" = "Limits";
@@ -1838,7 +1838,7 @@
 "main_family_manage" = "Manage";
 "main_family_add_member" = "Add member";
 "family_roster_manage_denied_banner_title" = "Roster management unavailable";
-"family_roster_manage_denied_banner_body" = "The app doesn’t recognize you as a parent or elderly member in this list. Sign out and sign in again, reopen Family, or wait for sync to finish. If it persists, contact support.";
+"family_roster_manage_denied_banner_body" = "The app doesn’t recognize you as a parent or a member with the “People 60+” role in this list. Sign out and sign in again, reopen Family, or wait for sync to finish. If it persists, contact support.";
 "family_identity_repair_banner_title" = "Family identity on this device";
 "family_identity_repair_banner_body" = "Your place in the family list may be out of sync with this account. Tap Restore to align your member ID and role from the list on this device, then the app will refresh from the server.";
 "family_identity_repair_button" = "Restore";

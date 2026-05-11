@@ -119,7 +119,7 @@ class FamilyRegistrationUITests: XCTestCase {
         XCTAssertTrue(app.buttons["Ребенок (4-12)"].exists)
         XCTAssertTrue(app.buttons["Подросток (13-17)"].exists)
         XCTAssertTrue(app.buttons["Взрослый (18-64)"].exists)
-        XCTAssertTrue(app.buttons["Пожилой (65+)"].exists)
+        XCTAssertTrue(app.buttons["Люди 60+"].exists)
         
         // Тестируем выбор возрастной группы
         selectAgeGroup("Взрослый (18-64)")

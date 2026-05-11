@@ -140,10 +140,25 @@ class UserProfileManager {
     }
 
     private func saveProfileToCache(_ profile: UserProfile) {
+        let priorUserId = userDefaults.string(forKey: "user_id")
         userDefaults.set(profile.name, forKey: displayNameKey)
         userDefaults.set(profile.name, forKey: profileNameKey) // Для совместимости
         userDefaults.set(profile.email, forKey: emailKey)
         userDefaults.set(Date().timeIntervalSince1970, forKey: lastUpdateKey)
+        let uid = profile.id.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !uid.isEmpty {
+            if profile.safeIsGuest {
+                let existing = (userDefaults.string(forKey: "user_id") ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                let hasRealUser = !existing.isEmpty && existing != "anonymous" && !existing.lowercased().hasPrefix("guest_")
+                if !hasRealUser { userDefaults.set(uid, forKey: "user_id") }
+            } else {
+                userDefaults.set(uid, forKey: "user_id")
+            }
+            let newUserId = userDefaults.string(forKey: "user_id")
+            if priorUserId != newUserId {
+                NotificationCenter.default.post(name: .aladdinUserIdentityDidUpdate, object: nil)
+            }
+        }
         userDefaults.synchronize()
     }
 }

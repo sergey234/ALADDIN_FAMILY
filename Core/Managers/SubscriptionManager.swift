@@ -1698,7 +1698,32 @@ final class SubscriptionManager: ObservableObject {
         #endif
 
         logger.business("💾 Persisted data loaded")
+        persistOfflineUserIdFromJWTIfMissing()
         bumpSubscriptionDisplayEpoch()
+    }
+
+    /// Подставляет `user_id` для offline-слоя из JWT, если в токене есть явные поля (без `sub` — часто device/session).
+    private func persistOfflineUserIdFromJWTIfMissing() {
+        guard let jwt = currentToken?.token, !jwt.isEmpty else { return }
+        let existing = (UserDefaults.standard.string(forKey: "user_id") ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        guard existing.isEmpty else { return }
+        guard let payload = FamilyLocalStore.jwtPayloadDictionary(from: jwt) else { return }
+        let extracted: String? = {
+            if let s = payload["user_id"] as? String {
+                let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+                return t.isEmpty ? nil : t
+            }
+            if let i = payload["user_id"] as? Int { return String(i) }
+            if let s = payload["userId"] as? String {
+                let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+                return t.isEmpty ? nil : t
+            }
+            if let i = payload["userId"] as? Int { return String(i) }
+            return nil
+        }()
+        guard let extracted, !extracted.isEmpty else { return }
+        UserDefaults.standard.set(extracted, forKey: "user_id")
+        NotificationCenter.default.post(name: .aladdinUserIdentityDidUpdate, object: nil)
     }
 
     #if DEBUG
@@ -1759,6 +1784,7 @@ final class SubscriptionManager: ObservableObject {
         logger.business("🏥 DEFENSIVE JWT: Monitoring запущен для нового токена")
 
         print("💾💾💾 STORE_TOKEN: Completed")
+        persistOfflineUserIdFromJWTIfMissing()
         bumpSubscriptionDisplayEpoch()
     }
 

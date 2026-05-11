@@ -353,6 +353,16 @@ struct AnalyticsScreen: View {
                     ProgressView(value: 0)
                         .progressViewStyle(.linear)
                         .tint(Color.gray.opacity(0.4))
+                } else if viewModel.protectionLevel == 0,
+                          viewModel.threatsDetected == 0,
+                          viewModel.threatsBlocked == 0 {
+                    Text(localizationManager.localized("analytics_protection_level_no_events"))
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    ProgressView(value: 0)
+                        .progressViewStyle(.linear)
+                        .tint(Color.gray.opacity(0.35))
                 } else {
                     ProgressView(value: min(max(viewModel.protectionLevel / 100.0, 0), 1))
                         .progressViewStyle(.linear)

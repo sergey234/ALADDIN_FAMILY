@@ -1676,43 +1676,44 @@ struct FamilyScreen: View {
     /// Краткий баннер: правило и текущее состояние (ваш id в списке / роль / можно ли управлять составом).
     @ViewBuilder
     private var familyRosterRulesInfoBanner: some View {
-        let ru = localizationManager.currentLanguage == .russian
         let myId = UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey) ?? ""
         let parents = FamilyRosterAccess.parentRoleCount(in: familyMembers)
         let roleLabel: String = {
             guard let me = familyMembers.first(where: { $0.id == myId || $0.serverMemberId == myId }) else {
-                return ru ? "нет в списке" : "not in list"
+                return localizationManager.localized("family_roster_not_in_list")
             }
             switch me.role {
-            case .parent: return ru ? "родитель" : "parent"
-            case .elderly: return ru ? "пожилой" : "elderly"
-            case .child: return ru ? "ребёнок" : "child"
-            case .teenager: return ru ? "подросток" : "teen"
+            case .parent: return localizationManager.localized("family_role_parent_label")
+            case .elderly: return localizationManager.localized("family_role_elderly_label")
+            case .child: return localizationManager.localized("family_role_child_label")
+            case .teenager: return localizationManager.localized("family_role_teen_label")
             }
         }()
+        let rosterYesNo = canManageFamilyRoster
+            ? localizationManager.localized("family_roster_yes")
+            : localizationManager.localized("family_roster_no")
+        let sharingState = canManageFamilySharing
+            ? localizationManager.localized("family_roster_family_sharing_ok")
+            : localizationManager.localized("family_roster_family_sharing_no")
         VStack(alignment: .leading, spacing: 6) {
-            Text(ru ? "Кто может менять состав семьи" : "Who can change the family roster")
+            Text(localizationManager.localized("family_roster_who_can_manage_title"))
                 .font(.caption.weight(.semibold))
                 .foregroundColor(Color.secondaryGold)
-            Text(ru
-                 ? "Добавлять и удалять участников могут только родители или пожилой в списке (не ребёнок и не подросток). До двух родительских аккаунтов — по правилам семьи."
-                 : "Only a parent or elderly member in the list may add or remove people (not a child or teen). Up to two parent accounts per family.")
+            Text(localizationManager.localized("family_roster_who_can_manage_body"))
                 .font(.caption2)
                 .foregroundColor(.white.opacity(0.88))
                 .fixedSize(horizontal: false, vertical: true)
             Divider().background(Color.white.opacity(0.2))
-            Text(ru ? "Сейчас на этом устройстве" : "On this device")
+            Text(localizationManager.localized("family_roster_on_this_device"))
                 .font(.caption.weight(.semibold))
                 .foregroundColor(Color.secondaryGold)
-            Text(ru
-                 ? "Ваш ID: \(myId.isEmpty ? "—" : String(myId.prefix(14)))… · роль в списке: \(roleLabel) · родителей в списке: \(parents) · управление составом: \(canManageFamilyRoster ? "да" : "нет")"
-                 : "Your ID: \(myId.isEmpty ? "—" : String(myId.prefix(14)))… · role in list: \(roleLabel) · parents in list: \(parents) · can manage roster: \(canManageFamilyRoster ? "yes" : "no")")
+            Text(
+                "\(localizationManager.localized("family_roster_device_id_prefix")) \(myId.isEmpty ? "—" : String(myId.prefix(14)))… · \(localizationManager.localized("family_roster_device_role_prefix")) \(roleLabel) · \(localizationManager.localized("family_roster_device_parents_count")) \(parents) · \(localizationManager.localized("family_roster_device_can_manage")) \(rosterYesNo)"
+            )
                 .font(.caption2)
                 .foregroundColor(.white.opacity(0.78))
                 .fixedSize(horizontal: false, vertical: true)
-            Text(ru
-                 ? "Family Sharing операции: \(canManageFamilySharing ? "доступны (parent)" : "недоступны")"
-                 : "Family Sharing operations: \(canManageFamilySharing ? "allowed (parent)" : "not allowed")")
+            Text("\(localizationManager.localized("family_roster_family_sharing_line")) \(sharingState)")
                 .font(.caption2)
                 .foregroundColor(.white.opacity(0.72))
                 .fixedSize(horizontal: false, vertical: true)
@@ -2081,9 +2082,7 @@ struct FamilyScreen: View {
                                                 )
                                             )
                                             .clipShape(Capsule())
-                                        Text(localizationManager.currentLanguage == .russian
-                                             ? "Добавлять участников может только родитель (или пожилой) в этой семье."
-                                             : "Only a parent (or elderly member) in this family can add members.")
+                                        Text(localizationManager.localized("family_add_member_denied_caption"))
                                             .font(.caption)
                                             .foregroundColor(.white.opacity(0.75))
                                             .multilineTextAlignment(.center)
@@ -8560,19 +8559,33 @@ struct FamilyBypassProtectionModal: View {
         return legacySelectedChild
     }
 
-    private var smartDNSOffReason: String {
-        if effectiveChildId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
-            return "Нет выбранного ребёнка"
-        }
+    /// Параметр для `/dns/config`: UUID или серверный `MEM_…` (как в прод-логах); иначе — без `childId`.
+    private var dnsConfigChildId: String? {
+        DNSProtectionManager.dnsConfigQueryChildId(from: effectiveChildId)
+    }
 
-        let error = (dnsProtectionManager.lastError ?? "").lowercased()
-        if error.contains("конфигурация dns пуста") || error.contains("ошибка получения конфига") {
-            return "Нет DNS-конфига с сервера"
+    private func localizedSmartDNSFailureMessage() -> String {
+        let raw = (dnsProtectionManager.lastError ?? "").lowercased()
+        if raw.contains("конфигурация dns пуста")
+            || raw.contains("ошибка получения конфига")
+            || raw.contains("dns configuration") {
+            return localizationManager.localized("bypass_smart_dns_reason_no_config")
         }
-        if error.contains("не удалось сохранить профиль ios") || error.contains("savetopreferences") {
-            return "Не удалось сохранить профиль iOS"
+        if raw.contains("ipc failed")
+            || raw.contains("neconfigurationerrordomain")
+            || raw.contains("connection invalid")
+            || raw.contains("nehelper") {
+            return localizationManager.localized("bypass_smart_dns_reason_ipc_failed")
         }
-        return "Не удалось активировать Smart DNS"
+        if raw.contains("не удалось сохранить профиль ios")
+            || raw.contains("savetopreferences")
+            || raw.contains("save to preferences") {
+            return localizationManager.localized("bypass_smart_dns_reason_ios_save")
+        }
+        if let err = dnsProtectionManager.lastError?.trimmingCharacters(in: .whitespacesAndNewlines), !err.isEmpty {
+            return String(format: localizationManager.localized("bypass_smart_dns_reason_detail"), err)
+        }
+        return localizationManager.localized("bypass_smart_dns_reason_generic")
     }
     
     var body: some View {
@@ -8608,18 +8621,15 @@ struct FamilyBypassProtectionModal: View {
                 // 4. Smart DNS enable/disable (ниже детекторов)
                 FamilyContentBlockItem(
                     icon: "🌐",
-                    title: "Smart DNS",
+                    title: localizationManager.localized("bypass_smart_dns_title"),
                     description: dnsProtectionManager.isEnabled
                         ? localizationManager.localized("parental_dns_status_active")
-                        : localizationManager.localized("parental_dns_status_inactive"),
+                        : localizationManager.localized("bypass_smart_dns_desc"),
                     isEnabled: Binding(
                         get: { dnsProtectionManager.isEnabled },
                         set: { newValue in
                             if newValue {
-                                // В FamilyScreen для выбранного ребёнка обычно хранится имя,
-                                // а не UUID childId. DNSConfig принимает childId, только если он корректный UUID.
-                                let childId: String? = effectiveChildId.isEmpty ? nil : effectiveChildId
-                                dnsProtectionManager.enableProtection(childId: childId)
+                                dnsProtectionManager.enableProtection(childId: dnsConfigChildId)
                             } else {
                                 dnsProtectionManager.disableProtection()
                             }
@@ -8627,13 +8637,19 @@ struct FamilyBypassProtectionModal: View {
                     )
                 )
                 
-                if !dnsProtectionManager.isEnabled {
-                    HStack {
-                        Text("Причина OFF: \(smartDNSOffReason)")
-                            .font(.caption)
+                if !dnsProtectionManager.isEnabled,
+                   let errRaw = dnsProtectionManager.lastError?.trimmingCharacters(in: .whitespacesAndNewlines),
+                   !errRaw.isEmpty {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(localizationManager.localized("bypass_smart_dns_debug_label"))
+                            .font(.caption.weight(.semibold))
                             .foregroundColor(.warningOrange)
-                        Spacer()
+                        Text(localizedSmartDNSFailureMessage())
+                            .font(.caption)
+                            .foregroundColor(.warningOrange.opacity(0.95))
+                            .fixedSize(horizontal: false, vertical: true)
                     }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, Spacing.m)
                 }
 

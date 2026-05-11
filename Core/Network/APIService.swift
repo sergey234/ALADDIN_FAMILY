@@ -1780,9 +1780,26 @@ class APIService: ObservableObject {
         logger.business("👤 Fetching user profile")
         networkManager.get(endpoint: AppConfig.Endpoint.profile) { [weak self] (result: Result<UserProfile, Error>) in
             if case .success(let profile) = result {
+                Self.persistUserIdFromProfileForOffline(profile)
                 self?.trackUserProfileContractSignals(profile: profile)
             }
             completion(result)
+        }
+    }
+
+    /// Сохраняет идентификатор пользователя из профиля для offline/fallback (`UserDefaults` ключ `user_id`).
+    private static func persistUserIdFromProfileForOffline(_ profile: UserProfile) {
+        let trimmed = profile.id.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if profile.safeIsGuest {
+            let existing = (UserDefaults.standard.string(forKey: "user_id") ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+            let hasRealUser = !existing.isEmpty && existing != "anonymous" && !existing.lowercased().hasPrefix("guest_")
+            if hasRealUser { return }
+        }
+        let prior = UserDefaults.standard.string(forKey: "user_id")
+        UserDefaults.standard.set(trimmed, forKey: "user_id")
+        if prior != trimmed {
+            NotificationCenter.default.post(name: .aladdinUserIdentityDidUpdate, object: nil)
         }
     }
 

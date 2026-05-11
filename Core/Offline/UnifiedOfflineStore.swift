@@ -46,6 +46,7 @@ final class UnifiedOfflineStore: ObservableObject {
         // `OfflineManager.shared` → `UnifiedOfflineStore.shared` → снова `OfflineManager.shared`.
         DispatchQueue.main.async { [weak self] in
             self?.setupAutomaticSync()
+            self?.setupUserIdentityResyncObserver()
         }
     }
     
@@ -316,6 +317,12 @@ final class UnifiedOfflineStore: ObservableObject {
         } catch {
             storeSyncPhase = .error
             print("❌ UnifiedOfflineStore: Sync aborted — \(error.localizedDescription)")
+            SyncEngine.shared.publish(
+                domain: .offline,
+                operation: "full_sync_aborted_missing_user_id",
+                state: .error(error.localizedDescription),
+                metadata: ["reason": "missing_user_id"]
+            )
             return
         }
         
@@ -411,6 +418,18 @@ final class UnifiedOfflineStore: ObservableObject {
                         await self?.performFullSync()
                     }
                 }
+            }
+            .store(in: &cancellables)
+    }
+
+    /// После появления `user_id` в UserDefaults повторяем полный sync (первая попытка могла уйти «вхолостую»).
+    private func setupUserIdentityResyncObserver() {
+        NotificationCenter.default.publisher(for: .aladdinUserIdentityDidUpdate)
+            .debounce(for: .milliseconds(300), scheduler: RunLoop.main)
+            .sink { [weak self] _ in
+                guard let self else { return }
+                guard OfflineManager.shared.isOnline else { return }
+                Task { await self.performFullSync() }
             }
             .store(in: &cancellables)
     }
@@ -679,4 +698,9 @@ enum UnifiedStoreSyncPhase: String {
     case idle
     case syncing
     case error
+}
+
+extension Notification.Name {
+    /// `UserDefaults` ключ `user_id` обновлён — можно повторить `UnifiedOfflineStore` sync.
+    static let aladdinUserIdentityDidUpdate = Notification.Name("AladdinUserIdentityDidUpdate")
 }

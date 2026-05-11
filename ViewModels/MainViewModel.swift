@@ -335,68 +335,85 @@ class MainViewModel: ObservableObject {
         }
         
         isLoadingFamilyStats = true
-        print("🔄 MainViewModel: Вызов API getFamilyStats...")
-        apiService.getFamilyStats { [weak self] result in
+        #if DEBUG
+        print("🔄 MainViewModel: Параллельно getFamilyStats + getDevices…")
+        #endif
+        let pairLock = NSLock()
+        var familyStatsResult: Result<FamilyStatsResponse, Error>?
+        var devicesListResult: Result<[DeviceResponse], Error>?
+        let dashboardPairGroup = DispatchGroup()
+
+        dashboardPairGroup.enter()
+        apiService.getFamilyStats { result in
+            pairLock.lock()
+            familyStatsResult = result
+            pairLock.unlock()
+            dashboardPairGroup.leave()
+        }
+
+        dashboardPairGroup.enter()
+        apiService.getDevices { result in
+            pairLock.lock()
+            devicesListResult = result
+            pairLock.unlock()
+            dashboardPairGroup.leave()
+        }
+
+        dashboardPairGroup.notify(queue: .main) { [weak self] in
             guard let self = self else { return }
-            
-            // Отменяем таймаут если запрос успел
             timeoutWorkItem.cancel()
-            
+
             Task { @MainActor [weak self] in
                 guard let self = self else { return }
-                
-                self.isLoadingFamilyStats = false // Сбрасываем флаг в любом случае
-                
+
+                self.isLoadingFamilyStats = false
+                guard let result = familyStatsResult else { return }
+
                 switch result {
                 case .success(let stats):
-                    // Не снимаем isLoadingDashboard до завершения GET /api/devices: иначе debounced
-                    // SubscriptionUpdated/onChange запускают второй loadDashboardData параллельно (лишние GET /api/devices).
-                    // ✅ BUILD 115: ОБНОВЛЯЕМ ДАННЫЕ ИЗ API с диагностикой
                     print("📊 MainViewModel: Обновление данных из API:")
                     print("   - Члены семьи: \(self.familyMembers) → \(stats.totalMembers)")
-                    print("   - Устройства: \(self.devicesProtected) → (ожидаем список /api/devices, fallback stats=\(stats.totalDevices))")
+                    print("   - Устройства: \(self.devicesProtected) → (слияние /api/devices + family/stats fallback=\(stats.totalDevices))")
                     print("   - Угрозы: \(self.threatsBlocked) → \(stats.totalThreats)")
                     print("   - Статус: \(stats.familyStatus ?? "nil")")
-                    
-                    // Члены: источник правды — ответ `family/stats` (избегаем рассинхрона с локальным списком до обновления экрана «Семья»).
+
                     self.familyMembers = stats.totalMembers
                     SubscriptionManager.shared.applyFamilyRosterQuotaFromFamilyStats(stats)
                     UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingMainFamilyStatsRefresh)
                     self.threatsBlocked = stats.totalThreats
-                    self.errorMessage = nil // Авто-очистка баннера при успехе
-                    
-                    // Подтверждаем статус по успешному API
+                    self.errorMessage = nil
+
                     let mappedStatus = FamilyProtectionStatus(apiValue: stats.familyStatus)
                     self.lastConfirmedStatus = mappedStatus
                     self.lastSuccessAt = Date()
                     self.consecutiveFailures = 0
-                    
-                    // Публикуем подтвержденный статус
+
                     self.familyProtectionStatus = mappedStatus
                     self.familyProtectionStatusMessage = stats.familyStatusMessage
                     VisualLogger.shared.log("ℹ️ FAMILY.STATUS raw=\(stats.familyStatus ?? "nil") mapped=\(mappedStatus.rawValue) source=api ttl_left=0s fails=\(self.consecutiveFailures)", level: .info, category: "MAIN.STATUS")
-                    
+
                     let fallbackDevices = stats.totalDevices
-                    self.apiService.getDevices { devicesResult in
-                        Task { @MainActor in
-                            switch devicesResult {
-                            case .success(let list):
-                                self.devicesProtected = Self.deduplicatedDeviceCount(list)
-                                print("   - Устройства (из /api/devices, dedupe): \(self.devicesProtected)")
-                            case .failure(let err):
-                                self.devicesProtected = fallbackDevices
-                                print("   - Устройства: список API недоступен, используем family/stats: \(fallbackDevices) (\(err.localizedDescription))")
-                            }
-                            self.isLoading = false
-                            self.isLoadingDashboard = false
-                            self.lastUpdateTime = Date()
-                            self.refreshNetworkLayerIndicators()
-                            PerformanceMonitor.shared.endScreenLoad("MainDashboard")
-                            print("✅ MainViewModel: Данные успешно обновлены из API")
-                            NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+                    if let devicesResult = devicesListResult {
+                        switch devicesResult {
+                        case .success(let list):
+                            self.devicesProtected = Self.deduplicatedDeviceCount(list)
+                            print("   - Устройства (из /api/devices, dedupe): \(self.devicesProtected)")
+                        case .failure(let err):
+                            self.devicesProtected = fallbackDevices
+                            print("   - Устройства: список API недоступен, используем family/stats: \(fallbackDevices) (\(err.localizedDescription))")
                         }
+                    } else {
+                        self.devicesProtected = fallbackDevices
                     }
-                    
+
+                    self.isLoading = false
+                    self.isLoadingDashboard = false
+                    self.lastUpdateTime = Date()
+                    self.refreshNetworkLayerIndicators()
+                    PerformanceMonitor.shared.endScreenLoad("MainDashboard")
+                    print("✅ MainViewModel: Данные успешно обновлены из API")
+                    NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
+
                 case .failure(let error):
                     // ✅ BUILD 115: Улучшенная диагностика ошибок
                     print("❌ MainViewModel: Ошибка загрузки данных из API (попытка \(currentAttempt)/\(maxAttempts))")

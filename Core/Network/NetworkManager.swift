@@ -186,14 +186,22 @@ private let logger = MasterLogger.shared
     
     /// Создание менеджера допустимо с любого исполнителя (singleton APIService, тесты); состояние экземпляра по-прежнему изолировано на MainActor.
     nonisolated init(baseURL: String = AppConfig.apiBaseURL, enableSSLPinning: Bool = true) {
-        // 🟡 ОТКЛЮЧИТЬ SSL PINNING - проверить, связано ли с сертификатами
-        // TEMPORARILY DISABLE SSL PINNING FOR TESTING CRASH CAUSE
+        // DISABLE_SSL_PINNING=1 разрешён только в DEBUG (локальные прокси/Charles). В Release игнорируем.
+        #if DEBUG
         let shouldDisableSSLPinning = ProcessInfo.processInfo.environment["DISABLE_SSL_PINNING"] == "1"
+        #else
+        let shouldDisableSSLPinning = false
+        if ProcessInfo.processInfo.environment["DISABLE_SSL_PINNING"] == "1" {
+            os_log("SECURITY: DISABLE_SSL_PINNING is set but ignored in non-DEBUG builds — pinning remains controlled by enableSSLPinning", log: Self.networkLogger, type: .fault)
+        }
+        #endif
         let actualEnableSSLPinning = enableSSLPinning && !shouldDisableSSLPinning
 
+        #if DEBUG
         print("🔐 SSL PINNING: enableSSLPinning parameter = \(enableSSLPinning)")
         print("🔐 SSL PINNING: DISABLE_SSL_PINNING env = \(ProcessInfo.processInfo.environment["DISABLE_SSL_PINNING"] ?? "not set")")
         print("🔐 SSL PINNING: Final decision = \(actualEnableSSLPinning ? "ENABLED" : "DISABLED")")
+        #endif
 
         // Override the property with our decision
         self.isSSLPinningEnabled = actualEnableSSLPinning

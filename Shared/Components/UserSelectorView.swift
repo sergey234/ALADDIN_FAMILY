@@ -108,8 +108,8 @@ struct UserSelectorView: View {
         guard let prefix = localizedRolePrefix else { return user.displayName }
 
         let knownPrefixes = [
-            "Родитель", "Ребенок", "Ребёнок", "Подросток", "Пожилой",
-            "Parent", "Child", "Teenager", "Elderly"
+            "Родитель", "Ребенок", "Ребёнок", "Подросток", "Пожилой", "Люди 60+",
+            "Parent", "Child", "Teenager", "Elderly", "People 60+"
         ]
 
         for known in knownPrefixes {

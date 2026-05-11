@@ -154,7 +154,7 @@
 "family.role.parent" = "Родитель";
 "family.role.child" = "Ребёнок";
 "family.role.teenager" = "Подросток";
-"family.role.elderly" = "Пожилой";
+"family.role.elderly" = "Люди 60+";
 "family.incomplete_server_roster_hint" = "По тарифу можно больше участников, а с сервера пришёл один — данные семьи неполные. Обратитесь в поддержку или дождитесь исправления на сервере.";
 "delete_account_error_gateway" = "Сервер вернул защитную оболочку без подтверждения удаления (mock-real-protection). Удаление не подтверждено — нужно исправить ответ DELETE /api/user/delete на бэкенде.";
 
@@ -1196,7 +1196,7 @@
 "component.smart_notification_manager.desc" = "Интеллектуальная система уведомлений";
 "component.child_interface_manager.title" = "Детский интерфейс";
 "component.child_interface_manager.desc" = "Управление детским интерфейсом";
-"component.elderly_interface_manager.title" = "Интерфейс для пожилых";
+"component.elderly_interface_manager.title" = "Интерфейс для людей 60+";
 "component.elderly_interface_manager.desc" = "Упрощенный интерфейс";
 "component.subscription_manager.title" = "Управление подпиской";
 "component.subscription_manager.desc" = "Настройки тарифов";
@@ -1468,9 +1468,9 @@
 "parent_dashboard_content_filters" = "Фильтры контента";
 "parent_dashboard_data_rights" = "Права на данные";
 "parent_dashboard_mirror_title" = "Зеркальный семейный обзор";
-"parent_dashboard_mirror_subtitle" = "Что видит ребёнок и что доступно участнику 60+ в текущих настройках.";
+"parent_dashboard_mirror_subtitle" = "Что видит ребёнок и что доступно участнику «Люди 60+» в текущих настройках.";
 "parent_dashboard_mirror_child_title" = "Ребёнок: видимые категории";
-"parent_dashboard_mirror_elderly_title" = "60+: доступные категории";
+"parent_dashboard_mirror_elderly_title" = "Люди 60+: доступные категории";
 "parent_dashboard_mirror_permissions_title" = "Семейные права";
 "parent_dashboard_perm_contacts" = "Контакты";
 "parent_dashboard_perm_limits" = "Лимиты";
@@ -1725,7 +1725,7 @@
 "main_family_manage" = "Управлять";
 "main_family_add_member" = "Добавить участника";
 "family_roster_manage_denied_banner_title" = "Управление составом недоступно";
-"family_roster_manage_denied_banner_body" = "Приложение не видит вас как родителя или пожилого участника в этом списке. Выйдите из аккаунта и войдите снова, откройте раздел «Семья» повторно или дождитесь окончания синхронизации. Если проблема останется — обратитесь в поддержку.";
+"family_roster_manage_denied_banner_body" = "Приложение не видит вас как родителя или участника с ролью «Люди 60+» в этом списке. Выйдите из аккаунта и войдите снова, откройте раздел «Семья» повторно или дождитесь окончания синхронизации. Если проблема останется — обратитесь в поддержку.";
 "family_identity_repair_banner_title" = "Профиль в семье на этом устройстве";
 "family_identity_repair_banner_body" = "Ваше место в списке семьи могло разойтись с аккаунтом. Нажмите «Восстановить», чтобы выровнять member ID и роль по локальному списку, затем приложение обновит данные с сервера.";
 "family_identity_repair_button" = "Восстановить";

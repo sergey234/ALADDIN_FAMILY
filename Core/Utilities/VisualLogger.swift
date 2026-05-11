@@ -298,8 +298,9 @@ class VisualLogger: ObservableObject {
             // 💾 СОХРАНЯЕМ ЛОГИ В UserDefaults ДЛЯ ВОССТАНОВЛЕНИЯ ПОСЛЕ КРАША
             self.saveLogToUserDefaults(entry)
 
-            // Также пишем в консоль для Xcode
+            #if DEBUG
             print("[\(entry.formattedTime)] [\(level.rawValue)] [\(fileName):\(line)] \(message)")
+            #endif
         }
     }
     
@@ -411,6 +412,8 @@ class VisualLogger: ObservableObject {
 
 /// Writes to Documents `startup_trace.txt` / `app_lifecycle_trace.txt` so diagnostics survive Xcode disconnect and SIGKILL.
 enum LaunchDiagnostics {
+    private static let ioQueue = DispatchQueue(label: "com.aladdin.launchDiagnostics.io", qos: .utility)
+
     static func appendStartupTrace(_ message: String) {
         appendLine(message, fileName: "startup_trace.txt", consolePrefix: "STARTUP_TRACE")
     }
@@ -422,25 +425,27 @@ enum LaunchDiagnostics {
     private static func appendLine(_ message: String, fileName: String, consolePrefix: String) {
         let ts = ISO8601DateFormatter().string(from: Date())
         let line = "[\(ts)] \(message)\n"
-        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-        let fileURL = (docs ?? FileManager.default.temporaryDirectory).appendingPathComponent(fileName)
-        do {
-            if FileManager.default.fileExists(atPath: fileURL.path) {
-                let handle = try FileHandle(forWritingTo: fileURL)
-                defer { try? handle.close() }
-                try handle.seekToEnd()
-                if let data = line.data(using: .utf8) {
-                    try handle.write(contentsOf: data)
+        ioQueue.async {
+            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+            let fileURL = (docs ?? FileManager.default.temporaryDirectory).appendingPathComponent(fileName)
+            do {
+                if FileManager.default.fileExists(atPath: fileURL.path) {
+                    let handle = try FileHandle(forWritingTo: fileURL)
+                    defer { try? handle.close() }
+                    try handle.seekToEnd()
+                    if let data = line.data(using: .utf8) {
+                        try handle.write(contentsOf: data)
+                    }
+                } else {
+                    try line.write(to: fileURL, atomically: true, encoding: .utf8)
                 }
-            } else {
-                try line.write(to: fileURL, atomically: true, encoding: .utf8)
+            } catch {
+                print("⚠️ LaunchDiagnostics write failed (\(fileName)): \(error)")
             }
-        } catch {
-            print("⚠️ LaunchDiagnostics write failed (\(fileName)): \(error)")
+            #if DEBUG
+            print("🧭 \(consolePrefix): \(message)")
+            #endif
         }
-        #if DEBUG
-        print("🧭 \(consolePrefix): \(message)")
-        #endif
     }
 }
 

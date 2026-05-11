@@ -10,12 +10,31 @@ import CryptoKit
  */
 @MainActor
 class DNSProtectionManager: ObservableObject {
+
+    /// Домен NSError для ошибок `NEDNSSettingsManager` (в Swift-обёртке символ `NEConfigurationErrorDomain` не всегда доступен).
+    private static let neConfigurationErrorDomain = "NEConfigurationErrorDomain"
+
+    /// Параметр `childId` для `/dns-config`: UUID или серверный идентификатор вида `MEM_…` (см. прод-логи). Произвольный текст (имя) не передаём.
+    static func dnsConfigQueryChildId(from raw: String) -> String? {
+        let t = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !t.isEmpty else { return nil }
+        if UUID(uuidString: t) != nil { return t }
+        let upper = t.uppercased()
+        guard upper.hasPrefix("MEM_") else { return nil }
+        let rest = String(t.dropFirst(4))
+        guard rest.count >= 8 else { return nil }
+        guard rest.range(of: "^[0-9a-fA-F]+$", options: .regularExpression) != nil else { return nil }
+        return t
+    }
     
     static let shared = DNSProtectionManager()
     
     @Published var isEnabled: Bool = false
     @Published var isLoading: Bool = false
     @Published var lastError: String?
+
+    private var lastEnableRequestAt: Date?
+    private var dnsSaveRetryUsed = false
     
     private let dnsSettingsManager = NEDNSSettingsManager.shared()
     
@@ -40,6 +59,17 @@ class DNSProtectionManager: ObservableObject {
     
     /// Активировать DoH защиту
     func enableProtection(childId: String? = nil) {
+        guard !isLoading else {
+            print("⏭️ DNS Manager: enableProtection ignored (already in progress)")
+            return
+        }
+        let now = Date()
+        if let t = lastEnableRequestAt, now.timeIntervalSince(t) < 1.2 {
+            print("⏭️ DNS Manager: enableProtection throttled (<1.2s)")
+            return
+        }
+        lastEnableRequestAt = now
+        dnsSaveRetryUsed = false
         isLoading = true
         lastError = nil
         
@@ -102,11 +132,23 @@ class DNSProtectionManager: ObservableObject {
             // Сохраняем и активируем
             self?.dnsSettingsManager.saveToPreferences { error in
                 DispatchQueue.main.async {
-                    self?.isLoading = false
                     if let error = error {
+                        let ns = error as NSError
+                        // Code 11 «IPC failed»: сбой связи с nehelper / NetworkExtension (часто временный, симулятор, гонки UI).
+                        if ns.domain == Self.neConfigurationErrorDomain, ns.code == 11,
+                           let strong = self, !strong.dnsSaveRetryUsed {
+                            strong.dnsSaveRetryUsed = true
+                            print("🔁 DNS Manager: IPC failed — one retry after delay")
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) {
+                                strong.setupDNSProfile(config: config, childId: childId)
+                            }
+                            return
+                        }
+                        self?.isLoading = false
                         self?.lastError = "Не удалось сохранить профиль iOS: \(error.localizedDescription)"
                         print("❌ DNS Manager: Save error: \(error.localizedDescription)")
                     } else {
+                        self?.isLoading = false
                         self?.isEnabled = true
                         self?.lastError = nil
                         print("✅ DNS Manager: DoH Profile active (\(config.dohUrl))")
