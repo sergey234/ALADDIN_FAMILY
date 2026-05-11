@@ -50,12 +50,8 @@ struct MainScreen: View {
             )
             .ignoresSafeArea()
 
-            // Декоративный герой (Lottie / растр / опционально USDZ на iOS 17+) — под контентом, без hit-testing
-            HeroAmbientLayerView(slot: .mainDashboard)
-                .ignoresSafeArea()
-                .blendMode(.softLight)
-                .opacity(0.32)
-                .accessibilityHidden(true)
+            // Декоративный герой: якорь .bottomTrailing, виньет сверху — см. HeroMainScreenBackdrop
+            HeroMainScreenBackdrop()
 
             VStack(spacing: 0) {
                 // ✅ УДАЛЕНО: Декораторы времени и заряда/сети - они больше не нужны

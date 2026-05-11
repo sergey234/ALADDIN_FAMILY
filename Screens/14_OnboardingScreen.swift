@@ -66,10 +66,15 @@ struct OnboardingScreen: View {
     // ✅ BUILD 112: Используем Singleton LocalizationManager для предотвращения переполнения стека
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
-    
+    @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+    @Environment(\.layoutDirection) private var layoutDirection
+    @Environment(\.colorScheme) private var colorScheme
+
     // MARK: - State
 
     @State private var currentPage: Int = 0
+    /// Увеличивается при выборе языка — короткий графический «всплеск» (без новых строк локализации).
+    @State private var languageSparkTick: Int = 0
     @State private var showJoinFamily: Bool = false
     @State private var showRecovery: Bool = false
     @State private var showRecoveryOptions = false
@@ -262,12 +267,28 @@ struct OnboardingScreen: View {
     }
 
     @ViewBuilder
-    private func languageStepView() -> some View {
-        VStack(spacing: Spacing.xl) {
-            Spacer(minLength: 12)
-
+    private func languageStepGlobe() -> some View {
+        if accessibilityReduceMotion {
             Text("🌐")
                 .font(.system(size: 56))
+        } else {
+            TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: false)) { context in
+                let t = context.date.timeIntervalSinceReferenceDate
+                let s = 1.0 + 0.04 * sin(t * .pi / 1.15)
+                Text("🌐")
+                    .font(.system(size: 56))
+                    .scaleEffect(s)
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func languageStepView() -> some View {
+        ZStack {
+            VStack(spacing: Spacing.xl) {
+            Spacer(minLength: 12)
+
+            languageStepGlobe()
 
             Text(languageStepTitle(for: selectedLanguageForOnboarding))
                 .font(.system(size: 22, weight: .bold))
@@ -283,6 +304,7 @@ struct OnboardingScreen: View {
                         localizationManager.changeLanguage(to: lang)
                         loadPages()
                         HapticFeedback.selection()
+                        languageSparkTick += 1
                     } label: {
                         HStack(spacing: Spacing.m) {
                             Text(lang.flag)
@@ -316,6 +338,10 @@ struct OnboardingScreen: View {
             .padding(.horizontal, Spacing.screenPadding)
 
             Spacer(minLength: 12)
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+
+            OnboardingLanguageSparkBurst(tick: languageSparkTick, reduceMotion: accessibilityReduceMotion)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .contain)
@@ -503,6 +529,7 @@ struct OnboardingScreen: View {
             HeroAmbientLayerView(slot: currentHeroSlot)
                 .ignoresSafeArea()
                 .opacity(0.4)
+                .modifier(OnboardingHeroRTLFlipModifier(isRTL: layoutDirection == .rightToLeft))
                 .accessibilityHidden(true)
 
             HeroBottomReadableGradient()
@@ -626,7 +653,12 @@ struct OnboardingScreen: View {
 
                     ForEach(Array(pages.enumerated()), id: \.offset) { contentIndex, page in
                         let tabIndex = contentIndex + 1
-                        onboardingPage(page, tabIndex: tabIndex, contentIndex: contentIndex)
+                        onboardingPage(
+                            page,
+                            tabIndex: tabIndex,
+                            contentIndex: contentIndex,
+                            isActiveTab: currentPage == tabIndex
+                        )
                             .tag(tabIndex)
                     }
                 }
@@ -646,6 +678,12 @@ struct OnboardingScreen: View {
                             .accessibilityLabel(currentPage == index ? "Текущая страница \(index + 1)" : "Страница \(index + 1)")
                     }
                 }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 10)
+                .background(
+                    Capsule()
+                        .fill(Color.black.opacity(colorScheme == .dark ? 0.48 : 0.28))
+                )
                 .padding(.vertical, Spacing.l)
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Индикаторы страниц")
@@ -891,7 +929,7 @@ struct OnboardingScreen: View {
 
     // MARK: - Onboarding Page
     
-    private func onboardingPage(_ page: OnboardingScreen.OnboardingPage, tabIndex _: Int, contentIndex: Int) -> some View {
+    private func onboardingPage(_ page: OnboardingScreen.OnboardingPage, tabIndex _: Int, contentIndex: Int, isActiveTab _: Bool) -> some View {
         Group {
             if contentIndex == 6 {
                 ScrollView(.vertical, showsIndicators: false) {
@@ -1004,6 +1042,51 @@ struct OnboardingScreen: View {
         .accessibilityLabel("Страница онбординга: \(page.title)")
     }
 
+}
+
+// MARK: - Onboarding hero chrome (RTL / искры языка)
+
+private struct OnboardingHeroRTLFlipModifier: ViewModifier {
+    let isRTL: Bool
+
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if isRTL {
+            if #available(iOS 16.0, *) {
+                content.scaleEffect(x: -1, y: 1, anchor: .center)
+            } else {
+                content
+            }
+        } else {
+            content
+        }
+    }
+}
+
+private struct OnboardingLanguageSparkBurst: View {
+    let tick: Int
+    let reduceMotion: Bool
+    @State private var burstVisible = false
+
+    var body: some View {
+        RadialGradient(
+            colors: [Color.secondaryGold.opacity(0.55), Color.clear],
+            center: .center,
+            startRadius: 4,
+            endRadius: 100
+        )
+        .frame(width: 200, height: 200)
+        .opacity(burstVisible ? 1 : 0)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+        .onChange(of: tick) { _ in
+            guard !reduceMotion else { return }
+            burstVisible = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
+                burstVisible = false
+            }
+        }
+    }
 }
 
 // MARK: - Loading View

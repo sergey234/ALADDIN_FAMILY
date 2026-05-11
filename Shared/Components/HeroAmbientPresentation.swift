@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import Combine
 
 #if canImport(Lottie)
 import Lottie
@@ -144,12 +145,32 @@ private struct HeroLottieRepresentable: UIViewRepresentable {
     let loopMode: LottieLoopMode
     let isPlaying: Bool
 
+    final class Coordinator {
+        weak var animationView: LottieAnimationView?
+        var memoryCancellable: AnyCancellable?
+
+        init() {
+            memoryCancellable = NotificationCenter.default.publisher(for: UIApplication.didReceiveMemoryWarningNotification)
+                .receive(on: DispatchQueue.main)
+                .sink { [weak self] _ in
+                    guard let view = self?.animationView else { return }
+                    view.pause()
+                    view.currentProgress = 0
+                }
+        }
+    }
+
+    func makeCoordinator() -> Coordinator {
+        Coordinator()
+    }
+
     func makeUIView(context: Context) -> LottieAnimationView {
         let view = LottieAnimationView()
         view.animation = LottieAnimation.named(name, bundle: .main, subdirectory: nil)
         view.contentMode = .scaleAspectFit
         view.loopMode = loopMode
         view.backgroundBehavior = .pauseAndRestore
+        context.coordinator.animationView = view
         if isPlaying {
             view.play()
         } else {
@@ -160,6 +181,7 @@ private struct HeroLottieRepresentable: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: LottieAnimationView, context: Context) {
+        context.coordinator.animationView = uiView
         if isPlaying {
             if !uiView.isAnimationPlaying {
                 uiView.play()
@@ -200,6 +222,7 @@ struct HeroAmbientLayerView: View {
 
     @Environment(\.scenePhase) private var scenePhase
     @Environment(\.accessibilityReduceMotion) private var accessibilityReduceMotion
+    @Environment(\.colorScheme) private var colorScheme
 
     @State private var lowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
 
@@ -229,6 +252,7 @@ struct HeroAmbientLayerView: View {
             let h = geo.size.height
             ZStack {
                 presentation.emotionWashOverlay()
+                    .opacity(colorScheme == .dark ? 0.78 : 1.0)
                     .allowsHitTesting(false)
 
                 heroCore()
@@ -316,6 +340,35 @@ struct HeroBottomReadableGradient: View {
             startPoint: .center,
             endPoint: .bottom
         )
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+// MARK: - Main: якорь героя + виньет сверху (слой B/C из handoff)
+
+/// Декоративный фон главного экрана: герой у нижнего края, лёгкий затемнитель под шапку. Без hit-testing; скрыт от VoiceOver как декор.
+struct HeroMainScreenBackdrop: View {
+    var body: some View {
+        ZStack(alignment: .bottomTrailing) {
+            HeroAmbientLayerView(slot: .mainDashboard)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .bottomTrailing)
+                .scaleEffect(0.88, anchor: .bottomTrailing)
+                .offset(x: 12, y: 20)
+        }
+        .ignoresSafeArea()
+        .overlay(alignment: .top) {
+            LinearGradient(
+                colors: [Color.black.opacity(0.38), Color.clear],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .frame(height: 130)
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+        .blendMode(.softLight)
+        .opacity(0.36)
         .allowsHitTesting(false)
         .accessibilityHidden(true)
     }
