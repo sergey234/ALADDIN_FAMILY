@@ -438,6 +438,7 @@ enum PrivacyMainSection: String, CaseIterable {
     case general = "Общие положения"
     case principles = "Принципы работы"
     case auth = "Регистрация и аутентификация"
+    case crashDiagnostics = "Диагностика сбоев и поддержка в Telegram"
     case notCollected = "Данные, НЕ собираемые"
     case collected = "Данные, собираемые (обезличенные)"
     case purposes = "Цели обработки"
@@ -454,6 +455,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .general: return "📋"
         case .principles: return "⭐"
         case .auth: return "🔐"
+        case .crashDiagnostics: return "💬"
         case .notCollected: return "❌"
         case .collected: return "✅"
         case .purposes: return "🎯"
@@ -472,6 +474,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .general: return localizationManager.localized("privacy_policy_section_general")
         case .principles: return localizationManager.localized("privacy_policy_section_principles")
         case .auth: return localizationManager.localized("privacy_policy_section_auth")
+        case .crashDiagnostics: return localizationManager.localized("privacy_policy_section_crash_diagnostics")
         case .notCollected: return localizationManager.localized("privacy_policy_section_not_collected")
         case .collected: return localizationManager.localized("privacy_policy_section_collected")
         case .purposes: return localizationManager.localized("privacy_policy_section_purposes")
@@ -490,6 +493,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .general: return localizationManager.localized("privacy_policy_section_general_subtitle")
         case .principles: return localizationManager.localized("privacy_policy_section_principles_subtitle")
         case .auth: return localizationManager.localized("privacy_policy_section_auth_subtitle")
+        case .crashDiagnostics: return localizationManager.localized("privacy_policy_section_crash_diagnostics_subtitle")
         case .notCollected: return localizationManager.localized("privacy_policy_section_not_collected_subtitle")
         case .collected: return localizationManager.localized("privacy_policy_section_collected_subtitle")
         case .purposes: return localizationManager.localized("privacy_policy_section_purposes_subtitle")
@@ -513,6 +517,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .general: return "Правовая основа и применение"
         case .principles: return "4 основных принципа ALADDIN AI"
         case .auth: return "Анонимная регистрация через QR"
+        case .crashDiagnostics: return "Бот @AladdinchatAI_bot, только по вашей команде"
         case .notCollected: return "Список данных, которые мы НЕ собираем"
         case .collected: return "Обезличенные данные для безопасности"
         case .purposes: return "Для чего используются данные"
@@ -549,6 +554,15 @@ enum PrivacyMainSection: String, CaseIterable {
                 localizationManager.localized("privacy_policy_section_auth_content_4"),
                 localizationManager.localized("privacy_policy_section_auth_content_5"),
                 localizationManager.localized("privacy_policy_section_auth_content_6")
+            ]
+        case .crashDiagnostics:
+            return [
+                localizationManager.localized("privacy_policy_section_crash_diagnostics_content_1"),
+                localizationManager.localized("privacy_policy_section_crash_diagnostics_content_2"),
+                localizationManager.localized("privacy_policy_section_crash_diagnostics_content_3"),
+                localizationManager.localized("privacy_policy_section_crash_diagnostics_content_4"),
+                localizationManager.localized("privacy_policy_section_crash_diagnostics_content_5"),
+                localizationManager.localized("privacy_policy_section_crash_diagnostics_content_6")
             ]
         case .notCollected:
             return [
@@ -651,6 +665,15 @@ enum PrivacyMainSection: String, CaseIterable {
                 "Face ID: Данные лица НЕ собираются — приложение использует только встроенную функцию iOS для локальной аутентификации",
                 "Face ID: Данные лица НЕ передаются третьим лицам — вся обработка происходит локально на устройстве в Secure Enclave",
                 "Face ID: Данные лица НЕ хранятся на наших серверах — они остаются только на устройстве пользователя и удаляются при удалении приложения"
+            ]
+        case .crashDiagnostics:
+            return [
+                "Бот @AladdinchatAI_bot (отображаемое имя может быть «AladdinAi_bot»).",
+                "Отправка логов только по вашей инициативе.",
+                "Пароли, карты, SMS, контакты, медиа через этот экран не собираем.",
+                "В отчёте — технические данные, уже записанные на устройстве; лишнее можно стереть вручную.",
+                "После отправки в Telegram действуют правила Telegram.",
+                "Цель — исправление сбоев; не для рекламы и не продаём."
             ]
         case .notCollected:
             return [

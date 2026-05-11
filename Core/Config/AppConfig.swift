@@ -138,11 +138,13 @@ struct AppConfig {
 
     // MARK: - Support (Telegram)
 
-    /// Имя бота поддержки **без** `@`. Задаётся ключом `SUPPORT_TELEGRAM_BOT_USERNAME` в Info.plist; иначе пусто — кнопка «чат с ботом» покажет подсказку настроить бота.
+    /// Имя бота поддержки **без** `@`. Задаётся ключом `SUPPORT_TELEGRAM_BOT_USERNAME` в Info.plist; если ключ пуст — используется официальный бот @AladdinchatAI_bot.
     static var supportTelegramBotUsername: String {
         let raw = (Bundle.main.object(forInfoDictionaryKey: "SUPPORT_TELEGRAM_BOT_USERNAME") as? String)?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        return raw.trimmingCharacters(in: CharacterSet(charactersIn: "@"))
+        let trimmed = raw.trimmingCharacters(in: CharacterSet(charactersIn: "@"))
+        if !trimmed.isEmpty { return trimmed }
+        return "AladdinchatAI_bot"
     }
 
     /// Параметр `start` для deep link (Telegram: `A-Za-z0-9_`, до 64 символов) — бот может связать тикет с билдом/временем.

@@ -30,7 +30,7 @@
 		<string>vk</string>
 	</array>
 	<key>SUPPORT_TELEGRAM_BOT_USERNAME</key>
-	<string></string>
+	<string>AladdinchatAI_bot</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>LSSupportsOpeningDocumentsInPlace</key>
