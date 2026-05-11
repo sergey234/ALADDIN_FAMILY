@@ -135,6 +135,24 @@ struct AppConfig {
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
+
+    // MARK: - Support (Telegram)
+
+    /// Имя бота поддержки **без** `@`. Задаётся ключом `SUPPORT_TELEGRAM_BOT_USERNAME` в Info.plist; иначе пусто — кнопка «чат с ботом» покажет подсказку настроить бота.
+    static var supportTelegramBotUsername: String {
+        let raw = (Bundle.main.object(forInfoDictionaryKey: "SUPPORT_TELEGRAM_BOT_USERNAME") as? String)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return raw.trimmingCharacters(in: CharacterSet(charactersIn: "@"))
+    }
+
+    /// Параметр `start` для deep link (Telegram: `A-Za-z0-9_`, до 64 символов) — бот может связать тикет с билдом/временем.
+    static func supportTelegramStartToken() -> String {
+        let ts = Int(Date().timeIntervalSince1970)
+        let raw = "ios\(buildNumber)_\(ts)"
+        let filtered = raw.filter { $0.isLetter || $0.isNumber || $0 == "_" }
+        let base = filtered.isEmpty ? "ios" : filtered
+        return String(base.prefix(64))
+    }
     
     // MARK: - API Endpoints
     

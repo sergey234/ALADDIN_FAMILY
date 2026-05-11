@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// 🧾 CrashLogsView (BUILD 95)
 /// Экран просмотра диагностических логов прямо на устройстве (TestFlight/Release).
@@ -9,6 +10,10 @@ struct CrashLogsView: View {
     @State private var text: String = "Загрузка логов..."
     @State private var showShareFullScreen = false
     @State private var shareExportURL: URL?
+
+    @State private var showTelegramConsentAlert = false
+    @State private var showTelegramErrorAlert = false
+    @State private var telegramErrorText = ""
 
     var body: some View {
         NavigationView {
@@ -37,8 +42,21 @@ struct CrashLogsView: View {
                     }
                     .buttonStyle(.bordered)
                 }
-                .padding(.bottom, 12)
+
+                Button(localizationManager.localized("crash_logs_support_telegram_button")) {
+                    showTelegramConsentAlert = true
+                }
+                .buttonStyle(.bordered)
+
+                Text(localizationManager.localized("crash_logs_support_footer"))
+                    .font(.caption2)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 12)
+
+                Spacer(minLength: 0)
             }
+            .padding(.bottom, 12)
             .navigationTitle(localizationManager.localized("crash_logs_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
@@ -47,6 +65,22 @@ struct CrashLogsView: View {
                 }
             }
             .onAppear { loadLogs() }
+            .alert(
+                localizationManager.localized("crash_logs_support_telegram_alert_title"),
+                isPresented: $showTelegramConsentAlert
+            ) {
+                Button(localizationManager.localized("crash_logs_support_telegram_cancel"), role: .cancel) {}
+                Button(localizationManager.localized("crash_logs_support_telegram_continue")) {
+                    openTelegramSupportChat()
+                }
+            } message: {
+                Text(localizationManager.localized("crash_logs_support_telegram_alert_message"))
+            }
+            .alert("Telegram", isPresented: $showTelegramErrorAlert) {
+                Button("OK", role: .cancel) {}
+            } message: {
+                Text(telegramErrorText)
+            }
             /// Вложенный `.sheet` поверх `.sheet` (Настройки → Логи) часто ломает `UIActivityViewController`.
             /// `fullScreenCover` поднимает share над текущим модальным окном.
             .fullScreenCover(isPresented: $showShareFullScreen, onDismiss: {
@@ -66,6 +100,53 @@ struct CrashLogsView: View {
 
     private func loadLogs() {
         text = composeDiagnosticsText()
+    }
+
+    /// Deep link в бота: `tg://resolve?domain=…&start=…` или fallback `https://t.me/…?start=…`.
+    /// `start` — только [A-Za-z0-9_], до 64 символов (см. `AppConfig.supportTelegramStartToken()`).
+    private func openTelegramSupportChat() {
+        let bot = AppConfig.supportTelegramBotUsername
+        guard !bot.isEmpty else {
+            telegramErrorText = localizationManager.localized("crash_logs_support_bot_missing")
+            showTelegramErrorAlert = true
+            return
+        }
+        let token = AppConfig.supportTelegramStartToken()
+        guard let httpsURL = URL(string: "https://t.me/\(bot)?start=\(token)") else {
+            telegramErrorText = localizationManager.localized("crash_logs_support_telegram_failed")
+            showTelegramErrorAlert = true
+            return
+        }
+        guard let tgURL = URL(string: "tg://resolve?domain=\(bot)&start=\(token)") else {
+            UIApplication.shared.open(httpsURL) { _ in }
+            return
+        }
+
+        if UIApplication.shared.canOpenURL(tgURL) {
+            UIApplication.shared.open(tgURL, options: [:]) { success in
+                if !success {
+                    DispatchQueue.main.async {
+                        UIApplication.shared.open(httpsURL, options: [:]) { ok in
+                            DispatchQueue.main.async {
+                                if !ok {
+                                    telegramErrorText = localizationManager.localized("crash_logs_support_telegram_failed")
+                                    showTelegramErrorAlert = true
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } else {
+            UIApplication.shared.open(httpsURL, options: [:]) { success in
+                DispatchQueue.main.async {
+                    if !success {
+                        telegramErrorText = localizationManager.localized("crash_logs_support_telegram_failed")
+                        showTelegramErrorAlert = true
+                    }
+                }
+            }
+        }
     }
 
     /// Полный текст для экрана и для экспорта (UTF-8 файл — надёжнее для Почты, чем огромное тело письма).
