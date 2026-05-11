@@ -258,6 +258,9 @@ struct HeroAmbientLayerView: View {
                 heroCore()
                     .frame(width: w, height: h)
                     .allowsHitTesting(false)
+                    // Лёгкий "пульс лампы" на шаге языка (Tier 1, минимальная нагрузка)
+                    .scaleEffect(slot == .onboardingLanguage ? (1.0 + sin(Date().timeIntervalSinceReferenceDate) * 0.008) : 1.0)
+                    .animation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true), value: slot)
 
                 // Лёгкий parallax двух слоёв только в full и если разрешено презентацией
                 if presentation.allowsParallax, motionTier == .full {
@@ -334,9 +337,12 @@ struct HeroAmbientLayerView: View {
 
 /// Вспомогательный модификатор: затемнение низа под нижние кнопки / safe area.
 struct HeroBottomReadableGradient: View {
+    /// Stronger gradient for bright hero illustrations (e.g. language step)
+    var strong: Bool = false
+
     var body: some View {
         LinearGradient(
-            colors: [Color.clear, Color.black.opacity(0.45)],
+            colors: [Color.clear, Color.black.opacity(strong ? 0.62 : 0.48)],
             startPoint: .center,
             endPoint: .bottom
         )

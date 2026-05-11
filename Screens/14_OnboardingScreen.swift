@@ -532,7 +532,7 @@ struct OnboardingScreen: View {
                 .modifier(OnboardingHeroRTLFlipModifier(isRTL: layoutDirection == .rightToLeft))
                 .accessibilityHidden(true)
 
-            HeroBottomReadableGradient()
+            HeroBottomReadableGradient(strong: currentPage == 0)
                 .ignoresSafeArea()
 
             // ✅ ВАРИАНТ 1: Показываем онбординг сразу, без проверки готовности локализации

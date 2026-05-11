@@ -1,0 +1,19 @@
+---
+description: Figma Phase B для онбординга/Main — через MCP в Cursor (мост уже проверен командой)
+alwaysApply: true
+---
+
+# Figma: делает агент через MCP
+
+Для этого репозитория **Figma MCP подключён и проверен**. Задачи **`figma-master-file-spec`** и **`figma-phase-b-mcp`** выполняет **агент в Cursor**, а не «обязательно дизайнер руками».
+
+**Ожидаемое поведение агента:**
+
+1. Перед вызовами записи в Figma — загрузить skill **`figma-use`** (обязательный prerequisite для `use_figma`).
+2. Читать **`docs/FIGMA_ONBOARDING.env`** (`FIGMA_MASTER_URL`, `FIGMA_FILE_KEY`). Если пусто — не выдумывать key; указать пользователю **`docs/FIGMA_LINK_INSTRUCTIONS.md`**. Шаблон: `FIGMA_ONBOARDING.env.example`.
+3. Опираться на **`docs/ONBOARDING_FIGMA_FRAME_CHECKLIST.md`**, **`docs/ONBOARDING_MAIN_HERO_HANDOFF.md`** §7.1 и §1.4–1.5 (393×852, hero ~60% / карточка ~40%, имена `OnboardingHero_00` … `OnboardingHero_07`, `MainHero_ambient`), **`docs/ALADDIN_Character_Bible.md`**, **`docs/ALADDIN_Onboarding_Prompts.md`** (детальные промпты + прогрессивная история) и **`docs/ALADDIN_Hero_Asset_Pipeline.md`** (полный end-to-end алгоритм генерации + интеграции hero-ассетов).
+4. Использовать MCP: `get_metadata` / `get_design_context` для чтения, `use_figma` — для сетки фреймов и правок по плану Фазы B (минимум лишних вызовов, как в handoff §7).
+5. **Вёрстка и копирайт в приложении:** при Фазе C **не** ломать `languageStepView` / `onboardingPage` и `Spacing.*` без явного ТЗ; сюжет Аладдина — слой героя/ассеты. Политика и чеклист: **`docs/ONBOARDING_MAIN_HERO_HANDOFF.md` §1.8 и §8** (проход 0…N после изменений).
+6. Ручной Figma — запасной путь, если MCP недоступен в сессии или пользователь явно просит только документ.
+
+Исключение: без доступа к файлу / без MCP агент **не** обещает двигать слои и вместо этого обновляет md или код.
