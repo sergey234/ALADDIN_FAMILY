@@ -102,7 +102,8 @@ enum HeroPresentation: Equatable {
         let colors: [Color]
         switch baseName {
         case "OnboardingHero_00":
-            colors = [Color(red: 0.95, green: 0.75, blue: 0.2).opacity(0.18), Color.indigo.opacity(0.12)]
+            // Very light wash for the language step so the generated illustration stays bright and clear
+            colors = [Color(red: 0.95, green: 0.75, blue: 0.2).opacity(0.06), Color.indigo.opacity(0.04)]
         case "OnboardingHero_01":
             colors = [Color.cyan.opacity(0.14), Color.blue.opacity(0.1)]
         case "OnboardingHero_02":
@@ -225,6 +226,7 @@ struct HeroAmbientLayerView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var lowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
+    @State private var languageStepPulse: CGFloat = 1.0
 
     private var presentation: HeroPresentation {
         HeroPresentation.presentation(for: slot)
@@ -258,9 +260,15 @@ struct HeroAmbientLayerView: View {
                 heroCore()
                     .frame(width: w, height: h)
                     .allowsHitTesting(false)
-                    // Лёгкий "пульс лампы" на шаге языка (Tier 1, минимальная нагрузка)
-                    .scaleEffect(slot == .onboardingLanguage ? (1.0 + sin(Date().timeIntervalSinceReferenceDate) * 0.008) : 1.0)
-                    .animation(.easeInOut(duration: 3.2).repeatForever(autoreverses: true), value: slot)
+                    // Gentle breathing animation only on the language step (Tier 1, very light)
+                    .scaleEffect(slot == .onboardingLanguage ? languageStepPulse : 1.0)
+                    .onAppear {
+                        if slot == .onboardingLanguage {
+                            withAnimation(.easeInOut(duration: 2.8).repeatForever(autoreverses: true)) {
+                                languageStepPulse = 1.012
+                            }
+                        }
+                    }
 
                 // Лёгкий parallax двух слоёв только в full и если разрешено презентацией
                 if presentation.allowsParallax, motionTier == .full {
@@ -286,26 +294,31 @@ struct HeroAmbientLayerView: View {
     private func rasterOrLottie(baseName: String) -> some View {
         #if canImport(Lottie)
         if HeroBundleResource.hasLottie(named: baseName) {
+            print("🦸 HeroAmbientLayerView: Using Lottie for \(baseName)")
             HeroLottieRepresentable(
                 name: baseName,
                 loopMode: shouldLoopLottie ? .loop : .playOnce,
                 isPlaying: lottieShouldPlay
             )
         } else if HeroBundleResource.hasRaster(named: baseName) {
+            print("🦸 HeroAmbientLayerView: Using raster image for \(baseName)")
             Image(baseName)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
+            print("🦸 HeroAmbientLayerView: No asset found for \(baseName) — showing placeholder gradient")
             heroPlaceholderGradient()
         }
         #else
         if HeroBundleResource.hasRaster(named: baseName) {
+            print("🦸 HeroAmbientLayerView: Using raster image for \(baseName) (no Lottie)")
             Image(baseName)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
+            print("🦸 HeroAmbientLayerView: No asset found for \(baseName) — showing placeholder gradient")
             heroPlaceholderGradient()
         }
         #endif

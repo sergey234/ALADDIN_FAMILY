@@ -528,7 +528,8 @@ struct OnboardingScreen: View {
 
             HeroAmbientLayerView(slot: currentHeroSlot)
                 .ignoresSafeArea()
-                .opacity(0.4)
+                // Removed .opacity(0.4) — it was making the new hero illustrations (OnboardingHero_00 etc.) almost invisible.
+                // The hero layer now renders at full opacity so the generated images are clearly visible.
                 .modifier(OnboardingHeroRTLFlipModifier(isRTL: layoutDirection == .rightToLeft))
                 .accessibilityHidden(true)
 
