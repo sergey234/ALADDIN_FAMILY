@@ -269,6 +269,25 @@ struct HeroAmbientLayerView: View {
                             }
                         }
                     }
+                    // Safe debug logging (outside ViewBuilder)
+                    .task {
+                        let base = presentation.baseNameForFallback
+                        #if canImport(Lottie)
+                        if HeroBundleResource.hasLottie(named: base) {
+                            print("🦸 HeroAmbientLayerView: Using Lottie for \(base)")
+                        } else if HeroBundleResource.hasRaster(named: base) {
+                            print("🦸 HeroAmbientLayerView: Using raster image for \(base)")
+                        } else {
+                            print("🦸 HeroAmbientLayerView: No asset found for \(base) — showing placeholder")
+                        }
+                        #else
+                        if HeroBundleResource.hasRaster(named: base) {
+                            print("🦸 HeroAmbientLayerView: Using raster image for \(base) (no Lottie)")
+                        } else {
+                            print("🦸 HeroAmbientLayerView: No asset found for \(base) — showing placeholder")
+                        }
+                        #endif
+                    }
 
                 // Лёгкий parallax двух слоёв только в full и если разрешено презентацией
                 if presentation.allowsParallax, motionTier == .full {
@@ -294,31 +313,26 @@ struct HeroAmbientLayerView: View {
     private func rasterOrLottie(baseName: String) -> some View {
         #if canImport(Lottie)
         if HeroBundleResource.hasLottie(named: baseName) {
-            print("🦸 HeroAmbientLayerView: Using Lottie for \(baseName)")
             HeroLottieRepresentable(
                 name: baseName,
                 loopMode: shouldLoopLottie ? .loop : .playOnce,
                 isPlaying: lottieShouldPlay
             )
         } else if HeroBundleResource.hasRaster(named: baseName) {
-            print("🦸 HeroAmbientLayerView: Using raster image for \(baseName)")
             Image(baseName)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            print("🦸 HeroAmbientLayerView: No asset found for \(baseName) — showing placeholder gradient")
             heroPlaceholderGradient()
         }
         #else
         if HeroBundleResource.hasRaster(named: baseName) {
-            print("🦸 HeroAmbientLayerView: Using raster image for \(baseName) (no Lottie)")
             Image(baseName)
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
         } else {
-            print("🦸 HeroAmbientLayerView: No asset found for \(baseName) — showing placeholder gradient")
             heroPlaceholderGradient()
         }
         #endif
