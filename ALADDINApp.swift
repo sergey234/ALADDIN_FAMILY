@@ -227,7 +227,7 @@ struct ALADDINApp: App {
     @StateObject private var localizationManager = LocalizationManager.shared
     /// Единый источник статистики главной / профиля (семья, устройства, угрозы).
     @StateObject private var mainViewModel = MainViewModel()
-    @AppStorage("selected_theme") private var selectedTheme: String = "system"
+    @AppStorage("selected_theme") private var selectedTheme: String = "light"
     // ✅ BUILD 95: Показ VisualLogger overlay в RELEASE/TestFlight по флагу
     @AppStorage("enable_visual_logging_release") private var enableVisualLoggingRelease: Bool = false
     // ✅ BUILD 95: Используем @AppStorage вместо UserDefaults для предотвращения рекурсии
@@ -251,14 +251,14 @@ struct ALADDINApp: App {
     /// Однократная метка: первый вызов `mainAppContent()` (после LocalizationManager).
     private static var loggedMainAppContentFirstInvocation = false
 
-    // MARK: - Theme Helper
-    private var preferredColorScheme: ColorScheme? {
-        switch selectedTheme {
-        case "light": return .light
-        case "dark": return .dark
-        case "system": return nil // nil = системная тема
-        default: return nil
-        }
+    // MARK: - Theme Helper (light-only product policy)
+    private var preferredColorScheme: ColorScheme? { .light }
+
+    private static func enforceLightAppearance() {
+        UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+            .flatMap(\.windows)
+            .forEach { $0.overrideUserInterfaceStyle = .light }
     }
     
     init() {
@@ -330,6 +330,8 @@ struct ALADDINApp: App {
                     LaunchDiagnostics.appendLifecycleTrace("WindowGroup.onAppear")
                     // Ensure persisted visual logs are restored once per app launch.
                     VisualLogger.shared.loadLogsAsync()
+                    selectedTheme = "light"
+                    Self.enforceLightAppearance()
                     LaunchDiagnostics.appendStartupTrace("WindowGroup.onAppear after loadLogsAsync")
                     // Восстанавливаем первичную инициализацию навигации, иначе приложение
                     // застревает на статическом loading-экране и не доходит до onboarding.

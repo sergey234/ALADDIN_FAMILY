@@ -275,11 +275,8 @@ struct OnboardingScreen: View {
         if accessibilityReduceMotion {
             globe
         } else {
-            TimelineView(.animation(minimumInterval: 1.0 / 12.0, paused: accessibilityReduceMotion)) { context in
-                let t = context.date.timeIntervalSinceReferenceDate
-                let s = 1.0 + 0.025 * sin(t * .pi / 2.4)
-                globe.scaleEffect(s)
-            }
+            // Build 198: без TimelineView/spring — меньше нагрузки на main thread при старте.
+            globe.scaleEffect(1.02)
         }
     }
 
@@ -629,7 +626,7 @@ struct OnboardingScreen: View {
                     Button(action: {
                         guard !pages.isEmpty else { return }
                         if currentPage < lastTabIndex {
-                            withAnimation {
+                            withAnimation(.easeInOut(duration: 0.22)) {
                                 currentPage = lastTabIndex
                             }
                             HapticFeedback.selection()
@@ -679,7 +676,7 @@ struct OnboardingScreen: View {
                         Circle()
                             .fill(currentPage == index ? Color.primaryBlue : Color.textSecondary.opacity(0.3))
                             .frame(width: currentPage == index ? 12 : 8, height: currentPage == index ? 12 : 8)
-                            .animation(.spring(), value: currentPage)
+                            .animation(.easeInOut(duration: 0.22), value: currentPage)
                             .accessibilityLabel(currentPage == index ? "Текущая страница \(index + 1)" : "Страница \(index + 1)")
                     }
                 }
@@ -704,14 +701,14 @@ struct OnboardingScreen: View {
                             UserDefaults.standard.synchronize()
                             // Страницы собираются через safeLocalized → currentLanguage; до этого шага был язык системы/дефолт.
                             loadPages()
-                            withAnimation {
+                            withAnimation(.easeInOut(duration: 0.22)) {
                                 currentPage = 1
                             }
                             HapticFeedback.selection()
                             return
                         }
                         if currentPage < lastTabIndex {
-                            withAnimation {
+                            withAnimation(.easeInOut(duration: 0.22)) {
                                 currentPage += 1
                             }
                             HapticFeedback.selection()
@@ -812,7 +809,7 @@ struct OnboardingScreen: View {
                             // Чекбокс согласия с Privacy Policy
                             HStack(spacing: Spacing.s) {
                                 Button(action: {
-                                    withAnimation {
+                                    withAnimation(.easeInOut(duration: 0.15)) {
                                         dataConsentAccepted.toggle()
                                     }
                                     HapticFeedback.selection()
@@ -847,7 +844,7 @@ struct OnboardingScreen: View {
 
                             HStack(spacing: Spacing.s) {
                                 Button(action: {
-                                    withAnimation {
+                                    withAnimation(.easeInOut(duration: 0.15)) {
                                         termsConsentAccepted.toggle()
                                     }
                                     HapticFeedback.selection()
@@ -1048,8 +1045,10 @@ private struct OnboardingLanguageSparkBurst: View {
         .onChange(of: tick) { _ in
             guard !reduceMotion else { return }
             burstVisible = true
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
-                burstVisible = false
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.18) {
+                withAnimation(.easeOut(duration: 0.12)) {
+                    burstVisible = false
+                }
             }
         }
     }

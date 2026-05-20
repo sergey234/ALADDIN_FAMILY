@@ -61,6 +61,7 @@
 		5E13D35A2F4652130010F7CE /* SettingsTestSuiteView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3592F4652130010F7CE /* SettingsTestSuiteView.swift */; };
 		5E13D35C2F46523A0010F7CE /* SettingsScreenFallback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D35B2F46523A0010F7CE /* SettingsScreenFallback.swift */; };
 		5E13D3602F4D90A10010F7CE /* MasterLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D35F2F4D90A00010F7CE /* MasterLogger.swift */; };
+		B19800022F98000100B19800 /* AIAssistantResponseDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19800012F98000100B19800 /* AIAssistantResponseDiagnostics.swift */; };
 		5E13D3622F4DB3C40010F7CE /* LogSanitizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3612F4DB3C40010F7CE /* LogSanitizer.swift */; };
 		5E13D3642F4DB6830010F7CE /* VisualLogger.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3632F4DB6830010F7CE /* VisualLogger.swift */; };
 		5E13D3662F4E52560010F7CE /* APITestAnalyzer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E13D3652F4E52550010F7CE /* APITestAnalyzer.swift */; };
@@ -125,6 +126,7 @@
 		E1E2EE0C02F1E40000E2EE01 /* FamilyE2EEMediaLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E2EE0B02F1E40000E2EE01 /* FamilyE2EEMediaLoader.swift */; };
 		E1CACHE0202F1E40000E2EE01 /* FamilyChatCiphertextCache.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1CACHE0102F1E40000E2EE01 /* FamilyChatCiphertextCache.swift */; };
 		E1E2EE0E02F1E40000E2EE01 /* FamilyE2EECryptoEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E2EE0D02F1E40000E2EE01 /* FamilyE2EECryptoEngineTests.swift */; };
+		B19800042F98000200B19800 /* FamilyLocalStorePersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19800032F98000200B19800 /* FamilyLocalStorePersistenceTests.swift */; };
 		E2PII0202F1E50000E2EE01 /* AIPIIRedactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2PII0102F1E50000E2EE01 /* AIPIIRedactor.swift */; };
 		E2PII0402F1E50000E2EE01 /* AIOutboundTextGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2PII0302F1E50000E2EE01 /* AIOutboundTextGate.swift */; };
 		E2HIST0202F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2HIST0102F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift */; };
@@ -507,6 +509,7 @@
 		5E13D3592F4652130010F7CE /* SettingsTestSuiteView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SettingsTestSuiteView.swift; path = Screens/SettingsTestSuiteView.swift; sourceTree = "<group>"; };
 		5E13D35B2F46523A0010F7CE /* SettingsScreenFallback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SettingsScreenFallback.swift; path = Screens/SettingsScreenFallback.swift; sourceTree = "<group>"; };
 		5E13D35F2F4D90A00010F7CE /* MasterLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = MasterLogger.swift; path = Core/Utilities/MasterLogger.swift; sourceTree = "<group>"; };
+		B19800012F98000100B19800 /* AIAssistantResponseDiagnostics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIAssistantResponseDiagnostics.swift; path = Core/Utilities/AIAssistantResponseDiagnostics.swift; sourceTree = "<group>"; };
 		5E13D3612F4DB3C40010F7CE /* LogSanitizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LogSanitizer.swift; path = Core/Utilities/LogSanitizer.swift; sourceTree = "<group>"; };
 		5E13D3632F4DB6830010F7CE /* VisualLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VisualLogger.swift; path = Core/Utilities/VisualLogger.swift; sourceTree = "<group>"; };
 		5E13D3652F4E52550010F7CE /* APITestAnalyzer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = APITestAnalyzer.swift; path = Core/Utilities/APITestAnalyzer.swift; sourceTree = "<group>"; };
@@ -572,6 +575,7 @@
 		E1E2EE0B02F1E40000E2EE01 /* FamilyE2EEMediaLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyE2EEMediaLoader.swift; path = Core/E2EE/FamilyE2EEMediaLoader.swift; sourceTree = "<group>"; };
 		E1CACHE0102F1E40000E2EE01 /* FamilyChatCiphertextCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChatCiphertextCache.swift; path = Core/E2EE/FamilyChatCiphertextCache.swift; sourceTree = "<group>"; };
 		E1E2EE0D02F1E40000E2EE01 /* FamilyE2EECryptoEngineTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyE2EECryptoEngineTests.swift; path = Tests/UnitTests/FamilyE2EECryptoEngineTests.swift; sourceTree = "<group>"; };
+		B19800032F98000200B19800 /* FamilyLocalStorePersistenceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyLocalStorePersistenceTests.swift; path = Tests/UnitTests/FamilyLocalStorePersistenceTests.swift; sourceTree = "<group>"; };
 		E2PII0102F1E50000E2EE01 /* AIPIIRedactor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIPIIRedactor.swift; path = Core/Privacy/AIPIIRedactor.swift; sourceTree = "<group>"; };
 		E2PII0302F1E50000E2EE01 /* AIOutboundTextGate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIOutboundTextGate.swift; path = Core/Privacy/AIOutboundTextGate.swift; sourceTree = "<group>"; };
 		E2HIST0102F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIAssistantLocalHistoryPolicy.swift; path = Core/Privacy/AIAssistantLocalHistoryPolicy.swift; sourceTree = "<group>"; };
@@ -1051,6 +1055,7 @@
 				5E13D3632F4DB6830010F7CE /* VisualLogger.swift */,
 				5E13D3612F4DB3C40010F7CE /* LogSanitizer.swift */,
 				5E13D35F2F4D90A00010F7CE /* MasterLogger.swift */,
+				B19800012F98000100B19800 /* AIAssistantResponseDiagnostics.swift */,
 				5E13D35B2F46523A0010F7CE /* SettingsScreenFallback.swift */,
 				5E13D3592F4652130010F7CE /* SettingsTestSuiteView.swift */,
 				5E6C6B0D2F427C3600F6FFEA /* SettingsDiagnosticsLogger.swift */,
@@ -1380,6 +1385,7 @@
 				A11205002F900221A1120506 /* ContentExperienceResolverTests.swift */,
 				E2PII0502F1E50000E2EE01 /* AIPIIRedactorTests.swift */,
 				E1E2EE0D02F1E40000E2EE01 /* FamilyE2EECryptoEngineTests.swift */,
+				B19800032F98000200B19800 /* FamilyLocalStorePersistenceTests.swift */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -1754,6 +1760,7 @@
 				5E0058092EC3C7A400024F7E /* RewardsQuickModal.swift in Sources */,
 				5E6F39362F15AFC400CEC103 /* ComplianceView.swift in Sources */,
 				5E13D3602F4D90A10010F7CE /* MasterLogger.swift in Sources */,
+				B19800022F98000100B19800 /* AIAssistantResponseDiagnostics.swift in Sources */,
 				B2000170B2000170B2000170 /* AdvancedProtectionSettingsScreen.swift in Sources */,
 				5E6F390B2F151FBF00CEC103 /* FamilyChatOfflineManager.swift in Sources */,
 				E1E2EE0202F1E40000E2EE01 /* FamilyE2EEManager.swift in Sources */,
@@ -1960,6 +1967,7 @@
 				5E00580F2EC473DA00024F7E /* PaymentQRViewModelProtectionTests.swift in Sources */,
 				E2PII0602F1E50000E2EE01 /* AIPIIRedactorTests.swift in Sources */,
 				E1E2EE0E02F1E40000E2EE01 /* FamilyE2EECryptoEngineTests.swift in Sources */,
+				B19800042F98000200B19800 /* FamilyLocalStorePersistenceTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

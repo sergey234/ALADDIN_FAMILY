@@ -198,7 +198,7 @@ class SettingsViewModel: ObservableObject {
     @Published var showPositioningSystemPicker: Bool = false
 
     // App Settings
-    @Published var selectedTheme: ThemeMode = .system
+    @Published var selectedTheme: ThemeMode = .light
 
     // Protection Level (computed from tariff)
     @Published var cachedProtectionLevel: Double = 25.0
@@ -373,6 +373,7 @@ class SettingsViewModel: ObservableObject {
         // В текущем контракте Settings-тумблер мапится на `antivirusEnabled` внутри network settings.
         $isNetworkProtectionEnabled
             .dropFirst()
+            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.main)
             .sink { [weak self] enabled in
                 self?.syncNetworkProtectionToggleToServer(enabled: enabled)
             }
@@ -400,16 +401,15 @@ class SettingsViewModel: ObservableObject {
             }
             .store(in: &cancellables)
 
-        // Sync theme selection and apply theme
+        // Light-only: debounce to avoid main-thread storms during Settings scroll/layout.
         $selectedTheme
             .dropFirst()
-            .sink { [weak self] theme in
-                // ✅ BUILD 96: Асинхронная установка для предотвращения рекурсии
+            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.main)
+            .sink { [weak self] _ in
                 Task { @MainActor in
-                    UserDefaults.standard.set(theme.rawValue, forKey: "selected_theme")
+                    UserDefaults.standard.set(ThemeMode.light.rawValue, forKey: "selected_theme")
                 }
-                // Применяем тему синхронно для немедленного эффекта
-                self?.applyTheme(theme)
+                self?.applyTheme(.light)
             }
             .store(in: &cancellables)
 
@@ -442,10 +442,9 @@ class SettingsViewModel: ObservableObject {
         consentAccepted = UserDefaults.standard.bool(forKey: "personal_data_consent_accepted")
         isBiometricEnabled = UserDefaults.standard.bool(forKey: "biometricEnabled")
 
-        if let savedTheme = UserDefaults.standard.string(forKey: "selected_theme"),
-           let theme = ThemeMode(rawValue: savedTheme) {
-            selectedTheme = theme
-        }
+        selectedTheme = .light
+        UserDefaults.standard.set(ThemeMode.light.rawValue, forKey: "selected_theme")
+        applyTheme(.light)
 
         if let positioningService = positioningService {
             selectedPositioningSystem = positioningService.selectedSystem
@@ -737,27 +736,12 @@ enum ThemeMode: String, CaseIterable {
 // MARK: - Theme Management
 extension SettingsViewModel {
     func cycleTheme() {
-        let allThemes = ThemeMode.allCases
-        if let currentIndex = allThemes.firstIndex(of: selectedTheme) {
-            let nextIndex = (currentIndex + 1) % allThemes.count
-            selectedTheme = allThemes[nextIndex]
-            // applyTheme будет автоматически вызван через reactive binding
-        }
+        selectedTheme = .light
     }
 
     private func applyTheme(_ theme: ThemeMode) {
-        let style: UIUserInterfaceStyle
-        switch theme {
-        case .light:
-            style = .light
-            print("🌞 Применена светлая тема")
-        case .dark:
-            style = .dark
-            print("🌙 Применена темная тема")
-        case .system:
-            style = .unspecified
-            print("⚙️ Следуем системной теме")
-        }
+        _ = theme
+        let style: UIUserInterfaceStyle = .light
 
         // Мгновенно применяем внешний вид ко всем окнам.
         UIApplication.shared.connectedScenes

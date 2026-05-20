@@ -62,7 +62,7 @@ struct FamilyChatScreen: View {
     @State private var showMediaPicker: Bool = false
     @State private var selectedMedia: UIImage? = nil
     @State private var showThemeSettings: Bool = false
-    @State private var chatTheme: ChatTheme = .auto
+    @State private var chatTheme: ChatTheme = .light
     @State private var showCamera: Bool = false
     @State private var showComposerActions: Bool = false
     @State private var showQuickReactionPicker: Bool = false
@@ -568,11 +568,11 @@ struct FamilyChatScreen: View {
             .sorted()
     }
 
-    /// Получает familyId из UserDefaults (канонический ключ — `FamilyLocalStore.familyIdKey`).
+    /// Единый источник с APIService: Keychain + legacy UserDefaults (`FamilyLocalStore.loadPersistedFamilyId`).
     private func getFamilyId() -> String? {
-        let raw = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+        let raw = FamilyLocalStore.loadPersistedFamilyId()
             .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard let raw, !raw.isEmpty else { return nil }
+        guard !raw.isEmpty else { return nil }
         return raw
     }
 
@@ -676,7 +676,7 @@ struct FamilyChatScreen: View {
                         chatFamilyContextInvalid = false
                         if let data = Self.encodeFamilyMembersListData(from: ctx.members, localizationManager: loc) {
                             UserDefaults.standard.set(data, forKey: familyMembersKey)
-                            let fid = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                            let fid = FamilyLocalStore.loadPersistedFamilyId().trimmingCharacters(in: .whitespacesAndNewlines)
                             FamilyLocalStore.persistRosterSnapshotFamilyId(fid)
                             UserDefaults.standard.synchronize()
                         }

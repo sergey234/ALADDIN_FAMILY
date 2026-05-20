@@ -478,6 +478,14 @@ struct AIAssistantScreen: View {
         }
 
         guard isAIDataSharingEnabled else {
+            AIAssistantResponseDiagnostics.logDelivery(
+                source: .cloudDisabled,
+                context: "consent_off",
+                responseLength: 0,
+                grounded: nil,
+                toolsUsed: nil,
+                preview: ""
+            )
             errorMessage = localizationManager.localized("ai_error_consent_required")
             showError = true
             return
@@ -710,6 +718,14 @@ struct AIAssistantScreen: View {
         // Hybrid FAQ+AI: локальный матч по тексту пользователя (до redact на сервере).
         if let faqMatch = UnifiedFAQCatalog.bestMatch(for: displayMessage, localize: localizationManager.localized) {
             logger.business("📚 AI Assistant: FAQ match found id=\(faqMatch.id)")
+            AIAssistantResponseDiagnostics.logDelivery(
+                source: .faqLocal,
+                context: context,
+                responseLength: faqMatch.answer.count,
+                grounded: true,
+                toolsUsed: ["faq:\(faqMatch.id)"],
+                preview: faqMatch.answer
+            )
             isLoading = false
             let faqResponse = ChatMessage(
                 text: localizationManager.localized("ai_assistant_faq_footer", faqMatch.answer, faqMatch.id),
@@ -734,9 +750,16 @@ struct AIAssistantScreen: View {
 
                     // Проверяем, является ли ответ стандартным mock ответом сервера
                     let finalResponse = response.response
-
-                    // ✅ ПРОДАКШН: Всегда используем серверный AI, без fallback на локальный
-                    logger.business("🤖 AI Assistant: Using real server AI response")
+                    let source = AIAssistantResponseDiagnostics.classifyServerResponse(finalResponse)
+                    AIAssistantResponseDiagnostics.logDelivery(
+                        source: source,
+                        context: context,
+                        responseLength: finalResponse.count,
+                        grounded: response.grounded,
+                        toolsUsed: response.toolsUsed,
+                        preview: finalResponse
+                    )
+                    logger.business("🤖 AI Assistant: Server response source=\(source.rawValue)")
 
                     let actions = (response.suggestedActions ?? []).map {
                         ChatSuggestedAction(id: $0.id, title: $0.title)

@@ -79,7 +79,11 @@ struct SettingsScreen: View {
             subtitle: viewModel.localizedStrings.settingsSubtitle,
             showBackButton: true,
             onBack: {
-                dismiss()
+                if navigationManager.canGoBack {
+                    navigationManager.goBack(reason: "settings_back")
+                } else {
+                    dismiss()
+                }
             }
         )
         .accessibilityElement(children: .combine)
@@ -379,36 +383,6 @@ struct SettingsScreen: View {
                     }
                     .padding(Spacing.m)
                 }
-
-                Divider()
-
-                // Theme
-                HStack {
-                    Image(systemName: viewModel.selectedTheme.icon)
-                        .foregroundColor(.secondary)
-                        .frame(width: 24)
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text(viewModel.localizedStrings.darkTheme)
-                            .foregroundColor(.primary)
-                        Text(viewModel.selectedTheme.displayName)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    Spacer()
-                    Button(action: {
-                        logger.buttonTap("Cycle Theme", screen: "Settings")
-                        VisualLogger.shared.log(
-                            "🎨 Cycle theme pressed (current: \(viewModel.selectedTheme.rawValue))",
-                            level: .info,
-                            category: "SETTINGS.THEME"
-                        )
-                        viewModel.cycleTheme()
-                    }) {
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                    }
-                }
-                .padding(Spacing.m)
 
                 Divider()
 

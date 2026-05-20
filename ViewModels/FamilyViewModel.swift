@@ -75,8 +75,8 @@ class FamilyViewModel: ObservableObject {
                     }
                     self?.isLoading = false
 
-                    let rosterFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
-                        .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                    let rosterFamilyId = FamilyLocalStore.loadPersistedFamilyId()
+                        .trimmingCharacters(in: .whitespacesAndNewlines)
                     Task { @MainActor in
                         ProfileManager.shared.syncChildRosterFromServer(
                             members: members,
