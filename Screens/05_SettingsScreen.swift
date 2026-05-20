@@ -20,12 +20,12 @@ struct SettingsScreen: View {
         case last
         case smart
 
-        var title: String {
+        func localizedTitle(_ localizationManager: LocalizationManager) -> String {
             switch self {
-            case .family: return "Семейный чат"
-            case .ai: return "AI чат"
-            case .last: return "Последний выбранный"
-            case .smart: return "Умный выбор"
+            case .family: return localizationManager.localized("settings_home_chat_mode_family")
+            case .ai: return localizationManager.localized("settings_home_chat_mode_ai")
+            case .last: return localizationManager.localized("settings_home_chat_mode_last")
+            case .smart: return localizationManager.localized("settings_home_chat_mode_smart")
             }
         }
     }
@@ -311,165 +311,99 @@ struct SettingsScreen: View {
                 .accessibilityAddTraits(.isHeader)
 
             VStack(spacing: 0) {
-                // Language
-                Button(action: {
+                appNavigationRow(
+                    icon: "globe",
+                    title: viewModel.localizedStrings.language,
+                    subtitle: viewModel.languageSubtitle
+                ) {
                     logger.buttonTap("Language Settings", screen: "Settings")
                     viewModel.showLanguageSettings = true
-                }) {
-                    HStack {
-                        Image(systemName: "globe")
-                            .foregroundColor(.secondary)
-                            .frame(width: 24)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(viewModel.localizedStrings.language)
-                                .foregroundColor(.primary)
-                            Text(viewModel.localizedStrings.languageSubtitle)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(Spacing.m)
                 }
 
                 Divider()
 
-                // Присоединить устройство к семье (новый телефон / планшет)
-                Button(action: {
+                appNavigationRow(
+                    icon: "iphone.and.arrow.forward.inward",
+                    title: viewModel.localizedStrings.settingsJoinDeviceTitle,
+                    subtitle: viewModel.localizedStrings.settingsJoinDeviceSubtitle
+                ) {
                     logger.buttonTap("Join family device", screen: "Settings")
                     navigationManager.navigateTo(.joinDevice)
-                }) {
-                    HStack {
-                        Image(systemName: "iphone.and.arrow.forward.inward")
-                            .foregroundColor(.secondary)
-                            .frame(width: 24)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(viewModel.localizedStrings.settingsJoinDeviceTitle)
-                                .foregroundColor(.primary)
-                            Text(viewModel.localizedStrings.settingsJoinDeviceSubtitle)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(Spacing.m)
                 }
 
                 Divider()
 
-                // Voice Notes
-                Button(action: {
+                appNavigationRow(
+                    icon: "waveform.badge.mic",
+                    title: localizationManager.localized("voice_notes_title"),
+                    subtitle: localizationManager.localized("voice_notes_settings_entry_subtitle")
+                ) {
                     logger.buttonTap("Open Voice Notes", screen: "Settings")
                     showVoiceNotesScreen = true
-                }) {
-                    HStack {
-                        Image(systemName: "waveform.badge.mic")
-                            .foregroundColor(.secondary)
-                            .frame(width: 24)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(localizationManager.localized("voice_notes_title"))
-                                .foregroundColor(.primary)
-                            Text(localizationManager.localized("voice_notes_settings_entry_subtitle"))
+                }
+
+                Divider()
+
+                VStack(spacing: Spacing.s) {
+                    HStack(spacing: Spacing.s) {
+                        Image(systemName: "bubble.left.and.bubble.right")
+                            .font(.system(size: 16))
+                            .foregroundColor(.primaryBlue)
+                            .frame(width: 24, height: 24, alignment: .leading)
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
+                            Text(localizationManager.localized("settings_home_chat_default_title"))
+                                .font(.body)
+                                .foregroundColor(.textPrimary)
+                            Text(localizationManager.localized("settings_home_chat_default_subtitle"))
                                 .font(.caption)
-                                .foregroundColor(.secondary)
+                                .foregroundColor(.textSecondary)
+                                .lineLimit(2)
                         }
                         Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
                     }
-                    .padding(Spacing.m)
+                    .padding(.horizontal, Spacing.m)
+                    .padding(.top, Spacing.s)
+
+                    Picker(
+                        localizationManager.localized("settings_home_chat_default_title"),
+                        selection: Binding<HomeChatDefaultMode>(
+                            get: { HomeChatDefaultMode(rawValue: homeChatDefaultModeRaw) ?? .last },
+                            set: { homeChatDefaultModeRaw = $0.rawValue }
+                        )
+                    ) {
+                        ForEach(HomeChatDefaultMode.allCases, id: \.rawValue) { mode in
+                            Text(mode.localizedTitle(localizationManager)).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, Spacing.m)
+                    .padding(.bottom, Spacing.s)
                 }
 
                 Divider()
 
-                // Default chat destination on Home
-                HStack {
-                    Image(systemName: "bubble.left.and.bubble.right")
-                        .foregroundColor(.secondary)
-                        .frame(width: 24)
-                    VStack(alignment: .leading, spacing: Spacing.xs) {
-                        Text("Чат по умолчанию")
-                            .foregroundColor(.primary)
-                        Text("Какой чат открывать первым на главном экране")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    Spacer()
-                }
-                .padding(.horizontal, Spacing.m)
-                .padding(.top, Spacing.s)
-
-                Picker(
-                    "Чат по умолчанию",
-                    selection: Binding<HomeChatDefaultMode>(
-                        get: { HomeChatDefaultMode(rawValue: homeChatDefaultModeRaw) ?? .last },
-                        set: { homeChatDefaultModeRaw = $0.rawValue }
-                    )
+                appNavigationRow(
+                    icon: "arrow.clockwise",
+                    title: viewModel.localizedStrings.updates,
+                    subtitle: viewModel.updatesSubtitle
                 ) {
-                    ForEach(HomeChatDefaultMode.allCases, id: \.rawValue) { mode in
-                        Text(mode.title).tag(mode)
-                    }
-                }
-                .pickerStyle(.segmented)
-                .padding(.horizontal, Spacing.m)
-                .padding(.bottom, Spacing.s)
-
-                Divider()
-
-                // Updates
-                Button(action: {
                     logger.buttonTap("Check Updates", screen: "Settings")
                     viewModel.checkForUpdates()
-                }) {
-                    HStack {
-                        Image(systemName: "arrow.clockwise")
-                            .foregroundColor(.secondary)
-                            .frame(width: 24)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(viewModel.localizedStrings.updates)
-                                .foregroundColor(.primary)
-                            Text(viewModel.localizedStrings.updatesSubtitle)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(Spacing.m)
                 }
 
                 Divider()
 
-                // Positioning System
-                Button(action: {
+                appNavigationRow(
+                    icon: viewModel.selectedPositioningSystem.icon,
+                    title: viewModel.localizedStrings.positioningSystemTitle,
+                    subtitle: viewModel.positioningSystemSubtitle
+                ) {
                     VisualLogger.shared.log(
                         "🛰️ Open Positioning System Picker",
                         level: .info,
                         category: "SETTINGS.POSITIONING"
                     )
                     viewModel.showPositioningSystemPicker = true
-                }) {
-                    HStack {
-                        Image(systemName: viewModel.selectedPositioningSystem.icon)
-                            .foregroundColor(.secondary)
-                            .frame(width: 24)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(viewModel.localizedStrings.positioningSystemTitle)
-                                .foregroundColor(.primary)
-                            Text(viewModel.selectedPositioningSystem.displayName)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(Spacing.m)
                 }
             }
             .background(Color.secondary.opacity(0.05))
@@ -775,6 +709,48 @@ struct SettingsScreen: View {
 
     private func percentText(_ value: Int) -> String {
         "\(value)%"
+    }
+
+    private func appNavigationRow(
+        icon: String,
+        title: String,
+        subtitle: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.s) {
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundColor(.primaryBlue)
+                    .frame(width: 24, height: 24, alignment: .leading)
+                    .fixedSize(horizontal: true, vertical: false)
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(title)
+                        .font(.body)
+                        .foregroundColor(.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(2)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.textSecondary.opacity(0.6))
+            }
+            .padding(Spacing.m)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(subtitle)")
+        .accessibilityAddTraits(.isButton)
     }
 
     private func settingsButton(_ icon: String, _ title: String, _ subtitle: String, action: @escaping () -> Void) -> some View {

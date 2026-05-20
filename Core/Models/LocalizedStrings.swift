@@ -168,10 +168,13 @@ struct LocalizedStrings {
         // App Section
         appSection = localizationService.localized("app_section")
         language = localizationService.localized("language")
-        languageSubtitle = localizationService.localized("language_subtitle")
+        languageSubtitle = localizationService.localized("language_subtitle_select")
         darkTheme = localizationService.localized("dark_theme")
         updates = localizationService.localized("updates")
-        updatesSubtitle = localizationService.localized("updates_subtitle")
+        updatesSubtitle = String(
+            format: localizationService.localized("updates_subtitle_fmt"),
+            AppConfig.appVersion
+        )
         positioningSystemTitle = localizationService.localized("positioning_system_title")
         positioningSystemAuto = localizationService.localized("positioning_system_auto")
 

@@ -127,8 +127,13 @@ struct LocalizedStrings {
     var settingsJoinDeviceSubtitle: String { localizationManager.localized("settings_join_device_subtitle") }
     var darkTheme: String { localizationManager.localized("dark_theme") }
     var updates: String { localizationManager.localized("updates") }
-    var updatesSubtitle: String { localizationManager.localized("updates_subtitle") }
+    var updatesSubtitle: String {
+        String(format: localizationManager.localized("updates_subtitle_fmt"), AppConfig.appVersion)
+    }
     var positioningSystemTitle: String { localizationManager.localized("positioning_system_title") }
+    var positioningSystemSubtitle: String {
+        selectedPositioningSystem.localizedDisplayName(localizationManager)
+    }
 
     // System Components
     var systemComponentsTitle: String { localizationManager.localized("system_components_title") }
