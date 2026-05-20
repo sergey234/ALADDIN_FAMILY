@@ -187,17 +187,21 @@ class KeychainManager {
         return loadData(forKey: key)?.count ?? 0
     }
 
-    // MARK: - Scoped keys (E2EE per family)
+    // MARK: - Scoped keys (dynamic account names: per-family E2EE, cipher cache, …)
 
     func save(_ data: Data, scopedKey: String) {
-        save(data, forKey: scopedKey)
+        saveScoped(data, account: scopedKey)
     }
 
     func loadData(scopedKey: String) -> Data? {
-        loadData(forKey: scopedKey)
+        loadScopedData(account: scopedKey)
     }
 
-    private func save(_ data: Data, forKey account: String) {
+    func delete(scopedKey: String) {
+        deleteScoped(account: scopedKey)
+    }
+
+    private func saveScoped(_ data: Data, account: String) {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -211,7 +215,7 @@ class KeychainManager {
         }
     }
 
-    private func loadData(forKey account: String) -> Data? {
+    private func loadScopedData(account: String) -> Data? {
         let query: [String: Any] = [
             kSecClass as String: kSecClassGenericPassword,
             kSecAttrService as String: service,
@@ -223,6 +227,15 @@ class KeychainManager {
         let status = SecItemCopyMatching(query as CFDictionary, &item)
         guard status == errSecSuccess, let data = item as? Data else { return nil }
         return data
+    }
+
+    private func deleteScoped(account: String) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account
+        ]
+        SecItemDelete(query as CFDictionary)
     }
 }
 

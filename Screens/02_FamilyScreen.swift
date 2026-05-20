@@ -426,7 +426,8 @@ struct FamilyScreen: View {
         // 2. Если нет сохранённых данных - создать карточку текущего пользователя
         // ✅ ИСПРАВЛЕНИЕ: Не перезаписываем, если уже есть участники
         if familyMembers.isEmpty {
-            let hasServerFamilyId = !(FamilyLocalStore.loadPersistedFamilyId() ?? "").isEmpty
+            let hasServerFamilyId = !FamilyLocalStore.loadPersistedFamilyId()
+                .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             let hasSeededMember = UserDefaults.standard.bool(forKey: familyMemberSeededKey)
             guard !hasServerFamilyId, !hasSeededMember else {
                 print("ℹ️ [loadFamilyMembers] Seed пропущен (hasServerFamilyId=\(hasServerFamilyId), hasSeededMember=\(hasSeededMember))")
@@ -543,8 +544,9 @@ struct FamilyScreen: View {
         }
 
         // Проверяем, есть ли family_id (канонический ключ — FamilyLocalStore)
-        guard let familyId = FamilyLocalStore.loadPersistedFamilyId(),
-              !familyId.isEmpty else {
+        let familyId = FamilyLocalStore.loadPersistedFamilyId()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !familyId.isEmpty else {
             print("⚠️ [syncFamilyMembersFromAPI] Family ID не найден, пропускаем синхронизацию")
             return
         }
@@ -973,7 +975,9 @@ struct FamilyScreen: View {
                 // Быстрая проверка контекста авторизации/семьи, чтобы не отправлять запрос в неверном контексте
                 let currentToken = AppConfig.authToken ?? KeychainManager.shared.loadString(forKey: .authToken)
                 let currentFamilyId = FamilyLocalStore.loadPersistedFamilyId()
-                guard let _ = currentToken, let famId = currentFamilyId, !member.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+                    .trimmingCharacters(in: .whitespacesAndNewlines)
+                guard let _ = currentToken, !currentFamilyId.isEmpty,
+                      !member.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                     await MainActor.run {
                         print("⚠️ [addFamilyMember] Пропускаем серверный add: нет валидного токена/семьи или пустое имя")
                         VisualLogger.shared.log("⚠️ FAMILY ADD(server): skipped — invalid token/familyId or empty name", level: .warning, category: "FAMILY")
@@ -982,7 +986,7 @@ struct FamilyScreen: View {
                 }
                 do {
                     let roleToSend = serverRole(for: member.role)
-                    VisualLogger.shared.log("➡️ FAMILY ADD(debug): familyId=\(famId) name=\(member.name) role=\(roleToSend)", level: .info, category: "FAMILY")
+                    VisualLogger.shared.log("➡️ FAMILY ADD(debug): familyId=\(currentFamilyId) name=\(member.name) role=\(roleToSend)", level: .info, category: "FAMILY")
                     let resp = try await APIService.shared.addFamilyMember(name: member.name, role: roleToSend)
                     await MainActor.run {
                         // ✅ PROD FIX: Помечаем admin-add + СБРАСЫВАЕМ retry count (ключевой фикс исчезновения)
@@ -1369,7 +1373,7 @@ struct FamilyScreen: View {
         }
 
         UserDefaults.standard.set(encoded, forKey: familyMembersKey)
-        let fid = (FamilyLocalStore.loadPersistedFamilyId() ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let fid = FamilyLocalStore.loadPersistedFamilyId().trimmingCharacters(in: .whitespacesAndNewlines)
         FamilyLocalStore.persistRosterSnapshotFamilyId(fid)
         // Persist not-seen counters
         if let countersData = try? JSONEncoder().encode(notSeenCounters) {
@@ -1515,6 +1519,7 @@ struct FamilyScreen: View {
     // deleteButtonCache prevents canShowDeleteButton() from running 20-50x per render
     private func updateAdminStatus() {
         let familyId = FamilyLocalStore.loadPersistedFamilyId()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
         let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
         let isFirstRegistration = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding) == false
 
@@ -1526,7 +1531,7 @@ struct FamilyScreen: View {
 
         // ✅ GOLDEN RULE FOR PROD: First registered user is ALWAYS creator + parent
         // This eliminates the root cause of desync (creator saved as child)
-        if isFirstRegistration || familyMembers.isEmpty || (familyId == nil || familyId?.isEmpty == true) {
+        if isFirstRegistration || familyMembers.isEmpty || familyId.isEmpty {
             newIsCreator = true
             newIsParent = true
             print("👑 FIRST REGISTRATION: Forcing isCurrentUserCreator=true and isCurrentUserParent=true")

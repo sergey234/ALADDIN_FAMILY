@@ -90,6 +90,7 @@
 		5E32FFF92EAD24D2000574C4 /* InfoRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF82EAD24D2000574C4 /* InfoRow.swift */; };
 		5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */; };
 		5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */; };
+		E2PEND0202F1E50000E2EE01 /* PendingAuthTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2PEND0102F1E50000E2EE01 /* PendingAuthTokenStore.swift */; };
 		5E32FFFF2EAD25F5000574C4 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */; };
 		5E5978072F60A0BD00854BDE /* DateFormatterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E5978062F60A0BC00854BDE /* DateFormatterService.swift */; };
 		5E7057062FA12A070065BDC4 /* SubscriptionProfileCaption.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7057052FA12A070065BDC4 /* SubscriptionProfileCaption.swift */; };
@@ -127,6 +128,8 @@
 		E2PII0202F1E50000E2EE01 /* AIPIIRedactor.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2PII0102F1E50000E2EE01 /* AIPIIRedactor.swift */; };
 		E2PII0402F1E50000E2EE01 /* AIOutboundTextGate.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2PII0302F1E50000E2EE01 /* AIOutboundTextGate.swift */; };
 		E2HIST0202F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2HIST0102F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift */; };
+		E2AIMAP0202F1E50000E2EE01 /* AIActionCardMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AIMAP0102F1E50000E2EE01 /* AIActionCardMapper.swift */; };
+		E2AIMIG0202F1E50000E2EE01 /* AIAssistantHistoryMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AIMIG0102F1E50000E2EE01 /* AIAssistantHistoryMigration.swift */; };
 		E2PII0602F1E50000E2EE01 /* AIPIIRedactorTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2PII0502F1E50000E2EE01 /* AIPIIRedactorTests.swift */; };
 		5E6F390D2F1520D600CEC103 /* PushNotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F390C2F1520D600CEC103 /* PushNotificationService.swift */; };
 		5E6F390F2F15211800CEC103 /* ChatSearchBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6F390E2F15211800CEC103 /* ChatSearchBar.swift */; };
@@ -533,6 +536,7 @@
 		5E32FFF82EAD24D2000574C4 /* InfoRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InfoRow.swift; path = Shared/Components/InfoRow.swift; sourceTree = "<group>"; };
 		5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityManager.swift; path = Core/Security/SecurityManager.swift; sourceTree = "<group>"; };
 		5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = KeychainManager.swift; path = Core/Security/KeychainManager.swift; sourceTree = "<group>"; };
+		E2PEND0102F1E50000E2EE01 /* PendingAuthTokenStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PendingAuthTokenStore.swift; path = Core/Security/PendingAuthTokenStore.swift; sourceTree = "<group>"; };
 		5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CacheManager.swift; path = Core/Cache/CacheManager.swift; sourceTree = "<group>"; };
 		5E5978062F60A0BC00854BDE /* DateFormatterService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DateFormatterService.swift; path = Core/Services/DateFormatterService.swift; sourceTree = "<group>"; };
 		5E7057052FA12A070065BDC4 /* SubscriptionProfileCaption.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SubscriptionProfileCaption.swift; path = Core/Services/SubscriptionProfileCaption.swift; sourceTree = "<group>"; };
@@ -571,6 +575,8 @@
 		E2PII0102F1E50000E2EE01 /* AIPIIRedactor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIPIIRedactor.swift; path = Core/Privacy/AIPIIRedactor.swift; sourceTree = "<group>"; };
 		E2PII0302F1E50000E2EE01 /* AIOutboundTextGate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIOutboundTextGate.swift; path = Core/Privacy/AIOutboundTextGate.swift; sourceTree = "<group>"; };
 		E2HIST0102F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIAssistantLocalHistoryPolicy.swift; path = Core/Privacy/AIAssistantLocalHistoryPolicy.swift; sourceTree = "<group>"; };
+		E2AIMAP0102F1E50000E2EE01 /* AIActionCardMapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIActionCardMapper.swift; path = Core/AI/AIActionCardMapper.swift; sourceTree = "<group>"; };
+		E2AIMIG0102F1E50000E2EE01 /* AIAssistantHistoryMigration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIAssistantHistoryMigration.swift; path = Core/AI/AIAssistantHistoryMigration.swift; sourceTree = "<group>"; };
 		E2PII0502F1E50000E2EE01 /* AIPIIRedactorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIPIIRedactorTests.swift; path = Tests/UnitTests/AIPIIRedactorTests.swift; sourceTree = "<group>"; };
 		5E6F390C2F1520D600CEC103 /* PushNotificationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PushNotificationService.swift; path = Core/Services/PushNotificationService.swift; sourceTree = "<group>"; };
 		5E6F390E2F15211800CEC103 /* ChatSearchBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ChatSearchBar.swift; path = Shared/Components/Chat/ChatSearchBar.swift; sourceTree = "<group>"; };
@@ -1059,6 +1065,8 @@
 				E2PII0102F1E50000E2EE01 /* AIPIIRedactor.swift */,
 				E2PII0302F1E50000E2EE01 /* AIOutboundTextGate.swift */,
 				E2HIST0102F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift */,
+				E2AIMAP0102F1E50000E2EE01 /* AIActionCardMapper.swift */,
+				E2AIMIG0102F1E50000E2EE01 /* AIAssistantHistoryMigration.swift */,
 				5E6C6B032F3D34A400F6FFEA /* RateLimiter.swift */,
 				5E6C6B012F3D349000F6FFEA /* MetricsService.swift */,
 				5E6C6AFF2F34C98400F6FFEA /* LocationManager.swift */,
@@ -1196,6 +1204,7 @@
 				B1000160B1000160B1000160 /* ProtectionLevelHistoryModal.swift */,
 				5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */,
 				5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */,
+				E2PEND0102F1E50000E2EE01 /* PendingAuthTokenStore.swift */,
 				5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */,
 				B1000100B1000100B1000100 /* ProtectionFeature.swift */,
 				B1000110B1000110B1000110 /* ProtectionLevelHistory.swift */,
@@ -1638,6 +1647,7 @@
 				5E6C6B022F3D349000F6FFEA /* MetricsService.swift in Sources */,
 				5E6F394A2F15B05000CEC103 /* ComponentStatus.swift in Sources */,
 				5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */,
+				E2PEND0202F1E50000E2EE01 /* PendingAuthTokenStore.swift in Sources */,
 				5E0C30B42EAE720700FD6647 /* MemberStatsModalView.swift in Sources */,
 				5E6F39152F15AC4400CEC103 /* ProtectionSettingsViewModel.swift in Sources */,
 				B1000001 /* AddMemberOptionsModal.swift in Sources */,
@@ -1756,6 +1766,8 @@
 				E2PII0202F1E50000E2EE01 /* AIPIIRedactor.swift in Sources */,
 				E2PII0402F1E50000E2EE01 /* AIOutboundTextGate.swift in Sources */,
 				E2HIST0202F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift in Sources */,
+				E2AIMAP0202F1E50000E2EE01 /* AIActionCardMapper.swift in Sources */,
+				E2AIMIG0202F1E50000E2EE01 /* AIAssistantHistoryMigration.swift in Sources */,
 				A3000033 /* ViewModels/ProfileViewModel.swift in Sources */,
 				5E7056CF2F597C960065BDC4 /* TokenHealthMonitor.swift in Sources */,
 				5E3200032EAD26CE000574C4 /* ConsentModal.swift in Sources */,
