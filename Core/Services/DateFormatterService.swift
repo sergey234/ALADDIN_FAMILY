@@ -23,15 +23,20 @@ class DateFormatterService {
         // Singleton - приватный инициализатор
     }
     
-    // MARK: - Static Calendar
+    // MARK: - Dynamic Locale-aware Calendar
     
-    /// ✅ BUILD 100: Статический Calendar для предотвращения рекурсии через Calendar.current
-    /// Calendar.current может читать из UserDefaults, что вызывает рекурсию через ICU библиотеку
-    private static let calendar: Calendar = {
+    /// ✅ BUILD 100: Calendar с локалью, зависящей от текущего языка приложения
+    /// Это обеспечивает правильное отображение дат (январь/January, мая/May и т.д.)
+    private static var currentLocale: Locale {
+        let lang = UserDefaults.standard.string(forKey: "app_language") ?? "ru"
+        return Locale(identifier: lang == "ru" ? "ru_RU" : "en_US")
+    }
+    
+    private static var calendar: Calendar {
         var cal = Calendar(identifier: .gregorian)
-        cal.locale = Locale(identifier: "ru_RU")
+        cal.locale = currentLocale
         return cal
-    }()
+    }
     
     // MARK: - ISO8601 Formatters
     
@@ -49,49 +54,48 @@ class DateFormatterService {
         return formatter
     }()
     
-    // MARK: - Display Formatters
+    // MARK: - Display Formatters (Locale-aware)
     
-    /// Статический DateFormatter для отображения дат (medium style)
-    /// ✅ BUILD 100: Используем статический Calendar вместо Calendar.current
-    private static let displayFormatter: DateFormatter = {
+    /// DateFormatter для отображения дат (medium style)
+    /// Локаль определяется динамически на основе текущего языка приложения
+    private static var displayFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .none
-        formatter.locale = Locale(identifier: "ru_RU")
-        // ✅ BUILD 100: Используем статический Calendar - обращаемся напрямую к calendar
-        formatter.calendar = DateFormatterService.calendar
+        formatter.locale = currentLocale
+        formatter.calendar = calendar
         return formatter
-    }()
+    }
     
-    /// Статический DateFormatter для отображения дат и времени
-    private static let dateTimeFormatter: DateFormatter = {
+    /// DateFormatter для отображения дат и времени
+    private static var dateTimeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .medium
         formatter.timeStyle = .short
-        formatter.locale = Locale(identifier: "ru_RU")
-        formatter.calendar = DateFormatterService.calendar
+        formatter.locale = currentLocale
+        formatter.calendar = calendar
         return formatter
-    }()
+    }
     
-    /// Статический DateFormatter для отображения только времени
-    private static let timeFormatter: DateFormatter = {
+    /// DateFormatter для отображения только времени
+    private static var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .none
         formatter.timeStyle = .short
-        formatter.locale = Locale(identifier: "ru_RU")
-        formatter.calendar = DateFormatterService.calendar
+        formatter.locale = currentLocale
+        formatter.calendar = calendar
         return formatter
-    }()
+    }
     
-    /// Статический DateFormatter для полного отображения даты и времени
-    private static let fullFormatter: DateFormatter = {
+    /// DateFormatter для полного отображения даты и времени
+    private static var fullFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.dateStyle = .full
         formatter.timeStyle = .full
-        formatter.locale = Locale(identifier: "ru_RU")
-        formatter.calendar = DateFormatterService.calendar
+        formatter.locale = currentLocale
+        formatter.calendar = calendar
         return formatter
-    }()
+    }
     
     // MARK: - Public Methods
     
@@ -107,7 +111,7 @@ class DateFormatterService {
     }
     
     /// Форматирует Date в строку для отображения (medium style)
-    /// ✅ BUILD 100: Выполняется на main thread для предотвращения рекурсии
+    /// Локаль определяется динамически - даты показываются на языке приложения (январь/January)
     func formatDisplayDate(_ date: Date) -> String {
         return Self.displayFormatter.string(from: date)
     }

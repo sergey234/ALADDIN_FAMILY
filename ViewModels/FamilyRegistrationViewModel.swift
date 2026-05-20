@@ -315,7 +315,7 @@ class FamilyRegistrationViewModel: ObservableObject {
         
         // Сбрасываем admin_add_mode только если на устройстве ещё нет семьи (истинная первичная регистрация).
         // Если family_id уже есть, admin_add_mode означает «добавить участника в текущую семью» — не сбрасывать (иначе всегда уходит в family/create).
-        let existingFamilyId = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "")
+        let existingFamilyId = (FamilyLocalStore.loadPersistedFamilyId() ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let hasExistingFamilyOnDevice = !existingFamilyId.isEmpty
         let wasAdminAddMode = UserDefaults.standard.bool(forKey: "admin_add_mode")
@@ -498,7 +498,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                     self?.recoveryCode = response.recovery_code
 
                     FamilyLocalStore.resetPersistedCachesIfFamilyChanged(newFamilyId: response.family_id)
-                    UserDefaults.standard.set(response.family_id, forKey: FamilyLocalStore.familyIdKey)
+                    FamilyLocalStore.persistFamilyId(response.family_id)
                     FamilyLocalStore.persistFamilyCreatorMemberId(response.creator_member_id)
 
                     // ✅ BUILD 115: Сохраняем your_member_id с диагностикой
@@ -925,7 +925,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                     self?.familyID = data.family_id
 
                     FamilyLocalStore.resetPersistedCachesIfFamilyChanged(newFamilyId: data.family_id)
-                    UserDefaults.standard.set(data.family_id, forKey: FamilyLocalStore.familyIdKey)
+                    FamilyLocalStore.persistFamilyId(data.family_id)
                     
                     // ✅ BUILD 115: Сохраняем your_member_id с диагностикой
                     // ✅ КРЕПОСТЬ 2.1: Асинхронный разрыв - UserDefaults.set в async для предотвращения рекурсии
@@ -1015,7 +1015,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                         // Сохраняем family_id
                         self?.familyID = recoveredFamilyId
                         FamilyLocalStore.resetPersistedCachesIfFamilyChanged(newFamilyId: recoveredFamilyId)
-                        UserDefaults.standard.set(recoveredFamilyId, forKey: FamilyLocalStore.familyIdKey)
+                        FamilyLocalStore.persistFamilyId(recoveredFamilyId)
                         UserDefaults.standard.synchronize()
 
                         // Критично для защищенных family endpoints:
@@ -1221,7 +1221,7 @@ class FamilyRegistrationViewModel: ObservableObject {
             // Сохраняем обновленный список
             if let encoded = try? JSONEncoder().encode(existingMembers) {
                 UserDefaults.standard.set(encoded, forKey: "family_members_list")
-                let fid = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                let fid = (FamilyLocalStore.loadPersistedFamilyId() ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
                 FamilyLocalStore.persistRosterSnapshotFamilyId(fid)
                 // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительная синхронизация UserDefaults
                 UserDefaults.standard.synchronize()
@@ -1363,7 +1363,7 @@ class FamilyRegistrationViewModel: ObservableObject {
             // Сохраняем обновленный список
             if let encoded = try? JSONEncoder().encode(existingMembers) {
                 UserDefaults.standard.set(encoded, forKey: "family_members_list")
-                let fid = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+                let fid = (FamilyLocalStore.loadPersistedFamilyId() ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
                 FamilyLocalStore.persistRosterSnapshotFamilyId(fid)
                 // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Принудительная синхронизация UserDefaults
                 UserDefaults.standard.synchronize()

@@ -39,28 +39,23 @@ class AIAssistantViewModel: ObservableObject {
     }
     
     func loadInitialMessages() {
-        let loc = LocalizationManager.shared
-        messages = [
-            ChatMessage(text: loc.localized("ai_chat_seed_greeting"), isUser: false, timestamp: Date().addingTimeInterval(-3600)),
-            ChatMessage(text: loc.localized("ai_chat_seed_user"), isUser: true, timestamp: Date().addingTimeInterval(-3540)),
-            ChatMessage(text: loc.localized("ai_chat_seed_assistant"), isUser: false, timestamp: Date().addingTimeInterval(-3530))
-        ]
+        // ai-ios-empty-state: no fake seed dialog (Capability Contract / FINAL plan)
+        messages = []
     }
     
     func sendMessage() {
         logger.business("User sent message to AI assistant: \(currentMessage.count) characters")
         guard !currentMessage.isEmpty else { return }
 
-        // ✅ ЗАДАЧА 67: Санитизация пользовательского ввода перед отправкой
+        // E2.1: opt-in → sanitize → PII-redact; в UI — displayText, на сервер — cloudText
         do {
-            let sanitizedMessage = try InputSanitizer.shared.sanitizeMessage(currentMessage)
+            let prepared = try AIOutboundTextGate.prepareUserMessage(currentMessage)
 
-            let userMessage = ChatMessage(text: sanitizedMessage, isUser: true, timestamp: Date())
+            let userMessage = ChatMessage(text: prepared.displayText, isUser: true, timestamp: Date())
             messages.append(userMessage)
             currentMessage = ""
 
-            // ✅ ЗАДАЧА 67: Используем санитизированное сообщение для отправки
-            sendSanitizedMessage(sanitizedMessage)
+            sendSanitizedMessage(prepared.cloudText)
 
         } catch let error as InputSanitizer.SanitizationError {
             let errorMessage = ChatMessage(
@@ -74,6 +69,13 @@ class AIAssistantViewModel: ObservableObject {
             print("❌ AIAssistantViewModel: Ошибка санитизации: \(error.localizedDescription)")
             #endif
 
+        } catch let error as AIOutboundTextGate.GateError {
+            let errorMessage = ChatMessage(
+                text: error.localizedDescription,
+                isUser: false,
+                timestamp: Date()
+            )
+            messages.append(errorMessage)
         } catch {
             let errorMessage = ChatMessage(
                 text: LocalizationManager.shared.localized("ai_assistant_error_unknown_processing"),
@@ -90,7 +92,7 @@ class AIAssistantViewModel: ObservableObject {
         isAITyping = true
         isStreaming = true
 
-        logger.business("🤖 AIAssistantViewModel: Starting AI token streaming for message: \(sanitizedMessage.prefix(50))...")
+        logger.business("🤖 AIAssistantViewModel: Starting AI token streaming (len=\(sanitizedMessage.count))")
 
         // Добавляем временное сообщение AI, которое будет обновляться в реальном времени
         let streamingMessage = ChatMessage(
@@ -124,9 +126,10 @@ class AIAssistantViewModel: ObservableObject {
                 Task { @MainActor in
                     self.isAITyping = false
                     self.isStreaming = false
-                    
+
+                    let display = Self.userFacingAIError(error)
                     let errorMessage = ChatMessage(
-                        text: LocalizationManager.shared.localized("ai_assistant_error_stream", error.localizedDescription),
+                        text: display,
                         isUser: false,
                         timestamp: Date()
                     )
@@ -139,6 +142,21 @@ class AIAssistantViewModel: ObservableObject {
                 }
             }
         }
+    }
+
+    private static func userFacingAIError(_ error: Error) -> String {
+        let loc = LocalizationManager.shared
+        let text = error.localizedDescription.lowercased()
+        if text.contains("503") || text.contains("unavailable") || text.contains("service unavailable") {
+            return loc.localized("ai_error_service_unavailable")
+        }
+        if text.contains("422") || text.contains("pii") || text.contains("blocked") {
+            return loc.localized("ai_error_pii_blocked")
+        }
+        if text.contains("429") || text.contains("rate limit") {
+            return loc.localized("ai_error_rate_limit")
+        }
+        return loc.localized("ai_assistant_error_stream", error.localizedDescription)
     }
 }
 

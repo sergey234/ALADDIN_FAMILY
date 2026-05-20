@@ -22,7 +22,7 @@ struct AddMemberOptionsScreen: View {
 
     /// Уже есть семья на устройстве — первый сценарий ведёт в addFamilyMember (через admin_add_mode), а не в family/create.
     private var hasExistingFamilyOnDevice: Bool {
-        let fid = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "")
+        let fid = (FamilyLocalStore.loadPersistedFamilyId() ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         return !fid.isEmpty
     }
@@ -149,9 +149,7 @@ struct AddMemberOptionsScreen: View {
                                         }
                                     }
                                     if !canManageFamilyRosterFromCache {
-                                        Text(localizationManager.currentLanguage == .russian
-                                             ? "Этот пункт только для родителя (или пожилого) в семье. Присоединиться по QR или коду можно ниже."
-                                             : "This option is for a parent (or elderly member) in the family. Use QR or code below to join.")
+                                        Text(localizationManager.localized("add_member_admin_only_notice"))
                                             .font(.caption2)
                                             .foregroundColor(.orange.opacity(0.95))
                                             .fixedSize(horizontal: false, vertical: true)

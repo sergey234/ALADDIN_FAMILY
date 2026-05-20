@@ -24,6 +24,17 @@ class KeychainManager {
         // ✅ НОВЫЕ КЛЮЧИ ДЛЯ RECOVERY CODE
         case recoveryCode = "recovery_code"
         case familyId = "family_id"
+        case pendingDeviceBindToken = "pending_device_bind_token"
+        case pendingMagicAuthToken = "pending_magic_auth_token"
+        // E1.4 Family Chat E2EE
+        case e2eeDeviceId = "e2ee_device_id"
+        case e2eeRegistrationId = "e2ee_registration_id"
+        case e2eeIdentityPrivate = "e2ee_identity_private"
+    }
+
+    /// Семейный симметричный ключ E2EE (per `family_id`).
+    static func e2eeFamilySymmetricKey(familyId: String) -> String {
+        "e2ee_family_symmetric_\(familyId)"
     }
     
     // MARK: - Generic Save/Load
@@ -174,6 +185,44 @@ class KeychainManager {
     
     func getDataSize(forKey key: Key) -> Int {
         return loadData(forKey: key)?.count ?? 0
+    }
+
+    // MARK: - Scoped keys (E2EE per family)
+
+    func save(_ data: Data, scopedKey: String) {
+        save(data, forKey: scopedKey)
+    }
+
+    func loadData(scopedKey: String) -> Data? {
+        loadData(forKey: scopedKey)
+    }
+
+    private func save(_ data: Data, forKey account: String) {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecValueData as String: data
+        ]
+        SecItemDelete(query as CFDictionary)
+        let status = SecItemAdd(query as CFDictionary, nil)
+        if status != errSecSuccess {
+            print("❌ KeychainManager: Failed to save scoped key \(account). Status: \(status)")
+        }
+    }
+
+    private func loadData(forKey account: String) -> Data? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrService as String: service,
+            kSecAttrAccount as String: account,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+        var item: CFTypeRef?
+        let status = SecItemCopyMatching(query as CFDictionary, &item)
+        guard status == errSecSuccess, let data = item as? Data else { return nil }
+        return data
     }
 }
 

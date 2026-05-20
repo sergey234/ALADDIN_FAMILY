@@ -64,7 +64,41 @@ final class MediaUploadManager: ObservableObject {
         
         isUploading = true
         uploadProgress[pending.id] = 0.0
-        
+
+        let useE2EE = AppConfig.isFamilyChatE2EEEnabled && FamilyE2EEManager.shared.isReady
+        let familyId = pending.familyId ?? ""
+
+        if useE2EE, !familyId.isEmpty {
+            do {
+                let enc = try FamilyE2EEMediaCrypto.encryptFile(pending.data)
+                apiService.uploadEncryptedMedia(
+                    encryptedData: enc.data,
+                    contentHash: enc.sha256Hex,
+                    familyId: familyId
+                ) { [weak self] result in
+                    DispatchQueue.main.async {
+                        self?.isUploading = false
+                        switch result {
+                        case .success(let payload):
+                            self?.handleSuccessfulE2EEUpload(
+                                pending: pending,
+                                url: payload.url,
+                                hash: payload.hash,
+                                keyBase64: enc.keyBase64,
+                                completion: completion
+                            )
+                        case .failure(let error):
+                            self?.handleFailedUpload(pending: pending, error: error, completion: completion)
+                        }
+                    }
+                }
+            } catch {
+                isUploading = false
+                completion(.failure(error))
+            }
+            return
+        }
+
         apiService.uploadMedia(
             data: pending.data,
             type: pending.type.rawValue,
@@ -87,6 +121,30 @@ final class MediaUploadManager: ObservableObject {
                 }
             }
         }
+    }
+
+    /// Результат E2EE upload: URL blob + hash + ключ для envelope.
+    struct E2EEMediaUploadResult {
+        let url: String
+        let hash: String
+        let keyBase64: String
+    }
+
+    private var lastE2EEUploadMeta: [String: E2EEMediaUploadResult] = [:]
+
+    func lastE2EEUpload(forMessageId id: String) -> E2EEMediaUploadResult? {
+        lastE2EEUploadMeta[id]
+    }
+
+    private func handleSuccessfulE2EEUpload(
+        pending: PendingMediaUpload,
+        url: String,
+        hash: String,
+        keyBase64: String,
+        completion: @escaping (Result<String, Error>) -> Void
+    ) {
+        lastE2EEUploadMeta[pending.id] = E2EEMediaUploadResult(url: url, hash: hash, keyBase64: keyBase64)
+        handleSuccessfulUpload(pending: pending, url: url, completion: completion)
     }
     
     private func handleSuccessfulUpload(pending: PendingMediaUpload, url: String, completion: @escaping (Result<String, Error>) -> Void) {

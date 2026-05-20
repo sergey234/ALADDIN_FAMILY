@@ -15,6 +15,10 @@ target 'ALADDIN' do
   # Data and Storage
   pod 'KeychainAccess', '~> 4.2'
   
+  # E1.4 E2EE (optional — requires `pod install` + ALADDIN.xcworkspace)
+  # ENV['LIBSIGNAL_FFI_PREBUILD_CHECKSUM'] = 'e3b89de2afc950c9e317f2fff426ae8edc77a397520d2e0afbb717d738213fd5'
+  # pod 'LibSignalClient', :git => 'https://github.com/signalapp/libsignal.git', :tag => 'v0.94.1'
+
   # UI and Animation
   pod 'Lottie', '~> 4.3'
   pod 'SDWebImageSwiftUI', '~> 2.2'

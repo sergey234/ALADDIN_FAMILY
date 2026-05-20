@@ -10,6 +10,7 @@ struct VoiceMessageBubble: View {
     @ObservedObject var player = VoiceMessagePlayer.shared
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var isDownloading: Bool = false
+    @State private var resolvedPlayURL: URL?
     
     private var isPlaying: Bool {
         player.isPlaying && player.currentMessageId == message.id
@@ -35,7 +36,7 @@ struct VoiceMessageBubble: View {
                         if isPlaying {
                             player.togglePause()
                         } else {
-                            if let voiceUrl = message.voiceUrl, let url = URL(string: voiceUrl) {
+                            if let url = resolvedPlayURL ?? message.voiceUrl.flatMap({ URL(string: $0) }) {
                                 player.play(url: url, messageId: message.id)
                             }
                         }
@@ -100,6 +101,27 @@ struct VoiceMessageBubble: View {
             if message.isCurrentUser {
                 Spacer()
             }
+        }
+        .task(id: message.id) {
+            await loadDecryptedVoiceIfNeeded()
+        }
+    }
+
+    private func loadDecryptedVoiceIfNeeded() async {
+        if let voiceUrl = message.voiceUrl, URL(string: voiceUrl) != nil {
+            resolvedPlayURL = URL(string: voiceUrl)
+            return
+        }
+        guard let enc = message.encryptedMedia else { return }
+        isDownloading = true
+        defer { isDownloading = false }
+        do {
+            resolvedPlayURL = try await FamilyE2EEMediaLoader.shared.resolvePlayableURL(
+                messageId: message.id,
+                media: enc
+            )
+        } catch {
+            print("⚠️ VoiceMessageBubble E2EE decrypt: \(error)")
         }
     }
     

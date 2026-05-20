@@ -268,16 +268,17 @@ struct OnboardingScreen: View {
 
     @ViewBuilder
     private func languageStepGlobe() -> some View {
+        let globe = Image(systemName: "globe")
+            .font(.system(size: 56, weight: .light))
+            .foregroundStyle(Color.secondaryGold.opacity(0.9))
+            .accessibilityHidden(true)
         if accessibilityReduceMotion {
-            Text("🌐")
-                .font(.system(size: 56))
+            globe
         } else {
-            TimelineView(.animation(minimumInterval: 1.0 / 30.0, paused: false)) { context in
+            TimelineView(.animation(minimumInterval: 1.0 / 12.0, paused: accessibilityReduceMotion)) { context in
                 let t = context.date.timeIntervalSinceReferenceDate
-                let s = 1.0 + 0.04 * sin(t * .pi / 1.15)
-                Text("🌐")
-                    .font(.system(size: 56))
-                    .scaleEffect(s)
+                let s = 1.0 + 0.025 * sin(t * .pi / 2.4)
+                globe.scaleEffect(s)
             }
         }
     }
@@ -615,7 +616,9 @@ struct OnboardingScreen: View {
 
     // ✅ Основной контент онбординга
     private func mainOnboardingContent() -> some View {
+        #if DEBUG
         print("🎯 OnboardingScreen.mainOnboardingContent: \(totalTabCount) вкладок (шаг языка + \(pages.count) контента)")
+        #endif
         return VStack(spacing: 0) {
             // «Пропустить» только до финального шага: ведёт к экрану с 2 обязательными согласиями. На последнем шаге скрыта — иначе обход без галочек.
             // Шаг 0 (язык) пропускать нельзя — без явного «Продолжить» и записи языка.
@@ -664,6 +667,7 @@ struct OnboardingScreen: View {
                     }
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Страница \(currentPage + 1) из \(totalTabCount)")
             }
@@ -935,29 +939,7 @@ struct OnboardingScreen: View {
             if contentIndex == 6 {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
-                        Color.clear.frame(height: 8)
-
-                        VStack(spacing: 0) {
-                            if UIImage(named: "app_icon") != nil || UIImage(named: "AppIcon") != nil {
-                                Image("app_icon")
-                                    .resizable()
-                                    .aspectRatio(contentMode: .fill)
-                                    .frame(width: 140, height: 140)
-                                    .clipShape(Circle())
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.secondaryGold, lineWidth: 14)
-                                    )
-                            } else {
-                                Text(page.icon)
-                                    .font(.system(size: 80))
-                                    .overlay(
-                                        Circle()
-                                            .stroke(Color.secondaryGold, lineWidth: 14)
-                                            .frame(width: 140, height: 140)
-                                    )
-                            }
-                        }
+                        Color.clear.frame(height: Spacing.xl)
 
                         VStack(spacing: Spacing.m) {
                             Text(page.title)
@@ -987,30 +969,13 @@ struct OnboardingScreen: View {
                 }
             } else {
                 VStack(spacing: Spacing.xxl) {
-                    Spacer()
-                    
-                    VStack(spacing: Spacing.m) {
-                        if contentIndex == 0 {
-                            OnboardingAladdinLogoView(size: 36, showSubtitle: false)
-                                .padding(.bottom, Spacing.s)
-                        }
-                        
-                        ZStack {
-                            Circle()
-                                .fill(page.color.opacity(0.2))
-                                .frame(width: 200, height: 200)
-                            
-                            Circle()
-                                .fill(page.color.opacity(0.1))
-                                .frame(width: 160, height: 160)
-                            
-                            Text(page.icon)
-                                .font(.system(size: 80))
-                        }
-                        .accessibilityElement(children: .combine)
-                        .accessibilityLabel("Иконка: \(page.icon)")
+                    Spacer(minLength: Spacing.xxl)
+
+                    if contentIndex == 0 {
+                        OnboardingAladdinLogoView(size: 36, showSubtitle: false)
+                            .padding(.bottom, Spacing.s)
                     }
-                    
+
                     VStack(spacing: Spacing.m) {
                         Text(page.title)
                             .font(.system(size: 24, weight: .bold))

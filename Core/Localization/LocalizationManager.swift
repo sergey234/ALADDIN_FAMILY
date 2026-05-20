@@ -145,8 +145,7 @@ class LocalizationManager: ObservableObject {
         // ✅ Обновляем текущий язык (это обновит UI через @Published)
         currentLanguage = resolved
         
-        // Сохраняем язык
-        // TODO: В будущем заменить на Keychain для безопасности
+        // Язык UI — некритичные prefs, остаётся в UserDefaults (не секрет).
         UserDefaults.standard.set(resolved.rawValue, forKey: AppConfig.UserDefaultsKeys.appLanguage)
         
         // Синхронизируем с системой
@@ -1387,6 +1386,7 @@ class LocalizationManager: ObservableObject {
             "family_settings": "Настройки",
             "add_member_title": "Добавить участника",
             "add_member_subtitle": "Выберите удобный способ пригласить нового пользователя",
+            "add_member_admin_only_notice": "Этот пункт только для родителя (или пожилого) в семье. Присоединиться по QR или коду можно ниже.",
             "add_member_create_family": "Создать новую семью",
             "add_member_create_family_desc": "Заполните профиль семьи и пригласите близких с нуля",
             "add_member_to_current_family": "Добавить в текущую семью",
@@ -2537,6 +2537,13 @@ class LocalizationManager: ObservableObject {
             "ai_assistant_error_sanitization": "Ошибка: %@",
             "ai_assistant_error_unknown_processing": "Произошла неизвестная ошибка при обработке сообщения.",
             "ai_assistant_error_stream": "Извините, произошла ошибка при обработке ответа: %@",
+            "ai_error_service_unavailable": "Сейчас не могу получить данные с сервера защиты. Повторите через минуту или откройте раздел «Аналитика» вручную.",
+            "ai_error_pii_blocked": "В сообщении есть личные данные. Уберите телефон, email или адрес и отправьте снова.",
+            "ai_error_rate_limit": "Слишком много запросов. Подождите или обновите тариф.",
+            "ai_error_consent_required": "Включите «Отправка данных AI» в Настройки → Конфиденциальность.",
+            "ai_grounded_badge": "На основе данных ALADDIN",
+            "ai_consent_banner_title": "Отправка данных в AI отключена",
+            "ai_consent_banner_action": "Открыть настройки",
             "voice_notes_title": "Диктофон",
             "voice_notes_settings_entry_subtitle": "Запись, транскрипция и AI-резюме заметок",
             "voice_notes_record": "Запись",
@@ -5753,6 +5760,13 @@ class LocalizationManager: ObservableObject {
             "family_chat_error_upload_not_member": "Нет доступа к этой семье для загрузки. Проверьте выбранную семью или выйдите из аккаунта и войдите снова.",
             "family_chat_reconnect": "Повторить подключение",
             "family_chat_ws_offline_hint": "Нет соединения в реальном времени. Сообщения по-прежнему отправляются по сети.",
+            "family_chat_e2ee_setup": "Настраивается сквозное шифрование чата…",
+            "family_chat_legacy_not_e2ee": "Историческое сообщение (без E2EE)",
+            "family_chat_legacy_thread_hint": "В ленте есть старые сообщения без сквозного шифрования. Новые защищены E2EE.",
+            "family_chat_legacy_redacted": "Текст скрыт (сообщение старше 90 дней, хранилось на сервере)",
+            "family_chat_e2ee_decrypt_failed": "Не удалось расшифровать. Обновите ключи или дождитесь повторной отправки.",
+            "family_chat_e2ee_not_ready": "Сквозное шифрование ещё не готово. Дождитесь настройки или откройте чат на другом устройстве семьи.",
+            "family_chat_error_edit_not_allowed": "Это сообщение нельзя редактировать (E2EE или историческая запись)",
             "family_chat_you": "Вы",
             "main_home_chat_segment_family": "Семейный чат",
             "main_home_chat_segment_ai": "AI чат",
@@ -9767,6 +9781,7 @@ class LocalizationManager: ObservableObject {
             "family_add_more_member": "Add more",
             "add_member_title": "Add member",
             "add_member_subtitle": "Choose a convenient way to invite a new user",
+            "add_member_admin_only_notice": "This option is for a parent (or elderly member) in the family. Use QR or code below to join.",
             "add_member_create_family": "Create a new family",
             "add_member_create_family_desc": "Fill out the family profile and invite relatives from scratch",
             "add_member_to_current_family": "Add to current family",
@@ -10493,6 +10508,13 @@ Settings
             "ai_assistant_error_sanitization": "Error: %@",
             "ai_assistant_error_unknown_processing": "An unknown error occurred while processing the message.",
             "ai_assistant_error_stream": "Sorry, something went wrong while loading the reply: %@",
+            "ai_error_service_unavailable": "Cannot reach the protection server right now. Try again in a minute or open Analytics manually.",
+            "ai_error_pii_blocked": "Your message may contain personal data. Remove phone, email, or address and try again.",
+            "ai_error_rate_limit": "Too many requests. Please wait or upgrade your plan.",
+            "ai_error_consent_required": "Enable “Send data to AI” in Settings → Privacy.",
+            "ai_grounded_badge": "Based on ALADDIN protection data",
+            "ai_consent_banner_title": "AI data sharing is off",
+            "ai_consent_banner_action": "Open Settings",
             "voice_notes_title": "Voice Notes",
             "voice_notes_settings_entry_subtitle": "Record, transcribe, and summarize notes with AI",
             "voice_notes_record": "Record",
@@ -13504,6 +13526,13 @@ Settings
             "family_chat_error_upload_not_member": "No access to upload for this family. Check the selected family or sign out and sign in again.",
             "family_chat_reconnect": "Reconnect",
             "family_chat_ws_offline_hint": "No real-time connection. Messages still send over HTTPS.",
+            "family_chat_e2ee_setup": "Setting up end-to-end encryption…",
+            "family_chat_legacy_not_e2ee": "Historical message (not E2EE)",
+            "family_chat_legacy_thread_hint": "This chat contains older messages without end-to-end encryption. New messages are E2EE-protected.",
+            "family_chat_legacy_redacted": "Text hidden (message older than 90 days, was stored on server)",
+            "family_chat_e2ee_decrypt_failed": "Could not decrypt. Refresh keys or wait for a resend.",
+            "family_chat_e2ee_not_ready": "End-to-end encryption is not ready yet. Wait for setup or open Family Chat on another family device.",
+            "family_chat_error_edit_not_allowed": "This message cannot be edited (E2EE or historical record)",
             "family_chat_you": "You",
             "family_chat_you_accusative": "you",
             

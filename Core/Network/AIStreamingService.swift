@@ -120,9 +120,22 @@ final class AIStreamingService: ObservableObject {
             isStreaming = false 
         }
         
+        let cloudMessage: String
+        do {
+            if message.isEmpty && context == "resume" {
+                cloudMessage = message
+            } else {
+                cloudMessage = try AIOutboundTextGate.prepareUserMessage(message).cloudText
+            }
+        } catch {
+            await MainActor.run { onError(error) }
+            isStreaming = false
+            return
+        }
+
         do {
             let stream = try await createStreamingRequest(
-                message: message,
+                message: cloudMessage,
                 context: context,
                 resumeFromIndex: lastTokenIndex,
                 messageId: newMessageId
@@ -175,8 +188,9 @@ final class AIStreamingService: ObservableObject {
         context: String = "general",
         messageId: String? = nil
     ) async throws -> AsyncThrowingStream<String, Error> {
+        let cloudMessage = try AIOutboundTextGate.prepareUserMessage(message).cloudText
         return try await createStreamingRequest(
-            message: message,
+            message: cloudMessage,
             context: context,
             resumeFromIndex: 0,
             messageId: messageId

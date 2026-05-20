@@ -9,7 +9,9 @@ import Lottie
 // MARK: - Asset / behavior contract (для дизайна и каталога)
 //
 // Lottie JSON в бандле: `OnboardingHero_00` … `OnboardingHero_07`, `MainHero_ambient`
-// Растровый fallback (2x/3x в Asset Catalog): те же имена как image set.
+// Растровый fallback (Asset Catalog `Images.xcassets`): те же имена как image set.
+// Полноразмерные мастера (не в бандле как отдельные файлы): `Resources/HeroAssets/README.txt`
+// Растровые image set для рантайма кладите в корень `Assets.xcassets/` (не во вложенный `*.xcassets`).
 // Опционально iOS 17+: `MainHero_ambient.usdz` в каталоге / бандле — только если есть ресурс.
 // USDZ не является единственным путём: при отсутствии файла или iOS < 17 показывается Lottie либо Image.
 
@@ -226,7 +228,6 @@ struct HeroAmbientLayerView: View {
     @Environment(\.colorScheme) private var colorScheme
 
     @State private var lowPowerMode = ProcessInfo.processInfo.isLowPowerModeEnabled
-    @State private var languageStepPulse: CGFloat = 1.0
 
     private var presentation: HeroPresentation {
         HeroPresentation.presentation(for: slot)
@@ -260,15 +261,6 @@ struct HeroAmbientLayerView: View {
                 heroCore()
                     .frame(width: w, height: h)
                     .allowsHitTesting(false)
-                    // Gentle breathing animation only on the language step (Tier 1, very light)
-                    .scaleEffect(slot == .onboardingLanguage ? languageStepPulse : 1.0)
-                    .onAppear {
-                        if slot == .onboardingLanguage {
-                            withAnimation(.easeInOut(duration: 2.8).repeatForever(autoreverses: true)) {
-                                languageStepPulse = 1.012
-                            }
-                        }
-                    }
                     // Safe debug logging (outside ViewBuilder)
                     .task {
                         let base = presentation.baseNameForFallback

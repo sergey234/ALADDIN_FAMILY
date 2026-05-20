@@ -47,12 +47,61 @@ except ImportError as e:
     print("❌ SFM Adapter not available: {}".format(e))
     print("   Current sys.path: {}".format(sys.path))
 
-# JWT Configuration
-JWT_SECRET = os.getenv("JWT_SECRET", "aladdin-jwt-secret-key-2026-production-ready")
-JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
+try:
+    from security.services.ai_response_helpers import (
+        dev_fallback_chat,
+        mock_allowed,
+        raise_service_unavailable,
+        require_sfm_adapter,
+    )
+    from security.services.ai_capabilities_manifest import static_capabilities_payload
+    from security.services.ai_intent_router import classify_intent, intent_requires_live_sfm, KB_ONLY_INTENTS
+    from security.services.hermes_client import chat_once as hermes_chat_once, hermes_available
+except ImportError:
+    from ai_response_helpers import (  # type: ignore
+        dev_fallback_chat,
+        mock_allowed,
+        raise_service_unavailable,
+        require_sfm_adapter,
+    )
+    from ai_capabilities_manifest import static_capabilities_payload  # type: ignore
+    from ai_intent_router import classify_intent, intent_requires_live_sfm, KB_ONLY_INTENTS  # type: ignore
+    from hermes_client import chat_once as hermes_chat_once, hermes_available  # type: ignore
+
+try:
+    from security.services.ai_prompt_gate import (
+        PIIPromptBlockedError,
+        prepare_for_llm_prompt,
+        prepare_optional_for_llm,
+        redact_feedback_only,
+    )
+    from security.services.ai_llm_prompt_builder import (
+        attach_sfm_aggregates_to_params,
+        build_ai_chat_sfm_payload,
+    )
+except ImportError:
+    from ai_prompt_gate import (  # type: ignore
+        PIIPromptBlockedError,
+        prepare_for_llm_prompt,
+        prepare_optional_for_llm,
+        redact_feedback_only,
+    )
+    from ai_llm_prompt_builder import (  # type: ignore
+        attach_sfm_aggregates_to_params,
+        build_ai_chat_sfm_payload,
+    )
+
+# JWT Configuration (single source: app.auth)
+try:
+    from app.auth import JWT_SECRET, JWT_ALGORITHM
+except ImportError:
+    JWT_SECRET = os.environ["JWT_SECRET"]
+    JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 security = HTTPBearer()
 
 logger = logging.getLogger(__name__)
+
+AI_BACKEND = os.getenv("AI_BACKEND", "sfm").strip().lower()
 
 # Создаем FastAPI Router
 router = APIRouter(prefix="/api/ai/assistant", tags=["AI Assistant"])
@@ -137,6 +186,11 @@ class StreamRequest(BaseModel):
     response_language: Optional[str] = Field(None, description="Предпочитаемый язык ответа (en, ru, …)")
 
 
+class SuggestedAction(BaseModel):
+    id: str = Field(..., description="Action id for iOS deep link")
+    title: str = Field(..., description="Button label")
+
+
 class ChatMessageResponse(BaseModel):
     """Ответ AI помощника"""
     response: str = Field(..., description="Ответ AI помощника")
@@ -144,6 +198,10 @@ class ChatMessageResponse(BaseModel):
     suggestions: List[str] = Field(default_factory=list, description="Предложения для пользователя")
     follow_up_questions: List[str] = Field(default_factory=list, description="Дополнительные вопросы")
     timestamp: Optional[datetime] = Field(None, description="Временная метка")
+    intent: Optional[str] = Field(None, description="Classified intent id")
+    grounded: Optional[bool] = Field(None, description="Answer used SFM/tools")
+    tools_used: List[str] = Field(default_factory=list, description="SFM tools invoked")
+    suggested_actions: List[SuggestedAction] = Field(default_factory=list, description="Deep link actions")
 
 
 class ChatHistoryResponse(BaseModel):
@@ -157,6 +215,10 @@ class FeedbackRequest(BaseModel):
     rating: int = Field(..., description="Оценка (1-5)", ge=1, le=5)
     comment: Optional[str] = Field(None, description="Комментарий", max_length=1000)
     message_id: Optional[str] = Field(None, description="ID сообщения")
+    query_text: Optional[str] = Field(None, description="Исходный вопрос", max_length=2000)
+    resolved_by: Optional[str] = Field(None, description="faq|ai|unknown", max_length=64)
+    faq_id: Optional[str] = Field(None, description="FAQ id", max_length=128)
+    session_id: Optional[str] = Field(None, description="ID сессии клиента", max_length=128)
 
 
 class FeedbackResponse(BaseModel):
@@ -223,23 +285,136 @@ class SecurityTipsResponse(BaseModel):
 # Helper функции
 # =============================================================================
 
-def _get_fallback_response(context: str = "general") -> Dict[str, Any]:
-    """Fallback ответы если SFM adapter недоступен"""
-    responses = {
-        "protection_status": "Ваша защита ALADDIN активна! Все 187 функций безопасности работают корректно.",
-        "threat_analysis": "Анализ угроз завершен. Обнаружено 3 потенциальные угрозы, все заблокированы.",
-        "recommendations": "Рекомендую включить все уровни защиты для максимальной безопасности.",
-        "help": "Я - ваш AI помощник по безопасности ALADDIN. Могу помочь с анализом угроз, настройками защиты и ответами на вопросы.",
-        "general": "Привет! Я AI помощник ALADDIN. Как я могу помочь вам с безопасностью?"
+def _hermes_skill_for_intent(intent_id: str) -> Optional[str]:
+    if intent_id in KB_ONLY_INTENTS or intent_id in ("general", "e2ee_howto", "tariff_explain", "parental_howto"):
+        return "aladdin-security-kb"
+    return None
+
+
+def _route_via_hermes(intent_id: str, kb_only: bool) -> bool:
+    if kb_only:
+        return True
+    return AI_BACKEND == "hermes" and intent_id == "general"
+
+
+def _chat_response_from_hermes(
+    *,
+    response_text: str,
+    intent_id: str,
+    tools_used: List[str],
+) -> ChatMessageResponse:
+    return ChatMessageResponse(
+        response=response_text,
+        confidence=0.8,
+        suggestions=[],
+        follow_up_questions=[],
+        timestamp=datetime.now(),
+        intent=intent_id,
+        grounded=False,
+        tools_used=tools_used,
+        suggested_actions=_suggested_actions_for_intent(intent_id),
+    )
+
+
+def _suggested_actions_for_intent(intent_id: str) -> List[SuggestedAction]:
+    mapping = {
+        "protection_status": [SuggestedAction(id="open_main", title="Главная")],
+        "threats_summary": [SuggestedAction(id="open_analytics", title="Аналитика")],
+        "family_overview": [SuggestedAction(id="open_family", title="Семья")],
+        "network_vpn_status": [SuggestedAction(id="open_network", title="Защита сети")],
+        "tariff_explain": [SuggestedAction(id="open_tariffs", title="Тарифы")],
+        "e2ee_howto": [SuggestedAction(id="open_family_chat", title="Семейный чат")],
+        "incident_analyze": [SuggestedAction(id="open_threats", title="Угрозы")],
+        "recommendations": [SuggestedAction(id="open_settings", title="Настройки")],
     }
-    response_text = responses.get(context, responses["general"])
-    return {
-        "response": response_text,
-        "confidence": 0.95,
-        "suggestions": ["Проверить статус защиты", "Посмотреть статистику", "Настроить параметры"],
-        "follow_up_questions": ["Что вас беспокоит?", "Нужна ли дополнительная защита?"],
-        "timestamp": datetime.now()
-    }
+    return mapping.get(intent_id, [])
+
+
+def _chat_response_from_sfm(
+    *,
+    result: dict,
+    intent_id: str,
+    tools_used: List[str],
+) -> ChatMessageResponse:
+    response_text = str(result.get("response") or "").strip()
+    if not response_text and not mock_allowed():
+        raise_service_unavailable()
+    grounded = bool(tools_used) and bool(response_text)
+    return ChatMessageResponse(
+        response=response_text or dev_fallback_chat(intent_id)["response"],
+        confidence=float(result.get("confidence", 0.85 if grounded else 0.5)),
+        suggestions=result.get("suggestions") or [],
+        follow_up_questions=result.get("follow_up_questions") or [],
+        timestamp=datetime.now(),
+        intent=intent_id,
+        grounded=grounded,
+        tools_used=tools_used,
+        suggested_actions=_suggested_actions_for_intent(intent_id),
+    )
+
+
+def _llm_message_or_http422(raw: str, *, field: str, allow_empty: bool = False) -> str:
+    """E2.2: redact + block residual PII before SFM/LLM."""
+    if allow_empty and not (raw or "").strip():
+        return ""
+    try:
+        return prepare_for_llm_prompt(raw, field_name=field).text
+    except PIIPromptBlockedError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+
+def _safe_record_chat_exchange(
+    *,
+    user_id: Optional[str],
+    user_message_redacted: str,
+    assistant_message: str,
+    ui_context: str,
+    session_id: Optional[str] = None,
+    message_id: Optional[str] = None,
+    sfm_aggregates: Optional[dict] = None,
+) -> None:
+    if not user_message_redacted.strip():
+        return
+    try:
+        from security.services.ai_history_store import record_chat_exchange
+
+        record_chat_exchange(
+            user_id=user_id,
+            user_message_redacted=user_message_redacted,
+            assistant_message=assistant_message,
+            ui_context=ui_context,
+            session_id=session_id,
+            message_id=message_id,
+            sfm_aggregates=sfm_aggregates,
+        )
+    except Exception as exc:
+        logger.warning("AI history persist failed: %s", exc)
+
+
+def _safe_record_feedback_analytics(
+    *,
+    user_id: Optional[str],
+    query_redacted: Optional[str],
+    ui_context: str = "feedback",
+    session_id: Optional[str] = None,
+    rating: Optional[int] = None,
+    faq_id: Optional[str] = None,
+    resolved_by: Optional[str] = None,
+) -> None:
+    try:
+        from security.services.ai_history_store import record_analytics_event
+
+        record_analytics_event(
+            user_id=user_id,
+            question_redacted=query_redacted,
+            ui_context=ui_context,
+            session_id=session_id,
+            rating=rating,
+            faq_id=faq_id,
+            resolved_by=resolved_by,
+        )
+    except Exception as exc:
+        logger.warning("AI feedback analytics persist failed: %s", exc)
 
 
 # =============================================================================
@@ -251,14 +426,7 @@ def _get_fallback_response(context: str = "general") -> Dict[str, Any]:
 async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(get_current_user)) -> ChatMessageResponse:
     """
     AI помощник - обработка сообщений пользователя
-    
-    Args:
-        request: Запрос с сообщением пользователя и контекстом
-    
-    Returns:
-        Ответ AI помощника с рекомендациями
     """
-    # Проверяем rate limit
     user_id = user["user_id"] or "anonymous"
     subscription_level = user["subscription_level"]
 
@@ -269,63 +437,159 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
         )
 
     try:
-        if SFM_ADAPTER_AVAILABLE and sfm_adapter:
-            data = {
-                "message": request.message,
-                "context": request.context,
-                "user_id": request.user_id or "guest",
-                "timestamp": request.timestamp.isoformat() if request.timestamp else datetime.now().isoformat()
-            }
-            success, result, message = sfm_adapter.execute_function("ai_assistant_chat", data)
-            
-            if success:
-                return ChatMessageResponse(
-                    response=result.get("response", _get_fallback_response(request.context)["response"]),
-                    confidence=result.get("confidence", 0.95),
-                    suggestions=result.get("suggestions", []),
-                    follow_up_questions=result.get("follow_up_questions", []),
-                    timestamp=datetime.now()
+        intent = classify_intent(request.message, request.context)
+        if _route_via_hermes(intent.intent_id, intent.kb_only):
+            if not hermes_available():
+                raise_service_unavailable()
+            cloud_message = _llm_message_or_http422(request.message, field="message")
+            skill = _hermes_skill_for_intent(intent.intent_id)
+            ok, text, err = hermes_chat_once(cloud_message, skill=skill)
+            if not ok or not text.strip():
+                logger.warning("Hermes chat failed: %s", err)
+                raise_service_unavailable()
+            tools = [f"hermes:{skill}"] if skill else ["hermes"]
+            response = _chat_response_from_hermes(
+                response_text=text,
+                intent_id=intent.intent_id,
+                tools_used=tools,
+            )
+            if cloud_message.strip():
+                _safe_record_chat_exchange(
+                    user_id=user_id,
+                    user_message_redacted=cloud_message,
+                    assistant_message=response.response,
+                    ui_context=request.context,
                 )
-            else:
-                logger.warning(f"SFM adapter error: {message}, using fallback")
-                fallback = _get_fallback_response(request.context)
-                return ChatMessageResponse(**fallback)
-        else:
-            # Fallback mock response
-            fallback = _get_fallback_response(request.context)
-            return ChatMessageResponse(**fallback)
+            return response
+
+        if intent_requires_live_sfm(intent.intent_id):
+            require_sfm_adapter(SFM_ADAPTER_AVAILABLE and sfm_adapter is not None)
+
+        if not SFM_ADAPTER_AVAILABLE or not sfm_adapter:
+            if mock_allowed():
+                fb = dev_fallback_chat(request.context)
+                return ChatMessageResponse(
+                    response=fb["response"],
+                    confidence=fb["confidence"],
+                    suggestions=fb.get("suggestions", []),
+                    follow_up_questions=fb.get("follow_up_questions", []),
+                    timestamp=datetime.now(),
+                    intent=intent.intent_id,
+                    grounded=False,
+                )
+            raise_service_unavailable()
+
+        cloud_message = _llm_message_or_http422(request.message, field="message")
+        data = build_ai_chat_sfm_payload(
+            message=cloud_message,
+            ui_context=request.context,
+            user_id=request.user_id,
+            execute_fn=sfm_adapter.execute_function,
+            timestamp=request.timestamp,
+        )
+        success, result, message = sfm_adapter.execute_function("ai_assistant_chat", data)
+
+        if not success:
+            logger.warning("SFM ai_assistant_chat failed: %s", message)
+            raise_service_unavailable()
+
+        if not isinstance(result, dict):
+            raise_service_unavailable()
+
+        tools_used = list(data.get("sfm_context_sources") or []) or ["ai_assistant_chat"]
+        response = _chat_response_from_sfm(
+            result=result,
+            intent_id=intent.intent_id,
+            tools_used=tools_used,
+        )
+        if cloud_message.strip() and response.response.strip():
+            _safe_record_chat_exchange(
+                user_id=user_id,
+                user_message_redacted=cloud_message,
+                assistant_message=response.response,
+                ui_context=request.context,
+                sfm_aggregates=data.get("sfm_aggregates"),
+            )
+        return response
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Ошибка при обработке сообщения: {e}")
-        fallback = _get_fallback_response(request.context)
-        return ChatMessageResponse(**fallback)
+        logger.error("Ошибка при обработке сообщения: %s", e)
+        raise_service_unavailable()
 
 
 @router.post("/stream")
-async def ai_assistant_stream(request: StreamRequest):
+async def ai_assistant_stream(request: StreamRequest, user: dict = Depends(get_current_user)):
     """
     SSE stream endpoint for iOS token-by-token rendering.
     """
     if not request.stream:
         raise HTTPException(status_code=400, detail="stream flag must be true")
 
+    user_id = user["user_id"] or "anonymous"
     response_text = ""
-    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
-        data = {
-            "message": request.message,
-            "context": request.context,
-            "message_id": request.messageId,
-            "resume_from_index": request.resumeFromIndex,
-            "stream": True,
-        }
-        if request.response_language:
-            data["response_language"] = request.response_language
+    cloud_message = ""
+    sfm_aggregates_snapshot: Optional[dict] = None
+
+    intent = classify_intent(request.message or "", request.context)
+    if _route_via_hermes(intent.intent_id, intent.kb_only):
+        if not hermes_available():
+            raise_service_unavailable()
+        cloud_message = _llm_message_or_http422(
+            request.message,
+            field="message",
+            allow_empty=(request.context == "resume" or request.resumeFromIndex > 0),
+        )
+        skill = _hermes_skill_for_intent(intent.intent_id)
+        ok, text, err = hermes_chat_once(cloud_message, skill=skill)
+        if not ok or not text.strip():
+            logger.warning("Hermes stream path failed: %s", err)
+            raise_service_unavailable()
+        response_text = text
+    elif intent_requires_live_sfm(intent.intent_id):
+        require_sfm_adapter(SFM_ADAPTER_AVAILABLE and sfm_adapter is not None)
+
+    if not response_text and (not SFM_ADAPTER_AVAILABLE or not sfm_adapter):
+        if mock_allowed():
+            response_text = dev_fallback_chat(request.context)["response"]
+        else:
+            raise_service_unavailable()
+    elif not response_text:
+        cloud_message = _llm_message_or_http422(
+            request.message,
+            field="message",
+            allow_empty=(request.context == "resume" or request.resumeFromIndex > 0),
+        )
+        data = build_ai_chat_sfm_payload(
+            message=cloud_message,
+            ui_context=request.context,
+            user_id=user_id,
+            execute_fn=sfm_adapter.execute_function,
+            stream=True,
+            message_id=request.messageId,
+            resume_from_index=request.resumeFromIndex,
+            response_language=request.response_language,
+        )
         success, result, message = sfm_adapter.execute_function("ai_assistant_chat", data)
         if not success:
-            raise HTTPException(status_code=502, detail=f"AI backend failed: {message}")
-        response_text = str(result.get("response") or "").strip()
-    else:
-        # Keep endpoint operational for mobile streaming flows even when adapter is down.
-        response_text = _get_fallback_response(request.context)["response"]
+            logger.warning("SFM stream failed: %s", message)
+            raise_service_unavailable()
+        response_text = str((result or {}).get("response") or "").strip()
+        if not response_text and not mock_allowed():
+            raise_service_unavailable()
+        if not response_text:
+            response_text = dev_fallback_chat(request.context)["response"]
+        sfm_aggregates_snapshot = data.get("sfm_aggregates")
+
+    if cloud_message.strip() and response_text.strip():
+        _safe_record_chat_exchange(
+            user_id=user_id,
+            user_message_redacted=cloud_message,
+            assistant_message=response_text,
+            ui_context=request.context,
+            message_id=request.messageId,
+            sfm_aggregates=sfm_aggregates_snapshot,
+        )
 
     tokens = response_text.split()
     start_index = min(request.resumeFromIndex, len(tokens))
@@ -367,34 +631,21 @@ async def ai_assistant_history(
         История разговоров
     """
     try:
-        if SFM_ADAPTER_AVAILABLE and sfm_adapter:
-            data = {"user_id": user_id or "guest", "limit": limit}
-            success, result, message = sfm_adapter.execute_function("ai_assistant_history", data)
-            
-            if success:
-                return ChatHistoryResponse(
-                    conversations=result.get("conversations", []),
-                    total=result.get("total", 0)
-                )
-            else:
-                logger.warning(f"SFM adapter error: {message}, using fallback")
-        
-        # Fallback mock response
-        return ChatHistoryResponse(
-            conversations=[
-                {"date": "2026-02-04", "messages": 12, "topics": ["protection", "threats"]},
-                {"date": "2026-02-03", "messages": 8, "topics": ["settings", "analysis"]}
-            ],
-            total=2
-        )
+        from security.services.ai_history_store import list_conversation_summaries
+
+        conversations = list_conversation_summaries(user_id, limit)
+        return ChatHistoryResponse(conversations=conversations, total=len(conversations))
     except Exception as e:
-        logger.error(f"Ошибка при получении истории: {e}")
+        logger.warning("AI history store unavailable: %s", e)
         return ChatHistoryResponse(conversations=[], total=0)
 
 
 # 3. POST /api/ai/assistant/feedback - Обратная связь
 @router.post("/feedback", response_model=FeedbackResponse)
-async def ai_assistant_feedback(request: FeedbackRequest) -> FeedbackResponse:
+async def ai_assistant_feedback(
+    request: FeedbackRequest,
+    user: dict = Depends(get_current_user),
+) -> FeedbackResponse:
     """
     Обратная связь по работе AI помощника
     
@@ -405,31 +656,41 @@ async def ai_assistant_feedback(request: FeedbackRequest) -> FeedbackResponse:
         Результат сохранения обратной связи
     """
     try:
+        user_id = user["user_id"] or "anonymous"
+        query_redacted = redact_feedback_only(request.query_text) if request.query_text else None
+        comment_redacted = redact_feedback_only(request.comment) if request.comment else None
+
+        _safe_record_feedback_analytics(
+            user_id=user_id,
+            query_redacted=query_redacted or comment_redacted,
+            ui_context="feedback",
+            session_id=request.session_id,
+            rating=request.rating,
+            faq_id=request.faq_id,
+            resolved_by=request.resolved_by,
+        )
+
         if SFM_ADAPTER_AVAILABLE and sfm_adapter:
             data = {
                 "rating": request.rating,
-                "comment": request.comment,
+                "comment": comment_redacted,
                 "message_id": request.message_id
             }
             success, result, message = sfm_adapter.execute_function("ai_assistant_feedback", data)
             
-            if success:
+            if success and isinstance(result, dict):
                 return FeedbackResponse(
                     feedback_recorded=True,
-                    average_rating=result.get("average_rating", 4.8),
-                    total_feedbacks=result.get("total_feedbacks", 1250)
+                    average_rating=float(result.get("average_rating", 0.0)),
+                    total_feedbacks=int(result.get("total_feedbacks", 0)),
                 )
-            else:
-                logger.warning(f"SFM adapter error: {message}, using fallback")
-        
-        # Fallback mock response
-        return FeedbackResponse(
-            feedback_recorded=True,
-            average_rating=4.8,
-            total_feedbacks=1250
-        )
+            logger.warning("SFM ai_assistant_feedback failed: %s", message)
+
+        return FeedbackResponse(feedback_recorded=True, average_rating=0.0, total_feedbacks=0)
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Ошибка при сохранении обратной связи: {e}")
+        logger.error("Ошибка при сохранении обратной связи: %s", e)
         return FeedbackResponse(feedback_recorded=False, average_rating=0.0, total_feedbacks=0)
 
 
@@ -445,39 +706,21 @@ async def ai_assistant_capabilities() -> CapabilitiesResponse:
     try:
         if SFM_ADAPTER_AVAILABLE and sfm_adapter:
             success, result, message = sfm_adapter.execute_function("ai_assistant_capabilities", {})
-            
-            if success:
+            if success and isinstance(result, dict) and result.get("features"):
                 return CapabilitiesResponse(
                     features=result.get("features", []),
                     languages=result.get("languages", ["Русский", "English"]),
-                    response_time=result.get("response_time", "<2 сек"),
-                    accuracy=result.get("accuracy", "95%")
+                    response_time=result.get("response_time", "variable"),
+                    accuracy=result.get("accuracy", "SFM-backed"),
                 )
-            else:
-                logger.warning(f"SFM adapter error: {message}, using fallback")
-        
-        # Fallback mock response
-        return CapabilitiesResponse(
-            features=[
-                "Анализ угроз в реальном времени",
-                "Персональные рекомендации по безопасности",
-                "Объяснение работы функций защиты",
-                "Мониторинг подозрительной активности",
-                "Советы по улучшению безопасности",
-                "Ответы на вопросы о кибербезопасности"
-            ],
-            languages=["Русский", "English"],
-            response_time="<2 сек",
-            accuracy="95%"
-        )
+            logger.warning("SFM capabilities unavailable: %s", message)
+
+        manifest = static_capabilities_payload()
+        return CapabilitiesResponse(**manifest)
     except Exception as e:
-        logger.error(f"Ошибка при получении возможностей: {e}")
-        return CapabilitiesResponse(
-            features=[],
-            languages=["Русский"],
-            response_time="N/A",
-            accuracy="N/A"
-        )
+        logger.error("Ошибка при получении возможностей: %s", e)
+        manifest = static_capabilities_payload()
+        return CapabilitiesResponse(**manifest)
 
 
 # 5. POST /api/ai/assistant/analyze_threat - Анализ угрозы
@@ -493,39 +736,35 @@ async def ai_assistant_analyze_threat(request: AnalyzeThreatRequest) -> AnalyzeT
         Результат анализа угрозы
     """
     try:
-        if SFM_ADAPTER_AVAILABLE and sfm_adapter:
-            data = {
-                "threat": request.threat,
+        require_sfm_adapter(SFM_ADAPTER_AVAILABLE and sfm_adapter is not None)
+        if not SFM_ADAPTER_AVAILABLE or not sfm_adapter:
+            raise_service_unavailable()
+
+        data = attach_sfm_aggregates_to_params(
+            {
+                "threat": _llm_message_or_http422(request.threat, field="threat"),
                 "type": request.type,
-                "context": request.context
-            }
-            success, result, message = sfm_adapter.execute_function("ai_assistant_analyze_threat", data)
-            
-            if success:
-                return AnalyzeThreatResponse(
-                    threat_level=result.get("threat_level", "medium"),
-                    analysis=result.get("analysis", "Угроза проанализирована."),
-                    actions_taken=result.get("actions_taken", []),
-                    prevention_tips=result.get("prevention_tips", [])
-                )
-            else:
-                logger.warning(f"SFM adapter error: {message}, using fallback")
-        
-        # Fallback mock response
-        return AnalyzeThreatResponse(
-            threat_level="medium",
-            analysis="Угроза проанализирована. Рекомендуется усилить защиту.",
-            actions_taken=["Заблокирован IP", "Отправлено уведомление", "Добавлен в черный список"],
-            prevention_tips=["Включите VPN", "Обновите пароли", "Используйте 2FA"]
+                "context": prepare_optional_for_llm(request.context, field_name="context"),
+            },
+            sfm_adapter.execute_function,
         )
+        success, result, message = sfm_adapter.execute_function("ai_assistant_analyze_threat", data)
+
+        if not success or not isinstance(result, dict):
+            logger.warning("SFM analyze_threat failed: %s", message)
+            raise_service_unavailable()
+
+        return AnalyzeThreatResponse(
+            threat_level=result.get("threat_level", "unknown"),
+            analysis=result.get("analysis", ""),
+            actions_taken=result.get("actions_taken", []),
+            prevention_tips=result.get("prevention_tips", []),
+        )
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Ошибка при анализе угрозы: {e}")
-        return AnalyzeThreatResponse(
-            threat_level="unknown",
-            analysis="Ошибка при анализе угрозы",
-            actions_taken=[],
-            prevention_tips=[]
-        )
+        logger.error("Ошибка при анализе угрозы: %s", e)
+        raise_service_unavailable()
 
 
 # 6. GET /api/ai/assistant/recommendations - Персональные рекомендации
@@ -543,36 +782,27 @@ async def ai_assistant_recommendations(
         Персональные рекомендации и оценка безопасности
     """
     try:
-        if SFM_ADAPTER_AVAILABLE and sfm_adapter:
-            success, result, message = sfm_adapter.execute_function("ai_assistant_recommendations", {"user_id": user_id})
-            
-            if success:
-                return RecommendationsResponse(
-                    personal_recommendations=result.get("personal_recommendations", []),
-                    security_score=result.get("security_score", 95),
-                    improvement_areas=result.get("improvement_areas", [])
-                )
-            else:
-                logger.warning(f"SFM adapter error: {message}, using fallback")
-        
-        # Fallback mock response
-        return RecommendationsResponse(
-            personal_recommendations=[
-                "Включите все уровни защиты для максимальной безопасности",
-                "Настройте автоматические обновления",
-                "Используйте сложные пароли",
-                "Регулярно проверяйте подключенные устройства"
-            ],
-            security_score=95,
-            improvement_areas=["VPN использование", "Парольная политика"]
+        require_sfm_adapter(SFM_ADAPTER_AVAILABLE and sfm_adapter is not None)
+        if not SFM_ADAPTER_AVAILABLE or not sfm_adapter:
+            raise_service_unavailable()
+
+        success, result, message = sfm_adapter.execute_function(
+            "ai_assistant_recommendations", {"user_id": user_id}
         )
+        if not success or not isinstance(result, dict):
+            logger.warning("SFM recommendations failed: %s", message)
+            raise_service_unavailable()
+
+        return RecommendationsResponse(
+            personal_recommendations=result.get("personal_recommendations", []),
+            security_score=int(result.get("security_score", 0)),
+            improvement_areas=result.get("improvement_areas", []),
+        )
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Ошибка при получении рекомендаций: {e}")
-        return RecommendationsResponse(
-            personal_recommendations=[],
-            security_score=0,
-            improvement_areas=[]
-        )
+        logger.error("Ошибка при получении рекомендаций: %s", e)
+        raise_service_unavailable()
 
 
 # 7. POST /api/ai/assistant/report_incident - Сообщить об инциденте
@@ -588,42 +818,36 @@ async def ai_assistant_report_incident(request: ReportIncidentRequest) -> Report
         Информация о зарегистрированном инциденте
     """
     try:
-        if SFM_ADAPTER_AVAILABLE and sfm_adapter:
-            data = {
+        require_sfm_adapter(SFM_ADAPTER_AVAILABLE and sfm_adapter is not None)
+        if not SFM_ADAPTER_AVAILABLE or not sfm_adapter:
+            raise_service_unavailable()
+
+        data = attach_sfm_aggregates_to_params(
+            {
                 "type": request.type,
-                "description": request.description,
-                "severity": request.severity
-            }
-            success, result, message = sfm_adapter.execute_function("ai_assistant_report_incident", data)
-            
-            if success:
-                return ReportIncidentResponse(
-                    incident_id=result.get("incident_id", f"INC-{datetime.now().strftime('%Y-%m-%d-%H%M%S')}"),
-                    status=result.get("status", "investigating"),
-                    estimated_resolution=result.get("estimated_resolution", "2 hours"),
-                    assigned_specialist=result.get("assigned_specialist", "AI Security Team"),
-                    follow_up_actions=result.get("follow_up_actions", [])
-                )
-            else:
-                logger.warning(f"SFM adapter error: {message}, using fallback")
-        
-        # Fallback mock response
-        return ReportIncidentResponse(
-            incident_id=f"INC-{datetime.now().strftime('%Y-%m-%d-%H%M%S')}",
-            status="investigating",
-            estimated_resolution="2 hours",
-            assigned_specialist="AI Security Team",
-            follow_up_actions=["Анализ логов", "Проверка систем", "Уведомление пользователя"]
+                "description": _llm_message_or_http422(request.description, field="description"),
+                "severity": request.severity,
+            },
+            sfm_adapter.execute_function,
         )
+        success, result, message = sfm_adapter.execute_function("ai_assistant_report_incident", data)
+
+        if not success or not isinstance(result, dict):
+            logger.warning("SFM report_incident failed: %s", message)
+            raise_service_unavailable()
+
+        return ReportIncidentResponse(
+            incident_id=result.get("incident_id", f"INC-{datetime.now().strftime('%Y%m%d%H%M%S')}"),
+            status=result.get("status", "received"),
+            estimated_resolution=result.get("estimated_resolution", "pending"),
+            assigned_specialist=result.get("assigned_specialist", "security-team"),
+            follow_up_actions=result.get("follow_up_actions", []),
+        )
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Ошибка при регистрации инцидента: {e}")
-        return ReportIncidentResponse(
-            incident_id="ERROR",
-            status="error",
-            estimated_resolution="N/A",
-            assigned_specialist="N/A",
-            follow_up_actions=[]
-        )
+        logger.error("Ошибка при регистрации инцидента: %s", e)
+        raise_service_unavailable()
 
 
 # 8. GET /api/ai/assistant/security_tips - Советы по безопасности
@@ -636,33 +860,22 @@ async def ai_assistant_security_tips() -> SecurityTipsResponse:
         Ежедневные советы, фокус недели и цель месяца
     """
     try:
-        if SFM_ADAPTER_AVAILABLE and sfm_adapter:
-            success, result, message = sfm_adapter.execute_function("ai_assistant_security_tips", {})
-            
-            if success:
-                return SecurityTipsResponse(
-                    daily_tips=result.get("daily_tips", []),
-                    weekly_focus=result.get("weekly_focus", "Защита от фишинга"),
-                    monthly_goal=result.get("monthly_goal", "Достичь 100% безопасности")
-                )
-            else:
-                logger.warning(f"SFM adapter error: {message}, using fallback")
-        
-        # Fallback mock response
+        require_sfm_adapter(SFM_ADAPTER_AVAILABLE and sfm_adapter is not None)
+        if not SFM_ADAPTER_AVAILABLE or not sfm_adapter:
+            raise_service_unavailable()
+
+        success, result, message = sfm_adapter.execute_function("ai_assistant_security_tips", {})
+        if not success or not isinstance(result, dict):
+            logger.warning("SFM security_tips failed: %s", message)
+            raise_service_unavailable()
+
         return SecurityTipsResponse(
-            daily_tips=[
-                "Всегда проверяйте URL перед вводом личных данных",
-                "Используйте менеджер паролей для сложных комбинаций",
-                "Регулярно обновляйте приложения и ОС",
-                "Будьте осторожны с email от неизвестных отправителей"
-            ],
-            weekly_focus="Защита от фишинга",
-            monthly_goal="Достичь 100% безопасности"
+            daily_tips=result.get("daily_tips", []),
+            weekly_focus=result.get("weekly_focus", ""),
+            monthly_goal=result.get("monthly_goal", ""),
         )
+    except HTTPException:
+        raise
     except Exception as e:
-        logger.error(f"Ошибка при получении советов: {e}")
-        return SecurityTipsResponse(
-            daily_tips=[],
-            weekly_focus="N/A",
-            monthly_goal="N/A"
-        )
+        logger.error("Ошибка при получении советов: %s", e)
+        raise_service_unavailable()

@@ -127,11 +127,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "196"
+    static let buildNumber = "197"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "196"
+    static let minimumClientBuildForApiContract = "197"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -193,6 +193,14 @@ struct AppConfig {
         // Family Chat
         static let familyChatMessages = "/api/family/chat/messages"
         static let familyChatSend = "/api/family/chat/send"
+        // E1.2 E2EE key directory
+        static let familyChatE2EEKeysRegister = "/api/family/chat/e2ee/keys/register"
+        static let familyChatE2EEKeys = "/api/family/chat/e2ee/keys"
+        static let familyChatE2EEKeysDevice = "/api/family/chat/e2ee/keys/device"
+        static let familyChatE2EESenderKeysDistribute = "/api/family/chat/e2ee/sender-keys/distribute"
+        static let familyChatE2EESenderKeys = "/api/family/chat/e2ee/sender-keys"
+        static let familyChatE2EEKeysRevoke = "/api/family/chat/e2ee/keys/revoke"
+        static let familyChatUploadMediaCiphertext = "/api/family/chat/upload-media-ciphertext"
         
         // Components (42 components API)
         static let componentStatus = "/api/components/status"
@@ -552,6 +560,8 @@ struct AppConfig {
     
     static let isNetworkProtectionEnabled = true
     static let isAIEnabled = true
+    /// E1.4 — новые текстовые сообщения Family Chat шифруются (envelope v2).
+    static let isFamilyChatE2EEEnabled = true
     static let isParentalControlEnabled = true
     static let isAnalyticsEnabled = true
     
@@ -646,6 +656,13 @@ extension AppConfig {
         static let pendingMagicAuthToken = "pending_magic_auth_token"
         /// Рубильник серверного сканирования Dark Web (`false` = UI и API-вызовы скана отключены). По умолчанию включено.
         static let darkWebServerScanEnabled = "dark_web_server_scan_enabled"
+        /// P0: opt-in отправки текста вопросов на сервер AI (по умолчанию выключено).
+        static let aiDataSharingEnabled = "ai_data_sharing_enabled"
+    }
+
+    /// Opt-in: облачный AI-ассистент (текст уходит на aladdin-ai.ru после redact).
+    static var isAIDataSharingEnabled: Bool {
+        UserDefaults.standard.bool(forKey: UserDefaultsKeys.aiDataSharingEnabled)
     }
 
     /// Продуктовый рубильник: серверные POST сканирования Dark Web (`/api/reports/dark-web/scan/*`).
@@ -717,10 +734,8 @@ extension AppConfig {
         /// Телефон поддержки (отображаемый формат)
         static let supportPhone = "+7 (927) 005-15-77"
         
-        /// URL для Telegram бота поддержки
-        /// ✅ Бот уже настроен и работает: https://t.me/aladdin_support_bot
-        /// При нажатии на кнопку "Чат с поддержкой" откроется Telegram с этим ботом
-        static let supportTelegramURL = "https://t.me/aladdin_support_bot"
+        /// URL для Telegram бота поддержки (@AladdinchatAI_bot — см. SUPPORT_TELEGRAM_BOT_USERNAME).
+        static let supportTelegramURL = "https://t.me/AladdinchatAI_bot"
         
         /// ✅ ИЗМЕНЕНИЕ: Email заменён на AI ассистента
         /// Вместо email пользователи могут отправлять пожелания и рекомендации через AI ассистента в приложении

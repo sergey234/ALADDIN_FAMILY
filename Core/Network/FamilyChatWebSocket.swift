@@ -58,8 +58,11 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
     
     // MARK: - Initialization
     
-    init(familyId: String?, baseURL: String = AppConfig.apiBaseURL) {
+    private let deviceId: String?
+
+    init(familyId: String?, deviceId: String? = FamilyE2EEDeviceIdentity.deviceId(), baseURL: String = AppConfig.apiBaseURL) {
         self.familyId = familyId
+        self.deviceId = deviceId
         self.baseURL = baseURL.replacingOccurrences(of: "/api", with: "").replacingOccurrences(of: "https://", with: "wss://").replacingOccurrences(of: "http://", with: "ws://")
         super.init()
     }
@@ -76,8 +79,18 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
         SyncEngine.shared.publish(domain: .familyChat, operation: "ws_connect", state: .syncing)
         isConnected = false
         
-        let wsURL = "\(baseURL)/ws/family/chat"
-        guard let url = URL(string: wsURL) else {
+        var components = URLComponents(string: "\(baseURL)/ws/family/chat")
+        var query: [URLQueryItem] = []
+        if let familyId = familyId, !familyId.isEmpty {
+            query.append(URLQueryItem(name: "family_id", value: familyId))
+        }
+        if let deviceId = deviceId, !deviceId.isEmpty {
+            query.append(URLQueryItem(name: "device_id", value: deviceId))
+        }
+        if !query.isEmpty {
+            components?.queryItems = query
+        }
+        guard let url = components?.url else {
             setConnectionStatus(.error)
             lastError = "Неверный URL WebSocket"
             return
@@ -100,7 +113,7 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
         startPingTimer()
         installAuthTokenReconnectObserver()
         
-        print("✅ FamilyChatWebSocket: Подключение к \(wsURL)")
+        print("✅ FamilyChatWebSocket: Подключение к \(url.absoluteString)")
     }
 
     private func installAuthTokenReconnectObserver() {
@@ -219,23 +232,16 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
         }
         
         switch type {
-        case "new_message":
-            let blob: [String: Any]? = (json["message"] as? [String: Any]) ?? (json["payload"] as? [String: Any])
-            if let messageData = blob,
-               let jsonData = try? JSONSerialization.data(withJSONObject: messageData) {
-                let message =
-                    (try? Self.snakeCaseMessageDecoder.decode(FamilyChatMessageResponse.self, from: jsonData))
-                    ?? (try? JSONDecoder().decode(FamilyChatMessageResponse.self, from: jsonData))
-                if let message {
-                    DispatchQueue.main.async {
-                        self.onNewMessage?(message)
-                        SyncEngine.shared.publish(
-                            domain: .familyChat,
-                            operation: "ws_new_message",
-                            state: .synced,
-                            recordId: message.id
-                        )
-                    }
+        case "new_message", "message", "chat":
+            if let message = decodeIncomingChatMessage(json) {
+                DispatchQueue.main.async {
+                    self.onNewMessage?(message)
+                    SyncEngine.shared.publish(
+                        domain: .familyChat,
+                        operation: "ws_new_message",
+                        state: .synced,
+                        recordId: message.id
+                    )
                 }
             }
             
@@ -306,6 +312,43 @@ class FamilyChatWebSocket: NSObject, ObservableObject, URLSessionWebSocketDelega
         }
     }
     
+    private func decodeIncomingChatMessage(_ json: [String: Any]) -> FamilyChatMessageResponse? {
+        if let blob = (json["message"] as? [String: Any]) ?? (json["payload"] as? [String: Any]),
+           let jsonData = try? JSONSerialization.data(withJSONObject: blob) {
+            return (try? Self.snakeCaseMessageDecoder.decode(FamilyChatMessageResponse.self, from: jsonData))
+                ?? (try? JSONDecoder().decode(FamilyChatMessageResponse.self, from: jsonData))
+        }
+
+        let env = (json["envelope_version"] as? Int) ?? (json["envelopeVersion"] as? Int) ?? 1
+        if env == 2, let cipher = json["ciphertext"] as? String, !cipher.isEmpty {
+            let messageId = (json["message_id"] as? String) ?? (json["messageId"] as? String) ?? UUID().uuidString
+            return FamilyChatMessageResponse(
+                id: messageId,
+                sender: (json["sender"] as? String) ?? "Family",
+                text: nil,
+                timestamp: (json["timestamp"] as? String) ?? ISO8601DateFormatter().string(from: Date()),
+                isCurrentUser: false,
+                messageType: (json["message_type"] as? String) ?? (json["messageType"] as? String) ?? "text",
+                voiceUrl: nil,
+                voiceDuration: nil,
+                mediaUrl: nil,
+                mediaThumbnailUrl: nil,
+                mediaType: nil,
+                replyToMessageId: nil,
+                reactions: nil,
+                readStatus: nil,
+                readAt: nil,
+                editedAt: nil,
+                envelopeVersion: 2,
+                senderDeviceId: (json["sender_device_id"] as? String) ?? (json["senderDeviceId"] as? String),
+                ciphertext: cipher,
+                ciphertextContentType: 0,
+                isLegacyPlaintext: false
+            )
+        }
+        return nil
+    }
+
     // MARK: - Ping/Pong
     
     private func startPingTimer() {

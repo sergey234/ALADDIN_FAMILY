@@ -46,6 +46,7 @@ struct FamilyChatScreen: View {
     @ObservedObject private var offlineManager = FamilyChatOfflineManager.shared
     @ObservedObject private var mediaUploadManager = MediaUploadManager.shared
     @ObservedObject private var pushService = PushNotificationService.shared
+    @ObservedObject private var e2eeManager = FamilyE2EEManager.shared
     @State private var webSocket: FamilyChatWebSocket?
     @State private var isRecordingVoice: Bool = false
     @State private var recordingURL: URL? = nil
@@ -121,6 +122,14 @@ struct FamilyChatScreen: View {
                 familyChatWebSocketBanner
             }
 
+            if AppConfig.isFamilyChatE2EEEnabled && !e2eeManager.isReady {
+                familyChatE2EEBanner
+            }
+
+            if familyChatHasLegacyMessages {
+                familyChatLegacyThreadBanner
+            }
+
             if !onlineUsers.isEmpty {
                 familyChatOnlineMembersStrip
             }
@@ -143,6 +152,38 @@ struct FamilyChatScreen: View {
 
             familyChatMessagesScrollArea
         }
+    }
+
+    private var familyChatHasLegacyMessages: Bool {
+        AppConfig.isFamilyChatE2EEEnabled && messages.contains { $0.isLegacyPlaintext }
+    }
+
+    private var familyChatLegacyThreadBanner: some View {
+        HStack(spacing: Spacing.s) {
+            Image(systemName: "exclamationmark.shield.fill")
+                .foregroundColor(.orange)
+            Text(localizationManager.localized("family_chat_legacy_thread_hint"))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, Spacing.screenPadding)
+        .padding(.vertical, Spacing.s)
+    }
+
+    private var familyChatE2EEBanner: some View {
+        HStack(spacing: Spacing.s) {
+            Image(systemName: "lock.fill")
+                .foregroundColor(.secondaryGold)
+            Text(localizationManager.localized("family_chat_e2ee_setup"))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, Spacing.screenPadding)
+        .padding(.vertical, Spacing.s)
     }
 
     private var familyChatWebSocketBanner: some View {
@@ -296,6 +337,9 @@ struct FamilyChatScreen: View {
                 loadCachedMessages()
                 let hadCachedSnapshot = !messages.isEmpty
                 loadMessages(silent: hadCachedSnapshot)
+                if AppConfig.isFamilyChatE2EEEnabled, let fid = getFamilyId(), !fid.isEmpty {
+                    await e2eeManager.bootstrap(familyId: fid)
+                }
                 setupWebSocket()
                 setupPushNotifications()
             }
@@ -764,6 +808,9 @@ struct FamilyChatScreen: View {
 
                 switch result {
                 case .success(let responses):
+                    if let fid = getFamilyId(), !fid.isEmpty {
+                        offlineManager.cacheMessages(responses, familyId: fid)
+                    }
                     let serverList = responses.map { convertToMessage($0) }
                     if silent {
                         // Пустой ответ после отправки часто затирал оптимистичные пузыри (сервер ещё не отдал запись в GET).
@@ -901,33 +948,193 @@ struct FamilyChatScreen: View {
     // MARK: - Data Conversion
     
     private func convertToMessage(_ response: FamilyChatMessageResponse) -> FamilyChatMessage {
-        let timeString = formatTimestamp(response.timestamp)
-        let msgType = MessageType(rawValue: response.messageType ?? "text") ?? .text
-        var mediaKind: MediaType? = response.mediaType.flatMap { MediaType(rawValue: $0) }
+        let familyId = getFamilyId() ?? ""
+        let decoded: FamilyChatMessageResponse
+        if AppConfig.isFamilyChatE2EEEnabled, !familyId.isEmpty {
+            decoded = FamilyE2EEManager.shared.decryptIncoming(response, familyId: familyId)
+        } else {
+            decoded = response
+        }
+        let timeString = formatTimestamp(decoded.timestamp)
+        let msgType = MessageType(rawValue: decoded.messageType ?? "text") ?? .text
+        var mediaKind: MediaType? = decoded.mediaType.flatMap { MediaType(rawValue: $0) }
         if mediaKind == nil, msgType == .voice || msgType == .audio {
             mediaKind = msgType == .audio ? .audio : .voice
         }
-        
-        return FamilyChatMessage(
-            id: response.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                ? UUID().uuidString
-                : response.id,
-            sender: response.sender,
-            text: response.text,
-            time: timeString,
-            isCurrentUser: response.isCurrentUser,
-            messageType: msgType,
-            voiceUrl: response.voiceUrl,
-            voiceDuration: response.voiceDuration,
-            mediaUrl: response.mediaUrl,
-            mediaThumbnailUrl: response.mediaThumbnailUrl,
-            mediaType: mediaKind,
-            replyToMessageId: response.replyToMessageId,
-            reactions: response.reactions ?? [],
-            readStatus: response.readStatus,
-            readAt: response.readAt,
-            editedAt: response.editedAt
+        let legacy = FamilyChatE2EULegacyPolicy.isLegacyMessage(response: decoded)
+        let e2ee = FamilyChatE2EULegacyPolicy.isE2EEMessage(response: decoded)
+        let decryptFailed = FamilyChatE2EULegacyPolicy.decryptionFailed(response: decoded, afterDecrypt: decoded.text)
+        let redacted = legacy && FamilyChatE2EULegacyPolicy.shouldRedactLegacyPlaintext(timestamp: decoded.timestamp)
+        let visibleText = FamilyChatE2EULegacyPolicy.displayText(
+            raw: decoded.text,
+            timestamp: decoded.timestamp,
+            isLegacy: legacy,
+            decryptionFailed: decryptFailed
         )
+
+        var encryptedMedia = FamilyE2EEManager.encryptedMedia(from: decoded, familyId: familyId)
+        if encryptedMedia == nil,
+           e2ee,
+           let b64 = decoded.ciphertext?.trimmingCharacters(in: .whitespacesAndNewlines),
+           !b64.isEmpty,
+           let inner = try? FamilyE2EECryptoEngine.decrypt(ciphertextBase64: b64, familyId: familyId),
+           let m = inner.media {
+            encryptedMedia = FamilyChatEncryptedMedia(
+                ciphertextUrl: m.url,
+                contentHash: m.hash,
+                keyBase64: m.key,
+                duration: m.duration,
+                mimeType: m.mime,
+                messageType: inner.t
+            )
+        }
+
+        return FamilyChatMessage(
+            id: decoded.id.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                ? UUID().uuidString
+                : decoded.id,
+            sender: decoded.sender,
+            text: visibleText,
+            time: timeString,
+            isCurrentUser: decoded.isCurrentUser,
+            messageType: msgType,
+            voiceUrl: legacy ? decoded.voiceUrl : nil,
+            voiceDuration: decoded.voiceDuration,
+            mediaUrl: legacy ? decoded.mediaUrl : nil,
+            mediaThumbnailUrl: legacy ? decoded.mediaThumbnailUrl : nil,
+            mediaType: mediaKind,
+            replyToMessageId: decoded.replyToMessageId,
+            reactions: decoded.reactions ?? [],
+            readStatus: decoded.readStatus,
+            readAt: decoded.readAt,
+            editedAt: decoded.editedAt,
+            envelopeVersion: FamilyChatE2EULegacyPolicy.envelopeVersion(from: decoded),
+            isLegacyPlaintext: legacy,
+            isE2EEMessage: e2ee,
+            decryptionFailed: decryptFailed,
+            rawTimestamp: decoded.timestamp,
+            isRedactedLegacy: redacted,
+            encryptedMedia: encryptedMedia
+        )
+    }
+
+    /// После upload: v2 ciphertext + blob URL или legacy plaintext URLs.
+    private func submitMediaChatMessage(
+        familyId: String,
+        messageId: String,
+        messageType: String,
+        uploadType: UploadMediaType,
+        uploadedUrl: String,
+        voiceDuration: Double?,
+        replyToMessageId: String?
+    ) {
+        guard requireE2EEReady(context: "submitMedia.e2ee") else { return }
+
+        let useE2EE = AppConfig.isFamilyChatE2EEEnabled && e2eeManager.isReady
+        if useE2EE, let meta = mediaUploadManager.lastE2EEUpload(forMessageId: messageId) {
+            do {
+                let mime = uploadMimeType(uploadType)
+                let enc = try e2eeManager.encryptOutgoingMedia(
+                    familyId: familyId,
+                    messageType: messageType,
+                    ciphertextUrl: meta.url,
+                    contentHash: meta.hash,
+                    keyBase64: meta.keyBase64,
+                    duration: voiceDuration,
+                    mimeType: mime
+                )
+                apiService.sendFamilyChatMessage(
+                    message: nil,
+                    familyId: familyId,
+                    messageType: messageType,
+                    voiceUrl: nil,
+                    voiceDuration: voiceDuration,
+                    mediaUrl: nil,
+                    mediaType: uploadType.rawValue,
+                    replyToMessageId: replyToMessageId,
+                    envelopeVersion: 2,
+                    senderDeviceId: enc.senderDeviceId,
+                    ciphertext: enc.ciphertext,
+                    mediaCiphertextUrl: meta.url,
+                    mediaCiphertextHash: meta.hash
+                ) { [self] sendResult in
+                    handleMediaSendResult(sendResult, familyId: familyId, messageId: messageId, messageType: messageType, uploadedUrl: uploadedUrl, voiceDuration: voiceDuration, replyToMessageId: replyToMessageId)
+                }
+            } catch {
+                presentChatError(
+                    localizationManager.localized("family_chat_error_send_response"),
+                    context: "submitMedia.e2ee",
+                    underlying: error
+                )
+            }
+            return
+        }
+
+        presentChatError(
+            localizationManager.localized("family_chat_e2ee_not_ready"),
+            context: "submitMedia.e2eeMissingMeta"
+        )
+    }
+
+    private func handleMediaSendResult(
+        _ sendResult: Result<SendFamilyChatMessageResponse, Error>,
+        familyId: String,
+        messageId: String,
+        messageType: String,
+        uploadedUrl: String,
+        voiceDuration: Double?,
+        replyToMessageId: String?
+    ) {
+        DispatchQueue.main.async {
+            switch sendResult {
+            case .success(let r):
+                guard self.isSuccessfulSendResponse(r) else {
+                    self.presentChatError(
+                        self.localizationManager.localized("family_chat_error_send_response"),
+                        context: "submitMedia.contract",
+                        underlying: nil
+                    )
+                    return
+                }
+                self.replyToMessage = nil
+                self.lastOutboundChatCompletedAt = Date()
+                self.loadMessages(silent: true)
+            case .failure(let err):
+                if self.isFamilyNotFoundForChat(err) {
+                    self.chatFamilyContextInvalid = true
+                    self.presentChatError(
+                        self.localizationManager.localized("family_chat_error_no_server_family"),
+                        context: "submitMedia.familyNotResolved",
+                        underlying: err
+                    )
+                } else {
+                    self.presentChatError(
+                        self.localizedLoadFailureMessage(for: err),
+                        context: "submitMedia",
+                        underlying: err
+                    )
+                }
+                self.offlineManager.addPendingMessage(PendingChatMessage(
+                    id: UUID(uuidString: messageId) ?? UUID(),
+                    text: nil,
+                    familyId: familyId,
+                    messageType: messageType,
+                    voiceUrl: uploadedUrl,
+                    voiceDuration: voiceDuration,
+                    mediaUrl: uploadedUrl,
+                    mediaType: messageType,
+                    replyToMessageId: replyToMessageId
+                ))
+            }
+        }
+    }
+
+    private func uploadMimeType(_ type: UploadMediaType) -> String {
+        switch type {
+        case .image: return "image/jpeg"
+        case .video: return "video/mp4"
+        case .audio, .voice: return "audio/m4a"
+        }
     }
     
     // ✅ ИСПРАВЛЕНИЕ BUILD 90: Статические форматтеры для предотвращения рекурсии
@@ -1139,26 +1346,7 @@ struct FamilyChatScreen: View {
         
         webSocket?.onMessageEdited = { [self] messageId, newText in
             if let index = messages.firstIndex(where: { $0.id == messageId }) {
-                let updatedMessage = messages[index]
-                // Обновляем текст сообщения
-                messages[index] = FamilyChatMessage(
-                    id: updatedMessage.id,
-                    sender: updatedMessage.sender,
-                    text: newText,
-                    time: updatedMessage.time,
-                    isCurrentUser: updatedMessage.isCurrentUser,
-                    messageType: updatedMessage.messageType,
-                    voiceUrl: updatedMessage.voiceUrl,
-                    voiceDuration: updatedMessage.voiceDuration,
-                    mediaUrl: updatedMessage.mediaUrl,
-                    mediaThumbnailUrl: updatedMessage.mediaThumbnailUrl,
-                    mediaType: updatedMessage.mediaType,
-                    replyToMessageId: updatedMessage.replyToMessageId,
-                    reactions: updatedMessage.reactions,
-                    readStatus: updatedMessage.readStatus,
-                    readAt: updatedMessage.readAt,
-                    editedAt: getCurrentTime()
-                )
+                messages[index] = messages[index].withUpdatedText(newText, editedAt: getCurrentTime())
             }
         }
         
@@ -1170,9 +1358,21 @@ struct FamilyChatScreen: View {
         pushService.requestAuthorization()
     }
     
+    /// E2EE обязателен — без silent plaintext fallback.
+    private func requireE2EEReady(context: String) -> Bool {
+        guard !AppConfig.isFamilyChatE2EEEnabled || e2eeManager.isReady else {
+            presentChatError(
+                localizationManager.localized("family_chat_e2ee_not_ready"),
+                context: context
+            )
+            return false
+        }
+        return true
+    }
+
     /// Загрузка кэшированных сообщений
     private func loadCachedMessages() {
-        let cached = offlineManager.loadCachedMessages()
+        let cached = offlineManager.loadCachedMessages(familyId: getFamilyId())
         if messages.isEmpty && !cached.isEmpty {
             messages = cached.map { convertToMessage($0) }
         }
@@ -1252,60 +1452,16 @@ struct FamilyChatScreen: View {
                         messages[idx] = m
                     }
                     
-                    self.apiService.sendFamilyChatMessage(
-                        message: nil,
+                    self.submitMediaChatMessage(
                         familyId: familyId,
+                        messageId: messageId,
                         messageType: "voice",
-                        voiceUrl: uploadedUrl,
+                        uploadType: .voice,
+                        uploadedUrl: uploadedUrl,
                         voiceDuration: duration,
-                        mediaUrl: uploadedUrl,
-                        mediaType: "voice",
                         replyToMessageId: self.replyToMessage?.id
-                    ) { sendResult in
-                        DispatchQueue.main.async {
-                            switch sendResult {
-                            case .success(let r):
-                                guard self.isSuccessfulSendResponse(r) else {
-                                    self.presentChatError(
-                                        self.localizationManager.localized("family_chat_error_send_response"),
-                                        context: "sendVoiceMessage.apiSend.contract",
-                                        underlying: nil
-                                    )
-                                    return
-                                }
-                                self.replyToMessage = nil
-                                self.lastOutboundChatCompletedAt = Date()
-                                self.loadMessages(silent: true)
-                            case .failure(let err):
-                                if self.isFamilyNotFoundForChat(err) {
-                                    self.chatFamilyContextInvalid = true
-                                    self.presentChatError(
-                                        self.localizationManager.localized("family_chat_error_no_server_family"),
-                                        context: "sendVoiceMessage.apiSend.familyNotResolved",
-                                        underlying: err
-                                    )
-                                } else {
-                                    self.presentChatError(
-                                        self.localizedLoadFailureMessage(for: err),
-                                        context: "sendVoiceMessage.apiSend",
-                                        underlying: err
-                                    )
-                                }
-                                self.offlineManager.addPendingMessage(PendingChatMessage(
-                                    id: UUID(uuidString: messageId)!,
-                                    text: nil,
-                                    familyId: familyId,
-                                    messageType: "voice",
-                                    voiceUrl: uploadedUrl,
-                                    voiceDuration: duration,
-                                    mediaUrl: uploadedUrl,
-                                    mediaType: "voice",
-                                    replyToMessageId: self.replyToMessage?.id
-                                ))
-                            }
-                        }
-                    }
-                    
+                    )
+
                 case .failure(let error):
                     presentChatError(
                         localizedLoadFailureMessage(for: error),
@@ -1395,58 +1551,16 @@ struct FamilyChatScreen: View {
                         )
                     }
                     
-                    self.apiService.sendFamilyChatMessage(
-                        message: nil,
+                    self.submitMediaChatMessage(
                         familyId: familyId,
+                        messageId: messageId,
                         messageType: "image",
-                        voiceUrl: nil,
+                        uploadType: .image,
+                        uploadedUrl: mediaUrl,
                         voiceDuration: nil,
-                        mediaUrl: mediaUrl,
-                        mediaType: "image",
                         replyToMessageId: self.replyToMessage?.id
-                    ) { sendResult in
-                        DispatchQueue.main.async {
-                            switch sendResult {
-                            case .success(let r):
-                                guard self.isSuccessfulSendResponse(r) else {
-                                    self.presentChatError(
-                                        self.localizationManager.localized("family_chat_error_send_response"),
-                                        context: "sendMediaMessage.apiSend.contract",
-                                        underlying: nil
-                                    )
-                                    return
-                                }
-                                self.replyToMessage = nil
-                                self.lastOutboundChatCompletedAt = Date()
-                                self.loadMessages(silent: true)
-                            case .failure(let err):
-                                if self.isFamilyNotFoundForChat(err) {
-                                    self.chatFamilyContextInvalid = true
-                                    self.presentChatError(
-                                        self.localizationManager.localized("family_chat_error_no_server_family"),
-                                        context: "sendMediaMessage.apiSend.familyNotResolved",
-                                        underlying: err
-                                    )
-                                } else {
-                                    self.presentChatError(
-                                        self.localizedLoadFailureMessage(for: err),
-                                        context: "sendMediaMessage.apiSend",
-                                        underlying: err
-                                    )
-                                }
-                                self.offlineManager.addPendingMessage(PendingChatMessage(
-                                    id: UUID(uuidString: messageId)!,
-                                    text: nil,
-                                    familyId: familyId,
-                                    messageType: "image",
-                                    mediaUrl: mediaUrl,
-                                    mediaType: "image",
-                                    replyToMessageId: self.replyToMessage?.id
-                                ))
-                            }
-                        }
-                    }
-                    
+                    )
+
                 case .failure(let error):
                     presentChatError(
                         localizedLoadFailureMessage(for: error),
@@ -1533,6 +1647,13 @@ struct FamilyChatScreen: View {
     
     /// Начало редактирования сообщения
     private func startEditing(_ message: FamilyChatMessage) {
+        guard FamilyChatE2EULegacyPolicy.canEdit(message: message) else {
+            presentChatError(
+                localizationManager.localized("family_chat_error_edit_not_allowed"),
+                context: "startEditing.e2eeOrLegacy"
+            )
+            return
+        }
         editingMessage = message
         editText = message.text ?? ""
         showMessageActions = false
@@ -1547,25 +1668,7 @@ struct FamilyChatScreen: View {
                 switch result {
                 case .success(_):
                     if let index = messages.firstIndex(where: { $0.id == message.id }) {
-                        let updated = messages[index]
-                        messages[index] = FamilyChatMessage(
-                            id: updated.id,
-                            sender: updated.sender,
-                            text: editText,
-                            time: updated.time,
-                            isCurrentUser: updated.isCurrentUser,
-                            messageType: updated.messageType,
-                            voiceUrl: updated.voiceUrl,
-                            voiceDuration: updated.voiceDuration,
-                            mediaUrl: updated.mediaUrl,
-                            mediaThumbnailUrl: updated.mediaThumbnailUrl,
-                            mediaType: updated.mediaType,
-                            replyToMessageId: updated.replyToMessageId,
-                            reactions: updated.reactions,
-                            readStatus: updated.readStatus,
-                            readAt: updated.readAt,
-                            editedAt: getCurrentTime()
-                        )
+                        messages[index] = messages[index].withUpdatedText(editText, editedAt: getCurrentTime())
                     }
                     editingMessage = nil
                     editText = ""
@@ -1667,6 +1770,8 @@ struct FamilyChatScreen: View {
             presentChatError(localizationManager.localized("family_chat_error_family_missing"), context: "sendMessage.noFamilyId")
             return
         }
+        guard requireE2EEReady(context: "sendMessage.e2ee") else { return }
+
         isSending = true
         markFamilyActivity()
         typingTextDebounceTask?.cancel()
@@ -1677,15 +1782,47 @@ struct FamilyChatScreen: View {
         let impactFeedback = UIImpactFeedbackGenerator(style: .light)
         impactFeedback.impactOccurred()
         
+        var envelopeVersion: Int? = nil
+        var senderDeviceId: String? = nil
+        var ciphertext: String? = nil
+        var plaintextForSend: String? = nil
+
+        if AppConfig.isFamilyChatE2EEEnabled {
+            do {
+                let enc = try e2eeManager.encryptOutgoing(
+                    plaintext: messageToSend,
+                    messageType: "text",
+                    familyId: familyId
+                )
+                envelopeVersion = 2
+                senderDeviceId = enc.senderDeviceId
+                ciphertext = enc.ciphertext
+            } catch {
+                isSending = false
+                messageText = messageToSend
+                presentChatError(
+                    localizationManager.localized("family_chat_error_send_response"),
+                    context: "sendMessage.e2ee",
+                    underlying: error
+                )
+                return
+            }
+        } else {
+            plaintextForSend = messageToSend
+        }
+
         apiService.sendFamilyChatMessage(
-            message: messageToSend,
+            message: plaintextForSend,
             familyId: familyId,
             messageType: "text",
             voiceUrl: nil,
             voiceDuration: nil,
             mediaUrl: nil,
             mediaType: nil,
-            replyToMessageId: replyToMessage?.id
+            replyToMessageId: replyToMessage?.id,
+            envelopeVersion: envelopeVersion,
+            senderDeviceId: senderDeviceId,
+            ciphertext: ciphertext
         ) { [self] result in
             DispatchQueue.main.async {
                 isSending = false
@@ -1724,7 +1861,13 @@ struct FamilyChatScreen: View {
                         readStatus: nil,
                         readAt: nil,
                         editedAt: nil,
-                        uploadProgress: nil
+                        uploadProgress: nil,
+                        envelopeVersion: envelopeVersion ?? 1,
+                        isLegacyPlaintext: false,
+                        isE2EEMessage: envelopeVersion == 2,
+                        decryptionFailed: false,
+                        rawTimestamp: nil,
+                        isRedactedLegacy: false
                     )
                     if !messages.contains(where: { $0.id == optimisticId }) {
                         messages.append(optimistic)
@@ -1741,11 +1884,14 @@ struct FamilyChatScreen: View {
                 case .failure(let error):
                     messageText = messageToSend
 
-                    if offlineManager.isOffline {
+                    if offlineManager.isOffline, AppConfig.isFamilyChatE2EEEnabled, let cipher = ciphertext {
                         offlineManager.addPendingMessage(PendingChatMessage(
-                            text: messageToSend,
+                            text: nil,
                             familyId: familyId,
-                            replyToMessageId: replyToMessage?.id
+                            replyToMessageId: replyToMessage?.id,
+                            envelopeVersion: 2,
+                            senderDeviceId: senderDeviceId,
+                            ciphertext: cipher
                         ))
                     }
 
@@ -1961,6 +2107,19 @@ struct FamilyChatMessage: Identifiable {
     
     // Локальное состояние для UI
     var uploadProgress: Double? = nil // 0.0...1.0 для отображения прогресса
+
+    // E1.5 E2EE / legacy
+    let envelopeVersion: Int?
+    let isLegacyPlaintext: Bool
+    let isE2EEMessage: Bool
+    let decryptionFailed: Bool
+    let rawTimestamp: String?
+    /// Текст скрыт по политике 90 дней (legacy на сервере).
+    let isRedactedLegacy: Bool
+    let encryptedMedia: FamilyChatEncryptedMedia?
+
+    var showsLegacyBanner: Bool { isLegacyPlaintext && !decryptionFailed }
+    var showsE2EELock: Bool { isE2EEMessage && !decryptionFailed && !isLegacyPlaintext }
     
     init(id: String = UUID().uuidString, 
          sender: String, 
@@ -1978,7 +2137,14 @@ struct FamilyChatMessage: Identifiable {
          readStatus: String? = nil,
          readAt: String? = nil,
          editedAt: String? = nil,
-         uploadProgress: Double? = nil) {
+         uploadProgress: Double? = nil,
+         envelopeVersion: Int? = nil,
+         isLegacyPlaintext: Bool = false,
+         isE2EEMessage: Bool = false,
+         decryptionFailed: Bool = false,
+         rawTimestamp: String? = nil,
+         isRedactedLegacy: Bool = false,
+         encryptedMedia: FamilyChatEncryptedMedia? = nil) {
         
         self.id = id
         self.sender = sender
@@ -1997,6 +2163,42 @@ struct FamilyChatMessage: Identifiable {
         self.readAt = readAt
         self.editedAt = editedAt
         self.uploadProgress = uploadProgress
+        self.envelopeVersion = envelopeVersion
+        self.isLegacyPlaintext = isLegacyPlaintext
+        self.isE2EEMessage = isE2EEMessage
+        self.decryptionFailed = decryptionFailed
+        self.rawTimestamp = rawTimestamp
+        self.isRedactedLegacy = isRedactedLegacy
+        self.encryptedMedia = encryptedMedia
+    }
+
+    func withUpdatedText(_ newText: String, editedAt: String?) -> FamilyChatMessage {
+        FamilyChatMessage(
+            id: id,
+            sender: sender,
+            text: newText,
+            time: time,
+            isCurrentUser: isCurrentUser,
+            messageType: messageType,
+            voiceUrl: voiceUrl,
+            voiceDuration: voiceDuration,
+            mediaUrl: mediaUrl,
+            mediaThumbnailUrl: mediaThumbnailUrl,
+            mediaType: mediaType,
+            replyToMessageId: replyToMessageId,
+            reactions: reactions,
+            readStatus: readStatus,
+            readAt: readAt,
+            editedAt: editedAt,
+            uploadProgress: uploadProgress,
+            envelopeVersion: envelopeVersion,
+            isLegacyPlaintext: isLegacyPlaintext,
+            isE2EEMessage: isE2EEMessage,
+            decryptionFailed: decryptionFailed,
+            rawTimestamp: rawTimestamp,
+            isRedactedLegacy: isRedactedLegacy,
+            encryptedMedia: encryptedMedia
+        )
     }
 }
 
@@ -2079,18 +2281,43 @@ struct MessageBubbleView: View {
                                     .font(.captionBold)
                                     .foregroundColor(.secondaryGold)
                             }
+
+                            if message.showsLegacyBanner {
+                                familyChatSecurityCaption(
+                                    icon: "exclamationmark.shield",
+                                    text: localizationManager.localized("family_chat_legacy_not_e2ee")
+                                )
+                            } else if message.decryptionFailed {
+                                familyChatSecurityCaption(
+                                    icon: "lock.slash",
+                                    text: localizationManager.localized("family_chat_e2ee_decrypt_failed")
+                                )
+                            } else if message.isRedactedLegacy {
+                                familyChatSecurityCaption(
+                                    icon: "clock.badge.exclamationmark",
+                                    text: localizationManager.localized("family_chat_legacy_redacted")
+                                )
+                            }
                             
-                            if let text = message.text {
-                                Text(text)
-                                    .font(.body)
-                                    .foregroundColor(message.isCurrentUser ? Color.white : Color(UIColor.label))
-                                    .padding(Spacing.m)
-                                    .background(
-                                        message.isCurrentUser
-                                            ? Color.primaryBlue
-                                            : Color(UIColor.secondarySystemBackground)
-                                    )
-                                    .cornerRadius(CornerRadius.medium)
+                            if let text = message.text, !text.isEmpty {
+                                HStack(alignment: .top, spacing: 6) {
+                                    if message.showsE2EELock {
+                                        Image(systemName: "lock.fill")
+                                            .font(.caption)
+                                            .foregroundColor(message.isCurrentUser ? Color.white.opacity(0.85) : .secondaryGold)
+                                            .padding(.top, 2)
+                                    }
+                                    Text(text)
+                                        .font(.body)
+                                        .foregroundColor(message.isCurrentUser ? Color.white : Color(UIColor.label))
+                                }
+                                .padding(Spacing.m)
+                                .background(
+                                    message.isCurrentUser
+                                        ? Color.primaryBlue
+                                        : Color(UIColor.secondarySystemBackground)
+                                )
+                                .cornerRadius(CornerRadius.medium)
                             }
                             
                             HStack(spacing: Spacing.xs) {
@@ -2136,6 +2363,22 @@ struct MessageBubbleView: View {
         }
     }
     
+    @ViewBuilder
+    private func familyChatSecurityCaption(icon: String, text: String) -> some View {
+        HStack(spacing: 6) {
+            Image(systemName: icon)
+                .font(.caption2)
+            Text(text)
+                .font(.caption2)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .foregroundColor(.textTertiary)
+        .padding(.horizontal, Spacing.s)
+        .padding(.vertical, 4)
+        .background(Color(UIColor.tertiarySystemFill))
+        .cornerRadius(CornerRadius.small)
+    }
+
     private var statusIcon: String {
         switch message.readStatus {
         case "read":
@@ -2204,7 +2447,7 @@ struct MessageContextMenu: View {
                 Label(localizationManager.localized("family_chat_reaction_add"), systemImage: "face.smiling")
             }
             
-            if message.isCurrentUser && message.messageType == .text {
+            if FamilyChatE2EULegacyPolicy.canEdit(message: message) {
                 Button(action: onEdit) {
                     Label(localizationManager.localized("family_chat_message_edit"), systemImage: "pencil")
                 }

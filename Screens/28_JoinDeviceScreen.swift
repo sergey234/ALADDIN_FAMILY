@@ -144,9 +144,8 @@ struct JoinDeviceScreen: View {
             bindWithToken(t)
             return
         }
-        let key = AppConfig.UserDefaultsKeys.pendingDeviceBindToken
-        if let s = UserDefaults.standard.string(forKey: key)?.trimmingCharacters(in: .whitespacesAndNewlines), !s.isEmpty {
-            UserDefaults.standard.removeObject(forKey: key)
+        if let s = PendingAuthTokenStore.loadDeviceBindToken() {
+            PendingAuthTokenStore.clearDeviceBindToken()
             if let token = DevicePairingLinkParser.extractToken(fromScannedString: s)
                 ?? URL(string: s).flatMap({ DevicePairingLinkParser.extractToken(from: $0) }) {
                 bindWithToken(token)

@@ -98,9 +98,20 @@
             ReferencedContainer = "container:ALADDIN.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
+      <CommandLineArguments>
+         <CommandLineArgument
+            argument = "-RESET_ONBOARDING"
+            isEnabled = "NO">
+         </CommandLineArgument>
+      </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "DISABLE_SSL_PINNING"
+            value = "1"
+            isEnabled = "YES">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "RESET_ONBOARDING"
             value = "1"
             isEnabled = "YES">
          </EnvironmentVariable>

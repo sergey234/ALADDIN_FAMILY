@@ -488,17 +488,29 @@ struct ChatMessageRequest: Codable {
     }
 }
 
+struct AISuggestedActionDTO: Codable, Equatable, Identifiable {
+    let id: String
+    let title: String
+}
+
 struct ChatMessageResponse: Codable {
     let response: String
     let confidence: Double?
     let suggestions: [String]?
     let followUpQuestions: [String]?
-    let timestamp: String?  // ✅ ИСПРАВЛЕНО: Изменено с Date? на String? для совместимости с сервером
+    let timestamp: String?
+    let intent: String?
+    let grounded: Bool?
+    let toolsUsed: [String]?
+    let suggestedActions: [AISuggestedActionDTO]?
 
     enum CodingKeys: String, CodingKey {
         case response, confidence, suggestions
         case followUpQuestions = "follow_up_questions"
         case timestamp
+        case intent, grounded
+        case toolsUsed = "tools_used"
+        case suggestedActions = "suggested_actions"
         case message, answer, result, detail, error
     }
 
@@ -517,6 +529,10 @@ struct ChatMessageResponse: Codable {
         self.suggestions = try? container.decode([String].self, forKey: .suggestions)
         self.followUpQuestions = try? container.decode([String].self, forKey: .followUpQuestions)
         self.timestamp = try? container.decode(String.self, forKey: .timestamp)
+        self.intent = try? container.decode(String.self, forKey: .intent)
+        self.grounded = try? container.decode(Bool.self, forKey: .grounded)
+        self.toolsUsed = try? container.decode([String].self, forKey: .toolsUsed)
+        self.suggestedActions = try? container.decode([AISuggestedActionDTO].self, forKey: .suggestedActions)
     }
 
     func encode(to encoder: Encoder) throws {
@@ -526,6 +542,10 @@ struct ChatMessageResponse: Codable {
         try container.encodeIfPresent(suggestions, forKey: .suggestions)
         try container.encodeIfPresent(followUpQuestions, forKey: .followUpQuestions)
         try container.encodeIfPresent(timestamp, forKey: .timestamp)
+        try container.encodeIfPresent(intent, forKey: .intent)
+        try container.encodeIfPresent(grounded, forKey: .grounded)
+        try container.encodeIfPresent(toolsUsed, forKey: .toolsUsed)
+        try container.encodeIfPresent(suggestedActions, forKey: .suggestedActions)
     }
 
     // ✅ ИСПРАВЛЕНИЕ BUILD 90: Статический форматтер для предотвращения рекурсии
@@ -1589,6 +1609,135 @@ struct FamilyChatMessageResponse: Codable, Identifiable {
     let readStatus: String? // "sent", "delivered", "read"
     let readAt: String? // Время прочтения
     let editedAt: String? // Время редактирования
+    // E1.3 / E1.4 E2EE
+    let envelopeVersion: Int?
+    let senderDeviceId: String?
+    let ciphertext: String?
+    let ciphertextContentType: Int?
+    let isLegacyPlaintext: Bool?
+    let mediaCiphertextUrl: String?
+    let mediaCiphertextHash: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id, sender, text, timestamp, isCurrentUser, messageType
+        case voiceUrl, voiceDuration, mediaUrl, mediaThumbnailUrl, mediaType
+        case replyToMessageId, reactions, readStatus, readAt, editedAt
+        case envelopeVersion, envelope_version
+        case senderDeviceId, sender_device_id
+        case ciphertext
+        case ciphertextContentType, ciphertext_content_type
+        case isLegacyPlaintext, legacy_plaintext
+        case mediaCiphertextUrl, media_ciphertext_url
+        case mediaCiphertextHash, media_ciphertext_hash
+    }
+
+    init(
+        id: String,
+        sender: String,
+        text: String?,
+        timestamp: String,
+        isCurrentUser: Bool,
+        messageType: String? = nil,
+        voiceUrl: String? = nil,
+        voiceDuration: Double? = nil,
+        mediaUrl: String? = nil,
+        mediaThumbnailUrl: String? = nil,
+        mediaType: String? = nil,
+        replyToMessageId: String? = nil,
+        reactions: [MessageReaction]? = nil,
+        readStatus: String? = nil,
+        readAt: String? = nil,
+        editedAt: String? = nil,
+        envelopeVersion: Int? = nil,
+        senderDeviceId: String? = nil,
+        ciphertext: String? = nil,
+        ciphertextContentType: Int? = nil,
+        isLegacyPlaintext: Bool? = nil,
+        mediaCiphertextUrl: String? = nil,
+        mediaCiphertextHash: String? = nil
+    ) {
+        self.id = id
+        self.sender = sender
+        self.text = text
+        self.timestamp = timestamp
+        self.isCurrentUser = isCurrentUser
+        self.messageType = messageType
+        self.voiceUrl = voiceUrl
+        self.voiceDuration = voiceDuration
+        self.mediaUrl = mediaUrl
+        self.mediaThumbnailUrl = mediaThumbnailUrl
+        self.mediaType = mediaType
+        self.replyToMessageId = replyToMessageId
+        self.reactions = reactions
+        self.readStatus = readStatus
+        self.readAt = readAt
+        self.editedAt = editedAt
+        self.envelopeVersion = envelopeVersion
+        self.senderDeviceId = senderDeviceId
+        self.ciphertext = ciphertext
+        self.ciphertextContentType = ciphertextContentType
+        self.isLegacyPlaintext = isLegacyPlaintext
+        self.mediaCiphertextUrl = mediaCiphertextUrl
+        self.mediaCiphertextHash = mediaCiphertextHash
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        id = try c.decode(String.self, forKey: .id)
+        sender = try c.decode(String.self, forKey: .sender)
+        text = try c.decodeIfPresent(String.self, forKey: .text)
+        timestamp = try c.decode(String.self, forKey: .timestamp)
+        isCurrentUser = try c.decode(Bool.self, forKey: .isCurrentUser)
+        messageType = try c.decodeIfPresent(String.self, forKey: .messageType)
+        voiceUrl = try c.decodeIfPresent(String.self, forKey: .voiceUrl)
+        voiceDuration = try c.decodeIfPresent(Double.self, forKey: .voiceDuration)
+        mediaUrl = try c.decodeIfPresent(String.self, forKey: .mediaUrl)
+        mediaThumbnailUrl = try c.decodeIfPresent(String.self, forKey: .mediaThumbnailUrl)
+        mediaType = try c.decodeIfPresent(String.self, forKey: .mediaType)
+        replyToMessageId = try c.decodeIfPresent(String.self, forKey: .replyToMessageId)
+        reactions = try c.decodeIfPresent([MessageReaction].self, forKey: .reactions)
+        readStatus = try c.decodeIfPresent(String.self, forKey: .readStatus)
+        readAt = try c.decodeIfPresent(String.self, forKey: .readAt)
+        editedAt = try c.decodeIfPresent(String.self, forKey: .editedAt)
+        envelopeVersion = try c.decodeIfPresent(Int.self, forKey: .envelopeVersion)
+            ?? c.decodeIfPresent(Int.self, forKey: .envelope_version)
+        senderDeviceId = try c.decodeIfPresent(String.self, forKey: .senderDeviceId)
+            ?? c.decodeIfPresent(String.self, forKey: .sender_device_id)
+        ciphertext = try c.decodeIfPresent(String.self, forKey: .ciphertext)
+        ciphertextContentType = try c.decodeIfPresent(Int.self, forKey: .ciphertextContentType)
+            ?? c.decodeIfPresent(Int.self, forKey: .ciphertext_content_type)
+        isLegacyPlaintext = try c.decodeIfPresent(Bool.self, forKey: .isLegacyPlaintext)
+            ?? c.decodeIfPresent(Bool.self, forKey: .legacy_plaintext)
+        mediaCiphertextUrl = try c.decodeIfPresent(String.self, forKey: .mediaCiphertextUrl)
+            ?? c.decodeIfPresent(String.self, forKey: .media_ciphertext_url)
+        mediaCiphertextHash = try c.decodeIfPresent(String.self, forKey: .mediaCiphertextHash)
+            ?? c.decodeIfPresent(String.self, forKey: .media_ciphertext_hash)
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var c = encoder.container(keyedBy: CodingKeys.self)
+        try c.encode(id, forKey: .id)
+        try c.encode(sender, forKey: .sender)
+        try c.encodeIfPresent(text, forKey: .text)
+        try c.encode(timestamp, forKey: .timestamp)
+        try c.encode(isCurrentUser, forKey: .isCurrentUser)
+        try c.encodeIfPresent(messageType, forKey: .messageType)
+        try c.encodeIfPresent(voiceUrl, forKey: .voiceUrl)
+        try c.encodeIfPresent(voiceDuration, forKey: .voiceDuration)
+        try c.encodeIfPresent(mediaUrl, forKey: .mediaUrl)
+        try c.encodeIfPresent(mediaThumbnailUrl, forKey: .mediaThumbnailUrl)
+        try c.encodeIfPresent(mediaType, forKey: .mediaType)
+        try c.encodeIfPresent(replyToMessageId, forKey: .replyToMessageId)
+        try c.encodeIfPresent(reactions, forKey: .reactions)
+        try c.encodeIfPresent(readStatus, forKey: .readStatus)
+        try c.encodeIfPresent(readAt, forKey: .readAt)
+        try c.encodeIfPresent(editedAt, forKey: .editedAt)
+        try c.encodeIfPresent(envelopeVersion, forKey: .envelopeVersion)
+        try c.encodeIfPresent(senderDeviceId, forKey: .senderDeviceId)
+        try c.encodeIfPresent(ciphertext, forKey: .ciphertext)
+        try c.encodeIfPresent(ciphertextContentType, forKey: .ciphertextContentType)
+        try c.encodeIfPresent(isLegacyPlaintext, forKey: .isLegacyPlaintext)
+    }
 }
 
 struct MessageReaction: Codable {
@@ -1606,6 +1755,128 @@ struct SendFamilyChatMessageRequest: Codable {
     let mediaUrl: String? // URL медиа файла
     let mediaType: String? // Тип медиа
     let replyToMessageId: String? // ID сообщения, на которое отвечают
+    let envelopeVersion: Int?
+    let senderDeviceId: String?
+    let ciphertext: String?
+    let ciphertextContentType: Int?
+    let mediaCiphertextUrl: String?
+    let mediaCiphertextHash: String?
+}
+
+// MARK: - Family Chat E2EE (E1.2 / E1.4)
+
+struct E2EESignedPreKeyIn: Codable {
+    let id: Int
+    let `public`: String
+    let signature: String
+}
+
+struct E2EEOneTimePreKeyIn: Codable {
+    let id: Int
+    let `public`: String
+}
+
+struct RegisterE2EEDeviceRequest: Codable {
+    let familyId: String
+    let deviceId: String?
+    let registrationId: Int
+    let identityKeyPublic: String
+    let signedPrekey: E2EESignedPreKeyIn
+    let oneTimePrekeys: [E2EEOneTimePreKeyIn]
+
+    enum CodingKeys: String, CodingKey {
+        case familyId = "family_id"
+        case deviceId = "device_id"
+        case registrationId = "registration_id"
+        case identityKeyPublic = "identity_key_public"
+        case signedPrekey = "signed_prekey"
+        case oneTimePrekeys = "one_time_prekeys"
+    }
+}
+
+struct RegisterE2EEDeviceResponse: Codable {
+    let success: Bool?
+    let deviceId: String?
+    let familyId: String?
+}
+
+struct RevokeE2EEDeviceRequest: Codable {
+    let familyId: String
+    let deviceId: String
+
+    enum CodingKeys: String, CodingKey {
+        case familyId = "family_id"
+        case deviceId = "device_id"
+    }
+}
+
+struct RevokeE2EEDeviceResponse: Codable {
+    let success: Bool?
+    let deviceId: String?
+    let familyId: String?
+}
+
+struct E2EEDeviceListItem: Codable {
+    let deviceId: String
+    let userId: Int
+    let registrationId: Int
+    let identityKeyPublic: String
+    let signedPrekeyId: Int
+    let signedPrekeyPublic: String
+    let signedPrekeySignature: String
+    let oneTimePrekeyCount: Int
+
+    enum CodingKeys: String, CodingKey {
+        case deviceId = "device_id"
+        case userId = "user_id"
+        case registrationId = "registration_id"
+        case identityKeyPublic = "identity_key_public"
+        case signedPrekeyId = "signed_prekey_id"
+        case signedPrekeyPublic = "signed_prekey_public"
+        case signedPrekeySignature = "signed_prekey_signature"
+        case oneTimePrekeyCount = "one_time_prekey_count"
+    }
+}
+
+struct E2EEDeviceListResponse: Codable {
+    let familyId: String
+    let devices: [E2EEDeviceListItem]
+}
+
+struct E2EESenderKeyDistributionItem: Codable {
+    let id: String
+    let senderDeviceId: String
+    let distributionMessage: String
+    let createdAt: String
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case senderDeviceId = "sender_device_id"
+        case distributionMessage = "distribution_message"
+        case createdAt = "created_at"
+    }
+}
+
+struct E2EESenderKeyDistributionListResponse: Codable {
+    let familyId: String
+    let items: [E2EESenderKeyDistributionItem]
+}
+
+struct DistributeE2EESenderKeyRequest: Codable {
+    let familyId: String
+    let senderDeviceId: String
+    let distributionMessage: String
+
+    enum CodingKeys: String, CodingKey {
+        case familyId = "family_id"
+        case senderDeviceId = "sender_device_id"
+        case distributionMessage = "distribution_message"
+    }
+}
+
+struct DistributeE2EESenderKeyResponse: Codable {
+    let success: Bool?
+    let distributionId: String?
 }
 
 struct SendFamilyChatMessageResponse: Codable {

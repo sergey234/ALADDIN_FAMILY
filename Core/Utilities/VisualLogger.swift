@@ -664,21 +664,14 @@ extension View {
     /// Используется для отображения логов на всех страницах приложения, включая модальные окна и подстраницы
     func withVisualLogger() -> some View {
         #if DEBUG
-        return self.overlay(
-            VStack {
-                Spacer()
-                HStack {
-                    Spacer()
-                    VisualLogView()
-                        .environmentObject(LocalizationManager.shared)
-                        .frame(maxWidth: 280)
-                        .padding(.trailing, 16)
-                        .padding(.bottom, 120)
-                        .allowsHitTesting(true) // Only the logger widget should capture taps
-                }
-            }
-            .allowsHitTesting(false) // Do not block interactions with underlying screens
-        )
+        // Без Spacer на весь экран: иначе оверлей занимает весь bounds и перехватывает касания (онбординг, модалки).
+        return self.overlay(alignment: .bottomTrailing) {
+            VisualLogView()
+                .environmentObject(LocalizationManager.shared)
+                .frame(maxWidth: 280)
+                .padding(.trailing, 16)
+                .padding(.bottom, 120)
+        }
         #else
         return self
         #endif

@@ -90,6 +90,13 @@ except ImportError:
         print("⚠️ Предупреждение: FAMILY_API_ENDPOINTS не найден. Endpoint /api/family/stats будет недоступен.")
         family_router_available = False
 
+# ✅ E1.2 Family Chat E2EE key directory
+try:
+    from app.routers import family_e2ee
+    family_e2ee_router_available = True
+except ImportError:
+    family_e2ee_router_available = False
+
 # ✅ ДОБАВЛЕНО: Импортируем роутер для User API compat
 try:
     from app.routers import user as user_router_module
@@ -279,6 +286,16 @@ except ImportError as e:
     ai_assistant_available = False
     ai_assistant_router = None
 
+# Telegram @AladdinchatAI_bot (phase I — not Shop bot)
+try:
+    from security.api.routers.telegram_ai_bot_router import router as telegram_ai_bot_router
+    telegram_ai_bot_available = True
+    print("✅ Telegram AI Bot Router loaded")
+except ImportError as e:
+    print(f"❌ Telegram AI Bot Router not available: {e}")
+    telegram_ai_bot_available = False
+    telegram_ai_bot_router = None
+
 # ✅ ЗАДАЧА 21: Импортируем Components Router
 try:
     from security.api.routers.components_router import router as components_router
@@ -406,42 +423,9 @@ app = FastAPI(
 )
 
 
-class FamilyChatWSManager:
-    def __init__(self):
-        self._rooms = defaultdict(set)
+from app.services.family_chat_realtime import family_ws_manager
+from app.routers.family_chat_v2_pure import sanitize_ws_payload, FamilyChatV2Error
 
-    async def connect(self, family_id: str, websocket: WebSocket):
-        await websocket.accept()
-        self._rooms[family_id].add(websocket)
-        await self.broadcast(
-            family_id,
-            {
-                "type": "presence",
-                "status": "online",
-                "family_id": family_id,
-            },
-        )
-
-    def disconnect(self, family_id: str, websocket: WebSocket):
-        room = self._rooms.get(family_id)
-        if not room:
-            return
-        room.discard(websocket)
-        if not room:
-            self._rooms.pop(family_id, None)
-
-    async def broadcast(self, family_id: str, payload: dict):
-        stale = []
-        for socket in list(self._rooms.get(family_id, set())):
-            try:
-                await socket.send_json(payload)
-            except Exception:
-                stale.append(socket)
-        for socket in stale:
-            self.disconnect(family_id, socket)
-
-
-family_ws_manager = FamilyChatWSManager()
 
 # Настройка CORS (разрешить запросы с любых доменов)
 app.add_middleware(
@@ -552,6 +536,13 @@ logging.getLogger().addFilter(PIIMaskingFilter())
 async def startup_event():
     """Создание таблиц при запуске приложения"""
     Base.metadata.create_all(bind=engine)
+    try:
+        from security.services.ai_history_store import ensure_tables, purge_expired
+
+        ensure_tables()
+        purge_expired()
+    except Exception as exc:
+        logging.getLogger(__name__).warning("AI history startup skipped: %s", exc)
 
 # --- Prometheus Freshness Exporter (pull) ---
 ENV_NAME = os.getenv("ALADDIN_ENV", "production")
@@ -736,6 +727,15 @@ if family_router_available:
 else:
     print("⚠️ Роутер Family API недоступен")
 
+if family_e2ee_router_available:
+    try:
+        app.include_router(family_e2ee.router, tags=["family-e2ee"])
+        print("✅ Роутер Family E2EE подключен: /api/family/chat/e2ee/* доступен")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер Family E2EE: {e}")
+else:
+    print("⚠️ Роутер Family E2EE недоступен")
+
 # ✅ ДОБАВЛЕНО: Добавлен роутер для User API compat
 if user_router_available:
     try:
@@ -915,6 +915,13 @@ if notifications_available:
         print(f"❌ Ошибка подключения Notifications: {e}")
 
 # ✅ ДОБАВЛЕНО: Подключение AI Assistant Router
+if telegram_ai_bot_available:
+    try:
+        app.include_router(telegram_ai_bot_router)
+        print("✅ Роутер Telegram AI Bot подключен")
+    except Exception as e:
+        print(f"❌ Ошибка подключения Telegram AI Bot: {e}")
+
 if ai_assistant_available:
     try:
         app.include_router(ai_assistant_router)
@@ -1048,14 +1055,23 @@ async def family_chat_websocket(websocket: WebSocket):
         while True:
             payload = await websocket.receive_json()
             message_type = payload.get("type", "message")
-            outbound = {
-                "type": message_type,
-                "family_id": family_id,
-                "user_id": payload.get("user_id"),
-                "message": payload.get("message"),
-                "typing": bool(payload.get("typing", False)),
-                "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
-            }
+
+            if message_type in ("message", "new_message", "chat"):
+                try:
+                    outbound = sanitize_ws_payload({**payload, "family_id": family_id})
+                except FamilyChatV2Error as exc:
+                    await websocket.close(code=1008, reason=str(exc))
+                    break
+            else:
+                outbound = {
+                    "type": message_type,
+                    "family_id": family_id,
+                    "user_id": payload.get("user_id"),
+                    "typing": bool(payload.get("typing", False)),
+                    "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
+                }
+                if message_type == "presence":
+                    outbound["status"] = payload.get("status", "online")
             await family_ws_manager.broadcast(family_id, outbound)
     except WebSocketDisconnect:
         family_ws_manager.disconnect(family_id, websocket)

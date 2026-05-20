@@ -426,7 +426,7 @@ struct FamilyScreen: View {
         // 2. Если нет сохранённых данных - создать карточку текущего пользователя
         // ✅ ИСПРАВЛЕНИЕ: Не перезаписываем, если уже есть участники
         if familyMembers.isEmpty {
-            let hasServerFamilyId = !(UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "").isEmpty
+            let hasServerFamilyId = !(FamilyLocalStore.loadPersistedFamilyId() ?? "").isEmpty
             let hasSeededMember = UserDefaults.standard.bool(forKey: familyMemberSeededKey)
             guard !hasServerFamilyId, !hasSeededMember else {
                 print("ℹ️ [loadFamilyMembers] Seed пропущен (hasServerFamilyId=\(hasServerFamilyId), hasSeededMember=\(hasSeededMember))")
@@ -543,7 +543,7 @@ struct FamilyScreen: View {
         }
 
         // Проверяем, есть ли family_id (канонический ключ — FamilyLocalStore)
-        guard let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey),
+        guard let familyId = FamilyLocalStore.loadPersistedFamilyId(),
               !familyId.isEmpty else {
             print("⚠️ [syncFamilyMembersFromAPI] Family ID не найден, пропускаем синхронизацию")
             return
@@ -972,7 +972,7 @@ struct FamilyScreen: View {
             Task {
                 // Быстрая проверка контекста авторизации/семьи, чтобы не отправлять запрос в неверном контексте
                 let currentToken = AppConfig.authToken ?? KeychainManager.shared.loadString(forKey: .authToken)
-                let currentFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
+                let currentFamilyId = FamilyLocalStore.loadPersistedFamilyId()
                 guard let _ = currentToken, let famId = currentFamilyId, !member.name.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
                     await MainActor.run {
                         print("⚠️ [addFamilyMember] Пропускаем серверный add: нет валидного токена/семьи или пустое имя")
@@ -1208,7 +1208,7 @@ struct FamilyScreen: View {
     private func reconcileOrSyncAfterRemove() {
         VisualLogger.shared.log("🔄 RECONCILE/SYNC: family maintenance (reconcile + refresh)", level: .info, category: "FAMILY")
         
-        let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
+        let familyId = FamilyLocalStore.loadPersistedFamilyId()
         let apiService = APIService.shared
         
         apiService.reconcileFamily(familyId: familyId) { result in
@@ -1369,7 +1369,7 @@ struct FamilyScreen: View {
         }
 
         UserDefaults.standard.set(encoded, forKey: familyMembersKey)
-        let fid = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let fid = (FamilyLocalStore.loadPersistedFamilyId() ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         FamilyLocalStore.persistRosterSnapshotFamilyId(fid)
         // Persist not-seen counters
         if let countersData = try? JSONEncoder().encode(notSeenCounters) {
@@ -1514,7 +1514,7 @@ struct FamilyScreen: View {
     // isCurrentUserCreator/isCurrentUserParent updated ONLY in updateAdminStatus()
     // deleteButtonCache prevents canShowDeleteButton() from running 20-50x per render
     private func updateAdminStatus() {
-        let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
+        let familyId = FamilyLocalStore.loadPersistedFamilyId()
         let myMemberId = UserDefaults.standard.string(forKey: "your_member_id") ?? ""
         let isFirstRegistration = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding) == false
 
@@ -1634,7 +1634,7 @@ struct FamilyScreen: View {
                     Button(ru ? "Принять сервер" : "Use server") {
                         _ = ProfileManager.shared.resolveChildRosterConflicts(
                             members: familyMembersAsResponse,
-                            familyId: UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey),
+                            familyId: FamilyLocalStore.loadPersistedFamilyId(),
                             prefer: .serverWins,
                             removeMissingServerLinkedChildren: true
                         )
@@ -1649,7 +1649,7 @@ struct FamilyScreen: View {
                     Button(ru ? "Оставить локальное" : "Keep local") {
                         _ = ProfileManager.shared.resolveChildRosterConflicts(
                             members: familyMembersAsResponse,
-                            familyId: UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey),
+                            familyId: FamilyLocalStore.loadPersistedFamilyId(),
                             prefer: .localWins,
                             removeMissingServerLinkedChildren: true
                         )
@@ -2064,7 +2064,10 @@ struct FamilyScreen: View {
                                 : subscriptionManager.familyQuotaSnapshot.used
                             let currentCount3 = max(familyMembers.count, quotaUsed3)
                             let limit3 = subscriptionManager.familyQuotaSnapshot.max
-                            let capacityText3 = "\(currentCount3) из \(limit3) участников (Tariff)"
+                            // ✅ Локализованный текст емкости (без хардкода и двойных скобок)
+                            let isRussian3 = (UserDefaults.standard.string(forKey: "app_language") ?? "ru") == "ru"
+                            let planLabel3 = isRussian3 ? "Тариф" : "Plan"
+                            let capacityText3 = "\(currentCount3) \(isRussian3 ? "из" : "of") \(limit3) \(isRussian3 ? "участников" : "members") (\(planLabel3))"
 
                             Group {
                                 if !canManageFamilyRoster {
@@ -2122,7 +2125,9 @@ struct FamilyScreen: View {
                                                 )
                                             )
                                             .clipShape(Capsule())
-                                        Text("Достигнут лимит (\(capacityText3)). Обновите тариф.")
+                                        Text(isRussian3
+                                             ? "Достигнут лимит (\(capacityText3)). Обновите тариф."
+                                             : "Limit reached (\(capacityText3)). Upgrade your plan.")
                                             .font(.caption)
                                             .foregroundColor(.secondaryGold)
                                     }
@@ -5988,13 +5993,14 @@ struct ScheduleSettingsModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     private let configurationService = ComponentConfigurationService.shared
     
-    // ✅ BUILD 98: Статический DateFormatter для предотвращения рекурсии
-    private static let timeFormatter: DateFormatter = {
+    // ✅ Динамический DateFormatter — локаль зависит от языка приложения (для корректного отображения времени)
+    private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
-        formatter.locale = Locale(identifier: "ru_RU")  // Статический locale вместо Locale.current
+        let lang = UserDefaults.standard.string(forKey: "app_language") ?? "ru"
+        formatter.locale = Locale(identifier: lang == "ru" ? "ru_RU" : "en_US")
         return formatter
-    }()
+    }
     
     // Сохранение дат через TimeInterval в UserDefaults
     @AppStorage("schedule_weekday_start") private var weekdayStartInterval: Double = 0
@@ -6104,7 +6110,7 @@ struct ScheduleSettingsModal: View {
                 Button(action: {
                     HapticFeedback.impact(.medium)
                     // ✅ BUILD 98: Используем статический DateFormatter для предотвращения рекурсии
-                    print("✅ Schedule saved: weekdays \(Self.timeFormatter.string(from: weekdayStart.wrappedValue)) - \(Self.timeFormatter.string(from: weekdayEnd.wrappedValue)), weekends \(Self.timeFormatter.string(from: weekendStart.wrappedValue)) - \(Self.timeFormatter.string(from: weekendEnd.wrappedValue))")
+                    print("✅ Schedule saved: weekdays \(timeFormatter.string(from: weekdayStart.wrappedValue)) - \(timeFormatter.string(from: weekdayEnd.wrappedValue)), weekends \(timeFormatter.string(from: weekendStart.wrappedValue)) - \(timeFormatter.string(from: weekendEnd.wrappedValue))")
                     Task {
                         await syncScheduleSettingsToServer()
                         await MainActor.run { isPresented = false }
@@ -6171,13 +6177,14 @@ struct SleepTimeSettingsModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     private let configurationService = ComponentConfigurationService.shared
     
-    // ✅ BUILD 98: Статический DateFormatter для предотвращения рекурсии
-    private static let timeFormatter: DateFormatter = {
+    // ✅ Динамический DateFormatter — локаль зависит от языка приложения
+    private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
-        formatter.locale = Locale(identifier: "ru_RU")  // Статический locale вместо Locale.current
+        let lang = UserDefaults.standard.string(forKey: "app_language") ?? "ru"
+        formatter.locale = Locale(identifier: lang == "ru" ? "ru_RU" : "en_US")
         return formatter
-    }()
+    }
     
     // Сохранение дат через TimeInterval в UserDefaults
     @AppStorage("sleep_bedtime_start") private var bedtimeStartInterval: Double = 0
@@ -6246,7 +6253,7 @@ struct SleepTimeSettingsModal: View {
                 Button(action: {
                     HapticFeedback.impact(.medium)
                     // ✅ BUILD 98: Используем статический DateFormatter для предотвращения рекурсии
-                    print("✅ Bedtime saved: \(Self.timeFormatter.string(from: bedtimeStart.wrappedValue)) - \(Self.timeFormatter.string(from: bedtimeEnd.wrappedValue)), emergency calls \(isEmergencyCallsEnabled ? "ON" : "OFF")")
+                    print("✅ Bedtime saved: \(timeFormatter.string(from: bedtimeStart.wrappedValue)) - \(timeFormatter.string(from: bedtimeEnd.wrappedValue)), emergency calls \(isEmergencyCallsEnabled ? "ON" : "OFF")")
                     Task {
                         await syncSleepSettingsToServer()
                         await MainActor.run { isPresented = false }
@@ -6316,13 +6323,14 @@ struct AppLimitsSettingsModal: View {
     // Сохранение лимитов приложений в UserDefaults
     private let limitsKey = "app_limits_settings"
     
-    // ✅ BUILD 98: Статический DateFormatter для предотвращения рекурсии
-    private static let timeFormatter: DateFormatter = {
+    // ✅ Динамический DateFormatter — локаль зависит от языка приложения
+    private var timeFormatter: DateFormatter {
         let formatter = DateFormatter()
         formatter.timeStyle = .short
-        formatter.locale = Locale(identifier: "ru_RU")  // Статический locale вместо Locale.current
+        let lang = UserDefaults.standard.string(forKey: "app_language") ?? "ru"
+        formatter.locale = Locale(identifier: lang == "ru" ? "ru_RU" : "en_US")
         return formatter
-    }()
+    }
     
     @State private var appLimits: [AppLimitItem] = []
     

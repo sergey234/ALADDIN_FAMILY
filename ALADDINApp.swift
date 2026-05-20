@@ -163,6 +163,42 @@ class UserProfileManager {
     }
 }
 
+/// Сброс онбординга до `NavigationManager()` (см. `appStartLogger` выше по порядку полей в `ALADDINApp`).
+private enum EarlyOnboardingLaunchReset {
+    /// Handles legacy scheme typo `RESET_ONBOARDING ` (trailing space) and any key that trims to `RESET_ONBOARDING`.
+    private static func resetOnboardingEnvironmentValue(from env: [String: String]) -> String? {
+        if let v = env["RESET_ONBOARDING"] { return v }
+        if let v = env["RESET_ONBOARDING "] { return v }
+        for (key, value) in env where key.trimmingCharacters(in: .whitespacesAndNewlines) == "RESET_ONBOARDING" {
+            return value
+        }
+        return nil
+    }
+
+    static func applyIfRequested() {
+        let pi = ProcessInfo.processInfo
+        let rawEnv = resetOnboardingEnvironmentValue(from: pi.environment)
+        let trimmed = rawEnv?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let lowered = trimmed.lowercased()
+        let fromEnv = (trimmed == "1" || lowered == "true" || lowered == "yes")
+        let argv = pi.arguments
+        let fromArgv = argv.contains("-RESET_ONBOARDING") || argv.contains("-ResetOnboarding")
+
+        #if DEBUG
+        let envForLog = rawEnv.map { "\"\($0)\"" } ?? "<unset>"
+        print("🔧 ONBOARDING_LAUNCH: RESET_ONBOARDING env=\(envForLog) | -RESET_ONBOARDING in argv=\(argv.contains("-RESET_ONBOARDING"))")
+        #endif
+
+        guard fromEnv || fromArgv else { return }
+
+        UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        UserDefaults.standard.synchronize()
+        #if DEBUG
+        print("🌍 ONBOARDING_LAUNCH: hasCompletedOnboarding сброшен (env=\(fromEnv), argv=\(fromArgv))")
+        #endif
+    }
+}
+
 @main
 struct ALADDINApp: App {
     private enum LifecycleKeys {
@@ -173,6 +209,8 @@ struct ALADDINApp: App {
 
     // 🔍 ТЕСТОВОЕ ЛОГИРОВАНИЕ - проверяем работу при старте приложения
     private let appStartLogger: Void = {
+        // RESET_ONBOARDING / -RESET_ONBOARDING must run BEFORE `@StateObject NavigationManager()` reads UserDefaults.
+        EarlyOnboardingLaunchReset.applyIfRequested()
         // W4-1 UI tests: must run before `NavigationManager()` reads onboarding defaults.
         if ProcessInfo.processInfo.arguments.contains("-UITestSkipOnboarding") {
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
@@ -243,14 +281,6 @@ struct ALADDINApp: App {
 
         print("🚀🚀🚀 ALADDINApp.init() called - APP STARTING")
         print("🚀 ALADDINApp: Начало инициализации приложения")
-        
-        // ✅ BUILD 115: Сброс онбординга для тестирования (если нужно)
-        if ProcessInfo.processInfo.environment["RESET_ONBOARDING"] == "1" {
-            UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
-            #if DEBUG
-            print("🌍 BUILD 115: RESET_ONBOARDING активирован — ключ сброшен")
-            #endif
-        }
 
         // One-time cleanup: legacy profile PIN field is removed from UI/flow.
         // Keep it out of UserDefaults to avoid user confusion.
@@ -327,7 +357,7 @@ struct ALADDINApp: App {
                 .onOpenURL { url in
                     if let token = DevicePairingLinkParser.extractToken(from: url)?.trimmingCharacters(in: .whitespacesAndNewlines),
                        !token.isEmpty {
-                        UserDefaults.standard.set(token, forKey: AppConfig.UserDefaultsKeys.pendingDeviceBindToken)
+                        PendingAuthTokenStore.saveDeviceBindToken(token)
                         if hasCompletedOnboarding {
                             navigationManager.pendingDeviceBindToken = token
                             navigationManager.navigateTo(.joinDevice)
@@ -337,15 +367,13 @@ struct ALADDINApp: App {
 
                     if let token = MagicAuthLinkParser.extractToken(from: url)?.trimmingCharacters(in: .whitespacesAndNewlines),
                        !token.isEmpty {
-                        UserDefaults.standard.set(token, forKey: AppConfig.UserDefaultsKeys.pendingMagicAuthToken)
+                        PendingAuthTokenStore.saveMagicAuthToken(token)
                         consumePendingMagicAuthTokenIfNeeded()
                     }
                 }
                 .onChange(of: hasCompletedOnboarding) { completed in
                     guard completed else { return }
-                    let key = AppConfig.UserDefaultsKeys.pendingDeviceBindToken
-                    if let raw = UserDefaults.standard.string(forKey: key)?.trimmingCharacters(in: .whitespacesAndNewlines),
-                       !raw.isEmpty {
+                    if let raw = PendingAuthTokenStore.loadDeviceBindToken() {
                         let token = DevicePairingLinkParser.extractToken(fromScannedString: raw)
                             ?? URL(string: raw).flatMap { DevicePairingLinkParser.extractToken(from: $0) }
                         if let token, !token.isEmpty {
@@ -410,7 +438,7 @@ struct ALADDINApp: App {
             let email = ProcessInfo.processInfo.environment["AUTO_LOGIN_EMAIL"]
             let password = ProcessInfo.processInfo.environment["AUTO_LOGIN_PASSWORD"]
             let savedEmail = UserDefaults.standard.string(forKey: "saved_login_email")
-            let savedPassword = UserDefaults.standard.string(forKey: "saved_login_password")
+            let savedPassword = KeychainManager.shared.loadString(forKey: .userPassword)
 
             print("🔍 ALADDINApp: Проверка переменных окружения...")
             let skipDebugTokensValue = ProcessInfo.processInfo.environment["SKIP_DEBUG_TOKENS"] ?? ""
@@ -464,9 +492,7 @@ struct ALADDINApp: App {
     private func consumePendingMagicAuthTokenIfNeeded() {
         guard hasCompletedOnboarding else { return }
         guard !isConsumingMagicLinkToken else { return }
-        let key = AppConfig.UserDefaultsKeys.pendingMagicAuthToken
-        guard let token = UserDefaults.standard.string(forKey: key)?.trimmingCharacters(in: .whitespacesAndNewlines),
-              !token.isEmpty else { return }
+        guard let token = PendingAuthTokenStore.loadMagicAuthToken() else { return }
 
         isConsumingMagicLinkToken = true
         APIService.shared.consumeMagicLink(token: token) { result in
@@ -481,7 +507,7 @@ struct ALADDINApp: App {
                     if let userId = session.userId, !userId.isEmpty {
                         UserDefaults.standard.set(userId, forKey: "user_id")
                     }
-                    UserDefaults.standard.removeObject(forKey: key)
+                    PendingAuthTokenStore.clearMagicAuthToken()
                     navigationManager.currentScreen = .main
                 case .failure(let error):
                     print("⚠️ Magic-link auth failed: \(error.localizedDescription)")
@@ -569,7 +595,7 @@ struct ALADDINApp: App {
                 }
             }
             .preferredColorScheme(preferredColorScheme)
-            .overlay(
+            .overlay(alignment: .bottomTrailing) {
                 Group {
                     #if DEBUG
                     visualLoggerOverlay()
@@ -579,7 +605,7 @@ struct ALADDINApp: App {
                     }
                     #endif
                 }
-            )
+            }
             .overlay {
                 FeedbackParticleOverlay()
             }
@@ -598,7 +624,6 @@ struct ALADDINApp: App {
                     .onDisappear {
                         print("🔄 MainScreenWithRegistration disappeared — registration flow completed")
                     }
-                    .withVisualLogger()
             ))
         }
         // КРИТИЧНО: NavigationView для основного приложения (регистрация показывается отдельным корнем выше)
@@ -921,8 +946,7 @@ struct ALADDINApp: App {
                 .appContentTransition(reduceMotion ? .fade : .slideTrailing, value: navigationManager.currentScreen)
                 .id("screen_\(navigationManager.currentScreen.rawValue)")
                 .navigationBarHidden(true)
-                // ✅ ИСПРАВЛЕНИЕ: Добавляем VisualLogView на все экраны через модификатор
-                .withVisualLogger()
+                // Visual logger: только `applyRootChrome` → `visualLoggerOverlay()` (без дубля `.withVisualLogger()`, иначе два виджета и перехват касаний).
             }
             .navigationViewStyle(StackNavigationViewStyle())
         ))
@@ -931,16 +955,11 @@ struct ALADDINApp: App {
     // MARK: - Visual Logger Overlay
     @ViewBuilder
     private func visualLoggerOverlay() -> some View {
-        VStack {
-            Spacer()
-            HStack {
-                Spacer()
-                MasterLogger.shared.visualLogView
-                    .frame(maxWidth: 280)
-                    .padding(.trailing, 16)
-                    .padding(.bottom, 120)
-            }
-        }
+        // Только размер виджета — без Spacer на весь экран (иначе перехватываются касания по всему экрану).
+        MasterLogger.shared.visualLogView
+            .frame(maxWidth: 280)
+            .padding(.trailing, 16)
+            .padding(.bottom, 120)
     }
 
 }
@@ -992,10 +1011,14 @@ extension ALADDINApp {
             _ = await NotificationManager.shared.requestAuthorization()
         }
 
-        // ✅ BUILD 95: Используем переданное значение hasCompletedOnboarding
-        // КРИТИЧНО: НЕ используем UserDefaults напрямую здесь - может вызвать рекурсию!
-        // Если значение не передано, используем false (безопасное значение по умолчанию)
-        var onboardingDone = hasCompletedOnboarding ?? false
+        // Истина — persisted `UserDefaults`: `@AppStorage` в WindowGroup.onAppear может отставать
+        // после `RESET_ONBOARDING` в `appStartLogger`; чтение `bool(forKey:)` здесь безопасно (без записи).
+        var onboardingDone = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+        #if DEBUG
+        if let passed = hasCompletedOnboarding, passed != onboardingDone {
+            print("⚠️ initializeNavigation: @AppStorage snapshot (\(passed)) ≠ UserDefaults (\(onboardingDone)) — используем UserDefaults")
+        }
+        #endif
 #if targetEnvironment(simulator)
         // Keep simulator auth/onboarding flow on stable runtimes (e.g. iOS 15.2).
         // Apply bypass only for problematic 18.4 simulator runtime.

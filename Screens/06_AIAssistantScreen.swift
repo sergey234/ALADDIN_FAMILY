@@ -29,21 +29,69 @@ struct AIAssistantScreen: View {
     @StateObject private var speechManager = SpeechManager()
     @StateObject private var syncEngine = SyncEngine.shared
 
-    // Ключ для сохранения истории сообщений
-    private let messagesKey = "ai_assistant_messages_list"
     private let hasReceivedWelcomeKey = "ai_assistant_welcome_sent"
     
+    struct ChatSuggestedAction: Identifiable, Codable, Equatable {
+        let id: String
+        let title: String
+    }
+
     struct ChatMessage: Identifiable, Codable {
         let id: UUID
         let text: String
         let isUser: Bool
         let time: String
-        
-        init(id: UUID = UUID(), text: String, isUser: Bool, time: String) {
+        /// E2.4: UTC anchor for 90-day local retention (hybrid D).
+        let storedAt: Date
+        var grounded: Bool?
+        var suggestedActions: [ChatSuggestedAction]?
+
+        init(
+            id: UUID = UUID(),
+            text: String,
+            isUser: Bool,
+            time: String,
+            storedAt: Date = Date(),
+            grounded: Bool? = nil,
+            suggestedActions: [ChatSuggestedAction]? = nil
+        ) {
             self.id = id
             self.text = text
             self.isUser = isUser
             self.time = time
+            self.storedAt = storedAt
+            self.grounded = grounded
+            self.suggestedActions = suggestedActions
+        }
+
+        init(from decoder: Decoder) throws {
+            let c = try decoder.container(keyedBy: CodingKeys.self)
+            id = try c.decode(UUID.self, forKey: .id)
+            text = try c.decode(String.self, forKey: .text)
+            isUser = try c.decode(Bool.self, forKey: .isUser)
+            time = try c.decode(String.self, forKey: .time)
+            if let interval = try c.decodeIfPresent(TimeInterval.self, forKey: .storedAt) {
+                storedAt = Date(timeIntervalSince1970: interval)
+            } else {
+                storedAt = Date()
+            }
+            grounded = try c.decodeIfPresent(Bool.self, forKey: .grounded)
+            suggestedActions = try c.decodeIfPresent([ChatSuggestedAction].self, forKey: .suggestedActions)
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var c = encoder.container(keyedBy: CodingKeys.self)
+            try c.encode(id, forKey: .id)
+            try c.encode(text, forKey: .text)
+            try c.encode(isUser, forKey: .isUser)
+            try c.encode(time, forKey: .time)
+            try c.encode(storedAt.timeIntervalSince1970, forKey: .storedAt)
+            try c.encodeIfPresent(grounded, forKey: .grounded)
+            try c.encodeIfPresent(suggestedActions, forKey: .suggestedActions)
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case id, text, isUser, time, storedAt, grounded, suggestedActions
         }
     }
     
@@ -109,6 +157,12 @@ struct AIAssistantScreen: View {
                 .padding(.horizontal, 20)
                 .padding(.top, 16)
                 .padding(.bottom, 12)
+
+                if !isAIDataSharingEnabled {
+                    aiConsentBanner
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 8)
+                }
                 
                 // Чат
                 ScrollView(.vertical, showsIndicators: false) {
@@ -223,22 +277,7 @@ struct AIAssistantScreen: View {
     }
 
     private var aiSyncStatusTitle: String {
-        switch aiSyncState {
-        case .idle:
-            return "AI idle"
-        case .local:
-            return "Local"
-        case .pending:
-            return "Pending"
-        case .syncing:
-            return "Streaming..."
-        case .synced:
-            return "Synced"
-        case .conflict:
-            return "Conflict"
-        case .error:
-            return "Stream error"
-        }
+        aiSyncState.localizedTitle(using: localizationManager)
     }
 
     private var aiSyncStatusColor: Color {
@@ -255,6 +294,27 @@ struct AIAssistantScreen: View {
             return .red
         }
     }
+
+    private var isAIDataSharingEnabled: Bool {
+        UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.aiDataSharingEnabled)
+    }
+
+    private var aiConsentBanner: some View {
+        HStack(spacing: 12) {
+            Text(localizationManager.localized("ai_consent_banner_title"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.white)
+            Spacer()
+            Button(localizationManager.localized("ai_consent_banner_action")) {
+                navigationManager.navigateTo(.settings)
+            }
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundColor(.yellow)
+        }
+        .padding(12)
+        .background(Color.orange.opacity(0.35))
+        .cornerRadius(12)
+    }
     
     // MARK: - Chat Bubble
     
@@ -264,8 +324,17 @@ struct AIAssistantScreen: View {
                 Spacer()
             }
             
-            VStack(alignment: message.isUser ? .trailing : .leading, spacing: 4) {
-                // Текст сообщения
+            VStack(alignment: message.isUser ? .trailing : .leading, spacing: 6) {
+                if !message.isUser, message.grounded == true {
+                    Text(localizationManager.localized("ai_grounded_badge"))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundColor(.green)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.green.opacity(0.15))
+                        .clipShape(Capsule())
+                }
+
                 Text(message.text)
                     .font(.body)
                     .foregroundColor(.primary)
@@ -287,8 +356,11 @@ struct AIAssistantScreen: View {
                             )
                     )
                     .cornerRadius(12)
+
+                if !message.isUser, let actions = message.suggestedActions, !actions.isEmpty {
+                    aiActionButtons(actions)
+                }
                 
-                // Время
                 Text(message.time)
                     .font(.caption)
                     .foregroundColor(.secondary)
@@ -302,6 +374,29 @@ struct AIAssistantScreen: View {
         }
     }
     
+    @ViewBuilder
+    private func aiActionButtons(_ actions: [ChatSuggestedAction]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(actions) { action in
+                Button {
+                    guard let screen = AIActionCardMapper.screen(for: action.id) else { return }
+                    logger.business("🤖 AI action card: \(action.id) → \(screen.rawValue)")
+                    navigationManager.navigateTo(screen)
+                } label: {
+                    Text(action.title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color.blue.opacity(0.85))
+                        .clipShape(Capsule())
+                }
+                .accessibilityIdentifier("ai_action_\(action.id)")
+            }
+        }
+        .frame(maxWidth: 280, alignment: .leading)
+    }
+
     // MARK: - Message Input Bar
     
     private var messageInputBar: some View {
@@ -382,37 +477,48 @@ struct AIAssistantScreen: View {
             return
         }
 
+        guard isAIDataSharingEnabled else {
+            errorMessage = localizationManager.localized("ai_error_consent_required")
+            showError = true
+            return
+        }
+
         logger.business("🤖 AI Assistant: Sending message (length: \(messageText.count) chars)")
 
         let generator = UIImpactFeedbackGenerator(style: .medium)
         generator.impactOccurred()
 
-        // Добавляем сообщение пользователя
-        messages.append(
-            ChatMessage(text: messageText, isUser: true, time: currentTime())
-        )
-
-        let userMessage = messageText
-        let context = determineMessageContext(userMessage)
-
-        logger.business("🤖 AI Assistant: Message context determined: \(context)")
-
+        let rawMessage = messageText
         messageText = ""
 
-        // Сохраняем сообщение
-        saveMessages()
+        let context = determineMessageContext(rawMessage)
+        logger.business("🤖 AI Assistant: Message context determined: \(context)")
 
-        // Показываем индикатор загрузки
-        isLoading = true
-
-        // Если это feedback сообщение - отправляем как обратную связь
         if context == "feedback" {
+            messages.append(ChatMessage(text: rawMessage, isUser: true, time: currentTime()))
+            saveMessages()
+            isLoading = true
             logger.business("🤖 AI Assistant: Detected feedback message, sending to feedback system")
-            sendFeedbackMessage(userMessage)
-        } else {
-            // Обычное сообщение AI
-            logger.business("🤖 AI Assistant: Sending regular message to AI service")
-            sendRegularMessage(userMessage, context: context)
+            sendFeedbackMessage(rawMessage)
+            return
+        }
+
+        do {
+            let prepared = try AIOutboundTextGate.prepareUserMessage(rawMessage)
+            messages.append(ChatMessage(text: prepared.displayText, isUser: true, time: currentTime()))
+            saveMessages()
+            isLoading = true
+            logger.business("🤖 AI Assistant: Sending regular message to AI (redactions=\(prepared.redactionCount))")
+            sendRegularMessage(prepared.cloudText, displayMessage: prepared.displayText, context: context)
+        } catch let error as InputSanitizer.SanitizationError {
+            errorMessage = LocalizationManager.shared.localized("ai_assistant_error_sanitization", error.localizedDescription)
+            showError = true
+        } catch let error as AIOutboundTextGate.GateError {
+            errorMessage = error.localizedDescription
+            showError = true
+        } catch {
+            errorMessage = localizationManager.localized("ai_assistant_error_unknown_processing")
+            showError = true
         }
     }
 
@@ -598,11 +704,11 @@ struct AIAssistantScreen: View {
         return "GENERAL_FEEDBACK"
     }
 
-    private func sendRegularMessage(_ message: String, context: String) {
+    private func sendRegularMessage(_ message: String, displayMessage: String, context: String) {
         logger.business("🤖 AI Assistant: Sending message to AI service (context: \(context))")
 
-        // Hybrid FAQ+AI: сначала пытаемся закрыть вопрос готовым FAQ-ответом.
-        if let faqMatch = UnifiedFAQCatalog.bestMatch(for: message, localize: localizationManager.localized) {
+        // Hybrid FAQ+AI: локальный матч по тексту пользователя (до redact на сервере).
+        if let faqMatch = UnifiedFAQCatalog.bestMatch(for: displayMessage, localize: localizationManager.localized) {
             logger.business("📚 AI Assistant: FAQ match found id=\(faqMatch.id)")
             isLoading = false
             let faqResponse = ChatMessage(
@@ -632,10 +738,15 @@ struct AIAssistantScreen: View {
                     // ✅ ПРОДАКШН: Всегда используем серверный AI, без fallback на локальный
                     logger.business("🤖 AI Assistant: Using real server AI response")
 
+                    let actions = (response.suggestedActions ?? []).map {
+                        ChatSuggestedAction(id: $0.id, title: $0.title)
+                    }
                     let aiResponse = ChatMessage(
                         text: finalResponse,
                         isUser: false,
-                        time: currentTime()
+                        time: currentTime(),
+                        grounded: response.grounded,
+                        suggestedActions: actions.isEmpty ? nil : actions
                     )
                     
                     // ✅ BUILD 115: Детальное логирование для подтверждения добавления сообщения
@@ -648,6 +759,7 @@ struct AIAssistantScreen: View {
                 case .failure(let error):
                     logger.error("❌ AI Assistant: Failed to get AI response", error: error)
                     logger.error("❌ AI Assistant: Error details - \(error.localizedDescription)")
+                    let errLower = error.localizedDescription.lowercased()
                     
                     // ✅ BUILD 115: Детальное логирование для диагностики на реальном устройстве
                     if let networkError = error as? NetworkError {
@@ -662,13 +774,23 @@ struct AIAssistantScreen: View {
                     #endif
                     
                     showError = true
-                    errorMessage = String(
-                        format: localizationManager.localized("ai_assistant_error_response_failed"),
-                        error.localizedDescription
-                    )
+                    if errLower.contains("503") || errLower.contains("unavailable") {
+                        errorMessage = localizationManager.localized("ai_error_service_unavailable")
+                    } else if errLower.contains("422") || errLower.contains("pii") {
+                        errorMessage = localizationManager.localized("ai_error_pii_blocked")
+                    } else if errLower.contains("429") || errLower.contains("rate limit") {
+                        errorMessage = localizationManager.localized("ai_error_rate_limit")
+                    } else {
+                        errorMessage = String(
+                            format: localizationManager.localized("ai_assistant_error_response_failed"),
+                            error.localizedDescription
+                        )
+                    }
 
                     let errorResponse = ChatMessage(
-                        text: localizationManager.localized("ai_assistant_error_generic_retry"),
+                        text: errLower.contains("503") || errLower.contains("unavailable")
+                            ? localizationManager.localized("ai_error_service_unavailable")
+                            : localizationManager.localized("ai_assistant_error_generic_retry"),
                         isUser: false,
                         time: currentTime()
                     )
@@ -783,22 +905,22 @@ struct AIAssistantScreen: View {
     // MARK: - Data Loading and Saving
 
     private func loadMessages() {
-        guard let savedData = UserDefaults.standard.data(forKey: messagesKey),
-              let decoded = try? JSONDecoder().decode([ChatMessage].self, from: savedData) else {
-            logger.business("🤖 AI Assistant: No saved messages found, starting fresh")
+        guard var decoded = AIAssistantHistoryMigration.load([ChatMessage].self) else {
+            logger.business("🤖 AI Assistant: No saved messages (v2), starting fresh")
             messages = []
             return
         }
+        decoded = decoded.filter {
+            AIAssistantLocalHistoryPolicy.purgeIfNeeded(storedAt: $0.storedAt)
+                && !AIAssistantHistoryMigration.isDemoOrSeedMessage($0.text)
+        }
         messages = decoded
-        logger.business("✅ AI Assistant: Loaded \(messages.count) messages from storage")
+        saveMessages()
+        logger.business("✅ AI Assistant: Loaded \(messages.count) messages (schema v\(AIAssistantHistoryMigration.currentSchemaVersion))")
     }
     
     private func saveMessages() {
-        guard let encoded = try? JSONEncoder().encode(messages) else {
-            logger.error("❌ AI Assistant: Failed to encode messages")
-            return
-        }
-        UserDefaults.standard.set(encoded, forKey: messagesKey)
+        AIAssistantHistoryMigration.save(messages)
         logger.business("✅ AI Assistant: Saved \(messages.count) messages to storage")
 
         // Уведомляем другие экраны об изменении (если нужно синхронизировать)

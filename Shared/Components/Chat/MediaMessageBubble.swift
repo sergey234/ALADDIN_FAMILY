@@ -11,6 +11,7 @@ struct MediaMessageBubble: View {
     
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var showFullImage = false
+    @State private var resolvedMediaURL: URL?
     @ObservedObject private var voicePlayer = VoiceMessagePlayer.shared
     
     var body: some View {
@@ -58,11 +59,27 @@ struct MediaMessageBubble: View {
         )
         .cornerRadius(18)
         .shadow(color: Color.black.opacity(0.1), radius: 3, x: 0, y: 2)
+        .task(id: message.id) {
+            await loadDecryptedMediaIfNeeded()
+        }
+    }
+
+    private func loadDecryptedMediaIfNeeded() async {
+        if message.mediaUrl != nil || message.voiceUrl != nil { return }
+        guard let enc = message.encryptedMedia else { return }
+        do {
+            resolvedMediaURL = try await FamilyE2EEMediaLoader.shared.resolvePlayableURL(
+                messageId: message.id,
+                media: enc
+            )
+        } catch {
+            print("⚠️ MediaMessageBubble E2EE decrypt: \(error)")
+        }
     }
     
     /// Превью от сервера или полный URL медиа
     private var displayImageURLString: String? {
-        message.mediaThumbnailUrl ?? message.mediaUrl
+        resolvedMediaURL?.absoluteString ?? message.mediaThumbnailUrl ?? message.mediaUrl
     }
     
     private var imageView: some View {
@@ -137,7 +154,7 @@ struct MediaMessageBubble: View {
             Button(action: {
                 if isPlayingCurrentVoice {
                     voicePlayer.togglePause()
-                } else if let voiceURLString = message.voiceUrl, let url = URL(string: voiceURLString) {
+                } else if let url = resolvedMediaURL ?? message.voiceUrl.flatMap({ URL(string: $0) }) {
                     voicePlayer.play(url: url, messageId: message.id)
                 }
             }) {

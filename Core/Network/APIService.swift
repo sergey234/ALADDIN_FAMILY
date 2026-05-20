@@ -105,7 +105,7 @@ class APIService: ObservableObject {
     private var familyMembersFetchInFlight = false
 
     private func enqueueFamilyMembersCompletion(_ completion: @escaping (Result<FamilyMembersSyncContext, Error>) -> Void) {
-        let mergeSnapshot = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+        let mergeSnapshot = FamilyLocalStore.loadPersistedFamilyId()
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         familyMembersCoalesceLock.lock()
         familyMembersPendingCompletions.append(completion)
@@ -392,7 +392,7 @@ class APIService: ObservableObject {
             .trimmingCharacters(in: .whitespacesAndNewlines), !resolved.isEmpty {
             UserDefaults.standard.set(resolved, forKey: FamilyLocalStore.lastResolvedFamilyIdKey)
             // Единый канонический `family_id` на устройстве = то, что подтвердил сервер для этого токена.
-            UserDefaults.standard.set(resolved, forKey: FamilyLocalStore.familyIdKey)
+            FamilyLocalStore.persistFamilyId(resolved)
         }
         if let memberHint = headerValue(for: currentMemberKeyCandidates) {
             FamilyLocalStore.applyYourMemberIdFromFamilyMembersHeaderIfPresent(memberHint)
@@ -409,7 +409,7 @@ class APIService: ObservableObject {
         completion: @escaping (Result<FamilyMembersSyncContext, Error>) -> Void
     ) {
         let wrapSuccess: ([FamilyMemberResponse]) -> FamilyMembersSyncContext = { members in
-            let after = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+            let after = FamilyLocalStore.loadPersistedFamilyId()
                 .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
             return FamilyMembersSyncContext(
                 members: members,
@@ -420,7 +420,7 @@ class APIService: ObservableObject {
         }
 
         // Передаём явный familyId, если он известен, чтобы избежать неверного контекста семьи на сервере
-        let storedFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
+        let storedFamilyId = FamilyLocalStore.loadPersistedFamilyId()
         let activeFamilyId = omitFamilyIdQuery ? nil : storedFamilyId
         let query: [String: String]? = {
             if let fid = activeFamilyId, !fid.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
@@ -556,7 +556,7 @@ class APIService: ObservableObject {
     }
     
     func addFamilyMember(name: String, role: String, completion: @escaping (Result<FamilyMemberResponse, Error>) -> Void) {
-        let activeFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
+        let activeFamilyId = FamilyLocalStore.loadPersistedFamilyId()
         let request = AddMemberRequest(name: name, role: role, familyId: activeFamilyId)
         performAddFamilyMember(request: request, hasRetriedAfterTokenBootstrap: false, completion: completion)
     }
@@ -700,7 +700,7 @@ class APIService: ObservableObject {
                 let reason: String?
                 let familyId: String?
             }
-            let activeFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
+            let activeFamilyId = FamilyLocalStore.loadPersistedFamilyId()
             let request = RemoveMemberRequest(memberId: memberId, source: source, reason: reason, familyId: activeFamilyId)
             VisualLogger.shared.log(
                 "➡️ HTTP DELETE \(AppConfig.Endpoint.removeFamilyMember) memberId=\(memberId) source=\(source)",
@@ -740,7 +740,7 @@ class APIService: ObservableObject {
     }
     
     func getFamilyStats(completion: @escaping (Result<FamilyStatsResponse, Error>) -> Void) {
-        let stored = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+        let stored = FamilyLocalStore.loadPersistedFamilyId()
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let headers: [String: String]? = stored.isEmpty ? nil : ["X-Family-Id": stored]
         networkManager.get(endpoint: AppConfig.Endpoint.familyStats, additionalHeaders: headers, completion: completion)
@@ -749,7 +749,7 @@ class APIService: ObservableObject {
     // MARK: - Family Chat API
     
     func getFamilyChatMessages(completion: @escaping (Result<[FamilyChatMessageResponse], Error>) -> Void) {
-        let stored = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+        let stored = FamilyLocalStore.loadPersistedFamilyId()
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let query: [String: String]? = stored.isEmpty ? nil : ["familyId": stored]
         let headers: [String: String]? = stored.isEmpty ? nil : ["X-Family-Id": stored]
@@ -764,7 +764,22 @@ class APIService: ObservableObject {
         )
     }
     
-    func sendFamilyChatMessage(message: String?, familyId: String?, messageType: String?, voiceUrl: String?, voiceDuration: Double?, mediaUrl: String?, mediaType: String?, replyToMessageId: String?, completion: @escaping (Result<SendFamilyChatMessageResponse, Error>) -> Void) {
+    func sendFamilyChatMessage(
+        message: String?,
+        familyId: String?,
+        messageType: String?,
+        voiceUrl: String?,
+        voiceDuration: Double?,
+        mediaUrl: String?,
+        mediaType: String?,
+        replyToMessageId: String?,
+        envelopeVersion: Int? = nil,
+        senderDeviceId: String? = nil,
+        ciphertext: String? = nil,
+        mediaCiphertextUrl: String? = nil,
+        mediaCiphertextHash: String? = nil,
+        completion: @escaping (Result<SendFamilyChatMessageResponse, Error>) -> Void
+    ) {
         let request = SendFamilyChatMessageRequest(
             message: message,
             familyId: familyId,
@@ -773,7 +788,13 @@ class APIService: ObservableObject {
             voiceDuration: voiceDuration,
             mediaUrl: mediaUrl,
             mediaType: mediaType,
-            replyToMessageId: replyToMessageId
+            replyToMessageId: replyToMessageId,
+            envelopeVersion: envelopeVersion,
+            senderDeviceId: senderDeviceId,
+            ciphertext: ciphertext,
+            ciphertextContentType: ciphertext != nil ? 0 : nil,
+            mediaCiphertextUrl: mediaCiphertextUrl,
+            mediaCiphertextHash: mediaCiphertextHash
         )
         networkManager.post(endpoint: AppConfig.Endpoint.familyChatSend, body: request) { [weak self] (result: Result<SendFamilyChatMessageResponse, Error>) in
             switch result {
@@ -800,7 +821,7 @@ class APIService: ObservableObject {
         struct DeleteRequest: Codable {
             let messageId: String
         }
-        let trimmedFamilyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+        let trimmedFamilyId = FamilyLocalStore.loadPersistedFamilyId()
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let extraHeaders: [String: String]? = trimmedFamilyId.isEmpty ? nil : ["X-Family-Id": trimmedFamilyId]
         networkManager.delete(
@@ -832,6 +853,40 @@ class APIService: ObservableObject {
         }
     }
     
+    // MARK: - Family Chat E2EE (E1.4)
+
+    func registerFamilyE2EEDevice(request: RegisterE2EEDeviceRequest, completion: @escaping (Result<RegisterE2EEDeviceResponse, Error>) -> Void) {
+        networkManager.post(endpoint: AppConfig.Endpoint.familyChatE2EEKeysRegister, body: request, completion: completion)
+    }
+
+    func fetchFamilyE2EEDevices(familyId: String, completion: @escaping (Result<E2EEDeviceListResponse, Error>) -> Void) {
+        let headers = ["X-Family-Id": familyId]
+        networkManager.get(
+            endpoint: AppConfig.Endpoint.familyChatE2EEKeys,
+            queryParams: ["family_id": familyId],
+            additionalHeaders: headers,
+            completion: completion
+        )
+    }
+
+    func distributeFamilyE2EESenderKey(request: DistributeE2EESenderKeyRequest, completion: @escaping (Result<DistributeE2EESenderKeyResponse, Error>) -> Void) {
+        networkManager.post(endpoint: AppConfig.Endpoint.familyChatE2EESenderKeysDistribute, body: request, completion: completion)
+    }
+
+    func fetchFamilyE2EESenderKeys(familyId: String, completion: @escaping (Result<E2EESenderKeyDistributionListResponse, Error>) -> Void) {
+        let headers = ["X-Family-Id": familyId]
+        networkManager.get(
+            endpoint: AppConfig.Endpoint.familyChatE2EESenderKeys,
+            queryParams: ["family_id": familyId],
+            additionalHeaders: headers,
+            completion: completion
+        )
+    }
+
+    func revokeFamilyE2EEDevice(request: RevokeE2EEDeviceRequest, completion: @escaping (Result<RevokeE2EEDeviceResponse, Error>) -> Void) {
+        networkManager.post(endpoint: AppConfig.Endpoint.familyChatE2EEKeysRevoke, body: request, completion: completion)
+    }
+
     func sendTypingIndicator(familyId: String?, completion: @escaping (Result<Bool, Error>) -> Void) {
         struct TypingRequest: Codable {
             let familyId: String?
@@ -875,6 +930,66 @@ class APIService: ObservableObject {
         }
     }
     
+    /// E1.6 — загрузка AES-GCM ciphertext blob (octet-stream).
+    func uploadEncryptedMedia(
+        encryptedData: Data,
+        contentHash: String,
+        familyId: String,
+        completion: @escaping (Result<(url: String, hash: String), Error>) -> Void
+    ) {
+        let resolvedFamily = familyId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !resolvedFamily.isEmpty else {
+            completion(.failure(NetworkError.badRequest("familyId is required")))
+            return
+        }
+        guard let url = URL(string: AppConfig.apiBaseURL + AppConfig.Endpoint.familyChatUploadMediaCiphertext) else {
+            completion(.failure(NetworkError.invalidURL))
+            return
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/octet-stream", forHTTPHeaderField: "Content-Type")
+        request.setValue(resolvedFamily, forHTTPHeaderField: "X-Family-Id")
+        request.setValue(contentHash, forHTTPHeaderField: "X-Content-Sha256")
+        if let token = AppConfig.authToken {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        request.httpBody = encryptedData
+
+        URLSession.shared.dataTask(with: request) { data, response, error in
+            if let error = error {
+                DispatchQueue.main.async { completion(.failure(error)) }
+                return
+            }
+            guard let http = response as? HTTPURLResponse, (200...299).contains(http.statusCode), let data else {
+                DispatchQueue.main.async { completion(.failure(NetworkError.invalidResponse)) }
+                return
+            }
+            struct UploadEncResponse: Codable {
+                let mediaCiphertextUrl: String?
+                let mediaUrl: String?
+                let url: String?
+                let mediaCiphertextHash: String?
+                let contentHash: String?
+            }
+            if let decoded = try? JSONDecoder().decode(UploadEncResponse.self, from: data) {
+                let mediaURL = decoded.mediaCiphertextUrl ?? decoded.mediaUrl ?? decoded.url ?? ""
+                if !mediaURL.isEmpty {
+                    let hash = decoded.mediaCiphertextHash ?? decoded.contentHash ?? contentHash
+                    DispatchQueue.main.async { completion(.success((url: mediaURL, hash: hash))) }
+                    return
+                }
+            }
+            if let resolved = self.extractMediaURL(from: data), !resolved.isEmpty {
+                DispatchQueue.main.async { completion(.success((url: resolved, hash: contentHash))) }
+                return
+            }
+            DispatchQueue.main.async {
+                completion(.failure(NSError(domain: "MediaUpload", code: -2, userInfo: [NSLocalizedDescriptionKey: "Invalid ciphertext upload response"])))
+            }
+        }.resume()
+    }
+
     // MARK: - ✅ Media Upload (Phase 2026 - High Priority)
     /// Полноценная загрузка медиа с поддержкой progress, retry и offline
     func uploadMedia(
@@ -887,7 +1002,7 @@ class APIService: ObservableObject {
     ) {
         let mediaType = type.lowercased()
         let defaultFilename = filename ?? "media_\(Date().timeIntervalSince1970).\(mediaType == "image" ? "jpg" : mediaType == "video" ? "mp4" : "m4a")"
-        let resolvedFamily = (familyId ?? UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey))?
+        let resolvedFamily = (familyId ?? FamilyLocalStore.loadPersistedFamilyId())?
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         if resolvedFamily.isEmpty {
             completion(.failure(NetworkError.badRequest("familyId is required for chat media upload")))
@@ -1382,8 +1497,15 @@ class APIService: ObservableObject {
         responseLanguage: String? = nil,
         completion: @escaping (Result<ChatMessageResponse, Error>) -> Void
     ) {
+        let cloudMessage: String
+        do {
+            cloudMessage = try AIOutboundTextGate.prepareUserMessage(message).cloudText
+        } catch {
+            completion(.failure(error))
+            return
+        }
         let request = ChatMessageRequest(
-            message: message,
+            message: cloudMessage,
             context: context,
             userId: AppConfig.authToken ?? "guest",
             timestamp: Date(),
@@ -1437,9 +1559,9 @@ class APIService: ObservableObject {
     ) {
         let request = AIFeedbackRequest(
             rating: rating,
-            comment: comment,
+            comment: AIOutboundTextGate.redactOptional(comment),
             messageId: messageId,
-            queryText: queryText,
+            queryText: AIOutboundTextGate.redactOptional(queryText),
             resolvedBy: resolvedBy,
             faqId: faqId,
             confidence: confidence,
@@ -1456,7 +1578,14 @@ class APIService: ObservableObject {
 
     // Анализ угрозы
     func analyzeThreat(threat: String, type: String?, completion: @escaping (Result<AIAnalyzeThreatResponse, Error>) -> Void) {
-        let request = AIAnalyzeThreatRequest(threat: threat, type: type, context: nil)
+        let cloudThreat: String
+        do {
+            cloudThreat = try AIOutboundTextGate.prepareUserMessage(threat).cloudText
+        } catch {
+            completion(.failure(error))
+            return
+        }
+        let request = AIAnalyzeThreatRequest(threat: cloudThreat, type: type, context: nil)
         networkManager.post(endpoint: AppConfig.Endpoint.aiAssistantAnalyzeThreat, body: request, completion: completion)
     }
 
@@ -1473,7 +1602,14 @@ class APIService: ObservableObject {
 
     // Сообщить об инциденте
     func reportIncident(type: String, description: String, severity: String = "medium", completion: @escaping (Result<AIReportIncidentResponse, Error>) -> Void) {
-        let request = AIReportIncidentRequest(type: type, description: description, severity: severity)
+        let cloudDescription: String
+        do {
+            cloudDescription = try AIOutboundTextGate.prepareUserMessage(description).cloudText
+        } catch {
+            completion(.failure(error))
+            return
+        }
+        let request = AIReportIncidentRequest(type: type, description: cloudDescription, severity: severity)
         networkManager.post(endpoint: AppConfig.Endpoint.aiAssistantReportIncident, body: request, completion: completion)
     }
 
@@ -2620,7 +2756,7 @@ class APIService: ObservableObject {
     }
     
     func registerDeviceToken(_ token: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
-        let rawFamily = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
+        let rawFamily = FamilyLocalStore.loadPersistedFamilyId()
             .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         let familyIdOpt: String? = rawFamily.isEmpty ? nil : rawFamily
         let body = DeviceTokenRequest(

@@ -748,13 +748,20 @@ final class SubscriptionManager: ObservableObject {
         }
         let remaining = max(0, limit - effectiveUsed)
 
+        // ✅ Локализованные сообщения о лимитах (без хардкода)
+        let isRussian = (UserDefaults.standard.string(forKey: "app_language") ?? "ru") == "ru"
+        
         if limit > 0 && currentCount >= limit {
-            let msg = "Лимит участников для вашего тарифа (\(limit)) достигнут. Обновите тариф чтобы добавить больше участников."
+            let msg = isRussian
+                ? "Лимит участников для вашего тарифа (\(limit)) достигнут. Обновите тариф чтобы добавить больше участников."
+                : "Member limit for your plan (\(limit)) reached. Upgrade your plan to add more members."
             return (false, msg, true)
         }
 
         if remaining <= 0 && limit > 0 {
-            let msg = "Осталось 0 мест по тарифу (\(limit)). Обновите подписку."
+            let msg = isRussian
+                ? "Осталось 0 мест по тарифу (\(limit)). Обновите подписку."
+                : "0 slots remaining on your plan (\(limit)). Upgrade your subscription."
             return (false, msg, true)
         }
 
@@ -765,10 +772,9 @@ final class SubscriptionManager: ObservableObject {
     func applyFamilyRosterQuotaFromFamilyStats(_ stats: FamilyStatsResponse) {
         guard let cap = stats.familyRosterMax, cap > 0 else { return }
         let used = stats.familyRosterUsed ?? stats.totalMembers
-        let familyId = (
-            UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-        )
+        let trimmedFamilyId = FamilyLocalStore.loadPersistedFamilyId()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let familyId: String? = trimmedFamilyId.isEmpty ? nil : trimmedFamilyId
         publishFamilyQuotaSnapshot(used: used, maxSlots: cap, source: .serverStats, familyId: familyId)
         VisualLogger.shared.log(
             "🔄 FAMILY STATS→LIMIT rosterUsed=\(used) rosterMax=\(cap) tier=\(stats.ownerSubscriptionTier ?? "?")",
@@ -1481,10 +1487,9 @@ final class SubscriptionManager: ObservableObject {
         UserDefaults.standard.synchronize()
 
         // Update reactive published properties (new single source)
-        let familyId = (
-            UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-        )
+        let trimmedFamilyId = FamilyLocalStore.loadPersistedFamilyId()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let familyId: String? = trimmedFamilyId.isEmpty ? nil : trimmedFamilyId
         publishFamilyQuotaSnapshot(used: cappedUsed, maxSlots: tariffBasedLimit, source: .tariffFallback, familyId: familyId)
 
         VisualLogger.shared.log("🔄 TARIFF→FAMILY SYNC: plan_level=\(status.level), cap_level=\(levelForFamilyCap), family_limit=\(tariffBasedLimit), remaining=\(calculatedRemaining) (published + UserDefaults)", level: .info, category: "FAMILY")
@@ -1573,10 +1578,9 @@ final class SubscriptionManager: ObservableObject {
 
         let cachedUsed = UserDefaults.standard.integer(forKey: "family_roster_used_last")
         let cachedFamilyId = UserDefaults.standard.string(forKey: "family_quota_family_id_last")
-        let currentFamilyId = (
-            UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)?
-                .trimmingCharacters(in: .whitespacesAndNewlines)
-        )
+        let trimmedCurrentFamilyId = FamilyLocalStore.loadPersistedFamilyId()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let currentFamilyId: String? = trimmedCurrentFamilyId.isEmpty ? nil : trimmedCurrentFamilyId
         let cachedSourceRaw = UserDefaults.standard.string(forKey: "family_quota_source_last")
         let cachedSource = FamilyQuotaSource(rawValue: cachedSourceRaw ?? "") ?? .persistedCache
         let normalizedCachedFamilyId = cachedFamilyId?.trimmingCharacters(in: .whitespacesAndNewlines)
@@ -2250,10 +2254,11 @@ extension SubscriptionManager {
     func getOfflineStatusInfo() -> (isOffline: Bool, lastSync: String) {
         let lastSyncText = lastSyncDate.map { date in
             let formatter = RelativeDateTimeFormatter()
-            // ✅ BUILD 98: Используем статический locale вместо Locale.current для предотвращения рекурсии
-            formatter.locale = Locale(identifier: "ru_RU")
+            // ✅ Динамическая локаль в зависимости от языка приложения
+            let lang = UserDefaults.standard.string(forKey: "app_language") ?? "ru"
+            formatter.locale = Locale(identifier: lang == "ru" ? "ru_RU" : "en_US")
             return formatter.localizedString(for: date, relativeTo: Date())
-        } ?? "Never"
+        } ?? (UserDefaults.standard.string(forKey: "app_language") ?? "ru" == "ru" ? "Никогда" : "Never")
 
         return (isOffline: isOfflineMode, lastSync: lastSyncText)
     }

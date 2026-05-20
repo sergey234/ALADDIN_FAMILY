@@ -39,6 +39,7 @@ struct SettingsScreen: View {
     // ✅ BUILD 95: Встроенный просмотр логов крашей/диагностики прямо на устройстве
     @State private var showCrashLogsView: Bool = false
     @AppStorage("home_chat_default_mode") private var homeChatDefaultModeRaw: String = HomeChatDefaultMode.last.rawValue
+    @AppStorage(AppConfig.UserDefaultsKeys.aiDataSharingEnabled) private var aiDataSharingEnabled: Bool = false
 
     // ✅ BUILD 100: Убран testLogger из struct - логирование перемещено в .onAppear
     // Это предотвращает избыточное логирование при пересоздании View
@@ -199,6 +200,15 @@ struct SettingsScreen: View {
                     isBiometric: true
                 )
                 
+                Divider()
+
+                settingRow(
+                    icon: "brain.head.profile",
+                    title: "Облачный AI-помощник",
+                    subtitle: "Отправка вопросов на сервер ALADDIN (без паролей и карт). Выкл. = только локальные подсказки.",
+                    isEnabled: $aiDataSharingEnabled
+                )
+
                 Divider()
 
                 // Protection Level

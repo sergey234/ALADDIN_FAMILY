@@ -23,9 +23,7 @@ struct ChildInterfaceScreen: View {
     @State private var selectedImage: UIImage?
     @State private var showChildInstructions: Bool = false
     @State private var showChildSettings: Bool = false
-    /// int-8: после `applyFamilyControlsPipelineIfPossible` на устройстве ребёнка.
-    @State private var familyControlsPipelineReady: Bool = false
-
+    
     // MARK: - Navigation Function
     
     private func navigateToContent(category: String) {
@@ -52,50 +50,51 @@ struct ChildInterfaceScreen: View {
     // MARK: - Body
     
     var body: some View {
-        GeometryReader { geometry in
-            let topCap = geometry.size.height * 0.25
-            ZStack {
-                // Фон (более яркий для детей)
-                LinearGradient(
-                    colors: [
-                        Color.blue,
-                        Color.blue.opacity(0.8),
-                        Color.blue.opacity(0.6)
-                    ],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
-                .accessibilityElement(children: .ignore)
-                .accessibilityLabel(localizationManager.localized("child_interface_background"))
+        ZStack {
+            // Фон (более яркий для детей)
+            LinearGradient(
+                colors: [
+                    Color.blue,
+                    Color.blue.opacity(0.8),
+                    Color.blue.opacity(0.6)
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+            .ignoresSafeArea()
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(localizationManager.localized("child_interface_background"))
+            
+            VStack(spacing: 0) {
+                // Простая навигация для детей
+                childHeader
                 
-                VStack(spacing: 0) {
-                    // Верх: навигация + приветствие, не больше ~25% высоты экрана (реальные устройства)
-                    childHeader
-                        .frame(maxHeight: topCap, alignment: .top)
-                        .clipped()
-                    
-                    // Основной контент
-                    ScrollView(.vertical, showsIndicators: false) {
-                        VStack(spacing: 16) {
-                            greetingCard
-                            
-                            ageTabs
-                            
-                            unicornBalanceCard
-                            
-                            bigButtonsGrid
-                            
-                            screenTimeCard
-                            
-                            Spacer(minLength: 0)
-                                .frame(maxHeight: 32)
-                        }
-                        .padding(.top, 12)
+                // Основной контент
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: 16) {
+                        // Приветствие
+                        greetingCard
+                        
+                        // НОВОЕ: Возрастные табы
+                        ageTabs
+                        
+                        // 🦄 Мои единороги
+                        unicornBalanceCard
+                        
+                        // Большие кнопки для детей
+                        bigButtonsGrid
+                        
+                        // Время экрана
+                        screenTimeCard
+                        
+                        // Адаптивный отступ (Apple HIG)
+                        Spacer(minLength: 0)
+                            .frame(maxHeight: 32)
                     }
-                    .accessibilityElement(children: .contain)
-                    .accessibilityLabel(localizationManager.localized("child_interface_content"))
+                    .padding(.top, 16)
                 }
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel(localizationManager.localized("child_interface_content"))
             }
         }
         .id("child_interface_lang_\(localizationManager.currentLanguage.rawValue)")
@@ -113,15 +112,9 @@ struct ChildInterfaceScreen: View {
             ProfileImagePicker(selectedImage: $selectedImage)
         }
         .onAppear {
-            UserDefaults.standard.set("child", forKey: "current_user_role")
-            UserDefaults.standard.synchronize()
             loadProfileImage()
             Task {
                 await ContentManager.shared.runUnifiedLifecycle()
-                let readiness = await ParentalControlManager.shared.applyFamilyControlsPipelineIfPossible()
-                await MainActor.run {
-                    familyControlsPipelineReady = readiness.isPipelineReady
-                }
             }
         }
         .onChange(of: selectedImage) { newImage in
@@ -142,7 +135,7 @@ struct ChildInterfaceScreen: View {
     // MARK: - Child Header
     
     private var childHeader: some View {
-        HStack(alignment: .center, spacing: 10) {
+        HStack(spacing: 12) {
             // Кнопка назад
             Button(action: {
                 // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
@@ -168,12 +161,12 @@ struct ChildInterfaceScreen: View {
                         Image(uiImage: selectedImage)
                             .resizable()
                             .aspectRatio(contentMode: .fill)
-                            .frame(width: 60, height: 60)
+                            .frame(width: 80, height: 80)
                             .clipShape(Circle())
                     } else {
                         Text("👧")
-                            .font(.system(size: 40))
-                            .frame(width: 60, height: 60)
+                            .font(.system(size: 50))
+                            .frame(width: 80, height: 80)
                             .background(
                                 Circle()
                                     .fill(Color.white.opacity(0.2))
@@ -200,21 +193,25 @@ struct ChildInterfaceScreen: View {
             }
             .buttonStyle(PlainButtonStyle())
             
-            // Приветствие (без имени; компактно для реальных экранов)
-            VStack(alignment: .leading, spacing: 4) {
-                Text(localizationManager.localized("child_interface_greeting_hi"))
-                    .font(.title3.weight(.bold))
+            // Приветствие
+            VStack(alignment: .leading, spacing: 2) {
+                Text(greetingTitle)
+                    .font(.title)
                     .foregroundColor(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.85)
-                
-                Text(localizationManager.localized("child_interface_protected_line"))
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundColor(.white.opacity(0.92))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.7)
-                    .allowsTightening(true)
-                    .layoutPriority(1)
+
+                HStack(spacing: 8) {
+                    Text(protectedBaseTitle)
+                        .font(.body)
+                        .foregroundColor(.white.opacity(0.9))
+
+                    Text(ageBadgeTitle)
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.white.opacity(0.2))
+                        .clipShape(Capsule())
+                }
             }
             
             Spacer()
@@ -240,26 +237,25 @@ struct ChildInterfaceScreen: View {
         .background(
             Color.white.opacity(0.1)
         )
+        .frame(height: UIScreen.main.bounds.height * 0.25)
     }
     
     // MARK: - Greeting Card
     
     private var greetingCard: some View {
-        VStack(spacing: 10) {
+        VStack(spacing: 12) {
             Text("🎮")
-                .font(.system(size: 36))
+                .font(.system(size: 64))
             
             Text(localizationManager.localized("child_interface_what_to_do"))
-                .font(.title2.weight(.bold))
+                .font(.largeTitle)
                 .foregroundColor(.white)
-                .minimumScaleFactor(0.85)
             
             Text(localizationManager.localized("child_interface_choose_activity"))
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.85))
-                .multilineTextAlignment(.center)
+                .font(.body)
+                .foregroundColor(.white.opacity(0.8))
         }
-        .padding(14)
+        .padding(16)
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.white.opacity(0.15))
@@ -505,18 +501,10 @@ struct ChildInterfaceScreen: View {
                     
                     RoundedRectangle(cornerRadius: 8)
                         .fill(Color.green)
-                        .frame(width: geometry.size.width * (familyControlsPipelineReady ? 0.25 : 0.08), height: 12)
+                        .frame(width: geometry.size.width * 0.25, height: 12)
                 }
             }
             .frame(height: 12)
-
-            if !familyControlsPipelineReady {
-                Text(localizationManager.localized("child_family_controls_pipeline_pending"))
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.92))
-                    .multilineTextAlignment(.center)
-                    .padding(.top, 6)
-            }
         }
         .padding(16)
         .background(
@@ -527,6 +515,27 @@ struct ChildInterfaceScreen: View {
     }
 
     // MARK: - User Name Management
+
+    private var greetingTitle: String {
+        localizationManager.currentLanguage == .russian ? "Привет!" : "Hi!"
+    }
+
+    private var protectedBaseTitle: String {
+        localizationManager.currentLanguage == .russian ? "Ты под защитой!" : "You're protected!"
+    }
+
+    private var ageBadgeTitle: String {
+        switch selectedAge {
+        case .kids:
+            return localizationManager.currentLanguage == .russian ? "ребенок 1-6" : "child 1-6"
+        case .school:
+            return localizationManager.currentLanguage == .russian ? "ребенок 7-12" : "child 7-12"
+        case .teen:
+            return localizationManager.currentLanguage == .russian ? "подросток 13-17" : "teen 13-17"
+        case .youngAdult:
+            return localizationManager.currentLanguage == .russian ? "молодой взрослый 18-23" : "young adult 18-23"
+        }
+    }
 
     private func getUserName() -> String {
         // ВРЕМЕННО: Используем заглушку вместо UserProfileManager

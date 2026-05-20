@@ -18,6 +18,32 @@ enum FamilyLocalStore {
     static let pendingPostAdminAddDeviceMemberIdKey = "pending_post_admin_add_device_member_id"
     static let pendingPostAdminAddDeviceMemberNameKey = "pending_post_admin_add_device_member_name"
 
+    // MARK: - P0: family_id в Keychain (не UserDefaults)
+
+    static func loadPersistedFamilyId() -> String {
+        if let keychainId = KeychainManager.shared.loadString(forKey: .familyId)?
+            .trimmingCharacters(in: .whitespacesAndNewlines), !keychainId.isEmpty {
+            return keychainId
+        }
+        if let legacy = UserDefaults.standard.string(forKey: familyIdKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines), !legacy.isEmpty {
+            persistFamilyId(legacy)
+            return legacy
+        }
+        return ""
+    }
+
+    static func persistFamilyId(_ newFamilyId: String) {
+        let newId = newFamilyId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !newId.isEmpty else {
+            KeychainManager.shared.delete(forKey: .familyId)
+            UserDefaults.standard.removeObject(forKey: familyIdKey)
+            return
+        }
+        KeychainManager.shared.save(newId, forKey: .familyId)
+        UserDefaults.standard.removeObject(forKey: familyIdKey)
+    }
+
     /// Сбрасывает сохранённый ростер и связанные ключи, если новый `family_id` отличается от уже сохранённого.
     /// Не трогает `your_member_id` и токены — вызывающий код обновляет их отдельно.
     /// - Returns: `true`, если выполнен сброс (семья сменилась или в хранилище был другой id).
@@ -26,7 +52,7 @@ enum FamilyLocalStore {
         let newId = newFamilyId.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !newId.isEmpty else { return false }
 
-        let previous = UserDefaults.standard.string(forKey: familyIdKey)?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        let previous = loadPersistedFamilyId()
         guard newId != previous else { return false }
 
         let defaults = UserDefaults.standard
