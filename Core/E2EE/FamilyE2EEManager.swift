@@ -35,6 +35,19 @@ final class FamilyE2EEManager: ObservableObject {
             isReady = FamilyE2EECryptoEngine.loadFamilyKey(familyId: fid) != nil
             lastError = isReady ? nil : "E2EE key not established"
         } catch {
+            if let ne = error as? NetworkError, case .internalServerError = ne {
+                FamilyE2EEDeviceIdentity.resetLocalIdentity()
+                do {
+                    try await registerDeviceIfNeeded(familyId: fid)
+                    try await ingestRemoteDistributions(familyId: fid)
+                    try await ensureLocalFamilyKey(familyId: fid)
+                    isReady = FamilyE2EECryptoEngine.loadFamilyKey(familyId: fid) != nil
+                    lastError = isReady ? nil : "E2EE key not established"
+                    if isReady { return }
+                } catch {
+                    // fall through to user-visible error
+                }
+            }
             isReady = false
             lastError = error.localizedDescription
             print("❌ FamilyE2EEManager.bootstrap: \(error)")

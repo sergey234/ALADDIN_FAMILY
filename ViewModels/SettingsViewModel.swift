@@ -131,9 +131,6 @@ struct LocalizedStrings {
         String(format: localizationManager.localized("updates_subtitle_fmt"), AppConfig.appVersion)
     }
     var positioningSystemTitle: String { localizationManager.localized("positioning_system_title") }
-    var positioningSystemSubtitle: String {
-        selectedPositioningSystem.localizedDisplayName(localizationManager)
-    }
 
     // System Components
     var systemComponentsTitle: String { localizationManager.localized("system_components_title") }
@@ -222,6 +219,14 @@ class SettingsViewModel: ObservableObject {
     @Published var selectedPositioningSystem: PositioningSystem = .auto
     var currentPositioningSystem: PositioningSystem { .gps }
     var currentRegionName: String { "Russia" }
+
+    var languageSubtitle: String { localizedStrings.languageSubtitle }
+
+    var updatesSubtitle: String { localizedStrings.updatesSubtitle }
+
+    var positioningSystemSubtitle: String {
+        selectedPositioningSystem.localizedDisplayName(LocalizationManager.shared)
+    }
 
     // Initialization flag
     @Published var isInitializing: Bool = false
@@ -421,6 +426,7 @@ class SettingsViewModel: ObservableObject {
         // Persist positioning system selection and keep current region mapping updated.
         $selectedPositioningSystem
             .dropFirst()
+            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.main)
             .sink { [weak self] system in
                 self?.positioningService?.saveSelectedSystem(system)
                 VisualLogger.shared.log(
@@ -449,7 +455,9 @@ class SettingsViewModel: ObservableObject {
 
         selectedTheme = .light
         UserDefaults.standard.set(ThemeMode.light.rawValue, forKey: "selected_theme")
-        applyTheme(.light)
+        Task { @MainActor [weak self] in
+            self?.applyTheme(.light)
+        }
 
         if let positioningService = positioningService {
             selectedPositioningSystem = positioningService.selectedSystem
@@ -472,42 +480,45 @@ class SettingsViewModel: ObservableObject {
 
     /// Применить удалённые настройки (сервер при открытии экрана имеет приоритет над локальным кэшем тумблеров).
     func applyRemoteNotificationAppSettings(masterEnabled: Bool, pushEnabled: Bool, soundEnabled serverSound: Bool) {
-        suppressRemoteNotificationServerLoop = true
         let push = masterEnabled && pushEnabled
         let sound = masterEnabled && serverSound
-        securityEnabled = push
-        soundEnabled = sound
-        var settings = NotificationManager.shared.notificationSettings
-        settings.securityEnabled = push
-        settings.soundEnabled = sound
-        NotificationManager.shared.updateNotificationSettings(settings)
-        suppressRemoteNotificationServerLoop = false
+        // Следующий run loop — не во время текущего layout pass.
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            self.suppressRemoteNotificationServerLoop = true
+            self.securityEnabled = push
+            self.soundEnabled = sound
+            var settings = NotificationManager.shared.notificationSettings
+            settings.securityEnabled = push
+            settings.soundEnabled = sound
+            NotificationManager.shared.updateNotificationSettings(settings)
+            self.suppressRemoteNotificationServerLoop = false
+        }
     }
 
     // MARK: - Public Methods
 
     func initializeView() {
-        // Сначала подтягиваем сохранённые значения — даже если initializeView уже выполняется (onAppear).
-        syncNotificationTogglesFromManager()
-
         guard !isInitializing else { return }
         isInitializing = true
 
-        print("✅ SettingsViewModel: MVVM initialization successful")
+        // Откладываем пачку @Published с main, чтобы не пересекаться с SwiftUI layout (watchdog 0x8BADF00D).
+        Task { @MainActor [weak self] in
+            guard let self else { return }
+            defer { self.isInitializing = false }
 
-        // Initialize notifications
-        initializeNotifications()
+            self.syncNotificationTogglesFromManager()
+            print("✅ SettingsViewModel: MVVM initialization successful")
 
-        // Load components if admin
-        if isAdmin {
-            loadComponents()
-        }
+            self.initializeNotifications()
 
-        initializeProtectionLevel()
-        Task { @MainActor in
+            if self.isAdmin {
+                self.loadComponents()
+            }
+
+            self.initializeProtectionLevel()
             NotificationAppSettingsSync.shared.pullFromServer(into: self)
         }
-        isInitializing = false
     }
 
     func toggleBiometric() {

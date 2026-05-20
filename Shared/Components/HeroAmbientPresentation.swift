@@ -147,6 +147,8 @@ private struct HeroLottieRepresentable: UIViewRepresentable {
     let name: String
     let loopMode: LottieLoopMode
     let isPlaying: Bool
+    /// Онбординг: заполняем экран (crop по краям). Главный экран: мягкий fit.
+    let fillsViewport: Bool
 
     final class Coordinator {
         weak var animationView: LottieAnimationView?
@@ -170,7 +172,8 @@ private struct HeroLottieRepresentable: UIViewRepresentable {
     func makeUIView(context: Context) -> LottieAnimationView {
         let view = LottieAnimationView()
         view.animation = LottieAnimation.named(name, bundle: .main, subdirectory: nil)
-        view.contentMode = .scaleAspectFit
+        view.contentMode = fillsViewport ? .scaleAspectFill : .scaleAspectFit
+        view.clipsToBounds = fillsViewport
         view.loopMode = loopMode
         view.backgroundBehavior = .pauseAndRestore
         context.coordinator.animationView = view
@@ -249,6 +252,16 @@ struct HeroAmbientLayerView: View {
         motionTier == .full
     }
 
+    /// Онбординг — edge-to-edge на всех iPhone; главный экран — декоративный fit.
+    private var fillsViewport: Bool {
+        switch slot {
+        case .onboardingLanguage, .onboardingContent:
+            return true
+        case .mainDashboard:
+            return false
+        }
+    }
+
     var body: some View {
         GeometryReader { geo in
             let w = geo.size.width
@@ -308,26 +321,37 @@ struct HeroAmbientLayerView: View {
             HeroLottieRepresentable(
                 name: baseName,
                 loopMode: shouldLoopLottie ? .loop : .playOnce,
-                isPlaying: lottieShouldPlay
+                isPlaying: lottieShouldPlay,
+                fillsViewport: fillsViewport
             )
         } else if HeroBundleResource.hasRaster(named: baseName) {
-            Image(baseName)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            heroRasterImage(baseName)
         } else {
             heroPlaceholderGradient()
         }
         #else
         if HeroBundleResource.hasRaster(named: baseName) {
-            Image(baseName)
-                .resizable()
-                .aspectRatio(contentMode: .fit)
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            heroRasterImage(baseName)
         } else {
             heroPlaceholderGradient()
         }
         #endif
+    }
+
+    @ViewBuilder
+    private func heroRasterImage(_ baseName: String) -> some View {
+        if fillsViewport {
+            Image(baseName)
+                .resizable()
+                .scaledToFill()
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .clipped()
+        } else {
+            Image(baseName)
+                .resizable()
+                .aspectRatio(contentMode: .fit)
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
     }
 
     private func heroPlaceholderGradient() -> some View {

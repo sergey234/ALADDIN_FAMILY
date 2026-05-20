@@ -44,3 +44,48 @@ enum AIAssistantHistoryMigration {
         return demoSubstrings.contains { lower.contains($0) }
     }
 }
+
+// MARK: - Hermes stderr filter (user-facing replies)
+
+enum AIAssistantResponseSanitizer {
+    struct Result {
+        let displayText: String
+        let strippedTechnicalNoise: Bool
+    }
+
+    private static let dropSubstrings = [
+        "no auxiliary llm",
+        "context compression",
+        "openrouter_api_key",
+        "hermes setup",
+        "prompt tokens limit",
+        "http 402",
+        "http 429",
+    ]
+
+    static func sanitize(_ raw: String) -> Result {
+        var droppedNoise = false
+        let lines = raw.components(separatedBy: .newlines).filter { line in
+            let t = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            if t.isEmpty { return false }
+            if t.hasPrefix("session_id:") { droppedNoise = true; return false }
+            if t.hasPrefix("⚠") || t.hasPrefix("Warning:") { droppedNoise = true; return false }
+            let low = t.lowercased()
+            if dropSubstrings.contains(where: { low.contains($0) }) {
+                droppedNoise = true
+                return false
+            }
+            return true
+        }
+        let cleaned = lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
+        if !cleaned.isEmpty {
+            return Result(displayText: cleaned, strippedTechnicalNoise: droppedNoise)
+        }
+        let fallback = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        return Result(displayText: fallback, strippedTechnicalNoise: droppedNoise || !fallback.isEmpty)
+    }
+
+    static func userFacingText(from raw: String) -> String {
+        sanitize(raw).displayText
+    }
+}

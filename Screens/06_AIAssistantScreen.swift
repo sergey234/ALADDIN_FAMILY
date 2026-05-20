@@ -1,6 +1,7 @@
 import SwiftUI
 import Speech
 import AVFoundation
+import Combine
 
 // Master Logger for AI assistant logging
 private let logger = MasterLogger.shared
@@ -24,11 +25,11 @@ struct AIAssistantScreen: View {
     @State private var showVoiceServiceUnavailableAlert = false
     @State private var showFeedbackSheet = false
     @State private var showDemoServerBanner = false
+    /// Снимок SyncEngine — не читаем @Published singleton в body (watchdog / layout deadlock).
+    @State private var aiSyncStateDisplay: SyncState = .idle
 
     // Сервисы
-    @StateObject private var apiService = APIService.shared
     @StateObject private var speechManager = SpeechManager()
-    @StateObject private var syncEngine = SyncEngine.shared
 
     private let hasReceivedWelcomeKey = "ai_assistant_welcome_sent"
     
@@ -170,7 +171,7 @@ struct AIAssistantScreen: View {
                         .padding(.horizontal, 20)
                         .padding(.bottom, 8)
                 }
-                
+
                 // Чат
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: 12) {
@@ -185,23 +186,12 @@ struct AIAssistantScreen: View {
                                     action: nil
                                 )
                                 
-                                // Приветственное сообщение от AI (только для новых пользователей)
                                 if !UserDefaults.standard.bool(forKey: hasReceivedWelcomeKey) {
                                     chatBubble(message: ChatMessage(
                                         text: localizationManager.localized("ai_assistant_welcome"),
                                         isUser: false,
                                         time: currentTime()
                                     ))
-                                    .onAppear {
-                                        // Добавляем приветствие в историю
-                                        messages.append(ChatMessage(
-                                            text: localizationManager.localized("ai_assistant_welcome"),
-                                            isUser: false,
-                                            time: currentTime()
-                                        ))
-                                        UserDefaults.standard.set(true, forKey: hasReceivedWelcomeKey)
-                                        saveMessages()
-                                    }
                                 }
                             }
                             .padding(.top, 40)
@@ -237,17 +227,19 @@ struct AIAssistantScreen: View {
                 messageInputBar
             }
         }
-        .onAppear {
+        .task {
             logger.business("🤖 AI Assistant: Screen appeared, loading messages")
+            aiSyncStateDisplay = SyncEngine.shared.latestStateByDomain[.aiStreaming] ?? .idle
             loadMessages()
+            seedWelcomeMessageIfNeeded()
             setupNotifications()
-            // Если сообщений нет и приветствие еще не отправлено - показываем приветствие
-            if messages.isEmpty && !UserDefaults.standard.bool(forKey: hasReceivedWelcomeKey) {
-                logger.business("🤖 AI Assistant: Showing welcome message for new user")
-            }
         }
-        .onReceive(syncEngine.events) { event in
-            guard event.domain == .aiStreaming else { return }
+        .onReceive(
+            SyncEngine.shared.events
+                .filter { $0.domain == .aiStreaming }
+                .debounce(for: .milliseconds(200), scheduler: RunLoop.main)
+        ) { event in
+            aiSyncStateDisplay = event.state
             if case .error(let message) = event.state {
                 showError = true
                 errorMessage = message
@@ -259,7 +251,7 @@ struct AIAssistantScreen: View {
         .navigationBarHidden(true)
         .id("ai_assistant_lang_\(localizationManager.currentLanguage.rawValue)")
         .sheet(isPresented: $showFeedbackSheet) {
-            AIFeedbackSheet(isPresented: $showFeedbackSheet, apiService: apiService, resolvedBy: "ai_assistant_feedback_sheet")
+            AIFeedbackSheet(isPresented: $showFeedbackSheet, apiService: APIService.shared, resolvedBy: "ai_assistant_feedback_sheet")
                 .environmentObject(localizationManager)
         }
         .alert(localizationManager.localized("common_error"), isPresented: $showError) {
@@ -279,16 +271,12 @@ struct AIAssistantScreen: View {
         }
     }
 
-    private var aiSyncState: SyncState {
-        syncEngine.latestStateByDomain[.aiStreaming] ?? .idle
-    }
-
     private var aiSyncStatusTitle: String {
-        aiSyncState.localizedTitle(using: localizationManager)
+        aiSyncStateDisplay.localizedTitle(using: localizationManager)
     }
 
     private var aiSyncStatusColor: Color {
-        switch aiSyncState {
+        switch aiSyncStateDisplay {
         case .idle:
             return .gray
         case .local, .pending:
@@ -358,25 +346,26 @@ struct AIAssistantScreen: View {
 
                 Text(message.text)
                     .font(.body)
-                    .foregroundColor(.primary)
+                    .foregroundColor(message.isUser ? .white : Color(UIColor.label))
                     .padding(12)
                     .background(
                         RoundedRectangle(cornerRadius: 12)
                             .fill(
-                                message.isUser ?
-                                LinearGradient(
-                                    colors: [Color.blue, Color.blue.opacity(0.8)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                ) :
-                                LinearGradient(
-                                    colors: [Color.gray, Color.gray],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                                message.isUser
+                                    ? AnyShapeStyle(
+                                        LinearGradient(
+                                            colors: [Color.blue, Color.blue.opacity(0.85)],
+                                            startPoint: .topLeading,
+                                            endPoint: .bottomTrailing
+                                        )
+                                    )
+                                    : AnyShapeStyle(Color(UIColor.secondarySystemGroupedBackground))
                             )
                     )
-                    .cornerRadius(12)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(message.isUser ? Color.clear : Color(UIColor.separator), lineWidth: 1)
+                    )
 
                 if !message.isUser, let actions = message.suggestedActions, !actions.isEmpty {
                     aiActionButtons(actions)
@@ -418,78 +407,99 @@ struct AIAssistantScreen: View {
         .frame(maxWidth: 280, alignment: .leading)
     }
 
-    // MARK: - Message Input Bar
-    
+    // MARK: - Message Input Bar (как в семейном чате — читаемый TextEditor + контраст)
+
     private var messageInputBar: some View {
-        HStack(spacing: 8) {
-            // Кнопка голосового ввода
-            VStack(spacing: 2) {
+        VStack(spacing: 6) {
+            HStack(alignment: .bottom, spacing: 10) {
                 Button(action: toggleVoiceRecording) {
                     Image(systemName: speechManager.isRecording ? "mic.fill" : "mic")
                         .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(speechManager.isRecording ? .red : .blue)
-                        .frame(width: 44, height: 44)
-                        .background(
-                            Circle()
-                                .fill(speechManager.isRecording ? Color.red.opacity(0.2) : Color.blue.opacity(0.2))
-                        )
+                        .foregroundColor(speechManager.isRecording ? .red : .white)
+                        .frame(width: 42, height: 42)
+                        .background(Color.white.opacity(0.18))
+                        .cornerRadius(12)
                 }
-                Text(localizationManager.localized("ai_assistant_voice_input_label"))
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-                Text(localizationManager.localized(voiceInputStatusKey))
-                    .font(.caption2)
-                    .foregroundColor(.secondary)
-            }
+                .accessibilityLabel(localizationManager.localized("ai_assistant_voice_input_label"))
 
-            // Текстовое поле
-            TextField(localizationManager.localized("ai_assistant_placeholder"), text: $messageText)
-                .font(.body)
-                .foregroundColor(.primary)
-                .padding(12)
-                .background(
-                    RoundedRectangle(cornerRadius: 16)
-                        .fill(Color.gray.opacity(0.3))
+                ZStack(alignment: .topLeading) {
+                    if messageText.isEmpty {
+                        Text(localizationManager.localized("ai_assistant_placeholder"))
+                            .foregroundColor(Color(UIColor.secondaryLabel))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 12)
+                            .allowsHitTesting(false)
+                    }
+
+                    TextEditor(text: $messageText)
+                        .font(.system(size: 16))
+                        .foregroundColor(Color(UIColor.label))
+                        .modifier(AIComposerHideScrollBackground())
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 8)
+                        .frame(minHeight: 44, maxHeight: aiComposerHeight(for: messageText))
+                        .background(Color.clear)
+                        .disabled(isLoading)
+                        .accessibilityLabel(localizationManager.localized("ai_assistant_placeholder"))
+                }
+                .background(Color(UIColor.secondarySystemGroupedBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 14)
+                        .stroke(Color(UIColor.separator), lineWidth: 1)
                 )
+                .cornerRadius(14)
 
-            // Кнопка отправки
-            Button(action: sendMessage) {
-                Image(systemName: messageText.isEmpty ? "paperplane" : "paperplane.fill")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.white)
-                    .frame(width: 48, height: 48)
-                    .background(
-                        Circle()
-                            .fill(
-                                messageText.isEmpty ?
-                                LinearGradient(colors: [Color.gray, Color.gray], startPoint: .top, endPoint: .bottom) :
-                                LinearGradient(
-                                    colors: [Color.blue, Color.blue.opacity(0.8)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
+                Button(action: sendMessage) {
+                    if isLoading {
+                        ProgressView()
+                            .tint(.backgroundDark)
+                            .scaleEffect(0.85)
+                            .frame(width: 42, height: 42)
+                    } else {
+                        Image(systemName: "paperplane.fill")
+                            .font(.system(size: 17, weight: .semibold))
+                            .foregroundColor(.backgroundDark)
+                            .frame(width: 42, height: 42)
+                            .background(
+                                messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                                    ? Color.surfaceDark.opacity(0.5)
+                                    : Color.secondaryGold
                             )
-                    )
-            }
-            .disabled(messageText.isEmpty)
+                            .cornerRadius(12)
+                    }
+                }
+                .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
 
-            // Кнопка обратной связи
-            Button(action: { showFeedbackSheet = true }) {
-                Image(systemName: "star")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(.orange)
-                    .frame(width: 44, height: 44)
-                    .background(
-                        Circle()
-                            .fill(Color.orange.opacity(0.2))
-                    )
+                Button(action: { showFeedbackSheet = true }) {
+                    Image(systemName: "star.fill")
+                        .font(.system(size: 17, weight: .semibold))
+                        .foregroundColor(.orange)
+                        .frame(width: 42, height: 42)
+                        .background(Color.white.opacity(0.18))
+                        .cornerRadius(12)
+                }
+                .accessibilityLabel(localizationManager.localized("app_feedback_star_accessibility"))
             }
-            .accessibilityLabel(localizationManager.localized("app_feedback_star_accessibility"))
+            .padding(.horizontal, Spacing.screenPadding)
+            .padding(.top, 8)
+            .padding(.bottom, 8)
+
+            Text(localizationManager.localized(voiceInputStatusKey))
+                .font(.caption2)
+                .foregroundColor(.white.opacity(0.75))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, Spacing.screenPadding)
+                .padding(.bottom, 4)
         }
-        .padding(12)
-        .background(
-            Color.black.opacity(0.95)
-        )
+        .background(LinearGradient.cardGradient.appGlassmorphism())
+    }
+
+    private func aiComposerHeight(for text: String) -> CGFloat {
+        let lineBreakCount = text.components(separatedBy: .newlines).count
+        let estimatedWrappedLines = max(1, Int(ceil(Double(text.count) / 34.0)))
+        let lineCount = max(lineBreakCount, estimatedWrappedLines)
+        let clampedLines = min(max(lineCount, 1), 5)
+        return CGFloat(clampedLines * 24 + 20)
     }
     
     private func sendMessage() {
@@ -560,7 +570,7 @@ struct AIAssistantScreen: View {
 
         // Отправляем как обратную связь
         logger.network("🤖 AI Assistant: Sending feedback to server")
-        apiService.sendAIFeedback(
+        APIService.shared.sendAIFeedback(
             rating: 5,
             comment: message,
             messageId: nil,
@@ -762,7 +772,7 @@ struct AIAssistantScreen: View {
         // Отправляем обычное сообщение AI
         logger.network("🤖 AI Assistant: Making API call to AI service")
         let responseLanguage = localizationManager.aiResponseLanguageCode
-        apiService.sendMessageToAI(message: message, context: context, responseLanguage: responseLanguage) { [self] result in
+        APIService.shared.sendMessageToAI(message: message, context: context, responseLanguage: responseLanguage) { [self] result in
             DispatchQueue.main.async {
                 isLoading = false
 
@@ -771,7 +781,7 @@ struct AIAssistantScreen: View {
                     logger.business("✅ AI Assistant: Received AI response (length: \(response.response.count) chars)")
 
                     // Проверяем, является ли ответ стандартным mock ответом сервера
-                    let finalResponse = response.response
+                    let finalResponse = userFacingAIReply(from: response.response)
                     let source = AIAssistantResponseDiagnostics.classifyServerResponse(finalResponse)
                     showDemoServerBanner = (source == .cloudAPIProbableMock)
                     AIAssistantResponseDiagnostics.logDelivery(
@@ -950,27 +960,51 @@ struct AIAssistantScreen: View {
     // Локальная обработка ответов AI (fallback если сервер не работает)
     // MARK: - Data Loading and Saving
 
+    /// Убирает служебный stderr Hermes; не дописывает подсказки к ответу модели.
+    private func userFacingAIReply(from raw: String) -> String {
+        let text = AIAssistantResponseSanitizer.userFacingText(from: raw)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return text.isEmpty
+            ? localizationManager.localized("ai_error_service_unavailable")
+            : text
+    }
+
+    private func seedWelcomeMessageIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: hasReceivedWelcomeKey) else { return }
+        let welcome = ChatMessage(
+            text: localizationManager.localized("ai_assistant_welcome"),
+            isUser: false,
+            time: currentTime()
+        )
+        if !messages.contains(where: { $0.text == welcome.text && !$0.isUser }) {
+            messages.append(welcome)
+            saveMessages()
+        }
+        UserDefaults.standard.set(true, forKey: hasReceivedWelcomeKey)
+        logger.business("🤖 AI Assistant: Welcome message seeded for new user")
+    }
+
     private func loadMessages() {
-        guard var decoded = AIAssistantHistoryMigration.load([ChatMessage].self) else {
+        guard let decoded = AIAssistantHistoryMigration.load([ChatMessage].self) else {
             logger.business("🤖 AI Assistant: No saved messages (v2), starting fresh")
             messages = []
             return
         }
-        decoded = decoded.filter {
+        let filtered = decoded.filter {
             AIAssistantLocalHistoryPolicy.purgeIfNeeded(storedAt: $0.storedAt)
                 && !AIAssistantHistoryMigration.isDemoOrSeedMessage($0.text)
         }
-        messages = decoded
-        saveMessages()
+        messages = filtered
+        if filtered.count != decoded.count {
+            AIAssistantHistoryMigration.save(filtered)
+            logger.business("🤖 AI Assistant: Pruned \(decoded.count - filtered.count) stale messages on load")
+        }
         logger.business("✅ AI Assistant: Loaded \(messages.count) messages (schema v\(AIAssistantHistoryMigration.currentSchemaVersion))")
     }
-    
+
     private func saveMessages() {
         AIAssistantHistoryMigration.save(messages)
         logger.business("✅ AI Assistant: Saved \(messages.count) messages to storage")
-
-        // Уведомляем другие экраны об изменении (если нужно синхронизировать)
-        NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
     }
     
     private func currentTime() -> String {
@@ -1047,6 +1081,17 @@ struct AIAssistantScreen: View {
             return "ai_assistant_voice_status_processing"
         }
         return "ai_assistant_voice_status_idle"
+    }
+}
+
+/// Скрывает системный фон TextEditor (iOS 16+) для контраста как в Family Chat.
+private struct AIComposerHideScrollBackground: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content.scrollContentBackground(.hidden)
+        } else {
+            content
+        }
     }
 }
 
@@ -1199,13 +1244,15 @@ class SpeechManager: ObservableObject {
 
             recognitionRequest.shouldReportPartialResults = true
 
-            let speechLocale = LocalizationManager.shared.speechRecognitionLocale
-            guard let speechRecognizer = SFSpeechRecognizer(locale: speechLocale), speechRecognizer.isAvailable else {
-                logger.warn("🎤 SpeechManager: Recognizer unavailable for locale \(speechLocale.identifier)")
+            guard let speechRecognizer = SpeechRecognizerFactory.bestAvailable(
+                preferred: LocalizationManager.shared.speechRecognitionLocale
+            ) else {
+                logger.warn("🎤 SpeechManager: No speech recognizer available (preferred \(LocalizationManager.shared.speechRecognitionLocale.identifier))")
                 NotificationCenter.default.post(name: NSNotification.Name("SpeechServiceUnavailable"), object: nil)
                 completion(nil)
                 return
             }
+            logger.business("🎤 SpeechManager: Using recognizer locale \(speechRecognizer.locale.identifier)")
 
             var completionDelivered = false
             func completeOnce(_ text: String?) {
@@ -1217,12 +1264,8 @@ class SpeechManager: ObservableObject {
             }
 
             recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
-                if let result = result {
-                    let text = result.bestTranscription.formattedString
-                    DispatchQueue.main.async {
-                        self.recognizedText = text
-                    }
-                }
+                // Не публикуем partial results в @Published — иначе SwiftUI layout + Combine deadlock (watchdog 0x8BADF00D).
+                _ = result?.bestTranscription.formattedString
 
                 if let nsError = error as NSError?,
                    nsError.domain == "kAFAssistantErrorDomain" || nsError.domain == "SiriCoreSiriConnectionErrorDomain" {

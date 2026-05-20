@@ -19,14 +19,33 @@ enum FamilyE2EEDeviceIdentity {
         return fresh
     }
 
+    private static func loadUInt32BigEndian(_ data: Data) -> UInt32 {
+        data.withUnsafeBytes { UInt32(bigEndian: $0.load(as: UInt32.self)) }
+    }
+
+    private static func saveUInt32BigEndian(_ value: UInt32, key: KeychainManager.Key) {
+        var bytes = value.bigEndian
+        KeychainManager.shared.save(Data(bytes: &bytes, count: 4), forKey: key)
+    }
+
+    /// Сброс E2EE-идентичности после сбоя регистрации на сервере (500 / integer out of range).
+    static func resetLocalIdentity() {
+        KeychainManager.shared.delete(forKey: .e2eeRegistrationId)
+        KeychainManager.shared.delete(scopedKey: signedPreKeyPrivateScoped)
+        KeychainManager.shared.delete(scopedKey: signedPreKeyIdScoped)
+    }
+
     static func registrationId() -> UInt32 {
         if let data = KeychainManager.shared.loadData(forKey: .e2eeRegistrationId),
            data.count == 4 {
-            return data.withUnsafeBytes { $0.load(as: UInt32.self) }
+            let value = loadUInt32BigEndian(data)
+            if value >= 1, value <= 0x3FFF_FFFF {
+                return value
+            }
+            KeychainManager.shared.delete(forKey: .e2eeRegistrationId)
         }
         let value = UInt32.random(in: 1...0x3FFF)
-        var bytes = value.bigEndian
-        KeychainManager.shared.save(Data(bytes: &bytes, count: 4), forKey: .e2eeRegistrationId)
+        saveUInt32BigEndian(value, key: .e2eeRegistrationId)
         return value
     }
 
@@ -49,7 +68,7 @@ enum FamilyE2EEDeviceIdentity {
            let idData = KeychainManager.shared.loadData(scopedKey: signedPreKeyIdScoped),
            idData.count == 4,
            let signingKey = try? Curve25519.Signing.PrivateKey(rawRepresentation: privData) {
-            let id = idData.withUnsafeBytes { $0.load(as: UInt32.self) }
+            let id = loadUInt32BigEndian(idData)
             let pub = signingKey.publicKey.rawRepresentation
             let sig = try? signingKey.signature(for: pub)
             return (id, pub, sig ?? Data(), signingKey)

@@ -14,12 +14,30 @@ def hermes_available() -> bool:
     return os.path.isfile(HERMES_BIN) and os.access(HERMES_BIN, os.X_OK)
 
 
+_HERMES_STDERR_LINE_PREFIXES = (
+    "no auxiliary llm",
+    "context compression",
+    "run `hermes setup`",
+    "openrouter_api_key",
+    "api call failed",
+    "http 402",
+    "http 429",
+    "prompt tokens limit",
+)
+
+
 def _strip_hermes_cli_noise(raw: str) -> str:
     lines = []
     for line in (raw or "").splitlines():
+        stripped = line.strip()
+        low = stripped.lower()
         if line.startswith("session_id:"):
             continue
-        if line.strip().startswith("Resume this session"):
+        if stripped.startswith("Resume this session"):
+            continue
+        if stripped.startswith("⚠") or stripped.startswith("Warning:"):
+            continue
+        if any(low.startswith(p) or p in low for p in _HERMES_STDERR_LINE_PREFIXES):
             continue
         lines.append(line)
     text = "\n".join(lines).strip()
@@ -59,11 +77,9 @@ def chat_once(
         return False, "", str(exc)
 
     if proc.returncode != 0:
-        err = (proc.stderr or proc.stdout or "hermes failed")[:500]
-        return False, "", err
+        err = _strip_hermes_cli_noise(proc.stderr or proc.stdout or "hermes failed")[:500]
+        return False, "", err or "hermes failed"
     out = _strip_hermes_cli_noise(proc.stdout or "")
-    if not out:
-        out = _strip_hermes_cli_noise(proc.stderr or "")
     if not out:
         return False, "", "empty hermes response"
     return True, out, None

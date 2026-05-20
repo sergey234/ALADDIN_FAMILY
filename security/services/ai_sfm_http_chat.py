@@ -12,6 +12,43 @@ def _aggregates(params: Dict[str, Any]) -> Dict[str, Any]:
     return raw if isinstance(raw, dict) else {}
 
 
+def _try_simple_math(message: str) -> Optional[str]:
+    """Безопасный ответ на элементарную арифметику (1+1, 2*3), когда LLM недоступен."""
+    m = re.search(r"(?i)(\d{1,6})\s*([+\-*/×÷])\s*(\d{1,6})", message)
+    if not m:
+        return None
+    a = int(m.group(1))
+    op_raw = m.group(2)
+    b = int(m.group(3))
+    op = {"+": "+", "-": "-", "*": "*", "/": "/", "×": "*", "÷": "/"}[op_raw]
+    if op == "+" and a + b > 1_000_000:
+        return None
+    if op == "-" and a - b < -1_000_000:
+        return None
+    if op == "*":
+        result = a * b
+    elif op == "/":
+        if b == 0:
+            return "Деление на ноль невозможно. Я помощник ALADDIN — спросите про защиту семьи, VPN или чат."
+        result = a // b if a % b == 0 else round(a / b, 4)
+    elif op == "-":
+        result = a - b
+    else:
+        result = a + b
+    return (
+        f"{a} {op_raw} {b} = {result}. "
+        "Я AI-помощник ALADDIN: могу подробнее рассказать про защиту семьи, угрозы, VPN, семейный чат и тарифы."
+    )
+
+
+def _off_topic_guidance(aggregates: Dict[str, Any]) -> str:
+    return (
+        "Я специализируюсь на ALADDIN: защита семьи, VPN, родительский контроль, семейный чат с E2EE, "
+        "аналитика угроз и тарифы. Задайте вопрос по этим темам — отвечу по данным с сервера. "
+        + _status_line(aggregates)
+    )
+
+
 def _status_line(aggregates: Dict[str, Any]) -> str:
     status = aggregates.get("protection_status") or "ACTIVE"
     healthy = aggregates.get("healthy_components")
@@ -37,8 +74,12 @@ def build_ai_assistant_chat_result(params: Dict[str, Any]) -> Dict[str, Any]:
     sources: List[str] = list(params.get("sfm_context_sources") or [])
 
     meta = _match_meta(msg_lower)
+    math_answer = _try_simple_math(message)
     if meta:
         response_text = meta
+        grounded = False
+    elif math_answer:
+        response_text = math_answer
         grounded = False
     elif "привет" in msg_lower or "здравств" in msg_lower or "hello" in msg_lower:
         response_text = (
@@ -81,11 +122,7 @@ def build_ai_assistant_chat_result(params: Dict[str, Any]) -> Dict[str, Any]:
         )
         grounded = False
     else:
-        response_text = (
-            "Я отвечаю по базе знаний ALADDIN и актуальным данным защиты с сервера "
-            "(не обучаюсь на вашем устройстве). Уточните вопрос: защита, угрозы, семья, VPN или тариф. "
-            + _status_line(aggregates)
-        )
+        response_text = _off_topic_guidance(aggregates)
         grounded = bool(sources)
 
     lang = (params.get("response_language") or "").lower()

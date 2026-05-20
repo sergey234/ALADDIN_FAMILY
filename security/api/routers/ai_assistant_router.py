@@ -491,6 +491,11 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
                     )
                 return response
             logger.warning("Hermes primary path failed intent=%s err=%s", intent.intent_id, err)
+            if err and ("402" in err or "credits" in err.lower() or "openrouter" in err.lower()):
+                logger.error(
+                    "Hermes/OpenRouter unavailable (credits or API). intent=%s — falling back to SFM rules.",
+                    intent.intent_id,
+                )
             if intent.kb_only and not mock_allowed():
                 raise_service_unavailable()
 

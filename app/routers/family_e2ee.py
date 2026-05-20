@@ -63,9 +63,9 @@ def _ensure_e2ee_schema(db) -> None:
                 id TEXT PRIMARY KEY,
                 family_id TEXT NOT NULL,
                 user_id INTEGER NOT NULL,
-                registration_id INTEGER NOT NULL,
+                registration_id BIGINT NOT NULL,
                 identity_key_public BYTEA NOT NULL,
-                signed_prekey_id INTEGER NOT NULL,
+                signed_prekey_id BIGINT NOT NULL,
                 signed_prekey_public BYTEA NOT NULL,
                 signed_prekey_signature BYTEA NOT NULL,
                 created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
@@ -82,7 +82,7 @@ def _ensure_e2ee_schema(db) -> None:
             CREATE TABLE IF NOT EXISTS family_e2ee_one_time_prekeys (
                 id SERIAL PRIMARY KEY,
                 device_id TEXT NOT NULL REFERENCES family_e2ee_devices(id) ON DELETE CASCADE,
-                prekey_id INTEGER NOT NULL,
+                prekey_id BIGINT NOT NULL,
                 prekey_public BYTEA NOT NULL,
                 consumed_at TIMESTAMPTZ,
                 UNIQUE (device_id, prekey_id)
@@ -155,6 +155,17 @@ def _ensure_e2ee_schema(db) -> None:
             """
         )
     )
+
+    # Migrate INT → BIGINT (Signal-style ids can exceed 2^31-1; iOS UInt32 endian bug caused 500s).
+    for ddl in (
+        "ALTER TABLE family_e2ee_devices ALTER COLUMN registration_id TYPE BIGINT",
+        "ALTER TABLE family_e2ee_devices ALTER COLUMN signed_prekey_id TYPE BIGINT",
+        "ALTER TABLE family_e2ee_one_time_prekeys ALTER COLUMN prekey_id TYPE BIGINT",
+    ):
+        try:
+            db.execute(text(ddl))
+        except Exception:
+            pass
 
     _e2ee_schema_ready = True
 

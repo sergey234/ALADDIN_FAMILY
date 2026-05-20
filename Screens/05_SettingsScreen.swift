@@ -31,7 +31,8 @@ struct SettingsScreen: View {
     }
 
     @StateObject private var viewModel: SettingsViewModel
-    @StateObject private var syncEngine = SyncEngine.shared
+    /// Singleton: только наблюдаем, не владеем через @StateObject (избегаем лишних objectWillChange / lock contention).
+    @ObservedObject private var syncEngine = SyncEngine.shared
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var showVoiceNotesScreen: Bool = false
@@ -73,16 +74,25 @@ struct SettingsScreen: View {
 
     // MARK: - UI Sections
 
+    /// Единый стиль групп строк (все секции Настроек).
+    private var settingsGroupedCardBackground: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(Color.secondary.opacity(0.05))
+    }
+
     private var navigationHeader: some View {
         ALADDINNavigationBar(
             title: viewModel.localizedStrings.settingsTitle,
             subtitle: viewModel.localizedStrings.settingsSubtitle,
             showBackButton: true,
             onBack: {
-                if navigationManager.canGoBack {
+                // Всегда на главную через NavigationManager (не dismiss NavigationLink — иначе MainScreen.task → онбординг).
+                if navigationManager.currentScreen == .settings {
+                    navigationManager.switchToMainScreen()
+                } else if navigationManager.canGoBack {
                     navigationManager.goBack(reason: "settings_back")
                 } else {
-                    dismiss()
+                    navigationManager.switchToMainScreen()
                 }
             }
         )
@@ -102,7 +112,7 @@ struct SettingsScreen: View {
             // Profile Card
             ZStack {
                 RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.secondary.opacity(0.1))
+                    .fill(Color.secondary.opacity(0.05))
 
                 VStack(spacing: Spacing.m) {
                     // Avatar and Name
@@ -242,26 +252,20 @@ struct SettingsScreen: View {
                 }
                 .padding(Spacing.m)
                 .accessibilityLabel(viewModel.localizedStrings.settingsProtectionLevelAccessibility)
-            }
-            .background(Color.secondary.opacity(0.05))
-            .clipShape(RoundedRectangle(cornerRadius: 12))
 
-            // Advanced Settings Button
-            Button(action: {
-                logger.buttonTap("Advanced Protection", screen: "Settings")
-                viewModel.showAdvancedProtection = true
-            }) {
-                HStack {
-                    Text(viewModel.localizedStrings.settingsAdvancedSettings)
-                        .foregroundColor(.blue)
-                        Spacer()
-                    Image(systemName: "chevron.right")
-                        .foregroundColor(.secondary)
+                Divider()
+
+                appNavigationRow(
+                    icon: "gearshape.2.fill",
+                    title: viewModel.localizedStrings.settingsAdvancedSettings,
+                    subtitle: localizationManager.localized("settings_advanced_subtitle")
+                ) {
+                    logger.buttonTap("Advanced Protection", screen: "Settings")
+                    viewModel.showAdvancedProtection = true
                 }
-                .padding(Spacing.m)
-                .background(Color.blue.opacity(0.1))
-                .clipShape(RoundedRectangle(cornerRadius: 8))
             }
+            .background(settingsGroupedCardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
 
@@ -275,7 +279,6 @@ struct SettingsScreen: View {
                 .accessibilityAddTraits(.isHeader)
 
             VStack(spacing: 0) {
-                // Security Notifications (Push)
                 settingRow(
                     icon: "bell.fill",
                     title: viewModel.localizedStrings.pushNotifications,
@@ -285,7 +288,6 @@ struct SettingsScreen: View {
 
                 Divider()
 
-                // Sound Notifications
                 settingRow(
                     icon: "speaker.wave.2.fill",
                     title: viewModel.localizedStrings.soundNotifications,
@@ -293,12 +295,9 @@ struct SettingsScreen: View {
                     isEnabled: $viewModel.soundEnabled
                 )
             }
+            .background(settingsGroupedCardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
         }
-        .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
     }
 
     private var appSection: some View {
@@ -406,7 +405,7 @@ struct SettingsScreen: View {
                     viewModel.showPositioningSystemPicker = true
                 }
             }
-            .background(Color.secondary.opacity(0.05))
+            .background(settingsGroupedCardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
@@ -417,7 +416,7 @@ struct SettingsScreen: View {
                 Text(viewModel.localizedStrings.systemComponentsTitle)
                     .font(.title2)
                     .fontWeight(.bold)
-                    .foregroundColor(.primary)
+                    .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
                 
                 Spacer()
@@ -456,7 +455,7 @@ struct SettingsScreen: View {
                 .clipShape(RoundedRectangle(cornerRadius: 8))
             } else if viewModel.components.isEmpty {
                 Text(viewModel.localizedStrings.systemComponentsEmpty)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.textSecondary)
                     .padding(Spacing.m)
                     .frame(maxWidth: .infinity, alignment: .center)
             } else {
@@ -470,7 +469,7 @@ struct SettingsScreen: View {
                         }
                     }
                 }
-                .background(Color.secondary.opacity(0.05))
+                .background(settingsGroupedCardBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 12))
             }
         }
@@ -491,26 +490,12 @@ struct SettingsScreen: View {
                 .padding(.bottom, Spacing.xs)
 
             VStack(spacing: 0) {
-                // Help & Support
-                Button(action: {
+                appNavigationRow(
+                    icon: "questionmark.circle.fill",
+                    title: viewModel.localizedStrings.helpSupport,
+                    subtitle: viewModel.localizedStrings.helpSupportSubtitle
+                ) {
                     viewModel.showSupportScreen = true
-                }) {
-                    HStack {
-                        Image(systemName: "questionmark.circle.fill")
-                            .foregroundColor(.secondary)
-                            .frame(width: 24)
-                        VStack(alignment: .leading, spacing: Spacing.xs) {
-                            Text(viewModel.localizedStrings.helpSupport)
-                                .foregroundColor(.primary)
-                            Text(viewModel.localizedStrings.helpSupportSubtitle)
-                                .font(.caption)
-                                .foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Image(systemName: "chevron.right")
-                            .foregroundColor(.secondary)
-                    }
-                    .padding(Spacing.m)
                 }
 
                 Divider()
@@ -563,7 +548,7 @@ struct SettingsScreen: View {
                 }
 
             }
-            .background(Color.secondary.opacity(0.05))
+            .background(settingsGroupedCardBackground)
             .clipShape(RoundedRectangle(cornerRadius: 12))
         }
     }
@@ -754,47 +739,7 @@ struct SettingsScreen: View {
     }
 
     private func settingsButton(_ icon: String, _ title: String, _ subtitle: String, action: @escaping () -> Void) -> some View {
-        Button(action: action) {
-            HStack(spacing: Spacing.s) {
-                // ✅ Фиксированная ширина иконки для выравнивания
-                Image(systemName: icon)
-                    .font(.system(size: 16))
-                    .foregroundColor(.primaryBlue)
-                    .frame(width: 24, height: 24, alignment: .leading)
-                    .fixedSize(horizontal: true, vertical: false)
-
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text(title)
-                        .font(.body)
-                        .foregroundColor(.textPrimary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-
-                    Text(subtitle)
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .multilineTextAlignment(.leading)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .lineLimit(2)
-                }
-
-                Spacer()
-
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.textSecondary.opacity(0.6))
-            }
-            .padding(Spacing.m)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(Color.backgroundMedium.opacity(0.2))
-            )
-        }
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel("\(title), \(subtitle)")
-        .accessibilityAddTraits(.isButton)
+        appNavigationRow(icon: icon, title: title, subtitle: subtitle, action: action)
     }
 
     private func settingRow(
@@ -852,10 +797,6 @@ struct SettingsScreen: View {
                 }
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title), включено")
     }
@@ -906,11 +847,11 @@ struct SettingsScreen: View {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(component.componentId.capitalized)
                         .font(.headline)
-                        .foregroundColor(.primary)
+                        .foregroundColor(.textPrimary)
 
                     Text(description)
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundColor(.textSecondary)
                 }
 
                 Spacer()

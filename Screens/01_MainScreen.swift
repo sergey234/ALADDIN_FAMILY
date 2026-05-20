@@ -298,12 +298,16 @@ struct MainScreen: View {
 
             // ✅ ИСПРАВЛЕНИЕ BUILD 92: Используем @AppStorage вместо UserDefaults.standard
             // Это безопасно, так как мы НЕ используем его в .id() или computed properties
-            debugLog.append("✅ onboardingDone = \(hasCompletedOnboarding)")
-            if !hasCompletedOnboarding {
-                let message = "Onboarding not completed, redirecting back"
-                // ✅ BUILD 110: Удален logger.warn
+            // Источник истины — UserDefaults (как NavigationManager.init), не только @AppStorage:
+            // после NavigationLink→Настройки→Назад @AppStorage может отставать и ошибочно кидать на онбординг.
+            let onboardingDoneUD = UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            if onboardingDoneUD && !hasCompletedOnboarding {
+                hasCompletedOnboarding = true
+            }
+            debugLog.append("✅ onboardingDone AppStorage=\(hasCompletedOnboarding) UD=\(onboardingDoneUD)")
+            if !onboardingDoneUD {
+                let message = "Onboarding not completed (UserDefaults), redirecting back"
                 debugLog.append("⚠️ \(message)")
-                // ✅ Сохраняем логи асинхронно (копируем массив для безопасности)
                 let logCopy = debugLog
                 Task {
                     saveDebugLog(logCopy)
@@ -578,12 +582,9 @@ struct MainScreen: View {
                                 )
                             }
                             
-                            // Настройки карточка
-                            NavigationLink(destination: Group {
-                                // ✅ [REVERT] SettingsScreen с EnvironmentObject
-                                SettingsScreen()
-                                    .environmentObject(navigationManager)
-                                    .environmentObject(localizationManager)
+                            // Настройки — через NavigationManager (не NavigationLink: иначе «Назад» → dismiss → ложный онбординг).
+                            Button(action: {
+                                navigationManager.navigateTo(.settings)
                             }) {
                                 VStack(spacing: 8) {
                                     Text("⚙️")
@@ -608,6 +609,7 @@ struct MainScreen: View {
                                         )
                                 )
                             }
+                            .buttonStyle(.plain)
                         }
                         .padding(.horizontal, 20)
                         
