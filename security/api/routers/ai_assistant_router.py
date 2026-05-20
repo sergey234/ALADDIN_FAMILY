@@ -50,6 +50,7 @@ except ImportError as e:
 try:
     from security.services.ai_response_helpers import (
         dev_fallback_chat,
+        is_probable_mock_response,
         mock_allowed,
         raise_service_unavailable,
         require_sfm_adapter,
@@ -60,6 +61,7 @@ try:
 except ImportError:
     from ai_response_helpers import (  # type: ignore
         dev_fallback_chat,
+        is_probable_mock_response,
         mock_allowed,
         raise_service_unavailable,
         require_sfm_adapter,
@@ -175,6 +177,7 @@ class ChatMessageRequest(BaseModel):
     context: str = Field("general", description="Контекст разговора", example="general")
     user_id: Optional[str] = Field(None, description="ID пользователя")
     timestamp: Optional[datetime] = Field(None, description="Временная метка")
+    response_language: Optional[str] = Field(None, description="Предпочитаемый язык ответа (ru, en, …)")
 
 
 class StreamRequest(BaseModel):
@@ -286,15 +289,44 @@ class SecurityTipsResponse(BaseModel):
 # =============================================================================
 
 def _hermes_skill_for_intent(intent_id: str) -> Optional[str]:
-    if intent_id in KB_ONLY_INTENTS or intent_id in ("general", "e2ee_howto", "tariff_explain", "parental_howto"):
+    if intent_id in KB_ONLY_INTENTS or intent_id in (
+        "general",
+        "app_help",
+        "e2ee_howto",
+        "tariff_explain",
+        "parental_howto",
+    ):
         return "aladdin-security-kb"
     return None
 
 
 def _route_via_hermes(intent_id: str, kb_only: bool) -> bool:
+    """KB / open questions → Hermes skill aladdin-security-kb when available."""
     if kb_only:
         return True
-    return AI_BACKEND == "hermes" and intent_id == "general"
+    if intent_id in ("general", "app_help"):
+        return True
+    return AI_BACKEND == "hermes" and intent_id in KB_ONLY_INTENTS
+
+
+def _try_hermes_answer(
+    *,
+    cloud_message: str,
+    intent_id: str,
+) -> Optional[ChatMessageResponse]:
+    if not hermes_available():
+        return None
+    skill = _hermes_skill_for_intent(intent_id)
+    ok, text, err = hermes_chat_once(cloud_message, skill=skill)
+    if not ok or not text.strip() or is_probable_mock_response(text):
+        logger.warning("Hermes fallback unavailable intent=%s err=%s", intent_id, err)
+        return None
+    tools = [f"hermes:{skill}"] if skill else ["hermes"]
+    return _chat_response_from_hermes(
+        response_text=text,
+        intent_id=intent_id,
+        tools_used=tools,
+    )
 
 
 def _chat_response_from_hermes(
@@ -438,29 +470,29 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
 
     try:
         intent = classify_intent(request.message, request.context)
-        if _route_via_hermes(intent.intent_id, intent.kb_only):
-            if not hermes_available():
-                raise_service_unavailable()
-            cloud_message = _llm_message_or_http422(request.message, field="message")
+        cloud_message = _llm_message_or_http422(request.message, field="message")
+
+        if _route_via_hermes(intent.intent_id, intent.kb_only) and hermes_available():
             skill = _hermes_skill_for_intent(intent.intent_id)
             ok, text, err = hermes_chat_once(cloud_message, skill=skill)
-            if not ok or not text.strip():
-                logger.warning("Hermes chat failed: %s", err)
-                raise_service_unavailable()
-            tools = [f"hermes:{skill}"] if skill else ["hermes"]
-            response = _chat_response_from_hermes(
-                response_text=text,
-                intent_id=intent.intent_id,
-                tools_used=tools,
-            )
-            if cloud_message.strip():
-                _safe_record_chat_exchange(
-                    user_id=user_id,
-                    user_message_redacted=cloud_message,
-                    assistant_message=response.response,
-                    ui_context=request.context,
+            if ok and text.strip() and not is_probable_mock_response(text):
+                tools = [f"hermes:{skill}"] if skill else ["hermes"]
+                response = _chat_response_from_hermes(
+                    response_text=text,
+                    intent_id=intent.intent_id,
+                    tools_used=tools,
                 )
-            return response
+                if cloud_message.strip():
+                    _safe_record_chat_exchange(
+                        user_id=user_id,
+                        user_message_redacted=cloud_message,
+                        assistant_message=response.response,
+                        ui_context=request.context,
+                    )
+                return response
+            logger.warning("Hermes primary path failed intent=%s err=%s", intent.intent_id, err)
+            if intent.kb_only and not mock_allowed():
+                raise_service_unavailable()
 
         if intent_requires_live_sfm(intent.intent_id):
             require_sfm_adapter(SFM_ADAPTER_AVAILABLE and sfm_adapter is not None)
@@ -483,14 +515,18 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
         data = build_ai_chat_sfm_payload(
             message=cloud_message,
             ui_context=request.context,
-            user_id=request.user_id,
+            user_id=request.user_id or user_id,
             execute_fn=sfm_adapter.execute_function,
             timestamp=request.timestamp,
+            response_language=request.response_language,
         )
         success, result, message = sfm_adapter.execute_function("ai_assistant_chat", data)
 
         if not success:
             logger.warning("SFM ai_assistant_chat failed: %s", message)
+            hermes_resp = _try_hermes_answer(cloud_message=cloud_message, intent_id=intent.intent_id)
+            if hermes_resp:
+                return hermes_resp
             raise_service_unavailable()
 
         if not isinstance(result, dict):
@@ -502,6 +538,13 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
             intent_id=intent.intent_id,
             tools_used=tools_used,
         )
+        if is_probable_mock_response(response.response):
+            logger.warning("SFM returned probable mock for intent=%s", intent.intent_id)
+            hermes_resp = _try_hermes_answer(cloud_message=cloud_message, intent_id=intent.intent_id)
+            if hermes_resp:
+                response = hermes_resp
+            elif not mock_allowed():
+                raise_service_unavailable()
         if cloud_message.strip() and response.response.strip():
             _safe_record_chat_exchange(
                 user_id=user_id,

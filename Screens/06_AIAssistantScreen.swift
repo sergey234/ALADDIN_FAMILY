@@ -23,6 +23,7 @@ struct AIAssistantScreen: View {
     @State private var showVoicePermissionAlert = false
     @State private var showVoiceServiceUnavailableAlert = false
     @State private var showFeedbackSheet = false
+    @State private var showDemoServerBanner = false
 
     // Сервисы
     @StateObject private var apiService = APIService.shared
@@ -163,6 +164,12 @@ struct AIAssistantScreen: View {
                         .padding(.horizontal, 20)
                         .padding(.bottom, 8)
                 }
+
+                if showDemoServerBanner {
+                    aiDemoServerBanner
+                        .padding(.horizontal, 20)
+                        .padding(.bottom, 8)
+                }
                 
                 // Чат
                 ScrollView(.vertical, showsIndicators: false) {
@@ -297,6 +304,20 @@ struct AIAssistantScreen: View {
 
     private var isAIDataSharingEnabled: Bool {
         UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.aiDataSharingEnabled)
+    }
+
+    private var aiDemoServerBanner: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "exclamationmark.triangle.fill")
+                .foregroundColor(.yellow)
+            Text(localizationManager.localized("ai_assistant_demo_server_banner"))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white)
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .background(Color.red.opacity(0.28))
+        .cornerRadius(12)
     }
 
     private var aiConsentBanner: some View {
@@ -718,6 +739,7 @@ struct AIAssistantScreen: View {
         // Hybrid FAQ+AI: локальный матч по тексту пользователя (до redact на сервере).
         if let faqMatch = UnifiedFAQCatalog.bestMatch(for: displayMessage, localize: localizationManager.localized) {
             logger.business("📚 AI Assistant: FAQ match found id=\(faqMatch.id)")
+            showDemoServerBanner = false
             AIAssistantResponseDiagnostics.logDelivery(
                 source: .faqLocal,
                 context: context,
@@ -751,6 +773,7 @@ struct AIAssistantScreen: View {
                     // Проверяем, является ли ответ стандартным mock ответом сервера
                     let finalResponse = response.response
                     let source = AIAssistantResponseDiagnostics.classifyServerResponse(finalResponse)
+                    showDemoServerBanner = (source == .cloudAPIProbableMock)
                     AIAssistantResponseDiagnostics.logDelivery(
                         source: source,
                         context: context,

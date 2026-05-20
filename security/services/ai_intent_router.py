@@ -22,6 +22,7 @@ KB_ONLY_INTENTS = frozenset(
         "parental_howto",
         "tariff_explain",
         "e2ee_howto",
+        "app_help",
     }
 )
 
@@ -70,6 +71,12 @@ def classify_intent(message: str, ui_context: str = "general") -> IntentResult:
         return IntentResult("recommendations", ("ai_assistant_recommendations",), False)
     if re.search(r"не помог|обратн|feedback", msg):
         return IntentResult("feedback", (), False)
+    if re.search(
+        r"учишь|обуча|обучен|как работа|что умеешь|что можешь|кто ты|ты ai|"
+        r"помощник aladdin|нейросет|искусствен",
+        msg,
+    ):
+        return IntentResult("app_help", (), True)
 
     return IntentResult("general", ("ai_assistant_chat",), False)
 

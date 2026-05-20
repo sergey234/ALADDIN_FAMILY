@@ -512,11 +512,9 @@ private let logger = MasterLogger.shared
             do {
                 let bodyData = try JSONEncoder().encode(body)
                 request.httpBody = bodyData
-                print("📦 REQUEST BODY: \(String(data: bodyData, encoding: .utf8) ?? "NIL")")
+                let safeBodyLog = Self.redactedRequestBodyForLog(bodyData)
+                print("📦 REQUEST BODY: \(safeBodyLog)")
                 print("📦 REQUEST BODY SIZE: \(bodyData.count) bytes")
-                if let bodyString = String(data: bodyData, encoding: .utf8) {
-                    print("   - Body: \(bodyString)")
-                }
             } catch {
                 print("❌ NetworkManager.post: Ошибка кодирования body: \(error)")
                 completion(.failure(error))
@@ -1791,6 +1789,22 @@ extension NetworkManager: URLSessionDelegate {
         #if DEBUG
         print("⚠️ NetworkManager: таймауты увеличены до \(newRequestTimeout)s / \(newResourceTimeout)s из-за медленных ответов")
         #endif
+    }
+
+    /// Маскирует JWT в `userId` и длинные токены в логах POST body.
+    nonisolated private static func redactedRequestBodyForLog(_ data: Data) -> String {
+        guard var text = String(data: data, encoding: .utf8) else { return "NIL" }
+        if text.contains("eyJ") {
+            text = text.replacingOccurrences(
+                of: #"eyJ[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+\.[A-Za-z0-9_\-]+"#,
+                with: "eyJ…[REDACTED]",
+                options: .regularExpression
+            )
+        }
+        if text.count > 600 {
+            return String(text.prefix(600)) + "…"
+        }
+        return text
     }
 }
 
