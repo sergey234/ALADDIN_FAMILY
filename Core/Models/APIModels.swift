@@ -1841,6 +1841,11 @@ struct E2EEDeviceListItem: Codable {
 struct E2EEDeviceListResponse: Codable {
     let familyId: String
     let devices: [E2EEDeviceListItem]
+
+    enum CodingKeys: String, CodingKey {
+        case familyId = "family_id"
+        case devices
+    }
 }
 
 struct E2EESenderKeyDistributionItem: Codable {
@@ -1860,6 +1865,11 @@ struct E2EESenderKeyDistributionItem: Codable {
 struct E2EESenderKeyDistributionListResponse: Codable {
     let familyId: String
     let items: [E2EESenderKeyDistributionItem]
+
+    enum CodingKeys: String, CodingKey {
+        case familyId = "family_id"
+        case items
+    }
 }
 
 struct DistributeE2EESenderKeyRequest: Codable {

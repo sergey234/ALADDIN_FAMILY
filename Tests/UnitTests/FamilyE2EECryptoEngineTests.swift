@@ -44,4 +44,13 @@ final class FamilyE2EECryptoEngineTests: XCTestCase {
         // Distribution uses sender identity; for unit test verify blob is non-empty and parse fails without correct pair.
         XCTAssertFalse(wrapped.isEmpty)
     }
+
+    func testSenderKeyDistributionListDecodesSnakeCaseFamilyId() throws {
+        let json = """
+        {"family_id":"FAM_7A492C0BC404","items":[]}
+        """.data(using: .utf8)!
+        let decoded = try JSONDecoder().decode(E2EESenderKeyDistributionListResponse.self, from: json)
+        XCTAssertEqual(decoded.familyId, "FAM_7A492C0BC404")
+        XCTAssertTrue(decoded.items.isEmpty)
+    }
 }
