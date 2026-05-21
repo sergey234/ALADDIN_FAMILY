@@ -1,4 +1,27 @@
 import SwiftUI
+import UIKit
+
+// MARK: - Onboarding logo V2 (transparent wordmark from BrandAssets / Figma WORDMARK_V2)
+
+private struct OnboardingLogoV2View: View {
+    var body: some View {
+        Group {
+            if UIImage(named: "OnboardingLogo_V2_Cinematic", in: .main, compatibleWith: nil) != nil {
+                Image("OnboardingLogo_V2_Cinematic")
+                    .renderingMode(.original)
+                    .resizable()
+                    .scaledToFit()
+            } else {
+                Text(AppConfig.localizedAppMarketingName)
+                    .font(.system(size: 28, weight: .bold, design: .serif))
+                    .foregroundStyle(Color.secondaryGold)
+            }
+        }
+        .frame(maxWidth: 361)
+        .frame(height: 104)
+        .accessibilityLabel(AppConfig.localizedAppMarketingName)
+    }
+}
 
 // MARK: - OnboardingAladdinLogoView Component
 /// 🎨 Стилизованный золотой логотип "Aladdin" в скриптном стиле для онбординга
@@ -92,6 +115,10 @@ struct OnboardingScreen: View {
 
     // ✅ НОВОЕ: Stored property вместо computed для устранения race condition
     // Стартуем не с пустого массива, чтобы исключить гонку первого кадра TabView(.page).
+    /// Защита от параллельных `loadPages()` (onAppear + onChange isReady → EXC_BAD_ACCESS в TabView).
+    @State private var isLoadingPages = false
+    @State private var tabViewContentID = UUID()
+
     @State private var pages: [OnboardingPage] = [
         OnboardingPage(
             icon: "🛡️",
@@ -267,26 +294,10 @@ struct OnboardingScreen: View {
     }
 
     @ViewBuilder
-    private func languageStepGlobe() -> some View {
-        let globe = Image(systemName: "globe")
-            .font(.system(size: 56, weight: .light))
-            .foregroundStyle(Color.secondaryGold.opacity(0.9))
-            .accessibilityHidden(true)
-        if accessibilityReduceMotion {
-            globe
-        } else {
-            // Build 198: без TimelineView/spring — меньше нагрузки на main thread при старте.
-            globe.scaleEffect(1.02)
-        }
-    }
-
-    @ViewBuilder
     private func languageStepView() -> some View {
         ZStack {
             VStack(spacing: Spacing.xl) {
             Spacer(minLength: 12)
-
-            languageStepGlobe()
 
             Text(languageStepTitle(for: selectedLanguageForOnboarding))
                 .font(.system(size: 22, weight: .bold))
@@ -347,23 +358,25 @@ struct OnboardingScreen: View {
     }
 
     // ✅ НОВОЕ: Функция безопасной загрузки страниц с fallback
+    @MainActor
     private func loadPages() {
+        guard !isLoadingPages else { return }
+        isLoadingPages = true
+        defer { isLoadingPages = false }
+
         print("🔄 OnboardingScreen.loadPages: Starting, localizationManager.isReady = \(localizationManager.isReady)")
-        do {
-            if localizationManager.isReady {
-                // Попытка загрузить полные страницы
-                pages = try createFullPages()
-                print("✅ OnboardingScreen: Successfully loaded \(pages.count) full pages")
-            } else {
-                // Fallback к минимальным страницам
-                pages = createMinimalPages()
-                print("⚠️ OnboardingScreen: Localization not ready, using \(pages.count) minimal pages")
-            }
-        } catch {
-            // Graceful degradation - используем минимальные страницы
-            pages = createMinimalPages()
-            print("❌ OnboardingScreen: Error loading pages: \(error.localizedDescription), using \(pages.count) minimal pages")
+
+        let nextPages: [OnboardingPage]
+        if localizationManager.isReady {
+            nextPages = createFullPages()
+            print("✅ OnboardingScreen: Successfully loaded \(nextPages.count) full pages")
+        } else {
+            nextPages = createMinimalPages()
+            print("⚠️ OnboardingScreen: Localization not ready, using \(nextPages.count) minimal pages")
         }
+
+        pages = nextPages
+        tabViewContentID = UUID()
         clampCurrentPageIfNeeded()
         applyStoredLanguageSkipIfNeeded()
     }
@@ -382,13 +395,10 @@ struct OnboardingScreen: View {
         }
     }
 
-    // ✅ Создание полных страниц (может выбросить ошибку)
-    private func createFullPages() throws -> [OnboardingPage] {
-        guard localizationManager.isReady else {
-            throw OnboardingError.localizationNotReady
-        }
-
-        return [
+    // ✅ Создание полных страниц (только с MainActor — см. loadPages)
+    @MainActor
+    private func createFullPages() -> [OnboardingPage] {
+        [
             // Страница 1: Защита всей семьи
             OnboardingPage(
                 icon: "🛡️",
@@ -437,7 +447,7 @@ struct OnboardingScreen: View {
                 title: safeLocalized("onboarding_page7_title"),
                 description: safeLocalized("onboarding_page7_desc"),
                 color: Color.green
-            )
+            ),
         ]
     }
 
@@ -531,7 +541,7 @@ struct OnboardingScreen: View {
                 .modifier(OnboardingHeroRTLFlipModifier(isRTL: layoutDirection == .rightToLeft))
                 .accessibilityHidden(true)
 
-            HeroBottomReadableGradient(strong: currentPage == 0)
+            HeroBottomReadableGradient(strong: currentPage == 0 || currentPage == 2 || currentPage == 3)
                 .ignoresSafeArea()
 
             // ✅ ВАРИАНТ 1: Показываем онбординг сразу, без проверки готовности локализации
@@ -666,6 +676,7 @@ struct OnboardingScreen: View {
                             .tag(tabIndex)
                     }
                 }
+                .id(tabViewContentID)
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
                 .accessibilityElement(children: .contain)
@@ -941,10 +952,13 @@ struct OnboardingScreen: View {
                     VStack(spacing: Spacing.l) {
                         Color.clear.frame(height: Spacing.xl)
 
+                        OnboardingLogoV2View()
+                            .padding(.bottom, Spacing.s)
+
                         VStack(spacing: Spacing.m) {
                             Text(page.title)
                                 .font(.system(size: 26, weight: .bold))
-                                .foregroundColor(.secondaryGold)
+                                .foregroundColor(.white)
                                 .multilineTextAlignment(.center)
                                 .lineLimit(2)
                                 .minimumScaleFactor(0.7)
@@ -972,7 +986,7 @@ struct OnboardingScreen: View {
                     Spacer(minLength: Spacing.xxl)
 
                     if contentIndex == 0 {
-                        OnboardingAladdinLogoView(size: 36, showSubtitle: false)
+                        OnboardingLogoV2View()
                             .padding(.bottom, Spacing.s)
                     }
 

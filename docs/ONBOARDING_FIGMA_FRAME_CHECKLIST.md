@@ -36,7 +36,7 @@
 | Готово | Имя фрейма (предложение) | Экран | Экспорт героя в Xcode | Что внутри auto-layout (кратко) |
 |:------:|--------------------------|-------|------------------------|----------------------------------|
 | ✓ | `OB_00_Language_393x852` | Язык | **OnboardingHero_00** | Сохранён: `Resources/FigmaExports/OB_00/`. QA Figma ✅; Xcode — в конце. |
-| ✓ | `OB_01_Family_393x852` | Семья | **OnboardingHero_01** | B1; V2 logo `BLOCK_aladdin_logo` **361×104** @ (16,484) FIT; title y=598, desc y=656; `FigmaExports/OB_01/BLOCK_aladdin_logo_V2_master.png`. |
+| ✓ | `OB_01_Family_393x852` | Семья | **OnboardingHero_01** | B1; V2 **WORDMARK_V2** `88:53` **361×104** @ (16,484) FIT, прозрачный PNG `WORDMARK_V2_transparent_figma_1x.png`; title y=598, desc y=656. |
 | ☐ | `OB_02_AI_393x852` | ИИ | **OnboardingHero_02** | **Дух «Пробуждение»** (не человек, не единорог); zone `OnboardingHero_02_figma_zone_361x460.png`; QA **§E-IMG**; node `103:53` / hero `103:54`. |
 | ☐ | `OB_03_Parents_393x852` | Родители | **OnboardingHero_03** | **Страж**; zone v2 `crop_w=1050` `height_frac=0.82` (см. `ONBOARDING_OB_03_EXPORT_LOG.md`); Figma ✅; Продукт ☐; node `108:53`/`108:54`. |
 | ☐ | `OB_04_Radar_393x852` | Аналитика | **OnboardingHero_04** | Figma ✅ `117:53`/`117:54`; космос радар; QA `ONBOARDING_OB_04_05_06_FIGMA_QA.md`. |

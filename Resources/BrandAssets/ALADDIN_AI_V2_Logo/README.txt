@@ -1,33 +1,38 @@
-ALADDIN AI — логотип V2 (Cinematic 3D, одна строка)
-================================================
+ALADDIN AI — Wordmark V2 (прозрачный, без космоса)
+=================================================
 
-Канон для онбординга OB_01 и будущего Xcode (OnboardingAladdinLogoView).
+Канон для онбординга OB_01 и OB_07: только золотые буквы «ALADDIN AI», PNG с альфой.
 
-ГДЕ ИСКАТЬ
-----------
-• В проекте (git):
-  ALADDIN_iOS/Resources/BrandAssets/ALADDIN_AI_V2_Logo/
+ФАЙЛЫ (источник для Figma + Xcode)
+----------------------------------
+WORDMARK_V2_transparent_master.png      — 361×104, прозрачный фон
+WORDMARK_V2_transparent_figma_1x.png    — то же, заливка в Figma FIT
+WORDMARK_V2_transparent_figma_1x@2x.png
+WORDMARK_V2_transparent_figma_1x@3x.png
 
-• На Mac (копия для дизайна / Finder):
-  ~/Downloads/ALADDIN_AI_V2_Logo/
+Справочно (с фоном, не в app):
+ALADDIN_AI_logo_V2_master.png           — cinematic board 670×340
+REFERENCE_V1_V2_board.png
+BLOCK_aladdin_logo_V2_*.png             — устаревшие opaque-экспорты
 
-ФАЙЛЫ
-------
-ALADDIN_AI_logo_V2_master.png     — главный мастер (670×340), полная строка «ALADDIN AI»
-BLOCK_aladdin_logo_V2_master.png  — то же (дубликат имени для пайплайна)
-BLOCK_aladdin_logo_V2_figma_1x.png — для Figma / макета 1x (361×173)
-BLOCK_aladdin_logo_V2@2x.png      — экспорт @2x
-BLOCK_aladdin_logo_V2@3x.png      — экспорт @3x
-REFERENCE_V1_V2_board.png         — доска сравнения V1 vs V2
+FIGMA (KvkUdyb5Ll31Z9FSzCbpNl)
+------------------------------
+| Слой | Node ID | Размер | Режим |
+|------|---------|--------|-------|
+| EXPORT_WORDMARK_V2_transparent | 185:53 | 361×104 | экспорт-канон |
+| WORDMARK_V2_raster | 185:54 | 361×104 | FIT |
+| WORDMARK_V2 (OB_01) | 88:53 | 361×104 @ (16,484) | FIT |
+| WORDMARK_V2 (OB_07) | 168:53 | 361×104 | FIT |
 
-FIGMA
+Загрузка: WORDMARK_V2_transparent_figma_1x.png через MCP upload_assets, scaleMode=FIT.
+
+XCODE
 -----
-Слой: BLOCK_aladdin_logo в OB_01_Family_393x852
-Файл: docs/FIGMA_ONBOARDING.env → KvkUdyb5Ll31Z9FSzCbpNl
+Assets.xcassets/OnboardingLogo_V2_Cinematic.imageset
+Синхронизация: python3 scripts/sync_wordmark_v2_transparent.py
 
-КОД (текстовый fallback до imageset)
------------------------------------
-AppConfig.localizedAppMarketingName → ключ app.name = «ALADDIN AI»
-Screens/14_OnboardingScreen.swift → OnboardingAladdinLogoView
+SWIFT
+-----
+Screens/14_OnboardingScreen.swift → OnboardingLogoV2View (contentIndex 0 и 6)
 
-Обновлено: 2026-05-19
+Обновлено: 2026-05-21
