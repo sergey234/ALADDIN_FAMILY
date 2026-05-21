@@ -28,14 +28,11 @@ class FamilyChatOfflineManager: ObservableObject {
     // MARK: - Cache (Keychain ciphertext-only)
 
     func cacheMessages(_ messages: [FamilyChatMessageResponse], familyId: String) {
+        // Keychain-only cache for ciphertext. Do NOT mirror every GET/poll into UnifiedOfflineStore:
+        // that created a new unsynced Core Data row per message per poll → infinite POST
+        // /api/offline-storage/data/update (see build 200 fix).
         FamilyChatCiphertextCache.save(messages, familyId: familyId)
         UserDefaults.standard.set(Date(), forKey: lastSyncKey)
-        Task {
-            for message in messages {
-                let stored = FamilyChatCiphertextCache.sanitizeForStorage(message)
-                _ = await unifiedStore.saveChatMessage(stored, isPending: false)
-            }
-        }
     }
 
     func loadCachedMessages(familyId: String?) -> [FamilyChatMessageResponse] {

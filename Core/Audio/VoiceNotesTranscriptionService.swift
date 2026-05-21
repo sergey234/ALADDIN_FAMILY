@@ -9,9 +9,13 @@ enum VoiceNotesTranscriptionError: Error {
 }
 
 final class VoiceNotesTranscriptionService {
-    private let recognizer = SFSpeechRecognizer(locale: LocalizationManager.shared.speechRecognitionLocale)
+    private let timeoutSec: TimeInterval = 45
 
     func transcribeOnDevice(url: URL, completion: @escaping (Result<String, Error>) -> Void) {
+        transcribe(url: url, preferOnDevice: true, completion: completion)
+    }
+
+    func transcribe(url: URL, preferOnDevice: Bool, completion: @escaping (Result<String, Error>) -> Void) {
         let lock = NSLock()
         var isCompleted = false
         func completeOnce(_ result: Result<String, Error>) {
@@ -28,17 +32,39 @@ final class VoiceNotesTranscriptionService {
                 return
             }
 
-            guard let recognizer = self.recognizer, recognizer.isAvailable else {
+            let locale = LocalizationManager.shared.speechRecognitionLocale
+            let selection: SpeechRecognizerFactory.Selection?
+            if preferOnDevice {
+                selection = SpeechRecognizerFactory.bestForFileTranscription(preferred: locale)
+            } else {
+                selection = SpeechRecognizerFactory.cloudOnly(preferred: locale)
+            }
+
+            guard let selection else {
+                if preferOnDevice {
+                    self.transcribe(url: url, preferOnDevice: false, completion: completion)
+                    return
+                }
                 completeOnce(.failure(VoiceNotesTranscriptionError.recognizerUnavailable))
                 return
             }
 
             let request = SFSpeechURLRecognitionRequest(url: url)
-            request.requiresOnDeviceRecognition = true
             request.shouldReportPartialResults = false
+            if selection.useOnDeviceRecognition {
+                request.requiresOnDeviceRecognition = true
+            }
 
-            let task = recognizer.recognitionTask(with: request) { result, error in
+            var recognitionTask: SFSpeechRecognitionTask?
+            recognitionTask = selection.recognizer.recognitionTask(with: request) { result, error in
                 if let error {
+                    let ns = error as NSError
+                    if preferOnDevice && selection.useOnDeviceRecognition,
+                       ns.domain == "kAFAssistantErrorDomain", ns.code == 1101 {
+                        recognitionTask?.cancel()
+                        self.transcribe(url: url, preferOnDevice: false, completion: completion)
+                        return
+                    }
                     completeOnce(.failure(VoiceNotesTranscriptionError.failed(error.localizedDescription)))
                     return
                 }
@@ -47,12 +73,12 @@ final class VoiceNotesTranscriptionService {
                 }
             }
 
-            DispatchQueue.global().asyncAfter(deadline: .now() + 15) {
+            DispatchQueue.global().asyncAfter(deadline: .now() + self.timeoutSec) {
                 lock.lock()
                 let done = isCompleted
                 lock.unlock()
                 if !done {
-                    task.cancel()
+                    recognitionTask?.cancel()
                     completeOnce(.failure(VoiceNotesTranscriptionError.timedOut))
                 }
             }

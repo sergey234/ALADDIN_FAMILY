@@ -1,9 +1,13 @@
 import Foundation
 import SwiftUI
 import AVFoundation
+import Speech
 
 @MainActor
 final class VoiceNotesViewModel: ObservableObject {
+    static let maxRecordingDurationSec = 600
+    static let recordingWarningBeforeEndSec = 30
+
     enum RecordingState: String {
         case idle
         case recording
@@ -51,6 +55,10 @@ final class VoiceNotesViewModel: ObservableObject {
     @Published var localOnlyModeEnabled: Bool = true
     @Published var searchText: String = ""
     @Published var activeFilter: NotesFilter = .all
+    @Published var showMicPermissionAlert = false
+    @Published var showSpeechPermissionAlert = false
+    @Published var isSpeechTranscriptionAvailable = true
+    @Published var showNearLimitWarning = false
 
     private let recorderService = VoiceNotesRecorderService()
     private let transcriptionService = VoiceNotesTranscriptionService()
@@ -69,6 +77,13 @@ final class VoiceNotesViewModel: ObservableObject {
             guard let self else { return }
             Task { @MainActor in
                 self.autosaveAfterInterruption()
+            }
+        }
+        recorderService.onAudioLevel = { [weak self] level in
+            guard let self else { return }
+            Task { @MainActor in
+                let normalized = AudioLevelMeter.normalizedLevel(fromAveragePower: level)
+                self.noiseLevel = normalized.isFinite ? normalized : 0
             }
         }
         loadNotes()
@@ -117,19 +132,51 @@ final class VoiceNotesViewModel: ObservableObject {
 
     func startRecording() {
         guard recordingState != .recording else { return }
+        showNearLimitWarning = false
+
+        let session = AVAudioSession.sharedInstance()
+        switch session.recordPermission {
+        case .granted:
+            beginRecordingAfterPermission()
+        case .denied:
+            showMicPermissionAlert = true
+            recordingState = .failed
+            currentStatusText = "voice_notes_mic_permission_denied"
+        case .undetermined:
+            session.requestRecordPermission { [weak self] granted in
+                Task { @MainActor in
+                    guard let self else { return }
+                    if granted {
+                        self.beginRecordingAfterPermission()
+                    } else {
+                        self.showMicPermissionAlert = true
+                        self.recordingState = .failed
+                        self.currentStatusText = "voice_notes_mic_permission_denied"
+                    }
+                }
+            }
+        @unknown default:
+            showMicPermissionAlert = true
+        }
+    }
+
+    private func beginRecordingAfterPermission() {
+        MasterLogger.shared.business("🎙️ VoiceNotes: Recording started")
         recordingState = .recording
         currentStatusText = "voice_notes_status_listening"
         feedbackLogged = false
         startTappedAt = Date()
-        if let url = try? recorderService.start() {
+        do {
+            let url = try recorderService.start()
             recordingURL = url
             recordingStartedAt = Date()
-        } else {
+        } catch {
             recordingState = .failed
-            currentStatusText = "ai_assistant_voice_service_unavailable"
+            currentStatusText = "voice_notes_session_busy"
             return
         }
         track(action: "voice_record_start_success_rate")
+        HapticFeedback.impact(.medium)
         startTimer()
         logTimeToFirstFeedbackIfNeeded()
     }
@@ -152,6 +199,7 @@ final class VoiceNotesViewModel: ObservableObject {
 
     func stopAndSaveRecording() {
         guard recordingState == .recording || recordingState == .paused else { return }
+        MasterLogger.shared.business("🎙️ VoiceNotes: Stop & save (elapsed \(elapsedSec)s)")
         recordingState = .processing
         currentStatusText = "voice_notes_status_processing"
         stopTimer()
@@ -173,6 +221,7 @@ final class VoiceNotesViewModel: ObservableObject {
         notes.insert(newNote, at: 0)
         persistNotes()
         showRecordingSavedToast(path: finishedURL?.path ?? "")
+        HapticFeedback.impact(.light)
         recordingState = .saved
         currentStatusText = "voice_notes_status_saved"
         recordingStartedAt = nil
@@ -197,6 +246,34 @@ final class VoiceNotesViewModel: ObservableObject {
 
     func markVoiceSessionStable() {
         track(action: "crash_free_sessions_voice")
+        refreshSpeechAvailability()
+        ensureSpeechAuthorizationForTranscription()
+    }
+
+    func refreshSpeechAvailability() {
+        let locale = LocalizationManager.shared.speechRecognitionLocale
+        isSpeechTranscriptionAvailable = SpeechRecognizerFactory.isSpeechInputAvailable(preferred: locale)
+    }
+
+    func ensureSpeechAuthorizationForTranscription() {
+        switch SFSpeechRecognizer.authorizationStatus() {
+        case .authorized:
+            break
+        case .denied, .restricted:
+            showSpeechPermissionAlert = true
+        case .notDetermined:
+            SFSpeechRecognizer.requestAuthorization { [weak self] status in
+                Task { @MainActor in
+                    guard let self else { return }
+                    if status != .authorized {
+                        self.showSpeechPermissionAlert = true
+                    }
+                    self.refreshSpeechAvailability()
+                }
+            }
+        @unknown default:
+            showSpeechPermissionAlert = true
+        }
     }
 
     func requestDelete(note: VoiceNoteItem) {
@@ -311,9 +388,13 @@ final class VoiceNotesViewModel: ObservableObject {
             guard let self else { return }
             Task { @MainActor in
                 self.elapsedSec += 1
-                self.noiseLevel = min(1.0, self.noiseLevel + 0.07)
-                if self.noiseLevel > 0.92 {
-                    self.noiseLevel = 0.18
+                let remaining = Self.maxRecordingDurationSec - self.elapsedSec
+                if remaining == Self.recordingWarningBeforeEndSec {
+                    self.showNearLimitWarning = true
+                    self.currentStatusText = "voice_notes_limit_warning"
+                }
+                if self.elapsedSec >= Self.maxRecordingDurationSec {
+                    self.stopAndSaveRecording()
                 }
             }
         }
@@ -338,10 +419,6 @@ final class VoiceNotesViewModel: ObservableObject {
 
     private func loadNotes() {
         let stored = store.load()
-        if stored.isEmpty {
-            seedDemoData()
-            return
-        }
         notes = stored.map {
             VoiceNoteItem(
                 id: $0.id,
@@ -382,40 +459,10 @@ final class VoiceNotesViewModel: ObservableObject {
         return "Voice Note • \(formatter.string(from: date))"
     }
 
-    private func seedDemoData() {
-        let now = Date()
-        notes = [
-            VoiceNoteItem(
-                id: UUID(),
-                title: generatedTitle(for: now),
-                createdAt: now,
-                durationSec: 94,
-                transcriptPreview: "Нужно согласовать релиз и проверить smoke по family API.",
-                summary: "Согласовать релиз и выполнить смоук-проверки API семейного чата.",
-                summaryConfidence: 0.88,
-                summaryVersion: 1,
-                tags: ["release", "api"],
-                audioPath: ""
-            ),
-            VoiceNoteItem(
-                id: UUID(),
-                title: generatedTitle(for: Calendar.current.date(byAdding: .day, value: -1, to: now) ?? now),
-                createdAt: Calendar.current.date(byAdding: .day, value: -1, to: now) ?? now,
-                durationSec: 56,
-                transcriptPreview: "Подготовить сценарий UX-тестов для voice-notes dashboard.",
-                summary: "Собрать UX-тест-кейсы для диктофона и статусов ошибок.",
-                summaryConfidence: 0.81,
-                summaryVersion: 1,
-                tags: ["ux", "qa"],
-                audioPath: ""
-            )
-        ]
-        persistNotes()
-    }
-    
     private func runLocalTranscriptionIfPossible(noteId: UUID, localURL: URL?) {
         guard localOnlyModeEnabled, let localURL else { return }
-        transcriptionService.transcribeOnDevice(url: localURL) { [weak self] result in
+        let preferOnDevice = SpeechRecognizerFactory.prefersOnDeviceRecognition
+        transcriptionService.transcribe(url: localURL, preferOnDevice: preferOnDevice) { [weak self] result in
             guard let self else { return }
             Task { @MainActor in
                 switch result {
@@ -433,6 +480,7 @@ final class VoiceNotesViewModel: ObservableObject {
                             switch e {
                             case .permissionDenied:
                                 self.notes[idx].transcriptPreview = "voice_notes_transcript_permission_denied"
+                                self.showSpeechPermissionAlert = true
                             case .recognizerUnavailable:
                                 self.notes[idx].transcriptPreview = "voice_notes_transcript_local_unavailable"
                             case .timedOut:
@@ -478,6 +526,9 @@ final class VoiceNotesViewModel: ObservableObject {
         elapsedSec = 0
         noiseLevel = 0.0
         markInterruption()
+        ToastManager.shared.showWarning(
+            LocalizationManager.shared.localized("voice_recording_interrupted")
+        )
         runLocalTranscriptionIfPossible(noteId: draft.id, localURL: finishedURL)
     }
 }

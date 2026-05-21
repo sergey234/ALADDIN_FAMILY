@@ -363,25 +363,30 @@ struct FamilyChatScreen: View {
                     selectedMedia = image
                     sendMediaMessage(image: image)
                 }
+                .aladdinSheetPresentation()
             }
             .sheet(isPresented: $showCamera) {
                 ImagePickerView(sourceType: .camera) { image in
                     selectedMedia = image
                     sendMediaMessage(image: image)
                 }
+                .aladdinSheetPresentation()
             }
             .sheet(isPresented: $showMessageActions) {
-                if let message = selectedMessage {
-                    MessageActionsMenu(
-                        message: message,
-                        onDelete: { deleteMessage(message) },
-                        onEdit: { startEditing(message) },
-                        onReply: { replyToMessage = message },
-                        onCopy: { copyMessage(message) },
-                        onForward: { forwardMessage(message) },
-                        onAddReaction: { showReactionPicker(for: message) }
-                    )
+                Group {
+                    if let message = selectedMessage {
+                        MessageActionsMenu(
+                            message: message,
+                            onDelete: { deleteMessage(message) },
+                            onEdit: { startEditing(message) },
+                            onReply: { replyToMessage = message },
+                            onCopy: { copyMessage(message) },
+                            onForward: { forwardMessage(message) },
+                            onAddReaction: { showReactionPicker(for: message) }
+                        )
+                    }
                 }
+                .aladdinSheetPresentation()
             }
             .sheet(isPresented: $showFeedbackSheet) {
                 AIFeedbackSheet(
@@ -481,6 +486,7 @@ struct FamilyChatScreen: View {
                         showContactPicker = false
                     }
                 )
+                .aladdinSheetPresentation()
             }
     }
 

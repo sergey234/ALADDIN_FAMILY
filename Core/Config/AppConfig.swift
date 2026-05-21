@@ -127,11 +127,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "199"
+    static let buildNumber = "200"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "199"
+    static let minimumClientBuildForApiContract = "200"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -658,6 +658,8 @@ extension AppConfig {
         static let darkWebServerScanEnabled = "dark_web_server_scan_enabled"
         /// P0: opt-in отправки текста вопросов на сервер AI (по умолчанию выключено).
         static let aiDataSharingEnabled = "ai_data_sharing_enabled"
+        /// Черновик из диктофона → AI Помощник.
+        static let pendingAIAssistantDraftMessage = "pending_ai_assistant_draft_message"
     }
 
     /// Opt-in: облачный AI-ассистент (текст уходит на aladdin-ai.ru после redact).

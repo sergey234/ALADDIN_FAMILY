@@ -1958,7 +1958,14 @@
 "voice_notes_undo" = "Undo";
 "voice_notes_deleted_undo_hint" = "Note deleted";
 "ai_assistant_voice_permission_denied" = "Microphone or speech recognition access is denied. Enable access in Settings.";
-"ai_assistant_voice_service_unavailable" = "Speech recognition service is currently unavailable. Please try again in a few seconds.";
+"ai_assistant_voice_service_unavailable" = "Speech recognition is not available on this device. In iPhone Settings, enable Siri and download the Russian language pack, or switch the app language to English.";
+"voice_open_settings" = "Open Settings";
+"voice_notes_start" = "Start recording";
+"voice_notes_stop_save" = "Stop & save";
+"voice_notes_howto" = "Tap Start recording, speak, then Stop & save. Transcription runs on your device.";
+"ai_assistant_voice_input_hint" = "Tap to speak, tap again to stop";
+"ai_assistant_voice_via_siri" = "Via Siri";
+"ai_assistant_voice_unavailable_chip" = "Voice unavailable";
 "ai_assistant_voice_empty_result" = "Couldn't recognize speech. Check your microphone and try again.";
 "ai_assistant_voice_input_label" = "Voice input";
 "ai_assistant_voice_status_idle" = "Ready";

@@ -27,7 +27,7 @@ struct NetworkProtectionScreen: View {
     @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
     @ObservedObject private var antivirusManager = AntivirusManager.shared
     @StateObject private var viewModel = NetworkProtectionViewModel()
-    @StateObject private var syncEngine = SyncEngine.shared
+    @ObservedObject private var syncEngine = SyncEngine.shared
     private let configurationService = ComponentConfigurationService.shared
     @State private var showingSettings = false
     @State private var showPasswordGenerator = false
@@ -1974,7 +1974,7 @@ struct NetworkProtectionSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
-    @StateObject private var syncEngine = SyncEngine.shared
+    @ObservedObject private var syncEngine = SyncEngine.shared
     private let apiService = APIService.shared
     private let toastManager = ToastManager.shared
     

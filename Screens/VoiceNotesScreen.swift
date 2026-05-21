@@ -2,14 +2,17 @@ import SwiftUI
 
 struct VoiceNotesScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
     @Environment(\.dismiss) private var dismiss
     @StateObject private var viewModel = VoiceNotesViewModel()
+    @StateObject private var playback = VoiceNotePlaybackController()
     @State private var showRenameAlert = false
     @State private var renameText = ""
     @State private var renameTargetId: UUID?
     @State private var callGoalText = ""
     @State private var callPostText = ""
     @State private var callOutcomeText = ""
+    @State private var isCallAssistantExpanded = false
 
     var body: some View {
         NavigationView {
@@ -21,9 +24,9 @@ struct VoiceNotesScreen: View {
 
                     privacyBanner
 
-                    callAssistantSection
-
                     notesContent
+
+                    callAssistantSection
                 }
                 .padding(.bottom, 8)
             }
@@ -58,6 +61,21 @@ struct VoiceNotesScreen: View {
         .onAppear {
             viewModel.markVoiceSessionStable()
         }
+        .onDisappear {
+            playback.stop()
+        }
+        .alert(localizationManager.localized("voice_notes_mic_permission_title"), isPresented: $viewModel.showMicPermissionAlert) {
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {}
+            Button(localizationManager.localized("voice_open_settings")) { openSettings() }
+        } message: {
+            Text(localizationManager.localized("voice_notes_mic_permission_message"))
+        }
+        .alert(localizationManager.localized("voice_notes_speech_permission_title"), isPresented: $viewModel.showSpeechPermissionAlert) {
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {}
+            Button(localizationManager.localized("voice_open_settings")) { openSettings() }
+        } message: {
+            Text(localizationManager.localized("voice_notes_speech_permission_message"))
+        }
         .alert(localizationManager.localized("voice_notes_rename"), isPresented: $showRenameAlert) {
             TextField(localizationManager.localized("voice_notes_rename_placeholder"), text: $renameText)
             Button(localizationManager.localized("common_cancel"), role: .cancel) {}
@@ -74,13 +92,22 @@ struct VoiceNotesScreen: View {
 
 private extension VoiceNotesScreen {
     var privacyBanner: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "lock.shield")
-                .foregroundColor(.green)
-            Text(localizationManager.localized("voice_notes_local_only_disclaimer"))
-                .font(.footnote)
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 8) {
+                Image(systemName: "lock.shield")
+                    .foregroundColor(.green)
+                Text(localizationManager.localized("voice_notes_local_only_disclaimer"))
+                    .font(.footnote)
+                    .foregroundColor(.secondary)
+            }
+            Text(localizationManager.localized("voice_notes_privacy_stt_disclaimer"))
+                .font(.caption)
                 .foregroundColor(.secondary)
-            Spacer()
+            if !viewModel.isSpeechTranscriptionAvailable {
+                Text(localizationManager.localized("voice_notes_speech_unavailable_hint"))
+                    .font(.caption)
+                    .foregroundColor(.orange)
+            }
         }
         .padding(.horizontal)
     }
@@ -143,8 +170,15 @@ private extension VoiceNotesScreen {
     func noteRow(_ note: VoiceNotesViewModel.VoiceNoteItem) -> some View {
         VoiceNoteCard(
             note: note,
+            playback: playback,
             onRegenerateSummary: {
                 viewModel.generateSummary(noteId: note.id, forceRegenerate: true)
+            },
+            onSendToAI: { text in
+                UserDefaults.standard.set(text, forKey: AppConfig.UserDefaultsKeys.pendingAIAssistantDraftMessage)
+                playback.stop()
+                dismiss()
+                navigationManager.navigateTo(.aiAssistant)
             }
         )
             .environmentObject(localizationManager)
@@ -167,37 +201,45 @@ private extension VoiceNotesScreen {
     }
 
     var callAssistantSection: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(localizationManager.localized("call_assistant_section_title"))
-                .font(.headline)
-            Text(localizationManager.localized("call_assistant_section_subtitle"))
-                .font(.caption)
-                .foregroundColor(.secondary)
+        DisclosureGroup(
+            isExpanded: $isCallAssistantExpanded,
+            content: {
+                VStack(alignment: .leading, spacing: 8) {
+                    Text(localizationManager.localized("call_assistant_section_subtitle"))
+                        .font(.caption)
+                        .foregroundColor(.secondary)
 
-            TextField(localizationManager.localized("call_assistant_goal_placeholder"), text: $callGoalText)
-                .textFieldStyle(.roundedBorder)
-            TextField(localizationManager.localized("call_assistant_postcall_placeholder"), text: $callPostText)
-                .textFieldStyle(.roundedBorder)
-            TextField(localizationManager.localized("call_assistant_outcome_placeholder"), text: $callOutcomeText)
-                .textFieldStyle(.roundedBorder)
+                    TextField(localizationManager.localized("call_assistant_goal_placeholder"), text: $callGoalText)
+                        .textFieldStyle(.roundedBorder)
+                    TextField(localizationManager.localized("call_assistant_postcall_placeholder"), text: $callPostText)
+                        .textFieldStyle(.roundedBorder)
+                    TextField(localizationManager.localized("call_assistant_outcome_placeholder"), text: $callOutcomeText)
+                        .textFieldStyle(.roundedBorder)
 
-            Button(localizationManager.localized("call_assistant_save_note")) {
-                viewModel.createCallAssistantNote(
-                    goal: callGoalText,
-                    postCallNote: callPostText,
-                    outcomes: callOutcomeText
-                )
-                callGoalText = ""
-                callPostText = ""
-                callOutcomeText = ""
+                    Button(localizationManager.localized("call_assistant_save_note")) {
+                        viewModel.createCallAssistantNote(
+                            goal: callGoalText,
+                            postCallNote: callPostText,
+                            outcomes: callOutcomeText
+                        )
+                        callGoalText = ""
+                        callPostText = ""
+                        callOutcomeText = ""
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .disabled(
+                        callGoalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+                        callPostText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+                        callOutcomeText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+                    )
+                }
+                .padding(.top, 6)
+            },
+            label: {
+                Text(localizationManager.localized("call_assistant_section_title"))
+                    .font(.headline)
             }
-            .buttonStyle(.borderedProminent)
-            .disabled(
-                callGoalText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-                callPostText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
-                callOutcomeText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-            )
-        }
+        )
         .padding(.horizontal)
     }
 
@@ -205,6 +247,12 @@ private extension VoiceNotesScreen {
         viewModel.searchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             ? "voice_notes_empty_title"
             : "voice_notes_empty_search_title"
+    }
+
+    private func openSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
     }
 
     var emptySubtitleKey: String {

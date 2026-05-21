@@ -85,6 +85,14 @@
 		B70001122F90000100ABC001 /* VoiceNotesStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001112F90000100ABC001 /* VoiceNotesStore.swift */; };
 		B70001142F90000100ABC001 /* VoiceNotesTranscriptionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001132F90000100ABC001 /* VoiceNotesTranscriptionService.swift */; };
 		B70001162F90000100ABC001 /* SpeechRecognizerFactory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001152F90000100ABC001 /* SpeechRecognizerFactory.swift */; };
+		B70001182F90000100ABC001 /* SpeechManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001172F90000100ABC001 /* SpeechManager.swift */; };
+		B700011A2F90000100ABC001 /* AudioLevelMeter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001192F90000100ABC001 /* AudioLevelMeter.swift */; };
+		B700011C2F90000100ABC001 /* VoiceAudioSessionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700011B2F90000100ABC001 /* VoiceAudioSessionCoordinator.swift */; };
+		B700011E2F90000100ABC001 /* SpeechRecognitionErrorClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700011D2F90000100ABC001 /* SpeechRecognitionErrorClassifier.swift */; };
+		B70001202F90000100ABC001 /* VoiceNotePlaybackController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B700011F2F90000100ABC001 /* VoiceNotePlaybackController.swift */; };
+		B70001222F90000100ABC001 /* VoiceLevelBarsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001212F90000100ABC001 /* VoiceLevelBarsView.swift */; };
+		B70001242F90000100ABC001 /* VoiceNoteWaveformSampler.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001232F90000100ABC001 /* VoiceNoteWaveformSampler.swift */; };
+		B5001217 /* SpeechPathTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5001117 /* SpeechPathTests.swift */; };
 		5E32FFF12EAD18D4000574C4 /* QRScannerModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF02EAD18D4000574C4 /* QRScannerModal.swift */; };
 		5E32FFF32EAD1915000574C4 /* RecoveryOptionsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF22EAD1915000574C4 /* RecoveryOptionsModal.swift */; };
 		5E32FFF52EAD199B000574C4 /* AvatarSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF42EAD199B000574C4 /* AvatarSelector.swift */; };
@@ -534,6 +542,14 @@
 		B70001112F90000100ABC001 /* VoiceNotesStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Storage/VoiceNotesStore.swift; sourceTree = "<group>"; };
 		B70001132F90000100ABC001 /* VoiceNotesTranscriptionService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/VoiceNotesTranscriptionService.swift; sourceTree = "<group>"; };
 		B70001152F90000100ABC001 /* SpeechRecognizerFactory.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/SpeechRecognizerFactory.swift; sourceTree = "<group>"; };
+		B70001172F90000100ABC001 /* SpeechManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/SpeechManager.swift; sourceTree = "<group>"; };
+		B70001192F90000100ABC001 /* AudioLevelMeter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/AudioLevelMeter.swift; sourceTree = "<group>"; };
+		B700011B2F90000100ABC001 /* VoiceAudioSessionCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/VoiceAudioSessionCoordinator.swift; sourceTree = "<group>"; };
+		B700011D2F90000100ABC001 /* SpeechRecognitionErrorClassifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/SpeechRecognitionErrorClassifier.swift; sourceTree = "<group>"; };
+		B700011F2F90000100ABC001 /* VoiceNotePlaybackController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/VoiceNotePlaybackController.swift; sourceTree = "<group>"; };
+		B70001212F90000100ABC001 /* VoiceLevelBarsView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shared/Components/VoiceNotes/VoiceLevelBarsView.swift; sourceTree = "<group>"; };
+		B70001232F90000100ABC001 /* VoiceNoteWaveformSampler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Audio/VoiceNoteWaveformSampler.swift; sourceTree = "<group>"; };
+		B5001117 /* SpeechPathTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpeechPathTests.swift; sourceTree = "<group>"; };
 		5E32FFF02EAD18D4000574C4 /* QRScannerModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = QRScannerModal.swift; path = Shared/Components/QRScannerModal.swift; sourceTree = "<group>"; };
 		5E32FFF22EAD1915000574C4 /* RecoveryOptionsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecoveryOptionsModal.swift; path = Shared/Components/RecoveryOptionsModal.swift; sourceTree = "<group>"; };
 		5E32FFF42EAD199B000574C4 /* AvatarSelector.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AvatarSelector.swift; path = Shared/Components/AvatarSelector.swift; sourceTree = "<group>"; };
@@ -1151,6 +1167,12 @@
 				B700010F2F90000100ABC001 /* VoiceNotesRecorderService.swift */,
 				B70001132F90000100ABC001 /* VoiceNotesTranscriptionService.swift */,
 				B70001152F90000100ABC001 /* SpeechRecognizerFactory.swift */,
+				B70001172F90000100ABC001 /* SpeechManager.swift */,
+				B70001192F90000100ABC001 /* AudioLevelMeter.swift */,
+				B700011B2F90000100ABC001 /* VoiceAudioSessionCoordinator.swift */,
+				B700011D2F90000100ABC001 /* SpeechRecognitionErrorClassifier.swift */,
+				B700011F2F90000100ABC001 /* VoiceNotePlaybackController.swift */,
+				B70001212F90000100ABC001 /* VoiceLevelBarsView.swift */,
 				B70001112F90000100ABC001 /* VoiceNotesStore.swift */,
 				5E6F390A2F151FBF00CEC103 /* FamilyChatOfflineManager.swift */,
 				E1E2EE0102F1E40000E2EE01 /* FamilyE2EEManager.swift */,
@@ -1378,6 +1400,7 @@
 				B5001113 /* ContentManifestPayloadHydrationTests.swift */,
 				B5001114 /* ParentActivityDailyAggregatorTests.swift */,
 				B5001115 /* AudioInterruptionTests.swift */,
+				B5001117 /* SpeechPathTests.swift */,
 				E7B800012F730011 /* ParentDashboardReportExporterTests.swift */,
 				A3C000012F740021 /* W3W4DigestAndLimitsTests.swift */,
 				PBUD0002 /* PerformanceBudgetTests.swift */,
@@ -1823,6 +1846,13 @@
 				B70001102F90000100ABC001 /* VoiceNotesRecorderService.swift in Sources */,
 				B70001142F90000100ABC001 /* VoiceNotesTranscriptionService.swift in Sources */,
 				B70001162F90000100ABC001 /* SpeechRecognizerFactory.swift in Sources */,
+				B70001182F90000100ABC001 /* SpeechManager.swift in Sources */,
+				B700011A2F90000100ABC001 /* AudioLevelMeter.swift in Sources */,
+				B700011C2F90000100ABC001 /* VoiceAudioSessionCoordinator.swift in Sources */,
+				B700011E2F90000100ABC001 /* SpeechRecognitionErrorClassifier.swift in Sources */,
+				B70001202F90000100ABC001 /* VoiceNotePlaybackController.swift in Sources */,
+				B70001222F90000100ABC001 /* VoiceLevelBarsView.swift in Sources */,
+				B70001242F90000100ABC001 /* VoiceNoteWaveformSampler.swift in Sources */,
 				B70001122F90000100ABC001 /* VoiceNotesStore.swift in Sources */,
 				A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */,
 				5EC3090E2EA6B60F00C7D34B /* 07_ParentalControlScreen.swift in Sources */,
@@ -1960,6 +1990,7 @@
 				B5001213 /* ContentManifestPayloadHydrationTests.swift in Sources */,
 				B5001214 /* ParentActivityDailyAggregatorTests.swift in Sources */,
 				B5001215 /* AudioInterruptionTests.swift in Sources */,
+				B5001217 /* SpeechPathTests.swift in Sources */,
 				E7B800012F730012 /* ParentDashboardReportExporterTests.swift in Sources */,
 				A3C000012F740022 /* W3W4DigestAndLimitsTests.swift in Sources */,
 				PBUD0004 /* PerformanceBudgetTests.swift in Sources */,
@@ -2021,7 +2052,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 199;
+				CURRENT_PROJECT_VERSION = 200;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2055,7 +2086,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 199;
+				CURRENT_PROJECT_VERSION = 200;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2213,7 +2244,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 199;
+				CURRENT_PROJECT_VERSION = 200;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2247,7 +2278,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 199;
+				CURRENT_PROJECT_VERSION = 200;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2279,7 +2310,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 199;
+				CURRENT_PROJECT_VERSION = 200;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2305,7 +2336,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 199;
+				CURRENT_PROJECT_VERSION = 200;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2329,7 +2360,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 199;
+				CURRENT_PROJECT_VERSION = 200;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2354,7 +2385,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 199;
+				CURRENT_PROJECT_VERSION = 200;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

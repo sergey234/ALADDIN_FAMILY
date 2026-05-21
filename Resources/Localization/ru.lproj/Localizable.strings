@@ -1845,7 +1845,14 @@
 "voice_notes_undo" = "Отменить";
 "voice_notes_deleted_undo_hint" = "Заметка удалена";
 "ai_assistant_voice_permission_denied" = "Нет доступа к микрофону или распознаванию речи. Разрешите доступ в Настройках.";
-"ai_assistant_voice_service_unavailable" = "Сервис распознавания речи сейчас недоступен. Попробуйте снова через несколько секунд.";
+"ai_assistant_voice_service_unavailable" = "Распознавание речи недоступно на этом устройстве. В Настройках iPhone включите Siri и загрузите язык «Русский», либо переключите язык приложения на English.";
+"voice_open_settings" = "Открыть Настройки";
+"voice_notes_start" = "Начать запись";
+"voice_notes_stop_save" = "Стоп и сохранить";
+"voice_notes_howto" = "Нажмите «Начать запись», говорите, затем «Стоп и сохранить». Транскрипция выполняется на устройстве.";
+"ai_assistant_voice_input_hint" = "Нажмите для голосового ввода, нажмите снова чтобы остановить";
+"ai_assistant_voice_via_siri" = "Через Siri";
+"ai_assistant_voice_unavailable_chip" = "Голос недоступен";
 "ai_assistant_voice_empty_result" = "Не удалось распознать речь. Проверьте микрофон и попробуйте еще раз.";
 "ai_assistant_voice_input_label" = "Голосовой ввод";
 "ai_assistant_voice_status_idle" = "Готов";

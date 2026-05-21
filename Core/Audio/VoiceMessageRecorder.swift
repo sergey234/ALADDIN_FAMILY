@@ -33,19 +33,6 @@ class VoiceMessageRecorder: NSObject, ObservableObject {
     
     override init() {
         super.init()
-        setupAudioSession()
-    }
-    
-    // MARK: - Audio Session Setup
-    
-    private func setupAudioSession() {
-        do {
-            try audioSession.setCategory(.playAndRecord, mode: .default, options: [.defaultToSpeaker, .allowBluetooth])
-            try audioSession.setActive(true)
-        } catch {
-            print("❌ VoiceMessageRecorder: Ошибка настройки аудио сессии: \(error.localizedDescription)")
-            recordingError = error.localizedDescription
-        }
     }
     
     // MARK: - Recording Methods
@@ -56,7 +43,12 @@ class VoiceMessageRecorder: NSObject, ObservableObject {
             print("⚠️ VoiceMessageRecorder: Запись уже идет")
             return nil
         }
-        
+
+        guard VoiceAudioSessionCoordinator.shared.acquire(.familyChat, profile: .familyChat) else {
+            recordingError = "Audio session busy"
+            return nil
+        }
+
         // Создаем URL для записи
         let documentsPath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)[0]
         let audioFilename = documentsPath.appendingPathComponent("voice_message_\(UUID().uuidString).m4a")
@@ -112,7 +104,8 @@ class VoiceMessageRecorder: NSObject, ObservableObject {
         stopLevelTimer()
         
         isRecording = false
-        
+        VoiceAudioSessionCoordinator.shared.release(.familyChat)
+
         // Проверяем минимальную длительность
         if recordingDuration < minRecordingDuration {
             print("⚠️ VoiceMessageRecorder: Запись слишком короткая (\(recordingDuration)s)")
@@ -133,7 +126,8 @@ class VoiceMessageRecorder: NSObject, ObservableObject {
         stopRecordingTimer()
         stopLevelTimer()
         isRecording = false
-        
+        VoiceAudioSessionCoordinator.shared.release(.familyChat)
+
         cleanup()
         print("✅ VoiceMessageRecorder: Запись отменена")
     }
@@ -177,8 +171,7 @@ class VoiceMessageRecorder: NSObject, ObservableObject {
             let level = recorder.averagePower(forChannel: 0)
             
             // Нормализуем уровень от -160 до 0 dB в диапазон 0.0-1.0
-            let normalizedLevel = pow(10, (level + 60) / 60)
-            self.audioLevel = min(max(normalizedLevel, 0.0), 1.0)
+            self.audioLevel = Float(AudioLevelMeter.normalizedLevel(fromAveragePower: level))
         }
     }
     

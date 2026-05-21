@@ -5,84 +5,134 @@ struct QuickRecorderBar: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
 
     var body: some View {
-        VStack(spacing: 10) {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("voice_notes_howto"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+
             HStack(spacing: 12) {
                 Circle()
-                    .fill(viewModel.recordingState == .recording ? Color.red : Color.gray)
+                    .fill(recordingIndicatorColor)
                     .frame(width: 12, height: 12)
-                Text(localizationManager.localized(viewModel.currentStatusText.isEmpty ? "voice_notes_status_idle" : viewModel.currentStatusText))
-                    .font(.subheadline)
+                Text(localizationManager.localized(statusKey))
+                    .font(.subheadline.weight(.medium))
                 Spacer()
                 Text(timeString(viewModel.elapsedSec))
                     .font(.system(.body, design: .monospaced))
             }
 
-            ProgressView(value: viewModel.noiseLevel)
-                .tint(.orange)
-
-            LazyVGrid(
-                columns: [
-                    GridItem(.flexible(minimum: 0), spacing: 10),
-                    GridItem(.flexible(minimum: 0), spacing: 10)
-                ],
-                spacing: 10
-            ) {
-                Button {
-                    viewModel.startRecording()
-                } label: {
-                    Text(localizationManager.localized("voice_notes_record"))
-                        .lineLimit(2)
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.75)
-                        .frame(maxWidth: .infinity, minHeight: 40)
-                }
-                .buttonStyle(.borderedProminent)
-                .disabled(viewModel.recordingState == .recording)
-                .accessibilityLabel(localizationManager.localized("voice_notes_record"))
-
-                Button {
-                    viewModel.pauseRecording()
-                } label: {
-                    Text(localizationManager.localized("voice_notes_pause"))
-                        .lineLimit(2)
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.75)
-                        .frame(maxWidth: .infinity, minHeight: 40)
-                }
-                .buttonStyle(.bordered)
-                .disabled(viewModel.recordingState != .recording)
-                .accessibilityLabel(localizationManager.localized("voice_notes_pause"))
-
-                Button {
-                    viewModel.resumeRecording()
-                } label: {
-                    Text(localizationManager.localized("voice_notes_resume"))
-                        .lineLimit(2)
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.75)
-                        .frame(maxWidth: .infinity, minHeight: 40)
-                }
-                .buttonStyle(.bordered)
-                .disabled(viewModel.recordingState != .paused)
-                .accessibilityLabel(localizationManager.localized("voice_notes_resume"))
-
-                Button {
-                    viewModel.stopAndSaveRecording()
-                } label: {
-                    Text(localizationManager.localized("voice_notes_stop"))
-                        .lineLimit(2)
-                        .multilineTextAlignment(.center)
-                        .minimumScaleFactor(0.75)
-                        .frame(maxWidth: .infinity, minHeight: 40)
-                }
-                .buttonStyle(.bordered)
-                .disabled(!(viewModel.recordingState == .recording || viewModel.recordingState == .paused))
-                .accessibilityLabel(localizationManager.localized("voice_notes_stop"))
+            if viewModel.recordingState == .recording || viewModel.recordingState == .paused {
+                VoiceLevelBarsView(
+                    level: viewModel.noiseLevel,
+                    activeColor: viewModel.recordingState == .recording ? .red : .orange
+                )
             }
+
+            if viewModel.showNearLimitWarning {
+                Text(localizationManager.localized("voice_notes_limit_warning"))
+                    .font(.caption)
+                    .foregroundColor(.orange)
+            }
+
+            recorderButtons
         }
         .padding()
         .background(.ultraThinMaterial)
         .clipShape(RoundedRectangle(cornerRadius: 14))
+    }
+
+    @ViewBuilder
+    private var recorderButtons: some View {
+        switch viewModel.recordingState {
+        case .idle, .saved, .failed:
+            Button {
+                viewModel.startRecording()
+            } label: {
+                Label(
+                    localizationManager.localized("voice_notes_start"),
+                    systemImage: "mic.circle.fill"
+                )
+                .frame(maxWidth: .infinity, minHeight: 44)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.red)
+
+        case .recording:
+            HStack(spacing: 10) {
+                Button {
+                    viewModel.pauseRecording()
+                } label: {
+                    Label(
+                        localizationManager.localized("voice_notes_pause"),
+                        systemImage: "pause.fill"
+                    )
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+
+                Button {
+                    viewModel.stopAndSaveRecording()
+                } label: {
+                    Label(
+                        localizationManager.localized("voice_notes_stop_save"),
+                        systemImage: "stop.fill"
+                    )
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+            }
+
+        case .paused:
+            HStack(spacing: 10) {
+                Button {
+                    viewModel.resumeRecording()
+                } label: {
+                    Label(
+                        localizationManager.localized("voice_notes_resume"),
+                        systemImage: "play.fill"
+                    )
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.bordered)
+
+                Button {
+                    viewModel.stopAndSaveRecording()
+                } label: {
+                    Label(
+                        localizationManager.localized("voice_notes_stop_save"),
+                        systemImage: "stop.fill"
+                    )
+                    .frame(maxWidth: .infinity, minHeight: 44)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(.orange)
+            }
+
+        case .processing:
+            HStack {
+                ProgressView()
+                Text(localizationManager.localized("voice_notes_status_processing"))
+                    .font(.subheadline)
+            }
+            .frame(maxWidth: .infinity, minHeight: 44)
+        }
+    }
+
+    private var statusKey: String {
+        if viewModel.currentStatusText.isEmpty {
+            return "voice_notes_status_idle"
+        }
+        return viewModel.currentStatusText
+    }
+
+    private var recordingIndicatorColor: Color {
+        switch viewModel.recordingState {
+        case .recording: return .red
+        case .paused: return .orange
+        case .processing: return .blue
+        default: return .gray
+        }
     }
 
     private func timeString(_ sec: Int) -> String {

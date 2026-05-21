@@ -2,6 +2,7 @@ import Foundation
 import CoreData
 import Combine
 import UIKit
+import CryptoKit
 
 /// 🚀 UnifiedOfflineStore v2
 /// Единый reactive слой оффлайн-хранения для всего приложения
@@ -27,6 +28,8 @@ final class UnifiedOfflineStore: ObservableObject {
     private var cancellables = Set<AnyCancellable>()
     private let lastSyncTimestampKey = "unified_offline_last_sync_timestamp"
     private let offlineDeviceIdKey = "unified_offline_device_id"
+    private var lastFullSyncStartedAt: Date?
+    private let minFullSyncInterval: TimeInterval = 8
     
     private init() {
         let model = UnifiedOfflineManagedObjectModelFactory.makeModel()
@@ -45,8 +48,13 @@ final class UnifiedOfflineStore: ObservableObject {
         // Откладываем подписку на `OfflineManager`, иначе deadlock при первом доступе
         // `OfflineManager.shared` → `UnifiedOfflineStore.shared` → снова `OfflineManager.shared`.
         DispatchQueue.main.async { [weak self] in
-            self?.setupAutomaticSync()
-            self?.setupUserIdentityResyncObserver()
+            guard let self else { return }
+            self.viewContext.perform {
+                self.collapseDuplicateFamilyChatRecords(in: self.viewContext)
+                self.updatePendingCount()
+            }
+            self.setupAutomaticSync()
+            self.setupUserIdentityResyncObserver()
         }
     }
     
@@ -87,8 +95,11 @@ final class UnifiedOfflineStore: ObservableObject {
 
     /// Специализированный метод для чата (используется FamilyChatOfflineManager)
     func saveChatMessage(_ message: FamilyChatMessageResponse, isPending: Bool = false) async -> Result<Void, Error> {
-        let type: OfflineDataType = isPending ? .familyChatMessage : .familyChatMessage
-        return await save(message, type: type, priority: isPending ? .critical : .normal)
+        if isPending {
+            return await save(message, type: .familyChatMessage, priority: .critical)
+        }
+        // Сообщение уже на сервере (GET) — только локальный снимок, без push в offline-storage.
+        return await upsertServerChatMessageSnapshot(message)
     }
 
     /// Специализированный fetch для чата
@@ -239,6 +250,99 @@ final class UnifiedOfflineStore: ObservableObject {
     
     // MARK: - Private Core Data Operations
     
+    /// Снимок сообщения с сервера: upsert по `message.id`, `isSynced=true` (не уходит в push).
+    private func upsertServerChatMessageSnapshot(_ message: FamilyChatMessageResponse) async -> Result<Void, Error> {
+        let recordId = stableUUID(forChatMessageId: message.id)
+        let type = OfflineDataType.familyChatMessage
+
+        return await withCheckedContinuation { continuation in
+            backgroundContext.perform {
+                let record: UnifiedOfflineRecord
+                if let existing = self.fetchRecord(id: recordId, dataType: type.rawValue, in: self.backgroundContext) {
+                    record = existing
+                } else {
+                    record = UnifiedOfflineRecord(context: self.backgroundContext)
+                    record.id = recordId
+                    record.dataType = type.rawValue
+                    record.createdAt = Date()
+                }
+                record.priority = Int16(DataPriority.normal.rawValue)
+                record.isSynced = true
+                record.isModified = false
+                record.syncedAt = Date()
+                record.serverVersion = Date()
+                record.clientVersion = Date()
+
+                do {
+                    record.data = try JSONEncoder().encode(message)
+                    try self.backgroundContext.save()
+                    self.viewContext.performAndWait {
+                        try? self.viewContext.save()
+                    }
+                    self.updatePendingCount()
+                    continuation.resume(returning: .success(()))
+                } catch {
+                    continuation.resume(returning: .failure(error))
+                }
+            }
+        }
+    }
+
+    private func stableUUID(forChatMessageId messageId: String) -> UUID {
+        let seed = "aladdin.family_chat.v1|\(messageId)"
+        let digest = SHA256.hash(data: Data(seed.utf8))
+        var bytes = Array(digest.prefix(16))
+        bytes[6] = (bytes[6] & 0x0F) | 0x40
+        bytes[8] = (bytes[8] & 0x3F) | 0x80
+        return UUID(uuid: (
+            bytes[0], bytes[1], bytes[2], bytes[3],
+            bytes[4], bytes[5], bytes[6], bytes[7],
+            bytes[8], bytes[9], bytes[10], bytes[11],
+            bytes[12], bytes[13], bytes[14], bytes[15]
+        ))
+    }
+
+    /// Удаляет дубликаты family_chat_message, накопленные старым polling (разный UUID на одно MSG_*).
+    private func collapseDuplicateFamilyChatRecords(in context: NSManagedObjectContext) {
+        let request = NSFetchRequest<UnifiedOfflineRecord>(entityName: "UnifiedOfflineRecord")
+        request.predicate = NSPredicate(format: "dataType == %@", OfflineDataType.familyChatMessage.rawValue)
+        guard let rows = try? context.fetch(request), rows.count > 1 else { return }
+
+        var canonicalByMessageId: [String: UnifiedOfflineRecord] = [:]
+        var toDelete: [UnifiedOfflineRecord] = []
+
+        for row in rows {
+            guard let payload = row.data,
+                  let json = try? JSONSerialization.jsonObject(with: payload) as? [String: Any],
+                  let messageId = json["id"] as? String,
+                  !messageId.isEmpty
+            else {
+                toDelete.append(row)
+                continue
+            }
+            if let existing = canonicalByMessageId[messageId] {
+                let keep = preferredFamilyChatRecord(existing, row)
+                let drop = (keep.objectID == existing.objectID) ? row : existing
+                canonicalByMessageId[messageId] = keep
+                toDelete.append(drop)
+            } else {
+                canonicalByMessageId[messageId] = row
+            }
+        }
+
+        guard !toDelete.isEmpty else { return }
+        toDelete.forEach { context.delete($0) }
+        try? context.save()
+        print("🧹 UnifiedOfflineStore: removed \(toDelete.count) duplicate family_chat_message rows")
+    }
+
+    private func preferredFamilyChatRecord(_ a: UnifiedOfflineRecord, _ b: UnifiedOfflineRecord) -> UnifiedOfflineRecord {
+        if a.isSynced != b.isSynced { return a.isSynced ? a : b }
+        let aDate = a.syncedAt ?? a.createdAt ?? .distantPast
+        let bDate = b.syncedAt ?? b.createdAt ?? .distantPast
+        return aDate >= bDate ? a : b
+    }
+
     private func saveToCoreData<T: Codable>(
         object: T,
         type: OfflineDataType,
@@ -311,6 +415,11 @@ final class UnifiedOfflineStore: ObservableObject {
     
     private func performFullSync() async {
         guard storeSyncPhase != .syncing else { return }
+        if let last = lastFullSyncStartedAt,
+           Date().timeIntervalSince(last) < minFullSyncInterval {
+            return
+        }
+        lastFullSyncStartedAt = Date()
         guard OfflineManager.shared.isOnline else { return }
         do {
             _ = try resolvedUserId()
@@ -360,6 +469,7 @@ final class UnifiedOfflineStore: ObservableObject {
             )
         }
         
+        collapseDuplicateFamilyChatRecords(in: viewContext)
         updatePendingCount()
         print("✅ UnifiedOfflineStore: Full sync completed (failed: \(pushResult.failedCount), pushed: \(pushResult.pushedCount))")
     }

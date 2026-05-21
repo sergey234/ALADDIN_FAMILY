@@ -469,7 +469,8 @@ class NavigationManager: ObservableObject {
     
     func switchToSettingsScreen() {
         logger.ui("Switching to Settings Screen", function: #function)
-        navigateToRoot(.settings)
+        guard currentScreen != .settings else { return }
+        navigateTo(.settings)
     }
     
     // MARK: - Специальные переходы

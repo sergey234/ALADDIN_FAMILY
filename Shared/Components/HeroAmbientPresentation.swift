@@ -274,25 +274,6 @@ struct HeroAmbientLayerView: View {
                 heroCore()
                     .frame(width: w, height: h)
                     .allowsHitTesting(false)
-                    // Safe debug logging (outside ViewBuilder)
-                    .task {
-                        let base = presentation.baseNameForFallback
-                        #if canImport(Lottie)
-                        if HeroBundleResource.hasLottie(named: base) {
-                            print("🦸 HeroAmbientLayerView: Using Lottie for \(base)")
-                        } else if HeroBundleResource.hasRaster(named: base) {
-                            print("🦸 HeroAmbientLayerView: Using raster image for \(base)")
-                        } else {
-                            print("🦸 HeroAmbientLayerView: No asset found for \(base) — showing placeholder")
-                        }
-                        #else
-                        if HeroBundleResource.hasRaster(named: base) {
-                            print("🦸 HeroAmbientLayerView: Using raster image for \(base) (no Lottie)")
-                        } else {
-                            print("🦸 HeroAmbientLayerView: No asset found for \(base) — showing placeholder")
-                        }
-                        #endif
-                    }
 
                 // Лёгкий parallax двух слоёв только в full и если разрешено презентацией
                 if presentation.allowsParallax, motionTier == .full {

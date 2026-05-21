@@ -570,6 +570,7 @@ struct OnboardingScreen: View {
             }
             .environmentObject(navigationManager)
             .environmentObject(localizationManager)
+            .aladdinSheetPresentation()
         }
         .sheet(isPresented: $showBackupRecovery) {
             BackupRecoveryModal(
@@ -586,6 +587,7 @@ struct OnboardingScreen: View {
                     navigationManager.navigateTo(.main)
                 }
             )
+            .aladdinSheetPresentation()
         }
         .sheet(isPresented: $showInvitationCodeInput) {
             InvitationCodeInputModal(
@@ -593,6 +595,7 @@ struct OnboardingScreen: View {
             )
             .environmentObject(navigationManager)
             .environmentObject(localizationManager)
+            .aladdinSheetPresentation()
         }
         .sheet(isPresented: $showQRScanner) {
             QRScannerModal { code in
@@ -602,21 +605,21 @@ struct OnboardingScreen: View {
             }
             .environmentObject(navigationManager)
             .environmentObject(localizationManager)
+            .aladdinSheetPresentation()
         }
         .sheet(isPresented: $showPrivacyPolicy) {
             PrivacyPolicyScreen()
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $showTermsOfService) {
             TermsOfServiceScreen()
+                .aladdinSheetPresentation()
         }
     }
 
     // ✅ Основной контент онбординга
     private func mainOnboardingContent() -> some View {
-        #if DEBUG
-        print("🎯 OnboardingScreen.mainOnboardingContent: \(totalTabCount) вкладок (шаг языка + \(pages.count) контента)")
-        #endif
-        return VStack(spacing: 0) {
+        VStack(spacing: 0) {
             // «Пропустить» только до финального шага: ведёт к экрану с 2 обязательными согласиями. На последнем шаге скрыта — иначе обход без галочек.
             // Шаг 0 (язык) пропускать нельзя — без явного «Продолжить» и записи языка.
             if currentPage > 0 && !isFinalOnboardingPage {

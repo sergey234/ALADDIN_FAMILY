@@ -15,5 +15,6 @@ alwaysApply: true
 4. Использовать MCP: `get_metadata` / `get_design_context` для чтения, `use_figma` — для сетки фреймов и правок по плану Фазы B (минимум лишних вызовов, как в handoff §7).
 5. **Вёрстка и копирайт в приложении:** при Фазе C **не** ломать `languageStepView` / `onboardingPage` и `Spacing.*` без явного ТЗ; сюжет Аладдина — слой героя/ассеты. Политика и чеклист: **`docs/ONBOARDING_MAIN_HERO_HANDOFF.md` §1.8 и §8** (проход 0…N после изменений).
 6. Ручной Figma — запасной путь, если MCP недоступен в сессии или пользователь явно просит только документ.
+7. **После каждого экрана OB_N (и Main):** не закрывать QA и не писать «100%», пока не пройден **`docs/ONBOARDING_MASTER_IMPLEMENTATION_PLAN.md` §4.1** (G1–G6). Обязательно: `get_screenshot` слоя **`OnboardingHero_0N`** — **иллюстрация**, не SOLID-заглушка. Порядок: `figma-ob-0N` → `hero-0N-figma` → `ob-0N-qa` (§4.1 + `ONBOARDING_FIGMA_PAGE_QA_ALGORITHM.md`).
 
 Исключение: без доступа к файлу / без MCP агент **не** обещает двигать слои и вместо этого обновляет md или код.

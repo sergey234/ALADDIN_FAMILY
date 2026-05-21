@@ -5,7 +5,7 @@ import SwiftUI
 struct MobileSecuritySettingsScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var syncEngine = SyncEngine.shared
+    @ObservedObject private var syncEngine = SyncEngine.shared
     @StateObject private var viewModel = MobileSecuritySettingsViewModel()
 
     private var syncState: SyncState {

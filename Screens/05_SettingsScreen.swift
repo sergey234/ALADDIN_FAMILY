@@ -634,48 +634,63 @@ struct SettingsScreen: View {
         }
         .sheet(isPresented: $viewModel.showProfileEdit) {
             ProfileEditView()
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showLanguageSettings) {
             LanguageSettingsScreen()
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showSupportScreen) {
             SupportScreen()
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showPrivacyPolicy) {
             PrivacyPolicyScreen()
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showTermsOfService) {
             TermsOfServiceScreen()
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showShareSheet) {
             ShareSheet(activityItems: [viewModel.localizedStrings.settingsShareMessage])
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $showCrashLogsView) {
             CrashLogsView()
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showProtectionExplanation) {
             ProtectionLevelExplanationModal(isPresented: $viewModel.showProtectionExplanation, currentTariff: viewModel.currentTariff)
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showAdvancedProtection) {
             AdvancedProtectionSettingsScreen()
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showProtectionHistory) {
             ProtectionLevelHistoryModal(isPresented: $viewModel.showProtectionHistory)
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showEmergencyContacts) {
             EmergencyContactsView()
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showEmergencyNotifications) {
             EmergencyNotificationsView()
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showVoiceControl) {
             VoiceControlView()
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showChildProtectionCompliance) {
             ComplianceView(section: .childProtection)
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showDataProtectionCompliance) {
             ComplianceView(section: .dataProtection)
+                .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showPositioningSystemPicker) {
             PositioningSystemPickerView(
@@ -683,10 +698,13 @@ struct SettingsScreen: View {
                 currentSystem: viewModel.currentPositioningSystem,
                 currentRegion: viewModel.currentRegionName
             )
+            .aladdinSheetPresentation()
         }
         .sheet(isPresented: $showVoiceNotesScreen) {
             VoiceNotesScreen()
+                .environmentObject(navigationManager)
                 .environmentObject(localizationManager)
+                .aladdinSheetPresentation()
         }
     }
 

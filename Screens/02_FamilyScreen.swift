@@ -16,7 +16,7 @@ struct FamilyScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var subscriptionManager: SubscriptionManager // For single-source family limits
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var syncEngine = SyncEngine.shared
+    @ObservedObject private var syncEngine = SyncEngine.shared
     
     // ✅ ИСПРАВЛЕНИЕ #7: Убрали @State showAddMemberModal - теперь используем NavigationManager
     // @State private var showAddMemberModal = false

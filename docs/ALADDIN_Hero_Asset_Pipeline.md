@@ -52,8 +52,8 @@ A magical night bedroom scene with a glowing golden oil lamp floating gently in 
 
 **Инструмент:** Встроенный генератор изображений Cursor (на базе продвинутой модели).  
 **Количество вариантов:** 8–12 (в данном случае взята первая удачная).  
-**Результат:**  
-`/Users/sergejhlystov/.cursor/projects/Users-sergejhlystov-ALADDIN-NEW/assets/OnboardingHero_00_v1.png`
+**Результат (мастер в репозитории):**  
+`ALADDIN_iOS/Resources/HeroAssets/OnboardingHero_00.png` (полный кадр; в каталог для рантайма — обрезка/масштаб 393×852 в `OnboardingHero_00.imageset/OnboardingHero_00.png`). См. также `Resources/HeroAssets/README.txt`.
 
 ### Шаг 2.4. Asset Naming & Storage
 
@@ -73,12 +73,12 @@ ALADDIN_iOS/
 
 1. Создана папка:
    ```
-   Assets.xcassets/Images.xcassets/OnboardingHero_00.imageset/
+   Assets.xcassets/OnboardingHero_00.imageset/
    ```
 
 2. Скопирован файл:
    ```
-   OnboardingHero_00.imageset/OnboardingHero_00.png
+   OnboardingHero_00.imageset/OnboardingHero_00.png  (корень `Assets.xcassets`, не вложенный `Images.xcassets`)
    ```
 
 3. Создан `Contents.json`:

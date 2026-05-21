@@ -1,6 +1,4 @@
 import SwiftUI
-import Speech
-import AVFoundation
 import Combine
 
 // Master Logger for AI assistant logging
@@ -21,8 +19,13 @@ struct AIAssistantScreen: View {
     @State private var isLoading = false
     @State private var showError = false
     @State private var errorMessage = ""
-    @State private var showVoicePermissionAlert = false
+    @State private var showMicrophonePermissionAlert = false
+    @State private var showSpeechPermissionAlert = false
     @State private var showVoiceServiceUnavailableAlert = false
+    @State private var isHoldRecording = false
+    @State private var holdRecordingDidStart = false
+    @State private var holdDragTranslation: CGFloat = 0
+    @State private var holdWillCancel = false
     @State private var showFeedbackSheet = false
     @State private var showDemoServerBanner = false
     /// Снимок SyncEngine — не читаем @Published singleton в body (watchdog / layout deadlock).
@@ -230,9 +233,14 @@ struct AIAssistantScreen: View {
         .task {
             logger.business("🤖 AI Assistant: Screen appeared, loading messages")
             aiSyncStateDisplay = SyncEngine.shared.latestStateByDomain[.aiStreaming] ?? .idle
+            speechManager.refreshAvailability()
             loadMessages()
             seedWelcomeMessageIfNeeded()
+            applyPendingDraftFromVoiceNotes()
             setupNotifications()
+        }
+        .onChange(of: localizationManager.currentLanguage) { _ in
+            speechManager.refreshAvailability()
         }
         .onReceive(
             SyncEngine.shared.events
@@ -246,6 +254,9 @@ struct AIAssistantScreen: View {
             }
         }
         .onDisappear {
+            if speechManager.isRecording {
+                speechManager.stopRecording()
+            }
             removeNotifications()
         }
         .navigationBarHidden(true)
@@ -259,13 +270,23 @@ struct AIAssistantScreen: View {
         } message: {
             Text(errorMessage)
         }
-        .alert(localizationManager.localized("common_error"), isPresented: $showVoicePermissionAlert) {
-            Button(localizationManager.localized("common_ok"), role: .cancel) {}
+        .alert(localizationManager.localized("voice_notes_mic_permission_title"), isPresented: $showMicrophonePermissionAlert) {
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {}
+            Button(localizationManager.localized("voice_open_settings")) { openSettings() }
         } message: {
-            Text(localizationManager.localized("ai_assistant_voice_permission_denied"))
+            Text(localizationManager.localized("ai_assistant_mic_permission_denied"))
+        }
+        .alert(localizationManager.localized("ai_assistant_speech_permission_title"), isPresented: $showSpeechPermissionAlert) {
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {}
+            Button(localizationManager.localized("voice_open_settings")) { openSettings() }
+        } message: {
+            Text(localizationManager.localized("ai_assistant_speech_permission_denied"))
         }
         .alert(localizationManager.localized("common_error"), isPresented: $showVoiceServiceUnavailableAlert) {
-            Button(localizationManager.localized("common_ok"), role: .cancel) {}
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {}
+            Button(localizationManager.localized("voice_open_settings")) {
+                openSettings()
+            }
         } message: {
             Text(localizationManager.localized("ai_assistant_voice_service_unavailable"))
         }
@@ -412,15 +433,45 @@ struct AIAssistantScreen: View {
     private var messageInputBar: some View {
         VStack(spacing: 6) {
             HStack(alignment: .bottom, spacing: 10) {
-                Button(action: toggleVoiceRecording) {
-                    Image(systemName: speechManager.isRecording ? "mic.fill" : "mic")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(speechManager.isRecording ? .red : .white)
-                        .frame(width: 42, height: 42)
-                        .background(Color.white.opacity(0.18))
-                        .cornerRadius(12)
-                }
-                .accessibilityLabel(localizationManager.localized("ai_assistant_voice_input_label"))
+                Image(systemName: speechManager.isRecording || isHoldRecording ? "mic.fill" : "mic")
+                    .font(.system(size: 20, weight: .semibold))
+                    .foregroundColor(speechManager.isRecording || isHoldRecording ? .red : (speechManager.isSpeechInputAvailable ? .white : .gray))
+                    .frame(width: 42, height: 42)
+                    .background(Color.white.opacity(speechManager.isSpeechInputAvailable ? 0.18 : 0.08))
+                    .cornerRadius(12)
+                    .contentShape(Rectangle())
+                    .onTapGesture {
+                        guard !isHoldRecording else { return }
+                        toggleVoiceRecording()
+                    }
+                    .highPriorityGesture(
+                        DragGesture(minimumDistance: 0)
+                            .onChanged { value in
+                                holdDragTranslation = value.translation.width
+                                holdWillCancel = value.translation.width < -72
+                                guard speechManager.isSpeechInputAvailable, !holdRecordingDidStart else { return }
+                                holdRecordingDidStart = true
+                                isHoldRecording = true
+                                startHoldVoiceRecording()
+                            }
+                            .onEnded { value in
+                                let cancel = holdWillCancel || value.translation.width < -80
+                                holdRecordingDidStart = false
+                                isHoldRecording = false
+                                holdDragTranslation = 0
+                                holdWillCancel = false
+                                if speechManager.isRecording {
+                                    if cancel {
+                                        speechManager.cancelRecording()
+                                    } else {
+                                        speechManager.stopRecording()
+                                    }
+                                }
+                            }
+                    )
+                    .disabled(!speechManager.isSpeechInputAvailable && !speechManager.isRecording)
+                    .accessibilityLabel(localizationManager.localized("ai_assistant_voice_input_label"))
+                    .accessibilityHint(localizationManager.localized("ai_assistant_voice_hold_hint"))
 
                 ZStack(alignment: .topLeading) {
                     if messageText.isEmpty {
@@ -484,12 +535,44 @@ struct AIAssistantScreen: View {
             .padding(.top, 8)
             .padding(.bottom, 8)
 
-            Text(localizationManager.localized(voiceInputStatusKey))
-                .font(.caption2)
-                .foregroundColor(.white.opacity(0.75))
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, Spacing.screenPadding)
-                .padding(.bottom, 4)
+            VStack(alignment: .leading, spacing: 4) {
+                HStack(spacing: 6) {
+                    Text(localizationManager.localized(voiceInputStatusKey))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.75))
+                    if speechManager.isRecording && speechManager.usesCloudRecognition {
+                        Text(localizationManager.localized("ai_assistant_voice_via_siri"))
+                            .font(.caption2)
+                            .padding(.horizontal, 6)
+                            .padding(.vertical, 2)
+                            .background(Color.orange.opacity(0.35))
+                            .clipShape(Capsule())
+                    }
+                    if !speechManager.isSpeechInputAvailable {
+                        Text(localizationManager.localized("ai_assistant_voice_unavailable_chip"))
+                            .font(.caption2)
+                            .foregroundColor(.orange)
+                    }
+                }
+                if speechManager.isRecording {
+                    VoiceLevelBarsView(level: speechManager.audioLevel, activeColor: .red)
+                        .padding(.top, 2)
+                }
+                if speechManager.isRecording, !speechManager.livePartialTranscript.isEmpty {
+                    Text(speechManager.livePartialTranscript)
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.9))
+                        .lineLimit(2)
+                }
+                if isHoldRecording && holdWillCancel {
+                    Text(localizationManager.localized("ai_assistant_voice_slide_cancel"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.orange)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(.horizontal, Spacing.screenPadding)
+            .padding(.bottom, 4)
         }
         .background(LinearGradient.cardGradient.appGlassmorphism())
     }
@@ -1038,26 +1121,74 @@ struct AIAssistantScreen: View {
         sendMessage()
     }
 
+    private func applyPendingDraftFromVoiceNotes() {
+        let key = AppConfig.UserDefaultsKeys.pendingAIAssistantDraftMessage
+        guard let draft = UserDefaults.standard.string(forKey: key)?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+              !draft.isEmpty else { return }
+        UserDefaults.standard.removeObject(forKey: key)
+        messageText = draft
+    }
+
     private func setupNotifications() {
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("SpeechPermissionDenied"), object: nil, queue: .main) { _ in
-            showVoicePermissionAlert = true
+        NotificationCenter.default.addObserver(forName: .microphonePermissionDenied, object: nil, queue: .main) { _ in
+            showMicrophonePermissionAlert = true
         }
-        NotificationCenter.default.addObserver(forName: NSNotification.Name("SpeechServiceUnavailable"), object: nil, queue: .main) { _ in
+        NotificationCenter.default.addObserver(forName: .speechRecognitionPermissionDenied, object: nil, queue: .main) { _ in
+            showSpeechPermissionAlert = true
+        }
+        NotificationCenter.default.addObserver(forName: .speechPermissionDenied, object: nil, queue: .main) { _ in
+            showSpeechPermissionAlert = true
+        }
+        NotificationCenter.default.addObserver(forName: .speechServiceUnavailable, object: nil, queue: .main) { _ in
             showVoiceServiceUnavailableAlert = true
+        }
+        NotificationCenter.default.addObserver(forName: .voiceNoteSendToAI, object: nil, queue: .main) { notification in
+            if let text = notification.userInfo?["text"] as? String, !text.isEmpty {
+                messageText = text
+            }
+        }
+        NotificationCenter.default.addObserver(forName: .voiceRecordingInterrupted, object: nil, queue: .main) { _ in
+            ToastManager.shared.showWarning(
+                localizationManager.localized("voice_recording_interrupted")
+            )
         }
     }
 
     private func removeNotifications() {
-        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("SpeechPermissionDenied"), object: nil)
-        NotificationCenter.default.removeObserver(self, name: NSNotification.Name("SpeechServiceUnavailable"), object: nil)
+        let center = NotificationCenter.default
+        center.removeObserver(self, name: .microphonePermissionDenied, object: nil)
+        center.removeObserver(self, name: .speechRecognitionPermissionDenied, object: nil)
+        center.removeObserver(self, name: .speechPermissionDenied, object: nil)
+        center.removeObserver(self, name: .speechServiceUnavailable, object: nil)
+        center.removeObserver(self, name: .voiceNoteSendToAI, object: nil)
+        center.removeObserver(self, name: .voiceRecordingInterrupted, object: nil)
+    }
+
+    private func startHoldVoiceRecording() {
+        guard speechManager.isSpeechInputAvailable, !speechManager.isRecording else { return }
+        holdWillCancel = false
+        holdDragTranslation = 0
+        speechManager.startRecording { recognizedText in
+            if let text = recognizedText, !text.isEmpty {
+                messageText = text
+                sendMessage()
+            }
+        }
     }
 
     private func toggleVoiceRecording() {
+        guard speechManager.isSpeechInputAvailable || speechManager.isRecording else {
+            showVoiceServiceUnavailableAlert = true
+            return
+        }
         if speechManager.isRecording {
             logger.business("🎤 AI Assistant: Stopping voice recording")
+            HapticFeedback.impact(.light)
             speechManager.stopRecording()
         } else {
             logger.business("🎤 AI Assistant: Starting voice recording")
+            HapticFeedback.impact(.medium)
             speechManager.startRecording { recognizedText in
                 if let text = recognizedText, !text.isEmpty {
                     logger.business("🎤 AI Assistant: Voice recognized: '\(text.prefix(50))...' (length: \(text.count))")
@@ -1081,6 +1212,12 @@ struct AIAssistantScreen: View {
             return "ai_assistant_voice_status_processing"
         }
         return "ai_assistant_voice_status_idle"
+    }
+
+    private func openSettings() {
+        if let url = URL(string: UIApplication.openSettingsURLString) {
+            UIApplication.shared.open(url)
+        }
     }
 }
 
@@ -1152,196 +1289,6 @@ struct QuickActionsView: View {
             }
             .padding(.horizontal, 4)
         }
-    }
-
-    private func openSettings() {
-        if let url = URL(string: UIApplication.openSettingsURLString) {
-            UIApplication.shared.open(url)
-        }
-    }
-}
-
-// MARK: - Speech Manager
-
-class SpeechManager: ObservableObject {
-    @Published var isRecording = false
-    @Published var recognizedText: String?
-
-    private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
-    private var recognitionTask: SFSpeechRecognitionTask?
-    private let audioEngine = AVAudioEngine()
-    /// Без снятия tap повторный `installTap` даёт NSException → SIGABRT (см. краш на `installTapOnBus`).
-    private var inputTapInstalled = false
-    private var isStopping = false
-
-    // Master Logger for speech recognition logging
-    private let logger = MasterLogger.shared
-
-    func startRecording(completion: @escaping (String?) -> Void) {
-        logger.business("🎤 SpeechManager: Starting speech recognition process")
-
-        guard !isRecording else {
-            logger.warn("🎤 SpeechManager: Already recording — ignoring duplicate start")
-            return
-        }
-
-        // Сначала микрофон, затем Speech — иначе возможен старт до granted и неконсистентный tap (особенно на новых iOS).
-        AVAudioSession.sharedInstance().requestRecordPermission { granted in
-            DispatchQueue.main.async {
-                guard granted else {
-                    self.showPermissionAlert()
-                    completion(nil)
-                    return
-                }
-                SFSpeechRecognizer.requestAuthorization { status in
-                    DispatchQueue.main.async {
-                        switch status {
-                        case .authorized:
-                            self.startRecordingInternal(completion: completion)
-                        case .denied, .restricted:
-                            self.showPermissionAlert()
-                            completion(nil)
-                        case .notDetermined:
-                            self.showPermissionAlert()
-                            completion(nil)
-                        @unknown default:
-                            self.showPermissionAlert()
-                            completion(nil)
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    private func removeInputTapIfInstalled() {
-        guard inputTapInstalled else { return }
-        audioEngine.inputNode.removeTap(onBus: 0)
-        inputTapInstalled = false
-    }
-
-    /// Сброс состояния движка перед новой сессией (повторное нажатие микрофона, возврат на экран и т.д.).
-    private func resetEngineForNewRecordingSession() {
-        if audioEngine.isRunning {
-            audioEngine.stop()
-        }
-        removeInputTapIfInstalled()
-    }
-
-    private func startRecordingInternal(completion: @escaping (String?) -> Void) {
-        do {
-            resetEngineForNewRecordingSession()
-            isStopping = false
-
-            let audioSession = AVAudioSession.sharedInstance()
-            try audioSession.setCategory(.record, mode: .measurement, options: [.duckOthers])
-            try audioSession.setActive(true, options: .notifyOthersOnDeactivation)
-
-            logger.business("🎤 SpeechManager: Audio session configured successfully")
-
-            recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
-            guard let recognitionRequest = recognitionRequest else { return }
-
-            recognitionRequest.shouldReportPartialResults = true
-
-            guard let speechRecognizer = SpeechRecognizerFactory.bestAvailable(
-                preferred: LocalizationManager.shared.speechRecognitionLocale
-            ) else {
-                logger.warn("🎤 SpeechManager: No speech recognizer available (preferred \(LocalizationManager.shared.speechRecognitionLocale.identifier))")
-                NotificationCenter.default.post(name: NSNotification.Name("SpeechServiceUnavailable"), object: nil)
-                completion(nil)
-                return
-            }
-            logger.business("🎤 SpeechManager: Using recognizer locale \(speechRecognizer.locale.identifier)")
-
-            var completionDelivered = false
-            func completeOnce(_ text: String?) {
-                guard !completionDelivered else { return }
-                completionDelivered = true
-                DispatchQueue.main.async {
-                    completion(text)
-                }
-            }
-
-            recognitionTask = speechRecognizer.recognitionTask(with: recognitionRequest) { result, error in
-                // Не публикуем partial results в @Published — иначе SwiftUI layout + Combine deadlock (watchdog 0x8BADF00D).
-                _ = result?.bestTranscription.formattedString
-
-                if let nsError = error as NSError?,
-                   nsError.domain == "kAFAssistantErrorDomain" || nsError.domain == "SiriCoreSiriConnectionErrorDomain" {
-                    self.logger.warn("🎤 SpeechManager: Speech service unavailable (\(nsError.domain):\(nsError.code))")
-                    NotificationCenter.default.post(name: NSNotification.Name("SpeechServiceUnavailable"), object: nil)
-                }
-
-                if error != nil || result?.isFinal == true {
-                    self.stopRecording()
-                    completeOnce(result?.bestTranscription.formattedString)
-                }
-            }
-
-            let inputNode = audioEngine.inputNode
-            logger.business("🎤 SpeechManager: Installing audio tap")
-
-            // `format: nil` — канонический формат узла; избегает нулевого sampleRate на некоторых конфигурациях.
-            inputNode.installTap(onBus: 0, bufferSize: 1024, format: nil) { buffer, _ in
-                self.recognitionRequest?.append(buffer)
-            }
-            inputTapInstalled = true
-            logger.business("🎤 SpeechManager: Audio tap installed successfully")
-
-            audioEngine.prepare()
-            try audioEngine.start()
-
-            isRecording = true
-            print("🎤 SpeechManager: Запись запущена успешно")
-
-        } catch {
-            print("🚨 SpeechManager: КРИТИЧЕСКАЯ ОШИБКА запуска записи: \(error.localizedDescription)")
-            resetEngineForNewRecordingSession()
-            recognitionTask?.cancel()
-            recognitionTask = nil
-            recognitionRequest = nil
-            isRecording = false
-            completion(nil)
-        }
-    }
-
-    func stopRecording() {
-        if isStopping {
-            logger.warn("🎤 SpeechManager: stopRecording ignored (already stopping)")
-            return
-        }
-        if !isRecording && recognitionTask == nil && recognitionRequest == nil && !audioEngine.isRunning {
-            logger.warn("🎤 SpeechManager: stopRecording ignored (already stopped)")
-            return
-        }
-        isStopping = true
-        logger.business("🎤 SpeechManager: Stopping recording")
-
-        recognitionRequest?.endAudio()
-        recognitionTask?.cancel()
-        recognitionTask = nil
-        recognitionRequest = nil
-
-        if audioEngine.isRunning {
-            audioEngine.stop()
-        }
-        removeInputTapIfInstalled()
-
-        isRecording = false
-        logger.business("🎤 SpeechManager: Recording stopped")
-
-        do {
-            try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
-        } catch {
-            logger.error("🎤 SpeechManager: Failed to deactivate audio session", error: error)
-        }
-        isStopping = false
-    }
-
-    private func showPermissionAlert() {
-        // Показываем алерт через NotificationCenter
-        NotificationCenter.default.post(name: NSNotification.Name("SpeechPermissionDenied"), object: nil)
     }
 }
 

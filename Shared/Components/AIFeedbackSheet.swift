@@ -102,6 +102,7 @@ struct AIFeedbackSheet: View {
                 Text(submitErrorDetail.isEmpty ? localizationManager.localized("ai_assistant_feedback_error") : submitErrorDetail)
             }
         }
+        .aladdinSheetPresentation()
     }
 
     private func submitFeedback() {

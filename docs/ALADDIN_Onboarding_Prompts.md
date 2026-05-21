@@ -10,7 +10,8 @@
 Вместе они создают «Круг доверия» — ощущение, что ребёнок и семья всегда под защитой.
 
 **Прогрессия по экранам:**
-- Слайд 0–1: Лампа + намёк на Единорога (начало истории)
+- Слайд 0: Лампа + намёк на Единорога (начало истории)
+- Слайд 1: **Первое появление Аладдина** у цифрового дома (лампа; без единорога)
 - Слайд 2–4: Аладдин + Единорог появляются рядом (дружба формируется)
 - Слайд 5, 7, Main: Полноценные пики эмоций (радость, замыкание круга, «мы вместе навсегда»)
 
@@ -43,21 +44,23 @@ A magical night bedroom scene with a glowing golden oil lamp floating gently in 
 
 ---
 
-## Слайд 1 — Семья / Цифровой дом (Tier 1, лёгкий)
+## Слайд 1 — Семья / Цифровой дом (Tier 1, лёгкий) — **Концепт B1 «Аладдин у светящегося дома»**
 
 **Сюжет и история:**
-Мы показываем **цифровой дом семьи**. Единорог появляется уже чуть заметнее — его силуэт или отражение в окне. Аладдин ещё не показан явно, но его присутствие чувствуется (защита). Это ощущение «семья под защитой даже ночью».
+**Первое появление Аладдина** (по пояс / 3/4), не портрет крупным планом — пик лица остаётся на слайде 2. Аладдин стоит у **цифрового дома семьи** вечером, смотрит на тёплые окна; в руке **лампа** (связь со слайдом 0). **Без единорога**, без отражений в стекле. Ощущение: «защитник уже у порога».
 
 **Что должно быть в кадре:**
-- Тёплый интерьер современного дома вечером
-- Мягкий свет из окон
-- В одном из окон — лёгкий силуэт или отражение маленького Единорога с золотым рогом
-- Атмосфера уюта, безопасности и тихой магии
+- Аладдин (Character Bible): 22–25, индиго-худи, золотые акценты, спокойная улыбка
+- Современный дом **сзади/справа**, вечер, индиго-небо, тёплый свет в окнах
+- Лампа в руке или у груди, мягкие золотые частицы
+- Внизу — простой тёмный грунт + едва заметный силуэт телефона (метафора «в кармане»)
+- Герой в **верхних ~60%** кадра; низ проще — под текст в приложении
+- Без текста на изображении
 
 **Промпт:**
 
 ```
-A warm cozy modern family home interior at dusk, soft glowing windows with golden light, gentle silhouette or soft reflection of a small fluffy unicorn with glowing golden horn visible in one of the windows, magical golden light particles in the air, soft warm lighting, highly detailed 3D render style, volumetric lighting, cinematic, soft realistic materials and textures, subsurface scattering, beautiful soft shadows and highlights, emotional storytelling, family-friendly, no text on image, indigo and golden color palette with warm pastel accents, safe and cozy atmosphere, protective family feeling
+A warm cozy modern family home exterior at dusk, indigo blue evening sky with soft volumetric light. In the foreground, young man Aladdin (22-25 years old, warm olive skin, dark wavy hair, kind expressive brown eyes, gentle calm smile) standing three-quarter view facing the glowing house, wearing modern comfortable dark indigo hoodie with subtle golden lamp-and-star accents. He holds a small glowing golden magic oil lamp in his hand with soft golden particles. The house behind has warm golden light in several windows, magical but realistic, no unicorn, no glass reflections, no text. Lower frame has simple dark ground and faint smartphone silhouette suggesting pocket protection. Highly detailed 3D render style, volumetric lighting, cinematic, soft realistic materials and textures, subsurface scattering, beautiful soft shadows and highlights, emotional storytelling, family-friendly, no text on image, indigo and golden color palette, turquoise-blue home neon accents, safe cozy protective atmosphere, hero composition with character in upper 60 percent of frame
 ```
 
 ---

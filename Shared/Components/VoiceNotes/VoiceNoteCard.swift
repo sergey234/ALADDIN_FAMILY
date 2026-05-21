@@ -2,18 +2,42 @@ import SwiftUI
 
 struct VoiceNoteCard: View {
     let note: VoiceNotesViewModel.VoiceNoteItem
-    /// Повторная генерация summary (вынесена из swipe у `List`, чтобы сохранить один общий скролл).
+    @ObservedObject var playback: VoiceNotePlaybackController
     var onRegenerateSummary: (() -> Void)?
+    var onSendToAI: ((String) -> Void)?
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @State private var waveformSamples: [CGFloat]?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(note.title)
                 .font(.headline)
+
+            if !note.audioPath.isEmpty, FileManager.default.fileExists(atPath: note.audioPath) {
+                HStack(spacing: 10) {
+                    VoiceNoteWaveformView(
+                        durationSec: note.durationSec,
+                        seed: note.id.hashValue,
+                        samples: waveformSamples
+                    )
+                    Button {
+                        playback.toggle(noteId: note.id, filePath: note.audioPath)
+                    } label: {
+                        Image(systemName: playback.playingNoteId == note.id ? "pause.circle.fill" : "play.circle.fill")
+                            .font(.title2)
+                            .foregroundColor(.orange)
+                    }
+                    if playback.playingNoteId == note.id {
+                        ProgressView(value: min(max(playback.progress, 0), 1))
+                            .frame(maxWidth: .infinity)
+                    }
+                }
+            }
+
             Text(transcriptText)
                 .font(.subheadline)
                 .foregroundColor(.secondary)
-                .lineLimit(2)
+                .lineLimit(3)
                 .multilineTextAlignment(.leading)
 
             if !note.summary.isEmpty {
@@ -34,15 +58,38 @@ struct VoiceNoteCard: View {
                     .foregroundColor(.secondary)
             }
 
-            if let onRegenerateSummary {
-                Button(action: onRegenerateSummary) {
-                    Label(localizationManager.localized("voice_notes_summary_retry"), systemImage: "arrow.clockwise")
-                        .font(.caption.weight(.semibold))
-                        .frame(maxWidth: .infinity)
+            HStack(spacing: 8) {
+                if let onRegenerateSummary {
+                    Button(action: onRegenerateSummary) {
+                        Label(localizationManager.localized("voice_notes_summary_retry"), systemImage: "arrow.clockwise")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
                 }
-                .buttonStyle(.bordered)
-                .controlSize(.small)
-                .tint(.orange)
+
+                if !note.audioPath.isEmpty, FileManager.default.fileExists(atPath: note.audioPath) {
+                    Button {
+                        shareAudioFile(path: note.audioPath)
+                    } label: {
+                        Label(localizationManager.localized("voice_notes_share"), systemImage: "square.and.arrow.up")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                }
+
+                if let onSendToAI {
+                    Button {
+                        onSendToAI(exportText)
+                    } label: {
+                        Label(localizationManager.localized("voice_notes_send_to_ai"), systemImage: "brain.head.profile")
+                            .font(.caption.weight(.semibold))
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .controlSize(.small)
+                    .tint(.blue)
+                }
             }
 
             if !note.tags.isEmpty {
@@ -63,10 +110,45 @@ struct VoiceNoteCard: View {
         .padding()
         .background(Color(UIColor.secondarySystemBackground))
         .clipShape(RoundedRectangle(cornerRadius: 12))
+        .task(id: note.audioPath) {
+            guard !note.audioPath.isEmpty else { return }
+            let path = note.audioPath
+            let samples = await Task.detached(priority: .utility) {
+                VoiceNoteWaveformSampler.samples(forFilePath: path)
+            }.value
+            waveformSamples = samples
+        }
+    }
+
+    private var exportText: String {
+        let raw = note.transcriptPreview
+        if !raw.hasPrefix("voice_notes_"), !raw.hasPrefix("ai_assistant_"), !raw.isEmpty {
+            return raw
+        }
+        if !note.summary.isEmpty { return note.summary }
+        return note.title
     }
 }
 
 private extension VoiceNoteCard {
+    func shareAudioFile(path: String) {
+        DispatchQueue.main.async {
+            let url = URL(fileURLWithPath: path)
+            let controller = UIActivityViewController(activityItems: [url], applicationActivities: nil)
+            if let popover = controller.popoverPresentationController {
+                popover.sourceView = UIApplication.shared.windows.first { $0.isKeyWindow }
+                popover.sourceRect = CGRect(x: UIScreen.main.bounds.midX, y: UIScreen.main.bounds.midY, width: 1, height: 1)
+            }
+            guard let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                  let root = scene.windows.first(where: { $0.isKeyWindow })?.rootViewController else { return }
+            var presenter = root
+            while let presented = presenter.presentedViewController {
+                presenter = presented
+            }
+            presenter.present(controller, animated: true)
+        }
+    }
+
     var transcriptText: String {
         if note.transcriptPreview.hasPrefix("voice_notes_") || note.transcriptPreview.hasPrefix("ai_assistant_") {
             return localizationManager.localized(note.transcriptPreview)
