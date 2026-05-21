@@ -1368,9 +1368,8 @@ private let logger = MasterLogger.shared
                         networkError = .httpError(httpResponse.statusCode)
                     }
 
-                    // ✅ SFM/mock hardening: если backend временно недоступен (503),
-                    // делаем ограниченный retry с экспоненциальной задержкой, чтобы iOS не уходила в неверные состояния.
-                    if httpResponse.statusCode == 503 && !isRetry {
+                    // ✅ Transient gateway errors (502/503): ограниченный retry с backoff.
+                    if (httpResponse.statusCode == 502 || httpResponse.statusCode == 503) && !isRetry {
                         let endpointKey = request.url?.absoluteString ?? "unknown"
                         guard let strongSelf = self else {
                             completion(.failure(networkError))
@@ -1387,9 +1386,10 @@ private let logger = MasterLogger.shared
                             strongSelf.retryLock.unlock()
 
                             let delaySeconds = pow(2.0, Double(currentRetryCount)) // 1s, 2s, ...
-                            os_log("HTTP 503: retry request in %{public}.1fs for %{public}@",
+                            os_log("HTTP %{public}d: retry request in %{public}.1fs for %{public}@",
                                    log: Self.networkLogger,
                                    type: .info,
+                                   httpResponse.statusCode,
                                    delaySeconds,
                                    endpointKey)
 

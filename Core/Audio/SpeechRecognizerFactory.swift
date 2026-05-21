@@ -25,6 +25,15 @@ enum SpeechRecognizerFactory {
     }
 
     static func bestForLiveRecognition(preferred: Locale) -> Selection? {
+        #if !targetEnvironment(simulator)
+        // Live mic (AI): ru-RU on-device пакет часто не загружен → 20–30 с «зависание» и retry.
+        // Siri cloud стартует сразу (текст уходит в Apple Speech, не на сервер ALADDIN).
+        if prefersOnDeviceRecognition,
+           bcp47LanguageCode(from: preferred) == "ru",
+           let cloud = cloudOnly(preferred: preferred) {
+            return cloud
+        }
+        #endif
         if prefersOnDeviceRecognition,
            let onDevice = firstAvailable(preferred: preferred, requireOnDevice: true) {
             return Selection(recognizer: onDevice, useOnDeviceRecognition: true)

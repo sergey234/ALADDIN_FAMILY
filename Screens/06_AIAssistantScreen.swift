@@ -233,7 +233,7 @@ struct AIAssistantScreen: View {
         .task {
             logger.business("🤖 AI Assistant: Screen appeared, loading messages")
             aiSyncStateDisplay = SyncEngine.shared.latestStateByDomain[.aiStreaming] ?? .idle
-            speechManager.refreshAvailability()
+            speechManager.warmUpPermissionsIfNeeded()
             loadMessages()
             seedWelcomeMessageIfNeeded()
             applyPendingDraftFromVoiceNotes()
@@ -241,6 +241,10 @@ struct AIAssistantScreen: View {
         }
         .onChange(of: localizationManager.currentLanguage) { _ in
             speechManager.refreshAvailability()
+        }
+        .onChange(of: speechManager.livePartialTranscript) { transcript in
+            guard speechManager.isRecording, !transcript.isEmpty else { return }
+            messageText = transcript
         }
         .onReceive(
             SyncEngine.shared.events
@@ -490,7 +494,7 @@ struct AIAssistantScreen: View {
                         .padding(.vertical, 8)
                         .frame(minHeight: 44, maxHeight: aiComposerHeight(for: messageText))
                         .background(Color.clear)
-                        .disabled(isLoading)
+                        .disabled(isLoading || speechManager.isRecording)
                         .accessibilityLabel(localizationManager.localized("ai_assistant_placeholder"))
                 }
                 .background(Color(UIColor.secondarySystemGroupedBackground))
@@ -554,15 +558,9 @@ struct AIAssistantScreen: View {
                             .foregroundColor(.orange)
                     }
                 }
-                if speechManager.isRecording {
+                if speechManager.isRecording || speechManager.isPreparingRecording {
                     VoiceLevelBarsView(level: speechManager.audioLevel, activeColor: .red)
                         .padding(.top, 2)
-                }
-                if speechManager.isRecording, !speechManager.livePartialTranscript.isEmpty {
-                    Text(speechManager.livePartialTranscript)
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.9))
-                        .lineLimit(2)
                 }
                 if isHoldRecording && holdWillCancel {
                     Text(localizationManager.localized("ai_assistant_voice_slide_cancel"))
@@ -600,7 +598,8 @@ struct AIAssistantScreen: View {
                 toolsUsed: nil,
                 preview: ""
             )
-            errorMessage = localizationManager.localized("ai_error_consent_required")
+            errorMessage = AIOutboundTextGate.GateError.optInRequired.errorDescription
+                ?? localizationManager.localized("ai_error_consent_required")
             showError = true
             return
         }
@@ -865,8 +864,11 @@ struct AIAssistantScreen: View {
 
                     // Проверяем, является ли ответ стандартным mock ответом сервера
                     let finalResponse = userFacingAIReply(from: response.response)
-                    let source = AIAssistantResponseDiagnostics.classifyServerResponse(finalResponse)
-                    showDemoServerBanner = (source == .cloudAPIProbableMock)
+                    let source = AIAssistantResponseDiagnostics.classifyServerResponse(
+                        finalResponse,
+                        grounded: response.grounded
+                    )
+                    showDemoServerBanner = (source == .cloudAPIProbableMock || source == .cloudRuleBasedOffTopic)
                     AIAssistantResponseDiagnostics.logDelivery(
                         source: source,
                         context: context,
@@ -913,7 +915,9 @@ struct AIAssistantScreen: View {
                     #endif
                     
                     showError = true
-                    if errLower.contains("503") || errLower.contains("unavailable") {
+                    if errLower.contains("502") || errLower.contains("bad gateway") || errLower.contains("ошибка шлюза") {
+                        errorMessage = localizationManager.localized("ai_error_gateway_retry")
+                    } else if errLower.contains("503") || errLower.contains("unavailable") {
                         errorMessage = localizationManager.localized("ai_error_service_unavailable")
                     } else if errLower.contains("422") || errLower.contains("pii") {
                         errorMessage = localizationManager.localized("ai_error_pii_blocked")
@@ -927,9 +931,11 @@ struct AIAssistantScreen: View {
                     }
 
                     let errorResponse = ChatMessage(
-                        text: errLower.contains("503") || errLower.contains("unavailable")
+                        text: (errLower.contains("502") || errLower.contains("bad gateway") || errLower.contains("ошибка шлюза"))
+                            ? localizationManager.localized("ai_error_gateway_retry")
+                            : (errLower.contains("503") || errLower.contains("unavailable")
                             ? localizationManager.localized("ai_error_service_unavailable")
-                            : localizationManager.localized("ai_assistant_error_generic_retry"),
+                            : localizationManager.localized("ai_assistant_error_generic_retry")),
                         isUser: false,
                         time: currentTime()
                     )
@@ -1166,19 +1172,16 @@ struct AIAssistantScreen: View {
     }
 
     private func startHoldVoiceRecording() {
-        guard speechManager.isSpeechInputAvailable, !speechManager.isRecording else { return }
+        guard speechManager.isSpeechInputAvailable, !speechManager.isRecording, !speechManager.isPreparingRecording else { return }
         holdWillCancel = false
         holdDragTranslation = 0
         speechManager.startRecording { recognizedText in
-            if let text = recognizedText, !text.isEmpty {
-                messageText = text
-                sendMessage()
-            }
+            handleVoiceRecognitionResult(recognizedText, autoSend: true)
         }
     }
 
     private func toggleVoiceRecording() {
-        guard speechManager.isSpeechInputAvailable || speechManager.isRecording else {
+        guard speechManager.isSpeechInputAvailable || speechManager.isRecording || speechManager.isPreparingRecording else {
             showVoiceServiceUnavailableAlert = true
             return
         }
@@ -1186,25 +1189,39 @@ struct AIAssistantScreen: View {
             logger.business("🎤 AI Assistant: Stopping voice recording")
             HapticFeedback.impact(.light)
             speechManager.stopRecording()
+        } else if speechManager.isPreparingRecording {
+            return
         } else {
             logger.business("🎤 AI Assistant: Starting voice recording")
             HapticFeedback.impact(.medium)
             speechManager.startRecording { recognizedText in
-                if let text = recognizedText, !text.isEmpty {
-                    logger.business("🎤 AI Assistant: Voice recognized: '\(text.prefix(50))...' (length: \(text.count))")
-                    messageText = text
-                    // Автоматически отправляем сообщение
-                    sendMessage()
-                } else {
-                    logger.warn("🎤 AI Assistant: Voice recognition returned empty text")
-                    errorMessage = localizationManager.localized("ai_assistant_voice_empty_result")
-                    showError = true
-                }
+                handleVoiceRecognitionResult(recognizedText, autoSend: true)
             }
         }
     }
 
+    /// После STT: текст в поле; отправка только при включённом «Облачный AI-помощник».
+    private func handleVoiceRecognitionResult(_ recognizedText: String?, autoSend: Bool) {
+        guard let text = recognizedText?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else {
+            logger.warn("🎤 AI Assistant: Voice recognition returned empty text")
+            errorMessage = localizationManager.localized("ai_assistant_voice_empty_result")
+            showError = true
+            return
+        }
+        logger.business("🎤 AI Assistant: Voice recognized: '\(text.prefix(50))...' (length: \(text.count))")
+        messageText = text
+        guard autoSend else { return }
+        guard isAIDataSharingEnabled else {
+            // Распознавание прошло; блокируем только отправку на сервер ALADDIN.
+            return
+        }
+        sendMessage()
+    }
+
     private var voiceInputStatusKey: String {
+        if speechManager.isPreparingRecording {
+            return "ai_assistant_voice_status_preparing"
+        }
         if speechManager.isRecording {
             return "ai_assistant_voice_status_listening"
         }

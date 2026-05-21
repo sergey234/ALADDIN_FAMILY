@@ -7,6 +7,7 @@ final class SpeechManager: ObservableObject {
     static let maxRecordingDurationSec: TimeInterval = 60
 
     @Published private(set) var isRecording = false
+    @Published private(set) var isPreparingRecording = false
     @Published private(set) var isSpeechInputAvailable = true
     @Published private(set) var livePartialTranscript: String = ""
     @Published private(set) var usesCloudRecognition = false
@@ -53,6 +54,19 @@ final class SpeechManager: ObservableObject {
         }
     }
 
+    /// Прогрев разрешений при открытии AI — первый тап по микрофону не «висит» 20–30 с.
+    func warmUpPermissionsIfNeeded() {
+        AVAudioSession.sharedInstance().requestRecordPermission { _ in }
+        let status = SFSpeechRecognizer.authorizationStatus()
+        if status == .notDetermined {
+            SFSpeechRecognizer.requestAuthorization { _ in
+                DispatchQueue.main.async { self.refreshAvailability() }
+            }
+        } else {
+            refreshAvailability()
+        }
+    }
+
     func startRecording(completion: @escaping (String?) -> Void) {
         logger.business("🎤 SpeechManager: Starting speech recognition process")
 
@@ -61,10 +75,13 @@ final class SpeechManager: ObservableObject {
             return
         }
 
+        runOnMain { self.isPreparingRecording = true }
+
         AVAudioSession.sharedInstance().requestRecordPermission { [weak self] granted in
             guard let self else { return }
             DispatchQueue.main.async {
                 guard granted else {
+                    self.isPreparingRecording = false
                     NotificationCenter.default.post(name: .microphonePermissionDenied, object: nil)
                     completion(nil)
                     return
@@ -75,9 +92,11 @@ final class SpeechManager: ObservableObject {
                         case .authorized:
                             self.startRecordingInternal(completion: completion)
                         case .denied, .restricted, .notDetermined:
+                            self.isPreparingRecording = false
                             NotificationCenter.default.post(name: .speechRecognitionPermissionDenied, object: nil)
                             completion(nil)
                         @unknown default:
+                            self.isPreparingRecording = false
                             NotificationCenter.default.post(name: .speechRecognitionPermissionDenied, object: nil)
                             completion(nil)
                         }
@@ -106,6 +125,7 @@ final class SpeechManager: ObservableObject {
             self.recognitionRequest = nil
             self.teardownAudioEngine()
             self.isRecording = false
+            self.isPreparingRecording = false
             self.livePartialTranscript = ""
             self.usesCloudRecognition = false
             self.audioLevel = 0
@@ -190,6 +210,7 @@ final class SpeechManager: ObservableObject {
         pendingCompletion = nil
         clearCloudFallbackFlags()
         DispatchQueue.main.async {
+            self.isPreparingRecording = false
             completion(text)
         }
     }
@@ -210,6 +231,7 @@ final class SpeechManager: ObservableObject {
 
             guard VoiceAudioSessionCoordinator.shared.acquire(.aiAssistant, profile: .aiLive) else {
                 logger.warn("🎤 SpeechManager: Audio session busy")
+                isPreparingRecording = false
                 completeOnce(nil, completion: completion)
                 return
             }
@@ -230,6 +252,7 @@ final class SpeechManager: ObservableObject {
             }
             guard let selection else {
                 logger.warn("🎤 SpeechManager: No speech recognizer available (preferred \(LocalizationManager.shared.speechRecognitionLocale.identifier))")
+                isPreparingRecording = false
                 postSpeechServiceUnavailableIfNeeded()
                 completeOnce(nil, completion: completion)
                 return
@@ -291,6 +314,7 @@ final class SpeechManager: ObservableObject {
 
             try audioEngine.start()
 
+            isPreparingRecording = false
             isRecording = true
             recordingSessionStarted = true
             startMaxDurationTimer()
@@ -299,6 +323,7 @@ final class SpeechManager: ObservableObject {
 
         } catch {
             logger.error("🎤 SpeechManager: Failed to start recording", error: error)
+            isPreparingRecording = false
             finishRecordingSession()
             VoiceAudioSessionCoordinator.shared.release(.aiAssistant)
             completeOnce(nil, completion: completion)

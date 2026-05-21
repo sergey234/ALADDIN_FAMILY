@@ -1969,6 +1969,7 @@
 "ai_assistant_voice_empty_result" = "Couldn't recognize speech. Check your microphone and try again.";
 "ai_assistant_voice_input_label" = "Voice input";
 "ai_assistant_voice_status_idle" = "Ready";
+"ai_assistant_voice_status_preparing" = "Connecting microphone...";
 "ai_assistant_voice_status_listening" = "Listening...";
 "ai_assistant_voice_status_processing" = "Processing...";
 "family_chat_voice_status_uploading" = "Uploading voice";

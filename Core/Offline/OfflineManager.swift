@@ -395,14 +395,10 @@ final class SyncEngine: ObservableObject {
     @Published private(set) var lastEvent: SyncEvent?
 
     let events = PassthroughSubject<SyncEvent, Never>()
-    private var cancellables = Set<AnyCancellable>()
+    private var pendingPublishWorkItem: DispatchWorkItem?
+    private let publishCoalesceInterval: TimeInterval = 0.08
 
-    private init() {
-        // Откладываем подписки, чтобы избежать цикла инициализации singleton-ов.
-        DispatchQueue.main.async { [weak self] in
-            self?.bindUnifiedOfflineStore()
-        }
-    }
+    private init() {}
 
     func publish(
         domain: SyncDomain,
@@ -419,38 +415,19 @@ final class SyncEngine: ObservableObject {
             recordId: recordId,
             metadata: metadata
         )
-        latestStateByDomain[domain] = state
-        lastEvent = event
-        events.send(event)
-    }
-
-    private func bindUnifiedOfflineStore() {
-        UnifiedOfflineStore.shared.$storeSyncPhase
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] phase in
-                switch phase {
-                case .idle:
-                    self?.publish(domain: .offline, operation: "store_phase_idle", state: .idle)
-                case .syncing:
-                    self?.publish(domain: .offline, operation: "store_phase_syncing", state: .syncing)
-                case .error:
-                    self?.publish(domain: .offline, operation: "store_phase_error", state: .error("offline_sync_error"))
-                }
+        DispatchQueue.main.async { [weak self] in
+            guard let self else { return }
+            let work = DispatchWorkItem { [weak self] in
+                guard let self else { return }
+                self.pendingPublishWorkItem = nil
+                self.latestStateByDomain[domain] = state
+                self.lastEvent = event
+                self.events.send(event)
             }
-            .store(in: &cancellables)
-
-        UnifiedOfflineStore.shared.$pendingCount
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] count in
-                let state: SyncState = count > 0 ? .pending : .synced
-                self?.publish(
-                    domain: .offline,
-                    operation: "pending_count_changed",
-                    state: state,
-                    metadata: ["pendingCount": "\(count)"]
-                )
-            }
-            .store(in: &cancellables)
+            self.pendingPublishWorkItem?.cancel()
+            self.pendingPublishWorkItem = work
+            DispatchQueue.main.asyncAfter(deadline: .now() + self.publishCoalesceInterval, execute: work)
+        }
     }
 }
 

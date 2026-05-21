@@ -1856,6 +1856,7 @@
 "ai_assistant_voice_empty_result" = "Не удалось распознать речь. Проверьте микрофон и попробуйте еще раз.";
 "ai_assistant_voice_input_label" = "Голосовой ввод";
 "ai_assistant_voice_status_idle" = "Готов";
+"ai_assistant_voice_status_preparing" = "Подключаю микрофон...";
 "ai_assistant_voice_status_listening" = "Слушаю...";
 "ai_assistant_voice_status_processing" = "Обрабатываю...";
 "family_chat_voice_status_uploading" = "Загрузка голоса";

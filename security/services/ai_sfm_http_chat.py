@@ -41,10 +41,18 @@ def _try_simple_math(message: str) -> Optional[str]:
     )
 
 
-def _off_topic_guidance(aggregates: Dict[str, Any]) -> str:
+def _off_topic_guidance(aggregates: Dict[str, Any], message: str) -> str:
+    topic = message.strip()
+    if len(topic) > 120:
+        topic = topic[:117] + "…"
+    lead = (
+        f"По теме «{topic}» у меня нет отдельной базы знаний — я помощник ALADDIN по кибербезопасности семьи. "
+        if topic
+        else "Этот вопрос вне моей специализации — я помощник ALADDIN по кибербезопасности семьи. "
+    )
     return (
-        "Я специализируюсь на ALADDIN: защита семьи, VPN, родительский контроль, семейный чат с E2EE, "
-        "аналитика угроз и тарифы. Задайте вопрос по этим темам — отвечу по данным с сервера. "
+        lead
+        + "Могу помочь с защитой семьи, VPN, родительским контролем, семейным чатом, угрозами и тарифами. "
         + _status_line(aggregates)
     )
 
@@ -122,7 +130,7 @@ def build_ai_assistant_chat_result(params: Dict[str, Any]) -> Dict[str, Any]:
         )
         grounded = False
     else:
-        response_text = _off_topic_guidance(aggregates)
+        response_text = _off_topic_guidance(aggregates, message)
         grounded = bool(sources)
 
     lang = (params.get("response_language") or "").lower()
@@ -148,7 +156,11 @@ def _match_meta(msg_lower: str) -> Optional[str]:
             "Отвечаю по справочнику ALADDIN и по актуальным агрегатам защиты с сервера "
             "(статус модулей, угрозы, семья). Включите «Облачный AI-помощник» в настройках."
         )
-    if re.search(r"кто ты|что ты|what are you|who are you", msg_lower):
+    # Не ловим «что ты знаешь о …» — только явные вопросы о роли помощника.
+    if re.search(
+        r"(^|\s)(кто ты|ты кто|что ты такое|what are you|who are you)(\s|$|[?!.])",
+        msg_lower,
+    ):
         return (
             "Я AI-помощник приложения ALADDIN: безопасность семьи, VPN, родительский контроль, "
             "семейный чат и подсказки по настройкам."

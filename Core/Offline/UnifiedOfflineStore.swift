@@ -30,6 +30,8 @@ final class UnifiedOfflineStore: ObservableObject {
     private let offlineDeviceIdKey = "unified_offline_device_id"
     private var lastFullSyncStartedAt: Date?
     private let minFullSyncInterval: TimeInterval = 8
+    private var lastPendingCountPublishedAt: Date?
+    private let minPendingCountPublishInterval: TimeInterval = 1.5
     
     private init() {
         let model = UnifiedOfflineManagedObjectModelFactory.makeModel()
@@ -68,13 +70,15 @@ final class UnifiedOfflineStore: ObservableObject {
     ) async -> Result<Void, Error> {
         let result = await saveToCoreData(object: object, type: type, priority: priority)
         if case .success = result {
-            objectWillChange.send() // Reactive update
-            SyncEngine.shared.publish(
-                domain: syncDomain(for: type),
-                operation: "local_save",
-                state: .pending,
-                metadata: ["type": type.rawValue, "priority": "\(priority.rawValue)"]
-            )
+            await MainActor.run {
+                objectWillChange.send() // Reactive update
+                SyncEngine.shared.publish(
+                    domain: syncDomain(for: type),
+                    operation: "local_save",
+                    state: .pending,
+                    metadata: ["type": type.rawValue, "priority": "\(priority.rawValue)"]
+                )
+            }
         }
         return result
     }
@@ -414,68 +418,69 @@ final class UnifiedOfflineStore: ObservableObject {
     }
     
     private func performFullSync() async {
-        guard storeSyncPhase != .syncing else { return }
-        if let last = lastFullSyncStartedAt,
-           Date().timeIntervalSince(last) < minFullSyncInterval {
-            return
+        // @Published (storeSyncPhase) — только с main; чтение с cooperative pool ломает Combine (SIGABRT).
+        let mayStart = await MainActor.run { () -> Bool in
+            guard storeSyncPhase != .syncing else { return false }
+            if let last = lastFullSyncStartedAt,
+               Date().timeIntervalSince(last) < minFullSyncInterval {
+                return false
+            }
+            guard OfflineManager.shared.isOnline else { return false }
+            return true
         }
-        lastFullSyncStartedAt = Date()
-        guard OfflineManager.shared.isOnline else { return }
+        guard mayStart else { return }
+        
         do {
             _ = try resolvedUserId()
         } catch {
-            storeSyncPhase = .error
-            print("❌ UnifiedOfflineStore: Sync aborted — \(error.localizedDescription)")
-            SyncEngine.shared.publish(
-                domain: .offline,
-                operation: "full_sync_aborted_missing_user_id",
-                state: .error(error.localizedDescription),
-                metadata: ["reason": "missing_user_id"]
-            )
+            await MainActor.run {
+                storeSyncPhase = .error
+                print("❌ UnifiedOfflineStore: Sync aborted — \(error.localizedDescription)")
+            }
             return
         }
         
-        storeSyncPhase = .syncing
-        SyncEngine.shared.publish(domain: .offline, operation: "full_sync_start", state: .syncing)
+        await MainActor.run {
+            lastFullSyncStartedAt = Date()
+            storeSyncPhase = .syncing
+        }
         
         let pushResult = await pushPendingRecords()
         
         do {
             let remote = try await pullRemoteChanges()
-            mergeRemoteData(remote.data)
-            collapseAIInteractionCheckpoints(in: viewContext)
-            saveLastSyncTimestamp(remote.lastSyncTimestamp)
+            await MainActor.run {
+                mergeRemoteData(remote.data)
+                viewContext.perform {
+                    self.collapseAIInteractionCheckpoints(in: self.viewContext)
+                }
+                saveLastSyncTimestamp(remote.lastSyncTimestamp)
+            }
         } catch {
             print("⚠️ UnifiedOfflineStore: Remote pull failed: \(error.localizedDescription)")
             // Push часть уже выполнена; не прерываем весь процесс.
         }
         
-        if pushResult.failedCount > 0 {
-            storeSyncPhase = .error
-            SyncEngine.shared.publish(
-                domain: .offline,
-                operation: "full_sync_finished",
-                state: .error("push_failed"),
-                metadata: ["pushed": "\(pushResult.pushedCount)", "failed": "\(pushResult.failedCount)"]
-            )
-        } else {
-            storeSyncPhase = .idle
-            lastSyncDate = Date()
-            SyncEngine.shared.publish(
-                domain: .offline,
-                operation: "full_sync_finished",
-                state: .synced,
-                metadata: ["pushed": "\(pushResult.pushedCount)", "failed": "0"]
-            )
+        await MainActor.run {
+            if pushResult.failedCount > 0 {
+                storeSyncPhase = .error
+            } else {
+                storeSyncPhase = .idle
+                lastSyncDate = Date()
+            }
         }
         
-        collapseDuplicateFamilyChatRecords(in: viewContext)
+        await MainActor.run {
+            viewContext.perform {
+                self.collapseDuplicateFamilyChatRecords(in: self.viewContext)
+            }
+        }
         updatePendingCount()
         print("✅ UnifiedOfflineStore: Full sync completed (failed: \(pushResult.failedCount), pushed: \(pushResult.pushedCount))")
     }
 
     private func pushPendingRecords() async -> (pushedCount: Int, failedCount: Int) {
-        let unsyncedRecords = fetchUnsyncedRecordsSorted()
+        let unsyncedRecords = await fetchUnsyncedRecordsSorted()
         var pushedCount = 0
         var failedCount = 0
 
@@ -491,23 +496,9 @@ final class UnifiedOfflineStore: ObservableObject {
                     markRecordAsSynced(objectID: record.objectID)
                     pushed = true
                     pushedCount += 1
-                    SyncEngine.shared.publish(
-                        domain: syncDomain(forRawType: record.dataType),
-                        operation: "push_record",
-                        state: .synced,
-                        recordId: record.id?.uuidString,
-                        metadata: ["attempt": "\(attempt)"]
-                    )
                 } catch {
                     if attempt >= maxAttempts {
                         failedCount += 1
-                        SyncEngine.shared.publish(
-                            domain: syncDomain(forRawType: record.dataType),
-                            operation: "push_record",
-                            state: .error(error.localizedDescription),
-                            recordId: record.id?.uuidString,
-                            metadata: ["attempt": "\(attempt)"]
-                        )
                         print("⚠️ UnifiedOfflineStore: Failed to sync record \(record.objectID) after \(attempt) attempts: \(error.localizedDescription)")
                     } else {
                         let delayNs = UInt64(pow(2.0, Double(attempt - 1)) * 250_000_000.0) // 250ms, 500ms
@@ -522,12 +513,10 @@ final class UnifiedOfflineStore: ObservableObject {
     
     private func setupAutomaticSync() {
         OfflineManager.shared.$isOnline
+            .receive(on: DispatchQueue.main)
             .sink { [weak self] isOnline in
-                if isOnline && self?.storeSyncPhase != .syncing {
-                    Task {
-                        await self?.performFullSync()
-                    }
-                }
+                guard let self, isOnline, self.storeSyncPhase != .syncing else { return }
+                Task { await self.performFullSync() }
             }
             .store(in: &cancellables)
     }
@@ -551,7 +540,14 @@ final class UnifiedOfflineStore: ObservableObject {
         viewContext.perform {
             do {
                 let count = try self.viewContext.count(for: request)
-                DispatchQueue.main.async {
+                Task { @MainActor in
+                    let now = Date()
+                    if let last = self.lastPendingCountPublishedAt,
+                       now.timeIntervalSince(last) < self.minPendingCountPublishInterval,
+                       count == self.pendingCount {
+                        return
+                    }
+                    self.lastPendingCountPublishedAt = now
                     self.pendingCount = count
                 }
             } catch {}
@@ -562,18 +558,22 @@ final class UnifiedOfflineStore: ObservableObject {
         updatePendingCount()
     }
     
-    private func fetchUnsyncedRecordsSorted() -> [UnifiedOfflineRecord] {
-        let request = NSFetchRequest<UnifiedOfflineRecord>(entityName: "UnifiedOfflineRecord")
-        request.predicate = NSPredicate(format: "isSynced == false")
-        request.sortDescriptors = [
-            NSSortDescriptor(key: "priority", ascending: true),
-            NSSortDescriptor(key: "createdAt", ascending: true)
-        ]
-        do {
-            return try viewContext.fetch(request)
-        } catch {
-            print("❌ UnifiedOfflineStore: Failed to fetch unsynced records: \(error.localizedDescription)")
-            return []
+    private func fetchUnsyncedRecordsSorted() async -> [UnifiedOfflineRecord] {
+        await withCheckedContinuation { continuation in
+            viewContext.perform {
+                let request = NSFetchRequest<UnifiedOfflineRecord>(entityName: "UnifiedOfflineRecord")
+                request.predicate = NSPredicate(format: "isSynced == false")
+                request.sortDescriptors = [
+                    NSSortDescriptor(key: "priority", ascending: true),
+                    NSSortDescriptor(key: "createdAt", ascending: true)
+                ]
+                do {
+                    continuation.resume(returning: try self.viewContext.fetch(request))
+                } catch {
+                    print("❌ UnifiedOfflineStore: Failed to fetch unsynced records: \(error.localizedDescription)")
+                    continuation.resume(returning: [])
+                }
+            }
         }
     }
     
@@ -804,7 +804,7 @@ final class UnifiedOfflineStore: ObservableObject {
 
 // MARK: - Supporting Types (только для UnifiedOfflineStore)
 
-enum UnifiedStoreSyncPhase: String {
+enum UnifiedStoreSyncPhase: String, Equatable {
     case idle
     case syncing
     case error

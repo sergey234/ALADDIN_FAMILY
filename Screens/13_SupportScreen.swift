@@ -48,7 +48,7 @@ enum UnifiedFAQCatalog {
         UnifiedFAQEntry(id: "faq_mitm_attacks", icon: "🕵️", questionKey: "faq_mitm_attacks", answerKey: "faq_mitm_attacks_answer", keywords: ["mitm", "человек посередине"]),
         UnifiedFAQEntry(id: "faq_parental_control_setup", icon: "👨‍👩‍👧‍👦", questionKey: "faq_parental_control_setup", answerKey: "faq_parental_control_setup_answer", keywords: ["настроить семью", "родительский контроль"]),
         UnifiedFAQEntry(id: "faq_cancel_subscription", icon: "💳", questionKey: "faq_cancel_subscription", answerKey: "faq_cancel_subscription_answer", keywords: ["подписка", "отменить подписку"]),
-        UnifiedFAQEntry(id: "faq_ai_how_works", icon: "🤖", questionKey: "faq_ai_how_works", answerKey: "faq_ai_how_works_answer", keywords: ["учишь", "обуча", "обучен", "как работает", "что умеешь", "что можешь", "кто ты", "помощник", "нейросет", "искусствен", "ai aladdin"])
+        UnifiedFAQEntry(id: "faq_ai_how_works", icon: "🤖", questionKey: "faq_ai_how_works", answerKey: "faq_ai_how_works_answer", keywords: ["учишь", "обуча", "обучен", "как работает ai", "что умеешь", "что можешь", "кто ты", "ты кто", "нейросет", "искусственный интеллект", "ai aladdin"])
     ]
 
     static func localizedItems(localize: (String) -> String) -> [UnifiedFAQItem] {
