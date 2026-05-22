@@ -361,12 +361,12 @@ struct HeroAmbientLayerView: View {
 
 /// Вспомогательный модификатор: затемнение низа под нижние кнопки / safe area.
 struct HeroBottomReadableGradient: View {
-    /// Stronger gradient for bright hero illustrations (e.g. language step)
+    /// Stronger gradient for bright hero illustrations (e.g. language step, onboarding 01–06)
     var strong: Bool = false
 
     var body: some View {
         LinearGradient(
-            colors: [Color.clear, Color.black.opacity(strong ? 0.62 : 0.48)],
+            colors: [Color.clear, Color.black.opacity(strong ? 0.68 : 0.48)],
             startPoint: .center,
             endPoint: .bottom
         )

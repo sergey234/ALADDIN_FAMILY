@@ -23,6 +23,300 @@ private struct OnboardingLogoV2View: View {
     }
 }
 
+// MARK: - Onboarding Figma anchors (screen space 393×852, OB_01…06)
+
+/// Координаты из Figma `OB_*_393x852` (y от верха экрана 852pt).
+private struct OnboardingFigmaAnchor {
+    var wordmark: CGRect?
+    let title: CGRect
+    let desc: CGRect
+    let scrim: CGRect
+    let scrimMaxOpacity: CGFloat
+    let maxBodyLines: Int
+
+    static func forContentIndex(_ index: Int) -> OnboardingFigmaAnchor? {
+        switch index {
+        case 0:
+            return OnboardingFigmaAnchor(
+                wordmark: CGRect(x: 16, y: 484, width: 361, height: 104),
+                title: CGRect(x: 16, y: 598, width: 361, height: 50),
+                desc: CGRect(x: 16, y: 656, width: 361, height: 48),
+                scrim: CGRect(x: 0, y: 528, width: 393, height: 324),
+                scrimMaxOpacity: 0.45,
+                maxBodyLines: 4
+            )
+        case 1:
+            return OnboardingFigmaAnchor(
+                wordmark: nil,
+                title: CGRect(x: 12, y: 533, width: 361, height: 60),
+                desc: CGRect(x: 12, y: 607, width: 361, height: 80),
+                scrim: CGRect(x: 0, y: 552, width: 393, height: 300),
+                scrimMaxOpacity: 0.42,
+                maxBodyLines: 6
+            )
+        case 2:
+            return OnboardingFigmaAnchor(
+                wordmark: nil,
+                title: CGRect(x: 16, y: 552, width: 361, height: 60),
+                desc: CGRect(x: 14, y: 630, width: 361, height: 80),
+                scrim: CGRect(x: 0, y: 500, width: 393, height: 320),
+                scrimMaxOpacity: 0.40,
+                maxBodyLines: 5
+            )
+        default:
+            return nil
+        }
+    }
+}
+
+private enum OnboardingFigmaScreenLayout {
+    static let canvasWidth: CGFloat = 393
+    static let canvasHeight: CGFloat = 852
+    /// Полоса «Пропустить» над TabView (как в `mainOnboardingContent`)
+    static let skipBandHeight: CGFloat = 52
+    /// Точки + CTA под TabView
+    static let chromeBandHeight: CGFloat = 154
+    static var tabDesignHeight: CGFloat { canvasHeight - skipBandHeight - chromeBandHeight }
+
+    static func tabTopY(_ screenY: CGFloat, tabHeight: CGFloat) -> CGFloat {
+        let tabY = screenY - skipBandHeight
+        return tabY * (tabHeight / tabDesignHeight)
+    }
+}
+
+/// Stops для `READABILITY_scrim_bottom` — совпадают с Figma OB_02 / OB_03.
+private func scrimGradientStops(for anchor: OnboardingFigmaAnchor) -> [Gradient.Stop] {
+    let midLocation: CGFloat
+    let midOpacity: CGFloat
+    switch (anchor.scrim.origin.y, anchor.scrimMaxOpacity) {
+    case (552, 0.42):
+        midLocation = 0.45
+        midOpacity = 0.189
+    case (500, 0.40):
+        midLocation = 0.4
+        midOpacity = 0.16
+    default:
+        midLocation = 0.4
+        midOpacity = anchor.scrimMaxOpacity * 0.4
+    }
+    return [
+        .init(color: .clear, location: 0),
+        .init(color: .black.opacity(midOpacity), location: midLocation),
+        .init(color: .black.opacity(anchor.scrimMaxOpacity), location: 1),
+    ]
+}
+
+/// Текст и лого по фиксированным Y из Figma (масштаб под высоту TabView).
+private struct OnboardingFigmaAnchoredContent: View {
+    let title: String
+    let description: String
+    let anchor: OnboardingFigmaAnchor
+
+    var body: some View {
+        GeometryReader { geo in
+            let scaleX = geo.size.width / OnboardingFigmaScreenLayout.canvasWidth
+            let tabH = geo.size.height
+
+            ZStack(alignment: .topLeading) {
+                Rectangle()
+                    .fill(
+                        LinearGradient(
+                            stops: scrimGradientStops(for: anchor),
+                            startPoint: .top,
+                            endPoint: .bottom
+                        )
+                    )
+                    .frame(
+                        width: anchor.scrim.width * scaleX,
+                        height: anchor.scrim.height * (tabH / OnboardingFigmaScreenLayout.tabDesignHeight)
+                    )
+                    .offset(
+                        x: anchor.scrim.origin.x * scaleX,
+                        y: OnboardingFigmaScreenLayout.tabTopY(anchor.scrim.origin.y, tabHeight: tabH)
+                    )
+                    .allowsHitTesting(false)
+                    .accessibilityHidden(true)
+
+                if let wordmark = anchor.wordmark {
+                    OnboardingLogoV2View()
+                        .frame(width: wordmark.width * scaleX, height: wordmark.height * scaleX)
+                        .offset(
+                            x: wordmark.origin.x * scaleX,
+                            y: OnboardingFigmaScreenLayout.tabTopY(wordmark.origin.y, tabHeight: tabH)
+                        )
+                }
+
+                figmaText(
+                    title,
+                    isTitle: true,
+                    frame: anchor.title,
+                    scaleX: scaleX,
+                    tabHeight: tabH,
+                    maxLines: 4
+                )
+                .accessibilityAddTraits(.isHeader)
+
+                figmaText(
+                    description,
+                    isTitle: false,
+                    frame: anchor.desc,
+                    scaleX: scaleX,
+                    tabHeight: tabH,
+                    maxLines: anchor.maxBodyLines
+                )
+            }
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title). \(description)")
+    }
+
+    @ViewBuilder
+    private func figmaText(
+        _ text: String,
+        isTitle: Bool,
+        frame: CGRect,
+        scaleX: CGFloat,
+        tabHeight: CGFloat,
+        maxLines: Int
+    ) -> some View {
+        OnboardingWholeWordText(
+            text: text,
+            font: .system(
+                size: isTitle ? OnboardingReadableLayout.titleFontSize : OnboardingReadableLayout.bodyFontSize,
+                weight: isTitle ? .bold : .regular
+            ),
+            color: isTitle ? .white : .white.opacity(0.92),
+            lineSpacing: isTitle ? 4 : 6,
+            maxLines: maxLines,
+            minimumScaleFactor: isTitle ? 0.85 : 0.9
+        )
+        .frame(width: frame.width * scaleX, alignment: .center)
+        .offset(
+            x: frame.origin.x * scaleX,
+            y: OnboardingFigmaScreenLayout.tabTopY(frame.origin.y, tabHeight: tabHeight)
+        )
+    }
+}
+
+// MARK: - Onboarding readable text zone (OB_01…06 only)
+
+private enum OnboardingReadableLayout {
+    /// Резерв под индикаторы + CTA (вне TabView, в `mainOnboardingContent`)
+    static let chromeBottomReserve: CGFloat = 162
+    static let horizontalInset: CGFloat = Spacing.screenPadding
+
+    static var titleFontSize: CGFloat {
+        UIScreen.main.bounds.width < 375 ? 22 : 24
+    }
+
+    static let bodyFontSize: CGFloat = 16
+}
+
+private struct OnboardingTextZoneConfig {
+    let minZoneHeight: CGFloat
+    let scrimMaxOpacity: CGFloat
+    let showsLogo: Bool
+    let maxBodyLines: Int
+
+    static func forContentIndex(_ index: Int) -> OnboardingTextZoneConfig? {
+        guard (0...5).contains(index) else { return nil }
+        switch index {
+        case 0:
+            return OnboardingTextZoneConfig(minZoneHeight: 288, scrimMaxOpacity: 0.45, showsLogo: true, maxBodyLines: 4)
+        case 1:
+            return OnboardingTextZoneConfig(minZoneHeight: 248, scrimMaxOpacity: 0.42, showsLogo: false, maxBodyLines: 6)
+        case 2:
+            return OnboardingTextZoneConfig(minZoneHeight: 220, scrimMaxOpacity: 0.40, showsLogo: false, maxBodyLines: 5)
+        case 3:
+            return OnboardingTextZoneConfig(minZoneHeight: 228, scrimMaxOpacity: 0.35, showsLogo: false, maxBodyLines: 5)
+        case 4:
+            return OnboardingTextZoneConfig(minZoneHeight: 252, scrimMaxOpacity: 0.38, showsLogo: false, maxBodyLines: 6)
+        case 5:
+            return OnboardingTextZoneConfig(minZoneHeight: 220, scrimMaxOpacity: 0.40, showsLogo: false, maxBodyLines: 5)
+        default:
+            return nil
+        }
+    }
+}
+
+/// Перенос только по пробелам (без переноса внутри слов).
+private struct OnboardingWholeWordText: View {
+    let text: String
+    let font: Font
+    let color: Color
+    let lineSpacing: CGFloat
+    let maxLines: Int
+    let minimumScaleFactor: CGFloat
+
+    var body: some View {
+        Text(text)
+            .font(font)
+            .foregroundColor(color)
+            .multilineTextAlignment(.center)
+            .lineSpacing(lineSpacing)
+            .lineLimit(maxLines)
+            .minimumScaleFactor(minimumScaleFactor)
+            .allowsTightening(false)
+            .fixedSize(horizontal: false, vertical: true)
+            .frame(maxWidth: .infinity, alignment: .center)
+    }
+}
+
+private struct OnboardingBottomTextPanel: View {
+    let title: String
+    let description: String
+    let config: OnboardingTextZoneConfig
+
+    var body: some View {
+        VStack(spacing: Spacing.s) {
+            if config.showsLogo {
+                OnboardingLogoV2View()
+                    .padding(.bottom, Spacing.xs)
+            }
+
+            OnboardingWholeWordText(
+                text: title,
+                font: .system(size: OnboardingReadableLayout.titleFontSize, weight: .bold),
+                color: .white,
+                lineSpacing: 4,
+                maxLines: 4,
+                minimumScaleFactor: 0.85
+            )
+            .accessibilityAddTraits(.isHeader)
+
+            OnboardingWholeWordText(
+                text: description,
+                font: .system(size: OnboardingReadableLayout.bodyFontSize, weight: .regular),
+                color: .white.opacity(0.92),
+                lineSpacing: 6,
+                maxLines: config.maxBodyLines,
+                minimumScaleFactor: 0.9
+            )
+        }
+        .padding(.horizontal, OnboardingReadableLayout.horizontalInset)
+        .padding(.top, Spacing.m)
+        .padding(.bottom, Spacing.m)
+        .frame(maxWidth: .infinity)
+        .frame(minHeight: config.minZoneHeight, alignment: .bottom)
+        .background(alignment: .bottom) {
+            LinearGradient(
+                stops: [
+                    .init(color: .clear, location: 0),
+                    .init(color: .black.opacity(config.scrimMaxOpacity * 0.4), location: 0.4),
+                    .init(color: .black.opacity(config.scrimMaxOpacity), location: 1),
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .allowsHitTesting(false)
+            .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title). \(description)")
+    }
+}
+
 // MARK: - OnboardingAladdinLogoView Component
 /// 🎨 Стилизованный золотой логотип "Aladdin" в скриптном стиле для онбординга
 struct OnboardingAladdinLogoView: View {
@@ -395,6 +689,26 @@ struct OnboardingScreen: View {
         }
     }
 
+    #if DEBUG
+    /// Симулятор: `-OnboardingPage3` или env `ONBOARDING_PAGE=3` (OB_03 = вкладка 3).
+    private func applyDebugOnboardingPageIfRequested() {
+        let pi = ProcessInfo.processInfo
+        var requested: Int?
+        if let raw = pi.environment["ONBOARDING_PAGE"]?.trimmingCharacters(in: .whitespacesAndNewlines),
+           let value = Int(raw) {
+            requested = value
+        }
+        for arg in pi.arguments {
+            if arg.hasPrefix("-OnboardingPage"), let value = Int(arg.dropFirst("-OnboardingPage".count)) {
+                requested = value
+            }
+        }
+        guard let page = requested, !pages.isEmpty else { return }
+        currentPage = min(max(0, page), lastTabIndex)
+        print("🧪 DEBUG Onboarding: jump to currentPage=\(currentPage) (OB content ≈ \(max(0, currentPage - 1)))")
+    }
+    #endif
+
     // ✅ Создание полных страниц (только с MainActor — см. loadPages)
     @MainActor
     private func createFullPages() -> [OnboardingPage] {
@@ -541,7 +855,7 @@ struct OnboardingScreen: View {
                 .modifier(OnboardingHeroRTLFlipModifier(isRTL: layoutDirection == .rightToLeft))
                 .accessibilityHidden(true)
 
-            HeroBottomReadableGradient(strong: currentPage == 0 || currentPage == 2 || currentPage == 3)
+            HeroBottomReadableGradient(strong: currentPage <= 6)
                 .ignoresSafeArea()
 
             // ✅ ВАРИАНТ 1: Показываем онбординг сразу, без проверки готовности локализации
@@ -556,6 +870,9 @@ struct OnboardingScreen: View {
             // ✅ ВАРИАНТ 1: Загружаем страницы сразу при появлении экрана
             // loadPages() сама решит - показывать полные страницы или минимальные
             loadPages()
+            #if DEBUG
+            applyDebugOnboardingPageIfRequested()
+            #endif
             print("✅ OnboardingScreen: Pages loaded (minimal or full depending on localization)")
         }
         .onChange(of: localizationManager.currentLanguage) { newLang in
@@ -568,6 +885,9 @@ struct OnboardingScreen: View {
             print("🔄 OnboardingScreen.onChange: localizationManager.isReady changed to \(isReady)")
             if isReady {
                 loadPages()
+                #if DEBUG
+                applyDebugOnboardingPageIfRequested()
+                #endif
                 print("✅ OnboardingScreen: Localization became ready, loaded pages")
             }
         }
@@ -981,41 +1301,25 @@ struct OnboardingScreen: View {
                     .padding(.horizontal, Spacing.xs)
                     .padding(.bottom, Spacing.m)
                 }
-            } else {
-                VStack(spacing: Spacing.xxl) {
-                    Spacer(minLength: Spacing.xxl)
-
-                    if contentIndex == 0 {
-                        OnboardingLogoV2View()
-                            .padding(.bottom, Spacing.s)
-                    }
-
-                    VStack(spacing: Spacing.m) {
-                        Text(page.title)
-                            .font(.system(size: 24, weight: .bold))
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.center)
-                            .lineLimit(3)
-                            .minimumScaleFactor(0.7)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .padding(.horizontal, Spacing.m)
-                            .accessibilityLabel("Заголовок: \(page.title)")
-                            .accessibilityAddTraits(.isHeader)
-                        
-                        Text(page.description)
-                            .font(.system(size: 16))
-                            .foregroundColor(.textSecondary)
-                            .multilineTextAlignment(.center)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .lineSpacing(6)
-                            .padding(.horizontal, Spacing.l)
-                            .accessibilityLabel("Описание: \(page.description)")
-                    }
-                    .accessibilityElement(children: .combine)
-                    .accessibilityLabel("\(page.title). \(page.description)")
-                    
-                    Spacer()
+            } else if let figmaAnchor = OnboardingFigmaAnchor.forContentIndex(contentIndex) {
+                OnboardingFigmaAnchoredContent(
+                    title: page.title,
+                    description: page.description,
+                    anchor: figmaAnchor
+                )
+            } else if let zoneConfig = OnboardingTextZoneConfig.forContentIndex(contentIndex) {
+                VStack(spacing: 0) {
+                    Spacer(minLength: 0)
+                    OnboardingBottomTextPanel(
+                        title: page.title,
+                        description: page.description,
+                        config: zoneConfig
+                    )
+                    .padding(.bottom, OnboardingReadableLayout.chromeBottomReserve)
                 }
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+            } else {
+                EmptyView()
             }
         }
         .accessibilityElement(children: .contain)
