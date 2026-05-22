@@ -6,16 +6,85 @@ from __future__ import annotations
 
 import logging
 from datetime import datetime
-from typing import Any, Callable, Dict, Optional, Tuple
+from typing import Any, Callable, Dict, List, Optional, Tuple
 
 from security.services.ai_sfm_aggregate_schema import strip_forbidden_llm_params
 from security.services.ai_sfm_context_builder import AISFMContextBuilder
 
 logger = logging.getLogger(__name__)
 
+# Re-export for routers
+__all__ = [
+    "LLM_CONTEXT_POLICY",
+    "HERMES_AGGREGATES_POLICY",
+    "build_ai_chat_sfm_payload",
+    "attach_sfm_aggregates_to_params",
+    "build_hermes_prompt_with_aggregates",
+]
+
 ExecuteFn = Callable[[str, Dict[str, Any]], Tuple[bool, Any, Optional[str]]]
 
 LLM_CONTEXT_POLICY = "aggregates_only_v1"
+HERMES_AGGREGATES_POLICY = "aggregates_only_v1"
+
+
+def _resolve_locale(response_language: Optional[str], message: str) -> str:
+    if response_language:
+        code = response_language.strip().lower()[:2]
+        if code in ("ru", "en"):
+            return code
+    if any("\u0400" <= ch <= "\u045f" or ch in "ёЁ" for ch in (message or "")):
+        return "ru"
+    return "en"
+
+
+def _format_aggregates_block(aggregates: Dict[str, Any], locale: str) -> str:
+    import json
+
+    header_ru = (
+        "Контекст ALADDIN (только агрегаты защиты, без персональных логов). "
+        "Любые цифры в ответе бери ТОЛЬКО из блока ниже; не выдумывай метрики."
+    )
+    header_en = (
+        "ALADDIN context (protection aggregates only, no personal logs). "
+        "Use ONLY the numbers below; do not invent metrics."
+    )
+    header = header_ru if locale == "ru" else header_en
+    body = json.dumps(aggregates, ensure_ascii=False, indent=0)[:3500]
+    label = "Агрегаты" if locale == "ru" else "Aggregates"
+    return f"{header}\n\n## {label}\n{body}"
+
+
+def build_hermes_prompt_with_aggregates(
+    *,
+    message: str,
+    execute_fn: ExecuteFn,
+    user_id: Optional[str] = None,
+    response_language: Optional[str] = None,
+    include_aggregates: bool = True,
+) -> Tuple[str, List[str]]:
+    """
+    R3.1: Hermes получает вопрос + whitelisted sfm_aggregates (без raw logs).
+    """
+    locale = _resolve_locale(response_language, message)
+    if not include_aggregates:
+        return message.strip(), []
+
+    bundle = AISFMContextBuilder(execute_fn).build(user_id=user_id)
+    if not bundle.aggregates:
+        return message.strip(), []
+
+    q_label = "Вопрос" if locale == "ru" else "Question"
+    prompt = (
+        f"{_format_aggregates_block(bundle.aggregates, locale)}\n\n"
+        f"## {q_label}\n{message.strip()}"
+    )
+    clean, removed = strip_forbidden_llm_params(
+        {"message": message, "llm_context_policy": HERMES_AGGREGATES_POLICY, "prompt": prompt}
+    )
+    if removed:
+        logger.warning("Hermes prompt stripped forbidden keys: %s", ",".join(sorted(removed)))
+    return str(clean.get("prompt") or message.strip()), list(bundle.sources)
 
 
 def build_ai_chat_sfm_payload(

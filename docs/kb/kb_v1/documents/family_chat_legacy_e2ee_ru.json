@@ -1,0 +1,10 @@
+{
+  "id": "family_chat_legacy_e2ee_ru",
+  "locale": "ru",
+  "topic": "e2ee",
+  "title": "family_chat_legacy",
+  "body": "### family_chat_legacy_not_e2ee\nИсторическое сообщение (без E2EE)\n\n### family_chat_legacy_redacted\nТекст скрыт (сообщение старше 90 дней, хранилось на сервере)\n\n### family_chat_legacy_thread_hint\nВ ленте есть старые сообщения без сквозного шифрования. Новые защищены E2EE.",
+  "source": "LocalizationManager",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

@@ -45,7 +45,7 @@
 | `06_AIAssistantScreen.swift` | Текст в поле при голосе; нет auto-send без opt-in; сообщения 502 |
 | `SpeechManager` / `SpeechRecognizerFactory` | Прогрев разрешений; ru live → cloud STT; статус «Подключаю микрофон…» |
 
-### 1.3 Номер сборки 201
+### 1.3 Номер сборки 202
 
 - `Core/Config/AppConfig.swift` — `buildNumber`, `minimumClientBuildForApiContract`
 - `Info.plist` — `CFBundleVersion`

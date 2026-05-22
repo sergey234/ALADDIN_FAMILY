@@ -1,0 +1,10 @@
+{
+  "id": "faq_social_engineering_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What is social engineering?",
+  "body": "What is social engineering?\n\nSocial engineering is when a scammer deceives you with words, not hacking.\n\nExamples:\n• \"I'm your new colleague, need access to the system\"\n• \"I'm from tech support, tell me your password for verification\"\n• \"Your mom is in the hospital! Urgently need money!\"\n\nThey play on your emotions - fear, greed, desire to help.\n\n✅ ALADDIN teaches you to recognize such deceptions.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

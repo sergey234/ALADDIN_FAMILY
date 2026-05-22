@@ -1,0 +1,10 @@
+{
+  "id": "faq_unsafe_wifi_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What is unsafe Wi-Fi?",
+  "body": "What is unsafe Wi-Fi?\n\nUnsafe Wi-Fi is a public network that can be a trap:\n• In cafes, airports, metro\n• Scammers can intercept your data\n• Steal passwords\n• See what you're doing\n\nIt's like if someone was standing behind you and watching what you type!\n\n✅ ALADDIN warns about dangerous networks and protects your data through network protection.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

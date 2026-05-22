@@ -61,7 +61,12 @@ def classify_intent(message: str, ui_context: str = "general") -> IntentResult:
         return IntentResult("network_vpn_status", ("get_components_health",), False)
     if re.search(r"семь|дет|ребён|ребен", msg):
         return IntentResult("family_overview", ("get_analytics_overview",), False)
-    if re.search(r"youtube|tiktok|родительск|огранич|игр", msg):
+    # «игр» убрано: ложное срабатывание на «ноутбук для игр» (off-topic покупки).
+    if re.search(
+        r"youtube|tiktok|родительск|огранич|видеоигр|игровое время|"
+        r"ограничить.*игр|заблокировать.*игр",
+        msg,
+    ):
         return IntentResult("parental_howto", (), True)
     if re.search(r"premium|тариф|подписк", msg):
         return IntentResult("tariff_explain", (), True)

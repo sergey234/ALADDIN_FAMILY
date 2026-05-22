@@ -286,6 +286,15 @@ except ImportError as e:
     ai_assistant_available = False
     ai_assistant_router = None
 
+try:
+    from security.api.routers.kb_router import router as kb_router
+    kb_router_available = True
+    print("✅ KB RAG Router loaded")
+except ImportError as e:
+    print(f"⚠️ KB RAG Router not loaded: {e}")
+    kb_router_available = False
+    kb_router = None
+
 # Telegram @AladdinchatAI_bot (phase I — not Shop bot)
 try:
     from security.api.routers.telegram_ai_bot_router import router as telegram_ai_bot_router
@@ -928,6 +937,13 @@ if ai_assistant_available:
         print("✅ Роутер AI Assistant подключен")
     except Exception as e:
         print(f"❌ Ошибка подключения AI Assistant: {e}")
+
+if kb_router_available and kb_router is not None:
+    try:
+        app.include_router(kb_router)
+        print("✅ Роутер KB RAG (internal) подключен")
+    except Exception as e:
+        print(f"❌ Ошибка подключения KB RAG: {e}")
 
 # ✅ ЗАДАЧА 21: Подключение Components Router
 if components_router_available and components_router is not None:

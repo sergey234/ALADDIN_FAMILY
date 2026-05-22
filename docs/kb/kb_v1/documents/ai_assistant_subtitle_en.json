@@ -1,0 +1,10 @@
+{
+  "id": "ai_assistant_subtitle_en",
+  "locale": "en",
+  "topic": "app_help",
+  "title": "Family security assistant",
+  "body": "Family security assistant",
+  "source": "LocalizationManager",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

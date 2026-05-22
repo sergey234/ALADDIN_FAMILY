@@ -1,0 +1,10 @@
+{
+  "id": "faq_fake_banks_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What are fake banks?",
+  "body": "What are fake banks?\n\nA fake bank is a site that looks like a real bank, but it's a fake!\n\nHow to tell:\n• Real bank: sberbank.ru\n• Fake: sberbank-check.ru (with a hyphen and different ending)\n\nScammers copy the design of a real bank, but it's a deception!\n\n✅ ALADDIN checks the site address and warns: \"This is NOT a real bank!\"",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

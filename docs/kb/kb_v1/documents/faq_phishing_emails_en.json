@@ -1,0 +1,10 @@
+{
+  "id": "faq_phishing_emails_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What are phishing emails?",
+  "body": "What are phishing emails?\n\nA phishing email is a deceptive email that asks you to do something dangerous:\n• \"Your account is blocked, log in via link\"\n• \"You won a prize! Click here\"\n• \"Someone tried to log into your account, check here\"\n\n❌ DON'T click links in such emails!\n\n✅ ALADDIN checks emails and warns of danger.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

@@ -80,6 +80,7 @@ try:
     from security.services.ai_llm_prompt_builder import (
         attach_sfm_aggregates_to_params,
         build_ai_chat_sfm_payload,
+        build_hermes_prompt_with_aggregates,
     )
 except ImportError:
     from ai_prompt_gate import (  # type: ignore
@@ -88,9 +89,11 @@ except ImportError:
         prepare_optional_for_llm,
         redact_feedback_only,
     )
+    from ai_intent_router import intent_requires_live_sfm  # type: ignore
     from ai_llm_prompt_builder import (  # type: ignore
         attach_sfm_aggregates_to_params,
         build_ai_chat_sfm_payload,
+        build_hermes_prompt_with_aggregates,
     )
 
 # JWT Configuration (single source: app.auth)
@@ -202,7 +205,8 @@ class ChatMessageResponse(BaseModel):
     follow_up_questions: List[str] = Field(default_factory=list, description="Дополнительные вопросы")
     timestamp: Optional[datetime] = Field(None, description="Временная метка")
     intent: Optional[str] = Field(None, description="Classified intent id")
-    grounded: Optional[bool] = Field(None, description="Answer used SFM/tools")
+    grounded: Optional[bool] = Field(None, description="Answer used SFM/tools or KB RAG")
+    sources: List[str] = Field(default_factory=list, description="KB parent ids, e.g. faq_*")
     tools_used: List[str] = Field(default_factory=list, description="SFM tools invoked")
     suggested_actions: List[SuggestedAction] = Field(default_factory=list, description="Deep link actions")
 
@@ -309,19 +313,68 @@ def _route_via_hermes(intent_id: str, kb_only: bool) -> bool:
     return AI_BACKEND == "hermes" and intent_id in KB_ONLY_INTENTS
 
 
+def _hermes_prompt_for_chat(
+    *,
+    cloud_message: str,
+    intent_id: str,
+    user_id: Optional[str],
+    response_language: Optional[str],
+) -> tuple[str, List[str]]:
+    """R3.1: factual intents → prompt with sfm_aggregates; KB intents → plain message."""
+    if (
+        intent_requires_live_sfm(intent_id)
+        and SFM_ADAPTER_AVAILABLE
+        and sfm_adapter is not None
+    ):
+        prompt, sources = build_hermes_prompt_with_aggregates(
+            message=cloud_message,
+            execute_fn=sfm_adapter.execute_function,
+            user_id=user_id,
+            response_language=response_language,
+            include_aggregates=True,
+        )
+        return prompt, sources
+    return cloud_message, []
+
+
 def _try_hermes_answer(
     *,
     cloud_message: str,
     intent_id: str,
+    user_id: Optional[str] = None,
+    response_language: Optional[str] = None,
 ) -> Optional[ChatMessageResponse]:
     if not hermes_available():
         return None
     skill = _hermes_skill_for_intent(intent_id)
-    ok, text, err = hermes_chat_once(cloud_message, skill=skill)
+    prompt, agg_sources = _hermes_prompt_for_chat(
+        cloud_message=cloud_message,
+        intent_id=intent_id,
+        user_id=user_id,
+        response_language=response_language,
+    )
+    ok, text, err = hermes_chat_once(prompt, skill=skill)
     if not ok or not text.strip() or is_probable_mock_response(text):
         logger.warning("Hermes fallback unavailable intent=%s err=%s", intent_id, err)
         return None
-    tools = [f"hermes:{skill}"] if skill else ["hermes"]
+    tools: List[str] = [f"hermes:{skill}"] if skill else ["hermes"]
+    for src in agg_sources:
+        if src not in tools:
+            tools.append(src)
+    grounded = bool(agg_sources)
+    if grounded:
+        return ChatMessageResponse(
+            response=text,
+            confidence=0.8,
+            suggestions=[],
+            follow_up_questions=[],
+            timestamp=datetime.now(),
+            intent=intent_id,
+            grounded=True,
+            sources=[],
+            tools_used=tools,
+            suggested_actions=_suggested_actions_for_intent(intent_id),
+        )
     return _chat_response_from_hermes(
         response_text=text,
         intent_id=intent_id,
@@ -343,6 +396,29 @@ def _chat_response_from_hermes(
         timestamp=datetime.now(),
         intent=intent_id,
         grounded=False,
+        sources=[],
+        tools_used=tools_used,
+        suggested_actions=_suggested_actions_for_intent(intent_id),
+    )
+
+
+def _chat_response_from_kb_rag(
+    *,
+    response_text: str,
+    intent_id: str,
+    sources: List[str],
+    tools_used: List[str],
+    confidence: float = 0.86,
+) -> ChatMessageResponse:
+    return ChatMessageResponse(
+        response=response_text,
+        confidence=confidence,
+        suggestions=[],
+        follow_up_questions=[],
+        timestamp=datetime.now(),
+        intent=intent_id,
+        grounded=True,
+        sources=sources,
         tools_used=tools_used,
         suggested_actions=_suggested_actions_for_intent(intent_id),
     )
@@ -380,6 +456,7 @@ def _chat_response_from_sfm(
         timestamp=datetime.now(),
         intent=intent_id,
         grounded=grounded,
+        sources=[],
         tools_used=tools_used,
         suggested_actions=_suggested_actions_for_intent(intent_id),
     )
@@ -471,16 +548,24 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
     try:
         intent = classify_intent(request.message, request.context)
         cloud_message = _llm_message_or_http422(request.message, field="message")
+        rag_locale = None
+        try:
+            from security.services.kb_rag_service import resolve_locale, try_kb_rag_answer
 
-        if _route_via_hermes(intent.intent_id, intent.kb_only) and hermes_available():
-            skill = _hermes_skill_for_intent(intent.intent_id)
-            ok, text, err = hermes_chat_once(cloud_message, skill=skill)
-            if ok and text.strip() and not is_probable_mock_response(text):
-                tools = [f"hermes:{skill}"] if skill else ["hermes"]
-                response = _chat_response_from_hermes(
-                    response_text=text,
+            rag_locale = resolve_locale(request.response_language, cloud_message)
+            rag_result = try_kb_rag_answer(
+                question=cloud_message,
+                intent_id=intent.intent_id,
+                kb_only=intent.kb_only,
+                locale=rag_locale,
+            )
+            if rag_result:
+                response = _chat_response_from_kb_rag(
+                    response_text=rag_result.response_text,
                     intent_id=intent.intent_id,
-                    tools_used=tools,
+                    sources=rag_result.sources,
+                    tools_used=rag_result.tools_used,
+                    confidence=rag_result.confidence,
                 )
                 if cloud_message.strip():
                     _safe_record_chat_exchange(
@@ -489,6 +574,61 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
                         assistant_message=response.response,
                         ui_context=request.context,
                     )
+                logger.info(
+                    "ai_chat_route intent=%s path=kb_rag sources=%s tools=%s",
+                    intent.intent_id,
+                    rag_result.sources[:3],
+                    rag_result.tools_used,
+                )
+                return response
+        except Exception as rag_exc:
+            logger.warning("kb_rag path skipped: %s", rag_exc)
+
+        if _route_via_hermes(intent.intent_id, intent.kb_only) and hermes_available():
+            skill = _hermes_skill_for_intent(intent.intent_id)
+            hermes_prompt, agg_sources = _hermes_prompt_for_chat(
+                cloud_message=cloud_message,
+                intent_id=intent.intent_id,
+                user_id=request.user_id or user_id,
+                response_language=request.response_language,
+            )
+            ok, text, err = hermes_chat_once(hermes_prompt, skill=skill)
+            if ok and text.strip() and not is_probable_mock_response(text):
+                tools: List[str] = [f"hermes:{skill}"] if skill else ["hermes"]
+                for src in agg_sources:
+                    if src not in tools:
+                        tools.append(src)
+                if agg_sources:
+                    response = ChatMessageResponse(
+                        response=text,
+                        confidence=0.8,
+                        suggestions=[],
+                        follow_up_questions=[],
+                        timestamp=datetime.now(),
+                        intent=intent.intent_id,
+                        grounded=True,
+                        sources=[],
+                        tools_used=tools,
+                        suggested_actions=_suggested_actions_for_intent(intent.intent_id),
+                    )
+                else:
+                    response = _chat_response_from_hermes(
+                        response_text=text,
+                        intent_id=intent.intent_id,
+                        tools_used=tools,
+                    )
+                if cloud_message.strip():
+                    _safe_record_chat_exchange(
+                        user_id=user_id,
+                        user_message_redacted=cloud_message,
+                        assistant_message=response.response,
+                        ui_context=request.context,
+                    )
+                logger.info(
+                    "ai_chat_route intent=%s path=hermes tools=%s",
+                    intent.intent_id,
+                    tools,
+                )
                 return response
             logger.warning("Hermes primary path failed intent=%s err=%s", intent.intent_id, err)
             if err and ("402" in err or "credits" in err.lower() or "openrouter" in err.lower()):
@@ -513,6 +653,7 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
                     timestamp=datetime.now(),
                     intent=intent.intent_id,
                     grounded=False,
+                    sources=[],
                 )
             raise_service_unavailable()
 
@@ -529,7 +670,12 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
 
         if not success:
             logger.warning("SFM ai_assistant_chat failed: %s", message)
-            hermes_resp = _try_hermes_answer(cloud_message=cloud_message, intent_id=intent.intent_id)
+            hermes_resp = _try_hermes_answer(
+                cloud_message=cloud_message,
+                intent_id=intent.intent_id,
+                user_id=request.user_id or user_id,
+                response_language=request.response_language,
+            )
             if hermes_resp:
                 return hermes_resp
             raise_service_unavailable()
@@ -545,7 +691,12 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
         )
         if is_probable_mock_response(response.response):
             logger.warning("SFM returned probable mock for intent=%s", intent.intent_id)
-            hermes_resp = _try_hermes_answer(cloud_message=cloud_message, intent_id=intent.intent_id)
+            hermes_resp = _try_hermes_answer(
+                cloud_message=cloud_message,
+                intent_id=intent.intent_id,
+                user_id=request.user_id or user_id,
+                response_language=request.response_language,
+            )
             if hermes_resp:
                 response = hermes_resp
             elif not mock_allowed():
@@ -558,6 +709,13 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
                 ui_context=request.context,
                 sfm_aggregates=data.get("sfm_aggregates"),
             )
+        path = "hermes" if any(str(t).startswith("hermes") for t in (response.tools_used or [])) else "sfm"
+        logger.info(
+            "ai_chat_route intent=%s path=%s tools=%s",
+            intent.intent_id,
+            path,
+            response.tools_used,
+        )
         return response
     except HTTPException:
         raise

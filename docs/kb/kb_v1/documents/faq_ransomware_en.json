@@ -1,0 +1,10 @@
+{
+  "id": "faq_ransomware_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What is Ransomware?",
+  "body": "What is Ransomware?\n\nThis is a very evil virus-bandit! It blocks all your files and demands money to return them.\n\nHow it happens:\n1. You download a malicious program\n2. It encrypts (blocks) all files\n3. A message appears on the screen: \"Pay 50,000₽ or lose everything!\"\n\n✅ ALADDIN doesn't let such programs get on your phone.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

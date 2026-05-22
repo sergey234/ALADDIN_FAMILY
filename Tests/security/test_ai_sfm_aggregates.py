@@ -7,7 +7,10 @@ ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 if ROOT not in sys.path:
     sys.path.insert(0, ROOT)
 
-from security.services.ai_llm_prompt_builder import build_ai_chat_sfm_payload
+from security.services.ai_llm_prompt_builder import (
+    build_ai_chat_sfm_payload,
+    build_hermes_prompt_with_aggregates,
+)
 from security.services.ai_sfm_aggregate_schema import (
     extract_allowed_aggregates,
     strip_forbidden_llm_params,
@@ -68,6 +71,38 @@ class TestAISFMAggregates(unittest.TestCase):
         self.assertIn("sfm_aggregates", payload)
         self.assertGreaterEqual(payload["sfm_aggregates"].get("threats_blocked", 0), 10)
         self.assertNotIn("logs", payload)
+
+    def test_strip_forbidden_nested_in_aggregates(self):
+        payload = {
+            "message": "статус",
+            "sfm_aggregates": {
+                "threats_blocked": 3,
+                "logs": ["must go"],
+                "nested": {"raw_logs": "x", "protection_status": "ACTIVE"},
+            },
+        }
+        clean, removed = strip_forbidden_llm_params(payload)
+        self.assertTrue(any("logs" in r for r in removed))
+        agg = clean["sfm_aggregates"]
+        self.assertEqual(agg["threats_blocked"], 3)
+        self.assertNotIn("logs", agg)
+        self.assertNotIn("raw_logs", agg.get("nested", {}))
+
+    def test_build_hermes_prompt_includes_aggregates_block(self):
+        def fake_execute(func, params=None):
+            if func == "get_analytics_overview":
+                return True, {"threats_blocked": 5, "protection_status": "ACTIVE"}, None
+            return False, {}, "unknown"
+
+        prompt, sources = build_hermes_prompt_with_aggregates(
+            message="Сколько угроз?",
+            execute_fn=fake_execute,
+            user_id="u1",
+            response_language="ru",
+        )
+        self.assertIn("threats_blocked", prompt)
+        self.assertIn("Сколько угроз?", prompt)
+        self.assertIn("get_analytics_overview", sources)
 
 
 if __name__ == "__main__":

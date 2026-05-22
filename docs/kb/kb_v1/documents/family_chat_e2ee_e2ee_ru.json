@@ -1,0 +1,10 @@
+{
+  "id": "family_chat_e2ee_e2ee_ru",
+  "locale": "ru",
+  "topic": "e2ee",
+  "title": "family_chat_e2ee",
+  "body": "### family_chat_e2ee_decrypt_failed\nНе удалось расшифровать. Обновите ключи или дождитесь повторной отправки.\n\n### family_chat_e2ee_not_ready\nЗащищённый чат на этом телефоне ещё не настроен. Подождите 5–10 секунд и отправьте снова. Если не помогло — откройте семейный чат на другом устройстве семьи, затем вернитесь сюда.\n\n### family_chat_e2ee_setup\nНастраивается сквозное шифрование чата…",
+  "source": "LocalizationManager",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

@@ -1,0 +1,10 @@
+{
+  "id": "family_chat_e2ee_e2ee_en",
+  "locale": "en",
+  "topic": "e2ee",
+  "title": "family_chat_e2ee",
+  "body": "### family_chat_e2ee_decrypt_failed\nCould not decrypt. Refresh keys or wait for a resend.\n\n### family_chat_e2ee_not_ready\nSecure chat is not set up on this phone yet. Wait 5–10 seconds and try again. If it still fails, open Family Chat on another family device, then return here.\n\n### family_chat_e2ee_setup\nSetting up end-to-end encryption…",
+  "source": "LocalizationManager",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

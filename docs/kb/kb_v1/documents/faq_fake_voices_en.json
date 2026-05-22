@@ -1,0 +1,10 @@
+{
+  "id": "faq_fake_voices_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What are fake voices?",
+  "body": "What are fake voices?\n\nA fake voice is when a computer copies a person's voice:\n• A scammer calls mom and speaks in son's voice: \"Mom, urgently need money!\"\n• Sounds like a real voice, but it's a deception!\n\n⚠️ If someone calls and asks for money - always call that person back yourself!\n\n✅ ALADDIN Premium analyzes voice and detects fakes.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

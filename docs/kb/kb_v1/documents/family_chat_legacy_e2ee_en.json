@@ -1,0 +1,10 @@
+{
+  "id": "family_chat_legacy_e2ee_en",
+  "locale": "en",
+  "topic": "e2ee",
+  "title": "family_chat_legacy",
+  "body": "### family_chat_legacy_not_e2ee\nHistorical message (not E2EE)\n\n### family_chat_legacy_redacted\nText hidden (message older than 90 days, was stored on server)\n\n### family_chat_legacy_thread_hint\nThis chat contains older messages without end-to-end encryption. New messages are E2EE-protected.",
+  "source": "LocalizationManager",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

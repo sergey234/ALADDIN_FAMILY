@@ -1,0 +1,10 @@
+{
+  "id": "faq_malicious_links_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What are malicious links?",
+  "body": "What are malicious links?\n\nA malicious link is like a door to a bad place. You click on it and fall into a trap!\n\nWhere they come from:\n• In messages from strangers\n• In ads on sites\n• In emails (\"Congratulations! You won...\")\n\n✅ ALADDIN checks all links and says: \"Stop! This link is dangerous!\"",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

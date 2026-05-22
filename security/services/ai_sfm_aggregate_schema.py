@@ -150,8 +150,28 @@ def merge_aggregate_maps(maps: Iterable[Mapping[str, Any]]) -> Dict[str, Any]:
     return merged
 
 
+def _strip_forbidden_nested(value: Any, path: str, removed: List[str]) -> Any:
+    """Рекурсивно убирает запрещённые ключи из dict/list (без raw logs в aggregates)."""
+    if isinstance(value, dict):
+        clean: Dict[str, Any] = {}
+        for key, item in value.items():
+            lower = str(key).lower()
+            child_path = f"{path}.{key}" if path else key
+            if lower in FORBIDDEN_LLM_PARAM_KEYS:
+                removed.append(child_path)
+                continue
+            clean[key] = _strip_forbidden_nested(item, child_path, removed)
+        return clean
+    if isinstance(value, list):
+        return [
+            _strip_forbidden_nested(item, f"{path}[]", removed)
+            for item in value[:_MAX_LIST_ITEMS]
+        ]
+    return value
+
+
 def strip_forbidden_llm_params(data: Mapping[str, Any]) -> Tuple[Dict[str, Any], List[str]]:
-    """Удаляет запрещённые ключи верхнего уровня; возвращает (clean, removed_keys)."""
+    """Удаляет запрещённые ключи (верхний уровень + вложенные); возвращает (clean, removed_keys)."""
     removed: List[str] = []
     out: Dict[str, Any] = {}
     for key, value in data.items():
@@ -159,5 +179,8 @@ def strip_forbidden_llm_params(data: Mapping[str, Any]) -> Tuple[Dict[str, Any],
         if lower in FORBIDDEN_LLM_PARAM_KEYS:
             removed.append(key)
             continue
-        out[key] = value
+        if key == "sfm_aggregates" and isinstance(value, dict):
+            out[key] = _strip_forbidden_nested(value, "sfm_aggregates", removed)
+            continue
+        out[key] = _strip_forbidden_nested(value, key, removed)
     return out, removed

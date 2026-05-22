@@ -2529,7 +2529,7 @@ class LocalizationManager: ObservableObject {
             "theme_system_display": "Системная",
             // AI Assistant Screen
             "ai_assistant_title": "AI Помощник",
-            "ai_assistant_subtitle": "Умная помощь по кибербезопасности семьи",
+            "ai_assistant_subtitle": "Помощник по безопасности семьи",
             "ai_assistant_back": "Назад",
             "ai_assistant_background": "Фон экрана AI Помощника",
             "ai_assistant_empty_title": "Начните диалог",
@@ -2553,6 +2553,8 @@ class LocalizationManager: ObservableObject {
             "faq_ai_how_works": "Как работает AI-помощник?",
             "faq_ai_how_works_answer": "AI-помощник ALADDIN не обучается на вашем телефоне и не запоминает переписку для тренировки модели. Он отвечает по справочнику приложения и по актуальным данным защиты с сервера (статус модулей, угрозы, семья). Для облачных ответов включите «Облачный AI-помощник» в Настройках.",
             "ai_grounded_badge": "На основе данных ALADDIN",
+            "ai_kb_sources": "Справочник: %@",
+            "ai_ungrounded_banner": "Подсказка ALADDIN · не из базы по этой теме",
             "ai_consent_banner_title": "Облачный AI-помощник выключен — вопросы на сервер не отправляются",
             "ai_consent_banner_action": "Включить в настройках",
             "voice_notes_title": "Диктофон",
@@ -10536,7 +10538,7 @@ Settings
             
             // AI Assistant Screen
             "ai_assistant_title": "AI Assistant",
-            "ai_assistant_subtitle": "Smart family cybersecurity support",
+            "ai_assistant_subtitle": "Family security assistant",
             "ai_assistant_back": "Back",
             "ai_assistant_background": "AI Assistant background",
             "ai_assistant_empty_title": "Start a conversation",
@@ -10560,6 +10562,8 @@ Settings
             "faq_ai_how_works": "How does the AI assistant work?",
             "faq_ai_how_works_answer": "The ALADDIN AI assistant does not train on your phone or store chats to train a model. It answers from the in-app knowledge base and live protection data from the server. Enable “Cloud AI assistant” in Settings for cloud replies.",
             "ai_grounded_badge": "Based on ALADDIN protection data",
+            "ai_kb_sources": "Knowledge base: %@",
+            "ai_ungrounded_banner": "ALADDIN guidance · not from topic knowledge base",
             "ai_consent_banner_title": "Cloud AI Assistant is off — questions are not sent to the server",
             "ai_consent_banner_action": "Turn on in Settings",
             "voice_notes_title": "Voice Notes",

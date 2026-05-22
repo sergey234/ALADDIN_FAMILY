@@ -1,0 +1,10 @@
+{
+  "id": "ai_assistant_subtitle_ru",
+  "locale": "ru",
+  "topic": "app_help",
+  "title": "Помощник по безопасности семьи",
+  "body": "Помощник по безопасности семьи",
+  "source": "LocalizationManager",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

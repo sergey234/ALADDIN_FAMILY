@@ -1,0 +1,10 @@
+{
+  "id": "ai_error_consent_required_ru",
+  "locale": "ru",
+  "topic": "app_help",
+  "title": "Включите «Облачный AI-помощник» в Настройках, чтобы отправлять вопросы помощнику.",
+  "body": "Включите «Облачный AI-помощник» в Настройках, чтобы отправлять вопросы помощнику.",
+  "source": "LocalizationManager",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

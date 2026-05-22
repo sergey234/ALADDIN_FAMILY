@@ -501,6 +501,7 @@ struct ChatMessageResponse: Codable {
     let timestamp: String?
     let intent: String?
     let grounded: Bool?
+    let sources: [String]?
     let toolsUsed: [String]?
     let suggestedActions: [AISuggestedActionDTO]?
 
@@ -508,7 +509,7 @@ struct ChatMessageResponse: Codable {
         case response, confidence, suggestions
         case followUpQuestions = "follow_up_questions"
         case timestamp
-        case intent, grounded
+        case intent, grounded, sources
         case toolsUsed = "tools_used"
         case suggestedActions = "suggested_actions"
         case message, answer, result, detail, error
@@ -531,6 +532,7 @@ struct ChatMessageResponse: Codable {
         self.timestamp = try? container.decode(String.self, forKey: .timestamp)
         self.intent = try? container.decode(String.self, forKey: .intent)
         self.grounded = try? container.decode(Bool.self, forKey: .grounded)
+        self.sources = try? container.decode([String].self, forKey: .sources)
         self.toolsUsed = try? container.decode([String].self, forKey: .toolsUsed)
         self.suggestedActions = try? container.decode([AISuggestedActionDTO].self, forKey: .suggestedActions)
     }
@@ -544,6 +546,7 @@ struct ChatMessageResponse: Codable {
         try container.encodeIfPresent(timestamp, forKey: .timestamp)
         try container.encodeIfPresent(intent, forKey: .intent)
         try container.encodeIfPresent(grounded, forKey: .grounded)
+        try container.encodeIfPresent(sources, forKey: .sources)
         try container.encodeIfPresent(toolsUsed, forKey: .toolsUsed)
         try container.encodeIfPresent(suggestedActions, forKey: .suggestedActions)
     }

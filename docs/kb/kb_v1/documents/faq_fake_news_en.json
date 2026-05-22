@@ -1,0 +1,10 @@
+{
+  "id": "faq_fake_news_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What is fake news?",
+  "body": "What is fake news?\n\nFake news is false information that spreads as truth:\n• \"Scientists found a cure for all diseases!\" (lie)\n• \"Earthquake in Moscow!\" (lie, if it didn't happen)\n• \"All banks are closing!\" (lie)\n\nThis is done to deceive people or sow panic.\n\n✅ ALADDIN checks news and shows whether it's true or not.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

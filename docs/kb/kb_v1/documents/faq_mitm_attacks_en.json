@@ -1,0 +1,10 @@
+{
+  "id": "faq_mitm_attacks_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What are Man-in-the-Middle attacks?",
+  "body": "What are Man-in-the-Middle attacks?\n\nMan-in-the-Middle is when a scammer intercepts a conversation between you and the bank:\n\nHow it works:\n1. You think you're talking to the bank\n2. Actually the scammer is \"in the middle\"\n3. They see everything you send (passwords, card data)\n4. Can change the bank's response to their own\n\nIt's like a conversation through an eavesdropper!\n\n✅ ALADDIN Premium uses special encryption so no one can eavesdrop.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

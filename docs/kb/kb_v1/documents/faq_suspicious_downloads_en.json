@@ -1,0 +1,10 @@
+{
+  "id": "faq_suspicious_downloads_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What are suspicious downloads?",
+  "body": "What are suspicious downloads?\n\nA suspicious download is a file that can be dangerous:\n• A program can be a virus\n• A photo can contain a virus\n• A game can steal data\n\nHow to identify:\n• File from unknown sender\n• Too good an offer (\"Download and win a million!\")\n• Unknown file extension\n\n✅ ALADDIN checks every file before downloading.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

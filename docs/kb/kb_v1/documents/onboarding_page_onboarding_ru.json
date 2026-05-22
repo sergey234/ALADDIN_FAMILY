@@ -1,0 +1,10 @@
+{
+  "id": "onboarding_page_onboarding_ru",
+  "locale": "ru",
+  "topic": "onboarding",
+  "title": "onboarding_page",
+  "body": "### onboarding_page1_desc\nКомплексная система защиты от более 100 видов киберугроз\n\n### onboarding_page1_title\nЗащита всей семьи в кармане\n\n### onboarding_page2_desc\nИИ охраняет вашу семью 24/7 + Многоуровневая система защита ⭐⭐⭐⭐⭐! Военные технологии шифрования\n\n### onboarding_page2_title\nВаш персональный агент безопасности\n\n### onboarding_page3_desc\nСистема обучения детей безопасности. Вы видите всю активность детей в интернете. Самообучающаяся система защиты AI\n\n### onboarding_page3_title\nРодительский контроль\n\n### onboarding_page4_desc\nСистема ALADDIN AI предсказывает, обнаруживает и предотвращает киберугрозы, постоянно обучаясь и улучшаясь.\n\n### onboarding_page4_title\nАналитика рисков\n\n### onboarding_page5_desc\nДети не смогут посещать опасные сайты, онлайн-казино, взрослые сайты или совершать покупки в играх и стриминговых сервисах\n\n### onboarding_page5_title\nЗащита для детей!\n\n### onboarding_page6_desc\nAI распознает фейковые звонки, новости, сообщения и видео. Защита от поддельных голосов и номеров.\n\n### onboarding_page6_title\nЗащита для людей 23+\n\n### onboarding_page7_desc\nСпокойствие близких - бесценно. Защита начинается сегодня!\n\n### onboarding_page7_title\nПрисоединяйтесь к ALADDIN",
+  "source": "LocalizationManager",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

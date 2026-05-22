@@ -1,0 +1,10 @@
+{
+  "id": "ai_error_consent_required_en",
+  "locale": "en",
+  "topic": "app_help",
+  "title": "Turn on “Cloud AI Assistant” in Settings to send questions to the assistant.",
+  "body": "Turn on “Cloud AI Assistant” in Settings to send questions to the assistant.",
+  "source": "LocalizationManager",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

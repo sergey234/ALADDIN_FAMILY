@@ -1,0 +1,10 @@
+{
+  "id": "faq_dangerous_sites_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What are dangerous sites?",
+  "body": "What are dangerous sites?\n\nA dangerous site is a site that can harm your phone:\n• Infect with a virus\n• Steal passwords\n• Deceive you\n• Show bad content\n\n✅ ALADDIN checks every site before opening and warns: \"This site is dangerous! Don't open!\"",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}

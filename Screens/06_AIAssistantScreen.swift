@@ -49,6 +49,7 @@ struct AIAssistantScreen: View {
         /// E2.4: UTC anchor for 90-day local retention (hybrid D).
         let storedAt: Date
         var grounded: Bool?
+        var sources: [String]?
         var suggestedActions: [ChatSuggestedAction]?
 
         init(
@@ -58,6 +59,7 @@ struct AIAssistantScreen: View {
             time: String,
             storedAt: Date = Date(),
             grounded: Bool? = nil,
+            sources: [String]? = nil,
             suggestedActions: [ChatSuggestedAction]? = nil
         ) {
             self.id = id
@@ -66,6 +68,7 @@ struct AIAssistantScreen: View {
             self.time = time
             self.storedAt = storedAt
             self.grounded = grounded
+            self.sources = sources
             self.suggestedActions = suggestedActions
         }
 
@@ -81,6 +84,7 @@ struct AIAssistantScreen: View {
                 storedAt = Date()
             }
             grounded = try c.decodeIfPresent(Bool.self, forKey: .grounded)
+            sources = try c.decodeIfPresent([String].self, forKey: .sources)
             suggestedActions = try c.decodeIfPresent([ChatSuggestedAction].self, forKey: .suggestedActions)
         }
 
@@ -92,11 +96,12 @@ struct AIAssistantScreen: View {
             try c.encode(time, forKey: .time)
             try c.encode(storedAt.timeIntervalSince1970, forKey: .storedAt)
             try c.encodeIfPresent(grounded, forKey: .grounded)
+            try c.encodeIfPresent(sources, forKey: .sources)
             try c.encodeIfPresent(suggestedActions, forKey: .suggestedActions)
         }
 
         private enum CodingKeys: String, CodingKey {
-            case id, text, isUser, time, storedAt, grounded, suggestedActions
+            case id, text, isUser, time, storedAt, grounded, sources, suggestedActions
         }
     }
     
@@ -366,6 +371,19 @@ struct AIAssistantScreen: View {
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
                         .background(Color.green.opacity(0.15))
+                        .clipShape(Capsule())
+                    if let kbSources = message.sources, !kbSources.isEmpty {
+                        Text(kbSourcesLabel(kbSources))
+                            .font(.caption2)
+                            .foregroundColor(.secondary)
+                    }
+                } else if !message.isUser, message.grounded == false {
+                    Text(localizationManager.localized("ai_ungrounded_banner"))
+                        .font(.caption2.weight(.semibold))
+                        .foregroundColor(.orange)
+                        .padding(.horizontal, 8)
+                        .padding(.vertical, 4)
+                        .background(Color.orange.opacity(0.15))
                         .clipShape(Capsule())
                 }
 
@@ -887,6 +905,7 @@ struct AIAssistantScreen: View {
                         isUser: false,
                         time: currentTime(),
                         grounded: response.grounded,
+                        sources: response.sources,
                         suggestedActions: actions.isEmpty ? nil : actions
                     )
                     
@@ -1101,6 +1120,14 @@ struct AIAssistantScreen: View {
         formatter.dateFormat = "HH:mm"
         formatter.locale = localizationManager.locale
         return formatter.string(from: Date())
+    }
+
+    private func kbSourcesLabel(_ sources: [String]) -> String {
+        let display = sources.prefix(3).map { id in
+            id.hasPrefix("faq_") ? String(id.dropFirst(4)) : id
+        }.joined(separator: ", ")
+        let template = localizationManager.localized("ai_kb_sources")
+        return String(format: template, display)
     }
 
     private func handleQuickAction(_ action: QuickActionType) {

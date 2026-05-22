@@ -1,0 +1,10 @@
+{
+  "id": "faq_phishing_sites_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What are phishing sites?",
+  "body": "What are phishing sites?\n\nPhishing is when scammers make a fake site that looks like a real bank or store.\n\nHow it works:\n1. You think you're on your bank's site\n2. You enter your password\n3. Scammers get your password and steal money!\n\nIt's like a fake store - looks real, but deceives!\n\n✅ ALADDIN checks all sites and warns: \"Caution! This is a fake!\"",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [],
+  "kb_version": "kb_v1"
+}
