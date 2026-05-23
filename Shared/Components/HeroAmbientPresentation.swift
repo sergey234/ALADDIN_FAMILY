@@ -319,13 +319,25 @@ struct HeroAmbientLayerView: View {
         #endif
     }
 
+    /// OB_02/03 PNG: zone94 по центру на `#0a1128` — ~118px «пустого» фона сверху. Лёгкий zoom от верха убирает полосу без обрезки рук.
+    private func heroOnboardingTopZoom(for baseName: String) -> CGFloat {
+        switch baseName {
+        case "OnboardingHero_02", "OnboardingHero_03":
+            return 1.16
+        default:
+            return 1.0
+        }
+    }
+
     @ViewBuilder
     private func heroRasterImage(_ baseName: String) -> some View {
         if fillsViewport {
+            let topZoom = heroOnboardingTopZoom(for: baseName)
             Image(baseName)
                 .resizable()
                 .scaledToFill()
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .scaleEffect(topZoom, anchor: .top)
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
                 .clipped()
         } else {
             Image(baseName)

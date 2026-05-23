@@ -11,10 +11,10 @@
 | Шлюз | Результат | Детали |
 |------|-----------|--------|
 | SYNC-H | ✅ | Xcode `f3d6d7c38e5a2eee577f7941a56a9ee9` → upload → Figma `2b1e8a9f6b31e61f2365d3a1372fb96cfb9672c2`, 393×852, 1 hero IMAGE |
-| SYNC-T | ✅ | SF Pro Bold 24 / Regular 16 white 0.92; scrim 528×324; Y title 598, desc 656, wordmark 484 |
+| SYNC-T | ✅ | SF Pro Bold 24 / Regular 16 white 0.92; scrim 528×324 stops 0/0.2025@0.45/0.45; wordmark 354×121 @10,354; title **536**; desc **615** w346 |
 | SYNC-I | ✅ | `OnboardingFigmaAnchor` case 0 = §4 |
 | SYNC-C | ✅ | TITLE/DESC = LocalizationManager |
-| SYNC-D | ⏳ | Симулятор SE + Pro Max — человек |
+| SYNC-D | ✅ | Принято 2026-05-23; повторная сверка live Figma `81:53` 2026-05-23 — координаты без изменений |
 
 ---
 
@@ -25,10 +25,10 @@
 | Шлюз | Результат | Детали |
 |------|-----------|--------|
 | SYNC-H | ✅ | Xcode `be22a36d…` → Figma `c5a72085…` (zone94 center, 393×852) |
-| SYNC-T | ✅ | SF Pro; title 533/607; scrim 552×300 stops 0 / 0.189@0.45 / 0.42 |
+| SYNC-T | ✅ | SF Pro; title **479** x10; desc **552** w364 x7; scrim 552×300 stops 0 / 0.189@0.45 / 0.42 |
 | SYNC-I | ✅ | `OnboardingFigmaAnchor` case 1 + `scrimGradientStops` |
 | SYNC-C | ✅ | Тексты совпали |
-| SYNC-D | ⏳ | Симулятор ≈ Figma — ждём «Принято» |
+| SYNC-D | ✅ | Принято 2026-05-23 |
 
 ---
 
@@ -44,4 +44,13 @@
 
 ---
 
-*Следующие: OB_01 D → OB_04…06 по тому же циклу. См. `ONBOARDING_TODO_MASTER.md` (15/30).*
+## OB_04 — OB_07 (build 203)
+
+| OB | SYNC-I | Примечание |
+|----|--------|------------|
+| 04 | ✅ case 3 | Y 496/566, scrim 542×310 |
+| 05 | ✅ case 4 | Y 496/566, scrim 532×320 |
+| 06 | ✅ case 5 | Y 496/566, scrim 552×300 |
+| 07 | ✅ case 6 | wordmark 374; title **482**; desc **520**; `OnboardingOB07LegalBlock` |
+
+*См. `ONBOARDING_COORDINATES_AND_SYNC.md`, `ONBOARDING_OB_07_SYNC_PLAN.md`.*

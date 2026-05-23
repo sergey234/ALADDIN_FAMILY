@@ -55,24 +55,24 @@ xcrun simctl launch booted family.aladdin.ios -RESET_ONBOARDING -OnboardingPageN
 | 8 | `ob01-sync-t` | OB_01 SF Pro, Y, scrim 528×324 | ✅ |
 | 9 | `ob01-sync-i` | `OnboardingFigmaAnchor` case 0 | ✅ |
 | 10 | `ob01-sync-c` | Copy page1 | ✅ |
-| 11 | `ob01-sync-d` | Симулятор SE/Max ≈ Figma | ⏳ |
+| 11 | `ob01-sync-d` | Симулятор SE/Max ≈ Figma | ✅ |
 | 12 | `ob02-sync-h` | Hero zone94 `be22a36d` = Figma upload | ✅ |
 | 13 | `ob02-sync-t` | Scrim 552×300, stops 0 / 0.189@**0.45** / 0.42 | ✅ |
 | 14 | `ob02-sync-i` | case 1 + `scrimGradientStops` | ✅ |
-| 15 | `ob02-sync-d` | Симулятор = Figma | ⏳ |
+| 15 | `ob02-sync-d` | Симулятор = Figma | ✅ |
 | 16 | `ob03-sync-h` | Hero zone94-style `73cfae32` = Figma upload | ✅ |
 | 17 | `ob03-sync-t` | Scrim **500×320**, stops 0 / 0.16@0.4 / 0.40 | ✅ |
 | 18 | `ob03-sync-i` | case 2 + `scrimGradientStops` | ✅ |
 | 19 | `ob03-sync-d` | Симулятор = Figma | ⏳ |
 | 20 | `ob04-hero` | Hero 04: master/compose → imageset + Figma | ⏳ |
 | 21 | `ob04-sync-htid` | OB_04: SYNC-H,T,I,C,D (Y 496/566, scrim 542×310) | ⏳ |
-| 22 | `ob04-anchor` | `OnboardingFigmaAnchor` case 3 | ⏳ |
+| 22 | `ob04-anchor` | `OnboardingFigmaAnchor` case 3 | ✅ |
 | 23 | `ob05-hero` | Hero 05 → imageset + Figma | ⏳ |
 | 24 | `ob05-sync-htid` | OB_05: SYNC-H,T,I,C,D (496/566, scrim 532×320) | ⏳ |
-| 25 | `ob05-anchor` | case 4 | ⏳ |
+| 25 | `ob05-anchor` | case 4 | ✅ |
 | 26 | `ob06-hero` | Hero 06 → imageset + Figma | ⏳ |
 | 27 | `ob06-sync-htid` | OB_06: SYNC-H,T,I,C,D | ⏳ |
-| 28 | `ob06-anchor` | case 5 | ⏳ |
+| 28 | `ob06-anchor` | case 5 | ✅ |
 | 29 | `script-hero-build` | `build_onboarding_hero_imagesets.py`: не слепо 393×852 | ⏳ |
 | 30 | `read-docs` | Полный §11 `ONBOARDING_FIGMA_PAGE_QA_ALGORITHM` на 01–06 | ⏳ |
 

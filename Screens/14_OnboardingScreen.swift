@@ -4,6 +4,9 @@ import UIKit
 // MARK: - Onboarding logo V2 (transparent wordmark from BrandAssets / Figma WORDMARK_V2)
 
 private struct OnboardingLogoV2View: View {
+    /// Figma `WORDMARK_V2` height (OB_01 / OB_07 = 104pt).
+    var fixedHeight: CGFloat? = nil
+
     var body: some View {
         Group {
             if UIImage(named: "OnboardingLogo_V2_Cinematic", in: .main, compatibleWith: nil) != nil {
@@ -17,13 +20,20 @@ private struct OnboardingLogoV2View: View {
                     .foregroundStyle(Color.secondaryGold)
             }
         }
-        .frame(maxWidth: 361)
-        .frame(height: 104)
+        .frame(maxWidth: .infinity)
+        .frame(height: fixedHeight)
         .accessibilityLabel(AppConfig.localizedAppMarketingName)
     }
 }
 
-// MARK: - Onboarding Figma anchors (screen space 393×852, OB_01…06)
+// MARK: - Onboarding Figma anchors (screen space 393×852, OB_01…07)
+
+private enum OnboardingFigmaLayoutMode {
+    /// OB_01…06: полоса «Пропустить» + chrome ~154pt.
+    case standard
+    /// OB_07: без skip, расширенный chrome 304pt (согласия).
+    case ob07Final
+}
 
 /// Координаты из Figma `OB_*_393x852` (y от верха экрана 852pt).
 private struct OnboardingFigmaAnchor {
@@ -34,13 +44,20 @@ private struct OnboardingFigmaAnchor {
     let scrimMaxOpacity: CGFloat
     let maxBodyLines: Int
 
+    var layoutMode: OnboardingFigmaLayoutMode {
+        if wordmark != nil, title.origin.y >= 480, desc.origin.y >= 518 {
+            return .ob07Final
+        }
+        return .standard
+    }
+
     static func forContentIndex(_ index: Int) -> OnboardingFigmaAnchor? {
         switch index {
         case 0:
             return OnboardingFigmaAnchor(
-                wordmark: CGRect(x: 16, y: 484, width: 361, height: 104),
-                title: CGRect(x: 16, y: 598, width: 361, height: 50),
-                desc: CGRect(x: 16, y: 656, width: 361, height: 48),
+                wordmark: CGRect(x: 10, y: 354, width: 360, height: 121),
+                title: CGRect(x: 16, y: 536, width: 361, height: 50),
+                desc: CGRect(x: 16, y: 615, width: 346, height: 48),
                 scrim: CGRect(x: 0, y: 528, width: 393, height: 324),
                 scrimMaxOpacity: 0.45,
                 maxBodyLines: 4
@@ -48,8 +65,8 @@ private struct OnboardingFigmaAnchor {
         case 1:
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 12, y: 533, width: 361, height: 60),
-                desc: CGRect(x: 12, y: 607, width: 361, height: 80),
+                title: CGRect(x: 10, y: 479, width: 361, height: 60),
+                desc: CGRect(x: 7, y: 552, width: 364, height: 79),
                 scrim: CGRect(x: 0, y: 552, width: 393, height: 300),
                 scrimMaxOpacity: 0.42,
                 maxBodyLines: 6
@@ -63,6 +80,42 @@ private struct OnboardingFigmaAnchor {
                 scrimMaxOpacity: 0.40,
                 maxBodyLines: 5
             )
+        case 3:
+            return OnboardingFigmaAnchor(
+                wordmark: nil,
+                title: CGRect(x: 16, y: 496, width: 361, height: 60),
+                desc: CGRect(x: 16, y: 566, width: 361, height: 100),
+                scrim: CGRect(x: 0, y: 542, width: 393, height: 310),
+                scrimMaxOpacity: 0.35,
+                maxBodyLines: 5
+            )
+        case 4:
+            return OnboardingFigmaAnchor(
+                wordmark: nil,
+                title: CGRect(x: 16, y: 496, width: 361, height: 60),
+                desc: CGRect(x: 16, y: 566, width: 361, height: 100),
+                scrim: CGRect(x: 0, y: 532, width: 393, height: 320),
+                scrimMaxOpacity: 0.38,
+                maxBodyLines: 6
+            )
+        case 5:
+            return OnboardingFigmaAnchor(
+                wordmark: nil,
+                title: CGRect(x: 16, y: 496, width: 361, height: 60),
+                desc: CGRect(x: 16, y: 566, width: 361, height: 100),
+                scrim: CGRect(x: 0, y: 552, width: 393, height: 300),
+                scrimMaxOpacity: 0.40,
+                maxBodyLines: 5
+            )
+        case 6:
+            return OnboardingFigmaAnchor(
+                wordmark: CGRect(x: 7, y: 374, width: 361, height: 104),
+                title: CGRect(x: 12, y: 482, width: 361, height: 60),
+                desc: CGRect(x: 12, y: 520, width: 361, height: 80),
+                scrim: CGRect(x: 0, y: 480, width: 393, height: 372),
+                scrimMaxOpacity: 0.42,
+                maxBodyLines: 4
+            )
         default:
             return nil
         }
@@ -74,13 +127,21 @@ private enum OnboardingFigmaScreenLayout {
     static let canvasHeight: CGFloat = 852
     /// Полоса «Пропустить» над TabView (как в `mainOnboardingContent`)
     static let skipBandHeight: CGFloat = 52
-    /// Точки + CTA под TabView
+    /// Точки + CTA под TabView (OB_01…06)
     static let chromeBandHeight: CGFloat = 154
+    /// Расширенный chrome OB_07: точки + «Начать» + legal + 2 кнопки (`CHROME_bottom` h=304).
+    static let ob07ChromeBandHeight: CGFloat = 304
     static var tabDesignHeight: CGFloat { canvasHeight - skipBandHeight - chromeBandHeight }
+    static var ob07ContentDesignHeight: CGFloat { canvasHeight - ob07ChromeBandHeight }
 
-    static func tabTopY(_ screenY: CGFloat, tabHeight: CGFloat) -> CGFloat {
-        let tabY = screenY - skipBandHeight
-        return tabY * (tabHeight / tabDesignHeight)
+    static func tabTopY(_ screenY: CGFloat, tabHeight: CGFloat, mode: OnboardingFigmaLayoutMode = .standard) -> CGFloat {
+        switch mode {
+        case .ob07Final:
+            return screenY * (tabHeight / ob07ContentDesignHeight)
+        case .standard:
+            let tabY = screenY - skipBandHeight
+            return tabY * (tabHeight / tabDesignHeight)
+        }
     }
 }
 
@@ -89,12 +150,27 @@ private func scrimGradientStops(for anchor: OnboardingFigmaAnchor) -> [Gradient.
     let midLocation: CGFloat
     let midOpacity: CGFloat
     switch (anchor.scrim.origin.y, anchor.scrimMaxOpacity) {
+    case (528, 0.45):
+        midLocation = 0.45
+        midOpacity = 0.2025
     case (552, 0.42):
         midLocation = 0.45
         midOpacity = 0.189
     case (500, 0.40):
         midLocation = 0.4
         midOpacity = 0.16
+    case (542, 0.35):
+        midLocation = 0.45
+        midOpacity = 0.1575
+    case (532, 0.38):
+        midLocation = 0.45
+        midOpacity = 0.171
+    case (552, 0.40):
+        midLocation = 0.45
+        midOpacity = 0.18
+    case (480, 0.42):
+        midLocation = 0.45
+        midOpacity = 0.189
     default:
         midLocation = 0.4
         midOpacity = anchor.scrimMaxOpacity * 0.4
@@ -106,16 +182,117 @@ private func scrimGradientStops(for anchor: OnboardingFigmaAnchor) -> [Gradient.
     ]
 }
 
+/// OB_07 типографика и цвета (Figma `122:53`).
+private enum OnboardingOB07Style {
+    static let linkBlue = Color(red: 46 / 255, green: 92 / 255, blue: 255 / 255)
+    static let infoFont = Font.system(size: 11, weight: .regular)
+    static let linkFont = Font.system(size: 11, weight: .semibold)
+    static let consentFont = Font.system(size: 12, weight: .regular)
+    static let contentWidth: CGFloat = 361
+}
+
+/// Legal-блок OB_07 — 4 строки столбиком (`BLOCK_final_legal`), как в Figma.
+private struct OnboardingOB07LegalBlock: View {
+    @Binding var dataConsentAccepted: Bool
+    @Binding var termsConsentAccepted: Bool
+    let dataCollectionInfo: String
+    let privacyPolicyLink: String
+    let dataConsentLabel: String
+    let termsOfServiceLink: String
+    let termsConsentLabel: String
+    let onPrivacyPolicy: () -> Void
+    let onTermsOfService: () -> Void
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Button(action: onPrivacyPolicy) {
+                (Text(dataCollectionInfo)
+                    .foregroundColor(.white.opacity(0.65))
+                 + Text(privacyPolicyLink)
+                    .fontWeight(.semibold)
+                    .foregroundColor(OnboardingOB07Style.linkBlue)
+                    .underline())
+                    .font(OnboardingOB07Style.infoFont)
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: OnboardingOB07Style.contentWidth, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("\(dataCollectionInfo) \(privacyPolicyLink)")
+
+            ob07ConsentRow(isOn: $dataConsentAccepted, label: dataConsentLabel)
+
+            Button(action: onTermsOfService) {
+                Text(termsOfServiceLink)
+                    .font(OnboardingOB07Style.linkFont)
+                    .foregroundColor(OnboardingOB07Style.linkBlue)
+                    .underline()
+                    .multilineTextAlignment(.leading)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(maxWidth: OnboardingOB07Style.contentWidth, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+
+            ob07ConsentRow(isOn: $termsConsentAccepted, label: termsConsentLabel)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(.horizontal, 16)
+    }
+
+    private func ob07ConsentRow(isOn: Binding<Bool>, label: String) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Button(action: {
+                withAnimation(.easeInOut(duration: 0.15)) {
+                    isOn.wrappedValue.toggle()
+                }
+                HapticFeedback.selection()
+            }) {
+                Image(systemName: isOn.wrappedValue ? "checkmark.square.fill" : "square")
+                    .font(.system(size: 20))
+                    .foregroundColor(isOn.wrappedValue ? .primaryBlue : .textSecondary)
+            }
+
+            Text(label)
+                .font(OnboardingOB07Style.consentFont)
+                .foregroundColor(.white.opacity(0.9))
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Spacer(minLength: 0)
+        }
+    }
+}
+
 /// Текст и лого по фиксированным Y из Figma (масштаб под высоту TabView).
 private struct OnboardingFigmaAnchoredContent: View {
     let title: String
     let description: String
     let anchor: OnboardingFigmaAnchor
 
+    private var isOB07: Bool { anchor.layoutMode == .ob07Final }
+
+    private var scrimDesignHeight: CGFloat {
+        switch anchor.layoutMode {
+        case .ob07Final:
+            return OnboardingFigmaScreenLayout.ob07ContentDesignHeight
+        case .standard:
+            return OnboardingFigmaScreenLayout.tabDesignHeight
+        }
+    }
+
     var body: some View {
         GeometryReader { geo in
             let scaleX = geo.size.width / OnboardingFigmaScreenLayout.canvasWidth
             let tabH = geo.size.height
+            let layoutMode = anchor.layoutMode
+            let vScale = isOB07 ? (tabH / OnboardingFigmaScreenLayout.ob07ContentDesignHeight) : 1
+            let yPos: (CGFloat) -> CGFloat = { screenY in
+                if isOB07 {
+                    return screenY * vScale
+                }
+                return OnboardingFigmaScreenLayout.tabTopY(screenY, tabHeight: tabH, mode: layoutMode)
+            }
 
             ZStack(alignment: .topLeading) {
                 Rectangle()
@@ -128,21 +305,24 @@ private struct OnboardingFigmaAnchoredContent: View {
                     )
                     .frame(
                         width: anchor.scrim.width * scaleX,
-                        height: anchor.scrim.height * (tabH / OnboardingFigmaScreenLayout.tabDesignHeight)
+                        height: anchor.scrim.height * (isOB07 ? vScale : tabH / scrimDesignHeight)
                     )
                     .offset(
                         x: anchor.scrim.origin.x * scaleX,
-                        y: OnboardingFigmaScreenLayout.tabTopY(anchor.scrim.origin.y, tabHeight: tabH)
+                        y: yPos(anchor.scrim.origin.y)
                     )
                     .allowsHitTesting(false)
                     .accessibilityHidden(true)
 
                 if let wordmark = anchor.wordmark {
-                    OnboardingLogoV2View()
-                        .frame(width: wordmark.width * scaleX, height: wordmark.height * scaleX)
+                    let logoScale = isOB07 ? vScale : scaleX
+                    let logoW = wordmark.width * scaleX
+                    let logoH = wordmark.height * logoScale
+                    OnboardingLogoV2View(fixedHeight: logoH)
+                        .frame(width: logoW, height: logoH, alignment: .center)
                         .offset(
                             x: wordmark.origin.x * scaleX,
-                            y: OnboardingFigmaScreenLayout.tabTopY(wordmark.origin.y, tabHeight: tabH)
+                            y: yPos(wordmark.origin.y)
                         )
                 }
 
@@ -151,8 +331,8 @@ private struct OnboardingFigmaAnchoredContent: View {
                     isTitle: true,
                     frame: anchor.title,
                     scaleX: scaleX,
-                    tabHeight: tabH,
-                    maxLines: 4
+                    yPos: yPos,
+                    maxLines: isOB07 ? 2 : 4
                 )
                 .accessibilityAddTraits(.isHeader)
 
@@ -161,7 +341,7 @@ private struct OnboardingFigmaAnchoredContent: View {
                     isTitle: false,
                     frame: anchor.desc,
                     scaleX: scaleX,
-                    tabHeight: tabH,
+                    yPos: yPos,
                     maxLines: anchor.maxBodyLines
                 )
             }
@@ -177,16 +357,19 @@ private struct OnboardingFigmaAnchoredContent: View {
         isTitle: Bool,
         frame: CGRect,
         scaleX: CGFloat,
-        tabHeight: CGFloat,
+        yPos: (CGFloat) -> CGFloat,
         maxLines: Int
     ) -> some View {
+        let titleFont: Font = isOB07
+            ? .system(size: 24, weight: .semibold)
+            : .system(size: OnboardingReadableLayout.titleFontSize, weight: .bold)
+        let bodyFont: Font = .system(size: OnboardingReadableLayout.bodyFontSize, weight: .regular)
+        let bodyColor: Color = isOB07 ? .white.opacity(0.75) : .white.opacity(0.92)
+
         OnboardingWholeWordText(
             text: text,
-            font: .system(
-                size: isTitle ? OnboardingReadableLayout.titleFontSize : OnboardingReadableLayout.bodyFontSize,
-                weight: isTitle ? .bold : .regular
-            ),
-            color: isTitle ? .white : .white.opacity(0.92),
+            font: isTitle ? titleFont : bodyFont,
+            color: isTitle ? .white : bodyColor,
             lineSpacing: isTitle ? 4 : 6,
             maxLines: maxLines,
             minimumScaleFactor: isTitle ? 0.85 : 0.9
@@ -194,7 +377,7 @@ private struct OnboardingFigmaAnchoredContent: View {
         .frame(width: frame.width * scaleX, alignment: .center)
         .offset(
             x: frame.origin.x * scaleX,
-            y: OnboardingFigmaScreenLayout.tabTopY(frame.origin.y, tabHeight: tabHeight)
+            y: yPos(frame.origin.y)
         )
     }
 }
@@ -472,7 +655,7 @@ struct OnboardingScreen: View {
         "onboarding_start": "НАЧАТЬ",
         "onboarding_have_code": "У МЕНЯ ЕСТЬ КОД",
         "onboarding_recover": "ВОССТАНОВИТЬ",
-        "onboarding_data_collection_info": "Мы собираем анонимную статистику использования для улучшения приложения",
+        "onboarding_data_collection_info": "Мы собираем только обезличенные данные для обеспечения безопасности. Подробнее в ",
         "onboarding_privacy_policy_link": "Политика конфиденциальности",
         "onboarding_terms_of_service_link": "Пользовательское соглашение",
         "onboarding_data_consent": "Я согласен с обработкой данных",
@@ -501,7 +684,7 @@ struct OnboardingScreen: View {
         "onboarding_start": "GET STARTED",
         "onboarding_have_code": "I HAVE A CODE",
         "onboarding_recover": "RECOVER",
-        "onboarding_data_collection_info": "We collect anonymous usage metrics to improve the app",
+        "onboarding_data_collection_info": "We collect only anonymized data to ensure security. Learn more in ",
         "onboarding_privacy_policy_link": "Privacy Policy",
         "onboarding_terms_of_service_link": "Terms of Service",
         "onboarding_data_consent": "I agree to the Privacy Policy",
@@ -1020,13 +1203,13 @@ struct OnboardingScreen: View {
                     Capsule()
                         .fill(Color.black.opacity(colorScheme == .dark ? 0.48 : 0.28))
                 )
-                .padding(.vertical, Spacing.l)
+                .padding(.vertical, isFinalOnboardingPage ? Spacing.s : Spacing.l)
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel("Индикаторы страниц")
             }
 
             // Кнопки (на последнем слайде показываем дополнительные)
-            VStack(spacing: Spacing.m) {
+            VStack(spacing: isFinalOnboardingPage ? Spacing.s : Spacing.m) {
                     // Основная кнопка
                     Button(action: {
                         if currentPage == 0 {
@@ -1114,89 +1297,18 @@ struct OnboardingScreen: View {
 
                     // Информация о данных и согласие на последней странице
                     if isFinalOnboardingPage {
-                        VStack(spacing: Spacing.s) {
-                            // Краткая информация о сборе данных
-                            HStack(spacing: Spacing.xs) {
-                                Image(systemName: "info.circle.fill")
-                                    .font(.system(size: 14))
-                                    .foregroundColor(.textSecondary)
-
-                                Text(safeLocalized("onboarding_data_collection_info"))
-                                    .font(.caption)
-                                    .foregroundColor(.textSecondary)
-                                    .multilineTextAlignment(.leading)
-
-                                Button(action: {
-                                    showPrivacyPolicy = true
-                                }) {
-                                    Text(safeLocalized("onboarding_privacy_policy_link"))
-                                        .font(.caption)
-                                        .foregroundColor(.primaryBlue)
-                                        .underline()
-                                        .fixedSize(horizontal: false, vertical: true)
-                                        .lineLimit(1)
-                                        .minimumScaleFactor(0.8)
-                                }
-                            }
-                            .padding(.horizontal, Spacing.screenPadding)
-
-                            // Чекбокс согласия с Privacy Policy
-                            HStack(spacing: Spacing.s) {
-                                Button(action: {
-                                    withAnimation(.easeInOut(duration: 0.15)) {
-                                        dataConsentAccepted.toggle()
-                                    }
-                                    HapticFeedback.selection()
-                                }) {
-                                    Image(systemName: dataConsentAccepted ? "checkmark.square.fill" : "square")
-                                        .font(.system(size: 20))
-                                        .foregroundColor(dataConsentAccepted ? .primaryBlue : .textSecondary)
-                                }
-
-                                Text(safeLocalized("onboarding_data_consent"))
-                                    .font(.caption)
-                                    .foregroundColor(.textPrimary)
-
-                                Spacer()
-                            }
-                            .padding(.horizontal, Spacing.screenPadding)
-
-                            // Ссылка + чекбокс согласия с Terms of Service
-                            HStack(spacing: Spacing.s) {
-                                Button(action: {
-                                    showTermsOfService = true
-                                }) {
-                                    Text(safeLocalized("onboarding_terms_of_service_link"))
-                                        .font(.caption)
-                                        .foregroundColor(.primaryBlue)
-                                        .underline()
-                                }
-
-                                Spacer()
-                            }
-                            .padding(.horizontal, Spacing.screenPadding)
-
-                            HStack(spacing: Spacing.s) {
-                                Button(action: {
-                                    withAnimation(.easeInOut(duration: 0.15)) {
-                                        termsConsentAccepted.toggle()
-                                    }
-                                    HapticFeedback.selection()
-                                }) {
-                                    Image(systemName: termsConsentAccepted ? "checkmark.square.fill" : "square")
-                                        .font(.system(size: 20))
-                                        .foregroundColor(termsConsentAccepted ? .primaryBlue : .textSecondary)
-                                }
-
-                                Text(safeLocalized("onboarding_terms_consent"))
-                                    .font(.caption)
-                                    .foregroundColor(.textPrimary)
-
-                                Spacer()
-                            }
-                            .padding(.horizontal, Spacing.screenPadding)
-                        }
-                        .padding(.top, Spacing.s)
+                        OnboardingOB07LegalBlock(
+                            dataConsentAccepted: $dataConsentAccepted,
+                            termsConsentAccepted: $termsConsentAccepted,
+                            dataCollectionInfo: safeLocalized("onboarding_data_collection_info"),
+                            privacyPolicyLink: safeLocalized("onboarding_privacy_policy_link"),
+                            dataConsentLabel: safeLocalized("onboarding_data_consent"),
+                            termsOfServiceLink: safeLocalized("onboarding_terms_of_service_link"),
+                            termsConsentLabel: safeLocalized("onboarding_terms_consent"),
+                            onPrivacyPolicy: { showPrivacyPolicy = true },
+                            onTermsOfService: { showTermsOfService = true }
+                        )
+                        .padding(.top, Spacing.xs)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
                     }
 
@@ -1267,41 +1379,7 @@ struct OnboardingScreen: View {
     
     private func onboardingPage(_ page: OnboardingScreen.OnboardingPage, tabIndex _: Int, contentIndex: Int, isActiveTab _: Bool) -> some View {
         Group {
-            if contentIndex == 6 {
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: Spacing.l) {
-                        Color.clear.frame(height: Spacing.xl)
-
-                        OnboardingLogoV2View()
-                            .padding(.bottom, Spacing.s)
-
-                        VStack(spacing: Spacing.m) {
-                            Text(page.title)
-                                .font(.system(size: 26, weight: .bold))
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.center)
-                                .lineLimit(2)
-                                .minimumScaleFactor(0.7)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .padding(.horizontal, Spacing.m)
-                                .accessibilityLabel("Заголовок: \(page.title)")
-                                .accessibilityAddTraits(.isHeader)
-
-                            Text(page.description)
-                                .font(.system(size: 16))
-                                .foregroundColor(.textSecondary)
-                                .multilineTextAlignment(.center)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .lineSpacing(6)
-                                .padding(.horizontal, Spacing.l)
-                                .accessibilityLabel("Описание: \(page.description)")
-                        }
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.horizontal, Spacing.xs)
-                    .padding(.bottom, Spacing.m)
-                }
-            } else if let figmaAnchor = OnboardingFigmaAnchor.forContentIndex(contentIndex) {
+            if let figmaAnchor = OnboardingFigmaAnchor.forContentIndex(contentIndex) {
                 OnboardingFigmaAnchoredContent(
                     title: page.title,
                     description: page.description,
