@@ -28,7 +28,7 @@
 | SYNC-T | ✅ | SF Pro; title 533/607; scrim 552×300 stops 0 / 0.189@0.45 / 0.42 |
 | SYNC-I | ✅ | `OnboardingFigmaAnchor` case 1 + `scrimGradientStops` |
 | SYNC-C | ✅ | Тексты совпали |
-| SYNC-D | ✅ | Симулятор = Figma (build 202) |
+| SYNC-D | ⏳ | Симулятор ≈ Figma — ждём «Принято» |
 
 ---
 
@@ -40,8 +40,8 @@
 | SYNC-T | ✅ | SF Pro; title 552; desc 630; scrim **500×320** stops 0 / 0.16@0.4 / 0.40@1 |
 | SYNC-I | ✅ | `OnboardingFigmaAnchor` case 2 + `scrimGradientStops` |
 | SYNC-C | ✅ | Тексты совпали |
-| SYNC-D | ✅ | Симулятор = Figma (build 202) |
+| SYNC-D | ⏳ | Симулятор ≈ Figma — ждём «Принято» |
 
 ---
 
-*Следующие: OB_04…06 по тому же циклу.*
+*Следующие: OB_01 D → OB_04…06 по тому же циклу. См. `ONBOARDING_TODO_MASTER.md` (15/30).*

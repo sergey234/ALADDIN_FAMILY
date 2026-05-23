@@ -2,6 +2,7 @@
 
 **Статус:** iOS + **Figma синхронизированы** (2026-05-22) — QA симулятор + визуальный просмотр Figma  
 **Полный алгоритм приёмки (ML):** `ONBOARDING_FINAL_ML_ALGORITHM.md`  
+**Мастер TODO + проверки hero/scrim:** `ONBOARDING_TODO_MASTER.md` (§0.3 ML-алгоритма)  
 **Область:** только `currentPage` **1…6** (контент `contentIndex` **0…5**).  
 **Не трогаем:** **OB_00** (язык), **OB_07** (приглашение + согласия), copy, hero PNG, TabView chrome.
 

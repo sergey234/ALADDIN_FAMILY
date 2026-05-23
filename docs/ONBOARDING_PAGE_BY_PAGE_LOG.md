@@ -4,14 +4,15 @@
 
 **Правила:** `ONBOARDING_LAYER_RULES.md` · **код:** только `ALADDIN_iOS`.  
 **План читаемости 01–06:** `ONBOARDING_OB_01_06_READABILITY_PLAN.md` (нижняя зона + белый body, OB_00/07 вне scope).  
-**Финальный алгоритм (ML / вся картина):** `ONBOARDING_FINAL_ML_ALGORITHM.md` ← **начинать здесь**.
+**Финальный алгоритм (ML / вся картина):** `ONBOARDING_FINAL_ML_ALGORITHM.md` ← **начинать здесь**.  
+**Мастер TODO (~30):** `ONBOARDING_TODO_MASTER.md` · **анти-регрессия hero/scrim:** §0.3 в ML-алгоритме.
 
 | OB | `currentPage` | Figma frame | nodeId | Xcode asset | Статус | Что сделали / что дальше |
 |----|---------------|-------------|--------|-------------|--------|---------------------------|
 | **00** | 0 | `OB_00_Language_393x852` | `7:65` | `OnboardingHero_00` | ✅ **В порядке** | Full-bleed 393×852; hero без UI в PNG. Переходим дальше. |
-| **01** | 1 | `OB_01_Family_393x852` | `81:53` | `OnboardingHero_01` | ✅ **SYNC H,T,I,C** | Hero: Xcode `f3d6d7c3…` → Figma `2b1e8a9f…` (upload). Текст §C ✅. Anchor ✅. **SYNC-D** ⏳ симулятор |
-| **02** | 2 | `OB_02_AI_393x852` | `103:53` | `OnboardingHero_02` | ✅ **SYNC H,T,I,C** | Hero zone94 `be22a36d…` = Figma `c5a72085…`. Scrim 552×300 stops 0/0.189@0.45/0.42. Y 533/607. |
-| **03** | 3 | `OB_03_Parents_393x852` | `108:53` | `OnboardingHero_03` | ✅ **SYNC H,T,I,C** | Hero zone94-style `73cfae32…` = Figma upload. Scrim 500×320. Y 552/630. |
+| **01** | 1 | `OB_01_Family_393x852` | `81:53` | `OnboardingHero_01` | ✅ **H,T,I,C** ⏳ **D** | Hero upload OK. Anchor case 0. **D:** симулятор ≈ Figma |
+| **02** | 2 | `OB_02_AI_393x852` | `103:53` | `OnboardingHero_02` | ✅ **H,T,I,C** ⏳ **D** | Hero zone94 `be22a36d…`. Scrim 552×300 @0.45. Y 533/607. |
+| **03** | 3 | `OB_03_Parents_393x852` | `108:53` | `OnboardingHero_03` | ✅ **H,T,I,C** ⏳ **D** | Hero `73cfae32…`. Scrim 500×320. Y 552/630. |
 | **04** | 4 | `OB_04_Radar_393x852` | `117:53` | `OnboardingHero_04` | ✅ **iOS + Figma** | Figma: hero **393×852** upload `06607f88…`, SF Pro, scrim `217:56`. |
 | **05** | 5 | `OB_05_Kids_393x852` | `117:70` | `OnboardingHero_05` | ✅ **iOS + Figma** | Figma: hero upload `22cd16a1…`, SF Pro, scrim `217:57`. |
 | **06** | 6 | `OB_06_Adults23_393x852` | `117:87` | `OnboardingHero_06` | ✅ **iOS + Figma** | Figma: hero upload `74ea6e9f…`, SF Pro, scrim `217:58`. |

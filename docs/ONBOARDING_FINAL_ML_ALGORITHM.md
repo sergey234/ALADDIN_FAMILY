@@ -32,7 +32,25 @@ master (или канон PNG)
     → Visual QA: симулятор SE + Pro Max ≈ Figma frame
 ```
 
-**STOP:** не писать «готово», пока MD5 Figma ≠ Xcode или §D Visual QA не пройден.
+**STOP:** не писать «готово», пока **симулятор ≠ Figma по hero/scrim** или §D Visual QA не пройден.  
+`imageHash` Figma **≠** `md5` файла — это норма; критерий — **один и тот же PNG** залит в imageset и в Figma upload.
+
+### 0.3 Инцидент OB_02 / OB_03 (2026-05-22) — обязательные проверки
+
+| Было не так | Симулятор | Figma (эталон) |
+|-------------|-----------|----------------|
+| OB_02 hero | cover-crop `dc46b525…` | zone94 center `be22a36d…` / hash `c5a72085…` |
+| OB_03 hero | старый full-bleed ≠ макет | zone94-style `73cfae32…` |
+| Scrim stops | везде middle **@0.4** | OB_02 **@0.45** (0.189), OB_03 **@0.4** (0.16) |
+
+**Правила против регрессии:**
+
+1. **SYNC-H:** после правки hero — `cp` PNG в `Assets.xcassets` **и** `upload_assets` с **этого же файла**; записать md5 в `ONBOARDING_SYNC_LOG_*.md`.
+2. **SYNC-T-S5 (новое):** `READABILITY_scrim_bottom.gradientStops` = `scrimGradientStops(for: anchor)` (позиция **и** alpha).
+3. **SYNC-D (обязательно):** `xcrun simctl launch booted family.aladdin.ios -RESET_ONBOARDING -OnboardingPageN` — сравнить с Figma frame **до** ✅.
+4. **Нельзя** помечать SYNC-I ✅, если imageset md5 не обновляли после смены Figma hero.
+
+**Мастер TODO:** `docs/ONBOARDING_TODO_MASTER.md` (≈30 пунктов, 11 открыты).
 
 ---
 
@@ -41,9 +59,9 @@ master (или канон PNG)
 | OB | `currentPage` | `contentIndex` | Figma frame | nodeId | Hero asset | Scope финального алгоритма |
 |----|---------------|----------------|-------------|--------|------------|----------------------------|
 | **00** | 0 | — | `OB_00_Language_393x852` | `7:65` | `OnboardingHero_00` | Отдельный snapshot; **не** 01–06 readability |
-| **01** | 1 | 0 | `OB_01_Family_393x852` | `81:53` | `OnboardingHero_01` | ✅ SYNC H,T,I,C — ⏳ D |
-| **02** | 2 | 1 | `OB_02_AI_393x852` | `103:53` | `OnboardingHero_02` | ✅ SYNC H,T,I,C — ⏳ D |
-| **03** | 3 | 2 | `OB_03_Parents_393x852` | `108:53` | `OnboardingHero_03` | ✅ SYNC H,T,I,C — ⏳ D |
+| **01** | 1 | 0 | `OB_01_Family_393x852` | `81:53` | `OnboardingHero_01` | ✅ H,T,I,C — ⏳ **D** |
+| **02** | 2 | 1 | `OB_02_AI_393x852` | `103:53` | `OnboardingHero_02` | ✅ H,T,I,C — ⏳ **D** (zone94) |
+| **03** | 3 | 2 | `OB_03_Parents_393x852` | `108:53` | `OnboardingHero_03` | ✅ H,T,I,C — ⏳ **D** (zone94-style) |
 | **04** | 4 | 3 | `OB_04_Radar_393x852` | `117:53` | `OnboardingHero_04` | ⏳ Figma Y + MD5 |
 | **05** | 5 | 4 | `OB_05_Kids_393x852` | `117:70` | `OnboardingHero_05` | ⏳ Figma Y + MD5 |
 | **06** | 6 | 5 | `OB_06_Adults23_393x852` | `117:87` | `OnboardingHero_06` | ⏳ Figma Y + MD5 |
@@ -91,9 +109,10 @@ master (или канон PNG)
 | # | Figma | iOS / репо | Критерий «ОК» |
 |---|-------|------------|---------------|
 | H-S1 | Узел `OnboardingHero_0N`: **393×852**, (0,0) | `Assets.xcassets/OnboardingHero_0N.imageset/*.png` | Размер **393×852** |
-| H-S2 | `imageHash` из fill слоя | `md5` imageset PNG | **Одинаковый** файл (или свежий upload из того же PNG) |
-| H-S3 | `get_screenshot` hero — силуэт целиком | Симулятор `currentPage==N` — тот же кадр | Нет полос «другого фона», руки/голова не обрезаны |
+| H-S2 | `imageHash` из fill слоя (справочно) | `md5` imageset PNG | Записать md5 в SYNC-log; upload из **этого** PNG |
+| H-S3 | `get_screenshot` hero — силуэт целиком | Симулятор `currentPage==N` — **тот же кадр** | Нет полос; руки/лампа видны (OB_02: zone94) |
 | H-S4 | В Figma **один** слой hero (не два RECTANGLE с IMAGE) | `HeroAmbientLayerView` — один raster/Lottie | Нет «двух картинок» |
+| H-S6 | **md5 до/после** в журнале | Файл на диске после `cp` | Не оставлять старый md5 в imageset при «готовом» Figma |
 
 **Записать в журнал:** `ONBOARDING_PAGE_BY_PAGE_LOG.md` — MD5 / imageHash.
 
@@ -104,7 +123,8 @@ master (или канон PNG)
 | T-S1 | `TITLE_pageN`: **SF Pro Bold**, 24 | `OnboardingWholeWordText` Bold 24 | Совпадает |
 | T-S2 | `DESC_pageN`: **SF Pro Regular**, 16, white **~92%** | white.opacity(0.92) | Не серый #BFC7D9 |
 | T-S3 | Y title / desc / wordmark | §4 таблица | **±0 pt** в Figma; в iOS — те же числа в `OnboardingFigmaAnchor` |
-| T-S4 | `READABILITY_scrim_bottom` y,h, opacity | `anchor.scrim` + `scrimMaxOpacity` | Совпадает §4 |
+| T-S4 | `READABILITY_scrim_bottom` y,h | `anchor.scrim` rect | **±0 pt** y,h,w |
+| T-S5 | `gradientStops` (pos + alpha) | `scrimGradientStops(for:)` | OB_02: **0.45**/0.189; OB_03: **0.4**/0.16; max = `scrimMaxOpacity` |
 
 #### SYNC-I — после правки iOS (шаг 3)
 
@@ -126,8 +146,8 @@ master (или канон PNG)
 
 | # | Действие | Критерий «ОК» |
 |---|----------|---------------|
-| D-S1 | Скрин **всего фрейма** Figma `OB_NN_*` | Скрин симулятора `currentPage==N` |
-| D-S2 | Side-by-side: hero + scrim + текст + отступ до chrome | Визуально **≈** (допуск SE ±8–12 pt по Y) |
+| D-S1 | Скрин **всего фрейма** Figma `OB_NN_*` | Скрин симулятора `-OnboardingPageN` | Hero **не другой кадр** |
+| D-S2 | Side-by-side: hero + scrim + текст + chrome | Визуально **≈** (SE ±8–12 pt по Y) | Scrim переход плавный, не «полоса» |
 | D-S3 | RU + EN в симуляторе | Текст в границах, целые слова |
 | D-S4 | Статус в журнале | **«Принято»** только после D-S1…D-S3 |
 
@@ -228,7 +248,7 @@ master (или канон PNG)
 |----|-------------------|-----------------|---------------|-------------|---------|------------|--------|
 | **01** | 16,**484**,361,104 | 16,**598**,361,50 | 16,**656**,361,48 | **528**,324 | 0.45 | ✅ case 0 | ✅ |
 | **02** | — | 12,**533**,361,60 | 12,**607**,361,80 | **552**,300 | 0.42 | ✅ case 1 | ✅ SYNC H,T,I,C |
-| **03** | — | 16,**552**,361,60 | 14,**630**,361,80 | **552**,300 | 0.40 | ✅ case 2 | ✅ SYNC H,T,I,C |
+| **03** | — | 16,**552**,361,60 | 14,**630**,361,80 | **500**,320 | 0.40 | ✅ case 2 | ✅ H,T,I,C — ⏳ D |
 | **04** | — | 16,**496**,361,60 | 16,**566**,361,100 | **542**,310 | 0.35 | ⏳ case 3 | ⏳ |
 | **05** | — | 16,**496**,361,60 | 16,**566**,361,100 | **532**,320 | 0.38 | ⏳ case 4 | ⏳ |
 | **06** | — | 16,**496**,361,60 | 16,**566**,361,100 | **552**,300 | 0.40 | ⏳ case 5 | ⏳ |
@@ -260,8 +280,9 @@ master (или канон PNG)
 | Figma scrim layer | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Figma hero 393×852 | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | iOS белый текст + gradient | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| iOS **Figma Y** anchors | ✅ | ✅ | ⏳ | ⏳ | ⏳ | ⏳ |
-| Hero MD5 Figma=Xcode | ✅ | ⏳ QA | ⏳ | ⏳ | ⏳ | ⏳ |
+| iOS **Figma Y** anchors | ✅ | ✅ | ✅ | ⏳ | ⏳ | ⏳ |
+| Hero PNG = Figma upload | ✅ | ✅ zone94 | ✅ zone94 | ⏳ | ⏳ | ⏳ |
+| Scrim stops = код | ✅ | ✅ @0.45 | ✅ @0.4 | ⏳ | ⏳ | ⏳ |
 | §D Visual QA | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ | ⏳ |
 
 ---
@@ -269,15 +290,17 @@ master (или канон PNG)
 ## 7. Очередь работ (строго по порядку)
 
 ```text
-OB_01 → закрыть §D QA (если ещё открыт)
-OB_02 → §E-IMG + §D QA (после master crop)
-OB_03 → Figma Y в коде + hero MD5 + §E-IMG + §D
-OB_04 → то же
-OB_05 → то же
-OB_06 → то же
-Скрипт build_onboarding_hero_imagesets.py → проверка качества 393×852
-read-docs → полный чеклист ONBOARDING_FIGMA_PAGE_QA_ALGORITHM
+См. docs/ONBOARDING_TODO_MASTER.md (30 пунктов, ~11 открыты)
+
+OB_01 → только SYNC-D (симулятор ≈ Figma)
+OB_04 → hero (тот же PNG → imageset + upload) → anchor case 3 → SYNC H,T,I,C,D
+OB_05 → то же → case 4
+OB_06 → то же → case 5
+Скрипт build_onboarding_hero_imagesets.py → не слепо копировать 393×852
+read-docs → §11 ONBOARDING_FIGMA_PAGE_QA_ALGORITHM на 01–06
 ```
+
+**Перед ✅:** всегда SYNC-H (md5 + upload) → SYNC-T (**T-S5 stops**) → SYNC-I → **SYNC-D**.
 
 **OB_07** — отдельный трек (согласия, ScrollView), не смешивать с 01–06.
 
