@@ -53,7 +53,7 @@
 "onboarding_page6_desc" = "AI распознает фейковые звонки, новости, сообщения и видео. Защита от поддельных голосов и номеров.";
 "onboarding_page7_title" = "Присоединяйтесь к ALADDIN";
 "onboarding_page7_desc" = "Спокойствие близких - бесценно. Защита начинается сегодня!";
-"onboarding_data_collection_info" = "Мы собираем только обезличенные данные для обеспечения безопасности. Подробнее в ";
+"onboarding_data_collection_info" = "Мы собираем только обезличенные данные для обеспечения безопасности.";
 "onboarding_privacy_policy_link" = "Политика конфиденциальности";
 "onboarding_data_consent" = "Я согласен с обработкой данных";
 "onboarding_terms_of_service_link" = "Пользовательское соглашение";

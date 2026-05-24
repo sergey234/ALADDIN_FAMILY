@@ -51,6 +51,6 @@
 | 04 | ✅ case 3 | Y 496/566, scrim 542×310 |
 | 05 | ✅ case 4 | Y 496/566, scrim 532×320 |
 | 06 | ✅ case 5 | Y 496/566, scrim 552×300 |
-| 07 | ✅ case 6 | wordmark 374; title **482**; desc **520**; `OnboardingOB07LegalBlock` |
+| 07 | ✅ case 6 | wordmark **250**; title **462**; desc **536**; legal privacy отдельной строкой; hero zone upload `122:54` |
 
 *См. `ONBOARDING_COORDINATES_AND_SYNC.md`, `ONBOARDING_OB_07_SYNC_PLAN.md`.*

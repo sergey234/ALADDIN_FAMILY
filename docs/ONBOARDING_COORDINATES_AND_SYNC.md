@@ -1,6 +1,6 @@
 # Онбординг OB_00–OB_07: координаты Figma ↔ iOS и статус синхронизации
 
-**Дата снимка:** 2026-05-23  
+**Дата снимка:** 2026-05-24 (live verify OB_01–03)  
 **Сборка:** `AppConfig.buildNumber` = **203**  
 **Код (источник правды для Y):** `Screens/14_OnboardingScreen.swift` → `OnboardingFigmaAnchor`, `scrimGradientStops(for:)`, `onboardingPage`  
 **Figma file:** `KvkUdyb5Ll31Z9FSzCbpNl` · страница **`OnboardingHero_00`**
@@ -29,7 +29,7 @@
 | OB | RU-заголовок (ключ) | `contentIndex` | `case` | Заголовок Y | Описание Y | Scrim (y × h) | opacity | `maxBodyLines` |
 |----|---------------------|----------------|--------|-------------|------------|---------------|---------|----------------|
 | **01** | Защита всей семьи… | 0 | 0 | **536** | **615** | **528×324** | 0.45 | 4 |
-| **02** | Персональный агент… | 1 | 1 | **479** | **552** | **552×300** | 0.42 | 6 |
+| **02** | Персональный агент… | 1 | 1 | **522** | **599** | **552×300** | 0.42 | 6 |
 | **03** | Родительский контроль | 2 | 2 | **552** | **630** | **500×320** | 0.40 | 5 |
 | **04** | Аналитика рисков | 3 | 3 | **496** | **566** | **542×310** | 0.35 | 5 |
 | **05** | Защита для детей! | 4 | 4 | **496** | **566** | **532×320** | 0.38 | 6 |
@@ -51,7 +51,9 @@
 | Scrim | 0 | **528** | 393 | 324 |
 
 **Scrim gradient:** mid **0.2025 @ 0.45**, max **0.45**  
-**Hero asset:** `OnboardingHero_01` · Figma hero `81:54`
+**Hero asset:** `OnboardingHero_01` · Figma hero `81:54` · `layoutMode: .standard` (не ob07Final)  
+**Wordmark:** только в коде `OnboardingLogoV2View` @ (10,354) — не в PNG hero  
+**SYNC 2026-05-24:** Figma hash `2b1e8a9f…` = HeroAssets = imageset · `scalingFactor=1`
 
 ---
 
@@ -59,12 +61,13 @@
 
 | Слой | x | y | w | h |
 |------|---|---|---|---|
-| Title | 10 | **479** | 361 | 60 |
-| Desc | 7 | **552** | 364 | 79 |
+| Title | 12 | **522** | 361 | 60 |
+| Desc | 12 | **599** | 370 | 82 |
 | Scrim | 0 | **552** | 393 | 300 |
 
 **Scrim gradient:** mid **0.189 @ 0.45**, max **0.42**  
-**Hero:** `OnboardingHero_02` · `103:54` · zone94
+**Hero:** `OnboardingHero_02` · `103:54` · letterbox top ~**118** · iOS zoom **1.165**  
+**SYNC 2026-05-24:** Figma hash `c5a72085…` = HeroAssets = imageset (byte copy)
 
 ---
 
@@ -77,7 +80,10 @@
 | Scrim | 0 | **500** | 393 | 320 |
 
 **Scrim gradient:** mid **0.16 @ 0.4**, max **0.40**  
-**Hero:** `OnboardingHero_03` · `108:54` · zone94
+**Hero:** `OnboardingHero_03` · `108:54` · zone94  
+**Канвас:** x=**3183**, y=40, visible. Полная спецификация → **`docs/ONBOARDING_OB_03_FIGMA_SPEC.md`**  
+**Hero top:** **70** (= OB_04/05, zone @ 16,24 + oy=46) · iOS zoom **1.09**  
+**SYNC 2026-05-24:** Figma hash `e8e967ab…` = HeroAssets = imageset
 
 ---
 
@@ -136,12 +142,12 @@
 | Слой | x | y | w | h |
 |------|---|---|---|---|
 | Hero | 16 | **24** | 361 | 460 |
-| WORDMARK | 7 | **374** | 361 | **104** |
-| Title | 12 | **470** | 361 | 60 |
-| Desc | 12 | **508** | 361 | 80 |
+| WORDMARK | **193** | **97** | **210** | **62** |
+| Title | **16** | **462** | 361 | 60 |
+| Desc | **16** | **536** | 361 | 80 |
 | Scrim | 0 | **480** | 393 | 372 |
 
-**Legal (chrome, `OnboardingOB07LegalBlock`):** 4 строки @ x=16, max width 361 — info+политика → чекбокс данных → ссылка соглашения → чекбокс соглашения.
+**Legal (chrome, `OnboardingOB07LegalBlock`):** 5 строк @ x=16, max width 361 — info → **политика (отдельная строка)** → чекбокс данных → ссылка соглашения → чекбокс соглашения.
 
 | Поле | Значение |
 |------|----------|
@@ -245,11 +251,23 @@ OB_06: figma://file/KvkUdyb5Ll31Z9FSzCbpNl?node-id=117-87
 OB_07: figma://file/KvkUdyb5Ll31Z9FSzCbpNl?node-id=122-53
 ```
 
-**В Layers:** на канвасе OB_03 и OB_04 рядом — выбирать frame по имени (`OB_04_Radar`, не `OB_03_Parents`).
+**В Layers:** OB_03 на x=**3183**, OB_04 на x=**3624** (разведены). Эталон OB_03: `docs/ONBOARDING_OB_03_FIGMA_SPEC.md`.
 
 ---
 
-## 8. Связанные документы
+## 8. Автопроверка OB_01–03 (2026-05-24)
+
+```bash
+cd mobile_apps/ALADDIN_iOS
+python3 scripts/build_onboarding_hero_imagesets.py
+python3 scripts/verify_onboarding_sync_01_03.py   # ожидается PASS
+```
+
+Проверяет: `OnboardingFigmaAnchor` cases 0–2 = live Figma · RU `Localizable.strings` · MD5 HeroAssets = imageset · zoom 02=1.165, 03=1.09.
+
+---
+
+## 9. Связанные документы
 
 | Документ | Назначение |
 |----------|------------|

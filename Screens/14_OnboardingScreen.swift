@@ -43,13 +43,8 @@ private struct OnboardingFigmaAnchor {
     let scrim: CGRect
     let scrimMaxOpacity: CGFloat
     let maxBodyLines: Int
-
-    var layoutMode: OnboardingFigmaLayoutMode {
-        if wordmark != nil, title.origin.y >= 480, desc.origin.y >= 518 {
-            return .ob07Final
-        }
-        return .standard
-    }
+    /// Только OB_07 (`case 6`). Не выводить из Y: у OB_01 тоже wordmark и title.y > 480.
+    let layoutMode: OnboardingFigmaLayoutMode
 
     static func forContentIndex(_ index: Int) -> OnboardingFigmaAnchor? {
         switch index {
@@ -60,16 +55,19 @@ private struct OnboardingFigmaAnchor {
                 desc: CGRect(x: 16, y: 615, width: 346, height: 48),
                 scrim: CGRect(x: 0, y: 528, width: 393, height: 324),
                 scrimMaxOpacity: 0.45,
-                maxBodyLines: 4
+                maxBodyLines: 4,
+                layoutMode: .standard
             )
         case 1:
+            // OB_02 Figma `103:53`: title 522×60, desc 599×82 → зазор между уровнями **17 pt**
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 10, y: 479, width: 361, height: 60),
-                desc: CGRect(x: 7, y: 552, width: 364, height: 79),
+                title: CGRect(x: 12, y: 522, width: 361, height: 60),
+                desc: CGRect(x: 12, y: 599, width: 370, height: 82),
                 scrim: CGRect(x: 0, y: 552, width: 393, height: 300),
                 scrimMaxOpacity: 0.42,
-                maxBodyLines: 6
+                maxBodyLines: 6,
+                layoutMode: .standard
             )
         case 2:
             return OnboardingFigmaAnchor(
@@ -78,7 +76,8 @@ private struct OnboardingFigmaAnchor {
                 desc: CGRect(x: 14, y: 630, width: 361, height: 80),
                 scrim: CGRect(x: 0, y: 500, width: 393, height: 320),
                 scrimMaxOpacity: 0.40,
-                maxBodyLines: 5
+                maxBodyLines: 5,
+                layoutMode: .standard
             )
         case 3:
             return OnboardingFigmaAnchor(
@@ -87,7 +86,8 @@ private struct OnboardingFigmaAnchor {
                 desc: CGRect(x: 16, y: 566, width: 361, height: 100),
                 scrim: CGRect(x: 0, y: 542, width: 393, height: 310),
                 scrimMaxOpacity: 0.35,
-                maxBodyLines: 5
+                maxBodyLines: 5,
+                layoutMode: .standard
             )
         case 4:
             return OnboardingFigmaAnchor(
@@ -96,7 +96,8 @@ private struct OnboardingFigmaAnchor {
                 desc: CGRect(x: 16, y: 566, width: 361, height: 100),
                 scrim: CGRect(x: 0, y: 532, width: 393, height: 320),
                 scrimMaxOpacity: 0.38,
-                maxBodyLines: 6
+                maxBodyLines: 6,
+                layoutMode: .standard
             )
         case 5:
             return OnboardingFigmaAnchor(
@@ -105,16 +106,19 @@ private struct OnboardingFigmaAnchor {
                 desc: CGRect(x: 16, y: 566, width: 361, height: 100),
                 scrim: CGRect(x: 0, y: 552, width: 393, height: 300),
                 scrimMaxOpacity: 0.40,
-                maxBodyLines: 5
+                maxBodyLines: 5,
+                layoutMode: .standard
             )
         case 6:
+            // OB_07 Figma `122:53`: wordmark 193,97 (плечо) · title 462 · desc 536
             return OnboardingFigmaAnchor(
-                wordmark: CGRect(x: 7, y: 374, width: 361, height: 104),
-                title: CGRect(x: 12, y: 482, width: 361, height: 60),
-                desc: CGRect(x: 12, y: 520, width: 361, height: 80),
+                wordmark: CGRect(x: 193, y: 97, width: 210, height: 62),
+                title: CGRect(x: 16, y: 462, width: 361, height: 60),
+                desc: CGRect(x: 16, y: 536, width: 361, height: 80),
                 scrim: CGRect(x: 0, y: 480, width: 393, height: 372),
                 scrimMaxOpacity: 0.42,
-                maxBodyLines: 4
+                maxBodyLines: 4,
+                layoutMode: .ob07Final
             )
         default:
             return nil
@@ -205,39 +209,40 @@ private struct OnboardingOB07LegalBlock: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Button(action: onPrivacyPolicy) {
-                (Text(dataCollectionInfo)
-                    .foregroundColor(.white.opacity(0.65))
-                 + Text(privacyPolicyLink)
-                    .fontWeight(.semibold)
-                    .foregroundColor(OnboardingOB07Style.linkBlue)
-                    .underline())
-                    .font(OnboardingOB07Style.infoFont)
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: OnboardingOB07Style.contentWidth, alignment: .leading)
-            }
-            .buttonStyle(.plain)
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("\(dataCollectionInfo) \(privacyPolicyLink)")
+            Text(dataCollectionInfo)
+                .font(OnboardingOB07Style.infoFont)
+                .foregroundColor(.white.opacity(0.65))
+                .multilineTextAlignment(.leading)
+                .fixedSize(horizontal: false, vertical: true)
+                .frame(maxWidth: OnboardingOB07Style.contentWidth, alignment: .leading)
+
+            ob07LinkRow(title: privacyPolicyLink, action: onPrivacyPolicy)
 
             ob07ConsentRow(isOn: $dataConsentAccepted, label: dataConsentLabel)
 
-            Button(action: onTermsOfService) {
-                Text(termsOfServiceLink)
-                    .font(OnboardingOB07Style.linkFont)
-                    .foregroundColor(OnboardingOB07Style.linkBlue)
-                    .underline()
-                    .multilineTextAlignment(.leading)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .frame(maxWidth: OnboardingOB07Style.contentWidth, alignment: .leading)
-            }
-            .buttonStyle(.plain)
+            ob07LinkRow(title: termsOfServiceLink, action: onTermsOfService)
 
             ob07ConsentRow(isOn: $termsConsentAccepted, label: termsConsentLabel)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 16)
+    }
+
+    /// Ссылка legal — синий #2E5CFF как `TEXT_terms_link` в Figma (не `Button`: tint chrome → белый).
+    private func ob07LinkRow(title: String, action: @escaping () -> Void) -> some View {
+        HStack(spacing: 0) {
+            Text(title)
+                .font(OnboardingOB07Style.linkFont)
+                .underline()
+        }
+        .foregroundColor(OnboardingOB07Style.linkBlue)
+        .multilineTextAlignment(.leading)
+        .fixedSize(horizontal: false, vertical: true)
+        .frame(maxWidth: OnboardingOB07Style.contentWidth, alignment: .leading)
+        .contentShape(Rectangle())
+        .onTapGesture(perform: action)
+        .accessibilityAddTraits(.isLink)
+        .accessibilityLabel(title)
     }
 
     private func ob07ConsentRow(isOn: Binding<Bool>, label: String) -> some View {
@@ -270,7 +275,7 @@ private struct OnboardingFigmaAnchoredContent: View {
     let description: String
     let anchor: OnboardingFigmaAnchor
 
-    private var isOB07: Bool { anchor.layoutMode == .ob07Final }
+    private var isOB07: Bool { anchor.layoutMode == .ob07Final } // только case 6
 
     private var scrimDesignHeight: CGFloat {
         switch anchor.layoutMode {
@@ -655,7 +660,7 @@ struct OnboardingScreen: View {
         "onboarding_start": "НАЧАТЬ",
         "onboarding_have_code": "У МЕНЯ ЕСТЬ КОД",
         "onboarding_recover": "ВОССТАНОВИТЬ",
-        "onboarding_data_collection_info": "Мы собираем только обезличенные данные для обеспечения безопасности. Подробнее в ",
+        "onboarding_data_collection_info": "Мы собираем только обезличенные данные для обеспечения безопасности.",
         "onboarding_privacy_policy_link": "Политика конфиденциальности",
         "onboarding_terms_of_service_link": "Пользовательское соглашение",
         "onboarding_data_consent": "Я согласен с обработкой данных",
@@ -684,7 +689,7 @@ struct OnboardingScreen: View {
         "onboarding_start": "GET STARTED",
         "onboarding_have_code": "I HAVE A CODE",
         "onboarding_recover": "RECOVER",
-        "onboarding_data_collection_info": "We collect only anonymized data to ensure security. Learn more in ",
+        "onboarding_data_collection_info": "We collect only anonymized data to ensure security.",
         "onboarding_privacy_policy_link": "Privacy Policy",
         "onboarding_terms_of_service_link": "Terms of Service",
         "onboarding_data_consent": "I agree to the Privacy Policy",

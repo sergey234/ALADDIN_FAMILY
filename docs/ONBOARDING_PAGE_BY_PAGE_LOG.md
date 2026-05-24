@@ -12,12 +12,12 @@
 |----|---------------|-------------|--------|-------------|--------|---------------------------|
 | **00** | 0 | `OB_00_Language_393x852` | `7:65` | `OnboardingHero_00` | ✅ **В порядке** | Full-bleed 393×852; hero без UI в PNG. Переходим дальше. |
 | **01** | 1 | `OB_01_Family_393x852` | `81:53` | `OnboardingHero_01` | ✅ **SYNC-I/D** | Live Figma `81:53` = case 0: wordmark 10,**354**×360×121; title **536**; desc **615**×346. Build **203**. |
-| **02** | 2 | `OB_02_AI_393x852` | `103:53` | `OnboardingHero_02` | ✅ **Принято** | Hero zone94. Title 479; desc 552. |
-| **03** | 3 | `OB_03_Parents_393x852` | `108:53` | `OnboardingHero_03` | ✅ **H,T,I,C** ⏳ **D** | Hero `73cfae32…`. Scrim 500×320. Y 552/630. |
+| **02** | 2 | `OB_02_AI_393x852` | `103:53` | `OnboardingHero_02` | ✅ **SYNC 2026-05-24** | Figma **522/599** = case 1; hero `c5a72085…`; zoom **1.165**; MD5 = imageset |
+| **03** | 3 | `OB_03_Parents_393x852` | `108:53` | `OnboardingHero_03` | ✅ **SYNC 2026-05-24** | Hero `e8e967ab…`; top **70**; Y **552/630**; zoom **1.09**; лампа убрана, центр |
 | **04** | 4 | `OB_04_Radar_393x852` | `117:53` | `OnboardingHero_04` | ✅ **SYNC-I** ⏳ **D** | Anchor **case 3**: Y 496/566, scrim 542×310 α0.35. Hero Figma+iOS. |
 | **05** | 5 | `OB_05_Kids_393x852` | `117:70` | `OnboardingHero_05` | ✅ **SYNC-I** ⏳ **D** | Anchor **case 4**: Y 496/566, scrim 532×320 α0.38. Hero `22cd16a1…`. |
 | **06** | 6 | `OB_06_Adults23_393x852` | `117:87` | `OnboardingHero_06` | ✅ **SYNC-I** ⏳ **D** | Anchor **case 5**: Y 496/566, scrim 552×300 α0.40. Hero `74ea6e9f…`. |
-| **07** | 7 | `OB_07_Invite_393x852` | `122:53` | `OnboardingHero_07` | ✅ **SYNC-I** ⏳ **D** | case 6: wordmark 374, title 470, desc 508; `OnboardingOB07LegalBlock` |
+| **07** | 7 | `OB_07_Invite_393x852` | `122:53` | `OnboardingHero_07` | ✅ **SYNC-I** ⏳ **D** | wordmark **193,97**; title 462; desc 536; hero inpaint top logo; privacy **linkBlue** via `ob07LinkRow` |
 
 ---
 

@@ -12,13 +12,13 @@
 
 | # | Задача | Figma | iOS |
 |---|--------|-------|-----|
-| 1 | `OnboardingFigmaAnchor` **case 6** | wordmark 7,374 · title 12,470 · desc 12,508 | `forContentIndex(6)` |
+| 1 | `OnboardingFigmaAnchor` **case 6** | wordmark **32,250** · title **16,462** · desc **16,536** | `forContentIndex(6)` |
 | 2 | Layout mode **ob07Final** | chrome h=304, без «Пропустить» | `tabTopY` без skipBand, design height 548 |
 | 3 | Scrim под текст | y≈480 | gradient + stops |
 | 4 | Типографика | title 24 Semibold · desc 16 @ 75% · legal 11/12 | `OnboardingOB07Style` |
 | 5 | Логотип | 361×104 @ y=374 | `OnboardingLogoV2View(fixedHeight: 104)` |
-| 6 | Legal-блок | `BLOCK_final_legal` @ screen y=654 | `OnboardingOB07LegalBlock` — 4 строки столбиком |
-| 7 | Политика | info + ссылка в одной строке (перенос) | `Text` + `Text` underline |
+| 6 | Legal-блок | `BLOCK_final_legal` @ screen y=654 | `OnboardingOB07LegalBlock` — **5** строк столбиком |
+| 7 | Политика | info **отдельно** + `ROW_privacy_link` | info `Text` + ссылка на **своей строке** |
 | 8 | Соглашение | отдельная строка-ссылка + чекбокс | как Figma `ROW_terms_link` + `ROW_terms_consent` |
 | 9 | QA | симулятор `-OnboardingPage7` | визуально ≈ Figma |
 
@@ -27,9 +27,9 @@
 | Элемент | y | Примечание |
 |---------|---|------------|
 | Hero | 24 | фон |
-| WORDMARK | 374 | TabView, anchored |
-| Title | 470 | 24pt Semibold |
-| Desc | 508 | 16pt, white 75% |
+| WORDMARK | **250** (над левым плечом) | TabView, anchored 210×62 |
+| Title | **462** | 24pt Semibold |
+| Desc | **536** | 16pt, white 75% |
 | CHROME | 556 | под TabView |
 | Legal block | 654 | в chrome |
 | Secondary buttons | 788 | «Код» / «Восстановить» |
