@@ -11,7 +11,7 @@
 | Шлюз | Результат | Детали |
 |------|-----------|--------|
 | SYNC-H | ✅ | Xcode `f3d6d7c38e5a2eee577f7941a56a9ee9` → upload → Figma `2b1e8a9f6b31e61f2365d3a1372fb96cfb9672c2`, 393×852, 1 hero IMAGE |
-| SYNC-T | ✅ | SF Pro Bold 24 / Regular 16 white 0.92; scrim 528×324 stops 0/0.2025@0.45/0.45; wordmark 354×121 @10,354; title **536**; desc **615** w346 |
+| SYNC-T | ✅ | SF Pro Bold 24 / Regular 16 white 0.92; scrim 528×324 stops 0/0.2025@0.45/0.45; wordmark 354×121 @10,354; title **508**; desc **593** w346 |
 | SYNC-I | ✅ | `OnboardingFigmaAnchor` case 0 = §4 |
 | SYNC-C | ✅ | TITLE/DESC = LocalizationManager |
 | SYNC-D | ✅ | Принято 2026-05-23; повторная сверка live Figma `81:53` 2026-05-23 — координаты без изменений |
@@ -48,8 +48,8 @@
 
 | OB | SYNC-I | Примечание |
 |----|--------|------------|
-| 04 | ✅ case 3 | Y 496/566, scrim 542×310 |
-| 05 | ✅ case 4 | Y 496/566, scrim 532×320 |
+| 04 | ✅ case 3 | Y **468/544** (desc h112), scrim 542×310 |
+| 05 | ✅ case 4 | Y **468/544** (desc h112), scrim 532×320 |
 | 06 | ✅ case 5 | Y 496/566, scrim 552×300 |
 | 07 | ✅ case 6 | wordmark **250**; title **462**; desc **536**; legal privacy отдельной строкой; hero zone upload `122:54` |
 

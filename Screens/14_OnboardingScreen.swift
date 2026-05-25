@@ -50,10 +50,11 @@ private struct OnboardingFigmaAnchor {
     static func forContentIndex(_ index: Int) -> OnboardingFigmaAnchor? {
         switch index {
         case 0:
+            // OB_01: title/desc +1 строка вверх (28pt / 22pt) — ближе к wordmark и друг к другу
             return OnboardingFigmaAnchor(
                 wordmark: CGRect(x: 10, y: 354, width: 360, height: 121),
-                title: CGRect(x: 16, y: 536, width: 361, height: 50),
-                desc: CGRect(x: 16, y: 615, width: 346, height: 48),
+                title: CGRect(x: 16, y: 508, width: 361, height: 50),
+                desc: CGRect(x: 16, y: 593, width: 346, height: 48),
                 scrim: CGRect(x: 0, y: 528, width: 393, height: 324),
                 scrimMaxOpacity: 0.45,
                 maxTitleLines: 4,
@@ -61,11 +62,11 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 1:
-            // OB_02 Figma `103:53`: title 522×60, desc 599×82 → зазор между уровнями **17 pt**
+            // OB_02: title/desc +1 строка вверх (28pt / 22pt); desc h=96 — 4 строки body без clip под chrome
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 12, y: 522, width: 361, height: 60),
-                desc: CGRect(x: 12, y: 599, width: 370, height: 82),
+                title: CGRect(x: 12, y: 494, width: 361, height: 60),
+                desc: CGRect(x: 12, y: 577, width: 370, height: 96),
                 scrim: CGRect(x: 0, y: 552, width: 393, height: 300),
                 scrimMaxOpacity: 0.42,
                 maxTitleLines: 2,
@@ -84,10 +85,11 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 3:
+            // OB_04: title/desc +1 строка вверх (28/22 pt), desc h=112 — последняя строка не под chrome
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 16, y: 496, width: 361, height: 60),
-                desc: CGRect(x: 16, y: 566, width: 361, height: 100),
+                title: CGRect(x: 16, y: 468, width: 361, height: 60),
+                desc: CGRect(x: 16, y: 544, width: 361, height: 112),
                 scrim: CGRect(x: 0, y: 542, width: 393, height: 310),
                 scrimMaxOpacity: 0.35,
                 maxTitleLines: 4,
@@ -95,10 +97,11 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 4:
+            // OB_05: как OB_04; длинный desc — h=112, maxBodyLines 6
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 16, y: 496, width: 361, height: 60),
-                desc: CGRect(x: 16, y: 566, width: 361, height: 100),
+                title: CGRect(x: 16, y: 468, width: 361, height: 60),
+                desc: CGRect(x: 16, y: 544, width: 361, height: 112),
                 scrim: CGRect(x: 0, y: 532, width: 393, height: 320),
                 scrimMaxOpacity: 0.38,
                 maxTitleLines: 4,

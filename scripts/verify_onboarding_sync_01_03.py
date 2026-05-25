@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Verify Figma ↔ iOS sync for onboarding OB_01–OB_03 (hero MD5, anchors, copy)."""
+"""Verify Figma ↔ iOS sync for onboarding OB_01–OB_05 (hero MD5, anchors, copy)."""
 from __future__ import annotations
 
 import hashlib
@@ -17,15 +17,15 @@ RU = IOS / "Resources/Localization/ru.lproj/Localizable.strings"
 FIGMA_ANCHORS = {
     0: {
         "wordmark": (10, 354, 360, 121),
-        "title": (16, 536, 361, 50),
-        "desc": (16, 615, 346, 48),
+        "title": (16, 508, 361, 50),
+        "desc": (16, 593, 346, 48),
         "scrim": (0, 528, 393, 324),
         "scrim_max": 0.45,
         "layout": "standard",
     },
     1: {
-        "title": (12, 522, 361, 60),
-        "desc": (12, 599, 370, 82),
+        "title": (12, 494, 361, 60),
+        "desc": (12, 577, 370, 96),
         "scrim": (0, 552, 393, 300),
         "scrim_max": 0.42,
         "layout": "standard",
@@ -35,6 +35,20 @@ FIGMA_ANCHORS = {
         "desc": (14, 630, 361, 80),
         "scrim": (0, 500, 393, 320),
         "scrim_max": 0.40,
+        "layout": "standard",
+    },
+    3: {
+        "title": (16, 468, 361, 60),
+        "desc": (16, 544, 361, 112),
+        "scrim": (0, 542, 393, 310),
+        "scrim_max": 0.35,
+        "layout": "standard",
+    },
+    4: {
+        "title": (16, 468, 361, 60),
+        "desc": (16, 544, 361, 112),
+        "scrim": (0, 532, 393, 320),
+        "scrim_max": 0.38,
         "layout": "standard",
     },
 }
@@ -89,7 +103,7 @@ def main() -> int:
     errors: list[str] = []
     ru = load_ru()
 
-    for case in (0, 1, 2):
+    for case in (0, 1, 2, 3, 4):
         swift = parse_swift_case(case)
         figma = FIGMA_ANCHORS[case]
         for key in ("title", "desc", "scrim"):
@@ -133,7 +147,7 @@ def main() -> int:
             print(" -", e)
         return 1
 
-    print("PASS: OB_01–OB_03 Figma anchors, RU copy, hero MD5, zoom rules")
+    print("PASS: OB_01–OB_05 Figma anchors, RU copy, hero MD5, zoom rules")
     return 0
 
 
