@@ -1,0 +1,44 @@
+---
+description: Онбординг OB_00–07 — «синхронизировать» = Figma MCP + iOS + verify; не закрывать задачу без таблицы SYNC
+alwaysApply: true
+---
+
+# Онбординг: Figma ↔ iOS — обязательная синхронизация
+
+Когда пользователь просит **синхронизировать**, **применить**, **как в Figma**, **как на 03** — это **не** «только Swift». Задача **не завершена**, пока не выполнен весь чеклист ниже.
+
+## Definition of Done (SYNC-H + SYNC-T)
+
+| # | Шаг | Инструмент |
+|---|-----|------------|
+| 1 | **Прочитать Figma** — `get_metadata` на frame `OB_*` (`81:53`, `103:53`, …) | MCP |
+| 2 | **Сверить каждый слой** — wordmark, title, desc, scrim, hero (`*:54`) | Figma vs `OnboardingFigmaAnchor` |
+| 3 | **Обновить iOS** — `Screens/14_OnboardingScreen.swift` | код |
+| 4 | **Обновить эталон verify** — `scripts/verify_onboarding_sync_01_03.py` → `FIGMA_ANCHORS` | скрипт |
+| 5 | **Hero PNG** — `HeroAssets` = `Assets.xcassets`; full-bleed → `fix_onboarding_hero_*_full_bleed.py` | PNG |
+| 6 | **Upload hero в Figma** — `upload_assets` + POST на `122:54` / `108:54` / …; full-bleed → слой **393×852 @ (0,0)** | MCP |
+| 7 | **Текст в Figma** — если менялись Y/h в коде → `use_figma` на `TITLE_*`, `DESC_*`, scrim | MCP |
+| 8 | **Wordmark** — координаты **только из Figma** (`WORDMARK_V2`, напр. `88:53` y=**271**), не из старого кода | MCP → код |
+| 9 | **`python3 scripts/verify_onboarding_sync_01_03.py`** → PASS | локально |
+| 10 | **Отчёт пользователю** — таблица «слой | Figma | iOS | ✅/❌»; явно: **Figma upload сделан: да/нет** | ответ |
+
+**PASS verify ≠ sync complete.** Verify проверяет эталон в скрипте, не живой Figma.
+
+## Запрещено
+
+- Писать «SYNC ✅» / «синхронизировано» только после правки Swift или verify.
+- Оставлять wordmark/title с **устаревшими Y** (типичный баг: wordmark y=354 при Figma y=271).
+- Менять hero в Xcode без upload в Figma `*:54`.
+- Пропускать `get_metadata` **до** правок — сначала читать Figma, потом код.
+
+## Фраза пользователя (копировать в запрос)
+
+> **«Синхронизируй Figma ↔ iOS по полному чеклисту SYNC-H+T. В конце — таблица слоёв и подтверждение Figma upload.»**
+
+Короткий вариант: **«Figma+iOS sync complete — все слои, upload hero»**
+
+## Канон
+
+- Репо: `ALADDIN_iOS` · Figma `KvkUdyb5Ll31Z9FSzCbpNl`
+- Координаты: `docs/ONBOARDING_COORDINATES_AND_SYNC.md`
+- Hero full-bleed: как OB_03 — w369, L/R≈12, top≈70, iOS `scaledToFill` + zoom **1.09**

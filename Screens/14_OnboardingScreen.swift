@@ -50,9 +50,9 @@ private struct OnboardingFigmaAnchor {
     static func forContentIndex(_ index: Int) -> OnboardingFigmaAnchor? {
         switch index {
         case 0:
-            // OB_01: wordmark+title над лампой; desc под лампой; title h=60 — 2 строки «в кармане»
+            // OB_01: wordmark Figma `88:53` @ (17,271); title/desc без изменений
             return OnboardingFigmaAnchor(
-                wordmark: CGRect(x: 10, y: 354, width: 360, height: 121),
+                wordmark: CGRect(x: 17, y: 271, width: 360, height: 121),
                 title: CGRect(x: 14, y: 450, width: 361, height: 60),
                 desc: CGRect(x: 22, y: 546, width: 346, height: 66),
                 scrim: CGRect(x: 0, y: 528, width: 393, height: 324),
@@ -62,15 +62,15 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 1:
-            // OB_02: title h=78 (3 строки «…безопасности»); desc +1 строка вверх, h=108 — «шифрования» над chrome
+            // OB_02: D-lite — подъём как OB_04 (440/522), desc h=132, 5 строк — «шифрования» над chrome
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 12, y: 466, width: 361, height: 78),
-                desc: CGRect(x: 12, y: 555, width: 370, height: 108),
-                scrim: CGRect(x: 0, y: 552, width: 393, height: 300),
+                title: CGRect(x: 12, y: 440, width: 361, height: 78),
+                desc: CGRect(x: 12, y: 522, width: 370, height: 132),
+                scrim: CGRect(x: 0, y: 532, width: 393, height: 310),
                 scrimMaxOpacity: 0.42,
                 maxTitleLines: 3,
-                maxBodyLines: 4,
+                maxBodyLines: 5,
                 layoutMode: .standard
             )
         case 2:
@@ -120,15 +120,15 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 6:
-            // OB_07: wordmark у головы; title/desc выше — в TabView (~556pt), не под chrome (304pt снизу вне TabView).
+            // OB_07 D-lite A: title 400, desc 468 h80 — «начинается сегодня»; wordmark UR (183,55) off genie
             return OnboardingFigmaAnchor(
-                wordmark: CGRect(x: 149, y: 78, width: 228, height: 70),
-                title: CGRect(x: 16, y: 424, width: 361, height: 60),
-                desc: CGRect(x: 16, y: 498, width: 361, height: 56),
-                scrim: CGRect(x: 0, y: 418, width: 393, height: 138),
+                wordmark: CGRect(x: 183, y: 55, width: 210, height: 62),
+                title: CGRect(x: 16, y: 400, width: 361, height: 60),
+                desc: CGRect(x: 16, y: 468, width: 361, height: 80),
+                scrim: CGRect(x: 0, y: 400, width: 393, height: 156),
                 scrimMaxOpacity: 0.42,
                 maxTitleLines: 2,
-                maxBodyLines: 3,
+                maxBodyLines: 4,
                 layoutMode: .ob07Final
             )
         default:
@@ -189,6 +189,9 @@ private func scrimGradientStops(for anchor: OnboardingFigmaAnchor) -> [Gradient.
         midLocation = 0.45
         midOpacity = 0.189
     case (418, 0.42):
+        midLocation = 0.45
+        midOpacity = 0.189
+    case (400, 0.42):
         midLocation = 0.45
         midOpacity = 0.189
     default:

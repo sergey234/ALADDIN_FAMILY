@@ -49,6 +49,18 @@
 - **Title:** «Родительский контроль» — `onboarding_page3_title`
 - **Desc:** «Система обучения детей безопасности. Вы видите всю активность детей в интернете. Самообучающаяся система защиты AI» — `onboarding_page3_desc` (`14_OnboardingScreen.swift` fallback; сверить с `LocalizationManager`)
 
+## Правка героя 2026-05-24 (лампа + центр + отступ сверху)
+
+| Параметр | Значение |
+|----------|----------|
+| Задача | Лампа убрана; герой по центру; **верх как OB_04/05** |
+| Источник | `variants/OnboardingHero_03_master.png` |
+| Zone | `361×460`, crop **115…1015**, `height_frac=0.82`, **oy=46**, ox≈15 |
+| Full frame | zone @ **(16, 24)** → **верх контента y=70** (= 04/05) |
+| iOS zoom | `OnboardingHero_03` → **1.09** (как 04–06) |
+| Текст/scrim/chrome | **без изменений** |
+| Бэкапы | `…_BEFORE_TOP_SYNC_20260524.png`, `…_figma_zone_BEFORE_TOP_SYNC_*.png` |
+
 ## QA
 
 | Проверка | Статус |
@@ -56,4 +68,4 @@
 | §E-IMG6–7 скрины | после upload |
 | G1–G10 | Figma QA — в работе |
 | Продукт OK | ☐ |
-| imageset / симулятор | 【Xcode batch】 |
+| imageset / симулятор | ✅ `build_onboarding_hero_imagesets.py` |

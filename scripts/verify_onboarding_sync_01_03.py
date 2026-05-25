@@ -16,7 +16,7 @@ RU = IOS / "Resources/Localization/ru.lproj/Localizable.strings"
 # Live Figma OnboardingHero_00 (2026-05-24)
 FIGMA_ANCHORS = {
     0: {
-        "wordmark": (10, 354, 360, 121),
+        "wordmark": (17, 271, 360, 121),
         "title": (14, 450, 361, 60),
         "desc": (22, 546, 346, 66),
         "scrim": (0, 528, 393, 324),
@@ -24,9 +24,9 @@ FIGMA_ANCHORS = {
         "layout": "standard",
     },
     1: {
-        "title": (12, 466, 361, 78),
-        "desc": (12, 555, 370, 108),
-        "scrim": (0, 552, 393, 300),
+        "title": (12, 440, 361, 78),
+        "desc": (12, 522, 370, 132),
+        "scrim": (0, 532, 393, 310),
         "scrim_max": 0.42,
         "layout": "standard",
     },
@@ -134,12 +134,6 @@ def main() -> int:
         if nn == "02" and "OnboardingHero_02" in hero_swift and "1.09" not in hero_swift:
             errors.append("zoom OB_02 not 1.09")
         if nn == "03":
-            m_fit = re.search(
-                r"private func usesFigmaCanvasFit\(_ baseName: String\) -> Bool \{\s*baseName == \"([^\"]+)\"",
-                hero_swift,
-            )
-            if m_fit and m_fit.group(1) != "OnboardingHero_07":
-                errors.append(f"usesFigmaCanvasFit must be OB_07 only, got {m_fit.group(1)}")
             m_zoom = re.search(
                 r"private func heroOnboardingTopZoom.*?case ([^\n]+):\s*\n\s*return 1\.09",
                 hero_swift,
@@ -147,6 +141,10 @@ def main() -> int:
             )
             if not m_zoom or "OnboardingHero_03" not in m_zoom.group(1):
                 errors.append("OB_03 must be in heroOnboardingTopZoom 1.09 switch")
+            if "OnboardingHero_07" not in m_zoom.group(1) if m_zoom else True:
+                errors.append("OB_07 must be in heroOnboardingTopZoom 1.09 switch")
+            if "usesFigmaCanvasFit" in hero_swift:
+                errors.append("usesFigmaCanvasFit removed — OB_07 uses fill+zoom like OB_03")
 
     for nn in ("01", "02", "03"):
         if not md5_match(nn):

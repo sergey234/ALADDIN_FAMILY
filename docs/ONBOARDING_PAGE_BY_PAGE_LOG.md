@@ -11,13 +11,13 @@
 | OB | `currentPage` | Figma frame | nodeId | Xcode asset | Статус | Что сделали / что дальше |
 |----|---------------|-------------|--------|-------------|--------|---------------------------|
 | **00** | 0 | `OB_00_Language_393x852` | `7:65` | `OnboardingHero_00` | ✅ **В порядке** | Full-bleed 393×852; hero без UI в PNG. Переходим дальше. |
-| **01** | 1 | `OB_01_Family_393x852` | `81:53` | `OnboardingHero_01` | ✅ **SYNC 2026-05-25** | wordmark **354**; title **450** h**60**; desc **546** h**66** (над/под лампой) |
-| **02** | 2 | `OB_02_AI_393x852` | `103:53` | `OnboardingHero_02` | ✅ **SYNC 2026-05-25** | title **466** h**78**; desc **555** h**108** — полный title + «шифрования» |
+| **01** | 1 | `OB_01_Family_393x852` | `81:53` | `OnboardingHero_01` | ✅ **SYNC 2026-05-25** | wordmark **271** @ x17 (Figma `88:53`); title **450** h**60**; desc **546** h**66** |
+| **02** | 2 | `OB_02_AI_393x852` | `103:53` | `OnboardingHero_02` | ✅ **SYNC 2026-05-25** build **208** | D-lite: **440/522** desc h**132** w**370** (как OB_04) — «шифрования» |
 | **03** | 3 | `OB_03_Parents_393x852` | `108:53` | `OnboardingHero_03` | ✅ **SYNC 2026-05-25** | Full-bleed PNG L/R≈12 как OB_02; **fill+zoom 1.09**; MD5 `1baecb91…`; Figma `108:54` |
 | **04** | 4 | `OB_04_Radar_393x852` | `117:53` | `OnboardingHero_04` | ✅ **SYNC 2026-05-25** | 2 предложения; **440/522** desc h**132** w**370** |
 | **05** | 5 | `OB_05_Kids_393x852` | `117:70` | `OnboardingHero_05` | ✅ **SYNC 2026-05-25** | copy без изменений; layout **440/522** w370 h**144** |
 | **06** | 6 | `OB_06_Adults23_393x852` | `117:87` | `OnboardingHero_06` | ✅ **SYNC-I** ⏳ **D** | Anchor **case 5**: Y 496/566, scrim 552×300 α0.40. Hero `74ea6e9f…`. |
-| **07** | 7 | `OB_07_Invite_393x852` | `122:53` | `OnboardingHero_07` | ✅ **SYNC-I** ⏳ **D** | wordmark **193,97**; title 462; desc 536; hero inpaint top logo; privacy **linkBlue** via `ob07LinkRow` |
+| **07** | 7 | `OB_07_Invite_393x852` | `122:53` | `OnboardingHero_07` | ✅ **SYNC** build **209** | D-lite A: title **400** desc **468** h**80**; wordmark **183,55** 210×62 |
 
 ---
 
