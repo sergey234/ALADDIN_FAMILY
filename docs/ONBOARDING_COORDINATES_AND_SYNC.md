@@ -1,7 +1,7 @@
 # Онбординг OB_00–OB_07: координаты Figma ↔ iOS и статус синхронизации
 
 **Дата снимка:** 2026-05-24 (live verify OB_01–03)  
-**Сборка:** `AppConfig.buildNumber` = **203**  
+**Сборка:** `AppConfig.buildNumber` = **205**  
 **Код (источник правды для Y):** `Screens/14_OnboardingScreen.swift` → `OnboardingFigmaAnchor`, `scrimGradientStops(for:)`, `onboardingPage`  
 **Figma file:** `KvkUdyb5Ll31Z9FSzCbpNl` · страница **`OnboardingHero_00`**
 
@@ -142,10 +142,10 @@
 | Слой | x | y | w | h |
 |------|---|---|---|---|
 | Hero | 16 | **24** | 361 | 460 |
-| WORDMARK | **193** | **97** | **210** | **62** |
-| Title | **16** | **462** | 361 | 60 |
-| Desc | **16** | **536** | 361 | 80 |
-| Scrim | 0 | **480** | 393 | 372 |
+| WORDMARK | **149** | **78** | **228** | **70** |
+| Title | **16** | **424** | 361 | 60 |
+| Desc | **16** | **498** | 361 | 56 |
+| Scrim | 0 | **418** | 393 | 138 |
 
 **Legal (chrome, `OnboardingOB07LegalBlock`):** 5 строк @ x=16, max width 361 — info → **политика (отдельная строка)** → чекбокс данных → ссылка соглашения → чекбокс соглашения.
 

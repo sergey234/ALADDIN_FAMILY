@@ -27,9 +27,9 @@
 | Элемент | y | Примечание |
 |---------|---|------------|
 | Hero | 24 | фон |
-| WORDMARK | **250** (над левым плечом) | TabView, anchored 210×62 |
-| Title | **462** | 24pt Semibold |
-| Desc | **536** | 16pt, white 75% |
+| WORDMARK | **78** (у головы) | TabView, anchored **228×70** @ x=149 |
+| Title | **424** | 24pt Semibold (выше chrome) |
+| Desc | **498** | 16pt, max 3 lines, bottom ≤556 |
 | CHROME | 556 | под TabView |
 | Legal block | 654 | в chrome |
 | Secondary buttons | 788 | «Код» / «Восстановить» |

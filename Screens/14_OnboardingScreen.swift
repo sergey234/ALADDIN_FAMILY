@@ -42,6 +42,7 @@ private struct OnboardingFigmaAnchor {
     let desc: CGRect
     let scrim: CGRect
     let scrimMaxOpacity: CGFloat
+    let maxTitleLines: Int
     let maxBodyLines: Int
     /// Только OB_07 (`case 6`). Не выводить из Y: у OB_01 тоже wordmark и title.y > 480.
     let layoutMode: OnboardingFigmaLayoutMode
@@ -55,6 +56,7 @@ private struct OnboardingFigmaAnchor {
                 desc: CGRect(x: 16, y: 615, width: 346, height: 48),
                 scrim: CGRect(x: 0, y: 528, width: 393, height: 324),
                 scrimMaxOpacity: 0.45,
+                maxTitleLines: 4,
                 maxBodyLines: 4,
                 layoutMode: .standard
             )
@@ -66,7 +68,8 @@ private struct OnboardingFigmaAnchor {
                 desc: CGRect(x: 12, y: 599, width: 370, height: 82),
                 scrim: CGRect(x: 0, y: 552, width: 393, height: 300),
                 scrimMaxOpacity: 0.42,
-                maxBodyLines: 6,
+                maxTitleLines: 2,
+                maxBodyLines: 4,
                 layoutMode: .standard
             )
         case 2:
@@ -76,6 +79,7 @@ private struct OnboardingFigmaAnchor {
                 desc: CGRect(x: 14, y: 630, width: 361, height: 80),
                 scrim: CGRect(x: 0, y: 500, width: 393, height: 320),
                 scrimMaxOpacity: 0.40,
+                maxTitleLines: 4,
                 maxBodyLines: 5,
                 layoutMode: .standard
             )
@@ -86,6 +90,7 @@ private struct OnboardingFigmaAnchor {
                 desc: CGRect(x: 16, y: 566, width: 361, height: 100),
                 scrim: CGRect(x: 0, y: 542, width: 393, height: 310),
                 scrimMaxOpacity: 0.35,
+                maxTitleLines: 4,
                 maxBodyLines: 5,
                 layoutMode: .standard
             )
@@ -96,6 +101,7 @@ private struct OnboardingFigmaAnchor {
                 desc: CGRect(x: 16, y: 566, width: 361, height: 100),
                 scrim: CGRect(x: 0, y: 532, width: 393, height: 320),
                 scrimMaxOpacity: 0.38,
+                maxTitleLines: 4,
                 maxBodyLines: 6,
                 layoutMode: .standard
             )
@@ -106,18 +112,20 @@ private struct OnboardingFigmaAnchor {
                 desc: CGRect(x: 16, y: 566, width: 361, height: 100),
                 scrim: CGRect(x: 0, y: 552, width: 393, height: 300),
                 scrimMaxOpacity: 0.40,
+                maxTitleLines: 4,
                 maxBodyLines: 5,
                 layoutMode: .standard
             )
         case 6:
-            // OB_07 Figma `122:53`: wordmark 193,97 (плечо) · title 462 · desc 536
+            // OB_07: wordmark у головы; title/desc выше — в TabView (~556pt), не под chrome (304pt снизу вне TabView).
             return OnboardingFigmaAnchor(
-                wordmark: CGRect(x: 193, y: 97, width: 210, height: 62),
-                title: CGRect(x: 16, y: 462, width: 361, height: 60),
-                desc: CGRect(x: 16, y: 536, width: 361, height: 80),
-                scrim: CGRect(x: 0, y: 480, width: 393, height: 372),
+                wordmark: CGRect(x: 149, y: 78, width: 228, height: 70),
+                title: CGRect(x: 16, y: 424, width: 361, height: 60),
+                desc: CGRect(x: 16, y: 498, width: 361, height: 56),
+                scrim: CGRect(x: 0, y: 418, width: 393, height: 138),
                 scrimMaxOpacity: 0.42,
-                maxBodyLines: 4,
+                maxTitleLines: 2,
+                maxBodyLines: 3,
                 layoutMode: .ob07Final
             )
         default:
@@ -135,8 +143,10 @@ private enum OnboardingFigmaScreenLayout {
     static let chromeBandHeight: CGFloat = 154
     /// Расширенный chrome OB_07: точки + «Начать» + legal + 2 кнопки (`CHROME_bottom` h=304).
     static let ob07ChromeBandHeight: CGFloat = 304
+    /// Верх chrome в Figma (`CHROME_bottom` y=556) — контент TabView только выше этой линии.
+    static let ob07ChromeTopScreenY: CGFloat = 556
     static var tabDesignHeight: CGFloat { canvasHeight - skipBandHeight - chromeBandHeight }
-    static var ob07ContentDesignHeight: CGFloat { canvasHeight - ob07ChromeBandHeight }
+    static var ob07ContentDesignHeight: CGFloat { ob07ChromeTopScreenY }
 
     static func tabTopY(_ screenY: CGFloat, tabHeight: CGFloat, mode: OnboardingFigmaLayoutMode = .standard) -> CGFloat {
         switch mode {
@@ -173,6 +183,9 @@ private func scrimGradientStops(for anchor: OnboardingFigmaAnchor) -> [Gradient.
         midLocation = 0.45
         midOpacity = 0.18
     case (480, 0.42):
+        midLocation = 0.45
+        midOpacity = 0.189
+    case (418, 0.42):
         midLocation = 0.45
         midOpacity = 0.189
     default:
@@ -292,6 +305,7 @@ private struct OnboardingFigmaAnchoredContent: View {
             let tabH = geo.size.height
             let layoutMode = anchor.layoutMode
             let vScale = isOB07 ? (tabH / OnboardingFigmaScreenLayout.ob07ContentDesignHeight) : 1
+            let textVScale = isOB07 ? vScale : (tabH / OnboardingFigmaScreenLayout.tabDesignHeight)
             let yPos: (CGFloat) -> CGFloat = { screenY in
                 if isOB07 {
                     return screenY * vScale
@@ -336,8 +350,9 @@ private struct OnboardingFigmaAnchoredContent: View {
                     isTitle: true,
                     frame: anchor.title,
                     scaleX: scaleX,
+                    textVScale: textVScale,
                     yPos: yPos,
-                    maxLines: isOB07 ? 2 : 4
+                    maxLines: anchor.maxTitleLines
                 )
                 .accessibilityAddTraits(.isHeader)
 
@@ -346,6 +361,7 @@ private struct OnboardingFigmaAnchoredContent: View {
                     isTitle: false,
                     frame: anchor.desc,
                     scaleX: scaleX,
+                    textVScale: textVScale,
                     yPos: yPos,
                     maxLines: anchor.maxBodyLines
                 )
@@ -362,6 +378,7 @@ private struct OnboardingFigmaAnchoredContent: View {
         isTitle: Bool,
         frame: CGRect,
         scaleX: CGFloat,
+        textVScale: CGFloat,
         yPos: (CGFloat) -> CGFloat,
         maxLines: Int
     ) -> some View {
@@ -379,7 +396,12 @@ private struct OnboardingFigmaAnchoredContent: View {
             maxLines: maxLines,
             minimumScaleFactor: isTitle ? 0.85 : 0.9
         )
-        .frame(width: frame.width * scaleX, alignment: .center)
+        .frame(
+            width: frame.width * scaleX,
+            height: frame.height * textVScale,
+            alignment: .top
+        )
+        .clipped()
         .offset(
             x: frame.origin.x * scaleX,
             y: yPos(frame.origin.y)

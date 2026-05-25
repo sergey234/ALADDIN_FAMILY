@@ -1,0 +1,37 @@
+---
+description: Эталон Figma/iOS для онбординга OB_03 (Родительский контроль) — не менять без сверки
+globs: Screens/14_OnboardingScreen.swift, Shared/Components/HeroAmbientPresentation.swift, docs/ONBOARDING*.md, **/OnboardingHero_03*
+alwaysApply: false
+---
+
+# OB_03 — Родительский контроль (зафиксировано 2026-05-23)
+
+Полная спецификация: **`docs/ONBOARDING_OB_03_FIGMA_SPEC.md`**.
+
+## Figma
+
+- File `KvkUdyb5Ll31Z9FSzCbpNl`, page `OnboardingHero_00`
+- Frame **`OB_03_Parents_393x852`** · **`108:53`** · canvas **(3183, 40)** · **visible**
+- Hero **`OnboardingHero_03`** · **`108:54`** · 393×852 · **FILL** · hash `5d1418b461cede93b389d3e7c61ce9ff070fe999` (2026-05-24: без лампы, pad100+crop960+shift36)
+
+## Текст и scrim (393×852)
+
+| Слой | x | y | w | h |
+|------|---|---|---|---|
+| Scrim `217:55` | 0 | **500** | 393 | **320** |
+| Title | 16 | **552** | 361 | 60 |
+| Desc | 14 | **630** | 361 | 80 |
+
+- Title: SF Pro **Bold 24**, `#FFF`, center — «Родительский контроль»
+- Desc: SF Pro **Regular 16**, `#FFF` @ **0.92**, center
+- Scrim stops: **0** → **0.16 @ 0.4** → **0.40 @ 1**
+
+## iOS
+
+- `OnboardingFigmaAnchor` **case 2**; TabView **page 3** (`-OnboardingPage3`)
+- Asset **`OnboardingHero_03`**; hero **`scaledToFit`** @ aspect 393:852 (не `scaledToFill` — device crop)
+- Не использовать координаты OB_04 (496/566) или OB_02 (522/599) для case 2
+
+## Инцидент
+
+OB_03 был **hidden** и стоял на **x=3175** под OB_04 — на канвасе казалось, что экран пропал. После fix: x=**3183**, ряд OB с шагом 441.

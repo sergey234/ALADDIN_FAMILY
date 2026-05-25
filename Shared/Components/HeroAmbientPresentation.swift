@@ -319,26 +319,43 @@ struct HeroAmbientLayerView: View {
         #endif
     }
 
-    /// OB_02/03 PNG: zone94 по центру на `#0a1128` — ~118px «пустого» фона сверху. Лёгкий zoom от верха убирает полосу без обрезки рук.
+    /// Канон Figma OB_*: frame 393×852. `scaledToFill` на весь экран режет по X на части реальных iPhone (симулятор 14 Pro часто 1:1).
+    private static let onboardingFigmaAspect: CGFloat = 393.0 / 852.0
+    private static let onboardingFigmaCanvasBG = Color(red: 10.0 / 255.0, green: 17.0 / 255.0, blue: 40.0 / 255.0)
+
+    /// OB_03: весь кадр как в Figma — без fill-crop. OB_02/04–06: лёгкий top-zoom после zone.
     private func heroOnboardingTopZoom(for baseName: String) -> CGFloat {
         switch baseName {
-        case "OnboardingHero_02", "OnboardingHero_03":
-            return 1.16
+        case "OnboardingHero_02", "OnboardingHero_04", "OnboardingHero_05", "OnboardingHero_06":
+            return 1.09
         default:
             return 1.0
         }
     }
 
+    /// OB_03: на устройстве `scaledToFill` обрезал руки при том же PNG, что в Figma/симуляторе.
+    private func usesFigmaCanvasFit(_ baseName: String) -> Bool {
+        baseName == "OnboardingHero_03" || baseName == "OnboardingHero_07"
+    }
+
     @ViewBuilder
     private func heroRasterImage(_ baseName: String) -> some View {
         if fillsViewport {
-            let topZoom = heroOnboardingTopZoom(for: baseName)
-            Image(baseName)
-                .resizable()
-                .scaledToFill()
-                .scaleEffect(topZoom, anchor: .top)
-                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
-                .clipped()
+            if usesFigmaCanvasFit(baseName) {
+                Image(baseName)
+                    .resizable()
+                    .aspectRatio(Self.onboardingFigmaAspect, contentMode: .fit)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .background(Self.onboardingFigmaCanvasBG)
+            } else {
+                let topZoom = heroOnboardingTopZoom(for: baseName)
+                Image(baseName)
+                    .resizable()
+                    .scaledToFill()
+                    .scaleEffect(topZoom, anchor: .top)
+                    .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
+                    .clipped()
+            }
         } else {
             Image(baseName)
                 .resizable()
