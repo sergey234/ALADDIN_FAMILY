@@ -57,9 +57,11 @@
 | Параметр | Значение |
 |----------|----------|
 | Первая строка контента в PNG | y ≈ **70** (как OB_04/05) |
-| Compose | zone **×1.10** в слот 361×460, paste canvas **(16, 42)** → margins **L/R=16** |
-| iOS hero | **`scaledToFit`** + aspect **393:852** (не `scaledToFill` — на реальном iPhone резало руки) |
-| iOS zoom | **нет** (1.0 implicit) |
+| Compose | **`fix_onboarding_hero_03_full_bleed.py`** — tight bbox zone, width **369**, paste **(12, 70)** → **L/R≈12** (как OB_02) |
+| iOS hero | **`scaledToFill`** + zoom **1.09** (как OB_02, build 2026-05-25+) |
+| iOS zoom | **1.09** |
+| imageHash (Figma upload) | `55c5a8e1…` (2026-05-25 full-bleed) |
+| PNG MD5 (imageset) | `1baecb9183b0b30a880ad21abbc3198e` |
 | iOS ambient wash | purple 0.12 → pink 0.08 (`HeroAmbientPresentation`) |
 
 ---

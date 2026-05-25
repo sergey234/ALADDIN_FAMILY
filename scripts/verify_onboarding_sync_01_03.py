@@ -17,15 +17,15 @@ RU = IOS / "Resources/Localization/ru.lproj/Localizable.strings"
 FIGMA_ANCHORS = {
     0: {
         "wordmark": (10, 354, 360, 121),
-        "title": (16, 508, 361, 50),
-        "desc": (16, 593, 346, 48),
+        "title": (14, 450, 361, 60),
+        "desc": (22, 546, 346, 66),
         "scrim": (0, 528, 393, 324),
         "scrim_max": 0.45,
         "layout": "standard",
     },
     1: {
-        "title": (12, 494, 361, 60),
-        "desc": (12, 577, 370, 96),
+        "title": (12, 466, 361, 78),
+        "desc": (12, 555, 370, 108),
         "scrim": (0, 552, 393, 300),
         "scrim_max": 0.42,
         "layout": "standard",
@@ -38,15 +38,15 @@ FIGMA_ANCHORS = {
         "layout": "standard",
     },
     3: {
-        "title": (16, 468, 361, 60),
-        "desc": (16, 544, 361, 112),
+        "title": (12, 440, 370, 60),
+        "desc": (12, 522, 370, 132),
         "scrim": (0, 542, 393, 310),
         "scrim_max": 0.35,
         "layout": "standard",
     },
     4: {
-        "title": (16, 468, 361, 60),
-        "desc": (16, 544, 361, 112),
+        "title": (12, 440, 370, 60),
+        "desc": (12, 522, 370, 144),
         "scrim": (0, 532, 393, 320),
         "scrim_max": 0.38,
         "layout": "standard",
@@ -60,6 +60,8 @@ RU_STRINGS = {
     "onboarding_page2_desc": "ИИ охраняет вашу семью 24/7 + Многоуровневая система защита ⭐⭐⭐⭐⭐! Военные технологии шифрования",
     "onboarding_page3_title": "Родительский контроль",
     "onboarding_page3_desc": "Система обучения детей безопасности. Вы видите всю активность детей в интернете. Самообучающаяся система защиты AI",
+    "onboarding_page4_title": "Аналитика рисков",
+    "onboarding_page4_desc": "Система ALADDIN AI предсказывает, обнаруживает и предотвращает киберугрозы. Постоянно обучается и улучшается.",
 }
 
 ZOOM = {"01": 1.0, "02": 1.09}
@@ -132,10 +134,19 @@ def main() -> int:
         if nn == "02" and "OnboardingHero_02" in hero_swift and "1.09" not in hero_swift:
             errors.append("zoom OB_02 not 1.09")
         if nn == "03":
-            if "usesFigmaCanvasFit" not in hero_swift or "OnboardingHero_03" not in hero_swift:
-                errors.append("OB_03 must use usesFigmaCanvasFit (scaledToFit 393:852)")
-            if "onboardingFigmaAspect" not in hero_swift:
-                errors.append("OB_03 missing onboardingFigmaAspect")
+            m_fit = re.search(
+                r"private func usesFigmaCanvasFit\(_ baseName: String\) -> Bool \{\s*baseName == \"([^\"]+)\"",
+                hero_swift,
+            )
+            if m_fit and m_fit.group(1) != "OnboardingHero_07":
+                errors.append(f"usesFigmaCanvasFit must be OB_07 only, got {m_fit.group(1)}")
+            m_zoom = re.search(
+                r"private func heroOnboardingTopZoom.*?case ([^\n]+):\s*\n\s*return 1\.09",
+                hero_swift,
+                re.S,
+            )
+            if not m_zoom or "OnboardingHero_03" not in m_zoom.group(1):
+                errors.append("OB_03 must be in heroOnboardingTopZoom 1.09 switch")
 
     for nn in ("01", "02", "03"):
         if not md5_match(nn):

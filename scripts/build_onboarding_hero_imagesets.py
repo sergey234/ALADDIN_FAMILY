@@ -14,8 +14,8 @@ HERO = IOS / "Resources" / "HeroAssets"
 XCASSETS = IOS / "Assets.xcassets"
 W, H = 393, 852
 ZONE_XY = (16, 24)
-# OB_03: zone was too narrow (~31pt margins); scale slot + lower paste → L/R=16, top=70 (see fix_onboarding_hero_03_hands_sync.py)
-OB_03_ZONE_SCALE = 1.10
+# OB_03: full-bleed compose — scripts/fix_onboarding_hero_03_full_bleed.py (L/R≈12, top≈70)
+OB_03_ZONE_SCALE = 1.10  # legacy zone slot path; prefer fix_onboarding_hero_03_full_bleed.py
 OB_03_ZONE_OY = 42
 COSMIC_BG = (10, 17, 40)  # #0a1128
 
@@ -39,8 +39,8 @@ def build_frame(n: int) -> Image.Image:
     with Image.open(master) as im:
         mw, mh = im.size
 
-    # Already full-screen portrait (OB_03 always recomposes from zone — hands/margins recipe)
-    if mw == W and mh == H and n != 3:
+    # Already full-screen portrait (OB_03 master from fix_onboarding_hero_03_full_bleed.py)
+    if mw == W and mh == H:
         return Image.open(master).convert("RGB")
 
     # Cosmic / tall masters: composite pre-built zone (background baked in)

@@ -50,26 +50,26 @@ private struct OnboardingFigmaAnchor {
     static func forContentIndex(_ index: Int) -> OnboardingFigmaAnchor? {
         switch index {
         case 0:
-            // OB_01: title/desc +1 строка вверх (28pt / 22pt) — ближе к wordmark и друг к другу
+            // OB_01: wordmark+title над лампой; desc под лампой; title h=60 — 2 строки «в кармане»
             return OnboardingFigmaAnchor(
                 wordmark: CGRect(x: 10, y: 354, width: 360, height: 121),
-                title: CGRect(x: 16, y: 508, width: 361, height: 50),
-                desc: CGRect(x: 16, y: 593, width: 346, height: 48),
+                title: CGRect(x: 14, y: 450, width: 361, height: 60),
+                desc: CGRect(x: 22, y: 546, width: 346, height: 66),
                 scrim: CGRect(x: 0, y: 528, width: 393, height: 324),
                 scrimMaxOpacity: 0.45,
-                maxTitleLines: 4,
-                maxBodyLines: 4,
+                maxTitleLines: 2,
+                maxBodyLines: 3,
                 layoutMode: .standard
             )
         case 1:
-            // OB_02: title/desc +1 строка вверх (28pt / 22pt); desc h=96 — 4 строки body без clip под chrome
+            // OB_02: title h=78 (3 строки «…безопасности»); desc +1 строка вверх, h=108 — «шифрования» над chrome
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 12, y: 494, width: 361, height: 60),
-                desc: CGRect(x: 12, y: 577, width: 370, height: 96),
+                title: CGRect(x: 12, y: 466, width: 361, height: 78),
+                desc: CGRect(x: 12, y: 555, width: 370, height: 108),
                 scrim: CGRect(x: 0, y: 552, width: 393, height: 300),
                 scrimMaxOpacity: 0.42,
-                maxTitleLines: 2,
+                maxTitleLines: 3,
                 maxBodyLines: 4,
                 layoutMode: .standard
             )
@@ -85,11 +85,11 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 3:
-            // OB_04: title/desc +1 строка вверх (28/22 pt), desc h=112 — последняя строка не под chrome
+            // OB_04: 2 предложения + подъём (440/522), desc h=132, w=370 — «улучшается» видно на device
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 16, y: 468, width: 361, height: 60),
-                desc: CGRect(x: 16, y: 544, width: 361, height: 112),
+                title: CGRect(x: 12, y: 440, width: 370, height: 60),
+                desc: CGRect(x: 12, y: 522, width: 370, height: 132),
                 scrim: CGRect(x: 0, y: 542, width: 393, height: 310),
                 scrimMaxOpacity: 0.35,
                 maxTitleLines: 4,
@@ -97,11 +97,11 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 4:
-            // OB_05: как OB_04; длинный desc — h=112, maxBodyLines 6
+            // OB_05: layout как OB_04 (440/522, w370); desc h=144 — 122 символа, 6 строк без clip
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 16, y: 468, width: 361, height: 60),
-                desc: CGRect(x: 16, y: 544, width: 361, height: 112),
+                title: CGRect(x: 12, y: 440, width: 370, height: 60),
+                desc: CGRect(x: 12, y: 522, width: 370, height: 144),
                 scrim: CGRect(x: 0, y: 532, width: 393, height: 320),
                 scrimMaxOpacity: 0.38,
                 maxTitleLines: 4,
@@ -673,7 +673,7 @@ struct OnboardingScreen: View {
         "onboarding_page3_title": "Родительский контроль",
         "onboarding_page3_desc": "Система обучения детей безопасности. Вы видите всю активность детей в интернете. Самообучающаяся система защиты AI",
         "onboarding_page4_title": "Аналитика рисков",
-        "onboarding_page4_desc": "Система ALADDIN AI предсказывает, обнаруживает и предотвращает киберугрозы, постоянно обучаясь и улучшаясь.",
+        "onboarding_page4_desc": "Система ALADDIN AI предсказывает, обнаруживает и предотвращает киберугрозы. Постоянно обучается и улучшается.",
         "onboarding_page5_title": "Защита для детей!",
         "onboarding_page5_desc": "Дети не смогут посещать опасные сайты, онлайн-казино, взрослые сайты или совершать покупки в играх и стриминговых сервисах",
         "onboarding_page6_title": "Защита для людей 23+",
@@ -702,7 +702,7 @@ struct OnboardingScreen: View {
         "onboarding_page3_title": "Parental control",
         "onboarding_page3_desc": "See and protect your children's digital activity",
         "onboarding_page4_title": "Risk analytics",
-        "onboarding_page4_desc": "ALADDIN AI predicts and prevents cyber threats",
+        "onboarding_page4_desc": "ALADDIN AI system predicts, detects and prevents cyber threats. It constantly learns and improves.",
         "onboarding_page5_title": "Protection for kids",
         "onboarding_page5_desc": "Block unsafe websites and risky content",
         "onboarding_page6_title": "Protection for 23+ users",

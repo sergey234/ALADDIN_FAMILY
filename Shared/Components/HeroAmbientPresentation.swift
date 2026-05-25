@@ -323,19 +323,19 @@ struct HeroAmbientLayerView: View {
     private static let onboardingFigmaAspect: CGFloat = 393.0 / 852.0
     private static let onboardingFigmaCanvasBG = Color(red: 10.0 / 255.0, green: 17.0 / 255.0, blue: 40.0 / 255.0)
 
-    /// OB_03: весь кадр как в Figma — без fill-crop. OB_02/04–06: лёгкий top-zoom после zone.
+    /// OB_02/03/04–06: full-bleed PNG + top zoom (OB_03 widened 2026-05-25, L/R≈12 как OB_02).
     private func heroOnboardingTopZoom(for baseName: String) -> CGFloat {
         switch baseName {
-        case "OnboardingHero_02", "OnboardingHero_04", "OnboardingHero_05", "OnboardingHero_06":
+        case "OnboardingHero_02", "OnboardingHero_03", "OnboardingHero_04", "OnboardingHero_05", "OnboardingHero_06":
             return 1.09
         default:
             return 1.0
         }
     }
 
-    /// OB_03: на устройстве `scaledToFill` обрезал руки при том же PNG, что в Figma/симуляторе.
+    /// OB_07: fit 393×852 — chrome вне TabView. OB_03 с 2026-05-25 — fill как OB_02 (новый PNG).
     private func usesFigmaCanvasFit(_ baseName: String) -> Bool {
-        baseName == "OnboardingHero_03" || baseName == "OnboardingHero_07"
+        baseName == "OnboardingHero_07"
     }
 
     @ViewBuilder
