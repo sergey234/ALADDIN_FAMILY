@@ -6,7 +6,7 @@
 **Синхронизация цифр:** только этот файл — остальные `COMPANION_*.md` ссылаются сюда.  
 **ADR 2D vs 3D:** [COMPANION_2D_VS_3D_ADR.md](./COMPANION_2D_VS_3D_ADR.md) ✅ · **Export 07:** [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md)  
 **Матрица HERO-3:** [COMPANION_HERO3_READINESS_MATRIX.md](./COMPANION_HERO3_READINESS_MATRIX.md)  
-**Figma Companion:** https://www.figma.com/design/vwKcGPUUEZjgayEHNn0BJM (`00_Spec` + `01`–`03` grid ✅)  
+**Figma Companion:** https://www.figma.com/design/vwKcGPUUEZjgayEHNn0BJM — **`00_Spec` ✅** · страницы **`01`–`03` (36 frames) ⏳** [аудит](./COMPANION_FIGMA_STATUS.md)  
 **Цель:** 2D Rive · 56% full-body rect · субтитр · 12 эмоций + lip-sync  
 **Следующий шаг:** **07** Figma→`.riv` (дизайн) · **11b** device QA · **11c** после 07 · [100% runbook](./COMPANION_100_PERCENT_PARALLEL.md)  
 **iOS:** ✅ build **210** · TTS на текст · Hub Rive-превью · **08b PASS** (device)
@@ -93,12 +93,13 @@
 
 ---
 
-## HERO-3 — 3 героя Figma→Rive (23/26)
+## HERO-3 — 3 героя Figma→Rive (25/26)
 
 ### Ядро (01–19)
 
 - [x] **HERO-3-01** — ADR план §1–11 + §2.1–2.3
-- [x] **HERO-3-02** — Figma 3×12 эмоций (wireframe grid; final art → Rive **07**)
+- [x] **HERO-3-02** — Spec в Figma `00_Spec` (Motion/Mimic/ADR/sign-off) ✅
+- [ ] **HERO-3-02b** — Figma страницы `01_Unicorn` · `02_Aladdin_Human` · `03_Genie` — **36 фреймов** final art (⏳ страниц нет в файле, 2026-05-27)
 - [x] **HERO-3-03** — BE genie + age_policy
 - [x] **HERO-3-04** — Pydantic + cosmetics genie
 - [x] **HERO-3-05** — companion_persona 3 ветки
@@ -111,7 +112,7 @@
 - [x] **HERO-3-10** — deploy + verify prod ✅ 2026-05-27 (`deploy_companion_p0.sh` + `verify_companion_p0_prod.sh` PASS)
 - [ ] **HERO-3-11** — QA D10 + SPEECH/MOTION/MIMIC-Q ([чеклист](./COMPANION_HERO3_11_QA_CHECKLIST.md))
   - [x] **11a** — pytest companion + SPEECH-Q5 + riv gate (46 tests, 2026-05-27)
-  - [ ] **11b** — device: MOTION-Q1–5, MIMIC-Q1–6, D10 (iPhone, build 209+)
+  - [ ] **11b** — device: MOTION-Q1–5, MIMIC-Q1–6, D10, SPEECH-Q6 TTS (iPhone, build **210+**)
   - [ ] **11c** — повтор MIMIC-Q1 после HERO-3-07 production `.riv`
 - [x] **HERO-3-12** — preset witty
 - [x] **HERO-3-13** — default preset + humor_density
@@ -196,11 +197,11 @@
 
 ## GATE — контрольные ворота
 
-- [ ] **GATE-P0** — smoke ✅ · prod verify ✅ 27.05 · **единый вход «Мир героев» ✅ (Kids/Игры)** · device 08b ⏳
+- [ ] **GATE-P0** — smoke ✅ · prod verify ✅ · **Мир героев** ✅ · **08b** ✅ · **11b** ⏳
 - [ ] **GATE-OPS** — health + verify prod
 - [ ] **GATE-CX** — 5 фраз CX (без VPN spam)
 - [ ] **GATE-P1** — cosmetics, legal
-- [ ] **GATE-HERO-3-IOS-α** — debounce + timeline + emoji + 1.2s + **23/24** (**без** production .riv)
+- [x] **GATE-HERO-3-IOS-α** — debounce + timeline + TTS text + **23/24/26** ✅ (без production .riv)
 - [ ] **GATE-EMO** — 13 state + Rive + D10 лица
 - [ ] **GATE-EMO-EMPATHY** — 5 мин × child / teen / senior (device)
 - [ ] **GATE-PROD** — P1+ 4 слоя
@@ -224,11 +225,18 @@ X-01 · X-02 · X-03 · X-04 · X-05 · X-06 · X-07
 - [x] iOS 15 fixes: `onChange`, `NavigationView`, `CompanionAPIService`, `Color`/Rive split  
 - [x] `CompanionChatResponse.cosmeticUnlocked`, `ALADDINNavigationBar` companion cases  
 - [x] **Проект ALADDIN собирается в Xcode**
+- [x] Unified **Мир героев** + build **209** push
+- [x] CI fix `Consumer.companion` · build **210**: TTS на текст, Hub Rive-превью
+- [x] **08b PASS** на реальном device (placeholder Rive)
+- [x] **11a** pytest 46 · **P1-13c-text** TTS
+- [x] Figma аудит: только `00_Spec` — [COMPANION_FIGMA_STATUS.md](./COMPANION_FIGMA_STATUS.md)
 
 ## В конце (по решению команды)
 
 - [x] **Xcode compile** (2026-05-27)  
-- [ ] **Device QA** HERO-3-08b + MOTION-Q, MIMIC-Q, D10, GATE-EMO-EMPATHY  
+- [x] **08b** device Rive  
+- [ ] **02b + 07** Figma 36 frames → Rive `.riv` ×3  
+- [ ] **11b / 11c** device QA  
 - [ ] **TestFlight**
 
 ---

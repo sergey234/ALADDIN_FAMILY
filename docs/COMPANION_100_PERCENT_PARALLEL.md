@@ -12,7 +12,8 @@
 | **08b** Rive на device | ✅ PASS (user) | **Готово** |
 | **11a** pytest | ✅ 46 tests | **Готово** |
 | **11b** QA на placeholder | ⏳ ~15 мин iPhone | **Вы** |
-| **07** Figma 360×480 → `.riv` ×3 | ⏳ аниматор | **Дизайн** |
+| **02b** Figma 3 страницы × 12 frames | ⏳ 0/36 в файле | **Дизайн** |
+| **07** Rive 360×480 → `.riv` ×3 | ⏳ после 02b | **Аниматор** |
 | **11c** MIMIC после 07 | ⏳ после export | **Вы + QA** |
 | **GATE-P0 / GATE-EMO** | ⏳ после 11b + 07 | **Приёмка** |
 
@@ -74,7 +75,8 @@ Figma: `vwKcGPUUEZjgayEHNn0BJM` · страницы `01`–`03` · **12 эмоц
 
 ## Дизайн (07) — handoff аниматору
 
-1. Открыть Figma Companion `01`–`03`, сетка 12 emotions.
+1. Создать в Figma страницы `01`–`03` (сейчас только `00_Spec` — см. [COMPANION_FIGMA_STATUS.md](./COMPANION_FIGMA_STATUS.md)).
+2. Сетка 12 emotions × 3 героя (36 фреймов 360×480).
 2. Rive Editor: artboard **360×480**, SM inputs `emotion` (triggers) + `mouth_open` (0…1).
 3. Export → три файла в `Resources/Companion/`.
 4. `python3 scripts/companion_riv_size_gate.py --dir Resources/Companion`

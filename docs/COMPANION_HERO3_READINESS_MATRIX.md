@@ -10,7 +10,8 @@
 |----|----------------|----|-----|--------|-----------|
 | **HERO-3-01** | ✅ §1–11 | — | — | — | ADR утверждён |
 | **HERO-3-17** | ✅ [Motion+Mimic sign-off](./COMPANION_HERO3_MOTION_MIMIC_SIGNOFF.md) PO 26.05 | — | — | — | — |
-| **HERO-3-02** | 🟡 3×12 wireframe grid (`01`–`03`) | — | — | — | final art → **07** |
+| **HERO-3-02** | ✅ `00_Spec` Motion/Mimic/ADR | — | — | — | [Figma audit](./COMPANION_FIGMA_STATUS.md) |
+| **HERO-3-02b** | ⏳ 36 frames `01`–`03` | — | — | — | страниц нет в Figma 27.05 |
 | **HERO-3-03** | — | ✅ genie + age | — | — | pytest age_policy |
 | **HERO-3-04** | — | ✅ Pydantic + cosmetics | — | — | verify API |
 | **HERO-3-05** | ✅ §2.1 черновики | ✅ 3 persona | — | — | persona tests |
