@@ -765,6 +765,16 @@ struct ChildRewardsScreen: View {
                     color: Color(hex: "A855F7"),
                     destination: NavigationManager.ALADDINScreen.unicornPet
                 )
+
+                // Карточка: 💬 Герой-компаньон (Kids only)
+                gameCardButton(
+                    icon: "💬",
+                    title: "Мир героев",
+                    status: "Голос и чат",
+                    metric: "Единорог · Аладдин",
+                    color: Color(hex: "6366F1"),
+                    destination: NavigationManager.ALADDINScreen.companionHome
+                )
                 
                 // Карточка 3: 🕵️ Я защитник
                 gameCardButton(

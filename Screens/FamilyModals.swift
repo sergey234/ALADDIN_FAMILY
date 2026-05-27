@@ -4194,6 +4194,8 @@ struct FamilyParentalControlSettingsModal: View {
                 .padding(Spacing.m)
                 .background(Color.backgroundMedium.opacity(0.3))
                 .cornerRadius(CornerRadius.medium)
+
+                CompanionParentConsentSection()
                 
                 // 3. Автоматические правила
                 FamilyConfigButtonItem(

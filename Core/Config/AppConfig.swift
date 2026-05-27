@@ -43,6 +43,18 @@ struct AppConfig {
      * ВАЖНО: Измените на свой реальный URL!
      */
     static let apiBaseURL: String = currentEnvironment.baseURL
+
+    /// WebSocket URL для companion voice (`?token=` ephemeral).
+    static func companionVoiceWebSocketURL(token: String) -> URL? {
+        var base = apiBaseURL
+        if base.hasPrefix("https://") {
+            base = "wss://" + base.dropFirst("https://".count)
+        } else if base.hasPrefix("http://") {
+            base = "ws://" + base.dropFirst("http://".count)
+        }
+        let encoded = token.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? token
+        return URL(string: "\(base)\(Endpoint.aiVoiceRealtime)?token=\(encoded)")
+    }
     
     /// Использовать Mock API вместо реального (только для DEBUG)
     /// ✅ ИСПРАВЛЕНО: Продакшен использует реальный API
@@ -127,11 +139,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "208"
+    static let buildNumber = "209"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "208"
+    static let minimumClientBuildForApiContract = "209"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -276,7 +288,34 @@ struct AppConfig {
         static let aiAssistantRecommendations = "/api/ai/assistant/recommendations"
         static let aiAssistantReportIncident = "/api/ai/assistant/report_incident"
         static let aiAssistantSecurityTips = "/api/ai/assistant/security_tips"
-        
+
+        // AI Family Companion (Aladdin / Unicorn) — see docs/GROK_COMPANION_ARCHITECTURE_FOR_ALADDIN.md
+        static let aiCompanionCharacters = "/api/ai/companion/characters"
+        static let aiCompanionState = "/api/ai/companion/state"
+        static let aiCompanionChat = "/api/ai/companion/chat"
+        static let aiCompanionStream = "/api/ai/companion/stream"
+        static let aiCompanionConsent = "/api/ai/companion/consent"
+        static let aiCompanionMemory = "/api/ai/companion/memory"
+        static let aiCompanionMemoryExport = "/api/ai/companion/memory/export"
+        static let aiCompanionProfile = "/api/ai/companion/profile"
+        static let aiCompanionFeedback = "/api/ai/companion/feedback"
+        static let aiCompanionCosmetics = "/api/ai/companion/cosmetics"
+        static let aiCompanionLegal = "/api/ai/companion/legal"
+        static let aiCompanionThreads = "/api/ai/companion/threads"
+        static func aiCompanionThreadMessages(threadId: String) -> String {
+            "/api/ai/companion/threads/\(threadId)/messages"
+        }
+
+        // AI Platform (shared infra — Family + future Adult app)
+        static let aiPlatformCapabilities = "/api/ai/platform/capabilities"
+        static let aiCompanionCapabilities = "/api/ai/companion/capabilities"
+        static let aiCompanionAnalytics = "/api/ai/companion/analytics"
+        static let aiPlatformChat = "/api/ai/platform/chat"
+        static let aiPlatformThreads = "/api/ai/platform/threads"
+        static let aiPlatformProfile = "/api/ai/platform/profile"
+        static let aiVoiceEphemeralToken = "/api/ai/voice/ephemeral-token"
+        static let aiVoiceRealtime = "/api/ai/voice/realtime"
+
         // ✅ ГЕЙМИФИКАЦИЯ: Gamification endpoints (30 endpoints)
         // Баланс единорогов (4 endpoints)
         static let gamificationBalance = "/api/gamification/balance"

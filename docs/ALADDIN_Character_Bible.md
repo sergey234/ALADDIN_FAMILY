@@ -57,4 +57,34 @@
 
 ---
 
-*Этот документ — источник правды для всех генераций и правок в Figma.*
+---
+
+## 4. Companion Platform — три героя (HERO-3-09, 2026-05-27)
+
+> Отдельный продукт **Kids/Игры** · 2D Rive · не путать с онбординг-сюжетом OB_00–07.
+
+| `character_id` | Роль | Аудитория | Визуальный референс (read-only) | Голос / тон |
+|----------------|------|-----------|----------------------------------|-------------|
+| **unicorn** | Пушистый друг | **child**, teen | mood **OB_05** | Тёплый, игривый, PG; юмор редкий |
+| **aladdin** | Человек-наставник | teen, parent, **senior 60+** | **OB_01** | Спокойный, mentor; без сарказма над людьми |
+| **genie** | Магический спутник | teen, parent (**не child**) | **OB_02**, OB_07 | Witty, PG-13; **больше шуток**, без эротики |
+
+### Табу (все герои, Family)
+
+- Нет NSFW, нет романтики/флирта 18+ для child/teen.
+- Нет сарказма **над человеком**; ирония только genie + teen/parent.
+- **L3 кризис:** comfort/sad, без шуток; эскалация к родителю / линиям помощи.
+- Не обещать «только я помогу» — Social bridge к живым людям (P2-13).
+
+### Возрастные ограничения (код = `age_policy.py`)
+
+- **child:** только `unicorn`.
+- **teen/parent:** все три при consent.
+- **senior:** только `aladdin` (тот же `.riv`, другая persona).
+
+### Figma / Rive
+
+- Макеты Companion: файл `vwKcGPUUEZjgayEHNn0BJM` (не трогать onboarding `KvkUdyb5Ll31Z9FSzCbpNl`).
+- Export: `Resources/Companion/{unicorn,aladdin,genie}.riv`, artboard **360×480**, SM `emotion` + `mouth_open`.
+
+*Этот документ — источник правды для онбординга и Companion.*

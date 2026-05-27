@@ -1,0 +1,43 @@
+name: Companion Gate
+
+on:
+  push:
+    branches: [main, develop]
+    paths:
+      - 'Resources/Companion/**'
+      - 'UI/Companion/**'
+      - 'Core/Companion/**'
+      - 'security/**/companion*.py'
+      - 'security/**/ai_companion_router.py'
+      - 'Tests/test_companion*.py'
+      - 'scripts/companion_*.py'
+      - 'scripts/verify_companion*.sh'
+  pull_request:
+    branches: [main, develop]
+    paths:
+      - 'Resources/Companion/**'
+      - 'UI/Companion/**'
+      - 'Core/Companion/**'
+      - 'security/**/companion*.py'
+      - 'security/**/ai_companion_router.py'
+      - 'Tests/test_companion*.py'
+      - 'scripts/companion_*.py'
+      - 'scripts/verify_companion*.sh'
+
+jobs:
+  companion-python-gate:
+    name: Rive gate + companion tests
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: HERO-3-22 — .riv size gate
+        run: python3 scripts/companion_riv_size_gate.py --dir Resources/Companion
+
+      - name: Companion unit tests
+        run: PYTHONPATH=. python3 -m unittest discover -s Tests -p 'test_companion*.py' -v

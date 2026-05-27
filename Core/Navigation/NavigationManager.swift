@@ -74,6 +74,9 @@ class NavigationManager: ObservableObject {
         case securityEducation = "SecurityEducationScreen"
         case gamesParentalControl = "GamesParentalControlView"
         case unicornPet = "UnicornPetView"
+        case companionHome = "CompanionHomeScreen"
+        case companionHub = "CompanionHubScreen"
+        case companionConversation = "CompanionConversationScreen"
         
         // НОВЫЕ ИГРОВЫЕ ЭКРАНЫ (геймификация)
         case youngDefender = "YoungDefenderView"           // 🛡️ Юный защитник
@@ -131,6 +134,9 @@ class NavigationManager: ObservableObject {
             case .securityEducation: return "Безопасность"
             case .gamesParentalControl: return "Игры и контроль"
             case .unicornPet: return "Единорог-питомец"
+            case .companionHome: return "Мир героев"
+            case .companionHub: return "Герои"
+            case .companionConversation: return "Разговор"
             case .mainWithRegistration: return "Главная с регистрацией"
             case .languageSettings: return "Настройки языка"
             case .notificationSettings: return "Настройки уведомлений"
@@ -185,6 +191,9 @@ class NavigationManager: ObservableObject {
             case .securityEducation: return "shield.lefthalf.filled"
             case .gamesParentalControl: return "gamecontroller.fill"
             case .unicornPet: return "pawprint.fill"
+            case .companionHome: return "person.2.wave.2.fill"
+            case .companionHub: return "sparkles"
+            case .companionConversation: return "bubble.left.and.bubble.right.fill"
             case .mainWithRegistration: return "house.fill"
             case .languageSettings: return "globe"
             case .notificationSettings: return "bell.badge.fill"
@@ -572,8 +581,8 @@ extension NavigationManager.ALADDINScreen {
     /// Проверка, является ли экран игровым
     var isGameScreen: Bool {
         switch self {
-        case .childRewards, .familyTournament, .gamesParentalControl, 
-             .unicornPet:
+        case .childRewards, .familyTournament, .gamesParentalControl,
+             .unicornPet, .companionHome, .companionHub, .companionConversation:
             return true
         default:
             return false

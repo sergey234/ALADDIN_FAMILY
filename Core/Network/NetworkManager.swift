@@ -531,6 +531,7 @@ private let logger = MasterLogger.shared
      */
     func delete<T: Decodable>(
         endpoint: String,
+        additionalHeaders: [String: String]? = nil,
         completion: @escaping (Result<T, Error>) -> Void
     ) {
         // Проверяем и обновляем токен если нужно
@@ -565,6 +566,12 @@ private let logger = MasterLogger.shared
             if let token = AppConfig.authToken {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             }
+
+            if let additionalHeaders = additionalHeaders {
+                for (field, value) in additionalHeaders {
+                    request.setValue(value, forHTTPHeaderField: field)
+                }
+            }
             
             performRequest(request: request, requiresAuth: false, completion: completion)
         }
@@ -576,6 +583,7 @@ private let logger = MasterLogger.shared
     func put<T: Decodable, B: Encodable>(
         endpoint: String,
         body: B,
+        extraHeaders: [String: String]? = nil,
         completion: @escaping (Result<T, Error>) -> Void
     ) {
         let fullURL = baseURL + endpoint
@@ -611,6 +619,12 @@ private let logger = MasterLogger.shared
             
             if let token = AppConfig.authToken {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            }
+
+            if let extraHeaders = extraHeaders {
+                for (field, value) in extraHeaders {
+                    request.setValue(value, forHTTPHeaderField: field)
+                }
             }
             
             // Encode body

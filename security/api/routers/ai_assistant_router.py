@@ -120,6 +120,11 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
     """Проверяет JWT токен и возвращает данные пользователя с уровнем подписки"""
     try:
         payload = jwt.decode(credentials.credentials, JWT_SECRET, algorithms=[JWT_ALGORITHM])
+        try:
+            from security.services.ai_platform.jwt_claims import merge_get_current_user
+            return merge_get_current_user(payload)
+        except ImportError:
+            pass
 
         # Извлекаем subscription данные из payload
         subscription = payload.get("subscription", {})
@@ -127,11 +132,14 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         limits = subscription.get("limits", {})
 
         return {
-            "user_id": payload.get("sub"),
+            "user_id": payload.get("sub") or payload.get("user_id") or payload.get("id"),
             "email": payload.get("email"),
             "subscription_level": level,
             "limits": limits,
-            "payload": payload
+            "payload": payload,
+            "age_band": payload.get("age_band", "parent"),
+            "parent_consent": payload.get("parent_consent") or {},
+            "app_id": payload.get("app_id", "aladdin_family"),
         }
     except jwt.ExpiredSignatureError:
         raise HTTPException(status_code=401, detail="Token has expired")
@@ -530,6 +538,89 @@ def _safe_record_feedback_analytics(
 # API Endpoints (8 штук)
 # =============================================================================
 
+def _is_companion_ui_context(context: str) -> bool:
+    return (context or "").strip().lower() == "companion"
+
+
+async def _ai_companion_context_chat(
+    request: ChatMessageRequest, user: dict
+) -> ChatMessageResponse:
+    """
+    P1-27: Family companion — Hermes with life-first prompt first; SFM fallback if Hermes down.
+    Skips security KB-RAG / security intent router.
+    """
+    user_id = user["user_id"] or "anonymous"
+    cloud_message = _llm_message_or_http422(request.message, field="message")
+    if hermes_available():
+        ok, text, err = hermes_chat_once(cloud_message, skill=None)
+        if ok and text.strip() and not is_probable_mock_response(text):
+            if cloud_message.strip():
+                _safe_record_chat_exchange(
+                    user_id=user_id,
+                    user_message_redacted=cloud_message[:500],
+                    assistant_message=text,
+                    ui_context="companion",
+                )
+            return ChatMessageResponse(
+                response=text,
+                confidence=0.88,
+                suggestions=[],
+                follow_up_questions=[],
+                timestamp=datetime.now(),
+                intent="companion_chat",
+                grounded=False,
+                sources=[],
+                tools_used=["hermes:companion"],
+                suggested_actions=[],
+            )
+        logger.warning("Companion Hermes path failed: %s", err)
+
+    if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        data = build_ai_chat_sfm_payload(
+            message=cloud_message,
+            ui_context="companion",
+            user_id=request.user_id or user_id,
+            execute_fn=sfm_adapter.execute_function,
+            timestamp=request.timestamp,
+            response_language=request.response_language,
+        )
+        success, result, message = sfm_adapter.execute_function("ai_assistant_chat", data)
+        if success and isinstance(result, dict):
+            tools_used = list(data.get("sfm_context_sources") or []) or ["ai_assistant_chat"]
+            response = _chat_response_from_sfm(
+                result=result,
+                intent_id="companion_chat",
+                tools_used=tools_used,
+            )
+            if not is_probable_mock_response(response.response):
+                if cloud_message.strip() and response.response.strip():
+                    _safe_record_chat_exchange(
+                        user_id=user_id,
+                        user_message_redacted=cloud_message[:500],
+                        assistant_message=response.response,
+                        ui_context="companion",
+                        sfm_aggregates=data.get("sfm_aggregates"),
+                    )
+                response.intent = "companion_chat"
+                return response
+        logger.warning("Companion SFM fallback failed: %s", message)
+
+    if mock_allowed():
+        fb = dev_fallback_chat("companion")
+        return ChatMessageResponse(
+            response=fb["response"],
+            confidence=fb["confidence"],
+            suggestions=[],
+            follow_up_questions=[],
+            timestamp=datetime.now(),
+            intent="companion_chat",
+            grounded=False,
+            sources=[],
+            tools_used=["dev_fallback"],
+        )
+    raise_service_unavailable()
+
+
 # 1. POST /api/ai/assistant/chat - Отправка сообщения AI помощнику
 @router.post("/chat", response_model=ChatMessageResponse)
 async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(get_current_user)) -> ChatMessageResponse:
@@ -544,6 +635,9 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
             status_code=429,
             detail=f"Rate limit exceeded for {subscription_level} subscription. Please upgrade or try again tomorrow."
         )
+
+    if _is_companion_ui_context(request.context):
+        return await _ai_companion_context_chat(request, user)
 
     try:
         intent = classify_intent(request.message, request.context)

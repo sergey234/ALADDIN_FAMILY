@@ -21,6 +21,8 @@ target 'ALADDIN' do
 
   # UI and Animation
   pod 'Lottie', '~> 4.3'
+  # HERO-3-08: дублирует SPM `rive-ios` в xcodeproj (если собираете через .xcworkspace)
+  pod 'RiveRuntime', '~> 6.0'
   pod 'SDWebImageSwiftUI', '~> 2.2'
   
   # Testing

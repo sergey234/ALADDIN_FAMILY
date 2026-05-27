@@ -845,6 +845,21 @@ struct ALADDINApp: App {
                         AnyView(AddMemberOptionsScreen().id("addMemberOptions").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .childRewards:
                         AnyView(ChildRewardsScreen().id("childRewards").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .companionHome:
+                        AnyView(CompanionHomeScreen()
+                            .id("companionHome")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .companionHub:
+                        AnyView(CompanionHomeScreen(initialTab: .heroes)
+                            .id("companionHub_legacy")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .companionConversation:
+                        AnyView(CompanionHomeScreen(initialTab: .main)
+                            .id("companionConversation_legacy")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
                     case .familyTournament:
                         AnyView(FamilyTournamentView().id("familyTournament").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .unicornPet:

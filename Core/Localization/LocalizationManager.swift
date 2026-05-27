@@ -344,6 +344,8 @@ class LocalizationManager: ObservableObject {
             "nav_screen_security_education": "Безопасность",
             "nav_screen_games_parental_control": "Игры и контроль",
             "nav_screen_unicorn_pet": "Единорог-питомец",
+            "nav_screen_companion_hub": "AI-компаньон",
+            "nav_screen_companion_conversation": "Разговор с героем",
             "nav_screen_unicorn_universe": "Вселенная единорогов",
             "nav_screen_wheel_of_fortune": "Колесо фортуны",
             "nav_screen_main_registration": "Главная с регистрацией",
@@ -8215,6 +8217,8 @@ class LocalizationManager: ObservableObject {
             "nav_screen_security_education": "Security education",
             "nav_screen_games_parental_control": "Games & control",
             "nav_screen_unicorn_pet": "Unicorn pet",
+            "nav_screen_companion_hub": "AI companion",
+            "nav_screen_companion_conversation": "Hero chat",
             "nav_screen_unicorn_universe": "Unicorn universe",
             "nav_screen_add_member_options": "Add member",
             
