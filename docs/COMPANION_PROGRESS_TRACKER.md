@@ -1,7 +1,7 @@
 # Companion — полный трекер задач (открой в Cursor)
 
 **Обновлено:** 2026-05-27  
-**Handoff ML:** [COMPANION_ML_HANDOFF_2026-05-27.md](./COMPANION_ML_HANDOFF_2026-05-27.md) ← **главный файл передачи**  
+**Handoff ML:** [COMPANION_ML_HANDOFF_START_HERE.md](./COMPANION_ML_HANDOFF_START_HERE.md) ← **открой первым** · [2026-05-27](./COMPANION_ML_HANDOFF_2026-05-27.md) (BE/SSH)  
 **Прогресс спринта:** **66 / 102 (65%)** · **HERO-3:** **25 / 26**  
 **Синхронизация цифр:** только этот файл — остальные `COMPANION_*.md` ссылаются сюда.  
 **ADR 2D vs 3D:** [COMPANION_2D_VS_3D_ADR.md](./COMPANION_2D_VS_3D_ADR.md) ✅ · **Export 07:** [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md)  

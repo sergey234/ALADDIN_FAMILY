@@ -4,17 +4,21 @@
 **Предыдущий handoff:** [COMPANION_ML_HANDOFF_FULL.md](./COMPANION_ML_HANDOFF_FULL.md) (частично устарел по счётчикам)  
 **Рабочий корень:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
 
+> ## ⭐ СЛЕДУЮЩАЯ ML-СИСТЕМА: открой сначала  
+> **[COMPANION_ML_HANDOFF_START_HERE.md](./COMPANION_ML_HANDOFF_START_HERE.md)**  
+> Полный каталог документов, Figma-аудит, next steps, код, команды.
+
 ---
 
 ## 0. С чего начать (5 минут)
 
-1. Прочитать **§1** (что строим) и **§2** (главный план — ссылки).  
-2. Открыть **[COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md)** — единый TODO-лист **102 задачи** с галочками.  
-3. Текущий фокус: **HERO-3** (3 героя 2D Rive) — §6.  
+1. Открыть **[COMPANION_ML_HANDOFF_START_HERE.md](./COMPANION_ML_HANDOFF_START_HERE.md)** — главная точка входа.  
+2. **[COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md)** — единый TODO **102 задачи**.  
+3. Фокус: **02b** (Figma 36 frames) → **07** (`.riv`) → **11b/11c** → GATE.  
 4. Не трогать онбординг Figma `KvkUdyb5Ll31Z9FSzCbpNl` (read-only).  
-5. Prod: не mock bypass — [.cursor/rules/prod-no-mock-bypass.mdc](../.cursor/rules/prod-no-mock-bypass.mdc).
+5. Prod: [.cursor/rules/prod-no-mock-bypass.mdc](../.cursor/rules/prod-no-mock-bypass.mdc).
 
-**Прогресс:** **64 / 102 (63%)** · **HERO-3: 23 / 26** · **P0 ✅** · **P1 ✅** · **CX ✅** · **OPS ✅** · **10 deploy+verify ✅ 27.05** · **08b UI ⏳**
+**Прогресс:** **66 / 102 (65%)** · **HERO-3: 25 / 26** · **build 210** · **08b ✅** · **11a ✅** · **Figma 0/36 frames** → [FIGMA_STATUS](./COMPANION_FIGMA_STATUS.md)
 
 ---
 
@@ -76,7 +80,11 @@
 | `COMPANION_HERO3_MOTION_MIMIC_SIGNOFF.md` | PO sign-off Motion/Mimic |
 | `COMPANION_FIGMA_PRODUCT_DECISIONS.md` | Продуктовые решения |
 | `COMPANION_DEPLOY_P0.md` | Деплой, env, nginx |
-| `COMPANION_ML_HANDOFF_2026-05-27.md` | **Этот файл** |
+| `COMPANION_ML_HANDOFF_START_HERE.md` | **Вход для следующей ML** |
+| `COMPANION_ML_HANDOFF_2026-05-27.md` | **Этот файл** (BE/SSH) |
+| `COMPANION_FIGMA_STATUS.md` | Аудит Figma 27.05 |
+| `COMPANION_100_PERCENT_PARALLEL.md` | 100% runbook |
+| `COMPANION_HERO3_11_QA_CHECKLIST.md` | QA 11b/11c |
 | `COMPANION_ML_HANDOFF_FULL.md` | SSH, BE история (доп.) |
 | `ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md` | SSH `149.154.65.180` |
 
