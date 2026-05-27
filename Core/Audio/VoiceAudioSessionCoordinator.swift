@@ -8,6 +8,7 @@ final class VoiceAudioSessionCoordinator {
         case aiAssistant
         case voiceNotes
         case familyChat
+        case companion
     }
 
     struct SessionProfile {
