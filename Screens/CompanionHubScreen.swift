@@ -82,8 +82,7 @@ struct CompanionHubScreen: View {
                                     }
                                 } label: {
                                     HStack(spacing: 12) {
-                                        Text(CompanionHeroRiveMapping.heroBaseEmoji(characterId: thread.characterId))
-                                            .font(.title2)
+                                        CompanionHubHeroPreview(characterId: thread.characterId)
                                         VStack(alignment: .leading, spacing: 2) {
                                             Text(thread.title)
                                                 .font(.subheadline.weight(.semibold))
@@ -127,8 +126,7 @@ struct CompanionHubScreen: View {
                                 }
                             } label: {
                                 HStack(spacing: 16) {
-                                    Text(CompanionHeroRiveMapping.heroBaseEmoji(characterId: hero.id))
-                                        .font(.system(size: 44))
+                                    CompanionHubHeroPreview(characterId: hero.id, diameter: 88)
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(hero.displayName).font(.headline)
                                         Text(hero.tagline).font(.subheadline).opacity(0.85)

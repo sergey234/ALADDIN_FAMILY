@@ -17,7 +17,7 @@ final class CompanionSpeechOutput: NSObject, ObservableObject {
         isSpeaking = false
     }
 
-    func speak(_ text: String, personalityPreset: String) {
+    func speak(_ text: String, personalityPreset: String, characterId: String = "unicorn") {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         stop()
@@ -42,8 +42,25 @@ final class CompanionSpeechOutput: NSObject, ObservableObject {
             utterance.rate = 0.5
             utterance.pitchMultiplier = 1.0
         }
+        applyCharacterVoice(characterId: characterId, utterance: utterance)
         isSpeaking = true
         synthesizer.speak(utterance)
+    }
+
+    /// HERO-3-15: лёгкая дифференциация TTS по герою (поверх preset).
+    private func applyCharacterVoice(characterId: String, utterance: AVSpeechUtterance) {
+        switch characterId {
+        case "genie":
+            utterance.rate = min(utterance.rate * 1.04, AVSpeechUtteranceMaximumSpeechRate)
+            utterance.pitchMultiplier = min(utterance.pitchMultiplier * 1.08, 2.0)
+        case "unicorn":
+            utterance.pitchMultiplier = min(utterance.pitchMultiplier * 1.1, 2.0)
+        case "aladdin":
+            utterance.rate = max(utterance.rate * 0.96, AVSpeechUtteranceMinimumSpeechRate)
+            utterance.pitchMultiplier = max(utterance.pitchMultiplier * 0.98, 0.5)
+        default:
+            break
+        }
     }
 }
 

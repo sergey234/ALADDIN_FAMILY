@@ -76,7 +76,7 @@ xcodebuild -project ALADDIN.xcodeproj -scheme ALADDIN \
 ## После PASS
 
 1. Отметить **HERO-3-08b** и пункт device в **GATE-P0** в [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md).
-2. Следующий шаг: **HERO-3-11** (QA D10 + MOTION/MIMIC-Q).
+2. Следующий шаг: **[HERO-3-11](./COMPANION_HERO3_11_QA_CHECKLIST.md)** (11a auto ✅ → 11b device).
 3. Параллельно: **HERO-3-07** — Figma → Rive Editor → export `.riv` → `Resources/Companion/`.
 
 ---

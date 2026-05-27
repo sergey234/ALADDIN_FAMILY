@@ -19,7 +19,7 @@
 | **HERO-3-08** | ✅ [unblock](./COMPANION_RIVE_UNBLOCK.md) | — | 🟡 08a compile+bundle ✅ · 08b UI ⏳ (**`CompanionHome` → `Главное`**) | 🟡 placeholder | `verify_companion_rive_ios_bundle.sh` + [08b checklist](./COMPANION_08B_DEVICE_CHECKLIST.md) |
 | **HERO-3-09** | ✅ Bible §4 | — | — | — | [ALADDIN_Character_Bible](./ALADDIN_Character_Bible.md) |
 | **HERO-3-10** | — | ✅ deploy 27.05 | — | — | verify PASS child=unicorn |
-| **HERO-3-11** | ✅ D10 script | — | — | ⏳ | SPEECH/MOTION/MIMIC-Q |
+| **HERO-3-11** | ✅ D10 script | ✅ 11a pytest | ⏳ 11b device | ⏳ / 🟡 placeholder | [11 QA checklist](./COMPANION_HERO3_11_QA_CHECKLIST.md) |
 | **HERO-3-12** | ✅ witty | ✅ preset | — | — | witty≠child |
 | **HERO-3-13** | ✅ defaults | ✅ CHARACTER_DEFAULT | — | — | unit |
 | **HERO-3-14** | ✅ humor | ✅ intent router | — | — | genie hint |

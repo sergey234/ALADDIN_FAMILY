@@ -96,6 +96,7 @@
 		C0MPPRS22F90000100C7D34B /* CompanionPersonalitySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPPRS12F90000100C7D34B /* CompanionPersonalitySection.swift */; };
 		C0MPCON22F90000100C7D34B /* CompanionConversationScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPCON12F90000100C7D34B /* CompanionConversationScreen.swift */; };
 		C0MPHRO22F90000100C7D34B /* CompanionHeroAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPHRO12F90000100C7D34B /* CompanionHeroAvatarView.swift */; };
+		C0MPHBP22F90000100C7D34B /* CompanionHubHeroPreview.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPHBP12F90000100C7D34B /* CompanionHubHeroPreview.swift */; };
 		C0MPMDL22F90000100C7D34B /* CompanionModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPMDL12F90000100C7D34B /* CompanionModels.swift */; };
 		C0MPCAP22F90000100C7D34B /* CompanionCapabilitiesService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPCAP12F90000100C7D34B /* CompanionCapabilitiesService.swift */; };
 		C0MPAPI22F90000100C7D34B /* CompanionAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPAPI12F90000100C7D34B /* CompanionAPIService.swift */; };
@@ -581,6 +582,7 @@
 		C0MPPRS12F90000100C7D34B /* CompanionPersonalitySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionPersonalitySection.swift; sourceTree = "<group>"; };
 		C0MPCON12F90000100C7D34B /* CompanionConversationScreen.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionConversationScreen.swift; sourceTree = "<group>"; };
 		C0MPHRO12F90000100C7D34B /* CompanionHeroAvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CompanionHeroAvatarView.swift; path = ../UI/Companion/CompanionHeroAvatarView.swift; sourceTree = "<group>"; };
+		C0MPHBP12F90000100C7D34B /* CompanionHubHeroPreview.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CompanionHubHeroPreview.swift; path = ../UI/Companion/CompanionHubHeroPreview.swift; sourceTree = "<group>"; };
 		C0MPMDL12F90000100C7D34B /* CompanionModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionModels.swift; path = Core/Models/CompanionModels.swift; sourceTree = "<group>"; };
 		C0MPCAP12F90000100C7D34B /* CompanionCapabilitiesService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionCapabilitiesService.swift; path = Core/Services/CompanionCapabilitiesService.swift; sourceTree = "<group>"; };
 		C0MPAPI12F90000100C7D34B /* CompanionAPIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionAPIService.swift; path = Core/Services/CompanionAPIService.swift; sourceTree = "<group>"; };
@@ -1051,6 +1053,7 @@
 				C0MPCON12F90000100C7D34B /* CompanionConversationScreen.swift */,
 				C0MPLEG12F90000100C7D34B /* CompanionLegalScreen.swift */,
 				C0MPHRO12F90000100C7D34B /* CompanionHeroAvatarView.swift */,
+				C0MPHBP12F90000100C7D34B /* CompanionHubHeroPreview.swift */,
 				C0MPCOS12F90000100C7D34B /* CompanionCosmeticsSection.swift */,
 				C0MPANM12F90000100C7D34B /* CompanionHeroAnimatedView.swift */,
 				C0MPRIV12F90000100C7D34B /* CompanionHeroRiveHost.swift */,
@@ -1949,6 +1952,7 @@
 				C0MPPRS22F90000100C7D34B /* CompanionPersonalitySection.swift in Sources */,
 				C0MPCON22F90000100C7D34B /* CompanionConversationScreen.swift in Sources */,
 				C0MPHRO22F90000100C7D34B /* CompanionHeroAvatarView.swift in Sources */,
+				C0MPHBP22F90000100C7D34B /* CompanionHubHeroPreview.swift in Sources */,
 				C0MPMDL22F90000100C7D34B /* CompanionModels.swift in Sources */,
 				C0MPCAP22F90000100C7D34B /* CompanionCapabilitiesService.swift in Sources */,
 				C0MPAPI22F90000100C7D34B /* CompanionAPIService.swift in Sources */,
@@ -2170,7 +2174,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 209;
+				CURRENT_PROJECT_VERSION = 210;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2204,7 +2208,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 209;
+				CURRENT_PROJECT_VERSION = 210;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2362,7 +2366,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 209;
+				CURRENT_PROJECT_VERSION = 210;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2396,7 +2400,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 209;
+				CURRENT_PROJECT_VERSION = 210;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2428,7 +2432,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 209;
+				CURRENT_PROJECT_VERSION = 210;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2454,7 +2458,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 209;
+				CURRENT_PROJECT_VERSION = 210;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2478,7 +2482,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 209;
+				CURRENT_PROJECT_VERSION = 210;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2503,7 +2507,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 209;
+				CURRENT_PROJECT_VERSION = 210;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

@@ -2,14 +2,14 @@
 
 **Обновлено:** 2026-05-27  
 **Handoff ML:** [COMPANION_ML_HANDOFF_2026-05-27.md](./COMPANION_ML_HANDOFF_2026-05-27.md) ← **главный файл передачи**  
-**Прогресс спринта:** **64 / 102 (63%)** · **HERO-3:** **23 / 26**  
+**Прогресс спринта:** **66 / 102 (65%)** · **HERO-3:** **25 / 26**  
 **Синхронизация цифр:** только этот файл — остальные `COMPANION_*.md` ссылаются сюда.  
 **ADR 2D vs 3D:** [COMPANION_2D_VS_3D_ADR.md](./COMPANION_2D_VS_3D_ADR.md) ✅ · **Export 07:** [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md)  
 **Матрица HERO-3:** [COMPANION_HERO3_READINESS_MATRIX.md](./COMPANION_HERO3_READINESS_MATRIX.md)  
 **Figma Companion:** https://www.figma.com/design/vwKcGPUUEZjgayEHNn0BJM (`00_Spec` + `01`–`03` grid ✅)  
 **Цель:** 2D Rive · 56% full-body rect · субтитр · 12 эмоций + lip-sync  
-**Следующий шаг:** **08b** device verify Rive (после интеграции «Мир героев») · **07** production `.riv` (аниматор) · **11** QA  
-**iOS:** ✅ **Xcode compile 2026-05-27** · Grok-layout код · placeholder `.riv` ×3
+**Следующий шаг:** **07** Figma→`.riv` (дизайн) · **11b** device QA · **11c** после 07 · [100% runbook](./COMPANION_100_PERCENT_PARALLEL.md)  
+**iOS:** ✅ build **210** · TTS на текст · Hub Rive-превью · **08b PASS** (device)
 
 Отмечай `[x]` при закрытии. Источник деталей: [COMPANION_IMPLEMENTATION_TODOS.md](./COMPANION_IMPLEMENTATION_TODOS.md)
 
@@ -23,12 +23,12 @@
 | P1 | 11 | 11 |
 | CX | 6 | 6 |
 | OPS | 4 | 4 |
-| HERO-3 | 23 | 26 |
+| HERO-3 | 25 | 26 |
 | P1+ | 0 | 12 |
 | P2 | 1 | 17 |
 | P3 | 0 | 6 |
 | Adult | 0 | 3 |
-| **Итого** | **64** | **102** |
+| **Итого** | **66** | **102** |
 
 ---
 
@@ -69,6 +69,7 @@
 - [x] **P1-09** — legal тексты
 - [x] **P1-10** — аналитика N1–N6 (`CompanionAnalytics` + `POST /analytics`, без PII)
 - [x] **P1-11** — banner 20% лимита
+- [x] **P1-13c-text** — TTS на текстовый stream + toggle «Моё» (build 210)
 
 ---
 
@@ -103,12 +104,15 @@
 - [x] **HERO-3-05** — companion_persona 3 ветки
 - [x] **HERO-3-06** — iOS Hub 3 карточки (🧞 только genie)
 - [ ] **HERO-3-07** — Rive export `.riv` ×3 — 🟡 **3/3 placeholder** в бандле ([unblock](./COMPANION_RIVE_UNBLOCK.md)) · production art ⏳
-- [ ] **HERO-3-08** — Rive на сцене ([unblock](./COMPANION_RIVE_UNBLOCK.md))
+- [x] **HERO-3-08** — Rive на сцене ([unblock](./COMPANION_RIVE_UNBLOCK.md))
   - [x] **08a** — SPM 6.20.5 + Xcode build + `.riv` в бандле (`verify_companion_rive_ios_bundle.sh`)
-  - [ ] **08b** — UI: `CompanionHome` → `Главное`, **Rive на реальном iPhone** (не iOS 15.2 Simulator) — [чеклист + протокол](./COMPANION_08B_DEVICE_CHECKLIST.md) · код: `shouldUseRiveRuntime` / shell на sim 15.x
+  - [x] **08b** — UI: `CompanionHome` → `Главное`, Rive на **реальном iPhone** PASS 2026-05-27 (placeholder art)
 - [x] **HERO-3-09** — Character Bible §4 в [ALADDIN_Character_Bible.md](./ALADDIN_Character_Bible.md)
 - [x] **HERO-3-10** — deploy + verify prod ✅ 2026-05-27 (`deploy_companion_p0.sh` + `verify_companion_p0_prod.sh` PASS)
-- [ ] **HERO-3-11** — QA D10 + SPEECH/MOTION/MIMIC-Q
+- [ ] **HERO-3-11** — QA D10 + SPEECH/MOTION/MIMIC-Q ([чеклист](./COMPANION_HERO3_11_QA_CHECKLIST.md))
+  - [x] **11a** — pytest companion + SPEECH-Q5 + riv gate (46 tests, 2026-05-27)
+  - [ ] **11b** — device: MOTION-Q1–5, MIMIC-Q1–6, D10 (iPhone, build 209+)
+  - [ ] **11c** — повтор MIMIC-Q1 после HERO-3-07 production `.riv`
 - [x] **HERO-3-12** — preset witty
 - [x] **HERO-3-13** — default preset + humor_density
 - [x] **HERO-3-14** — intent humor по герою

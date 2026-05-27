@@ -16,6 +16,8 @@ struct CompanionConversationScreen: View {
     @AppStorage("companion_security_expert_mode") private var securityExpertMode = false
     @AppStorage("companion_equipped_cosmetic_id") private var equippedCosmeticId: String = ""
     @AppStorage("companion_legal_ack_version") private var legalAckVersion: String = ""
+    /// P1-13c: озвучка текстовых ответов (Моё → можно выключить).
+    @AppStorage("companion_response_tts_enabled") private var responseTTSEnabled = true
     @State private var personalityPreset: String = "friendly"
     @State private var trustScore: Int = 10
     @State private var showCosmetics = false
@@ -535,7 +537,8 @@ struct CompanionConversationScreen: View {
             ?? pendingStreamContentEmotion
             ?? .happy
         pendingStreamContentEmotion = nil
-        applyTextOnlySpeakingThenContent(content)
+        let line = messages.indices.contains(index) ? messages[index].text : ""
+        presentAssistantReply(line: line, contentEmotion: content)
         CompanionAnalytics.track(
             .message,
             characterId: characterId,
@@ -733,7 +736,7 @@ struct CompanionConversationScreen: View {
         contentEmotionAfterSpeaking = emotion
         heroEmotion = .speaking
         lipSyncPhase = 1
-        speechOutput.speak(line, personalityPreset: personalityPreset)
+        speechOutput.speak(line, personalityPreset: personalityPreset, characterId: characterId)
         if voiceSession.isConnected {
             Task {
                 try? await Task.sleep(nanoseconds: 1_200_000_000)
@@ -756,12 +759,25 @@ struct CompanionConversationScreen: View {
         streamEmotionDebouncer.submit(emo) { heroEmotion = $0 }
     }
 
-    /// Текстовый stream без TTS: `speaking` минимум 1.2 s, затем контент-эмоция из BE.
-    private func applyTextOnlySpeakingThenContent(_ content: CompanionHeroEmotion) {
+    /// Текстовый ответ: TTS (если включён) или `speaking` минимум 1.2 s без звука.
+    private func presentAssistantReply(line: String, contentEmotion: CompanionHeroEmotion) {
+        contentEmotionAfterSpeaking = contentEmotion
+        let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        textSpeakingDismissTask?.cancel()
+
+        if responseTTSEnabled, !trimmed.isEmpty {
+            heroEmotion = .speaking
+            lipSyncPhase = 1
+            speechOutput.speak(trimmed, personalityPreset: personalityPreset, characterId: characterId)
+            return
+        }
+        applyTextOnlySpeakingVisual(contentEmotion)
+    }
+
+    private func applyTextOnlySpeakingVisual(_ content: CompanionHeroEmotion) {
         contentEmotionAfterSpeaking = content
         heroEmotion = .speaking
         lipSyncPhase = 1
-        textSpeakingDismissTask?.cancel()
         textSpeakingDismissTask = Task {
             try? await Task.sleep(nanoseconds: 1_200_000_000)
             await MainActor.run {

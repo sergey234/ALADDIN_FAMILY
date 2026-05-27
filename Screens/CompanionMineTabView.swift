@@ -10,6 +10,7 @@ struct CompanionMineTabView: View {
     var onOpenConversation: () -> Void
 
     @AppStorage("companion_equipped_cosmetic_id") private var equippedCosmeticId: String = ""
+    @AppStorage("companion_response_tts_enabled") private var responseTTSEnabled = true
     @State private var trustScore: Int = 10
     @State private var threads: [CompanionThreadSummary] = []
     @State private var showLegal = false
@@ -20,6 +21,20 @@ struct CompanionMineTabView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 trustCard
+
+                Toggle(isOn: $responseTTSEnabled) {
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text("Озвучивать ответы героя")
+                            .font(.subheadline.weight(.semibold))
+                        Text("Голос при текстовых сообщениях и субтитре")
+                            .font(.caption)
+                            .opacity(0.85)
+                    }
+                }
+                .tint(.purple)
+                .padding(14)
+                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .foregroundColor(.white)
 
                 CompanionCosmeticsSection(
                     characterId: selectedCharacterId,
@@ -98,8 +113,7 @@ struct CompanionMineTabView: View {
 
     private func threadRow(_ thread: CompanionThreadSummary) -> some View {
         HStack(spacing: 12) {
-            Text(CompanionHeroRiveMapping.heroBaseEmoji(characterId: thread.characterId))
-                .font(.title2)
+            CompanionHubHeroPreview(characterId: thread.characterId)
             VStack(alignment: .leading, spacing: 2) {
                 Text(thread.title)
                     .font(.subheadline.weight(.semibold))
