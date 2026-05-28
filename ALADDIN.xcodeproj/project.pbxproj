@@ -104,6 +104,8 @@
 		C0MPVOI22F90000100C7D34B /* CompanionVoiceSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPVOI12F90000100C7D34B /* CompanionVoiceSession.swift */; };
 		C0MPSPK22F90000100C7D34B /* CompanionSpeechOutput.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPSPK12F90000100C7D34B /* CompanionSpeechOutput.swift */; };
 		C0MPPST22F90000100C7D34B /* CompanionPersonalityPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPPST12F90000100C7D34B /* CompanionPersonalityPresets.swift */; };
+		C0MPERR22F90000100C7D34B /* CompanionErrorMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPERR12F90000100C7D34B /* CompanionErrorMapper.swift */; };
+		C0MPOFF22F90000100C7D34B /* CompanionOfflineStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPOFF12F90000100C7D34B /* CompanionOfflineStore.swift */; };
 		C0MPANL22F90000100C7D34B /* CompanionAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPANL12F90000100C7D34B /* CompanionAnalytics.swift */; };
 		C0MPCOS22F90000100C7D34B /* CompanionCosmeticsSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPCOS12F90000100C7D34B /* CompanionCosmeticsSection.swift */; };
 		C0MPLEG22F90000100C7D34B /* CompanionLegalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPLEG12F90000100C7D34B /* CompanionLegalScreen.swift */; };
@@ -447,6 +449,7 @@
 		B5002204 /* WidgetConfigurationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5002104 /* WidgetConfigurationUITests.swift */; };
 		A3C000012F740032 /* NavigationTransitionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C000012F740031 /* NavigationTransitionUITests.swift */; };
 		W4C00001 /* ChildContentProgressUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = W4C00000 /* ChildContentProgressUITests.swift */; };
+		C0MPSMK22F90000100C7D34B /* CompanionSmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPSMK12F90000100C7D34B /* CompanionSmokeUITests.swift */; };
 		B6000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000000 /* AppDelegate.swift */; };
 		B6000003 /* IoTSecurityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000002 /* IoTSecurityModule.swift */; };
 		B6000201 /* ALADDINWidgets/SharedDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000200 /* ALADDINWidgets/SharedDataManager.swift */; };
@@ -591,6 +594,8 @@
 		C0MPVOI12F90000100C7D34B /* CompanionVoiceSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionVoiceSession.swift; path = Core/Voice/CompanionVoiceSession.swift; sourceTree = "<group>"; };
 		C0MPSPK12F90000100C7D34B /* CompanionSpeechOutput.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionSpeechOutput.swift; path = Core/Voice/CompanionSpeechOutput.swift; sourceTree = "<group>"; };
 		C0MPPST12F90000100C7D34B /* CompanionPersonalityPresets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionPersonalityPresets.swift; path = Core/Companion/CompanionPersonalityPresets.swift; sourceTree = "<group>"; };
+		C0MPERR12F90000100C7D34B /* CompanionErrorMapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionErrorMapper.swift; path = Core/Companion/CompanionErrorMapper.swift; sourceTree = "<group>"; };
+		C0MPOFF12F90000100C7D34B /* CompanionOfflineStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionOfflineStore.swift; path = Core/Companion/CompanionOfflineStore.swift; sourceTree = "<group>"; };
 		C0MPANL12F90000100C7D34B /* CompanionAnalytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionAnalytics.swift; path = Core/Companion/CompanionAnalytics.swift; sourceTree = "<group>"; };
 		C0MPCOS12F90000100C7D34B /* CompanionCosmeticsSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionCosmeticsSection.swift; path = ../UI/Companion/CompanionCosmeticsSection.swift; sourceTree = "<group>"; };
 		C0MPLEG12F90000100C7D34B /* CompanionLegalScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CompanionLegalScreen.swift; sourceTree = "<group>"; };
@@ -890,6 +895,7 @@
 		B5002104 /* WidgetConfigurationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetConfigurationUITests.swift; sourceTree = "<group>"; };
 		A3C000012F740031 /* NavigationTransitionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTransitionUITests.swift; sourceTree = "<group>"; };
 		W4C00000 /* ChildContentProgressUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildContentProgressUITests.swift; sourceTree = "<group>"; };
+		C0MPSMK12F90000100C7D34B /* CompanionSmokeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CompanionSmokeUITests.swift; path = Tests/UITests/CompanionSmokeUITests.swift; sourceTree = "<group>"; };
 		B6000000 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B6000002 /* IoTSecurityModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IoTSecurityModule.swift; sourceTree = "<group>"; };
 		B6000200 /* ALADDINWidgets/SharedDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINWidgets/SharedDataManager.swift; sourceTree = "<group>"; };
@@ -1253,6 +1259,8 @@
 				C0MPVOI12F90000100C7D34B /* CompanionVoiceSession.swift */,
 				C0MPSPK12F90000100C7D34B /* CompanionSpeechOutput.swift */,
 				C0MPPST12F90000100C7D34B /* CompanionPersonalityPresets.swift */,
+				C0MPERR12F90000100C7D34B /* CompanionErrorMapper.swift */,
+				C0MPOFF12F90000100C7D34B /* CompanionOfflineStore.swift */,
 				C0MPANL12F90000100C7D34B /* CompanionAnalytics.swift */,
 				C0MPCAP12F90000100C7D34B /* CompanionCapabilitiesService.swift */,
 				C0MPAPI12F90000100C7D34B /* CompanionAPIService.swift */,
@@ -1516,6 +1524,7 @@
 				B5002104 /* WidgetConfigurationUITests.swift */,
 				A3C000012F740031 /* NavigationTransitionUITests.swift */,
 				W4C00000 /* ChildContentProgressUITests.swift */,
+				C0MPSMK12F90000100C7D34B /* CompanionSmokeUITests.swift */,
 			);
 			path = UITests;
 			sourceTree = "<group>";
@@ -1962,6 +1971,8 @@
 				C0MPVOI22F90000100C7D34B /* CompanionVoiceSession.swift in Sources */,
 				C0MPSPK22F90000100C7D34B /* CompanionSpeechOutput.swift in Sources */,
 				C0MPPST22F90000100C7D34B /* CompanionPersonalityPresets.swift in Sources */,
+				C0MPERR22F90000100C7D34B /* CompanionErrorMapper.swift in Sources */,
+				C0MPOFF22F90000100C7D34B /* CompanionOfflineStore.swift in Sources */,
 				C0MPANL22F90000100C7D34B /* CompanionAnalytics.swift in Sources */,
 				C0MPCOS22F90000100C7D34B /* CompanionCosmeticsSection.swift in Sources */,
 				C0MPLEG22F90000100C7D34B /* CompanionLegalScreen.swift in Sources */,
@@ -2145,6 +2156,7 @@
 				B5002204 /* WidgetConfigurationUITests.swift in Sources */,
 				A3C000012F740032 /* NavigationTransitionUITests.swift in Sources */,
 				W4C00001 /* ChildContentProgressUITests.swift in Sources */,
+				C0MPSMK22F90000100C7D34B /* CompanionSmokeUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

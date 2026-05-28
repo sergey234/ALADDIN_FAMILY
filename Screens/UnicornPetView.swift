@@ -24,6 +24,8 @@ struct UnicornPetView: View {
     @State private var isLoadingBalance: Bool = false
     @State private var balanceError: String? = nil
     
+    @AppStorage("companion_selected_character_id") private var companionCharacterId: String = "unicorn"
+    
     // Кэшированный баланс для офлайн режима
     @AppStorage("child_unicorn_balance") private var cachedBalance: Int = 0
     
@@ -245,6 +247,36 @@ struct UnicornPetView: View {
                 }
             }
             .padding(.horizontal, Spacing.screenPadding)
+
+            Button(action: {
+                HapticFeedback.impact(.medium)
+                companionCharacterId = "unicorn"
+                navigationManager.navigateTo(.companionHome)
+            }) {
+                HStack(spacing: Spacing.s) {
+                    Text("🦄")
+                        .font(.system(size: 28))
+                    Text(localizationManager.localized("companion_pet_talk_button"))
+                        .font(.bodyBold)
+                        .foregroundColor(.white)
+                    Spacer()
+                    Image(systemName: "mic.fill")
+                        .foregroundColor(.white.opacity(0.9))
+                }
+                .padding(Spacing.m)
+                .background(
+                    LinearGradient(
+                        colors: [Color(hex: "6366F1"), Color(hex: "A855F7")],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .cornerRadius(CornerRadius.large)
+            }
+            .buttonStyle(PlainButtonStyle())
+            .padding(.horizontal, Spacing.screenPadding)
+            .accessibilityIdentifier("unicorn_pet_companion_talk_button")
+            .accessibilityLabel(localizationManager.localized("companion_pet_talk_button"))
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Действия с питомцем")

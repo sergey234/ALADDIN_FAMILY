@@ -129,8 +129,9 @@ async def voice_realtime(websocket: WebSocket, token: Optional[str] = None):
             elif mtype == "audio.start":
                 await websocket.send_json({"type": "listening", "emotion": "listening"})
             elif mtype == "config":
-                if msg.get("character_id") in ("unicorn", "aladdin"):
-                    voice_state["character_id"] = msg["character_id"]
+                cid = msg.get("character_id")
+                if cid in ("unicorn", "aladdin", "genie"):
+                    voice_state["character_id"] = cid
                 if msg.get("family_id"):
                     voice_state["family_id"] = str(msg.get("family_id"))[:128]
                 if "security_expert_mode" in msg:
@@ -141,7 +142,7 @@ async def voice_realtime(websocket: WebSocket, token: Optional[str] = None):
             elif mtype == "audio.stop":
                 transcript = str(msg.get("transcript") or "").strip()
                 character_id = str(msg.get("character_id") or voice_state["character_id"])
-                if character_id not in ("unicorn", "aladdin"):
+                if character_id not in ("unicorn", "aladdin", "genie"):
                     character_id = "unicorn"
 
                 await websocket.send_json(

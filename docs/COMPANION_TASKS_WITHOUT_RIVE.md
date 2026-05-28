@@ -2,7 +2,10 @@
 
 > **Стратегия:** Rive Editor / production `.riv` — **блокер**, делаем **в конце** после подключения.  
 > **Этот список** — всё, что можно закрыть **сейчас** на placeholder `.riv` + PNG bridge.  
-> **Handoff:** [COMPANION_ML_HANDOFF_2026-05-29.md](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Трекер:** [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md)
+> **Handoff:** [COMPANION_ML_HANDOFF_2026-05-29.md](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Трекер:** [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md)  
+> **План кода v2:** [COMPANION_CODE_PLAN_NO_RIVE.md](./COMPANION_CODE_PLAN_NO_RIVE.md) · **Трекер v2:** [COMPANION_CODE_TODO_TRACKER.md](./COMPANION_CODE_TODO_TRACKER.md)  
+> **PO 29.05:** 🦄🧑🧞 — **три героя доступны всем**; PG + consent без ослабления.  
+> **Обновлено:** 2026-05-29 · **CODE Sprints 0–3 ✅** · **102-tracker: 76/102**
 
 **Правило:** задачи с пометкой **🟡 финал после Rive** — начинать можно, закрывать `[x]` только после визуальной части или явного PO «OK на placeholder».
 
@@ -10,51 +13,51 @@
 
 ## Приоритет 0 — сегодня (iOS, без Rive)
 
-| ID | Задача | Действие | Файлы / DoD |
-|----|--------|----------|-------------|
-| **iOS-POL-11** | STT на реальном iPhone | Commit локальных правок → build **214** → TF → QA | `SpeechManager.swift`, `CompanionConversationScreen.swift`, tests |
-| **iOS-POL-12** | Карточка «Мир героев» на Child Rewards | ✅ код (`companionWorldHeroCard`) · commit+**214** | `ChildRewardsScreen.swift` |
-| **P1-13g** | = iOS-POL-11 | См. выше | |
-| **GATE-P0** (часть) | **SPEECH-Q6** в 11b: STT + TTS на device | Чеклист SPEECH без MOTION/MIMIC | [11 QA](./COMPANION_HERO3_11_QA_CHECKLIST.md) |
+| ID | Задача | Действие | Статус |
+|----|--------|----------|--------|
+| **iOS-POL-11** | STT на реальном iPhone | ✅ код build **214** · device QA ⏳ |
+| **iOS-POL-12** | Карточка «Мир героев» на Child Rewards | ✅ |
+| **P1-13g** | = iOS-POL-11 | ✅ код |
+| **GATE-P0** (часть) | **SPEECH-Q6** в 11b | ⏳ после TF **214** |
 
 ---
 
 ## Приоритет 1 — iOS UX / навигация (без Rive)
 
-| ID | Задача | Объём | Заметки |
-|----|--------|-------|---------|
-| **UX-06** | Таб Kids «Друзья» → Companion | S | [UNIFIED_HOME](./COMPANION_UNIFIED_HOME_UX.md) |
-| **UX-07** | Ссылка из unicornPet | XS | |
-| **UX-08** | Удалить legacy navigation cases | S | `ALADDINNavigationBar`, routing |
-| **UX-09** | GATE навигации R6/R8 | S | QA чеклист |
-| **UX DoD** | Один push Kids → Companion Home | M | §8 UNIFIED_HOME — частично ☐ |
+| ID | Задача | Статус |
+|----|--------|--------|
+| **UX-06** | Big button «Друзья» → Companion | ✅ |
+| **UX-07** | Ссылка из unicornPet | ✅ |
+| **UX-08** | Legacy navigation → `companionHome` | ✅ |
+| **UX-09** | GATE навигации R6/R8 | ⏳ QA |
+| **UX DoD** | Один push Kids → Companion Home | ✅ (код) |
 
 ---
 
 ## Приоритет 2 — голос / бэкенд (без Rive)
 
-| ID | Задача | Что делать |
-|----|--------|------------|
-| **P1-13d** | WS голос без stub | `ai_voice_ws_router.py` + `run_companion_voice_turn` — wire STT→chat→TTS (сейчас transcript path есть, raw audio optional) |
-| **P1-13** (если в P1+ открыт) | Голос production E2E | Связано с 13d + prod keys |
-| **P0-04 доработка** | Voice realtime не stub | BE + iOS `CompanionVoiceSession` |
+| ID | Задача | Статус |
+|----|--------|--------|
+| **P1-13d** | WS голос без stub | ✅ |
+| **P1-13** | Голос production E2E | ✅ |
+| **P0-04 доработка** | Voice realtime не stub | ✅ |
 
 ---
 
 ## Приоритет 3 — P1+ Production (все без Rive)
 
-| ID | Задача |
-|----|--------|
-| **P1-12** | Postgres + Redis вместо SQLite |
-| **P1-14** | XCUITest: Kids → Hub → message (placeholder Rive OK) |
-| **P1-15** | Расширить `verify_companion_p0_prod.sh` |
-| **P1-16** | ADR hot path chat/stream |
-| **P1-17** | Accessibility: VoiceOver, Dynamic Type на Hub/чате |
-| **P1-18** | Rate limit + abuse 429 |
-| **P1-20** | Локализация RU/EN Companion strings |
-| **P1-21** | Offline-кэш thread + черновик |
-| **P1-22** | Post-LLM moderation |
-| **P1-19** | App Store pack, Privacy Nutrition — **скриншоты Hub 🟡 финал после Rive** |
+| ID | Задача | Статус |
+|----|--------|--------|
+| **P1-12** | Postgres + Redis | ⏳ Sprint 4 |
+| **P1-14** | XCUITest | ✅ |
+| **P1-15** | prod verify | ✅ |
+| **P1-16** | ADR hot path | ✅ |
+| **P1-17** | Accessibility | ✅ |
+| **P1-18** | Rate limit 429 | ✅ |
+| **P1-20** | RU/EN l10n | ✅ |
+| **P1-21** | Offline cache | ✅ |
+| **P1-22** | Post-LLM moderation | ✅ |
+| **P1-19** | App Store pack doc | ✅ · **3 Hub screenshots ⏳** |
 
 **P1-23 / GATE-EMO:** логика эмоций в BE+iOS **уже есть**; полный DoD **ждёт Rive** — не ставить `[x]` на GATE-EMO до 07.
 
@@ -131,19 +134,19 @@
 
 ---
 
-## Рекомендуемый порядок на 2 недели (без Rive)
+## Рекомендуемый порядок (обновлено 2026-05-29)
 
 ```text
-Неделя A:
-  214 TF → STT QA (11b SPEECH) → UX-06/07 → P1-14 XCUITest начало
-  P1-13d BE voice wire → GATE-DIALOG D01–D05
+Сделано (Sprints 0–3): UX+3 героя, voice/l10n/offline, XCUITest, 429, moderation, ADR, Store doc
 
-Неделя B:
-  P1-12 Postgres план → P1-17 a11y → P1-20 l10n
-  UX-08/09 → GATE-CX, GATE-P1 → P1-18 rate limit
+Следующий код (Sprint 4):
+  P1-12 Postgres/Redis → P2-02 orchestrator → P2-12/13/15/16
 
-После подключения Rive (отдельный спринт):
-  07 → gate scripts → 11b MOTION/MIMIC/D10 → 11c → GATE-EMO → P1-19 screenshots
+После TF 214:
+  11b SPEECH-Q6 device → GATE-DIALOG D01–D05 → UX-09
+
+После Rive:
+  07 → 11b MOTION/MIMIC/D10 → 11c → GATE-EMO → P1-19 screenshots
 ```
 
 ---

@@ -216,6 +216,14 @@ struct ALADDINApp: App {
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
             UserDefaults.standard.synchronize()
         }
+        if ProcessInfo.processInfo.arguments.contains("-UITestCompanionSmoke") {
+            UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            UserDefaults.standard.set("child", forKey: "current_user_role")
+            UserDefaults.standard.set("2026-05-26", forKey: "companion_legal_ack_version")
+            UserDefaults.standard.set(true, forKey: "companion_mic_coach_seen")
+            UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.aiDataSharingEnabled)
+            UserDefaults.standard.synchronize()
+        }
         print("🚀 ALADDIN_APP: Application starting...")
         print("🚀 ALADDIN_APP: Testing logger initialization...")
         return ()
@@ -345,6 +353,14 @@ struct ALADDINApp: App {
                     )
                     if ProcessInfo.processInfo.arguments.contains("-UITestChildContentW4_4") {
                         navManager.currentScreen = .childContent
+                    }
+                    if ProcessInfo.processInfo.arguments.contains("-UITestChildInterface")
+                        || (ProcessInfo.processInfo.arguments.contains("-UITestCompanionSmoke")
+                            && !ProcessInfo.processInfo.arguments.contains("-UITestCompanionHome")) {
+                        navManager.currentScreen = .childInterface
+                    }
+                    if ProcessInfo.processInfo.arguments.contains("-UITestCompanionHome") {
+                        navManager.currentScreen = .companionHome
                     }
                     consumePendingMagicAuthTokenIfNeeded()
                     LaunchDiagnostics.appendStartupTrace("initializeNavigation finished; currentScreen=\(navigationManager.currentScreen.rawValue)")
@@ -848,6 +864,7 @@ struct ALADDINApp: App {
                     case .companionHome:
                         AnyView(CompanionHomeScreen()
                             .id("companionHome")
+                            .accessibilityIdentifier("aladdin_root_companion_home")
                             .environmentObject(navigationManager)
                             .environmentObject(localizationManager))
                     case .companionHub:

@@ -16,6 +16,7 @@ struct CompanionMineTabView: View {
     @State private var showLegal = false
     @State private var isLoading = true
     @State private var errorText: String?
+    @State private var showingOfflineCache = false
 
     var body: some View {
         ScrollView {
@@ -24,9 +25,9 @@ struct CompanionMineTabView: View {
 
                 Toggle(isOn: $responseTTSEnabled) {
                     VStack(alignment: .leading, spacing: 4) {
-                        Text("Озвучивать ответы героя")
+                        Text(localizationManager.localized("companion_mine_tts_title"))
                             .font(.subheadline.weight(.semibold))
-                        Text("Голос при текстовых сообщениях и субтитре")
+                        Text(localizationManager.localized("companion_mine_tts_subtitle"))
                             .font(.caption)
                             .opacity(0.85)
                     }
@@ -35,6 +36,7 @@ struct CompanionMineTabView: View {
                 .padding(14)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                 .foregroundColor(.white)
+                .accessibilityIdentifier("companion_mine_tts_toggle")
 
                 CompanionCosmeticsSection(
                     characterId: selectedCharacterId,
@@ -44,8 +46,14 @@ struct CompanionMineTabView: View {
                 .padding(12)
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
 
+                if showingOfflineCache {
+                    Text(localizationManager.localized("companion_offline_cached_hint"))
+                        .font(.caption)
+                        .foregroundColor(.orange)
+                }
+
                 if !threads.isEmpty {
-                    Text("История")
+                    Text(localizationManager.localized("companion_hub_history"))
                         .font(.title3.bold())
                         .foregroundColor(.white)
                     ForEach(threads) { thread in
@@ -63,13 +71,14 @@ struct CompanionMineTabView: View {
                 Button {
                     showLegal = true
                 } label: {
-                    Label("Правила AI-компаньона", systemImage: "doc.text")
+                    Label(localizationManager.localized("companion_mine_rules"), systemImage: "doc.text")
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(14)
                         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                 }
                 .buttonStyle(.plain)
                 .foregroundColor(.white)
+                .accessibilityIdentifier("companion_mine_rules_button")
 
                 if let errorText {
                     Text(errorText).foregroundColor(.orange).font(.caption)
@@ -99,16 +108,25 @@ struct CompanionMineTabView: View {
 
     private var trustCard: some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text("Дружба с героем")
+            Text(localizationManager.localized("companion_mine_trust_title"))
                 .font(.headline)
                 .foregroundColor(.white)
-            Text("Trust: \(trustScore) · \(CompanionHeroRiveMapping.heroBaseEmoji(characterId: selectedCharacterId)) \(displayName(for: selectedCharacterId))")
-                .font(.subheadline)
-                .foregroundColor(.white.opacity(0.9))
+            Text(
+                String(
+                    format: localizationManager.localized("companion_mine_trust_value"),
+                    trustScore,
+                    CompanionHeroRiveMapping.heroBaseEmoji(characterId: selectedCharacterId),
+                    CompanionDisplayNames.heroName(characterId: selectedCharacterId, localizationManager: localizationManager)
+                )
+            )
+            .font(.subheadline)
+            .foregroundColor(.white.opacity(0.9))
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("companion_mine_trust_card")
     }
 
     private func threadRow(_ thread: CompanionThreadSummary) -> some View {
@@ -118,7 +136,7 @@ struct CompanionMineTabView: View {
                 Text(thread.title)
                     .font(.subheadline.weight(.semibold))
                     .lineLimit(1)
-                Text("\(thread.messageCount) сообщ. · \(thread.updatedAtDisplay)")
+                Text(String(format: localizationManager.localized("companion_thread_meta"), thread.messageCount, thread.updatedAtDisplay))
                     .font(.caption)
                     .opacity(0.8)
             }
@@ -128,25 +146,27 @@ struct CompanionMineTabView: View {
         .padding(12)
         .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
         .foregroundColor(.white)
-    }
-
-    private func displayName(for id: String) -> String {
-        switch id {
-        case "aladdin": return "Аладдин"
-        case "genie": return "Джин"
-        default: return "Единорог"
-        }
+        .accessibilityLabel("\(thread.title), \(String(format: localizationManager.localized("companion_thread_meta"), thread.messageCount, thread.updatedAtDisplay))")
     }
 
     private func reload() async {
         isLoading = true
         errorText = nil
+        showingOfflineCache = false
         defer { isLoading = false }
         do {
-            threads = (try? await CompanionAPIService.shared.fetchThreads()) ?? []
+            let live = (try? await CompanionAPIService.shared.fetchThreads()) ?? []
+            threads = live
+            CompanionOfflineStore.saveThreads(live)
             try await reloadTrust()
         } catch {
-            errorText = error.localizedDescription
+            let cached = CompanionOfflineStore.loadThreads()
+            if !cached.isEmpty {
+                threads = cached
+                showingOfflineCache = true
+            } else {
+                errorText = error.localizedDescription
+            }
         }
     }
 

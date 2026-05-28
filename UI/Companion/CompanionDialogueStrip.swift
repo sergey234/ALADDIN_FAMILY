@@ -2,6 +2,8 @@ import SwiftUI
 
 /// Grok-style: 1–2 последних реплики + крупный субтитр ответа (не лента пузырей).
 struct CompanionDialogueStrip: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
     let messages: [CompanionChatBubble]
     let showResumeStream: Bool
     let isSending: Bool
@@ -14,12 +16,13 @@ struct CompanionDialogueStrip: View {
         VStack(alignment: .leading, spacing: 10) {
             if showResumeStream {
                 Button(action: onResume) {
-                    Label("Продолжить загрузку", systemImage: "arrow.clockwise.circle.fill")
+                    Label(localizationManager.localized("companion_conversation_resume_stream"), systemImage: "arrow.clockwise.circle.fill")
                         .font(.subheadline.bold())
                         .foregroundStyle(.purple)
                 }
                 .disabled(isSending)
                 .frame(maxWidth: .infinity, alignment: .center)
+                .accessibilityIdentifier("companion_resume_stream_button")
             }
 
             if let user = penultimateUserLine {
@@ -40,18 +43,22 @@ struct CompanionDialogueStrip: View {
 
                 feedbackRow(message: assistant, index: idx)
             } else if messages.isEmpty {
-                Text("Скажи или напиши — я рядом.")
+                Text(localizationManager.localized("companion_dialogue_empty"))
                     .font(.title3.weight(.medium))
                     .foregroundStyle(.secondary)
             }
 
             if messages.count > 2 {
                 Button(action: onShowHistory) {
-                    Label("Вся история (\(messages.count))", systemImage: "text.bubble")
-                        .font(.caption.weight(.semibold))
+                    Label(
+                        String(format: localizationManager.localized("companion_conversation_full_history"), messages.count),
+                        systemImage: "text.bubble"
+                    )
+                    .font(.caption.weight(.semibold))
                 }
                 .buttonStyle(.plain)
                 .foregroundStyle(.purple)
+                .accessibilityIdentifier("companion_full_history_button")
             }
         }
         .padding(.horizontal, 16)
@@ -78,11 +85,13 @@ struct CompanionDialogueStrip: View {
             feedbackButton(
                 systemName: message.feedbackVote == "up" ? "hand.thumbsup.fill" : "hand.thumbsup",
                 tint: .green,
+                label: localizationManager.localized("companion_feedback_up"),
                 disabled: feedbackBusyId == message.id || message.feedbackVote != nil
             ) { onFeedback(index, "up") }
             feedbackButton(
                 systemName: message.feedbackVote == "down" ? "hand.thumbsdown.fill" : "hand.thumbsdown",
                 tint: .orange,
+                label: localizationManager.localized("companion_feedback_down"),
                 disabled: feedbackBusyId == message.id || message.feedbackVote != nil
             ) { onFeedback(index, "down") }
         }
@@ -92,6 +101,7 @@ struct CompanionDialogueStrip: View {
     private func feedbackButton(
         systemName: String,
         tint: Color,
+        label: String,
         disabled: Bool,
         action: @escaping () -> Void
     ) -> some View {
@@ -101,5 +111,6 @@ struct CompanionDialogueStrip: View {
         }
         .disabled(disabled)
         .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 }

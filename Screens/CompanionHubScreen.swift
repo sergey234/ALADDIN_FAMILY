@@ -16,6 +16,7 @@ struct CompanionHubScreen: View {
     @State private var threads: [CompanionThreadSummary] = []
     @State private var isLoading = true
     @State private var errorText: String?
+    @State private var showingOfflineCache = false
     var embeddedInHome: Bool = false
     var showsHistory: Bool = true
     var showsCosmetics: Bool = true
@@ -33,7 +34,7 @@ struct CompanionHubScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
                     HStack {
-                        Text("Разговор с героем")
+                        Text(localizationManager.localized("companion_hub_title"))
                             .font((embeddedInHome ? Font.title2 : .largeTitle).bold())
                             .foregroundColor(.white)
                         Spacer()
@@ -44,7 +45,7 @@ struct CompanionHubScreen: View {
                                 Image(systemName: "doc.text")
                                     .foregroundStyle(.white.opacity(0.9))
                             }
-                            .accessibilityLabel("Правила AI-компаньона")
+                            .accessibilityLabel(localizationManager.localized("companion_hub_legal"))
                         }
                     }
 
@@ -53,22 +54,28 @@ struct CompanionHubScreen: View {
                             .colorScheme(.dark)
                     }
 
+                    if showingOfflineCache {
+                        Text(localizationManager.localized("companion_offline_cached_hint"))
+                            .font(.caption)
+                            .foregroundColor(.orange)
+                    }
+
                     if isLoading {
                         ProgressView().tint(.white)
                     } else if let errorText {
                         Text(errorText).foregroundColor(.orange)
                     } else if characters.isEmpty {
                         VStack(alignment: .leading, spacing: 8) {
-                            Text("Герои пока недоступны")
+                            Text(localizationManager.localized("companion_hub_no_heroes_title"))
                                 .font(.headline)
                                 .foregroundColor(.white)
-                            Text("Попроси родителя открыть «Семья» → настройки родительского контроля → раздел «AI-компаньон» и включить «Разговор с героем».")
+                            Text(localizationManager.localized("companion_hub_no_heroes_body"))
                                 .font(.subheadline)
                                 .foregroundColor(.white.opacity(0.9))
                         }
                     } else {
                         if showsHistory && !threads.isEmpty {
-                            Text("История")
+                            Text(localizationManager.localized("companion_hub_history"))
                                 .font(.title2.bold())
                                 .foregroundColor(.white)
                             ForEach(threads) { thread in
@@ -78,7 +85,7 @@ struct CompanionHubScreen: View {
                                     if let onHeroPicked {
                                         onHeroPicked(thread.characterId)
                                     } else {
-                                        navigationManager.navigateTo(.companionConversation)
+                                        navigationManager.navigateTo(.companionHome)
                                     }
                                 } label: {
                                     HStack(spacing: 12) {
@@ -87,7 +94,7 @@ struct CompanionHubScreen: View {
                                             Text(thread.title)
                                                 .font(.subheadline.weight(.semibold))
                                                 .lineLimit(1)
-                                            Text("\(thread.messageCount) сообщ. · \(thread.updatedAtDisplay)")
+                                            Text(String(format: localizationManager.localized("companion_thread_meta"), thread.messageCount, thread.updatedAtDisplay))
                                                 .font(.caption)
                                                 .opacity(0.8)
                                         }
@@ -98,6 +105,7 @@ struct CompanionHubScreen: View {
                                     .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
                                 }
                                 .buttonStyle(.plain)
+                                .accessibilityLabel("\(thread.title), \(String(format: localizationManager.localized("companion_thread_meta"), thread.messageCount, thread.updatedAtDisplay))")
                             }
                         }
 
@@ -111,7 +119,7 @@ struct CompanionHubScreen: View {
                             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                         }
 
-                        Text("Герои")
+                        Text(localizationManager.localized("companion_hub_heroes"))
                             .font(.title2.bold())
                             .foregroundColor(.white)
 
@@ -122,7 +130,7 @@ struct CompanionHubScreen: View {
                                 if let onHeroPicked {
                                     onHeroPicked(hero.id)
                                 } else {
-                                    navigationManager.navigateTo(.companionConversation)
+                                    navigationManager.navigateTo(.companionHome)
                                 }
                             } label: {
                                 HStack(spacing: 16) {
@@ -141,6 +149,7 @@ struct CompanionHubScreen: View {
                                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                             }
                             .buttonStyle(.plain)
+                            .accessibilityLabel("\(hero.displayName). \(defaultStyleLabel(for: hero.id))")
                         }
                     }
                 }
@@ -163,18 +172,19 @@ struct CompanionHubScreen: View {
     }
 
     private func defaultStyleLabel(for characterId: String) -> String {
-        let ageBand = characters.contains(where: { $0.id == "genie" }) ? "parent" : "child"
+        let ageBand = CompanionUserContext.companionAgeBand
         let preset = CompanionPersonalityPresets.defaultPreset(
             characterId: characterId,
             ageBand: ageBand
         )
         let name = CompanionProfileSettings.presetLabels[preset] ?? preset
-        return "Стиль по умолчанию: \(name)"
+        return String(format: localizationManager.localized("companion_hub_default_style"), name)
     }
 
     private func loadHub() async {
         isLoading = true
         errorText = nil
+        showingOfflineCache = false
         defer { isLoading = false }
         do {
             async let chars = CompanionAPIService.shared.fetchCharacters()
@@ -183,14 +193,22 @@ struct CompanionHubScreen: View {
             let fetchedCharacters = try await chars
             let allowed = Set(caps.allowedCharactersFromCapabilities)
             characters = fetchedCharacters.filter { allowed.contains($0.id) }
-            threads = (try? await hist) ?? []
+            let liveThreads = (try? await hist) ?? []
+            threads = liveThreads
+            CompanionOfflineStore.saveThreads(liveThreads)
             if let st = try? await state {
                 trustScore = st.trustScore
                 usageSnapshot = st.usage
             }
             CompanionAnalytics.track(.open, characterId: selectedCharacterId)
         } catch {
-            errorText = error.localizedDescription
+            let cached = CompanionOfflineStore.loadThreads()
+            if !cached.isEmpty {
+                threads = cached
+                showingOfflineCache = true
+            } else {
+                errorText = error.localizedDescription
+            }
         }
     }
 }

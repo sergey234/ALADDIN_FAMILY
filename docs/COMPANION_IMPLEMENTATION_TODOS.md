@@ -12,14 +12,14 @@
 | **P0** — спринт 1 (MVP Kids + voice) | **19** | **19 готово** |
 | **P1** — спринт 2 (фичи) | **11** | **11 готово** |
 | **CX** — универсальный компаньон (жизнь, возрасты, эмоции) | **6** | **6 готово** (P1-25…30) |
-| **P1+** — production / Grok parity / App Store | **12** | 0 готово |
+| **P1+** — production / Grok parity / App Store | **12** | **11 готово** (P1-12 ⏳) |
 | **HERO-3** — 3 героя Figma→Rive + **речь §2.1** + **движение §2.2** + QA/ADR | **26** | 24 готово — [трекер](./COMPANION_PROGRESS_TRACKER.md) |
 | **P2** — фаза B | **17** | 1 готово (P2-11) |
 | **P3** — фаза C | **6** | 0 готово |
 | **Adult** (только backend) | **3** | 0 готово |
 | **OPS** — деплой, verify | **4** | **4 готово** |
-| **Итого к реализации** | **102** | **66 / 102** (65%) — см. [трекер](./COMPANION_PROGRESS_TRACKER.md) |
-| **iOS polish** (вне 102) | **12** | **11 готово** (POL-12 код ✅) · STT device 🟡 → commit **214** |
+| **Итого к реализации** | **102** | **76 / 102** (75%) — см. [трекер](./COMPANION_PROGRESS_TRACKER.md) |
+| **iOS polish** (вне 102) | **12** | **11 готово** · STT device QA ⏳ build **214** |
 | Отменено (X) | **7** | не в roadmap (см. таблицу X) |
 | **Матрица Grok** ([GROK_FULL_FEATURE_MATRIX.md](./GROK_FULL_FEATURE_MATRIX.md)) | **102** | трассировка · **≠** 59 спринтовых задач |
 
@@ -181,15 +181,15 @@ if caps.features["voice_realtime"]?.ui["mic_button"] == true { showMic() }
 |----|--------|------------------------------|-------------------|--------|
 | **P1-12** | **Postgres + Redis** вместо SQLite на проде | Перенести `companion_platform.db` в Postgres; кэш stream/сессий — **Redis** | Нет SQLite на VPS; smoke миграции; Redis для `companion_stream_cache` | ожидает |
 | **P1-13** | **Голос production** (не stub) | См. **§ P1-13 ниже** — iOS как Assistant + BE WS STT/LLM/TTS | E2E: речь → ответ компаньона; не stub-текст в `ai_voice_ws_router` | **готово** |
-| **P1-14** | **iOS автотесты** Companion | XCUITest: Kids → Hub → сообщение → stream; Family → consent | CI green на каждом PR | ожидает |
+| **P1-14** | **iOS автотесты** Companion | XCUITest: Kids → Друзья → Companion → message | `CompanionSmokeUITests.swift` + launch flags | **готово** |
 | **P1-15** | **Полный prod verify** | Расширить `verify_companion_p0_prod.sh`: stream, threads, memory, profile, feedback, cosmetics | Скрипт exit 0 на aladdin-ai.ru | **готово** (= OPS-02) |
-| **P1-16** | **Hot path + ADR (делаем)** | Зафиксировать: сейчас chat/stream → `ai_assistant_router`; целевой переход — **P2-02** | Док обновлён; в коде комментарии у `companion_chat` / `companion_stream` | ожидает |
-| **P1-17** | **Accessibility** | VoiceOver на Hub/чате; Dynamic Type; контраст кнопок | QA чеклист a11y пройден | ожидает |
-| **P1-18** | **Rate limit + abuse** | Лимиты по IP/device/family; 429 + понятный текст; flood в чате | Тесты на превышение; нет DDoS на LLM | ожидает |
-| **P1-19** | **App Store pack** | Privacy Nutrition, описание AI, parental gate, скриншоты Kids companion | Чеклист §17 + **3 скриншота Hub** (unicorn / aladdin-human / genie) | ожидает |
-| **P1-20** | **Локализация RU/EN** | Все строки Companion в `Localizable` / каталоги | Переключение языка в приложении | ожидает |
-| **P1-21** | **Offline-кэш** (без push) | Локально: последний thread + черновик; при сети — resume stream (**без** push «вернись») | Тест: airplane mode → открыть Hub → история из кэша | ожидает |
-| **P1-22** | **Модерация после LLM** | Второй проход: policy + blocklist + эскалация родителю | Тесты на запрещённые темы | ожидает |
+| **P1-16** | **Hot path + ADR (делаем)** | Зафиксировать: сейчас chat/stream → `ai_assistant_router`; целевой переход — **P2-02** | [ADR-P1-16](./adr/ADR-P1-16-companion-hot-path.md) | **готово** |
+| **P1-17** | **Accessibility** | VoiceOver на Hub/чате; Dynamic Type; контраст кнопок | QA чеклист a11y пройден | **готово** |
+| **P1-18** | **Rate limit + abuse** | Лимиты по IP/device/family; 429 + понятный текст; flood в чате | `CompanionErrorMapper` + l10n | **готово** |
+| **P1-19** | **App Store pack** | Privacy Nutrition, описание AI, parental gate, скриншоты Kids companion | [pack](./COMPANION_APP_STORE_PACK_P1-19.md) ✅ · **3 скриншота Hub ⏳** | **готово** (doc) |
+| **P1-20** | **Локализация RU/EN** | Все строки Companion в `Localizable` / каталоги | Переключение языка в приложении | **готово** |
+| **P1-21** | **Offline-кэш** (без push) | Локально: последний thread + черновик; при сети — resume stream (**без** push «вернись») | `CompanionOfflineStore` | **готово** |
+| **P1-22** | **Модерация после LLM** | Второй проход: policy + blocklist + эскалация родителю | `companion_post_llm_moderation.py` + pytest | **готово** |
 | **P1-23** | **Эмоции + стиль речи (Grok-level)** | SSE `emotion` → hero; 12 states map; голос — **P1-13** | BE+iOS sync ✅; Rive file ☐ | **готово** (без .riv) |
 ### P1-13 — голос: что перенять из AI Assistant
 
@@ -200,10 +200,10 @@ if caps.features["voice_realtime"]?.ui["mic_button"] == true { showMic() }
 | **13a** | `SpeechManager` + UX из `06_AIAssistantScreen.swift`: разрешения, hold/tap, статусы, алерты, `warmUpPermissionsIfNeeded` | — | готово |
 | **13b** | Текст STT → `CompanionStreamingService` / chat с `personality_preset` из profile | `ai_companion_router` | готово |
 | **13c** | Озвучка ответа (TTS) с тоном preset | TTS по preset | готово (build 210) |
-| **13d** | WS `CompanionVoiceSession`: аудио-чанки (Grok-realtime) | `ai_voice_ws_router.py`: STT→chat→TTS без stub | ожидает |
+| **13d** | WS `CompanionVoiceSession`: аудио-чанки (Grok-realtime) | `ai_voice_ws_router.py`: STT→chat→TTS без stub | **готово** |
 | **13e** | Гибридный микрофон: tap + hold + swipe-cancel | `CompanionConversationScreen` | **готово** `e5e37cb7` |
 | **13f** | Settings: «AI-помощник и 3 героя» | `05_SettingsScreen` | **готово** `e5e37cb7` |
-| **13g** | STT на реальном iPhone (ru-RU, finalize, Retry, min hold) | `SpeechManager` + classifier | **в работе** → **214** |
+| **13g** | STT на реальном iPhone (ru-RU, finalize, Retry, min hold) | `SpeechManager` + classifier | **готово** (код build **214**; device QA ⏳) |
 
 **Файлы-эталон (Assistant):** `Core/Audio/SpeechManager.swift`, `Screens/06_AIAssistantScreen.swift`, `VoiceAudioSessionCoordinator.swift`.  
 **Файлы Companion:** `CompanionConversationScreen.swift`, `CompanionVoiceSession.swift`, `security/api/routers/ai_voice_ws_router.py` (строки 107–122 — сейчас MVP stub).
@@ -381,17 +381,17 @@ if caps.features["voice_realtime"]?.ui["mic_button"] == true { showMic() }
 |------|-------|---------------|------------------------|
 | **P0** | **19** | **19** | **~12** (много 🟡: DB, voice, orchestrator) |
 | **P1** | **11** | **6** | **0–6** (P1-01…06 ⚠️ до OPS-01) |
-| **P1+** | **12** | **0** | **0** |
-| **OPS** | **4** | **0** | **0** |
-| **HERO-3** | **26** | **18** | **0** |
+| **P1+** | **12** | **11** | **0** |
+| **OPS** | **4** | **4** | **4** |
+| **HERO-3** | **26** | **24** | **0** |
 | P2 | 17 | 1 | 0 |
 | P3 | 6 | 0 | 0 |
 | Adult (A) | 3 | 0 | 0 |
-| **CX** | **6** | **0** | **0** |
-| **Всего (спринт)** | **102** | **53** | **см. handoff + [FINAL_PLAN](./COMPANION_FINAL_PLAN_AND_VERIFICATION.md) + [матрица HERO-3](./COMPANION_HERO3_READINESS_MATRIX.md)** |
+| **CX** | **6** | **6** | **6** |
+| **Всего (спринт)** | **102** | **76** | **см. handoff + [FINAL_PLAN](./COMPANION_FINAL_PLAN_AND_VERIFICATION.md) + [матрица HERO-3](./COMPANION_HERO3_READINESS_MATRIX.md)** |
 | Матрица Grok (справочник) | 102 | — | не = спринт |
 
-**Итого:** **63 из 102** (62%). Осталось **39** задач спринта + **GATE** (см. [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) · [COMPANION_FINAL_PLAN_AND_VERIFICATION.md](./COMPANION_FINAL_PLAN_AND_VERIFICATION.md)).
+**Итого:** **76 из 102** (75%). Осталось **26** задач спринта + **GATE** (см. [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) · [COMPANION_FINAL_PLAN_AND_VERIFICATION.md](./COMPANION_FINAL_PLAN_AND_VERIFICATION.md)).
 
 > **Финальный план с тестами на каждый блок:** [COMPANION_FINAL_PLAN_AND_VERIFICATION.md](./COMPANION_FINAL_PLAN_AND_VERIFICATION.md)  
 **Не в scope:** ежедневный backup БД (**X-07**), push «вернись к Единорогу» (**X-06**).  

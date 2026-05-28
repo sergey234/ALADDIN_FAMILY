@@ -2,6 +2,8 @@ import SwiftUI
 
 /// P1-07 — каталог косметики за trust + выбор наряда.
 struct CompanionCosmeticsSection: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
     let characterId: String
     let trustScore: Int
     @Binding var equippedCosmeticId: String
@@ -14,10 +16,10 @@ struct CompanionCosmeticsSection: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             HStack {
-                Text("Наряды героя")
+                Text(localizationManager.localized("companion_cosmetics_title"))
                     .font(.headline)
                 Spacer()
-                Text("Доверие: \(trustScore)")
+                Text(String(format: localizationManager.localized("companion_cosmetics_trust"), trustScore))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             }
@@ -27,7 +29,7 @@ struct CompanionCosmeticsSection: View {
             } else if let errorText {
                 Text(errorText).font(.caption).foregroundStyle(.orange)
             } else if items.isEmpty {
-                Text("Пока нет нарядов для этого героя.")
+                Text(localizationManager.localized("companion_cosmetics_empty"))
                     .font(.caption)
                     .foregroundStyle(.secondary)
             } else {
@@ -61,11 +63,13 @@ struct CompanionCosmeticsSection: View {
                     .multilineTextAlignment(.center)
                     .lineLimit(2)
                 if item.unlocked {
-                    Text(selected ? "Надето" : "Надеть")
+                    Text(selected
+                         ? localizationManager.localized("companion_cosmetic_equipped")
+                         : localizationManager.localized("companion_cosmetic_equip"))
                         .font(.caption2)
                         .foregroundStyle(selected ? .green : .purple)
                 } else {
-                    Text("Уровень \(item.trustLevel)")
+                    Text(String(format: localizationManager.localized("companion_cosmetic_level"), item.trustLevel))
                         .font(.caption2)
                         .foregroundStyle(.secondary)
                 }
@@ -78,6 +82,7 @@ struct CompanionCosmeticsSection: View {
         }
         .buttonStyle(.plain)
         .disabled(!item.unlocked || isSaving)
+        .accessibilityLabel("\(item.title), \(item.unlocked ? localizationManager.localized("companion_cosmetic_equip") : String(format: localizationManager.localized("companion_cosmetic_level"), item.trustLevel))")
     }
 
     private func load() async {

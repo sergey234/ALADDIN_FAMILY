@@ -1,7 +1,7 @@
 # Companion — единый «Мир героев» (UX + миграция)
 
 **Дата:** 2026-05-27  
-**Статус:** Фаза 1 в коде · E+C (таб Kids + Companion Home)  
+**Статус:** Фазы 1–3 в коде ✅ · build **214** · E+C (Друзья + Companion Home)  
 **Связано:** [COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md](./COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md) · [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md)
 
 ---
@@ -95,18 +95,18 @@ flowchart TB
 | **UX-03** | embeddedInHome Hub/Conversation | M | Фаза 1 ✅ |
 | **UX-04** | Hero chip на сцене (teen+) | S | Фаза 1 ✅ |
 | **UX-05** | Вход «Мир героев» | XS | Фаза 1 ✅ |
-| **UX-06** | Таб Kids «Друзья» | S | Фаза 2 |
-| **UX-07** | Ссылка из unicornPet | XS | Фаза 2 |
-| **UX-08** | Удалить legacy navigation cases | S | Фаза 3 |
-| **UX-09** | GATE навигации R6/R8 | S | QA |
+| **UX-06** | Big button Kids «Друзья» | S | ✅ 2026-05-29 |
+| **UX-07** | Ссылка из unicornPet | XS | ✅ 2026-05-29 |
+| **UX-08** | Legacy navigation → `companionHome` | S | ✅ 2026-05-29 |
+| **UX-09** | GATE навигации R6/R8 | S | QA ⏳ |
 
 ---
 
 ## 8. DoD Фаза 1
 
-- [ ] Один push из Kids → **Companion Home** (не Hub→Conversation chain)
-- [ ] child: только unicorn в API и UI
-- [ ] teen: chip переключает героя без выхода из Home
+- [x] Один push из Kids → **Companion Home** (кнопка «Друзья»)
+- [x] **3 героя** в Hub для всех age_band (PO 29.05; PG + consent)
+- [ ] teen: chip переключает героя без выхода из Home — device QA ⏳
 - [ ] Наряды/история/правила доступны из **Моё**, не дублируются в toolbar разговора (embedded)
 - [ ] HERO-3 Rive/08b сценарий без изменения пути
 

@@ -1,6 +1,6 @@
 import Foundation
 
-/// WebSocket голос companion (P1-13): on-device STT transcript → companion chat → TTS на клиенте.
+/// WebSocket голос companion (P1-13d): on-device STT transcript → companion chat → TTS на клиенте.
 @MainActor
 final class CompanionVoiceSession: ObservableObject {
     @Published private(set) var isConnected = false
@@ -8,12 +8,18 @@ final class CompanionVoiceSession: ObservableObject {
     @Published private(set) var lastTranscript: String = ""
     @Published private(set) var lastAssistantLine: String = ""
     @Published private(set) var lastCosmeticUnlocked: String?
+    @Published private(set) var lastTrustScore: Int?
     @Published private(set) var isAwaitingReply = false
+    @Published private(set) var lastErrorCode: String?
 
     var onAssistantReply: ((String, CompanionHeroEmotion) -> Void)?
+    var onError: ((String) -> Void)?
 
     private var task: URLSessionWebSocketTask?
     private let session = URLSession(configuration: .default)
+    private var sessionReady = false
+    private var pendingConfig: [String: Any]?
+    private var pendingStop: [String: Any]?
 
     func connect(ephemeralToken: String) async throws {
         disconnect()
@@ -23,6 +29,11 @@ final class CompanionVoiceSession: ObservableObject {
         guard VoiceAudioSessionCoordinator.shared.acquire(.companion, profile: .aiLive) else {
             throw NSError(domain: "CompanionVoice", code: 1, userInfo: [NSLocalizedDescriptionKey: "Audio session busy"])
         }
+
+        sessionReady = false
+        pendingConfig = nil
+        pendingStop = nil
+        lastErrorCode = nil
 
         let ws = session.webSocketTask(with: url)
         task = ws
@@ -38,6 +49,9 @@ final class CompanionVoiceSession: ObservableObject {
         task = nil
         isConnected = false
         isAwaitingReply = false
+        sessionReady = false
+        pendingConfig = nil
+        pendingStop = nil
         emotion = .idle
         VoiceAudioSessionCoordinator.shared.release(.companion)
     }
@@ -61,7 +75,11 @@ final class CompanionVoiceSession: ObservableObject {
         if let familyId, !familyId.isEmpty {
             payload["family_id"] = familyId
         }
-        sendJSON(payload)
+        if sessionReady {
+            sendJSON(payload)
+        } else {
+            pendingConfig = payload
+        }
     }
 
     func sendAudioStop(
@@ -81,13 +99,33 @@ final class CompanionVoiceSession: ObservableObject {
         if let securityExpertMode {
             payload["security_expert_mode"] = securityExpertMode
         }
-        sendJSON(payload)
-        isAwaitingReply = true
-        emotion = .thinking
+        if sessionReady {
+            flushStop(payload)
+        } else {
+            pendingStop = payload
+        }
     }
 
     func sendPing() {
         sendJSON(["type": "ping"])
+    }
+
+    private func flushPendingAfterReady() {
+        sessionReady = true
+        if let pendingConfig {
+            sendJSON(pendingConfig)
+            self.pendingConfig = nil
+        }
+        if let pendingStop {
+            flushStop(pendingStop)
+            self.pendingStop = nil
+        }
+    }
+
+    private func flushStop(_ payload: [String: Any]) {
+        sendJSON(payload)
+        isAwaitingReply = true
+        emotion = .thinking
     }
 
     private func sendJSON(_ object: [String: Any]) {
@@ -102,6 +140,7 @@ final class CompanionVoiceSession: ObservableObject {
                 guard let self else { return }
                 switch result {
                 case .failure:
+                    self.reportError(code: "connection_lost")
                     self.disconnect()
                 case .success(let message):
                     if case .string(let text) = message {
@@ -113,6 +152,11 @@ final class CompanionVoiceSession: ObservableObject {
                 }
             }
         }
+    }
+
+    private func reportError(code: String, message: String? = nil) {
+        lastErrorCode = code
+        onError?(message ?? code)
     }
 
     private func handleServerMessage(_ text: String) {
@@ -135,12 +179,21 @@ final class CompanionVoiceSession: ObservableObject {
             let emoRaw = json["emotion"] as? String ?? "happy"
             emotion = CompanionHeroEmotion(rawValue: emoRaw) ?? .speaking
             lastCosmeticUnlocked = json["cosmetic_unlocked"] as? String
+            if let trust = json["trust_score"] as? Int {
+                lastTrustScore = trust
+            }
             onAssistantReply?(line, emotion)
         case "session.ready":
             emotion = .happy
+            flushPendingAfterReady()
+        case "config.ack":
+            break
         case "error":
             isAwaitingReply = false
             emotion = .alert
+            let code = json["code"] as? String ?? "voice_error"
+            let message = json["message"] as? String
+            reportError(code: code, message: message)
         default:
             break
         }

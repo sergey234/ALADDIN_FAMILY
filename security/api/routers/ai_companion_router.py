@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
 """
-ALADDIN Family Companion API
-----------------------------
-REST API for animated family companions (Aladdin / Unicorn).
+ALADDIN Family Companion API (ADR P1-16 hot path).
 
+REST API for animated family companions (Unicorn / Aladdin / Genie).
 Delegates LLM work to ai_assistant_router; adds persona, trust, emotion, cosmetics.
+
+Text: POST /chat, POST /stream (SSE resume).
+Voice turn reuses /chat via companion_voice_turn + ai_voice_ws_router.
+Post-LLM moderation: companion_post_llm_moderation (P1-22).
 
 Usage in main.py:
     from security.api.routers.ai_companion_router import router as ai_companion_router
@@ -83,6 +86,7 @@ try:
     from security.services.ai_platform.companion_intent_router import classify_companion_intent
     from security.services.ai_platform.companion_emotions import emotion_for_companion
     from security.services.ai_platform.companion_ethics import evaluate_companion_ethics, ethics_hint_for_prompt
+    from security.services.ai_platform.companion_post_llm_moderation import moderate_companion_assistant_text
     from security.services.ai_platform.companion_persona import security_expert_mode_active
     from security.services.ai_platform.usage_meters import check_message_allowed, record_message
     from security.services.ai_pii_redactor import redact as redact_pii
@@ -916,19 +920,35 @@ async def companion_chat(
     assistant_resp: ChatMessageResponse = await ai_assistant_chat(assistant_req, user)
     if not mock_allowed() and is_probable_mock_response(assistant_resp.response):
         raise HTTPException(status_code=503, detail="ai_unavailable_no_mock_in_prod")
-    emotion = emotion_for_companion(
-        domain=cintent.domain,
-        mood=cintent.mood,
-        blocked=False,
-        fallback_intent=assistant_resp.intent,
+
+    safe_response, post_mod_blocked, _post_reason = moderate_companion_assistant_text(
+        assistant_resp.response,
+        app_id=ctx["app_id"],
+        age_band=ctx["age_band"],
+        age_verified=ctx["age_verified"],
+        jwt_policy=ctx.get("content_policy"),
     )
-    store.append_thread_message(user_id, thread_id, "assistant", assistant_resp.response, body.character_id)
+    if post_mod_blocked:
+        emotion = "alert"
+        hint = "shake_head"
+        intent_id = "post_moderation_block"
+    else:
+        emotion = emotion_for_companion(
+            domain=cintent.domain,
+            mood=cintent.mood,
+            blocked=False,
+            fallback_intent=assistant_resp.intent,
+        )
+        hint = _animation_hint_for_emotion(emotion)
+        intent_id = cintent.intent_id
+
+    store.append_thread_message(user_id, thread_id, "assistant", safe_response, body.character_id)
     m_key, m_enabled, _ = _memory_scope(http_request, user)
-    _maybe_record_memory(m_key, m_enabled, safe_message, assistant_resp.response)
-    hint = _animation_hint_for_emotion(emotion)
+    if not post_mod_blocked:
+        _maybe_record_memory(m_key, m_enabled, safe_message, safe_response)
 
     return CompanionChatResponse(
-        response=assistant_resp.response,
+        response=safe_response,
         character_id=body.character_id,
         emotion=emotion,
         animation_hint=hint,
@@ -936,7 +956,7 @@ async def companion_chat(
         trust_score=new_score,
         trust_level=level,
         confidence=assistant_resp.confidence or 0.9,
-        intent=cintent.intent_id,
+        intent=intent_id,
         companion_domain=cintent.domain,
         companion_mood=cintent.mood,
         mood_confidence=cintent.mood_confidence,

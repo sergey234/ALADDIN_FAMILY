@@ -5,6 +5,10 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
+from .companion_characters import STANDARD_COMPANION_CHARACTERS
+
+_ALL_CHARS = list(STANDARD_COMPANION_CHARACTERS)
+
 from .config import AppId, DEFAULT_POLICY_BY_APP
 
 DEFAULT_LIMITS_BY_LEVEL: Dict[str, Dict[str, int]] = {
@@ -30,7 +34,7 @@ def default_parent_consent(age_band: str) -> Dict[str, Any]:
             "memory_enabled": False,
             "companion": True,
             "child_can_use_companion": True,
-            "allowed_characters": ["unicorn"],
+            "allowed_characters": list(_ALL_CHARS),
         }
     if age_band == "teen":
         return {
@@ -38,14 +42,14 @@ def default_parent_consent(age_band: str) -> Dict[str, Any]:
             "memory_enabled": False,
             "companion": True,
             "child_can_use_companion": True,
-            "allowed_characters": ["aladdin", "unicorn"],
+            "allowed_characters": list(_ALL_CHARS),
         }
     return {
         "memory": True,
         "memory_enabled": True,
         "companion": True,
         "child_can_use_companion": True,
-        "allowed_characters": ["aladdin", "unicorn"],
+        "allowed_characters": list(_ALL_CHARS),
     }
 
 

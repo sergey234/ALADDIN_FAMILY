@@ -32,11 +32,11 @@ class TestCompanionPersonaSpeech(unittest.TestCase):
         r = classify_companion_intent("мне грустно", "teen", "genie")
         self.assertIn("Без шуток", r.response_hint)
 
-    def test_age_policy_child_only_unicorn(self):
+    def test_age_policy_child_has_all_heroes(self):
         from security.services.ai_platform.age_policy import get_age_band_rules
 
         rules = get_age_band_rules("child")
-        self.assertEqual(rules.allowed_characters, ("unicorn",))
+        self.assertEqual(set(rules.allowed_characters), {"unicorn", "aladdin", "genie"})
 
     def test_age_policy_teen_has_genie(self):
         from security.services.ai_platform.age_policy import get_age_band_rules

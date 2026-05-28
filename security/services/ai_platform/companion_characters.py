@@ -7,6 +7,8 @@ from typing import Dict, Tuple
 
 VALID_CHARACTER_IDS: Tuple[str, ...] = ("unicorn", "aladdin", "genie")
 CHARACTER_ID_PATTERN = "^(aladdin|unicorn|genie)$"
+# UX-HERO-01 (2026-05-29): all age bands — PG content via policy, not hero lockout.
+STANDARD_COMPANION_CHARACTERS: Tuple[str, ...] = VALID_CHARACTER_IDS
 
 CHARACTER_DEFAULT_PRESET: Dict[str, str] = {
     "unicorn": "playful",

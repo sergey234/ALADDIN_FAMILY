@@ -2,6 +2,7 @@ import SwiftUI
 
 /// P1-11 — предупреждение при ≥80% дневного лимита сообщений или голоса.
 struct CompanionUsageBanner: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
     let usage: CompanionUsageSnapshot?
 
     var body: some View {
@@ -35,16 +36,16 @@ struct CompanionUsageBanner: View {
             return BannerModel(
                 icon: "exclamationmark.octagon.fill",
                 tint: .red,
-                title: "Лимит сообщений на сегодня",
-                message: "Новые сообщения герою будут доступны завтра. Попроси родителя о тарифе Premium, если нужно больше."
+                title: localizationManager.localized("companion_usage_msg_limit_title"),
+                message: localizationManager.localized("companion_usage_msg_limit_body")
             )
         }
         if usage.voiceLimitReached {
             return BannerModel(
                 icon: "mic.slash.fill",
                 tint: .orange,
-                title: "Лимит голоса на сегодня",
-                message: "Можно продолжить писать текстом. Завтра лимит обновится."
+                title: localizationManager.localized("companion_usage_voice_limit_title"),
+                message: localizationManager.localized("companion_usage_voice_limit_body")
             )
         }
         if usage.shouldWarnMessages {
@@ -52,8 +53,12 @@ struct CompanionUsageBanner: View {
             return BannerModel(
                 icon: "bubble.left.and.bubble.right.fill",
                 tint: .purple,
-                title: "Осталось мало сообщений",
-                message: "Использовано \(usage.messagesUsagePercent)% лимита. Примерно \(left) сообщений на сегодня."
+                title: localizationManager.localized("companion_usage_msg_warn_title"),
+                message: String(
+                    format: localizationManager.localized("companion_usage_msg_warn_body"),
+                    usage.messagesUsagePercent,
+                    left
+                )
             )
         }
         if usage.shouldWarnVoice {
@@ -62,8 +67,12 @@ struct CompanionUsageBanner: View {
             return BannerModel(
                 icon: "waveform",
                 tint: .indigo,
-                title: "Голос почти на исходе",
-                message: "Осталось около \(leftMin) мин голоса на сегодня (\(usage.voiceUsagePercent)% лимита)."
+                title: localizationManager.localized("companion_usage_voice_warn_title"),
+                message: String(
+                    format: localizationManager.localized("companion_usage_voice_warn_body"),
+                    leftMin,
+                    usage.voiceUsagePercent
+                )
             )
         }
         return nil

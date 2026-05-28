@@ -6,6 +6,10 @@ from __future__ import annotations
 from dataclasses import dataclass
 from typing import Any, Dict, List, Optional, Tuple
 
+from .companion_characters import STANDARD_COMPANION_CHARACTERS
+
+_ALL_HEROES = STANDARD_COMPANION_CHARACTERS
+
 
 @dataclass(frozen=True)
 class AgeBandRules:
@@ -17,31 +21,31 @@ class AgeBandRules:
 
 _RULES: Dict[str, AgeBandRules] = {
     "child": AgeBandRules(
-        allowed_characters=("unicorn",),
+        allowed_characters=_ALL_HEROES,
         voice_enabled=True,
         memory_requires_parent_consent=True,
         max_message_length=500,
     ),
     "teen": AgeBandRules(
-        allowed_characters=("unicorn", "aladdin", "genie"),
+        allowed_characters=_ALL_HEROES,
         voice_enabled=True,
         memory_requires_parent_consent=True,
         max_message_length=1500,
     ),
     "parent": AgeBandRules(
-        allowed_characters=("unicorn", "aladdin", "genie"),
+        allowed_characters=_ALL_HEROES,
         voice_enabled=True,
         memory_requires_parent_consent=False,
         max_message_length=2000,
     ),
     "senior": AgeBandRules(
-        allowed_characters=("aladdin",),
+        allowed_characters=_ALL_HEROES,
         voice_enabled=True,
         memory_requires_parent_consent=False,
         max_message_length=2000,
     ),
     "adult_app": AgeBandRules(
-        allowed_characters=("unicorn", "aladdin", "genie"),
+        allowed_characters=_ALL_HEROES,
         voice_enabled=True,
         memory_requires_parent_consent=False,
         max_message_length=8000,

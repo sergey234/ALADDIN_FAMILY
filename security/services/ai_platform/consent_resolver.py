@@ -5,6 +5,10 @@ from __future__ import annotations
 
 from typing import Any, Dict, Optional
 
+from .companion_characters import STANDARD_COMPANION_CHARACTERS
+
+_DEFAULT_CHARS = list(STANDARD_COMPANION_CHARACTERS)
+
 from .companion_store import CompanionStore, get_companion_store
 
 
@@ -14,7 +18,7 @@ def normalize_parent_consent(raw: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         return {
             "memory_enabled": False,
             "child_can_use_companion": True,
-            "allowed_characters": ["aladdin", "unicorn"],
+            "allowed_characters": list(_DEFAULT_CHARS),
         }
     out = dict(raw)
     if "memory_enabled" not in out:
@@ -27,7 +31,7 @@ def normalize_parent_consent(raw: Optional[Dict[str, Any]]) -> Dict[str, Any]:
         out["child_can_use_companion"] = companion is not False
     chars = out.get("allowed_characters")
     if not isinstance(chars, list) or not chars:
-        out["allowed_characters"] = ["aladdin", "unicorn"]
+        out["allowed_characters"] = list(_DEFAULT_CHARS)
     return out
 
 

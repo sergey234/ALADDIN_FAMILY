@@ -21,12 +21,12 @@ class CompanionP0SmokeTests(unittest.TestCase):
         self.assertIn("subscription", data)
         self.assertIn("max_ai_messages", data["subscription"]["limits"])
 
-    def test_age_policy_child_unicorn_only(self):
+    def test_age_policy_child_all_three_heroes(self):
         from security.services.ai_platform.age_policy import filter_characters_for_age
 
-        chars = [{"id": "aladdin"}, {"id": "unicorn"}]
+        chars = [{"id": "aladdin"}, {"id": "unicorn"}, {"id": "genie"}]
         out = filter_characters_for_age(chars, "child", {"companion": True})
-        self.assertEqual([c["id"] for c in out], ["unicorn"])
+        self.assertEqual(sorted(c["id"] for c in out), ["aladdin", "genie", "unicorn"])
 
     def test_companion_store_trust_and_usage(self):
         from security.services.ai_platform import companion_store

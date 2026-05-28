@@ -1,7 +1,7 @@
 # 🧞 Companion — СТАРТ ДЛЯ СЛЕДУЮЩЕЙ ML-СИСТЕМЫ
 
 > **Открой этот файл первым.** Здесь — что уже сделано, что делать дальше, и полный каталог документов и кода.  
-> **Дата:** 2026-05-29 · **Handoff №4** — [COMPANION_ML_HANDOFF_2026-05-29.md](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Без Rive:** [COMPANION_TASKS_WITHOUT_RIVE.md](./COMPANION_TASKS_WITHOUT_RIVE.md) · [Rive connect](./COMPANION_RIVE_CONNECT_NODE_MCP.md)
+> **Дата:** 2026-05-29 · **Handoff №4** — [COMPANION_ML_HANDOFF_2026-05-29.md](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Без Rive:** [COMPANION_TASKS_WITHOUT_RIVE.md](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Код-спринты:** [CODE_PLAN](./COMPANION_CODE_PLAN_NO_RIVE.md) · [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md) · [Rive connect](./COMPANION_RIVE_CONNECT_NODE_MCP.md)
 
 ---
 
@@ -13,10 +13,10 @@
 | **Визуал** | **2D Rive** (не 3D), сцена **56%** экрана, субтитр снизу — как Grok Companions |
 | **Репозиторий** | `git@github.com:sergey234/ALADDIN_FAMILY.git` · ветка **`master`** |
 | **Рабочая папка iOS** | `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS` |
-| **Build iOS** | **213** TestFlight · **214** локально (STT + Child Rewards) |
-| **Прогресс** | **66 / 102 (65%)** · HERO-3: **24 / 26** |
+| **Build iOS** | **214** (canonical: Info.plist + project.pbxproj + AppConfig) |
+| **Прогресс** | **76 / 102 (75%)** · CODE v2 **29/49** · HERO-3: **24 / 26** |
 | **Главный TODO** | [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) — ставь `[x]` только после реальной проверки |
-| **Rive** | **Блокер** — в конце; сейчас → [TASKS_WITHOUT_RIVE](./COMPANION_TASKS_WITHOUT_RIVE.md) |
+| **Rive** | **Блокер** — в конце; **Sprint 4** → [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md) |
 
 ### Что делать дальше (две параллельные дорожки)
 
@@ -37,8 +37,8 @@ flowchart LR
 
 | Дорожка | ID | Действие |
 |---------|-----|----------|
-| **Сейчас** | iOS-POL-11/12, P1-13g | Build **214**, STT на iPhone |
-| **Сейчас** | UX-06…09, P1-12…22 | [Список без Rive](./COMPANION_TASKS_WITHOUT_RIVE.md) |
+| **Сейчас** | Sprint 4 | P1-12 Postgres · P2-02 orchestrator · P2-12/13/15/16 |
+| **Сейчас** | TF **214** | Push → device QA (11b SPEECH, GATE-DIALOG) |
 | **Потом** | **HERO-3-07** | Rive Editor → [5 steps](./COMPANION_RIVE_EDITOR_5_STEPS.md) |
 | **Потом** | **11b/11c**, **GATE-EMO** | MOTION/MIMIC/D10 + приёмка |
 
@@ -66,18 +66,20 @@ flowchart LR
 
 ## 2. Что уже сделано ✅ (не переделывать)
 
-### 2.1 Продукт и iOS (build 210)
+### 2.1 Продукт и iOS (build 214)
 
 | Сделано | Где в коде / доках |
 |---------|-------------------|
+| **3 героя всем** (PO 29.05) | `age_policy.py`, Hub/Home, voice WS genie |
+| Big button **«Друзья»** + pet + legacy redirect | `08_ChildInterfaceScreen`, `UnicornPetView`, `ALADDINApp` |
+| Mic coach + child hold-only mic | `CompanionConversationScreen` |
 | Единый вход **«Мир героев»** (Главное / Герои / Моё) | `CompanionHomeScreen`, [UNIFIED_HOME_UX](./COMPANION_UNIFIED_HOME_UX.md) |
 | Layout **56%** герой + субтитр | `CompanionHeroLayout`, `CompanionConversationScreen` |
 | Rive host + placeholder `.riv` ×3 | `CompanionHeroRiveHost`, `Resources/Companion/` |
 | **08b PASS** на реальном iPhone (placeholder art) | [08b checklist](./COMPANION_08B_DEVICE_CHECKLIST.md) |
-| **TTS на текстовые ответы** + toggle в «Моё» | `CompanionSpeechOutput`, `CompanionMineTabView` |
-| Hub: Rive-превью вместо только emoji | `CompanionHubHeroPreview` |
-| CI fix `VoiceAudioSessionCoordinator.Consumer.companion` | commit `30e917b2` |
-| pytest companion **46 passed** (11a) | `Tests/test_companion*.py` |
+| **TTS** + **Voice WS polish** + **offline** + **l10n RU/EN** | Sprint 2 |
+| **XCUITest**, **429 errors**, **post-LLM moderation**, **ADR** | Sprint 3 |
+| pytest companion **49 passed** | `Tests/test_companion*.py` |
 
 ### 2.2 Backend / OPS
 
@@ -85,7 +87,7 @@ flowchart LR
 |---------|----------|
 | P0 MVP (19/19), P1 (11/11), CX (6/6), OPS (4/4) | [TRACKER](./COMPANION_PROGRESS_TRACKER.md) |
 | Deploy + verify prod 27.05 | `COMPANION_DEPLOY_P0.md`, HERO-3-10 |
-| 3 героя BE + age_policy (genie не child) | `companion_persona`, routers |
+| 3 героя BE + age_policy (**всем** age_band, PG) | `companion_persona`, `age_policy.py`, routers |
 
 ### 2.3 Figma (только спека)
 
@@ -98,20 +100,20 @@ flowchart LR
 
 ## 3. Что НЕ сделано ⏳ (твоя работа)
 
-| ID | Задача | Блокер визуала «полноценный герой» |
-|----|--------|-----------------------------------|
-| **HERO-3-02b** | 36 фреймов в Figma (`01`–`03`) | **Да** — без art нечего экспортировать |
-| **HERO-3-07** | Production `.riv` ×3 | **Да** — сейчас кружки/placeholder на device |
-| **HERO-3-11b** | Device QA на placeholder | Нет — можно параллельно |
+| ID | Задача | Блокер |
+|----|--------|--------|
+| **P1-12** | Postgres + Redis | Sprint 4 |
+| **P2-02, P2-12…16** | orchestrator, domains, эмпатия | Sprint 4 |
+| **HERO-3-07** | Production `.riv` ×3 | Rive Editor |
+| **HERO-3-11b** | Device QA MOTION/MIMIC/D10 | После 07 (SPEECH часть ⏳ TF) |
 | **HERO-3-11c** | MIMIC после 07 | После 07 |
-| **GATE-P0** | Ждёт 11b | |
-| **GATE-EMO** | Ждёт 07 + D10/11c | |
+| **GATE-*** | D01–D10, EMO, PROD | TestFlight QA |
+| **P1-19b** | 3 marketing screenshots Hub | После 07 |
 
-### Почему на device «кружки», а не герои
+### Устарело (исправлено 29.05)
 
-- В бандле лежат **placeholder** `.riv` (~15 KB), не финальный art.
-- **«Главное»** — прямоугольник 56% (код верный); внутри Rive рисует заглушку.
-- **Джин** не виден на **child**-профиле — по дизайну (teen/parent only).
+- ~~**HERO-3-02b** 36 frames~~ — ✅ сделано  
+- ~~**Джин не виден child**~~ — PO: **3 героя всем**
 
 ---
 
@@ -127,9 +129,9 @@ flowchart LR
 | Страница Figma | Статус |
 |----------------|--------|
 | `00_Spec` | ✅ есть |
-| `01_Unicorn` | ❌ **создать** + 12 frames |
-| `02_Aladdin_Human` | ❌ **создать** + 12 frames |
-| `03_Genie` | ❌ **создать** + 12 frames |
+| `01_Unicorn` | ✅ 12 frames v2 |
+| `02_Aladdin_Human` | ✅ 12 frames |
+| `03_Genie` | ✅ 12 frames OB_03 headfix |
 
 Подробный аудит: [COMPANION_FIGMA_STATUS.md](./COMPANION_FIGMA_STATUS.md)
 
@@ -189,6 +191,8 @@ xcodebuild -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone 16' 
 |------|------------|
 | **COMPANION_ML_HANDOFF_START_HERE.md** | **Этот файл** — входная точка |
 | **COMPANION_PROGRESS_TRACKER.md** | **102 задачи** `[x]`/`[ ]` — единственный источник прогресса |
+| **COMPANION_CODE_PLAN_NO_RIVE.md** | **Финальный план кода v2** — 3 героя всем, UX+mic, спринты 1–5 |
+| **COMPANION_CODE_TODO_TRACKER.md** | **Трекер кода v2** — 49 задач, галочки простым языком |
 | **COMPANION_100_PERCENT_PARALLEL.md** | План vs факт, зоны ответственности |
 | **COMPANION_ML_HANDOFF_2026-05-27.md** | Handoff: BE, SSH, скрипты, индекс кода |
 | **COMPANION_ML_HANDOFF_FULL.md** | Расширенный handoff (часть устарела — сверять с TRACKER) |
@@ -278,7 +282,7 @@ xcodebuild -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone 16' 
 | `Core/Audio/VoiceAudioSessionCoordinator.swift` | `.companion` consumer |
 | `Core/Services/CompanionAPIService.swift` | REST |
 | `Core/Models/CompanionModels.swift` | DTO, emotions |
-| `Core/Config/AppConfig.swift` | build **210** |
+| `Core/Config/AppConfig.swift` | build **214** |
 
 ### 7.4 Ресурсы
 
@@ -294,7 +298,7 @@ xcodebuild -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone 16' 
 |------|------|
 | `security/services/ai_platform/companion_*.py` | Persona, emotions, chat |
 | `app/routers/companion*.py` | API routes |
-| `Tests/test_companion*.py` | 46 pytest |
+| `Tests/test_companion*.py` | 49 pytest |
 
 ---
 
@@ -328,10 +332,10 @@ xcodebuild -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone 16' 
 ## 10. Чеклист первого дня для новой ML
 
 - [ ] Прочитал §0–§3 этого файла  
-- [ ] Открыл [TRACKER](./COMPANION_PROGRESS_TRACKER.md) — понял 66/102 и открытые HERO-3  
-- [ ] Прочитал [FIGMA_STATUS](./COMPANION_FIGMA_STATUS.md) — 0/36 frames  
-- [ ] Прогнал `pytest Tests/test_companion*.py` — ожидаю 46 passed  
-- [ ] Понял: следующий **продуктовый** шаг — **02b → 07**; **параллельно** — **11b** на build 210  
+- [ ] Открыл [TRACKER](./COMPANION_PROGRESS_TRACKER.md) — понял **76/102** и открытые HERO-3 / Sprint 4  
+- [ ] Прочитал [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md) — Sprints 0–3 ✅, Sprint 4 ⏳  
+- [ ] Прогнал `pytest Tests/test_companion*.py` — ожидаю **49 passed**  
+- [ ] Понял: **Sprint 4** (BE scale) + **07** (Rive) параллельно по роли  
 - [ ] Не трогал onboarding Figma  
 
 ---
@@ -347,4 +351,4 @@ xcodebuild -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone 16' 
 
 ---
 
-*Конец handoff. Следующая ML: начни с §0, затем TRACKER, затем 02b или 11b по роли пользователя.*
+*Конец handoff. Следующая ML: TRACKER → CODE_TODO Sprint 4 или HERO-3-07 по роли.*

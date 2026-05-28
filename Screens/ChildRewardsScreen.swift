@@ -663,7 +663,7 @@ struct ChildRewardsScreen: View {
                     Text("✨")
                         .font(.system(size: 60))
                     Spacer()
-                    Text("Голос и чат")
+                    Text(localizationManager.localized("companion_world_card_badge"))
                         .font(.captionSmall.weight(.semibold))
                         .foregroundColor(Color(hex: "6366F1"))
                         .padding(.horizontal, 10)
@@ -672,11 +672,11 @@ struct ChildRewardsScreen: View {
                         .clipShape(Capsule())
                 }
 
-                Text("Мир героев")
+                Text(localizationManager.localized("companion_world_card_title"))
                     .font(.system(size: 32, weight: .bold))
                     .foregroundColor(.textPrimary)
 
-                Text("Зажми микрофон — скажи герою вслух. Единорог, Аладдин и Джин.")
+                Text(localizationManager.localized("companion_world_card_subtitle"))
                     .font(.body)
                     .foregroundColor(.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
@@ -686,12 +686,9 @@ struct ChildRewardsScreen: View {
                     .frame(height: 1)
                     .padding(.vertical, Spacing.xs)
 
-                HStack(spacing: Spacing.m) {
-                    Label("🦄 Единорог", systemImage: "sparkles")
-                    Label("🧞 Джин", systemImage: "wand.and.stars")
-                }
-                .font(.caption)
-                .foregroundColor(.textSecondary)
+                Text(localizationManager.localized("companion_heroes_line"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(Spacing.l)
@@ -716,6 +713,8 @@ struct ChildRewardsScreen: View {
         .buttonStyle(PressScaleButtonStyle())
         .padding(.horizontal, Spacing.screenPadding)
         .accessibilityIdentifier("child_rewards_companion_world_card")
+        .accessibilityLabel(localizationManager.localized("companion_world_card_title"))
+        .accessibilityHint(localizationManager.localized("companion_world_card_subtitle"))
     }
     
     // MARK: - Goal Progress Card

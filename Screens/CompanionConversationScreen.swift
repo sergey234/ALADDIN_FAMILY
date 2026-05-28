@@ -18,6 +18,7 @@ struct CompanionConversationScreen: View {
     @AppStorage("companion_legal_ack_version") private var legalAckVersion: String = ""
     /// P1-13c: озвучка текстовых ответов (Моё → можно выключить).
     @AppStorage("companion_response_tts_enabled") private var responseTTSEnabled = true
+    @AppStorage("companion_mic_coach_seen") private var micCoachSeen = false
     @State private var personalityPreset: String = "friendly"
     @State private var trustScore: Int = 10
     @State private var showCosmetics = false
@@ -47,6 +48,9 @@ struct CompanionConversationScreen: View {
     @State private var holdWillCancel = false
     @State private var holdRecordingDidStart = false
     @State private var holdRecordingBeganAt: Date?
+    @State private var showMicCoach = false
+    @State private var showAssistantBusyHint = false
+    @State private var showingOfflineCache = false
     var embeddedInHome: Bool = false
     var availableCharacters: [CompanionCharacterDTO] = []
     var onSelectCharacter: ((String) -> Void)? = nil
@@ -54,6 +58,10 @@ struct CompanionConversationScreen: View {
 
     private var isCloudAIEnabled: Bool {
         AppConfig.isAIDataSharingEnabled
+    }
+
+    private var isChildProfile: Bool {
+        CompanionUserContext.isChildProfile
     }
 
     var body: some View {
@@ -79,13 +87,36 @@ struct CompanionConversationScreen: View {
             if !isCloudAIEnabled {
                 cloudAIConsentBanner
             }
-            if let errorText, !errorText.isEmpty {
-                Text(errorText)
-                    .font(.caption)
+            if showingOfflineCache {
+                Text(localizationManager.localized("companion_offline_cached_hint"))
+                    .font(.caption2)
                     .foregroundStyle(.orange)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 16)
+            }
+            if let errorText, !errorText.isEmpty {
+                if showAssistantBusyHint {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text(localizationManager.localized("companion_mic_assistant_busy"))
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                        Button(localizationManager.localized("companion_mic_assistant_busy_action")) {
+                            navigationManager.navigateTo(.aiAssistant)
+                        }
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.purple)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
                     .padding(.vertical, 6)
+                } else {
+                    Text(errorText)
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 6)
+                }
             }
             inputBar
         }
@@ -117,11 +148,11 @@ struct CompanionConversationScreen: View {
                     )
                     .padding()
                 }
-                .navigationTitle("Наряды")
+                .navigationTitle(localizationManager.localized("companion_conversation_cosmetics"))
                 .navigationBarTitleDisplayMode(.inline)
                 .toolbar {
                     ToolbarItem(placement: .confirmationAction) {
-                        Button("Готово") { showCosmetics = false }
+                        Button(localizationManager.localized("companion_conversation_done")) { showCosmetics = false }
                     }
                 }
             }
@@ -134,6 +165,16 @@ struct CompanionConversationScreen: View {
             speechManager.warmUpPermissionsIfNeeded()
             voiceSession.onAssistantReply = { line, emo in
                 handleVoiceAssistantReply(line: line, emotion: emo)
+                if let trust = voiceSession.lastTrustScore {
+                    trustScore = trust
+                }
+            }
+            voiceSession.onError = { code in
+                errorText = CompanionDisplayNames.voiceErrorMessage(code: code, localizationManager: localizationManager)
+                heroEmotion = .alert
+            }
+            if input.isEmpty {
+                input = CompanionOfflineStore.loadDraft(characterId: characterId)
             }
             if legalAckVersion.isEmpty {
                 showLegal = true
@@ -141,6 +182,9 @@ struct CompanionConversationScreen: View {
             CompanionAnalytics.track(.open, characterId: characterId, sessionId: sessionId)
             if !embeddedInHome {
                 Task { await caps.refresh() }
+            }
+            if caps.voiceRealtimeEnabled && !micCoachSeen {
+                showMicCoach = true
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: .microphonePermissionDenied)) { _ in
@@ -156,7 +200,8 @@ struct CompanionConversationScreen: View {
             heroEmotion = .alert
         }
         .onReceive(NotificationCenter.default.publisher(for: .voiceAudioSessionBusy)) { _ in
-            errorText = "Микрофон занят другим режимом. Закройте AI-помощник или диктофон."
+            showAssistantBusyHint = true
+            errorText = localizationManager.localized("companion_mic_assistant_busy")
             heroEmotion = .alert
         }
         .onDisappear {
@@ -172,20 +217,20 @@ struct CompanionConversationScreen: View {
                 input = partial
             }
         }
-        .alert("Нужен доступ к микрофону", isPresented: $showMicrophonePermissionAlert) {
+        .alert(localizationManager.localized("companion_alert_mic_title"), isPresented: $showMicrophonePermissionAlert) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Разрешите микрофон в Настройках iPhone → ALADDIN Family.")
+            Text(localizationManager.localized("companion_alert_mic_body"))
         }
-        .alert("Нужно распознавание речи", isPresented: $showSpeechPermissionAlert) {
+        .alert(localizationManager.localized("companion_alert_speech_title"), isPresented: $showSpeechPermissionAlert) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Разрешите «Распознавание речи» в Настройках iPhone → ALADDIN Family.")
+            Text(localizationManager.localized("companion_alert_speech_body"))
         }
-        .alert("Голосовой ввод недоступен", isPresented: $showVoiceServiceUnavailableAlert) {
+        .alert(localizationManager.localized("companion_alert_voice_title"), isPresented: $showVoiceServiceUnavailableAlert) {
             Button("OK", role: .cancel) {}
         } message: {
-            Text("Проверьте интернет и разрешения микрофона, затем попробуйте снова.")
+            Text(localizationManager.localized("companion_alert_voice_body"))
         }
         .onChange(of: voiceSession.emotion) { newValue in
             applyVoiceSessionEmotion(newValue)
@@ -201,16 +246,32 @@ struct CompanionConversationScreen: View {
         .sheet(isPresented: $showFullChatHistory) {
             NavigationView {
                 fullChatHistoryScroll
-                    .navigationTitle("История")
+                    .navigationTitle(localizationManager.localized("companion_conversation_history"))
                     .navigationBarTitleDisplayMode(.inline)
                     .toolbar {
                         ToolbarItem(placement: .confirmationAction) {
-                            Button("Готово") { showFullChatHistory = false }
+                            Button(localizationManager.localized("companion_conversation_done")) { showFullChatHistory = false }
                         }
                     }
             }
             .navigationViewStyle(.stack)
         }
+        .sheet(isPresented: $showMicCoach) {
+            micCoachSheet
+        }
+        .onChange(of: input) { newValue in
+            CompanionOfflineStore.saveDraft(characterId: characterId, text: newValue)
+        }
+        .onChange(of: messages.count) { _ in
+            persistConversationCache()
+        }
+        .onChange(of: characterId) { newId in
+            input = CompanionOfflineStore.loadDraft(characterId: newId)
+        }
+    }
+
+    private func persistConversationCache() {
+        CompanionOfflineStore.saveMessages(threadId: resolveThreadId(), messages: messages)
     }
 
     /// Сцена виртуального друга (~56% высоты), GROK §6.2 — не мини-аватар в шапке чата.
@@ -229,6 +290,13 @@ struct CompanionConversationScreen: View {
             .padding(.top, 6)
             .padding(.bottom, CompanionHeroLayout.heroStatusOverlayHeight)
             .accessibilityIdentifier("companion_hero_stage")
+            if isChildProfile && caps.voiceRealtimeEnabled && embeddedInHome {
+                VStack {
+                    Spacer()
+                    childSceneSpeakButton
+                        .padding(.bottom, CompanionHeroLayout.heroStatusOverlayHeight + 12)
+                }
+            }
             heroStatusOverlay
         }
         .frame(height: layout.heroZoneHeight)
@@ -283,14 +351,29 @@ struct CompanionConversationScreen: View {
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(.purple)
             }
-            HStack {
-                Text(emotionLabel)
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(.primary)
-                Spacer()
-                Label("Доверие \(trustScore)", systemImage: "heart.fill")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
+            if isChildProfile {
+                HStack {
+                    Spacer()
+                    Button {
+                        onOpenMineTab?()
+                    } label: {
+                        Label("\(trustScore)", systemImage: "heart.fill")
+                            .font(.caption.weight(.semibold))
+                            .foregroundStyle(.secondary)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Trust \(trustScore)")
+                }
+            } else {
+                HStack {
+                    Text(emotionLabel)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.primary)
+                    Spacer()
+                    Label(String(format: localizationManager.localized("companion_conversation_trust"), trustScore), systemImage: "heart.fill")
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
         .padding(.horizontal, 16)
@@ -305,27 +388,27 @@ struct CompanionConversationScreen: View {
     }
 
     private var voiceStatusLabel: String {
-        if speechManager.isPreparingRecording { return "Подключаю микрофон…" }
-        if speechManager.isRecording { return "Слушаю тебя…" }
-        if voiceSession.isAwaitingReply { return "Думаю…" }
-        if speechOutput.isSpeaking { return "Говорю…" }
+        if speechManager.isPreparingRecording { return localizationManager.localized("companion_voice_preparing") }
+        if speechManager.isRecording { return localizationManager.localized("companion_voice_listening") }
+        if voiceSession.isAwaitingReply { return localizationManager.localized("companion_voice_thinking") }
+        if speechOutput.isSpeaking { return localizationManager.localized("companion_voice_speaking") }
         return ""
     }
 
     private var emotionLabel: String {
         switch heroEmotion {
-        case .listening: return "Слушаю…"
-        case .speaking: return "Говорю…"
-        case .thinking: return "Думаю…"
-        case .alert: return "Осторожно"
-        case .playful: return "Весело!"
-        case .sad: return "Сочувствую…"
-        case .comfort: return "Рядом с тобой"
-        case .nostalgic: return "Тепло и спокойно"
-        case .curious: return "Интересно!"
-        case .excited: return "Ура!"
-        case .celebrate: return "Ура, круто!"
-        default: return "Привет!"
+        case .listening: return localizationManager.localized("companion_emotion_listening")
+        case .speaking: return localizationManager.localized("companion_emotion_speaking")
+        case .thinking: return localizationManager.localized("companion_emotion_thinking")
+        case .alert: return localizationManager.localized("companion_emotion_alert")
+        case .playful: return localizationManager.localized("companion_emotion_playful")
+        case .sad: return localizationManager.localized("companion_emotion_sad")
+        case .comfort: return localizationManager.localized("companion_emotion_comfort")
+        case .nostalgic: return localizationManager.localized("companion_emotion_nostalgic")
+        case .curious: return localizationManager.localized("companion_emotion_curious")
+        case .excited: return localizationManager.localized("companion_emotion_excited")
+        case .celebrate: return localizationManager.localized("companion_emotion_celebrate")
+        default: return localizationManager.localized("companion_emotion_happy")
         }
     }
 
@@ -337,7 +420,7 @@ struct CompanionConversationScreen: View {
                         Button {
                             Task { await resumeStream() }
                         } label: {
-                            Label("Продолжить загрузку", systemImage: "arrow.clockwise.circle.fill")
+                            Label(localizationManager.localized("companion_conversation_resume_stream"), systemImage: "arrow.clockwise.circle.fill")
                                 .font(.subheadline.bold())
                                 .foregroundStyle(.purple)
                         }
@@ -380,12 +463,12 @@ struct CompanionConversationScreen: View {
             } else {
                 Menu {
                     Toggle(isOn: $securityExpertMode) {
-                        Label("Режим эксперта безопасности", systemImage: "shield.lefthalf.filled")
+                        Label(localizationManager.localized("companion_conversation_security_expert"), systemImage: "shield.lefthalf.filled")
                     }
                 } label: {
                     Image(systemName: securityExpertMode ? "shield.lefthalf.filled" : "shield")
                 }
-                .accessibilityLabel("Настройки безопасности")
+                .accessibilityLabel(localizationManager.localized("companion_conversation_security_expert"))
             }
         }
         ToolbarItem(placement: .navigationBarTrailing) {
@@ -396,20 +479,20 @@ struct CompanionConversationScreen: View {
                     } label: {
                         Image(systemName: "slider.horizontal.3")
                     }
-                    .accessibilityLabel("Открыть вкладку Моё")
+                    .accessibilityLabel(localizationManager.localized("companion_conversation_mine_tab"))
                 } else {
                     Button {
                         showLegal = true
                     } label: {
                         Image(systemName: "doc.text")
                     }
-                    .accessibilityLabel("Правила")
+                    .accessibilityLabel(localizationManager.localized("companion_conversation_rules"))
                     Button {
                         showCosmetics = true
                     } label: {
                         Image(systemName: "sparkles")
                     }
-                    .accessibilityLabel("Наряды героя")
+                    .accessibilityLabel(localizationManager.localized("companion_conversation_cosmetics"))
                 }
             }
         }
@@ -421,6 +504,7 @@ struct CompanionConversationScreen: View {
             feedbackButton(
                 systemName: msg.feedbackVote == "up" ? "hand.thumbsup.fill" : "hand.thumbsup",
                 tint: .green,
+                label: localizationManager.localized("companion_feedback_up"),
                 disabled: feedbackBusyId == msg.id || msg.feedbackVote != nil
             ) {
                 Task { await sendFeedback(messageIndex: index, vote: "up") }
@@ -428,6 +512,7 @@ struct CompanionConversationScreen: View {
             feedbackButton(
                 systemName: msg.feedbackVote == "down" ? "hand.thumbsdown.fill" : "hand.thumbsdown",
                 tint: .orange,
+                label: localizationManager.localized("companion_feedback_down"),
                 disabled: feedbackBusyId == msg.id || msg.feedbackVote != nil
             ) {
                 Task { await sendFeedback(messageIndex: index, vote: "down") }
@@ -440,6 +525,7 @@ struct CompanionConversationScreen: View {
     private func feedbackButton(
         systemName: String,
         tint: Color,
+        label: String,
         disabled: Bool,
         action: @escaping () -> Void
     ) -> some View {
@@ -449,6 +535,7 @@ struct CompanionConversationScreen: View {
         }
         .disabled(disabled)
         .buttonStyle(.plain)
+        .accessibilityLabel(label)
     }
 
     private var cloudAIConsentBanner: some View {
@@ -468,21 +555,108 @@ struct CompanionConversationScreen: View {
     }
 
     private var voiceHintText: String {
-        if speechManager.isPreparingRecording { return "Подключаю микрофон…" }
-        if speechManager.isStoppingRecording { return "Завершаю запись…" }
-        if speechManager.isMicrophoneCoolingDown { return "Подожди секунду и говори снова" }
-        if speechManager.isRecording && isHoldRecording { return "Держи 1–2 сек, отпусти — герой ответит" }
-        if speechManager.isRecording { return "Нажми ещё раз, чтобы остановить и отправить" }
-        return "Микрофон: нажми (tap) или зажми (hold)"
+        if isChildProfile {
+            if speechManager.isPreparingRecording { return localizationManager.localized("companion_mic_coach_step1") }
+            if speechManager.isRecording && isHoldRecording { return localizationManager.localized("companion_mic_coach_step3") }
+            if speechManager.isRecording { return localizationManager.localized("companion_mic_hold_hint_child") }
+            return localizationManager.localized("companion_mic_hold_hint_child")
+        }
+        if speechManager.isPreparingRecording { return localizationManager.localized("companion_voice_preparing") }
+        if speechManager.isStoppingRecording { return localizationManager.localized("companion_voice_stopping") }
+        if speechManager.isMicrophoneCoolingDown { return localizationManager.localized("companion_voice_cooldown") }
+        if speechManager.isRecording && isHoldRecording { return localizationManager.localized("companion_voice_hold_hint") }
+        if speechManager.isRecording { return localizationManager.localized("companion_voice_tap_stop") }
+        return localizationManager.localized("companion_voice_mic_modes")
+    }
+
+    private var childSceneSpeakButton: some View {
+        Text(localizationManager.localized("companion_mic_speak_button"))
+            .font(.title3.bold())
+            .foregroundStyle(.white)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 14)
+            .background(
+                Capsule()
+                    .fill(speechManager.isRecording ? Color.red : Color.purple)
+            )
+            .scaleEffect(isHoldRecording ? 1.06 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: isHoldRecording)
+            .accessibilityIdentifier("companion_child_speak_button")
+            .accessibilityLabel(localizationManager.localized("companion_mic_speak_button"))
+            .accessibilityHint(localizationManager.localized("companion_mic_hold_hint_child"))
+            .highPriorityGesture(
+                DragGesture(minimumDistance: 0)
+                    .onChanged { _ in
+                        guard speechManager.isSpeechInputAvailable, !holdRecordingDidStart else { return }
+                        holdRecordingDidStart = true
+                        holdRecordingBeganAt = Date()
+                        isHoldRecording = true
+                        Task { await startHoldVoiceRecording() }
+                    }
+                    .onEnded { _ in
+                        holdRecordingDidStart = false
+                        isHoldRecording = false
+                        let heldSec = Date().timeIntervalSince(holdRecordingBeganAt ?? Date())
+                        holdRecordingBeganAt = nil
+                        if speechManager.isRecording {
+                            if heldSec < 0.55 {
+                                speechManager.cancelRecording()
+                                errorText = localizationManager.localized("companion_mic_hold_hint_child")
+                                heroEmotion = .alert
+                            } else {
+                                speechManager.stopRecording()
+                            }
+                        }
+                    }
+            )
+            .opacity((speechManager.isPreparingRecording || voiceSession.isAwaitingReply) ? 0.5 : 1.0)
+            .allowsHitTesting(!(speechManager.isPreparingRecording || speechManager.isStoppingRecording || speechManager.isMicrophoneCoolingDown || voiceSession.isAwaitingReply))
+    }
+
+    private var micCoachSheet: some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: 20) {
+                Text("🎤")
+                    .font(.system(size: 56))
+                    .frame(maxWidth: .infinity)
+                Text(localizationManager.localized("companion_mic_coach_title"))
+                    .font(.title2.bold())
+                VStack(alignment: .leading, spacing: 12) {
+                    Text(localizationManager.localized("companion_mic_coach_step1"))
+                    Text(localizationManager.localized("companion_mic_coach_step2"))
+                    Text(localizationManager.localized("companion_mic_coach_step3"))
+                }
+                .font(.body)
+                Spacer()
+                Button {
+                    micCoachSeen = true
+                    showMicCoach = false
+                } label: {
+                    Text(localizationManager.localized("companion_mic_coach_done"))
+                        .font(.headline)
+                        .frame(maxWidth: .infinity)
+                        .padding()
+                        .background(Color.purple)
+                        .foregroundColor(.white)
+                        .clipShape(RoundedRectangle(cornerRadius: 14))
+                }
+                .accessibilityIdentifier("companion_mic_coach_done_button")
+            }
+            .padding(24)
+            .navigationBarTitleDisplayMode(.inline)
+        }
+        .navigationViewStyle(.stack)
+        .modifier(CompanionSheetDetentsModifier())
     }
 
     private var inputBar: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 10) {
-                TextField("Сообщение…", text: $input)
+                TextField(localizationManager.localized("companion_conversation_message_placeholder"), text: $input)
                     .textFieldStyle(.roundedBorder)
                     .focused($isInputFocused)
                     .submitLabel(.send)
+                    .accessibilityIdentifier("companion_message_input")
                     .onSubmit {
                         Task { await sendText() }
                     }
@@ -492,10 +666,10 @@ struct CompanionConversationScreen: View {
                         .foregroundStyle(voiceMicTint)
                         .frame(width: 36, height: 36)
                         .contentShape(Rectangle())
-                        .onTapGesture {
+                        .modifier(CompanionMicTapModifier(isEnabled: !isChildProfile) {
                             guard !isHoldRecording else { return }
                             Task { await toggleVoice() }
-                        }
+                        })
                         .highPriorityGesture(
                             DragGesture(minimumDistance: 0)
                                 .onChanged { value in
@@ -518,7 +692,9 @@ struct CompanionConversationScreen: View {
                                             speechManager.cancelRecording()
                                         } else if heldSec < 0.55 {
                                             speechManager.cancelRecording()
-                                            errorText = "Подержи микрофон чуть дольше (около секунды) и отпусти."
+                                            errorText = isChildProfile
+                                                ? localizationManager.localized("companion_mic_hold_hint_child")
+                                                : localizationManager.localized("companion_voice_hold_too_short")
                                             heroEmotion = .alert
                                         } else {
                                             speechManager.stopRecording()
@@ -526,8 +702,12 @@ struct CompanionConversationScreen: View {
                                     }
                                 }
                         )
-                        .accessibilityLabel("Голосовой ввод")
-                        .accessibilityHint("Нажми для старта/стопа, либо удерживай и отпусти для отправки")
+                        .accessibilityLabel(isChildProfile
+                            ? localizationManager.localized("companion_mic_speak_button")
+                            : localizationManager.localized("companion_voice_input_label"))
+                        .accessibilityHint(isChildProfile
+                            ? localizationManager.localized("companion_mic_hold_hint_child")
+                            : localizationManager.localized("companion_voice_input_hint"))
                         .opacity((speechManager.isPreparingRecording || voiceSession.isAwaitingReply) ? 0.5 : 1.0)
                         .allowsHitTesting(!(speechManager.isPreparingRecording || speechManager.isStoppingRecording || speechManager.isMicrophoneCoolingDown || voiceSession.isAwaitingReply))
                 }
@@ -537,6 +717,8 @@ struct CompanionConversationScreen: View {
                     Image(systemName: "paperplane.fill")
                 }
                 .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending)
+                .accessibilityIdentifier("companion_send_button")
+                .accessibilityLabel(localizationManager.localized("companion_conversation_send"))
             }
             if caps.voiceRealtimeEnabled {
                 Text(voiceHintText)
@@ -549,7 +731,7 @@ struct CompanionConversationScreen: View {
         .toolbar {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
-                Button("Готово") { isInputFocused = false }
+                Button(localizationManager.localized("companion_conversation_done")) { isInputFocused = false }
             }
         }
     }
@@ -577,7 +759,7 @@ struct CompanionConversationScreen: View {
             usageSnapshot = state.usage
             heroEmotion = CompanionHeroEmotion(rawValue: state.emotionDefault) ?? .idle
             if let profile = try? await profileTask {
-                let ageBand = characterId == "unicorn" ? "child" : "parent"
+                let ageBand = CompanionUserContext.companionAgeBand
                 personalityPreset = CompanionPersonalityPresets.effective(
                     stored: profile.personalityPreset,
                     characterId: characterId,
@@ -589,7 +771,7 @@ struct CompanionConversationScreen: View {
                 }
             }
         } catch {
-            errorText = error.localizedDescription
+            errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)
         }
         restorePendingStreamIfNeeded()
     }
@@ -598,8 +780,16 @@ struct CompanionConversationScreen: View {
         do {
             let rows = try await CompanionAPIService.shared.fetchThreadMessages(threadId: threadId)
             messages = rows.map { CompanionChatBubble(text: $0.text, isUser: $0.role == "user") }
+            showingOfflineCache = false
+            persistConversationCache()
         } catch {
-            errorText = error.localizedDescription
+            let cached = CompanionOfflineStore.loadMessages(threadId: threadId)
+            if !cached.isEmpty {
+                messages = cached
+                showingOfflineCache = true
+            } else {
+                errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)
+            }
         }
     }
 
@@ -645,7 +835,7 @@ struct CompanionConversationScreen: View {
             trustScore = resp.trustScore
             HapticFeedback.impact(.light)
         } catch {
-            errorText = error.localizedDescription
+            errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)
         }
     }
 
@@ -720,11 +910,11 @@ struct CompanionConversationScreen: View {
         if messages.indices.contains(index) {
             messages[index] = CompanionChatBubble(
                 id: messages[index].id,
-                text: "Не удалось отправить. Попробуй ещё раз.",
+                text: localizationManager.localized("companion_conversation_send_failed"),
                 isUser: false
             )
         } else {
-            messages.append(CompanionChatBubble(text: "Не удалось отправить. Попробуй ещё раз.", isUser: false))
+            messages.append(CompanionChatBubble(text: localizationManager.localized("companion_conversation_send_failed"), isUser: false))
         }
         heroEmotion = .alert
     }
@@ -771,7 +961,7 @@ struct CompanionConversationScreen: View {
                 if let gate = error as? AIOutboundTextGate.GateError {
                     errorText = gate.errorDescription
                 } else {
-                    errorText = error.localizedDescription
+                    errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)
                 }
                 handleStreamFailure(at: heroIdx)
             }
@@ -807,7 +997,7 @@ struct CompanionConversationScreen: View {
                 if let gate = error as? AIOutboundTextGate.GateError {
                     errorText = gate.errorDescription
                 } else {
-                    errorText = error.localizedDescription
+                    errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)
                 }
                 handleStreamFailure(at: heroIdx)
             }
@@ -836,7 +1026,7 @@ struct CompanionConversationScreen: View {
             return
         }
         guard speechManager.isSpeechInputAvailable else {
-            errorText = "Голосовой ввод недоступен. Проверь разрешения микрофона и распознавания речи."
+            errorText = localizationManager.localized("companion_voice_unavailable")
             heroEmotion = .alert
             showVoiceServiceUnavailableAlert = true
             return
@@ -861,7 +1051,7 @@ struct CompanionConversationScreen: View {
               !speechManager.isMicrophoneCoolingDown else { return }
         guard !voiceSession.isAwaitingReply else { return }
         guard speechManager.isSpeechInputAvailable else {
-            errorText = "Голосовой ввод недоступен. Проверь разрешения микрофона и распознавания речи."
+            errorText = localizationManager.localized("companion_voice_unavailable")
             heroEmotion = .alert
             showVoiceServiceUnavailableAlert = true
             return
@@ -877,7 +1067,7 @@ struct CompanionConversationScreen: View {
     private func handleVoiceTranscript(_ recognized: String?) async {
         guard let text = recognized?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else {
             heroEmotion = .alert
-            errorText = "Не удалось распознать речь. Зажми микрофон на 1–2 сек, говори чётко. Проверь: Настройки → Siri и Диктовка (русский) и доступ в интернет."
+            errorText = localizationManager.localized("companion_voice_recognition_failed")
             return
         }
         messages.append(CompanionChatBubble(text: text, isUser: true))
@@ -929,7 +1119,7 @@ struct CompanionConversationScreen: View {
             }
         } catch {
             heroEmotion = .alert
-            errorText = error.localizedDescription
+            errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)
         }
     }
 
@@ -1027,6 +1217,19 @@ private struct CompanionSheetDetentsModifier: ViewModifier {
     func body(content: Content) -> some View {
         if #available(iOS 16.0, *) {
             content.presentationDetents([.medium, .large])
+        } else {
+            content
+        }
+    }
+}
+
+private struct CompanionMicTapModifier: ViewModifier {
+    let isEnabled: Bool
+    let action: () -> Void
+
+    func body(content: Content) -> some View {
+        if isEnabled {
+            content.onTapGesture(perform: action)
         } else {
             content
         }

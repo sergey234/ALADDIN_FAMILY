@@ -3,7 +3,8 @@
 > **Читать первым:** [COMPANION_ML_HANDOFF_START_HERE.md](./COMPANION_ML_HANDOFF_START_HERE.md) (карта документов).  
 > **Этот файл:** всё сделанное, всё оставшееся, порядок работ, **стратегия «Rive в конце»**.  
 > **Задачи без Rive:** [COMPANION_TASKS_WITHOUT_RIVE.md](./COMPANION_TASKS_WITHOUT_RIVE.md) — параллельная очередь.  
-> **Трекер `[x]`:** [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) — единственный источник цифр **66/102**.
+> **План кода (спринты 1–5):** [COMPANION_CODE_PLAN_NO_RIVE.md](./COMPANION_CODE_PLAN_NO_RIVE.md) · **Трекер кода:** [COMPANION_CODE_TODO_TRACKER.md](./COMPANION_CODE_TODO_TRACKER.md)  
+> **Трекер `[x]`:** [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) — единственный источник цифр **76/102** · CODE v2 **29/49**.
 
 ---
 
@@ -13,7 +14,7 @@
 |---|---|
 | **Можно ли так?** | **Да.** iOS уже работает с **placeholder `.riv`** + **PNG bridge** (`CompanionHeroRasterView`). Чат, API, STT, TTS, навигация, бэкенд **не ждут** production Rive. |
 | **Что откладываем** | Только задачи, где DoD = **качество анимации/мимики в `.riv`** или **GATE-EMO** с production art. |
-| **Что делаем сейчас** | Build **214**, STT на iPhone, UX, P1+, бэкенд, диалоговый QA, XCUITest, локализация — см. [TASKS_WITHOUT_RIVE](./COMPANION_TASKS_WITHOUT_RIVE.md). |
+| **Что делаем сейчас** | **Sprint 4** (Postgres, orchestrator), TestFlight **214**, device QA — см. [TASKS_WITHOUT_RIVE](./COMPANION_TASKS_WITHOUT_RIVE.md). |
 | **Когда Rive** | После **подключения** Rive Editor / license / MCP — пакет **HERO-3-07** → **11c** → **GATE-EMO**. |
 
 ---
@@ -39,7 +40,7 @@
 | **PNG masters** | `docs/assets/*_360x480*.png` |
 | **Figma** | https://www.figma.com/design/vwKcGPUUEZjgayEHNn0BJM |
 | **Prod API** | `https://aladdin-ai.ru` |
-| **Build TestFlight** | **213** (`62c4a35f`); локально готовится **214** |
+| **Build TestFlight** | **213** (`62c4a35f`); **214** — этот commit + push |
 
 **Важно:** корневой `/Users/sergejhlystov/ALADDIN_NEW` может быть в другом git-состоянии — **Companion-работа только в nested `ALADDIN_iOS`.**
 
@@ -54,12 +55,13 @@
 | CX личность | 6 | 6 |
 | OPS | 4 | 4 |
 | HERO-3 | 24 | 26 |
-| P1+ prod | 0 | 12 |
+| P1+ prod | 11 | 12 |
 | P2 | 1 | 17 |
 | P3 | 0 | 6 |
 | Adult BE | 0 | 3 |
-| **Спринт 102** | **66** | **102** |
-| **iOS polish (вне 102)** | 10 | 12 |
+| **Спринт 102** | **76** | **102** |
+| **CODE v2 (Sprints 0–3)** | **29** | **49** |
+| **iOS polish (вне 102)** | 11 | 12 |
 
 ---
 
@@ -88,17 +90,30 @@
 - PO lock: genie master = OB_03 headfix ([CANON](./COMPANION_HERO_ART_CANON.md)).
 - `unicorn.riv` production partial **>25 KB** (158 KB); **aladdin/genie** — placeholder.
 
-### 4.4 Локально (не в TestFlight — сделать build 214)
+### 4.4 CODE Sprints 1–3 (2026-05-29) ✅
+
+| Sprint | Задачи | Ключевые файлы |
+|--------|--------|----------------|
+| **1** UX+герои | UX-HERO-01…03, UX-06…14, P1-20a, P1-17a | Child Interface, Hub, mic coach, l10n |
+| **2** | P1-13d, P1-20, P1-17, P1-21 | VoiceSession, OfflineStore, full l10n |
+| **3** | P1-14, P1-18, P1-22, P1-16, P1-19 doc | XCUITest, ErrorMapper, post-LLM mod, ADR |
+
+- pytest companion: **49 passed**
+- BE P1-22 deployed VPS (`companion_post_llm_moderation.py`)
+- Build **214** (Info.plist + pbxproj + AppConfig)
+
+### 4.5 Локально (включено в commit 214)
 
 | Файл | Изменение |
 |------|-----------|
 | `Core/Audio/SpeechManager.swift` | finalize delay, session release |
 | `Core/Audio/SpeechRecognitionErrorClassifier.swift` | Retry / user messages |
-| `Screens/CompanionConversationScreen.swift` | min hold, STT errors |
+| `Screens/CompanionConversationScreen.swift` | min hold, STT errors, 429 mapper |
 | `Screens/ChildRewardsScreen.swift` | featured «Мир героев» ✨ |
 | `Tests/UnitTests/SpeechPathTests.swift` | unit tests |
+| `Tests/UITests/CompanionSmokeUITests.swift` | P1-14 XCUITest |
 
-**Действие:** commit → bump `AppConfig` + `Info.plist` + `project.pbxproj` → **214** → push → TestFlight.
+**Действие после push:** TestFlight **214** → device QA (11b SPEECH).
 
 ---
 

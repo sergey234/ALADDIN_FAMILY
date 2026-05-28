@@ -80,6 +80,9 @@ struct ChildInterfaceScreen: View {
                         
                         // 🦄 Мои единороги
                         unicornBalanceCard
+
+                        // ✨ Друзья — вход в «Мир героев»
+                        companionFriendsButton
                         
                         // Большие кнопки для детей
                         bigButtonsGrid
@@ -98,6 +101,7 @@ struct ChildInterfaceScreen: View {
             }
         }
         .id("child_interface_lang_\(localizationManager.currentLanguage.rawValue)")
+        .accessibilityIdentifier("aladdin_root_child_interface")
         .sheet(isPresented: $showingContent) {
             if !selectedCategory.isEmpty {
                 ChildContentScreen(
@@ -309,6 +313,50 @@ struct ChildInterfaceScreen: View {
     
     private func getUnicornBalance() -> Int {
         UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+    }
+
+    /// UX-06: крупная кнопка «Друзья» → единый вход в companionHome.
+    private var companionFriendsButton: some View {
+        Button(action: {
+            HapticFeedback.impact(.medium)
+            navigationManager.navigateTo(.companionHome)
+        }) {
+            HStack(spacing: Spacing.m) {
+                Text("🦄🧑🧞")
+                    .font(.system(size: 36))
+
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(localizationManager.localized("companion_friends_button"))
+                        .font(.title2.bold())
+                        .foregroundColor(.white)
+                    Text(localizationManager.localized("companion_friends_hint"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.85))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer()
+
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.system(size: 28))
+                    .foregroundColor(.white.opacity(0.85))
+            }
+            .padding(Spacing.l)
+            .background(
+                LinearGradient(
+                    colors: [Color(hex: "6366F1"), Color(hex: "8B5CF6")],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .cornerRadius(CornerRadius.large)
+            .shadow(color: Color(hex: "6366F1").opacity(0.35), radius: 10, x: 0, y: 5)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityIdentifier("child_interface_companion_friends_button")
+        .accessibilityLabel(localizationManager.localized("companion_friends_button"))
+        .accessibilityHint(localizationManager.localized("companion_friends_hint"))
     }
     
     // MARK: - Age Tabs (НОВОЕ!)

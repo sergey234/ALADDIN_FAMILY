@@ -7,11 +7,11 @@ struct CompanionHomeScreen: View {
         case heroes
         case mine
 
-        var title: String {
+        func title(localizationManager: LocalizationManager) -> String {
             switch self {
-            case .main: return "Главное"
-            case .heroes: return "Герои"
-            case .mine: return "Моё"
+            case .main: return localizationManager.localized("companion_tab_main")
+            case .heroes: return localizationManager.localized("companion_tab_heroes")
+            case .mine: return localizationManager.localized("companion_tab_mine")
             }
         }
 
@@ -25,6 +25,7 @@ struct CompanionHomeScreen: View {
     }
 
     var initialTab: Tab = .main
+    var initialCharacterId: String?
 
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -47,6 +48,9 @@ struct CompanionHomeScreen: View {
         .navigationBarHidden(true)
         .onAppear {
             tab = initialTab
+            if let initialCharacterId, !initialCharacterId.isEmpty {
+                selectedCharacterId = initialCharacterId
+            }
             Task { await loadCharacters() }
         }
     }
@@ -59,9 +63,9 @@ struct CompanionHomeScreen: View {
                 Image(systemName: "chevron.left")
                     .font(.body.weight(.semibold))
             }
-            .accessibilityLabel("Назад")
+            .accessibilityLabel(localizationManager.localized("companion_back"))
 
-            Text("Мир героев")
+            Text(localizationManager.localized("companion_home_title"))
                 .font(.headline.bold())
             Spacer()
         }
@@ -112,7 +116,7 @@ struct CompanionHomeScreen: View {
                     VStack(spacing: 4) {
                         Image(systemName: item.icon)
                             .font(.system(size: 18))
-                        Text(item.title)
+                        Text(item.title(localizationManager: localizationManager))
                             .font(.caption2.weight(tab == item ? .bold : .regular))
                     }
                     .frame(maxWidth: .infinity)
@@ -120,6 +124,7 @@ struct CompanionHomeScreen: View {
                     .foregroundColor(tab == item ? .white : .white.opacity(0.55))
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("companion_home_tab_\(item.rawValue)")
             }
         }
         .padding(.horizontal, 8)

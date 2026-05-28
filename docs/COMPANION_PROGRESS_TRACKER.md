@@ -1,17 +1,17 @@
 # Companion — полный трекер задач (открой в Cursor)
 
-**Обновлено:** 2026-05-29 (iOS build **214** committed locally · TF push ⏳)  
-**Handoff AI:** [COMPANION_HANDOFF_AI_NEXT.md](./COMPANION_HANDOFF_AI_NEXT.md) · **ML №4:** [HANDOFF_29](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Без Rive:** [TASKS_NO_RIVE](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Завтра:** [PLAN_2026-05-29](./COMPANION_PLAN_TOMORROW_2026-05-29.md)  
+**Обновлено:** 2026-05-29 (iOS build **214** · CODE Sprints **0–3 ✅ 29/49** · push ⏳)  
+**Handoff AI:** [COMPANION_HANDOFF_AI_NEXT.md](./COMPANION_HANDOFF_AI_NEXT.md) · **ML №4:** [HANDOFF_29](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Без Rive:** [TASKS_NO_RIVE](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Код-спринты v2:** [CODE_PLAN](./COMPANION_CODE_PLAN_NO_RIVE.md) · [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md) (Sprints 0–3 ✅) · **Завтра:** [PLAN_2026-05-29](./COMPANION_PLAN_TOMORROW_2026-05-29.md)  
 **Rive connect:** [COMPANION_RIVE_CONNECT_NODE_MCP.md](./COMPANION_RIVE_CONNECT_NODE_MCP.md) · **Art canon:** [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md) · **UX:** [UNIFIED_HOME](./COMPANION_UNIFIED_HOME_UX.md)  
-**Прогресс спринта:** **66 / 102 (65%)** · **осталось 36** · **HERO-3: 24/26** · **07 + 11 ⏳** · **02b-PO-lock ✅** · **unicorn.riv >25KB ✅**  
-**Вне 102 (iOS polish):** **11/12 ✅** · **1 в работе** (STT device → **214**) · **POL-12 код ✅**, TF ⏳ — см. § «Сессия 2026-05-28…29»  
+**Прогресс спринта:** **76 / 102 (75%)** · **осталось 26** · **CODE v2: 29/49** · **HERO-3: 24/26** · **07 + 11 ⏳** · **02b-PO-lock ✅** · **unicorn.riv >25KB ✅**  
+**Вне 102 (iOS polish):** **11/12 ✅** · **1 в работе** (STT device QA → **214**) · **POL-12 ✅**  
 **Синхронизация цифр:** только этот файл — остальные `COMPANION_*.md` ссылаются сюда.  
 **ADR 2D vs 3D:** [COMPANION_2D_VS_3D_ADR.md](./COMPANION_2D_VS_3D_ADR.md) ✅ · **Export 07:** [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md)  
 **Матрица HERO-3:** [COMPANION_HERO3_READINESS_MATRIX.md](./COMPANION_HERO3_READINESS_MATRIX.md)  
 **Figma Companion:** https://www.figma.com/design/vwKcGPUUEZjgayEHNn0BJM — **`00_Spec` ✅** · **`01` unicorn v2 ✅** · **`03` genie OB_03×12 + OB_02–06 row ✅** [аудит](./COMPANION_FIGMA_STATUS.md)  
 **Цель:** 2D Rive · 56% full-body rect · субтитр · 12 эмоций + lip-sync  
-**Следующий шаг (без Rive):** **build 214** → STT QA → [TASKS_NO_RIVE](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Rive в конце:** **07** → **11c** → GATE-EMO  
-**iOS:** ✅ build **213** (TF) · build **214** committed locally ⏳ push · **08b PASS** · capabilities decode + coalescing ✅
+**Следующий шаг (код v2):** [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md) → **Sprint 4** (P1-12, P2-02, P2-12/13/15/16) · **Rive в конце:** **07** → **11c** → GATE-EMO  
+**iOS:** build **214** · pytest companion **49** · **08b PASS** · capabilities decode + coalescing ✅
 
 Отмечай `[x]` при закрытии. Источник деталей: [COMPANION_IMPLEMENTATION_TODOS.md](./COMPANION_IMPLEMENTATION_TODOS.md)
 
@@ -26,11 +26,11 @@
 | CX | 6 | 6 |
 | OPS | 4 | 4 |
 | HERO-3 | 24 | 26 |
-| P1+ | 0 | 12 |
+| P1+ | 11 | 12 |
 | P2 | 1 | 17 |
 | P3 | 0 | 6 |
 | Adult | 0 | 3 |
-| **Итого** | **66** | **102** |
+| **Итого** | **76** | **102** |
 
 ---
 
@@ -110,7 +110,7 @@
 - [x] **HERO-3-03** — BE genie + age_policy
 - [x] **HERO-3-04** — Pydantic + cosmetics genie
 - [x] **HERO-3-05** — companion_persona 3 ветки
-- [x] **HERO-3-06** — iOS Hub 3 карточки (🧞 только genie)
+- [x] **HERO-3-06** — iOS Hub 3 карточки **всем** age_band (PO 29.05: 🦄🧑🧞 всем; PG + consent)
 - [ ] **HERO-3-07** — Rive export `.riv` ×3 — 🟡 placeholder в бандле · production art ⏳ → [brief](./COMPANION_RIVE_ANIMATOR_BRIEF.md) · [supplement](./COMPANION_RIVE_ANIMATOR_PLAN_SUPPLEMENT.md) · [6 hats](./COMPANION_RIVE_ANIMATOR_6_HATS_AUDIT.md)
 - [x] **HERO-3-08** — Rive на сцене ([unblock](./COMPANION_RIVE_UNBLOCK.md))
   - [x] **08a** — SPM 6.20.5 + Xcode build + `.riv` в бандле (`verify_companion_rive_ios_bundle.sh`)
@@ -118,7 +118,7 @@
 - [x] **HERO-3-09** — Character Bible §4 в [ALADDIN_Character_Bible.md](./ALADDIN_Character_Bible.md)
 - [x] **HERO-3-10** — deploy + verify prod ✅ 2026-05-27 (`deploy_companion_p0.sh` + `verify_companion_p0_prod.sh` PASS)
 - [ ] **HERO-3-11** — QA D10 + SPEECH/MOTION/MIMIC-Q ([чеклист](./COMPANION_HERO3_11_QA_CHECKLIST.md))
-  - [x] **11a** — pytest companion + SPEECH-Q5 + riv gate (46 tests, 2026-05-27)
+  - [x] **11a** — pytest companion + SPEECH-Q5 + riv gate (**49** tests, 2026-05-29)
   - [ ] **11b** — device: MOTION-Q1–5, MIMIC-Q1–6, D10, SPEECH-Q6 STT/TTS (iPhone, build **213+**; STT-fix → **214+**)
   - [ ] **11c** — повтор MIMIC-Q1 после HERO-3-07 production `.riv`
 - [x] **HERO-3-12** — preset witty
@@ -145,20 +145,20 @@
 
 ---
 
-## P1+ Production (0/12)
+## P1+ Production (11/12)
 
 - [ ] **P1-12** — Postgres + Redis
-- [ ] **P1-13** — голос production
-- [ ] **P1-14** — XCUITest
-- [ ] **P1-15** — prod verify полный
-- [ ] **P1-16** — ADR hot path
-- [ ] **P1-17** — accessibility
-- [ ] **P1-18** — rate limit
-- [ ] **P1-19** — App Store pack (+ 3 скриншота Hub)
-- [ ] **P1-20** — RU/EN
-- [ ] **P1-21** — offline cache
-- [ ] **P1-22** — post-LLM moderation
-- [ ] **P1-23** — эмоции Grok-level (= GATE-EMO)
+- [x] **P1-13** — голос production (P1-13d WS + STT→chat→TTS; genie в voice WS)
+- [x] **P1-14** — XCUITest: Kids → Друзья → Companion → message (`CompanionSmokeUITests.swift`)
+- [x] **P1-15** — prod verify полный (= OPS-02 + VPS deploy Sprint 3 BE)
+- [x] **P1-16** — ADR hot path (`docs/adr/ADR-P1-16-companion-hot-path.md`)
+- [x] **P1-17** — accessibility (VoiceOver, Dynamic Type, stream/feedback/cosmetics)
+- [x] **P1-18** — rate limit 429 + `CompanionErrorMapper` + l10n
+- [x] **P1-19** — App Store pack doc ✅ · **3 скриншота Hub с Rive ⏳** ([pack](./COMPANION_APP_STORE_PACK_P1-19.md))
+- [x] **P1-20** — RU/EN Companion (полная l10n Sprint 2)
+- [x] **P1-21** — offline cache (`CompanionOfflineStore`)
+- [x] **P1-22** — post-LLM moderation (`companion_post_llm_moderation.py`)
+- [x] **P1-23** — эмоции Grok-level (BE+iOS; **GATE-EMO визуал ⏳** после 07)
 
 ---
 
@@ -289,10 +289,22 @@ X-01 · X-02 · X-03 · X-04 · X-05 · X-06 · X-07
 | **iOS-POL-08** | **P1-13f** — Settings «AI-помощник и 3 героя» | ✅ |
 | **iOS-POL-09** | Клавиатура + consent banner в `CompanionConversationScreen` | ✅ |
 | **iOS-POL-10** | TestFlight build **213** push | ✅ |
-| **iOS-POL-11** | STT на реальном iPhone (finalize delay, Retry, min hold 1s) | 🟡 build **214** committed · device QA ⏳ |
-| **iOS-POL-12** | Child Rewards: featured «Мир героев» ✨ над балансом | ✅ build **214** committed · ⏳ TF после push |
+| **iOS-POL-11** | STT на реальном iPhone (finalize delay, Retry, min hold 1s) | ✅ код build **214** · device QA ⏳ |
+| **iOS-POL-12** | Child Rewards: featured «Мир героев» ✨ над балансом | ✅ build **214** |
 
-**UX (Фаза 1):** [UX-01…05](./COMPANION_UNIFIED_HOME_UX.md) ✅ · **UX-06…09** — фаза 2–3 ⏳
+**UX (Фаза 1–3 код):** [UX-01…05](./COMPANION_UNIFIED_HOME_UX.md) ✅ · **UX-06…08** ✅ (Друзья, pet, legacy) · **UX-09** GATE R6/R8 ⏳ QA
+
+## Сессия 2026-05-29 — CODE Sprints 1–3 (v2, зафиксировано)
+
+> **CODE_TODO:** Sprints **0–3 = 29/49** ✅ · pytest companion **49** · BE P1-22 на VPS.
+
+| Блок | ID | Статус |
+|------|-----|--------|
+| Sprint 1 UX+герои | UX-HERO-01…03, UX-06…14, P1-20a, P1-17a | ✅ код |
+| Sprint 2 | P1-13d, P1-20, P1-17, P1-21 | ✅ код |
+| Sprint 3 | P1-14, P1-18, P1-22, P1-16, P1-19 (doc) | ✅ код |
+| Отложено Rive | UX-14b, HERO-3-07, P1-19 screenshots | ⏳ |
+| Следующий код | Sprint 4: P1-12, P2-02, P2-12/13/15/16 | ⏳ |
 
 ## В конце (по решению команды)
 
@@ -301,7 +313,7 @@ X-01 · X-02 · X-03 · X-04 · X-05 · X-06 · X-07
 - [x] **02b** Figma 36 frames + art ✅ 2026-05-27  
 - [ ] **07** Rive `.riv` ×3 (aladdin + genie production export)  
 - [ ] **11b / 11c** device QA (STT после **214**)  
-- [ ] **TestFlight** build **214** (STT + Child Rewards card) — committed locally, push ⏳
+- [ ] **TestFlight** build **214** — push ⏳ → device QA (11b SPEECH, GATE-DIALOG)
 
 ---
 
