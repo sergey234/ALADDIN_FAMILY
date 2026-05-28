@@ -2,7 +2,7 @@
 
 **Файл:** [Companion-Heroes](https://www.figma.com/design/vwKcGPUUEZjgayEHNn0BJM/Companion-Heroes)  
 **Ключ:** `vwKcGPUUEZjgayEHNn0BJM`  
-**Проверено:** 2026-05-27 (Figma API `get_metadata`)
+**Проверено:** 2026-05-27 · **live MCP:** [COMPANION_FIGMA_AUDIT_LIVE_2026-05-28.md](./COMPANION_FIGMA_AUDIT_LIVE_2026-05-28.md) ✅ **36/36**
 
 ---
 
@@ -11,11 +11,13 @@
 | Страница | По плану | В Figma сейчас |
 |----------|----------|----------------|
 | **00_Spec** | ADR, Motion, Mimic, Sign-off, export brief | ✅ **есть** |
-| **01_Unicorn** | 12× `unicorn/emotion/*` 360×480 | ❌ **нет** (страница не создана) |
-| **02_Aladdin_Human** | 12× `aladdin/emotion/*` | ❌ **нет** |
-| **03_Genie** | 12× `genie/emotion/*` | ❌ **нет** |
+| **01_Unicorn** | 12× `unicorn/emotion/*` 360×480 | ✅ **v2 cinematic** · CONCEPT круги удалены · master `25:2` |
+| **02_Aladdin_Human** | 12× `aladdin/emotion/*` | ✅ **OB_01** master |
+| **03_Genie** | 12× `genie/emotion/*` + PO row | ✅ **OB_03** в 12 frames (`122:2`) · ряд **OB_02–06** (`101:2`) |
 
-**Итого макетов:** **0 / 36** (только спецификация в `00_Spec`).
+**Итого макетов:** **36 / 36** ✅ **art-pass 2026-05-27** — согласованный PNG в каждом frame 360×480 ([CANON](./COMPANION_HERO_ART_CANON.md)).
+
+> **v1 art-pass:** один master на героя × 12 эмоций (лицо/поза в Rive **07**). Отдельные 12 иллюстраций на эмоцию — опционально v2.
 
 > Фрейм `02_DONE_36_frames` на `00_Spec` — **не «готово»**, а напоминание: «⛔ HERO-3-02 ЗАБЛОКИРОВАН — не рисовать 3×12 до sign-off».
 
@@ -40,7 +42,7 @@
 
 1. Создать 3 страницы: `01_Unicorn`, `02_Aladdin_Human`, `03_Genie`.
 2. На каждой — **12 фреймов** 360×480 pt (имена: `unicorn/emotion/happy`, …).
-3. Стиль: иллюстрация как онбординг (OB_01 / OB_02 / OB_05), не wireframe-круг.
+3. Стиль: **согласованный art** — [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md) (PO ✅ 27.05); не wireframe-круг.
 4. `speaking` — **не** 13-й постер; рот — в Motion/Rive.
 
 ### Шаг B — **HERO-3-07** (Rive export)

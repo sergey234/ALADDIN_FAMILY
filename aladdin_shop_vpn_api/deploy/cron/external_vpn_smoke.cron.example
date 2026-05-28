@@ -1,0 +1,3 @@
+# VPN32 — на машине ВНЕ 149.154.65.180 (ноутбук, второй VPS, healthchecks.io).
+# Каждые 5 минут:
+*/5 * * * * root ALADDIN_EXTERNAL_SMOKE_URLS="https://aladdin-ai.ru/v1/legal/vpn-instructions,https://aladdin-ai.ru/v1/legal/vpn-terms" /opt/aladdin-shop-vpn-api/deploy/scripts/external_vpn_smoke.sh >>/var/log/aladdin-external-vpn-smoke.log 2>&1

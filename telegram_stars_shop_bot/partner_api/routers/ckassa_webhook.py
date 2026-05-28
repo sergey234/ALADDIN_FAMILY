@@ -183,6 +183,10 @@ async def _ckassa_payment_webhook_impl(request: Request, settings: Settings) -> 
                 new_status=new_status,
             )
         )
+        if new_status == "paid":
+            from bot.services.vpn_payment_hook import schedule_vpn_provision_after_paid
+
+            schedule_vpn_provision_after_paid(settings, order_id_out)
     return PlainTextResponse("success", status_code=200)
 
 

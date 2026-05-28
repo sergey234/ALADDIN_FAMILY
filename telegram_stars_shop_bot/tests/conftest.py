@@ -12,6 +12,7 @@ os.environ.setdefault("ADMIN_IDS", "1")
 os.environ.setdefault("API_KEY_PEPPER", "pytest_pepper_value_minimum_32_chars__")
 # В проде курс только из .env; в тестах — стабильное значение, если тест не переопределяет.
 os.environ.setdefault("USD_RUB_RATE", "90")
+os.environ.setdefault("VPN_REFERRAL_API_RETRY_INTERVAL_SECONDS", "0")
 
 
 @pytest.fixture

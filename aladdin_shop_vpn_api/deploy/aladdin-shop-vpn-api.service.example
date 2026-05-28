@@ -1,0 +1,26 @@
+# Пример unit для прод (скопировать в /etc/systemd/system/aladdin-shop-vpn-api.service).
+# Рабочий каталог на сервере: /opt/aladdin-shop-vpn-api (корень выката, не /current)
+# Python: venv в /opt/aladdin-shop-vpn-api/venv
+# Переменные: /opt/aladdin-shop-vpn-api/env (не в git)
+
+[Unit]
+Description=ALADDIN Shop VPN control plane API
+After=network.target
+
+[Service]
+Type=simple
+# vpn-13: рекомендуется User=aladdin-shop-vpn + sudoers + VPN_WG_POST_* на *-sudo.sh (см. VPN13_SECRETS_SUDOERS_RUNBOOK.md).
+# MVP: User=root и прямые пути на wg-peer-up.sh / wg-peer-down.sh.
+User=root
+Group=root
+WorkingDirectory=/opt/aladdin-shop-vpn-api
+EnvironmentFile=-/opt/aladdin-shop-vpn-api/env
+ExecStart=/opt/aladdin-shop-vpn-api/venv/bin/python -m uvicorn aladdin_shop_vpn_api.main:app --host 127.0.0.1 --port 8091
+Restart=on-failure
+RestartSec=3
+# vpn-26: не уходить в бесконечный restart-loop при битом env/коде
+StartLimitIntervalSec=300
+StartLimitBurst=10
+
+[Install]
+WantedBy=multi-user.target

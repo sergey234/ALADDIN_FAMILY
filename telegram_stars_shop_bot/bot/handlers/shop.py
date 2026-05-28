@@ -21,6 +21,8 @@ from bot.keyboards.shop_kb import (
     payment_methods_kb,
     premium_dest_kb,
     verify_username_kb,
+    vpn_invoice_pay_url_kb,
+    vpn_order_invoice_kb,
 )
 from bot.services import analytics_repo, balance_repo, emoji_captcha, orders_repo, users_repo
 from bot.services.operator_payment_memo import operator_bc_manual_checklist_html
@@ -57,7 +59,7 @@ def _fmt_quote_html(p: Product, q, settings: Settings) -> str:
         f"База: <b>{format_shop_quote_money_html(settings, q.rub_list, q.usd)}</b>",
     ]
     if q.rub_referral_discount > 0:
-        lines.append(f"Реф. скидка: <b>−{esc(f'{q.rub_referral_discount:.2f}')} ₽</b>")
+        lines.append(f"Скидка по приглашению: <b>−{esc(f'{q.rub_referral_discount:.2f}')} ₽</b>")
     if q.rub_wholesale_discount > 0:
         lines.append(f"Опт Stars: <b>−{esc(f'{q.rub_wholesale_discount:.2f}')} ₽</b>")
     lines.append(f"К оплате: <b>{format_shop_quote_money_html(settings, q.rub_final, q.usd)}</b>")
@@ -71,15 +73,19 @@ async def _is_first_purchase(conn, user_id: int) -> bool:
     return await orders_repo.count_user_completed_orders(conn, user_id) == 0
 
 
-def _payment_kb(product_id: str, balance: float, rub_final: float):
+def _payment_kb(product: Product, balance: float, rub_final: float):
     show_full = balance + 1e-6 >= rub_final
     show_partial = (not show_full) and balance >= 0.01 and (rub_final - balance) > 0.01
+    from bot.services.vpn_nav import VPN_FLOW_MAIN_CALLBACK
+
+    back_cb = VPN_FLOW_MAIN_CALLBACK if (product.kind or "").strip().lower() == "vpn" else None
     return payment_methods_kb(
-        product_id,
+        product.id,
         show_full_balance=show_full,
         show_partial_mix=show_partial,
         balance=balance,
         rub_final=rub_final,
+        back_callback=back_cb,
     )
 
 
@@ -142,7 +148,7 @@ async def _present_fiat_checkout(
                 )
             if lava_checkout_configured(settings):
                 memo = f"ORDER{order_id}"
-                pay_lava, ext_lava = await create_invoice_payment_meta(
+                pay_lava, ext_lava, _lava_qr = await create_invoice_payment_meta(
                     settings,
                     order_id=order_id,
                     sum_rub=rub_due,
@@ -310,7 +316,7 @@ async def _present_fiat_checkout(
         intro_html = intro_html + miss
 
     memo = f"ORDER{order_id}"
-    pay_url, ext_id = await create_invoice_payment_meta(
+    pay_url, ext_id, _lava_qr = await create_invoice_payment_meta(
         settings,
         order_id=order_id,
         sum_rub=rub_due,
@@ -457,6 +463,351 @@ async def _present_crypto_checkout(
     await cb.message.edit_text(intro_html + pay, reply_markup=hub_menu_kb())
 
 
+def _order_row_str(row, key: str, default: str = "") -> str:
+    """sqlite3.Row не имеет .get() — только индексация по имени колонки."""
+    try:
+        val = row[key]
+    except (KeyError, IndexError, TypeError):
+        return default
+    if val is None:
+        return default
+    return str(val).strip()
+
+
+def _parse_pay_inv(data: str) -> tuple[str, int] | None:
+    parts = (data or "").split(":")
+    if len(parts) < 4 or parts[0] != "pay" or parts[1] != "inv":
+        return None
+    try:
+        return parts[2], int(parts[3])
+    except ValueError:
+        return None
+
+
+async def _require_pending_vpn_order(
+    cb: CallbackQuery,
+    conn,
+    order_id: int,
+    user_id: int,
+):
+    row = await orders_repo.get_order(conn, order_id)
+    if not row or int(row["user_id"]) != user_id:
+        await cb.answer("Заказ не найден", show_alert=True)
+        return None
+    if _order_row_str(row, "product_kind").lower() != "vpn":
+        await cb.answer("Это не заказ VPN", show_alert=True)
+        return None
+    if _order_row_str(row, "status").lower() != "pending_payment":
+        await cb.answer("Заказ уже оплачен или закрыт", show_alert=True)
+        return None
+    return row
+
+
+async def _present_vpn_order_invoice(
+    cb: CallbackQuery,
+    settings: Settings,
+    conn,
+    products: list[Product],
+    *,
+    order_id: int,
+) -> None:
+    from bot.services.vpn_invoice_screen import vpn_invoice_screen_html
+
+    row = await _require_pending_vpn_order(cb, conn, order_id, cb.from_user.id)
+    if not row:
+        return
+    pmap = products_by_id(products)
+    p = pmap.get(str(row["product_id"] or ""))
+    if not p:
+        await cb.answer("Товар не найден", show_alert=True)
+        return
+    due = orders_repo.amount_due_external(row)
+    try:
+        bap = float(row["balance_applied_rub"] or 0)
+    except (KeyError, TypeError):
+        bap = 0.0
+    pm = _order_row_str(row, "payment_method", "fiat").lower()
+    html = await vpn_invoice_screen_html(
+        settings,
+        conn,
+        order_id=order_id,
+        rub_due=due,
+        product=p,
+        telegram_user_id=cb.from_user.id,
+        payment_method=pm,
+        balance_applied=bap,
+    )
+    await cb.message.edit_text(
+        html,
+        reply_markup=vpn_order_invoice_kb(settings, order_id, pm),
+    )
+
+
+async def _pay_inv_lava_channel(
+    cb: CallbackQuery,
+    settings: Settings,
+    conn,
+    *,
+    order_id: int,
+    lava_service: str,
+    channel: str,
+) -> None:
+    from bot.services.vpn_payment_copy import (
+        vpn_invoice_card_checkout_html,
+        vpn_invoice_sbp_checkout_html,
+    )
+
+    row = await _require_pending_vpn_order(cb, conn, order_id, cb.from_user.id)
+    if not row:
+        return
+    ok_cd, wait_s = await allow_checkout_invoice_attempt(
+        conn, order_id, settings.payment_checkout_invoice_cooldown_seconds
+    )
+    if not ok_cd:
+        await cb.answer(
+            f"Повторный счёт можно запросить примерно через {int(wait_s) + 1} с.",
+            show_alert=True,
+        )
+        return
+    due = orders_repo.amount_due_external(row)
+    memo = f"ORDER{order_id}"
+    pay_url, ext, qr_url = await create_invoice_payment_meta(
+        settings,
+        order_id=order_id,
+        sum_rub=due,
+        comment=memo[:255],
+        include_service=[lava_service],
+    )
+    if not pay_url:
+        await cb.answer("Не удалось открыть оплату. Попробуйте позже.", show_alert=True)
+        return
+    await orders_repo.set_invoice_provider_metadata(
+        conn, order_id=order_id, provider="lava", external_id=ext
+    )
+    ch = (channel or lava_service).strip().lower()
+    if ch == "sbp":
+        html = vpn_invoice_sbp_checkout_html(
+            order_id=order_id, rub_due=due, qr_in_chat=True
+        )
+    else:
+        html = vpn_invoice_card_checkout_html(order_id=order_id, rub_due=due)
+    await cb.message.edit_text(
+        html,
+        reply_markup=vpn_invoice_pay_url_kb(
+            pay_url,
+            back_callback=f"pay:inv:view:{order_id}",
+            channel=ch,
+        ),
+    )
+    if ch == "sbp":
+        from aiogram.types import BufferedInputFile
+
+        from bot.services.wg_qr_util import pay_sbp_qr_filename, pay_url_qr_png_bytes
+
+        cap = (
+            f"<b>📱 QR — страница оплаты СБП</b>\n"
+            f"Заказ <code>{esc(order_id)}</code> · <b>{esc(f'{float(due):.2f}')} ₽</b>\n\n"
+            "1) Отсканируйте камерой или в банке.\n"
+            "2) Откроется страница LAVA — там будет <b>QR НСПК</b> для СБП.\n"
+            "3) Или нажмите кнопку «📱 Открыть СБП» в сообщении выше."
+        )
+        try:
+            if qr_url:
+                await cb.message.answer_photo(qr_url, caption=cap)
+            else:
+                png = pay_url_qr_png_bytes(pay_url)
+                photo = BufferedInputFile(png, filename=pay_sbp_qr_filename(order_id))
+                await cb.message.answer_photo(photo, caption=cap)
+        except Exception:
+            _log.warning("sbp_qr_photo_failed order_id=%s", order_id, exc_info=True)
+    await cb.answer()
+
+
+async def _pay_inv_ckassa(
+    cb: CallbackQuery,
+    settings: Settings,
+    conn,
+    *,
+    order_id: int,
+) -> None:
+    from bot.services.vpn_payment_copy import vpn_invoice_card_checkout_html
+
+    row = await _require_pending_vpn_order(cb, conn, order_id, cb.from_user.id)
+    if not row:
+        return
+    if not ckassa_checkout_configured(settings):
+        await cb.answer("Ckassa сейчас недоступна", show_alert=True)
+        return
+    ok_cd, wait_s = await allow_checkout_invoice_attempt(
+        conn, order_id, settings.payment_checkout_invoice_cooldown_seconds
+    )
+    if not ok_cd:
+        await cb.answer(
+            f"Повторный счёт можно запросить примерно через {int(wait_s) + 1} с.",
+            show_alert=True,
+        )
+        return
+    due = orders_repo.amount_due_external(row)
+    product_title = str(row["product_title"])
+    un = (cb.from_user.username or "").strip()
+    fn = (cb.from_user.first_name or "").strip()
+    ln = (cb.from_user.last_name or "").strip()
+    fio = (f"{fn} {ln}".strip() or (f"@{un}" if un else f"Telegram user {cb.from_user.id}"))[:200]
+    payer_email = f"tg{cb.from_user.id}@telegram.invalid"
+    payer_phone = (settings.ckassa_default_phone or "").strip() or "+79990000000"
+    ck_url, ck_ext = await create_ckassa_payment_meta(
+        settings,
+        order_id=order_id,
+        rub_due=due,
+        product_title=product_title,
+        payer_email=payer_email,
+        payer_phone=payer_phone,
+        payer_fio=fio,
+    )
+    if not ck_url:
+        await cb.answer("Ссылка Ckassa не открылась", show_alert=True)
+        return
+    await orders_repo.set_invoice_provider_metadata(
+        conn, order_id=order_id, provider="ckassa", external_id=ck_ext
+    )
+    html = vpn_invoice_card_checkout_html(order_id=order_id, rub_due=due)
+    await cb.message.edit_text(
+        html,
+        reply_markup=vpn_invoice_pay_url_kb(
+            ck_url,
+            back_callback=f"pay:inv:view:{order_id}",
+            channel="card",
+        ),
+    )
+    await cb.answer()
+
+
+async def _pay_inv_bc_universal(
+    cb: CallbackQuery,
+    settings: Settings,
+    conn,
+    *,
+    order_id: int,
+) -> None:
+    row = await _require_pending_vpn_order(cb, conn, order_id, cb.from_user.id)
+    if not row:
+        return
+    univers = (getattr(settings, "ckassa_bc_universal_payment_url", "") or "").strip()
+    if not univers:
+        await cb.answer("Ссылка оплаты не настроена", show_alert=True)
+        return
+    due = orders_repo.amount_due_external(row)
+    rub_s = esc(f"{float(due):.2f}")
+    oid_s = esc(str(order_id))
+    order_memo = esc(f"ORDER{order_id}")
+    sup_u = support_order_question_url(settings, order_id)
+    text = (
+        f"<b>Заказ <code>{oid_s}</code></b> · <b>{rub_s} ₽</b>\n\n"
+        "<b>Оплата по ссылке</b>\n"
+        f"• Сумма на странице: <b>{rub_s} ₽</b>\n"
+        f"• В комментарии (если есть поле): <code>{order_memo}</code>\n"
+        "• После оплаты нажмите <b>«Я оплатил»</b>.\n"
+    )
+    await cb.message.edit_text(
+        text,
+        reply_markup=fiat_checkout_options_kb(
+            universal_url=univers,
+            ckassa_shop_url=None,
+            lava_url=None,
+            bc_claim_order_id=order_id,
+            support_order_url=sup_u,
+        ),
+    )
+    await cb.answer()
+
+
+@router.callback_query(F.data.startswith("pay:inv:"))
+async def pay_inv_router(
+    cb: CallbackQuery,
+    settings: Settings,
+    conn,
+    products: list[Product],
+    state: FSMContext,
+) -> None:
+    parsed = _parse_pay_inv(cb.data or "")
+    if not parsed:
+        await cb.answer()
+        return
+    action, order_id = parsed
+    if action == "view":
+        await _present_vpn_order_invoice(cb, settings, conn, products, order_id=order_id)
+        await cb.answer()
+        return
+    if action == "cancel":
+        await state.clear()
+        await cb.answer("Счёт закрыт. Заказ остаётся в «Мои заказы».")
+        from bot.handlers.vpn import _vpn_present_main_screen
+
+        await _vpn_present_main_screen(
+            cb.message, cb.bot, settings, conn, products, cb.from_user.id
+        )
+        return
+    if action == "sbp":
+        await _pay_inv_lava_channel(
+            cb, settings, conn, order_id=order_id, lava_service="sbp", channel="sbp"
+        )
+        return
+    if action == "card":
+        await _pay_inv_lava_channel(
+            cb, settings, conn, order_id=order_id, lava_service="card", channel="card"
+        )
+        return
+    if action == "ckassa":
+        await _pay_inv_ckassa(cb, settings, conn, order_id=order_id)
+        return
+    if action == "bc":
+        await _pay_inv_bc_universal(cb, settings, conn, order_id=order_id)
+        return
+    if action == "crypto":
+        row = await _require_pending_vpn_order(cb, conn, order_id, cb.from_user.id)
+        if not row:
+            return
+        due = orders_repo.amount_due_external(row)
+        q_usd = float(row["usd_base"] or 0)
+        rub_total = float(row["rub_after_discounts"] or due)
+        usd_part = q_usd * (due / rub_total) if rub_total > 1e-6 else q_usd
+        from bot.services.vpn_invoice_screen import vpn_invoice_screen_html
+
+        pmap = products_by_id(products)
+        p = pmap.get(str(row["product_id"] or ""))
+        if not p:
+            await cb.answer("Товар не найден", show_alert=True)
+            return
+        try:
+            bap = float(row["balance_applied_rub"] or 0)
+        except (KeyError, TypeError):
+            bap = 0.0
+        pm = _order_row_str(row, "payment_method", "crypto").lower()
+        intro = await vpn_invoice_screen_html(
+            settings,
+            conn,
+            order_id=order_id,
+            rub_due=due,
+            product=p,
+            telegram_user_id=cb.from_user.id,
+            payment_method=pm,
+            balance_applied=bap,
+        )
+        intro = intro + "\n\n"
+        await _present_crypto_checkout(
+            cb,
+            settings,
+            conn,
+            order_id=order_id,
+            due_rub=due,
+            intro_html=intro,
+            usd_for_fx=usd_part,
+        )
+        await cb.answer()
+        return
+    await cb.answer()
+
+
 @router.message(Command("cancel"))
 async def cmd_cancel(message: Message, state: FSMContext) -> None:
     await state.clear()
@@ -472,6 +823,22 @@ async def open_product(cb: CallbackQuery, products: list[Product], settings: Set
     if not p:
         await cb.answer("Товар не найден", show_alert=True)
         return
+    if (p.kind or "").strip().lower() == "vpn":
+        from bot.services.vpn_legal_gate import ensure_vpn_legal_accepted
+
+        if not await ensure_vpn_legal_accepted(
+            conn=conn,
+            user_id=cb.from_user.id,
+            settings=settings,
+            message=cb.message,
+            products=products,
+        ):
+            await cb.answer(
+                "Сначала отметьте обе галочки: политика и соглашение AiMonkeyVPN.",
+                show_alert=True,
+            )
+            return
+    await cb.answer()
     is_first = await _is_first_purchase(conn, cb.from_user.id)
     q = quote_product(p, settings, is_first_order=is_first)
     if p.kind == "premium":
@@ -489,11 +856,22 @@ async def open_product(cb: CallbackQuery, products: list[Product], settings: Set
             hint += "\n<i>Подарок уйдёт на @username, который укажете после выбора оплаты.</i>"
         if p.kind == "gift":
             hint = "\n\n<i>Укажите @username получателя после выбора способа оплаты.</i>"
+        if p.kind == "vpn":
+            hint = (
+                "\n\n<i>Подписка на этот Telegram. После оплаты (~2 мин) — "
+                "«📥 Файл» или «📷 QR» в разделе AiMonkeyVPN.</i>"
+            )
+            if is_first and q.rub_referral_discount <= 0:
+                rb = esc(settings.ref_buyer_discount_percent)
+                hint = (
+                    f"\n\n<i>Первая покупка в магазине: обычно −{rb}% по вашей пригласительной ссылке "
+                    f"(если вы пришли по ref_ и ещё не было выданных заказов).</i>"
+                ) + hint
         bal = await balance_repo.get_balance(conn, cb.from_user.id)
         text = _fmt_quote_html(p, q, settings) + hint + "\n\n<b>Способ оплаты</b>"
         await cb.message.edit_text(
             text,
-            reply_markup=_payment_kb(p.id, bal, q.rub_final),
+            reply_markup=_payment_kb(p, bal, q.rub_final),
         )
     try:
         await analytics_repo.log_event(
@@ -501,7 +879,6 @@ async def open_product(cb: CallbackQuery, products: list[Product], settings: Set
         )
     except Exception:
         pass
-    await cb.answer()
 
 
 @router.callback_query(F.data.startswith("prem:"))
@@ -517,9 +894,10 @@ async def premium_pick_dest(cb: CallbackQuery, products: list[Product], settings
     q = quote_product(p, settings, is_first_order=is_first)
     bal = await balance_repo.get_balance(conn, cb.from_user.id)
     text = _fmt_quote_html(p, q, settings) + "\n\n<b>Способ оплаты</b>"
+    await cb.answer()
     await cb.message.edit_text(
         text,
-        reply_markup=_payment_kb(pid, bal, q.rub_final),
+        reply_markup=_payment_kb(p, bal, q.rub_final),
     )
     try:
         await analytics_repo.log_event(
@@ -527,7 +905,6 @@ async def premium_pick_dest(cb: CallbackQuery, products: list[Product], settings
         )
     except Exception:
         pass
-    await cb.answer()
 
 
 @router.callback_query(F.data.startswith("pay:bcc:"))
@@ -584,6 +961,25 @@ async def choose_payment(cb: CallbackQuery, state: FSMContext, products: list[Pr
     p = pmap[pid]
     data = await state.get_data()
     premium_self = bool(data.get("premium_self"))
+
+    if p.kind == "vpn":
+        from bot.services.vpn_nav import VPN_FLOW_MAIN_CALLBACK
+
+        un = (cb.from_user.username or "").strip()
+        recipient = f"@{un}" if un else f"Telegram ID {cb.from_user.id}"
+        await state.update_data(product_id=pid, payment=method, recipient=recipient)
+        await state.set_state(CheckoutStates.waiting_confirm)
+        is_first = await _is_first_purchase(conn, cb.from_user.id)
+        q = quote_product(p, settings, is_first_order=is_first)
+        await cb.answer()
+        await cb.message.edit_text(
+            _fmt_quote_html(p, q, settings)
+            + f"\n\n<b>Подключение:</b> на ваш аккаунт Telegram "
+            f"<code>{esc(recipient)}</code>.\n"
+            "Нажмите «Создать заказ».",
+            reply_markup=confirm_order_kb(cancel_callback=VPN_FLOW_MAIN_CALLBACK),
+        )
+        return
 
     if p.kind == "premium" and premium_self:
         un = cb.from_user.username
@@ -752,14 +1148,36 @@ async def order_submit(
             )
         except Exception:
             pass
+        from bot.services.vpn_payment_hook import schedule_vpn_provision_after_paid
+
+        schedule_vpn_provision_after_paid(settings, order_id)
         await state.clear()
-        body = (
-            f"<b>Заказ оплачен с баланса</b>\n"
-            f"ID: <code>{esc(order_id)}</code>\n"
-            f"Сумма: <b>{esc(f'{rub:.2f}')} ₽</b>\n"
-            f"Получатель: <code>{esc(recipient)}</code>\n\n"
-            "Дальше оператор обработает заказ и обновит статус после выдачи."
-        )
+        if pk == "vpn":
+            from bot.services.vpn_post_purchase_delivery import (
+                vpn_paid_summary_html,
+                vpn_paid_summary_kb,
+            )
+
+            days = int(p.vpn_subscription_days or 30)
+            body = await vpn_paid_summary_html(
+                settings,
+                order_id=order_id,
+                rub=rub,
+                telegram_user_id=cb.from_user.id,
+                vpn_days=days,
+            )
+            await cb.message.edit_text(body, reply_markup=vpn_paid_summary_kb())
+            await cb.answer()
+            await _notify_admins(bot, settings, conn, order_id)
+            return
+        else:
+            body = (
+                f"<b>Заказ оплачен с баланса</b>\n"
+                f"ID: <code>{esc(order_id)}</code>\n"
+                f"Сумма: <b>{esc(f'{rub:.2f}')} ₽</b>\n"
+                f"Получатель: <code>{esc(recipient)}</code>\n\n"
+                "Дальше оператор обработает заказ и обновит статус после выдачи."
+            )
         await cb.message.edit_text(body, reply_markup=hub_menu_kb())
         await cb.answer()
         await _notify_admins(bot, settings, conn, order_id)
@@ -816,14 +1234,38 @@ async def order_submit(
         row = await orders_repo.get_order(conn, order_id)
         due = orders_repo.amount_due_external(row)
         if due <= 0.01:
-            body = (
-                f"<b>Заказ оплачен</b> (часть с баланса)\n"
-                f"ID: <code>{esc(order_id)}</code>\n"
-                f"С баланса: <b>{esc(f'{apply:.2f}')} ₽</b>\n"
-                f"Всего: <b>{esc(f'{rub:.2f}')} ₽</b>\n"
-                f"Получатель: <code>{esc(recipient)}</code>"
-            )
-            await cb.message.edit_text(body, reply_markup=hub_menu_kb())
+            from bot.services.vpn_payment_hook import schedule_vpn_provision_after_paid
+
+            schedule_vpn_provision_after_paid(settings, order_id)
+            if pk == "vpn":
+                from bot.services.vpn_post_purchase_delivery import (
+                    vpn_paid_summary_html,
+                    vpn_paid_summary_kb,
+                )
+
+                days = int(p.vpn_subscription_days or 30)
+                body = await vpn_paid_summary_html(
+                    settings,
+                    order_id=order_id,
+                    rub=rub,
+                    telegram_user_id=cb.from_user.id,
+                    vpn_days=days,
+                )
+                await cb.message.edit_text(body, reply_markup=vpn_paid_summary_kb())
+            else:
+                body = (
+                    f"<b>Заказ оплачен</b> (часть с баланса)\n"
+                    f"ID: <code>{esc(order_id)}</code>\n"
+                    f"С баланса: <b>{esc(f'{apply:.2f}')} ₽</b>\n"
+                    f"Всего: <b>{esc(f'{rub:.2f}')} ₽</b>\n"
+                    f"Получатель: <code>{esc(recipient)}</code>"
+                )
+                await cb.message.edit_text(body, reply_markup=hub_menu_kb())
+            await cb.answer()
+            await _notify_admins(bot, settings, conn, order_id)
+            return
+        if pk == "vpn":
+            await _present_vpn_order_invoice(cb, settings, conn, products, order_id=order_id)
         elif payment == "mixfi":
             intro = (
                 f"<b>Заказ #{esc(order_id)}</b>\n"
@@ -902,7 +1344,9 @@ async def order_submit(
 
     await state.clear()
 
-    if payment == "crypto":
+    if pk == "vpn":
+        await _present_vpn_order_invoice(cb, settings, conn, products, order_id=order_id)
+    elif payment == "crypto":
         intro_cr = f"<b>Заказ создан</b>\nID: <code>{esc(order_id)}</code>\n"
         await _present_crypto_checkout(
             cb,
@@ -1030,7 +1474,7 @@ async def _notify_admins(bot: Bot, settings: Settings, conn, order_id: int) -> N
     from bot.services.admin_order_ff import ff_context_from_order_row, format_fulfillment_admin_block
 
     text = text + format_fulfillment_admin_block(order)
-    pm = str(order.get("payment_method") or "").strip().lower()
+    pm = _order_row_str(order, "payment_method").lower()
     if pm in ("fiat", "mix_fiat"):
         text += await operator_bc_manual_checklist_html(conn, settings, order)
     oid = int(order["id"])

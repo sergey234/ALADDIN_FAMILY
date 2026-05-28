@@ -16,6 +16,27 @@ class PriceQuote:
     rub_final: float
 
 
+def list_price_rub(product: Product, settings: Settings) -> float:
+    """Витринная цена в ₽: price_rub из каталога (VPN) или price_usd × USD_RUB_RATE (Stars/Premium)."""
+    if product.price_rub is not None and product.price_rub > 0:
+        return round(float(product.price_rub), 2)
+    return round(float(product.price_usd) * float(settings.usd_rub_rate), 2)
+
+
+def catalog_usd_for_quote(product: Product, settings: Settings, *, rub_list: float) -> float:
+    """
+    USD-снимок для заказа и подписи в чекауте.
+    Stars/Premium: номинал из products.yaml (price_usd).
+    VPN с price_rub: эквивалент rub / USD_RUB_RATE на момент расчёта (как у Stars: rub = usd × rate).
+    """
+    if product.price_rub is not None and product.price_rub > 0:
+        rate = float(settings.usd_rub_rate)
+        if rate > 0:
+            return round(rub_list / rate, 4)
+        return float(product.price_usd)
+    return float(product.price_usd)
+
+
 def quote_product(
     product: Product,
     settings: Settings,
@@ -23,8 +44,8 @@ def quote_product(
     is_first_order: bool,
 ) -> PriceQuote:
     # is_first_order: True пока у пользователя нет ни одного completed-заказа (реф. скидка на «первую выдачу»).
-    usd = product.price_usd
-    rub_list = round(usd * settings.usd_rub_rate, 2)
+    rub_list = list_price_rub(product, settings)
+    usd = catalog_usd_for_quote(product, settings, rub_list=rub_list)
 
     ref_disc = 0.0
     if is_first_order:
@@ -97,6 +118,9 @@ def format_shop_quote_money_html(
     su = esc(f"{shop_usd:.{usd_decimals}f}")
     r = esc(f"{rate:.2f}")
     cat = esc(f"{catalog_usd:.{usd_decimals}f}")
+    # Stars/Premium: rub = price_usd × rate → shop_usd ≈ catalog_usd. VPN (price_rub): то же после catalog_usd_for_quote.
+    if abs(shop_usd - float(catalog_usd)) < 0.05:
+        return f"{ru} ₽ (~{su} USD, курс магазина <code>{r}</code> ₽/USD)"
     return (
         f"{ru} ₽ (~{su} USD по курсу магазина <code>{r}</code> ₽/USD; "
         f"номинал в каталоге ~{cat} USD)"

@@ -1,0 +1,22 @@
+# Пример: rate limit для `GET /sub/` (vpn-23)
+
+Вынесите в `http { }` на nginx (один раз на сервер):
+
+```nginx
+limit_req_zone $binary_remote_addr zone=vpn_sub:10m rate=2r/s;
+```
+
+В `server { }` для публичного HTTPS-хоста (рядом с остальными `location` VPN, см. **`VPN03_INFRA_UFW_TLS_RUNBOOK.md`**):
+
+```nginx
+location ^~ /sub/ {
+    access_log off;
+    limit_req zone=vpn_sub burst=20 nodelay;
+    proxy_pass http://127.0.0.1:8091;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+    proxy_set_header X-Real-IP $remote_addr;
+}
+```
+
+Подберите `rate` и `burst` под политику (агрессивный лимит снижает злоупотребление перебором токенов; слишком жёсткий — мешает легитимным клиентам при обновлении подписки).

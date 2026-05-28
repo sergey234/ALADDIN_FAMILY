@@ -9,6 +9,17 @@
 
 Правки напрямую на сервере без копии в git — только для экстренного hotfix с последующей синхронизацией репозитория.
 
+### VPN Shop (AiMonkeyVPN) — отдельный контур
+
+Задачи **vpn-00 … vpn-40** (60+ пунктов плана), статус ✅/🟡/⏳, цепочка **оплата → Telegram ID → 📥/📷**, деплой на VPS:
+
+| Документ | Назначение |
+|----------|------------|
+| **`docs/VPN_TASKS_STATUS.md`** | **Главный реестр todo** (обновлять при выкатах) |
+| `docs/VPN_SHOP_INTEGRATION_PLAN.md` | Архитектура, §13–§14 |
+| `docs/VPN_ML_SYSTEM_HANDOFF.md` | Handoff для агентов / пост-деплой |
+| `docs/VPN_SHOP_API.md` | Контракт API |
+
 ---
 
 ## 1. Полный бэкап бота
@@ -192,7 +203,7 @@ tar --exclude='telegram_stars_shop_bot/.venv' \
 |----|--------|
 | `5-ref-rules` | ✅ Оба триггера — **первая выдача** (`completed`): скидка `quote_product` / `is_first_order`, комиссия `order_flow.apply_completed_side_effects` — см. `EDGE_CASES.md` §3.1, `pricing.py`, `order_flow.py` |
 | `5-ref-stats` | ✅ Счётчики и сумма начислений: `users_repo.user_stats`, профиль и экран «Реф-ссылка» в `hub.py`, Partner `GET /v1/user/profile` |
-| `6-menu-ux` | ✅ Хаб MonkeyStars: `hub_menu_kb`, `ui_copy` / `marketing.onboarding_screen_1_html`; «Продать Stars» убран из главного меню, остаётся в **Профиль** |
+| `6-menu-ux` | ✅ Хаб AIMonkeyStars: `hub_menu_kb`, `ui_copy` / `marketing.onboarding_screen_1_html`; «Продать Stars» убран из главного меню, остаётся в **Профиль** |
 | `6-premium-shelf` | ✅ Витрина Premium в боте без 1 мес.: `hide_from_menu` в `products.yaml` + фильтр в `nav_premium` (`catalog.Product`) |
 
 ### Фаза 7 — Доки и выкат

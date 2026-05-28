@@ -2,6 +2,8 @@ from __future__ import annotations
 
 import asyncio
 import json
+import secrets
+from datetime import datetime, timezone
 
 from aiogram import F, Router
 from aiogram.filters import Command, CommandObject
@@ -9,7 +11,17 @@ from aiogram.types import BufferedInputFile, CallbackQuery, InlineKeyboardButton
 
 from bot.config import Settings
 from bot.keyboards.shop_kb import admin_order_kb, admin_sell_kb, admin_topup_kb
-from bot.services import admin_audit_repo, admin_charts, admin_stats_repo, balance_repo, contest_repo, marketing, orders_repo
+from bot.services import (
+    admin_audit_repo,
+    admin_charts,
+    admin_stats_repo,
+    balance_repo,
+    contest_repo,
+    marketing,
+    orders_repo,
+    vpn_admin_support_repo,
+    vpn_api_client,
+)
 from bot.services.admin_crypto_paid_gate import crypto_manual_paid_gate_applies
 from bot.services.admin_order_ff import ff_context_from_order_row, format_fulfillment_admin_block
 from bot.services.alerts import send_alert
@@ -87,6 +99,25 @@ def _period_human(days: int | None) -> str:
     return f"{days} дн."
 
 
+async def _vpn_admin_dashboard_extras(
+    conn,
+    settings: Settings,
+    *,
+    days: int | None,
+) -> tuple[dict[str, float | int], dict[str, float | int], str | None]:
+    vpn_rm = await admin_stats_repo.vpn_referral_metrics(conn, days=days)
+    vpn_rm["vpn_ref_cfg_referrer_days"] = int(settings.vpn_referral_referrer_days)
+    vpn_rm["vpn_ref_cfg_friend_days"] = int(settings.vpn_referral_friend_days)
+    vpn_cp = await admin_stats_repo.fetch_vpn_controlplane_metrics(settings.resolved_vpn_db_path())
+    vpn_health_html: str | None = None
+    if (settings.vpn_api_base_url or "").strip():
+        from bot.services.vpn_ops_health import collect_vpn_ops_health
+
+        snap = await collect_vpn_ops_health(settings)
+        vpn_health_html = snap.summary_html()
+    return vpn_rm, vpn_cp, vpn_health_html
+
+
 def _admin_stats_main_kb() -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(
         inline_keyboard=[
@@ -125,6 +156,9 @@ def _format_dashboard_html(
     top_refs: list,
     rm: dict[str, float | int],
     funnel: dict[str, float | int] | None = None,
+    vpn_rm: dict[str, float | int] | None = None,
+    vpn_cp: dict[str, float | int] | None = None,
+    vpn_health_html: str | None = None,
 ) -> str:
     avg = (agg.revenue_rub / agg.orders_count) if agg.orders_count else 0.0
     ref_bonus_total = float(rm.get("total_referral_bonus_rub", 0))
@@ -153,6 +187,60 @@ def _format_dashboard_html(
             )
         else:
             lines.append("<i>Воронка: нет событий входа (/start, /menu) за период.</i>")
+    if vpn_rm is not None:
+        vst = int(vpn_rm.get("vpn_ref_starts", 0) or 0)
+        gnt = int(vpn_rm.get("vpn_ref_grants", 0) or 0)
+        rd_sum = int(vpn_rm.get("vpn_ref_referrer_days", 0) or 0)
+        fd_sum = int(vpn_rm.get("vpn_ref_friend_days", 0) or 0)
+        okf = int(vpn_rm.get("vpn_ref_api_friend_ok", 0) or 0)
+        okr = int(vpn_rm.get("vpn_ref_api_referrer_ok", 0) or 0)
+        pnd_f = int(vpn_rm.get("vpn_ref_pending_friend_api", 0) or 0)
+        pnd_r = int(vpn_rm.get("vpn_ref_pending_referrer_api", 0) or 0)
+        ret_f = int(vpn_rm.get("vpn_ref_pending_friend_retried", 0) or 0)
+        ret_r = int(vpn_rm.get("vpn_ref_pending_referrer_retried", 0) or 0)
+        cfg_rr = int(vpn_rm.get("vpn_ref_cfg_referrer_days", 0) or 0)
+        cfg_fr = int(vpn_rm.get("vpn_ref_cfg_friend_days", 0) or 0)
+        c_pct = round(100.0 * gnt / vst, 1) if vst else 0.0
+        lines.append(
+            "\n<b>VPN-рефералка</b> (период)\n"
+            f"• Env N/M дней: реферер <code>{esc(str(cfg_rr))}</code> · друг <code>{esc(str(cfg_fr))}</code>\n"
+            f"• Входы по ссылке <code>r-</code>: <code>{esc(str(vst))}</code>\n"
+            f"• Первых выданных VPN с бонусом: <code>{esc(str(gnt))}</code> "
+            f"(конверсия от входа: <b>{esc(str(c_pct))}%</b>)\n"
+            f"• Дней начислено реферерам / друзьям: <b>{esc(str(rd_sum))}</b> / <b>{esc(str(fd_sum))}</b>\n"
+            f"• Подтверждённо API (друг / реферер): <code>{esc(str(okf))}</code> / <code>{esc(str(okr))}</code>\n"
+            f"• Без OK API (друг / реферер): <code>{esc(str(pnd_f))}</code> / <code>{esc(str(pnd_r))}</code> "
+            f"(из них после ошибки: <code>{esc(str(ret_f))}</code> / <code>{esc(str(ret_r))}</code>)"
+        )
+    if vpn_cp is not None and int(vpn_cp.get("vpn_cp_available", 0) or 0) == 1:
+        tot_a = int(vpn_cp.get("vpn_cp_accounts_total", 0) or 0)
+        tot_j = int(vpn_cp.get("vpn_cp_jobs_total", 0) or 0)
+        pend_j = int(vpn_cp.get("vpn_cp_jobs_pending", 0) or 0)
+        fail_j = int(vpn_cp.get("vpn_cp_jobs_failed", 0) or 0)
+        p95 = vpn_cp.get("vpn_cp_p95_provision_sec", -1.0)
+        p95_s = "—" if p95 is None or float(p95) < 0 else esc(f"{float(p95):.2f}")
+        samp = int(vpn_cp.get("vpn_cp_provision_done_sample_n", 0) or 0)
+        act = int(vpn_cp.get("vpn_cp_accounts_vpn_active", 0) or 0)
+        prov = int(vpn_cp.get("vpn_cp_accounts_vpn_provisioning", 0) or 0)
+        fail_acc = int(vpn_cp.get("vpn_cp_accounts_vpn_failed", 0) or 0)
+        mo_acc = int(vpn_cp.get("vpn_cp_accounts_vpn_manual_override", 0) or 0)
+        exp_acc = int(vpn_cp.get("vpn_cp_accounts_vpn_expired", 0) or 0)
+        lines.append(
+            "\n<b>VPN control plane</b> (<code>vpn.db</code>)\n"
+            f"• Аккаунты всего: <code>{esc(str(tot_a))}</code> "
+            f"(active <code>{esc(str(act))}</code>, provisioning <code>{esc(str(prov))}</code>, "
+            f"failed <code>{esc(str(fail_acc))}</code>, "
+            f"<code>vpn_manual_override</code> <code>{esc(str(mo_acc))}</code>, "
+            f"expired <code>{esc(str(exp_acc))}</code>)\n"
+            f"• Jobs всего: <code>{esc(str(tot_j))}</code> · pending <code>{esc(str(pend_j))}</code> · failed "
+            f"<code>{esc(str(fail_j))}</code>\n"
+            f"• p95 времени job <code>provision</code>→done: <b>{p95_s}</b> с "
+            f"(выборка <code>{esc(str(samp))}</code>)"
+        )
+    elif vpn_cp is not None and int(vpn_cp.get("vpn_cp_available", 0) or 0) < 0:
+        lines.append("\n<i>VPN control plane: ошибка чтения vpn.db (см. лог).</i>")
+    if vpn_health_html:
+        lines.append(f"\n{vpn_health_html}")
     lines += [
         f"Реф. скидка в заказах: <code>{esc(str(rm.get('orders_with_ref_discount', 0)))}</code> "
         f"из <code>{esc(str(rm.get('completed_orders', 0)))}</code> "
@@ -313,7 +401,17 @@ async def cmd_admin(message: Message, settings: Settings, conn) -> None:
     top = await admin_stats_repo.top_referrers(conn, days=7, limit=3)
     rm = await admin_stats_repo.referral_metrics(conn, days=7)
     funnel = await admin_stats_repo.funnel_metrics(conn, days=7)
-    dash = _format_dashboard_html(period_label="7 дней", agg=agg, top_refs=top, rm=rm, funnel=funnel)
+    vpn_rm, vpn_cp, vpn_h = await _vpn_admin_dashboard_extras(conn, settings, days=7)
+    dash = _format_dashboard_html(
+        period_label="7 дней",
+        agg=agg,
+        top_refs=top,
+        rm=rm,
+        funnel=funnel,
+        vpn_rm=vpn_rm,
+        vpn_cp=vpn_cp,
+        vpn_health_html=vpn_h,
+    )
     rows = await orders_repo.list_recent_orders(conn, limit=8)
     recent_lines = ["\n<b>Последние заказы</b>\n"]
     if not rows:
@@ -351,6 +449,7 @@ async def admin_stats_callbacks(cb: CallbackQuery, settings: Settings, conn) -> 
             top = await admin_stats_repo.top_referrers(conn, days=days, limit=3)
             rm = await admin_stats_repo.referral_metrics(conn, days=days)
             funnel = await admin_stats_repo.funnel_metrics(conn, days=days)
+            vpn_rm, vpn_cp, vpn_h = await _vpn_admin_dashboard_extras(conn, settings, days=days)
             top_prof = await admin_stats_repo.top_products_by_profit(conn, days=days, limit=5)
             tlines = ["\n<b>Топ товаров по прибыли</b>\n"]
             if not top_prof:
@@ -370,6 +469,9 @@ async def admin_stats_callbacks(cb: CallbackQuery, settings: Settings, conn) -> 
                     top_refs=top,
                     rm=rm,
                     funnel=funnel,
+                    vpn_rm=vpn_rm,
+                    vpn_cp=vpn_cp,
+                    vpn_health_html=vpn_h,
                 )
                 + "\n".join(tlines)
             )
@@ -540,6 +642,163 @@ async def cmd_admqueue(message: Message, settings: Settings, conn) -> None:
         "кнопки статусов - там же.</i>"
     )
     await message.answer("\n".join(lines))
+
+
+def _parse_admin_vpn_paid_until(raw: str) -> str | None:
+    s = (raw or "").strip().replace("Z", "+00:00")
+    if len(s) < 10:
+        return None
+    try:
+        dt = datetime.fromisoformat(s)
+    except ValueError:
+        return None
+    if dt.tzinfo is None:
+        dt = dt.replace(tzinfo=timezone.utc)
+    return dt.astimezone(timezone.utc).replace(microsecond=0).isoformat()
+
+
+@router.message(Command("admin_vpn"))
+async def cmd_admin_vpn(message: Message, settings: Settings) -> None:
+    if not _is_admin(message.from_user.id, settings):
+        return
+    await message.answer(
+        "<b>VPN — команды для поддержки</b>\n\n"
+        "<code>/admin_vpn_status &lt;telegram_id&gt;</code> — статус подписки и ссылка (нужен "
+        "<code>VPN_DB_PATH</code>).\n"
+        "<code>/admin_vpn_revoke &lt;telegram_id&gt; [причина]</code> — отключить VPN.\n"
+        "<code>/admin_vpn_extend &lt;telegram_id&gt; &lt;дата_ISO&gt; [order_id]</code> — продлить; "
+        "без order_id — последний VPN-заказ в магазине.\n"
+        "<code>/admin_vpn_health</code> — снимок здоровья VPN (API, WireGuard, jobs).\n\n"
+        "Для revoke/extend на сервере должны быть настроены VPN API. "
+        "В дашборде <code>/admin</code> блок <b>VPN health</b> обновляется при открытии."
+    )
+
+
+@router.message(Command("admin_vpn_health"))
+async def cmd_admin_vpn_health(message: Message, settings: Settings) -> None:
+    if not _is_admin(message.from_user.id, settings):
+        return
+    from bot.services.vpn_ops_health import collect_vpn_ops_health
+
+    snap = await collect_vpn_ops_health(settings)
+    await message.answer(snap.summary_html())
+
+
+@router.message(Command("admin_vpn_status"))
+async def cmd_admin_vpn_status(message: Message, command: CommandObject, settings: Settings, conn) -> None:
+    if not _is_admin(message.from_user.id, settings):
+        return
+    parts = (command.args or "").split()
+    if len(parts) != 1 or not parts[0].isdigit():
+        await message.answer("Пример: <code>/admin_vpn_status 123456789</code>")
+        return
+    tid = int(parts[0])
+    vpath = settings.resolved_vpn_db_path()
+    if vpath is None:
+        await message.answer("Не задан <code>VPN_DB_PATH</code> — база VPN недоступна с бота.")
+        return
+    snap = await vpn_admin_support_repo.fetch_vpn_account_admin_snapshot(vpath, tid)
+    if snap is None:
+        await message.answer(f"Файл vpn.db не найден или недоступен: <code>{esc(str(vpath))}</code>")
+        return
+    txt = vpn_admin_support_repo.format_vpn_admin_snapshot_html(snap)
+    await _audit_admin(conn, message.from_user.id, "vpn:admin_status", telegram_user_id=tid)
+    await conn.commit()
+    await message.answer(txt)
+
+
+@router.message(Command("admin_vpn_revoke"))
+async def cmd_admin_vpn_revoke(message: Message, command: CommandObject, settings: Settings, conn) -> None:
+    if not _is_admin(message.from_user.id, settings):
+        return
+    parts = (command.args or "").split(maxsplit=1)
+    if not parts or not parts[0].isdigit():
+        await message.answer("Пример: <code>/admin_vpn_revoke 123456789 abuse</code>")
+        return
+    tid = int(parts[0])
+    reason = parts[1].strip() if len(parts) > 1 else "admin_revoke"
+    if not reason:
+        reason = "admin_revoke"
+    ikey = f"admin-revoke:{message.from_user.id}:{tid}:{secrets.token_hex(6)}"
+    ok, msg = await vpn_api_client.post_revoke(
+        settings, telegram_user_id=tid, reason=reason, idempotency_key=ikey
+    )
+    await _audit_admin(
+        conn,
+        message.from_user.id,
+        "vpn:admin_revoke",
+        telegram_user_id=tid,
+        reason=reason[:200],
+        ok=ok,
+        detail=msg[:300],
+    )
+    await conn.commit()
+    if ok:
+        await message.answer(f"Отключение VPN поставлено в очередь.\n<pre>{esc(msg)}</pre>")
+    else:
+        await message.answer(f"<b>Ошибка</b> revoke:\n<pre>{esc(msg)}</pre>")
+
+
+@router.message(Command("admin_vpn_extend"))
+async def cmd_admin_vpn_extend(message: Message, command: CommandObject, settings: Settings, conn) -> None:
+    if not _is_admin(message.from_user.id, settings):
+        return
+    raw = (command.args or "").strip()
+    parts = raw.split()
+    if len(parts) < 2:
+        await message.answer(
+            "Пример: <code>/admin_vpn_extend 123456789 2026-12-31T23:59:59+00:00</code>\n"
+            "или с заказом: <code>/admin_vpn_extend 123456789 2026-12-31T23:59:59+00:00 555</code>"
+        )
+        return
+    if not parts[0].isdigit():
+        await message.answer("Некорректный <code>telegram_user_id</code>.")
+        return
+    tid = int(parts[0])
+    paid_iso = _parse_admin_vpn_paid_until(parts[1])
+    if not paid_iso:
+        await message.answer("Некорректная дата <code>paid_until</code> (ожидается ISO8601, UTC предпочтителен).")
+        return
+    order_id: int | None = None
+    if len(parts) >= 3:
+        if not parts[2].isdigit():
+            await message.answer("Некорректный <code>order_id</code>.")
+            return
+        order_id = int(parts[2])
+    else:
+        order_id = await orders_repo.last_vpn_order_id_for_user(conn, tid)
+        if order_id is None:
+            await message.answer(
+                "Не найден VPN-заказ для этого пользователя — укажите <code>order_id</code> явно "
+                "(из карточки заказа)."
+            )
+            return
+    ikey = f"admin-extend:{message.from_user.id}:{tid}:{secrets.token_hex(6)}"
+    ok, msg = await vpn_api_client.post_extend(
+        settings,
+        telegram_user_id=tid,
+        order_id=int(order_id),
+        paid_until=paid_iso,
+        idempotency_key=ikey,
+    )
+    await _audit_admin(
+        conn,
+        message.from_user.id,
+        "vpn:admin_extend",
+        telegram_user_id=tid,
+        order_id=int(order_id),
+        paid_until=paid_iso,
+        ok=ok,
+        detail=msg[:300],
+    )
+    await conn.commit()
+    if ok:
+        await message.answer(
+            f"Extend поставлен в очередь, order_id=<code>{esc(str(order_id))}</code>, "
+            f"<code>{esc(ikey)}</code>.\n<pre>{esc(msg)}</pre>"
+        )
+    else:
+        await message.answer(f"<b>Ошибка</b> extend:\n<pre>{esc(msg)}</pre>")
 
 
 @router.message(Command("contest"))
@@ -715,6 +974,11 @@ async def admin_set_status(cb: CallbackQuery, settings: Settings, conn) -> None:
             await cb.answer("Недопустимый переход статуса для этого заказа.", show_alert=True)
             return
         raise
+
+    if new_status == "paid":
+        from bot.services.vpn_payment_hook import schedule_vpn_provision_after_paid
+
+        schedule_vpn_provision_after_paid(settings, order_id)
 
     if new_status == "completed" and prev_status != "completed":
         await apply_completed_side_effects(conn, order_id, settings)

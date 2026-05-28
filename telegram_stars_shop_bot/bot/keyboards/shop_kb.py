@@ -5,6 +5,7 @@ import os
 from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from bot import brand_constants as brand
 from bot.config import Settings
 from bot.services.admin_crypto_paid_gate import crypto_manual_paid_gate_applies
 from bot.services.admin_order_ff import AdminOrderFfContext, fulfillment_controls_allowed
@@ -52,7 +53,7 @@ def onboarding_channel_kb(settings: Settings) -> InlineKeyboardMarkup:
     """Подписка на канал внутри онбординга (до капчи и хаба)."""
     b = InlineKeyboardBuilder()
     inv = (settings.required_channel_invite_url or "").strip()
-    disp = (settings.required_channel_display_name or "").strip() or "Monkey Stars | Premium"
+    disp = (settings.required_channel_display_name or "").strip() or brand.CHANNEL_DISPLAY_NAME_DEFAULT
     if inv:
         b.row(InlineKeyboardButton(text=f"📺 {disp}", url=inv))
     b.row(InlineKeyboardButton(text="✅ Проверить подписку", callback_data="onb:ch:check"))
@@ -87,14 +88,16 @@ def _ui_card_visible(settings: Settings | None, attr_name: str, env_name: str) -
 
 
 def hub_menu_kb(settings: Settings | None = None) -> InlineKeyboardMarkup:
-    """Главное меню MonkeyStars: Stars / Premium / реф-ссылка / заказы / поддержка (без «Продать Stars»)."""
+    """Главное меню AIMonkeyStars: Stars / Premium / реф-ссылка / заказы / поддержка (без «Продать Stars»)."""
     b = InlineKeyboardBuilder()
     b.row(
         InlineKeyboardButton(text="⭐ Stars", callback_data="nav:buy_stars"),
         InlineKeyboardButton(text="💎 Premium", callback_data="nav:premium"),
     )
+    if _ui_card_visible(settings, "ui_show_vpn", "UI_SHOW_VPN"):
+        b.row(InlineKeyboardButton(text="🌐 AiMonkeyVPN", callback_data="nav:vpn"))
     b.row(
-        InlineKeyboardButton(text="🔗 Реф-ссылка", callback_data="nav:ref"),
+        InlineKeyboardButton(text="👥 Пригласить друга", callback_data="nav:ref"),
         InlineKeyboardButton(text="📜 Заказы", callback_data="nav:orders:0"),
     )
     b.row(
@@ -147,6 +150,7 @@ def payment_methods_kb(
     show_partial_mix: bool,
     balance: float,
     rub_final: float,
+    back_callback: str | None = None,
 ) -> InlineKeyboardMarkup:
     b = InlineKeyboardBuilder()
     apply_preview = min(max(0.0, balance), rub_final)
@@ -173,7 +177,12 @@ def payment_methods_kb(
         )
     b.row(InlineKeyboardButton(text="💳 Карта / СБП (онлайн)", callback_data=f"pay:fiat:{product_id}"))
     b.row(InlineKeyboardButton(text="₿ USDT (TRC20) / крипта", callback_data=f"pay:crypto:{product_id}"))
-    b.row(InlineKeyboardButton(text="⬅️ Назад", callback_data=f"buy:{product_id}"))
+    b.row(
+        InlineKeyboardButton(
+            text="⬅️ Назад",
+            callback_data=back_callback or f"buy:{product_id}",
+        )
+    )
     return b.as_markup()
 
 
@@ -259,10 +268,70 @@ def verify_username_kb() -> InlineKeyboardMarkup:
     return b.as_markup()
 
 
-def confirm_order_kb() -> InlineKeyboardMarkup:
+def vpn_order_invoice_kb(
+    settings,
+    order_id: int,
+    payment_method: str,
+) -> InlineKeyboardMarkup:
+    """Кнопки экрана счёта VPN: СБП / карта / крипта / Ckassa / отмена."""
+    from bot.services.ckassa_api import ckassa_checkout_configured
+    from bot.services.crypto_pay_api import crypto_pay_invoice_api_ready
+    from bot.services.lava_api import lava_checkout_configured
+    from bot.services.vpn_payment_copy import VPN_CARD_INVOICE_BTN, VPN_SBP_INVOICE_BTN
+    from bot.services.xrocket_pay_api import xrocket_invoice_api_ready
+
+    b = InlineKeyboardBuilder()
+    pm = (payment_method or "").strip().lower()
+    show_fiat = pm in ("fiat", "mix_fiat", "mixfi")
+    show_crypto = pm in ("crypto", "mix_crypto", "mixcr")
+    has_lava = lava_checkout_configured(settings)
+    has_ck = ckassa_checkout_configured(settings)
+    univers = bool((getattr(settings, "ckassa_bc_universal_payment_url", "") or "").strip())
+
+    if show_fiat:
+        if has_lava:
+            b.row(
+                InlineKeyboardButton(text=VPN_SBP_INVOICE_BTN, callback_data=f"pay:inv:sbp:{order_id}"),
+                InlineKeyboardButton(text=VPN_CARD_INVOICE_BTN, callback_data=f"pay:inv:card:{order_id}"),
+            )
+        if has_ck:
+            label = "💳 Ckassa" if not has_lava else "💳 Ckassa (альт.)"
+            b.row(InlineKeyboardButton(text=label, callback_data=f"pay:inv:ckassa:{order_id}"))
+        if univers and not has_lava and not has_ck:
+            b.row(InlineKeyboardButton(text="⭐ Оплата по ссылке", callback_data=f"pay:inv:bc:{order_id}"))
+
+    has_crypto_api = crypto_pay_invoice_api_ready(settings) or xrocket_invoice_api_ready(settings)
+    if has_crypto_api and (show_crypto or show_fiat):
+        b.row(InlineKeyboardButton(text="₿ USDT / крипта", callback_data=f"pay:inv:crypto:{order_id}"))
+
+    b.row(InlineKeyboardButton(text="⬅️ Отмена", callback_data=f"pay:inv:cancel:{order_id}"))
+    return b.as_markup()
+
+
+def vpn_invoice_pay_url_kb(
+    pay_url: str,
+    *,
+    back_callback: str,
+    channel: str = "default",
+) -> InlineKeyboardMarkup:
+    """После выбора СБП/карта/Ckassa — одна ссылка на оплату."""
+    from bot.services.vpn_payment_copy import vpn_invoice_pay_url_button_label
+
+    b = InlineKeyboardBuilder()
+    b.row(
+        InlineKeyboardButton(
+            text=vpn_invoice_pay_url_button_label(channel=channel),
+            url=pay_url,
+        )
+    )
+    b.row(InlineKeyboardButton(text="⬅️ Назад к счёту", callback_data=back_callback))
+    return b.as_markup()
+
+
+def confirm_order_kb(*, cancel_callback: str = "order:cancel") -> InlineKeyboardMarkup:
     b = InlineKeyboardBuilder()
     b.row(InlineKeyboardButton(text="✅ Создать заказ", callback_data="order:submit"))
-    b.row(InlineKeyboardButton(text="⬅️ Отмена", callback_data="order:cancel"))
+    b.row(InlineKeyboardButton(text="⬅️ Назад", callback_data=cancel_callback))
     return b.as_markup()
 
 

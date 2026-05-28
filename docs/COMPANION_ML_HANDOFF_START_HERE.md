@@ -1,7 +1,7 @@
 # 🧞 Companion — СТАРТ ДЛЯ СЛЕДУЮЩЕЙ ML-СИСТЕМЫ
 
 > **Открой этот файл первым.** Здесь — что уже сделано, что делать дальше, и полный каталог документов и кода.  
-> **Дата:** 2026-05-27 · **Handoff №2** (после build 210, Figma-аудит, 08b PASS)
+> **Дата:** 2026-05-28 · **Handoff №3** — см. [COMPANION_ML_HANDOFF_2026-05-28.md](./COMPANION_ML_HANDOFF_2026-05-28.md) · [Rive connect](./COMPANION_RIVE_CONNECT_NODE_MCP.md)
 
 ---
 
@@ -14,7 +14,7 @@
 | **Репозиторий** | `git@github.com:sergey234/ALADDIN_FAMILY.git` · ветка **`master`** |
 | **Рабочая папка iOS** | `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS` |
 | **Build iOS** | **210** (`AppConfig.buildNumber`) |
-| **Прогресс** | **66 / 102 (65%)** · HERO-3: **25 / 26** |
+| **Прогресс** | **67 / 102 (66%)** · HERO-3: **26 / 26** ✅ |
 | **Главный TODO** | [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) — ставь `[x]` только после реальной проверки |
 
 ### Что делать дальше (критический путь)
@@ -30,8 +30,8 @@ flowchart TD
 
 | Шаг | ID | Кто | Действие |
 |-----|-----|-----|----------|
-| **1** | **HERO-3-02b** | Дизайн | Создать в Figma страницы `01_Unicorn`, `02_Aladdin_Human`, `03_Genie` — **36 фреймов** 360×480 |
-| **2** | **HERO-3-07** | Аниматор | Rive Editor → `unicorn.riv`, `aladdin.riv`, `genie.riv` → `Resources/Companion/` |
+| **1** | ~~**HERO-3-02b**~~ | — | ✅ 36 frames Figma |
+| **2** | **HERO-3-07** | Аниматор | Rive Editor → [5 steps](./COMPANION_RIVE_EDITOR_5_STEPS.md) · [CONNECT](./COMPANION_RIVE_CONNECT_NODE_MCP.md) |
 | **3** | **HERO-3-11b** | QA / владелец | Device: D10, MOTION-Q, SPEECH-Q — [чеклист](./COMPANION_HERO3_11_QA_CHECKLIST.md) |
 | **4** | **HERO-3-11c** | QA | Повтор MIMIC-Q после production `.riv` |
 | **5** | **GATE-P0 / GATE-EMO** | Приёмка | После 11b + 07 |
@@ -47,13 +47,14 @@ flowchart TD
 | # | Документ | Зачем | Время |
 |---|----------|-------|-------|
 | **1** | **Этот файл** (`COMPANION_ML_HANDOFF_START_HERE.md`) | Карта и next steps | 10 мин |
-| **2** | [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) | Единый список 102 задач с `[x]` | 15 мин |
-| **3** | [COMPANION_100_PERCENT_PARALLEL.md](./COMPANION_100_PERCENT_PARALLEL.md) | План vs факт, кто что закрывает | 5 мин |
-| **4** | [COMPANION_FIGMA_STATUS.md](./COMPANION_FIGMA_STATUS.md) | **Аудит Figma** — что реально в файле | 5 мин |
-| **5** | [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md) | **HERO-3-07** — размеры, SM, export | 10 мин |
-| **6** | [COMPANION_HERO3_11_QA_CHECKLIST.md](./COMPANION_HERO3_11_QA_CHECKLIST.md) | Device QA 11b / 11c | 10 мин |
-| **7** | [COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md](./COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md) | Полная спека 3 героев (§2.2 Motion, §2.3 Mimic) | по необходимости |
-| **8** | [COMPANION_ML_HANDOFF_2026-05-27.md](./COMPANION_ML_HANDOFF_2026-05-27.md) | SSH, BE, скрипты, история | по задаче |
+| **2** | [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md) | **PO ✅ art** — где лежат все картинки | 5 мин |
+| **3** | [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) | Единый список 102 задач с `[x]` | 15 мин |
+| **4** | [COMPANION_100_PERCENT_PARALLEL.md](./COMPANION_100_PERCENT_PARALLEL.md) | План vs факт, кто что закрывает | 5 мин |
+| **5** | [COMPANION_FIGMA_STATUS.md](./COMPANION_FIGMA_STATUS.md) | **Аудит Figma** — что реально в файле | 5 мин |
+| **6** | [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md) | **HERO-3-07** — размеры, SM, export | 10 мин |
+| **7** | [COMPANION_HERO3_11_QA_CHECKLIST.md](./COMPANION_HERO3_11_QA_CHECKLIST.md) | Device QA 11b / 11c | 10 мин |
+| **8** | [COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md](./COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md) | Полная спека 3 героов (§2.2 Motion, §2.3 Mimic) | по необходимости |
+| **9** | [COMPANION_ML_HANDOFF_2026-05-27.md](./COMPANION_ML_HANDOFF_2026-05-27.md) | SSH, BE, скрипты, история | по задаче |
 
 ---
 

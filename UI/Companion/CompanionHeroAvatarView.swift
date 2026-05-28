@@ -57,8 +57,16 @@ struct CompanionHeroAvatarView: View {
 
     @ViewBuilder
     private var heroCore: some View {
-        #if canImport(RiveRuntime)
-        if CompanionHeroRiveHost.shouldUseRiveRuntime(characterId: characterId) {
+        if CompanionHeroRiveHost.shouldUseRasterMaster(characterId: characterId) {
+            CompanionHeroRasterView(
+                characterId: characterId,
+                emotion: emotion,
+                lipSyncPhase: lipSyncPhase,
+                stageStyle: stageStyle,
+                stageSize: stageSize
+            )
+        } else if CompanionHeroRiveHost.shouldUseRiveRuntime(characterId: characterId) {
+            #if canImport(RiveRuntime)
             CompanionHeroRiveRuntimeView(
                 characterId: characterId,
                 emotion: emotion,
@@ -66,13 +74,32 @@ struct CompanionHeroAvatarView: View {
                 stageStyle: stageStyle,
                 stageSize: stageSize
             )
+            #else
+            CompanionHeroAnimatedView(
+                characterId: characterId,
+                emotion: emotion,
+                lipSyncPhase: lipSyncPhase,
+                stageStyle: stageStyle,
+                stageSize: stageSize
+            )
+            #endif
         } else if CompanionHeroRiveHost.hasBundledRiv(characterId: characterId) {
+            #if canImport(RiveRuntime)
             CompanionHeroStageShellView(
                 characterId: characterId,
                 emotion: emotion,
                 stageStyle: stageStyle,
                 stageSize: stageSize
             )
+            #else
+            CompanionHeroAnimatedView(
+                characterId: characterId,
+                emotion: emotion,
+                lipSyncPhase: lipSyncPhase,
+                stageStyle: stageStyle,
+                stageSize: stageSize
+            )
+            #endif
         } else {
             CompanionHeroAnimatedView(
                 characterId: characterId,
@@ -82,15 +109,6 @@ struct CompanionHeroAvatarView: View {
                 stageSize: stageSize
             )
         }
-        #else
-        CompanionHeroAnimatedView(
-            characterId: characterId,
-            emotion: emotion,
-            lipSyncPhase: lipSyncPhase,
-            stageStyle: stageStyle,
-            stageSize: stageSize
-        )
-        #endif
     }
 }
 

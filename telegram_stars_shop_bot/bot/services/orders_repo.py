@@ -1095,3 +1095,22 @@ async def allow_order_create_interval(
         return True
     delta = (datetime.now(timezone.utc) - last).total_seconds()
     return delta >= float(min_seconds) - 1e-6
+
+
+async def last_vpn_order_id_for_user(conn: aiosqlite.Connection, user_id: int) -> int | None:
+    """Последний заказ пользователя с VPN-продуктом (vpn-14 admin extend)."""
+    cur = await conn.execute(
+        """
+        SELECT id FROM orders
+        WHERE user_id = ?
+          AND (
+            LOWER(TRIM(COALESCE(product_kind, ''))) = 'vpn'
+            OR LOWER(TRIM(COALESCE(product_id, ''))) LIKE 'vpn%'
+          )
+        ORDER BY id DESC
+        LIMIT 1
+        """,
+        (user_id,),
+    )
+    row = await cur.fetchone()
+    return int(row["id"]) if row else None

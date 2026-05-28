@@ -26,6 +26,15 @@ from security.family.family_registration import create_family
 
 # ✅ Авторизация с реальным user_id
 from app.auth.auth import get_current_user
+from app.routers.family_chat_v2_helpers import (
+    ensure_chat_v2_columns,
+    build_send_insert_params,
+    INSERT_MESSAGE_SQL,
+    SELECT_MESSAGES_SQL,
+    row_to_api_message,
+)
+from app.routers.family_chat_v2_pure import build_ws_new_message_payload
+from app.services.family_chat_realtime import family_ws_manager
 
 try:
     from app.database.database import get_db as get_postgres_db
@@ -61,7 +70,7 @@ logger = structlog.get_logger()
 _family_indexes_initialized = False
 
 _FAMILY_CHAT_UPLOAD_ROOT = Path(os.environ.get("ALADDIN_FAMILY_CHAT_UPLOAD_DIR", "/tmp/aladdin_family_chat_media"))
-_SAFE_CHAT_MEDIA_FILENAME = re.compile(r"^[a-f0-9]{32}\.[A-Za-z0-9]{1,12}$")
+_SAFE_CHAT_MEDIA_FILENAME = re.compile(r"^[a-f0-9]{32}\.(?:enc|[A-Za-z0-9]{1,12})$")
 
 
 def _ensure_family_chat_upload_root() -> Path:
@@ -738,6 +747,17 @@ class SendFamilyChatMessageRequest(BaseModel):
     mediaUrl: Optional[str] = None
     mediaType: Optional[str] = None
     replyToMessageId: Optional[str] = None
+    envelope_version: Optional[int] = None
+    envelopeVersion: Optional[int] = None
+    sender_device_id: Optional[str] = None
+    senderDeviceId: Optional[str] = None
+    ciphertext: Optional[str] = None
+    ciphertext_content_type: Optional[int] = 0
+    ciphertextContentType: Optional[int] = None
+    media_ciphertext_url: Optional[str] = None
+    mediaCiphertextUrl: Optional[str] = None
+    media_ciphertext_hash: Optional[str] = None
+    mediaCiphertextHash: Optional[str] = None
 
 
 class SendFamilyChatMessageResponse(BaseModel):
@@ -1979,17 +1999,9 @@ async def family_chat_messages_compat(
             if not effective_family_id:
                 return [], None
 
+            ensure_chat_v2_columns(db)
             rows = db.execute(
-                text(
-                    """
-                    SELECT id, sender_name, text, timestamp, message_type, voice_url, voice_duration,
-                           media_url, media_thumbnail_url, media_type, reply_to_message_id, edited_at, read_status, read_at
-                    FROM family_chat_messages
-                    WHERE family_id = :family_id
-                    ORDER BY timestamp ASC
-                    LIMIT 300
-                    """
-                ),
+                text(SELECT_MESSAGES_SQL),
                 {"family_id": effective_family_id},
             ).fetchall() or []
 
@@ -2018,27 +2030,9 @@ async def family_chat_messages_compat(
 
             messages: List[Dict[str, Any]] = []
             for r in rows:
-                sender_name = str(r[1] or "User")
-                messages.append(
-                    {
-                        "id": str(r[0]),
-                        "sender": sender_name,
-                        "text": r[2],
-                        "timestamp": str(r[3]),
-                        "isCurrentUser": sender_name == str(current_user.get("name") or "You"),
-                        "messageType": r[4],
-                        "voiceUrl": r[5],
-                        "voiceDuration": float(r[6]) if r[6] is not None else None,
-                        "mediaUrl": r[7],
-                        "mediaThumbnailUrl": r[8],
-                        "mediaType": r[9],
-                        "replyToMessageId": r[10],
-                        "reactions": reactions_by_message.get(str(r[0]), []),
-                        "readStatus": r[12],
-                        "readAt": r[13],
-                        "editedAt": r[11],
-                    }
-                )
+                item = row_to_api_message(r, current_user)
+                item["reactions"] = reactions_by_message.get(str(r[0]), [])
+                messages.append(item)
             return messages, effective_family_id
         finally:
             gen.close()
@@ -2138,6 +2132,65 @@ async def family_chat_upload_media(
     return await asyncio.to_thread(persist)
 
 
+@router.post("/chat/upload-media-ciphertext")
+async def family_chat_upload_media_ciphertext(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+    x_family_id: Annotated[Optional[str], Header(alias="X-Family-Id")] = None,
+    x_content_hash: Annotated[Optional[str], Header(alias="X-Content-Sha256")] = None,
+):
+    """E1.6 — загрузка только ciphertext blob (application/octet-stream)."""
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+    requested_fid = (x_family_id or "").strip()
+    if not requested_fid:
+        raise HTTPException(status_code=400, detail="X-Family-Id is required")
+    content = await request.body()
+    if not content:
+        raise HTTPException(status_code=400, detail="Empty body")
+    max_bytes = int(os.environ.get("ALADDIN_FAMILY_CHAT_UPLOAD_MAX_BYTES", str(25 * 1024 * 1024)))
+    if len(content) > max_bytes:
+        raise HTTPException(status_code=413, detail="File too large")
+    base = str(request.base_url).rstrip("/")
+    name = f"{uuid.uuid4().hex}.enc"
+
+    def persist() -> dict:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            effective: Optional[str] = None
+            if requested_fid and _actor_belongs_to_family(db, user_id, requested_fid):
+                effective = requested_fid
+            if not effective:
+                effective = _resolve_primary_family_id_for_actor(db, user_id, current_user)
+            if not effective or not _actor_belongs_to_family(db, user_id, effective):
+                raise HTTPException(status_code=403, detail="Not a member of this family")
+        finally:
+            gen.close()
+        root = _ensure_family_chat_upload_root()
+        dest = root / name
+        dest.write_bytes(content)
+        url = f"{base}/api/family/chat/media/{name}"
+        logger.info(
+            "family_chat_media_ciphertext_upload",
+            saved=name,
+            bytes=len(content),
+            family_id=effective,
+            hash=(x_content_hash or "")[:16],
+        )
+        return {
+            "success": True,
+            "url": url,
+            "mediaCiphertextUrl": url,
+            "mediaUrl": url,
+            "contentHash": (x_content_hash or "").strip() or None,
+            "mediaCiphertextHash": (x_content_hash or "").strip() or None,
+        }
+
+    return await asyncio.to_thread(persist)
+
+
 @router.get("/chat/media/{filename}")
 async def family_chat_get_media(filename: str):
     if not _SAFE_CHAT_MEDIA_FILENAME.match(filename):
@@ -2157,7 +2210,7 @@ async def family_chat_send(
     if not get_postgres_db:
         raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
 
-    def send_sync() -> SendFamilyChatMessageResponse:
+    def send_sync():
         gen = get_postgres_db()
         db = next(gen)
         try:
@@ -2166,50 +2219,36 @@ async def family_chat_send(
             if not family_id:
                 raise HTTPException(status_code=404, detail="Family not found")
 
+            ensure_chat_v2_columns(db)
             message_id = f"MSG_{uuid.uuid4().hex[:12].upper()}"
             timestamp = _iso_utc_timestamp()
             sender_name = str(current_user.get("name") or "You")
-            text_value = (payload.message or "").strip()
-            if not text_value and not (payload.mediaUrl or payload.voiceUrl):
-                raise HTTPException(status_code=400, detail="Empty message payload")
-
-            db.execute(
-                text(
-                    """
-                    INSERT INTO family_chat_messages (
-                        id, family_id, sender_user_id, sender_name, text, timestamp,
-                        message_type, voice_url, voice_duration, media_url, media_thumbnail_url,
-                        media_type, reply_to_message_id, read_status
-                    ) VALUES (
-                        :id, :family_id, :sender_user_id, :sender_name, :text, :timestamp,
-                        :message_type, :voice_url, :voice_duration, :media_url, :media_thumbnail_url,
-                        :media_type, :reply_to_message_id, :read_status
-                    )
-                    """
-                ),
-                {
-                    "id": message_id,
-                    "family_id": family_id,
-                    "sender_user_id": user_id,
-                    "sender_name": sender_name,
-                    "text": text_value if text_value else None,
-                    "timestamp": timestamp,
-                    "message_type": payload.messageType or ("media" if payload.mediaUrl else "text"),
-                    "voice_url": payload.voiceUrl,
-                    "voice_duration": payload.voiceDuration,
-                    "media_url": payload.mediaUrl,
-                    "media_thumbnail_url": payload.mediaUrl,
-                    "media_type": payload.mediaType,
-                    "reply_to_message_id": payload.replyToMessageId,
-                    "read_status": "sent",
-                },
+            insert_params = build_send_insert_params(
+                payload,
+                message_id=message_id,
+                family_id=family_id,
+                user_id=user_id,
+                sender_name=sender_name,
+                timestamp=timestamp,
             )
+            db.execute(text(INSERT_MESSAGE_SQL), insert_params)
             db.commit()
-            return SendFamilyChatMessageResponse(success=True, messageId=message_id)
+            return SendFamilyChatMessageResponse(success=True, messageId=message_id), family_id, insert_params
         finally:
             gen.close()
 
-    return await asyncio.to_thread(send_sync)
+    response, family_id, insert_params = await asyncio.to_thread(send_sync)
+    try:
+        ws_payload = build_ws_new_message_payload(
+            message_id=response.messageId,
+            family_id=family_id,
+            user_id=user_id,
+            insert_params=insert_params,
+        )
+        await family_ws_manager.broadcast(family_id, ws_payload)
+    except Exception as exc:
+        logger.warning("family_chat_send ws broadcast skipped", error=str(exc))
+    return response
 
 
 @router.post("/chat/send/typing", response_model=FamilyCompatBoolResponse)
@@ -2250,7 +2289,16 @@ async def family_chat_edit_message(
         gen = get_postgres_db()
         db = next(gen)
         try:
-            _ensure_family_chat_table(db)
+            ensure_chat_v2_columns(db)
+            env_row = db.execute(
+                text("SELECT envelope_version FROM family_chat_messages WHERE id = :mid LIMIT 1"),
+                {"mid": payload.messageId},
+            ).fetchone()
+            if env_row and int(env_row[0] or 1) == 2:
+                raise HTTPException(
+                    status_code=400,
+                    detail="E2EE messages cannot be edited via plaintext; update ciphertext in client",
+                )
             now = _iso_utc_timestamp()
             updated = db.execute(
                 text(
@@ -2258,6 +2306,7 @@ async def family_chat_edit_message(
                     UPDATE family_chat_messages
                     SET text = :text, edited_at = :edited_at
                     WHERE id = :message_id AND sender_user_id = :sender_user_id
+                      AND COALESCE(envelope_version, 1) = 1
                     """
                 ),
                 {"text": payload.text, "edited_at": now, "message_id": payload.messageId, "sender_user_id": user_id},

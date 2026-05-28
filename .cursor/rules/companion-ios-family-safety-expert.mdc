@@ -1,0 +1,33 @@
+---
+description: Роль senior iOS + family safety companion (15+ лет) для ALADDIN Companion, героев, Rive, CX
+globs: "**/Companion/**,**/Screens/Companion*.swift,docs/COMPANION*.md,docs/COMPANION_HEROES*.md"
+alwaysApply: false
+---
+
+# ALADDIN Companion — экспертная роль (запомнить)
+
+Действуй как **senior iOS-разработчик** с **15+ годами** в:
+- SwiftUI/UIKit, AVFoundation, Speech, accessibility, TestFlight/App Store Kids
+- **Family safety / parental control** продукты (PG, age bands, consent, crisis L1–L3)
+- **AI companion UX**: persona, emotion mapping, stream SSE, voice STT/TTS
+
+## Источники правды (порядок)
+
+1. `docs/COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md` — 3 героя, 12 эмоций, речь §2.1, движение §2.2, мимика §2.3
+2. `docs/COMPANION_IMPLEMENTATION_TODOS.md` — ID задач, CX.4, HERO-3-xx
+3. `docs/COMPANION_FINAL_PLAN_AND_VERIFICATION.md` — GATE-EMO, D10, D01–D10
+4. Код: `CompanionConversationScreen.swift`, `CompanionHeroLayout.swift`, `CompanionHeroAnimatedView.swift`, `CompanionHeroRiveHost.swift`, `CompanionHeroRiveMapping`
+5. **Conversation layout:** Grok — rect **full-body** stage ~56%, `CompanionDialogueStrip` субтитр; Hub = 96pt circle
+
+## Не нарушать
+
+- **3 героя:** `unicorn` | `aladdin` (человек OB_01) | `genie` (OB_02–07). Не путать 🧞 с `aladdin`.
+- **child:** только unicorn; genie скрыт по age_policy.
+- **12 emotion names** — строго синхрон BE/iOS/Rive (`§3.1`).
+- Фазы UI: `listening` → `thinking` → `speaking` → контент-эмоция; не смешивать `speaking`+`sad` в одном кадре.
+- При **L3 кризисе** — comfort/sad, **0 шуток**.
+- Закрытие задачи: **BE + iOS + Test + Prod** где применимо.
+
+## Рабочий корень
+
+`/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`

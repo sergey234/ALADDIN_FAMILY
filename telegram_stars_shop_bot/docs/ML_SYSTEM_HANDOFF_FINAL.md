@@ -38,6 +38,14 @@
 
 **Дальше по эксплуатации:** полный канон команд (`rsync` / `git pull` / `scp`, симлинки, что нельзя затирать) — в подразделе **«Доставка кода на production (канон)»** ниже в разделе 2; быстрый смоук в Telegram (`/start`, сценарии оплаты и т.д.) — **раздел 9** этого файла и чеклисты по ссылкам в разделе 10.
 
+### 0.1) Журнал: деплой VPN-стека + админ-команды бота (2026-05-14)
+
+1. **Shop Bot** — `rsync` каталога `telegram_stars_shop_bot/` в `ROOT/releases/20260514-143345/telegram_stars_shop_bot/`, симлинки `current_release` / `current_app`, `pip install -r current_app/requirements.txt`, рестарт **`aladdin-telegram-bot`**, **`aladdin-partner-api`**, **`aladdin-webhook-worker`**.  
+2. **aladdin-shop-vpn-api** — `rsync` из репо `aladdin_shop_vpn_api/` в **`/opt/aladdin-shop-vpn-api`** с исключениями **`var/`**, **`env`**, **`venv/`** (прод-данные и секреты не трогались), `chmod +x deploy/scripts/*.sh`, рестарт **`aladdin-shop-vpn-api.service`**.  
+3. **Смоук на сервере:** `8090/health` и `8091/health` → `ok`, `8091/ready` → **200**; все четыре unit’а выше + **`aladdin-shop-vpn-worker.timer`** — `active`; в `shared/.env` присутствуют **`VPN_API_BASE_URL`**, **`VPN_API_HMAC_SECRET`**, **`VPN_DB_PATH`**, **`ADMIN_IDS`** (значения не логируются).  
+4. **Новое в боте на проде:** команды **`/admin_vpn`**, **`/admin_vpn_status`**, **`/admin_vpn_revoke`**, **`/admin_vpn_extend`** (см. **`docs/VPN14_SUPPORT_ADMIN_RUNBOOK.md`**).  
+5. **Канон БД и VPN в меню (2026-05-14):** в **`shared/.env`** заданы **`DATABASE_PATH=/opt/aladdin-telegram-shop-bot/data/shop.db`** (каталог **`ROOT/data/`**, копия из активного релиза при первом включении) и **`UI_SHOW_VPN=true`** — в главном меню строка **«🌐 VPN»** и команда **`/vpn`** в списке команд бота после рестарта.
+
 ---
 
 Этот документ — единая входная точка для другой ML/agent системы.  
@@ -52,8 +60,13 @@
 | **Мобильное приложение ALADDIN (iOS)** | `Core/`, Xcode-проект, каталоги приложения **вне** `telegram_stars_shop_bot/` | **Не** в `/opt/aladdin-telegram-shop-bot`. Сборка — через Xcode / CI мобильного приложения; на сервере бота **не копировать**. |
 | **Основной ALADDIN backend (API)** | Отдельный репозиторий/дерево на сервере | **`/opt/aladdin-backend`**, публичный health обычно **`:8002`** | Свой деплой и `systemctl` (например `aladdin-backend`). При выкладке **магазина** backend **не трогать**, если нет отдельной задачи на backend. |
 | **Telegram Shop Bot** (этот документ) | Только **`telegram_stars_shop_bot/`** | **`ROOT=/opt/aladdin-telegram-shop-bot`**, Partner API внутри сервера **`:8090`**, три unit'а: `aladdin-telegram-bot`, `aladdin-partner-api`, `aladdin-webhook-worker` | **`rsync`** содержимого `./telegram_stars_shop_bot/` → `releases/<TS>/telegram_stars_shop_bot/` + симлинки `current_app` / `current_release` + `pip` в `ROOT/venv` + рестарт **трёх** сервисов бота. Канон — §2 и §2.1 ниже. |
+| **VPN для Shop Bot** (планируется) | План и пути: **`telegram_stars_shop_bot/docs/VPN_SHOP_INTEGRATION_PLAN.md`**; выборочный код-референс в монорепо: **`…/ALADDIN_iOS/app/security/vpn/`** | **`/opt/aladdin-shop-vpn-api`** + systemd **`aladdin-shop-vpn-api.service`**; **не** смешивать с **`/opt/aladdin-backend`**. Старый деплой справки: **`/opt/aladdin-backend/app/security/vpn`**. | Отдельный деплой venv + API; бот вызывает по секрету из **`ROOT/shared/.env`**. Детали — в `VPN_SHOP_INTEGRATION_PLAN.md`. |
 
 **Правило:** команда деплоя бота всегда начинается с пути **`…/ALADDIN_iOS/telegram_stars_shop_bot/`** (или эквивалента на диске). **Никогда** не делать `rsync` всего корня `ALADDIN_iOS` в `current_app` бота — туда попадёт мусор из iOS и сломается Python.
+
+### 0.6) VPN только для Telegram Shop Bot (отдельно от `/opt/aladdin-backend`)
+
+План путей на сервере, переиспользование старого `app/security/vpn`, интеграция с ботом (**доступ к VPN только после оплаты**, без триала) — в **`docs/VPN_SHOP_INTEGRATION_PLAN.md`**; контракт API — **`docs/VPN_SHOP_API.md`**. Новый контроль-план VPN **не** кладётся в дерево основного backend; целевой каталог на проде: **`/opt/aladdin-shop-vpn-api`** (отдельный systemd `aladdin-shop-vpn-api.service`). Старый код на сервере **`/opt/aladdin-backend/app/security/vpn`** трактовать как **архив/справку**, не как место деплоя нового VPN.
 
 ### Что **не** попадает на сервер тем же `rsync` бота (и это правильно)
 
@@ -448,3 +461,171 @@ tail -n 100 /opt/aladdin-telegram-shop-bot/logs/webhook_worker.log
 3. **Observability v2:** метрики Prometheus/Grafana + SLO по API/webhook.
 4. **Security v2:** регулярная ротация API/webhook секретов + audit trail.
 5. **CI v2:** сделать `mypy` обязательным, добавить контрактные API тесты из OpenAPI.
+
+---
+
+## 17) Реферальная система: Stars / Premium и VPN (где код, как связано)
+
+**Продуктовый план единого UX (без языка «заработок», одна ссылка `ref_`, дни VPN как доп. бонус):**  
+`docs/REFERRAL_UNIFIED_UX_PLAN.md` — тексты по экранам и чеклист внедрения на 3 дня.
+
+Два продукта в одном боте, **одна** привязка пригласившего в `users.referrer_id`, но **два разных бонуса** после оплаты:
+
+| Продукт | Ссылка входа | Бонус приглашённому | Бонус рефереру |
+|---------|--------------|---------------------|----------------|
+| **Stars / Premium / VPN** (единая ссылка) | `https://t.me/{bot}?start=ref_{user_id}` | Скидка **%** на **первый выданный** заказ (`REF_BUYER_*`) | **Бонус на покупки в магазине** **%** от первого выданного заказа → `ref_balance_rub` (в UI не «комиссия/заработок») |
+| **VPN** (дополнительно к бонусу в ₽) | та же `ref_`; опционально `GET /r/{code}` → редирект | **+N дней** другу после первой **выданной VPN**-покупки | **+M дней** вам (`VPN_REFERRAL_*_DAYS`) |
+
+**Premium** не имеет отдельной рефералки: те же правила, что у Stars (`quote_product` / `product.kind`).
+
+### 17.1 Где выполняется работа (runtime)
+
+| Слой | Путь / порт | Процессы |
+|------|-------------|----------|
+| **Telegram-бот** | `telegram_stars_shop_bot/bot/` | `aladdin-telegram-bot.service` |
+| **Partner API** (партнёры, вебхуки, лендинг `/r/`) | `telegram_stars_shop_bot/partner_api/` | `aladdin-partner-api.service` на **`127.0.0.1:8090`** (снаружи часто nginx → `https://aladdin-ai.ru/v1/…`) |
+| **Webhook worker** | `partner_api/webhook_worker.py` | `aladdin-webhook-worker.service` |
+| **БД магазина** | `ROOT/data/shop.db` (`DATABASE_PATH` в `shared/.env`) | SQLite: `users`, `orders`, `vpn_referral_codes`, `vpn_referral_grants` |
+| **VPN API** (бонусные дни) | `aladdin_shop_vpn_api/` → **`/opt/aladdin-shop-vpn-api`**, порт **8091** | `aladdin-shop-vpn-api.service`; HMAC из `VPN_API_HMAC_SECRET` |
+
+Секреты **только** в `ROOT/shared/.env` (см. `env.example`). В git и в handoff **не** копировать значения `API_KEY_PEPPER`, `PAYMENT_WEBHOOK_SECRET`, `VPN_API_HMAC_SECRET` и т.п. Если секреты попали в чат — **ротация на сервере**.
+
+### 17.2 Общая привязка реферера (один раз)
+
+```mermaid
+flowchart TD
+  A["/start ref_123 или r-CODE"] --> B["common.py: cmd_start"]
+  B --> C{"ref_ ?"}
+  C -->|да| D["users_repo.set_referrer_if_empty(referrer_id=123)"]
+  C -->|r-CODE| E["vpn_referral_repo.resolve_code_owner"]
+  E --> D
+  D --> F["users.referrer_id заполнен навсегда"]
+  F --> G["Самореферал и перезапись запрещены"]
+```
+
+| Файл | Функция |
+|------|---------|
+| `bot/handlers/common.py` | `cmd_start`: `ref_{id}` и `r_{code}` / `r-{code}` |
+| `bot/services/users_repo.py` | `set_referrer_if_empty` — только если `referrer_id IS NULL` |
+| `partner_api/routers/vpn_ref_landing.py` | `GET /r/{code}` → `302` на `t.me/{bot}?start=r-{code}` |
+
+### 17.3 Stars / Premium — скидка и комиссия в ₽
+
+**Цена в чекауте**
+
+| Файл | Логика |
+|------|--------|
+| `bot/services/pricing.py` | `quote_product(..., is_first_order=…)` → `rub_referral_discount` если нет ни одного `completed` заказа |
+| `bot/handlers/shop.py` | чекаут Stars/Premium/VPN: снимок `referrer_id` из `users`, поля заказа |
+| `partner_api/routers/orders.py` | то же для Partner API `POST /v1/orders` |
+
+**Настройки** (`bot/config.py` / `shared/.env`):
+
+- `REF_BUYER_FIRST_ORDER_DISCOUNT_PERCENT` — скидка другу (по умолчанию 10).
+- `REF_REFERRER_COMMISSION_FIRST_ORDER_PERCENT` — комиссия с первой выдачи (по умолчанию 15).
+
+**После `status=completed`** (любой товар, включая VPN):
+
+| Файл | Логика |
+|------|--------|
+| `bot/services/order_flow.py` | `apply_completed_side_effects` — **идемпотентно** (`fulfillment_applied_at`, `commission_paid`) |
+| | Если это **первый** `completed` пользователя: `first_order_completed=1`, начисление `commission_rub` → `users.ref_balance_rub` |
+| | Если не первый глобальный заказ — комиссия **не** начисляется (скидка в чекауте тоже только до первого `completed`) |
+| `bot/services/pricing.py` | `commission_for_first_order(rub_paid, settings)` |
+| `bot/handlers/admin.py` | смена статуса на `completed` → тот же `apply_completed_side_effects` |
+| `bot/services/admin_order_ff.py` | автовыдача → `completed` → side effects |
+
+**UI / статистика**
+
+| Файл | Назначение |
+|------|------------|
+| `bot/handlers/hub.py` | `profile_body_html`: ссылка `ref_{id}`, условия, `ref_balance_rub`, счётчики |
+| `bot/services/users_repo.py` | `user_stats`: invited / buyers with completed / sum commission |
+| `bot/services/marketing.py` | `referral_faq_html`, тексты в поддержке |
+| `partner_api/routers/profile.py` | API-профиль: `ref_balance_rub`, referral_* |
+| `bot/services/admin_stats_repo.py` | `referral_metrics`, `top_referrers` |
+
+**Тесты:** `tests/test_referral_stats.py`, скидки в `tests/test_bot_domain_suite.py`.
+
+### 17.4 VPN — бонусные дни (отдельно от ₽-комиссии)
+
+VPN-рефералка **не заменяет** Stars-рефералку: при первой выданной VPN-покупке приглашённого возможны **оба** эффекта:
+
+1. скидка/комиссия в ₽ (если это ещё «первый completed» глобально);
+2. запись в `vpn_referral_grants` + продление `paid_until` в VPN API.
+
+| Шаг | Файл |
+|-----|------|
+| Код ссылки на пользователя | `bot/services/vpn_referral_repo.py` → `ensure_my_vpn_referral_code`, таблица `vpn_referral_codes` |
+| Показ в профиле / VPN UI | `bot/handlers/hub.py`, `bot/handlers/vpn.py`, `bot/services/vpn_tariffs.py` (`vpn_referral_blurb_html`) |
+| Короткая ссылка HTTPS | `partner_api/routers/vpn_ref_landing.py` — **`GET /r/{code}`** (публичный роут **без** префикса `/v1`) |
+| Условие гранта | `vpn_referral_repo.try_insert_vpn_referral_grant` — только **первая** completed VPN-покупка пользователя, `referrer_id` из заказа |
+| Вызов VPN API | `bot/services/vpn_referral_extensions.py` → `vpn_api_client.post_add_subscription_days` |
+| VPN endpoint | `aladdin_shop_vpn_api/.../routes/internal.py` → **`POST /internal/v1/add-subscription-days`** (HMAC + `Idempotency-Key`) |
+| Повтор при сбое API | `bot/services/vpn_referral_retry_loop.py` (интервал `VPN_REFERRAL_API_RETRY_INTERVAL_SECONDS`) |
+| Точка входа из оплаты | `bot/services/order_flow.py` после commit; также `bot/services/vpn_payment_hook.py` при авто-fulfillment VPN |
+
+**Idempotency-Key** (важно для ретраев):  
+`shop-vpn-ref:{order_id}:friend:{telegram_id}` и `shop-vpn-ref:{order_id}:referrer:{telegram_id}`.
+
+**Настройки** (`env.example`):
+
+- `VPN_REFERRAL_REFERRER_DAYS=14`
+- `VPN_REFERRAL_FRIEND_DAYS=7`
+- `VPN_REFERRAL_API_RETRY_INTERVAL_SECONDS=300`
+- `VPN_REFERRAL_API_MAX_ATTEMPTS_PER_SIDE=12`
+- `SHOP_BOT_USERNAME` — для `/r/{code}` редиректа
+
+**Админ-метрики VPN-рефералки:** `admin_stats_repo.vpn_referral_metrics`.
+
+### 17.5 Схема БД (рефералка)
+
+**`users`**
+
+- `referrer_id` — кто привёл (Telegram user id).
+- `ref_balance_rub` — накопленная комиссия Stars/Premium (вывод/оплата — через баланс магазина).
+- `first_order_completed` — флаг после первого `completed`.
+
+**`orders`**
+
+- `referrer_id` — снимок на момент заказа.
+- `referral_discount_rub`, `referral_discount_percent` — скидка в чекауте.
+- `commission_rub`, `commission_paid` — комиссия рефереру (один раз на заказ).
+
+**`vpn_referral_codes`**
+
+- `user_id` → короткий `code` (8 символов) для ссылки `r-{code}`.
+
+**`vpn_referral_grants`**
+
+- одна строка на пару (referred, first VPN order): `friend_days`, `referrer_days`, `api_friend_ok`, `api_referrer_ok`, счётчики попыток.
+
+Миграции/колонки: `bot/db/database.py` (CREATE + `_ensure_column`).
+
+### 17.6 Проверка и известные краевые случаи
+
+| Сценарий | Ожидание | Где смотреть |
+|----------|----------|--------------|
+| Друг зашёл по `ref_`, купил Stars | Скидка в чекауте; после `completed` — % на `ref_balance_rub` реферера | `order_flow`, профиль |
+| Друг зашёл по `r-CODE`, купил VPN | `referrer_id` тот же; после первой VPN `completed` — дни другу и рефереру | `vpn_referral_grants`, VPN API jobs |
+| «ноутбук для игр» off-topic | intent `general`, не `parental_howto` (слово «игр» **не** должно ломать чекаут) | `security/services/ai_intent_router.py` на **ALADDIN backend** — не путать с shop bot |
+| Partner API создал заказ | те же поля `referrer_id` / скидки | `partner_api/routers/orders.py` |
+| Повторный `completed` | `fulfillment_applied_at` уже есть → side effects не дублируются | `docs/EDGE_CASES.md` |
+| VPN API down | грант в БД есть, `api_*_ok=0`, retry loop | логи бота, `vpn_referral_retry_loop` |
+
+**Смоук / тесты**
+
+```bash
+cd /opt/aladdin-telegram-shop-bot/current_app
+venv/bin/python3 -m pytest tests/test_referral_stats.py tests/test_bot_domain_suite.py -q
+curl -s http://127.0.0.1:8090/health
+# лендинг VPN ref (если SHOP_BOT_USERNAME задан):
+curl -sI "http://127.0.0.1:8090/r/Ab12Cd34" | head -5
+```
+
+**Связанные документы**
+
+- `docs/EDGE_CASES.md` — идемпотентность `completed`, API-заказы.
+- `docs/VPN_SHOP_API.md`, `docs/VPN_ML_SYSTEM_HANDOFF.md` — контракт VPN API.
+- `docs/VPN_ANTIABUSE_HANDOFF_ML.md` — `shop.db` vs `vpn.db`.
+- `env.example` — все `REF_*` и `VPN_REFERRAL_*`.

@@ -10,7 +10,7 @@ from aiogram.enums import ParseMode
 from aiogram.fsm.storage.memory import MemoryStorage
 from aiogram.types import BotCommand
 
-from bot.config import load_settings
+from bot.config import Settings, load_settings
 from bot.sentry_util import init_sentry_bot
 from bot.db.database import connect
 from bot.services.ckassa_api import ckassa_checkout_configured
@@ -20,19 +20,23 @@ from bot.handlers import admin as admin_handlers
 from bot.handlers import common as common_handlers
 from bot.handlers import hub as hub_handlers
 from bot.handlers import shop as shop_handlers
+from bot.handlers import vpn as vpn_handlers
 from bot.middlewares.channel_gate import ChannelGateMiddleware
 from bot.middlewares.inject import InjectMiddleware
 from bot.middlewares.throttling import ThrottleMiddleware
 from bot.logutil import slog
 from bot.services.catalog import load_products
 from bot.services.break_glass_monitor import break_glass_report_loop
+from bot.services.vpn_ops_health import vpn_ops_health_loop
 from bot.services.pending_payment_ttl import pending_payment_ttl_loop
 from bot.services.stuck_orders_monitor import stuck_paid_orders_loop
+from bot.services.vpn_expiry_notify import vpn_expiry_notify_loop
+from bot.services.vpn_referral_retry_loop import vpn_referral_api_retry_loop
 
 logger = logging.getLogger(__name__)
 
 
-async def _setup_bot_commands(bot: Bot) -> None:
+async def _setup_bot_commands(bot: Bot, settings: Settings) -> None:
     """
     Показывает кнопку Menu внизу чата и список команд в стиле популярных ботов.
     /menu ведёт к тому же экрану с 10 карточками, что и кнопка «Далее».
@@ -46,6 +50,8 @@ async def _setup_bot_commands(bot: Bot) -> None:
         BotCommand(command="admqueue", description="Админ: очередь внимания по заказам"),
         BotCommand(command="contest", description="Админ: конкурсы партнёров"),
     ]
+    if settings.ui_show_vpn:
+        commands.insert(4, BotCommand(command="vpn", description="AiMonkeyVPN — оплата и настройка"))
     await bot.set_my_commands(commands)
 
 
@@ -79,28 +85,46 @@ async def run() -> None:
     slog(logger, "bot_start", database=str(settings.database_path))
     products = load_products(settings.products_path)
     bot = Bot(settings.bot_token, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
-    await _setup_bot_commands(bot)
+    await _setup_bot_commands(bot, settings)
     dp = Dispatcher(storage=MemoryStorage())
     dp.update.middleware(InjectMiddleware(settings, conn, products))
     dp.message.middleware(ThrottleMiddleware(settings))
     dp.include_router(common_handlers.router)
     dp.include_router(hub_handlers.router)
+    dp.include_router(vpn_handlers.router)
     shop_handlers.router.callback_query.middleware(ChannelGateMiddleware())
     dp.include_router(shop_handlers.router)
     dp.include_router(admin_handlers.router)
     ttl_task = asyncio.create_task(pending_payment_ttl_loop(bot, settings))
+    vpn_ref_retry_task: asyncio.Task | None = None
+    if int(settings.vpn_referral_api_retry_interval_seconds) > 0:
+        vpn_ref_retry_task = asyncio.create_task(vpn_referral_api_retry_loop(bot, settings))
     stuck_task: asyncio.Task | None = None
     break_glass_task: asyncio.Task | None = None
+    vpn_ops_health_task: asyncio.Task | None = None
+    vpn_expiry_notify_task: asyncio.Task | None = None
     if int(settings.stuck_paid_alert_hours) > 0 or int(settings.stuck_processing_alert_minutes) > 0:
         stuck_task = asyncio.create_task(stuck_paid_orders_loop(bot, settings))
     if int(settings.break_glass_report_interval_seconds) > 0:
         break_glass_task = asyncio.create_task(break_glass_report_loop(bot, settings))
+    if int(settings.vpn_ops_health_interval_seconds) > 0 and (settings.vpn_api_base_url or "").strip():
+        vpn_ops_health_task = asyncio.create_task(vpn_ops_health_loop(bot, settings))
+    if (
+        settings.vpn_expiry_notify_enabled
+        and int(settings.vpn_expiry_notify_interval_seconds) > 0
+        and settings.resolved_vpn_db_path() is not None
+    ):
+        vpn_expiry_notify_task = asyncio.create_task(vpn_expiry_notify_loop(bot, settings))
     try:
         await dp.start_polling(bot)
     finally:
         ttl_task.cancel()
         with contextlib.suppress(asyncio.CancelledError):
             await ttl_task
+        if vpn_ref_retry_task is not None:
+            vpn_ref_retry_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await vpn_ref_retry_task
         if stuck_task is not None:
             stuck_task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
@@ -109,6 +133,14 @@ async def run() -> None:
             break_glass_task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await break_glass_task
+        if vpn_ops_health_task is not None:
+            vpn_ops_health_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await vpn_ops_health_task
+        if vpn_expiry_notify_task is not None:
+            vpn_expiry_notify_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await vpn_expiry_notify_task
         await conn.close()
 
 

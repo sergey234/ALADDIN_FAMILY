@@ -34,7 +34,7 @@ Resources/Companion/genie.riv
 
 **Inputs (Number/String):**
 
-- `emotion` — строки: `idle` · `happy` · `listening` · `speaking` · `alert` · `comfort` · `celebrate` · `thinking` · `sad` · `playful` · `curious` · `nostalgic` · `excited`
+- `emotion` — **13 triggers** (имена = iOS): `idle` · `listening` · `thinking` · **`speaking`** · `happy` · `playful` · `sad` · `comfort` · `celebrate` · `curious` · `nostalgic` · `excited` · `alert` — см. [PLAN_SUPPLEMENT](./COMPANION_RIVE_ANIMATOR_PLAN_SUPPLEMENT.md) §3
 - `mouth_open` — **0…1** (speaking + TTS)
 
 **12 контент-постеров** в Figma 02; `speaking` — фаза в Motion, не 13-й столбец сетки.
@@ -47,7 +47,7 @@ Resources/Companion/genie.riv
 |----------------|---------------------|-------------------|
 | `unicorn` | OB_05 mood | Пружинный bob, без жёстких прыжков на sad |
 | `aladdin` | OB_01 | Сдержанный; без дыма джина |
-| `genie` | OB_02 (`103:53`) | Дым/искры только playful/speaking; **не** на sad/comfort |
+| `genie` | **OB_03 headfix** (`122:2` · `onboarding_OB03_APP_360x480_FILL_headfix_v1.png`) | Дым/искры только playful/speaking; **не** на sad/comfort · brief: [ANIMATOR_BRIEF](./COMPANION_RIVE_ANIMATOR_BRIEF.md) |
 
 ---
 

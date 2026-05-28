@@ -12,14 +12,13 @@ from bot.keyboards.shop_kb import (
     hub_menu_kb,
     onboarding_language_kb,
 )
-from bot.services import branding_media, captcha_repo, onboarding_gate, users_repo
+from bot.services import analytics_repo, branding_media, captcha_repo, onboarding_gate, users_repo, vpn_referral_repo
 from bot.services.channel_gate import channel_gate_enabled, user_is_channel_member
 from bot.services.marketing import (
     CHANNEL_GATE_PHOTO_CAPTION_MAX,
     channel_hard_wall_html,
     channel_subscribe_after_greeting_html,
 )
-from bot.services import analytics_repo
 from bot.ui_copy import LANGUAGE_SELECTION_CAPTION_HTML, ONBOARDING_SCREEN_2
 
 router = Router(name="common")
@@ -98,6 +97,22 @@ async def cmd_start(message: Message, command: CommandObject, settings: Settings
             await users_repo.set_referrer_if_empty(conn, user_id=message.from_user.id, referrer_id=ref_id)
         except ValueError:
             pass
+    elif payload.startswith("r_") or payload.startswith("r-"):
+        sep = "r_" if payload.startswith("r_") else "r-"
+        code = payload[len(sep) :].strip()
+        if code:
+            owner = await vpn_referral_repo.resolve_code_owner(conn, code)
+            if owner is not None:
+                await users_repo.set_referrer_if_empty(conn, user_id=message.from_user.id, referrer_id=owner)
+                try:
+                    await analytics_repo.log_event(
+                        conn,
+                        user_id=message.from_user.id,
+                        event_type="vpn_ref_link_open",
+                        meta={"code": code[:32]},
+                    )
+                except Exception:
+                    pass
     if await users_repo.get_locale(conn, message.from_user.id) is None:
         await _send_language_pick(message, settings)
         return

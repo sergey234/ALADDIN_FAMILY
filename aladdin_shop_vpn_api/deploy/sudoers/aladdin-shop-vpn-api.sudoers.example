@@ -1,0 +1,13 @@
+# Пример для /etc/sudoers.d/aladdin-shop-vpn-api
+# Установка: sudo install -m 0440 -o root -g root ... /etc/sudoers.d/aladdin-shop-vpn-api
+# Проверка: sudo visudo -cf /etc/sudoers.d/aladdin-shop-vpn-api
+#
+# Замените aladdin-shop-vpn на фактическое имя пользователя из systemd User=.
+# Пути к wg-peer-*.sh должны совпадать с реальным деплоем (часто /opt/aladdin-shop-vpn-api/scripts/).
+
+Defaults:aladdin-shop-vpn !requiretty
+Defaults:aladdin-shop-vpn secure_path=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+
+aladdin-shop-vpn ALL=(root) NOPASSWD: /opt/aladdin-shop-vpn-api/scripts/wg-peer-up.sh, /opt/aladdin-shop-vpn-api/scripts/wg-peer-down.sh
+
+# Не добавляйте сюда openvpn/easy-rsa без отдельного обоснования: держите выпуск сертификатов вне runtime-пользователя API.

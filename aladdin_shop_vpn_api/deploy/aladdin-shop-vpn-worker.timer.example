@@ -1,0 +1,12 @@
+[Unit]
+Description=Run ALADDIN Shop VPN worker periodically
+
+[Timer]
+OnBootSec=30
+OnUnitActiveSec=60
+AccuracySec=10
+Persistent=true
+Unit=aladdin-shop-vpn-worker.service
+
+[Install]
+WantedBy=timers.target

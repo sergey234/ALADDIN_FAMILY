@@ -133,7 +133,7 @@ grep -E '^CRYPTO_PAY_|^XROCKET_' "$ENV" | sed 's/=.*/=…/'
 SB1|<order_id>|<due_kop>
 ```
 
-- **`SB1`** — версия схемы (MonkeyStars shop payload v1; префикс на wire не меняется при ребрендинге).
+- **`SB1`** — версия схемы (AIMonkeyStars shop payload v1; префикс на wire не меняется при ребрендинге).
 - **`order_id`** — целое `orders.id`.
 - **`due_kop`** — сумма **к оплате через Crypto Pay в ₽**, выраженная в **копейках**: `round(due_rub, 2) * 100`, целое число (кодирование через `round`, без двоичного дрейфа float).
 

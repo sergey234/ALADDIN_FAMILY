@@ -8,7 +8,7 @@ from aiogram.types import FSInputFile
 
 from bot.config import Settings
 
-# telegram_stars_shop_bot/assets/branding/monkey_stars_logo.png
+# telegram_stars_shop_bot/assets/branding/monkey_stars_logo.png (имя файла историческое; бренд AIMonkeyStars)
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 BRANDING_LOGO_PATH = _REPO_ROOT / "assets" / "branding" / "monkey_stars_logo.png"
 

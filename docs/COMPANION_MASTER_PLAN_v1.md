@@ -6,6 +6,9 @@
 **Репозиторий iOS:** `/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
 **Связанные файлы:**
 - [COMPANION_MODULAR_ARCHITECTURE.md](./COMPANION_MODULAR_ARCHITECTURE.md) — **модульная архитектура, потоки, флаги**
+- [COMPANION_RIVE_CONNECT_NODE_MCP.md](./COMPANION_RIVE_CONNECT_NODE_MCP.md) — **HERO-3-07: Rive Editor, Node, RiveMCP (2026-05-28)**
+- [COMPANION_ML_HANDOFF_2026-05-28.md](./COMPANION_ML_HANDOFF_2026-05-28.md) — handoff для внешней ML-системы
+- [COMPANION_PLAN_TOMORROW_2026-05-29.md](./COMPANION_PLAN_TOMORROW_2026-05-29.md) — план следующей сессии
 - [GROK_FULL_FEATURE_MATRIX.md](./GROK_FULL_FEATURE_MATRIX.md) — трассировка 90+ ID
 - [GROK_COMPANION_ARCHITECTURE_FOR_ALADDIN.md](./GROK_COMPANION_ARCHITECTURE_FOR_ALADDIN.md) — API companion
 - Код: `security/services/ai_platform/`, `security/api/routers/ai_platform_router.py`, `ai_companion_router.py`

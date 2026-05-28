@@ -20,13 +20,15 @@
 
 ## Протокол (заполнить после 11b)
 
+**Шаблон сессии:** [COMPANION_HERO3_11B_DEVICE_SESSION.md](./COMPANION_HERO3_11B_DEVICE_SESSION.md)
+
 | Поле | Значение |
 |------|----------|
 | Дата | |
 | Тестер | |
 | Устройство | |
 | iOS | |
-| Build | 209 |
+| Build | **210** |
 | Герои проверены | unicorn · aladdin · genie (genie только teen/parent) |
 | Итог 11b | PASS / FAIL |
 | Ссылка на скриншоты/запись | |

@@ -63,6 +63,50 @@ def lava_checkout_configured(settings: Settings) -> bool:
     return bool(shop and secret and hook)
 
 
+def _lava_pick_qr_url(inner: dict[str, Any]) -> str | None:
+    """QR СБП в ответе invoice/create (если LAVA отдаёт — зависит от тарифа/метода)."""
+    for key in (
+        "qr",
+        "qrUrl",
+        "qr_url",
+        "qrCode",
+        "qr_code",
+        "sbpQr",
+        "sbp_qr",
+        "nspkQr",
+        "nspk_qr",
+        "paymentQr",
+        "payment_qr",
+    ):
+        raw = inner.get(key)
+        if isinstance(raw, str) and raw.strip().startswith(("http://", "https://")):
+            return raw.strip()
+    return None
+
+
+def _lava_log_unknown_invoice_fields(inner: dict[str, Any], *, order_id: int, include_service: list[str] | None) -> None:
+    known = {
+        "url",
+        "id",
+        "invoice_id",
+        "invoiceId",
+        "amount",
+        "sum",
+        "status",
+        "expire",
+        "orderId",
+        "shopId",
+    }
+    extra = sorted(k for k in inner if k not in known)
+    if extra:
+        _log.info(
+            "lava_invoice_create_extra_fields order_id=%s include=%s keys=%s",
+            order_id,
+            include_service,
+            extra,
+        )
+
+
 async def create_invoice_payment_url(
     settings: Settings,
     *,
@@ -70,7 +114,7 @@ async def create_invoice_payment_url(
     sum_rub: float,
     comment: str | None = None,
 ) -> str | None:
-    url, _ = await create_invoice_payment_meta(
+    url, _, _ = await create_invoice_payment_meta(
         settings,
         order_id=order_id,
         sum_rub=sum_rub,
@@ -85,20 +129,22 @@ async def create_invoice_payment_meta(
     order_id: int,
     sum_rub: float,
     comment: str | None = None,
-) -> tuple[str | None, str | None]:
+    include_service: list[str] | None = None,
+) -> tuple[str | None, str | None, str | None]:
     """
-    Создаёт счёт в LAVA Business и возвращает URL оплаты (СБП / карты и др. по тарифам проекта).
+    Создаёт счёт в LAVA Business.
+    Возвращает (url страницы оплаты, external_id, qr_url или None).
     https://api.lava.ru/business/invoice/create
     """
     if not lava_checkout_configured(settings):
-        return None, None
+        return None, None, None
     shop = (settings.lava_shop_id or "").strip()
     secret = (settings.lava_secret_key or "").strip()
     hook = (settings.lava_hook_url or "").strip()
 
     base = (settings.lava_api_base or DEFAULT_LAVA_API_BASE).rstrip("/") + "/"
     expire = max(1, min(int(settings.lava_invoice_expire_minutes), 43200))
-    include = settings.lava_include_services_list()
+    include = include_service if include_service else settings.lava_include_services_list()
     payload = lava_invoice_signing_payload(
         shop_id=shop,
         order_id=str(order_id),
@@ -125,7 +171,7 @@ async def create_invoice_payment_meta(
         except Exception:
             _log.exception("lava_invoice_create_http_error order_id=%s attempt=%s", order_id, attempt)
             if attempt == 2:
-                return None, None
+                return None, None, None
             await asyncio.sleep(0.4 * (attempt + 1))
             continue
         if r.status_code == 200:
@@ -133,15 +179,16 @@ async def create_invoice_payment_meta(
                 data = r.json()
             except Exception:
                 _log.warning("lava_invoice_create_invalid_json order_id=%s", order_id)
-                return None, None
+                return None, None, None
             inner = data.get("data") if isinstance(data, dict) else None
             if not isinstance(inner, dict):
                 _log.warning("lava_invoice_create_no_data order_id=%s raw=%s", order_id, str(data)[:300])
-                return None, None
+                return None, None, None
+            _lava_log_unknown_invoice_fields(inner, order_id=order_id, include_service=include)
             pay_url = inner.get("url")
             if not pay_url or not isinstance(pay_url, str):
                 _log.warning("lava_invoice_create_no_url order_id=%s", order_id)
-                return None, None
+                return None, None, None
             ext = (
                 inner.get("id")
                 or inner.get("invoice_id")
@@ -151,7 +198,10 @@ async def create_invoice_payment_meta(
                 else None
             )
             ext_s = str(ext).strip() if ext is not None else None
-            return pay_url, (ext_s or None)
+            qr_url = _lava_pick_qr_url(inner)
+            if qr_url and include_service == ["sbp"]:
+                _log.info("lava_invoice_sbp_qr_url order_id=%s present=1", order_id)
+            return pay_url, (ext_s or None), qr_url
         if r.status_code in (429, 502, 503, 504) or r.status_code >= 500:
             _log.warning(
                 "lava_invoice_create_retryable status=%s order_id=%s attempt=%s",
@@ -163,4 +213,4 @@ async def create_invoice_payment_meta(
                 await asyncio.sleep(0.5 * (attempt + 1))
                 continue
         _log.warning("lava_invoice_create_bad_status %s body=%s", r.status_code, r.text[:500])
-        return None, None
+        return None, None, None

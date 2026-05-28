@@ -1,0 +1,12 @@
+[Unit]
+Description=ALADDIN Shop VPN job worker (process one pending job)
+After=network.target aladdin-shop-vpn-api.service
+
+[Service]
+Type=oneshot
+# Согласовать с aladdin-shop-vpn-api.service (тот же User= для доступа к vpn.db и вызова sudo-обёрток).
+User=root
+Group=root
+WorkingDirectory=/opt/aladdin-shop-vpn-api
+EnvironmentFile=-/opt/aladdin-shop-vpn-api/env
+ExecStart=/opt/aladdin-shop-vpn-api/venv/bin/python -m aladdin_shop_vpn_api.worker

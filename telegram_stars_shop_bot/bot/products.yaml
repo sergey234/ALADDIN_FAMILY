@@ -83,3 +83,55 @@ products:
     stars: 5000
     price_usd: 78.0
     sort_order: 5
+
+  # VPN: price_rub — фиксированная витрина в ₽ (не зависит от USD_RUB_RATE).
+  # price_usd в YAML не используется для ₽; USD в заказе = price_rub / USD_RUB_RATE (как эквивалент, см. pricing.catalog_usd_for_quote).
+  - id: vpn_30d
+    kind: vpn
+    title: "VPN 30 дней"
+    emoji: "🌐"
+    price_rub: 290
+    price_usd: 0
+    vpn_subscription_days: 30
+    hide_from_menu: true
+    sort_order: 50
+
+  - id: vpn_90d
+    kind: vpn
+    title: "VPN 3 месяца"
+    emoji: "🌐"
+    price_rub: 750
+    price_usd: 0
+    vpn_subscription_days: 90
+    hide_from_menu: true
+    sort_order: 51
+
+  - id: vpn_180d
+    kind: vpn
+    title: "VPN 6 месяцев"
+    emoji: "🌐"
+    price_rub: 1200
+    price_usd: 0
+    vpn_subscription_days: 180
+    hide_from_menu: true
+    sort_order: 52
+
+  - id: vpn_270d
+    kind: vpn
+    title: "VPN 9 месяцев"
+    emoji: "🌐"
+    price_rub: 1350
+    price_usd: 0
+    vpn_subscription_days: 270
+    hide_from_menu: true
+    sort_order: 53
+
+  - id: vpn_365d
+    kind: vpn
+    title: "VPN 12 месяцев"
+    emoji: "🌐"
+    price_rub: 1200
+    price_usd: 0
+    vpn_subscription_days: 365
+    hide_from_menu: true
+    sort_order: 54

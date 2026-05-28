@@ -20,6 +20,7 @@ from partner_api.routers import profile as profile_r
 from partner_api.routers import topups as topups_r
 from partner_api.routers import legal_pages as legal_r
 from partner_api.routers import webhooks_partner as webhooks_r
+from partner_api.routers import vpn_ref_landing as vpn_ref_landing_r
 from partner_api.rate_limit_middleware import PartnerRateLimitMiddleware
 from partner_api.rate_limit_store import build_rate_limit_store
 
@@ -74,6 +75,7 @@ def create_app() -> FastAPI:
 
     v1 = "/v1"
     app.include_router(legal_r.router, prefix=v1)
+    app.include_router(vpn_ref_landing_r.router)
     app.include_router(profile_r.router, prefix=v1)
     app.include_router(orders_r.router, prefix=v1)
     app.include_router(topups_r.router, prefix=v1)

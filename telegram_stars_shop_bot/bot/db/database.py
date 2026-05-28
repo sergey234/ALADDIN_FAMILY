@@ -223,6 +223,8 @@ async def migrate_legacy(conn: aiosqlite.Connection) -> None:
     onboard_added = await _ensure_column(conn, "users", "onboarding_completed_at", "onboarding_completed_at TEXT")
     await _ensure_column(conn, "users", "checkout_captcha_ok_until", "checkout_captcha_ok_until INTEGER")
     await _ensure_column(conn, "users", "last_start_command_at", "last_start_command_at INTEGER")
+    await _ensure_column(conn, "users", "vpn_privacy_accepted_at", "vpn_privacy_accepted_at TEXT")
+    await _ensure_column(conn, "users", "vpn_terms_accepted_at", "vpn_terms_accepted_at TEXT")
     if terms_added or onboard_added:
         await conn.execute(
             "UPDATE users SET terms_accepted_at = COALESCE(terms_accepted_at, datetime('now')) WHERE terms_accepted_at IS NULL"
@@ -417,8 +419,37 @@ async def migrate_legacy(conn: aiosqlite.Connection) -> None:
         );
         CREATE INDEX IF NOT EXISTS idx_partner_contests_active
         ON partner_contests(is_active, starts_at, ends_at);
+
+        CREATE TABLE IF NOT EXISTS vpn_referral_codes (
+            user_id INTEGER PRIMARY KEY,
+            code TEXT NOT NULL UNIQUE,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_vpn_referral_codes_code ON vpn_referral_codes(code);
+
+        CREATE TABLE IF NOT EXISTS vpn_referral_grants (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            referred_user_id INTEGER NOT NULL UNIQUE,
+            referrer_user_id INTEGER NOT NULL,
+            order_id INTEGER NOT NULL UNIQUE,
+            friend_days INTEGER NOT NULL,
+            referrer_days INTEGER NOT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            api_friend_ok INTEGER NOT NULL DEFAULT 0,
+            api_referrer_ok INTEGER NOT NULL DEFAULT 0
+        );
+        CREATE INDEX IF NOT EXISTS idx_vpn_referral_grants_referrer ON vpn_referral_grants(referrer_user_id);
+        CREATE INDEX IF NOT EXISTS idx_vpn_referral_grants_created ON vpn_referral_grants(created_at);
         """
     )
+    await _ensure_column(
+        conn, "vpn_referral_grants", "api_friend_attempts", "api_friend_attempts INTEGER NOT NULL DEFAULT 0"
+    )
+    await _ensure_column(
+        conn, "vpn_referral_grants", "api_referrer_attempts", "api_referrer_attempts INTEGER NOT NULL DEFAULT 0"
+    )
+    await _ensure_column(conn, "vpn_referral_grants", "api_friend_last_error", "api_friend_last_error TEXT")
+    await _ensure_column(conn, "vpn_referral_grants", "api_referrer_last_error", "api_referrer_last_error TEXT")
     await conn.commit()
 
 

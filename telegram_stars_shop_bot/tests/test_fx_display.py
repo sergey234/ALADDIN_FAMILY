@@ -30,8 +30,8 @@ def test_format_shop_quote_money_matches_rate(monkeypatch) -> None:
     assert "3200" in html
     assert "40.00" in html
     assert "80" in html
-    assert "по курсу магазина" in html
-    assert "номинал в каталоге" in html
+    assert "курс магазина" in html
+    assert "номинал в каталоге" not in html
 
 
 def test_fx_hints_usdt_only(monkeypatch) -> None:

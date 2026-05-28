@@ -17,6 +17,8 @@ class Settings(BaseSettings):
     )
 
     bot_token: str = Field(validation_alias="BOT_TOKEN")
+    # Публичный @username магазин-бота без @ — для редиректа /r/{code} → t.me (vpn-12). Пусто = редирект 503.
+    shop_bot_username: str = Field(default="", validation_alias="SHOP_BOT_USERNAME")
     admin_ids: str = Field(default="", validation_alias="ADMIN_IDS")
     # Подмножество ADMIN_IDS: финансовые действия (adm:paid/done, зачисление топапа, завершение выкупа и т.д.).
     # Пусто = все из ADMIN_IDS считаются супер-админами (как раньше).
@@ -44,7 +46,7 @@ class Settings(BaseSettings):
         return self
 
     ref_buyer_discount_percent: float = Field(
-        default=7.0, validation_alias="REF_BUYER_FIRST_ORDER_DISCOUNT_PERCENT"
+        default=10.0, validation_alias="REF_BUYER_FIRST_ORDER_DISCOUNT_PERCENT"
     )
     ref_commission_percent: float = Field(
         default=15.0, validation_alias="REF_REFERRER_COMMISSION_FIRST_ORDER_PERCENT"
@@ -89,7 +91,7 @@ class Settings(BaseSettings):
     sell_min_stars: int = Field(default=100, validation_alias="SELL_MIN_STARS")
     sell_max_stars: int = Field(default=50_000, validation_alias="SELL_MAX_STARS")
 
-    # Опционально: file_id вместо локального assets/branding/monkey_stars_logo.png (основной hero).
+    # Опционально: file_id вместо локального assets/branding/monkey_stars_logo.png (имя файла историческое; бренд: AIMonkeyStars).
     start_photo_file_id: str = Field(default="", validation_alias="START_PHOTO_FILE_ID")
     # Опционально: file_id картинки для второго экрана онбординга («Почему выбирают нас»).
     start_photo_file_id_2: str = Field(default="", validation_alias="START_PHOTO_FILE_ID_2")
@@ -122,8 +124,89 @@ class Settings(BaseSettings):
     ui_show_api: bool = Field(default=True, validation_alias="UI_SHOW_API")
     ui_show_partners: bool = Field(default=True, validation_alias="UI_SHOW_PARTNERS")
     ui_show_receipts: bool = Field(default=True, validation_alias="UI_SHOW_RECEIPTS")
+    # Отдельный продуктовый модуль VPN (главное меню + /vpn). Доступ после оплаты, без триала. См. docs/VPN_SHOP_INTEGRATION_PLAN.md, docs/VPN_SHOP_API.md
+    ui_show_vpn: bool = Field(default=False, validation_alias="UI_SHOW_VPN")
+    vpn_api_base_url: str = Field(default="", validation_alias="VPN_API_BASE_URL")
+    vpn_api_hmac_secret: str = Field(default="", validation_alias="VPN_API_HMAC_SECRET")
+    # vpn-25: circuit breaker к aladdin-shop-vpn-api (in-process, один процесс бота).
+    vpn_api_circuit_failure_threshold: int = Field(
+        default=5, ge=1, le=50, validation_alias="VPN_API_CIRCUIT_FAILURE_THRESHOLD"
+    )
+    vpn_api_circuit_failure_window_seconds: int = Field(
+        default=120, ge=10, le=3600, validation_alias="VPN_API_CIRCUIT_FAILURE_WINDOW_SECONDS"
+    )
+    vpn_api_circuit_open_seconds: int = Field(
+        default=60, ge=5, le=3600, validation_alias="VPN_API_CIRCUIT_OPEN_SECONDS"
+    )
+    vpn_api_http_max_retries: int = Field(default=2, ge=0, le=5, validation_alias="VPN_API_HTTP_MAX_RETRIES")
+    # Публичные markdown VPN (nginx → aladdin-shop-vpn-api). Без завершающего слэша.
+    vpn_docs_public_base: str = Field(
+        default="https://aladdin-ai.ru/v1/legal",
+        validation_alias="VPN_DOCS_PUBLIC_BASE",
+    )
+    # Происхождение для ссылок /sub/… в тексте бота (тот же хост, что и HTTPS магазина).
+    vpn_public_https_origin: str = Field(
+        default="https://aladdin-ai.ru",
+        validation_alias="VPN_PUBLIC_HTTPS_ORIGIN",
+    )
+    # Кнопка «Новости» в разделе VPN. Пусто = REQUIRED_CHANNEL_INVITE_URL, иначе OFFICIAL_CHANNEL_INVITE_URL.
+    vpn_news_channel_url: str = Field(default="", validation_alias="VPN_NEWS_CHANNEL_URL")
+    # Опционально: внешняя страница о VPN (HTTPS). Кнопка в маркетинг-блоке; не Telegram Web App.
+    vpn_marketing_landing_url: str = Field(default="", validation_alias="VPN_MARKETING_LANDING_URL")
+    # Хаб длинных инструкций (Teletype / свой сайт). Кнопка «Полная инструкция» в боте; пусто = fallback на VPN_MARKETING_LANDING_URL.
+    vpn_instructions_url: str = Field(default="", validation_alias="VPN_INSTRUCTIONS_URL")
+    # JSON: список локаций для экрана «Локации» в боте (см. docs/VPN_LOCATIONS_JSON.md). Пусто = встроенный MVP-список.
+    vpn_locations_json: str = Field(default="", validation_alias="VPN_LOCATIONS_JSON")
+    # Сколько строк в свёрнутом виде при использовании VPN_LOCATIONS_JSON (1..50).
+    vpn_locations_preview_n: int = Field(default=3, ge=1, le=50, validation_alias="VPN_LOCATIONS_PREVIEW_N")
+    # Тянуть список локаций из VPN API (GET /internal/v1/locations/catalog) вместо только VPN_LOCATIONS_JSON в боте.
+    vpn_locations_from_api: bool = Field(default=False, validation_alias="VPN_LOCATIONS_FROM_API")
+    # Бонусные дни VPN при первой выданной VPN-покупке приглашённого (0 = не начислять эту сторону).
+    vpn_referral_referrer_days: int = Field(default=14, validation_alias="VPN_REFERRAL_REFERRER_DAYS")
+    vpn_referral_friend_days: int = Field(default=7, validation_alias="VPN_REFERRAL_FRIEND_DAYS")
+    # Путь к vpn.db (aladdin-shop-vpn-api) для снимка peer/jobs/p95 в /admin. Пусто = блок не читается.
+    vpn_db_path: str = Field(default="", validation_alias="VPN_DB_PATH")
+    # После paid + provision: автоматически прислать .conf в чат (poll wg/conf).
+    vpn_auto_send_wg_after_paid: bool = Field(default=True, validation_alias="VPN_AUTO_SEND_WG_AFTER_PAID")
+    vpn_provision_delivery_timeout_seconds: int = Field(
+        default=120, ge=30, le=600, validation_alias="VPN_PROVISION_DELIVERY_TIMEOUT_SECONDS"
+    )
+    vpn_provision_delivery_poll_seconds: int = Field(
+        default=3, ge=1, le=30, validation_alias="VPN_PROVISION_DELIVERY_POLL_SECONDS"
+    )
+    # После авто-📥 прислать 📷 QR (тот же .conf).
+    vpn_auto_send_qr_after_paid: bool = Field(default=True, validation_alias="VPN_AUTO_SEND_QR_AFTER_PAID")
+    # Фон: проверка VPN API /ready, vpn.db, алерт админам. 0 = выключено.
+    vpn_ops_health_interval_seconds: int = Field(
+        default=300, ge=0, le=86400, validation_alias="VPN_OPS_HEALTH_INTERVAL_SECONDS"
+    )
+    vpn_ops_health_stale_job_minutes: int = Field(
+        default=10, ge=1, le=120, validation_alias="VPN_OPS_HEALTH_STALE_JOB_MINUTES"
+    )
+    vpn_ops_health_provisioning_warn_threshold: int = Field(
+        default=5, ge=0, le=500, validation_alias="VPN_OPS_HEALTH_PROVISIONING_WARN_THRESHOLD"
+    )
+    # Фон: повтор add-subscription-days при падении VPN API. 0 = выключено.
+    vpn_referral_api_retry_interval_seconds: int = Field(
+        default=300, validation_alias="VPN_REFERRAL_API_RETRY_INTERVAL_SECONDS"
+    )
+    vpn_referral_api_max_attempts_per_side: int = Field(
+        default=12, validation_alias="VPN_REFERRAL_API_MAX_ATTEMPTS_PER_SIDE"
+    )
+    # Напоминания об окончании VPN (1 проход в сутки по умолчанию). 0 interval = выключено.
+    vpn_expiry_notify_enabled: bool = Field(default=True, validation_alias="VPN_EXPIRY_NOTIFY_ENABLED")
+    vpn_expiry_notify_interval_seconds: int = Field(
+        default=86400, ge=0, le=604800, validation_alias="VPN_EXPIRY_NOTIFY_INTERVAL_SECONDS"
+    )
+    vpn_sub_access_alert_per_hour: int = Field(
+        default=120, ge=0, validation_alias="VPN_SUB_ACCESS_ALERT_PER_HOUR"
+    )
 
-    # Анти-спам: минимальный интервал между /start и между созданием заказов (секунды).
+    def resolved_vpn_db_path(self) -> Path | None:
+        raw = (self.vpn_db_path or "").strip()
+        if not raw:
+            return None
+        return Path(raw).expanduser()
     start_command_min_interval_seconds: int = Field(
         default=2, validation_alias="START_COMMAND_MIN_INTERVAL_SECONDS"
     )

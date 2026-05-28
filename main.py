@@ -287,6 +287,33 @@ except ImportError as e:
     ai_assistant_router = None
 
 try:
+    from security.api.routers.ai_companion_router import router as ai_companion_router
+    ai_companion_available = True
+    print("✅ AI Companion Router loaded")
+except ImportError as e:
+    print(f"❌ AI Companion Router not available: {e}")
+    ai_companion_available = False
+    ai_companion_router = None
+
+try:
+    from security.api.routers.ai_platform_router import router as ai_platform_router
+    ai_platform_available = True
+    print("✅ AI Platform Router loaded")
+except ImportError as e:
+    print(f"❌ AI Platform Router not available: {e}")
+    ai_platform_available = False
+    ai_platform_router = None
+
+try:
+    from security.api.routers.ai_voice_ws_router import router as ai_voice_ws_router
+    ai_voice_ws_available = True
+    print("✅ AI Voice WebSocket Router loaded")
+except ImportError as e:
+    print(f"❌ AI Voice WebSocket Router not available: {e}")
+    ai_voice_ws_available = False
+    ai_voice_ws_router = None
+
+try:
     from security.api.routers.kb_router import router as kb_router
     kb_router_available = True
     print("✅ KB RAG Router loaded")
@@ -937,6 +964,27 @@ if ai_assistant_available:
         print("✅ Роутер AI Assistant подключен")
     except Exception as e:
         print(f"❌ Ошибка подключения AI Assistant: {e}")
+
+if ai_companion_available:
+    try:
+        app.include_router(ai_companion_router)
+        print("✅ Роутер AI Companion подключен")
+    except Exception as e:
+        print(f"❌ Ошибка подключения AI Companion: {e}")
+
+if ai_platform_available:
+    try:
+        app.include_router(ai_platform_router)
+        print("✅ Роутер AI Platform подключен")
+    except Exception as e:
+        print(f"❌ Ошибка подключения AI Platform: {e}")
+
+if ai_voice_ws_available and ai_voice_ws_router is not None:
+    try:
+        app.include_router(ai_voice_ws_router)
+        print("✅ Роутер AI Voice WebSocket подключен")
+    except Exception as e:
+        print(f"❌ Ошибка подключения AI Voice WebSocket: {e}")
 
 if kb_router_available and kb_router is not None:
     try:

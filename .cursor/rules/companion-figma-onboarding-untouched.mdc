@@ -1,0 +1,26 @@
+---
+description: Companion Figma — отдельный файл; онбординг OB_00–07 и Apple-логотипы не трогать
+globs: ALADDIN_NEW/mobile_apps/ALADDIN_iOS/docs/COMPANION*.md,ALADDIN_NEW/mobile_apps/ALADDIN_iOS/docs/FIGMA*.md
+alwaysApply: true
+---
+
+# Companion vs Onboarding Figma (зафиксировано продуктом)
+
+## Не трогать (read-only)
+
+Файл **`KvkUdyb5Ll31Z9FSzCbpNl`** (`docs/FIGMA_ONBOARDING.env`), страница **`OnboardingHero_00`**:
+
+- **OB_00 … OB_07** — все фреймы онбординга
+- **APP_AppStoreIcon_393x852** и **APP_AppStoreIcon_LegacyBlue_393x852** — две страницы/макета с логотипом Apple
+- **EXPORT_WORDMARK_V2_transparent** и прочие слои онбординга
+
+Запрещено: `use_figma` правки, удаление, переименование, скрытие, перенос этих нод. Только `get_metadata` / `get_screenshot` как референс.
+
+## Companion HERO-3
+
+- Работа только в **отдельном Figma-файле** `vwKcGPUUEZjgayEHNn0BJM` — см. `docs/FIGMA_COMPANION.env`.
+- **Ничего не удалять** в существующем onboarding-файле.
+- **Джин:** главный визуальный референс — **OB_02** (`103:53`) в onboarding-файле (только смотреть, не копировать слои в OB_02).
+- **Аладдин-человек:** референс OB_01; **единорог:** mood OB_05.
+- **Sign-off HERO-3-17:** подписывает **владелец продукта (пользователь)**, не агент.
+- **Сетка 02:** **12 фреймов** = 12 сценариев CX.4; фазы `listening` / `thinking` / `speaking` — в **00_Spec/Motion**, не отдельная 13-я колонка в сетке (13 имён остаются в коде/Rive input).

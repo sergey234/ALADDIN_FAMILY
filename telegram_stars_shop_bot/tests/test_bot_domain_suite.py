@@ -9,7 +9,9 @@ from bot.config import Settings, load_settings
 from bot.services import catalog, marketing
 from bot.services import channel_gate as cg
 from bot.services.fx_display import effective_usdt_rub_rate, fx_payment_hints_html
-from bot.services.pricing import commission_for_first_order, quote_product, rub_per_100_stars_display
+from bot.services.pricing import commission_for_first_order, list_price_rub, quote_product, rub_per_100_stars_display
+from bot.handlers.vpn import vpn_marketing_html
+from bot.services.vpn_tariffs import vpn_referral_blurb_html, vpn_tariffs_html
 from partner_api.main import create_app
 
 _REPO_BOT = Path(__file__).resolve().parents[1] / "bot"
@@ -21,6 +23,10 @@ def test_products_yaml_loads_and_has_stars_and_premium() -> None:
     assert len(items) >= 4
     by_id = catalog.products_by_id(items)
     assert "stars_100" in by_id
+    vpn_ids = {"vpn_30d", "vpn_90d", "vpn_180d", "vpn_270d", "vpn_365d"}
+    assert vpn_ids <= set(by_id)
+    assert by_id["vpn_30d"].price_rub == 290.0
+    assert by_id["vpn_365d"].price_rub == 1200.0
     assert by_id["stars_100"].kind == "stars"
     assert (by_id["stars_100"].stars or 0) == 100
     premium = [p for p in items if p.kind == "premium"]
@@ -41,6 +47,69 @@ def test_sort_for_display_orders_stars_by_quantity() -> None:
     )
     out = catalog.sort_for_display([a, b])
     assert [x.id for x in out] == ["a", "b"]
+
+
+def test_vpn_referral_blurb_uses_env_percents(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BOT_TOKEN", "9:vpn-ref")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "v" * 32)
+    monkeypatch.setenv("REF_BUYER_FIRST_ORDER_DISCOUNT_PERCENT", "10")
+    monkeypatch.setenv("REF_REFERRER_COMMISSION_FIRST_ORDER_PERCENT", "15")
+    monkeypatch.setenv("VPN_REFERRAL_FRIEND_DAYS", "7")
+    monkeypatch.setenv("VPN_REFERRAL_REFERRER_DAYS", "14")
+    s = load_settings()
+    html = vpn_referral_blurb_html(s)
+    assert "Приглашение" in html
+    assert "Мой профиль" in html
+    assert "ref_" in html
+    assert "AiMonkeyVPN" in html
+
+
+def test_vpn_tariffs_html_lists_fixed_rub(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BOT_TOKEN", "9:vpn-t")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "t" * 32)
+    monkeypatch.setenv("USD_RUB_RATE", "80")
+    s = load_settings()
+    items = catalog.load_products(PRODUCTS_YAML)
+    html = vpn_tariffs_html(s, items)
+    assert "290" in html
+    assert "750" in html
+    assert "экономия" in html
+
+
+def test_vpn_marketing_welcome_copy(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BOT_TOKEN", "9:vpn-mkt")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "m" * 32)
+    monkeypatch.setenv("VPN_DOCS_PUBLIC_BASE", "https://aladdin-ai.ru/v1/legal")
+    s = load_settings()
+    html = vpn_marketing_html(s)
+    assert "Привет! Я AiMonkeyVPN" in html
+    assert "10 Гбит/с" in html
+    assert "не храним" in html
+    assert "не продаём" in html
+    assert "Telegram" in html
+    assert "Политика конфиденциальности" in html
+    assert "Пользовательское соглашение" in html
+    assert "legal/vpn-data" in html
+    assert "legal/vpn-terms" in html
+
+
+def test_vpn_price_rub_fixed_against_usd_rate(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setenv("BOT_TOKEN", "9:vpn-rub")
+    monkeypatch.setenv("ADMIN_IDS", "1")
+    monkeypatch.setenv("API_KEY_PEPPER", "vpn_rub_test_pepper_minimum_32_chars")
+    monkeypatch.setenv("USD_RUB_RATE", "200")
+    s = load_settings()
+    items = catalog.load_products(PRODUCTS_YAML)
+    p = catalog.products_by_id(items)["vpn_90d"]
+    assert list_price_rub(p, s) == 750.0
+    q = quote_product(p, s, is_first_order=True)
+    assert q.rub_list == 750.0
+    assert q.rub_referral_discount == 75.0
+    assert q.rub_final == 675.0
+    assert q.usd == pytest.approx(3.75)  # 750 / USD_RUB_RATE 200
 
 
 def test_quote_first_order_discount_and_wholesale(monkeypatch: pytest.MonkeyPatch) -> None:
@@ -155,11 +224,11 @@ def test_channel_hard_wall_html_display_name(monkeypatch: pytest.MonkeyPatch) ->
     monkeypatch.setenv("ADMIN_IDS", "1")
     monkeypatch.setenv("API_KEY_PEPPER", "m" * 32)
     monkeypatch.setenv("REQUIRED_CHANNEL_ID", "@shop")
-    monkeypatch.setenv("REQUIRED_CHANNEL_DISPLAY_NAME", "Monkey Stars | Premium")
+    monkeypatch.setenv("REQUIRED_CHANNEL_DISPLAY_NAME", "AIMonkey Stars | Premium")
     monkeypatch.setenv("REQUIRED_CHANNEL_GATE_MARKETING", "full")
     s = load_settings()
     html = marketing.channel_hard_wall_html(s)
-    assert "Monkey Stars" in html and "Premium" in html
+    assert "AIMonkey Stars" in html and "Premium" in html
     assert "меню бота" in html
     assert "Почему мы" in html
     assert "Telegram Stars и Premium" in html
@@ -199,7 +268,8 @@ def test_channel_hard_wall_gate_marketing_modes(monkeypatch: pytest.MonkeyPatch)
     s = load_settings()
     h = marketing.channel_hard_wall_html(s)
     assert "Почему мы" not in h
-    assert "MonkeyStars" in h
+    assert "AIMonkeyStars" in h
+    assert "@AiMonkeyStars_bot" in h
     assert "закрепе канала" in h
     assert "7" in h or "47" in h  # проценты из дефолтных настроек теста
     monkeypatch.setenv("REQUIRED_CHANNEL_GATE_MARKETING", "title_only")
@@ -252,12 +322,14 @@ def test_partner_api_health_and_openapi(partner_api_http_client: TestClient) -> 
 def test_legal_static_pages(partner_api_http_client: TestClient) -> None:
     r = partner_api_http_client.get("/v1/legal/privacy")
     assert r.status_code == 200
-    assert "StarBridge" in r.text
-    assert "ZERGRUSH" in r.text
+    assert "07 мая 2026" in r.text
+    assert "AiMonkeyStars_bot" in r.text
+    assert "ИП «AiMonkeyStars»" in r.text
     r2 = partner_api_http_client.get("/v1/legal/terms")
     assert r2.status_code == 200
     assert "Пользовательское соглашение" in r2.text
-    assert "Республики Молдова" in r2.text
+    assert "Республики Казахстан" in r2.text
+    assert "AiMonkeyStars_bot" in r2.text
 
 
 def test_privacy_screen_includes_policy_links(monkeypatch: pytest.MonkeyPatch) -> None:

@@ -6,9 +6,18 @@ from aiogram.fsm.context import FSMContext
 from aiogram.types import CallbackQuery, InlineKeyboardButton, InlineKeyboardMarkup, Message
 from aiogram.utils.keyboard import InlineKeyboardBuilder
 
+from bot import brand_constants as brand
 from bot.config import Settings
 from bot.keyboards.shop_kb import hub_menu_kb, order_detail_kb, products_kb
-from bot.services import api_clients_repo, balance_repo, contest_repo, onboarding_gate, orders_repo, users_repo
+from bot.services import (
+    api_clients_repo,
+    balance_repo,
+    contest_repo,
+    onboarding_gate,
+    orders_repo,
+    users_repo,
+    vpn_referral_repo,
+)
 from bot.services.api_repo import create_api_key_request
 from bot.services.catalog import Product, sort_for_display
 from bot.services.channel_gate import channel_gate_enabled, user_is_channel_member
@@ -55,7 +64,7 @@ FAQ_TEMPLATES = {
 
 def _support_kb(settings: Settings):
     b = InlineKeyboardBuilder()
-    b.row(InlineKeyboardButton(text="🛡️ Политика и данные", callback_data="sup:privacy"))
+    b.row(InlineKeyboardButton(text="🛡️ Политика Stars / Premium", callback_data="sup:privacy"))
     b.row(InlineKeyboardButton(text="📚 Частые вопросы", callback_data="sup:faq"))
     b.row(InlineKeyboardButton(text="💳 Оплата и зачисление", callback_data="sup:payfaq"))
     base = telegram_support_base(settings)
@@ -95,9 +104,11 @@ def _api_kb(settings: Settings):
 
 
 async def profile_body_html(bot: Bot, settings: Settings, conn, user_id: int) -> str:
+    from bot.services.vpn_user_links import invite_ref_telegram_url
+
     me = await bot.get_me()
     bot_user = me.username or "your_bot"
-    ref_link = f"https://t.me/{bot_user}?start=ref_{user_id}"
+    ref_link = invite_ref_telegram_url(bot_user, user_id)
     stats = await users_repo.user_stats(conn, user_id)
     br = float(stats["balance_rub"])
     rr = float(stats["ref_balance_rub"])
@@ -109,22 +120,47 @@ async def profile_body_html(bot: Bot, settings: Settings, conn, user_id: int) ->
     r_inv = int(stats["referral_invited_count"])
     r_done = int(stats["referral_buyers_completed_count"])
     r_earn = float(stats["referral_commission_earned_rub"])
-    return (
-        "<b>Мой профиль</b> · MonkeyStars\n\n"
-        f"<b>Реферальная ссылка</b>\n<code>{esc(ref_link)}</code>\n\n"
-        "<b>Условия</b> (те же %, что в приветствии)\n"
-        f"• Скидка другу до первого <b>выданного</b> заказа: <b>{rb}%</b>\n"
-        f"• Вам с первой <b>выданной</b> покупки друга: <b>{rc}%</b> в ₽ на реф. баланс\n"
-        f"• «До {md}%» - в рамках акций и способов оплаты, см. прайс\n\n"
-        "<b>Реферальная статистика</b>\n"
-        f"• Зашли по ссылке: <b>{r_inv}</b>\n"
+    rf = int(settings.vpn_referral_referrer_days)
+    ff = int(settings.vpn_referral_friend_days)
+    lines = [
+        f"<b>Мой профиль</b> · {brand.BRAND_SHORT} · {esc(brand.SHOP_BOT_HANDLE)}\n\n"
+        "<b>Пригласить друга в ALADDIN</b>\n"
+        f"<code>{esc(ref_link)}</code>\n\n"
+        "<b>Как это работает</b>\n"
+        "• Друг открывает бота по ссылке и оформляет заказ в магазине.\n"
+        f"• Пока у него не было <b>выданной</b> покупки — скидка <b>{rb}%</b> на первый заказ "
+        f"(Stars, Premium{', ' + esc(brand.VPN_PRODUCT_NAME) if settings.ui_show_vpn else ''}).\n"
+        f"• После первой <b>выданной</b> покупки друга — бонус <b>{rc}%</b> на ваши покупки "
+        "в магазине (оплата «С баланса»).\n",
+    ]
+    if settings.ui_show_vpn and (ff > 0 or rf > 0):
+        lines.append(
+            f"• Если друг <b>впервые получит</b> {esc(brand.VPN_PRODUCT_NAME)} — дополнительно "
+            f"ему <b>+{ff}</b> дн., вам <b>+{rf}</b> дн. (один раз на приглашённого).\n"
+        )
+    lines += [
+        f"• «До {md}%» — в рамках акций и способов оплаты, см. прайс.\n\n"
+        "<b>Статистика приглашений</b>\n"
+        f"• Перешли по ссылке: <b>{r_inv}</b>\n"
         f"• С выданной покупкой: <b>{r_done}</b>\n"
-        f"• Всего начислено с рефки: <b>{esc(f'{r_earn:.2f}')} ₽</b>\n\n"
-        f"<b>Баланс</b> (оплата заказов): <b>{esc(f'{br:.2f}')} ₽</b>\n"
-        f"<b>Реф. баланс</b>: <b>{esc(f'{rr:.2f}')} ₽</b>\n"
+        f"• Бонусов на покупки (накоплено): <b>{esc(f'{r_earn:.2f}')} ₽</b>\n",
+    ]
+    if settings.ui_show_vpn:
+        vs = await vpn_referral_repo.user_vpn_referral_stats(conn, user_id)
+        n_buy = int(vs["vpn_referral_buyers"])
+        n_days = int(vs["vpn_referral_days_earned"])
+        if n_buy > 0 or n_days > 0:
+            lines.append(
+                f"• Друзей с первой выдачей VPN: <b>{n_buy}</b> · бонусных дней вам: <b>{n_days}</b>\n"
+            )
+    lines += [
+        "\n"
+        f"<b>Счёт в магазине</b> (для оплаты заказов): <b>{esc(f'{br:.2f}')} ₽</b>\n"
+        f"<b>Бонус на покупки</b>: <b>{esc(f'{rr:.2f}')} ₽</b>\n"
         f"Заказов выдано: <b>{co}</b>\n"
-        f"Сумма покупок: <b>{esc(f'{sp:.2f}')} ₽</b>"
-    )
+        f"Сумма покупок: <b>{esc(f'{sp:.2f}')} ₽</b>",
+    ]
+    return "".join(lines)
 
 
 async def _orders_page_html(conn, user_id: int, page: int) -> tuple[str, bool, bool]:
@@ -399,7 +435,7 @@ async def nav_api(cb: CallbackQuery, settings: Settings) -> None:
         "<b>Наш API</b> - для <b>вашего бота, сайта или приложения</b>\n\n"
         "Создание заказов, статусы, пополнения и исходящие вебхуки - по HTTPS, заголовок <code>X-API-KEY</code> "
         "(ключ выпускается ниже). Не встраивайте ключ в публичный фронт - только server-to-server.\n\n"
-        "<i>Подробный сценарий «рефералка vs API» - кнопка «Партнёрам» в главном меню.</i>",
+        "<i>Подробный сценарий «приглашение друзей vs API» — кнопка «Партнёрам» в главном меню.</i>",
         reply_markup=_api_kb(settings),
     )
     await cb.answer()
@@ -490,25 +526,36 @@ async def api_req_done(message: Message, state: FSMContext, conn, bot: Bot, sett
 
 @router.callback_query(F.data == "nav:ref")
 async def nav_ref(cb: CallbackQuery, settings: Settings, conn, bot: Bot) -> None:
+    from bot.services.vpn_user_links import invite_ref_telegram_url
+
     me = await bot.get_me()
     bot_user = me.username or "your_bot"
     uid = cb.from_user.id
-    ref_link = f"https://t.me/{bot_user}?start=ref_{uid}"
+    ref_link = invite_ref_telegram_url(bot_user, uid)
     stats = await users_repo.user_stats(conn, uid)
     r_inv = int(stats["referral_invited_count"])
     r_done = int(stats["referral_buyers_completed_count"])
     r_earn = float(stats["referral_commission_earned_rub"])
     rb = esc(settings.ref_buyer_discount_percent)
     rc = esc(settings.ref_commission_percent)
+    rf = int(settings.vpn_referral_referrer_days)
+    ff = int(settings.vpn_referral_friend_days)
     text = (
-        "<b>Реферальная ссылка</b> · MonkeyStars\n\n"
+        f"<b>Пригласить друга</b> · {brand.BRAND_SHORT} · {esc(brand.SHOP_BOT_HANDLE)}\n\n"
         f"<code>{esc(ref_link)}</code>\n\n"
-        f"<b>Условия:</b> −{rb}% другу до первого выданного заказа; "
-        f"+{rc}% вам с первой выданной покупки друга.\n\n"
-        "<b>Статистика</b>\n"
-        f"• По ссылке зашли: <b>{r_inv}</b>\n"
+        f"<b>Условия:</b> −{rb}% другу до первой <b>выданной</b> покупки; "
+        f"бонус {rc}% на ваши покупки в магазине после первой выдачи друга."
+    )
+    if settings.ui_show_vpn and (ff > 0 or rf > 0):
+        text += (
+            f"\nЕсли друг <b>впервые получит</b> {esc(brand.VPN_PRODUCT_NAME)} — "
+            f"дополнительно +{ff} дн. ему, +{rf} дн. вам."
+        )
+    text += (
+        "\n\n<b>Статистика</b>\n"
+        f"• Перешли по ссылке: <b>{r_inv}</b>\n"
         f"• С выданной покупкой: <b>{r_done}</b>\n"
-        f"• Всего начислено: <b>{esc(f'{r_earn:.2f}')} ₽</b>"
+        f"• Бонусов на покупки (накоплено): <b>{esc(f'{r_earn:.2f}')} ₽</b>"
     )
     b = InlineKeyboardBuilder()
     b.row(InlineKeyboardButton(text="📖 Подробнее", callback_data="nav:reffaq"))
@@ -522,7 +569,7 @@ async def nav_ref(cb: CallbackQuery, settings: Settings, conn, bot: Bot) -> None
 async def nav_profile(cb: CallbackQuery, settings: Settings, conn, bot: Bot) -> None:
     text = await profile_body_html(bot, settings, conn, cb.from_user.id)
     b = InlineKeyboardBuilder()
-    b.row(InlineKeyboardButton(text="📖 Как работает рефералка", callback_data="nav:reffaq"))
+    b.row(InlineKeyboardButton(text="📖 Как работает приглашение", callback_data="nav:reffaq"))
     b.row(InlineKeyboardButton(text="📤 Мои заявки на выкуп", callback_data="nav:sells:0"))
     b.row(InlineKeyboardButton(text="💸 Продать Stars", callback_data="nav:sell_stars"))
     b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))
@@ -578,13 +625,15 @@ def _kb_privacy_support(settings: Settings) -> InlineKeyboardMarkup:
         b.row(InlineKeyboardButton(text="📄 Пользовательское соглашение", url=tu))
     b.row(InlineKeyboardButton(text="ℹ️ Частые вопросы", callback_data="sup:faq"))
     b.row(InlineKeyboardButton(text="💳 Оплата и зачисление", callback_data="sup:payfaq"))
+    if settings.ui_show_vpn:
+        b.row(InlineKeyboardButton(text="🌐 Документы AiMonkeyVPN", callback_data="nav:vpn"))
     b.row(InlineKeyboardButton(text="⬅️ В поддержку", callback_data="nav:supp"))
     return b.as_markup()
 
 
 def _kb_faq_support() -> InlineKeyboardMarkup:
     b = InlineKeyboardBuilder()
-    b.row(InlineKeyboardButton(text="🔒 Политика и данные", callback_data="sup:privacy"))
+    b.row(InlineKeyboardButton(text="🛡️ Политика Stars / Premium", callback_data="sup:privacy"))
     b.row(InlineKeyboardButton(text="💳 Оплата и зачисление", callback_data="sup:payfaq"))
     b.row(InlineKeyboardButton(text="⬅️ В поддержку", callback_data="nav:supp"))
     return b.as_markup()
@@ -592,7 +641,7 @@ def _kb_faq_support() -> InlineKeyboardMarkup:
 
 def _kb_payfaq_support() -> InlineKeyboardMarkup:
     b = InlineKeyboardBuilder()
-    b.row(InlineKeyboardButton(text="🔒 Политика и данные", callback_data="sup:privacy"))
+    b.row(InlineKeyboardButton(text="🛡️ Политика Stars / Premium", callback_data="sup:privacy"))
     b.row(InlineKeyboardButton(text="ℹ️ Частые вопросы", callback_data="sup:faq"))
     b.row(InlineKeyboardButton(text="⬅️ В поддержку", callback_data="nav:supp"))
     return b.as_markup()
@@ -622,7 +671,7 @@ async def screen_faq_support(cb: CallbackQuery, settings: Settings) -> None:
 async def nav_reffaq(cb: CallbackQuery, settings: Settings) -> None:
     b = InlineKeyboardBuilder()
     b.row(InlineKeyboardButton(text="⬅️ В профиль", callback_data="nav:profile"))
-    b.row(InlineKeyboardButton(text="🔗 Реф-ссылка", callback_data="nav:ref"))
+    b.row(InlineKeyboardButton(text="👥 Пригласить друга", callback_data="nav:ref"))
     b.row(InlineKeyboardButton(text="🏠 В меню", callback_data="nav:hub"))
     await cb.message.edit_text(referral_faq_html(settings), reply_markup=b.as_markup())
     await cb.answer()
@@ -641,7 +690,7 @@ async def screen_payfaq_support(cb: CallbackQuery, settings: Settings) -> None:
 @router.callback_query(F.data == "nav:partners")
 async def nav_partners(cb: CallbackQuery, settings: Settings) -> None:
     b = InlineKeyboardBuilder()
-    b.row(InlineKeyboardButton(text="🔗 Реф-ссылка", callback_data="nav:ref"))
+    b.row(InlineKeyboardButton(text="👥 Пригласить друга", callback_data="nav:ref"))
     b.row(InlineKeyboardButton(text="👤 Мой профиль", callback_data="nav:profile"))
     b.row(InlineKeyboardButton(text="🔌 Наш API (ключ)", callback_data="nav:api"))
     b.row(InlineKeyboardButton(text="⬅️ В меню", callback_data="nav:hub"))

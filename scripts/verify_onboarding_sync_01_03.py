@@ -24,9 +24,9 @@ FIGMA_ANCHORS = {
         "layout": "standard",
     },
     1: {
-        "title": (12, 440, 361, 78),
-        "desc": (12, 522, 370, 132),
-        "scrim": (0, 532, 393, 310),
+        "title": (12, 412, 361, 78),
+        "desc": (12, 494, 370, 132),
+        "scrim": (0, 504, 393, 310),
         "scrim_max": 0.42,
         "layout": "standard",
     },

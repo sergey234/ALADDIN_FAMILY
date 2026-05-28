@@ -1,14 +1,15 @@
 # Companion — полный трекер задач (открой в Cursor)
 
-**Обновлено:** 2026-05-27  
-**Handoff ML:** [COMPANION_ML_HANDOFF_START_HERE.md](./COMPANION_ML_HANDOFF_START_HERE.md) ← **открой первым** · [2026-05-27](./COMPANION_ML_HANDOFF_2026-05-27.md) (BE/SSH)  
-**Прогресс спринта:** **66 / 102 (65%)** · **HERO-3:** **25 / 26**  
+**Обновлено:** 2026-05-28 (unicorn production partial + handoff next ML)  
+**Handoff AI:** [COMPANION_HANDOFF_AI_NEXT.md](./COMPANION_HANDOFF_AI_NEXT.md) · **ML:** [COMPANION_ML_HANDOFF_2026-05-28.md](./COMPANION_ML_HANDOFF_2026-05-28.md) · **Завтра:** [PLAN_2026-05-29](./COMPANION_PLAN_TOMORROW_2026-05-29.md)  
+**Rive connect:** [COMPANION_RIVE_CONNECT_NODE_MCP.md](./COMPANION_RIVE_CONNECT_NODE_MCP.md) · **Art canon:** [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md)  
+**Прогресс спринта:** **66 / 102 (65%)** · **осталось 36** · **HERO-3: 24/26** · **07 + 11 ⏳** · **02b-PO-lock ✅** · **unicorn.riv >25KB ✅**  
 **Синхронизация цифр:** только этот файл — остальные `COMPANION_*.md` ссылаются сюда.  
 **ADR 2D vs 3D:** [COMPANION_2D_VS_3D_ADR.md](./COMPANION_2D_VS_3D_ADR.md) ✅ · **Export 07:** [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md)  
 **Матрица HERO-3:** [COMPANION_HERO3_READINESS_MATRIX.md](./COMPANION_HERO3_READINESS_MATRIX.md)  
-**Figma Companion:** https://www.figma.com/design/vwKcGPUUEZjgayEHNn0BJM — **`00_Spec` ✅** · страницы **`01`–`03` (36 frames) ⏳** [аудит](./COMPANION_FIGMA_STATUS.md)  
+**Figma Companion:** https://www.figma.com/design/vwKcGPUUEZjgayEHNn0BJM — **`00_Spec` ✅** · **`01` unicorn v2 ✅** · **`03` genie OB_03×12 + OB_02–06 row ✅** [аудит](./COMPANION_FIGMA_STATUS.md)  
 **Цель:** 2D Rive · 56% full-body rect · субтитр · 12 эмоций + lip-sync  
-**Следующий шаг:** **07** Figma→`.riv` (дизайн) · **11b** device QA · **11c** после 07 · [100% runbook](./COMPANION_100_PERCENT_PARALLEL.md)  
+**Следующий шаг:** завершить **07** для `aladdin.riv` + `genie.riv` (manual Rive export) **∥** **11b** ([session](./COMPANION_HERO3_11B_DEVICE_SESSION.md)) → **11c** → GATE-EMO  
 **iOS:** ✅ build **210** · TTS на текст · Hub Rive-превью · **08b PASS** (device)
 
 Отмечай `[x]` при закрытии. Источник деталей: [COMPANION_IMPLEMENTATION_TODOS.md](./COMPANION_IMPLEMENTATION_TODOS.md)
@@ -23,7 +24,7 @@
 | P1 | 11 | 11 |
 | CX | 6 | 6 |
 | OPS | 4 | 4 |
-| HERO-3 | 25 | 26 |
+| HERO-3 | 24 | 26 |
 | P1+ | 0 | 12 |
 | P2 | 1 | 17 |
 | P3 | 0 | 6 |
@@ -93,18 +94,23 @@
 
 ---
 
-## HERO-3 — 3 героя Figma→Rive (25/26)
+## HERO-3 — 3 героя Figma→Rive (24/26) 🟡
 
 ### Ядро (01–19)
 
 - [x] **HERO-3-01** — ADR план §1–11 + §2.1–2.3
 - [x] **HERO-3-02** — Spec в Figma `00_Spec` (Motion/Mimic/ADR/sign-off) ✅
-- [ ] **HERO-3-02b** — Figma страницы `01_Unicorn` · `02_Aladdin_Human` · `03_Genie` — **36 фреймов** final art (⏳ страниц нет в файле, 2026-05-27)
+- [x] **HERO-3-02b** — Figma `01`–`03` — **36/36** frames 360×480 ✅ 2026-05-27 ([FIGMA_STATUS](./COMPANION_FIGMA_STATUS.md))
+  - [x] **02b-v1.1 unicorn** — v2 cinematic во всех 12; CONCEPT_v1/A–E (круги) удалены
+  - [x] **02b-v1.1 genie** — OB_03 headfix в 12× `genie/emotion/*`; ряд OB_02–06 headfix для PO
+  - [x] **02b-v1.1 aladdin** — OB_01 master (без изменений в art-сессии)
+  - [x] PNG: `docs/assets/onboarding_OB0{2..6}_APP_360x480_FILL_headfix_v1.png`, `onboarding_OB03_APP_*`
+  - [x] **02b-PO-lock** — genie master = **OB_03 headfix** в [CANON](./COMPANION_HERO_ART_CANON.md) ✅ 2026-05-28 → **07**
 - [x] **HERO-3-03** — BE genie + age_policy
 - [x] **HERO-3-04** — Pydantic + cosmetics genie
 - [x] **HERO-3-05** — companion_persona 3 ветки
 - [x] **HERO-3-06** — iOS Hub 3 карточки (🧞 только genie)
-- [ ] **HERO-3-07** — Rive export `.riv` ×3 — 🟡 **3/3 placeholder** в бандле ([unblock](./COMPANION_RIVE_UNBLOCK.md)) · production art ⏳
+- [ ] **HERO-3-07** — Rive export `.riv` ×3 — 🟡 placeholder в бандле · production art ⏳ → [brief](./COMPANION_RIVE_ANIMATOR_BRIEF.md) · [supplement](./COMPANION_RIVE_ANIMATOR_PLAN_SUPPLEMENT.md) · [6 hats](./COMPANION_RIVE_ANIMATOR_6_HATS_AUDIT.md)
 - [x] **HERO-3-08** — Rive на сцене ([unblock](./COMPANION_RIVE_UNBLOCK.md))
   - [x] **08a** — SPM 6.20.5 + Xcode build + `.riv` в бандле (`verify_companion_rive_ios_bundle.sh`)
   - [x] **08b** — UI: `CompanionHome` → `Главное`, Rive на **реальном iPhone** PASS 2026-05-27 (placeholder art)
@@ -219,6 +225,40 @@ X-01 · X-02 · X-03 · X-04 · X-05 · X-06 · X-07
 
 ---
 
+## Сессия 2026-05-28 — Node + RiveMCP (зафиксировано)
+
+- [x] Homebrew **Node v26** · **rivemcp 1.3.6** (`/usr/local/bin/`)
+- [x] Cursor MCP: `~/.cursor/mcp.json` + `ALADDIN_iOS/.cursor/mcp.json`
+- [x] RiveMCP connected (`user-rivemcp-*` tools)
+- [x] Черновик: `Resources/Companion/unicorn_mcp_draft.{rev,riv}` (2/3 free exports used)
+- [x] `unicorn.riv` пересобран (Hero360 + HeroSM + 13 triggers + `mouth_open`) → **158,578 bytes**
+- [x] Gate после `unicorn.riv`: `companion_riv_size_gate.py` + `verify_companion_rive_ios_bundle.sh` PASS
+- [x] RiveMCP free exports исчерпаны (**3/3**): для `aladdin.riv` / `genie.riv` — manual Rive Editor export
+- [x] Доки: [RIVE_CONNECT](./COMPANION_RIVE_CONNECT_NODE_MCP.md) · [5_STEPS](./COMPANION_RIVE_EDITOR_5_STEPS.md) · [ML_HANDOFF_28](./COMPANION_ML_HANDOFF_2026-05-28.md)
+- [ ] **07** production `.riv` ×3 — ⏳ осталось `aladdin.riv` + `genie.riv`
+
+### Блокер 07 (передать следующей ML-системе)
+
+- [ ] `aladdin.riv` manual steps:
+  - Import PNG: `docs/assets/aladdin_master_OB01_crop_360x480.png`
+  - Разместить на Hero360 (360×480 full cover) → File Export в `Resources/Companion/aladdin.riv`
+- [ ] `genie.riv` manual steps:
+  - Import PNG: `docs/assets/onboarding_OB03_APP_360x480_FILL_headfix_v1.png`
+  - Разместить на Hero360 (360×480 full cover) → File Export в `Resources/Companion/genie.riv`
+- [ ] После каждого export: прогнать gate-скрипты и device smoke
+
+## Сессия 2026-05-27 — Figma art (зафиксировано)
+
+> Дублирует подпункты **HERO-3-02b** выше; отдельных новых ID в списке 102 нет.
+
+- [x] **01_Unicorn:** все `unicorn/emotion/*` = **v2 cinematic**; удалены CONCEPT_v1 / A–E (круги)
+- [x] **03_Genie:** ряд **OB_02–06** headfix 360×480 (`PO_MASTER_OB02_06_360x480` · `101:2`)
+- [x] **03_Genie:** сетка **12× OB_03** headfix (`GRID_12_genie_emotions_OB03` · `122:2`) — восстановлено после ошибочной чистки
+- [x] OB_02/04/05/06 headfix по образцу OB_03 (FILL 360×480, crop headfix v1)
+- [x] PNG в `docs/assets/` (см. **02b** подпункты)
+- [x] Handoff: [COMPANION_HANDOFF_AI_NEXT.md](./COMPANION_HANDOFF_AI_NEXT.md)
+- [x] **PO:** OB_03 = genie master в каноне → **HERO-3-07** Rive ✅ 2026-05-28
+
 ## Сессия 2026-05-26…27 (зафиксировано)
 
 - [x] Rive SPM кэш: `scripts/reset_rive_spm_cache.sh`  
@@ -235,7 +275,8 @@ X-01 · X-02 · X-03 · X-04 · X-05 · X-06 · X-07
 
 - [x] **Xcode compile** (2026-05-27)  
 - [x] **08b** device Rive  
-- [ ] **02b + 07** Figma 36 frames → Rive `.riv` ×3  
+- [x] **02b** Figma 36 frames + art ✅ 2026-05-27  
+- [ ] **07** Rive `.riv` ×3  
 - [ ] **11b / 11c** device QA  
 - [ ] **TestFlight**
 

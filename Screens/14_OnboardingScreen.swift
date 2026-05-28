@@ -6,6 +6,8 @@ import UIKit
 private struct OnboardingLogoV2View: View {
     /// Figma `WORDMARK_V2` height (OB_01 / OB_07 = 104pt).
     var fixedHeight: CGFloat? = nil
+    /// OB_07 UR corner — без `.infinity`, иначе на device лого «плывёт» vs Figma.
+    var expandsToContainerWidth: Bool = true
 
     var body: some View {
         Group {
@@ -20,7 +22,7 @@ private struct OnboardingLogoV2View: View {
                     .foregroundStyle(Color.secondaryGold)
             }
         }
-        .frame(maxWidth: .infinity)
+        .frame(maxWidth: expandsToContainerWidth ? .infinity : nil, alignment: .leading)
         .frame(height: fixedHeight)
         .accessibilityLabel(AppConfig.localizedAppMarketingName)
     }
@@ -62,12 +64,12 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 1:
-            // OB_02: D-lite — подъём как OB_04 (440/522), desc h=132, 5 строк — «шифрования» над chrome
+            // OB_02: +1 строка вверх (28pt) — «безопасности»; desc/scrim как OB_04 D-lite
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 12, y: 440, width: 361, height: 78),
-                desc: CGRect(x: 12, y: 522, width: 370, height: 132),
-                scrim: CGRect(x: 0, y: 532, width: 393, height: 310),
+                title: CGRect(x: 12, y: 412, width: 361, height: 78),
+                desc: CGRect(x: 12, y: 494, width: 370, height: 132),
+                scrim: CGRect(x: 0, y: 504, width: 393, height: 310),
                 scrimMaxOpacity: 0.42,
                 maxTitleLines: 3,
                 maxBodyLines: 5,
@@ -120,9 +122,14 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 6:
-            // OB_07 D-lite A: title 400, desc 468 h80 — «начинается сегодня»; wordmark UR (183,55) off genie
+            // OB_07: wordmark UR — 96×28 @ top/trailing (справа от головы, не на джина); Figma `168:53`
             return OnboardingFigmaAnchor(
-                wordmark: CGRect(x: 183, y: 55, width: 210, height: 62),
+                wordmark: CGRect(
+                    x: OnboardingFigmaScreenLayout.canvasWidth - 96 - OnboardingFigmaScreenLayout.ob07WordmarkTrailing,
+                    y: OnboardingFigmaScreenLayout.ob07WordmarkTop,
+                    width: 96,
+                    height: 28
+                ),
                 title: CGRect(x: 16, y: 400, width: 361, height: 60),
                 desc: CGRect(x: 16, y: 468, width: 361, height: 80),
                 scrim: CGRect(x: 0, y: 400, width: 393, height: 156),
@@ -148,6 +155,9 @@ private enum OnboardingFigmaScreenLayout {
     static let ob07ChromeBandHeight: CGFloat = 304
     /// Верх chrome в Figma (`CHROME_bottom` y=556) — контент TabView только выше этой линии.
     static let ob07ChromeTopScreenY: CGFloat = 556
+    /// OB_07 wordmark: UR-угол, справа от головы джина (hero zoom 1.09 — max ~102pt ширины).
+    static let ob07WordmarkTrailing: CGFloat = 8
+    static let ob07WordmarkTop: CGFloat = 6
     static var tabDesignHeight: CGFloat { canvasHeight - skipBandHeight - chromeBandHeight }
     static var ob07ContentDesignHeight: CGFloat { ob07ChromeTopScreenY }
 
@@ -179,6 +189,12 @@ private func scrimGradientStops(for anchor: OnboardingFigmaAnchor) -> [Gradient.
     case (542, 0.35):
         midLocation = 0.45
         midOpacity = 0.1575
+    case (532, 0.42):
+        midLocation = 0.45
+        midOpacity = 0.189
+    case (504, 0.42):
+        midLocation = 0.45
+        midOpacity = 0.189
     case (532, 0.38):
         midLocation = 0.45
         midOpacity = 0.171
@@ -340,15 +356,26 @@ private struct OnboardingFigmaAnchoredContent: View {
                     .accessibilityHidden(true)
 
                 if let wordmark = anchor.wordmark {
-                    let logoScale = isOB07 ? vScale : scaleX
                     let logoW = wordmark.width * scaleX
-                    let logoH = wordmark.height * logoScale
-                    OnboardingLogoV2View(fixedHeight: logoH)
-                        .frame(width: logoW, height: logoH, alignment: .center)
-                        .offset(
-                            x: wordmark.origin.x * scaleX,
-                            y: yPos(wordmark.origin.y)
-                        )
+                    let logoH = wordmark.height * scaleX
+                    let logoView = OnboardingLogoV2View(
+                        fixedHeight: logoH,
+                        expandsToContainerWidth: !isOB07
+                    )
+                    .frame(width: logoW, height: logoH, alignment: .topLeading)
+
+                    if isOB07 {
+                        logoView
+                            .frame(maxWidth: geo.size.width, alignment: .trailing)
+                            .padding(.top, OnboardingFigmaScreenLayout.ob07WordmarkTop * vScale)
+                            .padding(.trailing, OnboardingFigmaScreenLayout.ob07WordmarkTrailing * scaleX)
+                    } else {
+                        logoView
+                            .offset(
+                                x: wordmark.origin.x * scaleX,
+                                y: yPos(wordmark.origin.y)
+                            )
+                    }
                 }
 
                 figmaText(

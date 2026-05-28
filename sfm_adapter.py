@@ -51,6 +51,15 @@ class SFMAdapter:
         params = params or {}
 
         try:
+            from security.services.ai_prompt_gate import redact_sfm_params, PIIPromptBlockedError
+            params = redact_sfm_params(func_name, params)
+        except PIIPromptBlockedError as exc:
+            self.metrics['failed_calls'] += 1
+            return False, None, str(exc)
+        except ImportError:
+            pass
+
+        try:
             # HTTP запрос к SFM API
             response = requests.post(
                 'http://127.0.0.1:8003/api/execute',

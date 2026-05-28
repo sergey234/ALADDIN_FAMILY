@@ -17,7 +17,7 @@ optional_security = HTTPBearer(auto_error=False)
 
 # ✅ JWT-011: Унифицированный JWT_SECRET (совпадает с jwt_service.py)
 # В продакшене использовать переменные окружения
-JWT_SECRET = os.getenv("JWT_SECRET", "aladdin-super-secret-key-change-in-production")
+JWT_SECRET = os.environ["JWT_SECRET"]  # P0: required via .env / Xcode env
 JWT_ALGORITHM = os.getenv("JWT_ALGORITHM", "HS256")
 
 

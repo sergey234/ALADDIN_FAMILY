@@ -110,6 +110,7 @@
 		C0MPUSG22F90000100C7D34B /* CompanionUsageBanner.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPUSG12F90000100C7D34B /* CompanionUsageBanner.swift */; };
 		C0MPANM22F90000100C7D34B /* CompanionHeroAnimatedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPANM12F90000100C7D34B /* CompanionHeroAnimatedView.swift */; };
 		C0MPRIV22F90000100C7D34B /* CompanionHeroRiveHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPRIV12F90000100C7D34B /* CompanionHeroRiveHost.swift */; };
+		C0MPRAS22F90000100C7D34B /* CompanionHeroRasterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPRAS12F90000100C7D34B /* CompanionHeroRasterView.swift */; };
 		C0MPSHL22F90000100C7D34B /* CompanionHeroStageShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPSHL12F90000100C7D34B /* CompanionHeroStageShellView.swift */; };
 		C0MPHTL22F90000100C7D34B /* CompanionHeroEmotion+Timeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPHTL12F90000100C7D34B /* CompanionHeroEmotion+Timeline.swift */; };
 		C0MPLIP22F90000100C7D34B /* CompanionHeroLipSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPLIP12F90000100C7D34B /* CompanionHeroLipSync.swift */; };
@@ -596,6 +597,7 @@
 		C0MPUSG12F90000100C7D34B /* CompanionUsageBanner.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionUsageBanner.swift; path = ../UI/Companion/CompanionUsageBanner.swift; sourceTree = "<group>"; };
 		C0MPANM12F90000100C7D34B /* CompanionHeroAnimatedView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionHeroAnimatedView.swift; path = ../UI/Companion/CompanionHeroAnimatedView.swift; sourceTree = "<group>"; };
 		C0MPRIV12F90000100C7D34B /* CompanionHeroRiveHost.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionHeroRiveHost.swift; path = ../UI/Companion/CompanionHeroRiveHost.swift; sourceTree = "<group>"; };
+		C0MPRAS12F90000100C7D34B /* CompanionHeroRasterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionHeroRasterView.swift; path = ../UI/Companion/CompanionHeroRasterView.swift; sourceTree = "<group>"; };
 		C0MPSHL12F90000100C7D34B /* CompanionHeroStageShellView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionHeroStageShellView.swift; path = ../UI/Companion/CompanionHeroStageShellView.swift; sourceTree = "<group>"; };
 		C0MPHTL12F90000100C7D34B /* CompanionHeroEmotion+Timeline.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = "CompanionHeroEmotion+Timeline.swift"; path = "../UI/Companion/CompanionHeroEmotion+Timeline.swift"; sourceTree = "<group>"; };
 		C0MPLIP12F90000100C7D34B /* CompanionHeroLipSync.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionHeroLipSync.swift; path = ../UI/Companion/CompanionHeroLipSync.swift; sourceTree = "<group>"; };
@@ -1057,6 +1059,7 @@
 				C0MPCOS12F90000100C7D34B /* CompanionCosmeticsSection.swift */,
 				C0MPANM12F90000100C7D34B /* CompanionHeroAnimatedView.swift */,
 				C0MPRIV12F90000100C7D34B /* CompanionHeroRiveHost.swift */,
+				C0MPRAS12F90000100C7D34B /* CompanionHeroRasterView.swift */,
 				C0MPSHL12F90000100C7D34B /* CompanionHeroStageShellView.swift */,
 				C0MPHTL12F90000100C7D34B /* CompanionHeroEmotion+Timeline.swift */,
 				C0MPLIP12F90000100C7D34B /* CompanionHeroLipSync.swift */,
@@ -1965,6 +1968,7 @@
 				C0MPUSG22F90000100C7D34B /* CompanionUsageBanner.swift in Sources */,
 				C0MPANM22F90000100C7D34B /* CompanionHeroAnimatedView.swift in Sources */,
 				C0MPRIV22F90000100C7D34B /* CompanionHeroRiveHost.swift in Sources */,
+				C0MPRAS22F90000100C7D34B /* CompanionHeroRasterView.swift in Sources */,
 				C0MPSHL22F90000100C7D34B /* CompanionHeroStageShellView.swift in Sources */,
 				C0MPHTL22F90000100C7D34B /* CompanionHeroEmotion+Timeline.swift in Sources */,
 				C0MPLIP22F90000100C7D34B /* CompanionHeroLipSync.swift in Sources */,
@@ -2174,7 +2178,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 210;
+				CURRENT_PROJECT_VERSION = 211;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2208,7 +2212,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 210;
+				CURRENT_PROJECT_VERSION = 211;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2366,7 +2370,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 210;
+				CURRENT_PROJECT_VERSION = 211;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2400,7 +2404,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 210;
+				CURRENT_PROJECT_VERSION = 211;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2432,7 +2436,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 210;
+				CURRENT_PROJECT_VERSION = 211;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2458,7 +2462,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 210;
+				CURRENT_PROJECT_VERSION = 211;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2482,7 +2486,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 210;
+				CURRENT_PROJECT_VERSION = 211;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2507,7 +2511,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 210;
+				CURRENT_PROJECT_VERSION = 211;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

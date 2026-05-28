@@ -1,0 +1,100 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "s" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "id": 1,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "histogram_quantile(0.95, sum by (le, route, method) (rate(aladdin_shop_vpn_http_request_duration_seconds_bucket[$__rate_interval])))",
+          "legendFormat": "{{method}} {{route}}",
+          "refId": "A"
+        }
+      ],
+      "title": "HTTP p95 (all routes)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "reqps" }, "overrides": [] },
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "id": 2,
+      "options": { "legend": { "displayMode": "table", "placement": "bottom" } },
+      "targets": [
+        {
+          "expr": "sum by (route, method, status_class) (rate(aladdin_shop_vpn_http_requests_total[$__rate_interval]))",
+          "legendFormat": "{{method}} {{route}} {{status_class}}",
+          "refId": "A"
+        }
+      ],
+      "title": "HTTP RPS by route / status_class",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "none", "decimals": 0 }, "overrides": [] },
+      "gridPos": { "h": 7, "w": 12, "x": 0, "y": 8 },
+      "id": 3,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "expr": "aladdin_shop_vpn_jobs_pending", "legendFormat": "pending", "refId": "A" },
+        { "expr": "aladdin_shop_vpn_jobs_processing", "legendFormat": "processing", "refId": "B" },
+        { "expr": "aladdin_shop_vpn_jobs_failed", "legendFormat": "failed", "refId": "C" },
+        { "expr": "aladdin_shop_vpn_jobs_done", "legendFormat": "done", "refId": "D" }
+      ],
+      "title": "Jobs (from vpn.db at scrape)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": { "type": "prometheus", "uid": "${datasource}" },
+      "fieldConfig": { "defaults": { "unit": "none", "decimals": 0 }, "overrides": [] },
+      "gridPos": { "h": 7, "w": 12, "x": 12, "y": 8 },
+      "id": 4,
+      "options": { "legend": { "displayMode": "list", "placement": "bottom" } },
+      "targets": [
+        { "expr": "aladdin_shop_vpn_accounts_vpn_active", "legendFormat": "vpn_active", "refId": "A" },
+        { "expr": "aladdin_shop_vpn_accounts_vpn_provisioning", "legendFormat": "vpn_provisioning", "refId": "B" },
+        { "expr": "aladdin_shop_vpn_accounts_vpn_expired", "legendFormat": "vpn_expired", "refId": "C" },
+        { "expr": "aladdin_shop_vpn_accounts_vpn_failed", "legendFormat": "vpn_failed", "refId": "D" },
+        { "expr": "aladdin_shop_vpn_accounts_vpn_manual_override", "legendFormat": "vpn_manual_override", "refId": "E" }
+      ],
+      "title": "VPN accounts by status (from vpn.db at scrape)",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "30s",
+  "schemaVersion": 38,
+  "style": "dark",
+  "tags": ["aladdin", "vpn-api", "shop"],
+  "templating": {
+    "list": [
+      {
+        "current": { "selected": false, "text": "Prometheus", "value": "Prometheus" },
+        "hide": 0,
+        "label": "Datasource",
+        "name": "datasource",
+        "options": [],
+        "query": "prometheus",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": { "from": "now-6h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "ALADDIN Shop VPN API",
+  "uid": "aladdin-shop-vpn-api",
+  "version": 1,
+  "weekStart": ""
+}

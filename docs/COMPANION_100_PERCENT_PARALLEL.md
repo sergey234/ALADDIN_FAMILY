@@ -1,6 +1,8 @@
 # Companion → 100%: план · факт · остаток
 
-**Обновлено:** 2026-05-27 · build **210+**
+**Обновлено:** 2026-05-28 · build **210+**  
+**Завтра:** [COMPANION_PLAN_TOMORROW_2026-05-29.md](./COMPANION_PLAN_TOMORROW_2026-05-29.md)  
+**Rive / Node / MCP:** [COMPANION_RIVE_CONNECT_NODE_MCP.md](./COMPANION_RIVE_CONNECT_NODE_MCP.md) · **ML handoff:** [COMPANION_ML_HANDOFF_2026-05-28.md](./COMPANION_ML_HANDOFF_2026-05-28.md)
 
 ---
 
@@ -12,8 +14,9 @@
 | **08b** Rive на device | ✅ PASS (user) | **Готово** |
 | **11a** pytest | ✅ 46 tests | **Готово** |
 | **11b** QA на placeholder | ⏳ ~15 мин iPhone | **Вы** |
-| **02b** Figma 3 страницы × 12 frames | ⏳ 0/36 в файле | **Дизайн** |
-| **07** Rive 360×480 → `.riv` ×3 | ⏳ после 02b | **Аниматор** |
+| **02b** Figma 3 страницы × 12 frames | ✅ 36/36 · PO lock OB_03 | **Готово** |
+| **07** Rive 360×480 → `.riv` ×3 | ⏳ Editor + [5 steps](./COMPANION_RIVE_EDITOR_5_STEPS.md); MCP черновик `.rev` есть | **Аниматор** |
+| **Rive infra** Node + RiveMCP | ✅ 2026-05-28 | [CONNECT doc](./COMPANION_RIVE_CONNECT_NODE_MCP.md) |
 | **11c** MIMIC после 07 | ⏳ после export | **Вы + QA** |
 | **GATE-P0 / GATE-EMO** | ⏳ после 11b + 07 | **Приёмка** |
 

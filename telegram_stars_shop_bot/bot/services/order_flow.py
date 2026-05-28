@@ -3,7 +3,7 @@ from __future__ import annotations
 import aiosqlite
 
 from bot.config import Settings
-from bot.services import orders_repo
+from bot.services import orders_repo, vpn_referral_extensions, vpn_referral_repo
 from bot.services.pricing import commission_for_first_order
 
 
@@ -23,6 +23,9 @@ async def apply_completed_side_effects(conn: aiosqlite.Connection, order_id: int
     Первый завершённый (выданный) заказ пользователя: first_order_completed и комиссия рефереру
     (процент от суммы заказа в ₽ после скидок - см. Settings), если есть referrer и комиссия ещё не проведена.
     Скидка покупателю по рефкоду (`quote_product` / is_first_order) тоже действует до первого completed.
+
+    VPN-рефералка: при первой **выданной** VPN-покупке (`product_kind=vpn` или `product_id` с префиксом `vpn`)
+    — запись в `vpn_referral_grants` и (если настроен VPN API) вызов `add-subscription-days` для друга и реферера.
     """
     await conn.execute("BEGIN IMMEDIATE")
     try:
@@ -52,8 +55,11 @@ async def apply_completed_side_effects(conn: aiosqlite.Connection, order_id: int
                 """,
                 (order_id,),
             )
+            grant_info = await vpn_referral_repo.try_insert_vpn_referral_grant(conn, order, settings)
             await orders_repo.write_profit_snapshot(conn, order_id, settings)
             await conn.commit()
+            if grant_info:
+                await vpn_referral_extensions.apply_vpn_referral_extensions(conn, grant_info, settings)
             return
 
         await conn.execute(
@@ -66,6 +72,7 @@ async def apply_completed_side_effects(conn: aiosqlite.Connection, order_id: int
         rub = float(order["rub_after_discounts"] or 0)
         commission = commission_for_first_order(rub, settings) if referrer_id else 0.0
 
+        grant_info = None
         if referrer_id and commission > 0 and commission_paid == 0:
             ucur = await conn.execute(
                 """
@@ -83,6 +90,7 @@ async def apply_completed_side_effects(conn: aiosqlite.Connection, order_id: int
                 "UPDATE users SET ref_balance_rub = round(ref_balance_rub + ?, 2) WHERE user_id = ?",
                 (commission, int(referrer_id)),
             )
+            grant_info = await vpn_referral_repo.try_insert_vpn_referral_grant(conn, order, settings)
         else:
             await conn.execute(
                 """
@@ -91,8 +99,11 @@ async def apply_completed_side_effects(conn: aiosqlite.Connection, order_id: int
                 """,
                 (order_id,),
             )
+            grant_info = await vpn_referral_repo.try_insert_vpn_referral_grant(conn, order, settings)
         await orders_repo.write_profit_snapshot(conn, order_id, settings)
         await conn.commit()
+        if grant_info:
+            await vpn_referral_extensions.apply_vpn_referral_extensions(conn, grant_info, settings)
     except Exception:
         await conn.rollback()
         raise

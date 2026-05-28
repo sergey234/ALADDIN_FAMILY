@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from bot import brand_constants as brand
 from bot.config import Settings
 from bot.util_html import esc
 
@@ -54,11 +55,12 @@ def channel_gate_short_punch_html(settings: Settings) -> str:
     Детали вынесены в канал (закреп) - здесь только крючок и 2 кнопки.
     """
     raw = (settings.required_channel_display_name or "").strip()
-    title = esc(raw) if raw else "канал MonkeyStars"
+    title = esc(raw) if raw else f"канал {brand.BRAND_SHORT}"
     md = esc(f"{float(settings.marketing_max_discount_percent):.0f}")
     rb = esc(f"{float(settings.ref_buyer_discount_percent):.0f}")
     return (
-        "<b>⭐ MonkeyStars: Stars и Premium за минуты</b>\n"
+        f"<b>⭐ {brand.BRAND_SHORT}: Stars и Premium за минуты</b>\n"
+        f"<b>Официальный бот:</b> {esc(brand.SHOP_BOT_HANDLE)}\n"
         "Быстрое оформление, прозрачный статус и живая поддержка без квестов.\n"
         f"До <b>{md}%</b> выгоды + до <b>{rb}%</b> скидка другу на первую покупку.\n\n"
         f"👉 Подпишитесь на <b>{title}</b> - сразу откроем меню: оплата, заказы, поддержка.\n"
@@ -133,9 +135,10 @@ def onboarding_terms_caption_html(settings: Settings) -> str:
     if links:
         hero += "\n".join(links) + "\n\n"
     hero += "Ссылки 🔗 кликабельны."
+    hero += f'\n\n🤖 <b>Официальный бот магазина:</b> {esc(brand.SHOP_BOT_HANDLE)}'
     ch_url = (settings.required_channel_invite_url or settings.official_channel_invite_url or "").strip()
     if ch_url:
-        dn = (settings.required_channel_display_name or "").strip() or "Monkey Stars | Premium"
+        dn = (settings.required_channel_display_name or "").strip() or brand.CHANNEL_DISPLAY_NAME_DEFAULT
         hero += f'\n\n📢 <b>Официальный канал магазина:</b> <a href="{ch_url}">{esc(dn)}</a>'
     return hero
 
@@ -143,9 +146,10 @@ def onboarding_terms_caption_html(settings: Settings) -> str:
 def onboarding_channel_caption_html(settings: Settings) -> str:
     """Экран подписки на канал внутри онбординга."""
     raw = (settings.required_channel_display_name or "").strip()
-    name = esc(raw) if raw else "Monkey Stars"
+    name = esc(raw) if raw else "AIMonkey Stars"
     return (
         "<b>Что умеет этот бот?</b>\n"
+        f"Официальный магазин: {esc(brand.SHOP_BOT_HANDLE)}. "
         "Я помогу купить звёзды ⭐, подписку Telegram Premium со скидкой, подарки и пополнение — "
         "быстро и без лишних шагов.\n\n"
         f"📺 <b>Для использования бота необходимо подписаться на канал:</b> {name}\n"
@@ -163,10 +167,10 @@ def partner_onboarding_html(settings: Settings) -> str:
     )
     return (
         "<b>Партнёрам</b>\n\n"
-        "<b>1. Реферальная ссылка</b> (простой старт)\n"
-        "Кнопка «Реф-ссылка» в меню или «Мой профиль» - персональная ссылка. Приглашённый получает скидку "
-        "до первого <b>выданного</b> заказа; вам начисляются проценты на реф. баланс с первой "
-        "<b>выданной</b> покупки друга.\n"
+        "<b>1. Приглашение друзей</b> (простой старт)\n"
+        "Кнопка «Пригласить друга» в меню или «Мой профиль» — персональная ссылка. Приглашённый получает скидку "
+        "до первой <b>выданной</b> покупки; вам — бонус на покупки в магазине с первой "
+        "<b>выданной</b> покупки друга (оплата «С баланса»).\n"
         "Идеально для блогеров и личных рекомендаций.\n\n"
         "<b>2. API для своего бота или сайта</b>\n"
         "Если у вас свой Telegram-бот, сайт или приложение: выпустите ключ в разделе «Наш API», "
@@ -178,17 +182,28 @@ def partner_onboarding_html(settings: Settings) -> str:
 
 
 def referral_faq_html(settings: Settings) -> str:
+    from bot.brand_constants import VPN_PRODUCT_NAME
+
     rb = esc(settings.ref_buyer_discount_percent)
     rc = esc(settings.ref_commission_percent)
+    rf = int(settings.vpn_referral_referrer_days)
+    ff = int(settings.vpn_referral_friend_days)
+    vpn_extra = ""
+    if settings.ui_show_vpn and (ff > 0 or rf > 0):
+        vpn_extra = (
+            f"• Если первой <b>выданной</b> покупкой друга стала подписка {esc(VPN_PRODUCT_NAME)} — "
+            f"дополнительно бонусные дни ему (+{ff}) и вам (+{rf}) к VPN (один раз на друга).\n"
+        )
     return (
-        "<b>Как работает рефералка</b>\n\n"
-        f"• По вашей ссылке друг открывает бота и оформляет заказы, пока у него ещё не было "
-        f"<b>выданных</b> покупок - на такие заказы действует скидка <b>{rb}%</b>.\n"
-        f"• Когда у приглашённого появляется первый заказ со статусом «выдан», на ваш баланс "
-        f"начисляется <b>{rc}%</b> от суммы этого заказа в ₽.\n"
-        "• Самоприглашения и повторные начисления за того же человека не учитываются.\n\n"
-        "<b>Внутренний баланс</b> (в ₽) можно тратить на новые заказы - кнопка «С баланса» при выборе оплаты. "
-        "Реферальный баланс начисляется отдельно (см. профиль)."
+        "<b>Как работает приглашение друзей</b>\n\n"
+        "• Поделитесь ссылкой из профиля — друг должен открыть бота по ней.\n"
+        f"• Пока у друга ещё не было <b>выданных</b> покупок, на первый заказ действует скидка <b>{rb}%</b> "
+        "(Stars, Premium, VPN — любой товар в магазине).\n"
+        f"• После первой <b>выданной</b> покупки друга на ваш счёт в магазине начисляется бонус <b>{rc}%</b> "
+        "от суммы этого заказа. Бонус можно потратить на новые заказы — «С баланса» при оплате.\n"
+        f"{vpn_extra}"
+        "• Самоприглашение не засчитывается. Повторные начисления за того же человека — нет.\n\n"
+        "<i>Это программа скидок и бонусов внутри сервиса ALADDIN, а не выплата денег «с улицы».</i>"
     )
 
 
@@ -232,16 +247,16 @@ def payment_faq_html(settings: Settings) -> str:
         "счёт в Telegram (кнопка в боте).\n\n"
         "<b>USDT в счёте (Crypto Pay / xRocket)</b>\n"
         "Итог в USDT берите из <b>готового счёта</b> - он может чуть отличаться от ориентира в рублях в боте (курс ставит сервис счёта).\n\n"
-        "<b>Рефералка, скидка другу, процент</b> - в «Мой профиль» / «Как работает рефералка».\n\n"
+        "<b>Приглашение друзей, скидка, бонус на покупки</b> — в «Мой профиль» / «Как работает приглашение».\n\n"
         "<b>Возвраты</b> - не гарантируем по умолчанию; по согласованию в поддержке, если виноват сбой с нашей стороны."
     )
     return head + uni_extra + tail
 
 
 def privacy_screen_html(settings: Settings) -> str:
-    """Экран «Данные и политика»: кратко о данных в боте + ссылки на внешние документы."""
+    """Экран «Данные и политика» магазина Stars/Premium (не путать с документами AiMonkeyVPN)."""
     parts: list[str] = [
-        "<b>Данные и политика</b>\n",
+        "<b>Данные и политика</b> <i>(магазин Stars / Premium)</i>\n",
     ]
     pu = (settings.privacy_policy_url or "").strip()
     tu = (settings.terms_of_service_url or "").strip()
@@ -261,9 +276,23 @@ def privacy_screen_html(settings: Settings) -> str:
             "Данные не передаём третьим лицам для рекламы. Срок хранения - пока нужен для учёта и поддержки.\n\n",
             "По вопросам удаления или выгрузки данных напишите в раздел «Поддержка» с темой "
             "<code>персональные данные</code>.\n\n",
-            "Типовые вопросы по оплате, рефералке и возвратам - в разделе <b>«Поддержка»</b> в главном меню.",
+            "Типовые вопросы по оплате, рефералке и возвратам - в разделе <b>«Поддержка»</b> в главном меню.\n\n",
         ]
     )
+    vpn_base = (settings.vpn_docs_public_base or "").strip().rstrip("/")
+    if vpn_base:
+        parts.append(
+            f"<b>AiMonkeyVPN</b> — отдельный продукт с <b>своими</b> документами "
+            f"(<a href=\"{esc(vpn_base)}/vpn-data\">политика VPN</a>, "
+            f"<a href=\"{esc(vpn_base)}/vpn-terms\">соглашение VPN</a>). "
+            "Их принимают на шаге <b>🟢 Оплата</b> в разделе <b>🌐 VPN</b> главного меню — "
+            "это не те же страницы, что для Stars выше."
+        )
+    elif settings.ui_show_vpn:
+        parts.append(
+            "<b>AiMonkeyVPN</b> — отдельные документы; принимаются в разделе "
+            "<b>🌐 VPN</b> → <b>🟢 Оплата</b> (не путать с политикой магазина Stars)."
+        )
     return "".join(parts)
 
 
@@ -315,12 +344,12 @@ def faq_comprehensive_html(settings: Settings) -> str:
         "<b>• «Фейковая» / непроверенная крипта</b>\n"
         "Если в кошельке «Unverified token» / «Unknown token» - такой перевод <b>не</b> принимаем; "
         "оформите оплату через счёт в боте или напишите в поддержку.\n\n"
-        "<b>• Как устроена рефералка</b>\n"
+        "<b>• Как пригласить друга</b>\n"
         "В <b>«Мой профиль»</b> (<code>/menu</code> → «Мой профиль») ваша ссылка; приглашённые закрепляются за вами.\n"
-        f"Скидка другу до первого <b>выданного</b> заказа: <b>{rb}%</b>. "
-        f"С первой <b>выданной</b> покупки друга на реф. баланс: <b>{rc}%</b> от суммы заказа в ₽ "
-        "(см. «Как работает рефералка» в профиле).\n\n"
-        "<b>• Баланс / реф.баланс на Stars, Premium, подарки</b>\n"
+        f"Скидка другу до первой <b>выданной</b> покупки: <b>{rb}%</b>. "
+        f"После первой <b>выданной</b> покупки друга — бонус <b>{rc}%</b> на ваши покупки в магазине "
+        "(см. «Как работает приглашение» в профиле).\n\n"
+        "<b>• Баланс и бонус на покупки</b>\n"
         "В меню: «С баланса» / «С баланса частично» при оформлении.\n\n"
         "<b>• Розыгрыши в каналах</b>\n"
         "Не ведём от имени бота; к админам того канала.\n\n"

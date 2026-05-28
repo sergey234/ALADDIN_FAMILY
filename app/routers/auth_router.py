@@ -50,6 +50,15 @@ except ImportError as e:
 router = APIRouter(tags=["auth"])
 security = HTTPBearer()
 
+
+def _prepare_token_data(raw: dict) -> dict:
+    """Companion platform JWT claims (app_id, age_band, limits)."""
+    try:
+        from security.services.ai_platform.jwt_claims import enrich_access_token_data
+        return enrich_access_token_data(raw)
+    except ImportError:
+        return raw
+
 # ============================================
 # МОДЕЛИ ЗАПРОСОВ И ОТВЕТОВ
 # ============================================
@@ -296,7 +305,7 @@ async def login(login_data: LoginRequest, db: Session = Depends(get_db)):
             "email": user["email"]
         }
         
-        access_token = create_access_token(token_data, expires_delta=timedelta(hours=24))
+        access_token = create_access_token(_prepare_token_data(token_data), expires_delta=timedelta(hours=24))
         refresh_token = create_refresh_token(token_data)
         
         return LoginResponse(
@@ -348,7 +357,7 @@ async def register(login_data: LoginRequest, db: Session = Depends(get_db)):
             "email": user["email"]
         }
         
-        access_token = create_access_token(token_data, expires_delta=timedelta(hours=24))
+        access_token = create_access_token(_prepare_token_data(token_data), expires_delta=timedelta(hours=24))
         refresh_token = create_refresh_token(token_data)
         
         return LoginResponse(
@@ -392,7 +401,7 @@ async def register_device(request: DeviceRegisterRequest):
             "type": "device_auth",
         }
 
-        access_token = create_access_token(token_data, expires_delta=timedelta(hours=24))
+        access_token = create_access_token(_prepare_token_data(token_data), expires_delta=timedelta(hours=24))
         refresh_token = create_refresh_token(token_data)
 
         return LoginResponse(
@@ -462,7 +471,7 @@ async def refresh_token(refresh_data: RefreshTokenRequest, db: Session = Depends
             "type": "device_auth" if token_type == "device_refresh" else "access"  # ✅ Тип нового токена
         }
         
-        access_token = create_access_token(token_data, expires_delta=timedelta(hours=24))
+        access_token = create_access_token(_prepare_token_data(token_data), expires_delta=timedelta(hours=24))
         
         # ✅ BUILD 122: Создаем новый refresh token для device tokens
         if token_type == "device_refresh":
@@ -562,7 +571,7 @@ async def login_by_recovery_code(
             "user_id": resolved_subject,
             "sub": resolved_subject,
         }
-        access_token = create_access_token(token_data, expires_delta=timedelta(hours=24))
+        access_token = create_access_token(_prepare_token_data(token_data), expires_delta=timedelta(hours=24))
         refresh_token = create_refresh_token(token_data)
         
         return LoginResponse(
@@ -600,7 +609,7 @@ async def login_with_apple(request: AppleLoginRequest):
         "email": request.email,
         "auth_provider": "apple",
     }
-    access_token = create_access_token(token_data, expires_delta=timedelta(hours=24))
+    access_token = create_access_token(_prepare_token_data(token_data), expires_delta=timedelta(hours=24))
     refresh_token = create_refresh_token(token_data)
 
     return AuthSessionResponse(
@@ -659,7 +668,7 @@ async def consume_magic_link(request: ConsumeMagicLinkRequest):
         "email": email,
         "auth_provider": "magic_link",
     }
-    access_token = create_access_token(token_data, expires_delta=timedelta(hours=24))
+    access_token = create_access_token(_prepare_token_data(token_data), expires_delta=timedelta(hours=24))
     refresh_token = create_refresh_token(token_data)
     _magic_links.pop(token, None)
 

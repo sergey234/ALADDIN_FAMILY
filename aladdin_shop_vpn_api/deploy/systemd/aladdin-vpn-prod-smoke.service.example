@@ -1,0 +1,8 @@
+[Unit]
+Description=ALADDIN VPN API prod smoke (regression on VPS)
+After=network-online.target aladdin-shop-vpn-api.service
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash /opt/aladdin-shop-vpn-api/deploy/scripts/vpn_prod_smoke.sh
+User=root

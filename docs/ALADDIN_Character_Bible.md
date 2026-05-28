@@ -65,9 +65,9 @@
 
 | `character_id` | Роль | Аудитория | Визуальный референс (read-only) | Голос / тон |
 |----------------|------|-----------|----------------------------------|-------------|
-| **unicorn** | Пушистый друг | **child**, teen | mood **OB_05** | Тёплый, игривый, PG; юмор редкий |
-| **aladdin** | Человек-наставник | teen, parent, **senior 60+** | **OB_01** | Спокойный, mentor; без сарказма над людьми |
-| **genie** | Магический спутник | teen, parent (**не child**) | **OB_02**, OB_07 | Witty, PG-13; **больше шуток**, без эротики |
+| **unicorn** | Пушистый друг | **child**, teen | **master v2** ([CANON](./COMPANION_HERO_ART_CANON.md)) | Тёплый, игривый, PG; юмор редкий |
+| **aladdin** | Человек-наставник | teen, parent, **senior 60+** | **только OB_01** ([CANON](./COMPANION_HERO_ART_CANON.md)) | Спокойный, mentor; без сарказма над людьми |
+| **genie** | Магический спутник | teen, parent (**не child**) | **OB_04, 06, 07** ([CANON](./COMPANION_HERO_ART_CANON.md)) | Witty, PG-13; **больше шуток**, без эротики |
 
 ### Табу (все герои, Family)
 

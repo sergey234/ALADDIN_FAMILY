@@ -218,4 +218,8 @@ async def crypto_pay_webhook(
                 new_status=new_status,
             )
         )
+        if new_status == "paid":
+            from bot.services.vpn_payment_hook import schedule_vpn_provision_after_paid
+
+            schedule_vpn_provision_after_paid(settings, order_id_out)
     return {"ok": True, "order_id": order_id, "status": "paid"}

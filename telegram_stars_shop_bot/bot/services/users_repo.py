@@ -96,6 +96,44 @@ async def accept_terms(conn: aiosqlite.Connection, user_id: int) -> None:
     await conn.commit()
 
 
+def _col_accepted(row: aiosqlite.Row | None, column: str) -> bool:
+    if row is None:
+        return False
+    try:
+        v = row[column]
+    except (KeyError, IndexError):
+        return False
+    return v is not None and str(v).strip() != ""
+
+
+async def vpn_legal_ack_flags(conn: aiosqlite.Connection, user_id: int) -> tuple[bool, bool]:
+    row = await get_user(conn, user_id)
+    privacy = _col_accepted(row, "vpn_privacy_accepted_at")
+    terms = _col_accepted(row, "vpn_terms_accepted_at")
+    return privacy, terms
+
+
+async def has_vpn_legal_accepted(conn: aiosqlite.Connection, user_id: int) -> bool:
+    p, t = await vpn_legal_ack_flags(conn, user_id)
+    return p and t
+
+
+async def accept_vpn_privacy(conn: aiosqlite.Connection, user_id: int) -> None:
+    await conn.execute(
+        "UPDATE users SET vpn_privacy_accepted_at = datetime('now') WHERE user_id = ?",
+        (user_id,),
+    )
+    await conn.commit()
+
+
+async def accept_vpn_terms(conn: aiosqlite.Connection, user_id: int) -> None:
+    await conn.execute(
+        "UPDATE users SET vpn_terms_accepted_at = datetime('now') WHERE user_id = ?",
+        (user_id,),
+    )
+    await conn.commit()
+
+
 async def is_onboarding_completed(conn: aiosqlite.Connection, user_id: int) -> bool:
     row = await get_user(conn, user_id)
     if row is None:

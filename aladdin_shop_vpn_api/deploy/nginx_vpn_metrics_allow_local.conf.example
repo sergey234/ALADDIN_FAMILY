@@ -1,0 +1,11 @@
+# Пример: /metrics только с loopback (не копировать слепо — вставить в нужный server{}).
+# Используйте, если /metrics случайно оказался за тем же server, что и публичный трафик.
+
+location = /metrics {
+    allow 127.0.0.1;
+    allow ::1;
+    deny all;
+    proxy_pass http://127.0.0.1:8091;
+    proxy_http_version 1.1;
+    proxy_set_header Host $host;
+}

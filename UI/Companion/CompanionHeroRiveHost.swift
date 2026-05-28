@@ -1,7 +1,11 @@
 import SwiftUI
+import UIKit
 
 /// P1-08 / HERO-3-08 — хост: bundled `.riv` + RiveRuntime (если подключён).
 enum CompanionHeroRiveHost {
+    /// Placeholder `.riv` из репо ~15 KB; production export обычно &gt; 25 KB.
+    static let productionRivMinBytes: Int = 25_000
+
     /// Симулятор iOS 15.x: известные падения Rive/Metal (`currentDrawable`, sampler binding). QA Rive — на device.
     static var isSimulatorIOS15MetalUnstable: Bool {
         #if targetEnvironment(simulator)
@@ -12,9 +16,22 @@ enum CompanionHeroRiveHost {
         #endif
     }
 
-    /// Можно ли включать RiveViewModel (файл в бандле + среда без известных Metal-крашей).
+    /// Production `.riv` (не placeholder) в бандле.
+    static func isProductionRiv(characterId: String) -> Bool {
+        guard let url = bundledRivURL(characterId: characterId) else { return false }
+        let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        return size >= productionRivMinBytes
+    }
+
+    /// PNG master 360×480 пока `.riv` ещё placeholder (HERO-3-07).
+    static func shouldUseRasterMaster(characterId: String) -> Bool {
+        guard !isProductionRiv(characterId: characterId) else { return false }
+        return bundledMasterUIImage(characterId: characterId) != nil
+    }
+
+    /// Можно ли включать RiveViewModel (production `.riv` + среда без Metal-крашей).
     static func shouldUseRiveRuntime(characterId: String) -> Bool {
-        guard hasBundledRiv(characterId: characterId) else { return false }
+        guard isProductionRiv(characterId: characterId) else { return false }
         guard !isSimulatorIOS15MetalUnstable else { return false }
         return true
     }
@@ -36,6 +53,15 @@ enum CompanionHeroRiveHost {
         let name = rivBaseName(characterId: characterId)
         return Bundle.main.url(forResource: name, withExtension: "riv", subdirectory: "Companion")
             ?? Bundle.main.url(forResource: name, withExtension: "riv")
+    }
+
+    static func bundledMasterUIImage(characterId: String) -> UIImage? {
+        let name = "\(rivBaseName(characterId: characterId))_master"
+        guard let url = Bundle.main.url(forResource: name, withExtension: "png", subdirectory: "Companion")
+            ?? Bundle.main.url(forResource: name, withExtension: "png") else {
+            return nil
+        }
+        return UIImage(contentsOfFile: url.path)
     }
 
     #if canImport(RiveRuntime)
