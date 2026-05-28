@@ -138,7 +138,9 @@ struct CompanionConversationScreen: View {
                 showLegal = true
             }
             CompanionAnalytics.track(.open, characterId: characterId, sessionId: sessionId)
-            Task { await caps.refresh() }
+            if !embeddedInHome {
+                Task { await caps.refresh() }
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: .microphonePermissionDenied)) { _ in
             showMicrophonePermissionAlert = true

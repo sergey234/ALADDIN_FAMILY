@@ -12,6 +12,9 @@ final class CompanionCapabilitiesService: ObservableObject {
     @Published private(set) var lastError: String?
 
     private let api = CompanionAPIService.shared
+    private var cacheFetchedAt: Date?
+    private var refreshInFlight: Task<Void, Never>?
+    private let cacheTTL: TimeInterval = 30
 
     private init() {}
 
@@ -30,16 +33,37 @@ final class CompanionCapabilitiesService: ObservableObject {
         return list
     }
 
-    func refresh() async {
-        isLoading = true
-        lastError = nil
-        defer { isLoading = false }
-
-        do {
-            payload = try await api.fetchCapabilities()
-        } catch {
-            lastError = error.localizedDescription
+    /// TTL-кэш + coalescing параллельных вызовов (Home + Hub не дублируют сеть).
+    func refresh(force: Bool = false) async {
+        let now = Date()
+        if !force,
+           payload != nil,
+           let fetchedAt = cacheFetchedAt,
+           now.timeIntervalSince(fetchedAt) < cacheTTL {
+            return
         }
+        if let inflight = refreshInFlight {
+            await inflight.value
+            return
+        }
+
+        let task = Task<Void, Never> { [weak self] in
+            guard let self else { return }
+            self.isLoading = true
+            self.lastError = nil
+            defer { self.isLoading = false }
+
+            do {
+                let fetched = try await self.api.fetchCapabilities()
+                self.payload = fetched
+                self.cacheFetchedAt = Date()
+            } catch {
+                self.lastError = error.localizedDescription
+            }
+        }
+        refreshInFlight = task
+        defer { refreshInFlight = nil }
+        await task.value
     }
 
     private func featureEnabled(_ name: String) -> Bool {
