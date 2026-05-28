@@ -5,9 +5,18 @@ import Foundation
 final class CompanionAPIService {
     static let shared = CompanionAPIService()
     private let network: NetworkManager
+    private var legalCache: [String: (response: CompanionLegalResponse, fetchedAt: Date)] = [:]
+    private var legalInFlight: [String: Task<CompanionLegalResponse, Error>] = [:]
+    private let legalCacheTTL: TimeInterval = 30
+    private var profileCache: (response: CompanionProfileSettings, fetchedAt: Date)?
+    private var profileInFlight: Task<CompanionProfileSettings, Error>?
+    private let profileCacheTTL: TimeInterval = 20
+    private var stateCache: [String: (response: CompanionStateResponse, fetchedAt: Date)] = [:]
+    private var stateInFlight: [String: Task<CompanionStateResponse, Error>] = [:]
+    private let stateCacheTTL: TimeInterval = 12
 
     private init() {
-        network = NetworkManager()
+        network = APIService.shared.networkManager
     }
 
     private func familyScopeHeaders() -> [String: String] {
@@ -41,16 +50,32 @@ final class CompanionAPIService {
     }
 
     func fetchLegal(locale: String = "ru") async throws -> CompanionLegalResponse {
+        let now = Date()
+        if let cached = legalCache[locale], now.timeIntervalSince(cached.fetchedAt) < legalCacheTTL {
+            return cached.response
+        }
+        if let inflight = legalInFlight[locale] {
+            return try await inflight.value
+        }
+
+        let task = Task<CompanionLegalResponse, Error> {
         let path = "\(AppConfig.Endpoint.aiCompanionLegal)?locale=\(locale)"
-        return try await withCheckedThrowingContinuation { continuation in
-            network.get(
-                endpoint: path,
-                requiresAuth: true,
-                additionalHeaders: familyScopeHeaders()
-            ) { (result: Result<CompanionLegalResponse, Error>) in
-                continuation.resume(with: result)
+            return try await withCheckedThrowingContinuation { continuation in
+                network.get(
+                    endpoint: path,
+                    requiresAuth: true,
+                    additionalHeaders: familyScopeHeaders()
+                ) { (result: Result<CompanionLegalResponse, Error>) in
+                    continuation.resume(with: result)
+                }
             }
         }
+        legalInFlight[locale] = task
+        defer { legalInFlight[locale] = nil }
+
+        let response = try await task.value
+        legalCache[locale] = (response, now)
+        return response
     }
 
     func fetchCosmetics(characterId: String) async throws -> CompanionCosmeticsResponse {
@@ -71,7 +96,7 @@ final class CompanionAPIService {
             equippedCosmeticId: cosmeticId,
             equippedCosmeticCharacterId: characterId
         )
-        return try await withCheckedThrowingContinuation { continuation in
+        let updated = try await withCheckedThrowingContinuation { continuation in
             network.put(
                 endpoint: AppConfig.Endpoint.aiCompanionProfile,
                 body: body,
@@ -80,19 +105,38 @@ final class CompanionAPIService {
                 continuation.resume(with: result)
             }
         }
+        profileCache = (updated, Date())
+        stateCache.removeValue(forKey: characterId)
+        return updated
     }
 
-    func fetchState(characterId: String) async throws -> CompanionStateResponse {
+    func fetchState(characterId: String, forceRefresh: Bool = false) async throws -> CompanionStateResponse {
+        let now = Date()
+        if !forceRefresh, let cached = stateCache[characterId], now.timeIntervalSince(cached.fetchedAt) < stateCacheTTL {
+            return cached.response
+        }
+        if !forceRefresh, let inflight = stateInFlight[characterId] {
+            return try await inflight.value
+        }
+
+        let task = Task<CompanionStateResponse, Error> {
         let path = "\(AppConfig.Endpoint.aiCompanionState)?character_id=\(characterId)"
-        return try await withCheckedThrowingContinuation { continuation in
-            network.get(
-                endpoint: path,
-                requiresAuth: true,
-                additionalHeaders: familyScopeHeaders()
-            ) { (result: Result<CompanionStateResponse, Error>) in
-                continuation.resume(with: result)
+            return try await withCheckedThrowingContinuation { continuation in
+                network.get(
+                    endpoint: path,
+                    requiresAuth: true,
+                    additionalHeaders: familyScopeHeaders()
+                ) { (result: Result<CompanionStateResponse, Error>) in
+                    continuation.resume(with: result)
+                }
             }
         }
+        stateInFlight[characterId] = task
+        defer { stateInFlight[characterId] = nil }
+
+        let response = try await task.value
+        stateCache[characterId] = (response, now)
+        return response
     }
 
     func sendChat(
@@ -217,16 +261,32 @@ final class CompanionAPIService {
         }
     }
 
-    func fetchProfile() async throws -> CompanionProfileSettings {
-        try await withCheckedThrowingContinuation { continuation in
-            network.get(
-                endpoint: AppConfig.Endpoint.aiCompanionProfile,
-                requiresAuth: true,
-                additionalHeaders: familyScopeHeaders()
-            ) { (result: Result<CompanionProfileSettings, Error>) in
-                continuation.resume(with: result)
+    func fetchProfile(forceRefresh: Bool = false) async throws -> CompanionProfileSettings {
+        let now = Date()
+        if !forceRefresh, let cached = profileCache, now.timeIntervalSince(cached.fetchedAt) < profileCacheTTL {
+            return cached.response
+        }
+        if !forceRefresh, let inflight = profileInFlight {
+            return try await inflight.value
+        }
+
+        let task = Task<CompanionProfileSettings, Error> {
+            try await withCheckedThrowingContinuation { continuation in
+                network.get(
+                    endpoint: AppConfig.Endpoint.aiCompanionProfile,
+                    requiresAuth: true,
+                    additionalHeaders: familyScopeHeaders()
+                ) { (result: Result<CompanionProfileSettings, Error>) in
+                    continuation.resume(with: result)
+                }
             }
         }
+        profileInFlight = task
+        defer { profileInFlight = nil }
+
+        let response = try await task.value
+        profileCache = (response, now)
+        return response
     }
 
     func updateProfile(
@@ -241,7 +301,7 @@ final class CompanionAPIService {
             equippedCosmeticId: nil,
             equippedCosmeticCharacterId: nil
         )
-        return try await withCheckedThrowingContinuation { continuation in
+        let updated = try await withCheckedThrowingContinuation { continuation in
             network.put(
                 endpoint: AppConfig.Endpoint.aiCompanionProfile,
                 body: body,
@@ -250,6 +310,8 @@ final class CompanionAPIService {
                 continuation.resume(with: result)
             }
         }
+        profileCache = (updated, Date())
+        return updated
     }
 
     func deleteAllMemory() async throws -> CompanionMemoryDeleteResponse {

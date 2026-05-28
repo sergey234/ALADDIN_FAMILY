@@ -13,6 +13,7 @@ struct CompanionLegalScreen: View {
     @State private var errorText: String?
     @State private var showPrivacy = false
     @State private var showTerms = false
+    @State private var hasLoaded = false
 
     var body: some View {
         ScrollView {
@@ -75,7 +76,11 @@ struct CompanionLegalScreen: View {
                 }
             }
         }
-        .task { await load() }
+        .task {
+            guard !hasLoaded else { return }
+            hasLoaded = true
+            await load()
+        }
         .sheet(isPresented: $showPrivacy) {
             NavigationView {
                 PrivacyPolicyScreen()

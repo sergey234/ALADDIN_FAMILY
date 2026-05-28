@@ -39,27 +39,54 @@ struct CompanionConversationScreen: View {
     @State private var pendingStreamContentEmotion: CompanionHeroEmotion?
     @State private var textSpeakingDismissTask: Task<Void, Never>?
     @State private var showFullChatHistory = false
+    @FocusState private var isInputFocused: Bool
+    @State private var showMicrophonePermissionAlert = false
+    @State private var showSpeechPermissionAlert = false
+    @State private var showVoiceServiceUnavailableAlert = false
+    @State private var isHoldRecording = false
+    @State private var holdWillCancel = false
+    @State private var holdRecordingDidStart = false
     var embeddedInHome: Bool = false
     var availableCharacters: [CompanionCharacterDTO] = []
     var onSelectCharacter: ((String) -> Void)? = nil
     var onOpenMineTab: (() -> Void)? = nil
 
+    private var isCloudAIEnabled: Bool {
+        AppConfig.isAIDataSharingEnabled
+    }
+
     var body: some View {
-        GeometryReader { geo in
-            let layout = CompanionHeroLayout.conversationMetrics(contentSize: geo.size)
-            VStack(spacing: 0) {
-                heroStage(layout: layout)
-                if usageSnapshot != nil {
-                    CompanionUsageBanner(usage: usageSnapshot)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 4)
+        VStack(spacing: 0) {
+            GeometryReader { geo in
+                let layout = CompanionHeroLayout.conversationMetrics(contentSize: geo.size)
+                VStack(spacing: 0) {
+                    heroStage(layout: layout)
+                        .contentShape(Rectangle())
+                        .onTapGesture { isInputFocused = false }
+                    if usageSnapshot != nil {
+                        CompanionUsageBanner(usage: usageSnapshot)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 4)
+                    }
+                    Divider().opacity(0.15)
+                    companionDialogueStrip
+                        .frame(height: layout.chatZoneHeight)
+                        .contentShape(Rectangle())
+                        .onTapGesture { isInputFocused = false }
                 }
-                Divider().opacity(0.15)
-                companionDialogueStrip
-                    .frame(height: layout.chatZoneHeight)
-                inputBar
             }
-            .frame(width: geo.size.width, height: geo.size.height, alignment: .top)
+            if !isCloudAIEnabled {
+                cloudAIConsentBanner
+            }
+            if let errorText, !errorText.isEmpty {
+                Text(errorText)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+            }
+            inputBar
         }
         .background(Color(.systemGroupedBackground))
         .navigationBarTitleDisplayMode(.inline)
@@ -102,6 +129,7 @@ struct CompanionConversationScreen: View {
         }
         .task { await loadState() }
         .onAppear {
+            speechManager.audioSessionConsumer = .companion
             speechManager.warmUpPermissionsIfNeeded()
             voiceSession.onAssistantReply = { line, emo in
                 handleVoiceAssistantReply(line: line, emotion: emo)
@@ -110,6 +138,51 @@ struct CompanionConversationScreen: View {
                 showLegal = true
             }
             CompanionAnalytics.track(.open, characterId: characterId, sessionId: sessionId)
+            Task { await caps.refresh() }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .microphonePermissionDenied)) { _ in
+            showMicrophonePermissionAlert = true
+            heroEmotion = .alert
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .speechRecognitionPermissionDenied)) { _ in
+            showSpeechPermissionAlert = true
+            heroEmotion = .alert
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .speechServiceUnavailable)) { _ in
+            showVoiceServiceUnavailableAlert = true
+            heroEmotion = .alert
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .voiceAudioSessionBusy)) { _ in
+            errorText = "Микрофон занят другим режимом. Закройте AI-помощник или диктофон."
+            heroEmotion = .alert
+        }
+        .onDisappear {
+            if speechManager.isRecording {
+                speechManager.stopRecording()
+            }
+            speechOutput.stop()
+            voiceSession.disconnect()
+        }
+        .onChange(of: speechManager.livePartialTranscript) { partial in
+            guard speechManager.isRecording || speechManager.isPreparingRecording else { return }
+            if !partial.isEmpty {
+                input = partial
+            }
+        }
+        .alert("Нужен доступ к микрофону", isPresented: $showMicrophonePermissionAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Разрешите микрофон в Настройках iPhone → ALADDIN Family.")
+        }
+        .alert("Нужно распознавание речи", isPresented: $showSpeechPermissionAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Разрешите «Распознавание речи» в Настройках iPhone → ALADDIN Family.")
+        }
+        .alert("Голосовой ввод недоступен", isPresented: $showVoiceServiceUnavailableAlert) {
+            Button("OK", role: .cancel) {}
+        } message: {
+            Text("Проверьте интернет и разрешения микрофона, затем попробуйте снова.")
         }
         .onChange(of: voiceSession.emotion) { newValue in
             applyVoiceSessionEmotion(newValue)
@@ -375,29 +448,100 @@ struct CompanionConversationScreen: View {
         .buttonStyle(.plain)
     }
 
+    private var cloudAIConsentBanner: some View {
+        HStack(spacing: 12) {
+            Text(localizationManager.localized("ai_consent_banner_title"))
+                .font(.caption.weight(.medium))
+                .foregroundStyle(.primary)
+            Spacer(minLength: 8)
+            Button(localizationManager.localized("ai_consent_banner_action")) {
+                navigationManager.navigateTo(.settings)
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundStyle(.purple)
+        }
+        .padding(10)
+        .background(Color.orange.opacity(0.2))
+    }
+
+    private var voiceHintText: String {
+        if speechManager.isPreparingRecording { return "Подключаю микрофон…" }
+        if speechManager.isStoppingRecording { return "Завершаю запись…" }
+        if speechManager.isMicrophoneCoolingDown { return "Подожди секунду и говори снова" }
+        if speechManager.isRecording && isHoldRecording { return "Отпусти для отправки • свайп влево для отмены" }
+        if speechManager.isRecording { return "Нажми ещё раз, чтобы остановить и отправить" }
+        return "Микрофон: нажми (tap) или зажми (hold)"
+    }
+
     private var inputBar: some View {
-        HStack(spacing: 10) {
-            TextField("Сообщение…", text: $input)
-                .textFieldStyle(.roundedBorder)
-            if caps.voiceRealtimeEnabled {
-                Button {
-                    Task { await toggleVoice() }
-                } label: {
+        VStack(alignment: .leading, spacing: 6) {
+            HStack(spacing: 10) {
+                TextField("Сообщение…", text: $input)
+                    .textFieldStyle(.roundedBorder)
+                    .focused($isInputFocused)
+                    .submitLabel(.send)
+                    .onSubmit {
+                        Task { await sendText() }
+                    }
+                if caps.voiceRealtimeEnabled {
                     Image(systemName: voiceMicSymbol)
                         .font(.title2)
                         .foregroundStyle(voiceMicTint)
+                        .frame(width: 36, height: 36)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            guard !isHoldRecording else { return }
+                            Task { await toggleVoice() }
+                        }
+                        .highPriorityGesture(
+                            DragGesture(minimumDistance: 0)
+                                .onChanged { value in
+                                    holdWillCancel = value.translation.width < -72
+                                    guard speechManager.isSpeechInputAvailable, !holdRecordingDidStart else { return }
+                                    holdRecordingDidStart = true
+                                    isHoldRecording = true
+                                    Task { await startHoldVoiceRecording() }
+                                }
+                                .onEnded { value in
+                                    let cancel = holdWillCancel || value.translation.width < -80
+                                    holdRecordingDidStart = false
+                                    isHoldRecording = false
+                                    holdWillCancel = false
+                                    if speechManager.isRecording {
+                                        if cancel {
+                                            speechManager.cancelRecording()
+                                        } else {
+                                            speechManager.stopRecording()
+                                        }
+                                    }
+                                }
+                        )
+                        .accessibilityLabel("Голосовой ввод")
+                        .accessibilityHint("Нажми для старта/стопа, либо удерживай и отпусти для отправки")
+                        .opacity((speechManager.isPreparingRecording || voiceSession.isAwaitingReply) ? 0.5 : 1.0)
+                        .allowsHitTesting(!(speechManager.isPreparingRecording || speechManager.isStoppingRecording || speechManager.isMicrophoneCoolingDown || voiceSession.isAwaitingReply))
                 }
-                .disabled(speechManager.isPreparingRecording || voiceSession.isAwaitingReply)
+                Button {
+                    Task { await sendText() }
+                } label: {
+                    Image(systemName: "paperplane.fill")
+                }
+                .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending)
             }
-            Button {
-                Task { await sendText() }
-            } label: {
-                Image(systemName: "paperplane.fill")
+            if caps.voiceRealtimeEnabled {
+                Text(voiceHintText)
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
             }
-            .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending)
         }
         .padding()
         .background(.bar)
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Готово") { isInputFocused = false }
+            }
+        }
     }
 
     private var voiceMicSymbol: String {
@@ -576,9 +720,16 @@ struct CompanionConversationScreen: View {
     }
 
     private func sendText() async {
+        isInputFocused = false
         let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
+        guard isCloudAIEnabled else {
+            errorText = AIOutboundTextGate.GateError.optInRequired.errorDescription
+            heroEmotion = .alert
+            return
+        }
         input = ""
+        errorText = nil
         messages.append(CompanionChatBubble(text: text, isUser: true))
         isSending = true
         showResumeStream = false
@@ -606,7 +757,12 @@ struct CompanionConversationScreen: View {
             onComplete: { _, meta in
                 finishStreamSuccess(at: heroIdx, meta: meta)
             },
-            onError: { _ in
+            onError: { error in
+                if let gate = error as? AIOutboundTextGate.GateError {
+                    errorText = gate.errorDescription
+                } else {
+                    errorText = error.localizedDescription
+                }
                 handleStreamFailure(at: heroIdx)
             }
         )
@@ -637,15 +793,30 @@ struct CompanionConversationScreen: View {
             onComplete: { _, meta in
                 finishStreamSuccess(at: heroIdx, meta: meta)
             },
-            onError: { _ in
+            onError: { error in
+                if let gate = error as? AIOutboundTextGate.GateError {
+                    errorText = gate.errorDescription
+                } else {
+                    errorText = error.localizedDescription
+                }
                 handleStreamFailure(at: heroIdx)
             }
         )
     }
 
     private func toggleVoice() async {
+        isInputFocused = false
+        guard !speechManager.isPreparingRecording,
+              !speechManager.isStoppingRecording,
+              !speechManager.isMicrophoneCoolingDown,
+              !voiceSession.isAwaitingReply else { return }
         if speechManager.isRecording {
             speechManager.stopRecording()
+            return
+        }
+        guard isCloudAIEnabled else {
+            errorText = AIOutboundTextGate.GateError.optInRequired.errorDescription
+            heroEmotion = .alert
             return
         }
         if voiceSession.isConnected {
@@ -657,9 +828,37 @@ struct CompanionConversationScreen: View {
         guard speechManager.isSpeechInputAvailable else {
             errorText = "Голосовой ввод недоступен. Проверь разрешения микрофона и распознавания речи."
             heroEmotion = .alert
+            showVoiceServiceUnavailableAlert = true
             return
         }
+        errorText = nil
         heroEmotion = .listening
+        input = ""
+        speechManager.startRecording { recognized in
+            Task { await handleVoiceTranscript(recognized) }
+        }
+    }
+
+    private func startHoldVoiceRecording() async {
+        guard isCloudAIEnabled else {
+            errorText = AIOutboundTextGate.GateError.optInRequired.errorDescription
+            heroEmotion = .alert
+            return
+        }
+        guard !speechManager.isRecording,
+              !speechManager.isPreparingRecording,
+              !speechManager.isStoppingRecording,
+              !speechManager.isMicrophoneCoolingDown else { return }
+        guard !voiceSession.isAwaitingReply else { return }
+        guard speechManager.isSpeechInputAvailable else {
+            errorText = "Голосовой ввод недоступен. Проверь разрешения микрофона и распознавания речи."
+            heroEmotion = .alert
+            showVoiceServiceUnavailableAlert = true
+            return
+        }
+        errorText = nil
+        heroEmotion = .listening
+        input = ""
         speechManager.startRecording { recognized in
             Task { await handleVoiceTranscript(recognized) }
         }

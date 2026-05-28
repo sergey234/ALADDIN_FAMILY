@@ -218,8 +218,8 @@ struct SettingsScreen: View {
 
                 settingRow(
                     icon: "brain.head.profile",
-                    title: "Облачный AI-помощник",
-                    subtitle: "Отправка вопросов на сервер ALADDIN (без паролей и карт). Выкл. = только локальные подсказки.",
+                    title: "AI-помощник и 3 героя",
+                    subtitle: "Облачные ответы для AI-помощника и героев. Выкл. = сообщения не отправляются на сервер ALADDIN.",
                     isEnabled: $aiDataSharingEnabled
                 )
 

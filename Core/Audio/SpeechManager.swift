@@ -12,6 +12,8 @@ final class SpeechManager: ObservableObject {
     @Published private(set) var livePartialTranscript: String = ""
     @Published private(set) var usesCloudRecognition = false
     @Published private(set) var audioLevel: Double = 0
+    @Published private(set) var isStoppingRecording = false
+    @Published private(set) var isMicrophoneCoolingDown = false
     @Published var recognizedText: String?
 
     private var recognitionRequest: SFSpeechAudioBufferRecognitionRequest?
@@ -30,6 +32,12 @@ final class SpeechManager: ObservableObject {
     private var maxDurationTimer: Timer?
     private var interruptionObserver: NSObjectProtocol?
     private var lastLevelUIUpdate: CFAbsoluteTime = 0
+    private var lastStartAttemptAt: Date?
+    private let startDebounceSec: TimeInterval = 0.35
+    private let startCooldownSec: TimeInterval = 0.65
+
+    /// Потребитель `AVAudioSession` (на «Мир героев» — `.companion`, иначе `.aiAssistant`).
+    var audioSessionConsumer: VoiceAudioSessionCoordinator.Consumer = .aiAssistant
 
     private let logger = MasterLogger.shared
 
@@ -69,6 +77,20 @@ final class SpeechManager: ObservableObject {
 
     func startRecording(completion: @escaping (String?) -> Void) {
         logger.business("🎤 SpeechManager: Starting speech recognition process")
+
+        if isMicrophoneCoolingDown {
+            logger.warn("🎤 SpeechManager: Start ignored (cooldown)")
+            return
+        }
+        if isPreparingRecording || isStopping || isStoppingRecording {
+            logger.warn("🎤 SpeechManager: Start ignored (busy state)")
+            return
+        }
+        if let last = lastStartAttemptAt, Date().timeIntervalSince(last) < startDebounceSec {
+            logger.warn("🎤 SpeechManager: Start ignored (debounce)")
+            return
+        }
+        lastStartAttemptAt = Date()
 
         guard !isRecording else {
             logger.warn("🎤 SpeechManager: Already recording — ignoring duplicate start")
@@ -133,7 +155,9 @@ final class SpeechManager: ObservableObject {
             self.pendingCompletion = nil
             self.latestPartialTranscript = nil
             self.isStopping = false
-            VoiceAudioSessionCoordinator.shared.release(.aiAssistant)
+            self.isStoppingRecording = false
+            VoiceAudioSessionCoordinator.shared.release(audioSessionConsumer)
+            self.applyStartCooldown()
             HapticFeedback.notification(.warning)
         }
     }
@@ -149,6 +173,7 @@ final class SpeechManager: ObservableObject {
             return
         }
         isStopping = true
+        isStoppingRecording = true
         logger.business("🎤 SpeechManager: Stopping recording (endAudio, no immediate cancel)")
 
         recognitionRequest?.endAudio()
@@ -156,13 +181,15 @@ final class SpeechManager: ObservableObject {
         isRecording = false
         HapticFeedback.impact(.light)
 
-        VoiceAudioSessionCoordinator.shared.release(.aiAssistant)
+        VoiceAudioSessionCoordinator.shared.release(audioSessionConsumer)
         audioLevel = 0
 
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
             guard let self else { return }
             self.deliverPendingCompletionIfNeeded(forcePartial: true)
             self.isStopping = false
+            self.isStoppingRecording = false
+            self.applyStartCooldown()
         }
     }
 
@@ -229,7 +256,7 @@ final class SpeechManager: ObservableObject {
             resetEngineForNewRecordingSession()
             isStopping = false
 
-            guard VoiceAudioSessionCoordinator.shared.acquire(.aiAssistant, profile: .aiLive) else {
+            guard VoiceAudioSessionCoordinator.shared.acquire(audioSessionConsumer, profile: .aiLive) else {
                 logger.warn("🎤 SpeechManager: Audio session busy")
                 isPreparingRecording = false
                 completeOnce(nil, completion: completion)
@@ -274,7 +301,7 @@ final class SpeechManager: ObservableObject {
 
             recognitionRequest = SFSpeechAudioBufferRecognitionRequest()
             guard let recognitionRequest else {
-                VoiceAudioSessionCoordinator.shared.release(.aiAssistant)
+                VoiceAudioSessionCoordinator.shared.release(audioSessionConsumer)
                 completeOnce(nil, completion: completion)
                 return
             }
@@ -325,7 +352,7 @@ final class SpeechManager: ObservableObject {
             logger.error("🎤 SpeechManager: Failed to start recording", error: error)
             isPreparingRecording = false
             finishRecordingSession()
-            VoiceAudioSessionCoordinator.shared.release(.aiAssistant)
+            VoiceAudioSessionCoordinator.shared.release(audioSessionConsumer)
             completeOnce(nil, completion: completion)
         }
     }
@@ -437,7 +464,7 @@ final class SpeechManager: ObservableObject {
             self.usesCloudRecognition = false
             self.audioLevel = 0
             if !self.isStopping {
-                VoiceAudioSessionCoordinator.shared.release(.aiAssistant)
+                VoiceAudioSessionCoordinator.shared.release(audioSessionConsumer)
             }
         }
     }
@@ -460,6 +487,13 @@ final class SpeechManager: ObservableObject {
             queue: .main
         ) { [weak self] notification in
             self?.handleAudioInterruption(notification)
+        }
+    }
+
+    private func applyStartCooldown() {
+        isMicrophoneCoolingDown = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + startCooldownSec) { [weak self] in
+            self?.isMicrophoneCoolingDown = false
         }
     }
 

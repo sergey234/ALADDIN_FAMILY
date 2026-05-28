@@ -199,6 +199,8 @@ if caps.features["voice_realtime"]?.ui["mic_button"] == true { showMic() }
 | **13b** | Текст STT → `CompanionStreamingService` / chat с `personality_preset` из profile | Уже есть в `ai_companion_router` |
 | **13c** | Опционально: озвучка ответа (AVSpeechSynthesizer или TTS API) с тоном preset | TTS по preset |
 | **13d** | WS `CompanionVoiceSession`: слать аудио-чанки (если нужен Grok-realtime) | `ai_voice_ws_router.py`: убрать stub в `audio.stop`, wire STT→companion chat→TTS |
+| **13e** | Гибридный микрофон в Hero chat: tap-to-talk + hold-to-talk | iOS `CompanionConversationScreen`: tap старт/стоп + удержание/отпускание + swipe-cancel |
+| **13f** | Ясный consent-copy в Settings: «AI-помощник и 3 героя» | `SettingsScreen`: тумблер описывает обе поверхности (assistant + companion) |
 
 **Файлы-эталон (Assistant):** `Core/Audio/SpeechManager.swift`, `Screens/06_AIAssistantScreen.swift`, `VoiceAudioSessionCoordinator.swift`.  
 **Файлы Companion:** `CompanionConversationScreen.swift`, `CompanionVoiceSession.swift`, `security/api/routers/ai_voice_ws_router.py` (строки 107–122 — сейчас MVP stub).

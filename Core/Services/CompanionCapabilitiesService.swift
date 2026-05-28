@@ -5,6 +5,7 @@ import Combine
 @MainActor
 final class CompanionCapabilitiesService: ObservableObject {
     static let shared = CompanionCapabilitiesService()
+    static let defaultCompanionCharacters = ["unicorn", "aladdin", "genie"]
 
     @Published private(set) var payload: CompanionCapabilitiesPayload?
     @Published private(set) var isLoading = false
@@ -20,6 +21,13 @@ final class CompanionCapabilitiesService: ObservableObject {
 
     var companionEnabled: Bool {
         featureEnabled("companion")
+    }
+
+    var allowedCharactersFromCapabilities: [String] {
+        guard let list = payload?.features?["companion"]?.ui?.characters, !list.isEmpty else {
+            return Self.defaultCompanionCharacters
+        }
+        return list
     }
 
     func refresh() async {
@@ -39,6 +47,6 @@ final class CompanionCapabilitiesService: ObservableObject {
     }
 
     private func uiFlag(module: String, key: String) -> Bool {
-        payload?.features?[module]?.ui?[key] ?? true
+        payload?.features?[module]?.ui?.flag(key) ?? true
     }
 }

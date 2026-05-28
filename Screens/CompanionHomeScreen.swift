@@ -29,6 +29,7 @@ struct CompanionHomeScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
 
+    @StateObject private var caps = CompanionCapabilitiesService.shared
     @AppStorage("companion_selected_character_id") private var selectedCharacterId: String = "unicorn"
     @AppStorage("companion_active_thread_id") private var activeThreadId: String = ""
     @State private var tab: Tab = .main
@@ -47,7 +48,6 @@ struct CompanionHomeScreen: View {
         .onAppear {
             tab = initialTab
             Task { await loadCharacters() }
-            CompanionAnalytics.track(.open, characterId: selectedCharacterId)
         }
     }
 
@@ -128,7 +128,10 @@ struct CompanionHomeScreen: View {
     }
 
     private func loadCharacters() async {
-        availableCharacters = (try? await CompanionAPIService.shared.fetchCharacters()) ?? []
+        await caps.refresh()
+        let fetched = (try? await CompanionAPIService.shared.fetchCharacters()) ?? []
+        let allowed = Set(caps.allowedCharactersFromCapabilities)
+        availableCharacters = fetched.filter { allowed.contains($0.id) }
         if !availableCharacters.contains(where: { $0.id == selectedCharacterId }),
            let first = availableCharacters.first {
             selectedCharacterId = first.id

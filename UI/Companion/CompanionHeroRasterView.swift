@@ -13,26 +13,52 @@ struct CompanionHeroRasterView: View {
     )
 
     @State private var pulse = false
+    @Environment(\.scenePhase) private var scenePhase
+    @State private var isVisible = false
 
     private var unit: CGFloat { CompanionHeroLayout.scaleUnit(for: min(stageSize.width, stageSize.height)) }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1 / 30)) { timeline in
+        TimelineView(.animation(minimumInterval: animationInterval)) { timeline in
             let t = timeline.date.timeIntervalSinceReferenceDate
             let lipActive = emotion == .speaking || lipSyncPhase > 0
             let mouthOpen = CompanionHeroLipSync.proceduralMouthOpen(isActive: lipActive, time: t)
             Group {
-                switch stageStyle {
-                case .hubThumbnail:
-                    hubStage(t: t, mouthOpen: mouthOpen)
-                case .conversationFullBody:
-                    fullBodyStage(t: t, mouthOpen: mouthOpen)
+                if shouldAnimate {
+                    switch stageStyle {
+                    case .hubThumbnail:
+                        hubStage(t: t, mouthOpen: mouthOpen)
+                    case .conversationFullBody:
+                        fullBodyStage(t: t, mouthOpen: mouthOpen)
+                    }
+                } else {
+                    switch stageStyle {
+                    case .hubThumbnail:
+                        hubStage(t: 0, mouthOpen: 0)
+                    case .conversationFullBody:
+                        fullBodyStage(t: 0, mouthOpen: 0)
+                    }
                 }
             }
             .frame(width: stageSize.width, height: stageSize.height)
         }
-        .onAppear { pulse = true }
+        .onAppear {
+            pulse = true
+            isVisible = true
+        }
+        .onDisappear { isVisible = false }
         .onChange(of: emotion) { _ in pulse.toggle() }
+        .onChange(of: scenePhase) { phase in
+            isVisible = (phase == .active)
+        }
+    }
+
+    private var shouldAnimate: Bool {
+        isVisible && scenePhase == .active
+    }
+
+    private var animationInterval: TimeInterval {
+        stageStyle == .hubThumbnail ? (1 / 15) : (1 / 30)
     }
 
     @ViewBuilder

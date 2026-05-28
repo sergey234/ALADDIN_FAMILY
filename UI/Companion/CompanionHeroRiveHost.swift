@@ -3,6 +3,7 @@ import UIKit
 
 /// P1-08 / HERO-3-08 — хост: bundled `.riv` + RiveRuntime (если подключён).
 enum CompanionHeroRiveHost {
+    private static let masterImageCache = NSCache<NSString, UIImage>()
     /// Placeholder `.riv` из репо ~15 KB; production export обычно &gt; 25 KB.
     static let productionRivMinBytes: Int = 25_000
 
@@ -57,11 +58,19 @@ enum CompanionHeroRiveHost {
 
     static func bundledMasterUIImage(characterId: String) -> UIImage? {
         let name = "\(rivBaseName(characterId: characterId))_master"
+        let cacheKey = NSString(string: name)
+        if let cached = masterImageCache.object(forKey: cacheKey) {
+            return cached
+        }
         guard let url = Bundle.main.url(forResource: name, withExtension: "png", subdirectory: "Companion")
             ?? Bundle.main.url(forResource: name, withExtension: "png") else {
             return nil
         }
-        return UIImage(contentsOfFile: url.path)
+        guard let image = UIImage(contentsOfFile: url.path) else {
+            return nil
+        }
+        masterImageCache.setObject(image, forKey: cacheKey)
+        return image
     }
 
     #if canImport(RiveRuntime)

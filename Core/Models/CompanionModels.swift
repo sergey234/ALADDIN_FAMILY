@@ -196,7 +196,84 @@ struct CompanionCapabilitiesPayload: Codable {
 
 struct CompanionFeatureGate: Codable {
     let enabled: Bool?
-    let ui: [String: Bool]?
+    let ui: CompanionFeatureUI?
+}
+
+struct CompanionFeatureUI: Codable {
+    let flags: [String: Bool]
+    let characters: [String]?
+
+    init(flags: [String: Bool] = [:], characters: [String]? = nil) {
+        self.flags = flags
+        self.characters = characters
+    }
+
+    func flag(_ key: String) -> Bool? {
+        flags[key]
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: DynamicCodingKey.self)
+        var parsedFlags: [String: Bool] = [:]
+        var parsedCharacters: [String]?
+
+        for key in container.allKeys {
+            if key.stringValue == "characters" {
+                if let list = try? container.decode([String].self, forKey: key) {
+                    parsedCharacters = list
+                } else if (try? container.decodeNil(forKey: key)) == true {
+                    parsedCharacters = nil
+                } else {
+                    #if DEBUG
+                    print("⚠️ CompanionFeatureUI: unexpected `characters` type")
+                    #endif
+                }
+                continue
+            }
+
+            if let value = try? container.decode(Bool.self, forKey: key) {
+                parsedFlags[key.stringValue] = value
+            } else if (try? container.decodeNil(forKey: key)) == true {
+                continue
+            } else {
+                #if DEBUG
+                print("⚠️ CompanionFeatureUI: unsupported ui key `\(key.stringValue)`")
+                #endif
+            }
+        }
+
+        flags = parsedFlags
+        characters = parsedCharacters
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: DynamicCodingKey.self)
+        for (key, value) in flags {
+            try container.encode(value, forKey: DynamicCodingKey(key))
+        }
+        if let characters {
+            try container.encode(characters, forKey: DynamicCodingKey("characters"))
+        }
+    }
+}
+
+private struct DynamicCodingKey: CodingKey {
+    var stringValue: String
+    var intValue: Int?
+
+    init(_ string: String) {
+        self.stringValue = string
+        self.intValue = nil
+    }
+
+    init?(stringValue: String) {
+        self.init(stringValue)
+    }
+
+    init?(intValue: Int) {
+        self.stringValue = "\(intValue)"
+        self.intValue = intValue
+    }
 }
 
 struct CompanionLimits: Codable {

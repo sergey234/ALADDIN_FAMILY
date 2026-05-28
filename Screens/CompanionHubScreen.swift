@@ -180,7 +180,9 @@ struct CompanionHubScreen: View {
             async let chars = CompanionAPIService.shared.fetchCharacters()
             async let hist = CompanionAPIService.shared.fetchThreads()
             async let state = CompanionAPIService.shared.fetchState(characterId: selectedCharacterId)
-            characters = try await chars
+            let fetchedCharacters = try await chars
+            let allowed = Set(caps.allowedCharactersFromCapabilities)
+            characters = fetchedCharacters.filter { allowed.contains($0.id) }
             threads = (try? await hist) ?? []
             if let st = try? await state {
                 trustScore = st.trustScore
