@@ -14,7 +14,7 @@ struct CompanionHeroRasterView: View {
 
     @State private var pulse = false
 
-    private var unit: CGFloat { CompanionHeroLayout.scaleUnit(for: stageSize.shortSide) }
+    private var unit: CGFloat { CompanionHeroLayout.scaleUnit(for: min(stageSize.width, stageSize.height)) }
 
     var body: some View {
         TimelineView(.animation(minimumInterval: 1 / 30)) { timeline in
