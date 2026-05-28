@@ -1,14 +1,16 @@
 # Companion — план на завтра (2026-05-29)
 
 **Handoff:** [COMPANION_ML_HANDOFF_2026-05-28.md](./COMPANION_ML_HANDOFF_2026-05-28.md)  
-**Трекер:** [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) — **66/102**  
-**Rive:** [COMPANION_RIVE_CONNECT_NODE_MCP.md](./COMPANION_RIVE_CONNECT_NODE_MCP.md)
+**Трекер:** [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) — **66/102** · iOS polish **10/12**  
+**Rive:** [COMPANION_RIVE_CONNECT_NODE_MCP.md](./COMPANION_RIVE_CONNECT_NODE_MCP.md)  
+**Build:** **213** в TF · следующий **214** (STT + Child Rewards)
 
 ---
 
 ## Цель дня
 
-Закрыть оставшийся хвост **HERO-3-07**: `aladdin.riv` + `genie.riv` (unicorn уже >25 KB), и продвинуть **11b** на iPhone.
+1. **Утро:** закоммитить STT + Child Rewards → bump **214** → TestFlight.  
+2. **День:** **HERO-3-07** `aladdin.riv` + `genie.riv` и **11b** STT/TTS на iPhone (build **214+**).
 
 ---
 

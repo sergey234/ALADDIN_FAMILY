@@ -46,6 +46,7 @@ struct CompanionConversationScreen: View {
     @State private var isHoldRecording = false
     @State private var holdWillCancel = false
     @State private var holdRecordingDidStart = false
+    @State private var holdRecordingBeganAt: Date?
     var embeddedInHome: Bool = false
     var availableCharacters: [CompanionCharacterDTO] = []
     var onSelectCharacter: ((String) -> Void)? = nil
@@ -470,7 +471,7 @@ struct CompanionConversationScreen: View {
         if speechManager.isPreparingRecording { return "Подключаю микрофон…" }
         if speechManager.isStoppingRecording { return "Завершаю запись…" }
         if speechManager.isMicrophoneCoolingDown { return "Подожди секунду и говори снова" }
-        if speechManager.isRecording && isHoldRecording { return "Отпусти для отправки • свайп влево для отмены" }
+        if speechManager.isRecording && isHoldRecording { return "Держи 1–2 сек, отпусти — герой ответит" }
         if speechManager.isRecording { return "Нажми ещё раз, чтобы остановить и отправить" }
         return "Микрофон: нажми (tap) или зажми (hold)"
     }
@@ -501,6 +502,7 @@ struct CompanionConversationScreen: View {
                                     holdWillCancel = value.translation.width < -72
                                     guard speechManager.isSpeechInputAvailable, !holdRecordingDidStart else { return }
                                     holdRecordingDidStart = true
+                                    holdRecordingBeganAt = Date()
                                     isHoldRecording = true
                                     Task { await startHoldVoiceRecording() }
                                 }
@@ -509,9 +511,15 @@ struct CompanionConversationScreen: View {
                                     holdRecordingDidStart = false
                                     isHoldRecording = false
                                     holdWillCancel = false
+                                    let heldSec = Date().timeIntervalSince(holdRecordingBeganAt ?? Date())
+                                    holdRecordingBeganAt = nil
                                     if speechManager.isRecording {
                                         if cancel {
                                             speechManager.cancelRecording()
+                                        } else if heldSec < 0.55 {
+                                            speechManager.cancelRecording()
+                                            errorText = "Подержи микрофон чуть дольше (около секунды) и отпусти."
+                                            heroEmotion = .alert
                                         } else {
                                             speechManager.stopRecording()
                                         }
@@ -869,7 +877,7 @@ struct CompanionConversationScreen: View {
     private func handleVoiceTranscript(_ recognized: String?) async {
         guard let text = recognized?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else {
             heroEmotion = .alert
-            errorText = "Не удалось распознать речь. Попробуй ещё раз."
+            errorText = "Не удалось распознать речь. Зажми микрофон на 1–2 сек, говори чётко. Проверь: Настройки → Siri и Диктовка (русский) и доступ в интернет."
             return
         }
         messages.append(CompanionChatBubble(text: text, isUser: true))

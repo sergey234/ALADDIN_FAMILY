@@ -13,9 +13,9 @@
 |---|---|
 | **Продукт** | AI-компаньон Kids: 3 героя, голос, 13 эмоций + lip-sync, 2D Rive, сцена 56% |
 | **Репо iOS** | `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS` |
-| **Build** | **210** (`AppConfig.buildNumber`) |
-| **Прогресс** | **66/102** · HERO-3: **24/26** (открыты **07**, **11**) |
-| **Критический путь** | **07** production `.riv` ×3 → **11c** → **GATE-EMO** (параллельно **11b**) |
+| **Build** | **213** в TestFlight (`62c4a35f`); **214** — STT + Child Rewards (локально) |
+| **Прогресс** | **66/102** · HERO-3: **24/26** · iOS polish **10/12** (вне 102) |
+| **Критический путь** | **214** (STT QA) → **07** `aladdin`+`genie` `.riv` → **11b** → **11c** → **GATE-EMO** |
 | **Figma** | `vwKcGPUUEZjgayEHNn0BJM` — **36/36** frames ✅ · PO lock genie = OB_03 ✅ |
 | **Rive на Mac** | Editor ✅ · Node v26 ✅ · RiveMCP 1.3.6 ✅ · `unicorn.riv` обновлён (158,578 bytes) |
 
@@ -59,6 +59,10 @@ CompanionHeroRiveHost           — 13 triggerInput + setInput mouth_open
 - [x] **PNG bridge** — `CompanionHeroRasterView`, masters в `Resources/Companion/`
 - [x] Build **210**, TTS на текст, Hub Rive-превью
 - [x] **11a** pytest 46
+- [x] Build **213**: capabilities decode (`CompanionFeatureUI`), API caches, coalescing `/capabilities` (`62c4a35f`)
+- [x] **P1-13e/13f**: hybrid mic + Settings «AI-помощник и 3 героя» (`e5e37cb7`)
+- [x] **UX-01…05** — `CompanionHomeScreen` 3 вкладки, embedded Hub ([UNIFIED_HOME](./COMPANION_UNIFIED_HOME_UX.md))
+- [~] **13g** STT device + **iOS-POL-12** Child Rewards card — не в TF (нужен **214**)
 
 ### Rive / инфра
 - [x] Доки: [5 шагов Editor](./COMPANION_RIVE_EDITOR_5_STEPS.md), animator brief/supplement, export checklist

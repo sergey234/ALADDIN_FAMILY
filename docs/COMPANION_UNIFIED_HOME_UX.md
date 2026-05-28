@@ -112,4 +112,4 @@ flowchart TB
 
 ---
 
-*При закрытии UX-01…05 — обновить [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md).*
+*UX-01…05 закрыты 2026-05-28 — зафиксировано в [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) § «Сессия 2026-05-28…29».*

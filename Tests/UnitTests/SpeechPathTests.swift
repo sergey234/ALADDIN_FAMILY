@@ -40,6 +40,13 @@ final class SpeechPathTests: XCTestCase {
         XCTAssertFalse(SpeechRecognitionErrorClassifier.isServiceUnavailable(err))
     }
 
+    func testRetryPromptErrorClassification() {
+        let retry = NSError(domain: "kAFAssistantErrorDomain", code: 203)
+        XCTAssertTrue(SpeechRecognitionErrorClassifier.isRetryPrompt(retry))
+        let unsuccessful = NSError(domain: "EARErrorDomain", code: 3)
+        XCTAssertTrue(SpeechRecognitionErrorClassifier.isRetryPrompt(unsuccessful))
+    }
+
     func testServiceUnavailableClassification() {
         let err = NSError(domain: "SiriCoreSiriConnectionErrorDomain", code: 1)
         XCTAssertTrue(SpeechRecognitionErrorClassifier.isServiceUnavailable(err))

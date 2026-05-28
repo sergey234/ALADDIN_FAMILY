@@ -35,6 +35,17 @@ final class SpeechManager: ObservableObject {
     private var lastStartAttemptAt: Date?
     private let startDebounceSec: TimeInterval = 0.35
     private let startCooldownSec: TimeInterval = 0.65
+    private var recordingStartedAt: Date?
+    private var finalizeAttempt = 0
+
+    /// Cloud STT on device often needs >0.6s after `endAudio` for a final result.
+    private var finalizeDelaySec: TimeInterval {
+        #if targetEnvironment(simulator)
+        return 0.65
+        #else
+        return 1.35
+        #endif
+    }
 
     /// Потребитель `AVAudioSession` (на «Мир героев» — `.companion`, иначе `.aiAssistant`).
     var audioSessionConsumer: VoiceAudioSessionCoordinator.Consumer = .aiAssistant
@@ -180,17 +191,41 @@ final class SpeechManager: ObservableObject {
         teardownAudioEngine()
         isRecording = false
         HapticFeedback.impact(.light)
-
-        VoiceAudioSessionCoordinator.shared.release(audioSessionConsumer)
         audioLevel = 0
+        finalizeAttempt = 0
+        scheduleFinalizePass()
+    }
 
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) { [weak self] in
+    private func scheduleFinalizePass() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + finalizeDelaySec) { [weak self] in
             guard let self else { return }
+            let partial = self.latestPartialTranscript?.trimmingCharacters(in: .whitespacesAndNewlines)
+            if partial?.isEmpty == false {
+                self.deliverPendingCompletionIfNeeded(forcePartial: true)
+                self.finishStopUIState()
+                return
+            }
+            #if !targetEnvironment(simulator)
+            if self.finalizeAttempt == 0 {
+                self.finalizeAttempt = 1
+                self.logger.business("🎤 SpeechManager: Waiting extra beat for cloud final transcript")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.85) { [weak self] in
+                    guard let self else { return }
+                    self.deliverPendingCompletionIfNeeded(forcePartial: true)
+                    self.finishStopUIState()
+                }
+                return
+            }
+            #endif
             self.deliverPendingCompletionIfNeeded(forcePartial: true)
-            self.isStopping = false
-            self.isStoppingRecording = false
-            self.applyStartCooldown()
+            self.finishStopUIState()
         }
+    }
+
+    private func finishStopUIState() {
+        isStopping = false
+        isStoppingRecording = false
+        applyStartCooldown()
     }
 
     // MARK: - Private
@@ -236,6 +271,8 @@ final class SpeechManager: ObservableObject {
         completionDelivered = true
         pendingCompletion = nil
         clearCloudFallbackFlags()
+        recordingStartedAt = nil
+        VoiceAudioSessionCoordinator.shared.release(audioSessionConsumer)
         DispatchQueue.main.async {
             self.isPreparingRecording = false
             completion(text)
@@ -344,6 +381,7 @@ final class SpeechManager: ObservableObject {
             isPreparingRecording = false
             isRecording = true
             recordingSessionStarted = true
+            recordingStartedAt = Date()
             startMaxDurationTimer()
             HapticFeedback.impact(.medium)
             logger.business("🎤 SpeechManager: Recording started")
@@ -381,6 +419,14 @@ final class SpeechManager: ObservableObject {
                         self.finishRecordingSession()
                         let partial = self.latestPartialTranscript ?? result?.bestTranscription.formattedString
                         self.completeOnce(partial?.isEmpty == false ? partial : nil, completion: completion)
+                        return
+                    }
+                    if SpeechRecognitionErrorClassifier.isRetryPrompt(error),
+                       self.latestPartialTranscript == nil,
+                       !self.didAttemptCloudFallback {
+                        self.logger.warn("🎤 SpeechManager: Siri Retry — switching to cloud path")
+                        self.finishRecordingSession()
+                        self.retryWithCloudRecognition(previousPartial: nil, completion: completion)
                         return
                     }
                     if SpeechRecognitionErrorClassifier.isOnDeviceModelMissing(error),

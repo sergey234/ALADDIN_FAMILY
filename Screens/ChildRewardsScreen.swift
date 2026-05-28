@@ -191,6 +191,9 @@ struct ChildRewardsScreen: View {
                         
                         // Группа 2: Основные карточки
                         Group {
+                            if !isCurrentUserParent() {
+                                companionWorldHeroCard
+                            }
                             // Баланс единорогов
                             balanceCard
                             
@@ -648,6 +651,72 @@ struct ChildRewardsScreen: View {
         )
         .padding(.horizontal, Spacing.screenPadding)
     }
+
+    /// Крупная карточка входа в «Мир героев» (как баланс, на первом месте у ребёнка).
+    private var companionWorldHeroCard: some View {
+        Button(action: {
+            HapticFeedback.impact(.medium)
+            navigationManager.navigateTo(.companionHome)
+        }) {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                HStack {
+                    Text("✨")
+                        .font(.system(size: 60))
+                    Spacer()
+                    Text("Голос и чат")
+                        .font(.captionSmall.weight(.semibold))
+                        .foregroundColor(Color(hex: "6366F1"))
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 5)
+                        .background(Color(hex: "6366F1").opacity(0.18))
+                        .clipShape(Capsule())
+                }
+
+                Text("Мир героев")
+                    .font(.system(size: 32, weight: .bold))
+                    .foregroundColor(.textPrimary)
+
+                Text("Зажми микрофон — скажи герою вслух. Единорог, Аладдин и Джин.")
+                    .font(.body)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+
+                Rectangle()
+                    .fill(Color.textSecondary.opacity(0.2))
+                    .frame(height: 1)
+                    .padding(.vertical, Spacing.xs)
+
+                HStack(spacing: Spacing.m) {
+                    Label("🦄 Единорог", systemImage: "sparkles")
+                    Label("🧞 Джин", systemImage: "wand.and.stars")
+                }
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(Spacing.l)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.large)
+                    .fill(
+                        LinearGradient(
+                            gradient: Gradient(colors: [
+                                Color(hex: "6366F1").opacity(0.18),
+                                Color(hex: "A855F7").opacity(0.22)
+                            ]),
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.large)
+                            .stroke(Color(hex: "6366F1").opacity(0.45), lineWidth: 2)
+                    )
+            )
+        }
+        .buttonStyle(PressScaleButtonStyle())
+        .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityIdentifier("child_rewards_companion_world_card")
+    }
     
     // MARK: - Goal Progress Card
     
@@ -766,16 +835,6 @@ struct ChildRewardsScreen: View {
                     destination: NavigationManager.ALADDINScreen.unicornPet
                 )
 
-                // Карточка: 💬 Герой-компаньон (Kids only)
-                gameCardButton(
-                    icon: "💬",
-                    title: "Мир героев",
-                    status: "Голос и чат",
-                    metric: "Единорог · Аладдин",
-                    color: Color(hex: "6366F1"),
-                    destination: NavigationManager.ALADDINScreen.companionHome
-                )
-                
                 // Карточка 3: 🕵️ Я защитник
                 gameCardButton(
                     icon: "🕵️",

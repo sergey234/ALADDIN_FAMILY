@@ -1,7 +1,7 @@
 # 🧞 Companion — СТАРТ ДЛЯ СЛЕДУЮЩЕЙ ML-СИСТЕМЫ
 
 > **Открой этот файл первым.** Здесь — что уже сделано, что делать дальше, и полный каталог документов и кода.  
-> **Дата:** 2026-05-28 · **Handoff №3** — см. [COMPANION_ML_HANDOFF_2026-05-28.md](./COMPANION_ML_HANDOFF_2026-05-28.md) · [Rive connect](./COMPANION_RIVE_CONNECT_NODE_MCP.md)
+> **Дата:** 2026-05-29 · **Handoff №4** — [COMPANION_ML_HANDOFF_2026-05-29.md](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Без Rive:** [COMPANION_TASKS_WITHOUT_RIVE.md](./COMPANION_TASKS_WITHOUT_RIVE.md) · [Rive connect](./COMPANION_RIVE_CONNECT_NODE_MCP.md)
 
 ---
 
@@ -13,30 +13,36 @@
 | **Визуал** | **2D Rive** (не 3D), сцена **56%** экрана, субтитр снизу — как Grok Companions |
 | **Репозиторий** | `git@github.com:sergey234/ALADDIN_FAMILY.git` · ветка **`master`** |
 | **Рабочая папка iOS** | `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS` |
-| **Build iOS** | **210** (`AppConfig.buildNumber`) |
-| **Прогресс** | **67 / 102 (66%)** · HERO-3: **26 / 26** ✅ |
+| **Build iOS** | **213** TestFlight · **214** локально (STT + Child Rewards) |
+| **Прогресс** | **66 / 102 (65%)** · HERO-3: **24 / 26** |
 | **Главный TODO** | [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) — ставь `[x]` только после реальной проверки |
+| **Rive** | **Блокер** — в конце; сейчас → [TASKS_WITHOUT_RIVE](./COMPANION_TASKS_WITHOUT_RIVE.md) |
 
-### Что делать дальше (критический путь)
+### Что делать дальше (две параллельные дорожки)
 
 ```mermaid
-flowchart TD
-  A[02b Figma: 3 страницы x 12 frames = 36] --> B[07 Rive export .riv x3]
-  B --> C[11c MIMIC-Q на device]
-  D[11b QA на build 210 placeholder] --> E[GATE-P0]
-  B --> F[GATE-EMO]
-  C --> F
+flowchart LR
+  subgraph now["Сейчас без Rive"]
+    A[214 STT + UX]
+    B[P1+ BE/iOS]
+    C[GATE-DIALOG]
+  end
+  subgraph later["После подключения Rive"]
+    D[07 export .riv]
+    E[11c MIMIC]
+    F[GATE-EMO]
+  end
+  now --> later
 ```
 
-| Шаг | ID | Кто | Действие |
-|-----|-----|-----|----------|
-| **1** | ~~**HERO-3-02b**~~ | — | ✅ 36 frames Figma |
-| **2** | **HERO-3-07** | Аниматор | Rive Editor → [5 steps](./COMPANION_RIVE_EDITOR_5_STEPS.md) · [CONNECT](./COMPANION_RIVE_CONNECT_NODE_MCP.md) |
-| **3** | **HERO-3-11b** | QA / владелец | Device: D10, MOTION-Q, SPEECH-Q — [чеклист](./COMPANION_HERO3_11_QA_CHECKLIST.md) |
-| **4** | **HERO-3-11c** | QA | Повтор MIMIC-Q после production `.riv` |
-| **5** | **GATE-P0 / GATE-EMO** | Приёмка | После 11b + 07 |
+| Дорожка | ID | Действие |
+|---------|-----|----------|
+| **Сейчас** | iOS-POL-11/12, P1-13g | Build **214**, STT на iPhone |
+| **Сейчас** | UX-06…09, P1-12…22 | [Список без Rive](./COMPANION_TASKS_WITHOUT_RIVE.md) |
+| **Потом** | **HERO-3-07** | Rive Editor → [5 steps](./COMPANION_RIVE_EDITOR_5_STEPS.md) |
+| **Потом** | **11b/11c**, **GATE-EMO** | MOTION/MIMIC/D10 + приёмка |
 
-**iOS-код под `.riv` уже готов** — после **07** меняются только файлы в бандле, не архитектура.
+**iOS-код под `.riv` уже готов** — после **07** меняются только файлы в бандле.
 
 ---
 

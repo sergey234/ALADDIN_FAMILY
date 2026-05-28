@@ -13,12 +13,13 @@
 | **P1** — спринт 2 (фичи) | **11** | **11 готово** |
 | **CX** — универсальный компаньон (жизнь, возрасты, эмоции) | **6** | **6 готово** (P1-25…30) |
 | **P1+** — production / Grok parity / App Store | **12** | 0 готово |
-| **HERO-3** — 3 героя Figma→Rive + **речь §2.1** + **движение §2.2** + QA/ADR | **26** | 22 готово — [трекер](./COMPANION_PROGRESS_TRACKER.md) |
+| **HERO-3** — 3 героя Figma→Rive + **речь §2.1** + **движение §2.2** + QA/ADR | **26** | 24 готово — [трекер](./COMPANION_PROGRESS_TRACKER.md) |
 | **P2** — фаза B | **17** | 1 готово (P2-11) |
 | **P3** — фаза C | **6** | 0 готово |
 | **Adult** (только backend) | **3** | 0 готово |
 | **OPS** — деплой, verify | **4** | **4 готово** |
-| **Итого к реализации** | **102** | **63 / 102** (62%) — см. [трекер](./COMPANION_PROGRESS_TRACKER.md) |
+| **Итого к реализации** | **102** | **66 / 102** (65%) — см. [трекер](./COMPANION_PROGRESS_TRACKER.md) |
+| **iOS polish** (вне 102) | **12** | **11 готово** (POL-12 код ✅) · STT device 🟡 → commit **214** |
 | Отменено (X) | **7** | не в roadmap (см. таблицу X) |
 | **Матрица Grok** ([GROK_FULL_FEATURE_MATRIX.md](./GROK_FULL_FEATURE_MATRIX.md)) | **102** | трассировка · **≠** 59 спринтовых задач |
 
@@ -28,7 +29,8 @@
 
 **Продуктовый принцип:** компаньон по умолчанию — **друг на все темы жизни**; безопасность ALADDIN — **суперсила по запросу**, не клетка (см. **§ CX** и handoff §19–20).
 
-**Следующая (критический путь):** **HERO-3** (3 героя Figma→Rive→BE→iOS) → device QA D01–D10 · P1-10 · P1-12  
+**Следующая (без Rive):** [COMPANION_TASKS_WITHOUT_RIVE.md](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Handoff ML:** [COMPANION_ML_HANDOFF_2026-05-29.md](./COMPANION_ML_HANDOFF_2026-05-29.md)  
+**Rive (в конце):** **HERO-3-07** → 11c → GATE-EMO  
 
 **План 3 героев:** [COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md](./COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md)
 
@@ -193,14 +195,15 @@ if caps.features["voice_realtime"]?.ui["mic_button"] == true { showMic() }
 
 > **Решение продукта:** микрофон в Assistant уже рабочий (on-device STT). Companion сначала получает **тот же UX**, затем серверный WS без stub.
 
-| Шаг | iOS (перенять) | Backend |
-|-----|----------------|---------|
-| **13a** | `SpeechManager` + UX из `06_AIAssistantScreen.swift`: разрешения, hold/tap, статусы, алерты, `warmUpPermissionsIfNeeded` | — |
-| **13b** | Текст STT → `CompanionStreamingService` / chat с `personality_preset` из profile | Уже есть в `ai_companion_router` |
-| **13c** | Опционально: озвучка ответа (AVSpeechSynthesizer или TTS API) с тоном preset | TTS по preset |
-| **13d** | WS `CompanionVoiceSession`: слать аудио-чанки (если нужен Grok-realtime) | `ai_voice_ws_router.py`: убрать stub в `audio.stop`, wire STT→companion chat→TTS |
-| **13e** | Гибридный микрофон в Hero chat: tap-to-talk + hold-to-talk | iOS `CompanionConversationScreen`: tap старт/стоп + удержание/отпускание + swipe-cancel |
-| **13f** | Ясный consent-copy в Settings: «AI-помощник и 3 героя» | `SettingsScreen`: тумблер описывает обе поверхности (assistant + companion) |
+| Шаг | iOS (перенять) | Backend / DoD | Статус |
+|-----|----------------|---------------|--------|
+| **13a** | `SpeechManager` + UX из `06_AIAssistantScreen.swift`: разрешения, hold/tap, статусы, алерты, `warmUpPermissionsIfNeeded` | — | готово |
+| **13b** | Текст STT → `CompanionStreamingService` / chat с `personality_preset` из profile | `ai_companion_router` | готово |
+| **13c** | Озвучка ответа (TTS) с тоном preset | TTS по preset | готово (build 210) |
+| **13d** | WS `CompanionVoiceSession`: аудио-чанки (Grok-realtime) | `ai_voice_ws_router.py`: STT→chat→TTS без stub | ожидает |
+| **13e** | Гибридный микрофон: tap + hold + swipe-cancel | `CompanionConversationScreen` | **готово** `e5e37cb7` |
+| **13f** | Settings: «AI-помощник и 3 героя» | `05_SettingsScreen` | **готово** `e5e37cb7` |
+| **13g** | STT на реальном iPhone (ru-RU, finalize, Retry, min hold) | `SpeechManager` + classifier | **в работе** → **214** |
 
 **Файлы-эталон (Assistant):** `Core/Audio/SpeechManager.swift`, `Screens/06_AIAssistantScreen.swift`, `VoiceAudioSessionCoordinator.swift`.  
 **Файлы Companion:** `CompanionConversationScreen.swift`, `CompanionVoiceSession.swift`, `security/api/routers/ai_voice_ws_router.py` (строки 107–122 — сейчас MVP stub).
