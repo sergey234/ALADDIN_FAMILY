@@ -188,6 +188,34 @@ struct CompanionChatRequest: Codable {
     }
 }
 
+struct CompanionTTSResponse: Codable {
+    let audioBase64: String
+    let contentType: String
+    let provider: String
+    let cached: Bool
+    let durationSeconds: Double?
+
+    enum CodingKeys: String, CodingKey {
+        case audioBase64 = "audio_base64"
+        case contentType = "content_type"
+        case provider
+        case cached
+        case durationSeconds = "duration_seconds"
+    }
+}
+
+struct CompanionTTSRequestBody: Codable {
+    let text: String
+    let characterId: String
+    let locale: String
+
+    enum CodingKeys: String, CodingKey {
+        case text
+        case characterId = "character_id"
+        case locale
+    }
+}
+
 struct CompanionChatResponse: Codable {
     let response: String
     let characterId: String
@@ -207,6 +235,7 @@ struct CompanionChatResponse: Codable {
     let trustStreakDays: Int?
     let cogsAlert: Bool?
     let chatMode: String?
+    let toolsUsed: [String]?
 
     enum CodingKeys: String, CodingKey {
         case response
@@ -227,6 +256,7 @@ struct CompanionChatResponse: Codable {
         case trustStreakDays = "trust_streak_days"
         case cogsAlert = "cogs_alert"
         case chatMode = "chat_mode"
+        case toolsUsed = "tools_used"
     }
 }
 
@@ -250,6 +280,16 @@ struct CompanionWorkspaceDTO: Codable, Identifiable, Equatable {
 
 struct CompanionWorkspacesResponse: Codable {
     let workspaces: [CompanionWorkspaceDTO]
+}
+
+struct CompanionWorkspaceCreateBody: Encodable {
+    let title: String
+    let characterId: String
+
+    enum CodingKeys: String, CodingKey {
+        case title
+        case characterId = "character_id"
+    }
 }
 
 struct CompanionCogsResponse: Codable {

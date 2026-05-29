@@ -1,22 +1,32 @@
 # Handoff для следующей ML-системы — Companion «доделать до 100%»
 
-**Дата:** 2026-05-29  
+**Дата:** 2026-05-29 (после деплоя Sprint 4–5)  
 **Проект:** ALADDIN Family iOS + backend `ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
-**Цель:** довести **90 из 102** задач до рабочего продакшена **без Rive** и **без 12 отложённых QA/gates**.
+**Цель:** довести **90 из 102** задач до рабочего продакшена **без Rive** и **без 12 отложённых QA/gates**.  
+**Runbook Этап 2–3:** [COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md) ← **главный список «что делать дальше»**
 
 ---
 
-## 0. С чего начать (5 минут)
+## 0. С чего начать (следующая ML-система)
 
-1. Открой **[COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md)** — единый источник цифр **90/102**.  
-2. Открой **[COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md)** — пошаговый план этапов 1–5.  
-3. Открой **[COMPANION_CODE_TODO_TRACKER.md](./COMPANION_CODE_TODO_TRACKER.md)** — 49 CODE задач (все `[x]` в коде).  
-4. Проверь git: `git status` — много файлов Sprint 4–5 **ещё не в push**.  
-5. Запусти тесты:
+**Рабочая папка (единственная):**  
+`/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
+**Git:** `git@github.com:sergey234/ALADDIN_FAMILY.git`, ветка **`master`**
+
+| Шаг | Действие |
+|-----|----------|
+| 1 | [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) — цифры **90/102** |
+| 2 | **[COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md)** — Sprint 4 и 5 по пунктам |
+| 3 | [COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md) — этапы 1–5 и чеклисты |
+| 4 | [ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md](../ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md) — SSH, VPS |
+| 5 | Verify прод (должен быть exit 0): `./scripts/verify_companion_p0_prod.sh https://aladdin-ai.ru` |
+| 6 | **Не начинать** Rive 07, GATE-DIALOG без запроса PO |
 
 ```bash
-cd ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 python3 -m pytest Tests/test_companion*.py Tests/test_adult_companion_policy.py -q
+./scripts/deploy_companion_p0.sh root 149.154.65.180 ~/.ssh/aladdin_server
+./scripts/verify_companion_p0_prod.sh https://aladdin-ai.ru
 ```
 
 ---
@@ -39,20 +49,21 @@ python3 -m pytest Tests/test_companion*.py Tests/test_adult_companion_policy.py 
 - iOS: `Screens/CompanionConversationScreen.swift` — передаёт `chatMode`, `attachments`  
 - Backend: `CompanionStreamRequest` + `companion_stream()` → полный `CompanionChatRequest`
 
-**Твоя задача:** убедиться, что это в commit, на VPS и в TestFlight ≥215.
+**Статус:** исправление в **`351a9b03`** (master), на VPS после deploy 2026-05-29, в iOS после **TestFlight 215**.
 
 ---
 
-## 2. Что на сервере и в TestFlight
+## 2. Что на сервере и в TestFlight (актуально)
 
 | Место | Что есть |
 |-------|----------|
-| **GitHub `master` (remote)** | Коммит `771340a3` — **только спринты 1–3**, build 214 |
-| **Локальный диск** | Спринты **4–5**, stream-fix, ~15 новых `companion_*.py`, тесты sprint4/5 |
-| **aladdin-ai.ru** | Базовый компаньон (как на момент последнего deploy ~27.05). **Нет** `/domains`, `/workspaces`, `/cogs` |
-| **TestFlight 214** | Спринты 1–3. **Нет** спринтов 4–5, возможно старая карточка Rewards |
+| **GitHub `master`** | **`351a9b03`** — Sprint 4–5, stream-fix, build **215** |
+| **aladdin-ai.ru (VPS)** | ✅ Deploy Sprint 4–5: `/domains`, `/workspaces`, `/cogs`, обновлённый router |
+| **Verify прод** | ✅ `verify_companion_p0_prod.sh` — 17 шагов, политика **3 героя всем** |
+| **TestFlight** | ✅ **215** smoke · ⏳ **216** (COGS, папки, вложения, trust UI) |
+| **Этап 2–3** | ✅ код+VPS — [runbook](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md) · **102 осталось:** [WHAT_REMAINS](./COMPANION_WHAT_REMAINS.md) |
 
-**Вывод:** старый MVP на сервере — **да**. Новые ~20 задач — **нет**, пока не сделаете **commit → deploy → build 215**.
+**Вывод:** backend Sprint 4–5 на проде — **да**. «100% без Rive» — после **TF215 + этапы 2–3** из runbook.
 
 ### Команды деплоя
 
@@ -130,18 +141,18 @@ cd ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 
 XCUITest, 429, post-LLM moderation, ADR, App Store doc.
 
-### Блок J — Спринт 4 (6) ✅ код / ❌ VPS
+### Блок J — Спринт 4 (6) ✅ код + VPS / ⏳ MVP 100%
 
-| Что | Файл | На VPS |
-|-----|------|--------|
-| Redis stream cache | `companion_stream_redis.py` | ❌ |
-| Orchestrator (флаг) | `_invoke_companion_llm` | ❌ |
-| Темы chips | `companion_life_domains.py`, `GET /domains` | ❌ |
-| Social bridge | `companion_social_bridge.py` | ❌ |
-| Teen playbook | `companion_teen_playbook.py` | ❌ |
-| Trust эмпатия | `_trust_delta` | ❌ |
+| Что | Файл | VPS код | MVP 100% |
+|-----|------|---------|----------|
+| Redis stream cache | `companion_stream_redis.py` | ✅ | ⏳ env `redis` |
+| Orchestrator (флаг) | `_invoke_companion_llm` | ✅ | ⏳ smoke `ORCHESTRATOR=1` |
+| Темы chips | `GET /domains` | ✅ | ⏳ iOS TF215 |
+| Social bridge | `companion_social_bridge.py` | ✅ | ⏳ E2E meta |
+| Teen playbook | `companion_teen_playbook.py` | ✅ | ⏳ pytest + manual |
+| Trust эмпатия | `_trust_delta` | ✅ | ⏳ UI trust_delta |
 
-### Блок K — Спринт 5 (14) ✅ код / ❌ VPS / stream исправлен локально
+### Блок K — Спринт 5 (14) ✅ код + VPS / ⏳ MVP 100%
 
 | Что | Файл |
 |-----|------|
@@ -179,36 +190,50 @@ PO просил **не трогать** в этом цикле:
 
 ---
 
-## 5. План работ (копия краткая)
+## 5. План работ — что делать дальше
 
-См. полный **[COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md)**.
+| Этап | Документ | Статус |
+|------|----------|--------|
+| **1** Критично (git, deploy, 215) | [PLAN §3](./COMPANION_PLAN_TO_100_PERCENT.md) | ✅ git+deploy+verify+TF215+smoke |
+| **2** Sprint 4 (6 пунктов) | **[STAGE2/3 RUNBOOK](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md)** § Sprint 4 | ⏳ |
+| **3** Sprint 5 (14 пунктов) | **[STAGE2/3 RUNBOOK](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md)** § Sprint 5 | ⏳ |
+| **2b** Блок G «Мир героев» | RUNBOOK § G | ⏳ device TF215 |
+| **5** Тесты + трекеры | PLAN §7 | ⏳ |
 
-### Этап 1 — Критично
+### Этап 1 — закрыто / осталось
 
-- [x] Stream iOS + BE (в рабочей копии)  
-- [ ] `git commit` + `git push`  
-- [ ] `deploy_companion_p0.sh` + verify  
-- [ ] iOS build **215** → TestFlight  
-- [ ] Короткий smoke на iPhone  
+- [x] Stream iOS + BE  
+- [x] `git push` → `351a9b03`, build **215**  
+- [x] `deploy_companion_p0.sh` + verify (17 шагов)  
+- [x] **TestFlight 215** + smoke: Друзья → чат → chips → режим (2026-05-29)  
 
-### Этап 2 — Блок G
+### Этап 2 — Sprint 4 (кратко; детали в runbook)
 
-- [ ] Rewards card на TF215  
-- [ ] Все входы → `companionHome`  
+| Пункт | Действие MVP |
+|-------|----------------|
+| Redis | `COMPANION_STREAM_CACHE_BACKEND=redis` + `REDIS_URL` на VPS |
+| Orchestrator | staging: `COMPANION_USE_ORCHESTRATOR=1` + smoke |
+| Chips | domains на проде ✅ · iOS `fetchLifeDomains` + TF215 |
+| Social bridge | E2E: 2× «одиноко» → `show_social_bridge` в meta |
+| Teen playbook | `pytest test_companion_sprint4` + teen JWT manual |
+| Trust эмпатия | `trust_delta` в stream `done` meta + UI |
 
-### Этап 3 — Спринт 4 на VPS
+**Postgres** — не блокер; SQLite + Redis.
 
-- [ ] Redis env  
-- [ ] Проверка `/domains`, social bridge, teen playbook  
+### Этап 3 — Sprint 5 (кратко; детали в runbook)
 
-### Этап 4 — Спринт 5 MVP
-
-- [ ] PhotosPicker для вложений  
-- [ ] UI workspaces в «Моё»  
-- [ ] COGS строка для родителя  
-- [ ] Дока по поиску-заглушке  
-
-### Этап 5 — Тесты + обновить трекеры
+| Пункт | MVP 100% | Не сейчас |
+|-------|----------|-----------|
+| Поиск | флаг + дока «MVP citations» | реальный Search API |
+| Режимы | stream + меню + разница на device | — |
+| Фото/PDF | PhotosPicker + BE validate | vision |
+| Trust streak | UI из `done` meta | — |
+| Семья в промпте | stream path = chat path | — |
+| COGS | строка в «Моё» родителя | биллинг |
+| Workspaces | UI список/создать | полный UX |
+| Картинки/видео | stub, flag off в доке | генерация |
+| Long context | recap >24 msg | LLM summary |
+| Android/Adult | доки ✅ | отдельные репо |
 
 ---
 
@@ -250,11 +275,12 @@ scripts/verify_companion_p0_prod.sh
 
 ## 8. Критерии приёмки «100% без Rive»
 
-1. `master` содержит Sprint 4–5 + stream-fix.  
-2. VPS verify PASS; `/domains` отвечает 200 с JWT.  
-3. TestFlight ≥215: chips, 60+, режимы, карточка Rewards.  
-4. pytest ≥80 passed.  
-5. Трекеры обновлены с датой деплоя.  
+1. [x] `master` содержит Sprint 4–5 + stream-fix (`351a9b03`).  
+2. [x] VPS verify PASS; `/domains`, `/cogs`, `/workspaces` 200 с JWT.  
+3. [ ] TestFlight **215**: chips, 60+, режимы, карточка Rewards на device.  
+4. [ ] Sprint 4: 6/6 MVP (runbook).  
+5. [ ] Sprint 5: 14/14 MVP (stubs задокументированы).  
+6. [ ] pytest companion зелёный; трекеры с датой деплоя.  
 
 ---
 
@@ -276,7 +302,8 @@ scripts/verify_companion_p0_prod.sh
 ## 10. Контакты контекста
 
 - **PO:** 3 героя (🦄🧑🧞) для всех; карточка «Мир героев» только сверху Rewards (не в сетке игр).  
-- **Build:** 214 в TF; следующий **215** после Sprint 4–5.  
+- **Build:** **215** в git; загрузить в TestFlight.  
+- **VPS deploy:** 2026-05-29, `149.154.65.180`, `/opt/aladdin-backend`.  
 - **Remote:** `git@github.com:sergey234/ALADDIN_FAMILY.git`, branch `master`.
 
-Удачи. Начни с **Этапа 1** в [COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md).
+**Начни здесь:** [COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md) → TestFlight 215 → таблицы Sprint 4 и 5.

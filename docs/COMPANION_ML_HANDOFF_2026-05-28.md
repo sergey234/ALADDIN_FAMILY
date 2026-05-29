@@ -150,7 +150,7 @@ CompanionHeroRiveHost           — 13 triggerInput + setInput mouth_open
 ### GATE (11 ворот)
 
 - [ ] **GATE-P0** — ждёт **11b**
-- [ ] **GATE-OPS** · **GATE-CX** · **GATE-P1**
+- [x] **GATE-OPS** — verify 18/18 (2026-05-29, [signoff](./COMPANION_GATE_OPS_SIGNOFF_2026-05-29.md)) · [ ] **GATE-CX** · **GATE-P1**
 - [ ] **GATE-EMO** — 13 state + Rive + D10 (после **07** + **11c**)
 - [ ] **GATE-EMO-EMPATHY** — 5 мин × возраст (device)
 - [ ] **GATE-PROD** · **GATE-P2** · **GATE-P3**

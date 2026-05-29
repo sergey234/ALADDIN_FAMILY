@@ -110,7 +110,20 @@ try:
     from security.services.ai_platform.config import ChatMode
     from security.services.ai_platform.feature_flags import COMPANION_USE_ORCHESTRATOR
     from security.services.ai_platform.orchestrator import OrchestratorRequest, run_orchestrator
-    from security.services.ai_platform.usage_meters import check_message_allowed, record_message
+    from security.services.ai_platform.usage_meters import (
+        check_message_allowed,
+        check_voice_allowed,
+        record_message,
+        record_voice_seconds,
+    )
+    from security.services.ai_platform.companion_neuro_tts import (
+        assert_premium_tts_allowed,
+        build_tts_response_payload,
+        estimate_speech_seconds,
+        neuro_tts_configured,
+        synthesize_neuro_tts,
+    )
+    from security.services.ai_platform.feature_flags import NEURO_TTS_ENABLED
     from security.services.ai_pii_redactor import redact as redact_pii
     from security.services.ai_response_helpers import mock_allowed, is_probable_mock_response
 except ImportError:
@@ -281,13 +294,17 @@ def _normalize_profile_payload(raw: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     equipped_char = str(data.get("equipped_cosmetic_character_id") or "unicorn").strip()
     if equipped_char not in VALID_CHARACTER_IDS:
         equipped_char = "unicorn"
-    return {
+    normalized = {
         "custom_instructions": str(data.get("custom_instructions") or "")[:2000],
         "personality_preset": preset,
         "security_expert_mode": bool(data.get("security_expert_mode")),
         "equipped_cosmetic_id": equipped[:64],
         "equipped_cosmetic_character_id": equipped_char,
     }
+    bridge = data.get("social_bridge")
+    if isinstance(bridge, dict) and bridge:
+        normalized["social_bridge"] = bridge
+    return normalized
 
 
 def _load_companion_profile(storage_key: str) -> Dict[str, Any]:
@@ -809,6 +826,20 @@ class CompanionThreadMessagesResponse(BaseModel):
     messages: List[CompanionThreadMessageDTO]
 
 
+class CompanionTTSRequest(BaseModel):
+    text: str = Field(..., min_length=1, max_length=2000)
+    character_id: str = Field("unicorn", max_length=32)
+    locale: str = Field("ru", max_length=8)
+
+
+class CompanionTTSResponse(BaseModel):
+    audio_base64: str
+    content_type: str = "audio/mpeg"
+    provider: str = "elevenlabs"
+    cached: bool = False
+    duration_seconds: Optional[float] = None
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -818,6 +849,60 @@ class CompanionThreadMessagesResponse(BaseModel):
 async def companion_capabilities(user: dict = Depends(get_current_user)) -> Dict[str, Any]:
     """Те же capabilities что platform — для Kids companion UI."""
     return get_platform_capabilities(user)
+
+
+@router.post("/tts", response_model=CompanionTTSResponse)
+async def companion_neuro_tts(
+    body: CompanionTTSRequest,
+    user: dict = Depends(get_current_user),
+) -> CompanionTTSResponse:
+    """
+    Premium neuro-TTS (ElevenLabs Flash). Free/trial → 403; iOS falls back to AVSpeech.
+    Визуал героев не зависит от тарифа — только озвучка.
+    """
+    if not NEURO_TTS_ENABLED:
+        raise HTTPException(status_code=424, detail="neuro_tts_disabled")
+    subscription_level = user.get("subscription_level") or "free"
+    try:
+        assert_premium_tts_allowed(subscription_level)
+    except ValueError:
+        raise HTTPException(status_code=403, detail="neuro_tts_requires_premium")
+    if not neuro_tts_configured():
+        raise HTTPException(status_code=424, detail="neuro_tts_unconfigured")
+
+    character_id = (body.character_id or "unicorn").strip().lower()
+    if character_id not in VALID_CHARACTER_IDS:
+        raise HTTPException(status_code=400, detail="invalid_character_id")
+
+    user_id = user.get("user_id") or "anonymous"
+    est_sec = estimate_speech_seconds(body.text)
+    voice_check = check_voice_allowed(user_id, user.get("limits"), requested_seconds=est_sec)
+    if not voice_check.allowed:
+        raise HTTPException(status_code=429, detail=voice_check.reason or "voice_limit")
+
+    try:
+        audio, cached, content_type = await asyncio.to_thread(
+            synthesize_neuro_tts,
+            text=body.text,
+            character_id=character_id,
+            lang=(body.locale or "ru")[:8],
+        )
+    except ValueError as exc:
+        reason = str(exc)
+        if reason == "neuro_tts_requires_premium":
+            raise HTTPException(status_code=403, detail=reason)
+        if reason in ("neuro_tts_unconfigured", "voice_id_missing"):
+            raise HTTPException(status_code=424, detail=reason)
+        raise HTTPException(status_code=400, detail=reason)
+
+    record_voice_seconds(user_id, est_sec)
+    payload = build_tts_response_payload(
+        audio,
+        cached=cached,
+        content_type=content_type,
+        duration_seconds=float(est_sec),
+    )
+    return CompanionTTSResponse(**payload)
 
 
 @router.get("/threads", response_model=CompanionThreadsResponse)

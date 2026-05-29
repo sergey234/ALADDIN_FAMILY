@@ -18,7 +18,7 @@
 | **P3** — фаза C | **6** | 0 готово |
 | **Adult** (только backend) | **3** | 0 готово |
 | **OPS** — деплой, verify | **4** | **4 готово** |
-| **Итого к реализации** | **102** | **76 / 102** (75%) — см. [трекер](./COMPANION_PROGRESS_TRACKER.md) |
+| **Итого к реализации** | **102** | **90 / 102** (88%) — см. [трекер](./COMPANION_PROGRESS_TRACKER.md) · [осталось](./COMPANION_WHAT_REMAINS.md) |
 | **iOS polish** (вне 102) | **12** | **11 готово** · STT device QA ⏳ build **214** |
 | Отменено (X) | **7** | не в roadmap (см. таблицу X) |
 | **Матрица Grok** ([GROK_FULL_FEATURE_MATRIX.md](./GROK_FULL_FEATURE_MATRIX.md)) | **102** | трассировка · **≠** 59 спринтовых задач |

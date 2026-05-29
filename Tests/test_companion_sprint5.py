@@ -95,6 +95,19 @@ class CompanionSprint5Tests(unittest.TestCase):
             self.assertEqual(rows[0]["workspace_id"], row["workspace_id"])
             companion_store._store = None  # noqa: SLF001
 
+    def test_long_context_hint_over_threshold(self):
+        from security.services.ai_platform.companion_long_context import build_long_context_hint
+
+        class _Store:
+            def get_thread_messages(self, _uid, _tid, limit=50):
+                return [
+                    {"role": "user", "text": f"msg-{i}"}
+                    for i in range(30)
+                ]
+
+        hint = build_long_context_hint(_Store(), "u1", "t1", threshold=24, keep_recent=8)
+        self.assertIn("Long context recap", hint)
+
     def test_media_gen_disabled_by_default(self):
         from security.services.ai_platform.companion_media_gen import generate_companion_image
 

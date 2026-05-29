@@ -1,18 +1,23 @@
 import AVFoundation
 
-/// P1-13c — TTS ответа компаньона (AVSpeech) с тоном personality preset.
+/// P1-13c — TTS ответа компаньона: Premium → neuro (ElevenLabs), иначе AVSpeech (3 голоса).
 @MainActor
 final class CompanionSpeechOutput: NSObject, ObservableObject {
     @Published private(set) var isSpeaking = false
 
     private let synthesizer = AVSpeechSynthesizer()
+    private let neuroPlayer = CompanionNeuroTTSPlayer()
 
     override init() {
         super.init()
         synthesizer.delegate = self
+        neuroPlayer.onPlaybackEnded = { [weak self] in
+            self?.isSpeaking = false
+        }
     }
 
     func stop() {
+        neuroPlayer.stop()
         synthesizer.stopSpeaking(at: .immediate)
         isSpeaking = false
     }
@@ -22,9 +27,19 @@ final class CompanionSpeechOutput: NSObject, ObservableObject {
         guard !trimmed.isEmpty else { return }
         stop()
 
+        Task {
+            if await neuroPlayer.speak(text: trimmed, characterId: characterId) {
+                isSpeaking = true
+                return
+            }
+            speakWithAVSpeech(trimmed, personalityPreset: personalityPreset, characterId: characterId)
+        }
+    }
+
+    private func speakWithAVSpeech(_ trimmed: String, personalityPreset: String, characterId: String) {
         let utterance = AVSpeechUtterance(string: trimmed)
         let lang = LocalizationManager.shared.aiResponseLanguageCode
-        utterance.voice = AVSpeechSynthesisVoice(language: lang == "en" ? "en-US" : "ru-RU")
+        utterance.voice = resolveAVSpeechVoice(characterId: characterId, lang: lang)
         switch personalityPreset {
         case "witty":
             utterance.rate = 0.58
@@ -47,6 +62,33 @@ final class CompanionSpeechOutput: NSObject, ObservableObject {
         synthesizer.speak(utterance)
     }
 
+    /// Sprint 1–2: три разных Apple voice id (RU/EN); Premium идёт через neuro API.
+    private func resolveAVSpeechVoice(characterId: String, lang: String) -> AVSpeechSynthesisVoice? {
+        let isEn = lang == "en"
+        let id = Self.avSpeechVoiceIdentifier(characterId: characterId, english: isEn)
+        if let id, let voice = AVSpeechSynthesisVoice(identifier: id) {
+            return voice
+        }
+        return AVSpeechSynthesisVoice(language: isEn ? "en-US" : "ru-RU")
+    }
+
+    private static func avSpeechVoiceIdentifier(characterId: String, english: Bool) -> String? {
+        if english {
+            switch characterId {
+            case "unicorn": return "com.apple.voice.compact.en-US.Samantha"
+            case "genie": return "com.apple.voice.compact.en-US.Aaron"
+            case "aladdin": return "com.apple.voice.compact.en-US.Nicky"
+            default: return nil
+            }
+        }
+        switch characterId {
+        case "unicorn": return "com.apple.voice.compact.ru-RU.Katya"
+        case "genie": return "com.apple.voice.compact.ru-RU.Yuri"
+        case "aladdin": return "com.apple.voice.compact.ru-RU.Milena"
+        default: return nil
+        }
+    }
+
     /// HERO-3-15: лёгкая дифференциация TTS по герою (поверх preset).
     private func applyCharacterVoice(characterId: String, utterance: AVSpeechUtterance) {
         switch characterId {
@@ -67,13 +109,17 @@ final class CompanionSpeechOutput: NSObject, ObservableObject {
 extension CompanionSpeechOutput: AVSpeechSynthesizerDelegate {
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         Task { @MainActor in
-            self.isSpeaking = false
+            if !self.neuroPlayer.isSpeaking {
+                self.isSpeaking = false
+            }
         }
     }
 
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
         Task { @MainActor in
-            self.isSpeaking = false
+            if !self.neuroPlayer.isSpeaking {
+                self.isSpeaking = false
+            }
         }
     }
 }

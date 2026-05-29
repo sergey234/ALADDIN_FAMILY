@@ -251,7 +251,7 @@ struct UnicornPetView: View {
             Button(action: {
                 HapticFeedback.impact(.medium)
                 companionCharacterId = "unicorn"
-                navigationManager.navigateTo(.companionHome)
+                navigationManager.navigateToCompanionHome(returnTo: .unicornPet)
             }) {
                 HStack(spacing: Spacing.s) {
                     Text("🦄")

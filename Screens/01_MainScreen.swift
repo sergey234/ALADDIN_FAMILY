@@ -558,7 +558,7 @@ struct MainScreen: View {
                             Button(action: {
                                 UserDefaults.standard.set(true, forKey: "companion_senior_entry")
                                 UserDefaults.standard.set("aladdin", forKey: "companion_selected_character_id")
-                                navigationManager.navigateTo(.companionHome)
+                                navigationManager.navigateToCompanionHome(returnTo: .main)
                             }) {
                                 VStack(spacing: 8) {
                                     Text("🧓")

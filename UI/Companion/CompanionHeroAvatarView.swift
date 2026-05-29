@@ -83,7 +83,8 @@ struct CompanionHeroAvatarView: View {
                 stageSize: stageSize
             )
             #endif
-        } else if CompanionHeroRiveHost.hasBundledRiv(characterId: characterId) {
+        } else if CompanionHeroRiveHost.hasBundledRiv(characterId: characterId),
+                  CompanionHeroRiveHost.shouldUseRiveRuntime(characterId: characterId) {
             #if canImport(RiveRuntime)
             CompanionHeroStageShellView(
                 characterId: characterId,

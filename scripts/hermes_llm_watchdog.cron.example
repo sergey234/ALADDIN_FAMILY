@@ -1,0 +1,6 @@
+# /etc/cron.d/aladdin-hermes-watchdog
+SHELL=/bin/bash
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+
+# Every minute: binary + keys; smoke only if HERMES_WATCHDOG_SMOKE=1 in /opt/aladdin-backend/.env
+* * * * * root /opt/aladdin-backend/scripts/hermes_llm_watchdog.sh >> /var/log/aladdin-backend/hermes_watchdog.log 2>&1

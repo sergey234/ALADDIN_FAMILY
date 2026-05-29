@@ -1,18 +1,18 @@
 # Companion — полный трекер задач (открой в Cursor)
 
-**Обновлено:** 2026-05-29 (iOS build **214** на TF · CODE Sprints **0–5 ✅ 49/49** локально · pytest companion **~80** · push Sprint 4–5 ⏳)  
-**Handoff для следующей ML:** [COMPANION_ML_HANDOFF_NEXT_SYSTEM.md](./COMPANION_ML_HANDOFF_NEXT_SYSTEM.md) · **План до 100%:** [COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md)  
+**Обновлено:** 2026-05-29 (Sprint 4–5 MVP **код+VPS ✅** · verify **18/18** · **Premium voice plan** · build **216+** · [осталось](./COMPANION_WHAT_REMAINS.md))  
+**Handoff ML:** [COMPANION_ML_HANDOFF_NEXT_SYSTEM.md](./COMPANION_ML_HANDOFF_NEXT_SYSTEM.md) · **Этап 2–3:** [COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md) · **Cursor TODO:** [COMPANION_CURSOR_TODO_STAGE2_3.md](./COMPANION_CURSOR_TODO_STAGE2_3.md) · **План:** [COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md) · **Premium TTS:** [COMPANION_PREMIUM_VOICE_PLAN.md](./COMPANION_PREMIUM_VOICE_PLAN.md)  
 **Handoff AI:** [COMPANION_HANDOFF_AI_NEXT.md](./COMPANION_HANDOFF_AI_NEXT.md) · **ML №4:** [HANDOFF_29](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Без Rive:** [TASKS_NO_RIVE](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Код-спринты v2:** [CODE_PLAN](./COMPANION_CODE_PLAN_NO_RIVE.md) · [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md)  
 **Rive connect:** [COMPANION_RIVE_CONNECT_NODE_MCP.md](./COMPANION_RIVE_CONNECT_NODE_MCP.md) · **Art canon:** [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md) · **UX:** [UNIFIED_HOME](./COMPANION_UNIFIED_HOME_UX.md)  
-**Прогресс спринта:** **90 / 102 (88%)** · **осталось 12** · **CODE v2: 49/49 ✅** · **HERO-3: 24/26** · **07 + 11 ⏳** · **02b-PO-lock ✅** · **unicorn.riv >25KB ✅**  
+**Прогресс спринта:** **90 / 102 (88%)** · **осталось 12** · **VOICE-PREM: 2/6 ✅ код** · **CODE v2: 49/49 ✅** · **HERO-3: 24/26** · **07 + 11 ⏳** · **02b-PO-lock ✅** · **unicorn.riv >25KB ✅**  
 **Вне 102 (iOS polish):** **11/12 ✅** · **1 в работе** (STT device QA → **214**) · **POL-12 ✅**  
 **Синхронизация цифр:** только этот файл — остальные `COMPANION_*.md` ссылаются сюда.  
 **ADR 2D vs 3D:** [COMPANION_2D_VS_3D_ADR.md](./COMPANION_2D_VS_3D_ADR.md) ✅ · **Export 07:** [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md)  
 **Матрица HERO-3:** [COMPANION_HERO3_READINESS_MATRIX.md](./COMPANION_HERO3_READINESS_MATRIX.md)  
 **Figma Companion:** https://www.figma.com/design/vwKcGPUUEZjgayEHNn0BJM — **`00_Spec` ✅** · **`01` unicorn v2 ✅** · **`03` genie OB_03×12 + OB_02–06 row ✅** [аудит](./COMPANION_FIGMA_STATUS.md)  
 **Цель:** 2D Rive · 56% full-body rect · субтитр · 12 эмоций + lip-sync  
-**Следующий шаг:** **QA TestFlight 214** · **Rive 07** → **11c** → GATE-EMO · push Sprint 4+5 ⏳  
-**iOS:** build **214** · pytest companion **78** · **08b PASS** · capabilities decode + coalescing ✅
+**Следующий шаг:** **TestFlight 216** · затем HERO-3-07 / 11b только по PO · см. [WHAT_REMAINS](./COMPANION_WHAT_REMAINS.md)  
+**iOS:** build **216** в git (COGS, workspaces, вложения, trust UI) · **VPS:** Redis + orchestrator + social_bridge fix · verify **18/18** ✅
 
 Отмечай `[x]` при закрытии. Источник деталей: [COMPANION_IMPLEMENTATION_TODOS.md](./COMPANION_IMPLEMENTATION_TODOS.md)
 
@@ -33,7 +33,7 @@
 | Adult | 3 | 3 |
 | **Итого** | **90** | **102** |
 
-> **12 открытых** = не в «90»: HERO-3-07, HERO-3-11b/11c, P1-12 Postgres (MVP Redis+SQLite ✅ код), P2-09, P2-17, UX-14b, P1-19 Rive screenshots, GATE-* (см. [PLAN_100](./COMPANION_PLAN_TO_100_PERCENT.md)).
+> **12 открытых** = [COMPANION_WHAT_REMAINS.md](./COMPANION_WHAT_REMAINS.md): HERO-3-07, 11b/11c, P1-12 Postgres (не блокер), P2-09, P2-17, UX-14b, P1-19, GATE-*.
 
 ---
 
@@ -208,7 +208,7 @@
 ## GATE — контрольные ворота
 
 - [ ] **GATE-P0** — smoke ✅ · prod verify ✅ · **Мир героев** ✅ · **08b** ✅ · **11b** ⏳
-- [ ] **GATE-OPS** — health + verify prod
+- [x] **GATE-OPS** — health + verify prod (**18/18** exit 0, 2026-05-29) — [signoff](./COMPANION_GATE_OPS_SIGNOFF_2026-05-29.md)
 - [ ] **GATE-CX** — 5 фраз CX (без VPN spam)
 - [ ] **GATE-P1** — cosmetics, legal
 - [x] **GATE-HERO-3-IOS-α** — debounce + timeline + TTS text + **23/24/26** ✅ (без production .riv)
@@ -312,6 +312,28 @@ X-01 · X-02 · X-03 · X-04 · X-05 · X-06 · X-07
 
 ---
 
+## VOICE-PREM — Premium озвучка (вне 102, продукт 2026)
+
+> **Правило:** картинки одинаковые на всех тарифах; **только озвучка** меняется (AVSpeech vs ElevenLabs). Детали: [COMPANION_PREMIUM_VOICE_PLAN.md](./COMPANION_PREMIUM_VOICE_PLAN.md)
+
+- [x] **VOICE-PREM-01** — `companion_neuro_tts` capability + `POST /companion/tts` + subscription gate
+- [x] **VOICE-PREM-02** — iOS: `CompanionNeuroTTSPlayer` + 3 AVSpeech voice id
+- [ ] **VOICE-PREM-04** — **Сначала:** 3 voice id (unicorn, genie, aladdin) · [гайд](./COMPANION_ELEVENLABS_VOICES_RU.md)
+- [ ] **VOICE-PREM-03** — **Потом:** пилот genie + prewarm (после 04 + API key)
+- [ ] **VOICE-PREM-05** — Прайс Yandex SpeechKit (сравнение)
+- [x] **VOICE-PREM-06** — VPS deploy + `FEATURE_NEURO_TTS_ENABLED=1` + Premium cap ✅ · TTS **424** до ключей ElevenLabs
+
+### Спринты голоса (кратко)
+
+| Спринт | Содержание | Статус |
+|--------|------------|--------|
+| **1–2** ($0) | OpenRouter×2, AVSpeech×3, PNG, честный offline, Hermes retry | ✅ код |
+| **3–4** (Premium) | ElevenLabs API, neuro_tts_premium, кэш 30, лимиты минут | ✅ код · ⏳ ключи |
+| **5+** | Production Rive, OpenRouter без Hermes CLI | ⏳ |
+| **2027+** | Realtime voice Premium+ | ⏳ |
+
+---
+
 ## Сессия 2026-05-29 — CODE Sprints 0–5 (v2, зафиксировано)
 
 > **CODE_TODO:** Sprints **0–5 = 49/49** ✅ в рабочей копии · **git push** ⏳ (remote на `771340a3` = только 0–3).
@@ -325,7 +347,8 @@ X-01 · X-02 · X-03 · X-04 · X-05 · X-06 · X-07
 | Sprint 5 | P2-01…08, P2-14, P3-01…06, A-01…03 | ✅ код · **VPS ⏳** |
 | Stream-fix | `chat_mode`, `attachments`, `workspace_id` в SSE | ✅ локально |
 | Отложено Rive | UX-14b, HERO-3-07, P1-19 screenshots, P2-09, P2-17 | ⏳ не в плане 100% |
-| Следующий шаг | commit → deploy → TF **215** | [PLAN_100](./COMPANION_PLAN_TO_100_PERCENT.md) этап 1 |
+| VPS deploy 2026-05-29 | `deploy_companion_p0.sh` → 149.154.65.180 | ✅ verify 17 шагов |
+| Следующий шаг | TF **215** + [RUNBOOK](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md) Sprint 4–5 MVP | |
 
 ## В конце (по решению команды)
 

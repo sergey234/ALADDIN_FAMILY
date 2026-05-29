@@ -1,4 +1,6 @@
 import SwiftUI
+import UIKit
+import UniformTypeIdentifiers
 
 /// Разговор с выбранным героем (текст + голос MVP).
 struct CompanionConversationScreen: View {
@@ -55,7 +57,11 @@ struct CompanionConversationScreen: View {
     @State private var showSocialBridgeBanner = false
     @State private var chatMode: String = "fast"
     @State private var pendingAttachments: [CompanionAttachmentPayload] = []
+    @AppStorage("companion_active_workspace_id") private var activeWorkspaceId: String = ""
     @State private var trustStreakDays: Int = 0
+    @State private var lastTrustDelta: Int?
+    @State private var showPhotoPicker = false
+    @State private var showPdfImporter = false
     var embeddedInHome: Bool = false
     var availableCharacters: [CompanionCharacterDTO] = []
     var onSelectCharacter: ((String) -> Void)? = nil
@@ -163,6 +169,18 @@ struct CompanionConversationScreen: View {
             }
             .navigationViewStyle(.stack)
             .modifier(CompanionSheetDetentsModifier())
+        }
+        .fileImporter(
+            isPresented: $showPdfImporter,
+            allowedContentTypes: [.pdf],
+            allowsMultipleSelection: false
+        ) { result in
+            Task { await ingestPdfImport(result) }
+        }
+        .sheet(isPresented: $showPhotoPicker) {
+            ImagePickerView(sourceType: .photoLibrary) { image in
+                ingestPickedImage(image)
+            }
         }
         .task { await loadState() }
         .onAppear {
@@ -378,6 +396,16 @@ struct CompanionConversationScreen: View {
                     Label(String(format: localizationManager.localized("companion_conversation_trust"), trustScore), systemImage: "heart.fill")
                         .font(.caption)
                         .foregroundStyle(.secondary)
+                    if let lastTrustDelta, lastTrustDelta > 0 {
+                        Text(
+                            String(
+                                format: localizationManager.localized("companion_trust_delta_gain"),
+                                lastTrustDelta
+                            )
+                        )
+                        .font(.caption2.weight(.semibold))
+                        .foregroundStyle(.green)
+                    }
                 }
             }
         }
@@ -731,21 +759,19 @@ struct CompanionConversationScreen: View {
                     .font(.caption2)
                     .foregroundStyle(.secondary)
             }
+            if !pendingAttachments.isEmpty {
+                Text(
+                    String(
+                        format: localizationManager.localized("companion_attach_pending"),
+                        pendingAttachments.count
+                    )
+                )
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            }
             HStack(spacing: 10) {
                 if !isChildProfile {
-                    Button {
-                        pendingAttachments = [
-                            CompanionAttachmentPayload(
-                                kind: "image",
-                                filename: "photo.jpg",
-                                mimeType: "image/jpeg",
-                                contentB64: nil
-                            )
-                        ]
-                    } label: {
-                        Image(systemName: "paperclip")
-                    }
-                    .accessibilityLabel(localizationManager.localized("companion_attach_photo"))
+                    attachmentPickerMenu
                 }
                 TextField(localizationManager.localized("companion_conversation_message_placeholder"), text: $input)
                     .textFieldStyle(.roundedBorder)
@@ -827,6 +853,92 @@ struct CompanionConversationScreen: View {
             ToolbarItemGroup(placement: .keyboard) {
                 Spacer()
                 Button(localizationManager.localized("companion_conversation_done")) { isInputFocused = false }
+            }
+        }
+    }
+
+    private var attachmentPickerMenu: some View {
+        Menu {
+            Button {
+                showPhotoPicker = true
+            } label: {
+                Label(
+                    localizationManager.localized("companion_attach_photo"),
+                    systemImage: "photo"
+                )
+            }
+            Button {
+                showPdfImporter = true
+            } label: {
+                Label(
+                    localizationManager.localized("companion_attach_pdf"),
+                    systemImage: "doc"
+                )
+            }
+            if !pendingAttachments.isEmpty {
+                Button(role: .destructive) {
+                    pendingAttachments = []
+                } label: {
+                    Label(
+                        localizationManager.localized("companion_attach_clear"),
+                        systemImage: "xmark.circle"
+                    )
+                }
+            }
+        } label: {
+            Image(systemName: "paperclip")
+        }
+        .accessibilityLabel(localizationManager.localized("companion_attach_menu"))
+    }
+
+    private static let attachmentMaxBytes = 300_000
+
+    private func ingestPickedImage(_ image: UIImage) {
+        guard let data = image.jpegData(compressionQuality: 0.85) else {
+            errorText = localizationManager.localized("companion_attach_error")
+            return
+        }
+        guard data.count <= Self.attachmentMaxBytes else {
+            errorText = localizationManager.localized("companion_attach_too_large")
+            return
+        }
+        pendingAttachments = [
+            CompanionAttachmentPayload(
+                kind: "image",
+                filename: "photo.jpg",
+                mimeType: "image/jpeg",
+                contentB64: data.base64EncodedString()
+            )
+        ]
+    }
+
+    private func ingestPdfImport(_ result: Result<[URL], Error>) async {
+        switch result {
+        case .failure(let error):
+            errorText = error.localizedDescription
+        case .success(let urls):
+            guard let url = urls.first else { return }
+            guard url.startAccessingSecurityScopedResource() else {
+                errorText = localizationManager.localized("companion_attach_error")
+                return
+            }
+            defer { url.stopAccessingSecurityScopedResource() }
+            do {
+                let data = try Data(contentsOf: url)
+                guard data.count <= Self.attachmentMaxBytes else {
+                    errorText = localizationManager.localized("companion_attach_too_large")
+                    return
+                }
+                pendingAttachments = [
+                    CompanionAttachmentPayload(
+                        kind: "pdf",
+                        filename: url.lastPathComponent,
+                        mimeType: "application/pdf",
+                        contentB64: data.base64EncodedString()
+                    )
+                ]
+            } catch {
+                errorText = error.localizedDescription
             }
         }
     }
@@ -993,6 +1105,9 @@ struct CompanionConversationScreen: View {
         if let meta, let streak = meta.trustStreakDays {
             trustStreakDays = streak
         }
+        if let meta, let delta = meta.trustDelta, delta > 0 {
+            lastTrustDelta = delta
+        }
         let content = meta?.emotion.flatMap { CompanionHeroEmotion(rawValue: $0) }
             ?? pendingStreamContentEmotion
             ?? .happy
@@ -1067,7 +1182,7 @@ struct CompanionConversationScreen: View {
             sessionId: threadId,
             securityExpertMode: securityExpertMode,
             chatMode: chatMode,
-            workspaceId: nil,
+            workspaceId: activeWorkspaceId.isEmpty ? nil : activeWorkspaceId,
             attachments: attachmentsForSend,
             onEmotion: { name in
                 applyStreamEmotion(name)
@@ -1240,7 +1355,11 @@ struct CompanionConversationScreen: View {
             }
             handleVoiceAssistantReply(line: resp.response, emotion: CompanionHeroEmotion(rawValue: resp.emotion) ?? .happy)
             trustScore = resp.trustScore
+            if resp.trustDelta > 0 {
+                lastTrustDelta = resp.trustDelta
+            }
             applySocialBridge(from: resp)
+            CompanionLastToolsStore.save(resp.toolsUsed)
             await refreshUsage()
             if let unlocked = resp.cosmeticUnlocked, !unlocked.isEmpty {
                 equippedCosmeticId = unlocked

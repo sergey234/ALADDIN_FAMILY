@@ -22,6 +22,11 @@ final class CompanionCapabilitiesService: ObservableObject {
         uiFlag(module: "voice_realtime", key: "mic_button")
     }
 
+    /// Premium: ElevenLabs Flash через `/companion/tts`. Free/trial → AVSpeech на устройстве.
+    var neuroTtsPremiumEnabled: Bool {
+        uiFlag(module: "companion_neuro_tts", key: "neuro_tts_premium")
+    }
+
     var companionEnabled: Bool {
         featureEnabled("companion")
     }

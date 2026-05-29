@@ -320,7 +320,7 @@ struct ChildInterfaceScreen: View {
         Button(action: {
             HapticFeedback.impact(.medium)
             UserDefaults.standard.set(false, forKey: "companion_senior_entry")
-            navigationManager.navigateTo(.companionHome)
+            navigationManager.navigateToCompanionHome(returnTo: .childInterface)
         }) {
             HStack(spacing: Spacing.m) {
                 Text("🦄🧑🧞")

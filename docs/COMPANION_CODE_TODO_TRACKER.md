@@ -3,7 +3,7 @@
 > **План:** [COMPANION_CODE_PLAN_NO_RIVE.md](./COMPANION_CODE_PLAN_NO_RIVE.md) (v2)  
 > **Главный план:** [COMPANION_MASTER_PLAN_v1.md](./COMPANION_MASTER_PLAN_v1.md)  
 > **102 задачи (после QA):** [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md)  
-> **Обновлено:** 2026-05-29 · **PO:** 3 героя (🦄🧑🧞) доступны **всем** пользователям
+> **Обновлено:** 2026-05-29 · Sprint 4–5 MVP на VPS ✅ · iOS **216** · [что осталось 102](./COMPANION_WHAT_REMAINS.md)
 
 **Правило:** `[x]` = код в репо (+ pytest/unit где есть). iPhone/TestFlight — секция «Отложено».
 
@@ -144,6 +144,7 @@
 - [ ] Push build **214** → TestFlight
 - [ ] Device QA: STT, TTS (SPEECH-Q6), **11b**
 - [ ] **UX-09** GATE навигации R6/R8
+- [x] **GATE-OPS** — verify 18/18 (2026-05-29)
 - [ ] **GATE-DIALOG** D01–D10 · **GATE-DIALOG-REGRESS** · **GATE-CX/P1/EMO**
 - [ ] **HERO-3-07** production `.riv` ×3 · **UX-14b** финал overlay
 - [ ] **P1-19** 3 скриншота Hub с живым Rive

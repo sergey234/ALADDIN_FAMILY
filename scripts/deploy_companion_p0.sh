@@ -44,6 +44,9 @@ FILES=(
   "security/services/ai_platform/companion_voice_turn.py"
   "security/services/ai_platform/companion_usage.py"
   "security/api/routers/ai_assistant_router.py"
+  "security/services/ai_sfm_http_chat.py"
+  "security/services/hermes_client.py"
+  "security/services/hermes_key_rotator.py"
   "security/services/ai_platform/jwt_claims.py"
   "security/services/ai_platform/age_policy.py"
   "security/services/ai_platform/companion_store.py"
@@ -74,6 +77,9 @@ FILES=(
   "security/services/ai_platform/capabilities.py"
   "security/services/ai_platform/config.py"
   "security/services/ai_platform/feature_flags.py"
+  "security/services/ai_platform/companion_neuro_tts.py"
+  "security/services/ai_platform/companion_tts_greetings.py"
+  "security/services/ai_platform/modules/companion_neuro_tts.py"
   "security/services/ai_platform/orchestrator.py"
   "security/services/ai_platform/modules/base.py"
   "security/services/ai_platform/modules/registry.py"
@@ -144,11 +150,40 @@ EOF
   ./venv/bin/python3 -m py_compile security/services/ai_platform/modules/workspaces.py
   ./venv/bin/python3 -m py_compile security/services/ai_platform/modules/media_gen.py
   ./venv/bin/python3 -m py_compile security/api/routers/ai_voice_ws_router.py
+  ./venv/bin/python3 -m py_compile security/api/routers/ai_assistant_router.py
+  ./venv/bin/python3 -m py_compile security/services/ai_sfm_http_chat.py
+  ./venv/bin/python3 -m py_compile security/services/hermes_key_rotator.py
+  ./venv/bin/python3 -m py_compile security/services/hermes_client.py
   ./venv/bin/python3 -m py_compile security/services/ai_platform/jwt_claims.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_neuro_tts.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_tts_greetings.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/modules/companion_neuro_tts.py
+  grep -q FEATURE_NEURO_TTS_ENABLED .env 2>/dev/null || cat >> .env <<'EOF'
+
+# Premium neuro-TTS (off until ELEVENLABS_* set — see docs/COMPANION_NEURO_TTS_ENV.md)
+# FEATURE_NEURO_TTS_ENABLED=1
+# ELEVENLABS_API_KEY=
+# ELEVENLABS_VOICE_GENIE=
+EOF
 "
 
 echo ">>> [4/5] Restart ${SERVICE}"
 ssh_r "systemctl restart ${SERVICE} && sleep 4 && systemctl is-active ${SERVICE}"
+
+echo ">>> [5a/5] Hermes key rotator watchdog"
+if [[ -f "${LOCAL_ROOT}/scripts/hermes_llm_watchdog.sh" ]]; then
+  ssh_r "mkdir -p ${REMOTE_ROOT}/scripts /var/log/aladdin-backend ${REMOTE_ROOT}/data"
+  scp_f "${LOCAL_ROOT}/scripts/hermes_llm_watchdog.sh" "${REMOTE_ROOT}/scripts/hermes_llm_watchdog.sh"
+  scp_f "${LOCAL_ROOT}/scripts/hermes_llm_watchdog.cron.example" "${REMOTE_ROOT}/scripts/hermes_llm_watchdog.cron.example"
+  ssh_r "chmod +x ${REMOTE_ROOT}/scripts/hermes_llm_watchdog.sh"
+  grep -q 'HERMES_OPENROUTER_API_KEYS' .env 2>/dev/null || cat >> .env <<'EOF'
+
+# Hermes OpenRouter rotator (comma-separated keys; or use HERMES_OPENROUTER_KEYS_FILE)
+# HERMES_OPENROUTER_API_KEYS=sk-or-v1-aaa,sk-or-v1-bbb
+# HERMES_WATCHDOG_SMOKE=0
+EOF
+  echo "  OK hermes_llm_watchdog.sh (install cron from scripts/hermes_llm_watchdog.cron.example)"
+fi
 
 echo ">>> [5b/5] OPS-04 cost alert script"
 if [[ -f "${LOCAL_ROOT}/scripts/companion_llm_cost_alert.sh" ]]; then

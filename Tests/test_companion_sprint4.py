@@ -65,6 +65,19 @@ class CompanionSprint4Tests(unittest.TestCase):
 
         self.assertFalse(COMPANION_USE_ORCHESTRATOR)
 
+    def test_profile_normalization_keeps_social_bridge(self):
+        try:
+            from security.api.routers.ai_companion_router import _normalize_profile_payload
+        except ModuleNotFoundError as exc:
+            self.skipTest(f"router deps unavailable: {exc}")
+
+        raw = {
+            "personality_preset": "friendly",
+            "social_bridge": {"loneliness_streak": 2, "last_thread": "t1"},
+        }
+        out = _normalize_profile_payload(raw)
+        self.assertEqual(out["social_bridge"]["loneliness_streak"], 2)
+
 
 if __name__ == "__main__":
     unittest.main()

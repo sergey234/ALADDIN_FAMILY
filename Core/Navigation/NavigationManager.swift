@@ -22,6 +22,9 @@ class NavigationManager: ObservableObject {
 
     /// Токен из `aladdin://bind?token=` или Universal Link — подставляется на экране присоединения.
     @Published var pendingDeviceBindToken: String? = nil
+
+    /// Экран, на который возвращаемся из «Мир героев» (если стек навигации пуст/сброшен).
+    @Published private(set) var companionReturnScreen: ALADDINScreen?
     
     // ✅ Стартовый экран: читаем только флаг онбординга (без записи), чтобы первый кадр SwiftUI
     // не строил OnboardingScreen до `WindowGroup.onAppear` → `initializeNavigation`.
@@ -295,6 +298,29 @@ class NavigationManager: ObservableObject {
         currentScreen = screen
         objectWillChange.send()
         appendLog("➡️ navigateTo(\(screen)) | стек = \(navigationStack)")
+    }
+
+    /// «Мир героев» — запоминаем экран-источник для корректного «Назад».
+    func navigateToCompanionHome(returnTo: ALADDINScreen? = nil) {
+        companionReturnScreen = returnTo ?? currentScreen
+        navigateTo(.companionHome)
+    }
+
+    /// Возврат с CompanionHome: не уходим на `.main`, если вход был с наград/детского UI.
+    func goBackFromCompanionHome() {
+        if let target = companionReturnScreen {
+            companionReturnScreen = nil
+            appendLog("⬅️ goBackFromCompanionHome → \(target) (explicit return)")
+            if navigationStack.last == target {
+                _ = navigationStack.popLast()
+            } else if let idx = navigationStack.lastIndex(of: target) {
+                navigationStack.removeSubrange((idx + 1)...)
+            }
+            currentScreen = target
+            objectWillChange.send()
+            return
+        }
+        goBack()
     }
     
     /// Возврат к предыдущему экрану

@@ -666,7 +666,7 @@ struct ChildRewardsScreen: View {
     private var companionWorldHeroCard: some View {
         Button(action: {
             HapticFeedback.impact(.medium)
-            navigationManager.navigateTo(.companionHome)
+            navigationManager.navigateToCompanionHome(returnTo: .childRewards)
         }) {
             VStack(alignment: .leading, spacing: Spacing.s) {
                 HStack {

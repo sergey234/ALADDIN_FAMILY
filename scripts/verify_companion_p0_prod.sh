@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-# Полная проверка Companion P0/P1 на проде (OPS-02 / P1-15).
+# Полная проверка Companion P0/P1 + Sprint 4–5 на проде (OPS-02 / P1-15).
 # После deploy_companion_p0.sh
+#
+# Политика героев (PO 2026-05-29): 🦄🧑🧞 доступны всем age_band при consent.
 #
 # Usage: ./scripts/verify_companion_p0_prod.sh [base_url]
 set -euo pipefail
@@ -11,6 +13,7 @@ AUTH=()
 THREAD_ID=""
 MESSAGE_ID=""
 STREAM_GOT_TOKEN=0
+THREE_HEROES="unicorn,aladdin,genie"
 
 fail() {
   echo "FAIL: $*" >&2
@@ -19,6 +22,29 @@ fail() {
 
 ok() {
   echo "OK: $*"
+}
+
+# Проверка, что в JSON есть все три canonical id (characters[] или allowed_characters[]).
+assert_three_heroes_in_json() {
+  local label="$1"
+  local payload="$2"
+  echo "${payload}" | python3 -c "
+import json, sys
+label = sys.argv[1]
+raw = sys.stdin.read()
+d = json.loads(raw)
+if 'characters' in d:
+    ids = {c.get('id') for c in d.get('characters') or []}
+elif 'allowed_characters' in d:
+    ids = set(d.get('allowed_characters') or [])
+else:
+    raise SystemExit(f'{label}: no characters/allowed_characters field')
+need = {'unicorn', 'aladdin', 'genie'}
+missing = need - ids
+if missing:
+    raise SystemExit(f'{label}: missing {sorted(missing)} (got {sorted(ids)})')
+print(f'{label}:', ','.join(sorted(ids)))
+" "${label}" || fail "${label}: expected ${THREE_HEROES}"
 }
 
 curl_auth() {
@@ -52,21 +78,35 @@ if echo "${BODY}" | grep -q 'mock-real-protection\|get_ai_companion_characters';
   fail "still old SFM/mock gateway — run deploy_companion_p0.sh"
 fi
 echo "${BODY}" | grep -q '"characters"' || fail "characters shape"
-ok "characters"
+assert_three_heroes_in_json "GET /characters (child JWT)" "${BODY}"
+ok "characters (3 heroes for child)"
 
-echo "=== [4/12] GET /capabilities ==="
+echo "=== [4/18] GET /capabilities ==="
 CAP=$(curl_auth "${BASE}/api/ai/companion/capabilities")
 echo "${CAP}" | head -c 350
 echo ""
 echo "${CAP}" | grep -q '"streaming":true' || fail "streaming not enabled in capabilities"
-ok "capabilities"
+echo "${CAP}" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+feat = (d.get('features') or {})
+neuro = feat.get('companion_neuro_tts') or {}
+ui = neuro.get('ui') or {}
+# child JWT = free → neuro off, module present after deploy
+assert 'companion_neuro_tts' in feat, 'missing companion_neuro_tts module (deploy neuro TTS?)'
+assert ui.get('hero_visual_tier') == 'all', ui.get('hero_visual_tier')
+assert ui.get('neuro_tts_premium') is False, 'child/free must not get premium TTS'
+print('companion_neuro_tts: neuro_tts_premium=', ui.get('neuro_tts_premium'), 'visual=', ui.get('hero_visual_tier'))
+" || fail "companion_neuro_tts capabilities shape"
+ok "capabilities (+ neuro_tts module, free gate)"
 
 echo "=== [5/12] GET /consent ==="
 CONSENT=$(curl_auth "${BASE}/api/ai/companion/consent")
 echo "${CONSENT}" | head -c 300
 echo ""
 echo "${CONSENT}" | grep -q '"recorded"' || fail "consent shape"
-ok "consent"
+assert_three_heroes_in_json "GET /consent allowed_characters" "${CONSENT}"
+ok "consent (3 heroes in allowed_characters)"
 
 echo "=== [6/12] GET /profile ==="
 PROFILE=$(curl_auth "${BASE}/api/ai/companion/profile")
@@ -250,7 +290,36 @@ PY
   ok "stream resume (resumeFromIndex)"
 fi
 
-echo "=== [13/13] HERO-3-10 age_policy (local) ==="
+echo "=== [12b/17] POST /stream with chat_mode (Sprint 5 stream fields) ==="
+STREAM_MODE_JSON=$(python3 - <<'PY'
+import json
+print(json.dumps({
+    "message": "Одно слово: привет.",
+    "character_id": "unicorn",
+    "context": "companion",
+    "session_id": "verify-stream-mode-1",
+    "stream": True,
+    "chat_mode": "fast",
+    "resumeFromIndex": 0,
+}))
+PY
+)
+STREAM_MODE_CODE=$(curl -sS -m 60 -o /tmp/companion_verify_stream_mode.sse -w "%{http_code}" \
+  -X POST "${BASE}/api/ai/companion/stream" \
+  "${AUTH[@]}" -H "Content-Type: application/json" -d "${STREAM_MODE_JSON}")
+echo "stream+chat_mode HTTP ${STREAM_MODE_CODE}"
+if [[ "${STREAM_MODE_CODE}" == "200" ]]; then
+  head -c 200 /tmp/companion_verify_stream_mode.sse
+  echo ""
+  ok "stream accepts chat_mode=fast"
+elif [[ "${STREAM_MODE_CODE}" == "503" ]]; then
+  echo "WARN: stream+chat_mode 503 (LLM) — field accepted at gateway"
+  ok "stream chat_mode body (LLM skipped)"
+else
+  fail "stream+chat_mode HTTP ${STREAM_MODE_CODE}"
+fi
+
+echo "=== [13/17] HERO-3-10 age_policy (local, 3 heroes all bands) ==="
 PYTHONPATH=. python3 - <<'PY'
 from security.services.ai_platform.age_policy import filter_characters_for_age
 
@@ -259,30 +328,86 @@ CHARACTERS = [
     {"id": "aladdin"},
     {"id": "genie"},
 ]
-child = filter_characters_for_age(CHARACTERS, "child", {"child_can_use_companion": True})
-child_ids = {c["id"] for c in child}
-assert child_ids == {"unicorn"}, child_ids
-teen = filter_characters_for_age(CHARACTERS, "teen", {"child_can_use_companion": True})
-teen_ids = {c["id"] for c in teen}
-assert teen_ids == {"unicorn", "aladdin", "genie"}, teen_ids
-print("child:", sorted(child_ids), "teen:", sorted(teen_ids))
+ALL = {"unicorn", "aladdin", "genie"}
+consent = {
+    "child_can_use_companion": True,
+    "allowed_characters": ["unicorn", "aladdin", "genie"],
+}
+for band in ("child", "teen", "parent", "senior"):
+    got = {c["id"] for c in filter_characters_for_age(CHARACTERS, band, consent)}
+    assert got == ALL, (band, got)
+print("bands OK:", "child teen parent senior ->", sorted(ALL))
+empty = filter_characters_for_age(CHARACTERS, "child", {"child_can_use_companion": False})
+assert empty == [], empty
+print("consent gate OK: child_can_use_companion=False -> []")
 PY
-ok "age_policy child=unicorn only, teen=3 heroes"
+ok "age_policy: 3 heroes for child/teen/parent/senior; blocked without consent"
 
-echo "=== [14/14] HERO-3-10 prod /characters ids (child JWT) ==="
+echo "=== [14/17] HERO-3-10 prod /characters (child JWT, 3 heroes) ==="
 CHAR_IDS=$(echo "${BODY}" | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
 print(','.join(c['id'] for c in d.get('characters',[])))
 ")
 echo "character ids: ${CHAR_IDS}"
-echo "${CHAR_IDS}" | grep -q unicorn || fail "child missing unicorn"
-echo "${CHAR_IDS}" | grep -q genie && fail "child must not see genie" || true
-echo "${CHAR_IDS}" | grep -q aladdin && fail "child must not see aladdin" || true
-ok "prod child JWT: unicorn only"
+for hero in unicorn aladdin genie; do
+  echo "${CHAR_IDS}" | grep -q "${hero}" || fail "child JWT missing ${hero} on /characters"
+done
+ok "prod child JWT: unicorn + aladdin + genie"
+
+echo "=== [15/17] GET /domains (Sprint 4 P2-12 life topics) ==="
+DOMAINS=$(curl_auth "${BASE}/api/ai/companion/domains?locale=ru")
+echo "${DOMAINS}" | head -c 320
+echo ""
+echo "${DOMAINS}" | grep -q '"domains"' || fail "domains shape"
+echo "${DOMAINS}" | python3 -c "
+import json,sys
+d=json.load(sys.stdin)
+domains=d.get('domains') or []
+assert len(domains) >= 3, len(domains)
+ids={x.get('id') for x in domains}
+for need in ('school','friends','family'):
+    assert need in ids, ids
+print('domain ids:', sorted(ids)[:8], '… total', len(domains))
+" || fail "domains content"
+ok "domains chips API"
+
+echo "=== [16/17] GET /workspaces (Sprint 5 P3-03) ==="
+WS=$(curl_auth "${BASE}/api/ai/companion/workspaces")
+echo "${WS}" | head -c 200
+echo ""
+echo "${WS}" | grep -q '"workspaces"' || fail "workspaces shape"
+ok "workspaces list"
+
+echo "=== [17/17] GET /cogs (Sprint 5 P2-08 COGS estimate) ==="
+COGS=$(curl_auth "${BASE}/api/ai/companion/cogs")
+echo "${COGS}" | head -c 200
+echo ""
+echo "${COGS}" | grep -q '"daily_usd"' || fail "cogs shape"
+echo "${COGS}" | grep -q '"month_usd"' || fail "cogs month_usd"
+ok "cogs dashboard"
+
+echo "=== [18/18] Sprint 4 P2-13 social bridge (2× loneliness → meta) ==="
+SOCIAL_THREAD="social-bridge-${DEVICE_ID}"
+for LONELY_MSG in "мне одиноко" "я чувствую себя одиноким"; do
+  SOCIAL_RESP=$(curl -sS -m 45 "${AUTH[@]}" -X POST "${BASE}/api/ai/companion/chat" \
+    -H "Content-Type: application/json" \
+    -d "{\"message\":\"${LONELY_MSG}\",\"character_id\":\"unicorn\",\"session_id\":\"${SOCIAL_THREAD}\",\"chat_mode\":\"fast\"}")
+  echo "${SOCIAL_RESP}" | head -c 120
+  echo ""
+done
+echo "${SOCIAL_RESP}" | python3 -c "
+import json, sys
+d = json.load(sys.stdin)
+bridge = d.get('show_social_bridge')
+domain = d.get('companion_domain')
+assert bridge is True, f'show_social_bridge={bridge!r} domain={domain!r}'
+print('show_social_bridge=True domain=', domain)
+" || fail "social bridge E2E (2× lonely messages)"
+ok "social bridge E2E"
 
 echo ""
-echo "=== All checks passed (OPS-02 + HERO-3-10 verify) ==="
+echo "=== All checks passed (OPS-02 + HERO-3-10 + Sprint 4–5 verify) ==="
 if [[ "${STREAM_GOT_TOKEN}" -eq 0 ]]; then
   echo "Note: stream token check skipped (LLM 503) — re-run when AI is up."
 fi

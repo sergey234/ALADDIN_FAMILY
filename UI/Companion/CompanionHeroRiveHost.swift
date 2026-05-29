@@ -24,10 +24,11 @@ enum CompanionHeroRiveHost {
         return size >= productionRivMinBytes
     }
 
-    /// PNG master 360×480 пока `.riv` ещё placeholder (HERO-3-07).
+    /// PNG master 360×480 когда Rive runtime недоступен (симулятор iOS 15) или `.riv` ещё placeholder.
     static func shouldUseRasterMaster(characterId: String) -> Bool {
-        guard !isProductionRiv(characterId: characterId) else { return false }
-        return bundledMasterUIImage(characterId: characterId) != nil
+        guard bundledMasterUIImage(characterId: characterId) != nil else { return false }
+        if shouldUseRiveRuntime(characterId: characterId) { return false }
+        return true
     }
 
     /// Можно ли включать RiveViewModel (production `.riv` + среда без Metal-крашей).

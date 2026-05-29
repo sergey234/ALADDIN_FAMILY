@@ -58,7 +58,7 @@ struct CompanionHomeScreen: View {
     private var headerBar: some View {
         HStack {
             Button {
-                navigationManager.goBack()
+                navigationManager.goBackFromCompanionHome()
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.body.weight(.semibold))

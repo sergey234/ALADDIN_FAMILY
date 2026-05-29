@@ -542,6 +542,28 @@ def _is_companion_ui_context(context: str) -> bool:
     return (context or "").strip().lower() == "companion"
 
 
+def _companion_user_turn_for_sfm(cloud_message: str) -> str:
+    """
+    SFM keyword router must not see companion system prefix (contains «угроз», «VPN», «защит»).
+    User text is after the last [Companion routing: …] block from companion_chat.
+    """
+    text = (cloud_message or "").strip()
+    marker = "\n[Companion routing:"
+    if marker in text:
+        tail = text.rsplit(marker, 1)[-1]
+        if "]" in tail:
+            return tail.split("]", 1)[-1].strip()
+    lines = [ln.strip() for ln in text.splitlines() if ln.strip()]
+    user_lines: list[str] = []
+    for ln in reversed(lines):
+        if ln.startswith("[") or ln.startswith("Стиль общения:") or ln.startswith(
+            "Дополнительные инструкции"
+        ):
+            break
+        user_lines.insert(0, ln)
+    return " ".join(user_lines).strip() or text
+
+
 async def _ai_companion_context_chat(
     request: ChatMessageRequest, user: dict
 ) -> ChatMessageResponse:
@@ -576,8 +598,9 @@ async def _ai_companion_context_chat(
         logger.warning("Companion Hermes path failed: %s", err)
 
     if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+        sfm_message = _companion_user_turn_for_sfm(cloud_message)
         data = build_ai_chat_sfm_payload(
-            message=cloud_message,
+            message=sfm_message,
             ui_context="companion",
             user_id=request.user_id or user_id,
             execute_fn=sfm_adapter.execute_function,

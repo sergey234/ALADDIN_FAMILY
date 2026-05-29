@@ -37,6 +37,24 @@ final class CompanionAPIService {
         }
     }
 
+    func fetchNeuroTTS(text: String, characterId: String) async throws -> CompanionTTSResponse {
+        let body = CompanionTTSRequestBody(
+            text: text,
+            characterId: characterId,
+            locale: LocalizationManager.shared.aiResponseLanguageCode
+        )
+        return try await withCheckedThrowingContinuation { continuation in
+            network.post(
+                endpoint: AppConfig.Endpoint.aiCompanionTTS,
+                body: body,
+                requiresAuth: true,
+                extraHeaders: familyScopeHeaders()
+            ) { (result: Result<CompanionTTSResponse, Error>) in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
     func fetchCharacters() async throws -> [CompanionCharacterDTO] {
         try await withCheckedThrowingContinuation { continuation in
             network.get(
@@ -400,6 +418,20 @@ final class CompanionAPIService {
                 additionalHeaders: familyScopeHeaders()
             ) { (result: Result<CompanionWorkspacesResponse, Error>) in
                 continuation.resume(with: result.map(\.workspaces))
+            }
+        }
+    }
+
+    func createWorkspace(title: String, characterId: String) async throws -> CompanionWorkspaceDTO {
+        let body = CompanionWorkspaceCreateBody(title: title, characterId: characterId)
+        return try await withCheckedThrowingContinuation { continuation in
+            network.post(
+                endpoint: AppConfig.Endpoint.aiCompanionWorkspaces,
+                body: body,
+                requiresAuth: true,
+                extraHeaders: familyScopeHeaders()
+            ) { (result: Result<CompanionWorkspaceDTO, Error>) in
+                continuation.resume(with: result)
             }
         }
     }

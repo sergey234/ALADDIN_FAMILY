@@ -63,9 +63,9 @@ OPS → CX (P1-26…30, P1-25) → GATE-CX
 
 ### GATE-OPS
 
-- [ ] `curl` health + OpenAPI companion paths на `aladdin-ai.ru`
-- [ ] Verify: characters, capabilities, **stream**, threads, memory, profile, feedback, cosmetics
-- [ ] Ручной: stream + resume на устройстве
+- [x] `curl` health + OpenAPI companion paths на `aladdin-ai.ru` (2026-05-29)
+- [x] Verify: characters, capabilities, **stream**, threads, memory, profile, feedback, cosmetics, domains, workspaces, cogs, social bridge — **18/18** exit 0 — [signoff](./COMPANION_GATE_OPS_SIGNOFF_2026-05-29.md)
+- [ ] Ручной: stream + resume на устройстве → GATE-DIALOG-REGRESS **R19** (не блокер GATE-OPS API)
 
 ---
 

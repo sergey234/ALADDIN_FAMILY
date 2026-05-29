@@ -13,10 +13,12 @@
 | **Визуал** | **2D Rive** (не 3D), сцена **56%** экрана, субтитр снизу — как Grok Companions |
 | **Репозиторий** | `git@github.com:sergey234/ALADDIN_FAMILY.git` · ветка **`master`** |
 | **Рабочая папка iOS** | `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS` |
-| **Build iOS** | **214** (canonical: Info.plist + project.pbxproj + AppConfig) |
-| **Прогресс** | **90 / 102 (88%)** · CODE v2 **49/49** локально · HERO-3: **24 / 26** |
+| **Build iOS** | **216** (Info.plist + project.pbxproj + AppConfig) |
+| **Прогресс** | **90 / 102 (88%)** · Sprint 4–5 MVP код ✅ · **осталось:** [WHAT_REMAINS](./COMPANION_WHAT_REMAINS.md) |
 | **Главный TODO** | [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) — ставь `[x]` только после реальной проверки |
-| **Доделать** | [COMPANION_ML_HANDOFF_NEXT_SYSTEM.md](./COMPANION_ML_HANDOFF_NEXT_SYSTEM.md) — commit, deploy, TF215, блок G/J/K MVP |
+| **Доделать** | [COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md) — TF215, Sprint 4–5 MVP, блок G |
+| **Cursor TODO** | [COMPANION_CURSOR_TODO_STAGE2_3.md](./COMPANION_CURSOR_TODO_STAGE2_3.md) — этап 2–3 |
+| **Что осталось (102)** | [COMPANION_WHAT_REMAINS.md](./COMPANION_WHAT_REMAINS.md) — все открытые задачи |
 | **Rive** | **Отложено** (12 задач) — не блокирует «100% без Rive» |
 
 ### Что делать дальше (две параллельные дорожки)
@@ -38,7 +40,8 @@ flowchart LR
 
 | Дорожка | ID | Действие |
 |---------|-----|----------|
-| **Сейчас** | Этап 1 | commit Sprint 4–5 + stream-fix → deploy VPS → TF **215** |
+| **Сейчас** | Этап 2–3 | [RUNBOOK](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md): Redis, chips device, PhotosPicker, COGS UI |
+| **Сейчас** | TF **215** | Archive если ещё не в TestFlight (git ✅, VPS ✅) |
 | **Сейчас** | Блок G | Проверить карточку Rewards на device (build 215) |
 | **Потом** | TF **214** QA | device STT (11b) — отложено в 12 задач |
 | **Потом** | **HERO-3-07** | Rive Editor → [5 steps](./COMPANION_RIVE_EDITOR_5_STEPS.md) |
@@ -58,7 +61,8 @@ flowchart LR
 | **2** | [COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md) | Пошаговый план этапов 1–5 | 10 мин |
 | **3** | [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) | Единый список 102 задач с `[x]` | 15 мин |
 | **4** | [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md) | **PO ✅ art** — где лежат все картинки | 5 мин |
-| **4** | [COMPANION_100_PERCENT_PARALLEL.md](./COMPANION_100_PERCENT_PARALLEL.md) | План vs факт, кто что закрывает | 5 мин |
+| **4b** | [COMPANION_GATE_OPS_SIGNOFF_2026-05-29.md](./COMPANION_GATE_OPS_SIGNOFF_2026-05-29.md) | **GATE-OPS ✅** verify 18/18 | 2 мин |
+| **5** | [COMPANION_100_PERCENT_PARALLEL.md](./COMPANION_100_PERCENT_PARALLEL.md) | План vs факт, кто что закрывает | 5 min |
 | **5** | [COMPANION_FIGMA_STATUS.md](./COMPANION_FIGMA_STATUS.md) | **Аудит Figma** — что реально в файле | 5 мин |
 | **6** | [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md) | **HERO-3-07** — размеры, SM, export | 10 мин |
 | **7** | [COMPANION_HERO3_11_QA_CHECKLIST.md](./COMPANION_HERO3_11_QA_CHECKLIST.md) | Device QA 11b / 11c | 10 мин |

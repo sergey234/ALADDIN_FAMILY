@@ -38,3 +38,29 @@ def test_threats_use_aggregates():
     })
     assert "12" in result["response"]
     assert result.get("grounded") is True
+
+
+def test_companion_context_no_threats_template_on_casual_question():
+    result = build_ai_assistant_chat_result({
+        "message": "как дела у тебя",
+        "context": "companion",
+        "sfm_aggregates": {"threats_blocked": 47, "protection_status": "ACTIVE"},
+        "sfm_context_sources": [],
+    })
+    text = result["response"]
+    assert "47" not in text
+    assert "заблокировала" not in text.lower()
+
+
+def test_companion_user_turn_extraction_strips_system_prefix():
+    """Mirror of ai_assistant_router._companion_user_turn_for_sfm (no FastAPI import)."""
+    text = (
+        "[ALADDIN Family Companion — Единорог]\n"
+        "Суперсила ALADDIN (~30%, по запросу): угрозы и VPN.\n"
+        "\n[Companion routing: domain=friendship; mood=happy.]\n"
+        "как дела?"
+    )
+    marker = "\n[Companion routing:"
+    tail = text.rsplit(marker, 1)[-1]
+    user_turn = tail.split("]", 1)[-1].strip()
+    assert user_turn == "как дела?"

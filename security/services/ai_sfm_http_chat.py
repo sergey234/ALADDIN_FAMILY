@@ -70,6 +70,49 @@ def _status_line(aggregates: Dict[str, Any]) -> str:
     return "".join(parts)
 
 
+def _companion_life_first_fallback(
+    message: str, aggregates: Dict[str, Any], params: Dict[str, Any]
+) -> Dict[str, Any]:
+    """Companion SFM path when Hermes/LLM unavailable — life-first, not security keyword router."""
+    msg_lower = message.lower()
+    if "привет" in msg_lower or "здравств" in msg_lower or "hello" in msg_lower:
+        response_text = (
+            "Привет! Я рядом — расскажи, как день, или спроси что угодно. "
+            "Если понадобится помощь с безопасностью ALADDIN — подскажу."
+        )
+    elif any(w in msg_lower for w in ("груст", "одинок", "скуч", "страш", "боюсь")):
+        response_text = (
+            "Слышу тебя. Так бывает — важно, что ты делишься. "
+            "Хочешь поговорить подробнее или найти, чем заняться? "
+            "Если что-то серьёзное — лучше рассказать взрослому, которому доверяешь."
+        )
+    elif any(w in msg_lower for w in ("школ", "урок", "учит", "домашк")):
+        response_text = (
+            "Про школу могу помочь разобраться: что задали, как спланировать время, "
+            "как спокойнее готовиться. О чём именно хочешь поговорить?"
+        )
+    elif any(w in msg_lower for w in ("друг", "общен", "ссор")):
+        response_text = (
+            "Дружба бывает разной — иногда сложно. Расскажи, что случилось, "
+            "и вместе подумаем, что можно сделать."
+        )
+    else:
+        response_text = (
+            "Я пока отвечаю в упрощённом режиме — но я здесь и слушаю. "
+            "Расскажи подробнее, о чём хочешь поговорить?"
+        )
+    return {
+        "response": response_text,
+        "confidence": 0.72,
+        "timestamp": datetime.utcnow().isoformat(),
+        "suggestions": [],
+        "follow_up_questions": [],
+        "llm_context_policy": params.get("llm_context_policy", "aggregates_only_v1"),
+        "sfm_context_sources": list(params.get("sfm_context_sources") or []),
+        "grounded": False,
+    }
+
+
 def build_ai_assistant_chat_result(params: Dict[str, Any]) -> Dict[str, Any]:
     """
     Ответ только из whitelisted aggregates + FAQ-style product copy.
@@ -80,6 +123,9 @@ def build_ai_assistant_chat_result(params: Dict[str, Any]) -> Dict[str, Any]:
     context = (params.get("context") or "general").strip() or "general"
     aggregates = _aggregates(params)
     sources: List[str] = list(params.get("sfm_context_sources") or [])
+
+    if context == "companion":
+        return _companion_life_first_fallback(message, aggregates, params)
 
     meta = _match_meta(msg_lower)
     math_answer = _try_simple_math(message)
