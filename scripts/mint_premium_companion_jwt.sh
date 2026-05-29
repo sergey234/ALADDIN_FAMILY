@@ -1,8 +1,10 @@
 #!/usr/bin/env bash
-# Premium JWT — быстрый путь: mint на VPS (без 20s register-device).
+# Companion JWT для smoke (premium / trial / free).
 #
 # Usage:
 #   export PREMIUM_TOKEN="$(./scripts/mint_premium_companion_jwt.sh)"
+#   SUBSCRIPTION_LEVEL=trial ./scripts/mint_premium_companion_jwt.sh
+#   SUBSCRIPTION_LEVEL=free ./scripts/mint_premium_companion_jwt.sh
 #   MINT_VIA_REGISTER=1 ./scripts/mint_premium_companion_jwt.sh  # медленный fallback
 #
 set -euo pipefail
@@ -13,12 +15,17 @@ SSH_KEY="${SSH_KEY_PATH:-$HOME/.ssh/aladdin_server}"
 SSH_OPTS=(-o BatchMode=yes -o StrictHostKeyChecking=no -o ConnectTimeout=8)
 [[ -f "${SSH_KEY}" ]] && SSH_OPTS+=(-i "${SSH_KEY}")
 
+SUBSCRIPTION_LEVEL="${SUBSCRIPTION_LEVEL:-premium}"
+SUBSCRIPTION_LEVEL="$(echo "${SUBSCRIPTION_LEVEL}" | tr '[:upper:]' '[:lower:]')"
+
 mint_via_ssh() {
-  ssh "${SSH_OPTS[@]}" "${SSH_USER}@${SSH_HOST}" 'cd /opt/aladdin-backend && ./venv/bin/python3 -' <<'PY'
+  ssh "${SSH_OPTS[@]}" "${SSH_USER}@${SSH_HOST}" \
+    "cd /opt/aladdin-backend && SUBSCRIPTION_LEVEL=${SUBSCRIPTION_LEVEL} ./venv/bin/python3 -" <<'PY'
 import os
 import time
 import jwt
 
+level = (os.environ.get("SUBSCRIPTION_LEVEL") or "premium").strip().lower()
 secret = os.environ.get("JWT_SECRET")
 if not secret:
     for line in open(".env"):
@@ -28,14 +35,20 @@ if not secret:
 if not secret:
     raise SystemExit("JWT_SECRET missing")
 
+limits = {
+    "free": {"max_ai_messages": 20, "voice_minutes_month": 5},
+    "trial": {"max_ai_messages": 100, "voice_minutes_month": 30},
+    "premium": {"max_ai_messages": 1000, "voice_minutes_month": 120},
+}.get(level, {"max_ai_messages": 1000, "voice_minutes_month": 120})
+
 now = int(time.time())
 payload = {
-    "sub": "companion-premium-smoke",
+    "sub": f"companion-{level}-smoke",
     "type": "device_auth",
     "age_band": "parent",
     "app_id": "aladdin_family",
-    "subscription": {"level": "premium", "limits": {"max_ai_messages": 1000, "voice_minutes_month": 120}},
-    "subscription_level": "premium",
+    "subscription": {"level": level, "limits": limits},
+    "subscription_level": level,
     "parent_consent": {
         "memory": True,
         "memory_enabled": True,
@@ -57,7 +70,7 @@ if [[ "${MINT_VIA_REGISTER:-0}" != "1" ]]; then
 fi
 
 BASE="${1:-https://aladdin-ai.ru}"
-DEVICE_ID="companion-premium-mint-$(date +%s)"
+DEVICE_ID="companion-${SUBSCRIPTION_LEVEL}-mint-$(date +%s)"
 RESP=$(curl -sS -m 12 -X POST "${BASE}/api/auth/register-device" \
   -H "Content-Type: application/json" \
   -d "{\"deviceId\":\"${DEVICE_ID}\",\"deviceType\":\"ios\"}")
@@ -73,7 +86,7 @@ sub=p.get('subscription') or {}
 print(sub.get('level') or p.get('subscription_level') or 'free')
 " 2>/dev/null || echo "free")
 
-if [[ "${LEVEL}" == "premium" && -n "${TOKEN}" ]]; then
+if [[ "${LEVEL}" == "${SUBSCRIPTION_LEVEL}" && -n "${TOKEN}" ]]; then
   echo "${TOKEN}"
 else
   mint_via_ssh

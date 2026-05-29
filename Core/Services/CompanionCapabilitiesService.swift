@@ -76,6 +76,8 @@ final class CompanionCapabilitiesService: ObservableObject {
     }
 
     private func uiFlag(module: String, key: String) -> Bool {
-        payload?.features?[module]?.ui?.flag(key) ?? true
+        // neuro_tts_premium: default false until capabilities loaded (Free must not hit /tts)
+        let defaultValue = (module == "companion_neuro_tts" && key == "neuro_tts_premium") ? false : true
+        return payload?.features?[module]?.ui?.flag(key) ?? defaultValue
     }
 }

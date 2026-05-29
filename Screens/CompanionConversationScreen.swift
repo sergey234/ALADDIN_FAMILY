@@ -658,8 +658,8 @@ struct CompanionConversationScreen: View {
                         }
                     }
             )
-            .opacity((speechManager.isPreparingRecording || voiceSession.isAwaitingReply) ? 0.5 : 1.0)
-            .allowsHitTesting(!(speechManager.isPreparingRecording || speechManager.isStoppingRecording || speechManager.isMicrophoneCoolingDown || voiceSession.isAwaitingReply))
+            .opacity((speechManager.isPreparingRecording || voiceSession.isAwaitingReply || speechOutput.isSpeaking) ? 0.5 : 1.0)
+            .allowsHitTesting(!(speechManager.isPreparingRecording || speechManager.isStoppingRecording || speechManager.isMicrophoneCoolingDown || voiceSession.isAwaitingReply || speechOutput.isSpeaking))
     }
 
     private var micCoachSheet: some View {
@@ -829,8 +829,8 @@ struct CompanionConversationScreen: View {
                         .accessibilityHint(isChildProfile
                             ? localizationManager.localized("companion_mic_hold_hint_child")
                             : localizationManager.localized("companion_voice_input_hint"))
-                        .opacity((speechManager.isPreparingRecording || voiceSession.isAwaitingReply) ? 0.5 : 1.0)
-                        .allowsHitTesting(!(speechManager.isPreparingRecording || speechManager.isStoppingRecording || speechManager.isMicrophoneCoolingDown || voiceSession.isAwaitingReply))
+                        .opacity((speechManager.isPreparingRecording || voiceSession.isAwaitingReply || speechOutput.isSpeaking) ? 0.5 : 1.0)
+                        .allowsHitTesting(!(speechManager.isPreparingRecording || speechManager.isStoppingRecording || speechManager.isMicrophoneCoolingDown || voiceSession.isAwaitingReply || speechOutput.isSpeaking))
                 }
                 Button {
                     Task { await sendText() }
@@ -1245,7 +1245,8 @@ struct CompanionConversationScreen: View {
         guard !speechManager.isPreparingRecording,
               !speechManager.isStoppingRecording,
               !speechManager.isMicrophoneCoolingDown,
-              !voiceSession.isAwaitingReply else { return }
+              !voiceSession.isAwaitingReply,
+              !speechOutput.isSpeaking else { return }
         if speechManager.isRecording {
             speechManager.stopRecording()
             return
@@ -1270,6 +1271,7 @@ struct CompanionConversationScreen: View {
         errorText = nil
         heroEmotion = .listening
         input = ""
+        prepareMicForRecording()
         speechManager.startRecording { recognized in
             Task { await handleVoiceTranscript(recognized) }
         }
@@ -1284,7 +1286,8 @@ struct CompanionConversationScreen: View {
         guard !speechManager.isRecording,
               !speechManager.isPreparingRecording,
               !speechManager.isStoppingRecording,
-              !speechManager.isMicrophoneCoolingDown else { return }
+              !speechManager.isMicrophoneCoolingDown,
+              !speechOutput.isSpeaking else { return }
         guard !voiceSession.isAwaitingReply else { return }
         guard speechManager.isSpeechInputAvailable else {
             errorText = localizationManager.localized("companion_voice_unavailable")
@@ -1295,8 +1298,16 @@ struct CompanionConversationScreen: View {
         errorText = nil
         heroEmotion = .listening
         input = ""
+        prepareMicForRecording()
         speechManager.startRecording { recognized in
             Task { await handleVoiceTranscript(recognized) }
+        }
+    }
+
+    private func prepareMicForRecording() {
+        speechOutput.stop()
+        if voiceSession.isConnected {
+            voiceSession.disconnect()
         }
     }
 

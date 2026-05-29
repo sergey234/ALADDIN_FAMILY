@@ -31,6 +31,12 @@ final class VoiceAudioSessionCoordinator {
             mode: .default,
             options: [.defaultToSpeaker, .allowBluetooth]
         )
+        /// Companion TTS (ElevenLabs / AVSpeech) — отдельно от mic `.aiLive`.
+        static let companionPlayback = SessionProfile(
+            category: .playback,
+            mode: .spokenAudio,
+            options: [.duckOthers]
+        )
     }
 
     private(set) var activeConsumer: Consumer?

@@ -205,6 +205,12 @@ final class SpeechManager: ObservableObject {
                 self.finishStopUIState()
                 return
             }
+            if self.recognitionTask != nil, self.finalizeAttempt < 2 {
+                self.finalizeAttempt += 1
+                self.logger.business("🎤 SpeechManager: Waiting for speech final (\(self.finalizeAttempt))")
+                self.scheduleFinalizePass()
+                return
+            }
             #if !targetEnvironment(simulator)
             if self.finalizeAttempt == 0 {
                 self.finalizeAttempt = 1
@@ -220,6 +226,17 @@ final class SpeechManager: ObservableObject {
             self.deliverPendingCompletionIfNeeded(forcePartial: true)
             self.finishStopUIState()
         }
+    }
+
+    /// Companion TTS may leave `.playback` on `AVAudioSession`; reset before mic.
+    private func acquireAudioSessionForRecording() -> Bool {
+        if VoiceAudioSessionCoordinator.shared.acquire(audioSessionConsumer, profile: .aiLive) {
+            return true
+        }
+        guard audioSessionConsumer == .companion else { return false }
+        VoiceAudioSessionCoordinator.shared.forceReleaseAll()
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        return VoiceAudioSessionCoordinator.shared.acquire(audioSessionConsumer, profile: .aiLive)
     }
 
     private func finishStopUIState() {
@@ -293,7 +310,7 @@ final class SpeechManager: ObservableObject {
             resetEngineForNewRecordingSession()
             isStopping = false
 
-            guard VoiceAudioSessionCoordinator.shared.acquire(audioSessionConsumer, profile: .aiLive) else {
+            guard self.acquireAudioSessionForRecording() else {
                 logger.warn("🎤 SpeechManager: Audio session busy")
                 isPreparingRecording = false
                 completeOnce(nil, completion: completion)

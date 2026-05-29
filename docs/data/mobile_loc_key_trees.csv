@@ -1,0 +1,18 @@
+tree,scope,local_files,local_lines,local_python,local_swift,vps_files,vps_lines,vps_python,vps_swift,notes
+security/,runtime backend (Companion API deploy),134,38780,38780,0,133,39285,39285,0,Canonical deploy tree; NOT the whole backend
+app/security/,SFM monorepo (ai_agents vpn bots),422,273926,273819,0,411,272684,272577,0,Largest Python tree; overlaps conceptually with security/
+app/routers/,FastAPI routers (family antivirus etc),23,8833,8833,0,23,8834,8834,0,Included in app/ on VPS
+Core/,iOS core logic,199,107464,0,107464,112,82403,0,82403,Local ahead of VPS flat-export
+Screens/,iOS SwiftUI screens,97,78947,0,78947,78,55404,0,55404,Includes Companion* screens
+Shared/,shared UI components,99,19213,0,19213,90,17512,0,17512,
+Tests/,unit integration UI tests,98,15358,1580,13778,49,11513,0,11513,VPS snapshot incomplete
+ViewModels/,MVVM layer,33,11787,0,11787,32,10540,0,10540,
+backend/,deploy requirements helpers,12,1356,1356,0,13,1539,1539,0,
+scripts/,deploy verify gates LOC tool,126,13545,10494,113,28,2241,746,113,
+Core/Voice/,TTS STT CompanionSpeechOutput,3,392,0,392,0,0,0,0,VPS export missing build 216 Voice files
+Core/Services/,CompanionAPIService Capabilities,11,2251,0,2251,8,1581,0,1581,
+Core/Companion/,analytics offline presets,5,235,0,235,0,0,0,0,VPS export stale
+Core/Network/,APIService streaming WS,12,10416,0,10416,9,7783,0,7783,
+security/services/ai_platform/,companion modules neuro-TTS,46,3575,3575,0,44,3554,3554,0,Companion business logic BE
+docs/,markdown runbooks handoffs,113,19957,13654,0,107,19464,13174,0,Not runtime code
+__FULL_REPO__,all code excl backups,1843,769961,452465,275850,1843,651354,409530,203479,Sum from mobile_loc_*.csv __TOTAL__

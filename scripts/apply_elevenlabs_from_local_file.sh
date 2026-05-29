@@ -16,8 +16,15 @@ SSH_KEY="${4:-${SSH_KEY_PATH:-$HOME/.ssh/aladdin_server}}"
 
 if [[ ! -f "${ENV_FILE}" ]]; then
   echo "Missing ${ENV_FILE}" >&2
-  echo "Copy: cp secrets/elevenlabs.env.example secrets/elevenlabs.local.env" >&2
+  echo "Run: ./scripts/voice_prem_04_03.sh  (needs secrets/elevenlabs.api_key)" >&2
+  echo "Or: cp secrets/elevenlabs.env.example secrets/elevenlabs.local.env" >&2
   exit 1
+fi
+
+RECOMMENDED="${LOCAL_ROOT}/secrets/elevenlabs.recommended-voices.env"
+if [[ -f "${RECOMMENDED}" ]]; then
+  # shellcheck source=/dev/null
+  source "${RECOMMENDED}"
 fi
 
 # shellcheck source=/dev/null

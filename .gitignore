@@ -46,3 +46,4 @@ BACKUPS/
 
 # Companion neuro-TTS secrets (VOICE-PREM-04)
 secrets/elevenlabs.local.env
+secrets/elevenlabs.api_key

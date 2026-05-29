@@ -1,18 +1,18 @@
 # Companion — полный трекер задач (открой в Cursor)
 
-**Обновлено:** 2026-05-29 (Sprint 4–5 MVP **код+VPS ✅** · verify **18/18** · **Premium voice plan** · build **216+** · [осталось](./COMPANION_WHAT_REMAINS.md))  
+**Обновлено:** 2026-05-29 (build **216** push **`f8ca4e1e`** · 102: **90/12** · VOICE-PREM **4/6** · [осталось](./COMPANION_WHAT_REMAINS.md))  
 **Handoff ML:** [COMPANION_ML_HANDOFF_NEXT_SYSTEM.md](./COMPANION_ML_HANDOFF_NEXT_SYSTEM.md) · **Этап 2–3:** [COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md) · **Cursor TODO:** [COMPANION_CURSOR_TODO_STAGE2_3.md](./COMPANION_CURSOR_TODO_STAGE2_3.md) · **План:** [COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md) · **Premium TTS:** [COMPANION_PREMIUM_VOICE_PLAN.md](./COMPANION_PREMIUM_VOICE_PLAN.md)  
 **Handoff AI:** [COMPANION_HANDOFF_AI_NEXT.md](./COMPANION_HANDOFF_AI_NEXT.md) · **ML №4:** [HANDOFF_29](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Без Rive:** [TASKS_NO_RIVE](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Код-спринты v2:** [CODE_PLAN](./COMPANION_CODE_PLAN_NO_RIVE.md) · [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md)  
 **Rive connect:** [COMPANION_RIVE_CONNECT_NODE_MCP.md](./COMPANION_RIVE_CONNECT_NODE_MCP.md) · **Art canon:** [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md) · **UX:** [UNIFIED_HOME](./COMPANION_UNIFIED_HOME_UX.md)  
-**Прогресс спринта:** **90 / 102 (88%)** · **осталось 12** · **VOICE-PREM: 2/6 ✅ код** · **CODE v2: 49/49 ✅** · **HERO-3: 24/26** · **07 + 11 ⏳** · **02b-PO-lock ✅** · **unicorn.riv >25KB ✅**  
-**Вне 102 (iOS polish):** **11/12 ✅** · **1 в работе** (STT device QA → **214**) · **POL-12 ✅**  
+**Прогресс спринта:** **90 / 102 (88%)** · **осталось 12** · **VOICE-PREM: 4/6** (код+deploy ✅ · ключи ElevenLabs ⏳) · **CODE v2: 49/49 ✅** · **HERO-3: 24/26**  
+**Вне 102:** TF **216** ⏳ · ElevenLabs **04→03** ⏳ · Hermes 2-й ключ ⏳ · **POL-12 ✅**  
 **Синхронизация цифр:** только этот файл — остальные `COMPANION_*.md` ссылаются сюда.  
 **ADR 2D vs 3D:** [COMPANION_2D_VS_3D_ADR.md](./COMPANION_2D_VS_3D_ADR.md) ✅ · **Export 07:** [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md)  
 **Матрица HERO-3:** [COMPANION_HERO3_READINESS_MATRIX.md](./COMPANION_HERO3_READINESS_MATRIX.md)  
 **Figma Companion:** https://www.figma.com/design/vwKcGPUUEZjgayEHNn0BJM — **`00_Spec` ✅** · **`01` unicorn v2 ✅** · **`03` genie OB_03×12 + OB_02–06 row ✅** [аудит](./COMPANION_FIGMA_STATUS.md)  
 **Цель:** 2D Rive · 56% full-body rect · субтитр · 12 эмоций + lip-sync  
-**Следующий шаг:** **TestFlight 216** · затем HERO-3-07 / 11b только по PO · см. [WHAT_REMAINS](./COMPANION_WHAT_REMAINS.md)  
-**iOS:** build **216** в git (COGS, workspaces, вложения, trust UI) · **VPS:** Redis + orchestrator + social_bridge fix · verify **18/18** ✅
+**Следующий шаг:** **TestFlight 216** → smoke device → **VOICE-PREM-04** (3 voice id) → **03** prewarm · см. [WHAT_REMAINS](./COMPANION_WHAT_REMAINS.md)  
+**Git:** `f8ca4e1e` master @ origin (build **216**, neuro-TTS, Hermes rotator, companion UX) · **VPS** verify **18/18** ✅
 
 Отмечай `[x]` при закрытии. Источник деталей: [COMPANION_IMPLEMENTATION_TODOS.md](./COMPANION_IMPLEMENTATION_TODOS.md)
 
@@ -318,10 +318,22 @@ X-01 · X-02 · X-03 · X-04 · X-05 · X-06 · X-07
 
 - [x] **VOICE-PREM-01** — `companion_neuro_tts` capability + `POST /companion/tts` + subscription gate
 - [x] **VOICE-PREM-02** — iOS: `CompanionNeuroTTSPlayer` + 3 AVSpeech voice id
-- [ ] **VOICE-PREM-04** — **Сначала:** 3 voice id (unicorn, genie, aladdin) · [гайд](./COMPANION_ELEVENLABS_VOICES_RU.md)
-- [ ] **VOICE-PREM-03** — **Потом:** пилот genie + prewarm (после 04 + API key)
-- [ ] **VOICE-PREM-05** — Прайс Yandex SpeechKit (сравнение)
-- [x] **VOICE-PREM-06** — VPS deploy + `FEATURE_NEURO_TTS_ENABLED=1` + Premium cap ✅ · TTS **424** до ключей ElevenLabs
+- [x] **Trial testing gate** — `FEATURE_NEURO_TTS_TRIAL=1`: trial → `neuro_tts_premium` как premium (2026-05-30)
+- [ ] **VOICE-PREM-04** — **Сначала:** 3 voice id 🦄🧞🧑 · [гайд](./COMPANION_ELEVENLABS_VOICES_RU.md) · `apply_elevenlabs_from_local_file.sh`
+- [ ] **VOICE-PREM-03** — **Потом:** пилот genie + prewarm (**после 04**)
+- [x] **VOICE-PREM-05** — Сравнение SpeechKit vs ElevenLabs · [док](./COMPANION_TTS_PRICING_COMPARE.md) (КП Yandex — PO)
+- [x] **VOICE-PREM-06** — VPS deploy + `FEATURE_NEURO_TTS_ENABLED=1` + Premium cap · TTS **424** до ключей
+
+### Сессия build 216 (`f8ca4e1e`, 2026-05-29)
+
+| Область | Что сделано |
+|---------|-------------|
+| **Premium TTS** | `companion_neuro_tts` module, `POST /tts`, iOS `CompanionNeuroTTSPlayer`, AVSpeech×3 |
+| **LLM / Hermes** | Key rotator, retry, `hermes_llm_watchdog`, SFM life-first (без «47 угроз») |
+| **iOS UX** | Nav companion home, Rive→PNG fallback, attachments, COGS/workspaces/trust UI |
+| **Ops** | `verify_companion_p0_prod.sh` 18 шагов, deploy scripts, mint/prewarm/quick-check |
+| **Доки** | VOICE-PREM plan, CURSOR_TODO, WHAT_REMAINS, ElevenLabs RU гайд |
+| **Sprint 5+** | `tools_used` в «Моё» (5.6), media stub дока (5.9) |
 
 ### Спринты голоса (кратко)
 
@@ -347,8 +359,9 @@ X-01 · X-02 · X-03 · X-04 · X-05 · X-06 · X-07
 | Sprint 5 | P2-01…08, P2-14, P3-01…06, A-01…03 | ✅ код · **VPS ⏳** |
 | Stream-fix | `chat_mode`, `attachments`, `workspace_id` в SSE | ✅ локально |
 | Отложено Rive | UX-14b, HERO-3-07, P1-19 screenshots, P2-09, P2-17 | ⏳ не в плане 100% |
-| VPS deploy 2026-05-29 | `deploy_companion_p0.sh` → 149.154.65.180 | ✅ verify 17 шагов |
-| Следующий шаг | TF **215** + [RUNBOOK](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md) Sprint 4–5 MVP | |
+| VPS deploy 2026-05-29 | `deploy_companion_p0.sh` → 149.154.65.180 | ✅ verify **18/18** |
+| Build **216** push | `f8ca4e1e` → `origin/master` | ✅ 2026-05-29 |
+| Следующий шаг | TF **216** · VOICE-PREM **04→03** · HERO-3 **07** по PO | |
 
 ## В конце (по решению команды)
 

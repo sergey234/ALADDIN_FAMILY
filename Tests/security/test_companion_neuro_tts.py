@@ -26,10 +26,23 @@ from security.services.ai_platform.companion_neuro_tts import (
 
 
 class TestPremiumSubscription(unittest.TestCase):
-    def test_premium_only(self):
-        self.assertTrue(is_premium_subscription("premium"))
-        self.assertFalse(is_premium_subscription("free"))
-        self.assertFalse(is_premium_subscription("trial"))
+    def test_premium_and_trial_when_trial_flag_on(self):
+        with patch(
+            "security.services.ai_platform.modules.companion_neuro_tts.NEURO_TTS_TRIAL_ENABLED",
+            True,
+        ):
+            self.assertTrue(is_premium_subscription("premium"))
+            self.assertTrue(is_premium_subscription("trial"))
+            self.assertFalse(is_premium_subscription("free"))
+            self.assertFalse(is_premium_subscription("personal"))
+
+    def test_trial_off_when_flag_disabled(self):
+        with patch(
+            "security.services.ai_platform.modules.companion_neuro_tts.NEURO_TTS_TRIAL_ENABLED",
+            False,
+        ):
+            self.assertTrue(is_premium_subscription("premium"))
+            self.assertFalse(is_premium_subscription("trial"))
 
     def test_assert_premium_raises_for_free(self):
         with self.assertRaises(ValueError):
@@ -46,6 +59,15 @@ class TestCompanionNeuroTTSModule(unittest.TestCase):
             content_policy="family_pg13",
             subscription_level=level,
         )
+
+    @patch("security.services.ai_platform.modules.companion_neuro_tts.NEURO_TTS_ENABLED", True)
+    @patch("security.services.ai_platform.modules.companion_neuro_tts.NEURO_TTS_TRIAL_ENABLED", True)
+    def test_capability_trial_on(self):
+        mod = CompanionNeuroTTSModule()
+        frag = mod.capability_fragment(self._ctx("trial"))
+        self.assertTrue(frag.ui["neuro_tts_premium"])
+        self.assertEqual(frag.ui["tts_provider"], "elevenlabs")
+        self.assertEqual(frag.limits["requires_subscription"], "premium,trial")
 
     @patch("security.services.ai_platform.modules.companion_neuro_tts.NEURO_TTS_ENABLED", True)
     def test_capability_premium_on(self):

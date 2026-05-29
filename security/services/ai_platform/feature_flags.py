@@ -31,6 +31,8 @@ VISION_ENABLED = _env_bool("FEATURE_VISION_ENABLED", False)
 
 # Premium neuro-TTS (ElevenLabs Flash) — server + capability gate
 NEURO_TTS_ENABLED = _env_bool("FEATURE_NEURO_TTS_ENABLED", False)
+# Testing window: trial → same neuro-TTS path as premium (disable with FEATURE_NEURO_TTS_TRIAL=0)
+NEURO_TTS_TRIAL_ENABLED = _env_bool("FEATURE_NEURO_TTS_TRIAL", True)
 
 # P3+
 IMAGE_GEN_ENABLED = _env_bool("FEATURE_IMAGE_GEN_ENABLED", False)

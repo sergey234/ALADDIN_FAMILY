@@ -56,18 +56,22 @@ ELEVENLABS_VOICE_GENIE=${ELEVENLABS_VOICE_GENIE}
 ELEVENLABS_VOICE_ALADDIN=${ELEVENLABS_VOICE_ALADDIN}
 EOF
   chmod 600 ${SECRETS_FILE}
+  DROPIN=/etc/systemd/system/aladdin-backend.service.d/60-elevenlabs-env.conf
+  cat > \${DROPIN} <<'DROPINEOF'
+[Service]
+EnvironmentFile=/opt/aladdin-backend/secrets/elevenlabs.env
+DROPINEOF
   grep -q 'secrets/elevenlabs.env' ${REMOTE_ROOT}/.env 2>/dev/null || cat >> ${REMOTE_ROOT}/.env <<'ENVEOF'
 
-# Companion neuro-TTS (Premium) — source secrets/elevenlabs.env
-set -a
-[ -f /opt/aladdin-backend/secrets/elevenlabs.env ] && . /opt/aladdin-backend/secrets/elevenlabs.env
-set +a
+# Companion neuro-TTS (Premium) — keys in secrets/elevenlabs.env (loaded via systemd drop-in)
 FEATURE_NEURO_TTS_ENABLED=1
+FEATURE_NEURO_TTS_TRIAL=1
 COMPANION_TTS_CACHE_MAX=30
 ENVEOF
   grep -q '^FEATURE_NEURO_TTS_ENABLED=' ${REMOTE_ROOT}/.env && \
     sed -i 's/^FEATURE_NEURO_TTS_ENABLED=.*/FEATURE_NEURO_TTS_ENABLED=1/' ${REMOTE_ROOT}/.env || \
     echo 'FEATURE_NEURO_TTS_ENABLED=1' >> ${REMOTE_ROOT}/.env
+  systemctl daemon-reload
   systemctl restart aladdin-backend.service
   sleep 2
   systemctl is-active aladdin-backend.service

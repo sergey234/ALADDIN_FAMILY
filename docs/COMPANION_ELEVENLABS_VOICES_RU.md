@@ -18,16 +18,39 @@
 
 ---
 
-## 2. Локально → VPS (рекомендуется — без зависаний в чате)
+## 2. Автоматически (рекомендуется)
+
+```bash
+# 1) Положите API key (не коммитить):
+echo 'sk_ВАШ_КЛЮЧ' > secrets/elevenlabs.api_key
+chmod 600 secrets/elevenlabs.api_key
+
+# 2) Один скрипт: bootstrap 3 voice id → VPS → probe → prewarm
+./scripts/voice_prem_04_03.sh
+```
+
+Скрипт `bootstrap_elevenlabs_voices.py`:
+- читает библиотеку `GET /v1/voices`
+- подбирает 3 разных голоса под 🦄🧞🧑 (fallback: `secrets/elevenlabs.recommended-voices.env`)
+- проверяет RU TTS probe на ElevenLabs
+- пишет `secrets/elevenlabs.local.env` → `apply_elevenlabs_from_local_file.sh`
+
+**Рекомендованные premade id** (можно заменить после прослушивания):
+
+| Герой | Voice | ID |
+|-------|-------|-----|
+| 🦄 unicorn | Sarah | `EXAVITQu4vr4xnSDxMaL` |
+| 🧞 genie | Antoni | `ErXwobaYiN019PkySvjV` |
+| 🧑 aladdin | Daniel | `onwK4e9ZLuTAKqWW03F9` |
+
+## 2b. Вручную (локальный env)
 
 ```bash
 cp secrets/elevenlabs.env.example secrets/elevenlabs.local.env
-# заполнить 4 поля в редакторе
+# заполнить ELEVENLABS_API_KEY + при необходимости voice id
 
 ./scripts/apply_elevenlabs_from_local_file.sh
 ```
-
-Один скрипт: configure + verify + TTS probe + prewarm (~30–60 с).
 
 **Быстрая проверка без ключей** (~4 с):
 

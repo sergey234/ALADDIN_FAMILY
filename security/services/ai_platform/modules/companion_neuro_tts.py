@@ -1,16 +1,23 @@
 # -*- coding: utf-8 -*-
-"""Premium neuro-TTS (ElevenLabs Flash) — только subscription premium."""
+"""Premium neuro-TTS (ElevenLabs Flash) — premium + trial (testing via FEATURE_NEURO_TTS_TRIAL)."""
 
 from __future__ import annotations
 
-from ..feature_flags import NEURO_TTS_ENABLED
+from ..feature_flags import NEURO_TTS_ENABLED, NEURO_TTS_TRIAL_ENABLED
 from .base import CapabilityFragment, ModuleContext, PlatformModule
 
-_PREMIUM_LEVELS = frozenset({"premium"})
+
+def is_neuro_tts_subscription(subscription_level: str) -> bool:
+    level = (subscription_level or "free").strip().lower()
+    if level == "premium":
+        return True
+    if level == "trial" and NEURO_TTS_TRIAL_ENABLED:
+        return True
+    return False
 
 
-def is_premium_subscription(subscription_level: str) -> bool:
-    return (subscription_level or "free").strip().lower() in _PREMIUM_LEVELS
+# Back-compat alias (router + synthesize guards)
+is_premium_subscription = is_neuro_tts_subscription
 
 
 class CompanionNeuroTTSModule(PlatformModule):
@@ -19,11 +26,12 @@ class CompanionNeuroTTSModule(PlatformModule):
     def enabled(self, ctx: ModuleContext) -> bool:
         if not NEURO_TTS_ENABLED:
             return False
-        return is_premium_subscription(ctx.subscription_level)
+        return is_neuro_tts_subscription(ctx.subscription_level)
 
     def capability_fragment(self, ctx: ModuleContext) -> CapabilityFragment:
-        premium = is_premium_subscription(ctx.subscription_level)
-        neuro_on = NEURO_TTS_ENABLED and premium
+        eligible = is_neuro_tts_subscription(ctx.subscription_level)
+        neuro_on = NEURO_TTS_ENABLED and eligible
+        required_tiers = "premium,trial" if NEURO_TTS_TRIAL_ENABLED else "premium"
         return CapabilityFragment(
             id=self.module_id,
             enabled=neuro_on,
@@ -37,6 +45,6 @@ class CompanionNeuroTTSModule(PlatformModule):
                 "tts_provider": "elevenlabs" if neuro_on else "avspeech",
             },
             limits={
-                "requires_subscription": "premium",
+                "requires_subscription": required_tiers,
             },
         )

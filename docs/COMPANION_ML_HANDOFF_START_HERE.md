@@ -13,6 +13,7 @@
 | **Визуал** | **2D Rive** (не 3D), сцена **56%** экрана, субтитр снизу — как Grok Companions |
 | **Репозиторий** | `git@github.com:sergey234/ALADDIN_FAMILY.git` · ветка **`master`** |
 | **Рабочая папка iOS** | `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS` |
+| **Карта кода + LOC + CSV** | [MOBILE_CODEBASE_MAP.md](./MOBILE_CODEBASE_MAP.md) · [data/mobile_loc_local.csv](./data/mobile_loc_local.csv) · [data/mobile_loc_vps.csv](./data/mobile_loc_vps.csv) |
 | **Build iOS** | **216** (Info.plist + project.pbxproj + AppConfig) |
 | **Прогресс** | **90 / 102 (88%)** · Sprint 4–5 MVP код ✅ · **осталось:** [WHAT_REMAINS](./COMPANION_WHAT_REMAINS.md) |
 | **Главный TODO** | [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) — ставь `[x]` только после реальной проверки |

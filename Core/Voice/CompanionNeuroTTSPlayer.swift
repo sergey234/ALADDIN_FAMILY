@@ -14,6 +14,7 @@ final class CompanionNeuroTTSPlayer: NSObject, ObservableObject {
         player?.stop()
         player = nil
         isSpeaking = false
+        VoiceAudioSessionCoordinator.shared.release(.companion)
     }
 
     /// Returns true if audio started; false → caller should use AVSpeech.
@@ -28,8 +29,9 @@ final class CompanionNeuroTTSPlayer: NSObject, ObservableObject {
             guard let data = Data(base64Encoded: response.audioBase64), !data.isEmpty else {
                 return false
             }
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
-            try AVAudioSession.sharedInstance().setActive(true)
+            guard VoiceAudioSessionCoordinator.shared.acquire(.companion, profile: .companionPlayback) else {
+                return false
+            }
             let audioPlayer = try AVAudioPlayer(data: data)
             audioPlayer.delegate = self
             player = audioPlayer
@@ -38,6 +40,7 @@ final class CompanionNeuroTTSPlayer: NSObject, ObservableObject {
             audioPlayer.play()
             return true
         } catch {
+            VoiceAudioSessionCoordinator.shared.release(.companion)
             #if DEBUG
             print("CompanionNeuroTTSPlayer: \(error.localizedDescription)")
             #endif
@@ -52,6 +55,7 @@ extension CompanionNeuroTTSPlayer: AVAudioPlayerDelegate {
         Task { @MainActor in
             self.isSpeaking = false
             self.player = nil
+            VoiceAudioSessionCoordinator.shared.release(.companion)
             self.onPlaybackEnded?()
         }
     }
@@ -60,6 +64,7 @@ extension CompanionNeuroTTSPlayer: AVAudioPlayerDelegate {
         Task { @MainActor in
             self.isSpeaking = false
             self.player = nil
+            VoiceAudioSessionCoordinator.shared.release(.companion)
             self.onPlaybackEnded?()
         }
     }

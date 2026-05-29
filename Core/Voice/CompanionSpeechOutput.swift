@@ -20,6 +20,7 @@ final class CompanionSpeechOutput: NSObject, ObservableObject {
         neuroPlayer.stop()
         synthesizer.stopSpeaking(at: .immediate)
         isSpeaking = false
+        VoiceAudioSessionCoordinator.shared.release(.companion)
     }
 
     func speak(_ text: String, personalityPreset: String, characterId: String = "unicorn") {
@@ -37,6 +38,9 @@ final class CompanionSpeechOutput: NSObject, ObservableObject {
     }
 
     private func speakWithAVSpeech(_ trimmed: String, personalityPreset: String, characterId: String) {
+        guard VoiceAudioSessionCoordinator.shared.acquire(.companion, profile: .companionPlayback) else {
+            return
+        }
         let utterance = AVSpeechUtterance(string: trimmed)
         let lang = LocalizationManager.shared.aiResponseLanguageCode
         utterance.voice = resolveAVSpeechVoice(characterId: characterId, lang: lang)
@@ -111,6 +115,7 @@ extension CompanionSpeechOutput: AVSpeechSynthesizerDelegate {
         Task { @MainActor in
             if !self.neuroPlayer.isSpeaking {
                 self.isSpeaking = false
+                VoiceAudioSessionCoordinator.shared.release(.companion)
             }
         }
     }
@@ -119,6 +124,7 @@ extension CompanionSpeechOutput: AVSpeechSynthesizerDelegate {
         Task { @MainActor in
             if !self.neuroPlayer.isSpeaking {
                 self.isSpeaking = false
+                VoiceAudioSessionCoordinator.shared.release(.companion)
             }
         }
     }

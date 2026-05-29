@@ -10,6 +10,8 @@
 
 ```bash
 FEATURE_NEURO_TTS_ENABLED=1
+# Testing window: trial → neuro-TTS like premium (disable after QA: FEATURE_NEURO_TTS_TRIAL=0)
+FEATURE_NEURO_TTS_TRIAL=1
 ELEVENLABS_API_KEY=sk_...          # не коммитить
 ELEVENLABS_MODEL=eleven_flash_v2_5
 COMPANION_TTS_CACHE_MAX=30
@@ -59,7 +61,9 @@ curl -sS -H "Authorization: Bearer $PREMIUM_TOKEN" \
 }
 ```
 
-Free/trial: `neuro_tts_premium: false`, `tts_provider: "avspeech"`.
+Free: `neuro_tts_premium: false`, `tts_provider: "avspeech"`, `POST /tts` → **403**.
+
+Trial (пока `FEATURE_NEURO_TTS_TRIAL=1`): как Premium — `neuro_tts_premium: true`, `POST /tts` → **200** (или **424** без ключей ElevenLabs).
 
 ---
 
