@@ -554,6 +554,38 @@ struct MainScreen: View {
                             .accessibilityLabel("Тарифы - Выбор плана")
                             .accessibilityHint("Нажмите для открытия экрана тарифов")
                             
+                            // P2-14 — Senior 60+: тёплый вход в Companion (Аладдин, calm).
+                            Button(action: {
+                                UserDefaults.standard.set(true, forKey: "companion_senior_entry")
+                                UserDefaults.standard.set("aladdin", forKey: "companion_selected_character_id")
+                                navigationManager.navigateTo(.companionHome)
+                            }) {
+                                VStack(spacing: 8) {
+                                    Text("🧓")
+                                        .font(.system(size: 20))
+                                    Text(localizationManager.localized("main_senior_companion_title"))
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .multilineTextAlignment(.center)
+                                    Text(localizationManager.localized("main_senior_companion_subtitle"))
+                                        .font(.system(size: 10))
+                                        .foregroundColor(.white.opacity(0.8))
+                                        .multilineTextAlignment(.center)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 80)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 10)
+                                        .fill(Color.white.opacity(0.1))
+                                        .overlay(
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                                        )
+                                )
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .accessibilityIdentifier("main_nav_senior_companion")
+
                             // Аналитика карточка (через NavigationManager)
                             Button(action: {
                                 navigationManager.navigateTo(.analytics)

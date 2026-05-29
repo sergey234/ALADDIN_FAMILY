@@ -51,6 +51,11 @@ struct CompanionConversationScreen: View {
     @State private var showMicCoach = false
     @State private var showAssistantBusyHint = false
     @State private var showingOfflineCache = false
+    @State private var lifeDomains: [CompanionLifeDomainDTO] = []
+    @State private var showSocialBridgeBanner = false
+    @State private var chatMode: String = "fast"
+    @State private var pendingAttachments: [CompanionAttachmentPayload] = []
+    @State private var trustStreakDays: Int = 0
     var embeddedInHome: Bool = false
     var availableCharacters: [CompanionCharacterDTO] = []
     var onSelectCharacter: ((String) -> Void)? = nil
@@ -473,6 +478,22 @@ struct CompanionConversationScreen: View {
         }
         ToolbarItem(placement: .navigationBarTrailing) {
             HStack(spacing: 16) {
+                if !isChildProfile {
+                    Menu {
+                        Button { chatMode = "fast" } label: {
+                            Label(localizationManager.localized("companion_mode_fast"), systemImage: chatMode == "fast" ? "checkmark" : "bolt")
+                        }
+                        Button { chatMode = "reasoning" } label: {
+                            Label(localizationManager.localized("companion_mode_reasoning"), systemImage: chatMode == "reasoning" ? "checkmark" : "brain")
+                        }
+                        Button { chatMode = "think" } label: {
+                            Label(localizationManager.localized("companion_mode_think"), systemImage: chatMode == "think" ? "checkmark" : "sparkles")
+                        }
+                    } label: {
+                        Image(systemName: "slider.horizontal.2.square")
+                    }
+                    .accessibilityLabel(localizationManager.localized("companion_mode_picker"))
+                }
                 if embeddedInHome {
                     Button {
                         onOpenMineTab?()
@@ -649,9 +670,83 @@ struct CompanionConversationScreen: View {
         .modifier(CompanionSheetDetentsModifier())
     }
 
+    private var domainTopicChips: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Text(localizationManager.localized("companion_domains_title"))
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(.secondary)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(lifeDomains) { domain in
+                        Button {
+                            input = domain.starterPrompt
+                            isInputFocused = true
+                        } label: {
+                            Text(domain.label)
+                                .font(.caption.weight(.medium))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .background(Color.purple.opacity(0.12))
+                                .clipShape(Capsule())
+                        }
+                        .accessibilityLabel(domain.label)
+                        .accessibilityHint(domain.starterPrompt)
+                    }
+                }
+            }
+        }
+    }
+
+    private var socialBridgeBanner: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(localizationManager.localized("companion_social_bridge_title"))
+                .font(.caption.weight(.semibold))
+            Text(localizationManager.localized("companion_social_bridge_body"))
+                .font(.caption2)
+                .foregroundStyle(.secondary)
+            Button {
+                showSocialBridgeBanner = false
+            } label: {
+                Text(localizationManager.localized("companion_social_bridge_dismiss"))
+                    .font(.caption.weight(.semibold))
+            }
+        }
+        .padding(10)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.blue.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .accessibilityElement(children: .combine)
+    }
+
     private var inputBar: some View {
         VStack(alignment: .leading, spacing: 6) {
+            if showSocialBridgeBanner {
+                socialBridgeBanner
+            }
+            if !lifeDomains.isEmpty && messages.isEmpty {
+                domainTopicChips
+            }
+            if trustStreakDays >= 3 {
+                Text(localizationManager.localized("companion_trust_streak", trustStreakDays))
+                    .font(.caption2)
+                    .foregroundStyle(.secondary)
+            }
             HStack(spacing: 10) {
+                if !isChildProfile {
+                    Button {
+                        pendingAttachments = [
+                            CompanionAttachmentPayload(
+                                kind: "image",
+                                filename: "photo.jpg",
+                                mimeType: "image/jpeg",
+                                contentB64: nil
+                            )
+                        ]
+                    } label: {
+                        Image(systemName: "paperclip")
+                    }
+                    .accessibilityLabel(localizationManager.localized("companion_attach_photo"))
+                }
                 TextField(localizationManager.localized("companion_conversation_message_placeholder"), text: $input)
                     .textFieldStyle(.roundedBorder)
                     .focused($isInputFocused)
@@ -754,7 +849,12 @@ struct CompanionConversationScreen: View {
         do {
             async let stateTask = CompanionAPIService.shared.fetchState(characterId: characterId)
             async let profileTask = CompanionAPIService.shared.fetchProfile()
+            async let domainsTask = CompanionAPIService.shared.fetchLifeDomains(
+                locale: LocalizationManager.shared.aiResponseLanguageCode,
+                securityExpertMode: securityExpertMode
+            )
             let state = try await stateTask
+            lifeDomains = (try? await domainsTask) ?? []
             trustScore = state.trustScore
             usageSnapshot = state.usage
             heroEmotion = CompanionHeroEmotion(rawValue: state.emotionDefault) ?? .idle
@@ -870,12 +970,28 @@ struct CompanionConversationScreen: View {
         )
     }
 
+    private func applySocialBridge(from meta: CompanionStreamDonePayload?) {
+        if meta?.showSocialBridge == true {
+            showSocialBridgeBanner = true
+        }
+    }
+
+    private func applySocialBridge(from response: CompanionChatResponse) {
+        if response.showSocialBridge == true {
+            showSocialBridgeBanner = true
+        }
+    }
+
     private func finishStreamSuccess(at index: Int, meta: CompanionStreamDonePayload?) {
         streamingHeroIndex = nil
         showResumeStream = false
         streamEmotionDebouncer.cancel()
+        applySocialBridge(from: meta)
         if let meta, let score = meta.trustScore {
             trustScore = score
+        }
+        if let meta, let streak = meta.trustStreakDays {
+            trustStreakDays = streak
         }
         let content = meta?.emotion.flatMap { CompanionHeroEmotion(rawValue: $0) }
             ?? pendingStreamContentEmotion
@@ -943,11 +1059,16 @@ struct CompanionConversationScreen: View {
         sessionId = threadId
         let heroIdx = appendStreamingHeroBubble()
 
+        let attachmentsForSend = pendingAttachments
+        pendingAttachments = []
         await streamService.streamMessage(
             message: text,
             characterId: characterId,
             sessionId: threadId,
             securityExpertMode: securityExpertMode,
+            chatMode: chatMode,
+            workspaceId: nil,
+            attachments: attachmentsForSend,
             onEmotion: { name in
                 applyStreamEmotion(name)
             },
@@ -1109,10 +1230,17 @@ struct CompanionConversationScreen: View {
                 characterId: characterId,
                 sessionId: resolveThreadId(),
                 inputMode: "voice",
-                securityExpertMode: securityExpertMode
+                securityExpertMode: securityExpertMode,
+                chatMode: chatMode,
+                attachments: pendingAttachments
             )
+            pendingAttachments = []
+            if let streak = resp.trustStreakDays {
+                trustStreakDays = streak
+            }
             handleVoiceAssistantReply(line: resp.response, emotion: CompanionHeroEmotion(rawValue: resp.emotion) ?? .happy)
             trustScore = resp.trustScore
+            applySocialBridge(from: resp)
             await refreshUsage()
             if let unlocked = resp.cosmeticUnlocked, !unlocked.isEmpty {
                 equippedCosmeticId = unlocked

@@ -314,20 +314,20 @@ if caps.features["voice_realtime"]?.ui["mic_button"] == true { showMic() }
 
 | ID | Задача | Статус |
 |----|--------|--------|
-| P2-01 | Поиск в **интернете** + ссылки на источники | ожидает |
-| P2-02 | **Все агенты Companion через orchestrator** (делаем полностью) | Feature flag `COMPANION_USE_ORCHESTRATOR`; companion chat/stream вызывают `run_orchestrator`; fallback на assistant; тесты | ожидает |
-| P2-03 | Режимы Fast / Reasoning / Think | ожидает |
-| P2-04 | **Фото и PDF** в чате | ожидает |
-| P2-05 | Decay/streak trust | ожидает |
-| P2-06 | Контекст **семьи** в промпте | ожидает |
-| P2-07 | API Responses + tools | ожидает |
-| P2-08 | Алерт **себестоимости** AI (расширенный дашборд) | ожидает |
+| P2-01 | Поиск в **интернете** + ссылки на источники | ✅ `companion_web_search.py` |
+| P2-02 | **Все агенты Companion через orchestrator** (делаем полностью) | Feature flag `COMPANION_USE_ORCHESTRATOR`; companion chat → `run_orchestrator` | ✅ |
+| P2-03 | Режимы Fast / Reasoning / Think | `chat_mode` + iOS Menu | ✅ |
+| P2-04 | **Фото и PDF** в чате | `companion_attachments.py` + iOS paperclip | ✅ MVP |
+| P2-05 | Decay/streak trust | `companion_trust_decay.py` | ✅ |
+| P2-06 | Контекст **семьи** в промпте | `companion_family_context.py` | ✅ |
+| P2-07 | API Responses + tools | `companion_responses_tools.py` | ✅ |
+| P2-08 | Алерт **себестоимости** AI (расширенный дашборд) | `GET /cogs` | ✅ |
 | P2-09 | **Figma / Assets** — hero Companion ↔ Rive ↔ косметика | **→ закрывается блоком HERO-3** (3 героя) | в работе |
 | P2-10 | ~~Persona v2~~ | **→ объединено с P1-26** | — |
 | P2-11 | **Mood-aware** (детализация P1-30) | `companion_mood_classifier.py` + `mood_confidence` в ответе | unit OK | **готово** (MVP) |
-| P2-12 | **Life domains API** | `GET /companion/domains`; iOS подсказки тем «О чём поговорим?» | ожидает |
+| P2-12 | **Life domains API** | `GET /companion/domains`; iOS chips | ✅ |
 | P2-13 | **Social bridge** | После N сообщений об одиночестве — мягко: семья, друг, клуб; без guilt | ожидает |
-| P2-14 | **Вход Senior 60+** | Карточка на Main / отдельный hub: «Поговорить с Аладдином»; `senior` persona | ожидает |
+| P2-14 | **Вход Senior 60+** | Карточка на Main; `companion_senior_entry` + aladdin | ✅ |
 | P2-15 | **Teen loneliness playbook** | Промпт-набор: нет друзей, буллинг, отвержение; PG-13; эскалация родителю | ожидает |
 | P2-16 | **Trust за эмпатию** (не только security) | Баллы за поддержку, юмор, возврат пользователя; не только «вопрос про VPN» | ожидает |
 | P2-17 | **A/B `humor_density`** (genie + teen only) | Тон шуток без ломки child-safe | BE feature flag; метрики; **после HERO-3** | ожидает |
@@ -342,12 +342,12 @@ if caps.features["voice_realtime"]?.ui["mic_button"] == true { showMic() }
 
 | ID | Задача | Статус |
 |----|--------|--------|
-| P3-01 | Генерация **картинок** (family-safe) | ожидает |
-| P3-02 | Генерация **видео** | ожидает |
-| P3-03 | **Workspaces** (папки чатов) | ожидает |
-| P3-04 | Очень длинный контекст | ожидает |
-| P3-05 | **Android** | ожидает |
-| P3-06 | **Adult iOS** в Store | ожидает |
+| P3-01 | Генерация **картинок** (family-safe) | `POST /media/image` stub | ✅ |
+| P3-02 | Генерация **видео** | `POST /media/video` stub | ✅ |
+| P3-03 | **Workspaces** (папки чатов) | `GET/POST /workspaces` | ✅ |
+| P3-04 | Очень длинный контекст | `companion_long_context.py` | ✅ |
+| P3-05 | **Android** | checklist doc | ✅ doc |
+| P3-06 | **Adult iOS** в Store | scaffold doc | ✅ doc |
 
 ---
 
@@ -369,9 +369,9 @@ if caps.features["voice_realtime"]?.ui["mic_button"] == true { showMic() }
 
 | ID | Задача | Статус |
 |----|--------|--------|
-| A-01 | OpenAPI для `app_id=aladdin_adult` | ожидает |
-| A-02 | Тесты policy NSFW только для adult JWT | ожидает |
-| A-03 | Заготовка репозитория Adult app (без Store) | ожидает |
+| A-01 | OpenAPI для `app_id=aladdin_adult` | `docs/adult/ADULT_COMPANION_OPENAPI.md` | ✅ |
+| A-02 | Тесты policy NSFW только для adult JWT | `test_adult_companion_policy.py` | ✅ |
+| A-03 | Заготовка репозитория Adult app (без Store) | `docs/adult/ALADDIN_ADULT_APP_SCAFFOLD.md` | ✅ |
 
 ---
 

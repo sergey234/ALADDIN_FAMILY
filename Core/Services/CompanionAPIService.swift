@@ -49,6 +49,25 @@ final class CompanionAPIService {
         }
     }
 
+    func fetchLifeDomains(
+        locale: String = "ru",
+        securityExpertMode: Bool = false
+    ) async throws -> [CompanionLifeDomainDTO] {
+        var path = "\(AppConfig.Endpoint.aiCompanionDomains)?locale=\(locale)"
+        if securityExpertMode {
+            path += "&security_expert_mode=true"
+        }
+        return try await withCheckedThrowingContinuation { continuation in
+            network.get(
+                endpoint: path,
+                requiresAuth: true,
+                additionalHeaders: familyScopeHeaders()
+            ) { (result: Result<CompanionLifeDomainsResponse, Error>) in
+                continuation.resume(with: result.map(\.domains))
+            }
+        }
+    }
+
     func fetchLegal(locale: String = "ru") async throws -> CompanionLegalResponse {
         let now = Date()
         if let cached = legalCache[locale], now.timeIntervalSince(cached.fetchedAt) < legalCacheTTL {
@@ -144,7 +163,10 @@ final class CompanionAPIService {
         characterId: String,
         sessionId: String?,
         inputMode: String = "text",
-        securityExpertMode: Bool? = nil
+        securityExpertMode: Bool? = nil,
+        chatMode: String = "fast",
+        workspaceId: String? = nil,
+        attachments: [CompanionAttachmentPayload] = []
     ) async throws -> CompanionChatResponse {
         let cloudText: String
         do {
@@ -160,7 +182,10 @@ final class CompanionAPIService {
             responseLanguage: LocalizationManager.shared.aiResponseLanguageCode,
             sessionId: sessionId,
             inputMode: inputMode,
-            securityExpertMode: securityExpertMode
+            securityExpertMode: securityExpertMode,
+            chatMode: chatMode,
+            workspaceId: workspaceId,
+            attachments: attachments
         )
 
         return try await withCheckedThrowingContinuation { continuation in
@@ -361,6 +386,31 @@ final class CompanionAPIService {
                 requiresAuth: true,
                 extraHeaders: familyScopeHeaders()
             ) { (result: Result<CompanionEphemeralTokenResponse, Error>) in
+                continuation.resume(with: result)
+            }
+        }
+    }
+
+    func fetchWorkspaces(limit: Int = 30) async throws -> [CompanionWorkspaceDTO] {
+        let path = "\(AppConfig.Endpoint.aiCompanionWorkspaces)?limit=\(limit)"
+        return try await withCheckedThrowingContinuation { continuation in
+            network.get(
+                endpoint: path,
+                requiresAuth: true,
+                additionalHeaders: familyScopeHeaders()
+            ) { (result: Result<CompanionWorkspacesResponse, Error>) in
+                continuation.resume(with: result.map(\.workspaces))
+            }
+        }
+    }
+
+    func fetchCogs() async throws -> CompanionCogsResponse {
+        try await withCheckedThrowingContinuation { continuation in
+            network.get(
+                endpoint: AppConfig.Endpoint.aiCompanionCogs,
+                requiresAuth: true,
+                additionalHeaders: familyScopeHeaders()
+            ) { (result: Result<CompanionCogsResponse, Error>) in
                 continuation.resume(with: result)
             }
         }

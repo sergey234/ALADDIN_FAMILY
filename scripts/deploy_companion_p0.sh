@@ -54,6 +54,20 @@ FILES=(
   "security/services/ai_platform/companion_ethics.py"
   "security/services/ai_platform/companion_characters.py"
   "security/services/ai_platform/companion_mood_classifier.py"
+  "security/services/ai_platform/companion_post_llm_moderation.py"
+  "security/services/ai_platform/companion_stream_redis.py"
+  "security/services/ai_platform/companion_life_domains.py"
+  "security/services/ai_platform/companion_teen_playbook.py"
+  "security/services/ai_platform/companion_social_bridge.py"
+  "security/services/ai_platform/companion_trust_decay.py"
+  "security/services/ai_platform/companion_family_context.py"
+  "security/services/ai_platform/companion_web_search.py"
+  "security/services/ai_platform/companion_attachments.py"
+  "security/services/ai_platform/companion_responses_tools.py"
+  "security/services/ai_platform/companion_cogs.py"
+  "security/services/ai_platform/companion_workspaces.py"
+  "security/services/ai_platform/companion_long_context.py"
+  "security/services/ai_platform/companion_media_gen.py"
   "security/services/ai_platform/consent_resolver.py"
   "security/services/ai_platform/usage_meters.py"
   "security/services/ai_platform/policy_engine.py"
@@ -64,6 +78,8 @@ FILES=(
   "security/services/ai_platform/modules/base.py"
   "security/services/ai_platform/modules/registry.py"
   "security/services/ai_platform/modules/companion.py"
+  "security/services/ai_platform/modules/workspaces.py"
+  "security/services/ai_platform/modules/media_gen.py"
   "security/services/ai_platform/modules/voice_realtime.py"
   "security/services/ai_platform/modules/chat_core.py"
   "security/services/ai_platform/modules/web_search.py"
@@ -111,6 +127,22 @@ EOF
   ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_analytics.py
   ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_ethics.py
   ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_mood_classifier.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_post_llm_moderation.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_stream_redis.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_life_domains.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_teen_playbook.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_social_bridge.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_trust_decay.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_family_context.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_web_search.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_attachments.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_responses_tools.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_cogs.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_workspaces.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_long_context.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/companion_media_gen.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/modules/workspaces.py
+  ./venv/bin/python3 -m py_compile security/services/ai_platform/modules/media_gen.py
   ./venv/bin/python3 -m py_compile security/api/routers/ai_voice_ws_router.py
   ./venv/bin/python3 -m py_compile security/services/ai_platform/jwt_claims.py
 "

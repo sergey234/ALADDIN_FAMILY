@@ -319,6 +319,7 @@ struct ChildInterfaceScreen: View {
     private var companionFriendsButton: some View {
         Button(action: {
             HapticFeedback.impact(.medium)
+            UserDefaults.standard.set(false, forKey: "companion_senior_entry")
             navigationManager.navigateTo(.companionHome)
         }) {
             HStack(spacing: Spacing.m) {

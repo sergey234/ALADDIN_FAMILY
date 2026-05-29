@@ -10,6 +10,8 @@ from .chat_core import ChatCoreModule
 from .companion import CompanionModule
 from .voice_realtime import VoiceRealtimeModule
 from .web_search import WebSearchModule
+from .workspaces import WorkspacesModule
+from .media_gen import MediaGenModule
 
 # Порядок = порядок в capabilities JSON
 _BUILTIN_MODULES: List[PlatformModule] = [
@@ -17,6 +19,8 @@ _BUILTIN_MODULES: List[PlatformModule] = [
     VoiceRealtimeModule(),
     CompanionModule(),
     WebSearchModule(),
+    WorkspacesModule(),
+    MediaGenModule(),
 ]
 
 _registry: List[PlatformModule] = list(_BUILTIN_MODULES)

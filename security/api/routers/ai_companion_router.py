@@ -88,6 +88,28 @@ try:
     from security.services.ai_platform.companion_ethics import evaluate_companion_ethics, ethics_hint_for_prompt
     from security.services.ai_platform.companion_post_llm_moderation import moderate_companion_assistant_text
     from security.services.ai_platform.companion_persona import security_expert_mode_active
+    from security.services.ai_platform.companion_life_domains import list_life_domains
+    from security.services.ai_platform.companion_teen_playbook import teen_playbook_hint
+    from security.services.ai_platform.companion_social_bridge import apply_social_bridge
+    from security.services.ai_platform.companion_trust_decay import apply_trust_visit
+    from security.services.ai_platform.companion_family_context import build_family_context_hint
+    from security.services.ai_platform.companion_web_search import maybe_companion_web_search
+    from security.services.ai_platform.companion_attachments import validate_and_format_attachments
+    from security.services.ai_platform.companion_responses_tools import tools_used_for_turn
+    from security.services.ai_platform.companion_cogs import record_turn_cogs, build_cogs_dashboard
+    from security.services.ai_platform.companion_workspaces import (
+        create_workspace,
+        list_workspaces,
+        resolve_thread_for_workspace,
+    )
+    from security.services.ai_platform.companion_long_context import build_long_context_hint
+    from security.services.ai_platform.companion_media_gen import (
+        generate_companion_image,
+        generate_companion_video,
+    )
+    from security.services.ai_platform.config import ChatMode
+    from security.services.ai_platform.feature_flags import COMPANION_USE_ORCHESTRATOR
+    from security.services.ai_platform.orchestrator import OrchestratorRequest, run_orchestrator
     from security.services.ai_platform.usage_meters import check_message_allowed, record_message
     from security.services.ai_pii_redactor import redact as redact_pii
     from security.services.ai_response_helpers import mock_allowed, is_probable_mock_response
@@ -397,16 +419,103 @@ def _animation_hint_for_emotion(emotion: str) -> Optional[str]:
     return None
 
 
-def _trust_delta(message: str, blocked: bool) -> int:
+def _trust_delta(
+    message: str,
+    blocked: bool,
+    *,
+    domain: str = "general",
+    mood: str = "neutral",
+    intent_id: str = "",
+) -> int:
     if blocked:
         return -5
-    if len(message.strip()) < 3:
+    if len((message or "").strip()) < 3:
         return 0
+    if domain in ("loneliness", "feelings") or mood in ("lonely", "comfort_needed"):
+        return 4
+    if mood == "playful" or intent_id in ("companion_humor", "companion_playful"):
+        return 3
+    if domain == "safety" and intent_id not in ("threat_analysis", "report_incident"):
+        return 1
     return 2
 
 
 def _feedback_trust_delta(vote: str) -> int:
     return 1 if vote == "up" else -1
+
+
+def _parse_chat_mode(raw: Optional[str]) -> "ChatMode":
+    try:
+        from security.services.ai_platform.config import ChatMode as CM
+
+        return CM((raw or "fast").lower())
+    except (NameError, ValueError):
+        from security.services.ai_platform.config import ChatMode as CM
+
+        return CM.FAST
+
+
+async def _invoke_companion_llm(
+    prefixed: str,
+    user_id: str,
+    response_language: Optional[str],
+    user: dict,
+    *,
+    chat_mode: str = "fast",
+) -> ChatMessageResponse:
+    """P2-02 — delegate to assistant or orchestrator when COMPANION_USE_ORCHESTRATOR=1."""
+    assistant_req = ChatMessageRequest(
+        message=prefixed,
+        context="companion",
+        user_id=user_id,
+        timestamp=datetime.now(),
+        response_language=response_language,
+    )
+    try:
+        use_orch = COMPANION_USE_ORCHESTRATOR
+    except NameError:
+        use_orch = False
+
+    if not use_orch:
+        return await ai_assistant_chat(assistant_req, user)
+
+    async def _delegate(msg, ctx, uid, lang):
+        req = ChatMessageRequest(
+            message=msg,
+            context=ctx,
+            user_id=uid,
+            timestamp=datetime.now(),
+            response_language=lang,
+        )
+        resp = await ai_assistant_chat(req, user)
+        return {
+            "response": resp.response,
+            "intent": resp.intent,
+            "tools_used": resp.tools_used or [],
+            "sources": resp.sources or [],
+            "grounded": resp.grounded,
+        }
+
+    mode = _parse_chat_mode(chat_mode)
+    orch = await run_orchestrator(
+        OrchestratorRequest(
+            message=prefixed,
+            user_id=user_id,
+            app_id="aladdin_family",
+            context="companion",
+            response_language=response_language,
+            mode=mode,
+        ),
+        delegate_chat=_delegate,
+    )
+    return ChatMessageResponse(
+        response=orch.response_text,
+        intent=orch.intent,
+        confidence=0.9,
+        tools_used=orch.tools_used,
+        sources=orch.sources,
+        grounded=orch.grounded,
+    )
 
 
 def _record_companion_feedback_analytics(
@@ -468,6 +577,17 @@ class CompanionCharactersResponse(BaseModel):
     characters: List[CompanionCharacterDTO]
 
 
+class CompanionLifeDomainDTO(BaseModel):
+    id: str
+    label: str
+    starter_prompt: str
+    age_bands: List[str] = Field(default_factory=list)
+
+
+class CompanionLifeDomainsResponse(BaseModel):
+    domains: List[CompanionLifeDomainDTO]
+
+
 class CompanionUsageSnapshot(BaseModel):
     messages_today: int = 0
     messages_daily_cap: int = 50
@@ -496,6 +616,13 @@ class CompanionStateResponse(BaseModel):
     usage: Optional[CompanionUsageSnapshot] = None
 
 
+class CompanionAttachmentDTO(BaseModel):
+    kind: str = Field(..., pattern="^(image|pdf)$")
+    filename: str = Field(..., max_length=128)
+    mime_type: Optional[str] = Field(None, max_length=64)
+    content_b64: Optional[str] = Field(None, max_length=500_000)
+
+
 class CompanionChatRequest(BaseModel):
     message: str = Field(..., min_length=1, max_length=2000)
     character_id: str = Field(..., pattern=CHARACTER_ID_PATTERN)
@@ -506,6 +633,9 @@ class CompanionChatRequest(BaseModel):
     security_expert_mode: Optional[bool] = Field(
         None, description="P1-29: усилить security-контекст для этого сообщения/сессии"
     )
+    chat_mode: str = Field("fast", pattern="^(fast|reasoning|think)$")
+    workspace_id: Optional[str] = Field(None, max_length=64)
+    attachments: List[CompanionAttachmentDTO] = Field(default_factory=list)
 
 
 class CompanionStreamRequest(BaseModel):
@@ -519,6 +649,9 @@ class CompanionStreamRequest(BaseModel):
     messageId: Optional[str] = Field(None, max_length=128)
     stream: bool = True
     security_expert_mode: Optional[bool] = None
+    chat_mode: str = Field("fast", pattern="^(fast|reasoning|think)$")
+    workspace_id: Optional[str] = Field(None, max_length=64)
+    attachments: List[CompanionAttachmentDTO] = Field(default_factory=list)
 
 
 class CompanionChatResponse(BaseModel):
@@ -543,6 +676,11 @@ class CompanionChatResponse(BaseModel):
     nsfw_blocked: bool = True
     follow_up_questions: List[str] = Field(default_factory=list)
     suggestions: List[str] = Field(default_factory=list)
+    show_social_bridge: bool = Field(False, description="P2-13 suggest contacting a close person")
+    social_bridge_suggestions: List[str] = Field(default_factory=list)
+    trust_streak_days: int = Field(0, description="P2-05 consecutive active days")
+    cogs_alert: bool = Field(False, description="P2-08 daily cost alert triggered")
+    chat_mode: Optional[str] = Field(None, description="P2-03 mode used for this turn")
 
 
 class CompanionConsentRequest(BaseModel):
@@ -737,6 +875,149 @@ async def list_characters(
     )
 
 
+@router.get("/domains", response_model=CompanionLifeDomainsResponse)
+async def list_companion_domains(
+    request: Request,
+    user: dict = Depends(get_current_user),
+    locale: str = Query("ru", max_length=8),
+    security_expert_mode: bool = Query(False),
+) -> CompanionLifeDomainsResponse:
+    """P2-12 — темы «О чём поговорим?» для chips в iOS."""
+    fid = request.headers.get("x-aladdin-family-id")
+    ctx = _user_app_context(user, fid)
+    rows = list_life_domains(
+        age_band=ctx["age_band"],
+        locale=locale,
+        security_expert_mode=security_expert_mode,
+    )
+    return CompanionLifeDomainsResponse(
+        domains=[CompanionLifeDomainDTO(**row) for row in rows]
+    )
+
+
+class CompanionWorkspaceDTO(BaseModel):
+    workspace_id: str
+    title: str
+    character_id: str = "unicorn"
+    thread_id: Optional[str] = None
+    updated_at: Optional[str] = None
+
+
+class CompanionWorkspacesResponse(BaseModel):
+    workspaces: List[CompanionWorkspaceDTO]
+
+
+class CompanionWorkspaceCreateRequest(BaseModel):
+    title: str = Field(..., min_length=1, max_length=80)
+    character_id: str = Field("unicorn", pattern=CHARACTER_ID_PATTERN)
+
+
+class CompanionCogsResponse(BaseModel):
+    daily_usd: float
+    month_usd: float
+    turns_today: int
+    alert_threshold_usd: float
+    alert_triggered: bool
+
+
+class CompanionMediaGenRequest(BaseModel):
+    prompt: str = Field(..., min_length=1, max_length=500)
+    character_id: str = Field("unicorn", pattern=CHARACTER_ID_PATTERN)
+
+
+class CompanionMediaGenResponse(BaseModel):
+    ok: bool
+    status: str
+    message: str
+    image_url: Optional[str] = None
+    video_url: Optional[str] = None
+
+
+@router.get("/workspaces", response_model=CompanionWorkspacesResponse)
+async def list_companion_workspaces(
+    user: dict = Depends(get_current_user),
+    limit: int = Query(30, ge=1, le=100),
+) -> CompanionWorkspacesResponse:
+    """P3-03 — topic folders for companion chats."""
+    user_id = user["user_id"] or "anonymous"
+    rows = list_workspaces(get_companion_store(), user_id, limit=limit)
+    return CompanionWorkspacesResponse(
+        workspaces=[
+            CompanionWorkspaceDTO(
+                workspace_id=r["workspace_id"],
+                title=r.get("title") or "Чат",
+                character_id=r.get("character_id") or "unicorn",
+                thread_id=r.get("thread_id"),
+                updated_at=r.get("updated_at"),
+            )
+            for r in rows
+        ]
+    )
+
+
+@router.post("/workspaces", response_model=CompanionWorkspaceDTO)
+async def create_companion_workspace(
+    body: CompanionWorkspaceCreateRequest,
+    user: dict = Depends(get_current_user),
+) -> CompanionWorkspaceDTO:
+    user_id = user["user_id"] or "anonymous"
+    row = create_workspace(
+        get_companion_store(),
+        user_id,
+        body.title,
+        character_id=body.character_id,
+    )
+    return CompanionWorkspaceDTO(**row)
+
+
+@router.get("/cogs", response_model=CompanionCogsResponse)
+async def companion_cogs_dashboard(
+    user: dict = Depends(get_current_user),
+) -> CompanionCogsResponse:
+    """P2-08 — estimated AI unit economics for the current user."""
+    user_id = user["user_id"] or "anonymous"
+    dash = build_cogs_dashboard(get_companion_store(), user_id)
+    return CompanionCogsResponse(**dash)
+
+
+@router.post("/media/image", response_model=CompanionMediaGenResponse)
+async def companion_generate_image(
+    body: CompanionMediaGenRequest,
+    request: Request,
+    user: dict = Depends(get_current_user),
+) -> CompanionMediaGenResponse:
+    """P3-01 — family-safe image generation (stub when flag off)."""
+    fid = request.headers.get("x-aladdin-family-id")
+    ctx = _user_app_context(user, fid)
+    result = generate_companion_image(
+        body.prompt, age_band=ctx["age_band"], character_id=body.character_id
+    )
+    return CompanionMediaGenResponse(
+        ok=bool(result.get("ok")),
+        status=str(result.get("status") or "error"),
+        message=str(result.get("message") or result.get("error") or ""),
+        image_url=result.get("image_url"),
+    )
+
+
+@router.post("/media/video", response_model=CompanionMediaGenResponse)
+async def companion_generate_video(
+    body: CompanionMediaGenRequest,
+    request: Request,
+    user: dict = Depends(get_current_user),
+) -> CompanionMediaGenResponse:
+    """P3-02 — video generation stub (disabled in Family MVP)."""
+    fid = request.headers.get("x-aladdin-family-id")
+    ctx = _user_app_context(user, fid)
+    result = generate_companion_video(body.prompt, age_band=ctx["age_band"])
+    return CompanionMediaGenResponse(
+        ok=bool(result.get("ok")),
+        status=str(result.get("status") or "error"),
+        message=str(result.get("message") or result.get("error") or ""),
+        video_url=result.get("video_url"),
+    )
+
+
 @router.post("/analytics", response_model=CompanionAnalyticsEventResponse)
 async def record_companion_analytics_event(
     body: CompanionAnalyticsEventRequest,
@@ -833,11 +1114,6 @@ async def companion_chat(
     # Companion API is ALADDIN Family only (adult uses platform + separate app)
     safe_message = redact_pii(body.message.strip()).text
     blocked = _policy_block_message(safe_message, user, fid)
-    old_score = _trust_score(user_id, body.character_id)
-    delta = _trust_delta(body.message, blocked)
-    new_score = _set_trust_score(user_id, body.character_id, old_score + delta)
-    level, _ = _trust_level_info(new_score)
-    cosmetic_unlock = _new_cosmetic_unlock(body.character_id, old_score, new_score)
 
     scope_key, _ = _family_scope_key(http_request, user)
     profile = _merge_profile_for_turn(
@@ -850,10 +1126,38 @@ async def companion_chat(
     )
     ethics = evaluate_companion_ethics(safe_message)
 
+    store = get_companion_store()
+    trust_visit = apply_trust_visit(store, user_id, body.character_id)
+    old_score = int(trust_visit["score"])
+    delta = _trust_delta(
+        safe_message,
+        blocked,
+        domain=cintent.domain,
+        mood=cintent.mood,
+        intent_id=cintent.intent_id,
+    )
+    new_score = _set_trust_score(user_id, body.character_id, old_score + delta)
+    level, _ = _trust_level_info(new_score)
+    cosmetic_unlock = _new_cosmetic_unlock(body.character_id, old_score, new_score)
+    streak_days = int(trust_visit.get("streak_days") or 0)
+
+    att_accepted, att_hint, att_errors = validate_and_format_attachments(
+        [a.model_dump() for a in body.attachments],
+        age_band=ctx["age_band"],
+    )
+    if body.attachments and att_errors and not att_accepted:
+        raise HTTPException(status_code=422, detail="invalid_attachments")
+
+    web_sources, web_hint = maybe_companion_web_search(
+        safe_message, locale=body.response_language or "ru"
+    )
+    family_hint = build_family_context_hint(scope_key, ctx, store=store)
+
     if ethics.crisis:
         record_message(user_id)
-        thread_id = body.session_id or f"companion-{secrets.token_hex(8)}"
-        store = get_companion_store()
+        thread_id = resolve_thread_for_workspace(
+            store, user_id, body.workspace_id, body.session_id
+        )
         store.append_thread_message(user_id, thread_id, "user", safe_message, body.character_id)
         crisis_text = ethics.response_prefix
         store.append_thread_message(user_id, thread_id, "assistant", crisis_text, body.character_id)
@@ -896,28 +1200,38 @@ async def companion_chat(
         )
 
     record_message(user_id)
-    thread_id = body.session_id or f"companion-{secrets.token_hex(8)}"
-    store = get_companion_store()
+    thread_id = resolve_thread_for_workspace(
+        store, user_id, body.workspace_id, body.session_id
+    )
     store.append_thread_message(user_id, thread_id, "user", safe_message, body.character_id)
 
+    playbook_hint = teen_playbook_hint(ctx["age_band"], cintent.domain, safe_message) or ""
     intent_hint = (
         f"\n[Companion routing: domain={cintent.domain}; mood={cintent.mood}; "
         f"confidence={cintent.mood_confidence:.2f}. {cintent.response_hint} "
-        f"{ethics_hint_for_prompt(ethics)}]\n"
+        f"{ethics_hint_for_prompt(ethics)}{playbook_hint}]\n"
     )
+    long_hint = build_long_context_hint(store, user_id, thread_id)
     prefixed = (
         _build_companion_system_prefix(body.character_id, profile, ctx["age_band"])
+        + family_hint
+        + long_hint
+        + web_hint
+        + att_hint
         + intent_hint
         + safe_message
     )
-    assistant_req = ChatMessageRequest(
-        message=prefixed,
-        context="companion",
-        user_id=user_id,
-        timestamp=datetime.now(),
-        response_language=body.response_language,
+    try:
+        use_orch = COMPANION_USE_ORCHESTRATOR
+    except NameError:
+        use_orch = False
+    assistant_resp: ChatMessageResponse = await _invoke_companion_llm(
+        prefixed,
+        user_id,
+        body.response_language,
+        user,
+        chat_mode=body.chat_mode,
     )
-    assistant_resp: ChatMessageResponse = await ai_assistant_chat(assistant_req, user)
     if not mock_allowed() and is_probable_mock_response(assistant_resp.response):
         raise HTTPException(status_code=503, detail="ai_unavailable_no_mock_in_prod")
 
@@ -947,6 +1261,35 @@ async def companion_chat(
     if not post_mod_blocked:
         _maybe_record_memory(m_key, m_enabled, safe_message, safe_response)
 
+    profile, show_bridge, bridge_suggestions = apply_social_bridge(
+        profile,
+        domain=cintent.domain,
+        social_bridge_hint=ethics.social_bridge_hint,
+        crisis=False,
+        thread_id=thread_id,
+    )
+    store.set_profile(scope_key, profile)
+
+    merged_sources = list(assistant_resp.sources or []) + list(web_sources)
+    merged_tools = list(
+        dict.fromkeys(
+            (assistant_resp.tools_used or [])
+            + tools_used_for_turn(
+                web_search=bool(web_sources),
+                attachments=bool(att_accepted),
+                orchestrator=use_orch,
+            )
+        )
+    )
+    record_turn_cogs(
+        store,
+        user_id,
+        input_chars=len(prefixed),
+        output_chars=len(safe_response),
+        chat_mode=body.chat_mode,
+    )
+    cogs_dash = build_cogs_dashboard(store, user_id)
+
     return CompanionChatResponse(
         response=safe_response,
         character_id=body.character_id,
@@ -962,13 +1305,18 @@ async def companion_chat(
         mood_confidence=cintent.mood_confidence,
         security_expert_mode=security_expert_mode_active(profile),
         grounded=assistant_resp.grounded,
-        sources=assistant_resp.sources or [],
-        tools_used=assistant_resp.tools_used or [],
+        sources=merged_sources,
+        tools_used=merged_tools,
         suggested_actions=assistant_resp.suggested_actions or [],
         cosmetic_unlocked=cosmetic_unlock,
         nsfw_blocked=True,
         follow_up_questions=assistant_resp.follow_up_questions or [],
         suggestions=assistant_resp.suggestions or [],
+        show_social_bridge=show_bridge,
+        social_bridge_suggestions=bridge_suggestions,
+        trust_streak_days=streak_days,
+        cogs_alert=bool(cogs_dash.get("alert_triggered")),
+        chat_mode=body.chat_mode,
     )
 
 
@@ -1010,6 +1358,9 @@ async def companion_stream(
             session_id=body.session_id,
             input_mode=body.input_mode,
             security_expert_mode=body.security_expert_mode,
+            chat_mode=body.chat_mode,
+            workspace_id=body.workspace_id,
+            attachments=body.attachments,
         )
         resp = await companion_chat(chat_body, http_request, user)
         tokens = resp.response.split() if resp.response else []

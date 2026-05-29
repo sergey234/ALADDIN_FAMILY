@@ -139,11 +139,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "214"
+    static let buildNumber = "215"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "214"
+    static let minimumClientBuildForApiContract = "215"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -291,6 +291,11 @@ struct AppConfig {
 
         // AI Family Companion (Aladdin / Unicorn) — see docs/GROK_COMPANION_ARCHITECTURE_FOR_ALADDIN.md
         static let aiCompanionCharacters = "/api/ai/companion/characters"
+        static let aiCompanionDomains = "/api/ai/companion/domains"
+        static let aiCompanionWorkspaces = "/api/ai/companion/workspaces"
+        static let aiCompanionCogs = "/api/ai/companion/cogs"
+        static let aiCompanionMediaImage = "/api/ai/companion/media/image"
+        static let aiCompanionMediaVideo = "/api/ai/companion/media/video"
         static let aiCompanionState = "/api/ai/companion/state"
         static let aiCompanionChat = "/api/ai/companion/chat"
         static let aiCompanionStream = "/api/ai/companion/stream"

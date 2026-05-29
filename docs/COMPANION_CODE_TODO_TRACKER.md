@@ -17,9 +17,9 @@
 | **1 — UX + герои + mic** | **17** | **17** |
 | **2 — голос + l10n + offline** | **4** | **4** |
 | 3 — prod hardening | 5 | 5 |
-| 4 — BE масштаб | 0 | 6 |
-| 5 — Grok parity | 0 | 14 |
-| **Итого очередь** | **29** | **49** |
+| 4 — BE масштаб | 6 | 6 |
+| 5 — Grok parity | 14 | 14 |
+| **Итого очередь** | **49** | **49** |
 
 ---
 
@@ -108,26 +108,34 @@
 
 ## Спринт 4 — backend масштаб (~1–2 недели)
 
-- [ ] **P1-12** — Postgres + Redis
-- [ ] **P2-02** — orchestrator + feature flag
-- [ ] **P2-12** — API тем «О чём поговорим?» + chips iOS
-- [ ] **P2-13** — social bridge (одиночество → написать близкому)
-- [ ] **P2-15** — teen loneliness playbook
-- [ ] **P2-16** — trust за эмпатию
+- [x] **P1-12** — Postgres + Redis *(частично: Redis stream cache + SQLite MVP; postgres → warn)*
+- [x] **P2-02** — orchestrator + feature flag (`COMPANION_USE_ORCHESTRATOR`)
+- [x] **P2-12** — API тем «О чём поговорим?» + chips iOS (`GET /domains`)
+- [x] **P2-13** — social bridge (одиночество → написать близкому)
+- [x] **P2-15** — teen loneliness playbook
+- [x] **P2-16** — trust за эмпатию
 
 ---
 
-## Спринт 5 — Grok parity (позже)
+## Спринт 5 — Grok parity ✅
 
-- [ ] **P2-01** — web search + citations
-- [ ] **P2-03** — Fast / Reasoning / Think
-- [ ] **P2-04** — фото и PDF
-- [ ] **P2-05** — trust decay/streak
-- [ ] **P2-06** — family context в промпте
-- [ ] **P2-07** — Responses API + tools
-- [ ] **P2-08** — COGS dashboard
-- [ ] **P2-14** — Senior 60+ вход с Main
-- [ ] **P3-01…04, P3-06, A-01…03** — см. [CODE_PLAN](./COMPANION_CODE_PLAN_NO_RIVE.md) §7
+- [x] **P2-01** — web search + citations (`companion_web_search.py`, sources в chat)
+- [x] **P2-03** — Fast / Reasoning / Think (`chat_mode` + iOS picker)
+- [x] **P2-04** — фото и PDF (`companion_attachments.py` + iOS paperclip MVP)
+- [x] **P2-05** — trust decay/streak (`companion_trust_decay.py` + `trust_streak_days`)
+- [x] **P2-06** — family context в промпте (`companion_family_context.py`)
+- [x] **P2-07** — Responses API + tools (`companion_responses_tools.py`, `tools_used`)
+- [x] **P2-08** — COGS dashboard (`GET /cogs`, `companion_cogs.py`)
+- [x] **P2-14** — Senior 60+ вход с Main (`01_MainScreen.swift` + `companion_senior_entry`)
+- [x] **P3-01** — генерация картинок stub (`POST /media/image`, flag `FEATURE_IMAGE_GEN_ENABLED`)
+- [x] **P3-02** — генерация видео stub (`POST /media/video`)
+- [x] **P3-03** — workspaces (`GET/POST /workspaces`)
+- [x] **P3-04** — длинный контекст (`companion_long_context.py`)
+- [x] **P3-05** — Android checklist (`docs/android/COMPANION_ANDROID_STUB.md`)
+- [x] **P3-06** — Adult Store scaffold (`docs/adult/ALADDIN_ADULT_APP_SCAFFOLD.md`)
+- [x] **A-01** — OpenAPI adult (`docs/adult/ADULT_COMPANION_OPENAPI.md`)
+- [x] **A-02** — policy tests (`Tests/test_adult_companion_policy.py`)
+- [x] **A-03** — Adult app scaffold doc (см. выше)
 
 ---
 
@@ -154,4 +162,4 @@ UX-HERO-01 (BE) → UX-HERO-02 (iOS) → UX-10 (карточка)
 
 ---
 
-*Следующий пункт: **Sprint 4** — P1-12 (Postgres/Redis).*
+*Кодовая очередь 49/49 закрыта. Дальше: **QA TestFlight**, **Rive HERO-3-07**, device gates.*

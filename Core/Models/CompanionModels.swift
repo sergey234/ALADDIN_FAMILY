@@ -22,6 +22,24 @@ struct CompanionCharactersResponse: Codable {
     let characters: [CompanionCharacterDTO]
 }
 
+struct CompanionLifeDomainDTO: Codable, Identifiable, Equatable {
+    let id: String
+    let label: String
+    let starterPrompt: String
+    let ageBands: [String]
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case label
+        case starterPrompt = "starter_prompt"
+        case ageBands = "age_bands"
+    }
+}
+
+struct CompanionLifeDomainsResponse: Codable {
+    let domains: [CompanionLifeDomainDTO]
+}
+
 struct CompanionAnalyticsEventBody: Encodable {
     let event: String
     let characterId: String?
@@ -130,6 +148,20 @@ struct CompanionLegalResponse: Codable {
     }
 }
 
+struct CompanionAttachmentPayload: Codable {
+    let kind: String
+    let filename: String
+    let mimeType: String?
+    let contentB64: String?
+
+    enum CodingKeys: String, CodingKey {
+        case kind
+        case filename
+        case mimeType = "mime_type"
+        case contentB64 = "content_b64"
+    }
+}
+
 struct CompanionChatRequest: Codable {
     let message: String
     let characterId: String
@@ -138,6 +170,9 @@ struct CompanionChatRequest: Codable {
     let sessionId: String?
     let inputMode: String
     let securityExpertMode: Bool?
+    let chatMode: String
+    let workspaceId: String?
+    let attachments: [CompanionAttachmentPayload]
 
     enum CodingKeys: String, CodingKey {
         case message
@@ -147,6 +182,9 @@ struct CompanionChatRequest: Codable {
         case sessionId = "session_id"
         case inputMode = "input_mode"
         case securityExpertMode = "security_expert_mode"
+        case chatMode = "chat_mode"
+        case workspaceId = "workspace_id"
+        case attachments
     }
 }
 
@@ -164,6 +202,11 @@ struct CompanionChatResponse: Codable {
     let companionMood: String?
     let nsfwBlocked: Bool
     let cosmeticUnlocked: String?
+    let showSocialBridge: Bool?
+    let socialBridgeSuggestions: [String]?
+    let trustStreakDays: Int?
+    let cogsAlert: Bool?
+    let chatMode: String?
 
     enum CodingKeys: String, CodingKey {
         case response
@@ -179,6 +222,49 @@ struct CompanionChatResponse: Codable {
         case companionMood = "companion_mood"
         case nsfwBlocked = "nsfw_blocked"
         case cosmeticUnlocked = "cosmetic_unlocked"
+        case showSocialBridge = "show_social_bridge"
+        case socialBridgeSuggestions = "social_bridge_suggestions"
+        case trustStreakDays = "trust_streak_days"
+        case cogsAlert = "cogs_alert"
+        case chatMode = "chat_mode"
+    }
+}
+
+struct CompanionWorkspaceDTO: Codable, Identifiable, Equatable {
+    let workspaceId: String
+    let title: String
+    let characterId: String
+    let threadId: String?
+    let updatedAt: String?
+
+    var id: String { workspaceId }
+
+    enum CodingKeys: String, CodingKey {
+        case workspaceId = "workspace_id"
+        case title
+        case characterId = "character_id"
+        case threadId = "thread_id"
+        case updatedAt = "updated_at"
+    }
+}
+
+struct CompanionWorkspacesResponse: Codable {
+    let workspaces: [CompanionWorkspaceDTO]
+}
+
+struct CompanionCogsResponse: Codable {
+    let dailyUsd: Double
+    let monthUsd: Double
+    let turnsToday: Int
+    let alertThresholdUsd: Double
+    let alertTriggered: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case dailyUsd = "daily_usd"
+        case monthUsd = "month_usd"
+        case turnsToday = "turns_today"
+        case alertThresholdUsd = "alert_threshold_usd"
+        case alertTriggered = "alert_triggered"
     }
 }
 
@@ -597,6 +683,9 @@ struct CompanionStreamDonePayload: Codable {
     let trustLevel: Int?
     let trustDelta: Int?
     let done: Bool?
+    let showSocialBridge: Bool?
+    let socialBridgeSuggestions: [String]?
+    let trustStreakDays: Int?
 
     enum CodingKeys: String, CodingKey {
         case response
@@ -606,6 +695,9 @@ struct CompanionStreamDonePayload: Codable {
         case trustLevel = "trust_level"
         case trustDelta = "trust_delta"
         case done
+        case showSocialBridge = "show_social_bridge"
+        case socialBridgeSuggestions = "social_bridge_suggestions"
+        case trustStreakDays = "trust_streak_days"
     }
 }
 

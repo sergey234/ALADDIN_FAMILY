@@ -1,17 +1,18 @@
 # Companion — полный трекер задач (открой в Cursor)
 
-**Обновлено:** 2026-05-29 (iOS build **214** · CODE Sprints **0–3 ✅ 29/49** · push ⏳)  
-**Handoff AI:** [COMPANION_HANDOFF_AI_NEXT.md](./COMPANION_HANDOFF_AI_NEXT.md) · **ML №4:** [HANDOFF_29](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Без Rive:** [TASKS_NO_RIVE](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Код-спринты v2:** [CODE_PLAN](./COMPANION_CODE_PLAN_NO_RIVE.md) · [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md) (Sprints 0–3 ✅) · **Завтра:** [PLAN_2026-05-29](./COMPANION_PLAN_TOMORROW_2026-05-29.md)  
+**Обновлено:** 2026-05-29 (iOS build **214** на TF · CODE Sprints **0–5 ✅ 49/49** локально · pytest companion **~80** · push Sprint 4–5 ⏳)  
+**Handoff для следующей ML:** [COMPANION_ML_HANDOFF_NEXT_SYSTEM.md](./COMPANION_ML_HANDOFF_NEXT_SYSTEM.md) · **План до 100%:** [COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md)  
+**Handoff AI:** [COMPANION_HANDOFF_AI_NEXT.md](./COMPANION_HANDOFF_AI_NEXT.md) · **ML №4:** [HANDOFF_29](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Без Rive:** [TASKS_NO_RIVE](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Код-спринты v2:** [CODE_PLAN](./COMPANION_CODE_PLAN_NO_RIVE.md) · [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md)  
 **Rive connect:** [COMPANION_RIVE_CONNECT_NODE_MCP.md](./COMPANION_RIVE_CONNECT_NODE_MCP.md) · **Art canon:** [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md) · **UX:** [UNIFIED_HOME](./COMPANION_UNIFIED_HOME_UX.md)  
-**Прогресс спринта:** **76 / 102 (75%)** · **осталось 26** · **CODE v2: 29/49** · **HERO-3: 24/26** · **07 + 11 ⏳** · **02b-PO-lock ✅** · **unicorn.riv >25KB ✅**  
+**Прогресс спринта:** **90 / 102 (88%)** · **осталось 12** · **CODE v2: 49/49 ✅** · **HERO-3: 24/26** · **07 + 11 ⏳** · **02b-PO-lock ✅** · **unicorn.riv >25KB ✅**  
 **Вне 102 (iOS polish):** **11/12 ✅** · **1 в работе** (STT device QA → **214**) · **POL-12 ✅**  
 **Синхронизация цифр:** только этот файл — остальные `COMPANION_*.md` ссылаются сюда.  
 **ADR 2D vs 3D:** [COMPANION_2D_VS_3D_ADR.md](./COMPANION_2D_VS_3D_ADR.md) ✅ · **Export 07:** [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md)  
 **Матрица HERO-3:** [COMPANION_HERO3_READINESS_MATRIX.md](./COMPANION_HERO3_READINESS_MATRIX.md)  
 **Figma Companion:** https://www.figma.com/design/vwKcGPUUEZjgayEHNn0BJM — **`00_Spec` ✅** · **`01` unicorn v2 ✅** · **`03` genie OB_03×12 + OB_02–06 row ✅** [аудит](./COMPANION_FIGMA_STATUS.md)  
 **Цель:** 2D Rive · 56% full-body rect · субтитр · 12 эмоций + lip-sync  
-**Следующий шаг (код v2):** [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md) → **Sprint 4** (P1-12, P2-02, P2-12/13/15/16) · **Rive в конце:** **07** → **11c** → GATE-EMO  
-**iOS:** build **214** · pytest companion **49** · **08b PASS** · capabilities decode + coalescing ✅
+**Следующий шаг:** **QA TestFlight 214** · **Rive 07** → **11c** → GATE-EMO · push Sprint 4+5 ⏳  
+**iOS:** build **214** · pytest companion **78** · **08b PASS** · capabilities decode + coalescing ✅
 
 Отмечай `[x]` при закрытии. Источник деталей: [COMPANION_IMPLEMENTATION_TODOS.md](./COMPANION_IMPLEMENTATION_TODOS.md)
 
@@ -27,10 +28,12 @@
 | OPS | 4 | 4 |
 | HERO-3 | 24 | 26 |
 | P1+ | 11 | 12 |
-| P2 | 1 | 17 |
-| P3 | 0 | 6 |
-| Adult | 0 | 3 |
-| **Итого** | **76** | **102** |
+| P2 | 16 | 17 |
+| P3 | 6 | 6 |
+| Adult | 3 | 3 |
+| **Итого** | **90** | **102** |
+
+> **12 открытых** = не в «90»: HERO-3-07, HERO-3-11b/11c, P1-12 Postgres (MVP Redis+SQLite ✅ код), P2-09, P2-17, UX-14b, P1-19 Rive screenshots, GATE-* (см. [PLAN_100](./COMPANION_PLAN_TO_100_PERCENT.md)).
 
 ---
 
@@ -147,7 +150,7 @@
 
 ## P1+ Production (11/12)
 
-- [ ] **P1-12** — Postgres + Redis
+- [~] **P1-12** — Postgres + Redis — **MVP ✅** (`companion_stream_redis.py`, SQLite store; `COMPANION_STORE_BACKEND=postgres` → warning only). Полная миграция Postgres ⏳ отдельный проект.
 - [x] **P1-13** — голос production (P1-13d WS + STT→chat→TTS; genie в voice WS)
 - [x] **P1-14** — XCUITest: Kids → Друзья → Companion → message (`CompanionSmokeUITests.swift`)
 - [x] **P1-15** — prod verify полный (= OPS-02 + VPS deploy Sprint 3 BE)
@@ -162,43 +165,43 @@
 
 ---
 
-## P2 — фаза B (1/17)
+## P2 — фаза B (16/17)
 
-- [ ] **P2-01** — web search
-- [ ] **P2-02** — orchestrator
-- [ ] **P2-03** — Fast/Reasoning/Think
-- [ ] **P2-04** — фото и PDF
-- [ ] **P2-05** — trust decay/streak
-- [ ] **P2-06** — family context в промпте
-- [ ] **P2-07** — Responses API
-- [ ] **P2-08** — COGS dashboard
+- [x] **P2-01** — web search + citations
+- [x] **P2-02** — orchestrator + `COMPANION_USE_ORCHESTRATOR`
+- [x] **P2-03** — Fast/Reasoning/Think (`chat_mode` + iOS)
+- [x] **P2-04** — фото и PDF (attachments MVP)
+- [x] **P2-05** — trust decay/streak
+- [x] **P2-06** — family context в промпте
+- [x] **P2-07** — Responses API tools manifest
+- [x] **P2-08** — COGS dashboard `GET /cogs`
 - [ ] **P2-09** — Figma↔Rive (→ HERO-3)
 - [x] **P2-11** — mood-aware MVP
-- [ ] **P2-12** — life domains API
-- [ ] **P2-13** — social bridge
-- [ ] **P2-14** — вход Senior 60+
-- [ ] **P2-15** — teen loneliness playbook
-- [ ] **P2-16** — trust за эмпатию
+- [x] **P2-12** — life domains API + chips
+- [x] **P2-13** — social bridge
+- [x] **P2-14** — вход Senior 60+ (Main)
+- [x] **P2-15** — teen loneliness playbook
+- [x] **P2-16** — trust за эмпатию
 - [ ] **P2-17** — A/B humor_density (genie+teen, после HERO-3)
 
 ---
 
-## P3 (0/6)
+## P3 (6/6)
 
-- [ ] **P3-01** — генерация картинок
-- [ ] **P3-02** — генерация видео
-- [ ] **P3-03** — workspaces
-- [ ] **P3-04** — длинный контекст
-- [ ] **P3-05** — Android
-- [ ] **P3-06** — Adult iOS Store
+- [x] **P3-01** — генерация картинок (stub + flag)
+- [x] **P3-02** — генерация видео (stub)
+- [x] **P3-03** — workspaces API
+- [x] **P3-04** — длинный контекст (recap hint)
+- [x] **P3-05** — Android checklist doc
+- [x] **P3-06** — Adult scaffold doc
 
 ---
 
-## Adult backend (0/3)
+## Adult backend (3/3)
 
-- [ ] **A-01** — OpenAPI aladdin_adult
-- [ ] **A-02** — policy tests NSFW
-- [ ] **A-03** — repo stub Adult app
+- [x] **A-01** — OpenAPI aladdin_adult
+- [x] **A-02** — policy tests NSFW
+- [x] **A-03** — repo stub Adult app
 
 ---
 
@@ -294,17 +297,35 @@ X-01 · X-02 · X-03 · X-04 · X-05 · X-06 · X-07
 
 **UX (Фаза 1–3 код):** [UX-01…05](./COMPANION_UNIFIED_HOME_UX.md) ✅ · **UX-06…08** ✅ (Друзья, pet, legacy) · **UX-09** GATE R6/R8 ⏳ QA
 
-## Сессия 2026-05-29 — CODE Sprints 1–3 (v2, зафиксировано)
+## Блок G — UX «Мир героев» (CODE Sprint 1, 17 задач) ✅ код / ⏳ TF215
 
-> **CODE_TODO:** Sprints **0–3 = 29/49** ✅ · pytest companion **49** · BE P1-22 на VPS.
+| № | Задача | Код | 100%? |
+|---|--------|-----|-------|
+| 74–76 | Три героя BE/iOS/голос | блок E | ✅ |
+| 77–78 | Карточка Rewards + текст 🦄🧑🧞 | `ChildRewardsScreen.swift` | ✅ код · проверить **build 215** |
+| 79–82 | «Друзья», питомец, legacy→Home | `08_ChildInterfaceScreen`, pet, nav | ✅ |
+| 83–85 | Mic coach, hold детей, busy assistant | `CompanionConversationScreen` | ✅ |
+| 86 | Чистый overlay ребёнка | `heroStatusOverlay` | ✅ |
+| 87–88 | RU/EN, VoiceOver | `LocalizationManager` | ✅ |
+
+**До 100% блока G:** commit → TF **215** → device: Rewards card видна родителю и ребёнку, все входы → `companionHome`.
+
+---
+
+## Сессия 2026-05-29 — CODE Sprints 0–5 (v2, зафиксировано)
+
+> **CODE_TODO:** Sprints **0–5 = 49/49** ✅ в рабочей копии · **git push** ⏳ (remote на `771340a3` = только 0–3).
 
 | Блок | ID | Статус |
 |------|-----|--------|
-| Sprint 1 UX+герои | UX-HERO-01…03, UX-06…14, P1-20a, P1-17a | ✅ код |
-| Sprint 2 | P1-13d, P1-20, P1-17, P1-21 | ✅ код |
-| Sprint 3 | P1-14, P1-18, P1-22, P1-16, P1-19 (doc) | ✅ код |
-| Отложено Rive | UX-14b, HERO-3-07, P1-19 screenshots | ⏳ |
-| Следующий код | Sprint 4: P1-12, P2-02, P2-12/13/15/16 | ⏳ |
+| Sprint 1 UX+герои (блок G) | UX-HERO-01…03, UX-06…14, P1-20a, P1-17a | ✅ код |
+| Sprint 2 | P1-13d, P1-20, P1-17, P1-21 | ✅ код · push 214 |
+| Sprint 3 | P1-14, P1-18, P1-22, P1-16, P1-19 (doc) | ✅ код · push 214 |
+| Sprint 4 | P1-12 MVP, P2-02, P2-12/13/15/16 | ✅ код · **VPS ⏳** |
+| Sprint 5 | P2-01…08, P2-14, P3-01…06, A-01…03 | ✅ код · **VPS ⏳** |
+| Stream-fix | `chat_mode`, `attachments`, `workspace_id` в SSE | ✅ локально |
+| Отложено Rive | UX-14b, HERO-3-07, P1-19 screenshots, P2-09, P2-17 | ⏳ не в плане 100% |
+| Следующий шаг | commit → deploy → TF **215** | [PLAN_100](./COMPANION_PLAN_TO_100_PERCENT.md) этап 1 |
 
 ## В конце (по решению команды)
 

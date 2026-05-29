@@ -1,7 +1,7 @@
 # 🧞 Companion — СТАРТ ДЛЯ СЛЕДУЮЩЕЙ ML-СИСТЕМЫ
 
-> **Открой этот файл первым.** Здесь — что уже сделано, что делать дальше, и полный каталог документов и кода.  
-> **Дата:** 2026-05-29 · **Handoff №4** — [COMPANION_ML_HANDOFF_2026-05-29.md](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Без Rive:** [COMPANION_TASKS_WITHOUT_RIVE.md](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Код-спринты:** [CODE_PLAN](./COMPANION_CODE_PLAN_NO_RIVE.md) · [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md) · [Rive connect](./COMPANION_RIVE_CONNECT_NODE_MCP.md)
+> **Открой этот файл первым.** Здесь — карта документов. **Главный handoff «доделать до 100%»:** [COMPANION_ML_HANDOFF_NEXT_SYSTEM.md](./COMPANION_ML_HANDOFF_NEXT_SYSTEM.md) · **План:** [COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md)  
+> **Дата:** 2026-05-29 · **Handoff №4** — [COMPANION_ML_HANDOFF_2026-05-29.md](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Без Rive:** [COMPANION_TASKS_WITHOUT_RIVE.md](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Код-спринты:** [CODE_PLAN](./COMPANION_CODE_PLAN_NO_RIVE.md) · [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md)
 
 ---
 
@@ -14,9 +14,10 @@
 | **Репозиторий** | `git@github.com:sergey234/ALADDIN_FAMILY.git` · ветка **`master`** |
 | **Рабочая папка iOS** | `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS` |
 | **Build iOS** | **214** (canonical: Info.plist + project.pbxproj + AppConfig) |
-| **Прогресс** | **76 / 102 (75%)** · CODE v2 **29/49** · HERO-3: **24 / 26** |
+| **Прогресс** | **90 / 102 (88%)** · CODE v2 **49/49** локально · HERO-3: **24 / 26** |
 | **Главный TODO** | [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) — ставь `[x]` только после реальной проверки |
-| **Rive** | **Блокер** — в конце; **Sprint 4** → [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md) |
+| **Доделать** | [COMPANION_ML_HANDOFF_NEXT_SYSTEM.md](./COMPANION_ML_HANDOFF_NEXT_SYSTEM.md) — commit, deploy, TF215, блок G/J/K MVP |
+| **Rive** | **Отложено** (12 задач) — не блокирует «100% без Rive» |
 
 ### Что делать дальше (две параллельные дорожки)
 
@@ -37,8 +38,9 @@ flowchart LR
 
 | Дорожка | ID | Действие |
 |---------|-----|----------|
-| **Сейчас** | Sprint 4 | P1-12 Postgres · P2-02 orchestrator · P2-12/13/15/16 |
-| **Сейчас** | TF **214** | Push → device QA (11b SPEECH, GATE-DIALOG) |
+| **Сейчас** | Этап 1 | commit Sprint 4–5 + stream-fix → deploy VPS → TF **215** |
+| **Сейчас** | Блок G | Проверить карточку Rewards на device (build 215) |
+| **Потом** | TF **214** QA | device STT (11b) — отложено в 12 задач |
 | **Потом** | **HERO-3-07** | Rive Editor → [5 steps](./COMPANION_RIVE_EDITOR_5_STEPS.md) |
 | **Потом** | **11b/11c**, **GATE-EMO** | MOTION/MIMIC/D10 + приёмка |
 
@@ -52,9 +54,10 @@ flowchart LR
 
 | # | Документ | Зачем | Время |
 |---|----------|-------|-------|
-| **1** | **Этот файл** (`COMPANION_ML_HANDOFF_START_HERE.md`) | Карта и next steps | 10 мин |
-| **2** | [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md) | **PO ✅ art** — где лежат все картинки | 5 мин |
+| **1** | [COMPANION_ML_HANDOFF_NEXT_SYSTEM.md](./COMPANION_ML_HANDOFF_NEXT_SYSTEM.md) | **Главный:** что сделано, stream, deploy, блоки A–L | 15 мин |
+| **2** | [COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md) | Пошаговый план этапов 1–5 | 10 мин |
 | **3** | [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md) | Единый список 102 задач с `[x]` | 15 мин |
+| **4** | [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md) | **PO ✅ art** — где лежат все картинки | 5 мин |
 | **4** | [COMPANION_100_PERCENT_PARALLEL.md](./COMPANION_100_PERCENT_PARALLEL.md) | План vs факт, кто что закрывает | 5 мин |
 | **5** | [COMPANION_FIGMA_STATUS.md](./COMPANION_FIGMA_STATUS.md) | **Аудит Figma** — что реально в файле | 5 мин |
 | **6** | [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md) | **HERO-3-07** — размеры, SM, export | 10 мин |

@@ -191,9 +191,9 @@ struct ChildRewardsScreen: View {
                         
                         // Группа 2: Основные карточки
                         Group {
-                            if !isCurrentUserParent() {
-                                companionWorldHeroCard
-                            }
+                            // UX-10 / POL-12: «Мир героев» — всем (и ребёнок, и родитель из Семьи → Игры).
+                            // Раньше скрывалось при current_user_role=parent — карточку не видели на TF.
+                            companionWorldHeroCard
                             // Баланс единорогов
                             balanceCard
                             
@@ -313,8 +313,18 @@ struct ChildRewardsScreen: View {
 
             // ✅ КРИТИЧНО: Принудительная установка роли при открытии экрана
             // Это гарантирует, что роль будет установлена даже если пользователь открыл экран напрямую
-            let currentRole = UserDefaults.standard.string(forKey: "current_user_role")
+            var currentRole = UserDefaults.standard.string(forKey: "current_user_role")
             print("🔍 ChildRewardsScreen.onAppear: Текущая роль: '\(currentRole ?? "НЕ УСТАНОВЛЕНА")'")
+
+            // Вход из детского интерфейса → всегда режим ребёнка (роль parent из Семьи иначе ломала детский UI).
+            let fromChildInterface = navigationManager.currentScreen == .childInterface
+                || navigationManager.navigationStack.contains(.childInterface)
+            if fromChildInterface {
+                UserDefaults.standard.set("child", forKey: "current_user_role")
+                UserDefaults.standard.synchronize()
+                currentRole = "child"
+                print("   ✅ Роль принудительно 'child' (вход с Child Interface)")
+            }
             
             // Если роль не установлена, пытаемся определить по текущему экрану
             if currentRole == nil {

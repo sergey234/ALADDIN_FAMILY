@@ -6,6 +6,7 @@ Persistent companion state (SQLite MVP; swap for Postgres/Redis in prod).
 from __future__ import annotations
 
 import json
+import logging
 import os
 import sqlite3
 import threading
@@ -105,6 +106,27 @@ class CompanionStore:
                     tokens_json TEXT NOT NULL,
                     meta_json TEXT NOT NULL,
                     created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS companion_trust_meta (
+                    user_id TEXT NOT NULL,
+                    character_id TEXT NOT NULL,
+                    payload TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (user_id, character_id)
+                );
+                CREATE TABLE IF NOT EXISTS companion_workspaces (
+                    user_id TEXT NOT NULL,
+                    workspace_id TEXT NOT NULL,
+                    payload TEXT NOT NULL,
+                    updated_at TEXT NOT NULL,
+                    PRIMARY KEY (user_id, workspace_id)
+                );
+                CREATE TABLE IF NOT EXISTS companion_cogs_daily (
+                    user_id TEXT NOT NULL,
+                    day TEXT NOT NULL,
+                    cost_usd REAL NOT NULL DEFAULT 0,
+                    turns INTEGER NOT NULL DEFAULT 0,
+                    PRIMARY KEY (user_id, day)
                 );
                 """
             )
@@ -240,6 +262,20 @@ class CompanionStore:
         tokens: List[str],
         meta: Dict[str, Any],
     ) -> None:
+        try:
+            from security.services.ai_platform.companion_stream_redis import (
+                put_stream_cache_redis,
+                stream_cache_backend,
+            )
+        except ImportError:
+            from companion_stream_redis import (  # type: ignore
+                put_stream_cache_redis,
+                stream_cache_backend,
+            )
+        if stream_cache_backend() == "redis" and put_stream_cache_redis(
+            message_id, user_id, tokens, meta
+        ):
+            return
         now = datetime.utcnow().isoformat()
         with self._lock, self._conn() as conn:
             conn.execute(
@@ -256,6 +292,20 @@ class CompanionStore:
             )
 
     def get_stream_cache(self, message_id: str, user_id: Optional[str] = None) -> Optional[Dict[str, Any]]:
+        try:
+            from security.services.ai_platform.companion_stream_redis import (
+                get_stream_cache_redis,
+                stream_cache_backend,
+            )
+        except ImportError:
+            from companion_stream_redis import (  # type: ignore
+                get_stream_cache_redis,
+                stream_cache_backend,
+            )
+        if stream_cache_backend() == "redis":
+            cached = get_stream_cache_redis(message_id, user_id)
+            if cached is not None:
+                return cached
         with self._lock, self._conn() as conn:
             row = conn.execute(
                 "SELECT user_id, tokens_json, meta_json FROM companion_stream_cache WHERE message_id=?",
@@ -271,6 +321,18 @@ class CompanionStore:
             }
 
     def delete_stream_cache(self, message_id: str) -> None:
+        try:
+            from security.services.ai_platform.companion_stream_redis import (
+                delete_stream_cache_redis,
+                stream_cache_backend,
+            )
+        except ImportError:
+            from companion_stream_redis import (  # type: ignore
+                delete_stream_cache_redis,
+                stream_cache_backend,
+            )
+        if stream_cache_backend() == "redis":
+            delete_stream_cache_redis(message_id)
         with self._lock, self._conn() as conn:
             conn.execute("DELETE FROM companion_stream_cache WHERE message_id=?", (message_id,))
 
@@ -470,6 +532,107 @@ class CompanionStore:
             )
         return self.get_usage_today(user_id)
 
+    def get_trust_meta(self, user_id: str, character_id: str) -> Dict[str, Any]:
+        with self._lock, self._conn() as conn:
+            row = conn.execute(
+                "SELECT payload FROM companion_trust_meta WHERE user_id=? AND character_id=?",
+                (user_id, character_id),
+            ).fetchone()
+            if not row:
+                return {}
+            return json.loads(row["payload"])
+
+    def set_trust_meta(self, user_id: str, character_id: str, payload: Dict[str, Any]) -> None:
+        now = datetime.utcnow().isoformat()
+        with self._lock, self._conn() as conn:
+            conn.execute(
+                """
+                INSERT INTO companion_trust_meta(user_id, character_id, payload, updated_at)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(user_id, character_id) DO UPDATE SET
+                    payload=excluded.payload, updated_at=excluded.updated_at
+                """,
+                (user_id, character_id, json.dumps(payload), now),
+            )
+
+    def list_workspaces(self, user_id: str, limit: int = 30) -> List[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            rows = conn.execute(
+                """
+                SELECT workspace_id, payload, updated_at
+                FROM companion_workspaces
+                WHERE user_id=?
+                ORDER BY updated_at DESC
+                LIMIT ?
+                """,
+                (user_id, limit),
+            ).fetchall()
+        out: List[Dict[str, Any]] = []
+        for r in rows:
+            data = json.loads(r["payload"])
+            data.setdefault("workspace_id", r["workspace_id"])
+            data["updated_at"] = r["updated_at"]
+            out.append(data)
+        return out
+
+    def get_workspace(self, user_id: str, workspace_id: str) -> Optional[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            row = conn.execute(
+                "SELECT payload FROM companion_workspaces WHERE user_id=? AND workspace_id=?",
+                (user_id, workspace_id),
+            ).fetchone()
+            if not row:
+                return None
+            return json.loads(row["payload"])
+
+    def upsert_workspace(self, user_id: str, workspace_id: str, payload: Dict[str, Any]) -> None:
+        now = datetime.utcnow().isoformat()
+        with self._lock, self._conn() as conn:
+            conn.execute(
+                """
+                INSERT INTO companion_workspaces(user_id, workspace_id, payload, updated_at)
+                VALUES (?, ?, ?, ?)
+                ON CONFLICT(user_id, workspace_id) DO UPDATE SET
+                    payload=excluded.payload, updated_at=excluded.updated_at
+                """,
+                (user_id, workspace_id, json.dumps(payload), now),
+            )
+
+    def record_cogs(self, user_id: str, *, cost_usd: float) -> Dict[str, Any]:
+        day = self._today()
+        cost = max(0.0, float(cost_usd))
+        with self._lock, self._conn() as conn:
+            conn.execute(
+                """
+                INSERT INTO companion_cogs_daily(user_id, day, cost_usd, turns)
+                VALUES (?, ?, ?, 1)
+                ON CONFLICT(user_id, day) DO UPDATE SET
+                    cost_usd = cost_usd + excluded.cost_usd,
+                    turns = turns + 1
+                """,
+                (user_id, day, cost),
+            )
+        return self.get_cogs_snapshot(user_id)
+
+    def get_cogs_snapshot(self, user_id: str) -> Dict[str, Any]:
+        day = self._today()
+        month_prefix = day[:7]
+        with self._lock, self._conn() as conn:
+            daily = conn.execute(
+                "SELECT cost_usd, turns FROM companion_cogs_daily WHERE user_id=? AND day=?",
+                (user_id, day),
+            ).fetchone()
+            month_rows = conn.execute(
+                "SELECT cost_usd FROM companion_cogs_daily WHERE user_id=? AND day LIKE ?",
+                (user_id, f"{month_prefix}%"),
+            ).fetchall()
+        month_usd = sum(float(r["cost_usd"]) for r in month_rows)
+        return {
+            "daily_usd": float(daily["cost_usd"]) if daily else 0.0,
+            "turns_today": int(daily["turns"]) if daily else 0,
+            "month_usd": month_usd,
+        }
+
 
 _store: Optional[CompanionStore] = None
 
@@ -477,5 +640,11 @@ _store: Optional[CompanionStore] = None
 def get_companion_store() -> CompanionStore:
     global _store
     if _store is None:
+        backend = os.getenv("COMPANION_STORE_BACKEND", "sqlite").strip().lower()
+        if backend == "postgres":
+            logger = logging.getLogger(__name__)
+            logger.warning(
+                "COMPANION_STORE_BACKEND=postgres requested; using SQLite MVP until migration (P1-12)"
+            )
         _store = CompanionStore()
     return _store

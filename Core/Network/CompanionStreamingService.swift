@@ -25,6 +25,9 @@ final class CompanionStreamingService: ObservableObject {
         sessionId: String?,
         messageId: String? = nil,
         securityExpertMode: Bool = false,
+        chatMode: String = "fast",
+        workspaceId: String? = nil,
+        attachments: [CompanionAttachmentPayload] = [],
         onEmotion: ((String) -> Void)? = nil,
         onToken: @escaping (String) -> Void,
         onComplete: @escaping (String, CompanionStreamDonePayload?) -> Void,
@@ -62,7 +65,10 @@ final class CompanionStreamingService: ObservableObject {
                 resumeFromIndex: 0,
                 messageId: streamMessageId,
                 context: "companion",
-                securityExpertMode: securityExpertMode
+                securityExpertMode: securityExpertMode,
+                chatMode: chatMode,
+                workspaceId: workspaceId,
+                attachments: attachments
             )
             var doneMeta: CompanionStreamDonePayload?
 
@@ -168,7 +174,10 @@ final class CompanionStreamingService: ObservableObject {
         resumeFromIndex: Int,
         messageId: String,
         context: String,
-        securityExpertMode: Bool = false
+        securityExpertMode: Bool = false,
+        chatMode: String = "fast",
+        workspaceId: String? = nil,
+        attachments: [CompanionAttachmentPayload] = []
     ) async throws -> AsyncThrowingStream<StreamEvent, Error> {
         AsyncThrowingStream { continuation in
             let task = Task {
@@ -181,6 +190,9 @@ final class CompanionStreamingService: ObservableObject {
                         messageId: messageId,
                         context: context,
                         securityExpertMode: securityExpertMode,
+                        chatMode: chatMode,
+                        workspaceId: workspaceId,
+                        attachments: attachments,
                         continuation: continuation
                     )
                 } catch is CancellationError {
@@ -202,6 +214,9 @@ final class CompanionStreamingService: ObservableObject {
         messageId: String,
         context: String,
         securityExpertMode: Bool,
+        chatMode: String,
+        workspaceId: String?,
+        attachments: [CompanionAttachmentPayload],
         continuation: AsyncThrowingStream<StreamEvent, Error>.Continuation
     ) async throws {
         guard let url = URL(string: AppConfig.apiBaseURL + AppConfig.Endpoint.aiCompanionStream) else {
@@ -237,6 +252,18 @@ final class CompanionStreamingService: ObservableObject {
         }
         if securityExpertMode {
             body["security_expert_mode"] = true
+        }
+        body["chat_mode"] = chatMode
+        if let workspaceId, !workspaceId.isEmpty {
+            body["workspace_id"] = workspaceId
+        }
+        if !attachments.isEmpty {
+            body["attachments"] = attachments.map { att in
+                var row: [String: Any] = ["kind": att.kind, "filename": att.filename]
+                if let mime = att.mimeType { row["mime_type"] = mime }
+                if let b64 = att.contentB64 { row["content_b64"] = b64 }
+                return row
+            }
         }
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 

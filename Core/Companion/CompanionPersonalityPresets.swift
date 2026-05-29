@@ -41,8 +41,15 @@ enum CompanionUserContext {
         UserDefaults.standard.string(forKey: "current_user_role") == "child"
     }
 
+    /// P2-14 — set when opening companion from Main «60+» card.
+    static var isSeniorEntry: Bool {
+        UserDefaults.standard.bool(forKey: "companion_senior_entry")
+    }
+
     static var companionAgeBand: String {
-        isChildProfile ? "child" : "parent"
+        if isChildProfile { return "child" }
+        if isSeniorEntry { return "senior" }
+        return "parent"
     }
 }
 
