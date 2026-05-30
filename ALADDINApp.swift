@@ -428,6 +428,10 @@ struct ALADDINApp: App {
         print("✅ SubscriptionManager.initializeOnAppStart() completed successfully")
         LaunchDiagnostics.appendStartupTrace("deferred: SubscriptionManager.initializeOnAppStart END")
 
+        LaunchDiagnostics.appendStartupTrace("deferred: FamilyReconcileService.reconcileIfNeeded BEGIN")
+        await FamilyReconcileService.shared.reconcileIfNeeded(reason: "app_start", force: true)
+        LaunchDiagnostics.appendStartupTrace("deferred: FamilyReconcileService.reconcileIfNeeded END")
+
 #if DEBUG
         // Debug-only heavy operations (token seeding, auto-login diagnostics)
         let skipDebugTokensRaw = ProcessInfo.processInfo.environment["SKIP_DEBUG_TOKENS"] ?? ""

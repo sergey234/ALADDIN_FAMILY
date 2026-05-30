@@ -9,6 +9,7 @@ from .base import ModuleContext, PlatformModule
 from .chat_core import ChatCoreModule
 from .companion import CompanionModule
 from .companion_neuro_tts import CompanionNeuroTTSModule
+from .companion_server_stt import CompanionServerSTTModule
 from .voice_realtime import VoiceRealtimeModule
 from .web_search import WebSearchModule
 from .workspaces import WorkspacesModule
@@ -18,6 +19,7 @@ from .media_gen import MediaGenModule
 _BUILTIN_MODULES: List[PlatformModule] = [
     ChatCoreModule(),
     VoiceRealtimeModule(),
+    CompanionServerSTTModule(),
     CompanionNeuroTTSModule(),
     CompanionModule(),
     WebSearchModule(),

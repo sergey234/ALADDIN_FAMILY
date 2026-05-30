@@ -365,6 +365,15 @@ class APIService: ObservableObject {
             "X-Current-Member-Id", "x-current-member-id", "X-Your-Member-Id", "x-your-member-id",
             "X-Resolved-Member-Id", "x-resolved-member-id", "X-Member-Id-You", "x-member-id-you"
         ]
+        let canManageRosterKeyCandidates = [
+            "X-Actor-Can-Manage-Roster", "x-actor-can-manage-roster", "X-ACTOR-CAN-MANAGE-ROSTER"
+        ]
+        let rosterUsedKeyCandidates = [
+            "X-Family-Roster-Used", "x-family-roster-used", "X-FAMILY-ROSTER-USED"
+        ]
+        let rosterMaxKeyCandidates = [
+            "X-Family-Roster-Max", "x-family-roster-max", "X-FAMILY-ROSTER-MAX"
+        ]
 
         func headerValue(for keys: [String]) -> String? {
             for k in keys {
@@ -396,6 +405,17 @@ class APIService: ObservableObject {
         }
         if let memberHint = headerValue(for: currentMemberKeyCandidates) {
             FamilyLocalStore.applyYourMemberIdFromFamilyMembersHeaderIfPresent(memberHint)
+        }
+        if let canManageRaw = headerValue(for: canManageRosterKeyCandidates)?
+            .trimmingCharacters(in: .whitespacesAndNewlines).lowercased() {
+            let canManage = canManageRaw == "true" || canManageRaw == "1" || canManageRaw == "yes"
+            UserDefaults.standard.set(canManage, forKey: "family_actor_can_manage_roster_last")
+        }
+        if let usedStr = headerValue(for: rosterUsedKeyCandidates), let used = Int(usedStr) {
+            UserDefaults.standard.set(used, forKey: "family_roster_used_last")
+        }
+        if let maxStr = headerValue(for: rosterMaxKeyCandidates), let maxSlots = Int(maxStr) {
+            UserDefaults.standard.set(maxSlots, forKey: "family_limit")
         }
     }
 
@@ -570,12 +590,23 @@ class APIService: ObservableObject {
         }
     }
 
+    /// Устаревший локальный `familyId` — клиент не член этой семьи (P1 stale recovery).
+    private func isFamilyAddStaleContext409(_ networkError: NetworkError) -> Bool {
+        switch networkError {
+        case .conflict(let detail):
+            return (detail ?? "").lowercased().contains("family_context_stale")
+        default:
+            return false
+        }
+    }
+
     /// `true` только для лимита ростера (`family_roster_full` и т.п.), не для context mismatch.
     private func isFamilyAddRosterLimit409(_ networkError: NetworkError) -> Bool {
         switch networkError {
         case .conflict(let detail):
             let d = (detail ?? "").lowercased()
             if d.contains("context mismatch") { return false }
+            if d.contains("family_context_stale") { return false }
             return d.contains("family_roster")
         case .invalidStatusCode(let code), .httpError(let code):
             return code == 409
@@ -645,6 +676,17 @@ class APIService: ObservableObject {
                     return
                 }
                 
+                if self.isFamilyAddStaleContext409(networkError) {
+                    VisualLogger.shared.log(
+                        "🔄 FAMILY ADD(stale) 409 family_context_stale — clearing local family_id",
+                        level: .warning,
+                        category: "FAMILY"
+                    )
+                    FamilyLocalStore.clearPersistedFamilyContextWhenServerReportsNoFamily()
+                    completion(.failure(NetworkError.businessLogicError("family_context_stale")))
+                    return
+                }
+
                 // 409: `NetworkManager` отдаёт `.conflict(detail)`, не `.httpError(409)` — обрабатываем оба и отделяем лимит ростера от прочих конфликтов.
                 if self.isFamilyAddRosterLimit409(networkError) {
                     let msg = self.familyAddRosterLimitUserMessage(networkError: networkError)

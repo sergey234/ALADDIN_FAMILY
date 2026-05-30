@@ -253,6 +253,7 @@ final class JWTTokenManager: @unchecked Sendable {
 
                         // Сохраняем новый access token
                         self.keychainManager.save(response.access_token, forKey: .authToken)
+                        FamilyLocalStore.reconcileFamilyContextWithCurrentJWT()
 
                         // Сохраняем новый refresh token если он есть
                         if let newRefreshToken = response.refresh_token {
@@ -304,6 +305,7 @@ final class JWTTokenManager: @unchecked Sendable {
                     switch result {
                     case .success(let response):
                         self.keychainManager.save(response.access_token, forKey: .authToken)
+                        FamilyLocalStore.reconcileFamilyContextWithCurrentJWT()
 
                         if let newRefreshToken = response.refresh_token {
                             self.keychainManager.save(newRefreshToken, forKey: .refreshToken)

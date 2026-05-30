@@ -222,6 +222,7 @@
 		5E7056BA2F5479540065BDC4 /* TrialIntegrationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056B02F54771D0065BDC4 /* TrialIntegrationTests.swift */; };
 		5E7056BC2F547AA00065BDC4 /* SubscriptionManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7056BB2F547AA00065BDC4 /* SubscriptionManager.swift */; };
 		5E7057032FA12A010065BDC4 /* FamilyLocalStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7057022FA12A010065BDC4 /* FamilyLocalStore.swift */; };
+		5E7057062FA12A020065BDC4 /* FamilyReconcileService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E7057052FA12A020065BDC4 /* FamilyReconcileService.swift */; };
 		5E8A10022FA12A100065BDC4 /* NotificationAppSettingsSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E8A10012FA12A100065BDC4 /* NotificationAppSettingsSync.swift */; };
 		A3F700022FA12A030065BDC4 /* FamilySyncDebugSnapshot.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3F700012FA12A030065BDC4 /* FamilySyncDebugSnapshot.swift */; };
 		E7F8B0022FA12A050065BDC4 /* FamilyRosterSyncMergePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7F8B0012FA12A050065BDC4 /* FamilyRosterSyncMergePolicy.swift */; };
@@ -714,6 +715,7 @@
 		5E7056B82F5478CE0065BDC4 /* PaymentHelpView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaymentHelpView.swift; path = Screens/Views/PaymentHelpView.swift; sourceTree = "<group>"; };
 		5E7056BB2F547AA00065BDC4 /* SubscriptionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SubscriptionManager.swift; path = Core/Managers/SubscriptionManager.swift; sourceTree = "<group>"; };
 		5E7057022FA12A010065BDC4 /* FamilyLocalStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyLocalStore.swift; path = Core/Managers/FamilyLocalStore.swift; sourceTree = "<group>"; };
+		5E7057052FA12A020065BDC4 /* FamilyReconcileService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyReconcileService.swift; path = Core/Managers/FamilyReconcileService.swift; sourceTree = "<group>"; };
 		5E8A10012FA12A100065BDC4 /* NotificationAppSettingsSync.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationAppSettingsSync.swift; path = Core/Managers/NotificationAppSettingsSync.swift; sourceTree = "<group>"; };
 		A3F700012FA12A030065BDC4 /* FamilySyncDebugSnapshot.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySyncDebugSnapshot.swift; path = Core/Managers/FamilySyncDebugSnapshot.swift; sourceTree = "<group>"; };
 		E7F8B0012FA12A050065BDC4 /* FamilyRosterSyncMergePolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyRosterSyncMergePolicy.swift; path = Core/Managers/FamilyRosterSyncMergePolicy.swift; sourceTree = "<group>"; };
@@ -1146,6 +1148,7 @@
 				5E7056C12F547B9E0065BDC4 /* FeatureGateView.swift */,
 				5E7056BB2F547AA00065BDC4 /* SubscriptionManager.swift */,
 				5E7057022FA12A010065BDC4 /* FamilyLocalStore.swift */,
+				5E7057052FA12A020065BDC4 /* FamilyReconcileService.swift */,
 				5E8A10012FA12A100065BDC4 /* NotificationAppSettingsSync.swift */,
 				A3F700012FA12A030065BDC4 /* FamilySyncDebugSnapshot.swift */,
 				E7F8B0012FA12A050065BDC4 /* FamilyRosterSyncMergePolicy.swift */,
@@ -1775,6 +1778,7 @@
 				5EC309182EA6B63100C7D34B /* 19_TermsOfServiceScreen.swift in Sources */,
 				5E7056BC2F547AA00065BDC4 /* SubscriptionManager.swift in Sources */,
 				5E7057032FA12A010065BDC4 /* FamilyLocalStore.swift in Sources */,
+				5E7057062FA12A020065BDC4 /* FamilyReconcileService.swift in Sources */,
 				5E8A10022FA12A100065BDC4 /* NotificationAppSettingsSync.swift in Sources */,
 				A3F700022FA12A030065BDC4 /* FamilySyncDebugSnapshot.swift in Sources */,
 				E7F8B0022FA12A050065BDC4 /* FamilyRosterSyncMergePolicy.swift in Sources */,
@@ -2198,7 +2202,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 217;
+				CURRENT_PROJECT_VERSION = 218;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2232,7 +2236,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 217;
+				CURRENT_PROJECT_VERSION = 218;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2390,7 +2394,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 217;
+				CURRENT_PROJECT_VERSION = 218;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2424,7 +2428,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 217;
+				CURRENT_PROJECT_VERSION = 218;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2456,7 +2460,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 217;
+				CURRENT_PROJECT_VERSION = 218;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2482,7 +2486,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 217;
+				CURRENT_PROJECT_VERSION = 218;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2506,7 +2510,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 217;
+				CURRENT_PROJECT_VERSION = 218;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2531,7 +2535,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 217;
+				CURRENT_PROJECT_VERSION = 218;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

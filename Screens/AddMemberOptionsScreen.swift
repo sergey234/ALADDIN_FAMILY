@@ -41,9 +41,15 @@ struct AddMemberOptionsScreen: View {
         return list
     }
 
-    /// Тот же критерий, что `canManageFamilyRoster` на экране семьи (родитель/пожилой в списке).
+    /// Тот же критерий, что `canManageFamilyRoster` на экране семьи (серверный gate + локальная политика).
     private var canManageFamilyRosterFromCache: Bool {
-        FamilyRosterAccess.canManageRoster(
+        guard !FamilyLocalStore.isLikelyStaleFamilyContextForCurrentAccount(members: cachedFamilyMembersForRoster) else {
+            return false
+        }
+        if UserDefaults.standard.object(forKey: "family_actor_can_manage_roster_last") != nil {
+            return UserDefaults.standard.bool(forKey: "family_actor_can_manage_roster_last")
+        }
+        return FamilyRosterAccess.canManageRoster(
             members: cachedFamilyMembersForRoster,
             myMemberId: UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey),
             currentUserRoleFallback: UserDefaults.standard.string(forKey: "current_user_role")

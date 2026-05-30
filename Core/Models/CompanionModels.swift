@@ -131,6 +131,16 @@ struct CompanionLegalSection: Codable, Identifiable, Equatable {
             title: "COPPA и 152-ФЗ",
             body: "Родитель управляет доступом и памятью компаньона в настройках семьи."
         ),
+        CompanionLegalSection(
+            id: "voice_recognition_primary",
+            title: "Голос (Apple)",
+            body: "Сначала речь распознаётся на iPhone через Apple (Siri). ALADDIN получает только текст."
+        ),
+        CompanionLegalSection(
+            id: "voice_stt_fallback",
+            title: "Запасной путь ALADDIN",
+            body: "Если Apple не справилась, короткая запись (до 15 с) может обработаться на сервере ALADDIN и сразу удалиться. Включено только с «Облачным AI»."
+        ),
     ]
 }
 
@@ -201,6 +211,24 @@ struct CompanionTTSResponse: Codable {
         case provider
         case cached
         case durationSeconds = "duration_seconds"
+    }
+}
+
+struct CompanionSTTResponse: Codable {
+    let text: String
+    let confidence: Double
+    let provider: String
+    let language: String
+    let durationSec: Double?
+    let audioRetentionSec: Int
+
+    enum CodingKeys: String, CodingKey {
+        case text
+        case confidence
+        case provider
+        case language
+        case durationSec = "duration_sec"
+        case audioRetentionSec = "audio_retention_sec"
     }
 }
 

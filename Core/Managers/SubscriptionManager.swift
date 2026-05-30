@@ -285,6 +285,7 @@ final class SubscriptionManager: ObservableObject {
         ))
 
         reconcileTariffManagerWithSubscription(reason: "initializeOnAppStart")
+        FamilyLocalStore.reconcileFamilyContextWithCurrentJWT()
         logSubscriptionReconcileSummary(tokenStatus: tokenStatus)
         isInitialized = true
         #if DEBUG

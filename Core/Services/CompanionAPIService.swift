@@ -37,6 +37,70 @@ final class CompanionAPIService {
         }
     }
 
+    /// Hybrid STT fallback — short WAV in RAM only; server must discard after transcribe (see legal `voice_stt_fallback`).
+    func transcribeVoiceFallback(
+        audioWAV: Data,
+        characterId: String,
+        sessionId: String?,
+        language: String = LocalizationManager.shared.aiResponseLanguageCode
+    ) async throws -> CompanionSTTResponse {
+        guard AppConfig.isAIDataSharingEnabled else {
+            throw AIOutboundTextGate.GateError.optInRequired
+        }
+        guard !audioWAV.isEmpty else {
+            throw NetworkError.badRequest("empty_audio")
+        }
+
+        let boundary = "AladdinSTT-\(UUID().uuidString)"
+        var body = Data()
+        func appendField(_ name: String, _ value: String) {
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".data(using: .utf8)!)
+            body.append("\(value)\r\n".data(using: .utf8)!)
+        }
+        appendField("language", language)
+        appendField("character_id", characterId)
+        if let sessionId, !sessionId.isEmpty {
+            appendField("session_id", sessionId)
+        }
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"audio\"; filename=\"speech.wav\"\r\n".data(using: .utf8)!)
+        body.append("Content-Type: audio/wav\r\n\r\n".data(using: .utf8)!)
+        body.append(audioWAV)
+        body.append("\r\n--\(boundary)--\r\n".data(using: .utf8)!)
+
+        guard let url = URL(string: AppConfig.apiBaseURL + AppConfig.Endpoint.aiCompanionSTT) else {
+            throw NetworkError.invalidURL
+        }
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+        request.setValue("application/json", forHTTPHeaderField: "Accept")
+        if let token = AppConfig.authToken ?? KeychainManager.shared.loadString(forKey: .authToken) {
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+        }
+        for (key, value) in familyScopeHeaders() {
+            request.setValue(value, forHTTPHeaderField: key)
+        }
+        request.httpBody = body
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+        guard let http = response as? HTTPURLResponse else {
+            throw NetworkError.invalidResponse
+        }
+        if (200...299).contains(http.statusCode) {
+            return try JSONDecoder().decode(CompanionSTTResponse.self, from: data)
+        }
+        let detail = (try? JSONSerialization.jsonObject(with: data) as? [String: Any])?["detail"] as? String
+        switch http.statusCode {
+        case 400, 422: throw NetworkError.badRequest(detail ?? "stt_failed")
+        case 403: throw NetworkError.forbidden(detail)
+        case 424, 503: throw NetworkError.serviceUnavailable(detail ?? "server_stt_unavailable")
+        case 429: throw NetworkError.tooManyRequests(detail)
+        default: throw NetworkError.httpError(http.statusCode)
+        }
+    }
+
     func fetchNeuroTTS(text: String, characterId: String) async throws -> CompanionTTSResponse {
         let body = CompanionTTSRequestBody(
             text: text,

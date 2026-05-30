@@ -497,6 +497,9 @@ class SfmMockTo503Middleware(BaseHTTPMiddleware):
 
             request_path = request.url.path
             if request_path.startswith("/api/") and response.status_code in {500, 503}:
+                # Companion STT: pass through provider/network errors (iOS shows fallback message).
+                if request_path.startswith("/api/ai/companion/stt"):
+                    return response
                 # Gate-friendly hardening: unstable backend branches must not leak 5xx as final contract response.
                 return JSONResponse(
                     status_code=404,

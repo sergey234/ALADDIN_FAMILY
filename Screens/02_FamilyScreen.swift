@@ -63,6 +63,7 @@ struct FamilyScreen: View {
     // ✅ NEW: Debounce protection against sub-second save/reload cycles (main fix for infinite loop)
     @State private var lastFamilyOperationTime: Date = .distantPast
     @State private var lastCoalescedFamilySyncAt: Date = .distantPast
+    @State private var coalescedFamilySyncGeneration: UInt = 0
     // ✅ OPTIMIZATION: Cached admin status to prevent expensive computed property spam on every render
     @State private var isCurrentUserCreator: Bool = true
     @State private var isCurrentUserParent: Bool = true
@@ -543,14 +544,7 @@ struct FamilyScreen: View {
             return
         }
 
-        // Проверяем, есть ли family_id (канонический ключ — FamilyLocalStore)
-        let familyId = FamilyLocalStore.loadPersistedFamilyId()
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !familyId.isEmpty else {
-            print("⚠️ [syncFamilyMembersFromAPI] Family ID не найден, пропускаем синхронизацию")
-            return
-        }
-        
+        // Синхронизация с сервером даже при пустом family_id (JWT + X-Family-Context: none).
         isFamilySyncInProgress = true
         syncEngine.publish(domain: .family, operation: "family_sync_start", state: .syncing)
         print("🔄 [syncFamilyMembersFromAPI] Начинаем синхронизацию участников семьи с сервером")
@@ -563,6 +557,7 @@ struct FamilyScreen: View {
                 switch result {
                 case .success(let syncContext):
                     let members = syncContext.members
+                    let familyId = FamilyLocalStore.loadPersistedFamilyId()
                     let skipCrossFamilyMerge = syncContext.shouldReplaceLocalMembersInsteadOfMerge
                     if skipCrossFamilyMerge {
                         VisualLogger.shared.log(
@@ -875,6 +870,7 @@ struct FamilyScreen: View {
 
                     print("✅ [syncFamilyMembersFromAPI] Синхронизация завершена: \(convertedMembers.count) участников сохранено")
                     VisualLogger.shared.log("✅ FAMILY SYNC: completed", level: .success, category: "FAMILY")
+                    UserDefaults.standard.set(0, forKey: "family_sync_partial_retry_count")
                     self.syncEngine.publish(
                         domain: .family,
                         operation: "family_sync_complete",
@@ -883,6 +879,10 @@ struct FamilyScreen: View {
                     )
                     self.updateAdminStatus()  // ✅ OPTIMIZATION: Refresh cached admin status after sync
                     self.clearDeleteButtonCache(reason: "after_sync")  // Invalidate only after real data change
+                    // Broadcast after sync flag clears — save during sync skips notify to avoid CPU loop.
+                    DispatchQueue.main.async {
+                        FamilyLocalStore.notifyFamilyMembersUpdated()
+                    }
                     
                 case .failure(let error):
                     print("❌ [syncFamilyMembersFromAPI] Ошибка синхронизации: \(error.localizedDescription)")
@@ -1237,12 +1237,16 @@ struct FamilyScreen: View {
         }
     }
 
-    private func scheduleCoalescedFamilySync(delay: TimeInterval = 0.8, minInterval: TimeInterval = 2.0) {
+    private func scheduleCoalescedFamilySync(delay: TimeInterval = 0.8, minInterval: TimeInterval = 8.0) {
         let now = Date()
         guard !isFamilySyncInProgress else { return }
         guard now.timeIntervalSince(lastCoalescedFamilySyncAt) >= minInterval else { return }
         lastCoalescedFamilySyncAt = now
+        coalescedFamilySyncGeneration &+= 1
+        let generation = coalescedFamilySyncGeneration
         DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+            guard generation == self.coalescedFamilySyncGeneration else { return }
+            guard !self.isFamilySyncInProgress else { return }
             self.syncFamilyMembersFromAPI()
         }
     }
@@ -1387,8 +1391,10 @@ struct FamilyScreen: View {
         print("✅ Stored \(familyMembers.count) family members in UserDefaults")
         #endif
 
-        // Notify other screens (with guard in .onReceive to prevent loop)
-        FamilyLocalStore.notifyFamilyMembersUpdated()
+        // Notify other screens; skip during server sync — we already mutated `familyMembers` in memory.
+        if !allowDuringFamilySync {
+            FamilyLocalStore.notifyFamilyMembersUpdated()
+        }
     }
     
     // 🔥 FINAL v3: Агрессивная дедупликация + cleanup — server truth всегда
@@ -1591,9 +1597,15 @@ struct FamilyScreen: View {
         isCurrentUserParent
     }
 
-    /// Добавление/удаление участников: только родитель или пожилой в ростере (не ребёнок/подросток).
+    /// Добавление/удаление участников: серверный gate (`X-Actor-Can-Manage-Roster`) + локальная политика.
     private var canManageFamilyRoster: Bool {
-        FamilyAccessPolicy.hasPermission(.manageAppProfiles, members: familyMembers)
+        guard !FamilyLocalStore.isLikelyStaleFamilyContextForCurrentAccount(members: familyMembers) else {
+            return false
+        }
+        if UserDefaults.standard.object(forKey: "family_actor_can_manage_roster_last") != nil {
+            return UserDefaults.standard.bool(forKey: "family_actor_can_manage_roster_last")
+        }
+        return FamilyAccessPolicy.hasPermission(.manageAppProfiles, members: familyMembers)
     }
 
     /// Family Sharing операции отделены от app-level профилей:
@@ -2573,8 +2585,7 @@ struct FamilyScreen: View {
             unicornBalance = UnicornRewardsStore.readBalance(for: UnicornRewardsStore.resolveActiveChildId())
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyMembersUpdated"))) { _ in
-            // FIXED: Prevent notification feedback loop. Only reload if not already syncing.
-            // This was the main source of the infinite save/reload cycle.
+            // Reload local cache only — do NOT schedule API sync here (was causing sync→save→notify CPU loop).
             guard !isFamilyLoadInProgress && !isFamilySyncInProgress else {
                 #if DEBUG
                 print("🔄 [FamilyMembersUpdated] Skipping reload - already in progress")
@@ -2582,7 +2593,6 @@ struct FamilyScreen: View {
                 return
             }
             reloadFamilyMembersFromStorageOnly()
-            scheduleCoalescedFamilySync()
             if familyMembers.count > 1 {
                 UserDefaults.standard.set(false, forKey: postRegistrationDeviceNudgePendingKey)
                 UserDefaults.standard.synchronize()

@@ -27,6 +27,11 @@ final class CompanionCapabilitiesService: ObservableObject {
         uiFlag(module: "companion_neuro_tts", key: "neuro_tts_premium")
     }
 
+    /// Server Whisper fallback when Apple STT returns empty (requires FEATURE_COMPANION_SERVER_STT on VPS).
+    var serverSttFallbackEnabled: Bool {
+        uiFlag(module: "companion_server_stt", key: "server_stt_fallback", defaultValue: false)
+    }
+
     var companionEnabled: Bool {
         featureEnabled("companion")
     }
@@ -75,9 +80,16 @@ final class CompanionCapabilitiesService: ObservableObject {
         payload?.features?[name]?.enabled ?? true
     }
 
-    private func uiFlag(module: String, key: String) -> Bool {
+    private func uiFlag(module: String, key: String, defaultValue: Bool? = nil) -> Bool {
         // neuro_tts_premium: default false until capabilities loaded (Free must not hit /tts)
-        let defaultValue = (module == "companion_neuro_tts" && key == "neuro_tts_premium") ? false : true
-        return payload?.features?[module]?.ui?.flag(key) ?? defaultValue
+        let resolvedDefault: Bool
+        if let defaultValue {
+            resolvedDefault = defaultValue
+        } else if module == "companion_neuro_tts" && key == "neuro_tts_premium" {
+            resolvedDefault = false
+        } else {
+            resolvedDefault = true
+        }
+        return payload?.features?[module]?.ui?.flag(key) ?? resolvedDefault
     }
 }

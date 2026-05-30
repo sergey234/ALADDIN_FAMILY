@@ -139,11 +139,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "217"
+    static let buildNumber = "218"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "217"
+    static let minimumClientBuildForApiContract = "218"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -315,6 +315,7 @@ struct AppConfig {
         static let aiPlatformCapabilities = "/api/ai/platform/capabilities"
         static let aiCompanionCapabilities = "/api/ai/companion/capabilities"
         static let aiCompanionTTS = "/api/ai/companion/tts"
+        static let aiCompanionSTT = "/api/ai/companion/stt"
         static let aiCompanionAnalytics = "/api/ai/companion/analytics"
         static let aiPlatformChat = "/api/ai/platform/chat"
         static let aiPlatformThreads = "/api/ai/platform/threads"

@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import AVFoundation
 import UniformTypeIdentifiers
 
 /// Разговор с выбранным героем (текст + голос MVP).
@@ -50,6 +51,12 @@ struct CompanionConversationScreen: View {
     @State private var holdWillCancel = false
     @State private var holdRecordingDidStart = false
     @State private var holdRecordingBeganAt: Date?
+    /// Отделяем «тап» от «удержания» — иначе DragGesture(minimumDistance: 0) + onTap дают 2× STT и 2× ответ.
+    @State private var micTouchBeganAt: Date?
+    @State private var micHoldArmTask: Task<Void, Never>?
+    @State private var voiceCaptureActive = false
+    @State private var lastVoiceSentText: String?
+    @State private var lastVoiceSentAt: Date?
     @State private var showMicCoach = false
     @State private var showAssistantBusyHint = false
     @State private var showingOfflineCache = false
@@ -75,7 +82,26 @@ struct CompanionConversationScreen: View {
         CompanionUserContext.isChildProfile
     }
 
+    /// Задержка перед стартом hold-to-talk у взрослого UI (короткий тап = toggle).
+    private let micHoldArmDelaySec: TimeInterval = 0.35
+    private let micHoldMinSec: TimeInterval = 0.55
+    private let voiceSendDedupSec: TimeInterval = 3.0
+    private let serverSTTCooldownSec: TimeInterval = 10.0
+    @State private var lastServerSTTFallbackAt: Date?
+
     var body: some View {
+        conversationWithLifecycle(conversationWithSheets(conversationStyledCore))
+    }
+
+    private var conversationStyledCore: some View {
+        conversationBodyCore
+            .background(Color(.systemGroupedBackground))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar(content: conversationToolbarContent)
+    }
+
+    @ViewBuilder
+    private var conversationBodyCore: some View {
         VStack(spacing: 0) {
             GeometryReader { geo in
                 let layout = CompanionHeroLayout.conversationMetrics(contentSize: geo.size)
@@ -105,43 +131,50 @@ struct CompanionConversationScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 16)
             }
-            if let errorText, !errorText.isEmpty {
-                if showAssistantBusyHint {
-                    VStack(alignment: .leading, spacing: 6) {
-                        Text(localizationManager.localized("companion_mic_assistant_busy"))
-                            .font(.caption)
-                            .foregroundStyle(.orange)
-                        Button(localizationManager.localized("companion_mic_assistant_busy_action")) {
-                            navigationManager.navigateTo(.aiAssistant)
-                        }
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(.purple)
+            conversationErrorBanner
+            inputBar
+        }
+    }
+
+    @ViewBuilder
+    private var conversationErrorBanner: some View {
+        if let errorText, !errorText.isEmpty {
+            if showAssistantBusyHint {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(localizationManager.localized("companion_mic_assistant_busy"))
+                        .font(.caption)
+                        .foregroundStyle(.orange)
+                    Button(localizationManager.localized("companion_mic_assistant_busy_action")) {
+                        navigationManager.navigateTo(.aiAssistant)
                     }
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.purple)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 16)
+                .padding(.vertical, 6)
+            } else {
+                Text(errorText)
+                    .font(.caption)
+                    .foregroundStyle(.orange)
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 16)
                     .padding(.vertical, 6)
-                } else {
-                    Text(errorText)
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 6)
-                }
             }
-            inputBar
         }
-        .background(Color(.systemGroupedBackground))
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar(content: conversationToolbarContent)
+    }
+
+    @ViewBuilder
+    private func conversationWithSheets<Content: View>(_ content: Content) -> some View {
+        content
         .sheet(isPresented: $showLegal, onDismiss: {
             if legalAckVersion.isEmpty {
-                legalAckVersion = "2026-05-26"
+                legalAckVersion = "2026-05-30"
             }
         }) {
             NavigationView {
                 CompanionLegalScreen(onAcknowledge: {
-                    legalAckVersion = "2026-05-26"
+                    legalAckVersion = "2026-05-30"
                     showLegal = false
                 })
                 .environmentObject(navigationManager)
@@ -182,34 +215,29 @@ struct CompanionConversationScreen: View {
                 ingestPickedImage(image)
             }
         }
-        .task { await loadState() }
-        .onAppear {
-            speechManager.audioSessionConsumer = .companion
-            speechManager.warmUpPermissionsIfNeeded()
-            voiceSession.onAssistantReply = { line, emo in
-                handleVoiceAssistantReply(line: line, emotion: emo)
-                if let trust = voiceSession.lastTrustScore {
-                    trustScore = trust
-                }
+        .sheet(isPresented: $showFullChatHistory) {
+            NavigationView {
+                fullChatHistoryScroll
+                    .navigationTitle(localizationManager.localized("companion_conversation_history"))
+                    .navigationBarTitleDisplayMode(.inline)
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button(localizationManager.localized("companion_conversation_done")) { showFullChatHistory = false }
+                        }
+                    }
             }
-            voiceSession.onError = { code in
-                errorText = CompanionDisplayNames.voiceErrorMessage(code: code, localizationManager: localizationManager)
-                heroEmotion = .alert
-            }
-            if input.isEmpty {
-                input = CompanionOfflineStore.loadDraft(characterId: characterId)
-            }
-            if legalAckVersion.isEmpty {
-                showLegal = true
-            }
-            CompanionAnalytics.track(.open, characterId: characterId, sessionId: sessionId)
-            if !embeddedInHome {
-                Task { await caps.refresh() }
-            }
-            if caps.voiceRealtimeEnabled && !micCoachSeen {
-                showMicCoach = true
-            }
+            .navigationViewStyle(.stack)
         }
+        .sheet(isPresented: $showMicCoach) {
+            micCoachSheet
+        }
+    }
+
+    @ViewBuilder
+    private func conversationWithLifecycle<Content: View>(_ content: Content) -> some View {
+        content
+        .task { await loadState() }
+        .onAppear(perform: handleConversationAppear)
         .onReceive(NotificationCenter.default.publisher(for: .microphonePermissionDenied)) { _ in
             showMicrophonePermissionAlert = true
             heroEmotion = .alert
@@ -227,13 +255,7 @@ struct CompanionConversationScreen: View {
             errorText = localizationManager.localized("companion_mic_assistant_busy")
             heroEmotion = .alert
         }
-        .onDisappear {
-            if speechManager.isRecording {
-                speechManager.stopRecording()
-            }
-            speechOutput.stop()
-            voiceSession.disconnect()
-        }
+        .onDisappear(perform: handleConversationDisappear)
         .onChange(of: speechManager.livePartialTranscript) { partial in
             guard speechManager.isRecording || speechManager.isPreparingRecording else { return }
             if !partial.isEmpty {
@@ -266,22 +288,6 @@ struct CompanionConversationScreen: View {
                 finishSpeakingPhase()
             }
         }
-        .sheet(isPresented: $showFullChatHistory) {
-            NavigationView {
-                fullChatHistoryScroll
-                    .navigationTitle(localizationManager.localized("companion_conversation_history"))
-                    .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button(localizationManager.localized("companion_conversation_done")) { showFullChatHistory = false }
-                        }
-                    }
-            }
-            .navigationViewStyle(.stack)
-        }
-        .sheet(isPresented: $showMicCoach) {
-            micCoachSheet
-        }
         .onChange(of: input) { newValue in
             CompanionOfflineStore.saveDraft(characterId: characterId, text: newValue)
         }
@@ -291,6 +297,49 @@ struct CompanionConversationScreen: View {
         .onChange(of: characterId) { newId in
             input = CompanionOfflineStore.loadDraft(characterId: newId)
         }
+    }
+
+    private func handleConversationAppear() {
+        speechManager.audioSessionConsumer = .companion
+        speechManager.warmUpPermissionsIfNeeded()
+        voiceSession.onAssistantReply = { line, emo in
+            handleVoiceAssistantReply(line: line, emotion: emo)
+            if let trust = voiceSession.lastTrustScore {
+                trustScore = trust
+            }
+        }
+        voiceSession.onError = { code in
+            errorText = CompanionDisplayNames.voiceErrorMessage(code: code, localizationManager: localizationManager)
+            heroEmotion = .alert
+        }
+        if input.isEmpty {
+            input = CompanionOfflineStore.loadDraft(characterId: characterId)
+        }
+        if legalAckVersion.isEmpty {
+            showLegal = true
+        }
+        speechOutput.onPlaybackEnded = {
+            deactivateSharedAudioSessionForMic()
+        }
+        if !embeddedInHome {
+            Task { await caps.refresh() }
+        }
+        if caps.voiceRealtimeEnabled && !micCoachSeen {
+            showMicCoach = true
+        }
+    }
+
+    private func handleConversationDisappear() {
+        if speechManager.isRecording {
+            speechManager.stopRecording()
+        }
+        speechOutput.stop()
+        voiceSession.disconnect()
+    }
+
+    private func deactivateSharedAudioSessionForMic() {
+        VoiceAudioSessionCoordinator.shared.forceReleaseAll()
+        try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
     }
 
     private func persistConversationCache() {
@@ -633,31 +682,7 @@ struct CompanionConversationScreen: View {
             .accessibilityIdentifier("companion_child_speak_button")
             .accessibilityLabel(localizationManager.localized("companion_mic_speak_button"))
             .accessibilityHint(localizationManager.localized("companion_mic_hold_hint_child"))
-            .highPriorityGesture(
-                DragGesture(minimumDistance: 0)
-                    .onChanged { _ in
-                        guard speechManager.isSpeechInputAvailable, !holdRecordingDidStart else { return }
-                        holdRecordingDidStart = true
-                        holdRecordingBeganAt = Date()
-                        isHoldRecording = true
-                        Task { await startHoldVoiceRecording() }
-                    }
-                    .onEnded { _ in
-                        holdRecordingDidStart = false
-                        isHoldRecording = false
-                        let heldSec = Date().timeIntervalSince(holdRecordingBeganAt ?? Date())
-                        holdRecordingBeganAt = nil
-                        if speechManager.isRecording {
-                            if heldSec < 0.55 {
-                                speechManager.cancelRecording()
-                                errorText = localizationManager.localized("companion_mic_hold_hint_child")
-                                heroEmotion = .alert
-                            } else {
-                                speechManager.stopRecording()
-                            }
-                        }
-                    }
-            )
+            .highPriorityGesture(companionMicDragGesture(childImmediateHold: true))
             .opacity((speechManager.isPreparingRecording || voiceSession.isAwaitingReply || speechOutput.isSpeaking) ? 0.5 : 1.0)
             .allowsHitTesting(!(speechManager.isPreparingRecording || speechManager.isStoppingRecording || speechManager.isMicrophoneCoolingDown || voiceSession.isAwaitingReply || speechOutput.isSpeaking))
     }
@@ -787,42 +812,7 @@ struct CompanionConversationScreen: View {
                         .foregroundStyle(voiceMicTint)
                         .frame(width: 36, height: 36)
                         .contentShape(Rectangle())
-                        .modifier(CompanionMicTapModifier(isEnabled: !isChildProfile) {
-                            guard !isHoldRecording else { return }
-                            Task { await toggleVoice() }
-                        })
-                        .highPriorityGesture(
-                            DragGesture(minimumDistance: 0)
-                                .onChanged { value in
-                                    holdWillCancel = value.translation.width < -72
-                                    guard speechManager.isSpeechInputAvailable, !holdRecordingDidStart else { return }
-                                    holdRecordingDidStart = true
-                                    holdRecordingBeganAt = Date()
-                                    isHoldRecording = true
-                                    Task { await startHoldVoiceRecording() }
-                                }
-                                .onEnded { value in
-                                    let cancel = holdWillCancel || value.translation.width < -80
-                                    holdRecordingDidStart = false
-                                    isHoldRecording = false
-                                    holdWillCancel = false
-                                    let heldSec = Date().timeIntervalSince(holdRecordingBeganAt ?? Date())
-                                    holdRecordingBeganAt = nil
-                                    if speechManager.isRecording {
-                                        if cancel {
-                                            speechManager.cancelRecording()
-                                        } else if heldSec < 0.55 {
-                                            speechManager.cancelRecording()
-                                            errorText = isChildProfile
-                                                ? localizationManager.localized("companion_mic_hold_hint_child")
-                                                : localizationManager.localized("companion_voice_hold_too_short")
-                                            heroEmotion = .alert
-                                        } else {
-                                            speechManager.stopRecording()
-                                        }
-                                    }
-                                }
-                        )
+                        .highPriorityGesture(companionMicDragGesture(childImmediateHold: false))
                         .accessibilityLabel(isChildProfile
                             ? localizationManager.localized("companion_mic_speak_button")
                             : localizationManager.localized("companion_voice_input_label"))
@@ -1240,13 +1230,107 @@ struct CompanionConversationScreen: View {
         )
     }
 
+    private func companionMicDragGesture(childImmediateHold: Bool) -> some Gesture {
+        DragGesture(minimumDistance: 0)
+            .onChanged { value in
+                if !childImmediateHold {
+                    holdWillCancel = value.translation.width < -72
+                }
+                if micTouchBeganAt == nil {
+                    micTouchBeganAt = Date()
+                }
+                scheduleMicHoldRecordingStart(immediate: childImmediateHold)
+            }
+            .onEnded { value in
+                let cancel = !childImmediateHold && (holdWillCancel || value.translation.width < -80)
+                Task { await finishMicPress(cancelSlide: cancel, childImmediateHold: childImmediateHold) }
+            }
+    }
+
+    private func cancelMicHoldArmTask() {
+        micHoldArmTask?.cancel()
+        micHoldArmTask = nil
+    }
+
+    private func scheduleMicHoldRecordingStart(immediate: Bool) {
+        guard speechManager.isSpeechInputAvailable,
+              !holdRecordingDidStart,
+              !voiceCaptureActive,
+              !speechManager.isRecording,
+              !speechManager.isPreparingRecording,
+              !speechManager.isStoppingRecording,
+              !speechManager.isMicrophoneCoolingDown,
+              !speechOutput.isSpeaking,
+              !voiceSession.isAwaitingReply else { return }
+
+        if immediate {
+            holdRecordingDidStart = true
+            holdRecordingBeganAt = micTouchBeganAt ?? Date()
+            isHoldRecording = true
+            Task { await startHoldVoiceRecording() }
+            return
+        }
+
+        guard micHoldArmTask == nil else { return }
+        micHoldArmTask = Task {
+            defer { Task { @MainActor in micHoldArmTask = nil } }
+            try? await Task.sleep(nanoseconds: UInt64(micHoldArmDelaySec * 1_000_000_000))
+            guard !Task.isCancelled else { return }
+            await MainActor.run {
+                guard micTouchBeganAt != nil, !holdRecordingDidStart, !voiceCaptureActive else { return }
+                holdRecordingDidStart = true
+                holdRecordingBeganAt = micTouchBeganAt ?? Date()
+                isHoldRecording = true
+            }
+            await startHoldVoiceRecording()
+        }
+    }
+
+    private func finishMicPress(cancelSlide: Bool, childImmediateHold: Bool) async {
+        cancelMicHoldArmTask()
+        let pressBegan = micTouchBeganAt
+        micTouchBeganAt = nil
+        let heldSec = Date().timeIntervalSince(pressBegan ?? holdRecordingBeganAt ?? Date())
+        let wasCapturing = holdRecordingDidStart || speechManager.isRecording || speechManager.isPreparingRecording
+
+        defer {
+            holdRecordingDidStart = false
+            isHoldRecording = false
+            holdWillCancel = false
+            holdRecordingBeganAt = nil
+        }
+
+        if wasCapturing || speechManager.isRecording {
+            if cancelSlide {
+                speechManager.cancelRecording()
+                return
+            }
+            if heldSec < micHoldMinSec {
+                speechManager.cancelRecording()
+                errorText = childImmediateHold
+                    ? localizationManager.localized("companion_mic_hold_hint_child")
+                    : localizationManager.localized("companion_voice_hold_too_short")
+                heroEmotion = .alert
+                return
+            }
+            speechManager.stopRecording()
+            return
+        }
+
+        // Короткий тап без hold — режим toggle (только взрослый UI).
+        if !childImmediateHold, heldSec < micHoldArmDelaySec + 0.08 {
+            await toggleVoice()
+        }
+    }
+
     private func toggleVoice() async {
         isInputFocused = false
         guard !speechManager.isPreparingRecording,
               !speechManager.isStoppingRecording,
               !speechManager.isMicrophoneCoolingDown,
               !voiceSession.isAwaitingReply,
-              !speechOutput.isSpeaking else { return }
+              !speechOutput.isSpeaking,
+              !voiceCaptureActive else { return }
         if speechManager.isRecording {
             speechManager.stopRecording()
             return
@@ -1268,13 +1352,7 @@ struct CompanionConversationScreen: View {
             showVoiceServiceUnavailableAlert = true
             return
         }
-        errorText = nil
-        heroEmotion = .listening
-        input = ""
-        prepareMicForRecording()
-        speechManager.startRecording { recognized in
-            Task { await handleVoiceTranscript(recognized) }
-        }
+        await beginVoiceCapture()
     }
 
     private func startHoldVoiceRecording() async {
@@ -1283,7 +1361,8 @@ struct CompanionConversationScreen: View {
             heroEmotion = .alert
             return
         }
-        guard !speechManager.isRecording,
+        guard !voiceCaptureActive,
+              !speechManager.isRecording,
               !speechManager.isPreparingRecording,
               !speechManager.isStoppingRecording,
               !speechManager.isMicrophoneCoolingDown,
@@ -1295,12 +1374,21 @@ struct CompanionConversationScreen: View {
             showVoiceServiceUnavailableAlert = true
             return
         }
+        await beginVoiceCapture()
+    }
+
+    private func beginVoiceCapture() async {
+        guard !voiceCaptureActive else { return }
+        voiceCaptureActive = true
         errorText = nil
         heroEmotion = .listening
         input = ""
         prepareMicForRecording()
         speechManager.startRecording { recognized in
-            Task { await handleVoiceTranscript(recognized) }
+            Task {
+                defer { voiceCaptureActive = false }
+                await handleVoiceTranscript(recognized)
+            }
         }
     }
 
@@ -1309,14 +1397,34 @@ struct CompanionConversationScreen: View {
         if voiceSession.isConnected {
             voiceSession.disconnect()
         }
+        deactivateSharedAudioSessionForMic()
     }
 
     private func handleVoiceTranscript(_ recognized: String?) async {
-        guard let text = recognized?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else {
+        var text = recognized?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        if text.isEmpty {
+            text = await tryServerSTTFallbackIfEligible() ?? ""
+        }
+        guard !text.isEmpty else {
             heroEmotion = .alert
-            errorText = localizationManager.localized("companion_voice_recognition_failed")
+            if !speechManager.hadAudioSignalDuringLastSession {
+                errorText = localizationManager.localized("companion_voice_no_audio_signal")
+            } else if !isCloudAIEnabled {
+                errorText = AIOutboundTextGate.GateError.optInRequired.errorDescription
+            } else {
+                errorText = localizationManager.localized("companion_voice_recognition_failed")
+            }
             return
         }
+        if let last = lastVoiceSentText,
+           let sentAt = lastVoiceSentAt,
+           last == text,
+           Date().timeIntervalSince(sentAt) < voiceSendDedupSec {
+            return
+        }
+        guard !isSending else { return }
+        lastVoiceSentText = text
+        lastVoiceSentAt = Date()
         messages.append(CompanionChatBubble(text: text, isUser: true))
         heroEmotion = .thinking
         isSending = true
@@ -1347,6 +1455,39 @@ struct CompanionConversationScreen: View {
         }
 
         await sendVoiceAsChat(text)
+    }
+
+    /// Apple STT failed — one server fallback attempt (Whisper on ALADDIN VPS, audio not retained server-side).
+    private func tryServerSTTFallbackIfEligible() async -> String? {
+        guard isCloudAIEnabled else { return nil }
+        guard caps.serverSttFallbackEnabled else { return nil }
+        guard speechManager.hadAudioSignalDuringLastSession else { return nil }
+        if let last = lastServerSTTFallbackAt,
+           Date().timeIntervalSince(last) < serverSTTCooldownSec {
+            return nil
+        }
+        guard let wav = speechManager.takeFallbackWAVData(), wav.count > 44 else { return nil }
+
+        lastServerSTTFallbackAt = Date()
+        heroEmotion = .thinking
+        errorText = localizationManager.localized("companion_voice_server_stt_processing")
+
+        do {
+            let response = try await CompanionAPIService.shared.transcribeVoiceFallback(
+                audioWAV: wav,
+                characterId: characterId,
+                sessionId: resolveThreadId()
+            )
+            let trimmed = response.text.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !trimmed.isEmpty else { return nil }
+            if let prepared = try? AIOutboundTextGate.prepareUserMessage(trimmed) {
+                return prepared.displayText
+            }
+            return trimmed
+        } catch {
+            MasterLogger.shared.warn("Companion server STT fallback failed: \(error.localizedDescription)")
+            return nil
+        }
     }
 
     private func sendVoiceAsChat(_ text: String) async {
@@ -1388,12 +1529,14 @@ struct CompanionConversationScreen: View {
     }
 
     private func handleVoiceAssistantReply(line: String, emotion: CompanionHeroEmotion) {
-        guard !line.isEmpty else { return }
-        messages.append(CompanionChatBubble(text: line, isUser: false))
+        let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        if let last = messages.last, !last.isUser, last.text == trimmed { return }
+        messages.append(CompanionChatBubble(text: trimmed, isUser: false))
         contentEmotionAfterSpeaking = emotion
         heroEmotion = .speaking
         lipSyncPhase = 1
-        speechOutput.speak(line, personalityPreset: personalityPreset, characterId: characterId)
+        speechOutput.speak(trimmed, personalityPreset: personalityPreset, characterId: characterId)
         if voiceSession.isConnected {
             Task {
                 try? await Task.sleep(nanoseconds: 1_200_000_000)
@@ -1481,15 +1624,3 @@ private struct CompanionSheetDetentsModifier: ViewModifier {
     }
 }
 
-private struct CompanionMicTapModifier: ViewModifier {
-    let isEnabled: Bool
-    let action: () -> Void
-
-    func body(content: Content) -> some View {
-        if isEnabled {
-            content.onTapGesture(perform: action)
-        } else {
-            content
-        }
-    }
-}

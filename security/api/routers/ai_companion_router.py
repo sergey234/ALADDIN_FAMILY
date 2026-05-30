@@ -25,7 +25,7 @@ from datetime import datetime
 from typing import Any, Dict, List, Optional
 
 import jwt
-from fastapi import APIRouter, Depends, Header, HTTPException, Query, Request
+from fastapi import APIRouter, Depends, File, Form, Header, HTTPException, Query, Request, UploadFile
 from fastapi.responses import StreamingResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from pydantic import BaseModel, Field
@@ -123,7 +123,11 @@ try:
         neuro_tts_configured,
         synthesize_neuro_tts,
     )
-    from security.services.ai_platform.feature_flags import NEURO_TTS_ENABLED
+    from security.services.ai_platform.feature_flags import NEURO_TTS_ENABLED, COMPANION_SERVER_STT_ENABLED
+    from security.services.ai_platform.companion_stt import (
+        server_stt_configured,
+        transcribe_audio_bytes,
+    )
     from security.services.ai_pii_redactor import redact as redact_pii
     from security.services.ai_response_helpers import mock_allowed, is_probable_mock_response
 except ImportError:
@@ -840,6 +844,15 @@ class CompanionTTSResponse(BaseModel):
     duration_seconds: Optional[float] = None
 
 
+class CompanionSTTResponse(BaseModel):
+    text: str
+    confidence: float = 0.0
+    provider: str = "openai_whisper"
+    language: str = "ru"
+    duration_sec: Optional[float] = None
+    audio_retention_sec: int = 0
+
+
 # ---------------------------------------------------------------------------
 # Endpoints
 # ---------------------------------------------------------------------------
@@ -903,6 +916,73 @@ async def companion_neuro_tts(
         duration_seconds=float(est_sec),
     )
     return CompanionTTSResponse(**payload)
+
+
+@router.post("/stt", response_model=CompanionSTTResponse)
+async def companion_server_stt(
+    user: dict = Depends(get_current_user),
+    audio: UploadFile = File(...),
+    language: str = Form("ru"),
+    character_id: str = Form("unicorn"),
+    session_id: Optional[str] = Form(None),
+) -> CompanionSTTResponse:
+    """
+    Hybrid STT fallback: short audio → text in RAM → discard audio.
+
+    Requires FEATURE_COMPANION_SERVER_STT=1 and OPENAI_API_KEY (Whisper API).
+    Not a replacement for on-device / Siri STT — only when Apple path failed.
+    """
+    if not COMPANION_SERVER_STT_ENABLED:
+        raise HTTPException(status_code=424, detail="server_stt_disabled")
+    if not server_stt_configured():
+        raise HTTPException(status_code=424, detail="server_stt_unconfigured")
+
+    user_id = user.get("user_id") or "anonymous"
+    subscription_level = user.get("subscription_level") or "free"
+    if not check_rate_limit(user_id, subscription_level):
+        raise HTTPException(status_code=429, detail="rate_limit")
+
+    raw = await audio.read()
+    content_type = (audio.content_type or "audio/wav").strip()
+
+    try:
+        result = await asyncio.to_thread(
+            transcribe_audio_bytes,
+            raw,
+            content_type=content_type,
+            language=(language or "ru")[:8],
+        )
+    except ValueError as exc:
+        reason = str(exc)
+        if reason in ("empty_audio", "audio_too_large", "audio_too_long"):
+            raise HTTPException(status_code=400, detail=reason)
+        if reason == "empty_transcript":
+            raise HTTPException(status_code=422, detail=reason)
+        if reason in ("server_stt_network_error", "server_stt_provider_error"):
+            raise HTTPException(status_code=503, detail=reason)
+        raise HTTPException(status_code=424, detail=reason)
+
+    text = str(result.get("text") or "").strip()
+    redacted = redact_pii(text).text if text else ""
+    if not redacted.strip():
+        raise HTTPException(status_code=422, detail="empty_transcript_after_redact")
+
+    logger.info(
+        "companion_stt_fallback_used user_id=%s character_id=%s session_id=%s provider=%s duration_sec=%s",
+        user_id,
+        (character_id or "")[:32],
+        (session_id or "")[:64] or None,
+        result.get("provider"),
+        result.get("duration_sec"),
+    )
+    return CompanionSTTResponse(
+        text=redacted.strip(),
+        confidence=float(result.get("confidence") or 0.0),
+        provider=str(result.get("provider") or "openai_whisper"),
+        language=str(result.get("language") or language or "ru"),
+        duration_sec=result.get("duration_sec"),
+        audio_retention_sec=0,
+    )
 
 
 @router.get("/threads", response_model=CompanionThreadsResponse)
@@ -1737,7 +1817,7 @@ class CompanionLegalSection(BaseModel):
 
 
 class CompanionLegalResponse(BaseModel):
-    version: str = "2026-05-26"
+    version: str = "2026-05-30"
     locale: str = "ru"
     app_id: str = "aladdin_family"
     sections: List[CompanionLegalSection]
@@ -1782,6 +1862,36 @@ async def companion_legal(
             body=(
                 "Диалоги и счётчики использования хранятся для лимитов тарифа и качества сервиса. "
                 "Тексты проходят фильтрацию PII перед отправкой в облако."
+            ),
+        ),
+        CompanionLegalSection(
+            id="voice_recognition_primary",
+            title="Голосовой ввод (основной путь)",
+            body=(
+                "Когда вы говорите с героем, речь сначала распознаётся на iPhone через сервисы Apple "
+                "(Siri / «Распознавание речи»). Аудио обрабатывается по правилам Apple. "
+                "ALADDIN получает только текст, если распознавание удалось."
+            ),
+        ),
+        CompanionLegalSection(
+            id="voice_stt_fallback",
+            title="Запасное распознавание на сервере ALADDIN",
+            body=(
+                "Если на устройстве текст получить не удалось, приложение может один раз отправить "
+                "короткую запись голоса (до 15 секунд) на сервер ALADDIN для преобразования в текст. "
+                "Запись обрабатывается в памяти и не сохраняется после ответа (0 секунд хранения аудио). "
+                "На сервер уходит только текст результата — как если бы вы напечатали сообщение. "
+                "Запасной путь работает только при включённом «Облачном AI-помощнике» в настройках."
+            ),
+        ),
+        CompanionLegalSection(
+            id="voice_privacy_summary",
+            title="Кратко о голосе",
+            body=(
+                "• Основной путь: Apple (Siri cloud) на телефоне.\n"
+                "• Запасной путь: ALADDIN VPS — только если Apple не справилась.\n"
+                "• Аудио на сервере ALADDIN не копится «навсегда» — обработали и удалили.\n"
+                "• Текст диалога — по общим правилам компаньона (память, лимиты тарифа)."
             ),
         ),
         CompanionLegalSection(

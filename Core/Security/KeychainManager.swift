@@ -189,8 +189,21 @@ class KeychainManager {
 
     // MARK: - Scoped keys (dynamic account names: per-family E2EE, cipher cache, …)
 
+    func save(_ string: String, scopedKey: String) {
+        guard let data = string.data(using: .utf8) else {
+            print("❌ KeychainManager: Failed to convert string to data for scoped key \(scopedKey)")
+            return
+        }
+        save(data, scopedKey: scopedKey)
+    }
+
     func save(_ data: Data, scopedKey: String) {
         saveScoped(data, account: scopedKey)
+    }
+
+    func loadString(scopedKey: String) -> String? {
+        guard let data = loadData(scopedKey: scopedKey) else { return nil }
+        return String(data: data, encoding: .utf8)
     }
 
     func loadData(scopedKey: String) -> Data? {

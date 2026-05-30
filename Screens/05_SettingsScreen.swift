@@ -219,7 +219,7 @@ struct SettingsScreen: View {
                 settingRow(
                     icon: "brain.head.profile",
                     title: "AI-помощник и 3 героя",
-                    subtitle: "Облачные ответы для AI-помощника и героев. Выкл. = сообщения не отправляются на сервер ALADDIN.",
+                    subtitle: localizationManager.localized("ai_data_sharing_subtitle_extended"),
                     isEnabled: $aiDataSharingEnabled
                 )
 

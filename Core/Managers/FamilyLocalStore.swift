@@ -12,23 +12,61 @@ enum FamilyLocalStore {
     /// Создатель семьи (`creator_member_id` из `POST /api/family/create`) — не путать с `your_member_id` присоединившегося.
     static let familyCreatorMemberIdKey = "family_creator_member_id"
     static let yourMemberIdUserDefaultsKey = "your_member_id"
+    /// JWT `user_id`, привязанный к сохранённому family-контексту (сброс при смене аккаунта).
+    static let familyContextOwnerUserIdKey = "family_context_owner_user_id"
     /// Последний `family_id`, с которым был сохранён `family_members_list` (защита от «чужого» кэша с другого аккаунта/чата).
     static let rosterSnapshotFamilyIdKey = "family_members_roster_snapshot_family_id"
     /// После «Добавить в текущую семью»: предложить зарегистрировать устройство для нового `MEM_*` (очищается после выбора пользователя).
     static let pendingPostAdminAddDeviceMemberIdKey = "pending_post_admin_add_device_member_id"
     static let pendingPostAdminAddDeviceMemberNameKey = "pending_post_admin_add_device_member_name"
 
-    // MARK: - P0: family_id в Keychain (не UserDefaults)
+    // MARK: - P0: family_id в Keychain (scoped per JWT user_id)
+
+    private static func scopedFamilyIdKey(forUserId userId: String) -> String {
+        let uid = userId.trimmingCharacters(in: .whitespacesAndNewlines)
+        return "family_id_uid_\(uid)"
+    }
+
+    /// `user_id` из текущего JWT (без side effects).
+    static func currentJWTUserId(defaults: UserDefaults = .standard) -> String? {
+        let jwt = KeychainManager.shared.loadString(forKey: .authToken)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !jwt.isEmpty, let payload = jwtPayloadDictionary(from: jwt) else {
+            let stored = (defaults.string(forKey: familyContextOwnerUserIdKey) ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            return stored.isEmpty ? nil : stored
+        }
+        if let s = payload["user_id"] as? String {
+            let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !t.isEmpty { return t }
+        }
+        if let i = payload["user_id"] as? Int { return String(i) }
+        if let s = payload["userId"] as? String {
+            let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !t.isEmpty { return t }
+        }
+        if let i = payload["userId"] as? Int { return String(i) }
+        return nil
+    }
 
     static func loadPersistedFamilyId() -> String {
-        if let keychainId = KeychainManager.shared.loadString(forKey: .familyId)?
-            .trimmingCharacters(in: .whitespacesAndNewlines), !keychainId.isEmpty {
-            return keychainId
+        if let uid = currentJWTUserId(),
+           let scoped = KeychainManager.shared.loadString(scopedKey: scopedFamilyIdKey(forUserId: uid))?
+            .trimmingCharacters(in: .whitespacesAndNewlines), !scoped.isEmpty {
+            return scoped
         }
-        if let legacy = UserDefaults.standard.string(forKey: familyIdKey)?
+        if let legacy = KeychainManager.shared.loadString(forKey: .familyId)?
             .trimmingCharacters(in: .whitespacesAndNewlines), !legacy.isEmpty {
-            persistFamilyId(legacy)
+            if let uid = currentJWTUserId() {
+                KeychainManager.shared.save(legacy, scopedKey: scopedFamilyIdKey(forUserId: uid))
+                KeychainManager.shared.delete(forKey: .familyId)
+            }
             return legacy
+        }
+        if let legacyUD = UserDefaults.standard.string(forKey: familyIdKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines), !legacyUD.isEmpty {
+            persistFamilyId(legacyUD)
+            return legacyUD
         }
         return ""
     }
@@ -36,11 +74,15 @@ enum FamilyLocalStore {
     static func persistFamilyId(_ newFamilyId: String) {
         let newId = newFamilyId.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !newId.isEmpty else {
-            KeychainManager.shared.delete(forKey: .familyId)
-            UserDefaults.standard.removeObject(forKey: familyIdKey)
+            clearPersistedFamilyIdFromAllStores()
             return
         }
-        KeychainManager.shared.save(newId, forKey: .familyId)
+        if let uid = currentJWTUserId() {
+            KeychainManager.shared.save(newId, scopedKey: scopedFamilyIdKey(forUserId: uid))
+            KeychainManager.shared.delete(forKey: .familyId)
+        } else {
+            KeychainManager.shared.save(newId, forKey: .familyId)
+        }
         UserDefaults.standard.removeObject(forKey: familyIdKey)
     }
 
@@ -118,9 +160,69 @@ enum FamilyLocalStore {
     /// - НЕ трогаем trial status / JWT / subscription payload.
     /// - НЕ трогаем серверные данные семьи.
     /// - Удаляем только локальный family roster/context cache, который будет восстановлен серверным sync.
+    /// Удаляет `family_id` из Keychain и legacy UserDefaults (P0: без этого «очистка» не работает).
+    private static func clearPersistedFamilyIdFromAllStores(defaults: UserDefaults = .standard) {
+        KeychainManager.shared.delete(forKey: .familyId)
+        if let uid = currentJWTUserId(defaults: defaults) {
+            KeychainManager.shared.delete(scopedKey: scopedFamilyIdKey(forUserId: uid))
+        }
+        defaults.removeObject(forKey: familyIdKey)
+    }
+
+    /// Сбрасывает family-кэш, если JWT принадлежит другому `user_id`, чем сохранённый контекст.
+    static func reconcileFamilyContextWithCurrentJWT(defaults: UserDefaults = .standard) {
+        let jwt = KeychainManager.shared.loadString(forKey: .authToken)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !jwt.isEmpty, let payload = jwtPayloadDictionary(from: jwt) else { return }
+
+        let extracted: String? = {
+            if let s = payload["user_id"] as? String {
+                let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+                return t.isEmpty ? nil : t
+            }
+            if let i = payload["user_id"] as? Int { return String(i) }
+            if let s = payload["userId"] as? String {
+                let t = s.trimmingCharacters(in: .whitespacesAndNewlines)
+                return t.isEmpty ? nil : t
+            }
+            if let i = payload["userId"] as? Int { return String(i) }
+            return nil
+        }()
+        guard let extracted, !extracted.isEmpty else { return }
+
+        let previous = (defaults.string(forKey: familyContextOwnerUserIdKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if !previous.isEmpty, previous != extracted {
+            VisualLogger.shared.log(
+                "🔄 FAMILY JWT user_id changed (\(previous) → \(extracted)) — clearing local family context",
+                level: .warning,
+                category: "FAMILY"
+            )
+            clearPersistedFamilyContextWhenServerReportsNoFamily()
+        }
+        defaults.set(extracted, forKey: familyContextOwnerUserIdKey)
+        defaults.synchronize()
+    }
+
+    /// `family_id` есть локально, но нет своей строки в ростере / ростер пуст — типичный stale id после смены JWT или reinstall.
+    static func isLikelyStaleFamilyContextForCurrentAccount(
+        members: [FamilyMemberData] = UnifiedFamilyRoster.load(),
+        defaults: UserDefaults = .standard
+    ) -> Bool {
+        let fid = loadPersistedFamilyId().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !fid.isEmpty else { return false }
+        let my = (defaults.string(forKey: yourMemberIdUserDefaultsKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if members.isEmpty, my.isEmpty { return true }
+        if !my.isEmpty, !members.contains(where: { memberRowMatchesYourMemberId($0, myMemberId: my) }) {
+            return true
+        }
+        return false
+    }
+
     static func clearLocalFamilyContextForManualReset(defaults: UserDefaults = .standard) {
         clearLocalFamilyRosterCacheForManualReset(defaults: defaults)
-        defaults.removeObject(forKey: familyIdKey)
+        clearPersistedFamilyIdFromAllStores(defaults: defaults)
         defaults.removeObject(forKey: lastResolvedFamilyIdKey)
         defaults.removeObject(forKey: familyCreatorMemberIdKey)
         defaults.removeObject(forKey: yourMemberIdUserDefaultsKey)
@@ -134,7 +236,7 @@ enum FamilyLocalStore {
     /// Перед чтением `family_members_list`: отбрасываем кэш, если он не относится к текущему `family_id` или при пустом `family_id` содержит серверные MEM_*.
     @discardableResult
     static func validatePersistedRosterAgainstCurrentFamily(defaults: UserDefaults = .standard) -> Bool {
-        let fid = (defaults.string(forKey: familyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let fid = loadPersistedFamilyId().trimmingCharacters(in: .whitespacesAndNewlines)
         let snap = (defaults.string(forKey: rosterSnapshotFamilyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
 
         guard let data = defaults.data(forKey: familyMembersKey),
@@ -384,8 +486,10 @@ enum FamilyLocalStore {
 
     /// fam-7: показывать CTA «Восстановить» — семья есть, но `your_member_id` не сходится с ростром или заявлен родитель/пожилой при `canManageAppProfiles == false`.
     static func needsFamilyIdentityRepairHeuristic(members: [FamilyMemberData], canManageAppProfiles: Bool) -> Bool {
-        let fid = (UserDefaults.standard.string(forKey: familyIdKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
-        guard !fid.isEmpty, !members.isEmpty else { return false }
+        let fid = loadPersistedFamilyId().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !fid.isEmpty else { return false }
+        if isLikelyStaleFamilyContextForCurrentAccount(members: members) { return true }
+        guard !members.isEmpty else { return false }
 
         let my = (UserDefaults.standard.string(forKey: yourMemberIdUserDefaultsKey) ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
         let inRoster = !my.isEmpty && members.contains { memberRowMatchesYourMemberId($0, myMemberId: my) }
@@ -428,7 +532,7 @@ enum FamilyLocalStore {
     /// Сервер явно сообщил, что у аккаунта нет семьи (`X-Family-Context: none`) или 404 на `GET /members` с устаревшим `familyId`.
     static func clearPersistedFamilyContextWhenServerReportsNoFamily() {
         let defaults = UserDefaults.standard
-        defaults.removeObject(forKey: familyIdKey)
+        clearPersistedFamilyIdFromAllStores(defaults: defaults)
         defaults.removeObject(forKey: familyMembersKey)
         defaults.removeObject(forKey: lastResolvedFamilyIdKey)
         defaults.removeObject(forKey: familyAdditionOrderKey)
@@ -437,6 +541,9 @@ enum FamilyLocalStore {
         defaults.removeObject(forKey: familyCreatorMemberIdKey)
         defaults.removeObject(forKey: rosterSnapshotFamilyIdKey)
         defaults.removeObject(forKey: yourMemberIdUserDefaultsKey)
+        defaults.removeObject(forKey: "family_actor_can_manage_roster_last")
+        defaults.removeObject(forKey: "family_reconcile_family_id_last")
+        defaults.removeObject(forKey: "family_reconcile_at_last")
         defaults.synchronize()
         NotificationCenter.default.post(name: NSNotification.Name("FamilyMembersUpdated"), object: nil)
     }

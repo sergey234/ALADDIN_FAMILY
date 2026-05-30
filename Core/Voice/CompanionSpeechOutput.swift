@@ -7,12 +7,14 @@ final class CompanionSpeechOutput: NSObject, ObservableObject {
 
     private let synthesizer = AVSpeechSynthesizer()
     private let neuroPlayer = CompanionNeuroTTSPlayer()
+    var onPlaybackEnded: (() -> Void)?
 
     override init() {
         super.init()
         synthesizer.delegate = self
         neuroPlayer.onPlaybackEnded = { [weak self] in
             self?.isSpeaking = false
+            self?.onPlaybackEnded?()
         }
     }
 
@@ -116,6 +118,7 @@ extension CompanionSpeechOutput: AVSpeechSynthesizerDelegate {
             if !self.neuroPlayer.isSpeaking {
                 self.isSpeaking = false
                 VoiceAudioSessionCoordinator.shared.release(.companion)
+                self.onPlaybackEnded?()
             }
         }
     }
@@ -125,6 +128,7 @@ extension CompanionSpeechOutput: AVSpeechSynthesizerDelegate {
             if !self.neuroPlayer.isSpeaking {
                 self.isSpeaking = false
                 VoiceAudioSessionCoordinator.shared.release(.companion)
+                self.onPlaybackEnded?()
             }
         }
     }

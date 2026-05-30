@@ -29,6 +29,9 @@ MULTI_AGENT_ENABLED = _env_bool("FEATURE_MULTI_AGENT_ENABLED", False)
 COMPANION_USE_ORCHESTRATOR = _env_bool("COMPANION_USE_ORCHESTRATOR", False)
 VISION_ENABLED = _env_bool("FEATURE_VISION_ENABLED", False)
 
+# Hybrid voice STT fallback (Apple primary → ALADDIN server only on failure; audio not persisted)
+COMPANION_SERVER_STT_ENABLED = _env_bool("FEATURE_COMPANION_SERVER_STT", False)
+
 # Premium neuro-TTS (ElevenLabs Flash) — server + capability gate
 NEURO_TTS_ENABLED = _env_bool("FEATURE_NEURO_TTS_ENABLED", False)
 # Testing window: trial → same neuro-TTS path as premium (disable with FEATURE_NEURO_TTS_TRIAL=0)

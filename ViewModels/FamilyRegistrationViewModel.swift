@@ -394,6 +394,19 @@ class FamilyRegistrationViewModel: ObservableObject {
         // This unifies admin_add_mode with FamilyScreen and eliminates bypass.
         if UserDefaults.standard.bool(forKey: "admin_add_mode") {
             logger.business("========== ADDING MEMBER (admin-add mode) ==========")
+
+            if FamilyLocalStore.isLikelyStaleFamilyContextForCurrentAccount() {
+                logger.business("⚠️ ADMIN_ADD: stale family_id without roster identity — switching to createFamily()")
+                VisualLogger.shared.log(
+                    "🔄 Stale family_id on device (not your server family) — creating new family",
+                    level: .warning,
+                    category: "FAMILY"
+                )
+                UserDefaults.standard.set(false, forKey: "admin_add_mode")
+                UserDefaults.standard.synchronize()
+                FamilyLocalStore.clearPersistedFamilyContextWhenServerReportsNoFamily()
+                // Fall through to POST /api/family/create below.
+            } else {
             
             // Load current family count for accurate check
             var currentCount = 1 // at least the creator
@@ -468,6 +481,28 @@ class FamilyRegistrationViewModel: ObservableObject {
                             }
                             return
                         }
+
+                        let isStaleFamilyContext = errorDesc.contains("family_context_stale")
+                        let isForbiddenAdminAdd = errorDesc.contains("only administrators")
+                            || errorDesc.contains("forbidden")
+                            || errorDesc.contains("доступ запрещен")
+                            || errorDesc.contains("403")
+                        if isStaleFamilyContext || isForbiddenAdminAdd {
+                            VisualLogger.shared.log(
+                                "🔄 FAMILY_ADD \(isStaleFamilyContext ? "409 stale" : "403"): clearing local context and createFamily()",
+                                level: .warning,
+                                category: "FAMILY"
+                            )
+                            logger.business("🔄 Auto-fallback: \(isStaleFamilyContext ? "409 stale" : "403") on add → clear family_id → createFamily()")
+                            FamilyLocalStore.clearPersistedFamilyContextWhenServerReportsNoFamily()
+                            UserDefaults.standard.set(false, forKey: "admin_add_mode")
+                            UserDefaults.standard.synchronize()
+                            self.currentStep = .idle
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                                self.createFamily()
+                            }
+                            return
+                        }
                         
                         self.errorMessage = error.localizedDescription
                         self.currentStep = .idle
@@ -476,6 +511,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                 }
             }
             return
+            }
         }
 
         logger.business("========== CREATING FAMILY ==========")
@@ -785,6 +821,7 @@ class FamilyRegistrationViewModel: ObservableObject {
 
         // Попытка 1: Сохраняем токены
         KeychainManager.shared.save(accessToken, forKey: .authToken)
+        FamilyLocalStore.reconcileFamilyContextWithCurrentJWT()
         #if DEBUG
         VisualLogger.shared.log("💾 FamilyRegistrationViewModel.saveTokens: Access token сохранен в Keychain", level: .success, category: "AUTH")
         print("💾 FamilyRegistrationViewModel.saveTokens: Access token сохранен в Keychain")

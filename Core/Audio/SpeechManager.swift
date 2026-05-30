@@ -37,13 +37,18 @@ final class SpeechManager: ObservableObject {
     private let startCooldownSec: TimeInterval = 0.65
     private var recordingStartedAt: Date?
     private var finalizeAttempt = 0
+    private var sawAudioSignalDuringSession = false
+    private var fallbackPCMInt16 = Data()
+    private var fallbackSampleRate: Double = 16_000
+    private var fallbackChannels: UInt16 = 1
+    private let fallbackMaxPCMBytes = 480_000
 
     /// Cloud STT on device often needs >0.6s after `endAudio` for a final result.
     private var finalizeDelaySec: TimeInterval {
         #if targetEnvironment(simulator)
         return 0.65
         #else
-        return 1.35
+        return 1.75
         #endif
     }
 
@@ -72,6 +77,20 @@ final class SpeechManager: ObservableObject {
             self.isSpeechInputAvailable = available
         }
     }
+
+    /// PCM/WAV captured during companion recording for server STT fallback (companion consumer only).
+    func takeFallbackWAVData() -> Data? {
+        guard audioSessionConsumer == .companion, !fallbackPCMInt16.isEmpty else { return nil }
+        let wav = Self.wrapPCM16AsWAV(
+            pcm: fallbackPCMInt16,
+            sampleRate: UInt32(max(1, Int(fallbackSampleRate))),
+            channels: fallbackChannels
+        )
+        fallbackPCMInt16.removeAll(keepingCapacity: false)
+        return wav
+    }
+
+    var hadAudioSignalDuringLastSession: Bool { sawAudioSignalDuringSession }
 
     /// Прогрев разрешений при открытии AI — первый тап по микрофону не «висит» 20–30 с.
     func warmUpPermissionsIfNeeded() {
@@ -271,6 +290,10 @@ final class SpeechManager: ObservableObject {
         completionDelivered = false
         recordingSessionStarted = false
         sessionUsedOnDeviceRecognition = false
+        sawAudioSignalDuringSession = false
+        fallbackPCMInt16.removeAll(keepingCapacity: false)
+        fallbackSampleRate = 16_000
+        fallbackChannels = 1
         // Keep `forceCloudRecognition` / `didAttemptCloudFallback` across engine reset when retrying cloud path.
     }
 
@@ -278,6 +301,15 @@ final class SpeechManager: ObservableObject {
         guard !completionDelivered else { return }
         guard let completion = pendingCompletion else { return }
         let text = latestPartialTranscript?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if text?.isEmpty != false,
+           sawAudioSignalDuringSession,
+           !didAttemptCloudFallback,
+           recordingSessionStarted {
+            logger.warn("🎤 SpeechManager: Empty transcript after audio signal — retrying cloud path")
+            finishRecordingSession()
+            retryWithCloudRecognition(previousPartial: nil, completion: completion)
+            return
+        }
         if forcePartial || (text?.isEmpty == false) {
             completeOnce(text?.isEmpty == false ? text : nil, completion: completion)
         }
@@ -322,7 +354,11 @@ final class SpeechManager: ObservableObject {
             pendingCompletion = completion
 
             let selection: SpeechRecognizerFactory.Selection?
-            if forceCloudRecognition {
+            if audioSessionConsumer == .companion {
+                selection = SpeechRecognizerFactory.cloudOnly(
+                    preferred: LocalizationManager.shared.speechRecognitionLocale
+                )
+            } else if forceCloudRecognition {
                 selection = SpeechRecognizerFactory.cloudOnly(
                     preferred: LocalizationManager.shared.speechRecognitionLocale
                 )
@@ -375,6 +411,10 @@ final class SpeechManager: ObservableObject {
             let inputNode = audioEngine.inputNode
             audioEngine.prepare()
             let tapFormat = Self.validTapFormat(for: inputNode)
+            guard tapFormat != nil else {
+                logger.error("🎤 SpeechManager: Invalid input tap format — cannot start recording")
+                throw NSError(domain: "SpeechManager", code: 3, userInfo: [NSLocalizedDescriptionKey: "Invalid audio input format"])
+            }
             guard !inputTapInstalled else {
                 logger.warn("🎤 SpeechManager: Tap already installed — skipping duplicate install")
                 throw NSError(domain: "SpeechManager", code: 2, userInfo: [NSLocalizedDescriptionKey: "Duplicate audio tap"])
@@ -384,6 +424,12 @@ final class SpeechManager: ObservableObject {
                 guard let self else { return }
                 self.recognitionRequest?.append(buffer)
                 let level = AudioLevelMeter.normalizedLevel(from: buffer)
+                if level > 0.02 {
+                    self.sawAudioSignalDuringSession = true
+                }
+                if self.audioSessionConsumer == .companion {
+                    self.appendFallbackPCM(from: buffer)
+                }
                 let now = CFAbsoluteTimeGetCurrent()
                 guard now - self.lastLevelUIUpdate > 0.05 else { return }
                 self.lastLevelUIUpdate = now
@@ -541,6 +587,68 @@ final class SpeechManager: ObservableObject {
         }
         RunLoop.main.add(timer, forMode: .common)
         maxDurationTimer = timer
+    }
+
+    private func appendFallbackPCM(from buffer: AVAudioPCMBuffer) {
+        guard fallbackPCMInt16.count < fallbackMaxPCMBytes else { return }
+        let format = buffer.format
+        fallbackSampleRate = format.sampleRate
+        fallbackChannels = UInt16(max(1, min(2, Int(format.channelCount))))
+        let frameCount = Int(buffer.frameLength)
+        guard frameCount > 0 else { return }
+
+        if let channelData = buffer.floatChannelData {
+            var local = Data()
+            local.reserveCapacity(min(frameCount * 2, fallbackMaxPCMBytes - fallbackPCMInt16.count))
+            for frame in 0..<frameCount {
+                var sample: Float32 = 0
+                for ch in 0..<Int(format.channelCount) {
+                    sample += channelData[ch][frame]
+                }
+                sample /= Float32(max(1, format.channelCount))
+                let clamped = max(-1, min(1, sample))
+                var int16 = Int16(clamped * Float32(Int16.max))
+                withUnsafeBytes(of: &int16) { local.append(contentsOf: $0) }
+                if fallbackPCMInt16.count + local.count >= fallbackMaxPCMBytes { break }
+            }
+            fallbackPCMInt16.append(local)
+        } else if let channelData = buffer.int16ChannelData {
+            let byteCount = frameCount * MemoryLayout<Int16>.size * Int(format.channelCount)
+            let ptr = UnsafeRawBufferPointer(start: channelData[0], count: byteCount)
+            fallbackPCMInt16.append(Data(ptr.prefix(fallbackMaxPCMBytes - fallbackPCMInt16.count)))
+        }
+    }
+
+    private static func wrapPCM16AsWAV(pcm: Data, sampleRate: UInt32, channels: UInt16) -> Data {
+        let bitsPerSample: UInt16 = 16
+        let byteRate = sampleRate * UInt32(channels) * UInt32(bitsPerSample / 8)
+        let blockAlign = channels * (bitsPerSample / 8)
+        var header = Data()
+        header.append(contentsOf: "RIFF".utf8)
+        var chunkSize = UInt32(36 + pcm.count).littleEndian
+        withUnsafeBytes(of: &chunkSize) { header.append(contentsOf: $0) }
+        header.append(contentsOf: "WAVE".utf8)
+        header.append(contentsOf: "fmt ".utf8)
+        var subchunk1Size = UInt32(16).littleEndian
+        withUnsafeBytes(of: &subchunk1Size) { header.append(contentsOf: $0) }
+        var audioFormat = UInt16(1).littleEndian
+        withUnsafeBytes(of: &audioFormat) { header.append(contentsOf: $0) }
+        var ch = channels.littleEndian
+        withUnsafeBytes(of: &ch) { header.append(contentsOf: $0) }
+        var sr = sampleRate.littleEndian
+        withUnsafeBytes(of: &sr) { header.append(contentsOf: $0) }
+        var br = byteRate.littleEndian
+        withUnsafeBytes(of: &br) { header.append(contentsOf: $0) }
+        var ba = blockAlign.littleEndian
+        withUnsafeBytes(of: &ba) { header.append(contentsOf: $0) }
+        var bps = bitsPerSample.littleEndian
+        withUnsafeBytes(of: &bps) { header.append(contentsOf: $0) }
+        header.append(contentsOf: "data".utf8)
+        var dataSize = UInt32(pcm.count).littleEndian
+        withUnsafeBytes(of: &dataSize) { header.append(contentsOf: $0) }
+        var out = header
+        out.append(pcm)
+        return out
     }
 
     private func registerInterruptionObserver() {

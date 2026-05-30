@@ -1133,6 +1133,25 @@ async def add_family_member(
 
             # Политика доступа: владелец семьи или parent-строка в этой семье (не «последняя роль в другой семье»).
             if not _actor_can_manage_family_roster(db, user_id, str(family_id)):
+                if payload.familyId is not None:
+                    in_target = db.execute(
+                        text(
+                            """
+                            SELECT 1 FROM family_members
+                            WHERE family_id = :fid AND user_id = :uid
+                            LIMIT 1
+                            """
+                        ),
+                        {"fid": str(family_id), "uid": user_id},
+                    ).fetchone()
+                    if in_target is None:
+                        logger.warning(
+                            "family_add_stale_context",
+                            user_id=user_id,
+                            family_id=str(family_id),
+                            actor_family_id=str(actor_family_id) if actor_family_id is not None else None,
+                        )
+                        raise HTTPException(status_code=409, detail="family_context_stale")
                 logger.warning(
                     "family_add_denied_not_admin",
                     user_id=user_id,
@@ -1496,7 +1515,7 @@ async def get_family_members_compat(
                         detail="No family registered for this account (invalid familyId query)",
                     )
                 logger.warning("family_members_no_family_for_actor", user_id=user_id)
-                return [], None, None
+                return [], None, None, False, 0, 0
             family_id = resolved_primary
             resolved = resolved_primary
             qfid = (familyId or "").strip()
@@ -1568,19 +1587,31 @@ async def get_family_members_compat(
                 {"family_id": family_id, "user_id": user_id},
             ).fetchone()
             current_member_id = str(cur[0]).strip() if cur and cur[0] is not None else None
-            return members, resolved, current_member_id
+            can_manage = _actor_can_manage_family_roster(db, user_id, str(family_id))
+            owner_level = _owner_subscription_level_for_family(db, str(family_id))
+            roster_used = _count_family_members(db, str(family_id))
+            roster_max = max_family_slots_for_subscription_level(owner_level)
+            return members, resolved, current_member_id, can_manage, roster_used, roster_max
         finally:
             gen.close()
 
     try:
-        members, resolved_fid, current_member_id = await asyncio.to_thread(load_members_sync)
+        members, resolved_fid, current_member_id, can_manage, roster_used, roster_max = await asyncio.to_thread(load_members_sync)
         if resolved_fid:
             response.headers["X-Resolved-Family-Id"] = resolved_fid
+            response.headers["X-Actor-Can-Manage-Roster"] = "true" if can_manage else "false"
+            response.headers["X-Family-Roster-Used"] = str(roster_used)
+            response.headers["X-Family-Roster-Max"] = str(roster_max)
+            response.headers["X-Family-Limit"] = str(roster_max)
+            response.headers["X-Family-Remaining"] = str(max(0, roster_max - roster_used))
             logger.info(
                 "metric_family_members_get_ok",
                 user_id=user_id,
                 family_id=resolved_fid,
                 count=len(members),
+                can_manage_roster=can_manage,
+                roster_used=roster_used,
+                roster_max=roster_max,
             )
         elif not (familyId or "").strip():
             # Явный сигнал клиенту: у аккаунта нет семьи в БД — не интерпретировать `[]` как «неизвестно».
