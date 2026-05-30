@@ -141,10 +141,7 @@ struct FamilyScreen: View {
     }
 
     private var effectiveQuotaUsedForUI: Int {
-        if subscriptionManager.familyQuotaSnapshot.source == .persistedCache {
-            return familyMembers.count
-        }
-        return subscriptionManager.familyQuotaSnapshot.used
+        subscriptionManager.effectiveFamilyQuotaUsed(localRosterCount: familyMembers.count)
     }
 
     /// Единая проверка лимита тарифа для тулбара, кнопки «Добавить» и AddMoreMemberCard (без `let` внутри ViewBuilder).
@@ -421,6 +418,14 @@ struct FamilyScreen: View {
             VisualLogger.shared.log("🩹 FAMILY AUTO-HEAL: reset stale persisted quota used to 0 (empty roster)", level: .warning, category: "FAMILY")
         }
         
+        if FamilyLocalStore.clearPhantomLocalRosterIfNeeded(members: &familyMembers) {
+            VisualLogger.shared.log(
+                "🧹 FAMILY: cleared phantom local roster before sync (no server family_id)",
+                level: .warning,
+                category: "FAMILY"
+            )
+        }
+
         // 2) Синхронизация с сервером (источник истины после merge в syncFamilyMembersFromAPI)
         syncFamilyMembersFromAPI()
         
@@ -430,8 +435,12 @@ struct FamilyScreen: View {
             let hasServerFamilyId = !FamilyLocalStore.loadPersistedFamilyId()
                 .trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
             let hasSeededMember = UserDefaults.standard.bool(forKey: familyMemberSeededKey)
-            guard !hasServerFamilyId, !hasSeededMember else {
-                print("ℹ️ [loadFamilyMembers] Seed пропущен (hasServerFamilyId=\(hasServerFamilyId), hasSeededMember=\(hasSeededMember))")
+            let hasJWT = FamilyLocalStore.hasAuthenticatedJWT()
+            let yourMemberId = (UserDefaults.standard.string(forKey: "your_member_id") ?? "")
+                .trimmingCharacters(in: .whitespacesAndNewlines)
+            let hasYourMemberId = !yourMemberId.isEmpty
+            guard !hasServerFamilyId, !hasSeededMember, !hasJWT, !hasYourMemberId else {
+                print("ℹ️ [loadFamilyMembers] Seed пропущен (hasServerFamilyId=\(hasServerFamilyId), hasSeededMember=\(hasSeededMember), hasJWT=\(hasJWT), hasYourMemberId=\(hasYourMemberId))")
                 return
             }
 
@@ -592,12 +601,24 @@ struct FamilyScreen: View {
                     
                     // Обновление счётчиков not-seen теперь выполняется НИЖЕ и только при полном ответе, не при partial subset
 
-                    // Не перетираем локальный непустой список пустым серверным ответом.
-                    // Это защищает UI при задержке server-side propagation после локального добавления.
+                    // Не перетираем локальный непустой список пустым серверным ответом,
+                    // но phantom UUID placeholder (без MEM_*) при fid=none — удаляем.
                     if members.isEmpty && !self.familyMembers.isEmpty {
-                        print("ℹ️ [syncFamilyMembersFromAPI] Сервер вернул 0, локально есть \(self.familyMembers.count) — сохраняем локальный список")
-                        VisualLogger.shared.log("ℹ️ FAMILY SYNC: server empty while local non-empty — keep local", level: .warning, category: "FAMILY")
-                        return
+                        if FamilyLocalStore.clearPhantomLocalRosterIfNeeded(members: &self.familyMembers) {
+                            VisualLogger.shared.log(
+                                "🧹 FAMILY SYNC: server empty — dropped phantom local roster",
+                                level: .warning,
+                                category: "FAMILY"
+                            )
+                            self.saveFamilyMembers(allowDuringFamilySync: true)
+                            DispatchQueue.main.async {
+                                FamilyLocalStore.notifyFamilyMembersUpdated()
+                            }
+                        } else {
+                            print("ℹ️ [syncFamilyMembersFromAPI] Сервер вернул 0, локально есть \(self.familyMembers.count) — сохраняем локальный список")
+                            VisualLogger.shared.log("ℹ️ FAMILY SYNC: server empty while local non-empty — keep local", level: .warning, category: "FAMILY")
+                            return
+                        }
                     }
                     
                     // Защита от частичных ответов сервера:
@@ -2037,10 +2058,8 @@ struct FamilyScreen: View {
                                 .accessibilityAddTraits(.isHeader)
                             
                             // Improved stats: capacity "X of Y (Plan)" + progress. Single source from SubscriptionManager.
-                            let quotaUsed2 = subscriptionManager.familyQuotaSnapshot.source == .persistedCache
-                                ? familyMembers.count
-                                : subscriptionManager.familyQuotaSnapshot.used
-                            let currentCount2 = max(familyMembers.count, quotaUsed2)
+                            let quotaUsed2 = subscriptionManager.effectiveFamilyQuotaUsed(localRosterCount: familyMembers.count)
+                            let currentCount2 = quotaUsed2
                             let limit2 = subscriptionManager.familyQuotaSnapshot.max
                             let capacityText2 = "\(currentCount2) из \(limit2)"
                             let progress = limit2 > 0 ? Double(currentCount2) / Double(limit2) : 0.0
@@ -2076,10 +2095,8 @@ struct FamilyScreen: View {
                             
                             // Updated: Uses single source SubscriptionManager.canAddFamilyMember + capacity display
                             // Shows "X of Y members (Plan)" with progress. Consistent across all add paths.
-                            let quotaUsed3 = subscriptionManager.familyQuotaSnapshot.source == .persistedCache
-                                ? familyMembers.count
-                                : subscriptionManager.familyQuotaSnapshot.used
-                            let currentCount3 = max(familyMembers.count, quotaUsed3)
+                            let quotaUsed3 = subscriptionManager.effectiveFamilyQuotaUsed(localRosterCount: familyMembers.count)
+                            let currentCount3 = quotaUsed3
                             let limit3 = subscriptionManager.familyQuotaSnapshot.max
                             // ✅ Локализованный текст емкости (без хардкода и двойных скобок)
                             let isRussian3 = (UserDefaults.standard.string(forKey: "app_language") ?? "ru") == "ru"

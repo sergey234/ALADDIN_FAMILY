@@ -769,6 +769,26 @@ final class SubscriptionManager: ObservableObject {
         return (true, nil, false)
     }
 
+    /// Единая формула «X из Y» для главной и экрана «Семья».
+    func effectiveFamilyQuotaUsed(localRosterCount: Int? = nil) -> Int {
+        let localCount = max(0, localRosterCount ?? FamilyLocalStore.persistedLocalRosterCount())
+        let limit = max(0, familyQuotaSnapshot.max)
+        let quotaUsed: Int
+        if familyQuotaSnapshot.source == .persistedCache {
+            quotaUsed = localCount
+        } else {
+            quotaUsed = familyQuotaSnapshot.used
+        }
+        let combined = max(localCount, quotaUsed)
+        guard limit > 0 else { return combined }
+        return min(combined, limit)
+    }
+
+    /// Перерисовать карточку семьи на главной после локального sync.
+    func refreshFamilyQuotaDisplayFromLocalRoster() {
+        bumpSubscriptionDisplayEpoch()
+    }
+
     /// Выравнивает лимит ростера с `GET /api/family/stats` (кап владельца в БД), чтобы UI не расходился с gate на `add`.
     func applyFamilyRosterQuotaFromFamilyStats(_ stats: FamilyStatsResponse) {
         guard let cap = stats.familyRosterMax, cap > 0 else { return }
@@ -777,6 +797,7 @@ final class SubscriptionManager: ObservableObject {
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let familyId: String? = trimmedFamilyId.isEmpty ? nil : trimmedFamilyId
         publishFamilyQuotaSnapshot(used: used, maxSlots: cap, source: .serverStats, familyId: familyId)
+        bumpSubscriptionDisplayEpoch()
         VisualLogger.shared.log(
             "🔄 FAMILY STATS→LIMIT rosterUsed=\(used) rosterMax=\(cap) tier=\(stats.ownerSubscriptionTier ?? "?")",
             level: .info,

@@ -558,4 +558,51 @@ enum FamilyLocalStore {
             return false
         }
     }
+
+    // MARK: - Roster helpers (quota UI + phantom cleanup)
+
+    static func hasAuthenticatedJWT() -> Bool {
+        let jwt = KeychainManager.shared.loadString(forKey: .authToken)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        return !jwt.isEmpty
+    }
+
+    static func isServerKnownMember(_ member: FamilyMemberData) -> Bool {
+        if member.localOnly == true { return false }
+        if let sid = member.serverMemberId?.trimmingCharacters(in: .whitespacesAndNewlines), !sid.isEmpty {
+            return true
+        }
+        return member.id.hasPrefix("MEM_")
+    }
+
+    /// Локальный placeholder (UUID без MEM_*) — не считается участником серверной семьи.
+    static func rosterContainsOnlyLocalPlaceholders(_ members: [FamilyMemberData]) -> Bool {
+        guard !members.isEmpty else { return false }
+        return members.allSatisfy { !isServerKnownMember($0) }
+    }
+
+    static func persistedLocalRosterCount(defaults: UserDefaults = .standard) -> Int {
+        guard let data = defaults.data(forKey: familyMembersKey),
+              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: data) else {
+            return 0
+        }
+        return decoded.count
+    }
+
+    /// Сбрасывает phantom-ростер (UUID placeholder), когда сервер сообщает 0 участников и нет `family_id`.
+    @discardableResult
+    static func clearPhantomLocalRosterIfNeeded(
+        members: inout [FamilyMemberData],
+        defaults: UserDefaults = .standard
+    ) -> Bool {
+        let familyId = loadPersistedFamilyId().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard familyId.isEmpty, rosterContainsOnlyLocalPlaceholders(members) else { return false }
+        members.removeAll()
+        defaults.removeObject(forKey: familyMembersKey)
+        defaults.removeObject(forKey: rosterSnapshotFamilyIdKey)
+        defaults.removeObject(forKey: familyAdditionOrderKey)
+        defaults.removeObject(forKey: familyMemberSeededKey)
+        defaults.synchronize()
+        return true
+    }
 }

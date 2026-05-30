@@ -5,6 +5,14 @@ import Combine
 /// Live speech-to-text for AI Assistant (Apple `Speech` framework — on-device or Siri cloud, not ALADDIN API).
 final class SpeechManager: ObservableObject {
     static let maxRecordingDurationSec: TimeInterval = 60
+    static let minimumUsefulRecordingSec: TimeInterval = 1.25
+
+    enum LastRecognitionFailure: Equatable {
+        case none
+        case serviceUnavailable
+        case recordingTooShort
+        case emptyTranscript
+    }
 
     @Published private(set) var isRecording = false
     @Published private(set) var isPreparingRecording = false
@@ -28,8 +36,12 @@ final class SpeechManager: ObservableObject {
     private var sessionUsedOnDeviceRecognition = false
     private var recordingSessionStarted = false
     private var didAttemptCloudFallback = false
+    private var didAttemptOnDeviceFallback = false
     private var forceCloudRecognition = false
+    private var forceOnDeviceRecognition = false
     private var maxDurationTimer: Timer?
+    private var lastSessionRecordingDurationSec: TimeInterval = 0
+    private(set) var lastRecognitionFailure: LastRecognitionFailure = .none
     private var interruptionObserver: NSObjectProtocol?
     private var lastLevelUIUpdate: CFAbsoluteTime = 0
     private var lastStartAttemptAt: Date?
@@ -91,6 +103,7 @@ final class SpeechManager: ObservableObject {
     }
 
     var hadAudioSignalDuringLastSession: Bool { sawAudioSignalDuringSession }
+    var lastRecordingDurationSec: TimeInterval { lastSessionRecordingDurationSec }
 
     /// Прогрев разрешений при открытии AI — первый тап по микрофону не «висит» 20–30 с.
     func warmUpPermissionsIfNeeded() {
@@ -107,6 +120,7 @@ final class SpeechManager: ObservableObject {
 
     func startRecording(completion: @escaping (String?) -> Void) {
         logger.business("🎤 SpeechManager: Starting speech recognition process")
+        lastRecognitionFailure = .none
 
         if isMicrophoneCoolingDown {
             logger.warn("🎤 SpeechManager: Start ignored (cooldown)")
@@ -294,17 +308,28 @@ final class SpeechManager: ObservableObject {
         fallbackPCMInt16.removeAll(keepingCapacity: false)
         fallbackSampleRate = 16_000
         fallbackChannels = 1
-        // Keep `forceCloudRecognition` / `didAttemptCloudFallback` across engine reset when retrying cloud path.
+        // Keep fallback flags across engine reset when retrying alternate path.
     }
 
     private func deliverPendingCompletionIfNeeded(forcePartial: Bool = false) {
         guard !completionDelivered else { return }
         guard let completion = pendingCompletion else { return }
         let text = latestPartialTranscript?.trimmingCharacters(in: .whitespacesAndNewlines)
+        let text = latestPartialTranscript?.trimmingCharacters(in: .whitespacesAndNewlines)
+        if text?.isEmpty != false,
+           sawAudioSignalDuringSession,
+           !didAttemptOnDeviceFallback,
+           sessionUsedOnDeviceRecognition == false,
+           SpeechRecognizerFactory.onDeviceOnly(preferred: LocalizationManager.shared.speechRecognitionLocale) != nil {
+            logger.warn("🎤 SpeechManager: Empty cloud transcript after audio signal — retrying on-device path")
+            finishRecordingSession()
+            retryWithOnDeviceRecognition(previousPartial: nil, completion: completion)
+            return
+        }
         if text?.isEmpty != false,
            sawAudioSignalDuringSession,
            !didAttemptCloudFallback,
-           recordingSessionStarted {
+           !forceOnDeviceRecognition {
             logger.warn("🎤 SpeechManager: Empty transcript after audio signal — retrying cloud path")
             finishRecordingSession()
             retryWithCloudRecognition(previousPartial: nil, completion: completion)
@@ -317,9 +342,22 @@ final class SpeechManager: ObservableObject {
 
     private func completeOnce(_ text: String?, completion: @escaping (String?) -> Void) {
         guard !completionDelivered else { return }
+        if let start = recordingStartedAt {
+            lastSessionRecordingDurationSec = Date().timeIntervalSince(start)
+        }
+        if text?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty != false {
+            if lastSessionRecordingDurationSec > 0,
+               lastSessionRecordingDurationSec < Self.minimumUsefulRecordingSec {
+                lastRecognitionFailure = .recordingTooShort
+            } else if lastRecognitionFailure == .none {
+                lastRecognitionFailure = .emptyTranscript
+            }
+        } else {
+            lastRecognitionFailure = .none
+        }
         completionDelivered = true
         pendingCompletion = nil
-        clearCloudFallbackFlags()
+        clearRecognitionFallbackFlags()
         recordingStartedAt = nil
         VoiceAudioSessionCoordinator.shared.release(audioSessionConsumer)
         DispatchQueue.main.async {
@@ -328,8 +366,8 @@ final class SpeechManager: ObservableObject {
         }
     }
 
-    private func postSpeechServiceUnavailableIfNeeded() {
-        guard !recordingSessionStarted else {
+    private func postSpeechServiceUnavailableIfNeeded(force: Bool = false) {
+        guard force || !recordingSessionStarted else {
             logger.warn("🎤 SpeechManager: Suppressed unavailable alert (session had started)")
             return
         }
@@ -352,9 +390,14 @@ final class SpeechManager: ObservableObject {
             logger.business("🎤 SpeechManager: Audio session configured successfully")
 
             pendingCompletion = completion
+            lastRecognitionFailure = .none
 
             let selection: SpeechRecognizerFactory.Selection?
-            if audioSessionConsumer == .companion {
+            if forceOnDeviceRecognition {
+                selection = SpeechRecognizerFactory.onDeviceOnly(
+                    preferred: LocalizationManager.shared.speechRecognitionLocale
+                )
+            } else if audioSessionConsumer == .companion {
                 selection = SpeechRecognizerFactory.cloudOnly(
                     preferred: LocalizationManager.shared.speechRecognitionLocale
                 )
@@ -500,9 +543,22 @@ final class SpeechManager: ObservableObject {
                         self.retryWithCloudRecognition(previousPartial: nil, completion: completion)
                         return
                     }
+                    if SpeechRecognitionErrorClassifier.isServiceUnavailable(error),
+                       !self.sessionUsedOnDeviceRecognition,
+                       !self.didAttemptOnDeviceFallback,
+                       SpeechRecognizerFactory.onDeviceOnly(
+                           preferred: LocalizationManager.shared.speechRecognitionLocale
+                       ) != nil {
+                        self.logger.warn("🎤 SpeechManager: Siri cloud unavailable (1107) — retrying on-device path")
+                        self.lastRecognitionFailure = .serviceUnavailable
+                        self.finishRecordingSession()
+                        self.retryWithOnDeviceRecognition(previousPartial: nil, completion: completion)
+                        return
+                    }
                     if SpeechRecognitionErrorClassifier.isServiceUnavailable(error) {
                         self.logger.warn("🎤 SpeechManager: Speech service unavailable (\(error))")
-                        self.postSpeechServiceUnavailableIfNeeded()
+                        self.lastRecognitionFailure = .serviceUnavailable
+                        self.postSpeechServiceUnavailableIfNeeded(force: true)
                     } else {
                         self.logger.warn("🎤 SpeechManager: Recognition error: \(error.localizedDescription)")
                     }
@@ -546,6 +602,7 @@ final class SpeechManager: ObservableObject {
         }
         didAttemptCloudFallback = true
         forceCloudRecognition = true
+        forceOnDeviceRecognition = false
         sessionUsedOnDeviceRecognition = false
         if let partial = previousPartial, !partial.isEmpty {
             latestPartialTranscript = partial
@@ -554,9 +611,34 @@ final class SpeechManager: ObservableObject {
         startRecordingInternal(completion: completion)
     }
 
-    private func clearCloudFallbackFlags() {
+    /// Fallback when Siri cloud returns 1107/1111 on device (common on iOS 26 beta).
+    private func retryWithOnDeviceRecognition(previousPartial: String?, completion: @escaping (String?) -> Void) {
+        guard !didAttemptOnDeviceFallback else {
+            completeOnce(previousPartial, completion: completion)
+            return
+        }
+        guard SpeechRecognizerFactory.onDeviceOnly(
+            preferred: LocalizationManager.shared.speechRecognitionLocale
+        ) != nil else {
+            completeOnce(previousPartial, completion: completion)
+            return
+        }
+        didAttemptOnDeviceFallback = true
+        forceOnDeviceRecognition = true
         forceCloudRecognition = false
+        sessionUsedOnDeviceRecognition = true
+        if let partial = previousPartial, !partial.isEmpty {
+            latestPartialTranscript = partial
+        }
+        completionDelivered = false
+        startRecordingInternal(completion: completion)
+    }
+
+    private func clearRecognitionFallbackFlags() {
+        forceCloudRecognition = false
+        forceOnDeviceRecognition = false
         didAttemptCloudFallback = false
+        didAttemptOnDeviceFallback = false
     }
 
     private func finishRecordingSession() {

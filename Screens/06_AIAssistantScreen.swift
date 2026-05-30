@@ -1231,7 +1231,14 @@ struct AIAssistantScreen: View {
     private func handleVoiceRecognitionResult(_ recognizedText: String?, autoSend: Bool) {
         guard let text = recognizedText?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty else {
             logger.warn("🎤 AI Assistant: Voice recognition returned empty text")
-            errorMessage = localizationManager.localized("ai_assistant_voice_empty_result")
+            switch speechManager.lastRecognitionFailure {
+            case .serviceUnavailable:
+                errorMessage = localizationManager.localized("ai_assistant_voice_service_unavailable")
+            case .recordingTooShort:
+                errorMessage = localizationManager.localized("companion_voice_hold_too_short")
+            case .emptyTranscript, .none:
+                errorMessage = localizationManager.localized("ai_assistant_voice_empty_result")
+            }
             showError = true
             return
         }

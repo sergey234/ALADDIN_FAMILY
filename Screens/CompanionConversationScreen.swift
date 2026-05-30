@@ -57,6 +57,7 @@ struct CompanionConversationScreen: View {
     @State private var voiceCaptureActive = false
     @State private var lastVoiceSentText: String?
     @State private var lastVoiceSentAt: Date?
+    @State private var lastServerSTTFallbackFailed = false
     @State private var showMicCoach = false
     @State private var showAssistantBusyHint = false
     @State private var showingOfflineCache = false
@@ -1381,6 +1382,7 @@ struct CompanionConversationScreen: View {
         guard !voiceCaptureActive else { return }
         voiceCaptureActive = true
         errorText = nil
+        lastServerSTTFallbackFailed = false
         heroEmotion = .listening
         input = ""
         prepareMicForRecording()
@@ -1409,6 +1411,12 @@ struct CompanionConversationScreen: View {
             heroEmotion = .alert
             if !speechManager.hadAudioSignalDuringLastSession {
                 errorText = localizationManager.localized("companion_voice_no_audio_signal")
+            } else if speechManager.lastRecognitionFailure == .serviceUnavailable {
+                errorText = localizationManager.localized("ai_assistant_voice_service_unavailable")
+            } else if speechManager.lastRecognitionFailure == .recordingTooShort {
+                errorText = localizationManager.localized("companion_voice_hold_too_short")
+            } else if lastServerSTTFallbackFailed {
+                errorText = localizationManager.localized("companion_voice_server_stt_unavailable")
             } else if !isCloudAIEnabled {
                 errorText = AIOutboundTextGate.GateError.optInRequired.errorDescription
             } else {
@@ -1485,6 +1493,7 @@ struct CompanionConversationScreen: View {
             }
             return trimmed
         } catch {
+            lastServerSTTFallbackFailed = true
             MasterLogger.shared.warn("Companion server STT fallback failed: \(error.localizedDescription)")
             return nil
         }

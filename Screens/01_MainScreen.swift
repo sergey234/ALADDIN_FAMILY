@@ -656,8 +656,8 @@ struct MainScreen: View {
                                     Text(localizationManager.localized("main_family_header_title"))
                                         .font(.system(size: 14, weight: .bold))
                                         .foregroundColor(.black)
-                                    // Лимит по тарифу (как «3 из 5» в семейной защите): сколько уже в семье / максимум по плану.
-                                    let quotaUsed = max(0, subscriptionManager.familyQuotaSnapshot.used)
+                                    // Лимит по тарифу — та же формула, что на экране «Семья».
+                                    let quotaUsed = subscriptionManager.effectiveFamilyQuotaUsed()
                                     let quotaMax = max(0, subscriptionManager.familyQuotaSnapshot.max)
                                     Text(
                                         localizationManager.localized(
@@ -961,8 +961,7 @@ struct MainScreen: View {
                     mainViewModel.requestRefreshDebounced()
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyMembersUpdated"))) { _ in
-                    // После сохранения списка участников на экране «Семья» обязательно перезапрашиваем `/api/family/stats`,
-                    // иначе на главной остаётся старый totalMembers (типичный кейс: на Семье уже 1 участник, на главной «0»).
+                    subscriptionManager.refreshFamilyQuotaDisplayFromLocalRoster()
                     mainViewModel.requestRefreshDebounced()
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyDevicesDidChange"))) { _ in

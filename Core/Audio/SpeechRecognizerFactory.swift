@@ -49,6 +49,15 @@ enum SpeechRecognizerFactory {
         return Selection(recognizer: cloud, useOnDeviceRecognition: false)
     }
 
+    /// On-device path when Siri cloud returns 1107/1111 on device.
+    static func onDeviceOnly(preferred: Locale) -> Selection? {
+        guard prefersOnDeviceRecognition,
+              let onDevice = firstAvailable(preferred: preferred, requireOnDevice: true) else {
+            return nil
+        }
+        return Selection(recognizer: onDevice, useOnDeviceRecognition: true)
+    }
+
     /// Файловая транскрипция (диктофон): на Simulator — cloud, на устройстве — on-device с fallback в сервисе.
     static func bestForFileTranscription(preferred: Locale) -> Selection? {
         if prefersOnDeviceRecognition,
