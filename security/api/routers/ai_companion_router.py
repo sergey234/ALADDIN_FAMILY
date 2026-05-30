@@ -958,7 +958,12 @@ async def companion_server_stt(
             raise HTTPException(status_code=400, detail=reason)
         if reason == "empty_transcript":
             raise HTTPException(status_code=422, detail=reason)
-        if reason in ("server_stt_network_error", "server_stt_provider_error"):
+        if reason in (
+            "server_stt_network_error",
+            "server_stt_provider_error",
+            "server_stt_geo_blocked",
+            "server_stt_proxy_unavailable",
+        ):
             raise HTTPException(status_code=503, detail=reason)
         raise HTTPException(status_code=424, detail=reason)
 

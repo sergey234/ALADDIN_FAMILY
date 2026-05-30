@@ -58,6 +58,7 @@ struct CompanionConversationScreen: View {
     @State private var lastVoiceSentText: String?
     @State private var lastVoiceSentAt: Date?
     @State private var lastServerSTTFallbackFailed = false
+    @State private var lastServerSTTFailureDetail: String?
     @State private var showMicCoach = false
     @State private var showAssistantBusyHint = false
     @State private var showingOfflineCache = false
@@ -1383,6 +1384,7 @@ struct CompanionConversationScreen: View {
         voiceCaptureActive = true
         errorText = nil
         lastServerSTTFallbackFailed = false
+        lastServerSTTFailureDetail = nil
         heroEmotion = .listening
         input = ""
         prepareMicForRecording()
@@ -1416,7 +1418,11 @@ struct CompanionConversationScreen: View {
             } else if speechManager.lastRecognitionFailure == .recordingTooShort {
                 errorText = localizationManager.localized("companion_voice_hold_too_short")
             } else if lastServerSTTFallbackFailed {
-                errorText = localizationManager.localized("companion_voice_server_stt_unavailable")
+                if lastServerSTTFailureDetail == "server_stt_geo_blocked" {
+                    errorText = localizationManager.localized("companion_voice_server_stt_geo_blocked")
+                } else {
+                    errorText = localizationManager.localized("companion_voice_server_stt_unavailable")
+                }
             } else if !isCloudAIEnabled {
                 errorText = AIOutboundTextGate.GateError.optInRequired.errorDescription
             } else {
@@ -1494,6 +1500,12 @@ struct CompanionConversationScreen: View {
             return trimmed
         } catch {
             lastServerSTTFallbackFailed = true
+            let detail = error.localizedDescription.lowercased()
+            if detail.contains("server_stt_geo_blocked") || detail.contains("geo_blocked") {
+                lastServerSTTFailureDetail = "server_stt_geo_blocked"
+            } else {
+                lastServerSTTFailureDetail = nil
+            }
             MasterLogger.shared.warn("Companion server STT fallback failed: \(error.localizedDescription)")
             return nil
         }

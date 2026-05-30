@@ -1,0 +1,21 @@
+# Companion STT — copy keys into /opt/aladdin-backend/.env (never commit secrets).
+
+# Phase B: keep off until Yandex + smoke PASS
+FEATURE_COMPANION_SERVER_STT=0
+
+# Provider chain (auto = Yandex primary → OpenAI EU backup)
+COMPANION_STT_PROVIDER=auto
+COMPANION_STT_FALLBACK_PROVIDER=openai_whisper
+
+# Yandex SpeechKit (primary for RU VPS) — REQUIRED before enabling STT
+# YANDEX_SPEECHKIT_API_KEY=
+# YANDEX_SPEECHKIT_FOLDER_ID=
+
+# OpenAI Whisper (backup via EU egress)
+# OPENAI_API_KEY=
+# COMPANION_STT_OPENAI_HTTPS_PROXY=http://user:pass@eu-proxy:8080
+# COMPANION_STT_OPENAI_HTTPS_PROXY=socks5h://user:pass@eu-host:1080
+
+# Limits
+# COMPANION_STT_MAX_BYTES=524288
+# COMPANION_STT_MAX_AUDIO_SEC=15
