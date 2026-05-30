@@ -315,7 +315,6 @@ final class SpeechManager: ObservableObject {
         guard !completionDelivered else { return }
         guard let completion = pendingCompletion else { return }
         let text = latestPartialTranscript?.trimmingCharacters(in: .whitespacesAndNewlines)
-        let text = latestPartialTranscript?.trimmingCharacters(in: .whitespacesAndNewlines)
         if text?.isEmpty != false,
            sawAudioSignalDuringSession,
            !didAttemptOnDeviceFallback,
