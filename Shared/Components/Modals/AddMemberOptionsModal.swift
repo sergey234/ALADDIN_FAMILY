@@ -78,7 +78,8 @@ struct AddMemberOptionsModal: View {
                         }
                         
                         isProcessingCreateFamily = true
-                        print("✅ AddMemberOptionsModal: Открываем регистрацию семьи")
+                        FamilyLocalStore.prepareCreateFamilyFlow()
+                        print("✅ AddMemberOptionsModal: Открываем регистрацию семьи (createFamily)")
                         
                         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Увеличиваем задержку для TestFlight и разных контекстов
                         // Сначала открываем регистрацию

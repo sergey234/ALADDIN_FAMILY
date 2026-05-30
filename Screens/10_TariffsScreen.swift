@@ -340,6 +340,10 @@ struct TariffsScreen: View {
                             object: nil,
                             userInfo: ["level": level, "source": "tariffs_trial_selected"]
                         )
+                        if FamilyLocalStore.needsServerFamilyCreation() {
+                            FamilyLocalStore.prepareCreateFamilyFlow()
+                            navigationManager.navigateTo(.mainWithRegistration)
+                        }
                     }
                     return
                 }

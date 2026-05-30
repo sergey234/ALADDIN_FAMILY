@@ -54,4 +54,22 @@ final class FamilyLocalStorePersistenceTests: XCTestCase {
         XCTAssertNil(KeychainManager.shared.loadString(forKey: .familyId))
         XCTAssertNil(KeychainManager.shared.loadString(scopedKey: "family_id_uid_\(testUserId)"))
     }
+
+    func testNeedsServerFamilyCreationWithoutJWT() {
+        KeychainManager.shared.delete(forKey: .authToken)
+        XCTAssertFalse(FamilyLocalStore.needsServerFamilyCreation())
+    }
+
+    func testNeedsServerFamilyCreationWithJWTAndNoFamily() {
+        KeychainManager.shared.save("test.jwt.token", forKey: .authToken)
+        FamilyLocalStore.clearPersistedFamilyContextWhenServerReportsNoFamily()
+        XCTAssertTrue(FamilyLocalStore.needsServerFamilyCreation())
+        KeychainManager.shared.delete(forKey: .authToken)
+    }
+
+    func testPrepareCreateFamilyFlowClearsAdminAddMode() {
+        UserDefaults.standard.set(true, forKey: "admin_add_mode")
+        FamilyLocalStore.prepareCreateFamilyFlow()
+        XCTAssertFalse(UserDefaults.standard.bool(forKey: "admin_add_mode"))
+    }
 }

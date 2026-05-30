@@ -605,4 +605,46 @@ enum FamilyLocalStore {
         defaults.synchronize()
         return true
     }
+
+    // MARK: - Create-family flow (Phase D)
+
+    static let familyCreationRequiredNotification = Notification.Name("AladdinFamilyCreationRequired")
+
+    /// JWT есть, но на сервере ещё нет семьи (`family_id` / `your_member_id` / только phantom UUID).
+    static func needsServerFamilyCreation(
+        members: [FamilyMemberData] = UnifiedFamilyRoster.load(),
+        defaults: UserDefaults = .standard
+    ) -> Bool {
+        guard hasAuthenticatedJWT() else { return false }
+        if isLikelyStaleFamilyContextForCurrentAccount(members: members, defaults: defaults) {
+            return true
+        }
+        let fid = loadPersistedFamilyId().trimmingCharacters(in: .whitespacesAndNewlines)
+        let myId = (defaults.string(forKey: yourMemberIdUserDefaultsKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        if fid.isEmpty, myId.isEmpty { return true }
+        if fid.isEmpty, rosterContainsOnlyLocalPlaceholders(members) { return true }
+        return false
+    }
+
+    /// Перед `POST /api/family/create`: не admin_add, без stale `family_id` и phantom-ростера.
+    static func prepareCreateFamilyFlow(defaults: UserDefaults = .standard) {
+        defaults.set(false, forKey: "admin_add_mode")
+        if isLikelyStaleFamilyContextForCurrentAccount(defaults: defaults) {
+            clearPersistedFamilyContextWhenServerReportsNoFamily()
+        } else {
+            var roster = UnifiedFamilyRoster.load(defaults: defaults)
+            _ = clearPhantomLocalRosterIfNeeded(members: &roster, defaults: defaults)
+        }
+        defaults.synchronize()
+    }
+
+    static func postFamilyCreationRequired(source: String) {
+        guard needsServerFamilyCreation() else { return }
+        NotificationCenter.default.post(
+            name: familyCreationRequiredNotification,
+            object: nil,
+            userInfo: ["source": source]
+        )
+    }
 }

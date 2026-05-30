@@ -938,6 +938,7 @@ final class SubscriptionManager: ObservableObject {
                     NotificationManager.shared.scheduleTrialNotifications(trialEndDate: serverTrial.endDate)
                     logger.business("✅ Trial activated from server: \(serverTrial.daysRemaining) days remaining + notifications scheduled")
                     logger.business("📊 TRIAL_TARIFF_PIPELINE trial_activated plan=\(currentSubscription?.level.rawValue ?? "nil") effective=\(getCurrentLevel().rawValue) trial_end=\(serverTrial.endDate)")
+                    FamilyLocalStore.postFamilyCreationRequired(source: "trial_activated")
                 } else {
                     logger.business("ℹ️ Server trial is not active anymore. App should behave as free/paid.")
                 }

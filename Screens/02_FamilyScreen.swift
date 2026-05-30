@@ -1629,6 +1629,21 @@ struct FamilyScreen: View {
         return FamilyAccessPolicy.hasPermission(.manageAppProfiles, members: familyMembers)
     }
 
+    private var needsCreateFamilyOnServer: Bool {
+        FamilyLocalStore.needsServerFamilyCreation(members: familyMembers)
+    }
+
+    private func navigateToAddOrCreateFamily() {
+        if needsCreateFamilyOnServer {
+            FamilyLocalStore.prepareCreateFamilyFlow()
+            navigationManager.navigateTo(.mainWithRegistration)
+        } else {
+            UserDefaults.standard.set(true, forKey: "admin_add_mode")
+            UserDefaults.standard.synchronize()
+            navigationManager.navigateTo(.addMemberOptions)
+        }
+    }
+
     /// Family Sharing операции отделены от app-level профилей:
     /// доступ разрешён только parent-профилю (не elderly/child/teen).
     private var canManageFamilySharing: Bool {
@@ -1952,14 +1967,12 @@ struct FamilyScreen: View {
                         // Toolbar «+»: родитель/пожилой (в т.ч. fallback по роли при рассинх id); тариф — на экране добавления или алерт при жёстком лимите
                         Button(action: {
                             logger.buttonTap("Add Member", screen: "Family")
-                            guard canManageFamilyRoster else {
+                            guard canManageFamilyRoster || needsCreateFamilyOnServer else {
                                 UINotificationFeedbackGenerator().notificationOccurred(.warning)
                                 VisualLogger.shared.log("🚫 FAMILY ADD toolbar: canManageFamilyRoster=false", level: .warning, category: "FAMILY")
                                 return
                             }
-                            UserDefaults.standard.set(true, forKey: "admin_add_mode")
-                            UserDefaults.standard.synchronize()
-                            navigationManager.navigateTo(.addMemberOptions)
+                            navigateToAddOrCreateFamily()
                         }) {
                             Image(systemName: "plus")
                                 .font(.system(size: 16, weight: .bold))
@@ -1967,7 +1980,7 @@ struct FamilyScreen: View {
                                 .frame(width: 40, height: 40)
                                 .background(Color(red: 0.96, green: 0.62, blue: 0.04))
                                 .clipShape(Circle())
-                                .opacity(canManageFamilyRoster ? 1 : 0.35)
+                                .opacity((canManageFamilyRoster || needsCreateFamilyOnServer) ? 1 : 0.35)
                         }
                         .accessibilityLabel(localizationManager.localized("add_member_accessibility"))
                         .accessibilityHint(localizationManager.localized("add_member_accessibility_hint"))
@@ -2126,9 +2139,7 @@ struct FamilyScreen: View {
                                     }
                                 } else if canAddFamilyMemberUnderTariff {
                                     Button(action: {
-                                        UserDefaults.standard.set(true, forKey: "admin_add_mode")
-                                        UserDefaults.standard.synchronize()
-                                        navigationManager.navigateTo(.addMemberOptions)
+                                        navigateToAddOrCreateFamily()
                                     }) {
                                         Text(localizationManager.localized("family_add_member"))
                                             .font(.system(size: 16, weight: .bold))
@@ -2250,9 +2261,7 @@ struct FamilyScreen: View {
                                     // Updated: AddMoreMemberCard now respects tariff limit via shared guard (no more <10 bypass)
                                     if canAddFamilyMemberUnderTariff && canManageFamilyRoster {
                                         AddMoreMemberCard {
-                                            UserDefaults.standard.set(true, forKey: "admin_add_mode")
-                                            UserDefaults.standard.synchronize()
-                                            navigationManager.navigateTo(.addMemberOptions)
+                                            navigateToAddOrCreateFamily()
                                         }
                                         .environmentObject(localizationManager)
                                     }
@@ -2333,7 +2342,7 @@ struct FamilyScreen: View {
                                     }
                                 }
                             }
-                            // Пустое состояние - показываем WelcomeCardForCreator только если список пуст
+                            // Пустое состояние — CTA «Создать семью» или «Добавить первого участника»
                             else {
                                 VStack(spacing: Spacing.m) {
                                     Text("👨‍👩‍👧‍👦")
@@ -2343,15 +2352,24 @@ struct FamilyScreen: View {
                                     Text(localizationManager.localized("family_no_members"))
                                         .font(.subheadline)
                                         .foregroundColor(.white.opacity(0.7))
+
+                                    if needsCreateFamilyOnServer {
+                                        Text(localizationManager.localized("family_create_family_prompt"))
+                                            .font(.caption)
+                                            .foregroundColor(.white.opacity(0.65))
+                                            .multilineTextAlignment(.center)
+                                    }
                                     
-                                    if canManageFamilyRoster {
+                                    if needsCreateFamilyOnServer
+                                        || canManageFamilyRoster {
                                         Button(action: {
-                                            // ✅ ИСПРАВЛЕНИЕ #4: Используем NavigationManager вместо sheet модала
-                                            UserDefaults.standard.set(true, forKey: "admin_add_mode")
-                                            UserDefaults.standard.synchronize()
-                                            navigationManager.navigateTo(.addMemberOptions)
+                                            navigateToAddOrCreateFamily()
                                         }) {
-                                            Text(localizationManager.localized("family_add_first_member"))
+                                            Text(localizationManager.localized(
+                                                needsCreateFamilyOnServer
+                                                    ? "add_member_create_family"
+                                                    : "family_add_first_member"
+                                            ))
                                                 .font(.subheadline)
                                                 .fontWeight(.semibold)
                                                 .foregroundColor(.secondaryGold)

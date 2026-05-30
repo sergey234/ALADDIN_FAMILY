@@ -20,11 +20,9 @@ struct AddMemberOptionsScreen: View {
     @EnvironmentObject private var subscriptionManager: SubscriptionManager // Single source for tariff limits
     @State private var isProcessingCreateFamily: Bool = false // ✅ Защита от двойного клика
 
-    /// Уже есть семья на устройстве — первый сценарий ведёт в addFamilyMember (через admin_add_mode), а не в family/create.
+    /// Уже есть **подтверждённая** семья на устройстве — первый сценарий ведёт в addFamilyMember (через admin_add_mode), а не в family/create.
     private var hasExistingFamilyOnDevice: Bool {
-        let fid = (FamilyLocalStore.loadPersistedFamilyId() ?? "")
-            .trimmingCharacters(in: .whitespacesAndNewlines)
-        return !fid.isEmpty
+        !FamilyLocalStore.needsServerFamilyCreation(members: cachedFamilyMembersForRoster)
     }
 
     /// Число участников для баннера лимита (из кэша).
@@ -132,7 +130,7 @@ struct AddMemberOptionsScreen: View {
                                             hasExistingFamilyOnDevice ? "add_member_to_current_family_desc" : "add_member_create_family_desc"
                                         ),
                                         color: .orange,
-                                        enabled: canManageFamilyRosterFromCache
+                                        enabled: !hasExistingFamilyOnDevice || canManageFamilyRosterFromCache
                                     ) {
                                         // ✅ FIXED: Pure navigation - no internal modals
                                         guard !isProcessingCreateFamily else {
@@ -145,8 +143,10 @@ struct AddMemberOptionsScreen: View {
                                             UserDefaults.standard.set(true, forKey: "admin_add_mode")
                                             UserDefaults.standard.synchronize()
                                             print("✅ AddMemberOptionsScreen: admin_add_mode ON → registration flow uses addFamilyMember for current family")
+                                        } else {
+                                            FamilyLocalStore.prepareCreateFamilyFlow()
+                                            print("✅ AddMemberOptionsScreen: create-family flow → POST /api/family/create")
                                         }
-                                        print("✅ AddMemberOptionsScreen: Navigating to registration (create or add-to-current)")
 
                                         navigationManager.navigateTo(.mainWithRegistration)
 
@@ -154,7 +154,7 @@ struct AddMemberOptionsScreen: View {
                                             isProcessingCreateFamily = false
                                         }
                                     }
-                                    if !canManageFamilyRosterFromCache {
+                                    if hasExistingFamilyOnDevice, !canManageFamilyRosterFromCache {
                                         Text(localizationManager.localized("add_member_admin_only_notice"))
                                             .font(.caption2)
                                             .foregroundColor(.orange.opacity(0.95))
