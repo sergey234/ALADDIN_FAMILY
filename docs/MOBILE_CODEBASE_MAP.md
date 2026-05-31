@@ -1,6 +1,6 @@
 # ALADDIN Mobile — карта кодовой базы и архитектуры
 
-**Обновлено:** 2026-05-30  
+**Обновлено:** 2026-05-31  
 **Для:** следующей ML-системы (быстрый поиск, подсчёт LOC, деплой)  
 **Git iOS (канон):** build **216** · `f8ca4e1e`  
 **Companion-трекер:** [COMPANION_PROGRESS_TRACKER.md](./COMPANION_PROGRESS_TRACKER.md)
@@ -318,6 +318,7 @@ sequenceDiagram
 | [COMPANION_PREMIUM_VOICE_PLAN.md](./COMPANION_PREMIUM_VOICE_PLAN.md) | Free AVSpeech vs Premium ElevenLabs |
 | [ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md](../ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md) | SSH, деплой, health |
 | [COMPANION_MODULAR_ARCHITECTURE.md](./COMPANION_MODULAR_ARCHITECTURE.md) | Platform modules |
+| [COMPANION_OLLAMA_PHASE2_HANDOFF.md](./COMPANION_OLLAMA_PHASE2_HANDOFF.md) | Prod LLM fallback harness (Hermes → Ollama → SFM) |
 
 ---
 
@@ -330,6 +331,111 @@ sequenceDiagram
 5. **Companion verify:** `./scripts/verify_companion_p0_prod.sh https://aladdin-ai.ru`
 6. **Premium TTS smoke:** `./scripts/companion_voice_quick_check.sh` (нужен Premium JWT + ElevenLabs keys)
 7. **Swift на VPS** — snapshot; для iOS правок смотреть **только local git**
+
+---
+
+## 11. AI Harness map (dev vs prod)
+
+> **Harness** — обвязка вокруг LLM: контекст, tools, маршрутизация, moderation, fallback, feature flags, observability.  
+> **Не путать:** 9Router/Cursor = **dev harness** (coding); Companion backend = **prod harness** (дети в app).
+
+### 11.1 Два контура
+
+```mermaid
+flowchart TB
+  subgraph DEV["DEV HARNESS — разработка"]
+    CUR[Cursor Agent / 9Router localhost:20128]
+    RULES[".cursor/rules/*.mdc"]
+    DOCS["docs/*HANDOFF*.md · этот файл"]
+    SCR["scripts/verify_* · deploy_* · mobile_codebase_loc_report.py"]
+    AGENTS[AGENTS.md · COMPANION_ML_HANDOFF_START_HERE.md]
+    CUR --> RULES --> DOCS --> SCR
+  end
+
+  subgraph PROD["PROD HARNESS — aladdin-ai.ru :8002"]
+    IOS["iOS CompanionConversationScreen · CompanionAPIService"]
+    RT["security/api/routers/ai_companion_router.py"]
+    CHAIN["_invoke_companion_llm · orchestrator · Hermes · SFM"]
+    SAFE["ethics · age_policy · post_llm_moderation · trust"]
+    FLAGS["security/services/ai_platform/feature_flags.py"]
+    EXT["Hermes · ElevenLabs TTS · Yandex STT · Phase2 Ollama"]
+    IOS -->|JWT| RT --> CHAIN --> SAFE
+    CHAIN --> EXT
+    FLAGS --> CHAIN
+    FLAGS --> SAFE
+  end
+
+  DEV -.->|deploy security/| PROD
+```
+
+### 11.2 Prod Companion — цепочка файлов
+
+| Слой harness | Файл | Назначение |
+|--------------|------|------------|
+| HTTP entry | `security/api/routers/ai_companion_router.py` | `/api/ai/companion/*`, trust, `_invoke_companion_llm()` |
+| LLM context | `security/api/routers/ai_assistant_router.py` | `_ai_companion_context_chat()` — Hermes / SFM (Phase 2: + Ollama) |
+| Persona / ethics | `security/services/ai_platform/companion_persona.py` | 3 героя, humor |
+| | `security/services/ai_platform/companion_ethics.py` | Ethics hint в prompt |
+| | `security/services/ai_platform/age_policy.py` | Возрастные ограничения |
+| Routing | `security/services/ai_platform/companion_intent_router.py` | Domain / mood |
+| | `security/services/ai_platform/orchestrator.py` | Multi-agent (`COMPANION_USE_ORCHESTRATOR=1`) |
+| LLM adapters | `security/services/hermes_client.py` | Hermes + OpenRouter |
+| | `security/services/llm_providers/ollama_client.py` | **Phase 2** — Ollama fallback (planned) |
+| Safety | `security/services/ai_platform/companion_post_llm_moderation.py` | Post-LLM filter (все пути) |
+| | `security/services/ai_platform/companion_trust_decay.py` | Trust score 1–5 |
+| State / stream | `security/services/ai_platform/companion_store.py` | Threads, SQLite/Redis |
+| | `security/services/ai_platform/companion_stream_redis.py` | SSE |
+| Voice | `security/services/ai_platform/companion_stt.py` | Server STT |
+| | `security/services/ai_platform/companion_neuro_tts.py` | Premium ElevenLabs |
+| Kill switches | `security/services/ai_platform/feature_flags.py` | `FEATURE_*`, `COMPANION_USE_ORCHESTRATOR`, … |
+| iOS client | `Core/Services/CompanionAPIService.swift` | REST + stream |
+| | `Core/Services/CompanionCapabilitiesService.swift` | Premium gates |
+| | `Screens/CompanionConversationScreen.swift` | UI + STT/TTS |
+
+**Целевой LLM fallback (Phase 2):** Hermes OK → живой ответ; Hermes FAIL → Ollama `deepseek-v4-flash`; Ollama FAIL → SFM. См. [COMPANION_OLLAMA_PHASE2_HANDOFF.md](./COMPANION_OLLAMA_PHASE2_HANDOFF.md).
+
+### 11.3 Dev harness — Cursor / ML-агенты
+
+| Компонент | Путь | Роль |
+|-----------|------|------|
+| Cursor rules | `.cursor/rules/*.mdc` | Guardrails (prod bypass, iOS root, Figma sync, VPS deploy) |
+| Карта кода | `docs/MOBILE_CODEBASE_MAP.md` | Архитектура + этот §11 |
+| Handoff | `docs/COMPANION_ML_HANDOFF_START_HERE.md` | Старт для ML-системы |
+| Agent workspace | `AGENTS.md` | Корень репо, onboarding policy |
+| Deploy verify | `scripts/verify_companion_p0_prod.sh` | 18 шагов prod smoke |
+| LOC / metrics | `scripts/mobile_codebase_loc_report.py` | Пересчёт CSV |
+| 9Router (local) | `localhost:20128` | **Только** запасной Cursor при лимитах; **не** prod Companion |
+
+**Ключевые `.cursor/rules`:**
+
+| Rule | Защищает |
+|------|----------|
+| `prod-no-mock-bypass.mdc` | Parental bypass API без mock в prod |
+| `ios-working-root.mdc` | Git root `ALADDIN_iOS` |
+| `aladdin-server-connection.mdc` | VPS deploy алгоритм |
+| `companion-ios-family-safety-expert.mdc` | Companion domain (L1–L3, age bands) |
+| `onboarding-figma-ios-sync-mandatory.mdc` | DoD Figma ↔ iOS |
+
+### 11.4 Другие домены (harness частично)
+
+| Функция | iOS | Backend | Harness-статус |
+|---------|-----|---------|----------------|
+| Parental bypass | `Screens/*Parental*` | `/api/parental/bypass/*` | Policy rule + API; без LLM |
+| Family chat | `Core/Network/FamilyChatWebSocket` | `app/routers/family.py` | E2EE WS |
+| Antivirus | `Core/Antivirus/` | `/api/antivirus/scan` | Scan pipeline |
+| AI Assistant (не Companion) | Main / Settings | `ai_assistant_router` | Общий LLM path; moderation отдельно |
+| SFM monolith | — | `app/security/ai_agents/` (~79k LOC) | Legacy agents; Companion deploy из `security/` |
+
+### 11.5 Приоритеты усиления harness
+
+| P | Действие | Файлы / артефакты |
+|---|----------|-------------------|
+| **P0** | Phase 2.0 — лог `llm_path=hermes\|sfm\|ollama` | `ai_companion_router.py`, `ai_assistant_router.py` |
+| **P0** | 3-tier chain Hermes → Ollama → SFM | `_ai_companion_context_chat()`, `ollama_client.py` |
+| **P0** | Shadow / kill switch Ollama | `feature_flags.py`, VPS env |
+| **P0** | Smoke LLM chain | `scripts/vps_smoke_companion_llm.py` (planned) |
+| **P1** | Не смешивать 9Router с prod Companion | Dev only |
+| **P2** | Унификация moderation для AI Assistant | `companion_post_llm_moderation.py` pattern |
 
 ---
 
