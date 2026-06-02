@@ -64,7 +64,7 @@
 | 4 | **WELLNESS_ML_HANDOFF.md** | Эта инструкция |
 | 5 | **WELLNESS_I18N_CHECKLIST.md** | ~120 ключей `wellness_*` ru/en |
 | 6 | **WELLNESS_I18N_GLOSSARY.md** | Запрещённые термины, тон child/teen |
-| 7 | **WELLNESS_APPLE_HEALTHKIT_SETUP.md** | Capability Apple Developer (p2-36) |
+| 7 | **WELLNESS_APPLE_HEALTHKIT_SETUP.md** | HealthKit: вариант A (Portal) / откат B — [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md) |
 | 8 | `docs/ADR-WELLNESS-PLATFORM.md` | Фаза 0 ✅ |
 | 9 | `docs/WELLNESS_ESCALATION_LADDER.md` | Фаза 0 ✅ |
 | 10 | `docs/WELLNESS_CLINICAL_REVIEW.md` | Фаза 0 ✅ |
@@ -225,7 +225,11 @@ WELLNESS_PLATFORM_MASTER_PLAN.md §14, §19
 Батч 2: p1-01 … p1-29  (29) — все completed
 Батч 3: p2-01 … p2-51  (51) — все completed
 Батч 4: p3-01 … p3-20 + p18-01 … p18-15 (35) — все completed
-PO: po-clinical-signoff ✅ · po-verify-prod ✅ · po-healthkit (Portal manual)
+PO: po-clinical-signoff ✅ · po-verify-prod ✅ · po-healthkit ⏸ · po-healthkit-rollback-ci 📋
+
+**CI build 221:** archive failed (HealthKit vs profile) — см. [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md). Код отката **не выполнять** без явной команды PO.
+
+**PO (отложено):** HealthKit — вариант A [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md) · вариант B rollback [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md).
 ```
 
 ---
@@ -234,7 +238,7 @@ PO: po-clinical-signoff ✅ · po-verify-prod ✅ · po-healthkit (Portal manual
 
 **131/131 задач ядра выполнены.** Ф0–Ф3 + §18 i18n = 100%.
 
-**PO (не код):** HealthKit capability — [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md).
+**PO (не код):** HealthKit — см. rollback plan B (CI) или Portal A — docs выше.
 
 **Deploy + verify после каждого выката:**
 

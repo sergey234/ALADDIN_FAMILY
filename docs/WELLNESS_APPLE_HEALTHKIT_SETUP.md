@@ -1,67 +1,97 @@
-# Apple HealthKit — включение capability (p2-36)
+# Apple HealthKit — capability (p2-36)
 
-> **Контекст:** ранее HealthKit был **удалён** из сборки по требованию App Review (декабрь 2025).  
-> С **Wellness p2-36** снова нужен **только read sleep** для prefill check-in — без PPG, без диагнозов.
+> **Обновлено:** 2026-06-02  
+> **Активный план PO:** 📋 **отложен** — сначала [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md) (вариант B, без Portal).  
+> **Вариант A** (этот файл, §2–4) — когда решите вернуть автозаполнение сна из Health.
 
 ---
 
-## 1. Что уже в репозитории (код)
+## Контекст
+
+| Дата | Событие |
+|------|---------|
+| Дек 2025 | HealthKit **удалён** по App Review |
+| Июн 2026 | Wellness p2-36: **только read sleep** для prefill check-in |
+| Build 221 `95439b21` | Entitlement снова в репо |
+| CI `logs_71945656834` | Archive **FAILED**: profile без HealthKit |
+| **Сейчас** | Код с HealthKit в `master`; **исполнение отката — позже** |
+
+HealthKit в ALADDIN = **одна функция**: подставить **часы сна** в Wellness check-in. Без HealthKit check-in **полностью работает** (ползунок вручную).
+
+---
+
+## Вариант B — откат (рекомендован для ближайшего CI)
+
+**Полный пошаговый план:** [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md)
+
+Кратко:
+
+1. Убрать `com.apple.developer.healthkit` из `ALADDIN.entitlements`
+2. Убрать `NSHealthShareUsageDescription` из `Info.plist`
+3. Убрать import UI из `WellnessCheckinScreen.swift`
+4. Clean Build → Build в Xcode → commit → push (правила релиза в плане §6)
+5. Bump build (**222** рекомендуется после 221 с HealthKit)
+
+**Не требует:** Apple Developer Portal, обновление GitHub Secrets.
+
+---
+
+## Вариант A — включить HealthKit (когда будете готовы)
+
+### 1. Что в репозитории (после отката B нужно будет вернуть)
 
 | Файл | Назначение |
 |------|------------|
 | `ALADDIN.entitlements` | `com.apple.developer.healthkit` = true |
-| `Info.plist` | `NSHealthShareUsageDescription` (ru текст) |
-| `Core/Services/WellnessHealthSleepReader.swift` | чтение сна за прошлую ночь |
-| `Screens/WellnessCheckinScreen.swift` | кнопка «Из Health» + prefill `sleep_hours` |
+| `Info.plist` | `NSHealthShareUsageDescription` |
+| `Core/Services/WellnessHealthSleepReader.swift` | чтение сна за ~24 ч |
+| `Screens/WellnessCheckinScreen.swift` | кнопка «Из Health» + prefill |
 
 **Нет** `NSHealthUpdateUsageDescription` — приложение **не пишет** в Health.
 
----
-
-## 2. Apple Developer Portal (ручные шаги PO)
+### 2. Apple Developer Portal (PO)
 
 1. [developer.apple.com](https://developer.apple.com) → **Certificates, Identifiers & Profiles**
-2. **Identifiers** → App ID `com.aladdin.family` (или ваш bundle id)
-3. **Capabilities** → включить **HealthKit**
-4. **Save** → пересоздать **Provisioning Profile** (Development + Distribution)
-5. Xcode → **Signing & Capabilities** → выбрать новый profile
-6. Убедиться, что capability **HealthKit** видна в target ALADDIN (не дублировать в extension без нужды)
+2. **Identifiers** → App ID (`family.aladdin.ios` / ваш bundle id)
+3. **Capabilities** → **HealthKit** → Save
+4. **Profiles** → **App Store** (не Development / Ad Hoc):
+   - App: HealthKit + App Groups (`group.com.aladdin.family`)
+   - Extension `…ALADDINContentBlocker`: App Groups
+5. Связать с **Apple Distribution: SERGEY KHLYSTOV**
+6. Обновить GitHub Secrets: `PROVISIONING_PROFILE_APP`, `PROVISIONING_PROFILE_EXTENSION`
 
-**Статус репозитория (2026-06-01):** код + entitlements + `WellnessHealthSleepReader` ✅ · **осталось PO:** шаги 2–5 в Developer Portal.
+### Профили App Store (отдельно от HealthKit)
 
----
+CI также предупреждал: secrets могут содержать **Development/Ad Hoc** профили (есть `ProvisionedDevices`). Для TestFlight нужны **App Store Distribution** профили **без** списка устройств — пересоздать при варианте A.
 
-## 3. App Store Connect / Review
+### 3. App Store Connect / Review
 
-При следующей отправке билда **обновить ответ Review** (ранее писали «HealthKit удалён»):
+При отправке билда **с HealthKit** обновить ответ Review (раньше писали «HealthKit удалён»):
 
-**RU (кратко):**  
-«В версии X.Y добавлена опциональная интеграция HealthKit: пользователь может **по желанию** подставить часы сна из Apple Health в ежедневный check-in эмоциональной поддержки. Данные не используются для диагноза и не передаются третьим лицам вне защищённого API ALADDIN.»
+**RU:**  
+«Опционально: пользователь может подставить часы сна из Apple Health в check-in эмоциональной поддержки. Не для диагноза. Только по разрешению пользователя.»
 
 **EN:**  
-«Optional HealthKit read (sleep duration) prefills a self-help mood check-in. Not used for medical diagnosis. User-initiated permission only.»
+«Optional HealthKit read (sleep duration) prefills a self-help mood check-in. Not medical diagnosis. User-initiated only.»
 
-Ссылка на политику: Privacy Policy + in-app disclaimer `wellness_*`.
+### 4. Проверка на устройстве
 
----
+1. Реальный iPhone
+2. Wellness → Check-in → «Из Health»
+3. Allow → ползунок заполнился
 
-## 4. Проверка на устройстве
-
-1. Собрать на **реальном iPhone** (симулятор Health ограничен)
-2. Wellness → Check-in → «Из Health» / import sleep
-3. Системный диалог Health → Allow
-4. Поле сна заполнилось (часы, 0.5 шаг)
-
-Если capability не в profile — Xcode: *Provisioning profile doesn't include HealthKit entitlement*.
+Ошибка profile: *Provisioning profile doesn't include HealthKit entitlement*.
 
 ---
 
-## 5. Откат (если Review снова отклонит)
+## Статус задач
 
-1. Убрать entitlement из `ALADDIN.entitlements`
-2. Обернуть UI import в `#if canImport(HealthKit)` + feature flag `FEATURE_WELLNESS_HEALTHKIT=0` на backend не нужен
-3. Оставить ручной ввод сна в check-in
+| ID | Статус | Комментарий |
+|----|--------|-------------|
+| p2-36 (код) | ✅ в репо | Sleep reader + UI (до отката B) |
+| po-healthkit (Portal A) | ⏸ отложено | См. rollback plan B |
+| po-healthkit-rollback-ci | 📋 запланировано | [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md) |
 
 ---
 
-*Связано: p2-36 · [WELLNESS_IMPLEMENTATION_STATUS.md](./WELLNESS_IMPLEMENTATION_STATUS.md)*
+*Связано: [WELLNESS_IMPLEMENTATION_STATUS.md](./WELLNESS_IMPLEMENTATION_STATUS.md) · [WELLNESS_CURSOR_TODO.md](./WELLNESS_CURSOR_TODO.md)*

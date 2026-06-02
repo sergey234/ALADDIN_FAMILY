@@ -1,7 +1,7 @@
 # Wellness Platform — статус реализации (131 задача)
 
-> **Обновлено:** 2026-06-02 (post-close iOS Xcode sync + `Wellness*.swift` ↔ target audit)  
-> **Ядро:** 131/131 · **PO-трекинг:** 133/134 (`po-healthkit` открыт)  
+> **Обновлено:** 2026-06-02 (CI HealthKit blocker + план отката B)  
+> **Ядро:** 131/131 · **PO-трекинг:** 133/134 (`po-healthkit` отложено → [rollback plan](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md))  
 > **Рабочая папка:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
 > **Чеклист:** [WELLNESS_CURSOR_TODO.md](./WELLNESS_CURSOR_TODO.md)  
 > **Handoff для ML:** [WELLNESS_ML_HANDOFF.md](./WELLNESS_ML_HANDOFF.md)
@@ -19,7 +19,7 @@
 | §18 i18n | 15 | 15 | 100% |
 | **Σ** | **131** | **131** | **100%** |
 
-**Осталось (ядро):** 0. **PO вручную:** HealthKit capability в Apple Developer Portal — [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md).
+**Осталось (ядро):** 0. **PO (отложено):** откат HealthKit для CI — [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md) · Portal HealthKit (вариант A) — [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md).
 
 ---
 
@@ -71,7 +71,7 @@ cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 | `WellnessProgressPDFService` | p3-19 |
 | `WellnessCheckinWidget` | p3-18 |
 | `WellnessPillarEmotionView` | p3-09 |
-| `WellnessHealthSleepReader` | p2-36 / po-healthkit |
+| `WellnessHealthSleepReader` | p2-36 · **CI:** entitlement блокирует archive → rollback B запланирован |
 | `WellnessSwiftUICompat` | post-close — iOS 15.2 API shims |
 | `WellnessNavigationStack` / `WellnessMultilineField` | внутри compat |
 
@@ -92,6 +92,20 @@ cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 | Xcode target | `ALADDIN.xcodeproj/project.pbxproj` | В **Compile Sources**: PDF, compat, Paywall, Values, Referral (уник. ID), **PillarEmotion** |
 
 **PO:** после правок — Clean Build (⇧⌘K) → Build (⌘B).
+
+### 2026-06-02 — CI build 221: HealthKit blocker (archive failed)
+
+| Факт | Деталь |
+|------|--------|
+| Git | `95439b21` на `origin/master`, build **221**, Wellness + HealthKit entitlement |
+| CI log | `logs_71945656834` — Fastlane archive **FAILED** |
+| Ошибка | Profile `ALADDIN App Store Distribution new` **без** HealthKit; entitlement в `ALADDIN.entitlements` **есть** |
+| Другие Health-типы | **Нет** — только read sleep для check-in |
+| Предупреждение CI | Профили Development/Ad Hoc в secrets — отдельно от HealthKit; исправить при варианте A |
+| **Решение PO** | ✅ **Вариант B выполнен** build **222** — entitlement + UI откат |
+| План | [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md) |
+
+Check-in **без HealthKit:** ползунок «Как спал(а)?» 3–12 ч — работает всегда.
 
 ### 2026-06-02 — Ops ML (handoff выполнен на VPS)
 

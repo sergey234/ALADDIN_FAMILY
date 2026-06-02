@@ -10,7 +10,6 @@ struct WellnessCheckinScreen: View {
     @State private var stressLevel: Double = 3
     @State private var saved = false
     @State private var offlineQueued = false
-    @State private var healthSleepHint: String?
 
     private let moods: [(id: String, emoji: String, key: String)] = [
         ("great", "😊", "wellness_mood_great"),
@@ -40,19 +39,6 @@ struct WellnessCheckinScreen: View {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(WellnessAgeL10n.text(localizationManager, key: "wellness_sleep_label", ageBand: ageBand))
                         .font(.subheadline.weight(.semibold))
-                    if WellnessHealthSleepReader.isAvailable {
-                        Button {
-                            Task { await importSleepFromHealth() }
-                        } label: {
-                            Text(localizationManager.localized("wellness_sleep_import_health"))
-                                .font(.caption)
-                        }
-                    }
-                    if let healthSleepHint {
-                        Text(healthSleepHint)
-                            .font(.caption2)
-                            .foregroundStyle(.green)
-                    }
                     Slider(value: $sleepHours, in: 3...12, step: 0.5)
                     Text(String(format: localizationManager.localized("wellness_sleep_hours"), sleepHours))
                         .font(.caption)
@@ -100,29 +86,6 @@ struct WellnessCheckinScreen: View {
             .padding()
         }
         .onAppear { loadDraft() }
-        .task { await tryAutoHealthSleep() }
-    }
-
-    private func tryAutoHealthSleep() async {
-        guard WellnessHealthSleepReader.isAvailable,
-              let r = await WellnessHealthSleepReader.requestSleepHours() else { return }
-        sleepHours = r.hours
-        healthSleepHint = String(
-            format: localizationManager.localized("wellness_sleep_imported"),
-            r.hours
-        )
-    }
-
-    private func importSleepFromHealth() async {
-        guard let r = await WellnessHealthSleepReader.requestSleepHours() else {
-            healthSleepHint = localizationManager.localized("wellness_sleep_import_failed")
-            return
-        }
-        sleepHours = r.hours
-        healthSleepHint = String(
-            format: localizationManager.localized("wellness_sleep_imported"),
-            r.hours
-        )
     }
 
     private var header: some View {

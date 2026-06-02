@@ -2,7 +2,7 @@
 
 > **Единственный рабочий чеклист** для реализации. Архитектура — [WELLNESS_PLATFORM_MASTER_PLAN.md](./WELLNESS_PLATFORM_MASTER_PLAN.md) **§4.3 Knowledge Pack**.  
 > **Handoff для другой ML:** [WELLNESS_ML_HANDOFF.md](./WELLNESS_ML_HANDOFF.md) · **Статус реализации:** [WELLNESS_IMPLEMENTATION_STATUS.md](./WELLNESS_IMPLEMENTATION_STATUS.md)  
-> **HealthKit (Apple Developer):** [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md)  
+> **HealthKit:** [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md) · **Откат B:** ✅ build 222 — [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md)  
 > **Обновлено:** 2026-06-01 · **Версия плана:** v2.5  
 > **Панель Cursor:** все `p0-*` … `p18-*` — статус дублируется в TodoWrite (не удалять).
 
@@ -189,13 +189,14 @@
 
 - [x] **po-clinical-signoff** — PO self-review p0-08: [WELLNESS_CLINICAL_REVIEW.md](./WELLNESS_CLINICAL_REVIEW.md) ☑ 2026-06-01; prod flags JUNG/REFLECTIVE/ORCHESTRATOR=1
 - [x] **po-verify-prod** — `./scripts/verify_wellness_prod.sh https://aladdin-ai.ru` после deploy → **14/14** (2026-06-01)
-- [ ] **po-healthkit** — HealthKit capability в Apple Developer Portal → [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md) (код ✅, Portal — PO)
+- [ ] **po-healthkit** — ⏸ **отложено** — Portal + profile (вариант A) → [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md)
+- [x] **po-healthkit-rollback-ci** — ✅ build **222** — откат HealthKit (вариант B) → [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md)
 
-**PO прогресс:** 2/3 · **134 tracking:** 133/134 (99%)
+**PO прогресс:** 2/3 ядро PO · **134 tracking:** 133/134 · +1 deferred rollback (не в 134)
 
 ---
 
-**Осталось:** 0 задач ядра · **1 PO:** HealthKit capability — см. [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md)
+**Осталось:** 0 задач ядра · **PO отложено:** HealthKit rollback CI (B) или Portal (A) — см. [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md)
 
 ### Приоритеты (P0 → P2 + PO)
 
@@ -210,7 +211,8 @@
 | **P2** | p3-13, p3-16, p3-18, p3-19 | Family playbook, widget, PDF |
 | **P2** | p3-15, p3-08, p3-09 | Senior voice, health journal, Rive/TTS |
 | **P2** | p3-14, p3-17, p3-07, p3-20 | Seasonal, sleep audio, values card, pack_version |
-| **PO** | po-healthkit | Apple Developer — WELLNESS_APPLE_HEALTHKIT_SETUP.md |
+| **PO** | po-healthkit | ⏸ Portal — вариант A — WELLNESS_APPLE_HEALTHKIT_SETUP.md |
+| **PO** | po-healthkit-rollback-ci | ✅ build 222 — WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md |
 | **PO** | po-verify-prod | `./scripts/verify_wellness_prod.sh` после каждого deploy |
 
 ### Срез «что сделали» (кратко)
@@ -230,7 +232,7 @@
 | 2026-06-01 21:36 UTC | **131/131** — redeploy + `errors_v1.json` fix → smoke **ALL PASSED**, prod **14/14** |
 | 2026-06-01 | `deploy_wellness_p1.sh` → VPS **OK** · pytest **110/110** · l10n **297 keys** |
 | PO | `./scripts/verify_wellness_prod.sh https://aladdin-ai.ru` — ✅ 14/14 (2026-06-01) |
-| PO | HealthKit — [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md) (Portal manual) |
+| PO | HealthKit — [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md) (A, отложено) · CI rollback — [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md) (B, запланировано) |
 
 ### Следующий срез
 

@@ -5,6 +5,8 @@ import HealthKit
 #endif
 
 /// p2-36 — read last night's sleep from Apple Health (optional; requires HealthKit entitlement).
+/// **Shipping (build 222+):** entitlement/UI disabled — see `docs/WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md`.
+/// Kept in repo for future variant A (Portal + profile with HealthKit).
 enum WellnessHealthSleepReader {
     struct Result {
         let hours: Double
