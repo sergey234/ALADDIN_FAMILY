@@ -1,0 +1,108 @@
+{
+  "version": "v1",
+  "errors": {
+    "wellness_disabled": {
+      "message_key": "wellness_error_disabled",
+      "http_status": 404,
+      "message": { "ru": "Поддержка выключена родителем", "en": "Support turned off by parent" }
+    },
+    "wellness_consent_required": {
+      "message_key": "wellness_error_consent_required",
+      "http_status": 403,
+      "message": { "ru": "Нужно принять правила", "en": "Please accept the terms first" }
+    },
+    "wellness_premium_blocked": {
+      "message_key": "wellness_error_premium_blocked",
+      "http_status": 403,
+      "message": { "ru": "Расширенная поддержка временно недоступна", "en": "Extended support is temporarily unavailable" }
+    },
+    "crisis_cooldown_48h": {
+      "message_key": "wellness_error_crisis_cooldown",
+      "http_status": 403,
+      "message": { "ru": "Сначала важна поддержка живого человека — попробуйте позже", "en": "A real person matters most right now — try again later" }
+    },
+    "wellness_premium_subscription_required": {
+      "message_key": "wellness_error_premium_subscription",
+      "http_status": 402,
+      "message": { "ru": "Нужна подписка для полного timeline и опросников", "en": "Subscription required for full timeline and screenings" }
+    },
+    "pillar_not_allowed_for_age": {
+      "message_key": "wellness_error_age_blocked",
+      "http_status": 403,
+      "message": { "ru": "Недоступно для твоего возраста", "en": "Not available for your age" }
+    },
+    "phq_lite_blocked_for_age": {
+      "message_key": "wellness_error_age_blocked",
+      "http_status": 403,
+      "message": { "ru": "Недоступно для твоего возраста", "en": "Not available for your age" }
+    },
+    "assessment_blocked_for_age": {
+      "message_key": "wellness_error_age_blocked",
+      "http_status": 403,
+      "message": { "ru": "Недоступно для твоего возраста", "en": "Not available for your age" }
+    },
+    "mbi_lite_blocked_for_age": {
+      "message_key": "wellness_error_age_blocked",
+      "http_status": 403,
+      "message": { "ru": "Недоступно для твоего возраста", "en": "Not available for your age" }
+    },
+    "dreams_blocked_for_age": {
+      "message_key": "wellness_error_age_blocked",
+      "http_status": 403,
+      "message": { "ru": "Дневник снов — с 13 лет", "en": "Dream journal — age 13+" }
+    },
+    "jung_disabled": {
+      "message_key": "wellness_error_jung_disabled",
+      "http_status": 403,
+      "message": { "ru": "«Понять себя» временно недоступно", "en": "Self-understanding mode is temporarily off" }
+    },
+    "reflective_disabled": {
+      "message_key": "wellness_error_reflective_disabled",
+      "http_status": 403,
+      "message": { "ru": "Режим размышления временно недоступен", "en": "Reflective mode is temporarily off" }
+    },
+    "teen_only": {
+      "message_key": "wellness_error_teen_only",
+      "http_status": 403,
+      "message": { "ru": "Только для подростков", "en": "Teen accounts only" }
+    },
+    "parent_only": {
+      "message_key": "wellness_error_parent_only",
+      "http_status": 403,
+      "message": { "ru": "Только для родительского аккаунта", "en": "Parent account only" }
+    },
+    "parent_toggle_only": {
+      "message_key": "wellness_error_parent_only",
+      "http_status": 403,
+      "message": { "ru": "Эту настройку меняет родитель", "en": "Only a parent can change this setting" }
+    },
+    "clinician_export_teen_plus": {
+      "message_key": "wellness_error_clinician_teen_plus",
+      "http_status": 403,
+      "message": { "ru": "Экспорт для подростков 13+", "en": "Export for teens 13+" }
+    },
+    "exercise_not_found": {
+      "message_key": "wellness_error_exercise_not_found",
+      "http_status": 404,
+      "message": { "ru": "Упражнение не найдено", "en": "Exercise not found" }
+    },
+    "if_then_too_short": {
+      "message_key": "wellness_error_if_then_short",
+      "http_status": 400,
+      "message": { "ru": "Опишите шаг чуть подробнее", "en": "Describe the step in a bit more detail" }
+    },
+    "wellness_canary_excluded": {
+      "message_key": "wellness_error_canary_excluded",
+      "http_status": 403,
+      "message": {
+        "ru": "Раздел скоро откроется для всех — пока в тестовой группе",
+        "en": "This section is rolling out — not in your test group yet"
+      }
+    },
+    "wellness_generic": {
+      "message_key": "wellness_error_generic",
+      "http_status": 500,
+      "message": { "ru": "Не получилось — попробуй ещё раз", "en": "Something went wrong — try again" }
+    }
+  }
+}

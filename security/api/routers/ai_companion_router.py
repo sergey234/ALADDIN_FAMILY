@@ -85,7 +85,11 @@ try:
     )
     from security.services.ai_platform.companion_intent_router import classify_companion_intent
     from security.services.ai_platform.companion_emotions import emotion_for_companion
-    from security.services.ai_platform.companion_ethics import evaluate_companion_ethics, ethics_hint_for_prompt
+    from security.services.ai_platform.companion_ethics import (
+        companion_crisis_response,
+        evaluate_companion_ethics,
+        ethics_hint_for_prompt,
+    )
     from security.services.ai_platform.companion_post_llm_moderation import moderate_companion_assistant_text
     from security.services.ai_platform.companion_persona import security_expert_mode_active
     from security.services.ai_platform.companion_life_domains import list_life_domains
@@ -108,7 +112,17 @@ try:
         generate_companion_video,
     )
     from security.services.ai_platform.config import ChatMode
-    from security.services.ai_platform.feature_flags import COMPANION_USE_ORCHESTRATOR
+    from security.services.ai_platform.feature_flags import (
+        COMPANION_USE_ORCHESTRATOR,
+        FEATURE_WELLNESS_ENABLED,
+        FEATURE_WELLNESS_JUNG,
+        FEATURE_WELLNESS_ORCHESTRATOR,
+        FEATURE_WELLNESS_REFLECTIVE,
+    )
+    from security.services.ai_platform.wellness_orchestrator import (
+        apply_response_guard,
+        prepare_wellness_chat_turn,
+    )
     from security.services.ai_platform.orchestrator import OrchestratorRequest, run_orchestrator
     from security.services.ai_platform.usage_meters import (
         check_message_allowed,
@@ -465,6 +479,38 @@ def _feedback_trust_delta(vote: str) -> int:
     return 1 if vote == "up" else -1
 
 
+def _wellness_chat_actions(
+    level: str,
+    locale: str,
+    escalation_actions: Optional[List[str]] = None,
+) -> List[SuggestedAction]:
+    try:
+        from security.services.ai_platform.wellness_i18n_loader import (
+            wellness_suggested_actions_for_escalation,
+        )
+
+        rows = wellness_suggested_actions_for_escalation(
+            level, locale, escalation_actions=escalation_actions
+        )
+        return [SuggestedAction(id=r["id"], title=r["title"]) for r in rows]
+    except Exception:
+        return []
+
+
+def _merge_suggested_actions(
+    *groups: Optional[List[SuggestedAction]],
+) -> List[SuggestedAction]:
+    seen: set[str] = set()
+    out: List[SuggestedAction] = []
+    for group in groups:
+        for action in group or []:
+            if action.id in seen:
+                continue
+            seen.add(action.id)
+            out.append(action)
+    return out
+
+
 def _parse_chat_mode(raw: Optional[str]) -> "ChatMode":
     try:
         from security.services.ai_platform.config import ChatMode as CM
@@ -657,6 +703,11 @@ class CompanionChatRequest(BaseModel):
     chat_mode: str = Field("fast", pattern="^(fast|reasoning|think)$")
     workspace_id: Optional[str] = Field(None, max_length=64)
     attachments: List[CompanionAttachmentDTO] = Field(default_factory=list)
+    wellness_pillar: Optional[str] = Field(
+        None,
+        description="Wellness primary_pillar: cognitive|behavioral|humanistic|jung",
+        max_length=32,
+    )
 
 
 class CompanionStreamRequest(BaseModel):
@@ -673,6 +724,11 @@ class CompanionStreamRequest(BaseModel):
     chat_mode: str = Field("fast", pattern="^(fast|reasoning|think)$")
     workspace_id: Optional[str] = Field(None, max_length=64)
     attachments: List[CompanionAttachmentDTO] = Field(default_factory=list)
+    wellness_pillar: Optional[str] = Field(
+        None,
+        description="Wellness primary_pillar: cognitive|behavioral|humanistic|jung",
+        max_length=32,
+    )
 
 
 class CompanionChatResponse(BaseModel):
@@ -1297,6 +1353,25 @@ async def companion_chat(
     ethics = evaluate_companion_ethics(safe_message)
 
     store = get_companion_store()
+    try:
+        from security.services.ai_platform.feature_flags import FEATURE_WELLNESS_ENABLED
+        if FEATURE_WELLNESS_ENABLED and cintent.mood in (
+            "sad",
+            "anxious",
+            "tired",
+            "lonely",
+            "comfort_needed",
+        ):
+            from security.services.ai_platform.wellness_journal import record_mood_from_chat
+
+            record_mood_from_chat(
+                store,
+                user_id=user_id,
+                mood=cintent.mood,
+                age_band=ctx["age_band"],
+            )
+    except Exception:
+        pass
     trust_visit = apply_trust_visit(store, user_id, body.character_id)
     old_score = int(trust_visit["score"])
     delta = _trust_delta(
@@ -1324,12 +1399,23 @@ async def companion_chat(
     family_hint = build_family_context_hint(scope_key, ctx, store=store)
 
     if ethics.crisis:
+        try:
+            from security.services.ai_platform.feature_flags import FEATURE_WELLNESS_ENABLED
+            if FEATURE_WELLNESS_ENABLED:
+                from security.services.ai_platform.wellness_crisis_monitor import (
+                    record_crisis_l3,
+                )
+
+                record_crisis_l3(store, user_id, source="companion_ethics_l3")
+        except Exception:
+            pass
         record_message(user_id)
         thread_id = resolve_thread_for_workspace(
             store, user_id, body.workspace_id, body.session_id
         )
         store.append_thread_message(user_id, thread_id, "user", safe_message, body.character_id)
-        crisis_text = ethics.response_prefix
+        crisis_loc = (body.response_language or "ru")[:2]
+        crisis_text = companion_crisis_response(crisis_loc)
         store.append_thread_message(user_id, thread_id, "assistant", crisis_text, body.character_id)
         return CompanionChatResponse(
             response=crisis_text,
@@ -1347,6 +1433,7 @@ async def companion_chat(
             security_expert_mode=security_expert_mode_active(profile),
             grounded=True,
             nsfw_blocked=True,
+            suggested_actions=_wellness_chat_actions("L3", crisis_loc),
         )
 
     if blocked:
@@ -1382,8 +1469,80 @@ async def companion_chat(
         f"{ethics_hint_for_prompt(ethics)}{playbook_hint}]\n"
     )
     long_hint = build_long_context_hint(store, user_id, thread_id)
+
+    wellness_prefix = ""
+    active_wellness_pillar: Optional[str] = None
+    wellness_agents_active: List[str] = []
+    wellness_loop_phase: Optional[str] = None
+    wellness_prep: Optional[Any] = None
+    try:
+        if FEATURE_WELLNESS_ENABLED:
+            from security.services.ai_platform.wellness_age_policy import has_wellness_consent
+
+            consent_row = store.get_consent(user_id)
+            if has_wellness_consent(consent_row, age_band=ctx["age_band"]):
+                use_wellness_loop = FEATURE_WELLNESS_ORCHESTRATOR
+                loc = (body.response_language or "ru")[:2]
+                prep = prepare_wellness_chat_turn(
+                    store,
+                    user_id,
+                    message=safe_message,
+                    age_band=ctx["age_band"],
+                    locale=loc,
+                    requested_pillar=body.wellness_pillar,
+                    character_id=body.character_id,
+                    jung_enabled=FEATURE_WELLNESS_JUNG,
+                    reflective_enabled=FEATURE_WELLNESS_REFLECTIVE,
+                    use_full_loop=use_wellness_loop,
+                )
+                wellness_prep = prep
+                if not prep.ok:
+                    raise HTTPException(status_code=409, detail=prep.reason)
+                wellness_loop_phase = prep.loop_phase
+                wellness_agents_active = list(prep.agents_active or [])
+                if prep.loop_phase == "crisis_l3" or (
+                    prep.escalation and prep.escalation.level == "L3"
+                ):
+                    crisis_text = companion_crisis_response(loc)
+                    store.append_thread_message(
+                        user_id, thread_id, "assistant", crisis_text, body.character_id
+                    )
+                    crisis_tools = [f"wellness_agent:{a}" for a in wellness_agents_active]
+                    return CompanionChatResponse(
+                        response=crisis_text,
+                        character_id=body.character_id,
+                        emotion="comfort",
+                        animation_hint="idle",
+                        trust_delta=delta,
+                        trust_score=new_score,
+                        trust_level=level,
+                        confidence=1.0,
+                        intent="wellness_crisis_l3",
+                        companion_domain="feelings",
+                        companion_mood="comfort_needed",
+                        mood_confidence=1.0,
+                        security_expert_mode=security_expert_mode_active(profile),
+                        grounded=True,
+                        nsfw_blocked=True,
+                        tools_used=crisis_tools,
+                        suggested_actions=_wellness_chat_actions(
+                            "L3",
+                            loc,
+                            prep.escalation.actions if prep.escalation else None,
+                        ),
+                    )
+                wellness_prefix = prep.wellness_prefix
+                active_wellness_pillar = prep.active_pillar
+    except NameError:
+        wellness_prefix = ""
+        active_wellness_pillar = None
+        wellness_agents_active = []
+        wellness_loop_phase = None
+        wellness_prep = None
+
     prefixed = (
         _build_companion_system_prefix(body.character_id, profile, ctx["age_band"])
+        + wellness_prefix
         + family_hint
         + long_hint
         + web_hint
@@ -1412,6 +1571,16 @@ async def companion_chat(
         age_verified=ctx["age_verified"],
         jwt_policy=ctx.get("content_policy"),
     )
+    if active_wellness_pillar:
+        try:
+            og = apply_response_guard(
+                safe_response,
+                primary_pillar=active_wellness_pillar,
+                locale=(body.response_language or "ru")[:2],
+            )
+            safe_response = og.text
+        except NameError:
+            pass
     if post_mod_blocked:
         emotion = "alert"
         hint = "shake_head"
@@ -1441,6 +1610,9 @@ async def companion_chat(
     store.set_profile(scope_key, profile)
 
     merged_sources = list(assistant_resp.sources or []) + list(web_sources)
+    wellness_tool_tags = [f"wellness_agent:{a}" for a in wellness_agents_active]
+    if wellness_loop_phase and wellness_loop_phase not in ("legacy", "idle"):
+        wellness_tool_tags.append(f"wellness_loop:{wellness_loop_phase}")
     merged_tools = list(
         dict.fromkeys(
             (assistant_resp.tools_used or [])
@@ -1449,6 +1621,7 @@ async def companion_chat(
                 attachments=bool(att_accepted),
                 orchestrator=use_orch,
             )
+            + wellness_tool_tags
         )
     )
     record_turn_cogs(
@@ -1459,6 +1632,20 @@ async def companion_chat(
         chat_mode=body.chat_mode,
     )
     cogs_dash = build_cogs_dashboard(store, user_id)
+
+    chat_loc = (body.response_language or "ru")[:2]
+    wellness_actions: List[SuggestedAction] = []
+    if wellness_prep and wellness_prep.escalation and wellness_prep.escalation.level in (
+        "L2",
+        "L3",
+    ):
+        wellness_actions = _wellness_chat_actions(
+            wellness_prep.escalation.level,
+            chat_loc,
+            wellness_prep.escalation.actions,
+        )
+    elif ethics.level == "L2":
+        wellness_actions = _wellness_chat_actions("L2", chat_loc, ["social_bridge"])
 
     return CompanionChatResponse(
         response=safe_response,
@@ -1477,7 +1664,10 @@ async def companion_chat(
         grounded=assistant_resp.grounded,
         sources=merged_sources,
         tools_used=merged_tools,
-        suggested_actions=assistant_resp.suggested_actions or [],
+        suggested_actions=_merge_suggested_actions(
+            assistant_resp.suggested_actions,
+            wellness_actions,
+        ),
         cosmetic_unlocked=cosmetic_unlock,
         nsfw_blocked=True,
         follow_up_questions=assistant_resp.follow_up_questions or [],
@@ -1531,6 +1721,7 @@ async def companion_stream(
             chat_mode=body.chat_mode,
             workspace_id=body.workspace_id,
             attachments=body.attachments,
+            wellness_pillar=body.wellness_pillar,
         )
         resp = await companion_chat(chat_body, http_request, user)
         tokens = resp.response.split() if resp.response else []

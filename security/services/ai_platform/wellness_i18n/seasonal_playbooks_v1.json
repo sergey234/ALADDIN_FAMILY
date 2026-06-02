@@ -1,0 +1,45 @@
+{
+  "version": "v1",
+  "playbooks": {
+    "school_start": {
+      "title_key": "wellness_seasonal_school_title",
+      "title": { "ru": "Новый учебный год", "en": "New school year" },
+      "tips": [
+        {
+          "id": "routine",
+          "text": {
+            "ru": "Мягкий режим сна за неделю до школы",
+            "en": "Ease sleep schedule a week before school"
+          }
+        },
+        {
+          "id": "talk",
+          "text": {
+            "ru": "Спросите: «Чего ждёшь / чего боишься?»",
+            "en": "Ask: «What are you looking forward to or worried about?»"
+          }
+        }
+      ]
+    },
+    "exams": {
+      "title_key": "wellness_seasonal_exams_title",
+      "title": { "ru": "Экзамены", "en": "Exams" },
+      "tips": [
+        {
+          "id": "breaks",
+          "text": {
+            "ru": "Короткие перерывы каждые 45 минут",
+            "en": "Short breaks every 45 minutes"
+          }
+        },
+        {
+          "id": "breath",
+          "text": {
+            "ru": "3 минуты спокойного дыхания перед экзаменом",
+            "en": "3 minutes calm breathing before the exam"
+          }
+        }
+      ]
+    }
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "assessment_type": "gad7",
+  "version": "v1",
+  "max_score": 21,
+  "disclaimer": {
+    "ru": "Это скрининг GAD-7, не диагноз. При сильной тревоге — специалист или взрослый.",
+    "en": "This GAD-7 screening is not a diagnosis. If anxiety is overwhelming, talk to a professional or trusted adult."
+  },
+  "question_count": 7
+}

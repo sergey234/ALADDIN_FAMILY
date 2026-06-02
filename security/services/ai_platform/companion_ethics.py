@@ -35,11 +35,30 @@ _L1_LONELY = re.compile(
     re.I,
 )
 
-_CRISIS_RESPONSE = (
+_CRISIS_RESPONSE_RU = (
     "Мне очень жаль, что тебе так тяжело. Ты не один — рядом есть люди, которые могут помочь. "
     "Пожалуйста, расскажи взрослому, которому доверяешь, или позвони на экстренную линию 112. "
     "Я — цифровой друг в ALADDIN, но важные вещи лучше обсудить с живым человеком."
 )
+_CRISIS_RESPONSE_EN = (
+    "I'm really sorry you're going through this. You're not alone — people can help. "
+    "Please tell a trusted adult, or call emergency services (112 in Russia). "
+    "I'm a digital friend in ALADDIN; important things are best discussed with a real person."
+)
+
+
+def companion_crisis_response(locale: str = "ru") -> str:
+    """Fixed L3 crisis reply (ethics + wellness orchestrator)."""
+    try:
+        from .wellness_i18n_loader import wellness_crisis_message
+
+        msg = wellness_crisis_message(locale)
+        if msg:
+            return msg
+    except Exception:
+        pass
+    loc = (locale or "ru").lower()[:2]
+    return _CRISIS_RESPONSE_EN if loc == "en" else _CRISIS_RESPONSE_RU
 
 
 def evaluate_companion_ethics(message: str) -> CompanionEthicsResult:
@@ -49,7 +68,7 @@ def evaluate_companion_ethics(message: str) -> CompanionEthicsResult:
             level=ETHICS_L3,
             crisis=True,
             social_bridge_hint=False,
-            response_prefix=_CRISIS_RESPONSE,
+            response_prefix=companion_crisis_response("ru"),  # locale applied in router
         )
     if _L2_PATTERNS.search(msg):
         return CompanionEthicsResult(

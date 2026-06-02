@@ -128,8 +128,141 @@ class CompanionStore:
                     turns INTEGER NOT NULL DEFAULT 0,
                     PRIMARY KEY (user_id, day)
                 );
+                CREATE TABLE IF NOT EXISTS wellness_checkins (
+                    user_id TEXT NOT NULL,
+                    day TEXT NOT NULL,
+                    mood_emoji TEXT,
+                    mood_score INTEGER,
+                    sleep_hours REAL,
+                    stress_level INTEGER,
+                    energy_level INTEGER,
+                    notes TEXT,
+                    source TEXT NOT NULL DEFAULT 'app',
+                    age_band TEXT,
+                    created_at TEXT NOT NULL,
+                    PRIMARY KEY (user_id, day)
+                );
+                CREATE TABLE IF NOT EXISTS wellness_assessments (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    assessment_type TEXT NOT NULL,
+                    answers_json TEXT NOT NULL,
+                    score INTEGER NOT NULL,
+                    severity TEXT NOT NULL,
+                    suggest_professional INTEGER NOT NULL DEFAULT 0,
+                    disclaimer_version TEXT NOT NULL DEFAULT 'v1',
+                    created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS wellness_exercises (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    pillar TEXT NOT NULL,
+                    exercise_type TEXT NOT NULL,
+                    state_json TEXT NOT NULL DEFAULT '{}',
+                    step_index INTEGER NOT NULL DEFAULT 0,
+                    completed INTEGER NOT NULL DEFAULT 0,
+                    thread_id TEXT,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS wellness_settings (
+                    user_id TEXT PRIMARY KEY,
+                    primary_pillar TEXT,
+                    exercise_id TEXT,
+                    exercise_step INTEGER NOT NULL DEFAULT 0,
+                    exercise_step_total INTEGER NOT NULL DEFAULT 0,
+                    escalation_level TEXT NOT NULL DEFAULT 'L0',
+                    parent_share_aggregate INTEGER NOT NULL DEFAULT 0,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS wellness_outcomes (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    pillar TEXT NOT NULL,
+                    helpful INTEGER NOT NULL,
+                    note TEXT,
+                    created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS wellness_dreams (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    dream_text TEXT NOT NULL,
+                    mood_tag TEXT,
+                    created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS wellness_alert_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    alert_type TEXT NOT NULL,
+                    severity TEXT NOT NULL,
+                    action_taken TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS wellness_habit_plans (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    if_then TEXT NOT NULL,
+                    streak INTEGER NOT NULL DEFAULT 0,
+                    active INTEGER NOT NULL DEFAULT 1,
+                    created_at TEXT NOT NULL,
+                    updated_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS wellness_insights (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    pillar TEXT NOT NULL,
+                    observe_text TEXT NOT NULL,
+                    next_step_text TEXT,
+                    source TEXT NOT NULL DEFAULT 'exercise',
+                    created_at TEXT NOT NULL
+                );
+                CREATE TABLE IF NOT EXISTS wellness_crisis_log (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id TEXT NOT NULL,
+                    level TEXT NOT NULL,
+                    source TEXT NOT NULL,
+                    created_at TEXT NOT NULL
+                );
                 """
             )
+            try:
+                conn.execute(
+                    "ALTER TABLE wellness_settings ADD COLUMN daily_reminder_hour INTEGER DEFAULT 19"
+                )
+            except sqlite3.OperationalError:
+                pass
+            try:
+                conn.execute(
+                    "ALTER TABLE wellness_settings ADD COLUMN daily_reminder_enabled INTEGER DEFAULT 0"
+                )
+            except sqlite3.OperationalError:
+                pass
+            try:
+                conn.execute(
+                    "ALTER TABLE wellness_settings ADD COLUMN last_idle_nudge_day TEXT"
+                )
+            except sqlite3.OperationalError:
+                pass
+            for col, ddl in (
+                ("session_pillar_locked", "TEXT"),
+                ("session_started_at", "TEXT"),
+                ("last_session_completed_at", "TEXT"),
+                ("last_outcome_prompt_day", "TEXT"),
+                ("fatigue_streak_pillar", "TEXT"),
+                ("fatigue_streak_count", "INTEGER DEFAULT 0"),
+                ("alliance_score", "INTEGER DEFAULT 50"),
+                ("hero_emotion", "TEXT"),
+                ("last_trauma_referral_day", "TEXT"),
+                ("last_weekly_meaning_day", "TEXT"),
+                ("session_pack_folder", "TEXT"),
+                ("session_pack_version", "TEXT"),
+            ):
+                try:
+                    conn.execute(
+                        f"ALTER TABLE wellness_settings ADD COLUMN {col} {ddl}"
+                    )
+                except sqlite3.OperationalError:
+                    pass
 
     def get_trust(self, user_id: str, character_id: str) -> int:
         with self._lock, self._conn() as conn:
@@ -632,6 +765,798 @@ class CompanionStore:
             "turns_today": int(daily["turns"]) if daily else 0,
             "month_usd": month_usd,
         }
+
+    def get_wellness_settings(self, user_id: str) -> Dict[str, Any]:
+        with self._lock, self._conn() as conn:
+            row = conn.execute(
+                "SELECT * FROM wellness_settings WHERE user_id=?",
+                (user_id,),
+            ).fetchone()
+            if not row:
+                return {
+                    "primary_pillar": None,
+                    "exercise_id": None,
+                    "exercise_step": 0,
+                    "exercise_step_total": 0,
+                    "escalation_level": "L0",
+                    "parent_share_aggregate": 0,
+                    "daily_reminder_hour": 19,
+                    "daily_reminder_enabled": 0,
+                }
+            data = dict(row)
+            if data.get("daily_reminder_hour") is None:
+                data["daily_reminder_hour"] = 19
+            return data
+
+    def upsert_wellness_settings(
+        self,
+        user_id: str,
+        *,
+        primary_pillar: Optional[str] = None,
+        exercise_id: Optional[str] = None,
+        exercise_step: Optional[int] = None,
+        exercise_step_total: Optional[int] = None,
+        escalation_level: Optional[str] = None,
+        parent_share_aggregate: Optional[int] = None,
+        last_idle_nudge_day: Optional[str] = None,
+        session_pillar_locked: Optional[str] = None,
+        session_started_at: Optional[str] = None,
+        last_session_completed_at: Optional[str] = None,
+        last_outcome_prompt_day: Optional[str] = None,
+        fatigue_streak_pillar: Optional[str] = None,
+        fatigue_streak_count: Optional[int] = None,
+        last_weekly_meaning_day: Optional[str] = None,
+        clear_session_lock: bool = False,
+    ) -> Dict[str, Any]:
+        current = self.get_wellness_settings(user_id)
+        if primary_pillar is not None:
+            current["primary_pillar"] = primary_pillar
+        if exercise_id is not None:
+            current["exercise_id"] = exercise_id
+        if exercise_step is not None:
+            current["exercise_step"] = int(exercise_step)
+        if exercise_step_total is not None:
+            current["exercise_step_total"] = int(exercise_step_total)
+        if escalation_level is not None:
+            current["escalation_level"] = escalation_level
+        if parent_share_aggregate is not None:
+            current["parent_share_aggregate"] = int(parent_share_aggregate)
+        if last_idle_nudge_day is not None:
+            current["last_idle_nudge_day"] = last_idle_nudge_day
+        if session_pillar_locked is not None:
+            current["session_pillar_locked"] = session_pillar_locked
+        if session_started_at is not None:
+            current["session_started_at"] = session_started_at
+        if last_session_completed_at is not None:
+            current["last_session_completed_at"] = last_session_completed_at
+        if last_outcome_prompt_day is not None:
+            current["last_outcome_prompt_day"] = last_outcome_prompt_day
+        if fatigue_streak_pillar is not None:
+            current["fatigue_streak_pillar"] = fatigue_streak_pillar
+        if fatigue_streak_count is not None:
+            current["fatigue_streak_count"] = int(fatigue_streak_count)
+        if last_weekly_meaning_day is not None:
+            current["last_weekly_meaning_day"] = last_weekly_meaning_day
+        if clear_session_lock:
+            current["session_pillar_locked"] = None
+            current["session_started_at"] = None
+        now = datetime.utcnow().isoformat()
+        with self._lock, self._conn() as conn:
+            exists = conn.execute(
+                "SELECT 1 FROM wellness_settings WHERE user_id=?",
+                (user_id,),
+            ).fetchone()
+            if parent_share_aggregate is None and not exists:
+                # p1-23: new wellness_settings row — parent aggregate OFF by default
+                current["parent_share_aggregate"] = 0
+            conn.execute(
+                """
+                INSERT INTO wellness_settings(
+                    user_id, primary_pillar, exercise_id, exercise_step,
+                    exercise_step_total, escalation_level, parent_share_aggregate,
+                    daily_reminder_hour, daily_reminder_enabled, last_idle_nudge_day,
+                    session_pillar_locked, session_started_at, last_session_completed_at,
+                    last_outcome_prompt_day, fatigue_streak_pillar, fatigue_streak_count,
+                    updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(user_id) DO UPDATE SET
+                    primary_pillar=excluded.primary_pillar,
+                    exercise_id=excluded.exercise_id,
+                    exercise_step=excluded.exercise_step,
+                    exercise_step_total=excluded.exercise_step_total,
+                    escalation_level=excluded.escalation_level,
+                    parent_share_aggregate=excluded.parent_share_aggregate,
+                    daily_reminder_hour=excluded.daily_reminder_hour,
+                    daily_reminder_enabled=excluded.daily_reminder_enabled,
+                    last_idle_nudge_day=excluded.last_idle_nudge_day,
+                    session_pillar_locked=excluded.session_pillar_locked,
+                    session_started_at=excluded.session_started_at,
+                    last_session_completed_at=excluded.last_session_completed_at,
+                    last_outcome_prompt_day=excluded.last_outcome_prompt_day,
+                    fatigue_streak_pillar=excluded.fatigue_streak_pillar,
+                    fatigue_streak_count=excluded.fatigue_streak_count,
+                    updated_at=excluded.updated_at
+                """,
+                (
+                    user_id,
+                    current.get("primary_pillar"),
+                    current.get("exercise_id"),
+                    int(current.get("exercise_step") or 0),
+                    int(current.get("exercise_step_total") or 0),
+                    str(current.get("escalation_level") or "L0"),
+                    int(current.get("parent_share_aggregate") or 0),
+                    int(current.get("daily_reminder_hour") or 19),
+                    int(current.get("daily_reminder_enabled") or 0),
+                    current.get("last_idle_nudge_day"),
+                    current.get("session_pillar_locked"),
+                    current.get("session_started_at"),
+                    current.get("last_session_completed_at"),
+                    current.get("last_outcome_prompt_day"),
+                    current.get("fatigue_streak_pillar"),
+                    int(current.get("fatigue_streak_count") or 0),
+                    now,
+                ),
+            )
+        result = self.get_wellness_settings(user_id)
+        if result:
+            try:
+                from security.services.ai_platform.wellness_store_dual import (
+                    mirror_settings_to_postgres,
+                )
+
+                mirror_settings_to_postgres(result)
+            except Exception:
+                pass
+        return result
+
+    def update_wellness_misc(
+        self,
+        user_id: str,
+        **fields: Any,
+    ) -> Dict[str, Any]:
+        """Patch optional wellness_settings columns (weekly meaning, etc.)."""
+        if not fields:
+            return self.get_wellness_settings(user_id)
+        allowed = {
+            "last_weekly_meaning_day",
+            "last_trauma_referral_day",
+            "session_pack_folder",
+            "session_pack_version",
+        }
+        sets = []
+        vals: List[Any] = []
+        for key, val in fields.items():
+            if key in allowed:
+                sets.append(f"{key}=?")
+                vals.append(val)
+        if not sets:
+            return self.get_wellness_settings(user_id)
+        now = datetime.utcnow().isoformat()
+        sets.append("updated_at=?")
+        vals.append(now)
+        vals.append(user_id)
+        with self._lock, self._conn() as conn:
+            exists = conn.execute(
+                "SELECT 1 FROM wellness_settings WHERE user_id=?",
+                (user_id,),
+            ).fetchone()
+            if not exists:
+                conn.execute(
+                    """
+                    INSERT INTO wellness_settings(
+                        user_id, escalation_level, parent_share_aggregate, updated_at
+                    ) VALUES (?, 'L0', 0, ?)
+                    """,
+                    (user_id, now),
+                )
+            conn.execute(
+                f"UPDATE wellness_settings SET {', '.join(sets)} WHERE user_id=?",
+                vals,
+            )
+        return self.get_wellness_settings(user_id)
+
+    def update_wellness_alliance(
+        self,
+        user_id: str,
+        *,
+        alliance_score: int,
+        hero_emotion: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        score = max(0, min(100, int(alliance_score)))
+        emotion = hero_emotion or "warm"
+        now = datetime.utcnow().isoformat()
+        with self._lock, self._conn() as conn:
+            exists = conn.execute(
+                "SELECT 1 FROM wellness_settings WHERE user_id=?",
+                (user_id,),
+            ).fetchone()
+            if not exists:
+                conn.execute(
+                    """
+                    INSERT INTO wellness_settings(
+                        user_id, escalation_level, parent_share_aggregate,
+                        alliance_score, hero_emotion, updated_at
+                    ) VALUES (?, 'L0', 0, ?, ?, ?)
+                    """,
+                    (user_id, score, emotion, now),
+                )
+            else:
+                conn.execute(
+                    """
+                    UPDATE wellness_settings
+                    SET alliance_score=?, hero_emotion=?, updated_at=?
+                    WHERE user_id=?
+                    """,
+                    (score, emotion, now, user_id),
+                )
+        return self.get_wellness_settings(user_id)
+
+    def upsert_wellness_checkin(
+        self,
+        user_id: str,
+        *,
+        day: str,
+        mood_emoji: Optional[str] = None,
+        mood_score: Optional[int] = None,
+        sleep_hours: Optional[float] = None,
+        stress_level: Optional[int] = None,
+        energy_level: Optional[int] = None,
+        notes: Optional[str] = None,
+        source: str = "app",
+        age_band: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        now = datetime.utcnow().isoformat()
+        with self._lock, self._conn() as conn:
+            conn.execute(
+                """
+                INSERT INTO wellness_checkins(
+                    user_id, day, mood_emoji, mood_score, sleep_hours, stress_level,
+                    energy_level, notes, source, age_band, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                ON CONFLICT(user_id, day) DO UPDATE SET
+                    mood_emoji=excluded.mood_emoji,
+                    mood_score=excluded.mood_score,
+                    sleep_hours=excluded.sleep_hours,
+                    stress_level=excluded.stress_level,
+                    energy_level=excluded.energy_level,
+                    notes=excluded.notes,
+                    source=excluded.source,
+                    age_band=excluded.age_band,
+                    created_at=excluded.created_at
+                """,
+                (
+                    user_id,
+                    day,
+                    mood_emoji,
+                    mood_score,
+                    sleep_hours,
+                    stress_level,
+                    energy_level,
+                    notes,
+                    source,
+                    age_band,
+                    now,
+                ),
+            )
+            row = conn.execute(
+                "SELECT * FROM wellness_checkins WHERE user_id=? AND day=?",
+                (user_id, day),
+            ).fetchone()
+        out = dict(row) if row else {}
+        if out:
+            try:
+                from security.services.ai_platform.wellness_store_dual import (
+                    mirror_checkin_to_postgres,
+                )
+
+                mirror_checkin_to_postgres(out)
+            except Exception:
+                pass
+        return out
+
+    def get_wellness_checkin(self, user_id: str, day: str) -> Optional[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            row = conn.execute(
+                "SELECT * FROM wellness_checkins WHERE user_id=? AND day=?",
+                (user_id, day),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def list_wellness_checkins(self, user_id: str, *, days: int = 7) -> List[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM wellness_checkins
+                WHERE user_id=?
+                ORDER BY day DESC
+                LIMIT ?
+                """,
+                (user_id, max(1, int(days))),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def save_wellness_assessment(
+        self,
+        user_id: str,
+        *,
+        assessment_type: str,
+        answers: List[int],
+        score: int,
+        severity: str,
+        suggest_professional: bool,
+        disclaimer_version: str = "v1",
+    ) -> Dict[str, Any]:
+        now = datetime.utcnow().isoformat()
+        with self._lock, self._conn() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO wellness_assessments(
+                    user_id, assessment_type, answers_json, score, severity,
+                    suggest_professional, disclaimer_version, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    user_id,
+                    assessment_type,
+                    json.dumps(answers),
+                    int(score),
+                    severity,
+                    1 if suggest_professional else 0,
+                    disclaimer_version,
+                    now,
+                ),
+            )
+            row = conn.execute(
+                "SELECT * FROM wellness_assessments WHERE id=?",
+                (cur.lastrowid,),
+            ).fetchone()
+        return dict(row) if row else {}
+
+    def list_wellness_assessments(
+        self, user_id: str, *, limit: int = 20
+    ) -> List[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM wellness_assessments
+                WHERE user_id=?
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (user_id, max(1, int(limit))),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def create_wellness_exercise(
+        self,
+        user_id: str,
+        *,
+        pillar: str,
+        exercise_type: str,
+        step_index: int,
+        step_total: int,
+        state_json: str,
+        created_at: str,
+        thread_id: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        now = created_at
+        with self._lock, self._conn() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO wellness_exercises(
+                    user_id, pillar, exercise_type, state_json, step_index,
+                    completed, thread_id, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, 0, ?, ?, ?)
+                """,
+                (
+                    user_id,
+                    pillar,
+                    exercise_type,
+                    state_json,
+                    int(step_index),
+                    thread_id,
+                    now,
+                    now,
+                ),
+            )
+            row = conn.execute(
+                "SELECT * FROM wellness_exercises WHERE id=?",
+                (cur.lastrowid,),
+            ).fetchone()
+        return dict(row) if row else {}
+
+    def get_wellness_exercise(
+        self, user_id: str, exercise_id: int
+    ) -> Optional[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM wellness_exercises
+                WHERE id=? AND user_id=?
+                """,
+                (int(exercise_id), user_id),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def get_active_wellness_exercise(self, user_id: str) -> Optional[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM wellness_exercises
+                WHERE user_id=? AND completed=0
+                ORDER BY id DESC LIMIT 1
+                """,
+                (user_id,),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def update_wellness_exercise(
+        self,
+        user_id: str,
+        exercise_id: int,
+        *,
+        step_index: int,
+        state_json: str,
+    ) -> Dict[str, Any]:
+        now = datetime.utcnow().isoformat()
+        with self._lock, self._conn() as conn:
+            conn.execute(
+                """
+                UPDATE wellness_exercises
+                SET step_index=?, state_json=?, updated_at=?
+                WHERE id=? AND user_id=?
+                """,
+                (int(step_index), state_json, now, int(exercise_id), user_id),
+            )
+            row = conn.execute(
+                "SELECT * FROM wellness_exercises WHERE id=? AND user_id=?",
+                (int(exercise_id), user_id),
+            ).fetchone()
+        return dict(row) if row else {}
+
+    def complete_wellness_exercise(
+        self,
+        user_id: str,
+        exercise_id: int,
+        *,
+        state_json: str,
+    ) -> Dict[str, Any]:
+        now = datetime.utcnow().isoformat()
+        with self._lock, self._conn() as conn:
+            conn.execute(
+                """
+                UPDATE wellness_exercises
+                SET completed=1, state_json=?, updated_at=?
+                WHERE id=? AND user_id=?
+                """,
+                (state_json, now, int(exercise_id), user_id),
+            )
+            row = conn.execute(
+                "SELECT * FROM wellness_exercises WHERE id=? AND user_id=?",
+                (int(exercise_id), user_id),
+            ).fetchone()
+        return dict(row) if row else {}
+
+    def list_wellness_exercises(
+        self, user_id: str, *, limit: int = 20
+    ) -> List[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            rows = conn.execute(
+                """
+                SELECT id, pillar, exercise_type, step_index, completed, created_at, updated_at
+                FROM wellness_exercises
+                WHERE user_id=?
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (user_id, max(1, int(limit))),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def save_wellness_outcome(
+        self,
+        user_id: str,
+        *,
+        pillar: str,
+        helpful: int,
+        note: Optional[str],
+        created_at: str,
+    ) -> Dict[str, Any]:
+        with self._lock, self._conn() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO wellness_outcomes(user_id, pillar, helpful, note, created_at)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (user_id, pillar, int(helpful), note, created_at),
+            )
+            row = conn.execute(
+                "SELECT * FROM wellness_outcomes WHERE id=?",
+                (cur.lastrowid,),
+            ).fetchone()
+        return dict(row) if row else {}
+
+    def save_wellness_insight(
+        self,
+        user_id: str,
+        *,
+        pillar: str,
+        observe_text: str,
+        next_step_text: Optional[str] = None,
+        source: str = "exercise",
+        created_at: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        now = created_at or datetime.utcnow().isoformat()
+        with self._lock, self._conn() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO wellness_insights(
+                    user_id, pillar, observe_text, next_step_text, source, created_at
+                ) VALUES (?, ?, ?, ?, ?, ?)
+                """,
+                (
+                    user_id,
+                    pillar,
+                    observe_text[:500],
+                    (next_step_text or "")[:500] or None,
+                    source,
+                    now,
+                ),
+            )
+            row = conn.execute(
+                "SELECT * FROM wellness_insights WHERE id=?",
+                (cur.lastrowid,),
+            ).fetchone()
+        return dict(row) if row else {}
+
+    def save_wellness_habit_plan(
+        self,
+        user_id: str,
+        *,
+        if_then: str,
+        created_at: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        now = created_at or datetime.utcnow().isoformat()
+        with self._lock, self._conn() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO wellness_habit_plans(
+                    user_id, if_then, streak, active, created_at, updated_at
+                ) VALUES (?, ?, 0, 1, ?, ?)
+                """,
+                (user_id, if_then[:500], now, now),
+            )
+            row = conn.execute(
+                "SELECT * FROM wellness_habit_plans WHERE id=?",
+                (cur.lastrowid,),
+            ).fetchone()
+        return dict(row) if row else {}
+
+    def list_wellness_habit_plans(
+        self, user_id: str, *, active_only: bool = True
+    ) -> List[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            if active_only:
+                rows = conn.execute(
+                    """
+                    SELECT * FROM wellness_habit_plans
+                    WHERE user_id=? AND active=1
+                    ORDER BY id DESC
+                    LIMIT 20
+                    """,
+                    (user_id,),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    """
+                    SELECT * FROM wellness_habit_plans
+                    WHERE user_id=?
+                    ORDER BY id DESC
+                    LIMIT 20
+                    """,
+                    (user_id,),
+                ).fetchall()
+        return [dict(r) for r in rows]
+
+    def get_last_wellness_insight(self, user_id: str) -> Optional[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            row = conn.execute(
+                """
+                SELECT * FROM wellness_insights
+                WHERE user_id=?
+                ORDER BY id DESC
+                LIMIT 1
+                """,
+                (user_id,),
+            ).fetchone()
+        return dict(row) if row else None
+
+    def list_wellness_outcomes(
+        self, user_id: str, *, limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM wellness_outcomes
+                WHERE user_id=?
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (user_id, max(1, int(limit))),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def save_wellness_dream(
+        self,
+        user_id: str,
+        *,
+        dream_text: str,
+        mood_tag: Optional[str] = None,
+        created_at: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        now = created_at or datetime.utcnow().isoformat()
+        with self._lock, self._conn() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO wellness_dreams(user_id, dream_text, mood_tag, created_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (user_id, dream_text[:4000], mood_tag, now),
+            )
+            row = conn.execute(
+                "SELECT * FROM wellness_dreams WHERE id=?",
+                (cur.lastrowid,),
+            ).fetchone()
+        return dict(row) if row else {}
+
+    def list_wellness_dreams(
+        self, user_id: str, *, limit: int = 30
+    ) -> List[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            rows = conn.execute(
+                """
+                SELECT id, dream_text, mood_tag, created_at
+                FROM wellness_dreams
+                WHERE user_id=?
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (user_id, max(1, int(limit))),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def log_wellness_crisis_event(
+        self,
+        user_id: str,
+        *,
+        level: str,
+        source: str,
+        created_at: str,
+    ) -> Dict[str, Any]:
+        with self._lock, self._conn() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO wellness_crisis_log(user_id, level, source, created_at)
+                VALUES (?, ?, ?, ?)
+                """,
+                (user_id, level, source, created_at),
+            )
+            row = conn.execute(
+                "SELECT * FROM wellness_crisis_log WHERE id=?",
+                (cur.lastrowid,),
+            ).fetchone()
+        return dict(row) if row else {}
+
+    def last_wellness_crisis_l3_at(self, user_id: str) -> Optional[str]:
+        with self._lock, self._conn() as conn:
+            row = conn.execute(
+                """
+                SELECT created_at FROM wellness_crisis_log
+                WHERE user_id=? AND level='L3'
+                ORDER BY id DESC
+                LIMIT 1
+                """,
+                (user_id,),
+            ).fetchone()
+        return str(row["created_at"]) if row else None
+
+    def list_wellness_crisis_log(
+        self, user_id: str, *, limit: int = 10
+    ) -> List[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            rows = conn.execute(
+                """
+                SELECT id, level, source, created_at
+                FROM wellness_crisis_log
+                WHERE user_id=?
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (user_id, max(1, int(limit))),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def save_wellness_alert_log(
+        self,
+        user_id: str,
+        *,
+        alert_type: str,
+        severity: str,
+        action_taken: str,
+        created_at: str,
+    ) -> Dict[str, Any]:
+        with self._lock, self._conn() as conn:
+            cur = conn.execute(
+                """
+                INSERT INTO wellness_alert_log(user_id, alert_type, severity, action_taken, created_at)
+                VALUES (?, ?, ?, ?, ?)
+                """,
+                (user_id, alert_type, severity, action_taken, created_at),
+            )
+            row = conn.execute(
+                "SELECT * FROM wellness_alert_log WHERE id=?",
+                (cur.lastrowid,),
+            ).fetchone()
+        return dict(row) if row else {}
+
+    def list_wellness_alert_log(
+        self, user_id: str, *, limit: int = 20
+    ) -> List[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            rows = conn.execute(
+                """
+                SELECT id, alert_type, severity, action_taken, created_at
+                FROM wellness_alert_log
+                WHERE user_id=?
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (user_id, max(1, int(limit))),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def list_wellness_insights(
+        self, user_id: str, *, limit: int = 50
+    ) -> List[Dict[str, Any]]:
+        with self._lock, self._conn() as conn:
+            rows = conn.execute(
+                """
+                SELECT * FROM wellness_insights
+                WHERE user_id=?
+                ORDER BY id DESC
+                LIMIT ?
+                """,
+                (user_id, max(1, int(limit))),
+            ).fetchall()
+        return [dict(r) for r in rows]
+
+    def delete_all_wellness_data(self, user_id: str) -> Dict[str, int]:
+        """p3-05 — erase wellness tables for GDPR/152-ФЗ delete request."""
+        counts: Dict[str, int] = {}
+        tables = (
+            "wellness_checkins",
+            "wellness_assessments",
+            "wellness_exercises",
+            "wellness_outcomes",
+            "wellness_dreams",
+            "wellness_alert_log",
+            "wellness_habit_plans",
+            "wellness_insights",
+            "wellness_crisis_log",
+        )
+        with self._lock, self._conn() as conn:
+            for table in tables:
+                cur = conn.execute(
+                    f"DELETE FROM {table} WHERE user_id=?",
+                    (user_id,),
+                )
+                counts[table] = int(cur.rowcount or 0)
+            cur = conn.execute(
+                "DELETE FROM wellness_settings WHERE user_id=?",
+                (user_id,),
+            )
+            counts["wellness_settings"] = int(cur.rowcount or 0)
+        return counts
 
 
 _store: Optional[CompanionStore] = None

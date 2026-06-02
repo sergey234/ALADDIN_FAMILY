@@ -1,0 +1,49 @@
+{
+  "version": "v1",
+  "title_key": "wellness_parent_playbook_title",
+  "subtitle_key": "wellness_parent_playbook_subtitle",
+  "phrases": [
+    {
+      "id": "when_to_talk",
+      "text": {
+        "ru": "Выбери спокойный момент — не сразу после конфликта.",
+        "en": "Pick a calm moment — not right after a conflict."
+      }
+    },
+    {
+      "id": "starter",
+      "text": {
+        "ru": "«Как ты? Можно коротко — я слушаю, без советов.»",
+        "en": "\"How are you? Keep it short — I'm listening, no lectures.\""
+      }
+    },
+    {
+      "id": "validate",
+      "text": {
+        "ru": "«Понимаю, что это непросто» — без «да ладно, мелочь».",
+        "en": "\"I get that this is hard\" — skip \"it's nothing.\""
+      }
+    },
+    {
+      "id": "no_interrogation",
+      "text": {
+        "ru": "Не допрашивай — один открытый вопрос за раз.",
+        "en": "No interrogation — one open question at a time."
+      }
+    },
+    {
+      "id": "privacy",
+      "text": {
+        "ru": "Не читай переписку — спроси напрямую, что готов(а) рассказать.",
+        "en": "Don't read chats — ask what they're willing to share."
+      }
+    },
+    {
+      "id": "specialist",
+      "text": {
+        "ru": "Если тяжело долго — предложи поговорить со специалистом по их выбору.",
+        "en": "If it's heavy for a while — suggest a professional they choose."
+      }
+    }
+  ]
+}

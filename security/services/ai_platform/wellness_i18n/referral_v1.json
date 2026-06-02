@@ -1,0 +1,36 @@
+{
+  "version": "v1",
+  "disclaimer": {
+    "ru": "ALADDIN — цифровой друг. Не заменяет очного специалиста.",
+    "en": "ALADDIN is a digital friend. Not a replacement for an in-person professional."
+  },
+  "lines": [
+    {
+      "id": "112",
+      "label_key": "wellness_referral_112",
+      "label": {
+        "ru": "Экстренная помощь",
+        "en": "Emergency"
+      },
+      "phone": "112"
+    },
+    {
+      "id": "child_helpline",
+      "label_key": "wellness_referral_helpline_ru",
+      "label": {
+        "ru": "Телефон доверия",
+        "en": "Helpline (RU)"
+      },
+      "phone": "8-800-2000-122"
+    },
+    {
+      "id": "mchs",
+      "label_key": "wellness_referral_mchs",
+      "label": {
+        "ru": "Психологическая помощь МЧС",
+        "en": "MChS psychological help"
+      },
+      "phone": "051"
+    }
+  ]
+}

@@ -265,6 +265,9 @@ final class CompanionStreamingService: ObservableObject {
                 return row
             }
         }
+        if let pillar = WellnessSessionStore.activePillar, !pillar.isEmpty {
+            body["wellness_pillar"] = pillar
+        }
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
         let (bytes, response) = try await URLSession.shared.bytes(for: request)

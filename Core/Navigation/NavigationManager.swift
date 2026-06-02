@@ -80,6 +80,18 @@ class NavigationManager: ObservableObject {
         case companionHome = "CompanionHomeScreen"
         case companionHub = "CompanionHubScreen"
         case companionConversation = "CompanionConversationScreen"
+        case wellnessConsent = "WellnessConsentScreen"
+        case wellnessHub = "WellnessHubScreen"
+        case wellnessCheckin = "WellnessCheckinScreen"
+        case wellnessTrust = "WellnessTrustCenterScreen"
+        case wellnessPhqLite = "WellnessPhqLiteScreen"
+        case wellnessAssessmentsHub = "WellnessAssessmentsHubScreen"
+        case wellnessAssessmentFlow = "WellnessAssessmentFlowScreen"
+        case wellnessExercise = "WellnessExerciseScreen"
+        case wellnessTimeline = "WellnessTimelineScreen"
+        case wellnessDreamJournal = "WellnessDreamJournalScreen"
+        case wellnessReflective = "WellnessReflectiveModeScreen"
+        case wellnessTogether = "WellnessTogetherModeScreen"
         
         // НОВЫЕ ИГРОВЫЕ ЭКРАНЫ (геймификация)
         case youngDefender = "YoungDefenderView"           // 🛡️ Юный защитник
@@ -140,6 +152,18 @@ class NavigationManager: ObservableObject {
             case .companionHome: return "Мир героев"
             case .companionHub: return "Герои"
             case .companionConversation: return "Разговор"
+            case .wellnessConsent: return "Согласие wellness"
+            case .wellnessHub: return "Настроение и поддержка"
+            case .wellnessCheckin: return "Как ты?"
+            case .wellnessTrust: return "Безопасность"
+            case .wellnessPhqLite: return "Опрос"
+            case .wellnessAssessmentsHub: return "Опросы"
+            case .wellnessAssessmentFlow: return "Опрос"
+            case .wellnessExercise: return "Упражнение"
+            case .wellnessTimeline: return "Дневник"
+            case .wellnessDreamJournal: return "Сны"
+            case .wellnessReflective: return "Глубокое исследование"
+            case .wellnessTogether: return "Вместе"
             case .mainWithRegistration: return "Главная с регистрацией"
             case .languageSettings: return "Настройки языка"
             case .notificationSettings: return "Настройки уведомлений"
@@ -197,6 +221,18 @@ class NavigationManager: ObservableObject {
             case .companionHome: return "person.2.wave.2.fill"
             case .companionHub: return "sparkles"
             case .companionConversation: return "bubble.left.and.bubble.right.fill"
+            case .wellnessConsent: return "heart.text.square"
+            case .wellnessHub: return "heart.text.square.fill"
+            case .wellnessCheckin: return "face.smiling"
+            case .wellnessTrust: return "lock.shield"
+            case .wellnessPhqLite: return "list.clipboard"
+            case .wellnessAssessmentsHub: return "list.bullet.clipboard"
+            case .wellnessAssessmentFlow: return "list.clipboard.fill"
+            case .wellnessExercise: return "figure.mind.and.body"
+            case .wellnessTimeline: return "calendar"
+            case .wellnessDreamJournal: return "moon.stars"
+            case .wellnessReflective: return "sparkles"
+            case .wellnessTogether: return "figure.2.arms.open"
             case .mainWithRegistration: return "house.fill"
             case .languageSettings: return "globe"
             case .notificationSettings: return "bell.badge.fill"
@@ -608,7 +644,11 @@ extension NavigationManager.ALADDINScreen {
     var isGameScreen: Bool {
         switch self {
         case .childRewards, .familyTournament, .gamesParentalControl,
-             .unicornPet, .companionHome, .companionHub, .companionConversation:
+             .unicornPet, .companionHome, .companionHub, .companionConversation,
+             .wellnessConsent, .wellnessHub, .wellnessCheckin,
+             .wellnessTrust, .wellnessPhqLite, .wellnessAssessmentsHub, .wellnessAssessmentFlow,
+             .wellnessExercise,
+             .wellnessTimeline, .wellnessDreamJournal, .wellnessReflective, .wellnessTogether:
             return true
         default:
             return false

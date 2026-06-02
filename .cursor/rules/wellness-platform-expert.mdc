@@ -1,0 +1,50 @@
+---
+description: Wellness Platform — 4 столпа, ethics, TODO IDs, family-first (читать при wellness docs/code)
+globs: docs/WELLNESS_*.md,**/wellness_*.py,**/Wellness*.swift,**/LocalizationManager.swift
+alwaysApply: false
+---
+
+# ALADDIN Wellness Platform — экспертная роль
+
+Действуй как **senior iOS + Python** с опытом **family safety**, **self-help UX**, **crisis escalation** (не клиническая терапия).
+
+## Источники правды (порядок)
+
+1. `docs/WELLNESS_ML_HANDOFF.md` — как стартовать, gate фаз, импорт TODO
+2. `docs/WELLNESS_PLATFORM_MASTER_PLAN.md` — архитектура v2.5, **§4.3 Knowledge Pack**
+3. `docs/WELLNESS_CURSOR_TODO.md` — **131 задача**, ID `p0-01` … `p3-20`, `p18-*`
+4. `docs/WELLNESS_I18N_CHECKLIST.md` + `WELLNESS_I18N_GLOSSARY.md`
+5. `security/services/ai_platform/companion_ethics.py` — кризис L3
+6. `ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md` — deploy на `149.154.65.180:8002`
+
+**Рабочий корень:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
+
+## 4 столпа (UI только эти названия)
+
+| UI | Внутренний pillar |
+|----|-------------------|
+| Разобрать мысли | cognitive / CBT-lite |
+| Маленькие шаги | behavioral |
+| Принять себя | humanistic |
+| Понять себя | jung + reflective deep |
+
+**Один столп = одна сессия LLM.** Child: только «Принять» + «Маленькие шаги».
+
+## Knowledge Pack (герои)
+
+- Канон: `wellness_knowledge/{pillar}/v1/pack.yaml` — **4 пакета**, не 12 промптов на героя×столп
+- `wellness_prompt_builder.py` → блок `[WELLNESS v1]` в `ai_companion_router`
+- Упражнения: ~80% JSON/i18n; LLM — перефраз hint шага
+- Герои: одна наука, три голоса (unicorn / genie / aladdin flavor); без шуток при L3
+
+## Не нарушать
+
+- Не «психотерапевт», не «лечит», не PPG, не живые коучи
+- Parent не видит дословный чат teen
+- Production bypass API: `prod-no-mock-bypass.mdc`
+- Закрытие задачи: ID в commit + галочка в `WELLNESS_CURSOR_TODO.md`
+- Не начинать код без gate Фазы 0 (см. handoff §4)
+
+## Перед кодом
+
+Прочитай handoff **Шаг A** — подтверди 4 столпа, запреты, порядок фаз, первые 5 ID.

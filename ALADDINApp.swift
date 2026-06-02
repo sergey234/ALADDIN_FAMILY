@@ -881,6 +881,66 @@ struct ALADDINApp: App {
                             .id("companionConversation_legacy")
                             .environmentObject(navigationManager)
                             .environmentObject(localizationManager))
+                    case .wellnessConsent:
+                        AnyView(WellnessConsentScreen()
+                            .id("wellnessConsent")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessHub:
+                        AnyView(WellnessHubScreen()
+                            .id("wellnessHub")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessCheckin:
+                        AnyView(WellnessCheckinScreen()
+                            .id("wellnessCheckin")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessTrust:
+                        AnyView(WellnessTrustCenterScreen()
+                            .id("wellnessTrust")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessPhqLite:
+                        AnyView(WellnessAssessmentFlowScreen(kind: .phqLite)
+                            .id("wellnessPhqLite")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessAssessmentsHub:
+                        AnyView(WellnessAssessmentsHubScreen()
+                            .id("wellnessAssessmentsHub")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessAssessmentFlow:
+                        AnyView(WellnessAssessmentFlowScreen(kind: .fromStore())
+                            .id("wellnessAssessmentFlow")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessExercise:
+                        AnyView(WellnessExerciseScreen()
+                            .id("wellnessExercise")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessTimeline:
+                        AnyView(WellnessTimelineScreen()
+                            .id("wellnessTimeline")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessDreamJournal:
+                        AnyView(WellnessDreamJournalScreen()
+                            .id("wellnessDreamJournal")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessReflective:
+                        AnyView(WellnessReflectiveModeScreen()
+                            .id("wellnessReflective")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessTogether:
+                        AnyView(WellnessTogetherModeScreen()
+                            .id("wellnessTogether")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
                     case .familyTournament:
                         AnyView(FamilyTournamentView().id("familyTournament").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .unicornPet:

@@ -1,0 +1,10 @@
+{
+  "assessment_type": "phq9",
+  "version": "v1",
+  "max_score": 27,
+  "disclaimer": {
+    "ru": "Это скрининг PHQ-9, не диагноз. При сильных переживаниях — специалист или взрослый.",
+    "en": "This PHQ-9 screening is not a diagnosis. If you feel very low, talk to a professional or trusted adult."
+  },
+  "question_count": 9
+}

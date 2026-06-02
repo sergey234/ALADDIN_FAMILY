@@ -1,0 +1,72 @@
+{
+  "exercise_id": "thought_record",
+  "pillar": "cognitive",
+  "version": "v1",
+  "title": {
+    "ru": "Разобрать мысль",
+    "en": "Examine a thought"
+  },
+  "total_steps": 5,
+  "steps": [
+    {
+      "step": 1,
+      "hint": {
+        "ru": "Какая мысль сейчас крутится в голове? Запиши одной фразой.",
+        "en": "What thought is spinning in your head? Write it in one short sentence."
+      },
+      "llm_rephrase_only": true,
+      "instruction": {
+        "ru": "Озвучь только шаг 1; один короткий вопрос; простой русский.",
+        "en": "Voice only step 1; one short question; plain English."
+      }
+    },
+    {
+      "step": 2,
+      "hint": {
+        "ru": "Что из этого точно произошло (факт), а что ты додумал?",
+        "en": "What definitely happened (fact), and what did you assume?"
+      },
+      "llm_rephrase_only": true,
+      "instruction": {
+        "ru": "Озвучь только шаг 2; помоги отделить факт от догадки; один вопрос.",
+        "en": "Voice only step 2; help separate fact from guess; one question."
+      }
+    },
+    {
+      "step": 3,
+      "hint": {
+        "ru": "Что ты чувствуешь, когда думаешь эту мысль? Одно слово или эмодзи.",
+        "en": "What do you feel when you think this thought? One word or emoji."
+      },
+      "llm_rephrase_only": true,
+      "instruction": {
+        "ru": "Озвучь только шаг 3; без анализа личности.",
+        "en": "Voice only step 3; no personality analysis."
+      }
+    },
+    {
+      "step": 4,
+      "hint": {
+        "ru": "Есть ли более мягкая формулировка той же мысли — как другу?",
+        "en": "Is there a gentler way to say the same thought — like to a friend?"
+      },
+      "llm_rephrase_only": true,
+      "instruction": {
+        "ru": "Озвучь только шаг 4; предложи одну мягкую переформулировку, не навязывай.",
+        "en": "Voice only step 4; offer one gentle rephrase, do not push."
+      }
+    },
+    {
+      "step": 5,
+      "hint": {
+        "ru": "Один маленький шаг на сегодня — что реально сделать за 2 минуты?",
+        "en": "One tiny step for today — what can you really do in 2 minutes?"
+      },
+      "llm_rephrase_only": true,
+      "instruction": {
+        "ru": "Озвучь только шаг 5; один конкретный микро-шаг.",
+        "en": "Voice only step 5; one concrete micro-step."
+      }
+    }
+  ]
+}

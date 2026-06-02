@@ -15,6 +15,7 @@ struct ALADDINWidgets: WidgetBundle {
         FamilyProtectionWidget()
         NetworkProtectionStatusWidget()
         AnalyticsWidget()
+        WellnessCheckinWidget()
     }
 }
 

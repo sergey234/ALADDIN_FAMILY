@@ -11,6 +11,7 @@ struct CompanionDialogueStrip: View {
     let onResume: () -> Void
     let onShowHistory: () -> Void
     let onFeedback: (Int, String) -> Void
+    var onActionTap: ((CompanionSuggestedActionDTO) -> Void)? = nil
 
     var body: some View {
         VStack(alignment: .leading, spacing: 10) {
@@ -42,6 +43,10 @@ struct CompanionDialogueStrip: View {
                     .accessibilityIdentifier("companion_hero_subtitle")
 
                 feedbackRow(message: assistant, index: idx)
+
+                if let actions = assistant.suggestedActions, !actions.isEmpty {
+                    wellnessActionRow(actions)
+                }
             } else if messages.isEmpty {
                 Text(localizationManager.localized("companion_dialogue_empty"))
                     .font(.title3.weight(.medium))
@@ -112,5 +117,26 @@ struct CompanionDialogueStrip: View {
         .disabled(disabled)
         .buttonStyle(.plain)
         .accessibilityLabel(label)
+    }
+
+    @ViewBuilder
+    private func wellnessActionRow(_ actions: [CompanionSuggestedActionDTO]) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            ForEach(actions) { action in
+                Button {
+                    onActionTap?(action)
+                } label: {
+                    Text(action.title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(Color(hex: "8B5CF6").opacity(0.9))
+                        .clipShape(Capsule())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("companion_action_\(action.id)")
+            }
+        }
     }
 }

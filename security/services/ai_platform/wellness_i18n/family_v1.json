@@ -1,0 +1,41 @@
+{
+  "version": "v1",
+  "dashboard_message": {
+    "ru": "Сводка настроения (без текста чата).",
+    "en": "Mood summary only (no chat text)."
+  },
+  "themes_disclaimer": {
+    "ru": "Только темы — без текста чата.",
+    "en": "Themes only — no chat messages."
+  },
+  "mood_trend_down": {
+    "ru": "Настроение ↓ %d дн.",
+    "en": "Mood ↓ %d days"
+  },
+  "theme_labels": {
+    "school": {
+      "ru": "Школа",
+      "en": "School"
+    },
+    "friends": {
+      "ru": "Друзья",
+      "en": "Friends"
+    },
+    "anxiety": {
+      "ru": "Тревога",
+      "en": "Anxiety"
+    },
+    "sleep": {
+      "ru": "Сон",
+      "en": "Sleep"
+    },
+    "family": {
+      "ru": "Семья",
+      "en": "Family"
+    },
+    "mood_low": {
+      "ru": "Настроение",
+      "en": "Mood"
+    }
+  }
+}

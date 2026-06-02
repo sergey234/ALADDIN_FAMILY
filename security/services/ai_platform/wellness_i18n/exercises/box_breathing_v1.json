@@ -1,0 +1,40 @@
+{
+  "exercise_id": "box_breathing",
+  "pillar": "humanistic",
+  "version": "v1",
+  "title": {
+    "ru": "Спокойное дыхание",
+    "en": "Calm breathing"
+  },
+  "total_steps": 4,
+  "steps": [
+    {
+      "step": 1,
+      "hint": {
+        "ru": "Вдох на 4 счёта — медленно через нос.",
+        "en": "Breathe in for a count of 4 — slowly through your nose."
+      }
+    },
+    {
+      "step": 2,
+      "hint": {
+        "ru": "Задержи дыхание на 4.",
+        "en": "Hold for 4."
+      }
+    },
+    {
+      "step": 3,
+      "hint": {
+        "ru": "Выдох на 4.",
+        "en": "Breathe out for 4."
+      }
+    },
+    {
+      "step": 4,
+      "hint": {
+        "ru": "Пауза 4. Как ты сейчас — одним словом?",
+        "en": "Pause for 4. How are you now — in one word?"
+      }
+    }
+  ]
+}

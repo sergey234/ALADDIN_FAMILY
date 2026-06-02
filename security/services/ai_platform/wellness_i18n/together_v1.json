@@ -1,0 +1,28 @@
+{
+  "version": "v1",
+  "title_key": "wellness_together_title",
+  "intro": {
+    "parent": {
+      "ru": "3 минуты спокойного дыхания с ребёнком — общий таймер, без чтения переписки.",
+      "en": "3 minutes of calm breathing with your child — same timer, no chat reading."
+    },
+    "child": {
+      "ru": "3 минуты дышим вместе со взрослым, которому доверяешь.",
+      "en": "3 minutes breathing together with a trusted adult."
+    }
+  },
+  "steps": [
+    {
+      "ru": "Сядьте рядом",
+      "en": "Sit side by side"
+    },
+    {
+      "ru": "Вдох 4 сек — выдох 4 сек",
+      "en": "Breathe in 4s — out 4s"
+    },
+    {
+      "ru": "Можно молчать — просто присутствие",
+      "en": "No need to talk — just presence"
+    }
+  ]
+}

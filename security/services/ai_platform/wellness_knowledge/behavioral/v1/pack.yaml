@@ -1,0 +1,89 @@
+# Knowledge Pack — столп «Маленькие шаги» (behavioral)
+pack_version: behavioral_v1.0
+pillar: behavioral
+schema: wellness_knowledge_pack_v1
+status: draft
+
+ui:
+  ru: Маленькие шаги
+  en: Small steps
+
+allowed_topics:
+  - micro_habits
+  - if_then
+  - energy
+  - one_action_today
+
+forbidden_concepts:
+  - diagnosis
+  - other_pillars
+  - therapy_claims
+  - reflex_conditioning
+  - jung_dreams
+
+forbidden_phrases:
+  ru:
+    - рефлекс
+    - дрессиров
+    - Павлов
+    - диагноз
+    - терапия
+  en:
+    - Pavlov
+    - conditioning
+    - diagnose
+    - therapy
+
+llm_rules:
+  ru: >
+    Один конкретный шаг на сегодня. Без морали и без «надо всё изменить».
+    Если устал — шаг на 2 минуты. Не смешивай разбор мыслей или дыхание.
+  en: >
+    One concrete step for today. No guilt. If tired — a 2-minute step.
+    Do not mix thought work or breathing here.
+
+exercises:
+  micro_habit:
+    id: micro_habit
+    total_steps: 3
+    steps:
+      - step: 1
+        hint:
+          ru: "Что одно маленькое действие сегодня реально сделать за 2 минуты?"
+          en: "What is one tiny action you can really do in 2 minutes today?"
+      - step: 2
+        hint:
+          ru: "Когда именно сделаешь — время или ситуация (после завтрака, перед сном)?"
+          en: "When will you do it — a time or situation (after breakfast, before bed)?"
+      - step: 3
+        hint:
+          ru: "Как поймёшь, что шаг сделан? Одно слово."
+          en: "How will you know the step is done? One word."
+
+  if_then_plan:
+    id: if_then_plan
+    total_steps: 3
+    steps:
+      - step: 1
+        hint:
+          ru: "Если случится X (триггер), я сделаю Y — запиши X одной фразой."
+          en: "If X happens (trigger), I will do Y — write X in one phrase."
+      - step: 2
+        hint:
+          ru: "Теперь Y — самый маленький ответ на X."
+          en: "Now Y — the smallest response to X."
+      - step: 3
+        hint:
+          ru: "Где напоминание поможет — телефон, стикер, друг?"
+          en: "Where would a reminder help — phone, sticker, friend?"
+
+hero_flavor:
+  unicorn:
+    ru: "Один шаг — уже победа."
+    en: "One step is already a win."
+  aladdin:
+    ru: "План на сегодня — короткий."
+    en: "Today's plan stays short."
+  genie:
+    ru: "Маленькое — но своё."
+    en: "Small — but yours."

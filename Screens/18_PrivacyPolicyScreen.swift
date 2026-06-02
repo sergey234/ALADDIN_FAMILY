@@ -448,6 +448,7 @@ enum PrivacyMainSection: String, CaseIterable {
     case transfer = "Трансграничная передача"
     case responsibility = "Ответственность"
     case contacts = "Контакты"
+    case wellness = "Эмоциональная поддержка (Wellness)"
     case final = "Заключительные положения"
     
     var emoji: String {
@@ -465,6 +466,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .transfer: return "🌐"
         case .responsibility: return "🤝"
         case .contacts: return "📞"
+        case .wellness: return "💜"
         case .final: return "📜"
         }
     }
@@ -484,6 +486,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .transfer: return localizationManager.localized("privacy_policy_section_transfer")
         case .responsibility: return localizationManager.localized("privacy_policy_section_responsibility")
         case .contacts: return localizationManager.localized("privacy_policy_section_contacts")
+        case .wellness: return localizationManager.localized("privacy_policy_section_wellness")
         case .final: return localizationManager.localized("privacy_policy_section_final")
         }
     }
@@ -503,6 +506,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .transfer: return localizationManager.localized("privacy_policy_section_transfer_subtitle")
         case .responsibility: return localizationManager.localized("privacy_policy_section_responsibility_subtitle")
         case .contacts: return localizationManager.localized("privacy_policy_section_contacts_subtitle")
+        case .wellness: return localizationManager.localized("privacy_policy_section_wellness_subtitle")
         case .final: return localizationManager.localized("privacy_policy_section_final_subtitle")
         }
     }
@@ -527,6 +531,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .transfer: return "Передача данных за границу"
         case .responsibility: return "Гарантии Оператора"
         case .contacts: return "Техподдержка и вопросы"
+        case .wellness: return "Самопомощь и цифровой друг (ИИ)"
         case .final: return "Вступление в силу"
         }
     }
@@ -630,6 +635,16 @@ enum PrivacyMainSection: String, CaseIterable {
                 localizationManager.localized("privacy_policy_section_contacts_content_2"),
                 localizationManager.localized("privacy_policy_section_contacts_content_3"),
                 localizationManager.localized("privacy_policy_section_contacts_content_4")
+            ]
+        case .wellness:
+            return [
+                localizationManager.localized("privacy_policy_section_wellness_content_1"),
+                localizationManager.localized("privacy_policy_section_wellness_content_2"),
+                localizationManager.localized("privacy_policy_section_wellness_content_3"),
+                localizationManager.localized("privacy_policy_section_wellness_content_4"),
+                localizationManager.localized("privacy_policy_section_wellness_content_5"),
+                localizationManager.localized("privacy_policy_section_wellness_content_6"),
+                localizationManager.localized("privacy_policy_section_wellness_content_7")
             ]
         case .final:
             return [
@@ -741,6 +756,15 @@ enum PrivacyMainSection: String, CaseIterable {
                 "Телефон: +7 (927) 005-15-77",
                 "Адрес: Россия, г. Самара",
                 "Чат в приложении ALADDIN AI"
+            ]
+        case .wellness:
+            return [
+                "Раздел «Настроение и поддержка» — инструменты самопомощи, не медицинская услуга",
+                "Данные wellness (настроение, ответы упражнений) хранятся в привязке к анонимному аккаунту",
+                "Родитель не видит дословный текст подростка в companion/wellness",
+                "При признаках кризиса — подсказки обратиться к взрослому или на линию помощи",
+                "Можно отозвать согласие и удалить данные в настройках раздела",
+                "Не заменяет психотерапию, психиатрию и экстренную помощь"
             ]
         case .final:
             return [

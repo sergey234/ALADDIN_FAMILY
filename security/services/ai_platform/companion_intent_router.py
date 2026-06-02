@@ -28,6 +28,7 @@ COMPANION_DOMAINS: FrozenSet[str] = frozenset(
         "daily_life",
         "news_fun",
         "safety",
+        "wellness",
         "general",
     }
 )
@@ -104,6 +105,11 @@ def _hint_for(domain: str, mood: str, age_band: str, character_id: str = "unicor
         parts.append("Раздели радость, поддержи энтузиазм.")
     elif domain == "safety":
         parts.append("Помоги с безопасностью ALADDIN чётко и спокойно.")
+    elif domain == "wellness":
+        parts.append(
+            "Это про настроение и эмоциональную поддержку (самопомощь). "
+            "Без диагнозов; один мягкий шаг или вопрос."
+        )
     if age_band == "child":
         parts.append("Очень простые слова.")
     elif age_band == "teen":
@@ -144,9 +150,14 @@ def classify_companion_intent(
     ):
         mood = "playful"
         domain = "news_fun"
-    elif re.search(r"грустн|печал|тоск|плачу|не рад", msg):
-        mood = "sad"
-        domain = "feelings"
+    elif re.search(
+        r"настроен|чувствую себя|эмоци|поддержк|wellness|грустн|печал|тоск|плачу|не рад",
+        msg,
+    ):
+        mood = "sad" if re.search(r"грустн|печал|тоск|плачу|не рад", msg) else mood
+        domain = "wellness"
+        if mood == "neutral":
+            mood = "sad" if re.search(r"грустн|печал|тоск", msg) else "comfort_needed"
     elif re.search(r"одинок|никто не разговар|некому поговорить|скучно дома|скучаю", msg):
         mood = "lonely" if "одинок" in msg or "никто" in msg or "некому" in msg else mood
         domain = "loneliness"

@@ -1,0 +1,20 @@
+{
+  "version": "v1",
+  "strings": {
+    "wellness_assessment_crisis_hint": {
+      "base": { "ru": "Если вам сейчас очень тяжело — позовите близкого или наберите 112.", "en": "If you are in crisis — reach someone you trust or call 112." },
+      "child": { "ru": "Если очень тяжело — позови взрослого или набери 112.", "en": "If it feels very hard — get an adult or call 112." },
+      "teen": { "ru": "Если тебе сейчас очень тяжело — позови взрослого или набери 112.", "en": "If you feel in crisis — get an adult you trust or call 112." }
+    },
+    "wellness_consent_body": {
+      "base": { "ru": "ALADDIN — цифровой друг для самопомощи. Не врач и не психолог. Опросы — не диагноз.", "en": "ALADDIN is a digital friend for self-help. Not a doctor or therapist. Screenings are not a diagnosis." },
+      "child": { "ru": "ALADDIN — друг для самопомощи. Это не врач. Взрослый рядом — если тяжело.", "en": "ALADDIN is a friend for self-help. Not a doctor. An adult nearby if things feel hard." },
+      "teen": { "ru": "ALADDIN — цифровой друг для самопомощи. Не врач и не психолог. Опросы — не диагноз.", "en": "ALADDIN is a digital friend for self-help. Not a doctor or therapist. Screenings are not a diagnosis." }
+    },
+    "wellness_hub_subtitle": {
+      "base": { "ru": "Выберите, с чего начать", "en": "Choose where to start" },
+      "child": { "ru": "Выбери, с чего начать", "en": "Pick where to start" },
+      "teen": { "ru": "С чего начнём сегодня", "en": "Where shall we start today" }
+    }
+  }
+}

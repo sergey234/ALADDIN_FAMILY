@@ -68,6 +68,13 @@ struct CompanionHomeScreen: View {
             Text(localizationManager.localized("companion_home_title"))
                 .font(.headline.bold())
             Spacer()
+            Button {
+                WellnessNavigation.open(from: navigationManager)
+            } label: {
+                Image(systemName: "heart.text.square.fill")
+                    .font(.body.weight(.semibold))
+            }
+            .accessibilityLabel(localizationManager.localized("wellness_entry_from_companion"))
         }
         .foregroundColor(.white)
         .padding(.horizontal, 16)

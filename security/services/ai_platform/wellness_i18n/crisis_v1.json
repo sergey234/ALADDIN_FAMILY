@@ -1,0 +1,53 @@
+{
+  "version": "v1",
+  "crisis_message": {
+    "ru": "Мне очень жаль, что тебе так тяжело. Ты не один(одна). Расскажи взрослому, которому доверяешь, или позвони 112. Я — цифровой друг в ALADDIN, но важные вещи лучше обсудить с живым человеком.",
+    "en": "I'm sorry it's so hard. You're not alone. Tell a trusted adult or call 112. I'm a digital friend in ALADDIN — a real person matters most right now."
+  },
+  "crisis_deep_blocked": {
+    "ru": "Сейчас важнее поддержка живого человека",
+    "en": "A real person matters most right now"
+  },
+  "actions": {
+    "wellness_action_open_checkin": {
+      "ru": "Отметить настроение",
+      "en": "Log mood"
+    },
+    "wellness_action_open_assessment": {
+      "ru": "Короткий опрос",
+      "en": "Short screening"
+    },
+    "wellness_open_referral": {
+      "ru": "Помощь рядом",
+      "en": "Help nearby"
+    },
+    "wellness_referral_112": {
+      "ru": "Экстренная помощь: 112",
+      "en": "Emergency: 112"
+    },
+    "wellness_referral_helpline_ru": {
+      "ru": "Телефон доверия: 8-800-2000-122",
+      "en": "Helpline: 8-800-2000-122"
+    },
+    "wellness_action_start_breathing": {
+      "ru": "Подышать",
+      "en": "Breathe"
+    },
+    "wellness_action_start_grounding": {
+      "ru": "Заземление",
+      "en": "Grounding"
+    }
+  },
+  "levels": {
+    "L2": [
+      "wellness_action_open_checkin",
+      "wellness_open_referral",
+      "wellness_action_open_assessment"
+    ],
+    "L3": [
+      "wellness_referral_112",
+      "wellness_referral_helpline_ru",
+      "wellness_action_open_checkin"
+    ]
+  }
+}

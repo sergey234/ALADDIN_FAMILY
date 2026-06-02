@@ -27,6 +27,7 @@ STREAM_RESUME_ENABLED = _env_bool("FEATURE_STREAM_RESUME_ENABLED", True)
 WEB_SEARCH_ENABLED = _env_bool("FEATURE_WEB_SEARCH_ENABLED", False)
 MULTI_AGENT_ENABLED = _env_bool("FEATURE_MULTI_AGENT_ENABLED", False)
 COMPANION_USE_ORCHESTRATOR = _env_bool("COMPANION_USE_ORCHESTRATOR", False)
+# ^ Hermes multi-agent stub (orchestrator.py). NOT wellness — use FEATURE_WELLNESS_ORCHESTRATOR.
 VISION_ENABLED = _env_bool("FEATURE_VISION_ENABLED", False)
 
 # Hybrid voice STT fallback (Apple primary → ALADDIN server only on failure; audio not persisted)
@@ -44,3 +45,12 @@ WORKSPACES_ENABLED = _env_bool("FEATURE_WORKSPACES_ENABLED", False)
 
 # Adult infra (backend only; UI in separate app)
 ADULT_APP_ENABLED = _env_bool("FEATURE_ADULT_APP_ENABLED", True)
+
+# Wellness Platform (Phase 0 — default OFF until gate 0→1)
+FEATURE_WELLNESS_ENABLED = _env_bool("FEATURE_WELLNESS_ENABLED", False)
+FEATURE_WELLNESS_ORCHESTRATOR = _env_bool("FEATURE_WELLNESS_ORCHESTRATOR", False)
+FEATURE_WELLNESS_REFLECTIVE = _env_bool("FEATURE_WELLNESS_REFLECTIVE", False)
+FEATURE_WELLNESS_JUNG = _env_bool("FEATURE_WELLNESS_JUNG", False)
+# p3-10 — 0..100 cohort; default 100 = all users (prod parity after full rollout)
+# p3-16 — parent playbook LLM personalize (Hermes); default OFF
+FEATURE_WELLNESS_PARENT_LLM = _env_bool("FEATURE_WELLNESS_PARENT_LLM", False)

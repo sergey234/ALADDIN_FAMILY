@@ -1,0 +1,75 @@
+{
+  "version": "v1",
+  "modes": [
+    {
+      "id": "presence",
+      "label_key": "wellness_mode_presence",
+      "hint_key": "wellness_mode_presence_hint",
+      "pillar": "humanistic",
+      "label": {
+        "ru": "Просто побудь рядом",
+        "en": "Just stay with me"
+      },
+      "hint": {
+        "ru": "Переключит на столп «Принять себя»",
+        "en": "Switches to humanistic pillar"
+      }
+    },
+    {
+      "id": "deep_explore",
+      "label_key": "wellness_mode_deep",
+      "hint_key": "wellness_mode_deep_hint",
+      "pillar": "jung",
+      "label": {
+        "ru": "Разбери глубоко",
+        "en": "Explore deeply"
+      },
+      "hint": {
+        "ru": "Jung + reflective — метафоры, не диагноз",
+        "en": "Jung + reflective — metaphors, not diagnosis"
+      }
+    },
+    {
+      "id": "structured_view",
+      "label_key": "wellness_mode_structured",
+      "hint_key": "wellness_mode_structured_hint",
+      "pillar": "cognitive",
+      "label": {
+        "ru": "Взгляд со стороны",
+        "en": "Outside view"
+      },
+      "hint": {
+        "ru": "Факты и интерпретации",
+        "en": "Facts vs interpretations"
+      }
+    },
+    {
+      "id": "blind_spots",
+      "label_key": "wellness_mode_blind_spots",
+      "hint_key": "wellness_mode_blind_spots_hint",
+      "pillar": "jung",
+      "label": {
+        "ru": "Слепые зоны",
+        "en": "Blind spots"
+      },
+      "hint": {
+        "ru": "Мягко про паттерны",
+        "en": "Gentle patterns"
+      }
+    },
+    {
+      "id": "single_question",
+      "label_key": "wellness_mode_one_question",
+      "hint_key": "wellness_mode_one_question_hint",
+      "pillar": "humanistic",
+      "label": {
+        "ru": "Только вопрос",
+        "en": "One question only"
+      },
+      "hint": {
+        "ru": "Без нравоучений",
+        "en": "No lecture"
+      }
+    }
+  ]
+}

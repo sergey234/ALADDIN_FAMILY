@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>220</string>
+	<string>221</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -67,6 +67,8 @@
 	<string>ALADDIN Family needs camera access for security features and face recognition.</string>
 	<key>NSContactsUsageDescription</key>
 	<string>ALADDIN Family needs contacts access to help manage family member information securely.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>ALADDIN uses sleep data from Apple Health only to pre-fill your wellness check-in (hours slept). We do not diagnose or treat medical conditions.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>ALADDIN Family uses Face ID for secure authentication and family member identification.</string>
 	<key>NSHomeKitUsageDescription</key>

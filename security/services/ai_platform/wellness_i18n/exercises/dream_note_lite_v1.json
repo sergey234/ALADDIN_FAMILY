@@ -1,0 +1,33 @@
+{
+  "exercise_id": "dream_note_lite",
+  "pillar": "jung",
+  "version": "v1",
+  "title": {
+    "ru": "Заметка о сне",
+    "en": "Dream note"
+  },
+  "total_steps": 3,
+  "steps": [
+    {
+      "step": 1,
+      "hint": {
+        "ru": "Коротко: что запомнилось из сна или образа? Без оценки.",
+        "en": "Briefly: what do you remember from a dream or image? No judgment."
+      }
+    },
+    {
+      "step": 2,
+      "hint": {
+        "ru": "Какое одно чувство было сильнее всего?",
+        "en": "What one feeling was strongest?"
+      }
+    },
+    {
+      "step": 3,
+      "hint": {
+        "ru": "Если бы это был символ — что он мог бы означать для тебя сейчас?",
+        "en": "If it were a symbol — what might it mean for you right now?"
+      }
+    }
+  ]
+}

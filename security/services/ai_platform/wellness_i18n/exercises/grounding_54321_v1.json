@@ -1,0 +1,33 @@
+{
+  "exercise_id": "grounding_54321",
+  "pillar": "humanistic",
+  "version": "v1",
+  "title": {
+    "ru": "Заземление 5-4-3-2-1",
+    "en": "Grounding 5-4-3-2-1"
+  },
+  "total_steps": 3,
+  "steps": [
+    {
+      "step": 1,
+      "hint": {
+        "ru": "Назови 5 вещей, которые видишь вокруг.",
+        "en": "Name 5 things you can see."
+      }
+    },
+    {
+      "step": 2,
+      "hint": {
+        "ru": "4 звука, 3 ощущения кожи.",
+        "en": "4 sounds, 3 things you feel on skin."
+      }
+    },
+    {
+      "step": 3,
+      "hint": {
+        "ru": "Сделай один медленный выдох.",
+        "en": "Take one slow breath out."
+      }
+    }
+  ]
+}

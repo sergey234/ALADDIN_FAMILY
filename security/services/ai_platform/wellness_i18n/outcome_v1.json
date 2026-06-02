@@ -1,0 +1,49 @@
+{
+  "version": "v1",
+  "outcome_reminder": {
+    "title": {
+      "ru": "Как ты сейчас?",
+      "en": "How are you feeling now?"
+    },
+    "body": {
+      "ru": "Один тап — легче, так же или хуже — это помогает подстроить поддержку.",
+      "en": "One tap — better, same, or worse — helps tailor support."
+    }
+  },
+  "weekly_meaning": {
+    "title": {
+      "ru": "10 минут для смысла",
+      "en": "10 minutes for meaning"
+    },
+    "body": {
+      "ru": "Раз в неделю — пауза и внимание к тому, что важно. Не диагноз.",
+      "en": "Once a week — pause and notice what matters. No diagnosis."
+    },
+    "prompt": {
+      "ru": "Что было важным на этой неделе — даже в малом?",
+      "en": "What felt meaningful this week — even something small?"
+    },
+    "prompt_with_observe": {
+      "ru": "В прошлый раз: %@. Какую нить замечаешь сейчас?",
+      "en": "Last time: %@. What thread do you notice now?"
+    }
+  },
+  "continuity_prefix": {
+    "ru": "В прошлый раз мы остановились на: %s",
+    "en": "Last time we paused at: %s"
+  },
+  "session_recap": {
+    "default": {
+      "ru": "Сегодня можно начать с одного маленького шага.",
+      "en": "Today you can start with one small step."
+    },
+    "active_exercise": {
+      "ru": "У тебя есть незаконченное упражнение — продолжим?",
+      "en": "You have an exercise in progress — continue?"
+    },
+    "low_mood": {
+      "ru": "Вижу, что день непростой. Я рядом.",
+      "en": "Sounds like a tough day. I'm here."
+    }
+  }
+}

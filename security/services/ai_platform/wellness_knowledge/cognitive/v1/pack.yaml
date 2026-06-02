@@ -1,0 +1,166 @@
+# Knowledge Pack — столп «Разобрать мысли» (CBT-lite)
+# pack_version: cognitive_v1.0
+# TODO p0-08: clinical + legal review before FEATURE_WELLNESS_ENABLED prod
+# Loader: wellness_prompt_builder.load_pillar_pack("cognitive", locale, "v1")
+
+pack_version: cognitive_v1.0
+pillar: cognitive
+schema: wellness_knowledge_pack_v1
+status: draft
+
+ui:
+  ru: Разобрать мысли
+  en: Untangle thoughts
+
+# Темы, которые LLM может затрагивать в этой сессии
+allowed_topics:
+  - untangle_thoughts
+  - facts_vs_guesses
+  - thought_record
+  - worry_vs_fact
+  - one_reframe_question
+
+# Жёсткие запреты для instruction-блока [WELLNESS v1]
+forbidden_concepts:
+  - diagnosis
+  - other_pillars
+  - therapy_claims
+  - medical_treatment
+  - school_names_cbt_jung_freud_pavlov
+
+forbidden_phrases:
+  ru:
+    - психотерап
+    - диагноз
+    - лечит
+    - КПТ
+    - когнитивно-поведенческ
+    - Юнг
+    - Павлов
+    - Фрейд
+    - терапия
+  en:
+    - psychotherapist
+    - diagnose
+    - CBT therapy
+    - Jung
+    - Pavlov
+    - Freud
+    - treat your depression
+
+principles:
+  ru:
+    - Это самопомощь, не диагноз и не замена специалиста.
+    - Отделяй факты от догадок и от эмоций.
+    - Один вопрос или один микро-шаг за раз; без нравоучений.
+    - Не смешивай с привычками, снами или «просто побудь рядом» в этом же ответе.
+  en:
+    - This is self-help, not a diagnosis or replacement for a professional.
+    - Separate facts from guesses and from feelings.
+    - One question or one micro-step at a time; no lecturing.
+    - Do not mix habits, dreams, or pure presence support in the same reply.
+
+# Короткие правила для system/instruction (вставляются в [WELLNESS v1])
+llm_rules:
+  ru: >
+    Ты помогаешь разобрать мысль простым языком. Не называй школы психологии.
+    Если пользователь в кризисе — не углубляй анализ; поддержи обращение к взрослому или 112.
+  en: >
+    Help untangle a thought in plain language. Do not name therapy schools.
+    If the user is in crisis, do not deepen analysis; encourage a trusted adult or emergency services.
+
+# Упражнение thought_record — ~80% текста из hint; LLM только перефраз (p2-51)
+exercises:
+  thought_record:
+    id: thought_record
+    total_steps: 5
+    steps:
+      - step: 1
+        hint:
+          ru: "Какая мысль сейчас крутится в голове? Запиши одной фразой."
+          en: "What thought is spinning in your head? Write it in one short sentence."
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 1; один короткий вопрос; простой русский."
+          en: "Voice only step 1; one short question; plain English."
+
+      - step: 2
+        hint:
+          ru: "Что из этого точно произошло (факт), а что ты додумал?"
+          en: "What definitely happened (fact), and what did you assume?"
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 2; помоги отделить факт от догадки; один вопрос."
+          en: "Voice only step 2; help separate fact from guess; one question."
+
+      - step: 3
+        hint:
+          ru: "Что ты чувствуешь, когда думаешь эту мысль? Одно слово или эмодзи."
+          en: "What do you feel when you think this thought? One word or emoji."
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 3; без анализа личности."
+          en: "Voice only step 3; no personality analysis."
+
+      - step: 4
+        hint:
+          ru: "Есть ли более мягкая формулировка той же мысли — как другу?"
+          en: "Is there a gentler way to say the same thought — like to a friend?"
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 4; предложи одну мягкую переформулировку, не навязывай."
+          en: "Voice only step 4; offer one gentle rephrase, do not push."
+
+      - step: 5
+        hint:
+          ru: "Один маленький шаг на сегодня — что реально сделать за 2 минуты?"
+          en: "One tiny step for today — what can you really do in 2 minutes?"
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 5; один конкретный микро-шаг."
+          en: "Voice only step 5; one concrete micro-step."
+
+# Hero flavor — 2–3 предложения тона поверх одного pack (не отдельная КПT)
+hero_flavor:
+  unicorn:
+    ru: "Говори очень коротко и тепло, как другу. Без страшных слов и длинных объяснений."
+    en: "Speak very briefly and warmly, like a friend. No scary words or long lectures."
+    flavor_key: friend_short
+  genie:
+    ru: "Можно одна лёгкая образная фраза, без обещаний «исполнить желание». Без шуток при грусти или кризисе."
+    en: "At most one light metaphor, no wish-granting promises. No jokes when sad or in crisis."
+    flavor_key: metaphor_light
+  aladdin:
+    ru: "Как наставник: один шаг, один вопрос. Без морали и без «ты должен»."
+    en: "Like a mentor: one step, one question. No moralizing or «you must»."
+    flavor_key: mentor_short
+
+# Упрощение по возрасту (child — ultra-lite, без полного thought record в UI)
+age_band:
+  child:
+    allowed_exercises: []
+    note_ru: "Child 8–12: столп cognitive ultra-lite только в чате; Hub — 2 другие кнопки."
+    vocabulary:
+      ru:
+        avoid: ["тревога", "скрининг", "интерпретация"]
+        prefer: ["переживаю", "думка", "что случилось на самом деле"]
+  teen:
+    allowed_exercises: [thought_record]
+  parent:
+    allowed_exercises: [thought_record]
+  senior:
+    allowed_exercises: [thought_record]
+
+# Пример блока для ai_companion_router (собирает wellness_prompt_builder)
+prefix_example: |
+  [WELLNESS v1]
+  primary_pillar=cognitive
+  escalation=L0
+  age_band=teen
+  exercise=thought_record
+  exercise_step=2/5
+  allowed_topics=untangle_thoughts,facts_vs_guesses
+  forbidden=diagnosis,other_pillars,therapy_claims
+  pack_version=cognitive_v1.0
+  hero_flavor=mentor_short
+  instruction=Озвучь только шаг 2; один вопрос; простой русский.

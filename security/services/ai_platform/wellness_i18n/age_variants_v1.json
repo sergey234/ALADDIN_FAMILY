@@ -1,0 +1,34 @@
+{
+  "version": "v1",
+  "variant_suffixes": {
+    "child": "_child",
+    "teen": "_teen"
+  },
+  "keys_with_variants": [
+    "wellness_consent_title",
+    "wellness_consent_body",
+    "wellness_consent_jung_note",
+    "wellness_consent_accept",
+    "wellness_checkin_title",
+    "wellness_checkin_subtitle",
+    "wellness_checkin_save",
+    "wellness_checkin_talk_after",
+    "wellness_hub_title",
+    "wellness_hub_subtitle",
+    "wellness_mood_anxious",
+    "wellness_stress_label",
+    "wellness_pillar_behavioral_title",
+    "wellness_pillar_behavioral_subtitle",
+    "wellness_pillar_humanistic_title",
+    "wellness_pillar_humanistic_subtitle",
+    "wellness_pillar_cognitive_title",
+    "wellness_pillar_cognitive_subtitle",
+    "wellness_pillar_jung_title",
+    "wellness_pillar_jung_subtitle",
+    "wellness_outcome_title",
+    "wellness_outcome_subtitle",
+    "wellness_assessment_crisis_hint",
+    "wellness_fatigue_switch",
+    "wellness_open_companion"
+  ]
+}

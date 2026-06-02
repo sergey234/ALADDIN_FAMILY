@@ -183,6 +183,7 @@ struct CompanionChatRequest: Codable {
     let chatMode: String
     let workspaceId: String?
     let attachments: [CompanionAttachmentPayload]
+    let wellnessPillar: String?
 
     enum CodingKeys: String, CodingKey {
         case message
@@ -195,6 +196,7 @@ struct CompanionChatRequest: Codable {
         case chatMode = "chat_mode"
         case workspaceId = "workspace_id"
         case attachments
+        case wellnessPillar = "wellness_pillar"
     }
 }
 
@@ -264,6 +266,7 @@ struct CompanionChatResponse: Codable {
     let cogsAlert: Bool?
     let chatMode: String?
     let toolsUsed: [String]?
+    let suggestedActions: [CompanionSuggestedActionDTO]?
 
     enum CodingKeys: String, CodingKey {
         case response
@@ -285,7 +288,13 @@ struct CompanionChatResponse: Codable {
         case cogsAlert = "cogs_alert"
         case chatMode = "chat_mode"
         case toolsUsed = "tools_used"
+        case suggestedActions = "suggested_actions"
     }
+}
+
+struct CompanionSuggestedActionDTO: Codable, Identifiable, Equatable {
+    let id: String
+    let title: String
 }
 
 struct CompanionWorkspaceDTO: Codable, Identifiable, Equatable {
@@ -754,6 +763,7 @@ struct CompanionStreamDonePayload: Codable {
     let showSocialBridge: Bool?
     let socialBridgeSuggestions: [String]?
     let trustStreakDays: Int?
+    let suggestedActions: [CompanionSuggestedActionDTO]?
 
     enum CodingKeys: String, CodingKey {
         case response
@@ -766,6 +776,7 @@ struct CompanionStreamDonePayload: Codable {
         case showSocialBridge = "show_social_bridge"
         case socialBridgeSuggestions = "social_bridge_suggestions"
         case trustStreakDays = "trust_streak_days"
+        case suggestedActions = "suggested_actions"
     }
 }
 
@@ -774,12 +785,20 @@ struct CompanionChatBubble: Identifiable {
     let text: String
     let isUser: Bool
     var feedbackVote: String?
+    var suggestedActions: [CompanionSuggestedActionDTO]?
 
-    init(id: UUID = UUID(), text: String, isUser: Bool, feedbackVote: String? = nil) {
+    init(
+        id: UUID = UUID(),
+        text: String,
+        isUser: Bool,
+        feedbackVote: String? = nil,
+        suggestedActions: [CompanionSuggestedActionDTO]? = nil
+    ) {
         self.id = id
         self.text = text
         self.isUser = isUser
         self.feedbackVote = feedbackVote
+        self.suggestedActions = suggestedActions
     }
 }
 

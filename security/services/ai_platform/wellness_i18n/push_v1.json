@@ -1,0 +1,65 @@
+{
+  "version": "v1",
+  "push": {
+    "checkin_evening": {
+      "ru": "Как прошёл день?",
+      "en": "How was your day?"
+    },
+    "nudge_idle_2d": {
+      "title": {
+        "ru": "Давно не виделись",
+        "en": "We miss you"
+      },
+      "body": {
+        "ru": "Давно не заходил(а) — всё ок? Хватит одной минуты check-in.",
+        "en": "Haven't checked in — all OK? One minute is enough."
+      }
+    },
+    "outcome_24h": {
+      "ru": "Стало ли легче после вчерашнего разговора?",
+      "en": "Feeling better after yesterday?"
+    },
+    "weekly_meaning": {
+      "ru": "10 минут понять себя — когда удобно",
+      "en": "10 min for yourself — when ready"
+    },
+    "parent_digest": {
+      "ru": "Сводка по семье за неделю",
+      "en": "Weekly family summary"
+    },
+    "phq_suggest": {
+      "ru": "Можем коротко проверить настроение",
+      "en": "Quick mood check available"
+    }
+  },
+  "alerts": {
+    "checkin_reminder_title": {
+      "ru": "Как ты сегодня?",
+      "en": "How are you today?"
+    },
+    "checkin_reminder_body": {
+      "ru": "Минута check-in поможет отследить настроение.",
+      "en": "A quick check-in helps track mood."
+    },
+    "phq_suggest_title": {
+      "ru": "Короткий опрос",
+      "en": "Short screening"
+    },
+    "phq_suggest_body": {
+      "ru": "Несколько дней настроение ниже обычного.",
+      "en": "Mood has been low for several days."
+    },
+    "trauma_referral_title": {
+      "ru": "Поддержка специалиста",
+      "en": "Specialist support"
+    },
+    "trauma_referral_body": {
+      "ru": "Тяжёлые темы лучше обсуждать со специалистом. Линии помощи — в один тап.",
+      "en": "Heavy topics are best with a specialist. Helplines are one tap away."
+    },
+    "daily_checkin_body": {
+      "ru": "Напоминание в %d:00 — как прошёл день?",
+      "en": "Reminder at %d:00 — how was your day?"
+    }
+  }
+}

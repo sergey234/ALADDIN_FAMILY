@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "title_key": "wellness_widget_title",
+  "tap_key": "wellness_widget_tap",
+  "title": {
+    "ru": "Как ты?",
+    "en": "How are you?"
+  },
+  "tap": {
+    "ru": "Нажми, чтобы отметить",
+    "en": "Tap to log"
+  }
+}

@@ -64,6 +64,7 @@ struct CompanionConversationScreen: View {
     @State private var showingOfflineCache = false
     @State private var lifeDomains: [CompanionLifeDomainDTO] = []
     @State private var showSocialBridgeBanner = false
+    @State private var showWellnessReferralSheet = false
     @State private var chatMode: String = "fast"
     @State private var pendingAttachments: [CompanionAttachmentPayload] = []
     @AppStorage("companion_active_workspace_id") private var activeWorkspaceId: String = ""
@@ -115,6 +116,29 @@ struct CompanionConversationScreen: View {
                         CompanionUsageBanner(usage: usageSnapshot)
                             .padding(.horizontal, 12)
                             .padding(.vertical, 4)
+                    }
+                    if let pillar = WellnessSessionStore.activePillar,
+                       let wp = WellnessPillar(rawValue: pillar) {
+                        HStack(spacing: 8) {
+                            Text(localizationManager.localized("wellness_chip_mood"))
+                                .font(.caption2.bold())
+                                .padding(.horizontal, 8)
+                                .padding(.vertical, 4)
+                                .background(Color(hex: "A78BFA").opacity(0.25))
+                                .clipShape(Capsule())
+                            Image(systemName: "heart.text.square.fill")
+                                .foregroundStyle(Color(hex: "A78BFA"))
+                            Text(localizationManager.localized(wp.titleKey))
+                                .font(.caption.weight(.semibold))
+                            Spacer()
+                            if let checkin = WellnessSessionStore.loadCheckin() {
+                                Text(moodEmoji(checkin.mood))
+                            }
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(Color(hex: "8B5CF6").opacity(0.12))
+                        .accessibilityIdentifier("companion_wellness_pillar_banner")
                     }
                     Divider().opacity(0.15)
                     companionDialogueStrip
@@ -232,6 +256,10 @@ struct CompanionConversationScreen: View {
         }
         .sheet(isPresented: $showMicCoach) {
             micCoachSheet
+        }
+        .sheet(isPresented: $showWellnessReferralSheet) {
+            WellnessReferralSheet(level: "L2")
+                .environmentObject(localizationManager)
         }
     }
 
@@ -388,8 +416,32 @@ struct CompanionConversationScreen: View {
             onShowHistory: { showFullChatHistory = true },
             onFeedback: { index, vote in
                 Task { await sendFeedback(messageIndex: index, vote: vote) }
+            },
+            onActionTap: { action in
+                handleWellnessAction(action)
             }
         )
+    }
+
+    private func handleWellnessAction(_ action: CompanionSuggestedActionDTO) {
+        if let url = AIActionCardMapper.phoneURL(for: action.id) {
+            UIApplication.shared.open(url)
+            return
+        }
+        if AIActionCardMapper.opensReferralSheet(action.id) {
+            showWellnessReferralSheet = true
+            return
+        }
+        if let screen = AIActionCardMapper.screen(for: action.id) {
+            navigationManager.navigateTo(screen)
+        }
+    }
+
+    private func attachSuggestedActions(at index: Int, actions: [CompanionSuggestedActionDTO]?) {
+        guard messages.indices.contains(index), let actions, !actions.isEmpty else { return }
+        var bubble = messages[index]
+        bubble.suggestedActions = actions
+        messages[index] = bubble
     }
 
     private var heroStatusOverlay: some View {
@@ -1074,6 +1126,16 @@ struct CompanionConversationScreen: View {
         )
     }
 
+    private func moodEmoji(_ mood: String) -> String {
+        switch mood {
+        case "great": return "😊"
+        case "sad": return "😢"
+        case "anxious": return "😰"
+        case "tired": return "😴"
+        default: return "🙂"
+        }
+    }
+
     private func applySocialBridge(from meta: CompanionStreamDonePayload?) {
         if meta?.showSocialBridge == true {
             showSocialBridgeBanner = true
@@ -1091,6 +1153,7 @@ struct CompanionConversationScreen: View {
         showResumeStream = false
         streamEmotionDebouncer.cancel()
         applySocialBridge(from: meta)
+        attachSuggestedActions(at: index, actions: meta?.suggestedActions)
         if let meta, let score = meta.trustScore {
             trustScore = score
         }
@@ -1532,6 +1595,10 @@ struct CompanionConversationScreen: View {
                 lastTrustDelta = resp.trustDelta
             }
             applySocialBridge(from: resp)
+            if let actions = resp.suggestedActions, !actions.isEmpty,
+               let idx = messages.lastIndex(where: { !$0.isUser }) {
+                attachSuggestedActions(at: idx, actions: actions)
+            }
             CompanionLastToolsStore.save(resp.toolsUsed)
             await refreshUsage()
             if let unlocked = resp.cosmeticUnlocked, !unlocked.isEmpty {

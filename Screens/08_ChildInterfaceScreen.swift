@@ -83,6 +83,7 @@ struct ChildInterfaceScreen: View {
 
                         // ✨ Друзья — вход в «Мир героев»
                         companionFriendsButton
+                        wellnessSupportButton
                         
                         // Большие кнопки для детей
                         bigButtonsGrid
@@ -313,6 +314,44 @@ struct ChildInterfaceScreen: View {
     
     private func getUnicornBalance() -> Int {
         UserDefaults.standard.integer(forKey: "child_unicorn_balance")
+    }
+
+    /// Wellness Hub — эмоциональная поддержка (child: 2 столпа).
+    private var wellnessSupportButton: some View {
+        Button(action: {
+            HapticFeedback.impact(.medium)
+            WellnessNavigation.open(from: navigationManager)
+        }) {
+            HStack(spacing: Spacing.m) {
+                Image(systemName: "heart.text.square.fill")
+                    .font(.system(size: 32))
+                    .foregroundColor(.white)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(localizationManager.localized("nav_screen_wellness_hub"))
+                        .font(.title3.bold())
+                        .foregroundColor(.white)
+                    Text(localizationManager.localized("wellness_entry_from_companion"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.85))
+                }
+                Spacer()
+                Image(systemName: "arrow.right.circle.fill")
+                    .font(.system(size: 26))
+                    .foregroundColor(.white.opacity(0.85))
+            }
+            .padding(Spacing.l)
+            .background(
+                LinearGradient(
+                    colors: [Color(hex: "7C3AED"), Color(hex: "A855F7")],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .cornerRadius(CornerRadius.large)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityIdentifier("child_interface_wellness_button")
     }
 
     /// UX-06: крупная кнопка «Друзья» → единый вход в companionHome.

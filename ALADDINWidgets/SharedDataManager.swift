@@ -29,6 +29,9 @@ class SharedDataManager {
         static let dataSaved = "data_saved"
         static let protectionLevel = "protection_level"
         static let lastUpdate = "last_update"
+        static let wellnessWidgetTitle = "wellness_widget_title"
+        static let wellnessWidgetTap = "wellness_widget_tap"
+        static let wellnessLastMood = "wellness_last_mood"
     }
     
     // MARK: - Family Protection Data
@@ -117,7 +120,25 @@ class SharedDataManager {
     static func getLastUpdate() -> Date {
         return userDefaults.object(forKey: Keys.lastUpdate) as? Date ?? Date()
     }
-    
+
+    // MARK: - Wellness Widget (p3-18)
+
+    static func updateWellnessWidgetData(title: String, tapHint: String, lastMood: String) {
+        userDefaults.set(title, forKey: Keys.wellnessWidgetTitle)
+        userDefaults.set(tapHint, forKey: Keys.wellnessWidgetTap)
+        userDefaults.set(lastMood, forKey: Keys.wellnessLastMood)
+        userDefaults.set(Date(), forKey: Keys.lastUpdate)
+        WidgetCenter.shared.reloadTimelines(ofKind: "WellnessCheckinWidget")
+    }
+
+    static func getWellnessWidgetData() -> (title: String, tapHint: String, lastMood: String) {
+        (
+            userDefaults.string(forKey: Keys.wellnessWidgetTitle) ?? "How are you?",
+            userDefaults.string(forKey: Keys.wellnessWidgetTap) ?? "Tap to log",
+            userDefaults.string(forKey: Keys.wellnessLastMood) ?? "🙂"
+        )
+    }
+
     // MARK: - Clear Data
     
     static func clearAllData() {

@@ -1,0 +1,11 @@
+{
+  "version": "v1",
+  "checkin_evening": "How was your day?",
+  "nudge_idle_2d": "Haven't checked in — all OK?",
+  "nudge_idle_2d_title": "We miss you",
+  "nudge_idle_2d_body": "Haven't checked in — all OK? One minute is enough.",
+  "outcome_24h": "Feeling better after yesterday?",
+  "weekly_meaning": "10 min for yourself — when ready",
+  "parent_digest": "Weekly family summary",
+  "phq_suggest": "Quick mood check available"
+}

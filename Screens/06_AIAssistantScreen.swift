@@ -28,6 +28,7 @@ struct AIAssistantScreen: View {
     @State private var holdWillCancel = false
     @State private var showFeedbackSheet = false
     @State private var showDemoServerBanner = false
+    @State private var showWellnessReferralSheet = false
     /// Снимок SyncEngine — не читаем @Published singleton в body (watchdog / layout deadlock).
     @State private var aiSyncStateDisplay: SyncState = .idle
 
@@ -274,6 +275,10 @@ struct AIAssistantScreen: View {
             AIFeedbackSheet(isPresented: $showFeedbackSheet, apiService: APIService.shared, resolvedBy: "ai_assistant_feedback_sheet")
                 .environmentObject(localizationManager)
         }
+        .sheet(isPresented: $showWellnessReferralSheet) {
+            WellnessReferralSheet(level: "L2")
+                .environmentObject(localizationManager)
+        }
         .alert(localizationManager.localized("common_error"), isPresented: $showError) {
             Button(localizationManager.localized("common_ok"), role: .cancel) {}
         } message: {
@@ -432,6 +437,14 @@ struct AIAssistantScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             ForEach(actions) { action in
                 Button {
+                    if let url = AIActionCardMapper.phoneURL(for: action.id) {
+                        UIApplication.shared.open(url)
+                        return
+                    }
+                    if AIActionCardMapper.opensReferralSheet(action.id) {
+                        showWellnessReferralSheet = true
+                        return
+                    }
                     guard let screen = AIActionCardMapper.screen(for: action.id) else { return }
                     logger.business("🤖 AI action card: \(action.id) → \(screen.rawValue)")
                     navigationManager.navigateTo(screen)

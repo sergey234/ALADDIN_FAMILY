@@ -296,6 +296,15 @@ except ImportError as e:
     ai_companion_router = None
 
 try:
+    from security.api.routers.wellness_router import router as wellness_router
+    wellness_router_available = True
+    print("✅ Wellness Router loaded")
+except ImportError as e:
+    print(f"❌ Wellness Router not available: {e}")
+    wellness_router_available = False
+    wellness_router = None
+
+try:
     from security.api.routers.ai_platform_router import router as ai_platform_router
     ai_platform_available = True
     print("✅ AI Platform Router loaded")
@@ -974,6 +983,13 @@ if ai_companion_available:
         print("✅ Роутер AI Companion подключен")
     except Exception as e:
         print(f"❌ Ошибка подключения AI Companion: {e}")
+
+if wellness_router_available and wellness_router is not None:
+    try:
+        app.include_router(wellness_router)
+        print("✅ Роутер Wellness подключен")
+    except Exception as e:
+        print(f"❌ Ошибка подключения Wellness: {e}")
 
 if ai_platform_available:
     try:

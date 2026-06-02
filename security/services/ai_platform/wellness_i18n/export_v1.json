@@ -1,0 +1,47 @@
+{
+  "version": "v1",
+  "clinician": {
+    "title": {
+      "ru": "ALADDIN — сводка wellness (подросток)",
+      "en": "ALADDIN Wellness summary (teen)"
+    },
+    "disclaimer": {
+      "ru": "Сводка приложения самопомощи — не медицинская карта и не диагноз. Только с согласия подростка.",
+      "en": "Self-help app summary — not a medical record or diagnosis. For professional use only with teen consent."
+    }
+  },
+  "weekly_pdf": {
+    "title": {
+      "ru": "Мой прогресс — ALADDIN",
+      "en": "My progress — ALADDIN"
+    },
+    "disclaimer": {
+      "ru": "Сводка самопомощи без текста чата. Не диагноз и не медицинская карта.",
+      "en": "Self-help summary without chat text. Not a diagnosis or medical record."
+    },
+    "section_checkins": {
+      "ru": "Настроение",
+      "en": "Mood"
+    },
+    "section_assessments": {
+      "ru": "Опросники",
+      "en": "Screenings"
+    },
+    "section_outcomes": {
+      "ru": "Оценки после упражнений",
+      "en": "Exercise feedback"
+    },
+    "section_insights": {
+      "ru": "Инсайты",
+      "en": "Insights"
+    },
+    "generated_label": {
+      "ru": "Сформировано: %s",
+      "en": "Generated: %s"
+    },
+    "share_cta": {
+      "ru": "Поделиться PDF",
+      "en": "Share PDF"
+    }
+  }
+}

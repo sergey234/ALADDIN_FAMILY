@@ -1,0 +1,72 @@
+# Knowledge Pack — столп «Понять себя» (Jung lite; gate p0-08)
+pack_version: jung_v1.0
+pillar: jung
+schema: wellness_knowledge_pack_v1
+status: draft
+
+ui:
+  ru: Понять себя
+  en: Understand yourself
+
+allowed_topics:
+  - dreams_as_metaphor
+  - symbols_lite
+  - reflection_without_prediction
+
+forbidden_concepts:
+  - diagnosis
+  - fortune_telling
+  - other_pillars
+  - therapy_claims
+
+forbidden_phrases:
+  ru:
+    - предсказ
+    - сбудется
+    - диагноз
+    - терапия
+    - Юнг
+    - Фрейд
+  en:
+    - will happen
+    - predict your future
+    - diagnose
+    - Jung
+    - Freud
+
+llm_rules:
+  ru: >
+    Сны и образы — метафоры, не предсказания. Один вопрос за раз.
+    Не давай медицинских или мистических выводов. При кризисе — взрослый или 112.
+  en: >
+    Dreams and images are metaphors, not predictions. One question at a time.
+    No medical or mystical conclusions. In crisis — trusted adult or emergency.
+
+exercises:
+  dream_note_lite:
+    id: dream_note_lite
+    total_steps: 3
+    steps:
+      - step: 1
+        hint:
+          ru: "Коротко: что запомнилось из сна или образа? Без оценки."
+          en: "Briefly: what do you remember from a dream or image? No judgment."
+      - step: 2
+        hint:
+          ru: "Какое одно чувство было сильнее всего?"
+          en: "What one feeling was strongest?"
+      - step: 3
+        hint:
+          ru: "Если бы это был символ — что он мог бы означать для тебя сейчас?"
+          en: "If it were a symbol — what might it mean for you right now?"
+
+hero_flavor:
+  unicorn:
+    ru: "Образы — как подсказки, не как приговор."
+    en: "Images are hints, not verdicts."
+  aladdin:
+    ru: "Один образ — один вопрос."
+    en: "One image — one question."
+  genie:
+    ru: "Без магии — только смысл для тебя."
+    en: "No magic — only meaning for you."

@@ -1,0 +1,35 @@
+{
+  "version": "v1",
+  "stories": [
+    {
+      "id": "river",
+      "title": { "ru": "Речка у дома", "en": "The creek near home" },
+      "duration_min": 8,
+      "audio_url": "https://aladdin-ai.ru/static/wellness/sleep/river_v1.m4a"
+    },
+    {
+      "id": "stars",
+      "title": { "ru": "Звёздная тропа", "en": "Star path" },
+      "duration_min": 7,
+      "audio_url": "https://aladdin-ai.ru/static/wellness/sleep/stars_v1.m4a"
+    },
+    {
+      "id": "train",
+      "title": { "ru": "Мягкий поезд", "en": "The gentle train" },
+      "duration_min": 10,
+      "audio_url": "https://aladdin-ai.ru/static/wellness/sleep/train_v1.m4a"
+    },
+    {
+      "id": "garden",
+      "title": { "ru": "Ночной сад", "en": "Night garden" },
+      "duration_min": 6,
+      "audio_url": "https://aladdin-ai.ru/static/wellness/sleep/garden_v1.m4a"
+    },
+    {
+      "id": "cloud",
+      "title": { "ru": "Облако", "en": "Cloud" },
+      "duration_min": 5,
+      "audio_url": "https://aladdin-ai.ru/static/wellness/sleep/cloud_v1.m4a"
+    }
+  ]
+}

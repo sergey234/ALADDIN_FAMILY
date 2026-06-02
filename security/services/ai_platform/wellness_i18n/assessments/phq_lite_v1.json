@@ -1,0 +1,62 @@
+{
+  "assessment_type": "phq_lite",
+  "version": "v1",
+  "max_score": 15,
+  "disclaimer": {
+    "ru": "Это короткий скрининг, не диагноз. При сильных переживаниях обратись к специалисту или взрослому.",
+    "en": "This is a short screening, not a diagnosis. If you feel very low, talk to a professional or a trusted adult."
+  },
+  "answer_options": [
+    {
+      "value": 0,
+      "label_key": "wellness_assessment_answer_never",
+      "ru": "Совсем нет",
+      "en": "Not at all"
+    },
+    {
+      "value": 1,
+      "label_key": "wellness_assessment_answer_severaldays",
+      "ru": "Несколько дней",
+      "en": "Several days"
+    },
+    {
+      "value": 2,
+      "label_key": "wellness_assessment_answer_morehalf",
+      "ru": "Больше половины дней",
+      "en": "More than half the days"
+    },
+    {
+      "value": 3,
+      "label_key": "wellness_assessment_answer_daily",
+      "ru": "Почти каждый день",
+      "en": "Nearly every day"
+    }
+  ],
+  "questions": [
+    {
+      "id": "q1",
+      "ru": "Мало интереса или удовольствия от дел?",
+      "en": "Little interest or pleasure in doing things?"
+    },
+    {
+      "id": "q2",
+      "ru": "Подавленное настроение, грусть или безнадёжность?",
+      "en": "Feeling down, sad, or hopeless?"
+    },
+    {
+      "id": "q3",
+      "ru": "Трудности со сном (мало или слишком много)?",
+      "en": "Trouble sleeping (too little or too much)?"
+    },
+    {
+      "id": "q4",
+      "ru": "Усталость или мало энергии?",
+      "en": "Feeling tired or having little energy?"
+    },
+    {
+      "id": "q5",
+      "ru": "Плохой аппетит или переедание?",
+      "en": "Poor appetite or overeating?"
+    }
+  ]
+}
