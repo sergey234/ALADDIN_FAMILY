@@ -383,6 +383,12 @@ def _get_rewards_catalog(db: Session) -> List[RewardResponse]:
     return [_row_to_reward(row) for row in rows]
 
 
+def _gamification_user_id(userId: Optional[str], current_user: dict) -> str:
+    """JWT may expose numeric id — Postgres gamification tables use text user_id."""
+    raw = userId or current_user.get("id") or current_user.get("user_id") or current_user.get("sub")
+    return str(raw) if raw is not None else "unknown_user"
+
+
 def _get_user_rewards_history(
     db: Session, user_id: str, limit: int
 ) -> List[RewardResponse]:
@@ -1339,7 +1345,7 @@ async def get_gamification_rewards_history(
     GET /api/gamification/rewards/history
     История наград пользователя (совместимо с iOS `[RewardResponse]`).
     """
-    user_id = userId or current_user.get("id") or "unknown_user"
+    user_id = _gamification_user_id(userId, current_user)
     history = _get_user_rewards_history(db, user_id, limit)
     logger.info("✅ Fetched gamification rewards history: user_id=%s, count=%d", user_id, len(history))
     return history

@@ -235,19 +235,22 @@ async def create_thread(body: CreateThreadRequest, user: dict = Depends(get_curr
 
 @platform_router.get("/profile", response_model=UserProfileResponse)
 async def get_profile(user: dict = Depends(get_current_user)) -> UserProfileResponse:
-    uid = user["user_id"] or "anonymous"
+    uid = str(user.get("user_id") or user.get("sub") or "anonymous")
     data = _profiles.get(uid, {})
-    return UserProfileResponse(**{k: data.get(k) for k in UserProfileResponse.model_fields})
+    return UserProfileResponse.model_validate(data)
 
 
 @platform_router.put("/profile", response_model=UserProfileResponse)
 async def update_profile(body: UserProfileUpdateRequest, user: dict = Depends(get_current_user)) -> UserProfileResponse:
-    uid = user["user_id"] or "anonymous"
-    current = _profiles.get(uid, {})
+    uid = str(user.get("user_id") or user.get("sub") or "anonymous")
+    current = dict(_profiles.get(uid, {}))
     patch = body.model_dump(exclude_unset=True)
+    if "default_mode" in patch and patch["default_mode"] is not None:
+        mode = patch["default_mode"]
+        patch["default_mode"] = mode.value if hasattr(mode, "value") else mode
     current.update(patch)
     _profiles[uid] = current
-    return UserProfileResponse(**{k: current.get(k) for k in UserProfileResponse.model_fields})
+    return UserProfileResponse.model_validate(current)
 
 
 @voice_router.post("/ephemeral-token", response_model=EphemeralTokenResponse)

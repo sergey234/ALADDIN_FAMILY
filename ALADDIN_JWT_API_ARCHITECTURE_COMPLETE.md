@@ -1,51 +1,56 @@
 # 🔐 **ALADDIN JWT & API АРХИТЕКТУРА - ПОЛНЫЙ СПРАВОЧНИК**
 
 **Дата создания:** 4 марта 2026 года  
-**Дата обновления:** 25 апреля 2026 года (v2.5.0: handoff ML + OpenAPI audit; v2.5.1: честный «всё работает?», 174 vs бэкенд, чеклист повторной проверки)  
-**Версия:** 2.5.1 (честный статус «всё ли работает» + 174 задачи vs бэкенд)  
-**Статус (JWT/API):** ✅ **RELEASE GATE PASS (LIVE VERIFIED)** (история R75 / §6.1; не отменяет отдельный смотр 5xx из OpenAPI-прогона 2026-04-25)  
+**Дата обновления:** 3 июня 2026 года (v2.7.0: OpenAPI 491 paths / 534 ops, 0×5xx после фиксов platform/profile + rewards/history, deploy-status §6.7)  
+**Версия:** 2.7.0 (prod backend fixes 2026-06-03 + OpenAPI SSOT на `https://aladdin-ai.ru/openapi.json`)  
+**Статус (JWT/API):** ✅ **RELEASE GATE PASS (LIVE VERIFIED)** (R75 / §6.1) + OpenAPI audit **0×5xx** (2026-06-03, §6.7)  
 **Статус (общий релиз):** ❌ **NO_GO** (блокер `rel-15` 24h soak, см. `docs/release/release-gate-report.json` / `docs/release/go-no-go.md`)
 **Цель документа:** Единый источник истины (SSOT) для архитектуры JWT и API.
 
 **Дополнение 2026-04-25 (iOS plan-fact + `smart_api_tester.py`):** см. **§6.3** в этом файле — итог по счётчику плана **174/178**, прогон тестера по `https://aladdin-ai.ru`, исправленный контракт `register-device` (`device_id` → `access_token`).
 
+**Дополнение 2026-06-03 (backend fixes + OpenAPI SSOT):** см. **§6.7** — что уже на VPS, что в git; **`GET https://aladdin-ai.ru/openapi.json`** = **491 paths**; OpenAPI audit **534 ops → 0×5xx** (после фиксов `platform/profile`, `rewards/history`, wellness export/values-card).
+
 ---
 
-## 🤖 Для ML-систем и автоматизации: полный набор эндпоинтов, как проверять, результаты (актуально 2026-04-25)
+## 🤖 Для ML-систем и автоматизации (актуально 2026-06-03)
 
 ### Где «все эндпоинты» (machine-readable)
 
-- **Полный перечень маршрутов и HTTP-методов** поставляется **сервером** в OpenAPI 3, не этим Markdown-файлом:  
-  **`GET {BASE}/openapi.json`**  
-  - Рекомендуемый `BASE` для **полного** `openapi.json`: **`http://149.154.65.180:8002`** (на **`https://aladdin-ai.ru`** в развёртке 2026-04 документ OpenAPI может быть **недоступен** — 404, это не «нет API», а «другой хост/прокси без `openapi.json`**).
-- **Факты по последнему снятию (UTC 2026-04-25, прогон `scripts/openapi_conformant_audit.py`):**
-  - **368** path templates (уникальные пути),
-  - **395** **операций** (суммарно все методы: GET, POST, …).
-- Детализация по ответам и **точные пары (method, path)**: **`docs/OPENAPI_CONFORMANT_AUDIT_LATEST.json`** (и рядом **timestamp-копия** `docs/OPENAPI_CONFORMANT_AUDIT_20260425T181619.json` — обновляется при каждом прогоне `openapi_conformant_audit.py`).
-- Краткое резюме человеку: **`docs/OPENAPI_CONFORMANT_AUDIT_LATEST.md`**.
+- **Полный перечень маршрутов и HTTP-методов** поставляется **сервером** в OpenAPI 3:  
+  **`GET https://aladdin-ai.ru/openapi.json`** (nginx → FastAPI `:8002`, **491+ paths**, 2026-06-02)  
+  - **Не путать** с **`GET /api/openapi.json`** — это **SFM mock-envelope** (`version: 3.0.0-mock-real-protection`, `paths` пустой), **не** схема API.  
+  - **`GET /openapi.json` без `/api/`** — единственный SSOT для автоматизации с публичного домена.  
+  - Порт **`:8002` снаружи закрыт** — audit с локальной машины: `ssh` на VPS + `ALADDIN_BASE_URL=http://127.0.0.1:8002 python3 scripts/openapi_conformant_audit.py`.
+- **Факты по последнему снятию (UTC 2026-06-02, прогон `scripts/openapi_conformant_audit.py` на VPS `:8002`):**
+  - **491** path templates,
+  - **534** **операций** (суммарно все методы: GET, POST, …).
+- Детализация: **`docs/OPENAPI_CONFORMANT_AUDIT_20260602T212620.json`** (и копия `docs/OPENAPI_CONFORMANT_AUDIT_LATEST.json` при следующем прогоне).
+- Архив 2026-04-25: **368** paths, **395** ops, **1×5xx** — устарело.
 
 ### Три уровня проверки (что делать другой ML-системе, в каком порядке)
 
 | # | Что | Где | Зачем |
 |---|-----|-----|--------|
 | **A** | Политика «без mock / без 503-обхода / без JWT в URL» + safe-матрица | `docs/server/full_system_endpoint_audit.py` + JSON-артефакты §6.1 / `### 3) Canonical evidence artifacts` | **Релизные** критерии, согласованные с R75. |
-| **B** | Каждая **операция из OpenAPI** с **правильным** HTTP-методом; для `requestBody: application/json` — минимальный `{}` | `scripts/openapi_conformant_audit.py`, `ALADDIN_BASE_URL=http://149.154.65.180:8002` | **Инвентаризация «всё, что задекларировал бэкенд»** + дым по маршрутам; 422 на многих POST — **ожидаемо** (не хватает бизнес-полей), не путать с «сломано всё». |
-| **C** | Грубый «один POST + один JSON на все пути» | `smart_api_tester.py` (корневой файл репо) | Только **быстрый ориентир**; **не** использовать как SSOT (даёт много 404/405/422 от неверного метода). RU-объяснение: **`docs/OPENAPI_HTTP_CHECKS_EXPLAINED_RU.md`**. |
+| **B** | Каждая **операция из OpenAPI** с **правильным** HTTP-методом; для `requestBody: application/json` — минимальный `{}` | `scripts/openapi_conformant_audit.py`, `ALADDIN_BASE_URL=https://aladdin-ai.ru` или SSH + `127.0.0.1:8002` | **Инвентаризация «всё, что задекларировал бэкенд»** + дым по маршрутам; 422 на многих POST — **ожидаемо** (не хватает бизнес-полей), не путать с «сломано всё». |
+| **C** | Wellness contract tests (method-aware) | `smart_api_tester.py --wellness-only` | **57/57** wellness ops; не SSOT для всего API. |
+| **D** | Грубый «один POST + один JSON на все пути» | `smart_api_tester.py` (без флагов) | Только **быстрый ориентир**; **не** использовать как SSOT (даёт много 404/405/422 от неверного метода). RU-объяснение: **`docs/OPENAPI_HTTP_CHECKS_EXPLAINED_RU.md`**. |
 
-### Результаты уровня B (последний прогон 2026-04-25)
+### Результаты уровня B (последний прогон 2026-06-02)
 
-Источник: `docs/OPENAPI_CONFORMANT_AUDIT_LATEST.md`.
+Источник: `docs/OPENAPI_CONFORMANT_AUDIT_20260602T212620.json`.
 
 | Метрика | Значение | Как читать |
 |--------|----------|------------|
-| Всего операций | **395** | Столько пар **(путь, метод)** в `openapi.json`. |
-| Ответ **не 404** | **316** / 395 | Сервер **распознал** маршрут (2xx, 4xx кроме 404, 5xx). |
-| **2xx** | **192** | Успешный ответ с минимальным/тестовым вводом. |
-| **422** | **121** | Валидация Pydantic: чаще всего **нормально** при пустом `{}` — надо **реальное тело** по схеме. |
-| **404** | **79** | Нет ресурса с **подставленными** тестовыми id — не то же, что «нет маршрута везде POST». |
-| **5xx** | **1** | См. ниже — **серверная ошибка** на конкретном маршруте. |
+| Всего операций | **534** | Столько пар **(путь, метод)** в `openapi.json`. |
+| Ответ **не 404** | **451** / 534 | Сервер **распознал** маршрут (2xx, 4xx кроме 404, 5xx). |
+| **2xx** | **245** | Успешный ответ с минимальным/тестовым вводом. |
+| **422** | **170** | Валидация Pydantic: чаще всего **нормально** при пустом `{}` — надо **реальное тело** по схеме. |
+| **404** | **83** | Нет ресурса с **подставленными** тестовыми id — не то же, что «нет маршрута везде POST». |
+| **5xx** | **0** | ✅ После фиксов §6.7 (`platform/profile`, `rewards/history`, wellness). |
 
-**Зафиксированный 5xx в том прогоне:** `GET /api/gamification/rewards/history` → HTTP **500** (см. поле `status` / `path` / `method` в `OPENAPI_CONFORMANT_AUDIT_LATEST.json`).
+*Архив 2026-04-25: 395 ops, 1×5xx на `GET /api/gamification/rewards/history` — **исправлено**.*
 
 ### Что значит «1 в колонке server_5xx — реальный сигнал бэкенду»
 
@@ -71,18 +76,19 @@
 | Утверждение | Факт / условие |
 |-------------|----------------|
 | **JWT, политика без mock/503-обхода, без JWT в URL (R75 / уровень A)** | В пределах артефактов §6.1 / historical gate — **да**, **failed cases = 0** по **той** матрице и **тем** вызовам, которые тот отчёт делает. |
-| **Каждая задекларированная в OpenAPI операция вернула только 2xx** | **Нет.** Уровень **B** (2026-04-25): **192**× **2xx**, **121**× **422**, **79**× **404**, **1**× **5xx** — так и должно быть при **минимальном** вводе; 422/404 **не** доказывают «сервер мёртв», см. таблицу уровня B. |
-| **Серверная ошибка на бэке** | **Как минимум одна:** `GET /api/gamification/rewards/history` → **500** в прогоне (см. `OPENAPI_CONFORMANT_AUDIT_LATEST.json`). Пока не исправлено/не объяснено (например, пустой стейт) — **нельзя** говорить «всё 100% ок по API». |
-| **Итог для PR/релиза** | **Интеграция iOS** может быть **готова** по **своим** gate (сборка, smoke-скрипты в репо), при этом **часть маршрутов** требует **по-настоящему** контрактных сценариев (тела из схемы) и **отдельно** — разбора 5xx на бэкенде. |
+| **Каждая задекларированная в OpenAPI операция вернула только 2xx** | **Нет.** Уровень **B** (2026-06-02): **245**× **2xx**, **170**× **422**, **83**× **404**, **0**× **5xx** — 422/404 **нормальны** при минимальном вводе. |
+| **Серверная ошибка на бэке (OpenAPI audit)** | **0×5xx** (2026-06-02). Ранее был 1×5xx на `rewards/history` — **исправлено** §6.7. |
+| **Итог для PR/релиза** | **Интеграция iOS** может быть **готова** по **своим** gate; маршруты с 422 требуют **контрактных** тел из схемы. |
 
 **Итог:** **всю актуальную** методологию, **цифры** последнего **OpenAPI-conformant** прогона, **интерпретации** 422/404/5xx и **контракт** `register-device` — **в этот файл внесено** (разделы выше + §6.3, ссылки на JSON/Markdown). **Гарантию «все эндпоинты в проде ведут себя идеально в бою»** такой дым **не** даёт — она требуется **поэндпоинтно** по `openapi.json` + E2E с **валидными** DTO + мониторинг.
 
-### Чеклист повторной проверки (когда взять следующий снимок)
+### Чеклист повторной проверки
 
-1. `curl -sS -m 8 http://149.154.65.180:8002/api/health` → `{"status":"ok"}`.
-2. `ALADDIN_BASE_URL=http://149.154.65.180:8002 python3 scripts/openapi_conformant_audit.py` — обновить `docs/OPENAPI_CONFORMANT_AUDIT_LATEST.*`.
-3. (Опционально) `ALADDIN_AUTH_TOKEN=… python3 docs/server/full_system_endpoint_audit.py` — **другой** смысл, см. таблицу уровня A.
-4. Сверить 5xx в JSON; при **0** по 5xx на уровне B + закрытом баге по `rewards/history` — сильнее основание для «маршрутная матрица в порядке по дыму».
+1. `curl -sS https://aladdin-ai.ru/api/health` → `{"status":"ok"}`.
+2. `curl -sS https://aladdin-ai.ru/openapi.json | jq '.paths | length'` → **491**.
+3. `ALADDIN_BASE_URL=https://aladdin-ai.ru python3 scripts/openapi_conformant_audit.py` — обновить `docs/OPENAPI_CONFORMANT_AUDIT_LATEST.*`.
+4. `python3 smart_api_tester.py --wellness-only` → **57/57**.
+5. (Опционально) `ALADDIN_AUTH_TOKEN=… python3 docs/server/full_system_endpoint_audit.py` — уровень A, см. §6.1.
 
 ---
 
@@ -91,7 +97,8 @@
 - **Last live verification:**  
   - `2026-03-21` — полный live-аудит R75/R74 (`FULL_SYSTEM_ENDPOINT_AUDIT_REPORT_*_POST_R75_20260321*`)  
   - `2026-04-01` — актуальная live-валидация JWT + full_system audit BUILD_124_125 (см. §6.1 / §6.2)  
-  - `2026-04-25` — **OpenAPI-inventory + method-aware** прогон `scripts/openapi_conformant_audit.py` (395 ops, 1× 5xx на `GET /api/gamification/rewards/history`, отчёты `docs/OPENAPI_CONFORMANT_AUDIT_LATEST.*`)
+  - `2026-06-03` — OpenAPI **491 paths / 534 ops**, audit **0×5xx**; backend fixes §6.7; nginx `/openapi.json`
+  - `2026-04-25` — OpenAPI-inventory (395 ops, архив)
 
 ### 📊 **АКТУАЛЬНЫЕ ЦИФРЫ (ФАКТ ПО LIVE-АУДИТУ)**
 
@@ -145,6 +152,8 @@
 | `app/routers/crash_detection_compat.py` | `/api/crash-detection/*` |
 | `app/routers/parental_compat.py` | `/api/parental/*` |
 | `app/routers/misc_other_compat.py` | `other cluster` (`/api/malware/*`, `/api/protection/*`, `/api/devices`, `/api/location/geofences`, `/api/payments/qr/status/test`, `/api/test`) |
+| `security/api/routers/wellness_router.py` | `/api/wellness/*` (75 ops, Wellness Platform 131/131 + 3 PO) |
+| `security/api/routers/ai_companion_router.py` | `/api/ai/companion/*` (stream, threads, wellness_pillar in body) |
 
 ### 2) Endpoint truth-state (final)
 
@@ -160,6 +169,7 @@ Workflow definition: `NotStarted -> Routed -> AuthOK -> BusinessOK -> Regression
 | `/api/gamification/*` | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `/api/system/*` | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `/api/ai/*` | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/api/wellness/*` | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `other` cluster | ✅ | ✅ | ✅ | ✅ | ✅ |
 
 | Family | Final state | Evidence |
@@ -172,6 +182,7 @@ Workflow definition: `NotStarted -> Routed -> AuthOK -> BusinessOK -> Regression
 | `/api/gamification/*` | `RegressionSafe` | Final full rerun `POST_R75` |
 | `/api/system/*` | `RegressionSafe` | Final full rerun `POST_R75` |
 | `/api/ai/*` | `RegressionSafe` | Final full rerun `POST_R75` |
+| `/api/wellness/*` | `RegressionSafe` | `scripts/verify_wellness_prod.sh` 14/14 PASS (2026-06-01 UTC), build 221 deploy |
 | `other` cluster | `RegressionSafe` | Closed by R75 waves + final rerun |
 
 ### 3) Canonical evidence artifacts
@@ -274,10 +285,10 @@ PY
 
 ### 6.3) `smart_api_tester.py` — реальный HTTP-прогон и ограничения
 
-> **Актуальный handoff для ML (полный inventory OpenAPI, три уровня проверки, 5xx, артефакты):** см. раздел **«Для ML-систем и автоматизации»** в **начале** этого файла (обновлено 2026-04-25).
+> **Актуальный handoff для ML (полный inventory OpenAPI, три уровня проверки, 5xx, артефакты):** см. раздел **«Для ML-систем и автоматизации»** в **начале** этого файла (обновлено 2026-06-03).
 
 - **Назначение (репозиторий iOS):** `smart_api_tester.py` в корне проекта — «дымовой» прогон по `https://aladdin-ai.ru` с **настоящими** HTTP-запросами (`requests`, зависимость: `python3 -m pip install --user requests`).
-- **OpenAPI на рантайме:** `GET https://aladdin-ai.ru/api/openapi.json` (в скрипте также пробуется объединение путей из OpenAPI + статический список `APP_ENDPOINTS`).
+- **OpenAPI на рантайме:** `GET https://aladdin-ai.ru/openapi.json` (**491 paths**). Не `/api/openapi.json` (SFM mock).
 
 #### Контракт `register-device` (актуальный на 2026-04-25, prod `aladdin-ai.ru`)
 
@@ -310,10 +321,12 @@ PY
 
 #### Правильная проверка «всех задекларированных в OpenAPI» операций (2026-04-25)
 
+- **Wellness Platform (2026-06-02):** `python3 smart_api_tester.py --wellness-only` — **method-aware** прогон всех `/api/wellness/*` с корректными GET/POST и контрактными телами (consent → checkin → phq-lite → pdf-labels → widget/copy). Альтернатива: `./scripts/verify_wellness_prod.sh`.
+
 - **Простое объяснение (RU):** `docs/OPENAPI_HTTP_CHECKS_EXPLAINED_RU.md` — зачем наивный «везде POST» даёт 404/422 и чем его заменить.
 - **Скрипт с корректными HTTP-методами:** `scripts/openapi_conformant_audit.py` — читает `GET {BASE}/openapi.json` (на prod стенде `http://149.154.65.180:8002/openapi.json` отдаёт схему) и вызывает каждую операцию **тем методом, который указан в OpenAPI**; для JSON `requestBody` шлёт минимальный `{}`. Итоговые отчёты: `docs/OPENAPI_CONFORMANT_AUDIT_LATEST.md` / `.json`.
-- **Актуальный срез (пример):** 395 операций, 316 ответов без **404** (см. LATEST). Один **5xx** в отчёте требует разбора на бэкенде (пример: `GET /api/gamification/rewards/history` в прогоне от 2026-04-25).
-- **Публичный домен** `https://aladdin-ai.ru`: OpenAPI в текущей конфигурации может **не** отдаваться — полный список маршрутов снимать с того хоста, где доступен `/openapi.json` (см. `ALADDIN_BASE_URL` в скрипте).
+- **Актуальный срез (2026-06-03):** **534** операций, **0×5xx**, **245×2xx** — `docs/OPENAPI_CONFORMANT_AUDIT_20260602T212620.json`.
+- **Публичный домен:** `https://aladdin-ai.ru/openapi.json` — **доступен** (nginx, см. §6.7).
 
 ### 6.4) Исторический список iOS‑only эндпоинтов (contract drift `41/41` → `31/31`)
 
@@ -380,6 +393,185 @@ PY
   - сервер для всех этих путей даёт **честный 404**,  
   - гейты (contract‑matrix + full_system audit) это состояние **принимают как зелёное**,  
   - рисков по JWT/mocks/5xx здесь нет.
+
+### 6.5) Wellness Platform API — `/api/wellness/*` (SSOT, build 221+, prod 2026-06-01)
+
+> **План:** `docs/WELLNESS_PLATFORM_MASTER_PLAN.md` — **131/131** core задач + **3 PO** (HealthKit rollback build 222, widget p3-18, PDF p3-19) = **134** закрытых пункта.  
+> **Роутер:** `security/api/routers/wellness_router.py` (`prefix="/api/wellness"`).  
+> **iOS константы:** `Core/Config/AppConfig.swift` → блок `wellness*`.  
+> **Prod smoke:** `scripts/verify_wellness_prod.sh` → **14/14 PASS** (deploy **2026-06-01 21:36 UTC**).  
+> **Method-aware тест:** `smart_api_tester.py` → `run_wellness_contract_tests()`.  
+> **Clinician export i18n:** `security/services/ai_platform/wellness_clinician_export.py` → ключи `wellness_pdf_clinician_title`, `wellness_pdf_disclaimer` из `wellness_i18n_loader`.
+
+#### Auth и общие правила
+
+- **JWT:** `Authorization: Bearer <access_token>` (кроме `GET /api/wellness/widget/copy` — без user, только `FEATURE_WELLNESS_ENABLED`).
+- **Consent gate:** большинство мутаций и journal требуют `POST /api/wellness/consent` с `{"wellness_accepted": true}`.
+- **Locale:** query `?locale=ru|en` или заголовок `Accept-Language` (см. `wellness_locale_dep`).
+- **Age bands:** `child`, `teen`, `parent`, `senior` — влияют на pillars, parent-only routes, clinician export (teen+).
+- **Feature flag:** `FEATURE_WELLNESS_ENABLED=1`; canary: `GET /api/wellness/canary/status`.
+
+#### Полный реестр операций (75)
+
+| # | Method | Path | Назначение / задача |
+|---|--------|------|---------------------|
+| 1 | GET | `/api/wellness/pillars` | Список столпов по age_band (p1-04) |
+| 2 | POST | `/api/wellness/session/pillar` | Выбор столпа `{pillar, force_switch?}` (p1-05) |
+| 3 | POST | `/api/wellness/session/end` | Завершить сессию / снять lock (p2-15) |
+| 4 | GET | `/api/wellness/settings` | Настройки + alliance (p1-25) |
+| 5 | POST | `/api/wellness/settings/parent-share` | Teen: share mood aggregate `{parent_share_aggregate}` |
+| 6 | GET | `/api/wellness/consent` | Статус consent + has_access |
+| 7 | POST | `/api/wellness/consent` | `{wellness_accepted, psychological_support_enabled?}` |
+| 8 | POST | `/api/wellness/checkin` | Emoji + sliders `{mood, sleep_hours?, stress_level?, energy_level?, notes?}` |
+| 9 | GET | `/api/wellness/checkin/today` | Check-in за сегодня |
+| 10 | GET | `/api/wellness/journal` | `?days=7` — история check-in |
+| 11 | GET | `/api/wellness/triggers/status` | Триггеры / nudges (locale) |
+| 12 | POST | `/api/wellness/nudges/idle/dismiss` | Dismiss idle nudge |
+| 13 | GET | `/api/wellness/assessments/phq-lite/schema` | PHQ-lite схема (child/teen) |
+| 14 | POST | `/api/wellness/assessments/phq-lite/submit` | `{answers: [5 int]}` |
+| 15 | GET | `/api/wellness/assessments/phq-9/schema` | PHQ-9 (teen+) |
+| 16 | POST | `/api/wellness/assessments/phq-9/submit` | `{answers: [9 int]}` |
+| 17 | GET | `/api/wellness/assessments/gad-7/schema` | GAD-7 |
+| 18 | POST | `/api/wellness/assessments/gad-7/submit` | `{answers: [7 int]}` |
+| 19 | GET | `/api/wellness/assessments/mbi-lite/schema` | MBI-lite burnout |
+| 20 | POST | `/api/wellness/assessments/mbi-lite/submit` | `{answers: [5 int]}` |
+| 21 | GET | `/api/wellness/escalation/level` | `?message=` → L0–L3 ladder |
+| 22 | GET | `/api/wellness/referral` | `?locale=&level=` — helplines |
+| 23 | GET | `/api/wellness/trauma/check` | Trauma-informed gate |
+| 24 | GET | `/api/wellness/crisis/status` | Crisis cooldown + premium gate |
+| 25 | GET | `/api/wellness/premium/eligibility` | Jung / deep paths eligibility |
+| 26 | GET | `/api/wellness/alliance` | Therapeutic alliance state |
+| 27 | GET | `/api/wellness/session/suggest-pillar` | Auto-suggest по mood |
+| 28 | GET | `/api/wellness/session/loop` | Orchestrator snapshot `?message=&locale=` |
+| 29 | GET | `/api/wellness/session/plan` | Session plan agent |
+| 30 | GET | `/api/wellness/session/recap` | Recap после сессии |
+| 31 | GET | `/api/wellness/exercises/catalog` | Каталог упражнений |
+| 32 | GET | `/api/wellness/exercises/active` | Активное упражнение |
+| 33 | POST | `/api/wellness/exercises/start` | `{pillar, exercise_id}` |
+| 34 | POST | `/api/wellness/exercises/{exercise_row_id}/step` | `{answer?}` |
+| 35 | GET | `/api/wellness/timeline` | Wellness timeline |
+| 36 | POST | `/api/wellness/outcomes` | `{pillar, helpful, note?}` |
+| 37 | POST | `/api/wellness/outcomes/dismiss-prompt` | Dismiss outcome prompt |
+| 38 | GET | `/api/wellness/reflective/modes` | Reflective modes list |
+| 39 | GET | `/api/wellness/reflective/resolve` | Resolve reflective mode |
+| 40 | GET | `/api/wellness/pillar/fatigue` | Pillar fatigue guard |
+| 41 | POST | `/api/wellness/habits` | `{if_then}` habit plan |
+| 42 | GET | `/api/wellness/habits` | List habit plans |
+| 43 | GET | `/api/wellness/dreams` | Jung dream journal |
+| 44 | POST | `/api/wellness/dreams` | `{dream_text, mood_tag?}` |
+| 45 | GET | `/api/wellness/alerts` | Wellness alerts |
+| 46 | GET | `/api/wellness/family/dashboard` | Parent aggregate dashboard |
+| 47 | GET | `/api/wellness/hub/copy` | Hub A/B copy `?locale=` (p2-40) |
+| 48 | GET | `/api/wellness/weekly-meaning` | Weekly meaning card |
+| 49 | POST | `/api/wellness/weekly-meaning/dismiss` | Dismiss weekly card |
+| 50 | GET | `/api/wellness/family/themes` | Parent themes (no chat text) |
+| 51 | GET | `/api/wellness/parent/playbook` | **parent/senior** talk scripts `?topic=&teen_mood=&use_llm=` (p3-16) |
+| 52 | GET | `/api/wellness/export/pdf-labels` | **PDF labels** для p3-19 `?locale=` |
+| 53 | GET | `/api/wellness/widget/copy` | **Widget strings** для p3-18 `?locale=` |
+| 54 | GET | `/api/wellness/security/fusion` | Mood + security fusion `?teen_user_id=` |
+| 55 | GET | `/api/wellness/streaks` | Check-in streaks + badges |
+| 56 | GET | `/api/wellness/export/personal` | GDPR/152-ФЗ export `?days=` |
+| 57 | DELETE | `/api/wellness/data` | Delete wellness data |
+| 58 | GET | `/api/wellness/export/clinician` | Clinician JSON export (teen+, i18n via `wellness_clinician_export.py`) |
+| 59 | GET | `/api/wellness/together/session` | Co-regulation session `?duration_sec=` |
+| 60 | GET | `/api/wellness/scheduler/reminders` | Reminder schedule |
+| 61 | GET | `/api/wellness/errors/catalog` | Error codes i18n |
+| 62 | GET | `/api/wellness/humanistic/values-card` | Values card |
+| 63 | POST | `/api/wellness/humanistic/values-card` | Save values card |
+| 64 | POST | `/api/wellness/senior/journal/merge` | Senior journal merge |
+| 65 | GET | `/api/wellness/pillar/rive` | Rive animation config |
+| 66 | GET | `/api/wellness/family/talk-prompts` | Family talk prompts |
+| 67 | GET | `/api/wellness/seasonal/playbooks` | Seasonal playbooks |
+| 68 | GET | `/api/wellness/senior/voice-session` | Senior voice session copy |
+| 69 | GET | `/api/wellness/sleep/stories` | Sleep stories catalog |
+| 70 | GET | `/api/wellness/canary/status` | Canary cohort status |
+| 71 | GET | `/api/wellness/store/backend` | `sqlite` \| `postgres` backend probe (p3-11) |
+
+> **Примечание:** нумерация 71 строк — некоторые path templates (`/exercises/{id}/step`) считаются одной операцией; полный OpenAPI после деплоя wellness включает **~75** wellness-операций в общем inventory **534** ops (491 paths).
+
+#### Ключевые контракты (новые prod API, запрос пользователя)
+
+**Consent**
+```http
+GET  /api/wellness/consent
+POST /api/wellness/consent
+Content-Type: application/json
+{"wellness_accepted": true}
+→ {"ok": true, "has_access": true, ...}
+```
+
+**Check-in & Journal**
+```http
+POST /api/wellness/checkin
+{"mood": "🙂", "sleep_hours": 7.0, "stress_level": 2, "energy_level": 4}
+GET  /api/wellness/checkin/today
+GET  /api/wellness/journal?days=7
+```
+
+**PHQ-lite**
+```http
+GET  /api/wellness/assessments/phq-lite/schema?locale=ru
+POST /api/wellness/assessments/phq-lite/submit
+{"answers": [0, 1, 0, 1, 0]}
+```
+
+**Parent playbook (parent/senior only)**
+```http
+GET /api/wellness/parent/playbook?locale=ru&topic=school&teen_mood=sad&use_llm=false
+→ {"ok": true, "steps": [...], "llm_used": false}
+```
+
+**PDF labels (p3-19)**
+```http
+GET /api/wellness/export/pdf-labels?locale=ru
+→ {"ok": true, "title_key": "wellness_pdf_title", ...}
+```
+
+**Widget copy (p3-18)**
+```http
+GET /api/wellness/widget/copy?locale=ru
+→ {"ok": true, "title_key": "wellness_widget_title", ...}
+```
+
+**Clinician export i18n** (`wellness_clinician_export.py`):
+```json
+{"title_key": "wellness_pdf_clinician_title", "disclaimer_key": "wellness_pdf_disclaimer", ...}
+```
+
+#### Prod verification (2026-06-01)
+
+```bash
+./scripts/verify_wellness_prod.sh https://aladdin-ai.ru
+# → Wellness prod verify PASSED — full platform spot-check (131/131)
+
+python3 smart_api_tester.py --wellness-only
+# → method-aware contract tests для всех GET/POST wellness ops
+```
+
+**Fixed prod (2026-06-02):** wellness `export/personal`, `values-card`.  
+**Fixed prod (2026-06-03):** `GET/PUT /api/ai/platform/profile` (Pydantic defaults), `GET /api/gamification/rewards/history` без `userId` (JWT id → str).
+
+### 6.7) Deploy status — prod vs git (2026-06-03)
+
+| Что | На VPS (`149.154.65.180`) | В git (`master`) |
+|-----|---------------------------|------------------|
+| Backend fixes (§6.7) | **✅ задеплоено** (`scp` + `systemctl restart aladdin-backend`) | **⏳ не закоммичено** |
+| nginx `/openapi.json` | **✅** `location = /openapi.json` | только в этом `.md` |
+| iOS build 222 | не требуется | отдельный трек |
+
+**Нужен ли ещё deploy?** **Нет** — prod уже работает (проверено: profile **200**, rewards/history **200**, openapi **491 paths**).
+
+**Нужен git commit?** **Да** — чтобы репозиторий = SSOT для команды и CI:
+- `app/auth/auth.py`
+- `security/api/routers/ai_platform_router.py`
+- `security/api/routers/gamification_router.py`
+- `security/services/ai_platform/wellness_gdpr.py`
+- `security/services/ai_platform/wellness_values_card.py`
+- `smart_api_tester.py`, `scripts/openapi_conformant_audit.py`
+- `ALADDIN_JWT_API_ARCHITECTURE_COMPLETE.md`
+- `docs/OPENAPI_CONFORMANT_AUDIT_20260602T212620.json`
+
+Полный wellness deploy (`scripts/deploy_wellness_p1.sh`) **не нужен** — точечные файлы уже на сервере.
 
 ### 7) JWT TTL policy (normative)
 

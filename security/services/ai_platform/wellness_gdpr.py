@@ -38,7 +38,7 @@ def export_wellness_personal_data(
         "outcomes": store.list_wellness_outcomes(user_id, limit=50),
         "dreams": store.list_wellness_dreams(user_id, limit=50),
         "insights": store.list_wellness_insights(user_id, limit=50),
-        "habit_plans": store.list_wellness_habit_plans(user_id, limit=20),
+        "habit_plans": store.list_wellness_habit_plans(user_id, active_only=False),
         "crisis_log": store.list_wellness_crisis_log(user_id, limit=20),
         "alert_log": store.list_wellness_alert_log(user_id, limit=20),
     }

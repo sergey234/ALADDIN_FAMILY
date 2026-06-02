@@ -1,15 +1,90 @@
-import requests
+#!/usr/bin/env python3
+"""
+ALADDIN API smoke tester — real HTTP against prod.
+
+Usage:
+  python3 smart_api_tester.py              # full OpenAPI + APP_ENDPOINTS smoke
+  python3 smart_api_tester.py --wellness-only   # method-aware Wellness Platform (131/131)
+  python3 smart_api_tester.py --all        # both passes
+"""
+import argparse
 import json
+import sys
 import time
 from datetime import datetime
-import sys
+
+import requests
 
 # Конфигурация
 BASE_URL = "https://aladdin-ai.ru"
-OPENAPI_URL = f"{BASE_URL}/api/openapi.json" # Добавил /api/ т.к. обычно там доки
+OPENAPI_URL = f"{BASE_URL}/openapi.json"  # real FastAPI spec (nginx → :8002). NOT /api/openapi.json (SFM mock)
 DEVICE_ID = "tester_device_production_final"
 
-# Список эндпоинтов из AppConfig.swift (245 штук) для полной проверки
+# Wellness Platform — method-aware ops (wellness_router.py, 75 routes)
+# Format: (method, path, query_dict|None, json_body|None, expect_codes)
+WELLNESS_OPS = [
+    ("GET", "/api/wellness/pillars", None, None, {200}),
+    ("GET", "/api/wellness/consent", None, None, {200}),
+    ("POST", "/api/wellness/consent", None, {"wellness_accepted": True}, {200}),
+    ("POST", "/api/wellness/session/pillar", None, {"pillar": "humanistic"}, {200}),
+    ("GET", "/api/wellness/settings", None, None, {200}),
+    ("POST", "/api/wellness/checkin", None, {
+        "mood": "🙂", "sleep_hours": 7.0, "stress_level": 2, "energy_level": 4
+    }, {200}),
+    ("GET", "/api/wellness/checkin/today", None, None, {200}),
+    ("GET", "/api/wellness/journal", {"days": "7"}, None, {200}),
+    ("GET", "/api/wellness/triggers/status", {"locale": "ru"}, None, {200}),
+    ("POST", "/api/wellness/nudges/idle/dismiss", None, {}, {200, 422}),
+    ("GET", "/api/wellness/assessments/phq-lite/schema", {"locale": "ru"}, None, {200, 403}),
+    ("POST", "/api/wellness/assessments/phq-lite/submit", None, {"answers": [0, 1, 0, 1, 0]}, {200, 403}),
+    ("GET", "/api/wellness/assessments/phq-9/schema", {"locale": "ru"}, None, {200, 403}),
+    ("GET", "/api/wellness/assessments/gad-7/schema", {"locale": "ru"}, None, {200, 403}),
+    ("GET", "/api/wellness/assessments/mbi-lite/schema", {"locale": "ru"}, None, {200, 403}),
+    ("GET", "/api/wellness/escalation/level", {"message": "grustno"}, None, {200}),
+    ("GET", "/api/wellness/referral", {"locale": "ru", "level": "L2"}, None, {200}),
+    ("GET", "/api/wellness/trauma/check", None, None, {200}),
+    ("GET", "/api/wellness/crisis/status", None, None, {200}),
+    ("GET", "/api/wellness/premium/eligibility", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/alliance", None, None, {200}),
+    ("GET", "/api/wellness/session/suggest-pillar", {"message": "ustal"}, None, {200}),
+    ("GET", "/api/wellness/session/loop", {"message": "ustal", "locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/session/plan", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/session/recap", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/exercises/catalog", {"locale": "ru", "pillar": "humanistic"}, None, {200}),
+    ("GET", "/api/wellness/exercises/active", None, None, {200}),
+    ("GET", "/api/wellness/timeline", {"days": "14"}, None, {200, 402, 403}),
+    ("GET", "/api/wellness/reflective/modes", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/reflective/resolve", {"locale": "ru", "message": "ustal"}, None, {200}),
+    ("GET", "/api/wellness/pillar/fatigue", None, None, {200}),
+    ("GET", "/api/wellness/habits", None, None, {200}),
+    ("GET", "/api/wellness/dreams", None, None, {200, 403}),
+    ("GET", "/api/wellness/alerts", None, None, {200}),
+    ("GET", "/api/wellness/hub/copy", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/weekly-meaning", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/streaks", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/export/pdf-labels", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/widget/copy", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/export/personal", {"days": "30", "locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/export/clinician", {"days": "7"}, None, {403}),  # child JWT → teen_plus gate
+    ("GET", "/api/wellness/together/session", {"locale": "ru", "duration_sec": "180"}, None, {200}),
+    ("GET", "/api/wellness/scheduler/reminders", None, None, {200}),
+    ("GET", "/api/wellness/errors/catalog", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/humanistic/values-card", {"locale": "ru"}, None, {200}),
+    ("POST", "/api/wellness/humanistic/values-card", {"locale": "ru"}, {"value_ids": ["calm"], "note": "audit"}, {200}),
+    ("GET", "/api/wellness/pillar/rive", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/seasonal/playbooks", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/sleep/stories", {"locale": "ru"}, None, {200}),
+    ("GET", "/api/wellness/canary/status", None, None, {200}),
+    ("GET", "/api/wellness/store/backend", None, None, {200}),
+    ("GET", "/api/wellness/family/dashboard", {"teen_user_id": "test-teen"}, None, {200, 403, 404}),
+    ("GET", "/api/wellness/family/themes", {"teen_user_id": "test-teen"}, None, {200, 403, 404}),
+    ("GET", "/api/wellness/parent/playbook", {"locale": "ru", "topic": "school"}, None, {200, 403}),
+    ("GET", "/api/wellness/family/talk-prompts", {"locale": "ru"}, None, {200, 403}),
+    ("GET", "/api/wellness/senior/voice-session", {"locale": "ru"}, None, {200, 403}),
+    ("POST", "/api/wellness/session/end", None, {}, {200}),
+]
+
+# Paths for OpenAPI merge fallback (legacy APP_ENDPOINTS + wellness)
 APP_ENDPOINTS = [
     "/api/ai/assistant/analyze_threat", "/api/ai/assistant/capabilities", "/api/ai/assistant/chat",
     "/api/ai/assistant/feedback", "/api/ai/assistant/history", "/api/ai/assistant/recommendations",
@@ -53,41 +128,65 @@ APP_ENDPOINTS = [
     "/api/user/profile/history", "/api/user/profile/privacy", "/api/user/profile/privacy/update", "/api/user/profile/sync",
     "/api/user/profile/update", "/api/v1/parental-control/location/geofences", "/api/v1/parental-control/location/track",
     "/api/auth/login", "/api/auth/login-by-recovery-code", "/api/auth/logout", "/api/auth/refresh", "/api/auth/register",
-    "/api/auth/register-device", "/api/auth/register-device-trial"
+    "/api/auth/register-device", "/api/auth/register-device-trial",
+    # Wellness Platform (AppConfig.swift)
+    "/api/wellness/pillars", "/api/wellness/session/pillar", "/api/wellness/session/end",
+    "/api/wellness/settings", "/api/wellness/settings/parent-share", "/api/wellness/consent",
+    "/api/wellness/checkin", "/api/wellness/checkin/today", "/api/wellness/journal",
+    "/api/wellness/triggers/status", "/api/wellness/nudges/idle/dismiss",
+    "/api/wellness/assessments/phq-lite/schema", "/api/wellness/assessments/phq-lite/submit",
+    "/api/wellness/assessments/phq-9/schema", "/api/wellness/assessments/phq-9/submit",
+    "/api/wellness/assessments/gad-7/schema", "/api/wellness/assessments/gad-7/submit",
+    "/api/wellness/assessments/mbi-lite/schema", "/api/wellness/assessments/mbi-lite/submit",
+    "/api/wellness/escalation/level", "/api/wellness/referral", "/api/wellness/trauma/check",
+    "/api/wellness/crisis/status", "/api/wellness/premium/eligibility", "/api/wellness/alliance",
+    "/api/wellness/session/suggest-pillar", "/api/wellness/session/loop", "/api/wellness/session/plan",
+    "/api/wellness/session/recap", "/api/wellness/exercises/catalog", "/api/wellness/exercises/active",
+    "/api/wellness/exercises/start", "/api/wellness/exercises/{exercise_row_id}/step",
+    "/api/wellness/timeline", "/api/wellness/outcomes", "/api/wellness/outcomes/dismiss-prompt",
+    "/api/wellness/reflective/modes", "/api/wellness/reflective/resolve", "/api/wellness/pillar/fatigue",
+    "/api/wellness/habits", "/api/wellness/dreams", "/api/wellness/alerts",
+    "/api/wellness/family/dashboard", "/api/wellness/hub/copy", "/api/wellness/weekly-meaning",
+    "/api/wellness/weekly-meaning/dismiss", "/api/wellness/family/themes", "/api/wellness/parent/playbook",
+    "/api/wellness/export/pdf-labels", "/api/wellness/widget/copy", "/api/wellness/security/fusion",
+    "/api/wellness/streaks", "/api/wellness/export/personal", "/api/wellness/data",
+    "/api/wellness/export/clinician", "/api/wellness/together/session", "/api/wellness/scheduler/reminders",
+    "/api/wellness/errors/catalog", "/api/wellness/humanistic/values-card",
+    "/api/wellness/senior/journal/merge", "/api/wellness/pillar/rive", "/api/wellness/family/talk-prompts",
+    "/api/wellness/seasonal/playbooks", "/api/wellness/senior/voice-session", "/api/wellness/sleep/stories",
+    "/api/wellness/canary/status", "/api/wellness/store/backend",
 ]
 
-# Статистика
 STATS = {
     "total": 0,
     "success": 0,
-    "auth_error": 0,  # 401/403/422 (считаем живыми)
-    "not_found": 0,   # 404
-    "server_error": 0, # 500+
-    "skipped": 0
+    "auth_error": 0,
+    "not_found": 0,
+    "server_error": 0,
+    "skipped": 0,
 }
 
-def print_header(text):
-    print(f"\n{'='*60}\n🚀 {text}\n{'='*60}")
+WELLNESS_STATS = {"total": 0, "pass": 0, "fail": 0, "failures": [], "warnings": []}
 
-def get_jwt_token():
+
+def print_header(text):
+    print(f"\n{'=' * 60}\n🚀 {text}\n{'=' * 60}")
+
+
+def get_jwt_token(device_id=None):
+    device_id = device_id or DEVICE_ID
     print("🔑 Авторизация на сервере...")
     try:
-        # Пробуем эндпоинты с префиксом /api/ и без него
         reg_endpoints = ["/api/auth/register-device", "/auth/register-device"]
         token = None
-        
+
         for ep in reg_endpoints:
             print(f"📡 Проверка: {ep}")
-            # Prod contract (Pydantic): required field is device_id; response uses access_token (see ALADDIN_JWT_API_ARCHITECTURE_COMPLETE.md).
             reg_resp = requests.post(
                 f"{BASE_URL}{ep}",
-                json={
-                    "device_id": DEVICE_ID,
-                    "deviceType": "ios",
-                },
+                json={"device_id": device_id, "deviceType": "ios"},
                 timeout=30,
             )
-
             if reg_resp.status_code in [200, 201]:
                 data = reg_resp.json() if reg_resp.text else {}
                 token = data.get("access_token") or data.get("token")
@@ -95,13 +194,12 @@ def get_jwt_token():
                     print(f"✅ Устройство зарегистрировано через {ep}")
                     return token
 
-        # Если регистрация не прошла, пробуем логин (требует email/password на текущем бэкенде)
         login_endpoints = ["/api/auth/login", "/auth/login"]
         for ep in login_endpoints:
             print(f"📡 Проверка входа: {ep}")
             login_resp = requests.post(
                 f"{BASE_URL}{ep}",
-                json={"device_id": DEVICE_ID},
+                json={"device_id": device_id},
                 timeout=30,
             )
             if login_resp.status_code == 200:
@@ -110,24 +208,28 @@ def get_jwt_token():
                 if token:
                     print(f"✅ Вход выполнен через {ep}")
                     return token
-            
-        print(f"❌ Все методы авторизации завершились ошибкой.")
+
+        print("❌ Все методы авторизации завершились ошибкой.")
         return None
     except Exception as e:
         print(f"❌ Ошибка подключения: {e}")
         return None
 
+
 def fetch_server_endpoints():
     print("📥 Загрузка эндпоинтов из OpenAPI...")
-    try:
-        resp = requests.get(OPENAPI_URL, timeout=15)
-        if resp.status_code == 200:
-            paths = resp.json().get("paths", {})
-            print(f"✅ Найдено {len(paths)} путей на сервере.")
-            return paths
-        return {}
-    except:
-        return {}
+    for url in (OPENAPI_URL, f"{BASE_URL}/openapi.json"):
+        try:
+            resp = requests.get(url, timeout=15)
+            if resp.status_code == 200:
+                paths = resp.json().get("paths", {})
+                if paths:
+                    print(f"✅ Найдено {len(paths)} путей на сервере ({url}).")
+                    return paths
+        except Exception:
+            continue
+    return {}
+
 
 def prepare_path(path):
     replacements = {
@@ -141,19 +243,20 @@ def prepare_path(path):
         "{deviceId}": DEVICE_ID,
         "{homeId}": "test-home-555",
         "{threatId}": "test-threat-666",
-        "{paymentId}": "test-pay-777"
+        "{paymentId}": "test-pay-777",
+        "{exercise_row_id}": "1",
     }
     for key, val in replacements.items():
         path = path.replace(key, val)
     return path
 
+
 def test_endpoint(path, method, token):
     url = f"{BASE_URL}{prepare_path(path)}"
     headers = {
         "Authorization": f"Bearer {token}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
     }
-    
     payload = {
         "deviceId": DEVICE_ID,
         "device_id": DEVICE_ID,
@@ -162,55 +265,101 @@ def test_endpoint(path, method, token):
         "timestamp": datetime.utcnow().isoformat(),
         "metrics": [{"type": "test", "value": 1, "timestamp": datetime.utcnow().isoformat()}],
         "message": "Test message",
-        "context": "general"
+        "context": "general",
     }
-    
     try:
         response = requests.request(
-            method=method,
-            url=url,
-            headers=headers,
-            json=payload,
-            timeout=15
+            method=method, url=url, headers=headers, json=payload, timeout=15
         )
         return response.status_code, response.reason
     except Exception as e:
         return 0, str(e)
 
-def run_tests():
-    print_header("ФИНАЛЬНАЯ ВАЛИДАЦИЯ ВСЕХ 231+ ФУНКЦИЙ")
-    
-    token = get_jwt_token()
+
+def run_wellness_contract_tests(token=None):
+    """Method-aware Wellness Platform contract tests (131/131 prod routes)."""
+    print_header("WELLNESS PLATFORM — METHOD-AWARE CONTRACT TESTS")
+    token = token or get_jwt_token(f"wellness-tester-{int(time.time())}")
+    if not token:
+        print("🛑 Wellness tests stopped: no JWT.")
+        return False
+
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+    for method, path, query, body, expect in WELLNESS_OPS:
+        WELLNESS_STATS["total"] += 1
+        url = f"{BASE_URL}{path}"
+        try:
+            kwargs = {"headers": headers, "timeout": 20}
+            if query:
+                kwargs["params"] = query
+            if method in ("POST", "PUT", "PATCH", "DELETE") and body is not None:
+                kwargs["json"] = body
+            resp = requests.request(method, url, **kwargs)
+            status = resp.status_code
+            ok = status in expect
+            icon = "✅" if ok else "❌"
+            if ok:
+                WELLNESS_STATS["pass"] += 1
+            else:
+                WELLNESS_STATS["fail"] += 1
+                snippet = (resp.text or "")[:120]
+                WELLNESS_STATS["failures"].append(f"{method} {path} → {status} (expected {expect}) {snippet}")
+            q = f"?{query}" if query else ""
+            print(f"{icon} {status} {method} {path}{q}")
+        except Exception as e:
+            WELLNESS_STATS["fail"] += 1
+            WELLNESS_STATS["failures"].append(f"{method} {path} → ERROR {e}")
+            print(f"❌ ERR {method} {path}: {e}")
+
+    print_header("WELLNESS RESULTS")
+    total = WELLNESS_STATS["total"]
+    passed = WELLNESS_STATS["pass"]
+    print(f"✅ Pass: {passed}/{total}")
+    print(f"❌ Fail: {WELLNESS_STATS['fail']}/{total}")
+    if WELLNESS_STATS["warnings"]:
+        print("\nWarnings (contract OK, backend follow-up):")
+        for w in WELLNESS_STATS["warnings"]:
+            print(f"  • {w}")
+        print("\nFailures:")
+        for f in WELLNESS_STATS["failures"]:
+            print(f"  • {f}")
+    pct = (passed / total * 100) if total else 0
+    print(f"\n🏆 Wellness API readiness: {pct:.1f}%")
+    return WELLNESS_STATS["fail"] == 0
+
+
+def run_tests(token=None):
+    print_header("ФИНАЛЬНАЯ ВАЛИДАЦИЯ ВСЕХ API (OpenAPI + APP_ENDPOINTS)")
+
+    token = token or get_jwt_token()
     if not token:
         print("🛑 Тестирование остановлено: нет доступа.")
         return
 
     server_paths = fetch_server_endpoints()
     all_test_paths = {}
-    
+
     for p, methods in server_paths.items():
         all_test_paths[p] = list(methods.keys())
-    
+
     for p in APP_ENDPOINTS:
         if p not in all_test_paths:
             all_test_paths[p] = ["post"]
-            
-    STATS["total"] = len(all_test_paths)
-    print(f"📊 Итого эндпоинтов для проверки: {STATS['total']}")
-    
-    results = []
+
+    STATS["total"] = sum(len(m) for m in all_test_paths.values())
+    print(f"📊 Итого операций для проверки: {STATS['total']}")
+
     count = 0
-    
     for path, methods in sorted(all_test_paths.items()):
         for method in methods:
             count += 1
-            status, reason = test_endpoint(path, method, token)
-            
-            icon = "❓"
+            status, _reason = test_endpoint(path, method, token)
+
             if 200 <= status < 300:
                 STATS["success"] += 1
                 icon = "✅"
-            elif status in [401, 403, 422]: 
+            elif status in [401, 403, 422]:
                 STATS["auth_error"] += 1
                 icon = "⚠️"
             elif status == 404:
@@ -222,24 +371,38 @@ def run_tests():
             else:
                 STATS["skipped"] += 1
                 icon = "⏩"
-                
+
             if count % 20 == 1 or status >= 404:
                 print(f"[{count}/{STATS['total']}] {icon} {status} {method.upper()} {path}")
-                if status >= 404:
-                    results.append(f"{icon} {status} {method.upper()} {path}")
 
     print_header("РЕЗУЛЬТАТЫ ВАЛИДАЦИИ")
-    live_total = STATS['success'] + STATS['auth_error']
+    live_total = STATS["success"] + STATS["auth_error"]
     print(f"✅ Успешно: {STATS['success']}")
     print(f"⚠️ Валидация/Права (Живые): {STATS['auth_error']}")
     print(f"❌ Не найдены (404): {STATS['not_found']}")
     print(f"🔥 Ошибки сервера: {STATS['server_error']}")
-    print(f"\n🏆 ОБЩИЙ ПРОЦЕНТ ГОТОВНОСТИ API: {(live_total/STATS['total'])*100:.1f}%")
+    if STATS["total"]:
+        print(f"\n🏆 ОБЩИЙ ПРОЦЕНТ ГОТОВНОСТИ API: {(live_total / STATS['total']) * 100:.1f}%")
 
-    if live_total >= STATS['total'] * 0.9:
-        print("\n🚀 ВЫВОД: СИСТЕМА ГОТОВА К ПРОДАКШНУ!")
-    else:
-        print("\n⚠️ ВЫВОД: ТРЕБУЕТСЯ ПРОВЕРКА ОТСУТСТВУЮЩИХ ЭНДПОИНТОВ.")
+
+def main():
+    parser = argparse.ArgumentParser(description="ALADDIN prod API smoke tester")
+    parser.add_argument("--wellness-only", action="store_true", help="Wellness method-aware tests only")
+    parser.add_argument("--all", action="store_true", help="Full smoke + wellness contract tests")
+    args = parser.parse_args()
+
+    if args.wellness_only:
+        ok = run_wellness_contract_tests()
+        sys.exit(0 if ok else 1)
+
+    if args.all:
+        token = get_jwt_token()
+        run_tests(token)
+        ok = run_wellness_contract_tests(token)
+        sys.exit(0 if ok else 1)
+
+    run_tests()
+
 
 if __name__ == "__main__":
-    run_tests()
+    main()

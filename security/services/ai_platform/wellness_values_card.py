@@ -48,7 +48,7 @@ def save_values_card(
     observe = ",".join(picked)
     if note:
         observe = f"{observe}|{note[:200]}"
-    row = store.add_wellness_insight(
+    row = store.save_wellness_insight(
         user_id,
         pillar="humanistic",
         observe_text=observe,

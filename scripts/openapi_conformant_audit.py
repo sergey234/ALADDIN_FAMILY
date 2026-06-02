@@ -114,6 +114,14 @@ def http_request(
 
 
 def load_openapi() -> dict[str, Any]:
+    def _valid(spec: dict[str, Any]) -> bool:
+        if spec.get("version") == "3.0.0-mock-real-protection":
+            return False
+        if spec.get("function"):
+            return False
+        paths = spec.get("paths")
+        return isinstance(paths, dict) and bool(paths)
+
     for suffix in ("/openapi.json", "/api/openapi.json"):
         st, text = http_request(
             f"{BASE}{suffix}",
@@ -126,9 +134,11 @@ def load_openapi() -> dict[str, Any]:
         )
         if st == 200 and text:
             try:
-                return json.loads(text)
+                spec = json.loads(text)
             except json.JSONDecodeError:
                 continue
+            if _valid(spec):
+                return spec
     raise RuntimeError(f"Cannot load OpenAPI from {BASE} (/openapi.json, /api/openapi.json)")
 
 

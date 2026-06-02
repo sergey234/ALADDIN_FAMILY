@@ -122,7 +122,7 @@ def get_current_user(
     canonical_id = payload.get("user_id") or payload.get("id") or payload.get("sub")
     # Важно: **payload после canonical — иначе поле `id` из токена перезаписывает нормализованный id.
     merged = dict(payload)
-    merged["id"] = canonical_id
+    merged["id"] = str(canonical_id) if canonical_id is not None else None
     if payload.get("email") is not None:
         merged["email"] = payload.get("email")
     return merged
