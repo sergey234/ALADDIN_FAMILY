@@ -11,6 +11,7 @@ from fastapi.responses import HTMLResponse
 _REPO_ROOT = Path(__file__).resolve().parents[2]
 _PRIVACY_PATH = _REPO_ROOT / "legal" / "privacy_policy_ru.txt"
 _TERMS_PATH = _REPO_ROOT / "legal" / "terms_of_service_ru.txt"
+_OFFER_PATH = _REPO_ROOT / "legal" / "public_offer_ru.txt"
 
 router = APIRouter(tags=["legal"])
 
@@ -51,3 +52,9 @@ async def privacy_policy_page() -> HTMLResponse:
 async def terms_of_service_page() -> HTMLResponse:
     body = _read_text(_TERMS_PATH)
     return HTMLResponse(_html_page("Пользовательское соглашение", body))
+
+
+@router.get("/legal/offer", response_class=HTMLResponse)
+async def public_offer_page() -> HTMLResponse:
+    body = _read_text(_OFFER_PATH)
+    return HTMLResponse(_html_page("Публичная оферта", body))

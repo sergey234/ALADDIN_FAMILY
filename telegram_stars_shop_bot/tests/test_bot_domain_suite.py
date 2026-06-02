@@ -330,6 +330,10 @@ def test_legal_static_pages(partner_api_http_client: TestClient) -> None:
     assert "Пользовательское соглашение" in r2.text
     assert "Республики Казахстан" in r2.text
     assert "AiMonkeyStars_bot" in r2.text
+    r3 = partner_api_http_client.get("/v1/legal/offer")
+    assert r3.status_code == 200
+    assert "ПУБЛИЧНАЯ ОФЕРТА" in r3.text
+    assert "AiMonkeyStars_bot" in r3.text
 
 
 def test_privacy_screen_includes_policy_links(monkeypatch: pytest.MonkeyPatch) -> None:
