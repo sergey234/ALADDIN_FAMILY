@@ -36,6 +36,13 @@ class CompanionIntentRouterTests(unittest.TestCase):
         self.assertEqual(r.domain, "loneliness")
         self.assertIn(r.mood, ("lonely", "nostalgic", "comfort_needed"))
 
+    def test_feel_lonely_not_wellness_domain(self):
+        from security.services.ai_platform.companion_intent_router import classify_companion_intent
+
+        r = classify_companion_intent("я чувствую себя одиноким", "child")
+        self.assertEqual(r.domain, "loneliness")
+        self.assertEqual(r.mood, "lonely")
+
     def test_safety_domain_on_phishing(self):
         from security.services.ai_platform.companion_intent_router import classify_companion_intent
 

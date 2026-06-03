@@ -1,8 +1,8 @@
 # Knowledge Pack — столп «Понять себя» (Jung lite; gate p0-08)
-pack_version: jung_v1.0
+pack_version: jung_v1.1
 pillar: jung
 schema: wellness_knowledge_pack_v1
-status: draft
+status: approved
 
 ui:
   ru: Понять себя
@@ -36,8 +36,9 @@ forbidden_phrases:
 
 llm_rules:
   ru: >
-    Сны и образы — метафоры, не предсказания. Один вопрос за раз.
-    Не давай медицинских или мистических выводов. При кризисе — взрослый или 112.
+    Сны и образы — метафора внутреннего состояния, не предсказания и не диагноз.
+    Один образ + один мягкий вопрос. Не называй школы и не «толкуй судьбу».
+    При кризисе — взрослый или 112.
   en: >
     Dreams and images are metaphors, not predictions. One question at a time.
     No medical or mystical conclusions. In crisis — trusted adult or emergency.

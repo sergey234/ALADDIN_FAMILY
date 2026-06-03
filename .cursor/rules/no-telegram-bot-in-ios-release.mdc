@@ -1,0 +1,33 @@
+---
+description: Telegram Stars Shop Bot — отдельный проект, не в релизные коммиты iOS
+alwaysApply: true
+---
+
+# Telegram Stars Shop Bot — не в iOS-релиз
+
+`telegram_stars_shop_bot/` — **отдельный проект** (бот + partner API). Он лежит в том же git-репозитории по историческим причинам, но **не является частью мобильного приложения ALADDIN**.
+
+## Запрещено при iOS-релизе
+
+При сборках iOS, bump build number, `git commit` / `git push origin master` в каноническом репо:
+
+- **Не добавлять** в staging (`git add`) пути `telegram_stars_shop_bot/**`
+- **Не включать** изменения бота в коммиты вида `feat(build N)`, Wellness, iOS fixes, backend для приложения
+- **Не коммитить** `.env` (секреты)
+
+Если `git status` показывает `M telegram_stars_shop_bot/...` — оставить **unstaged**. Коммитить только то, что относится к iOS/ALADDIN-релизу по задаче пользователя.
+
+## Когда работать с ботом
+
+- Деплой и изменения бота — только по явной задаче про бот; канон: `telegram_stars_shop_bot/docs/ML_SYSTEM_HANDOFF_FINAL.md` и правило `telegram-shop-bot-deploy.mdc`
+- Отдельный коммит/ветка для бота — **только если пользователь явно попросил** закоммитить или выкатить бот
+
+## Перед релизным коммитом
+
+Проверить:
+
+```bash
+git diff --cached --name-only | grep -E '^telegram_stars_shop_bot/|^\.env$' && echo STOP || echo OK
+```
+
+Если вывод `STOP` — убрать из индекса: `git restore --staged telegram_stars_shop_bot .env` (при необходимости).

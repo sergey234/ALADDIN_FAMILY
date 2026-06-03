@@ -15,6 +15,9 @@ COMPANION_EVENT_VOICE_START = "voice_start"
 COMPANION_EVENT_VOICE_END = "voice_end"
 COMPANION_EVENT_TRUST_LEVEL_UP = "trust_level_up"
 COMPANION_EVENT_POLICY_BLOCKED = "policy_blocked"
+COMPANION_EVENT_HUMOR_INJECTED = "humor_injected"
+COMPANION_EVENT_WISDOM_USED = "wisdom_used"
+COMPANION_EVENT_GUARD_TRIGGERED = "guard_triggered"
 
 ALLOWED_EVENTS = frozenset(
     {
@@ -24,6 +27,9 @@ ALLOWED_EVENTS = frozenset(
         COMPANION_EVENT_VOICE_END,
         COMPANION_EVENT_TRUST_LEVEL_UP,
         COMPANION_EVENT_POLICY_BLOCKED,
+        COMPANION_EVENT_HUMOR_INJECTED,
+        COMPANION_EVENT_WISDOM_USED,
+        COMPANION_EVENT_GUARD_TRIGGERED,
     }
 )
 
@@ -44,7 +50,7 @@ def record_companion_product_event(
     if character_id:
         meta["character_id"] = character_id
     if extra:
-        for key in ("age_band", "emotion", "voice_seconds", "trust_level", "reason"):
+        for key in ("age_band", "emotion", "voice_seconds", "trust_level", "reason", "character_id", "domain", "mood"):
             if key in extra and extra[key] is not None:
                 meta[key] = extra[key]
     redacted = f"companion_metric:{event}:{character_id or ''}:{session_id or ''}"
@@ -61,3 +67,21 @@ def record_companion_product_event(
         )
     except Exception as exc:
         logger.warning("Companion product analytics failed: %s", exc)
+
+
+def record_hero_persona_metric(
+    *,
+    user_id: str,
+    event: str,
+    character_id: str,
+    session_id: Optional[str] = None,
+    extra: Optional[Dict[str, Any]] = None,
+) -> None:
+    """hero-x-64 — humor/wisdom/guard observability (no message text)."""
+    record_companion_product_event(
+        user_id=user_id,
+        event=event,
+        character_id=character_id,
+        session_id=session_id,
+        extra=extra,
+    )

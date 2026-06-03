@@ -61,6 +61,43 @@ def _extract_key_values(section: str, keys: set[str]) -> dict[str, str]:
     return out
 
 
+HERO_X65_KEYS = (
+    "companion_humor_hint_unicorn",
+    "companion_humor_hint_aladdin",
+    "companion_humor_hint_genie",
+    "companion_wisdom_toggle_title",
+    "companion_wisdom_toggle_subtitle",
+    "companion_wisdom_toggle_subtitle_child",
+    "companion_teen_humor_title",
+    "companion_teen_humor_subtitle",
+    "companion_teen_humor_normal",
+    "companion_teen_humor_less",
+    "companion_heroes_one_pager_title",
+    "companion_heroes_one_pager_intro",
+    "companion_heroes_one_pager_unicorn",
+    "companion_heroes_one_pager_aladdin",
+    "companion_heroes_one_pager_genie",
+)
+
+
+def _extract_keys_with_prefix(section: str, prefix: str) -> set[str]:
+    return set(re.findall(rf'"({re.escape(prefix)}[^"]+)":', section))
+
+
+def check_companion_hero_l10n() -> list[str]:
+    """hero-x-50…52, hero-x-65 — humor/wisdom toggle keys ru/en parity."""
+    errors: list[str] = []
+    text = SWIFT.read_text(encoding="utf-8")
+    ru_sec, en_sec = _split_ru_en_sections(text)
+    for key in HERO_X65_KEYS:
+        for label, section in (("RU", ru_sec), ("EN", en_sec)):
+            vals = _extract_key_values(section, {key})
+            val = vals.get(key, "")
+            if not val.strip():
+                errors.append(f"companion l10n: empty {label} value for {key}")
+    return errors
+
+
 def check_ios_parity() -> list[str]:
     errors: list[str] = []
     text = SWIFT.read_text(encoding="utf-8")
@@ -180,6 +217,7 @@ def main() -> int:
 
     errors: list[str] = []
     errors.extend(check_ios_parity())
+    errors.extend(check_companion_hero_l10n())
     errors.extend(check_backend_json())
     errors.extend(check_age_variants())
     errors.extend(check_glossary(strict=args.strict))

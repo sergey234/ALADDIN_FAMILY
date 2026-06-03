@@ -13,6 +13,8 @@ struct CompanionHubScreen: View {
     @State private var trustScore: Int = 10
     @State private var usageSnapshot: CompanionUsageSnapshot?
     @State private var showLegal = false
+    @State private var showOnePager = false
+    @State private var teenHumorLess = false
     @State private var threads: [CompanionThreadSummary] = []
     @State private var isLoading = true
     @State private var errorText: String?
@@ -39,6 +41,13 @@ struct CompanionHubScreen: View {
                             .foregroundColor(.white)
                         Spacer()
                         if !embeddedInHome {
+                            Button {
+                                showOnePager = true
+                            } label: {
+                                Image(systemName: "person.3")
+                                    .foregroundStyle(.white.opacity(0.9))
+                            }
+                            .accessibilityLabel(localizationManager.localized("companion_heroes_one_pager_title"))
                             Button {
                                 showLegal = true
                             } label: {
@@ -119,6 +128,10 @@ struct CompanionHubScreen: View {
                             .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                         }
 
+                        if CompanionUserContext.companionAgeBand == "teen" {
+                            teenHumorSection
+                        }
+
                         Text(localizationManager.localized("companion_hub_heroes"))
                             .font(.title2.bold())
                             .foregroundColor(.white)
@@ -141,6 +154,12 @@ struct CompanionHubScreen: View {
                                         Text(heroStyleCaption(for: hero.id))
                                             .font(.caption)
                                             .foregroundStyle(.white.opacity(0.75))
+                                        if let humorHint = heroHumorHint(for: hero.id) {
+                                            Text(humorHint)
+                                                .font(.caption2)
+                                                .foregroundStyle(.white.opacity(0.65))
+                                                .lineLimit(2)
+                                        }
                                     }
                                     Spacer()
                                     Image(systemName: "chevron.right")
@@ -167,6 +186,16 @@ struct CompanionHubScreen: View {
             }
             .navigationViewStyle(.stack)
         }
+        .sheet(isPresented: $showOnePager) {
+            NavigationView {
+                CompanionHeroesOnePagerView()
+                    .environmentObject(localizationManager)
+            }
+            .navigationViewStyle(.stack)
+        }
+        .onAppear {
+            teenHumorLess = CompanionSettings.cachedTeenHumorPreference() == "less"
+        }
         .task {
             await caps.refresh()
             await loadHub()
@@ -183,6 +212,41 @@ struct CompanionHubScreen: View {
         }
         let text = localizationManager.localized(key)
         return text != key ? text : characterId
+    }
+
+    /// hero-x-50 — humor hint under hero card (ru/en via LocalizationManager).
+    private func heroHumorHint(for characterId: String) -> String? {
+        let key = CompanionSettings.humorHintKey(for: characterId)
+        let text = localizationManager.localized(key)
+        return text != key ? text : nil
+    }
+
+    /// hero-x-67 — teen «Меньше шуток» slider.
+    private var teenHumorSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("companion_teen_humor_title"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.white)
+            Text(localizationManager.localized("companion_teen_humor_subtitle"))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.8))
+            Toggle(isOn: $teenHumorLess) {
+                Text(localizationManager.localized(teenHumorLess ? "companion_teen_humor_less" : "companion_teen_humor_normal"))
+                    .font(.subheadline)
+                    .foregroundColor(.white)
+            }
+            .tint(.purple)
+            .accessibilityIdentifier("companion_teen_humor_toggle")
+            .onChange(of: teenHumorLess) { less in
+                let pref = less ? "less" : "normal"
+                CompanionSettings.setCachedTeenHumorPreference(pref)
+                Task {
+                    try? await CompanionAPIService.shared.updateTeenHumorPreference(pref)
+                }
+            }
+        }
+        .padding(12)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
     }
 
     private func loadHub() async {
@@ -214,5 +278,40 @@ struct CompanionHubScreen: View {
                 errorText = error.localizedDescription
             }
         }
+    }
+}
+
+/// hero-x-69 — parent/teen one-pager «что умеют герои».
+struct CompanionHeroesOnePagerView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(localizationManager.localized("companion_heroes_one_pager_intro"))
+                    .font(.body)
+                heroBlock("companion_heroes_one_pager_unicorn")
+                heroBlock("companion_heroes_one_pager_aladdin")
+                heroBlock("companion_heroes_one_pager_genie")
+            }
+            .padding()
+        }
+        .navigationTitle(localizationManager.localized("companion_heroes_one_pager_title"))
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .confirmationAction) {
+                Button(localizationManager.localized("close")) { dismiss() }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private func heroBlock(_ key: String) -> some View {
+        Text(localizationManager.localized(key))
+            .font(.subheadline)
+            .padding(12)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.purple.opacity(0.08), in: RoundedRectangle(cornerRadius: 12))
     }
 }

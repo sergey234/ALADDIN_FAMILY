@@ -322,7 +322,38 @@ def _normalize_profile_payload(raw: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     bridge = data.get("social_bridge")
     if isinstance(bridge, dict) and bridge:
         normalized["social_bridge"] = bridge
+    pref = str(data.get("humor_preference") or "normal").strip().lower()
+    normalized["humor_preference"] = pref if pref in ("normal", "less") else "normal"
     return normalized
+
+
+def _humor_turn_prefs(
+    user_id: str,
+    age_band: str,
+    profile: Dict[str, Any],
+    body: Any,
+) -> tuple[str, float]:
+    """hero-x-67/68 — teen humor slider + optional genie A/B scale."""
+    band = (age_band or "parent").strip().lower()
+    pref = "normal"
+    if band == "teen":
+        raw = getattr(body, "humor_preference", None) or profile.get("humor_preference") or "normal"
+        pref = str(raw).strip().lower()
+        if pref not in ("normal", "less"):
+            pref = "normal"
+    scale = 1.0
+    try:
+        from security.services.ai_platform.companion_experiment import (
+            genie_humor_ab_variant,
+            genie_humor_probability_scale,
+        )
+        from security.services.ai_platform.feature_flags import FEATURE_GENIE_HUMOR_AB
+
+        variant = genie_humor_ab_variant(user_id, enabled=FEATURE_GENIE_HUMOR_AB)
+        scale = genie_humor_probability_scale(variant)
+    except Exception:
+        pass
+    return pref, scale
 
 
 def _load_companion_profile(storage_key: str) -> Dict[str, Any]:
@@ -708,6 +739,11 @@ class CompanionChatRequest(BaseModel):
         description="Wellness primary_pillar: cognitive|behavioral|humanistic|jung",
         max_length=32,
     )
+    humor_preference: Optional[str] = Field(
+        None,
+        description="hero-x-67 teen: normal|less",
+        pattern="^(normal|less)$",
+    )
 
 
 class CompanionStreamRequest(BaseModel):
@@ -766,6 +802,7 @@ class CompanionConsentRequest(BaseModel):
     allowed_characters: List[str] = Field(
         default_factory=lambda: ["unicorn", "aladdin", "genie"]
     )
+    vedic_wisdom_enabled: bool = True
     family_id: Optional[str] = Field(None, max_length=128)
 
 
@@ -774,6 +811,7 @@ class CompanionConsentResponse(BaseModel):
     memory_enabled: bool
     child_can_use_companion: bool
     allowed_characters: List[str]
+    vedic_wisdom_enabled: bool = True
     family_id: Optional[str] = None
     scope: str = "user"
 
@@ -785,9 +823,14 @@ class CompanionProfileResponse(BaseModel):
     equipped_cosmetic_id: str = ""
     equipped_cosmetic_character_id: str = "unicorn"
     storage_scope: str = ""
+    humor_preference: Optional[str] = None
     available_presets: List[str] = Field(
         default_factory=lambda: list(PERSONALITY_PRESET_HINTS.keys())
     )
+
+
+class CompanionTeenSettingsRequest(BaseModel):
+    humor_preference: str = Field(..., pattern="^(normal|less)$")
 
 
 class CompanionProfileUpdateRequest(BaseModel):
@@ -1347,8 +1390,14 @@ async def companion_chat(
         request_flag=body.security_expert_mode,
         message=safe_message,
     )
+    humor_pref, genie_scale = _humor_turn_prefs(user_id, ctx["age_band"], profile, body)
     cintent = classify_companion_intent(
-        safe_message, ctx["age_band"], body.character_id
+        safe_message,
+        ctx["age_band"],
+        body.character_id,
+        locale=(body.response_language or "ru")[:2],
+        humor_preference=humor_pref,
+        genie_ab_scale=genie_scale,
     )
     ethics = evaluate_companion_ethics(safe_message)
 
@@ -1462,12 +1511,6 @@ async def companion_chat(
     )
     store.append_thread_message(user_id, thread_id, "user", safe_message, body.character_id)
 
-    playbook_hint = teen_playbook_hint(ctx["age_band"], cintent.domain, safe_message) or ""
-    intent_hint = (
-        f"\n[Companion routing: domain={cintent.domain}; mood={cintent.mood}; "
-        f"confidence={cintent.mood_confidence:.2f}. {cintent.response_hint} "
-        f"{ethics_hint_for_prompt(ethics)}{playbook_hint}]\n"
-    )
     long_hint = build_long_context_hint(store, user_id, thread_id)
 
     wellness_prefix = ""
@@ -1540,16 +1583,183 @@ async def companion_chat(
         wellness_loop_phase = None
         wellness_prep = None
 
-    prefixed = (
-        _build_companion_system_prefix(body.character_id, profile, ctx["age_band"])
-        + wellness_prefix
-        + family_hint
-        + long_hint
-        + web_hint
-        + att_hint
-        + intent_hint
-        + safe_message
+    if active_wellness_pillar:
+        from security.services.ai_platform.companion_topic_policy import (
+            apply_wellness_topic_guard,
+        )
+
+        cintent = apply_wellness_topic_guard(cintent, active_wellness_pillar)
+
+    chat_loc = (body.response_language or "ru")[:2]
+    playbook_hint = teen_playbook_hint(ctx["age_band"], cintent.domain, safe_message) or ""
+    intent_hint = (
+        f"\n[Companion routing: domain={cintent.domain}; mood={cintent.mood}; "
+        f"escalation={getattr(cintent, 'escalation', 'L0')}; "
+        f"mood_confidence={cintent.mood_confidence:.2f}; "
+        f"topic_confidence={getattr(cintent, 'domain_confidence', 0.0):.2f}. "
+        f"{cintent.response_hint} "
+        f"{ethics_hint_for_prompt(ethics)}{playbook_hint}]\n"
     )
+
+    prior_msgs = store.get_thread_messages(user_id, thread_id, limit=80) or []
+    turn_count = sum(1 for m in prior_msgs if (m.get("role") or "") == "user")
+    user_msg_texts = [
+        str(m.get("text") or "")
+        for m in prior_msgs
+        if (m.get("role") or "") == "user"
+    ]
+
+    wisdom_prefix = ""
+    try:
+        from security.services.ai_platform.feature_flags import FEATURE_COMPANION_VEDIC_WISDOM
+
+        consent = ctx.get("parent_consent") or {}
+        wisdom_consent = bool(consent.get("vedic_wisdom_enabled", True))
+        if (
+            FEATURE_COMPANION_VEDIC_WISDOM
+            and wisdom_consent
+            and not active_wellness_pillar
+            and getattr(cintent, "escalation", "L0") == "L0"
+            and ctx["age_band"] != "child"
+            and body.character_id in ("aladdin", "genie")
+        ):
+            from security.services.ai_platform.companion_wisdom import (
+                format_wisdom_block,
+                pick_wisdom_snippet,
+                wisdom_frequency_allowed,
+            )
+
+            used_ids = list(profile.get("wisdom_used_ids") or [])
+            if wisdom_frequency_allowed(turn_count):
+                snippet = pick_wisdom_snippet(
+                    body.character_id,
+                    cintent.domain,
+                    cintent.mood,
+                    ctx["age_band"],
+                    locale=chat_loc,
+                    used_snippet_ids=used_ids,
+                    turn_count=turn_count,
+                )
+                if snippet:
+                    wisdom_prefix = format_wisdom_block(snippet)
+                    used_ids = (used_ids + [snippet.id])[-20:]
+                    profile = dict(profile)
+                    profile["wisdom_used_ids"] = used_ids
+    except Exception:
+        wisdom_prefix = ""
+
+    try:
+        from security.services.ai_platform.companion_analytics import (
+            COMPANION_EVENT_HUMOR_INJECTED,
+            COMPANION_EVENT_WISDOM_USED,
+            record_hero_persona_metric,
+        )
+        from security.services.ai_platform.companion_humor_policy import should_inject_humor
+
+        _sid = body.session_id or thread_id
+        if wisdom_prefix:
+            record_hero_persona_metric(
+                user_id=user_id,
+                event=COMPANION_EVENT_WISDOM_USED,
+                character_id=body.character_id,
+                session_id=_sid,
+                extra={"domain": cintent.domain, "mood": cintent.mood},
+            )
+        if should_inject_humor(
+            body.character_id,
+            cintent.mood,
+            getattr(cintent, "escalation", "L0"),
+            age_band=ctx["age_band"],
+            message=safe_message,
+            turn_key=f"{body.character_id}:{turn_count}",
+            humor_preference=humor_pref,
+            genie_ab_scale=genie_scale,
+        ):
+            record_hero_persona_metric(
+                user_id=user_id,
+                event=COMPANION_EVENT_HUMOR_INJECTED,
+                character_id=body.character_id,
+                session_id=_sid,
+                extra={"domain": cintent.domain, "mood": cintent.mood},
+            )
+    except Exception:
+        pass
+
+    psych_prefix = ""
+    pattern_prefix = ""
+    try:
+        esc_level = getattr(cintent, "escalation", "L0")
+        if not ethics.crisis and esc_level in ("L0", "L1"):
+            from security.services.ai_platform.companion_psychology import (
+                build_psych_internal_block,
+            )
+
+            psych_prefix = build_psych_internal_block(
+                ctx["age_band"],
+                esc_level,
+                locale=chat_loc,
+            )
+            if esc_level == "L0":
+                from security.services.ai_platform.companion_pattern_reflect import (
+                    build_pattern_reflect_hint,
+                )
+
+                last_reflect = int(profile.get("last_pattern_reflect_turn") or -999)
+                pr = build_pattern_reflect_hint(
+                    user_msg_texts,
+                    turn_count=turn_count,
+                    last_reflect_turn=last_reflect,
+                    locale=chat_loc,
+                )
+                if pr.applied:
+                    pattern_prefix = pr.hint
+                    profile = dict(profile)
+                    profile["last_pattern_reflect_turn"] = turn_count
+    except Exception:
+        psych_prefix = ""
+        pattern_prefix = ""
+
+    try:
+        from security.services.ai_platform.companion_prompt_assembler import (
+            PromptLayer,
+            assemble_companion_prompt_layers,
+        )
+
+        persona_block = _build_companion_system_prefix(
+            body.character_id, profile, ctx["age_band"]
+        )
+        layers = [
+            PromptLayer("persona", persona_block, priority=10, droppable=False),
+            PromptLayer("wellness", wellness_prefix, priority=20, droppable=False),
+            PromptLayer("psych", psych_prefix, priority=30, droppable=True),
+            PromptLayer("pattern", pattern_prefix, priority=35, droppable=True),
+            PromptLayer("wisdom", wisdom_prefix, priority=40, droppable=True),
+            PromptLayer("family", family_hint, priority=45, droppable=True),
+            PromptLayer("long_context", long_hint, priority=50, droppable=True),
+            PromptLayer("web", web_hint, priority=55, droppable=True),
+            PromptLayer("attachments", att_hint, priority=56, droppable=True),
+            PromptLayer("routing", intent_hint, priority=60, droppable=True),
+        ]
+        assembled = assemble_companion_prompt_layers(
+            layers,
+            char_budget=14000,
+            user_message=safe_message,
+        )
+        prefixed = "\n".join(assembled.parts) + safe_message
+    except Exception:
+        prefixed = (
+            _build_companion_system_prefix(body.character_id, profile, ctx["age_band"])
+            + wellness_prefix
+            + psych_prefix
+            + pattern_prefix
+            + wisdom_prefix
+            + family_hint
+            + long_hint
+            + web_hint
+            + att_hint
+            + intent_hint
+            + safe_message
+        )
     try:
         use_orch = COMPANION_USE_ORCHESTRATOR
     except NameError:
@@ -1588,6 +1798,40 @@ async def companion_chat(
             safe_response = og.text
         except NameError:
             pass
+    else:
+        try:
+            from security.services.ai_platform.companion_response_guard import (
+                apply_companion_response_guard,
+            )
+
+            cg = apply_companion_response_guard(
+                safe_response,
+                locale=(body.response_language or "ru")[:2],
+            )
+            if not cg.ok and cg.reason:
+                logger.warning(
+                    "companion_forbidden_phrase user_id=%s reason=%s",
+                    user_id,
+                    cg.reason,
+                )
+                try:
+                    from security.services.ai_platform.companion_analytics import (
+                        COMPANION_EVENT_GUARD_TRIGGERED,
+                        record_hero_persona_metric,
+                    )
+
+                    record_hero_persona_metric(
+                        user_id=user_id,
+                        event=COMPANION_EVENT_GUARD_TRIGGERED,
+                        character_id=body.character_id,
+                        session_id=body.session_id or thread_id,
+                        extra={"reason": cg.reason, "guard": "free_chat"},
+                    )
+                except Exception:
+                    pass
+            safe_response = cg.text
+        except Exception:
+            pass
     if post_mod_blocked:
         emotion = "alert"
         hint = "shake_head"
@@ -1610,6 +1854,7 @@ async def companion_chat(
     profile, show_bridge, bridge_suggestions = apply_social_bridge(
         profile,
         domain=cintent.domain,
+        mood=cintent.mood,
         social_bridge_hint=ethics.social_bridge_hint,
         crisis=False,
         thread_id=thread_id,
@@ -1779,6 +2024,7 @@ async def companion_get_consent(
         memory_enabled=bool(consent.get("memory_enabled")),
         child_can_use_companion=bool(consent.get("child_can_use_companion", True)),
         allowed_characters=list(consent.get("allowed_characters") or ["aladdin", "unicorn"]),
+        vedic_wisdom_enabled=bool(consent.get("vedic_wisdom_enabled", True)),
         family_id=fid,
         scope=scope,
     )
@@ -1798,6 +2044,7 @@ async def companion_set_consent(
             "memory_enabled": body.memory_enabled,
             "child_can_use_companion": body.child_can_use_companion,
             "allowed_characters": body.allowed_characters,
+            "vedic_wisdom_enabled": body.vedic_wisdom_enabled,
             "companion": body.child_can_use_companion,
             "memory": body.memory_enabled,
         }
@@ -1813,6 +2060,7 @@ async def companion_set_consent(
         memory_enabled=body.memory_enabled,
         child_can_use_companion=body.child_can_use_companion,
         allowed_characters=body.allowed_characters,
+        vedic_wisdom_enabled=body.vedic_wisdom_enabled,
         family_id=fid or None,
         scope=scope,
     )
@@ -1826,6 +2074,7 @@ async def companion_get_profile(
     storage_key, ctx = _family_scope_key(request, user)
     profile = _load_companion_profile(storage_key)
     age_band = str(ctx.get("age_band") or "parent")
+    humor_pref = profile.get("humor_preference") if age_band == "teen" else None
     return CompanionProfileResponse(
         custom_instructions=profile["custom_instructions"],
         personality_preset=profile["personality_preset"],
@@ -1833,6 +2082,33 @@ async def companion_get_profile(
         equipped_cosmetic_id=profile.get("equipped_cosmetic_id") or "",
         equipped_cosmetic_character_id=profile.get("equipped_cosmetic_character_id") or "unicorn",
         storage_scope=storage_key,
+        humor_preference=humor_pref,
+        available_presets=list(available_personality_presets(age_band)),
+    )
+
+
+@router.patch("/profile/teen-settings", response_model=CompanionProfileResponse)
+async def companion_teen_settings(
+    body: CompanionTeenSettingsRequest,
+    request: Request,
+    user: dict = Depends(get_current_user),
+) -> CompanionProfileResponse:
+    """hero-x-67 — teen humor preference (normal | less)."""
+    storage_key, ctx = _family_scope_key(request, user)
+    age_band = str(ctx.get("age_band") or "parent")
+    if age_band != "teen":
+        raise HTTPException(status_code=403, detail="teen_settings_teen_only")
+    current = _load_companion_profile(storage_key)
+    current["humor_preference"] = body.humor_preference.strip().lower()
+    get_companion_store().set_profile(storage_key, current)
+    return CompanionProfileResponse(
+        custom_instructions=current["custom_instructions"],
+        personality_preset=current["personality_preset"],
+        security_expert_mode=bool(current.get("security_expert_mode")),
+        equipped_cosmetic_id=current.get("equipped_cosmetic_id") or "",
+        equipped_cosmetic_character_id=current.get("equipped_cosmetic_character_id") or "unicorn",
+        storage_scope=storage_key,
+        humor_preference=current["humor_preference"],
         available_presets=list(available_personality_presets(age_band)),
     )
 

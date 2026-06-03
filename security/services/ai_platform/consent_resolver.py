@@ -19,6 +19,7 @@ def normalize_parent_consent(raw: Optional[Dict[str, Any]]) -> Dict[str, Any]:
             "memory_enabled": False,
             "child_can_use_companion": True,
             "allowed_characters": list(_DEFAULT_CHARS),
+            "vedic_wisdom_enabled": True,
         }
     out = dict(raw)
     if "memory_enabled" not in out:
@@ -32,6 +33,10 @@ def normalize_parent_consent(raw: Optional[Dict[str, Any]]) -> Dict[str, Any]:
     chars = out.get("allowed_characters")
     if not isinstance(chars, list) or not chars:
         out["allowed_characters"] = list(_DEFAULT_CHARS)
+    if "vedic_wisdom_enabled" not in out:
+        out["vedic_wisdom_enabled"] = True
+    else:
+        out["vedic_wisdom_enabled"] = bool(out.get("vedic_wisdom_enabled"))
     return out
 
 

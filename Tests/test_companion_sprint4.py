@@ -34,12 +34,34 @@ class CompanionSprint4Tests(unittest.TestCase):
             profile, show, suggestions = apply_social_bridge(
                 profile,
                 domain="loneliness",
+                mood="lonely",
                 social_bridge_hint=True,
                 crisis=False,
                 thread_id=tid,
             )
         self.assertTrue(show)
         self.assertIn("family", suggestions)
+
+    def test_social_bridge_verify_e2e_messages(self):
+        """P2-13 prod verify: «мне одиноко» then «я чувствую себя одиноким»."""
+        from security.services.ai_platform.companion_intent_router import classify_companion_intent
+        from security.services.ai_platform.companion_social_bridge import apply_social_bridge
+
+        profile: dict = {}
+        tid = "social-bridge-verify"
+        for msg in ("мне одиноко", "я чувствую себя одиноким"):
+            intent = classify_companion_intent(msg, "child")
+            self.assertEqual(intent.domain, "loneliness", msg)
+            profile, show, suggestions = apply_social_bridge(
+                profile,
+                domain=intent.domain,
+                mood=intent.mood,
+                social_bridge_hint=False,
+                crisis=False,
+                thread_id=tid,
+            )
+        self.assertTrue(show)
+        self.assertIn("friend", suggestions)
 
     def test_teen_playbook_bullying(self):
         from security.services.ai_platform.companion_teen_playbook import teen_playbook_hint
@@ -51,7 +73,7 @@ class CompanionSprint4Tests(unittest.TestCase):
     def test_trust_delta_empathy_loneliness(self):
         try:
             from security.api.routers.ai_companion_router import _trust_delta
-        except ModuleNotFoundError as exc:
+        except (ModuleNotFoundError, RuntimeError) as exc:
             self.skipTest(f"router deps unavailable: {exc}")
 
         self.assertEqual(
@@ -68,7 +90,7 @@ class CompanionSprint4Tests(unittest.TestCase):
     def test_profile_normalization_keeps_social_bridge(self):
         try:
             from security.api.routers.ai_companion_router import _normalize_profile_payload
-        except ModuleNotFoundError as exc:
+        except (ModuleNotFoundError, RuntimeError) as exc:
             self.skipTest(f"router deps unavailable: {exc}")
 
         raw = {

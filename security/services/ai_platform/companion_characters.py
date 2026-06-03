@@ -17,9 +17,9 @@ CHARACTER_DEFAULT_PRESET: Dict[str, str] = {
 }
 
 HUMOR_DENSITY: Dict[str, str] = {
-    "unicorn": "medium",
-    "aladdin": "low",
-    "genie": "high",
+    "unicorn": "medium-high",
+    "aladdin": "low-medium",
+    "genie": "max",
 }
 
 

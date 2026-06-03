@@ -1,0 +1,239 @@
+# Vedic wisdom snippets — secular user-facing paraphrases (hero-x-10)
+# schema: companion_wisdom_v1
+# source_internal ids are YAML-only; never echo religion words in ru_paraphrase.
+
+schema: companion_wisdom_v1
+version: vedic_v1.0
+
+forbidden_user_words:
+  - бог
+  - храм
+  - молитва
+  - вера
+  - религия
+  - ислам
+  - христиан
+  - будд
+  - инду
+  - karma yoga sect
+
+snippets:
+  - id: gita_2_47_lite
+    source_internal: gita_2_47
+    snippet_tier: vedic_lite
+    themes: [anxiety, duty, exam_stress, school]
+    characters: [aladdin, genie]
+    age_band_min: teen
+    ru_paraphrase: "Сделай лучшее, что можешь сейчас — и отпусти тревогу о результате, которую не контролируешь."
+    en_paraphrase: "Do your best right now — and let go of worry about results you cannot control."
+    tone: calm_mentor
+
+  - id: gita_6_5_lite
+    source_internal: gita_6_5
+    snippet_tier: vedic_lite
+    themes: [anxiety, calm, sleep]
+    characters: [aladdin]
+    age_band_min: teen
+    ru_paraphrase: "Когда мысли скачут — мягко возвращай внимание к одному простому якорю: дыхание или ощущение стоп."
+    en_paraphrase: "When thoughts jump — gently return attention to one simple anchor: breath or your feet on the ground."
+    tone: calm_mentor
+
+  - id: gita_equanimity_lite
+    source_internal: gita_2_48
+    snippet_tier: vedic_lite
+    themes: [feelings, exam_stress, work]
+    characters: [aladdin, genie]
+    age_band_min: teen
+    ru_paraphrase: "Радость и разочарование приходят волнами — ты можешь делать шаг вперёд, не цепляясь ни за одну волну."
+    en_paraphrase: "Joy and disappointment come in waves — you can still take a step forward without clinging to either."
+    tone: calm_mentor
+
+  - id: maha_arjuna_doubt_lite
+    source_internal: mahabharata_arjuna
+    snippet_tier: vedic_lite
+    themes: [anxiety, identity, school]
+    characters: [aladdin]
+    age_band_min: teen
+    ru_paraphrase: "Сомнение перед важным шагом — не слабость, а знак, что тебе не всё равно. Один маленький шаг всё равно возможен."
+    en_paraphrase: "Doubt before an important step is not weakness — it shows you care. One small step is still possible."
+    tone: calm_mentor
+
+  - id: maha_friendship_lite
+    source_internal: mahabharata_friendship
+    snippet_tier: vedic_lite
+    themes: [friends, loneliness, family]
+    characters: [aladdin, genie]
+    age_band_min: teen
+    ru_paraphrase: "Настоящая опора — не в количестве людей рядом, а в честности и тепле хотя бы одного разговора."
+    en_paraphrase: "Real support is not how many people are near — but honesty and warmth in even one conversation."
+    tone: warm
+
+  - id: genie_lamp_path_lite
+    source_internal: gita_2_47
+    snippet_tier: vedic_lite
+    themes: [motivation, daily_life, exam_stress]
+    characters: [genie]
+    age_band_min: teen
+    ru_paraphrase: "Как лампа освещает следующий шаг, а не всю дорогу — тебе достаточно ясности на сегодня."
+    en_paraphrase: "Like a lamp lighting the next step, not the whole road — clarity for today is enough."
+    tone: playful_wisdom
+
+  - id: genie_detach_worry_lite
+    source_internal: gita_2_47
+    snippet_tier: vedic_lite
+    themes: [anxiety, feelings]
+    characters: [genie]
+    age_band_min: teen
+    ru_paraphrase: "Тревога любит кататься вперёд по воображаемым горкам — верни её к одному факту, который видишь прямо сейчас."
+    en_paraphrase: "Worry loves to roll ahead on imaginary hills — bring it back to one fact you see right now."
+    tone: playful_wisdom
+
+  - id: universal_courage_child
+    source_internal: universal
+    snippet_tier: universal
+    themes: [school, friends, feelings]
+    characters: [unicorn]
+    age_band_min: child
+    ru_paraphrase: "Смелость — это не «не бояться», а делать маленький шаг, даже когда страшновато."
+    en_paraphrase: "Courage is not having no fear — it is one small step even when you feel scared."
+    tone: warm
+
+  - id: universal_friendship_child
+    source_internal: universal
+    snippet_tier: universal
+    themes: [friends, loneliness]
+    characters: [unicorn]
+    age_band_min: child
+    ru_paraphrase: "Дружба похожа на мостик: его строят по одной доске — добрым словом и «я рядом»."
+    en_paraphrase: "Friendship is like a bridge built one plank at a time — with kind words and «I'm here»."
+    tone: warm
+
+  - id: aladdin_duty_soft_lite
+    source_internal: gita_3_35
+    snippet_tier: vedic_lite
+    themes: [work, parenting_stress, school]
+    characters: [aladdin]
+    age_band_min: parent
+    ru_paraphrase: "Лучше свой честный маленький шаг, чем чужой идеальный план, который давит."
+    en_paraphrase: "Better your honest small step than someone else's perfect plan that crushes you."
+    tone: calm_mentor
+
+  - id: grief_wave_lite
+    source_internal: gita_2_14
+    snippet_tier: vedic_lite
+    themes: [grief, feelings, loneliness]
+    characters: [aladdin]
+    age_band_min: teen
+    ru_paraphrase: "Тяжёлые чувства приходят и уходят, как погода — ты остаёшься, даже когда сейчас дождь."
+    en_paraphrase: "Heavy feelings come and go like weather — you remain, even when it rains now."
+    tone: calm_mentor
+
+  - id: anger_fire_lite
+    source_internal: mahabharata_anger
+    snippet_tier: vedic_lite
+    themes: [feelings, family, relationships]
+    characters: [aladdin, genie]
+    age_band_min: teen
+    ru_paraphrase: "Злость часто охраняет рану — сначала назови, что тебе больно, потом решай, что делать."
+    en_paraphrase: "Anger often guards a wound — name what hurts first, then decide what to do."
+    tone: calm_mentor
+
+  - id: genie_playful_balance_lite
+    source_internal: gita_6_5
+    snippet_tier: vedic_lite
+    themes: [motivation, hobbies]
+    characters: [genie]
+    age_band_min: teen
+    ru_paraphrase: "Даже весёлый дух знает паузу: иногда лучший «фокус» — просто выдохнуть и посмотреть вокруг."
+    en_paraphrase: "Even a playful spirit knows pause: sometimes the best «trick» is to exhale and look around."
+    tone: playful_wisdom
+
+  - id: exam_stress_aladdin
+    source_internal: gita_2_47
+    snippet_tier: vedic_lite
+    themes: [exam_stress, school]
+    characters: [aladdin, genie]
+    age_band_min: teen
+    ru_paraphrase: "Перед экзаменом важнее не идеал, а честная подготовка и забота о себе после."
+    en_paraphrase: "Before an exam, honest preparation and self-care after matter more than perfection."
+    tone: calm_mentor
+
+  - id: money_worry_lite
+    source_internal: gita_2_47
+    snippet_tier: vedic_lite
+    themes: [money_worries, work, daily_life]
+    characters: [aladdin]
+    age_band_min: parent
+    ru_paraphrase: "Тревога о деньгах часто бежит вперёд — верни её к одному конкретному действию на эту неделю."
+    en_paraphrase: "Money worry often runs ahead — bring it back to one concrete action this week."
+    tone: calm_mentor
+
+  - id: identity_teen_lite
+    source_internal: mahabharata_identity
+    snippet_tier: vedic_lite
+    themes: [identity, feelings, teen]
+    characters: [aladdin, genie]
+    age_band_min: teen
+    ru_paraphrase: "Ты больше, чем одна роль или одна оценка — ты человек, который учится и меняется."
+    en_paraphrase: "You are more than one role or one grade — you are someone who learns and changes."
+    tone: warm
+
+  - id: sleep_rest_lite
+    source_internal: gita_6_16
+    snippet_tier: vedic_lite
+    themes: [sleep, health_feelings, tired]
+    characters: [aladdin]
+    age_band_min: teen
+    ru_paraphrase: "Отдых — не лень, а часть силы: без паузы ум путает факты и страхи."
+    en_paraphrase: "Rest is not laziness — without pause, the mind mixes facts and fears."
+    tone: calm_mentor
+
+  - id: universal_bravery_unicorn
+    source_internal: universal
+    snippet_tier: universal
+    themes: [school, sport, creativity]
+    characters: [unicorn]
+    age_band_min: child
+    ru_paraphrase: "Иногда «магия» — это просто попробовать ещё раз, когда первая попытка не вышла."
+    en_paraphrase: "Sometimes «magic» is just trying again when the first try did not work."
+    tone: warm
+
+  - id: parenting_stress_lite
+    source_internal: gita_3_35
+    snippet_tier: vedic_lite
+    themes: [parenting_stress, family, work]
+    characters: [aladdin]
+    age_band_min: parent
+    ru_paraphrase: "Ты не обязан быть идеальным родителем — достаточно быть настоящим и рядом в этом дне."
+    en_paraphrase: "You do not have to be a perfect parent — being real and present today is enough."
+    tone: calm_mentor
+
+  - id: internet_drama_lite
+    source_internal: universal
+    snippet_tier: vedic_lite
+    themes: [internet_drama, friends, feelings]
+    characters: [genie, aladdin]
+    age_band_min: teen
+    ru_paraphrase: "Не каждый шум в сети — про тебя; иногда лучшая мудрость — закрыть вкладку и выпить воды."
+    en_paraphrase: "Not every online storm is about you; sometimes wisdom is closing the tab and drinking water."
+    tone: playful_wisdom
+
+  - id: motivation_step_lite
+    source_internal: gita_2_47
+    snippet_tier: vedic_lite
+    themes: [motivation, daily_life, hobbies]
+    characters: [genie, aladdin]
+    age_band_min: teen
+    ru_paraphrase: "Большие мечты начинаются с смешно маленького действия — и это нормально."
+    en_paraphrase: "Big dreams start with a ridiculously small action — and that is okay."
+    tone: warm
+
+  - id: senior_wisdom_lite
+    source_internal: mahabharata_elder
+    snippet_tier: vedic_lite
+    themes: [loneliness, daily_life, nostalgia]
+    characters: [aladdin]
+    age_band_min: senior
+    ru_paraphrase: "Опыт — это не только прошлое; один тёплый разговор сегодня тоже часть твоей силы."
+    en_paraphrase: "Experience is not only the past; one warm conversation today is part of your strength too."
+    tone: calm_mentor

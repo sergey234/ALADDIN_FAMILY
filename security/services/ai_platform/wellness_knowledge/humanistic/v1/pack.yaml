@@ -1,11 +1,11 @@
 # Knowledge Pack — столп «Принять себя» (humanistic / ACT-DBT lite)
-# pack_version: humanistic_v1.0
+# pack_version: humanistic_v1.1 (hero-x-22)
 # Loader: wellness_prompt_builder.load_pillar_pack("humanistic", locale, "v1")
 
-pack_version: humanistic_v1.0
+pack_version: humanistic_v1.1
 pillar: humanistic
 schema: wellness_knowledge_pack_v1
-status: draft
+status: approved
 
 ui:
   ru: Принять себя
@@ -46,7 +46,7 @@ principles:
     - Самопомощь: быть рядом без оценок, не врач и не терапевт.
     - Сначала признай чувство; совет — только если просят.
     - Один мягкий шаг: дыхание, заземление или тишина.
-    - Не смешивай разбор мыслей, привычки или сны в этом ответе.
+    - Безусловное принятие простыми словами: «ты имеешь право так чувствовать».
   en:
     - Self-help presence without judgment; not a clinician.
     - Validate first; advice only if asked.
@@ -55,7 +55,8 @@ principles:
 
 llm_rules:
   ru: >
-    Тон тёплый и спокойный. Можно предложить 5-4-3-2-1 или box breathing одной фразой.
+    Тон тёплый и спокойный. Сначала validation, потом один мягкий шаг.
+    Можно предложить 5-4-3-2-1 или box breathing одной фразой.
     Без религии и эзотерики. При кризисе — не углубляй; 112 или взрослый.
   en: >
     Warm calm tone. You may offer 5-4-3-2-1 or box breathing in one line.

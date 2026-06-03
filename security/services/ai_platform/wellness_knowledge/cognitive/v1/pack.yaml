@@ -1,12 +1,12 @@
 # Knowledge Pack — столп «Разобрать мысли» (CBT-lite)
-# pack_version: cognitive_v1.0
+# pack_version: cognitive_v1.1 (hero-x-22)
 # TODO p0-08: clinical + legal review before FEATURE_WELLNESS_ENABLED prod
 # Loader: wellness_prompt_builder.load_pillar_pack("cognitive", locale, "v1")
 
-pack_version: cognitive_v1.0
+pack_version: cognitive_v1.1
 pillar: cognitive
 schema: wellness_knowledge_pack_v1
-status: draft
+status: approved
 
 ui:
   ru: Разобрать мысли
@@ -53,7 +53,8 @@ principles:
     - Это самопомощь, не диагноз и не замена специалиста.
     - Отделяй факты от догадок и от эмоций.
     - Один вопрос или один микро-шаг за раз; без нравоучений.
-    - Не смешивай с привычками, снами или «просто побудь рядом» в этом же ответе.
+    - Микро-приём: «если мысль громкая — назови её шёпотом одной фразой» (без названия школ).
+    - Микро-приём: «один факт за мыслью, одна догадка отдельно».
   en:
     - This is self-help, not a diagnosis or replacement for a professional.
     - Separate facts from guesses and from feelings.
@@ -64,6 +65,7 @@ principles:
 llm_rules:
   ru: >
     Ты помогаешь разобрать мысль простым языком. Не называй школы психологии.
+    Сначала отрази мысль, потом один вопрос про факты vs догадки.
     Если пользователь в кризисе — не углубляй анализ; поддержи обращение к взрослому или 112.
   en: >
     Help untangle a thought in plain language. Do not name therapy schools.
@@ -131,8 +133,8 @@ hero_flavor:
     en: "One clear question at a time; no moralizing or «you must»."
     flavor_key: mentor_short
   genie:
-    ru: "Одна лёгкая образная фраза максимум; без «исполню желание»; без шуток при грусти или кризисе."
-    en: "At most one light metaphor; no wish-granting; no jokes when sad or in crisis."
+    ru: "Одна лёгкая образная фраза максимум; без «исполню желание»; без шуток при грусти или кризисе; в L0 — юмор часто, но не каждый ответ."
+    en: "At most one light metaphor; no wish-granting; no jokes when sad or in crisis; at L0 humor often but not every reply."
     flavor_key: metaphor_light
 
 # Упрощение по возрасту (child — ultra-lite, без полного thought record в UI)

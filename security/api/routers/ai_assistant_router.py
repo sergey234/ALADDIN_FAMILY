@@ -184,7 +184,7 @@ def check_rate_limit(user_id: str, subscription_level: str) -> bool:
 
 class ChatMessageRequest(BaseModel):
     """Запрос на отправку сообщения AI помощнику"""
-    message: str = Field(..., description="Сообщение пользователя", min_length=1, max_length=2000)
+    message: str = Field(..., description="Сообщение пользователя", min_length=1, max_length=16000)
     context: str = Field("general", description="Контекст разговора", example="general")
     user_id: Optional[str] = Field(None, description="ID пользователя")
     timestamp: Optional[datetime] = Field(None, description="Временная метка")

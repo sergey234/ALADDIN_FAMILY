@@ -1,0 +1,68 @@
+# SSOT humor tiers — hero-x-01
+# schema: companion_humor_tiers_v1
+# Loader: companion_humor_policy.load_humor_tiers()
+
+schema: companion_humor_tiers_v1
+version: humor_v1.0
+
+humor_density:
+  unicorn: medium-high
+  aladdin: low-medium
+  genie: max
+
+humor_hard_stops:
+  moods: [sad, lonely, comfort_needed, anxious]
+  escalation: [L1, L2, L3]
+  wellness_pillars_no_jokes: [humanistic, jung]
+  child_band: no_sarcasm_no_innuendo
+  keyword_override:
+    - грустн
+    - печал
+    - тоск
+    - плачу
+    - мне плохо
+    - хочу умереть
+    - боюсь
+    - не рад
+  max_jokes_per_reply:
+    genie: 1
+    unicorn: 1
+    aladdin: 1
+
+# Not stand-up — probability that THIS turn gets a humor hint (hero-x-04 PO balance)
+humor_frequency:
+  genie:
+    L0_playful: 0.70
+    L0_neutral: 0.40
+    L0_curious: 0.50
+    L0_joyful: 0.55
+  unicorn:
+    L0_playful: 0.45
+    L0_neutral: 0.20
+  aladdin:
+    L0_playful: 0.25
+    L0_neutral: 0.10
+
+escalation_matrix:
+  L0: allow_humor_if_mood_ok
+  L1: no_humor
+  L2: no_humor
+  L3: no_humor
+
+sarcasm:
+  genie: situational_pg_only
+  aladdin: rare_dry_wit
+  unicorn: false
+  child: false
+
+hint_templates:
+  hard_stop: "Без шуток — только эмпатия и поддержка."
+  genie_with_humor: >-
+    Джин: одна короткая сказочная шутка или каламбур (PG-13), иногда лёгкий сарказм
+    про ситуацию (не про человека). Не больше одной шутки.
+  genie_without_humor: >-
+    Джин: тёплый ответ без шутки в этом сообщении — чередуй, не стендап.
+  unicorn_with_humor: "Добавь лёгкий PG-юмор (игры, дружба, «магия»). Без сарказма."
+  unicorn_neutral: "При уместности — одна лёгкая PG-шутка или тёплая игривая деталь."
+  aladdin_with_humor: "Короткая тёплая реплика; редко сухая мудрая ирония про ситуацию (PG). Без сарказма над человеком."
+  aladdin_playful: "Короткая тёплая реплика; юмор только если уместен."

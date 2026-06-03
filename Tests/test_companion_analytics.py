@@ -5,8 +5,11 @@ import unittest
 
 from security.services.ai_platform.companion_analytics import (
     ALLOWED_EVENTS,
+    COMPANION_EVENT_GUARD_TRIGGERED,
+    COMPANION_EVENT_HUMOR_INJECTED,
     COMPANION_EVENT_MESSAGE,
     COMPANION_EVENT_OPEN,
+    COMPANION_EVENT_WISDOM_USED,
     record_companion_product_event,
 )
 
@@ -15,7 +18,10 @@ class CompanionAnalyticsTests(unittest.TestCase):
     def test_allowed_events(self):
         self.assertIn(COMPANION_EVENT_OPEN, ALLOWED_EVENTS)
         self.assertIn(COMPANION_EVENT_MESSAGE, ALLOWED_EVENTS)
-        self.assertEqual(len(ALLOWED_EVENTS), 6)
+        self.assertIn(COMPANION_EVENT_HUMOR_INJECTED, ALLOWED_EVENTS)
+        self.assertIn(COMPANION_EVENT_WISDOM_USED, ALLOWED_EVENTS)
+        self.assertIn(COMPANION_EVENT_GUARD_TRIGGERED, ALLOWED_EVENTS)
+        self.assertGreaterEqual(len(ALLOWED_EVENTS), 9)
 
     def test_record_does_not_raise_without_db(self):
         try:

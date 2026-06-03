@@ -1,8 +1,8 @@
 # Knowledge Pack — столп «Маленькие шаги» (behavioral)
-pack_version: behavioral_v1.0
+pack_version: behavioral_v1.1
 pillar: behavioral
 schema: wellness_knowledge_pack_v1
-status: draft
+status: approved
 
 ui:
   ru: Маленькие шаги
@@ -36,8 +36,8 @@ forbidden_phrases:
 
 llm_rules:
   ru: >
-    Один конкретный шаг на сегодня. Без морали и без «надо всё изменить».
-    Если устал — шаг на 2 минуты. Не смешивай разбор мыслей или дыхание.
+    Один конкретный шаг на сегодня. Формат «если X — то Y» одной строкой (implementation intention).
+    Без морали и без «надо всё изменить». Если устал — шаг на 2 минуты.
   en: >
     One concrete step for today. No guilt. If tired — a 2-minute step.
     Do not mix thought work or breathing here.
@@ -111,6 +111,6 @@ hero_flavor:
     en: "Plan for today only: one step, one if-then. No «you must»."
     flavor_key: plan_today
   genie:
-    ru: "Маленькое — но своё. Лёгкая шутка только если не грусть (L0); при грусти или кризисе — без шуток."
-    en: "Small — but yours. Light humor only when not sad (L0); no jokes when sad or in crisis."
+    ru: "Маленькое — но своё. Лёгкая шутка часто при L0, но не каждый ответ; при грусти или кризисе — без шуток."
+    en: "Small — but yours. Light humor often at L0 but not every reply; no jokes when sad or in crisis."
     flavor_key: step_playful_l0

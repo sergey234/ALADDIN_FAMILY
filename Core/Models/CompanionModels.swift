@@ -184,6 +184,7 @@ struct CompanionChatRequest: Codable {
     let workspaceId: String?
     let attachments: [CompanionAttachmentPayload]
     let wellnessPillar: String?
+    let humorPreference: String?
 
     enum CodingKeys: String, CodingKey {
         case message
@@ -197,6 +198,7 @@ struct CompanionChatRequest: Codable {
         case workspaceId = "workspace_id"
         case attachments
         case wellnessPillar = "wellness_pillar"
+        case humorPreference = "humor_preference"
     }
 }
 
@@ -525,6 +527,7 @@ struct CompanionConsentSettings: Codable, Equatable {
     var memoryEnabled: Bool
     var childCanUseCompanion: Bool
     var allowedCharacters: [String]
+    var vedicWisdomEnabled: Bool
     var familyId: String?
     var scope: String?
 
@@ -532,6 +535,7 @@ struct CompanionConsentSettings: Codable, Equatable {
         case memoryEnabled = "memory_enabled"
         case childCanUseCompanion = "child_can_use_companion"
         case allowedCharacters = "allowed_characters"
+        case vedicWisdomEnabled = "vedic_wisdom_enabled"
         case familyId = "family_id"
         case scope
         case recorded
@@ -541,12 +545,14 @@ struct CompanionConsentSettings: Codable, Equatable {
         memoryEnabled: Bool = false,
         childCanUseCompanion: Bool = true,
         allowedCharacters: [String] = ["unicorn"],
+        vedicWisdomEnabled: Bool = true,
         familyId: String? = nil,
         scope: String? = nil
     ) {
         self.memoryEnabled = memoryEnabled
         self.childCanUseCompanion = childCanUseCompanion
         self.allowedCharacters = allowedCharacters
+        self.vedicWisdomEnabled = vedicWisdomEnabled
         self.familyId = familyId
         self.scope = scope
     }
@@ -556,6 +562,7 @@ struct CompanionConsentSettings: Codable, Equatable {
         memoryEnabled = try c.decodeIfPresent(Bool.self, forKey: .memoryEnabled) ?? false
         childCanUseCompanion = try c.decodeIfPresent(Bool.self, forKey: .childCanUseCompanion) ?? true
         allowedCharacters = try c.decodeIfPresent([String].self, forKey: .allowedCharacters) ?? ["unicorn"]
+        vedicWisdomEnabled = try c.decodeIfPresent(Bool.self, forKey: .vedicWisdomEnabled) ?? true
         familyId = try c.decodeIfPresent(String.self, forKey: .familyId)
         scope = try c.decodeIfPresent(String.self, forKey: .scope)
     }
@@ -565,6 +572,7 @@ struct CompanionConsentSettings: Codable, Equatable {
         try c.encode(memoryEnabled, forKey: .memoryEnabled)
         try c.encode(childCanUseCompanion, forKey: .childCanUseCompanion)
         try c.encode(allowedCharacters, forKey: .allowedCharacters)
+        try c.encode(vedicWisdomEnabled, forKey: .vedicWisdomEnabled)
         try c.encodeIfPresent(familyId, forKey: .familyId)
     }
 }
@@ -573,12 +581,14 @@ struct CompanionConsentRequestBody: Encodable {
     let memoryEnabled: Bool
     let childCanUseCompanion: Bool
     let allowedCharacters: [String]
+    let vedicWisdomEnabled: Bool
     let familyId: String?
 
     enum CodingKeys: String, CodingKey {
         case memoryEnabled = "memory_enabled"
         case childCanUseCompanion = "child_can_use_companion"
         case allowedCharacters = "allowed_characters"
+        case vedicWisdomEnabled = "vedic_wisdom_enabled"
         case familyId = "family_id"
     }
 }
@@ -645,6 +655,14 @@ struct CompanionCosmeticsResponse: Codable {
     enum CodingKeys: String, CodingKey {
         case characterId = "character_id"
         case cosmetics
+    }
+}
+
+struct CompanionTeenHumorBody: Encodable {
+    let humorPreference: String
+
+    enum CodingKeys: String, CodingKey {
+        case humorPreference = "humor_preference"
     }
 }
 

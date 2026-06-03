@@ -398,6 +398,7 @@
 		PBUD0004 /* PerformanceBudgetTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PBUD0002 /* PerformanceBudgetTests.swift */; };
 		FBK0003 /* FeedbackSystemTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FBK0002 /* FeedbackSystemTests.swift */; };
 		CMPDBT03 /* CompanionStreamEmotionDebouncerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CMPDBT02 /* CompanionStreamEmotionDebouncerTests.swift */; };
+		CMPSET03 /* CompanionSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CMPSET02 /* CompanionSettingsTests.swift */; };
 		C9F3A0012F71B001A0000002 /* ChildProfile.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F3A0012F71B001A0000001 /* ChildProfile.swift */; };
 		C9F3A0012F71B001A0000004 /* ProfileManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C9F3A0012F71B001A0000003 /* ProfileManager.swift */; };
 		F7B100012F71B001A0000002 /* FamilyAccessPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = F7B100012F71B001A0000001 /* FamilyAccessPolicy.swift */; };
@@ -532,7 +533,7 @@
 		5E0058042EC3C50500024F7E /* ALADDINToggle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINToggle.swift; path = Shared/Components/Inputs/ALADDINToggle.swift; sourceTree = "<group>"; };
 		5E0058062EC3C52B00024F7E /* SecondaryButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecondaryButton.swift; path = Shared/Components/Buttons/SecondaryButton.swift; sourceTree = "<group>"; };
 		5E0058082EC3C7A400024F7E /* RewardsQuickModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RewardsQuickModal.swift; path = Components/Modals/RewardsQuickModal.swift; sourceTree = "<group>"; };
-		5E00580E2EC473DA00024F7E /* PaymentQRViewModelProtectionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaymentQRViewModelProtectionTests.swift; path = Tests/UnitTests/PaymentQRViewModelProtectionTests.swift; sourceTree = "<group>"; };
+		5E00580E2EC473DA00024F7E /* PaymentQRViewModelProtectionTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PaymentQRViewModelProtectionTests.swift; path = PaymentQRViewModelProtectionTests.swift; sourceTree = "<group>"; };
 		5E0058102EC4A65900024F7E /* ProtectionGroup.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionGroup.swift; path = Shared/Models/ProtectionGroup.swift; sourceTree = "<group>"; };
 		5E0058122EC4A66600024F7E /* ProtectionSettings.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionSettings.swift; path = Shared/Models/ProtectionSettings.swift; sourceTree = "<group>"; };
 		5E0058142EC4A6D700024F7E /* ProtectionSettingsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionSettingsManager.swift; path = Core/Managers/ProtectionSettingsManager.swift; sourceTree = "<group>"; };
@@ -716,14 +717,14 @@
 		E1E2EE0902F1E40000E2EE01 /* FamilyE2EEMediaCrypto.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyE2EEMediaCrypto.swift; path = Core/E2EE/FamilyE2EEMediaCrypto.swift; sourceTree = "<group>"; };
 		E1E2EE0B02F1E40000E2EE01 /* FamilyE2EEMediaLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyE2EEMediaLoader.swift; path = Core/E2EE/FamilyE2EEMediaLoader.swift; sourceTree = "<group>"; };
 		E1CACHE0102F1E40000E2EE01 /* FamilyChatCiphertextCache.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChatCiphertextCache.swift; path = Core/E2EE/FamilyChatCiphertextCache.swift; sourceTree = "<group>"; };
-		E1E2EE0D02F1E40000E2EE01 /* FamilyE2EECryptoEngineTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyE2EECryptoEngineTests.swift; path = Tests/UnitTests/FamilyE2EECryptoEngineTests.swift; sourceTree = "<group>"; };
-		B19800032F98000200B19800 /* FamilyLocalStorePersistenceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyLocalStorePersistenceTests.swift; path = Tests/UnitTests/FamilyLocalStorePersistenceTests.swift; sourceTree = "<group>"; };
+		E1E2EE0D02F1E40000E2EE01 /* FamilyE2EECryptoEngineTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyE2EECryptoEngineTests.swift; path = FamilyE2EECryptoEngineTests.swift; sourceTree = "<group>"; };
+		B19800032F98000200B19800 /* FamilyLocalStorePersistenceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyLocalStorePersistenceTests.swift; path = FamilyLocalStorePersistenceTests.swift; sourceTree = "<group>"; };
 		E2PII0102F1E50000E2EE01 /* AIPIIRedactor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIPIIRedactor.swift; path = Core/Privacy/AIPIIRedactor.swift; sourceTree = "<group>"; };
 		E2PII0302F1E50000E2EE01 /* AIOutboundTextGate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIOutboundTextGate.swift; path = Core/Privacy/AIOutboundTextGate.swift; sourceTree = "<group>"; };
 		E2HIST0102F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIAssistantLocalHistoryPolicy.swift; path = Core/Privacy/AIAssistantLocalHistoryPolicy.swift; sourceTree = "<group>"; };
 		E2AIMAP0102F1E50000E2EE01 /* AIActionCardMapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIActionCardMapper.swift; path = Core/AI/AIActionCardMapper.swift; sourceTree = "<group>"; };
 		E2AIMIG0102F1E50000E2EE01 /* AIAssistantHistoryMigration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIAssistantHistoryMigration.swift; path = Core/AI/AIAssistantHistoryMigration.swift; sourceTree = "<group>"; };
-		E2PII0502F1E50000E2EE01 /* AIPIIRedactorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIPIIRedactorTests.swift; path = Tests/UnitTests/AIPIIRedactorTests.swift; sourceTree = "<group>"; };
+		E2PII0502F1E50000E2EE01 /* AIPIIRedactorTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIPIIRedactorTests.swift; path = AIPIIRedactorTests.swift; sourceTree = "<group>"; };
 		5E6F390C2F1520D600CEC103 /* PushNotificationService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PushNotificationService.swift; path = Core/Services/PushNotificationService.swift; sourceTree = "<group>"; };
 		5E6F390E2F15211800CEC103 /* ChatSearchBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ChatSearchBar.swift; path = Shared/Components/Chat/ChatSearchBar.swift; sourceTree = "<group>"; };
 		5E6F39102F15ABF200CEC103 /* NetworkProtectionViewModelTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NetworkProtectionViewModelTests.swift; path = Tests/ViewModels/NetworkProtectionViewModelTests.swift; sourceTree = "<group>"; };
@@ -784,7 +785,7 @@
 		5E7056CA2F597C2A0065BDC4 /* JWTEventLogger.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JWTEventLogger.swift; path = Core/Logging/JWTEventLogger.swift; sourceTree = "<group>"; };
 		5E7056CC2F597C640065BDC4 /* TokenValidator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TokenValidator.swift; path = Core/Managers/TokenValidator.swift; sourceTree = "<group>"; };
 		5E7056CE2F597C960065BDC4 /* TokenHealthMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = TokenHealthMonitor.swift; path = Core/Managers/TokenHealthMonitor.swift; sourceTree = "<group>"; };
-		5E7056D02F597D0B0065BDC4 /* DEFENSIVEJWTTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DEFENSIVEJWTTests.swift; path = Tests/UnitTests/DEFENSIVEJWTTests.swift; sourceTree = "<group>"; };
+		5E7056D02F597D0B0065BDC4 /* DEFENSIVEJWTTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DEFENSIVEJWTTests.swift; path = DEFENSIVEJWTTests.swift; sourceTree = "<group>"; };
 		5E7056D22F597D3F0065BDC4 /* JWTErrorRecovery.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JWTErrorRecovery.swift; path = Core/Managers/JWTErrorRecovery.swift; sourceTree = "<group>"; };
 		5E7056D42F597D610065BDC4 /* JWTCircuitBreaker.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = JWTCircuitBreaker.swift; path = Core/Managers/JWTCircuitBreaker.swift; sourceTree = "<group>"; };
 		5E95A0012F9B000100000001 /* RecursionMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = RecursionMonitor.swift; path = Core/Diagnostics/RecursionMonitor.swift; sourceTree = "<group>"; };
@@ -1000,6 +1001,7 @@
 		PBUD0002 /* PerformanceBudgetTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PerformanceBudgetTests.swift; sourceTree = "<group>"; };
 		FBK0002 /* FeedbackSystemTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FeedbackSystemTests.swift; sourceTree = "<group>"; };
 		CMPDBT02 /* CompanionStreamEmotionDebouncerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionStreamEmotionDebouncerTests.swift; sourceTree = "<group>"; };
+		CMPSET02 /* CompanionSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionSettingsTests.swift; sourceTree = "<group>"; };
 		C9F3A0012F71B001A0000001 /* ChildProfile.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ChildProfile.swift; path = Core/Profile/ChildProfile.swift; sourceTree = "<group>"; };
 		C9F3A0012F71B001A0000003 /* ProfileManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProfileManager.swift; path = Core/Profile/ProfileManager.swift; sourceTree = "<group>"; };
 		F7B100012F71B001A0000001 /* FamilyAccessPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyAccessPolicy.swift; path = Core/Profile/FamilyAccessPolicy.swift; sourceTree = "<group>"; };
@@ -1595,6 +1597,7 @@
 				PBUD0002 /* PerformanceBudgetTests.swift */,
 				FBK0002 /* FeedbackSystemTests.swift */,
 				CMPDBT02 /* CompanionStreamEmotionDebouncerTests.swift */,
+				CMPSET02 /* CompanionSettingsTests.swift */,
 				A11204002F900221A1120403 /* ContentManifestSigningTests.swift */,
 				A11204002F900221A1120404 /* ContentPayloadDiskCachePolicyTests.swift */,
 				A11204002F900221A1120405 /* ContentSyncManagerApplyTests.swift */,
@@ -2255,6 +2258,7 @@
 				PBUD0004 /* PerformanceBudgetTests.swift in Sources */,
 				FBK0003 /* FeedbackSystemTests.swift in Sources */,
 				CMPDBT03 /* CompanionStreamEmotionDebouncerTests.swift in Sources */,
+				CMPSET03 /* CompanionSettingsTests.swift in Sources */,
 				A11204002F900221A1120413 /* ContentManifestSigningTests.swift in Sources */,
 				A11204002F900221A1120414 /* ContentPayloadDiskCachePolicyTests.swift in Sources */,
 				A11204002F900221A1120415 /* ContentSyncManagerApplyTests.swift in Sources */,
@@ -2314,7 +2318,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 223;
+				CURRENT_PROJECT_VERSION = 224;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2348,7 +2352,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 223;
+				CURRENT_PROJECT_VERSION = 224;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2506,7 +2510,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 223;
+				CURRENT_PROJECT_VERSION = 224;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2540,7 +2544,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 223;
+				CURRENT_PROJECT_VERSION = 224;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2572,7 +2576,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 223;
+				CURRENT_PROJECT_VERSION = 224;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2598,7 +2602,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 223;
+				CURRENT_PROJECT_VERSION = 224;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2622,7 +2626,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 223;
+				CURRENT_PROJECT_VERSION = 224;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2647,7 +2651,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 223;
+				CURRENT_PROJECT_VERSION = 224;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

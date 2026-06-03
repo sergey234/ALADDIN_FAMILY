@@ -99,6 +99,44 @@ enum WellnessAgeBandResolver {
     }
 }
 
+/// hero-x-50…51 — local + family settings for companion persona layers.
+enum CompanionSettings {
+    private static let vedicWisdomKey = "companion_vedic_wisdom_enabled_v1"
+
+    /// Child profiles never receive wisdom snippets (hero-x-51).
+    static func defaultVedicWisdomEnabled(ageBand: String) -> Bool {
+        ageBand != "child"
+    }
+
+    static func cachedVedicWisdomEnabled(ageBand: String) -> Bool {
+        if ageBand == "child" { return false }
+        guard UserDefaults.standard.object(forKey: vedicWisdomKey) != nil else {
+            return defaultVedicWisdomEnabled(ageBand: ageBand)
+        }
+        return UserDefaults.standard.bool(forKey: vedicWisdomKey)
+    }
+
+    static func setCachedVedicWisdomEnabled(_ enabled: Bool, ageBand: String) {
+        let value = ageBand == "child" ? false : enabled
+        UserDefaults.standard.set(value, forKey: vedicWisdomKey)
+    }
+
+    static func humorHintKey(for characterId: String) -> String {
+        "companion_humor_hint_\(characterId)"
+    }
+
+    private static let teenHumorKey = "companion_teen_humor_preference_v1"
+
+    static func cachedTeenHumorPreference() -> String {
+        let raw = UserDefaults.standard.string(forKey: teenHumorKey) ?? "normal"
+        return raw == "less" ? "less" : "normal"
+    }
+
+    static func setCachedTeenHumorPreference(_ value: String) {
+        UserDefaults.standard.set(value == "less" ? "less" : "normal", forKey: teenHumorKey)
+    }
+}
+
 enum CompanionDisplayNames {
     static func heroName(characterId: String, localizationManager: LocalizationManager) -> String {
         switch characterId {

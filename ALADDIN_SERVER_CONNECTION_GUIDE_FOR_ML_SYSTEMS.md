@@ -677,3 +677,62 @@ chmod +x scripts/aladdin_server_connect_and_setup.sh
 
 Роутеры: `app/routers/misc_other_compat.py`, `app/routers/antivirus.py`. После правок:  
 `python3 -m py_compile app/routers/misc_other_compat.py app/routers/antivirus.py app/services/user_malware_threats.py app/auth/auth.py`, выкат каталога **`app/services/`** и перечисленных файлов в `/opt/aladdin-backend/`, **`systemctl restart aladdin-backend.service`**, прогон `tools/release_openapi_drift_and_ios_sync.py`.
+
+---
+
+## 15) Hero-X deploy checklist (companion wellness, phase 6)
+
+**Корень backend:** `/opt/aladdin-backend` (не `/opt/aladdin-telegram-shop-bot`).  
+**SSH:** `ssh -i ~/.ssh/aladdin_server root@149.154.65.180`  
+**Публичный API:** `https://aladdin-ai.ru` (прокси на `:8002`).
+
+### Быстрая проверка «всё ли живо»
+
+```bash
+curl -sS https://aladdin-ai.ru/api/health
+# → {"status":"ok"}
+
+cd mobile_apps/ALADDIN_iOS
+./scripts/verify_companion_p0_prod.sh https://aladdin-ai.ru   # 18/18
+./scripts/verify_hero_x_phase6.sh                               # локальный gate
+```
+
+### Деплой hero-x (phase 6)
+
+```bash
+cd mobile_apps/ALADDIN_iOS
+./scripts/deploy_hero_x_phase6.sh root 149.154.65.180 ~/.ssh/aladdin_server
+```
+
+Скрипт вызывает `deploy_companion_p0.sh`, затем копирует knowledge packs и hero-модули.  
+**Обязательно:** перед `scp` knowledge создаётся каталог на сервере:
+
+```bash
+ssh -i ~/.ssh/aladdin_server root@149.154.65.180 \
+  "mkdir -p /opt/aladdin-backend/security/services/ai_platform/companion_knowledge"
+```
+
+Без `mkdir -p` первый деплoy падает с «No such file or directory».
+
+После выката: `systemctl restart aladdin-backend.service` → `systemctl is-active` → `active`.
+
+### Типичные verify-шаги (prod)
+
+| Шаг | Что проверяет |
+|-----|----------------|
+| 1–3 | health, JWT child, 3 heroes |
+| 9 | `POST /api/ai/companion/chat` → HTTP 200 |
+| 18 | social bridge: 2× «одиноко» → `show_social_bridge=true` |
+
+Шаг 18 требует, чтобы «я чувствую себя одиноким» классифицировалось как `domain=loneliness` (не `wellness`). Логика: `companion_intent_router.py` + `companion_social_bridge.py`.
+
+### Если «не подключается» локально
+
+| Симптом | Действие |
+|---------|----------|
+| Permission denied | `ssh -i ~/.ssh/aladdin_server root@149.154.65.180` |
+| Connection refused | порт 22, VPN, IP `149.154.65.180` |
+| Host key changed | `ssh-keygen -R 149.154.65.180` |
+
+Документация плана: `docs/WELLNESS_HERO_PERSONA_ENHANCEMENT_PLAN.md`, smoke TestFlight: `docs/COMPANION_HERO_X62_SMOKE.md`.
+

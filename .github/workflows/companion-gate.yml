@@ -10,8 +10,10 @@ on:
       - 'security/**/companion*.py'
       - 'security/**/ai_companion_router.py'
       - 'Tests/test_companion*.py'
-      - 'scripts/companion_*.py'
-      - 'scripts/verify_companion*.sh'
+      - 'Tests/fixtures/companion_golden/**'
+      - 'scripts/run_companion_tests.sh'
+      - 'scripts/verify_hero_x_phase6.sh'
+      - 'scripts/count_companion_parametrize.py'
   pull_request:
     branches: [main, develop]
     paths:
@@ -21,8 +23,10 @@ on:
       - 'security/**/companion*.py'
       - 'security/**/ai_companion_router.py'
       - 'Tests/test_companion*.py'
-      - 'scripts/companion_*.py'
-      - 'scripts/verify_companion*.sh'
+      - 'Tests/fixtures/companion_golden/**'
+      - 'scripts/run_companion_tests.sh'
+      - 'scripts/verify_hero_x_phase6.sh'
+      - 'scripts/count_companion_parametrize.py'
 
 jobs:
   companion-python-gate:
@@ -36,8 +40,14 @@ jobs:
         with:
           python-version: '3.11'
 
+      - name: Install test dependencies
+        run: pip install -r Tests/requirements-test.txt
+
       - name: HERO-3-22 — .riv size gate
         run: python3 scripts/companion_riv_size_gate.py --dir Resources/Companion
 
       - name: Companion unit tests
-        run: PYTHONPATH=. python3 -m unittest discover -s Tests -p 'test_companion*.py' -v
+        run: PYTHONPATH=. python3 -m pytest Tests/test_companion_*.py -q
+
+      - name: hero-x phase 6 gate (golden + ethics + l10n)
+        run: chmod +x scripts/verify_hero_x_phase6.sh && ./scripts/verify_hero_x_phase6.sh

@@ -127,7 +127,7 @@ def test_prepare_wellness_full_loop_prefix(tmp_path):
     assert prep.ok
     assert prep.active_pillar == "cognitive"
     assert "[WELLNESS" in prep.wellness_prefix
-    assert "pack_version=cognitive_v1.0" in prep.wellness_prefix
+    assert "pack_version=cognitive_v1.1" in prep.wellness_prefix
     assert "[WELLNESS AGENTS ACTIVE]" in prep.wellness_prefix
     assert "cbt_coach_agent" in prep.agents_active
     assert prep.loop_phase == "session"
@@ -141,7 +141,7 @@ def test_session_pack_lock(tmp_path):
     uid = "u-pack"
     folder, ver = lock_session_pack(store, uid, "humanistic")
     assert folder == "v1"
-    assert ver == "humanistic_v1.0"
+    assert ver == "humanistic_v1.1"
     folder2, ver2 = lock_session_pack(store, uid, "humanistic")
     assert folder2 == folder
     assert ver2 == ver

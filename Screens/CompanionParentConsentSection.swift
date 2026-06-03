@@ -1,9 +1,12 @@
 import SwiftUI
 
-/// P1-02: настройки согласия родителя на AI-компаньона (семейный scope).
+/// P1-02 + hero-x-50…52: настройки согласия родителя на AI-компаньона (семейный scope).
 struct CompanionParentConsentSection: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
     @State private var childCanUseCompanion = true
     @State private var memoryEnabled = false
+    @State private var vedicWisdomEnabled = true
     @State private var allowUnicorn = true
     @State private var allowAladdin = false
     @State private var isLoading = true
@@ -42,6 +45,19 @@ struct CompanionParentConsentSection: View {
                 )
                 .disabled(!childCanUseCompanion)
                 .opacity(childCanUseCompanion ? 1 : 0.45)
+
+                consentToggle(
+                    title: localizationManager.localized("companion_wisdom_toggle_title"),
+                    subtitle: localizationManager.localized("companion_wisdom_toggle_subtitle"),
+                    isOn: $vedicWisdomEnabled
+                )
+                .disabled(!childCanUseCompanion)
+                .opacity(childCanUseCompanion ? 1 : 0.45)
+                .accessibilityIdentifier("companion_consent_vedic_wisdom_toggle")
+
+                Text(localizationManager.localized("companion_wisdom_toggle_subtitle_child"))
+                    .font(.caption2)
+                    .foregroundColor(.textSecondary)
 
                 VStack(alignment: .leading, spacing: 8) {
                     Text("Разрешённые герои")
@@ -87,6 +103,7 @@ struct CompanionParentConsentSection: View {
         .onChange(of: childCanUseCompanion) { enabled in
             if !enabled {
                 memoryEnabled = false
+                vedicWisdomEnabled = false
             }
         }
     }
@@ -134,13 +151,21 @@ struct CompanionParentConsentSection: View {
             let s = try await CompanionAPIService.shared.fetchConsent()
             childCanUseCompanion = s.childCanUseCompanion
             memoryEnabled = s.memoryEnabled
+            vedicWisdomEnabled = s.vedicWisdomEnabled
             allowUnicorn = s.allowedCharacters.contains("unicorn")
             allowAladdin = s.allowedCharacters.contains("aladdin")
             if !allowUnicorn && !allowAladdin {
                 allowUnicorn = true
             }
+            CompanionSettings.setCachedVedicWisdomEnabled(
+                s.vedicWisdomEnabled,
+                ageBand: CompanionUserContext.companionAgeBand
+            )
         } catch {
             errorText = "Не удалось загрузить настройки: \(error.localizedDescription)"
+            vedicWisdomEnabled = CompanionSettings.cachedVedicWisdomEnabled(
+                ageBand: CompanionUserContext.companionAgeBand
+            )
         }
     }
 
@@ -161,11 +186,16 @@ struct CompanionParentConsentSection: View {
         let payload = CompanionConsentSettings(
             memoryEnabled: memoryEnabled && childCanUseCompanion,
             childCanUseCompanion: childCanUseCompanion,
-            allowedCharacters: chars
+            allowedCharacters: chars,
+            vedicWisdomEnabled: vedicWisdomEnabled && childCanUseCompanion
         )
 
         do {
             _ = try await CompanionAPIService.shared.updateConsent(payload)
+            CompanionSettings.setCachedVedicWisdomEnabled(
+                payload.vedicWisdomEnabled,
+                ageBand: CompanionUserContext.companionAgeBand
+            )
             statusMessage = "Сохранено для всей семьи."
             NotificationCenter.default.post(name: .companionConsentDidSave, object: nil)
             HapticFeedback.impact(.light)

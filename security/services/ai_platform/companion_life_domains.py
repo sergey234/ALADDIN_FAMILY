@@ -120,6 +120,38 @@ _CATALOG: List[LifeDomainItem] = [
         "Help me understand online safety.",
         frozenset({"teen", "parent", "senior"}),
     ),
+    LifeDomainItem(
+        "sleep",
+        "Сон",
+        "Sleep",
+        "Не могу нормально спать, поговорим?",
+        "I can't sleep well — can we talk?",
+        frozenset({"teen", "parent", "senior"}),
+    ),
+    LifeDomainItem(
+        "pets",
+        "Питомцы",
+        "Pets",
+        "Хочу рассказать про своего питомца.",
+        "I want to tell you about my pet.",
+        frozenset({"child", "teen", "parent", "senior"}),
+    ),
+    LifeDomainItem(
+        "motivation",
+        "Мотивация",
+        "Motivation",
+        "Нет сил и мотивации что-то делать.",
+        "I have no motivation to do anything.",
+        frozenset({"teen", "parent", "senior"}),
+    ),
+    LifeDomainItem(
+        "money_worries",
+        "Деньги",
+        "Money worries",
+        "Тревожусь из-за денег.",
+        "I'm worried about money.",
+        frozenset({"parent", "senior"}),
+    ),
 ]
 
 

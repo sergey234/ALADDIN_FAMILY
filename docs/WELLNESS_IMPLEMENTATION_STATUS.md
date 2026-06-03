@@ -1,262 +1,430 @@
-# Wellness Platform — статус реализации (131 задача)
+# Wellness Platform — итоговый статус (131 + r100 герои)
 
-> **Обновлено:** 2026-06-03 (build **223**, r100 premium funnel, handoff)  
-> **Ядро:** 131/131 · **Дорожка «100%»:** [WELLNESS_ROADMAP_100.md](./WELLNESS_ROADMAP_100.md) (`r100-*`)  
-> **PO-трекинг:** 133/134 (`po-healthkit` → [rollback plan](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md))  
-> **Рабочая папка:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
-> **Чеклист ядра:** [WELLNESS_CURSOR_TODO.md](./WELLNESS_CURSOR_TODO.md)  
-> **Handoff для новой ML (продолжение):** [WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md)  
-> **Handoff 131 (архив):** [WELLNESS_ML_HANDOFF.md](./WELLNESS_ML_HANDOFF.md)  
-> **Деплой (отложен):** [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md)
+> **Обновлено:** 2026-06-04 (hero-x 37/37 + build **224** TestFlight)  
+> **Ядро wellness:** **131/131** закрыто (2026-06-01)  
+> **Дорожка «100%» (герои + Companion):** **28/39** `r100-*` закрыто · **11 pending**  
+> **hero-x (усиление героев):** **37/37 ✅ COMPLETE** (2026-06-04)  
+> **iOS build (канон):** **224** · git `origin/master` (после push build 224)  
+> **Prod verify:** wellness **14/14** · companion **18/18** · hero-x gate **ALL PASSED** (2026-06-04)  
+> **Рабочая папка (ТОЛЬКО):** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
+> **Remote:** `git@github.com:sergey234/ALADDIN_FAMILY.git` · ветка **`master`**
 
----
-
-## Сводка
-
-| Фаза | Всего | Готово | % |
-|------|-------|--------|---|
-| 0 — подготовка | 16 | 16 | 100% |
-| 1 — MVP | 29 | 29 | 100% |
-| 2 — столпы + automation | 51 | 51 | 100% |
-| 3 — orchestrator + premium | 20 | 20 | 100% |
-| §18 i18n | 15 | 15 | 100% |
-| **Σ** | **131** | **131** | **100%** |
-
-**Осталось (ядро):** 0. **PO (отложено):** откат HealthKit для CI — [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md) · Portal HealthKit (вариант A) — [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md).
+| Документ | Роль |
+|----------|------|
+| **Этот файл** | Единая точка входа: что сделано, что осталось, команды, порядок работ |
+| [WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md) | §0 — текст для нового чата; продукт «что хотим от героев» |
+| [WELLNESS_ROADMAP_100.md](./WELLNESS_ROADMAP_100.md) | Батчи 0–7, «простыми словами» |
+| [WELLNESS_CURSOR_TODO.md](./WELLNESS_CURSOR_TODO.md) | 131 задача p0–p18 — **все ☑, не переделывать** |
+| [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md) | Деплой одним прогоном (повторять после каждого BE-изменения) |
+| [WELLNESS_TESTFLIGHT_SMOKE_15.md](./WELLNESS_TESTFLIGHT_SMOKE_15.md) | 15 пунктов на device (r100-0-01) |
 
 ---
 
-## План vs факт (финальный срез)
+## 0. Старт для новой ML-системы (скопировать в чат)
 
-| Блок | План | Факт |
-|------|------|------|
-| Backend REST | `/api/wellness/*` 80+ routes | ✅ `wellness_router.py` + smoke |
-| i18n | 297 keys ru/en + 25 JSON | ✅ `check_wellness_l10n.py` |
-| Premium | ethics (p3-12) + subscription (p3-06) | ✅ `wellness_premium_access.py` |
-| Errors API | p18-15 structured `{code, message_key, message}` | ✅ `errors_v1.json` + catalog |
-| Ф3 extras | widget/PDF/values/seasonal/sleep/senior | ✅ API + iOS scaffold |
-| Postgres | p3-11 migration | ✅ scaffold + runbook (prod still SQLite) |
-| Canary | p3-10 runbook | ✅ `WELLNESS_CANARY_RUNBOOK.md` |
+```text
+Продолжаю ALADDIN Wellness + Companion (герои). Ядро 131/131 закрыто — не трогать.
 
-**Scaffold (ops позже):** Postgres cutover, Rive `.riv` assets, CDN sleep audio URLs, `FEATURE_WELLNESS_PARENT_LLM=1`.
+Папка ТОЛЬКО: /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
+Ветка: master · origin: git@github.com:sergey234/ALADDIN_FAMILY.git
+
+Прочитай:
+1) docs/WELLNESS_IMPLEMENTATION_STATUS.md (этот файл — статус + pending + команды)
+2) docs/WELLNESS_ML_HANDOFF_R100.md §1 (продукт героев)
+3) docs/WELLNESS_TESTFLIGHT_SMOKE_15.md (r100-0-01)
+
+Продукт: 3 героя = 1 LLM + persona + hero_flavor + дорожка wellness. Не fine-tune.
+UI: «дорожка», не «столп». Parent playbook ≠ чат ребёнка.
+
+Следующий приоритет PO:
+1) TestFlight build **224** на device → r100-0-01 + hero-x-62 smoke
+2) Widget Extension в Xcode → r100-2-06 (~15 мин, MANUAL_WIDGET_SETUP.md)
+3) Через 7d dual-write → r100-1-04 PG read
+4) Батч 7: Hermes keys, Rive
+
+Prod: https://aladdin-ai.ru · VPS root@149.154.65.180 · ~/.ssh/aladdin_server
+После BE deploy: ./scripts/verify_wellness_prod.sh → 14/14
+Hero-x CI: ./scripts/verify_hero_x_phase6.sh + ./scripts/verify_companion_p0_prod.sh → 18/18
+
+Не: rebase/force-push master, WELLNESS_PG_READ до 7d, canary rollout, commit/push без PO.
+```
 
 ---
 
-## Деплой backend (VPS) — чеклист
+## 1. Сводка: 131 ядро (закрыто)
 
-| Шаг | Статус | Как проверить |
-|-----|--------|----------------|
-| `deploy_wellness_p1.sh` — все `wellness_*.py` + router + i18n JSON | ✅ | scp ~60 файлов на `149.154.65.180:/opt/aladdin-backend` |
-| Restart `aladdin-backend.service` | ✅ | smoke на localhost:8002 |
-| `vps_smoke_wellness.py` | ✅ 2026-06-01 | ALL PASSED (incl. phq9_child_block, errors_catalog n=19) |
-| Prod через nginx | ✅ 2026-06-03 14:21 | `verify_wellness_prod.sh` — **14/14** (child pillars: `device_id` + `age_band` после fix `wellness_age_policy`) |
-| Feature flags prod | ✅ | `ENABLED=1`, `ORCHESTRATOR=1`, `REFLECTIVE=1`, `JUNG=1` |
-| l10n gate | ✅ | `python3 scripts/check_wellness_l10n.py` — 297 keys |
+| Фаза | Всего | Готово |
+|------|-------|--------|
+| 0 — подготовка | 16 | 16 |
+| 1 — MVP | 29 | 29 |
+| 2 — столпы + automation | 51 | 51 |
+| 3 — orchestrator + premium | 20 | 20 |
+| §18 i18n | 15 | 15 |
+| **Σ** | **131** | **131** |
 
-**Команда выката:**
+**PO (вне ядра):** HealthKit CI — [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md) (build 222 откат entitlement; текущий **223** без HealthKit в archive).
+
+---
+
+## 2. Дополнительно к 131 — дорожка r100 (герои + Companion)
+
+> Всё ниже — **поверх** закрытого ядра 131. Не дублировать p1–p18 из `WELLNESS_CURSOR_TODO.md`.
+
+### 2.1 Продуктовая модель героев (кратко)
+
+| Продукт | Кто | Где | LLM |
+|---------|-----|-----|-----|
+| **Чат с героем** | Ребёнок / семья | `CompanionConversationScreen`, `POST /api/ai/companion/chat` | Полный ответ на каждое сообщение |
+| **Parent playbook** | Родитель | `GET /api/wellness/parent/playbook` | JSON + опционально 2–3 фразы LLM |
+| **Wellness Hub** | С consent | 4 **дорожки**, check-in, упражнения | Оркестратор → `wellness_pillar` в чат |
+
+**Три героя** (Единорог, Аладдин, Джин) = одна модель, три тона через `hero_flavor` в `pack.yaml`.
+
+### 2.2 Что сделано по героям (батчи 3–5 + ops)
+
+| id / область | Статус | Что именно |
+|--------------|--------|------------|
+| **r100-3-hero-unicorn** | ✅ | Tagline «Магический друг для детей» |
+| **r100-3-hero-aladdin** | ✅ | Tagline «Мудрый наставник» |
+| **r100-3-hero-genie** | ✅ | Tagline Джина |
+| **r100-3-hero-style** | ✅ | Под героями: Игривый / Спокойный / Остроумный |
+| **r100-3-hero-deploy** | ✅ | `deploy_companion_p0.sh` → VPS (taglines в `ai_companion_router.py`) |
+| **r100-4-flavor** | ✅ | `hero_flavor` 3×4 во всех `wellness_knowledge/*/v1/pack.yaml` |
+| **r100-4-cog/beh/hum/jung** | ✅ | `instruction`, `llm_rephrase_only`, `llm_rules`; **status: approved** (hero-x-30) |
+| **r100-4-recap** | ✅ | Recap над чатом (`CompanionConversationScreen` + BE `/session/recap`) |
+| **r100-4-memory** | ✅ | Memory chips (consent; не child export) |
+| **r100-4-drift** | ✅ | Лог `wellness_pillar_drift` в `ai_companion_router.py` |
+| **r100-4-outcome** | ✅ | Outcome «хуже» → `pillar_fatigue` → смена дорожки iOS+BE |
+| **r100-5-stream** | ✅ | SSE streaming в чате |
+| **r100-5-voice** | ✅ | Hold-to-talk, WS ping 20s, reconnect UI, fallback в текст |
+| **r100-5-proactive** | ✅ | Check-in → баннер «поговорить с героем» в чате |
+| **r100-2-13** | ✅ | `finishWellnessFlow` — wellness не выкидывает на Main |
+| **r100-2-12 / r100-0-05** | ✅ | `WellnessCompanionNavUITests` — hub→exercise→outcome→companion |
+| **r100-2-14** | ✅ | Glossary «дорожка» / pillar |
+| **r100-1-16** | ✅ | Premium funnel: Hub gate → paywall → тарифы — [WELLNESS_PREMIUM_FUNNEL.md](./WELLNESS_PREMIUM_FUNNEL.md) |
+| **r100-1-15** | ✅ | `scripts/wellness_ops_digest.sh` |
+| **r100-0-02** | ✅ | Prod verify 14/14; fix `wellness_age_policy` (`device_id` при JWT `type=access`) |
+| **r100-0-06** | ✅ | `verify_wellness_reflective_prod.sh` |
+| **r100-2-11** | ✅ | `WellnessModelsTests` в `ALADDINUnitTests` |
+| **r100-2-06** | ⏳ частично | `WellnessWidgetBridge` + код в `ALADDINWidgets/`; **нет Widget Extension target в Xcode** |
+
+### 2.3 UX / iOS вне таблицы 131 Wellness*.swift
+
+| Изменение | Файлы |
+|-----------|--------|
+| 4 вкладки Companion («Мир героев») | `CompanionHomeScreen.swift`, `CompanionHubScreen.swift` |
+| Embedded Wellness в Companion | `WellnessHubScreen.swift`, `NavigationManager.swift` |
+| Premium paywall sheet | `WellnessPremiumPaywallSheet.swift`, `WellnessPremiumFunnel.swift` |
+| Voice polish | `CompanionVoiceSession.swift`, `CompanionDialogueStrip.swift` |
+| iOS 15 compat | `WellnessSwiftUICompat.swift`, `onChange` fixes |
+| UITest bootstrap | `ALADDINApp.swift` (`-UITestWellnessNavSmoke`), `WellnessOfflineStore.seedNavSmokeFixtures()` |
+| Статический gate (без долгого xcodebuild) | `scripts/verify_r100_ios_static.sh`, `scripts/run_wellness_r100_tests.sh` |
+
+### 2.4 Backend за пределами 131 (деploy 2026-06-03)
+
+| Шаг | Статус |
+|-----|--------|
+| `deploy_wellness_batch4.sh` (packs, routers, age_policy, jwt_claims) | ✅ VPS |
+| `deploy_companion_p0.sh` (taglines героев) | ✅ VPS |
+| `verify_wellness_prod.sh` | ✅ **14/14** |
+| Child pillars JWT smoke | ✅ `age_band: child`, 2 дорожки |
+| Postgres dual-write | ✅ `WELLNESS_PG_DUAL_WRITE=1` |
+| PG read cutover | ⏳ r100-1-04 — **не раньше 7 дней** |
+| Parent LLM | ⏳ flag on VPS, `llm_used: false` без ключей (r100-0-03/0-04) |
+
+### 2.5 Git / build 224 (TestFlight — hero-x)
+
+| Место | Значение | Примечание |
+|-------|----------|------------|
+| `Info.plist` → `CFBundleVersion` | **224** | явный bump (не только pbxproj) |
+| `Core/Config/AppConfig.swift` → `buildNumber` | **224** | |
+| `AppConfig.minimumClientBuildForApiContract` | **224** | |
+| `ALADDIN.xcodeproj/project.pbxproj` ×8 `CURRENT_PROJECT_VERSION` | **224** | |
+| `Tests/UnitTests/AppConfigTests.swift` | asserts **224** | |
+
+**Build 224 включает (hero-x):** humor/wisdom/psychology layers, social bridge fix, teen «Меньше шуток», one-pager героев, vedic toggle l10n, prod verify 18/18.
+
+**Примечание:** номер **224** (не 219) — монотонный bump после shipped **223**; TestFlight не принимает downgrade.
+
+### 2.6 hero-x — полная таблица (37/37 ✅)
+
+| id | Область | Статус | Артефакт |
+|----|---------|--------|----------|
+| hero-x-00 | PO gate §0.1 | ✅ | [COMPANION_HERO_X00_PO_SIGNOFF.md](./COMPANION_HERO_X00_PO_SIGNOFF.md) |
+| hero-x-01…09, 44 | Юмор + guard + assembler | ✅ | `companion_humor_policy.py`, `companion_response_guard.py` |
+| hero-x-06 | 12 manual QA | ✅ | [COMPANION_HERO_X06_MANUAL_QA.md](./COMPANION_HERO_X06_MANUAL_QA.md) + golden |
+| hero-x-07 | Golden set ≥95% | ✅ | `Tests/fixtures/companion_golden/` |
+| hero-x-10…15 | Vedic wisdom | ✅ | `companion_wisdom.py`, `verify_vedic_secular_gate.py` |
+| hero-x-14 | PO/legal secular | ✅ | WELLNESS_CLINICAL_REVIEW Appendix B |
+| hero-x-20…24 | Psychology internal | ✅ | `companion_knowledge/psychology/` |
+| hero-x-30 | Clinical approved | ✅ | pack `status: approved` + Appendix C |
+| hero-x-40…43 | Empathy + topics | ✅ | `companion_empathy.py`, `companion_topic_policy.py` |
+| hero-x-50…52, 65 | iOS l10n + toggle | ✅ | `CompanionParentConsentSection`, l10n gate |
+| hero-x-60…64 | CI + deploy + metrics | ✅ | `verify_hero_x_phase6.sh`, prod 18/18 |
+| hero-x-62 | TestFlight smoke | ✅ | [COMPANION_HERO_X62_SMOKE.md](./COMPANION_HERO_X62_SMOKE.md) + backend smoke |
+| hero-x-67 | Teen «Меньше шуток» | ✅ | Hub toggle + `PATCH /profile/teen-settings` |
+| hero-x-68 | Genie A/B cap | ✅ | `companion_experiment.py`, `FEATURE_GENIE_HUMOR_AB` |
+| hero-x-69 | Parent one-pager | ✅ | Hub sheet + [COMPANION_HERO_PARENT_ONE_PAGER.md](./COMPANION_HERO_PARENT_ONE_PAGER.md) |
+
+**Финальный CI (2026-06-04):**
+
+```bash
+./scripts/verify_hero_x_phase6.sh          # 129 pytest + golden + ethics + vedic
+./scripts/verify_hero_x62_backend_smoke.sh https://aladdin-ai.ru
+./scripts/verify_wellness_prod.sh https://aladdin-ai.ru   # 14/14
+./scripts/verify_companion_p0_prod.sh https://aladdin-ai.ru  # 18/18 incl. social bridge
+```
+
+**Deploy BE (уже на prod):** `./scripts/deploy_hero_x_phase6.sh root 149.154.65.180 ~/.ssh/aladdin_server`
+
+**План:** [WELLNESS_HERO_PERSONA_ENHANCEMENT_PLAN.md](./WELLNESS_HERO_PERSONA_ENHANCEMENT_PLAN.md) — **✅ COMPLETE (37/37)**
+
+---
+
+## 3. r100 — полная таблица (39 задач)
+
+| id | Батч | Задача | Статус | Владелец |
+|----|------|--------|--------|----------|
+| r100-0-01 | 0 | TestFlight — 15 пунктов UX на device | **pending** | PO + iOS |
+| r100-0-02 | 0 | verify_wellness_prod 14/14 после deploy | **completed** | BE |
+| r100-0-03 | 7 | Hermes/OpenRouter keys | **pending** | PO + BE |
+| r100-0-04 | 7 | Parent LLM `llm_used: true` | **pending** | BE ops |
+| r100-0-05 | 0 | Nav smoke wellness→exercise→outcome→companion | **completed** | iOS |
+| r100-0-06 | 0 | Reflective prod verify | **completed** | BE |
+| r100-1-04 | 1 | PG read cutover после 7d dual-write | **pending** | BE ops |
+| r100-1-15 | 1 | Мониторинг `wellness_ops_digest.sh` | **completed** | DevOps |
+| r100-1-16 | 1 | Premium воронка | **completed** | iOS |
+| r100-2-06 | 2 | Widget Extension target Xcode | **pending** | iOS ~15 мин |
+| r100-2-11 | 2 | WellnessModelsTests в CI | **completed** | iOS |
+| r100-2-12 | 2 | E2E UI Companion+Hub | **completed** | iOS |
+| r100-2-13 | 2 | Embedded nav `finishWellnessFlow` | **completed** | iOS |
+| r100-2-14 | 2 | Glossary «дорожка»/pillar | **completed** | Docs |
+| r100-3-hero-unicorn | 3 | Tagline Единорог | **completed** | BE+iOS |
+| r100-3-hero-aladdin | 3 | Tagline Аладдин | **completed** | BE+iOS |
+| r100-3-hero-genie | 3 | Tagline Джин | **completed** | BE+iOS |
+| r100-3-hero-style | 3 | Игривый/Спокойный/Остроумный | **completed** | iOS |
+| r100-3-hero-deploy | 3 | deploy_companion_p0 taglines | **completed** | BE |
+| r100-4-cog | 4 | Pack cognitive draft | **completed** | Content |
+| r100-4-beh | 4 | Pack behavioral | **completed** | Content |
+| r100-4-hum | 4 | Pack humanistic | **completed** | Content |
+| r100-4-jung | 4 | Pack jung | **completed** | Content |
+| r100-4-flavor | 4 | hero_flavor 3×4 | **completed** | Content |
+| r100-4-recap | 4 | Recap над чатом | **completed** | iOS |
+| r100-4-memory | 4 | Memory chips consent | **completed** | iOS |
+| r100-4-drift | 4 | Drift log BE | **completed** | BE |
+| r100-4-outcome | 4 | Outcome → fatigue/pillar | **completed** | iOS+BE |
+| r100-4-voice | 4 | STT→LLM→TTS latency polish | **pending** | iOS |
+| r100-5-stream | 5 | Streaming чат | **completed** | iOS+BE |
+| r100-5-voice | 5 | Hold-to-talk + WS reconnect | **completed** | iOS |
+| r100-5-proactive | 5 | Check-in → CTA герою | **completed** | iOS |
+| r100-5-ethics | 5 | L3 + parent не видит teen-chat | **completed** | QA (hero-x-63 gate) |
+| r100-6-store | 6 | App Store metadata | **pending** | PO |
+| r100-6-healthkit | 6 | HealthKit Portal A или rollback B | **pending** | PO |
+| r100-7-07 | 7 | Rive `.riv` + PillarEmotion | **pending** | Design+iOS |
+| r100-7-08 | 7 | Sleep stories MP3 CDN | **pending** | BE+iOS |
+| r100-7-10 | 7 | Clinical → pack `approved` | **completed** | hero-x-30 (2026-06-04) |
+| r100-7-docs | 7 | Внутренние docs «дорожка» | **pending** | Docs |
+
+**Итог:** **28 completed · 11 pending**
+
+**hero-x deploy (2026-06-04):** `./scripts/deploy_hero_x_phase6.sh` · **129** companion pytest · golden **37/37** · prod **18/18** + wellness **14/14** · social bridge fix · backlog 67–69 · BE live on VPS.
+
+**hero-x track CLOSED (37/37):** [COMPANION_HERO_X00_PO_SIGNOFF.md](./COMPANION_HERO_X00_PO_SIGNOFF.md) · clinical Appendix B/C · [COMPANION_HERO_X62_SMOKE.md](./COMPANION_HERO_X62_SMOKE.md).
+
+**План hero-x:** [WELLNESS_HERO_PERSONA_ENHANCEMENT_PLAN.md](./WELLNESS_HERO_PERSONA_ENHANCEMENT_PLAN.md) v2 **✅ COMPLETE**.
+
+---
+
+## 4. Оставшиеся 13 задач — что делать и с чего начать
+
+> **Порядок для PO/ML (рекомендуемый):** 0-01 → 2-06 → (TestFlight снова) → 1-04 по календарю → батч 7.
+
+### r100-0-01 — TestFlight 15 пунктов (PO + device)
+
+- **Чеклист:** [WELLNESS_TESTFLIGHT_SMOKE_15.md](./WELLNESS_TESTFLIGHT_SMOKE_15.md)
+- **Билд:** **224** (hero-x UI: teen humor, one-pager, wisdom toggle l10n)
+- **Автотесты:** `WellnessCompanionNavUITests`, `WellnessModelsTests`
+- **Критерий done:** все 15 галочек на реальном iPhone
+
+### r100-2-06 — Widget Extension (~15 мин, Xcode)
+
+- **Инструкция:** [MANUAL_WIDGET_SETUP.md](../MANUAL_WIDGET_SETUP.md) + [WELLNESS_WIDGET_TARGET_CHECKLIST.md](./WELLNESS_WIDGET_TARGET_CHECKLIST.md)
+- **Код готов:** `ALADDINWidgets/WellnessCheckinWidget.swift`, `WellnessWidgetBridge` после check-in
+- **Критерий done:** виджет check-in на Home Screen, App Group
+
+### r100-1-04 — Postgres read cutover
+
+- **Когда:** ≥7 дней после `WELLNESS_PG_DUAL_WRITE=1` (старт ~2026-06-01)
+- **Док:** [WELLNESS_POSTGRES_MIGRATION.md](./WELLNESS_POSTGRES_MIGRATION.md)
+- **Действие:** `WELLNESS_PG_READ=1` на VPS + smoke + verify 14/14
+- **Не делать раньше срока**
+
+### r100-0-03 / r100-0-04 — Hermes + Parent LLM
+
+- **Док:** [WELLNESS_POSTGRES_PARENT_LLM_HANDOFF.md](./WELLNESS_POSTGRES_PARENT_LLM_HANDOFF.md)
+- **PO:** ключи OpenRouter/Hermes на VPS
+- **Проверка:** `curl` parent playbook → `llm_used: true`
+
+### r100-4-voice — Latency polish
+
+- **Файлы:** `CompanionVoiceSession.swift`, STT/TTS pipeline
+- **Цель:** субъективно быстрее STT→LLM→TTS на device
+
+### r100-5-ethics — QA audit
+
+- L3 escalation → helpline без шуток героя
+- Родитель **не** видит дословный teen-chat
+- Связано с пунктами 12–14 TestFlight smoke
+
+### r100-6-store — App Store metadata
+
+- Скриншоты, описание, privacy nutrition labels
+- Wellness + Companion в одном listing
+
+### r100-6-healthkit — HealthKit PO
+
+- **A:** Portal profile + entitlement (sleep read)
+- **B:** оставить rollback build 222-style без entitlement (текущий 223)
+- **Док:** [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md)
+
+### r100-7-07 — Rive анимации
+
+- `.riv` assets + `WellnessPillarEmotionView` binding
+
+### r100-7-08 — Sleep CDN
+
+- MP3 URLs для sleep stories API + iOS player
+
+### r100-7-10 — Clinical sign-off
+
+- ✅ **completed** hero-x-30 (2026-06-04): все 4 pack `status: approved`
+- **Док:** [WELLNESS_CLINICAL_REVIEW.md](./WELLNESS_CLINICAL_REVIEW.md) Appendix C
+
+### r100-7-docs — Внутренние docs
+
+- Заменить оставшиеся «столп» → «дорожка» в docs (не в UI — UI уже ok)
+
+---
+
+## 5. Деплой backend (VPS) — актуальный чеклист
+
+| Шаг | Статус | Команда / проверка |
+|-----|--------|-------------------|
+| Full wellness P1 | ✅ исторически | `./scripts/deploy_wellness_p1.sh root 149.154.65.180 ~/.ssh/aladdin_server` |
+| Batch 4 (packs, age, jwt) | ✅ 2026-06-03 | `./scripts/deploy_wellness_batch4.sh …` |
+| Companion P0 (taglines) | ✅ 2026-06-03 | `./scripts/deploy_companion_p0.sh …` |
+| **Hero-x phase 6** | ✅ 2026-06-04 | `./scripts/deploy_hero_x_phase6.sh …` |
+| Prod wellness verify | ✅ 14/14 | `./scripts/verify_wellness_prod.sh https://aladdin-ai.ru` |
+| Prod companion verify | ✅ 18/18 | `./scripts/verify_companion_p0_prod.sh https://aladdin-ai.ru` |
+| Hero-x local gate | ✅ | `./scripts/verify_hero_x_phase6.sh` (129 pytest) |
+| Hero-x-62 backend smoke | ✅ | `./scripts/verify_hero_x62_backend_smoke.sh` |
+| Reflective verify | ✅ | `./scripts/verify_wellness_reflective_prod.sh` |
+| vps_smoke_wellness.py | ✅ | ALL PASSED |
+| Feature flags | ✅ | `ENABLED=1`, `ORCHESTRATOR=1`, `REFLECTIVE=1`, `JUNG=1` |
+| l10n gate | ✅ | `python3 scripts/check_wellness_l10n.py` — **303 keys** |
+| Backend pytest | ✅ | **129** companion + wellness (`Tests/test_companion_*.py`, `test_wellness_*.py`) |
+
+**После каждого BE-изменения:** deploy → verify 14/14 → обновить дату в этом файле.
+
+---
+
+## 6. iOS — сверка Wellness*.swift ↔ таргет ALADDIN
+
+**Main app:** **25/25** wellness Swift в Compile Sources.  
+**Вне таргета:** `ALADDINWidgets/WellnessCheckinWidget.swift` → **r100-2-06**.
+
+| Companion (r100, не в таблице Wellness*) | Файл |
+|------------------------------------------|------|
+| Чат, recap, memory, voice | `Screens/CompanionConversationScreen.swift` |
+| 4 вкладки | `Screens/CompanionHomeScreen.swift` |
+| Выбор героя | `Screens/CompanionHubScreen.swift` |
+| Голос WS | `Core/Voice/CompanionVoiceSession.swift` |
+| Premium gate | `Core/Services/WellnessPremiumFunnel.swift` |
+
+Полная таблица 25 файлов — без изменений с 2026-06-02 (см. git history этого файла).
+
+---
+
+## 7. Ключевые файлы для правок героев
+
+| Слой | Файл |
+|------|------|
+| BE чат | `security/api/routers/ai_companion_router.py` |
+| BE wellness | `security/api/routers/wellness_router.py` |
+| Persona | `security/services/ai_platform/companion_persona.py` |
+| Оркестратор | `security/services/ai_platform/wellness_orchestrator.py` |
+| Промпты | `security/services/ai_platform/wellness_prompt_builder.py` |
+| Knowledge Pack | `security/services/ai_platform/wellness_knowledge/*/v1/pack.yaml` |
+| Age band | `security/services/ai_platform/wellness_age_policy.py` |
+| iOS чат | `Screens/CompanionConversationScreen.swift` |
+| iOS Hub | `Screens/WellnessHubScreen.swift` |
+| iOS session | `Core/Services/WellnessSessionStore.swift` |
+
+---
+
+## 8. Команды (копировать)
 
 ```bash
 cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
-./scripts/deploy_wellness_p1.sh root 149.154.65.180 ~/.ssh/aladdin_server
-./scripts/verify_wellness_prod.sh https://aladdin-ai.ru
-```
 
----
+# Статика iOS (быстро, без xcodebuild)
+./scripts/verify_r100_ios_static.sh
 
-## iOS — финальные экраны / сервисы
-
-| Компонент | Задачи |
-|-----------|--------|
-| Hub, Check-in, Consent, Trust, Assessment, Exercise, Dream, Timeline | Ф1–Ф2 |
-| `WellnessAgeL10n` child/teen | p18-14 |
-| `WellnessPremiumPaywallSheet` | p3-06 |
-| `WellnessValuesCardSheet` | p3-07 |
-| `WellnessProgressPDFService` | p3-19 |
-| `WellnessCheckinWidget` | p3-18 |
-| `WellnessPillarEmotionView` | p3-09 |
-| `WellnessHealthSleepReader` | p2-36 · **CI:** entitlement блокирует archive → rollback B запланирован |
-| `WellnessSwiftUICompat` | post-close — iOS 15.2 API shims |
-| `WellnessNavigationStack` / `WellnessMultilineField` | внутри compat |
-
----
-
-## 2026-06-02 — post-close iOS fixes (после 131/131)
-
-> Задачи **не** в `WELLNESS_CURSOR_TODO.md` — стабилизация сборки Xcode (deployment target **15.2**).
-
-| Изменение | Файлы | Зачем |
-|-----------|--------|--------|
-| iOS 15.2 shims | `Shared/Components/WellnessSwiftUICompat.swift` | `NavigationStack` → `root:`; `NavigationView` на 15; `presentationDetents`; multiline `TextField` |
-| HealthKit sleep stages | `Core/Services/WellnessHealthSleepReader.swift` | `#available(iOS 16)` для asleepCore/Deep/REM vs legacy `.asleep` |
-| Share PDF | `Screens/WellnessTimelineScreen.swift` | `ShareSheet` вместо `ShareLink` (iOS 16+) |
-| Referral sheet | `Screens/WellnessReferralSheet.swift` | Убран мусор в импорте; compat navigation |
-| Privacy Policy | `Screens/18_PrivacyPolicyScreen.swift` | `case .wellness` в deprecated `content` switch |
-| Navigation icons | `Core/Navigation/NavigationManager.swift` | `.wellnessAssessmentsHub`, `.wellnessAssessmentFlow` |
-| Xcode target | `ALADDIN.xcodeproj/project.pbxproj` | В **Compile Sources**: PDF, compat, Paywall, Values, Referral (уник. ID), **PillarEmotion** |
-
-**PO:** после правок — Clean Build (⇧⌘K) → Build (⌘B).
-
-### 2026-06-02 — CI build 221: HealthKit blocker (archive failed)
-
-| Факт | Деталь |
-|------|--------|
-| Git | `95439b21` на `origin/master`, build **221**, Wellness + HealthKit entitlement |
-| CI log | `logs_71945656834` — Fastlane archive **FAILED** |
-| Ошибка | Profile `ALADDIN App Store Distribution new` **без** HealthKit; entitlement в `ALADDIN.entitlements` **есть** |
-| Другие Health-типы | **Нет** — только read sleep для check-in |
-| Предупреждение CI | Профили Development/Ad Hoc в secrets — отдельно от HealthKit; исправить при варианте A |
-| **Решение PO** | ✅ **Вариант B** build **222**; текущий iOS build **223** (r100 wellness + companion) |
-| План | [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md) |
-
-Check-in **без HealthKit:** ползунок «Как спал(а)?» 3–12 ч — работает всегда.
-
-### 2026-06-02 — Ops ML (handoff выполнен на VPS)
-
-| Шаг | Статус | Деталь |
-|-----|--------|--------|
-| Parent LLM A | ✅ | `FEATURE_WELLNESS_PARENT_LLM=1`, backend active |
-| Playbook curl | ✅ | JSON-фразы ru; `llm_used: false` (Hermes fallback — проверить ключи на VPS) |
-| verify prod | ✅ | `verify_wellness_prod.sh` — 14/14 |
-| Postgres B1–B4 | ✅ | DB `wellness` создана, migrate **160 rows**, `WELLNESS_PG_DUAL_WRITE=1` |
-| PG read cutover | ⏳ | `WELLNESS_PG_READ=0` — включить через **7 дней** мониторинга (handoff B5) |
-| smoke VPS | ✅ | `vps_smoke_wellness.py` — ALL PASSED |
-| iOS unit test | ✅ | `WellnessModelsTests.swift` → таргет `ALADDINUnitTests` |
-| Widget Extension | 📋 | Код в `ALADDINWidgets/` — таргет в Xcode: [MANUAL_WIDGET_SETUP.md](../MANUAL_WIDGET_SETUP.md) (~15 мин) |
-
-Скрипт миграции: поддержка `companion_platform.db` (prod path).
-
----
-
-## iOS — сверка `Wellness*.swift` ↔ таргет ALADDIN
-
-Проверено: **2026-06-02**. Таргет: **ALADDIN** (main app). Отдельного **Widget Extension** в проекте нет.
-
-| Файл | В репо | В таргете ALADDIN | Примечание |
-|------|:------:|:-----------------:|------------|
-| `Screens/WellnessConsentScreen.swift` | ✅ | ✅ | p1-10 |
-| `Screens/WellnessHubScreen.swift` | ✅ | ✅ | p1-12 |
-| `Screens/WellnessCheckinScreen.swift` | ✅ | ✅ | p1-13 |
-| `Screens/WellnessTrustCenterScreen.swift` | ✅ | ✅ | p1-24 |
-| `Screens/WellnessPhqLiteScreen.swift` | ✅ | ✅ | p1-06 |
-| `Screens/WellnessExerciseScreen.swift` | ✅ | ✅ | p2-21 |
-| `Screens/WellnessTimelineScreen.swift` | ✅ | ✅ | p2-19 |
-| `Screens/WellnessDreamJournalScreen.swift` | ✅ | ✅ | p2-20 |
-| `Screens/WellnessAssessmentFlowScreen.swift` | ✅ | ✅ | p2-03 (+ Hub внутри) |
-| `Screens/WellnessReflectiveModeScreen.swift` | ✅ | ✅ | p2-22 |
-| `Screens/WellnessTogetherModeScreen.swift` | ✅ | ✅ | p2-44 |
-| `Screens/WellnessOutcomeSheet.swift` | ✅ | ✅ | p2-42 |
-| `Screens/WellnessReferralSheet.swift` | ✅ | ✅ | p2-43 |
-| `Screens/WellnessPremiumPaywallSheet.swift` | ✅ | ✅ | p3-06 (добавлен в target 2026-06-02) |
-| `Screens/WellnessValuesCardSheet.swift` | ✅ | ✅ | p3-07 (добавлен в target 2026-06-02) |
-| `Screens/WellnessPillarEmotionView.swift` | ✅ | ✅ | p3-09 (добавлен в target 2026-06-02) |
-| `Core/Services/WellnessAPIService.swift` | ✅ | ✅ | p1-11 |
-| `Core/Services/WellnessOfflineStore.swift` | ✅ | ✅ | p2-23 |
-| `Core/Services/WellnessHealthSleepReader.swift` | ✅ | ✅ | p2-36 |
-| `Core/Services/WellnessProgressPDFService.swift` | ✅ | ✅ | p3-19 (добавлен в target 2026-06-02) |
-| `Core/Services/WellnessSessionStore.swift` | ✅ | ✅ | — |
-| `Core/Services/WellnessLoopCoordinator.swift` | ✅ | ✅ | — |
-| `Core/Models/WellnessModels.swift` | ✅ | ✅ | incl. `WellnessAgeL10n` |
-| `Core/Models/WellnessTogetherSession.swift` | ✅ | ✅ | p2-44 |
-| `Shared/Components/WellnessSwiftUICompat.swift` | ✅ | ✅ | post-close 2026-06-02 |
-| `ALADDINWidgets/WellnessCheckinWidget.swift` | ✅ | ⚠️ нет | p3-18 scaffold; нужен **Widget Extension** target |
-| `Tests/UnitTests/WellnessModelsTests.swift` | ✅ | ✅ | `ALADDINUnitTests` — `scripts/run_wellness_r100_tests.sh` |
-
-**Итого main app:** 25/25 Swift-файлов wellness в таргете · **1** файл вне compile: widget (`ALADDINWidgets/` → r100-2-06).
-
-**UI smoke (2026-06-03):** `Tests/UITests/WellnessCompanionNavUITests.swift` — r100-0-05 / r100-2-12.  
-**Статический gate (без xcodebuild):** `./scripts/verify_r100_ios_static.sh` — таргеты, UITest bootstrap, чеклисты.
-
----
-
-## 2026-06-03 — дорожка r100 (Companion + герои, без деплоя PO)
-
-> Детали: [WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md) · План: [WELLNESS_ROADMAP_100.md](./WELLNESS_ROADMAP_100.md)
-
-| Область | Статус в репо |
-|---------|----------------|
-| hero_flavor 3×4, pack instructions | ✅ draft |
-| Recap, memory chips, outcome→fatigue, drift log | ✅ |
-| Voice reconnect, embedded nav, check-in→hero banner | ✅ |
-| Hermes keys, Rive, clinical | ⏳ батч 7 |
-| Premium funnel (r100-1-16) | ✅ Hub gate + paywall → тарифы — [WELLNESS_PREMIUM_FUNNEL.md](./WELLNESS_PREMIUM_FUNNEL.md) |
-| Деплой VPS + TestFlight | ⏳ [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md) |
-
----
-
-## r100 — осталось (13 из 39) · 26 закрыто
-
-> Полная таблица: [WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md) §4.
-
-| id | Простыми словами | Кто |
-|----|------------------|-----|
-| r100-0-01 | TestFlight: 15 пунктов на телефоне | PO |
-| r100-0-03 | Ключи Hermes (батч 7) | PO |
-| r100-0-04 | Parent LLM `llm_used: true` | BE ops |
-| r100-1-04 | Postgres **read** через 7 дней dual-write | BE ops |
-| r100-2-06 | **Виджет** check-in на Home Screen (Widget Extension в Xcode) | iOS ~15 мин |
-| r100-4-voice | Полировка задержки голоса | iOS |
-| r100-5-ethics | Аудит L3 + родитель не видит teen-chat | QA |
-| r100-6-store | App Store metadata | PO |
-| r100-6-healthkit | HealthKit Portal A или откат B | PO |
-| r100-7-07 | Rive анимации героев | Design |
-| r100-7-08 | Sleep stories MP3 на CDN | BE+iOS |
-| r100-7-10 | Clinical sign-off → pack `approved` | Внешний |
-| r100-7-docs | Внутренние docs: «дорожка» не «столп» | Docs |
-
-**Не путать с «4 виджета»:** только **r100-2-06** — виджет; остальное — ethics, docs, voice.
-
-**Сборка 223 (канон):** `AppConfig.swift` · `AppConfigTests.swift` · `ALADDIN.xcodeproj` (`CURRENT_PROJECT_VERSION`).
-
----
-
-## Пакет для передачи другой ML (индекс)
-
-| Файл | Зачем |
-|------|--------|
-| **[WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md)** | **Главный handoff 2026-06-03** — герои, r100 todo, что сделано, деплой |
-| [WELLNESS_ROADMAP_100.md](./WELLNESS_ROADMAP_100.md) | План до 100%, батчи, r100-* |
-| [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md) | Один деплой когда PO готов |
-| [WELLNESS_CURSOR_TODO.md](./WELLNESS_CURSOR_TODO.md) | **131** задача — все ☑ (справочник) |
-| [WELLNESS_PLATFORM_MASTER_PLAN.md](./WELLNESS_PLATFORM_MASTER_PLAN.md) | Архитектура **v2.5** |
-| **WELLNESS_IMPLEMENTATION_STATUS.md** | Этот файл — 131/131, **2026-06-02**, **Wellness*.swift** |
-| [WELLNESS_ML_HANDOFF.md](./WELLNESS_ML_HANDOFF.md) | Старый handoff 131 (не дублировать работу) |
-| [WELLNESS_POSTGRES_PARENT_LLM_HANDOFF.md](./WELLNESS_POSTGRES_PARENT_LLM_HANDOFF.md) | Postgres + Parent LLM |
-| `.cursor/rules/wellness-platform-expert.mdc` | Правило Cursor |
-| [ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md](../ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md) | VPS |
-
-> **Версии:** канон **131 ядро** (2026-06-01) + **r100** (2026-06-03). Новой ML: [WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md) §0.
-
-### Как передать ML (кратко)
-
-1. Папка только: `…/mobile_apps/ALADDIN_iOS`.
-2. Новый чат → вставить **§0** из [WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md).
-3. `@docs/WELLNESS_ML_HANDOFF_R100.md` `@docs/WELLNESS_ROADMAP_100.md` `@docs/WELLNESS_IMPLEMENTATION_STATUS.md`.
-4. TodoWrite: **r100-*** из handoff §4 (не переделывать 131).
-5. Деплой — только по [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md) после TestFlight.
-
----
-
-## Тесты (локально)
-
-```bash
+# Backend
 python3 scripts/check_wellness_l10n.py
 PYTHONPATH=. python3 -m pytest Tests/test_wellness_*.py -q
+PYTHONPATH=. python3 -m pytest Tests/test_wellness_age_policy_device_auth.py -q
+
+# r100 runner
+./scripts/run_wellness_r100_tests.sh backend   # | static | ios-unit | all
+
+# Prod (после deploy)
+./scripts/verify_wellness_prod.sh https://aladdin-ai.ru
+./scripts/verify_wellness_reflective_prod.sh
+./scripts/wellness_ops_digest.sh https://aladdin-ai.ru root 149.154.65.180 ~/.ssh/aladdin_server
+
+# Hero-x final CI (2026-06-04)
+./scripts/verify_hero_x_phase6.sh
+./scripts/verify_hero_x62_backend_smoke.sh https://aladdin-ai.ru
+./scripts/verify_companion_p0_prod.sh https://aladdin-ai.ru
+
+# Deploy (когда PO разрешил)
+./scripts/deploy_wellness_batch4.sh root 149.154.65.180 ~/.ssh/aladdin_server
+./scripts/deploy_companion_p0.sh root 149.154.65.180 ~/.ssh/aladdin_server
+./scripts/deploy_hero_x_phase6.sh root 149.154.65.180 ~/.ssh/aladdin_server
 ```
 
-Ожидание: **110/110** passed (18 test modules).
+---
+
+## 9. Индекс документов
+
+| # | Файл | Зачем |
+|---|------|--------|
+| 1 | **WELLNESS_IMPLEMENTATION_STATUS.md** | **Этот файл — старт** |
+| 2 | WELLNESS_ML_HANDOFF_R100.md | Продукт героев, §0 для чата |
+| 3 | WELLNESS_ROADMAP_100.md | Батчи 0–7 |
+| 4 | WELLNESS_DEPLOY_BACKLOG.md | Один деплой |
+| 5 | WELLNESS_CURSOR_TODO.md | 131 ☑ справочник |
+| 6 | WELLNESS_PLATFORM_MASTER_PLAN.md | Архитектура v2.5 |
+| 7 | WELLNESS_TESTFLIGHT_SMOKE_15.md | r100-0-01 |
+| 8 | WELLNESS_PREMIUM_FUNNEL.md | r100-1-16 |
+| 9 | WELLNESS_POSTGRES_MIGRATION.md | r100-1-04 |
+| 10 | WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md | r100-6-healthkit |
+| 11 | MANUAL_WIDGET_SETUP.md | r100-2-06 |
+| 12 | ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md | VPS SSH |
+| 13 | **WELLNESS_HERO_PERSONA_ENHANCEMENT_PLAN.md** v2 | **hero-x-* (37):** юмор balance, vedic secular, psychology, guard, golden set |
 
 ---
 
-## Документы
+## 10. История сессий (хронология)
 
-| Документ | Статус |
-|----------|--------|
-| [WELLNESS_CURSOR_TODO.md](./WELLNESS_CURSOR_TODO.md) | 131/131 ☑ |
-| [WELLNESS_I18N_CHECKLIST.md](./WELLNESS_I18N_CHECKLIST.md) | §17 errors ☑ |
-| [WELLNESS_CANARY_RUNBOOK.md](./WELLNESS_CANARY_RUNBOOK.md) | p3-10 |
-| [WELLNESS_POSTGRES_MIGRATION.md](./WELLNESS_POSTGRES_MIGRATION.md) | p3-11 |
-| [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md) | PO manual |
+| Дата | Событие |
+|------|---------|
+| 2026-06-01 | Ядро **131/131** closed; prod verify 14/14; Postgres dual-write |
+| 2026-06-02 | iOS 15.2 shims; HealthKit CI blocker → rollback B; Wellness*.swift audit |
+| 2026-06-03 | r100 батчи 3–5; build **223**; deploy batch4+companion; push `f9e65234` |
+| 2026-06-04 | **hero-x 37/37** complete; social bridge 18/18; packs approved; build **224**; final CI green; push master |
 
 ---
 
-*Синхронизировано с WELLNESS_CURSOR_TODO.md · ядро CLOSED 2026-06-01 · iOS target audit 2026-06-02.*
+*Финальная редакция 2026-06-04. hero-x CLOSED. Ядро 131 не reopen.*

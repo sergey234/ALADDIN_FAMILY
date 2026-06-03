@@ -258,6 +258,10 @@ final class CompanionAPIService {
             throw error
         }
 
+        let teenHumor: String? = CompanionUserContext.companionAgeBand == "teen"
+            ? CompanionSettings.cachedTeenHumorPreference()
+            : nil
+
         let body = CompanionChatRequest(
             message: cloudText,
             characterId: characterId,
@@ -269,7 +273,8 @@ final class CompanionAPIService {
             chatMode: chatMode,
             workspaceId: workspaceId,
             attachments: attachments,
-            wellnessPillar: wellnessPillar
+            wellnessPillar: wellnessPillar,
+            humorPreference: teenHumor
         )
 
         return try await withCheckedThrowingContinuation { continuation in
@@ -332,6 +337,7 @@ final class CompanionAPIService {
             memoryEnabled: settings.memoryEnabled,
             childCanUseCompanion: settings.childCanUseCompanion,
             allowedCharacters: settings.allowedCharacters,
+            vedicWisdomEnabled: settings.vedicWisdomEnabled,
             familyId: fid.isEmpty ? nil : fid
         )
         return try await withCheckedThrowingContinuation { continuation in
@@ -396,6 +402,27 @@ final class CompanionAPIService {
         let response = try await task.value
         profileCache = (response, now)
         return response
+    }
+
+    func updateTeenHumorPreference(_ preference: String) async throws {
+        let pref = preference == "less" ? "less" : "normal"
+        let body = CompanionTeenHumorBody(humorPreference: pref)
+        _ = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+            network.patch(
+                endpoint: AppConfig.Endpoint.aiCompanionTeenSettings,
+                body: body,
+                requiresAuth: true,
+                extraHeaders: familyScopeHeaders()
+            ) { (result: Result<CompanionProfileSettings, Error>) in
+                switch result {
+                case .success:
+                    CompanionSettings.setCachedTeenHumorPreference(pref)
+                    continuation.resume()
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
+            }
+        }
     }
 
     func updateProfile(

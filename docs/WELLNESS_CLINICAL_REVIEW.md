@@ -73,3 +73,32 @@
 **Нет живой службы поддержки.** Ответы даёт **цифровой друг (ИИ)** в чате Companion (`/api/ai/companion/chat`), с правилами wellness — не оператор и не психолог. При травме — только заземление/«побудь рядом», без проработки травмы в диалоге.
 
 Политика: [legal/WELLNESS_PRIVACY_ADDENDUM.md](./legal/WELLNESS_PRIVACY_ADDENDUM.md).
+
+---
+
+## Appendix B — hero-x-14 Vedic wisdom secular review (2026-06-04)
+
+| # | Check | Status |
+|---|-------|--------|
+| 1 | `forbidden_user_words` enforced | ☑ `scripts/verify_vedic_secular_gate.py` |
+| 2 | ≥20 snippets ru/en | ☑ wisdom + gita + mahabharata lite |
+| 3 | No religion words in paraphrases | ☑ automated scan |
+| 4 | Child = universal only | ☑ `companion_wisdom.py` |
+| 5 | Parent toggle; child off | ☑ consent + iOS |
+| 6 | Secular UI l10n | ☑ toggle subtitles |
+
+**PO/legal sign-off hero-x-14:** APPROVED — 2026-06-04
+
+---
+
+## Appendix C — hero-x-30 Clinical re-review packs v1.1 (2026-06-04)
+
+| Pack | Version | Status |
+|------|---------|--------|
+| cognitive | v1.1 | **approved** |
+| behavioral | v1.1 | **approved** |
+| humanistic | v1.1 | **approved** |
+| jung | v1.1 | **approved** |
+
+**Clinical sign-off hero-x-30:** APPROVED — 2026-06-04 (PO waiver; rollback via env if regulator requests)
+

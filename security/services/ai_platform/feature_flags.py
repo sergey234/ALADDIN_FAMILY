@@ -54,3 +54,7 @@ FEATURE_WELLNESS_JUNG = _env_bool("FEATURE_WELLNESS_JUNG", False)
 # p3-10 — 0..100 cohort; default 100 = all users (prod parity after full rollout)
 # p3-16 — parent playbook LLM personalize (Hermes); default OFF
 FEATURE_WELLNESS_PARENT_LLM = _env_bool("FEATURE_WELLNESS_PARENT_LLM", False)
+
+# hero-x-13 — vedic wisdom layer in companion chat (off when 0)
+FEATURE_COMPANION_VEDIC_WISDOM = _env_bool("FEATURE_COMPANION_VEDIC_WISDOM", True)
+FEATURE_GENIE_HUMOR_AB = _env_bool("FEATURE_GENIE_HUMOR_AB", False)
