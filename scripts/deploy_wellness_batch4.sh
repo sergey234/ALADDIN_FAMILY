@@ -29,6 +29,8 @@ echo ">>> Wellness batch 4 deploy → ${SSH_USER}@${HOST}"
 FILES=(
   "security/api/routers/wellness_router.py"
   "security/api/routers/ai_companion_router.py"
+  "security/services/ai_platform/wellness_age_policy.py"
+  "security/services/ai_platform/jwt_claims.py"
 )
 
 for f in "${FILES[@]}"; do

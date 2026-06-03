@@ -44,8 +44,10 @@ echo "${BODY}" | python3 -c "
 import json,sys
 d=json.load(sys.stdin)
 p=set(d.get('pillars') or [])
+band=d.get('age_band')
+assert band=='child', f'expected age_band child, got {band!r}: {d}'
 assert p=={'humanistic','behavioral'}, f'child pillars: {p}'
-print('child pillars OK:', sorted(p))
+print('child pillars OK:', sorted(p), 'age_band:', band)
 " || fail "child pillars"
 ok "pillars child"
 

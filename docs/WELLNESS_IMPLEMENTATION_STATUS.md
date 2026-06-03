@@ -49,7 +49,7 @@
 | `deploy_wellness_p1.sh` — все `wellness_*.py` + router + i18n JSON | ✅ | scp ~60 файлов на `149.154.65.180:/opt/aladdin-backend` |
 | Restart `aladdin-backend.service` | ✅ | smoke на localhost:8002 |
 | `vps_smoke_wellness.py` | ✅ 2026-06-01 | ALL PASSED (incl. phq9_child_block, errors_catalog n=19) |
-| Prod через nginx | ✅ 2026-06-01 21:36 | `verify_wellness_prod.sh` — **14/14** |
+| Prod через nginx | ✅ 2026-06-03 14:21 | `verify_wellness_prod.sh` — **14/14** (child pillars: `device_id` + `age_band` после fix `wellness_age_policy`) |
 | Feature flags prod | ✅ | `ENABLED=1`, `ORCHESTRATOR=1`, `REFLECTIVE=1`, `JUNG=1` |
 | l10n gate | ✅ | `python3 scripts/check_wellness_l10n.py` — 297 keys |
 
@@ -183,14 +183,13 @@ Check-in **без HealthKit:** ползунок «Как спал(а)?» 3–12 
 
 ---
 
-## r100 — осталось (15 из 39) · 24 закрыто
+## r100 — осталось (13 из 39) · 26 закрыто
 
 > Полная таблица: [WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md) §4.
 
 | id | Простыми словами | Кто |
 |----|------------------|-----|
 | r100-0-01 | TestFlight: 15 пунктов на телефоне | PO |
-| r100-0-02 | После деплоя: `verify_wellness_prod.sh` 14/14 | BE ops |
 | r100-0-03 | Ключи Hermes (батч 7) | PO |
 | r100-0-04 | Parent LLM `llm_used: true` | BE ops |
 | r100-1-04 | Postgres **read** через 7 дней dual-write | BE ops |

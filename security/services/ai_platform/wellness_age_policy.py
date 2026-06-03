@@ -22,10 +22,29 @@ def _role_from_user(user: dict) -> str:
     return ""
 
 
+def _token_type(user: dict) -> str:
+    raw = user.get("type")
+    if raw:
+        return str(raw).strip().lower()
+    payload = user.get("payload") if isinstance(user.get("payload"), dict) else {}
+    return str(payload.get("type") or "").strip().lower()
+
+
+def _is_device_registration_user(user: dict) -> bool:
+    """Device JWTs lose type=device_auth at sign (create_access_token → type=access)."""
+    token_type = _token_type(user)
+    if token_type in ("device_auth", "device_refresh"):
+        return True
+    payload = user.get("payload") if isinstance(user.get("payload"), dict) else {}
+    return bool(payload.get("device_id") or user.get("device_id"))
+
+
 def resolve_wellness_age_band(user: dict) -> str:
     """Wellness pillars: parent/senior accounts must not get child band from stale JWT."""
     explicit = normalize_age_band(user.get("age_band"))
     role = _role_from_user(user)
+    token_type = _token_type(user)
+    is_device = _is_device_registration_user(user)
     if role in ("parent", "guardian", "mother", "father", "родитель"):
         return "parent"
     if role in ("elderly", "senior", "grandparent", "пожилой", "люди 60+"):
@@ -36,8 +55,10 @@ def resolve_wellness_age_band(user: dict) -> str:
         return "teen"
     if explicit in ("parent", "senior", "adult_app"):
         return explicit
-    if explicit == "child" and user.get("type") not in ("device_auth", "device_refresh"):
+    if explicit == "child" and not is_device:
         return "parent"
+    if is_device and explicit in ("teen", "child"):
+        return "child"
     return explicit
 
 

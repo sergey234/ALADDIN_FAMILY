@@ -164,7 +164,7 @@ Prod: https://aladdin-ai.ru
 | id | Батч | Задача | Статус | Владелец |
 |----|------|--------|--------|----------|
 | r100-0-01 | 0 | TestFlight — 15 пунктов UX на device | **pending** | PO + iOS |
-| r100-0-02 | 0 | verify_wellness_prod 14/14 после deploy | **pending** | BE ops |
+| r100-0-02 | 0 | verify_wellness_prod 14/14 после deploy | **completed** | BE — `device_id` в resolver (JWT type=access после sign) |
 | r100-0-03 | 7 | Hermes/OpenRouter keys (с Rive, **в конце**) | **pending** | PO key + BE |
 | r100-0-04 | 7 | Parent LLM `llm_used: true` (после ключей) | **pending** | BE ops |
 | r100-0-05 | 0 | Nav smoke: wellness→exercise→outcome→companion | **completed** | `WellnessCompanionNavUITests` + TestFlight §7–10 |
