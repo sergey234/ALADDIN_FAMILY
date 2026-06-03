@@ -127,6 +127,7 @@ struct WellnessCheckinScreen: View {
             mood = draft.mood
             sleepHours = draft.sleepHours
             stressLevel = Double(draft.stressLevel)
+            WellnessWidgetBridge.syncFromCheckin(moodId: mood, localizationManager: localizationManager)
         }
     }
 
@@ -139,6 +140,7 @@ struct WellnessCheckinScreen: View {
         )
         WellnessSessionStore.saveCheckin(draft)
         WellnessOfflineStore.saveCheckinDraft(draft)
+        WellnessWidgetBridge.syncFromCheckin(moodId: mood, localizationManager: localizationManager)
         saved = true
         offlineQueued = false
         HapticFeedback.impact(.light)
@@ -149,9 +151,27 @@ struct WellnessCheckinScreen: View {
                     sleepHours: sleepHours,
                     stressLevel: Int(stressLevel)
                 )
+                await applyCheckinLoopForCompanion()
             } catch {
                 offlineQueued = true
             }
         }
+    }
+
+    /// r100-5-proactive — после check-in подсказка в чате с дорожкой от loop.
+    private func applyCheckinLoopForCompanion() async {
+        let outcome = await WellnessLoopCoordinator.runAndApply(
+            message: "",
+            requestedPillar: WellnessSessionStore.activePillar
+        )
+        guard case .proceed = outcome else { return }
+        guard let pillarId = WellnessSessionStore.activePillar,
+              let pillar = WellnessPillar(rawValue: pillarId) else { return }
+        let name = localizationManager.localized(pillar.titleKey)
+        let banner = String(
+            format: localizationManager.localized("wellness_checkin_companion_banner"),
+            name
+        )
+        WellnessSessionStore.setCompanionEntryBanner(banner)
     }
 }

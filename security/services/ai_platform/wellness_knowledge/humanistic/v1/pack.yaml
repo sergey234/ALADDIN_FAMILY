@@ -70,14 +70,26 @@ exercises:
         hint:
           ru: "Назови 5 вещей, которые видишь вокруг."
           en: "Name 5 things you can see."
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 1; заземление 5-4-3-2-1; без нравоучений."
+          en: "Voice only step 1; 5-4-3-2-1 grounding; no lecturing."
       - step: 2
         hint:
           ru: "4 звука, 3 ощущения кожи."
           en: "4 sounds, 3 things you feel on skin."
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 2; звуки и ощущения; спокойно."
+          en: "Voice only step 2; sounds and sensations; stay calm."
       - step: 3
         hint:
           ru: "Сделай один медленный выдох."
           en: "Take one slow breath out."
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 3; один выдох; спроси одним словом как сейчас."
+          en: "Voice only step 3; one breath out; ask in one word how they feel."
 
   box_breathing:
     id: box_breathing
@@ -87,18 +99,34 @@ exercises:
         hint:
           ru: "Вдох на 4 счёта — медленно через нос."
           en: "Breathe in for a count of 4 — slowly through your nose."
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 1; вдох 4; без давления."
+          en: "Voice only step 1; inhale 4; no pressure."
       - step: 2
         hint:
           ru: "Задержи дыхание на 4."
           en: "Hold for 4."
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 2; пауза 4."
+          en: "Voice only step 2; hold 4."
       - step: 3
         hint:
           ru: "Выдох на 4."
           en: "Breathe out for 4."
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 3; выдох 4."
+          en: "Voice only step 3; exhale 4."
       - step: 4
         hint:
           ru: "Пауза 4. Как ты сейчас — одним словом?"
           en: "Pause for 4. How are you now — in one word?"
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 4; одно слово о состоянии."
+          en: "Voice only step 4; one word for how they feel."
 
   dbt_stop:
     id: dbt_stop
@@ -108,26 +136,45 @@ exercises:
         hint:
           ru: "S — Стоп. Положи телефон или замри на секунду."
           en: "S — Stop. Put the phone down or freeze for a second."
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг S; стоп без упрёков."
+          en: "Voice only S step; stop without blame."
       - step: 2
         hint:
           ru: "T — Вдох-выдох один раз."
           en: "T — Take one breath in and out."
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг T; один вдох-выдох."
+          en: "Voice only T step; one breath."
       - step: 3
         hint:
           ru: "O — Обойди комнату или посмотри в окно 30 секунд."
           en: "O — Walk around or look out the window for 30 seconds."
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг O; смена обстановки."
+          en: "Voice only O step; change of scene."
       - step: 4
         hint:
           ru: "P — Продолжай мягко. Что сделаешь дальше — одно слово?"
           en: "P — Proceed gently. What's next — one word?"
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг P; одно слово «дальше»."
+          en: "Voice only P step; one word for what's next."
 
 hero_flavor:
   unicorn:
-    ru: "Можно просто побуть. Я рядом."
-    en: "You can just be here. I'm with you."
+    ru: "Тишина и «я рядом» — можно просто побуть, без советов и вопросов подряд."
+    en: "Quiet presence — you can just be here; no advice or question chains."
+    flavor_key: presence_friend
   aladdin:
-    ru: "Минута тишины — выдохни."
-    en: "A quiet minute — breathe out."
+    ru: "Как наставник без нравоучений: одна фраза поддержки, без «надо исправиться»."
+    en: "Mentor without lecturing: one supportive line, no «you should fix yourself»."
+    flavor_key: mentor_presence
   genie:
-    ru: "Без спешки. Я рядом."
-    en: "No rush. I'm here."
+    ru: "Без спешки и без шуток, если грустно или тяжело; только тепло и рядом."
+    en: "No rush and no jokes when sad or heavy; only warmth and staying close."
+    flavor_key: presence_no_jokes

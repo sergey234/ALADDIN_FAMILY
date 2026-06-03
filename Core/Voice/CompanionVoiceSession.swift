@@ -20,6 +20,8 @@ final class CompanionVoiceSession: ObservableObject {
     private var sessionReady = false
     private var pendingConfig: [String: Any]?
     private var pendingStop: [String: Any]?
+    private var keepaliveTask: Task<Void, Never>?
+    private let keepaliveIntervalSec: TimeInterval = 20
 
     func connect(ephemeralToken: String) async throws {
         disconnect()
@@ -40,18 +42,23 @@ final class CompanionVoiceSession: ObservableObject {
         ws.resume()
         isConnected = true
         emotion = .listening
+        startKeepalive()
         receiveLoop()
     }
 
-    func disconnect() {
+    /// - Parameter clearPending: `false` при обрыве WS во время ответа — оставляем payload для reconnect.
+    func disconnect(clearPending: Bool = true) {
+        stopKeepalive()
         sendJSON(["type": "session.end"])
         task?.cancel(with: .goingAway, reason: nil)
         task = nil
         isConnected = false
-        isAwaitingReply = false
+        if clearPending {
+            isAwaitingReply = false
+            pendingStop = nil
+        }
         sessionReady = false
         pendingConfig = nil
-        pendingStop = nil
         emotion = .idle
         VoiceAudioSessionCoordinator.shared.release(.companion)
     }
@@ -106,6 +113,17 @@ final class CompanionVoiceSession: ObservableObject {
         }
     }
 
+    /// Повторная отправка последнего `audio.stop` после reconnect (r100-5-voice).
+    func resendPendingStopIfAny() -> Bool {
+        guard let payload = pendingStop, sessionReady else { return false }
+        sendJSON(payload)
+        isAwaitingReply = true
+        emotion = .thinking
+        return true
+    }
+
+    var hasPendingStop: Bool { pendingStop != nil }
+
     func sendPing() {
         sendJSON(["type": "ping"])
     }
@@ -116,13 +134,13 @@ final class CompanionVoiceSession: ObservableObject {
             sendJSON(pendingConfig)
             self.pendingConfig = nil
         }
-        if let pendingStop {
-            flushStop(pendingStop)
-            self.pendingStop = nil
+        if let stop = pendingStop {
+            flushStop(stop)
         }
     }
 
     private func flushStop(_ payload: [String: Any]) {
+        pendingStop = payload
         sendJSON(payload)
         isAwaitingReply = true
         emotion = .thinking
@@ -134,14 +152,31 @@ final class CompanionVoiceSession: ObservableObject {
         task?.send(.string(text)) { _ in }
     }
 
+    private func startKeepalive() {
+        stopKeepalive()
+        keepaliveTask = Task { [weak self] in
+            while !Task.isCancelled {
+                try? await Task.sleep(nanoseconds: UInt64((self?.keepaliveIntervalSec ?? 20) * 1_000_000_000))
+                guard !Task.isCancelled, let self, self.isConnected else { break }
+                self.sendPing()
+            }
+        }
+    }
+
+    private func stopKeepalive() {
+        keepaliveTask?.cancel()
+        keepaliveTask = nil
+    }
+
     private func receiveLoop() {
         task?.receive { [weak self] result in
             Task { @MainActor in
                 guard let self else { return }
                 switch result {
                 case .failure:
+                    let awaiting = self.isAwaitingReply
+                    self.disconnect(clearPending: !awaiting)
                     self.reportError(code: "connection_lost")
-                    self.disconnect()
                 case .success(let message):
                     if case .string(let text) = message {
                         self.handleServerMessage(text)
@@ -174,6 +209,7 @@ final class CompanionVoiceSession: ObservableObject {
             lastTranscript = json["text"] as? String ?? ""
         case "assistant.text":
             isAwaitingReply = false
+            pendingStop = nil
             let line = json["text"] as? String ?? ""
             lastAssistantLine = line
             let emoRaw = json["emotion"] as? String ?? "happy"

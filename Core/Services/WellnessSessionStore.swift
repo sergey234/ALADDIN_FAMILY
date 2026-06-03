@@ -8,6 +8,8 @@ enum WellnessSessionStore {
     private static let assessmentKindKey = "wellness_assessment_flow_kind"
     private static let checkinKey = "wellness_last_checkin_v1"
     private static let ageBandKey = "wellness_age_band_cache"
+    private static let companionBannerKey = "wellness_companion_entry_banner_v1"
+    private static let highlightMicKey = "wellness_companion_highlight_mic_v1"
 
     static var cachedAgeBand: String? {
         UserDefaults.standard.string(forKey: ageBandKey)
@@ -79,5 +81,57 @@ enum WellnessSessionStore {
         let dec = JSONDecoder()
         dec.dateDecodingStrategy = .iso8601
         return try? dec.decode(WellnessCheckinDraft.self, from: data)
+    }
+
+    static var companionEntryBanner: String? {
+        let v = UserDefaults.standard.string(forKey: companionBannerKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return (v?.isEmpty == false) ? v : nil
+    }
+
+    static func setCompanionEntryBanner(_ text: String?) {
+        if let text, !text.isEmpty {
+            UserDefaults.standard.set(text, forKey: companionBannerKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: companionBannerKey)
+        }
+    }
+
+    static func requestMicHighlight() {
+        UserDefaults.standard.set(true, forKey: highlightMicKey)
+    }
+
+    static func consumeMicHighlight() -> Bool {
+        let flag = UserDefaults.standard.bool(forKey: highlightMicKey)
+        if flag {
+            UserDefaults.standard.set(false, forKey: highlightMicKey)
+        }
+        return flag
+    }
+}
+
+/// r100-2-06 — App Group keys shared with `ALADDINWidgets/SharedDataManager`.
+enum WellnessWidgetBridge {
+    private static let appGroupId = "group.com.aladdin.family"
+    private static let titleKey = "wellness_widget_title"
+    private static let tapKey = "wellness_widget_tap"
+    private static let moodKey = "wellness_last_mood"
+
+    static func syncFromCheckin(moodId: String, localizationManager: LocalizationManager) {
+        guard let defaults = UserDefaults(suiteName: appGroupId) else { return }
+        defaults.set(localizationManager.localized(WellnessWidgetL10n.titleKey), forKey: titleKey)
+        defaults.set(localizationManager.localized(WellnessWidgetL10n.tapKey), forKey: tapKey)
+        defaults.set(moodEmoji(moodId), forKey: moodKey)
+        defaults.set(Date(), forKey: "last_update")
+    }
+
+    private static func moodEmoji(_ moodId: String) -> String {
+        switch moodId {
+        case "great": return "😊"
+        case "sad": return "😢"
+        case "anxious": return "😰"
+        case "tired": return "😴"
+        default: return "🙂"
+        }
     }
 }

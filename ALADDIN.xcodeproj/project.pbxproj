@@ -122,6 +122,7 @@
 		WELLTO22F90000100C7D34B /* WellnessTogetherModeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLTO12F90000100C7D34B /* WellnessTogetherModeScreen.swift */; };
 		WELLTS22F90000100C7D34B /* WellnessTogetherSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLTS12F90000100C7D34B /* WellnessTogetherSession.swift */; };
 		WELLSSN22F90000100C7D34B /* WellnessSessionStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLSSN12F90000100C7D34B /* WellnessSessionStore.swift */; };
+		WELPRM22F90000100C7D34B /* WellnessPremiumFunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELPRM12F90000100C7D34B /* WellnessPremiumFunnel.swift */; };
 		WELLOOP22F90000100C7D34B /* WellnessLoopCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLOOP12F90000100C7D34B /* WellnessLoopCoordinator.swift */; };
 		WELLMDL22F90000100C7D34B /* WellnessModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLMDL12F90000100C7D34B /* WellnessModels.swift */; };
 		WELLCON22F90000100C7D34B /* WellnessConsentScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLCON12F90000100C7D34B /* WellnessConsentScreen.swift */; };
@@ -479,6 +480,7 @@
 		A3C000012F740032 /* NavigationTransitionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C000012F740031 /* NavigationTransitionUITests.swift */; };
 		W4C00001 /* ChildContentProgressUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = W4C00000 /* ChildContentProgressUITests.swift */; };
 		C0MPSMK22F90000100C7D34B /* CompanionSmokeUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPSMK12F90000100C7D34B /* CompanionSmokeUITests.swift */; };
+		W1N000012F90000100WELL01 /* WellnessCompanionNavUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = W1N000002F90000100WELL01 /* WellnessCompanionNavUITests.swift */; };
 		B6000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000000 /* AppDelegate.swift */; };
 		B6000003 /* IoTSecurityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000002 /* IoTSecurityModule.swift */; };
 		B6000201 /* ALADDINWidgets/SharedDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000200 /* ALADDINWidgets/SharedDataManager.swift */; };
@@ -641,6 +643,7 @@
 		WELLTO12F90000100C7D34B /* WellnessTogetherModeScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessTogetherModeScreen.swift; sourceTree = "<group>"; };
 		WELLTS12F90000100C7D34B /* WellnessTogetherSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Models/WellnessTogetherSession.swift; sourceTree = "<group>"; };
 		WELLSSN12F90000100C7D34B /* WellnessSessionStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessSessionStore.swift; path = Core/Services/WellnessSessionStore.swift; sourceTree = "<group>"; };
+		WELPRM12F90000100C7D34B /* WellnessPremiumFunnel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessPremiumFunnel.swift; path = Core/Services/WellnessPremiumFunnel.swift; sourceTree = "<group>"; };
 		WELLOOP12F90000100C7D34B /* WellnessLoopCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessLoopCoordinator.swift; path = Core/Services/WellnessLoopCoordinator.swift; sourceTree = "<group>"; };
 		WELLMDL12F90000100C7D34B /* WellnessModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessModels.swift; path = Core/Models/WellnessModels.swift; sourceTree = "<group>"; };
 		WELLCON12F90000100C7D34B /* WellnessConsentScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessConsentScreen.swift; sourceTree = "<group>"; };
@@ -954,6 +957,7 @@
 		A3C000012F740031 /* NavigationTransitionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NavigationTransitionUITests.swift; sourceTree = "<group>"; };
 		W4C00000 /* ChildContentProgressUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ChildContentProgressUITests.swift; sourceTree = "<group>"; };
 		C0MPSMK12F90000100C7D34B /* CompanionSmokeUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = CompanionSmokeUITests.swift; path = Tests/UITests/CompanionSmokeUITests.swift; sourceTree = "<group>"; };
+		W1N000002F90000100WELL01 /* WellnessCompanionNavUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = WellnessCompanionNavUITests.swift; path = Tests/UITests/WellnessCompanionNavUITests.swift; sourceTree = "<group>"; };
 		B6000000 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B6000002 /* IoTSecurityModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IoTSecurityModule.swift; sourceTree = "<group>"; };
 		B6000200 /* ALADDINWidgets/SharedDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINWidgets/SharedDataManager.swift; sourceTree = "<group>"; };
@@ -1347,6 +1351,7 @@
 				WELLPDF12F90000100C7D34B /* WellnessProgressPDFService.swift */,
 				WELLTS12F90000100C7D34B /* WellnessTogetherSession.swift */,
 				WELLSSN12F90000100C7D34B /* WellnessSessionStore.swift */,
+				WELPRM12F90000100C7D34B /* WellnessPremiumFunnel.swift */,
 				WELLOOP12F90000100C7D34B /* WellnessLoopCoordinator.swift */,
 				C0MPMDL12F90000100C7D34B /* CompanionModels.swift */,
 				WELLMDL12F90000100C7D34B /* WellnessModels.swift */,
@@ -1612,6 +1617,7 @@
 				A3C000012F740031 /* NavigationTransitionUITests.swift */,
 				W4C00000 /* ChildContentProgressUITests.swift */,
 				C0MPSMK12F90000100C7D34B /* CompanionSmokeUITests.swift */,
+				W1N000002F90000100WELL01 /* WellnessCompanionNavUITests.swift */,
 			);
 			path = UITests;
 			sourceTree = "<group>";
@@ -2077,6 +2083,7 @@
 				WELLTO22F90000100C7D34B /* WellnessTogetherModeScreen.swift in Sources */,
 				WELLTS22F90000100C7D34B /* WellnessTogetherSession.swift in Sources */,
 				WELLSSN22F90000100C7D34B /* WellnessSessionStore.swift in Sources */,
+				WELPRM22F90000100C7D34B /* WellnessPremiumFunnel.swift in Sources */,
 				WELLOOP22F90000100C7D34B /* WellnessLoopCoordinator.swift in Sources */,
 				WELLMDL22F90000100C7D34B /* WellnessModels.swift in Sources */,
 				WELLCON22F90000100C7D34B /* WellnessConsentScreen.swift in Sources */,
@@ -2273,6 +2280,7 @@
 				A3C000012F740032 /* NavigationTransitionUITests.swift in Sources */,
 				W4C00001 /* ChildContentProgressUITests.swift in Sources */,
 				C0MPSMK22F90000100C7D34B /* CompanionSmokeUITests.swift in Sources */,
+				W1N000012F90000100WELL01 /* WellnessCompanionNavUITests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -2306,7 +2314,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 222;
+				CURRENT_PROJECT_VERSION = 223;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2340,7 +2348,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
-				CURRENT_PROJECT_VERSION = 222;
+				CURRENT_PROJECT_VERSION = 223;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2498,7 +2506,7 @@
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 222;
+				CURRENT_PROJECT_VERSION = 223;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2532,7 +2540,7 @@
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
-				CURRENT_PROJECT_VERSION = 222;
+				CURRENT_PROJECT_VERSION = 223;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -2564,7 +2572,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 222;
+				CURRENT_PROJECT_VERSION = 223;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2590,7 +2598,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 222;
+				CURRENT_PROJECT_VERSION = 223;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2614,7 +2622,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 222;
+				CURRENT_PROJECT_VERSION = 223;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -2639,7 +2647,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 222;
+				CURRENT_PROJECT_VERSION = 223;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;

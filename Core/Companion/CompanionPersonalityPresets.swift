@@ -47,9 +47,55 @@ enum CompanionUserContext {
     }
 
     static var companionAgeBand: String {
-        if isChildProfile { return "child" }
-        if isSeniorEntry { return "senior" }
-        return "parent"
+        WellnessAgeBandResolver.localExpectedBand()
+    }
+}
+
+/// Wellness Hub: age_band с сервера + выравнивание по роли в приложении.
+enum WellnessAgeBandResolver {
+    static func localExpectedBand() -> String {
+        if CompanionUserContext.isChildProfile { return "child" }
+        if CompanionUserContext.isSeniorEntry { return "senior" }
+        let role = (UserDefaults.standard.string(forKey: "current_user_role") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        switch role {
+        case "child", "kid", "ребенок", "ребёнок":
+            return "child"
+        case "teen", "teenager", "подросток":
+            return "teen"
+        case "elderly", "senior", "пожилой", "люди 60+":
+            return "senior"
+        case "parent", "guardian", "родитель":
+            return "parent"
+        default:
+            return "parent"
+        }
+    }
+
+    static var isAdultFamilyAccount: Bool {
+        let band = localExpectedBand()
+        return band == "parent" || band == "senior"
+    }
+
+    /// Сервер вернул child/teen, а локально взрослый аккаунт — показываем 4 направления.
+    static func shouldOverrideServerChildBand(_ serverBand: String) -> Bool {
+        isAdultFamilyAccount && (serverBand == "child" || serverBand == "teen")
+    }
+
+    static func pillarsForDisplay(
+        serverPillars: [String],
+        serverAgeBand: String
+    ) -> (ageBand: String, pillars: [WellnessPillar]) {
+        let band = shouldOverrideServerChildBand(serverAgeBand)
+            ? localExpectedBand()
+            : serverAgeBand
+        let allowed = Set(serverPillars)
+        var list = WellnessPillar.allowed(for: band).filter { allowed.contains($0.rawValue) }
+        if list.isEmpty && isAdultFamilyAccount {
+            list = WellnessPillar.allowed(for: localExpectedBand())
+        }
+        return (band, list)
     }
 }
 

@@ -1,15 +1,17 @@
 import SwiftUI
 
-/// Единый «Мир героев» — 3 вкладки: Главное · Герои · Моё (E+C).
+/// Единый «Мир героев» — 4 вкладки: Главное · AI поддержка · Герои · Мой мир.
 struct CompanionHomeScreen: View {
     enum Tab: Int, CaseIterable {
         case main
+        case wellness
         case heroes
         case mine
 
         func title(localizationManager: LocalizationManager) -> String {
             switch self {
             case .main: return localizationManager.localized("companion_tab_main")
+            case .wellness: return localizationManager.localized("companion_tab_wellness")
             case .heroes: return localizationManager.localized("companion_tab_heroes")
             case .mine: return localizationManager.localized("companion_tab_mine")
             }
@@ -18,8 +20,9 @@ struct CompanionHomeScreen: View {
         var icon: String {
             switch self {
             case .main: return "bubble.left.and.bubble.right.fill"
+            case .wellness: return "heart.text.square.fill"
             case .heroes: return "sparkles"
-            case .mine: return "heart.circle.fill"
+            case .mine: return "globe.europe.africa.fill"
             }
         }
     }
@@ -35,6 +38,10 @@ struct CompanionHomeScreen: View {
     @AppStorage("companion_active_thread_id") private var activeThreadId: String = ""
     @State private var tab: Tab = .main
     @State private var availableCharacters: [CompanionCharacterDTO] = []
+    @State private var wellnessTabReady = WellnessSessionStore.hasAcceptedConsent
+
+    private let tabActiveColor = Color(hex: "C4B5FD")
+    private let tabInactiveColor = Color(hex: "E2E8F0").opacity(0.82)
 
     var body: some View {
         ZStack {
@@ -48,10 +55,16 @@ struct CompanionHomeScreen: View {
         .navigationBarHidden(true)
         .onAppear {
             tab = initialTab
+            wellnessTabReady = WellnessSessionStore.hasAcceptedConsent
             if let initialCharacterId, !initialCharacterId.isEmpty {
                 selectedCharacterId = initialCharacterId
             }
             Task { await loadCharacters() }
+        }
+        .onChange(of: navigationManager.companionHomeTargetTab) { raw in
+            guard let raw, let picked = Tab(rawValue: raw) else { return }
+            tab = picked
+            navigationManager.companionHomeTargetTab = nil
         }
     }
 
@@ -68,13 +81,6 @@ struct CompanionHomeScreen: View {
             Text(localizationManager.localized("companion_home_title"))
                 .font(.headline.bold())
             Spacer()
-            Button {
-                WellnessNavigation.open(from: navigationManager)
-            } label: {
-                Image(systemName: "heart.text.square.fill")
-                    .font(.body.weight(.semibold))
-            }
-            .accessibilityLabel(localizationManager.localized("wellness_entry_from_companion"))
         }
         .foregroundColor(.white)
         .padding(.horizontal, 16)
@@ -94,6 +100,15 @@ struct CompanionHomeScreen: View {
                 },
                 onOpenMineTab: { tab = .mine }
             )
+        case .wellness:
+            if wellnessTabReady {
+                WellnessHubScreen(embeddedInHome: true)
+            } else {
+                WellnessConsentScreen(
+                    embeddedInHome: true,
+                    onConsentAccepted: { wellnessTabReady = true }
+                )
+            }
         case .heroes:
             CompanionHubScreen(
                 embeddedInHome: true,
@@ -122,21 +137,28 @@ struct CompanionHomeScreen: View {
                 } label: {
                     VStack(spacing: 4) {
                         Image(systemName: item.icon)
-                            .font(.system(size: 18))
+                            .font(.system(size: 18, weight: tab == item ? .semibold : .regular))
+                            .symbolRenderingMode(.hierarchical)
                         Text(item.title(localizationManager: localizationManager))
-                            .font(.caption2.weight(tab == item ? .bold : .regular))
+                            .font(.caption2.weight(tab == item ? .bold : .medium))
+                            .lineLimit(1)
+                            .minimumScaleFactor(0.75)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 8)
-                    .foregroundColor(tab == item ? .white : .white.opacity(0.55))
+                    .foregroundColor(tab == item ? tabActiveColor : tabInactiveColor)
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("companion_home_tab_\(item.rawValue)")
             }
         }
-        .padding(.horizontal, 8)
-        .padding(.bottom, 6)
-        .background(.ultraThinMaterial.opacity(0.35))
+        .padding(.horizontal, 6)
+        .padding(.top, 6)
+        .padding(.bottom, 8)
+        .background(
+            Color.black.opacity(0.48)
+                .background(.ultraThinMaterial)
+        )
     }
 
     private func loadCharacters() async {

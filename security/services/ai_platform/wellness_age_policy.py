@@ -13,6 +13,34 @@ def normalize_age_band(age_band: Optional[str]) -> str:
     return band
 
 
+def _role_from_user(user: dict) -> str:
+    payload = user.get("payload") if isinstance(user.get("payload"), dict) else {}
+    for key in ("family_role", "role", "member_role", "user_role"):
+        raw = user.get(key) or payload.get(key)
+        if raw:
+            return str(raw).strip().lower()
+    return ""
+
+
+def resolve_wellness_age_band(user: dict) -> str:
+    """Wellness pillars: parent/senior accounts must not get child band from stale JWT."""
+    explicit = normalize_age_band(user.get("age_band"))
+    role = _role_from_user(user)
+    if role in ("parent", "guardian", "mother", "father", "родитель"):
+        return "parent"
+    if role in ("elderly", "senior", "grandparent", "пожилой", "люди 60+"):
+        return "senior"
+    if role in ("child", "kid", "ребенок", "ребёнок"):
+        return "child"
+    if role in ("teen", "teenager", "подросток"):
+        return "teen"
+    if explicit in ("parent", "senior", "adult_app"):
+        return explicit
+    if explicit == "child" and user.get("type") not in ("device_auth", "device_refresh"):
+        return "parent"
+    return explicit
+
+
 def can_use_phq_lite(age_band: str) -> bool:
     return normalize_age_band(age_band) in ("teen", "parent", "senior", "adult_app")
 

@@ -25,6 +25,12 @@ class NavigationManager: ObservableObject {
 
     /// Экран, на который возвращаемся из «Мир героев» (если стек навигации пуст/сброшен).
     @Published private(set) var companionReturnScreen: ALADDINScreen?
+
+    /// Куда вернуться после wellness flow (упражнение, check-in), если вход был из embedded Hub.
+    @Published private(set) var wellnessReturnScreen: ALADDINScreen?
+
+    /// Вкладка CompanionHome после `finishWellnessFlow` (0 main, 1 wellness, 2 heroes, 3 mine).
+    @Published var companionHomeTargetTab: Int?
     
     // ✅ Стартовый экран: читаем только флаг онбординга (без записи), чтобы первый кадр SwiftUI
     // не строил OnboardingScreen до `WindowGroup.onAppear` → `initializeNavigation`.
@@ -340,6 +346,65 @@ class NavigationManager: ObservableObject {
     func navigateToCompanionHome(returnTo: ALADDINScreen? = nil) {
         companionReturnScreen = returnTo ?? currentScreen
         navigateTo(.companionHome)
+    }
+
+    // MARK: - Wellness embedded nav (r100-2-13)
+    // | From | Action | Return |
+    // | CompanionHome tab Wellness | exercise / check-in / … | `.companionHome` + tab wellness |
+    // | Standalone wellnessHub | exercise / outcome | `.wellnessHub` via `popToWellnessHub` |
+    // | Hub «Поговорить с героем» embedded | switch tab main | stay on `.companionHome` |
+
+    /// Wellness-экран с явным return (embedded Hub в CompanionHome → returnTo `.companionHome`).
+    func navigateToWellnessScreen(_ screen: ALADDINScreen, returnTo: ALADDINScreen) {
+        wellnessReturnScreen = returnTo
+        navigateTo(screen)
+    }
+
+    /// После outcome/упражнения: Hub, Companion+вкладка Wellness, или явный return.
+    func finishWellnessFlow() {
+        let target = wellnessReturnScreen
+        wellnessReturnScreen = nil
+        guard let target else {
+            popToWellnessHub()
+            return
+        }
+        appendLog("↩ finishWellnessFlow → \(target)")
+        if target == .companionHome {
+            companionHomeTargetTab = 1
+            popToScreen(.companionHome)
+            return
+        }
+        if target == .wellnessHub {
+            popToWellnessHub()
+            return
+        }
+        popToScreen(target)
+    }
+
+    private func popToScreen(_ screen: ALADDINScreen) {
+        if currentScreen == screen { return }
+        while currentScreen != screen, !navigationStack.isEmpty {
+            currentScreen = navigationStack.removeLast()
+        }
+        if currentScreen != screen {
+            currentScreen = screen
+        }
+        objectWillChange.send()
+        appendLog("✅ popToScreen(\(screen)) | стек = \(navigationStack)")
+    }
+
+    /// Возврат на Wellness Hub после упражнения/outcome (не на Main при пустом стеке).
+    func popToWellnessHub() {
+        if currentScreen == .wellnessHub { return }
+        appendLog("↩ popToWellnessHub from \(currentScreen)")
+        while currentScreen != .wellnessHub, !navigationStack.isEmpty {
+            currentScreen = navigationStack.removeLast()
+        }
+        if currentScreen != .wellnessHub {
+            currentScreen = .wellnessHub
+        }
+        objectWillChange.send()
+        appendLog("✅ popToWellnessHub | current = \(currentScreen) | стек = \(navigationStack)")
     }
 
     /// Возврат с CompanionHome: не уходим на `.main`, если вход был с наград/детского UI.

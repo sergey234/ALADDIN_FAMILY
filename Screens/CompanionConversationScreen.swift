@@ -37,6 +37,13 @@ struct CompanionConversationScreen: View {
     @State private var feedbackBusyId: UUID?
     @State private var streamingHeroIndex: Int?
     @State private var showResumeStream = false
+    @State private var showVoiceReconnect = false
+    private struct VoiceTurnRetryContext: Equatable {
+        let transcript: String
+        let characterId: String
+        let threadId: String
+    }
+    @State private var voiceRetryContext: VoiceTurnRetryContext?
     @State private var streamEmotionDebouncer = CompanionStreamEmotionDebouncer()
     @State private var contentEmotionAfterSpeaking: CompanionHeroEmotion = .happy
     /// HERO-3-23: последняя emotion из SSE (fallback), на UI не вешаем до `done`.
@@ -65,6 +72,11 @@ struct CompanionConversationScreen: View {
     @State private var lifeDomains: [CompanionLifeDomainDTO] = []
     @State private var showSocialBridgeBanner = false
     @State private var showWellnessReferralSheet = false
+    @State private var companionEntryBanner: String?
+    @State private var wellnessRecapLine: String?
+    @State private var memoryChips: [CompanionMemoryItemDTO] = []
+    @State private var memoryChipsEnabled = false
+    @State private var highlightMicPulse = false
     @State private var chatMode: String = "fast"
     @State private var pendingAttachments: [CompanionAttachmentPayload] = []
     @AppStorage("companion_active_workspace_id") private var activeWorkspaceId: String = ""
@@ -139,6 +151,47 @@ struct CompanionConversationScreen: View {
                         .padding(.vertical, 8)
                         .background(Color(hex: "8B5CF6").opacity(0.12))
                         .accessibilityIdentifier("companion_wellness_pillar_banner")
+                    }
+                    if let companionEntryBanner, !companionEntryBanner.isEmpty {
+                        HStack(spacing: 8) {
+                            Image(systemName: "sparkles")
+                                .foregroundStyle(Color(hex: "A78BFA"))
+                            Text(companionEntryBanner)
+                                .font(.caption)
+                                .foregroundStyle(.primary)
+                            Spacer()
+                            Button {
+                                WellnessSessionStore.setCompanionEntryBanner(nil)
+                                self.companionEntryBanner = nil
+                            } label: {
+                                Image(systemName: "xmark.circle.fill")
+                                    .foregroundStyle(.secondary)
+                            }
+                            .accessibilityLabel(localizationManager.localized("companion_social_bridge_dismiss"))
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 8)
+                        .background(Color.mint.opacity(0.12))
+                        .accessibilityIdentifier("companion_wellness_mode_banner")
+                    }
+                    if let wellnessRecapLine, !wellnessRecapLine.isEmpty {
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "clock.arrow.circlepath")
+                                .font(.caption)
+                                .foregroundStyle(Color(hex: "8B5CF6"))
+                            Text(wellnessRecapLine)
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                            Spacer(minLength: 0)
+                        }
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 6)
+                        .background(Color(hex: "8B5CF6").opacity(0.08))
+                        .accessibilityIdentifier("companion_wellness_recap_banner")
+                    }
+                    if memoryChipsEnabled, !memoryChips.isEmpty {
+                        companionMemoryChipsRow
                     }
                     Divider().opacity(0.15)
                     companionDialogueStrip
@@ -330,6 +383,14 @@ struct CompanionConversationScreen: View {
     }
 
     private func handleConversationAppear() {
+        companionEntryBanner = WellnessSessionStore.companionEntryBanner
+        if WellnessSessionStore.consumeMicHighlight() {
+            highlightMicPulse = true
+            Task {
+                try? await Task.sleep(nanoseconds: 8_000_000_000)
+                await MainActor.run { highlightMicPulse = false }
+            }
+        }
         speechManager.audioSessionConsumer = .companion
         speechManager.warmUpPermissionsIfNeeded()
         voiceSession.onAssistantReply = { line, emo in
@@ -339,6 +400,10 @@ struct CompanionConversationScreen: View {
             }
         }
         voiceSession.onError = { code in
+            if code == "connection_lost", voiceRetryContext != nil {
+                showVoiceReconnect = true
+                isSending = false
+            }
             errorText = CompanionDisplayNames.voiceErrorMessage(code: code, localizationManager: localizationManager)
             heroEmotion = .alert
         }
@@ -410,9 +475,11 @@ struct CompanionConversationScreen: View {
         CompanionDialogueStrip(
             messages: messages,
             showResumeStream: showResumeStream,
+            showVoiceReconnect: showVoiceReconnect,
             isSending: isSending,
             feedbackBusyId: feedbackBusyId,
             onResume: { Task { await resumeStream() } },
+            onVoiceReconnect: { Task { await retryVoiceRealtime() } },
             onShowHistory: { showFullChatHistory = true },
             onFeedback: { index, vote in
                 Task { await sendFeedback(messageIndex: index, vote: vote) }
@@ -563,6 +630,19 @@ struct CompanionConversationScreen: View {
                         .disabled(isSending)
                         .frame(maxWidth: .infinity, alignment: .center)
                         .padding(.vertical, 4)
+                    }
+                    if showVoiceReconnect {
+                        Button {
+                            Task { await retryVoiceRealtime() }
+                        } label: {
+                            Label(localizationManager.localized("companion_conversation_resume_voice"), systemImage: "mic.circle.fill")
+                                .font(.subheadline.bold())
+                                .foregroundStyle(.orange)
+                        }
+                        .disabled(isSending)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.vertical, 4)
+                        .accessibilityIdentifier("companion_resume_voice_button_history")
                     }
                     ForEach(Array(messages.enumerated()), id: \.element.id) { idx, msg in
                         VStack(alignment: msg.isUser ? .trailing : .leading, spacing: 4) {
@@ -731,8 +811,17 @@ struct CompanionConversationScreen: View {
                 Capsule()
                     .fill(speechManager.isRecording ? Color.red : Color.purple)
             )
-            .scaleEffect(isHoldRecording ? 1.06 : 1.0)
+            .scaleEffect(isHoldRecording ? 1.06 : (highlightMicPulse ? 1.08 : 1.0))
             .animation(.easeInOut(duration: 0.15), value: isHoldRecording)
+            .animation(highlightMicPulse ? .easeInOut(duration: 0.8).repeatForever(autoreverses: true) : .default, value: highlightMicPulse)
+            .overlay {
+                if highlightMicPulse {
+                    Capsule()
+                        .stroke(Color.mint, lineWidth: 3)
+                        .scaleEffect(1.12)
+                        .opacity(0.85)
+                }
+            }
             .accessibilityIdentifier("companion_child_speak_button")
             .accessibilityLabel(localizationManager.localized("companion_mic_speak_button"))
             .accessibilityHint(localizationManager.localized("companion_mic_hold_hint_child"))
@@ -1029,7 +1118,81 @@ struct CompanionConversationScreen: View {
         } catch {
             errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)
         }
+        await loadWellnessRecapIfNeeded()
+        await loadCompanionMemoryChipsIfNeeded()
         restorePendingStreamIfNeeded()
+    }
+
+    private var companionMemoryChipsRow: some View {
+        VStack(alignment: .leading, spacing: 6) {
+            Text(localizationManager.localized("companion_memory_chips_label"))
+                .font(.caption2.weight(.semibold))
+                .foregroundStyle(.secondary)
+                .padding(.horizontal, 14)
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    ForEach(memoryChips.prefix(6)) { item in
+                        Text(item.summary)
+                            .font(.caption2)
+                            .lineLimit(2)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 6)
+                            .background(Color(hex: "6366F1").opacity(0.12))
+                            .clipShape(Capsule())
+                            .accessibilityIdentifier("companion_memory_chip")
+                    }
+                }
+                .padding(.horizontal, 14)
+            }
+        }
+        .padding(.vertical, 4)
+        .accessibilityIdentifier("companion_memory_chips_row")
+    }
+
+    private func loadCompanionMemoryChipsIfNeeded() async {
+        guard !isChildProfile else {
+            memoryChipsEnabled = false
+            memoryChips = []
+            return
+        }
+        do {
+            let resp = try await CompanionAPIService.shared.fetchMemory()
+            memoryChipsEnabled = resp.memoryEnabled
+            memoryChips = resp.items
+        } catch {
+            memoryChipsEnabled = false
+            memoryChips = []
+        }
+    }
+
+    private func loadWellnessRecapIfNeeded() async {
+        guard WellnessSessionStore.hasAcceptedConsent else {
+            wellnessRecapLine = nil
+            return
+        }
+        if let cached = WellnessOfflineStore.loadRecap() {
+            wellnessRecapLine = companionRecapDisplayLine(from: cached)
+        }
+        do {
+            let recap = try await WellnessAPIService.shared.fetchSessionRecap()
+            WellnessOfflineStore.saveRecap(recap)
+            wellnessRecapLine = companionRecapDisplayLine(from: recap)
+        } catch {
+            // keep cached line if any
+        }
+    }
+
+    private func companionRecapDisplayLine(from recap: WellnessSessionRecapResponse) -> String? {
+        let raw: String?
+        if let cont = recap.continuityMessage, !cont.isEmpty {
+            raw = cont
+        } else if let msg = recap.message, !msg.isEmpty {
+            raw = msg
+        } else {
+            return nil
+        }
+        guard let raw else { return nil }
+        return String(format: localizationManager.localized("wellness_recap_prefix"), raw)
     }
 
     private func loadThreadHistory(threadId: String) async {
@@ -1507,6 +1670,14 @@ struct CompanionConversationScreen: View {
         isSending = true
         defer { isSending = false }
 
+        let threadId = resolveThreadId()
+        voiceRetryContext = VoiceTurnRetryContext(
+            transcript: text,
+            characterId: characterId,
+            threadId: threadId
+        )
+        showVoiceReconnect = false
+
         if caps.voiceRealtimeEnabled {
             do {
                 let token = try await CompanionAPIService.shared.fetchEphemeralVoiceToken()
@@ -1522,7 +1693,50 @@ struct CompanionConversationScreen: View {
                 voiceSession.sendAudioStop(
                     transcript: text,
                     characterId: characterId,
-                    sessionId: resolveThreadId(),
+                    sessionId: threadId,
+                    securityExpertMode: securityExpertMode
+                )
+                return
+            } catch {
+                voiceSession.disconnect()
+                await sendVoiceAsChat(text)
+                return
+            }
+        }
+
+        await sendVoiceAsChat(text)
+    }
+
+    /// r100-5-voice — повтор WS-хода или fallback в текстовый чат.
+    private func retryVoiceRealtime() async {
+        guard let ctx = voiceRetryContext else {
+            showVoiceReconnect = false
+            return
+        }
+        showVoiceReconnect = false
+        isSending = true
+        heroEmotion = .thinking
+        errorText = nil
+        defer { isSending = false }
+
+        if caps.voiceRealtimeEnabled {
+            do {
+                let token = try await CompanionAPIService.shared.fetchEphemeralVoiceToken()
+                try await voiceSession.connect(ephemeralToken: token.token)
+                let fid = FamilyLocalStore.loadPersistedFamilyId()
+                voiceSession.sendConfig(
+                    characterId: ctx.characterId,
+                    securityExpertMode: securityExpertMode,
+                    responseLanguage: LocalizationManager.shared.aiResponseLanguageCode,
+                    familyId: fid.isEmpty ? nil : fid
+                )
+                if voiceSession.resendPendingStopIfAny() {
+                    return
+                }
+                voiceSession.sendAudioStop(
+                    transcript: ctx.transcript,
+                    characterId: ctx.characterId,
+                    sessionId: ctx.threadId,
                     securityExpertMode: securityExpertMode
                 )
                 return
@@ -1530,8 +1744,7 @@ struct CompanionConversationScreen: View {
                 voiceSession.disconnect()
             }
         }
-
-        await sendVoiceAsChat(text)
+        await sendVoiceAsChat(ctx.transcript)
     }
 
     /// Apple STT failed — one server fallback attempt (Whisper on ALADDIN VPS, audio not retained server-side).
@@ -1617,6 +1830,8 @@ struct CompanionConversationScreen: View {
     }
 
     private func handleVoiceAssistantReply(line: String, emotion: CompanionHeroEmotion) {
+        showVoiceReconnect = false
+        voiceRetryContext = nil
         let trimmed = line.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
         if let last = messages.last, !last.isUser, last.text == trimmed { return }

@@ -46,6 +46,7 @@ try:
     from security.services.ai_platform.wellness_age_policy import (
         has_wellness_consent,
         normalize_age_band,
+        resolve_wellness_age_band,
         wellness_consent_from_payload,
     )
     from security.services.ai_platform.wellness_journal import (
@@ -257,7 +258,7 @@ async def list_pillars(
     user: dict = Depends(get_current_user),
 ) -> Dict[str, Any]:
     _require_wellness(user=user)
-    age_band = (user.get("age_band") or "teen").lower()
+    age_band = resolve_wellness_age_band(user)
     return {"pillars": pillars_for_age_band(age_band), "age_band": age_band}
 
 
@@ -268,7 +269,7 @@ async def set_session_pillar(
 ) -> Dict[str, Any]:
     _require_wellness(user=user)
     _require_consent(user)
-    age_band = (user.get("age_band") or "teen").lower()
+    age_band = resolve_wellness_age_band(user)
     pillar = normalize_pillar(body.pillar, age_band)
     if not pillar:
         raise_wellness_error("pillar_not_allowed_for_age", 403)
@@ -1074,6 +1075,16 @@ async def post_outcome(
         age_band=age_band,
         jung_enabled=FEATURE_WELLNESS_JUNG,
     )
+    from security.services.ai_platform.wellness_pillar_fatigue import evaluate_pillar_fatigue
+
+    loc = (user.get("locale") or "ru")[:2]
+    pillar_fatigue = evaluate_pillar_fatigue(
+        store,
+        uid,
+        age_band=age_band,
+        locale=loc,
+        jung_enabled=FEATURE_WELLNESS_JUNG,
+    )
     return {
         "ok": True,
         "outcome": {
@@ -1083,6 +1094,7 @@ async def post_outcome(
             "created_at": result.created_at,
         },
         "adjusted_pillar": adjustment.get("adjusted_pillar"),
+        "pillar_fatigue": pillar_fatigue,
         "settings": adjustment.get("settings"),
         "alliance": apply_alliance_for_outcome(store, uid, helpful=body.helpful),
     }

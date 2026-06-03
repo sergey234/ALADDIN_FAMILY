@@ -69,4 +69,15 @@ enum WellnessOfflineStore {
         }
         return (score, emotion)
     }
+
+    /// UI smoke (`-UITestWellnessNavSmoke`): hub без сети.
+    static func seedNavSmokeFixtures() {
+        savePillars(
+            WellnessPillarsResponse(
+                pillars: ["humanistic", "behavioral", "cognitive", "jung"],
+                ageBand: "teen"
+            )
+        )
+        setConsentCached(true)
+    }
 }

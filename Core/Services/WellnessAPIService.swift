@@ -53,10 +53,10 @@ final class WellnessAPIService {
         )
     }
 
-    func setSessionPillar(_ pillar: String) async throws -> WellnessSessionPillarResponse {
+    func setSessionPillar(_ pillar: String, forceSwitch: Bool = false) async throws -> WellnessSessionPillarResponse {
         try await post(
             AppConfig.Endpoint.wellnessSessionPillar,
-            body: WellnessPillarSelectBody(pillar: pillar)
+            body: WellnessPillarSelectBody(pillar: pillar, forceSwitch: forceSwitch ? true : nil)
         )
     }
 

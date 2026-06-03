@@ -51,22 +51,37 @@ exercises:
         hint:
           ru: "Коротко: что запомнилось из сна или образа? Без оценки."
           en: "Briefly: what do you remember from a dream or image? No judgment."
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 1; без интерпретации и без предсказаний."
+          en: "Voice only step 1; no interpretation or predictions."
       - step: 2
         hint:
           ru: "Какое одно чувство было сильнее всего?"
           en: "What one feeling was strongest?"
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 2; одно чувство."
+          en: "Voice only step 2; one feeling."
       - step: 3
         hint:
           ru: "Если бы это был символ — что он мог бы означать для тебя сейчас?"
           en: "If it were a symbol — what might it mean for you right now?"
+        llm_rephrase_only: true
+        instruction:
+          ru: "Озвучь только шаг 3; смысл для тебя сейчас; не «сбудется»."
+          en: "Voice only step 3; meaning for you now; not «it will happen»."
 
 hero_flavor:
   unicorn:
-    ru: "Образы — как подсказки, не как приговор."
-    en: "Images are hints, not verdicts."
+    ru: "Образы без страха — как подсказки, не приговор и не предсказание."
+    en: "Gentle images — hints, not verdicts or fortune-telling."
+    flavor_key: image_safe
   aladdin:
-    ru: "Один образ — один вопрос."
-    en: "One image — one question."
+    ru: "Спокойный смысл: один образ и один мягкий вопрос, без мистики."
+    en: "Calm meaning: one image and one gentle question, no mysticism."
+    flavor_key: image_mentor
   genie:
-    ru: "Без магии — только смысл для тебя."
-    en: "No magic — only meaning for you."
+    ru: "Сказочный образ без «исполню желание» и без предсказаний будущего."
+    en: "Fairy-tale image without wish-granting or predicting the future."
+    flavor_key: image_fable

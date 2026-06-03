@@ -3,6 +3,7 @@ import SwiftUI
 /// p3-06 — Premium paywall for timeline / full assessments.
 struct WellnessPremiumPaywallSheet: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
     @Environment(\.dismiss) private var dismiss
 
     var onUpgrade: (() -> Void)?
@@ -16,7 +17,11 @@ struct WellnessPremiumPaywallSheet: View {
                     .font(.body)
                     .foregroundStyle(.secondary)
                 Button {
-                    onUpgrade?()
+                    if let onUpgrade {
+                        onUpgrade()
+                    } else {
+                        navigationManager.navigateTo(.tariffs)
+                    }
                     dismiss()
                 } label: {
                     Text(localizationManager.localized("wellness_premium_cta"))

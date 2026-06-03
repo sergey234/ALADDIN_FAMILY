@@ -49,9 +49,9 @@ def build_streaks_payload(
     next_threshold = next((t for t in _BADGE_THRESHOLDS if streak < t), None)
     loc = (locale or "ru").lower()[:2]
     if loc == "en":
-        message = f"{streak} day(s) of check-ins in a row."
+        message = f"{streak} day(s) logging mood in a row."
     else:
-        message = f"{streak} день(дней) check-in подряд."
+        message = f"{streak} день(дней) с отметкой настроения подряд."
     badges: List[Dict[str, Any]] = []
     for t in _BADGE_THRESHOLDS:
         badges.append(

@@ -11,8 +11,8 @@
         "en": "Just stay with me"
       },
       "hint": {
-        "ru": "Переключит на столп «Принять себя»",
-        "en": "Switches to humanistic pillar"
+        "ru": "Откроет «Принять себя» в чате с героем",
+        "en": "Opens “Accept yourself” in hero chat"
       }
     },
     {
@@ -25,8 +25,8 @@
         "en": "Explore deeply"
       },
       "hint": {
-        "ru": "Jung + reflective — метафоры, не диагноз",
-        "en": "Jung + reflective — metaphors, not diagnosis"
+        "ru": "Образы и метафоры — не медицинский вывод",
+        "en": "Symbols and metaphors — not a medical conclusion"
       }
     },
     {

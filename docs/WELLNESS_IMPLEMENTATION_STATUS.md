@@ -1,10 +1,13 @@
 # Wellness Platform — статус реализации (131 задача)
 
-> **Обновлено:** 2026-06-02 (CI HealthKit blocker + план отката B)  
-> **Ядро:** 131/131 · **PO-трекинг:** 133/134 (`po-healthkit` отложено → [rollback plan](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md))  
+> **Обновлено:** 2026-06-03 (build **223**, r100 premium funnel, handoff)  
+> **Ядро:** 131/131 · **Дорожка «100%»:** [WELLNESS_ROADMAP_100.md](./WELLNESS_ROADMAP_100.md) (`r100-*`)  
+> **PO-трекинг:** 133/134 (`po-healthkit` → [rollback plan](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md))  
 > **Рабочая папка:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
-> **Чеклист:** [WELLNESS_CURSOR_TODO.md](./WELLNESS_CURSOR_TODO.md)  
-> **Handoff для ML:** [WELLNESS_ML_HANDOFF.md](./WELLNESS_ML_HANDOFF.md)
+> **Чеклист ядра:** [WELLNESS_CURSOR_TODO.md](./WELLNESS_CURSOR_TODO.md)  
+> **Handoff для новой ML (продолжение):** [WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md)  
+> **Handoff 131 (архив):** [WELLNESS_ML_HANDOFF.md](./WELLNESS_ML_HANDOFF.md)  
+> **Деплой (отложен):** [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md)
 
 ---
 
@@ -102,7 +105,7 @@ cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 | Ошибка | Profile `ALADDIN App Store Distribution new` **без** HealthKit; entitlement в `ALADDIN.entitlements` **есть** |
 | Другие Health-типы | **Нет** — только read sleep для check-in |
 | Предупреждение CI | Профили Development/Ad Hoc в secrets — отдельно от HealthKit; исправить при варианте A |
-| **Решение PO** | ✅ **Вариант B выполнен** build **222** — entitlement + UI откат |
+| **Решение PO** | ✅ **Вариант B** build **222**; текущий iOS build **223** (r100 wellness + companion) |
 | План | [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md) |
 
 Check-in **без HealthKit:** ползунок «Как спал(а)?» 3–12 ч — работает всегда.
@@ -156,9 +159,54 @@ Check-in **без HealthKit:** ползунок «Как спал(а)?» 3–12 
 | `Core/Models/WellnessTogetherSession.swift` | ✅ | ✅ | p2-44 |
 | `Shared/Components/WellnessSwiftUICompat.swift` | ✅ | ✅ | post-close 2026-06-02 |
 | `ALADDINWidgets/WellnessCheckinWidget.swift` | ✅ | ⚠️ нет | p3-18 scaffold; нужен **Widget Extension** target |
-| `Tests/UnitTests/WellnessModelsTests.swift` | ✅ | ⚠️ нет | не в `ALADDINUnitTests` (pytest backend отдельно) |
+| `Tests/UnitTests/WellnessModelsTests.swift` | ✅ | ✅ | `ALADDINUnitTests` — `scripts/run_wellness_r100_tests.sh` |
 
-**Итого main app:** 25/25 Swift-файлов wellness в таргете · **2** файла в репо вне compile (widget + unit test).
+**Итого main app:** 25/25 Swift-файлов wellness в таргете · **1** файл вне compile: widget (`ALADDINWidgets/` → r100-2-06).
+
+**UI smoke (2026-06-03):** `Tests/UITests/WellnessCompanionNavUITests.swift` — r100-0-05 / r100-2-12.  
+**Статический gate (без xcodebuild):** `./scripts/verify_r100_ios_static.sh` — таргеты, UITest bootstrap, чеклисты.
+
+---
+
+## 2026-06-03 — дорожка r100 (Companion + герои, без деплоя PO)
+
+> Детали: [WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md) · План: [WELLNESS_ROADMAP_100.md](./WELLNESS_ROADMAP_100.md)
+
+| Область | Статус в репо |
+|---------|----------------|
+| hero_flavor 3×4, pack instructions | ✅ draft |
+| Recap, memory chips, outcome→fatigue, drift log | ✅ |
+| Voice reconnect, embedded nav, check-in→hero banner | ✅ |
+| Hermes keys, Rive, clinical | ⏳ батч 7 |
+| Premium funnel (r100-1-16) | ✅ Hub gate + paywall → тарифы — [WELLNESS_PREMIUM_FUNNEL.md](./WELLNESS_PREMIUM_FUNNEL.md) |
+| Деплой VPS + TestFlight | ⏳ [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md) |
+
+---
+
+## r100 — осталось (15 из 39) · 24 закрыто
+
+> Полная таблица: [WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md) §4.
+
+| id | Простыми словами | Кто |
+|----|------------------|-----|
+| r100-0-01 | TestFlight: 15 пунктов на телефоне | PO |
+| r100-0-02 | После деплоя: `verify_wellness_prod.sh` 14/14 | BE ops |
+| r100-0-03 | Ключи Hermes (батч 7) | PO |
+| r100-0-04 | Parent LLM `llm_used: true` | BE ops |
+| r100-1-04 | Postgres **read** через 7 дней dual-write | BE ops |
+| r100-2-06 | **Виджет** check-in на Home Screen (Widget Extension в Xcode) | iOS ~15 мин |
+| r100-4-voice | Полировка задержки голоса | iOS |
+| r100-5-ethics | Аудит L3 + родитель не видит teen-chat | QA |
+| r100-6-store | App Store metadata | PO |
+| r100-6-healthkit | HealthKit Portal A или откат B | PO |
+| r100-7-07 | Rive анимации героев | Design |
+| r100-7-08 | Sleep stories MP3 на CDN | BE+iOS |
+| r100-7-10 | Clinical sign-off → pack `approved` | Внешний |
+| r100-7-docs | Внутренние docs: «дорожка» не «столп» | Docs |
+
+**Не путать с «4 виджета»:** только **r100-2-06** — виджет; остальное — ethics, docs, voice.
+
+**Сборка 223 (канон):** `AppConfig.swift` · `AppConfigTests.swift` · `ALADDIN.xcodeproj` (`CURRENT_PROJECT_VERSION`).
 
 ---
 
@@ -166,24 +214,26 @@ Check-in **без HealthKit:** ползунок «Как спал(а)?» 3–12 
 
 | Файл | Зачем |
 |------|--------|
-| [WELLNESS_ML_HANDOFF.md](./WELLNESS_ML_HANDOFF.md) | Главная инструкция — §0 стартовое сообщение, шаги A–D, gate, DoD, ошибки |
-| [WELLNESS_CURSOR_TODO.md](./WELLNESS_CURSOR_TODO.md) | **131** задача `p0-01`…`p3-20`, `p18-*` + **3 PO** → **134** трекинг |
-| [WELLNESS_PLATFORM_MASTER_PLAN.md](./WELLNESS_PLATFORM_MASTER_PLAN.md) | Архитектура **v2.5** (§4.3 Knowledge Pack, §19 ML) |
-| [WELLNESS_IMPLEMENTATION_STATUS.md](./WELLNESS_IMPLEMENTATION_STATUS.md) | Этот файл — факт, деплой, iOS audit |
-| [WELLNESS_POSTGRES_PARENT_LLM_HANDOFF.md](./WELLNESS_POSTGRES_PARENT_LLM_HANDOFF.md) | Ops: Postgres cutover + Parent LLM на VPS |
-| `.cursor/rules/wellness-platform-expert.mdc` | Правило Cursor для wellness-файлов |
-| [WELLNESS_APPLE_HEALTHKIT_SETUP.md](./WELLNESS_APPLE_HEALTHKIT_SETUP.md) | PO: capability Portal |
-| [ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md](../ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md) | Deploy VPS |
+| **[WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md)** | **Главный handoff 2026-06-03** — герои, r100 todo, что сделано, деплой |
+| [WELLNESS_ROADMAP_100.md](./WELLNESS_ROADMAP_100.md) | План до 100%, батчи, r100-* |
+| [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md) | Один деплой когда PO готов |
+| [WELLNESS_CURSOR_TODO.md](./WELLNESS_CURSOR_TODO.md) | **131** задача — все ☑ (справочник) |
+| [WELLNESS_PLATFORM_MASTER_PLAN.md](./WELLNESS_PLATFORM_MASTER_PLAN.md) | Архитектура **v2.5** |
+| **WELLNESS_IMPLEMENTATION_STATUS.md** | Этот файл — 131/131, **2026-06-02**, **Wellness*.swift** |
+| [WELLNESS_ML_HANDOFF.md](./WELLNESS_ML_HANDOFF.md) | Старый handoff 131 (не дублировать работу) |
+| [WELLNESS_POSTGRES_PARENT_LLM_HANDOFF.md](./WELLNESS_POSTGRES_PARENT_LLM_HANDOFF.md) | Postgres + Parent LLM |
+| `.cursor/rules/wellness-platform-expert.mdc` | Правило Cursor |
+| [ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md](../ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md) | VPS |
 
-> **Версии:** в старых переписках встречаются «120 задач» и master plan **v2.4** — канон сейчас **131 ядро + §18** и **v2.5-final** (2026-06-01). Фазы 0–3 **закрыты**; новой ML — не «Старт Фаза 0», а ops/App Store (см. handoff §11).
+> **Версии:** канон **131 ядро** (2026-06-01) + **r100** (2026-06-03). Новой ML: [WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md) §0.
 
 ### Как передать ML (кратко)
 
-1. Папка только: `…/mobile_apps/ALADDIN_iOS` (не весь `ALADDIN_NEW` ~28GB).
-2. Новый чат → `@docs/WELLNESS_ML_HANDOFF.md` + `@WELLNESS_CURSOR_TODO.md` + `@WELLNESS_PLATFORM_MASTER_PLAN.md`.
-3. Вставить блок **§0** из handoff → дождаться **Шага A** (таблица 4 столпа / запреты / риски).
-4. TodoWrite: импорт **131** id (все `completed`) + PO `po-healthkit` `pending`.
-5. Работа: Postgres/Parent LLM handoff, `verify_wellness_prod.sh`, iOS TestFlight.
+1. Папка только: `…/mobile_apps/ALADDIN_iOS`.
+2. Новый чат → вставить **§0** из [WELLNESS_ML_HANDOFF_R100.md](./WELLNESS_ML_HANDOFF_R100.md).
+3. `@docs/WELLNESS_ML_HANDOFF_R100.md` `@docs/WELLNESS_ROADMAP_100.md` `@docs/WELLNESS_IMPLEMENTATION_STATUS.md`.
+4. TodoWrite: **r100-*** из handoff §4 (не переделывать 131).
+5. Деплой — только по [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md) после TestFlight.
 
 ---
 

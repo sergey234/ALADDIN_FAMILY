@@ -2,6 +2,9 @@ import SwiftUI
 
 /// p1-10 — согласие на эмоциональную поддержку (самопомощь, не врач).
 struct WellnessConsentScreen: View {
+    var embeddedInHome: Bool = false
+    var onConsentAccepted: (() -> Void)?
+
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
 
@@ -35,13 +38,15 @@ struct WellnessConsentScreen: View {
                 .buttonStyle(.borderedProminent)
                 .tint(Color(hex: "8B5CF6"))
 
-                Button {
-                    navigationManager.goBack()
-                } label: {
-                    Text(localizationManager.localized("wellness_consent_decline"))
-                        .frame(maxWidth: .infinity)
+                if !embeddedInHome {
+                    Button {
+                        navigationManager.goBack()
+                    } label: {
+                        Text(localizationManager.localized("wellness_consent_decline"))
+                            .frame(maxWidth: .infinity)
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
             }
             .padding()
         }
@@ -61,9 +66,12 @@ struct WellnessConsentScreen: View {
         do {
             _ = try await WellnessAPIService.shared.postConsent(accepted: true)
             WellnessSessionStore.acceptConsent()
-            navigationManager.navigateTo(.wellnessHub)
         } catch {
             WellnessSessionStore.acceptConsent()
+        }
+        if embeddedInHome {
+            onConsentAccepted?()
+        } else {
             navigationManager.navigateTo(.wellnessHub)
         }
     }

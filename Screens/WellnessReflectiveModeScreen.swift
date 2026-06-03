@@ -100,10 +100,24 @@ struct WellnessReflectiveModeScreen: View {
 
     private func selectMode(_ mode: WellnessReflectiveModeItem) async {
         isSelecting = true
+        errorText = nil
         defer { isSelecting = false }
         let p = pillar(for: mode.id)
-        _ = try? await WellnessAPIService.shared.setSessionPillar(p)
-        WellnessSessionStore.setActivePillar(p)
+        do {
+            _ = try await WellnessAPIService.shared.setSessionPillar(p, forceSwitch: true)
+            WellnessSessionStore.setActivePillar(p)
+            WellnessSessionStore.setExercisePillar(p)
+        } catch {
+            errorText = localizationManager.localized("wellness_error_pillar")
+            return
+        }
+        let label = modeLabel(mode)
+        let banner = String(
+            format: localizationManager.localized("wellness_companion_mode_banner"),
+            label
+        )
+        WellnessSessionStore.setCompanionEntryBanner(banner)
+        WellnessSessionStore.requestMicHighlight()
         navigationManager.navigateToCompanionHome(returnTo: .wellnessReflective)
     }
 }

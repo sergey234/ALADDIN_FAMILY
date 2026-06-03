@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Вкладка «Моё» — trust, наряды, история, правила (единое место, без дублей в разговоре).
+/// Вкладка «Мой мир» — trust, наряды, история, правила (единое место, без дублей в разговоре).
 struct CompanionMineTabView: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager

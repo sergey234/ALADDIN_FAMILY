@@ -200,14 +200,14 @@ CHARACTERS = [
     {
         "id": "unicorn",
         "display_name": "Единорог",
-        "tagline": "Тёплый магический компаньон для детей",
+        "tagline": "Магический друг для детей",
         "available": True,
         "min_subscription": "free",
     },
     {
         "id": "aladdin",
         "display_name": "Аладдин",
-        "tagline": "Мудрый наставник-человек (не джин)",
+        "tagline": "Мудрый наставник",
         "available": True,
         "min_subscription": "trial",
     },
@@ -1578,6 +1578,13 @@ async def companion_chat(
                 primary_pillar=active_wellness_pillar,
                 locale=(body.response_language or "ru")[:2],
             )
+            if not og.ok and og.reason:
+                logger.warning(
+                    "wellness_pillar_drift user_id=%s pillar=%s reason=%s",
+                    user_id,
+                    active_wellness_pillar,
+                    og.reason,
+                )
             safe_response = og.text
         except NameError:
             pass

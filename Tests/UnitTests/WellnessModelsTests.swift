@@ -18,11 +18,12 @@ final class WellnessModelsTests: XCTestCase {
 
     func testDecodeOutcomePostResponse() throws {
         let json = """
-        {"ok":true,"outcome":{"id":1,"pillar":"humanistic","helpful":5,"created_at":"2026-06-01T00:00:00"}}
+        {"ok":true,"outcome":{"id":1,"pillar":"humanistic","helpful":1,"created_at":"2026-06-01T00:00:00"},"adjusted_pillar":"behavioral","pillar_fatigue":{"fatigued":false,"streak_count":2}}
         """
         let resp = try JSONDecoder().decode(WellnessOutcomePostResponse.self, from: Data(json.utf8))
         XCTAssertTrue(resp.ok)
-        XCTAssertEqual(resp.outcome?.helpful, 5)
-        XCTAssertEqual(resp.outcome?.pillar, "humanistic")
+        XCTAssertEqual(resp.outcome?.helpful, 1)
+        XCTAssertEqual(resp.adjustedPillar, "behavioral")
+        XCTAssertEqual(resp.pillarFatigue?.streakCount, 2)
     }
 }

@@ -41,6 +41,7 @@ struct WellnessOutcomeSheet: View {
     @State private var submitted = false
     @State private var isSubmitting = false
     @State private var errorText: String?
+    @State private var followUpHint: String?
 
     private var ageBand: String {
         WellnessSessionStore.cachedAgeBand ?? CompanionUserContext.companionAgeBand
@@ -58,6 +59,14 @@ struct WellnessOutcomeSheet: View {
                     .foregroundStyle(.green)
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.top, 24)
+                    if let followUpHint, !followUpHint.isEmpty {
+                        Text(followUpHint)
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                            .frame(maxWidth: .infinity)
+                            .padding(.top, 8)
+                    }
                 } else {
                     Text(WellnessAgeL10n.text(localizationManager, key: "wellness_outcome_title", ageBand: ageBand))
                         .font(.title3.bold())
@@ -85,6 +94,7 @@ struct WellnessOutcomeSheet: View {
                         }
                         .buttonStyle(.plain)
                         .disabled(isSubmitting)
+                        .accessibilityIdentifier("wellness_outcome_\(choice.rawValue)")
                     }
                     if isSubmitting {
                         ProgressView().frame(maxWidth: .infinity)
@@ -99,6 +109,7 @@ struct WellnessOutcomeSheet: View {
                     Button(localizationManager.localized("wellness_outcome_skip")) {
                         close()
                     }
+                    .accessibilityIdentifier("wellness_outcome_skip")
                 }
             }
         }
@@ -110,12 +121,30 @@ struct WellnessOutcomeSheet: View {
         errorText = nil
         defer { isSubmitting = false }
         do {
-            _ = try await WellnessAPIService.shared.postOutcome(
+            let resp = try await WellnessAPIService.shared.postOutcome(
                 pillar: pillar,
                 helpful: choice.helpfulScore
             )
+            if let next = resp.adjustedPillar, !next.isEmpty, next != pillar {
+                WellnessSessionStore.setActivePillar(next)
+                if let wp = WellnessPillar(rawValue: next) {
+                    followUpHint = String(
+                        format: localizationManager.localized("wellness_outcome_pillar_switch"),
+                        localizationManager.localized(wp.titleKey)
+                    )
+                }
+            } else if resp.pillarFatigue?.fatigued == true,
+                      let suggested = resp.pillarFatigue?.suggestedPillar,
+                      let wp = WellnessPillar(rawValue: suggested) {
+                WellnessSessionStore.setActivePillar(suggested)
+                let fatigueMsg = resp.pillarFatigue?.message
+                    ?? localizationManager.localized("wellness_fatigue_switch")
+                followUpHint = "\(fatigueMsg) \(localizationManager.localized(wp.titleKey))"
+            } else if choice == .worse {
+                followUpHint = localizationManager.localized("wellness_outcome_worse_hint")
+            }
             submitted = true
-            try? await Task.sleep(nanoseconds: 900_000_000)
+            try? await Task.sleep(nanoseconds: followUpHint == nil ? 900_000_000 : 1_800_000_000)
             close()
         } catch {
             errorText = localizationManager.localized("wellness_error_network")

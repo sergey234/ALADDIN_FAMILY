@@ -11,8 +11,8 @@
         "en": "We miss you"
       },
       "body": {
-        "ru": "Давно не заходил(а) — всё ок? Хватит одной минуты check-in.",
-        "en": "Haven't checked in — all OK? One minute is enough."
+        "ru": "Давно не заходил(а) — всё ок? Хватит одной минуты отметить настроение.",
+        "en": "Haven't logged mood — all OK? One minute is enough."
       }
     },
     "outcome_24h": {
@@ -38,8 +38,8 @@
       "en": "How are you today?"
     },
     "checkin_reminder_body": {
-      "ru": "Минута check-in поможет отследить настроение.",
-      "en": "A quick check-in helps track mood."
+      "ru": "Минута на отметку настроения поможет отслеживать самочувствие.",
+      "en": "A quick mood log helps track how you feel."
     },
     "phq_suggest_title": {
       "ru": "Короткий опрос",

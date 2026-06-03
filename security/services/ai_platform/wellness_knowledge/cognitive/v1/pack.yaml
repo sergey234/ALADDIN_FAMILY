@@ -123,17 +123,17 @@ exercises:
 # Hero flavor — 2–3 предложения тона поверх одного pack (не отдельная КПT)
 hero_flavor:
   unicorn:
-    ru: "Говори очень коротко и тепло, как другу. Без страшных слов и длинных объяснений."
-    en: "Speak very briefly and warmly, like a friend. No scary words or long lectures."
-    flavor_key: friend_short
-  genie:
-    ru: "Можно одна лёгкая образная фраза, без обещаний «исполнить желание». Без шуток при грусти или кризисе."
-    en: "At most one light metaphor, no wish-granting promises. No jokes when sad or in crisis."
-    flavor_key: metaphor_light
+    ru: "Как пазл по кусочку: очень коротко и тепло, как другу. Без страшных слов."
+    en: "Like a puzzle piece at a time: brief and warm, like a friend. No scary words."
+    flavor_key: puzzle_friend
   aladdin:
-    ru: "Как наставник: один шаг, один вопрос. Без морали и без «ты должен»."
-    en: "Like a mentor: one step, one question. No moralizing or «you must»."
+    ru: "Один чёткий вопрос за раз, без морали и без «ты должен»."
+    en: "One clear question at a time; no moralizing or «you must»."
     flavor_key: mentor_short
+  genie:
+    ru: "Одна лёгкая образная фраза максимум; без «исполню желание»; без шуток при грусти или кризисе."
+    en: "At most one light metaphor; no wish-granting; no jokes when sad or in crisis."
+    flavor_key: metaphor_light
 
 # Упрощение по возрасту (child — ultra-lite, без полного thought record в UI)
 age_band:

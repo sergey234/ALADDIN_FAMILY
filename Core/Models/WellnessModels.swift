@@ -14,6 +14,12 @@ struct WellnessPillarsResponse: Codable {
 
 struct WellnessPillarSelectBody: Encodable {
     let pillar: String
+    var forceSwitch: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case pillar
+        case forceSwitch = "force_switch"
+    }
 }
 
 struct WellnessSessionPillarResponse: Codable {
@@ -326,6 +332,15 @@ struct WellnessOutcomeRequestBody: Encodable {
 struct WellnessOutcomePostResponse: Codable {
     let ok: Bool
     let outcome: WellnessOutcomeDTO?
+    let adjustedPillar: String?
+    let pillarFatigue: WellnessPillarFatigueDTO?
+
+    enum CodingKeys: String, CodingKey {
+        case ok
+        case outcome
+        case adjustedPillar = "adjusted_pillar"
+        case pillarFatigue = "pillar_fatigue"
+    }
 }
 
 struct WellnessOutcomeDTO: Codable {

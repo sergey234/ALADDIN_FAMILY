@@ -33,10 +33,11 @@ struct WellnessExerciseScreen: View {
             }
             .padding()
         }
+        .accessibilityIdentifier("wellness_exercise_screen")
         .task { await bootstrap() }
         .sheet(isPresented: $showOutcomeSheet) {
             WellnessOutcomeSheet(pillar: pillar) {
-                navigationManager.goBack()
+                navigationManager.finishWellnessFlow()
             }
             .environmentObject(localizationManager)
         }
@@ -116,8 +117,9 @@ struct WellnessExerciseScreen: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .accessibilityIdentifier("wellness_exercise_open_outcome")
                 Button {
-                    navigationManager.goBack()
+                    navigationManager.popToWellnessHub()
                 } label: {
                     Text(localizationManager.localized("wellness_outcome_skip"))
                         .frame(maxWidth: .infinity)

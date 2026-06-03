@@ -138,7 +138,7 @@ struct CompanionHubScreen: View {
                                     VStack(alignment: .leading, spacing: 4) {
                                         Text(hero.displayName).font(.headline)
                                         Text(hero.tagline).font(.subheadline).opacity(0.85)
-                                        Text(defaultStyleLabel(for: hero.id))
+                                        Text(heroStyleCaption(for: hero.id))
                                             .font(.caption)
                                             .foregroundStyle(.white.opacity(0.75))
                                     }
@@ -149,7 +149,9 @@ struct CompanionHubScreen: View {
                                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                             }
                             .buttonStyle(.plain)
-                            .accessibilityLabel("\(hero.displayName). \(defaultStyleLabel(for: hero.id))")
+                            .accessibilityLabel(
+                                "\(hero.displayName). \(hero.tagline). \(heroStyleCaption(for: hero.id))"
+                            )
                         }
                     }
                 }
@@ -171,14 +173,16 @@ struct CompanionHubScreen: View {
         }
     }
 
-    private func defaultStyleLabel(for characterId: String) -> String {
-        let ageBand = CompanionUserContext.companionAgeBand
-        let preset = CompanionPersonalityPresets.defaultPreset(
-            characterId: characterId,
-            ageBand: ageBand
-        )
-        let name = CompanionProfileSettings.presetLabels[preset] ?? preset
-        return String(format: localizationManager.localized("companion_hub_default_style"), name)
+    /// Короткая подпись тона героя (без «Стиль по умолчанию»).
+    private func heroStyleCaption(for characterId: String) -> String {
+        let key: String
+        switch characterId {
+        case "aladdin": key = "companion_hero_style_aladdin"
+        case "genie": key = "companion_hero_style_genie"
+        default: key = "companion_hero_style_unicorn"
+        }
+        let text = localizationManager.localized(key)
+        return text != key ? text : characterId
     }
 
     private func loadHub() async {

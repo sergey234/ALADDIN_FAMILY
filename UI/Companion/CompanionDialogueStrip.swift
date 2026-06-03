@@ -6,9 +6,11 @@ struct CompanionDialogueStrip: View {
 
     let messages: [CompanionChatBubble]
     let showResumeStream: Bool
+    let showVoiceReconnect: Bool
     let isSending: Bool
     let feedbackBusyId: UUID?
     let onResume: () -> Void
+    let onVoiceReconnect: () -> Void
     let onShowHistory: () -> Void
     let onFeedback: (Int, String) -> Void
     var onActionTap: ((CompanionSuggestedActionDTO) -> Void)? = nil
@@ -24,6 +26,16 @@ struct CompanionDialogueStrip: View {
                 .disabled(isSending)
                 .frame(maxWidth: .infinity, alignment: .center)
                 .accessibilityIdentifier("companion_resume_stream_button")
+            }
+            if showVoiceReconnect {
+                Button(action: onVoiceReconnect) {
+                    Label(localizationManager.localized("companion_conversation_resume_voice"), systemImage: "mic.circle.fill")
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.orange)
+                }
+                .disabled(isSending)
+                .frame(maxWidth: .infinity, alignment: .center)
+                .accessibilityIdentifier("companion_resume_voice_button")
             }
 
             if let user = penultimateUserLine {

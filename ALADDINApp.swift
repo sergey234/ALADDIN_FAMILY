@@ -216,12 +216,21 @@ struct ALADDINApp: App {
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
             UserDefaults.standard.synchronize()
         }
-        if ProcessInfo.processInfo.arguments.contains("-UITestCompanionSmoke") {
+        if ProcessInfo.processInfo.arguments.contains("-UITestCompanionSmoke")
+            || ProcessInfo.processInfo.arguments.contains("-UITestWellnessNavSmoke") {
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
             UserDefaults.standard.set("child", forKey: "current_user_role")
             UserDefaults.standard.set("2026-05-26", forKey: "companion_legal_ack_version")
             UserDefaults.standard.set(true, forKey: "companion_mic_coach_seen")
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.aiDataSharingEnabled)
+            UserDefaults.standard.synchronize()
+        }
+        if ProcessInfo.processInfo.arguments.contains("-UITestWellnessNavSmoke") {
+            UserDefaults.standard.set(true, forKey: "wellness_consent_accepted_v1")
+            UserDefaults.standard.set("humanistic", forKey: "wellness_active_pillar")
+            UserDefaults.standard.set("humanistic", forKey: "wellness_exercise_pillar")
+            UserDefaults.standard.set("teen", forKey: "wellness_age_band_cache")
+            WellnessOfflineStore.seedNavSmokeFixtures()
             UserDefaults.standard.synchronize()
         }
         print("🚀 ALADDIN_APP: Application starting...")
@@ -359,8 +368,12 @@ struct ALADDINApp: App {
                             && !ProcessInfo.processInfo.arguments.contains("-UITestCompanionHome")) {
                         navManager.currentScreen = .childInterface
                     }
-                    if ProcessInfo.processInfo.arguments.contains("-UITestCompanionHome") {
+                    if ProcessInfo.processInfo.arguments.contains("-UITestCompanionHome")
+                        || ProcessInfo.processInfo.arguments.contains("-UITestWellnessNavSmoke") {
                         navManager.currentScreen = .companionHome
+                    }
+                    if ProcessInfo.processInfo.arguments.contains("-UITestWellnessNavSmoke") {
+                        navManager.companionHomeTargetTab = 1
                     }
                     consumePendingMagicAuthTokenIfNeeded()
                     LaunchDiagnostics.appendStartupTrace("initializeNavigation finished; currentScreen=\(navigationManager.currentScreen.rawValue)")

@@ -58,15 +58,15 @@ def list_reflective_modes(*, locale: str = "ru") -> List[Dict[str, str]]:
     loc = (locale or "ru").lower()[:2]
     if loc == "en":
         return [
-            {"id": "presence", "label": "Stay with me", "hint": "Switches to humanistic pillar"},
-            {"id": "deep_explore", "label": "Explore deeply", "hint": "Jung + reflective"},
+            {"id": "presence", "label": "Stay with me", "hint": "Opens Accept yourself in hero chat"},
+            {"id": "deep_explore", "label": "Explore deeply", "hint": "Symbols and metaphors — not a medical conclusion"},
             {"id": "structured_view", "label": "Outside view", "hint": "Facts vs interpretations"},
             {"id": "blind_spots", "label": "Blind spots", "hint": "Gentle patterns"},
             {"id": "single_question", "label": "One question only", "hint": "No lecture"},
         ]
     return [
-        {"id": "presence", "label": "Побудь рядом", "hint": "Переключит на столп «Принять себя»"},
-        {"id": "deep_explore", "label": "Разбери глубоко", "hint": "Jung + reflective"},
+        {"id": "presence", "label": "Побудь рядом", "hint": "Откроет «Принять себя» в чате с героем"},
+        {"id": "deep_explore", "label": "Разбери глубоко", "hint": "Образы и метафоры — не медицинский вывод"},
         {"id": "structured_view", "label": "Взгляд со стороны", "hint": "Факты и интерпретации"},
         {"id": "blind_spots", "label": "Слепые зоны", "hint": "Мягко про паттерны"},
         {"id": "single_question", "label": "Только вопрос", "hint": "Без нравоучений"},

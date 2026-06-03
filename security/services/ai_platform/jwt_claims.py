@@ -19,8 +19,23 @@ DEFAULT_LIMITS_BY_LEVEL: Dict[str, Dict[str, int]] = {
 
 
 def infer_age_band(token_data: dict) -> str:
+    role = str(
+        token_data.get("family_role")
+        or token_data.get("role")
+        or token_data.get("member_role")
+        or ""
+    ).strip().lower()
+    if role in ("parent", "guardian", "mother", "father", "родитель"):
+        return "parent"
+    if role in ("elderly", "senior", "grandparent", "пожилой", "люди 60+"):
+        return "senior"
+    if role in ("teen", "teenager", "подросток"):
+        return "teen"
+    if role in ("child", "kid", "ребенок", "ребёнок"):
+        return "child"
+
     explicit = token_data.get("age_band")
-    if explicit in ("child", "teen", "parent", "adult_app"):
+    if explicit in ("child", "teen", "parent", "senior", "adult_app"):
         return explicit
     if token_data.get("type") in ("device_auth", "device_refresh"):
         return "child"
