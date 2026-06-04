@@ -647,6 +647,8 @@ private let logger = MasterLogger.shared
     func patch<T: Decodable, B: Encodable>(
         endpoint: String,
         body: B,
+        requiresAuth: Bool = true,
+        extraHeaders: [String: String]? = nil,
         completion: @escaping (Result<T, Error>) -> Void
     ) {
         let fullURL = baseURL + endpoint
@@ -656,6 +658,15 @@ private let logger = MasterLogger.shared
         // Проверяем и обновляем токен если нужно
         Task {
             _ = await JWTTokenManager.shared.refreshTokenIfNeeded()
+
+            if requiresAuth {
+                let category = determineCategory(for: endpoint)
+                guard JWTCircuitBreaker.shared.shouldAllowRequest(for: category) else {
+                    logger.error("🚫 DEFENSIVE JWT: Circuit Breaker active - blocking PATCH to \(endpoint)")
+                    completion(.failure(NetworkError.circuitBreakerActive("Сервер временно недоступен. Повторите попытку позже.")))
+                    return
+                }
+            }
             
             guard let url = URL(string: fullURL) else {
                 print("❌ NetworkManager.patch: Неверный URL: \(fullURL)")
@@ -686,6 +697,12 @@ private let logger = MasterLogger.shared
             if let token = AppConfig.authToken {
                 request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
             }
+
+            if let extraHeaders = extraHeaders {
+                for (field, value) in extraHeaders {
+                    request.setValue(value, forHTTPHeaderField: field)
+                }
+            }
             
             // Encode body
             do {
@@ -697,7 +714,7 @@ private let logger = MasterLogger.shared
                 return
             }
             
-            performRequest(request: request, requiresAuth: false, completion: completion)
+            performRequest(request: request, requiresAuth: requiresAuth, completion: completion)
         }
     }
     
