@@ -138,13 +138,28 @@ final class ContentRecommender {
             let progressScore = DifficultyAdapter.shared.progressScore(for: progress)
             let difficulty = DifficultyAdapter.shared.difficulty(for: item, progress: progress)
             var reasons: [String] = []
+            var boostedInterest = interest
             if interest > 0 { reasons.append("interest_match") }
             if (progress?.completionPercent ?? 0) < 100 { reasons.append("unfinished_content") }
             reasons.append("difficulty_\(difficulty.rawValue)")
+            if MnemoCategoryChrome.isMnemoCategory(item.categoryId, ageGroup: .school)
+                || MnemoCategoryChrome.isMnemoCategory(item.categoryId, ageGroup: .kids)
+                || MnemoCategoryChrome.isMnemoCategory(item.categoryId, ageGroup: .teen)
+                || MnemoCategoryChrome.isMnemoCategory(item.categoryId, ageGroup: .youngAdult) {
+                let due = MnemonicSRSStore.shared.dueToday(category: item.categoryId)
+                if due > 0 {
+                    boostedInterest += min(3, due)
+                    reasons.append("mnemo_srs_due")
+                }
+            }
+            if item.id == "games.05", UserDefaults.standard.bool(forKey: "child.mnemo.study.failed") {
+                boostedInterest += 3
+                reasons.append("mnemo_study_fail_boost")
+            }
             return ContentRecommendation(
                 id: item.id,
                 item: item,
-                interestScore: interest,
+                interestScore: boostedInterest,
                 progressScore: progressScore,
                 difficulty: difficulty,
                 reasons: reasons

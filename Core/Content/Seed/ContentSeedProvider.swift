@@ -96,7 +96,7 @@ final class ContentSeedProvider {
                             title: title,
                             subtitle: "Контент-пакет фазы 2",
                             description: "Элемент категории \(category.id)",
-                            tags: ["phase2", "seed", category.id],
+                            tags: seedTags(for: category.id),
                             estimatedDurationSec: 300 + index * 60
                         ),
                         payloadURL: nil,
@@ -116,6 +116,25 @@ final class ContentSeedProvider {
             categories: categories,
             items: items
         )
+    }
+
+    private static let mnemoSeedCategoryIds: Set<String> = [
+        ChildCategoryKey.songs,
+        ChildCategoryKey.games,
+        ChildCategoryKey.study,
+        ChildCategoryKey.cartoons,
+        ChildCategoryKey.music,
+        ChildCategoryKey.video,
+        ChildCategoryKey.movies,
+        ChildCategoryKey.education
+    ]
+
+    private func seedTags(for categoryId: String) -> [String] {
+        var tags = ["phase2", "seed", categoryId]
+        if Self.mnemoSeedCategoryIds.contains(categoryId) {
+            tags.append("mnemo")
+        }
+        return tags
     }
 
     private func inferredType(for category: String) -> ContentItemType {

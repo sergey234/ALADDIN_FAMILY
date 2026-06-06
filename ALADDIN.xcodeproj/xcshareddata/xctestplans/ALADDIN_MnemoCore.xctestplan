@@ -1,0 +1,54 @@
+{
+  "configurations" : [
+    {
+      "id" : "MNEMO-CORE-0001-0000-0000-000000000001",
+      "name" : "MnemoCore Unit",
+      "options" : {
+        "targetForVariableExpansion" : {
+          "containerPath" : "container:ALADDIN.xcodeproj",
+          "identifier" : "A0FFFFFD",
+          "name" : "ALADDIN"
+        }
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "enabled" : true,
+      "target" : {
+        "containerPath" : "container:ALADDIN.xcodeproj",
+        "identifier" : "B5001000",
+        "name" : "ALADDINUnitTests"
+      },
+      "selectedTests" : {
+        "suites" : [
+          {
+            "name" : "MnemonicSRSStoreTests"
+          },
+          {
+            "name" : "MnemonicBaselineAssessmentTests"
+          },
+          {
+            "name" : "MnemonicCapstoneStoreTests"
+          },
+          {
+            "name" : "MnemonicChampionshipStoreTests"
+          },
+          {
+            "name" : "MnemonicPictogramStoreTests"
+          },
+          {
+            "name" : "MnemonicTableEngineTests"
+          },
+          {
+            "name" : "MnemoCoreV3Tests"
+          }
+        ]
+      }
+    }
+  ],
+  "version" : 1
+}

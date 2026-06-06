@@ -139,11 +139,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "224"
+    static let buildNumber = "225"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "224"
+    static let minimumClientBuildForApiContract = "225"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -761,6 +761,8 @@ extension AppConfig {
         static let darkWebServerScanEnabled = "dark_web_server_scan_enabled"
         /// P0: opt-in отправки текста вопросов на сервер AI (по умолчанию выключено).
         static let aiDataSharingEnabled = "ai_data_sharing_enabled"
+        /// AIL: adaptive immersive hero on Companion «Главное» (default on).
+        static let companionHeroImmersiveLayoutEnabled = "companion_hero_immersive_layout_enabled"
         /// Черновик из диктофона → AI Помощник.
         static let pendingAIAssistantDraftMessage = "pending_ai_assistant_draft_message"
     }
@@ -768,6 +770,14 @@ extension AppConfig {
     /// Opt-in: облачный AI-ассистент (текст уходит на aladdin-ai.ru после redact).
     static var isAIDataSharingEnabled: Bool {
         UserDefaults.standard.bool(forKey: UserDefaultsKeys.aiDataSharingEnabled)
+    }
+
+    /// AIL §6.2b: adaptive hero layout (standard / focused / immersive). `false` → только 0.56/0.28.
+    static var heroImmersiveLayoutEnabled: Bool {
+        if UserDefaults.standard.object(forKey: UserDefaultsKeys.companionHeroImmersiveLayoutEnabled) != nil {
+            return UserDefaults.standard.bool(forKey: UserDefaultsKeys.companionHeroImmersiveLayoutEnabled)
+        }
+        return true
     }
 
     /// Продуктовый рубильник: серверные POST сканирования Dark Web (`/api/reports/dark-web/scan/*`).

@@ -20,6 +20,7 @@ struct ParentDashboardView: View {
     @State private var roiRows: [ParentROIRow] = []
     @State private var digestAutoLines: [String] = []
     @State private var pendingExtensionRequestCount: Int = 0
+    @State private var showMnemoParentGuide = false
 
     var body: some View {
         NavigationView {
@@ -60,6 +61,10 @@ struct ParentDashboardView: View {
 
                 activityDigestSection
                 learnedPanelSection
+                mnemoMasterySection
+                mnemoSemesterProgressSection
+                mnemoMQTrendSection
+                mnemoTechniqueMasterySection
                 masteryLevelsSection
                 roiSection
                 autoDigestSection
@@ -186,6 +191,10 @@ struct ParentDashboardView: View {
                 UnifiedTimeLimitsScreen()
                     .environmentObject(localizationManager)
             }
+            .sheet(isPresented: $showMnemoParentGuide) {
+                MnemoParentGuideSheet()
+                    .environmentObject(localizationManager)
+            }
             .onChange(of: showUnifiedTimeLimits) { isVisible in
                 if !isVisible {
                     pendingExtensionRequestCount = ChildTimeExtensionRequestStore.shared.pendingRequest() == nil ? 0 : 1
@@ -275,6 +284,83 @@ struct ParentDashboardView: View {
         .background(Color.white.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 12))
         .accessibilityIdentifier("parent_dashboard_learned_panel")
+    }
+
+    private var mnemoMasterySection: some View {
+        let percent = MnemonicSkillTracker.shared.masteryPercent()
+        let level = MnemonicSkillTracker.shared.currentLevel()
+        let pictogramCount = MnemonicPictogramStore.shared.pictogramCount(
+            childId: MnemonicPictogramStore.activeChildId()
+        )
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized(MnemoBrandChrome.parentSmartTitleKey))
+                .font(.system(size: 18, weight: .semibold))
+            Text(localizationManager.localized(MnemoBrandChrome.parentSmartSubtitleKey))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white.opacity(0.78))
+            Text(
+                String(
+                    format: localizationManager.localized("parent_dashboard_mnemo_mastery_percent"),
+                    percent
+                )
+            )
+            .font(.system(size: 14, weight: .semibold))
+            Text(localizationManager.localized(level.localizationKey))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white.opacity(0.8))
+            Text(
+                String(
+                    format: localizationManager.localized("parent_dashboard_mnemo_pictogram_count"),
+                    pictogramCount
+                )
+            )
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundColor(.white.opacity(0.88))
+            .accessibilityIdentifier("parent_dashboard_mnemo_pictogram_count")
+            Text(localizationManager.localized(MnemoBrandChrome.promiseKey))
+                .font(.system(size: 11, weight: .medium))
+                .foregroundColor(.white.opacity(0.65))
+            Button(localizationManager.localized("parent_mnemo_guide_open_cta")) {
+                showMnemoParentGuide = true
+            }
+            .font(.system(size: 14, weight: .semibold))
+            .padding(.top, 6)
+            .accessibilityIdentifier("parent_dashboard_mnemo_guide_open")
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(10)
+        .background(Color.white.opacity(0.08))
+        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .accessibilityIdentifier("parent_dashboard_mnemo_mastery")
+    }
+
+    private var mnemoSemesterProgressSection: some View {
+        let childId = MnemonicBaselineAssessment.activeChildId()
+        let progress = MnemonicCurriculumSpine.shared.nextSemesterUnlockProgress(childId: childId)
+        return MnemoParentSemesterProgressView(
+            localizationManager: localizationManager,
+            progress: progress
+        )
+    }
+
+    private var mnemoMQTrendSection: some View {
+        let childId = MnemonicBaselineAssessment.activeChildId()
+        let assessment = MnemonicBaselineAssessment.shared
+        return MnemoParentMQTrendView(
+            localizationManager: localizationManager,
+            points: assessment.trendPoints(childId: childId),
+            latestMQ: assessment.latestMemoryQuotient(childId: childId),
+            delta: assessment.memoryQuotientDelta(childId: childId)
+        )
+    }
+
+    private var mnemoTechniqueMasterySection: some View {
+        MnemoParentTechniqueMasteryView(
+            localizationManager: localizationManager,
+            rows: MnemoParentTechniqueMasterySnapshot.rows(
+                childId: MnemonicBaselineAssessment.activeChildId()
+            )
+        )
     }
 
     private var masteryLevelsSection: some View {

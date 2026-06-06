@@ -198,26 +198,13 @@ struct ChildInterfaceScreen: View {
             }
             .buttonStyle(PlainButtonStyle())
             
-            // Приветствие
-            VStack(alignment: .leading, spacing: 2) {
-                Text(greetingTitle)
-                    .font(.title)
-                    .foregroundColor(.white)
-
-                HStack(spacing: 8) {
-                    Text(protectedBaseTitle)
-                        .font(.body)
-                        .foregroundColor(.white.opacity(0.9))
-
-                    Text(ageBadgeTitle)
-                        .font(.caption.weight(.semibold))
-                        .foregroundColor(.white)
-                        .padding(.horizontal, 8)
-                        .padding(.vertical, 4)
-                        .background(Color.white.opacity(0.2))
-                        .clipShape(Capsule())
-                }
-            }
+            // Приветствие — одна строка на всех возрастах
+            Text(localizationManager.localized("child_interface_greeting_hi"))
+                .font(.title)
+                .foregroundColor(.white)
+                .lineLimit(1)
+                .minimumScaleFactor(0.8)
+                .accessibilityLabel(localizationManager.localized("child_interface_greeting_hi"))
             
             Spacer()
             
@@ -448,7 +435,7 @@ struct ChildInterfaceScreen: View {
                     }
                 }
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "🎵", title: localizationManager.localized(ChildCategoryKey.songs), color: Color.purple) {
+                    bigChildButton(icon: "🎵", title: mnemonicCategoryTitle(for: ChildCategoryKey.songs), color: Color.purple) {
                         navigateToContent(category: ChildCategoryKey.songs)
                     }
                     bigChildButton(icon: "📖", title: localizationManager.localized(ChildCategoryKey.stories), color: Color.blue) {
@@ -458,10 +445,10 @@ struct ChildInterfaceScreen: View {
             case .school:
                 // Для школьников 7-12 лет: учёба и развлечения
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "🎮", title: localizationManager.localized(ChildCategoryKey.games), color: Color.green) {
+                    bigChildButton(icon: "🎮", title: mnemonicCategoryTitle(for: ChildCategoryKey.games), color: Color.green) {
                         navigateToContent(category: ChildCategoryKey.games)
                     }
-                    bigChildButton(icon: "📚", title: localizationManager.localized(ChildCategoryKey.study), color: Color.blue) {
+                    bigChildButton(icon: "📚", title: mnemonicCategoryTitle(for: ChildCategoryKey.study), color: Color.blue) {
                         navigateToContent(category: ChildCategoryKey.study)
                     }
                 }
@@ -469,7 +456,7 @@ struct ChildInterfaceScreen: View {
                     bigChildButton(icon: "🛡️", title: localizationManager.localized(FamilyContentSafetyBridge.safetyTitleKey), color: Color.cyan) {
                         showChildInstructions = true
                     }
-                    bigChildButton(icon: "📺", title: localizationManager.localized(ChildCategoryKey.cartoons), color: Color.red) {
+                    bigChildButton(icon: "📺", title: mnemonicCategoryTitle(for: ChildCategoryKey.cartoons), color: Color.red) {
                         navigateToContent(category: ChildCategoryKey.cartoons)
                     }
                 }
@@ -493,12 +480,12 @@ struct ChildInterfaceScreen: View {
                     bigChildButton(icon: "📱", title: localizationManager.localized(ChildCategoryKey.social), color: Color.purple) {
                         navigateToContent(category: ChildCategoryKey.social)
                     }
-                    bigChildButton(icon: "🎵", title: localizationManager.localized(ChildCategoryKey.music), color: Color.orange) {
+                    bigChildButton(icon: "🎵", title: mnemonicCategoryTitle(for: ChildCategoryKey.music), color: Color.orange) {
                         navigateToContent(category: ChildCategoryKey.music)
                     }
                 }
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "📺", title: localizationManager.localized(ChildCategoryKey.video), color: Color.red) {
+                    bigChildButton(icon: "📺", title: mnemonicCategoryTitle(for: ChildCategoryKey.video), color: Color.red) {
                         navigateToContent(category: ChildCategoryKey.video)
                     }
                     Spacer()
@@ -509,7 +496,7 @@ struct ChildInterfaceScreen: View {
                     bigChildButton(icon: "🛡️", title: localizationManager.localized(FamilyContentSafetyBridge.safetyTitleKey), color: Color.cyan) {
                         navigationManager.navigateTo(.securityEducation)
                     }
-                    bigChildButton(icon: "🎓", title: localizationManager.localized(ChildCategoryKey.education), color: Color.blue) {
+                    bigChildButton(icon: "🎓", title: mnemonicCategoryTitle(for: ChildCategoryKey.education), color: Color.blue) {
                         navigateToContent(category: ChildCategoryKey.education)
                     }
                 }
@@ -522,7 +509,7 @@ struct ChildInterfaceScreen: View {
                     }
                 }
                 HStack(spacing: 12) {
-                    bigChildButton(icon: "🎬", title: localizationManager.localized(ChildCategoryKey.movies), color: Color.orange) {
+                    bigChildButton(icon: "🎬", title: mnemonicCategoryTitle(for: ChildCategoryKey.movies), color: Color.orange) {
                         navigateToContent(category: ChildCategoryKey.movies)
                     }
                     Spacer()
@@ -602,28 +589,17 @@ struct ChildInterfaceScreen: View {
         .padding(.horizontal, 20)
     }
 
+    // MARK: - Mnemo Academy labels
+
+    private func mnemonicCategoryTitle(for category: String) -> String {
+        MnemoCategoryChrome.displayTitle(
+            category: category,
+            ageGroup: selectedAge,
+            localization: localizationManager
+        )
+    }
+
     // MARK: - User Name Management
-
-    private var greetingTitle: String {
-        localizationManager.currentLanguage == .russian ? "Привет!" : "Hi!"
-    }
-
-    private var protectedBaseTitle: String {
-        localizationManager.currentLanguage == .russian ? "Ты под защитой!" : "You're protected!"
-    }
-
-    private var ageBadgeTitle: String {
-        switch selectedAge {
-        case .kids:
-            return localizationManager.currentLanguage == .russian ? "ребенок 1-6" : "child 1-6"
-        case .school:
-            return localizationManager.currentLanguage == .russian ? "ребенок 7-12" : "child 7-12"
-        case .teen:
-            return localizationManager.currentLanguage == .russian ? "подросток 13-17" : "teen 13-17"
-        case .youngAdult:
-            return localizationManager.currentLanguage == .russian ? "молодой взрослый 18-23" : "young adult 18-23"
-        }
-    }
 
     private func getUserName() -> String {
         // ВРЕМЕННО: Используем заглушку вместо UserProfileManager

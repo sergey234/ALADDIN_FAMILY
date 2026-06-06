@@ -57,6 +57,7 @@ struct ChildContentScreen: View {
     @State private var teenArtifactTarget: Int = 2
     @State private var teenLastArtifactKey: String = "child_creative_output_v2_none"
     @State private var extensionRequestStatus: String?
+    @State private var showMnemoBaselineAssessment = false
     
     // MARK: - Body
     
@@ -80,6 +81,23 @@ struct ChildContentScreen: View {
                             timeLimitBannerCard
                         }
                         
+                        if isMnemoAcademyCategory {
+                            MnemoAcademyBannerView(
+                                ageGroup: ageGroup,
+                                localizationManager: localizationManager,
+                                activeSemester: mnemoActiveSemester,
+                                activeSemesterWeek: mnemoActiveSemesterWeek,
+                                dueTodayCount: mnemoDueTodayCount,
+                                onOpenFirstDue: openFirstDueMnemoItem
+                            )
+                            if !mnemoCategoryGate.isAccessible {
+                                mnemoSemesterLockBanner
+                            }
+                            if mnemoBaselineOfferKind != nil {
+                                mnemoBaselineOfferCard
+                            }
+                        }
+
                         // Специфичный контент для каждой категории
                         categoryContent
                         
@@ -101,7 +119,20 @@ struct ChildContentScreen: View {
             .environmentObject(navigationManager)
             .environmentObject(localizationManager)
         }
+        .sheet(isPresented: $showMnemoBaselineAssessment) {
+            MnemoBaselineAssessmentView()
+                .environmentObject(localizationManager)
+        }
         .accessibilityIdentifier("aladdin_root_child_content")
+        .onAppear {
+            MnemoLessonFlow.persistActiveAgeGroup(ageGroup)
+        }
+        .onChange(of: navigationManager.pendingMnemoOpenItemId) { _ in
+            tryOpenPendingMnemoItem()
+        }
+        .onChange(of: navigationManager.pendingMnemoOpenFirstDue) { _ in
+            tryOpenPendingMnemoItem()
+        }
     }
     
     // MARK: - Background Gradient
@@ -128,7 +159,104 @@ struct ChildContentScreen: View {
     }
     
     private var localizedCategoryTitle: String {
-        localizationManager.localized(category)
+        MnemoCategoryChrome.displayTitle(
+            category: category,
+            ageGroup: ageGroup,
+            localization: localizationManager
+        )
+    }
+
+    private var isMnemoAcademyCategory: Bool {
+        MnemoCategoryChrome.isMnemoCategory(category, ageGroup: ageGroup)
+    }
+
+    private var mnemoDueTodayCount: Int {
+        MnemonicSRSStore.shared.dueToday(category: category)
+    }
+
+    private var mnemoActiveSemester: MnemonicCurriculumSpine.Semester? {
+        let index = MnemonicCurriculumSpine.shared.activeSemesterIndex()
+        return MnemonicCurriculumSpine.shared.semester(at: index)
+    }
+
+    private var mnemoActiveSemesterWeek: Int {
+        guard let semester = mnemoActiveSemester else { return 1 }
+        return MnemonicCurriculumSpine.shared.currentWeek(in: semester.index)
+    }
+
+    private var mnemoCategoryGate: MnemonicCurriculumSpine.SemesterGate {
+        MnemonicCurriculumSpine.shared.gate(for: category)
+    }
+
+    private var mnemoBaselineOfferKind: MnemonicBaselineAssessment.OfferKind? {
+        MnemonicBaselineAssessment.shared.offerKind(
+            childId: MnemonicBaselineAssessment.activeChildId()
+        )
+    }
+
+    private var mnemoBaselineOfferCard: some View {
+        let isRetest = mnemoBaselineOfferKind == .quarterlyRetest
+        return VStack(alignment: .leading, spacing: 8) {
+            Text(
+                localizationManager.localized(
+                    isRetest
+                        ? "child_mnemo_baseline_retest_offer_title"
+                        : "child_mnemo_baseline_offer_title"
+                )
+            )
+                .font(.system(size: 15, weight: .bold))
+                .foregroundColor(.white)
+            Text(
+                localizationManager.localized(
+                    isRetest
+                        ? "child_mnemo_baseline_retest_offer_subtitle"
+                        : "child_mnemo_baseline_offer_subtitle"
+                )
+            )
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white.opacity(0.85))
+            Button(
+                localizationManager.localized(
+                    isRetest ? "child_mnemo_baseline_retest_cta" : "child_mnemo_baseline_cta"
+                )
+            ) {
+                showMnemoBaselineAssessment = true
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(.yellow)
+            .accessibilityIdentifier("child_mnemo_baseline_cta")
+        }
+        .padding(14)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.white.opacity(0.14))
+        )
+        .accessibilityIdentifier("child_mnemo_baseline_offer_card")
+    }
+
+    private var mnemoSemesterLockBanner: some View {
+        let spine = MnemonicCurriculumSpine.shared
+        let gate = mnemoCategoryGate
+        let priorSemester = spine.semester(at: max(0, gate.requiredSemesterIndex - 1))
+        let priorTitle = priorSemester.map { localizationManager.localized($0.titleKey) } ?? ""
+        return MnemoSemesterLockView(
+            title: localizationManager.localized("child_mnemo_semester_locked_title"),
+            subtitle: String(
+                format: localizationManager.localized("child_mnemo_semester_locked_subtitle"),
+                priorTitle
+            ),
+            progressLine: String(
+                format: localizationManager.localized("child_mnemo_semester_locked_progress"),
+                gate.priorMasteryPercent,
+                gate.unlockThresholdPercent
+            )
+        )
+    }
+
+    private func mnemoItemIsLocked(_ itemId: String) -> Bool {
+        guard isMnemoAcademyCategory else { return false }
+        return !MnemonicCurriculumSpine.shared.itemGate(forItemId: itemId, category: category).isAccessible
     }
 
     // MARK: - Data Loading
@@ -164,7 +292,38 @@ struct ChildContentScreen: View {
             loadCreativeOutputState()
             loadTeenJourneyState()
             loadTeenCreativeOutputState()
+            tryOpenPendingMnemoItem()
         }
+    }
+
+    private func tryOpenPendingMnemoItem() {
+        guard loadPhase == .ready else { return }
+
+        let targetItemId: String?
+        if let pending = navigationManager.pendingMnemoOpenItemId {
+            navigationManager.pendingMnemoOpenItemId = nil
+            targetItemId = pending
+        } else if navigationManager.pendingMnemoOpenFirstDue {
+            navigationManager.pendingMnemoOpenFirstDue = false
+            targetItemId = MnemonicSRSStore.shared.dueItems(category: category).first
+        } else {
+            return
+        }
+
+        guard let targetItemId,
+              !mnemoItemIsLocked(targetItemId),
+              let item = contentItems.first(where: { $0.id == targetItemId }),
+              let route = ContentExperienceResolver.shared.resolve(for: item) else { return }
+
+        selectedExperience = ContentExperiencePresentation(item: item, route: route)
+    }
+
+    private func openFirstDueMnemoItem() {
+        guard let itemId = MnemonicSRSStore.shared.dueItems(category: category).first,
+              !mnemoItemIsLocked(itemId),
+              let item = contentItems.first(where: { $0.id == itemId }),
+              let route = ContentExperienceResolver.shared.resolve(for: item) else { return }
+        selectedExperience = ContentExperiencePresentation(item: item, route: route)
     }
 
     private func loadContentPass(forceRefresh: Bool) async -> (items: [ContentItem], progressById: [String: ContentProgress])? {
@@ -213,10 +372,42 @@ struct ChildContentScreen: View {
                 Text(ageGroup.title(localizationManager: localizationManager))
                     .font(.system(size: 14, weight: .medium))
                     .foregroundColor(.white.opacity(0.8))
+
+                if isMnemoAcademyCategory {
+                    Text(MnemoBrandChrome.brandTitle(ageGroup: ageGroup, localization: localizationManager))
+                        .font(.system(size: 12, weight: .bold))
+                        .foregroundColor(.yellow.opacity(0.95))
+                        .accessibilityIdentifier("child_mnemo_brand_title")
+                }
                 
                 Text(localizedCategoryTitle)
                     .font(.system(size: 22, weight: .bold))
                     .foregroundColor(.white)
+
+                if isMnemoAcademyCategory {
+                    Text(MnemoBrandChrome.brandTagline(ageGroup: ageGroup, localization: localizationManager))
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.9))
+                        .accessibilityIdentifier("child_mnemo_brand_tagline")
+
+                    if let techniqueSubtitle = MnemoCategoryChrome.displaySubtitle(
+                        category: category,
+                        ageGroup: ageGroup,
+                        localization: localizationManager
+                    ) {
+                        Text(techniqueSubtitle)
+                            .font(.system(size: 12, weight: .medium))
+                            .foregroundColor(.white.opacity(0.75))
+                    }
+                } else if let subtitle = MnemoCategoryChrome.displaySubtitle(
+                    category: category,
+                    ageGroup: ageGroup,
+                    localization: localizationManager
+                ) {
+                    Text(subtitle)
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundColor(.white.opacity(0.85))
+                }
             }
             
             Spacer()
@@ -269,7 +460,62 @@ struct ChildContentScreen: View {
         }
     }
     
+    private var mnemoSkillLevel: MnemonicSkillLevel {
+        MnemonicSkillTracker.shared.currentLevel()
+    }
+
+    private var mnemoJourneyStopIndex: Int {
+        let recalls = MnemonicSkillTracker.shared.successfulRecallCount()
+        return min(MnemonicJourneyPath.stopCount, max(1, (recalls % MnemonicJourneyPath.stopCount) + 1))
+    }
+
+    private var mnemoSkillLevelCard: some View {
+        HStack(spacing: 10) {
+            Text(MnemoMemoryHeroChrome.isEnabled ? MnemoMemoryHeroChrome.heroEmoji(for: mnemoSkillLevel) : "🦄")
+                .font(.system(size: 28))
+                .accessibilityIdentifier("child_mnemo_hero_avatar")
+            VStack(alignment: .leading, spacing: 4) {
+                Text(
+                    localizationManager.localized(
+                        MnemoMemoryHeroChrome.isEnabled
+                            ? "child_mnemo_hero_card_title"
+                            : "child_mnemo_journey_title"
+                    )
+                )
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundColor(.white)
+                Text(
+                    String(
+                        format: localizationManager.localized("child_mnemo_journey_stop_current"),
+                        MnemonicJourneyPath.stopTitle(index: mnemoJourneyStopIndex, localization: localizationManager)
+                    )
+                )
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white.opacity(0.85))
+                Text(
+                    localizationManager.localized(
+                        MnemoMemoryHeroChrome.isEnabled
+                            ? MnemoMemoryHeroChrome.heroLabelKey(for: mnemoSkillLevel)
+                            : mnemoSkillLevel.localizationKey
+                    )
+                )
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.yellow)
+            }
+            Spacer()
+        }
+        .padding(14)
+        .background(
+            RoundedRectangle(cornerRadius: 14)
+                .fill(Color.purple.opacity(0.35))
+        )
+        .accessibilityIdentifier("child_mnemo_skill_level_card")
+    }
+
     private var greetingEmoji: String {
+        if isMnemoAcademyCategory {
+            return "🧠"
+        }
         // Используем только локализованные значения
         if category == ChildCategoryKey.toys {
             return "🧸"
@@ -300,6 +546,14 @@ struct ChildContentScreen: View {
     }
     
     private var greetingText: String {
+        if isMnemoAcademyCategory,
+           let mnemoGreeting = MnemoCategoryChrome.catalogGreeting(
+            category: category,
+            ageGroup: ageGroup,
+            localization: localizationManager
+           ) {
+            return mnemoGreeting
+        }
         // Используем только локализованные значения
         if category == "child_interface_category_games" {
             return localizationManager.localized("child_game_greeting")
@@ -342,12 +596,26 @@ struct ChildContentScreen: View {
                 childContentEmptyView
             case .ready:
                 VStack(spacing: 14) {
-                    childDailyJourneyCard
-                    if ageGroup == .school {
-                        schoolJourneyPacingCard
-                    }
-                    if ageGroup == .teen || ageGroup == .youngAdult {
-                        teenJourneyAutonomyCard
+                    if isMnemoAcademyCategory {
+                        mnemoSkillLevelCard
+                        if MnemoFeatureFlags.familyMemoryChallenge {
+                            MnemoFamilyMemoryChallengeCard()
+                        }
+                        if MnemoFeatureFlags.companionVoiceReminder {
+                            MnemoCompanionSRSReminderCard(dueCount: mnemoDueTodayCount)
+                        }
+                        if MnemoFeatureFlags.advancedNumberPegs,
+                           ageGroup == .teen || ageGroup == .youngAdult {
+                            MnemoAdvancedNumberPegsCard()
+                        }
+                    } else {
+                        childDailyJourneyCard
+                        if ageGroup == .school {
+                            schoolJourneyPacingCard
+                        }
+                        if ageGroup == .teen || ageGroup == .youngAdult {
+                            teenJourneyAutonomyCard
+                        }
                     }
                     rewardProgressCard
                     if ageGroup == .kids {
@@ -849,7 +1117,8 @@ struct ChildContentScreen: View {
             ForEach(displayedContentItems, id: \.id) { item in
                 let pct = min(100, max(0, progressById[item.id]?.completionPercent ?? 0))
                 let resolvedTitle = localizedContentTitle(for: item)
-                AnimatedButton(tone: animatedTone(for: item), haptics: true, playsSound: true) {
+                let itemLocked = mnemoItemIsLocked(item.id)
+                AnimatedButton(tone: animatedTone(for: item), haptics: true, playsSound: !itemLocked) {
                     let result = await trackContentOpen(item)
                     await MainActor.run {
                         switch result {
@@ -869,6 +1138,7 @@ struct ChildContentScreen: View {
                             scheduleMascotReset(to: mascotEmotion, activity: .idle, delay: 0.45)
                         }
                         if result != .error,
+                           !itemLocked,
                            let route = ContentExperienceResolver.shared.resolve(for: item) {
                             selectedExperience = ContentExperiencePresentation(
                                 item: item,
@@ -901,30 +1171,54 @@ struct ChildContentScreen: View {
                                     .font(.system(size: 13, weight: .semibold))
                                     .foregroundColor(.white.opacity(0.9))
                             }
-                            HStack(spacing: 6) {
-                                Image(systemName: "hand.tap.fill")
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundColor(.cyan)
-                                Text(localizationManager.localized("child_content_tap_to_open"))
-                                    .font(.system(size: 11, weight: .semibold))
-                                    .foregroundColor(.cyan)
+                            if itemLocked {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "lock.fill")
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundColor(.yellow)
+                                    Text(localizationManager.localized("child_mnemo_semester_item_locked_hint"))
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundColor(.yellow.opacity(0.95))
+                                }
+                            } else {
+                                HStack(spacing: 6) {
+                                    Image(systemName: "hand.tap.fill")
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundColor(.cyan)
+                                    Text(localizationManager.localized("child_content_tap_to_open"))
+                                        .font(.system(size: 11, weight: .semibold))
+                                        .foregroundColor(.cyan)
+                                }
                             }
                         }
                         VStack(alignment: .trailing) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .font(.system(size: 22))
-                                .foregroundColor(isCompleted(item.id) ? .green : .white.opacity(0.4))
-                            Image(systemName: "chevron.right.circle.fill")
-                                .font(.system(size: 18, weight: .semibold))
-                                .foregroundColor(.cyan.opacity(0.9))
-                                .padding(.top, 8)
+                            if itemLocked {
+                                Image(systemName: "lock.circle.fill")
+                                    .font(.system(size: 22))
+                                    .foregroundColor(.yellow.opacity(0.9))
+                            } else {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .font(.system(size: 22))
+                                    .foregroundColor(isCompleted(item.id) ? .green : .white.opacity(0.4))
+                            }
+                            if !itemLocked {
+                                Image(systemName: "chevron.right.circle.fill")
+                                    .font(.system(size: 18, weight: .semibold))
+                                    .foregroundColor(.cyan.opacity(0.9))
+                                    .padding(.top, 8)
+                            }
                         }
                     }
                     .padding()
                     .background(
                         RoundedRectangle(cornerRadius: 12)
-                            .fill(Color.white.opacity(0.16))
+                            .fill(Color.white.opacity(itemLocked ? 0.08 : 0.16))
                     )
+                    .overlay(
+                        RoundedRectangle(cornerRadius: 12)
+                            .stroke(itemLocked ? Color.yellow.opacity(0.35) : Color.clear, lineWidth: 1)
+                    )
+                    .opacity(itemLocked ? 0.72 : 1)
                 }
                 .accessibilityLabel(resolvedTitle)
                 .accessibilityValue([progressText(for: item.id), lastOpenedDescription(for: item.id)].joined(separator: " · "))

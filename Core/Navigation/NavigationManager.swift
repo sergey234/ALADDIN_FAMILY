@@ -23,6 +23,12 @@ class NavigationManager: ObservableObject {
     /// Токен из `aladdin://bind?token=` или Universal Link — подставляется на экране присоединения.
     @Published var pendingDeviceBindToken: String? = nil
 
+    /// Child content catalog category + age when navigating via mnemo deep link / push.
+    @Published var childContentCategory: String = ChildCategoryKey.games
+    @Published var childContentAgeGroup: ChildInterfaceScreen.AgeGroup = .school
+    @Published var pendingMnemoOpenItemId: String? = nil
+    @Published var pendingMnemoOpenFirstDue: Bool = false
+
     /// Экран, на который возвращаемся из «Мир героев» (если стек навигации пуст/сброшен).
     @Published private(set) var companionReturnScreen: ALADDINScreen?
 
@@ -693,6 +699,16 @@ class NavigationManager: ObservableObject {
         var history = navigationStack.map { $0.displayName }
         history.append(currentScreen.displayName)
         return history
+    }
+
+    /// Opens mnemo catalog for SRS review (push / deep link / SRS badge).
+    func navigateToMnemoReview(category: String, openFirstDue: Bool = true, itemId: String? = nil) {
+        childContentCategory = category
+        childContentAgeGroup = MnemoDeepLinkRouter.ageGroup(for: category)
+        pendingMnemoOpenItemId = itemId
+        pendingMnemoOpenFirstDue = openFirstDue && itemId == nil
+        currentScreen = .childContent
+        appendLog("🧠 navigateToMnemoReview category=\(category) openFirstDue=\(openFirstDue)")
     }
     
     #if DEBUG

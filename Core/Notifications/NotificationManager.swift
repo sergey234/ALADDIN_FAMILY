@@ -52,6 +52,7 @@ class NotificationManager: NSObject, ObservableObject {
         // ✅ ИСПРАВЛЕНО: Синхронная инициализация (как в бэкапах - работало)
         checkAuthorizationStatus()
         loadSettings()
+        setupNotificationCategories()
         // ВРЕМЕННО ОТКЛЮЧЕНО: logger.business("NotificationManager initialized successfully")
         print("✅ NotificationManager initialized successfully")
     }
@@ -499,6 +500,19 @@ class NotificationManager: NSObject, ObservableObject {
             intentIdentifiers: [],
             options: []
         )
+
+        let mnemoCategory = UNNotificationCategory(
+            identifier: NotificationCategory.mnemo.rawValue,
+            actions: [
+                UNNotificationAction(
+                    identifier: "open_mnemo_review",
+                    title: "Повторить",
+                    options: [.foreground]
+                )
+            ],
+            intentIdentifiers: [],
+            options: []
+        )
         
         notificationCenter.setNotificationCategories([
             generalCategory,
@@ -506,7 +520,8 @@ class NotificationManager: NSObject, ObservableObject {
             familyCategory,
             networkProtectionCategory,
             aiCategory,
-            subscriptionCategory
+            subscriptionCategory,
+            mnemoCategory
         ])
     }
     
@@ -995,6 +1010,16 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             )
             return
         }
+
+        if let type = userInfo["type"] as? String, type == MnemonicNotificationScheduler.userInfoType {
+            let category = userInfo["category"] as? String ?? ChildCategoryKey.games
+            NotificationCenter.default.post(
+                name: NSNotification.Name("NavigateToMnemoReview"),
+                object: nil,
+                userInfo: ["category": category]
+            )
+            return
+        }
         
         // TODO: Обработка обычного нажатия
         print("📱 Default notification action triggered")
@@ -1011,6 +1036,7 @@ enum NotificationCategory: String, CaseIterable {
     case ai = "ai"
     case subscription = "subscription"
     case trial = "trial"
+    case mnemo = "mnemo"
 }
 
 struct NotificationSettings: Codable, Equatable {

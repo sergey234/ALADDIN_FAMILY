@@ -91,6 +91,16 @@ struct ChildContentExperienceScreen: View {
                                     : "child_accessibility_category_education"
                                 )
                             )
+                    } else if route == .lesson, item.categoryId == ChildCategoryKey.study, item.id == MnemonicCapstoneStore.itemId {
+                        MnemoStudyCapstoneExperienceView(item: item, onComplete: onComplete)
+                            .environmentObject(localizationManager)
+                            .accessibilityIdentifier("child_experience_category_study_capstone")
+                            .accessibilityLabel(localizationManager.localized("child_accessibility_category_study"))
+                    } else if route == .lesson, item.categoryId == ChildCategoryKey.study, item.id == MnemonicTableEngine.study09ItemId {
+                        MnemoTableExperienceView(item: item, onComplete: onComplete)
+                            .environmentObject(localizationManager)
+                            .accessibilityIdentifier("child_experience_category_study_table")
+                            .accessibilityLabel(localizationManager.localized("child_accessibility_category_study"))
                     } else if route == .lesson, item.categoryId == ChildCategoryKey.study {
                         StudyLessonTestExperienceView(item: item, onComplete: onComplete)
                             .environmentObject(localizationManager)
@@ -763,6 +773,49 @@ private struct EducationPathwayMilestone: Identifiable {
     let actionKey: String
 }
 
+private struct MnemoInlineRecallCard: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
+    let itemId: String
+    let promptKey: String
+    let optionKeys: [String]
+    let correctIndex: Int
+    let rewardEvent: MnemonicRewardEvent
+    let onComplete: () async -> Void
+
+    @State private var passed: Bool = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            if !passed {
+                MnemoHintLadderRecallView(
+                    localizationManager: localizationManager,
+                    itemId: itemId,
+                    attemptKey: "inline",
+                    prompt: localizationManager.localized(promptKey),
+                    options: optionKeys.map { localizationManager.localized($0) },
+                    correctIndex: correctIndex,
+                    pictogramRevision: 0,
+                    onSelectAnswer: { _ in
+                        passed = true
+                    }
+                )
+            } else {
+                Text(localizationManager.localized(rewardEvent.localizationKey))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.purple)
+                Button(localizationManager.localized("child_interface_done")) {
+                    MnemonicSRSStore.shared.recordSuccess(itemId: itemId)
+                    MnemonicRewardBridge.award(rewardEvent, itemId: itemId)
+                    MnemonicSkillTracker.shared.recordSuccessfulRecall()
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
+            }
+        }
+    }
+}
+
 private struct EducationPathwaysMilestonesView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
 
@@ -774,6 +827,11 @@ private struct EducationPathwaysMilestonesView: View {
     @State private var reflectionInput: String = ""
     @State private var showReflectionPrompt: Bool = false
     @State private var finished: Bool = false
+    @State private var mnemoRecallPassed: Bool = false
+
+    private var isMnemoEducationItem: Bool {
+        item.id.hasPrefix("education.")
+    }
 
     private var milestones: [EducationPathwayMilestone] {
         switch item.id {
@@ -940,6 +998,19 @@ private struct EducationPathwaysMilestonesView: View {
                 }
                 .buttonStyle(.borderedProminent)
                 .disabled(showReflectionPrompt && reflectionInput.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+            } else if isMnemoEducationItem && !mnemoRecallPassed {
+                MnemoInlineRecallCard(
+                    itemId: item.id,
+                    promptKey: "child_mnemo_education_recall_prompt",
+                    optionKeys: [
+                        "child_mnemo_education_recall_option_smart",
+                        "child_mnemo_education_recall_option_random",
+                        "child_mnemo_education_recall_option_skip"
+                    ],
+                    correctIndex: 0,
+                    rewardEvent: .studyPass,
+                    onComplete: onComplete
+                )
             } else {
                 Text(localizationManager.localized("child_education_pathways_done"))
                     .font(.system(size: 16, weight: .bold))
@@ -999,6 +1070,7 @@ private struct MusicDrillsProgressionView: View {
     @State private var streak: Int = 0
     @State private var bestStreak: Int = 0
     @State private var finished: Bool = false
+    @State private var mnemoRecallPassed: Bool = false
 
     private var drills: [MusicDrill] {
         switch item.id {
@@ -1129,6 +1201,19 @@ private struct MusicDrillsProgressionView: View {
                 }
 
                 metricRow
+            } else if !mnemoRecallPassed {
+                MnemoInlineRecallCard(
+                    itemId: item.id,
+                    promptKey: "child_mnemo_music_recall_prompt",
+                    optionKeys: [
+                        "child_mnemo_music_recall_option_rhythm",
+                        "child_mnemo_music_recall_option_silence",
+                        "child_mnemo_music_recall_option_noise"
+                    ],
+                    correctIndex: 0,
+                    rewardEvent: .songRecall,
+                    onComplete: onComplete
+                )
             } else {
                 Text(localizationManager.localized("child_music_drill_done"))
                     .font(.system(size: 16, weight: .bold))
@@ -1401,6 +1486,7 @@ private struct VideoProductionExperienceView: View {
     let onComplete: () async -> Void
 
     @State private var progressValue: Int = 0
+    @State private var mnemoRecallPassed: Bool = false
 
     private var cardPrefix: String {
         switch item.id {
@@ -1456,14 +1542,29 @@ private struct VideoProductionExperienceView: View {
             }
 
             if progressValue >= 100 {
-                Text(localizationManager.localized("\(cardPrefix)_done"))
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.green)
+                if !mnemoRecallPassed {
+                    MnemoInlineRecallCard(
+                        itemId: item.id,
+                        promptKey: "child_mnemo_video_recall_prompt",
+                        optionKeys: [
+                            "child_mnemo_video_recall_option_frame",
+                            "child_mnemo_video_recall_option_blur",
+                            "child_mnemo_video_recall_option_dark"
+                        ],
+                        correctIndex: 0,
+                        rewardEvent: .studyPass,
+                        onComplete: onComplete
+                    )
+                } else {
+                    Text(localizationManager.localized("\(cardPrefix)_done"))
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.green)
 
-                Button(localizationManager.localized("child_interface_done")) {
-                    Task { await onComplete() }
+                    Button(localizationManager.localized("child_interface_done")) {
+                        Task { await onComplete() }
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
-                .buttonStyle(.borderedProminent)
             }
         }
         .padding(14)
@@ -1478,6 +1579,7 @@ private struct MovieLiteracyExperienceView: View {
     let onComplete: () async -> Void
 
     @State private var progressValue: Int = 0
+    @State private var mnemoRecallPassed: Bool = false
 
     private var cardPrefix: String {
         switch item.id {
@@ -1533,14 +1635,29 @@ private struct MovieLiteracyExperienceView: View {
             }
 
             if progressValue >= 100 {
-                Text(localizationManager.localized("\(cardPrefix)_done"))
-                    .font(.system(size: 14, weight: .bold))
-                    .foregroundColor(.green)
+                if !mnemoRecallPassed {
+                    MnemoInlineRecallCard(
+                        itemId: item.id,
+                        promptKey: "child_mnemo_movies_recall_prompt",
+                        optionKeys: [
+                            "child_mnemo_movies_recall_option_plot",
+                            "child_mnemo_movies_recall_option_list",
+                            "child_mnemo_movies_recall_option_skip"
+                        ],
+                        correctIndex: 0,
+                        rewardEvent: .studyPass,
+                        onComplete: onComplete
+                    )
+                } else {
+                    Text(localizationManager.localized("\(cardPrefix)_done"))
+                        .font(.system(size: 14, weight: .bold))
+                        .foregroundColor(.green)
 
-                Button(localizationManager.localized("child_interface_done")) {
-                    Task { await onComplete() }
+                    Button(localizationManager.localized("child_interface_done")) {
+                        Task { await onComplete() }
+                    }
+                    .buttonStyle(.borderedProminent)
                 }
-                .buttonStyle(.borderedProminent)
             }
         }
         .padding(14)
@@ -1568,6 +1685,7 @@ private struct CartoonsActiveWatchExperienceView: View {
     @State private var selectedIndex: Int?
     @State private var recallCorrect: Int = 0
     @State private var recallFinished: Bool = false
+    @State private var showMicroWinToast = false
 
     private let ticker = Timer.publish(every: 0.4, on: .main, in: .common).autoconnect()
 
@@ -1756,6 +1874,9 @@ private struct CartoonsActiveWatchExperienceView: View {
     private var recallSection: some View {
         VStack(alignment: .leading, spacing: 10) {
             if !recallFinished {
+                Text(localizationManager.localized("child_mnemo_cartoon_scene_order_hint"))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.secondary)
                 Text(localizationManager.localized("child_cartoons_recall_progress") + " \(questionIndex + 1)/\(questions.count)")
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.secondary)
@@ -1784,6 +1905,13 @@ private struct CartoonsActiveWatchExperienceView: View {
                         .disabled(selectedIndex != nil)
                     }
                 }
+
+                if showMicroWinToast {
+                    Text(localizationManager.localized("child_mnemo_reward_micro_win"))
+                        .font(.system(size: 12, weight: .semibold))
+                        .foregroundColor(.purple)
+                        .accessibilityIdentifier("child_mnemo_micro_win_toast")
+                }
             } else {
                 Text(localizationManager.localized("child_cartoons_recall_done"))
                     .font(.system(size: 16, weight: .bold))
@@ -1793,6 +1921,9 @@ private struct CartoonsActiveWatchExperienceView: View {
                     .foregroundColor(.secondary)
 
                 Button(localizationManager.localized("child_interface_done")) {
+                    MnemonicSRSStore.shared.recordSuccess(itemId: item.id)
+                    MnemonicRewardBridge.award(.studyPass, itemId: item.id)
+                    MnemonicSkillTracker.shared.recordSuccessfulRecall()
                     Task { await onComplete() }
                 }
                 .buttonStyle(.borderedProminent)
@@ -1803,6 +1934,12 @@ private struct CartoonsActiveWatchExperienceView: View {
     private func choose(_ index: Int) {
         guard selectedIndex == nil else { return }
         selectedIndex = index
+        if MnemonicRewardBridge.awardRecallAttempt(itemId: item.id, attemptKey: "q\(questionIndex)") {
+            showMicroWinToast = true
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.4) {
+                showMicroWinToast = false
+            }
+        }
         if index == question.correctIndex {
             recallCorrect += 1
             SoundEffectPlayer.shared.play(.success, priority: .medium)
@@ -2063,8 +2200,10 @@ private struct StudyLessonTestExperienceView: View {
     let item: ContentItem
     let onComplete: () async -> Void
 
-    @State private var currentLessonIndex: Int = 0
-    @State private var lessonDone: Bool = false
+    @State private var studyPhase: MnemoAcademyPhase
+    @State private var userSelectedTechnique: MnemonicTechnique?
+    @State private var showPictogramDrawingSheet = false
+    @State private var pictogramUIRevision = 0
     @State private var testIndex: Int = 0
     @State private var selectedIndex: Int?
     @State private var correctAnswers: Int = 0
@@ -2075,6 +2214,12 @@ private struct StudyLessonTestExperienceView: View {
         let promptKey: String
         let optionKeys: [String]
         let correctIndex: Int
+    }
+
+    init(item: ContentItem, onComplete: @escaping () async -> Void) {
+        self.item = item
+        self.onComplete = onComplete
+        _studyPhase = State(initialValue: MnemoLessonFlow.initialLessonPhase())
     }
 
     private var specializedLessonPageKeys: [String]? {
@@ -2334,7 +2479,7 @@ private struct StudyLessonTestExperienceView: View {
         ]
     }
 
-    private var questions: [StudyQuestion] {
+    private var baseQuestions: [StudyQuestion] {
         if let specializedQuestions {
             return specializedQuestions.map { template in
                 StudyQuestion(
@@ -2375,6 +2520,26 @@ private struct StudyLessonTestExperienceView: View {
         ]
     }
 
+    private var questions: [StudyQuestion] {
+        [makeTechniqueQuestion()] + baseQuestions
+    }
+
+    private func makeTechniqueQuestion() -> StudyQuestion {
+        let correct = studyTechnique
+        var options: [MnemonicTechnique] = [correct]
+        for technique in MnemonicTechnique.allCases where technique != .spacedReview {
+            if options.count >= 3 { break }
+            if technique != correct { options.append(technique) }
+        }
+        let shuffled = options.shuffled()
+        let correctIndex = shuffled.firstIndex(of: correct) ?? 0
+        return StudyQuestion(
+            prompt: localizationManager.localized("child_mnemo_study_technique_test_prompt"),
+            options: shuffled.map { localizationManager.localized($0.localizationKey) },
+            correctIndex: correctIndex
+        )
+    }
+
     private var activeQuestion: StudyQuestion {
         questions[testIndex]
     }
@@ -2383,54 +2548,185 @@ private struct StudyLessonTestExperienceView: View {
         2
     }
 
+    private var studyTechnique: MnemonicTechnique {
+        userSelectedTechnique ?? MnemonicStudyTechniqueMap.technique(for: item.id)
+    }
+
+    private var recommendedStudyTechnique: MnemonicTechnique {
+        MnemonicStudyTechniqueMap.technique(for: item.id)
+    }
+
+    private var studyJourneyStop: Int {
+        MnemonicStudyTechniqueMap.journeyStop(for: item.id)
+    }
+
+    private var studyPhaseText: String {
+        switch studyPhase {
+        case .techniquePick:
+            return localizationManager.localized("child_mnemo_technique_picker_prompt")
+        case .warmup:
+            return localizationManager.localized("child_mnemo_warmup_focus_prompt")
+        case .encode:
+            return lessonPages.first ?? ""
+        case .anchor:
+            let anchorPage = lessonPages.count > 1 ? lessonPages[1] : (lessonPages.first ?? "")
+            return String(
+                format: localizationManager.localized("child_mnemo_study_anchor_template"),
+                localizationManager.localized(studyTechnique.localizationKey),
+                studyJourneyStop,
+                anchorPage
+            )
+        case .recall:
+            return lessonPages.count > 2 ? lessonPages[2] : (lessonPages.last ?? "")
+        case .reward:
+            return localizationManager.localized("child_mnemo_reward_study_pass")
+        case .reflect:
+            return localizationManager.localized("child_mnemo_reflect_prompt")
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
             Text(localizationManager.localized("child_study_lesson_test_title"))
                 .font(.system(size: 17, weight: .bold))
 
-            if !lessonDone {
-                lessonSection
-            } else {
+            mnemoPhaseHeader
+
+            switch studyPhase {
+            case .techniquePick:
+                MnemoTechniquePickerView(
+                    localizationManager: localizationManager,
+                    itemId: item.id,
+                    recommendedTechnique: recommendedStudyTechnique,
+                    onSelect: { technique in
+                        userSelectedTechnique = technique
+                        studyPhase = MnemoLessonFlow.supportsWarmup() ? .warmup : .encode
+                        MasterLogger.shared.business(
+                            "MNEMO-B14 technique picker → \(studyPhase) contentId=\(item.id) technique=\(technique.rawValue)"
+                        )
+                    }
+                )
+            case .warmup:
+                MnemoWarmupPhaseView(
+                    localizationManager: localizationManager,
+                    techniqueTitle: localizationManager.localized(studyTechnique.localizationKey),
+                    onComplete: {
+                        studyPhase = .encode
+                        MasterLogger.shared.business("MNEMO-B14 warmup completed contentId=\(item.id)")
+                    }
+                )
+            case .encode, .anchor:
+                mnemoLessonPhaseSection
+            case .recall:
                 testSection
+            case .reward:
+                mnemoRewardSection
+            case .reflect:
+                MnemoReflectPhaseView(
+                    localizationManager: localizationManager,
+                    correctTechnique: studyTechnique,
+                    onComplete: {
+                        Task { await onComplete() }
+                    }
+                )
             }
         }
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+        .onAppear {
+            MnemonicSRSStore.shared.scheduleInitial(itemId: item.id)
+        }
+        .sheet(isPresented: $showPictogramDrawingSheet) {
+            MnemoPictogramDrawingSheet(itemId: item.id) {
+                pictogramUIRevision += 1
+            }
+            .environmentObject(localizationManager)
+        }
     }
 
-    private var lessonSection: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            Text(localizationManager.localized("child_study_lesson_progress_prefix") + " \(currentLessonIndex + 1)/\(lessonPages.count)")
-                .font(.system(size: 13, weight: .semibold))
+    private var mnemoPhaseHeader: some View {
+        HStack(spacing: 6) {
+            ForEach(MnemoLessonFlow.lessonPhaseIndicators()) { phase in
+                Circle()
+                    .fill(phase.rawValue <= studyPhase.rawValue ? Color.indigo : Color.gray.opacity(0.35))
+                    .frame(width: 8, height: 8)
+            }
+            Text(localizationManager.localized(studyPhase.localizationKey))
+                .font(.system(size: 12, weight: .semibold))
                 .foregroundColor(.secondary)
+        }
+        .accessibilityIdentifier("child_mnemo_lesson_phase_header")
+    }
 
-            Text(lessonPages[currentLessonIndex])
+    private var mnemoLessonPhaseSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(studyPhaseText)
                 .font(.system(size: 16))
                 .padding(12)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .background(RoundedRectangle(cornerRadius: 10).fill(Color.blue.opacity(0.08)))
 
+            if studyPhase == .encode, MnemonicPictogramStore.supportsCoCreation(itemId: item.id) {
+                MnemoPictogramEncodeCTA(
+                    localizationManager: localizationManager,
+                    itemId: item.id,
+                    onDrawTapped: handlePictogramEncodeTap
+                )
+                .id(pictogramUIRevision)
+            }
+
             HStack {
                 Button(localizationManager.localized("child_interface_back")) {
-                    currentLessonIndex = max(0, currentLessonIndex - 1)
+                    if studyPhase == .anchor {
+                        studyPhase = .encode
+                    }
                 }
                 .buttonStyle(.bordered)
-                .disabled(currentLessonIndex == 0)
+                .disabled(studyPhase == .encode)
 
                 Spacer()
 
-                Button(currentLessonIndex == lessonPages.count - 1
+                Button(studyPhase == .anchor
                        ? localizationManager.localized("child_study_start_test")
                        : localizationManager.localized("child_interface_done")) {
-                    if currentLessonIndex < lessonPages.count - 1 {
-                        currentLessonIndex += 1
+                    if studyPhase == .encode {
+                        studyPhase = .anchor
+                        MnemonicSkillTracker.shared.recordAnchorPlaced()
                     } else {
-                        lessonDone = true
-                        MasterLogger.shared.business("P2-202 lesson completed contentId=\(item.id)")
+                        studyPhase = .recall
+                        MasterLogger.shared.business("P2-202 mnemo anchor completed contentId=\(item.id)")
                     }
                 }
                 .buttonStyle(.borderedProminent)
             }
+        }
+    }
+
+    private var mnemoRewardSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(studyPhaseText)
+                .font(.system(size: 16, weight: .semibold))
+                .foregroundColor(.green)
+            Text(
+                String(
+                    format: localizationManager.localized("child_mnemo_skill_levelup"),
+                    localizationManager.localized(MnemonicSkillTracker.shared.currentLevel().localizationKey)
+                )
+            )
+            .font(.system(size: 13, weight: .semibold))
+            .foregroundColor(.purple)
+            Text(localizationManager.localized(MnemoBrandChrome.superpowerToastKey))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.yellow)
+            Button(localizationManager.localized("child_interface_done")) {
+                if MnemoLessonFlow.supportsReflect() {
+                    studyPhase = .reflect
+                    MasterLogger.shared.business("MNEMO-B14 reward → reflect contentId=\(item.id)")
+                } else {
+                    Task { await onComplete() }
+                }
+            }
+            .buttonStyle(.borderedProminent)
         }
     }
 
@@ -2441,30 +2737,17 @@ private struct StudyLessonTestExperienceView: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(.secondary)
 
-                Text(activeQuestion.prompt)
-                    .font(.system(size: 16, weight: .semibold))
-                    .padding(12)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .background(RoundedRectangle(cornerRadius: 10).fill(Color.indigo.opacity(0.08)))
-
-                VStack(spacing: 8) {
-                    ForEach(Array(activeQuestion.options.enumerated()), id: \.offset) { index, option in
-                        Button {
-                            selectAnswer(index)
-                        } label: {
-                            Text(option)
-                                .font(.system(size: 15, weight: .semibold))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 10)
-                                .foregroundColor(.white)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(answerBackgroundColor(index: index))
-                                )
-                        }
-                        .disabled(selectedIndex != nil)
-                    }
-                }
+                MnemoHintLadderRecallView(
+                    localizationManager: localizationManager,
+                    itemId: item.id,
+                    attemptKey: "q\(testIndex)",
+                    prompt: activeQuestion.prompt,
+                    options: activeQuestion.options,
+                    correctIndex: activeQuestion.correctIndex,
+                    pictogramRevision: pictogramUIRevision,
+                    onSelectAnswer: selectAnswer
+                )
+                .id(testIndex)
             } else {
                 Text(localizationManager.localized(passed ? "child_study_checkpoint_passed" : "child_study_checkpoint_failed"))
                     .font(.system(size: 16, weight: .bold))
@@ -2477,14 +2760,22 @@ private struct StudyLessonTestExperienceView: View {
                 HStack {
                     if passed {
                         Button(localizationManager.localized("child_interface_done")) {
-                            Task { await onComplete() }
+                            MnemonicSRSStore.shared.recordSuccess(itemId: item.id)
+                            MnemonicRewardBridge.award(.studyPass, itemId: item.id, technique: studyTechnique)
+                            MnemonicSkillTracker.shared.recordSuccessfulRecall()
+                            studyPhase = .reward
                         }
                         .buttonStyle(.borderedProminent)
                     } else {
-                        Button(localizationManager.localized("child_study_retry_test")) {
-                            restartTest()
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(localizationManager.localized("child_mnemo_fail_cta_games"))
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundColor(.secondary)
+                            Button(localizationManager.localized("child_study_retry_test")) {
+                                restartTest()
+                            }
+                            .buttonStyle(.borderedProminent)
                         }
-                        .buttonStyle(.borderedProminent)
                     }
                 }
             }
@@ -2505,6 +2796,11 @@ private struct StudyLessonTestExperienceView: View {
         }
     }
 
+    private func handlePictogramEncodeTap() {
+        MasterLogger.shared.business("MNEMO-B11 pictogram encode CTA study contentId=\(item.id)")
+        showPictogramDrawingSheet = true
+    }
+
     private func proceedTestFlow() {
         selectedIndex = nil
         if testIndex < questions.count - 1 {
@@ -2513,6 +2809,12 @@ private struct StudyLessonTestExperienceView: View {
         }
         testFinished = true
         passed = correctAnswers >= passThreshold
+        if !passed {
+            UserDefaults.standard.set(true, forKey: "child.mnemo.study.failed")
+            MnemonicSRSStore.shared.recordFailure(itemId: item.id)
+        } else {
+            UserDefaults.standard.set(false, forKey: "child.mnemo.study.failed")
+        }
         MasterLogger.shared.business("P2-202 test finished contentId=\(item.id) correct=\(correctAnswers) passed=\(passed)")
     }
 
@@ -2524,16 +2826,6 @@ private struct StudyLessonTestExperienceView: View {
         passed = false
     }
 
-    private func answerBackgroundColor(index: Int) -> Color {
-        guard let selectedIndex else { return Color.indigo.opacity(0.85) }
-        if index == activeQuestion.correctIndex {
-            return Color.green.opacity(0.85)
-        }
-        if selectedIndex == index {
-            return Color.red.opacity(0.85)
-        }
-        return Color.gray.opacity(0.55)
-    }
 }
 
 private enum GamesChallengeDomain: String, CaseIterable, Identifiable {
@@ -2558,6 +2850,13 @@ private struct GamesChallengeTemplate {
     let hintKey: String
 }
 
+private struct MnemoCardTile: Identifiable {
+    let id = UUID()
+    let pairId: Int
+    let label: String
+    let isImage: Bool
+}
+
 private struct GamesChallengeEngineView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
 
@@ -2573,11 +2872,20 @@ private struct GamesChallengeEngineView: View {
     @State private var subjectQuizIndex: Int = 0
     @State private var subjectQuizScore: Int = 0
     @State private var subjectQuizSelected: Int?
+    @State private var memoryMode: MemoryGameMode = .palaceDrill
     @State private var memorySequence: [Int] = []
     @State private var memoryGuess: [Int] = []
     @State private var memoryRound: Int = 1
     @State private var memorySolvedRounds: Int = 0
     @State private var memoryFeedbackKey: String?
+    @State private var memoryShowSequence: Bool = true
+    @State private var cardDeck: [MnemoCardTile] = []
+    @State private var cardFlipped: Set<Int> = []
+    @State private var cardMatched: Set<Int> = []
+    @State private var cardFirstPick: Int?
+    @State private var cardMatchScore: Int = 0
+
+    private let memoryPegEmojis = ["🐱", "🌟", "🎈", "🚗", "🦄", "📚", "🎵", "⚽"]
     @State private var speedRound: Int = 1
     @State private var speedTarget: Int = Int.random(in: 1...9)
     @State private var speedScore: Int = 0
@@ -2741,6 +3049,9 @@ private struct GamesChallengeEngineView: View {
         Group {
             if isSubjectQuiz {
                 subjectQuizCard
+            } else if isMemoryTraining, memoryMode == .championship {
+                MnemoChampionshipExperienceView(item: item, onComplete: onComplete)
+                    .environmentObject(localizationManager)
             } else if isMemoryTraining {
                 memoryCard
             } else if isSpeedGame {
@@ -2948,24 +3259,62 @@ private struct GamesChallengeEngineView: View {
         .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
     }
 
+    private enum MemoryGameMode {
+        case palaceDrill
+        case championship
+    }
+
+    private var championshipUnlocked: Bool {
+        MnemonicChampionshipStore.shared.isUnlocked(childId: MnemonicBaselineAssessment.activeChildId())
+    }
+
+    private var memoryActivePegCount: Int {
+        memoryRound <= 2 ? 4 : memoryPegEmojis.count
+    }
+
     private var memoryCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(localizationManager.localized("child_games_memory_title"))
+            if championshipUnlocked {
+                memoryModePicker
+            }
+
+            Text(localizationManager.localized("child_mnemo_games_05_title"))
                 .font(.system(size: 17, weight: .bold))
             Text("\(localizationManager.localized("child_games_memory_round")) \(memoryRound)")
                 .font(.system(size: 14, weight: .semibold))
                 .foregroundColor(.secondary)
-            if !memorySequence.isEmpty {
-                Text(memorySequence.map(String.init).joined(separator: " • "))
-                    .font(.system(size: 20, weight: .bold))
+            if memoryRound <= 2 {
+                Text(localizationManager.localized("child_mnemo_games_05_grid_label"))
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.secondary)
+            }
+            if memoryShowSequence, !memorySequence.isEmpty {
+                Text(localizationManager.localized("child_mnemo_games_05_show_hint"))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.secondary)
+                Text(memorySequence.map { memoryPegEmojis[$0] }.joined(separator: " "))
+                    .font(.system(size: 28, weight: .bold))
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(8)
                     .background(RoundedRectangle(cornerRadius: 10).fill(Color.blue.opacity(0.1)))
-            }
-            HStack {
-                ForEach(Array(1...4), id: \.self) { n in
-                    Button("\(n)") { appendMemoryGuess(n) }
+            } else if !memorySequence.isEmpty {
+                Text(localizationManager.localized("child_mnemo_games_05_recall_prompt"))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.secondary)
+                if !memoryGuess.isEmpty {
+                    Text(memoryGuess.map { memoryPegEmojis[$0] }.joined(separator: " "))
+                        .font(.system(size: 22, weight: .bold))
+                        .frame(maxWidth: .infinity, alignment: .center)
+                }
+                LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: memoryRound <= 2 ? 2 : 4), spacing: 8) {
+                    ForEach(Array(0..<memoryActivePegCount), id: \.self) { index in
+                        Button(memoryPegEmojis[index]) {
+                            appendMemoryGuess(index)
+                        }
+                        .font(.system(size: 28))
+                        .frame(maxWidth: .infinity, minHeight: 52)
                         .buttonStyle(.bordered)
+                    }
                 }
             }
             if let memoryFeedbackKey {
@@ -2973,12 +3322,14 @@ private struct GamesChallengeEngineView: View {
                     .font(.system(size: 13, weight: .semibold))
                     .foregroundColor(memoryFeedbackKey.contains("ok") ? .green : .orange)
             }
-            Button(localizationManager.localized("child_games_memory_next")) {
-                startMemoryRound()
-            }
-            .buttonStyle(.bordered)
             if memorySolvedRounds >= 3 {
+                Text(localizationManager.localized("child_mnemo_reward_memory_game"))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.purple)
                 Button(localizationManager.localized("child_interface_done")) {
+                    MnemonicSRSStore.shared.recordSuccess(itemId: item.id)
+                    MnemonicRewardBridge.award(.memoryGame, itemId: item.id)
+                    MnemonicSkillTracker.shared.recordAnchorPlaced()
                     Task { await onComplete() }
                 }
                 .buttonStyle(.borderedProminent)
@@ -2989,6 +3340,36 @@ private struct GamesChallengeEngineView: View {
         .onAppear {
             if memorySequence.isEmpty {
                 startMemoryRound()
+            }
+        }
+    }
+
+    private var memoryModePicker: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Picker("", selection: $memoryMode) {
+                Text(localizationManager.localized("child_mnemo_championship_palace_mode"))
+                    .tag(MemoryGameMode.palaceDrill)
+                Text(localizationManager.localized("child_mnemo_championship_mode"))
+                    .tag(MemoryGameMode.championship)
+            }
+            .pickerStyle(.segmented)
+            .accessibilityIdentifier("child_mnemo_championship_mode_picker")
+
+            if memoryMode == .championship {
+                let best = MnemonicChampionshipStore.shared.personalBest(
+                    childId: MnemonicBaselineAssessment.activeChildId()
+                )
+                if best > 0 {
+                    Text(
+                        String(
+                            format: localizationManager.localized("child_mnemo_championship_personal_best"),
+                            best,
+                            MnemonicChampionshipStore.itemCount
+                        )
+                    )
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.purple)
+                }
             }
         }
     }
@@ -3163,26 +3544,32 @@ private struct GamesChallengeEngineView: View {
 
     private var cardCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(localizationManager.localized("child_games_card_title"))
+            Text(localizationManager.localized("child_mnemo_games_12_title"))
                 .font(.system(size: 17, weight: .bold))
-            Text("\(localizationManager.localized("child_games_card_target")): \(cardPairTarget)")
-                .font(.system(size: 18, weight: .semibold))
-            HStack {
-                ForEach(Array(1...6), id: \.self) { number in
-                    Button("\(number)") {
-                        if number == cardPairTarget {
-                            cardScore += 1
-                            cardPairTarget = Int.random(in: 1...6)
-                        }
+            Text(localizationManager.localized("child_mnemo_games_12_pair_prompt"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
+                ForEach(Array(cardDeck.enumerated()), id: \.offset) { index, tile in
+                    Button {
+                        selectMnemoCard(index)
+                    } label: {
+                        Text(cardFaceText(index: index, tile: tile))
+                            .font(.system(size: tile.isImage ? 28 : 14, weight: .semibold))
+                            .frame(maxWidth: .infinity, minHeight: 56)
+                            .multilineTextAlignment(.center)
                     }
                     .buttonStyle(.bordered)
+                    .disabled(cardMatched.contains(tile.pairId))
                 }
             }
-            Text("\(localizationManager.localized("child_games_card_score")): \(cardScore)")
+            Text("\(localizationManager.localized("child_games_card_score")): \(cardMatchScore)/6")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundColor(.secondary)
-            if cardScore >= 5 {
+            if cardMatchScore >= 6 {
                 Button(localizationManager.localized("child_interface_done")) {
+                    MnemonicSRSStore.shared.recordSuccess(itemId: item.id)
+                    MnemonicSkillTracker.shared.recordSuccessfulRecall()
                     Task { await onComplete() }
                 }
                 .buttonStyle(.borderedProminent)
@@ -3190,6 +3577,11 @@ private struct GamesChallengeEngineView: View {
         }
         .padding(14)
         .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+        .onAppear {
+            if cardDeck.isEmpty {
+                resetMnemoCardDeck()
+            }
+        }
     }
 
     private var arcadeCard: some View {
@@ -3445,24 +3837,88 @@ private struct GamesChallengeEngineView: View {
     }
 
     private func startMemoryRound() {
-        let count = min(2 + memoryRound, 5)
-        memorySequence = (0..<count).map { _ in Int.random(in: 1...4) }
+        let pegCount = memoryActivePegCount
+        let count = memoryRound <= 2 ? min(2 + memoryRound, 4) : min(5 + memoryRound, 7)
+        memorySequence = (0..<count).map { _ in Int.random(in: 0..<pegCount) }
         memoryGuess = []
         memoryFeedbackKey = nil
+        memoryShowSequence = true
+        DispatchQueue.main.asyncAfter(deadline: .now() + 2.0) {
+            memoryShowSequence = false
+        }
     }
 
     private func appendMemoryGuess(_ value: Int) {
         guard memorySolvedRounds < 3 else { return }
+        guard !memoryShowSequence else { return }
         guard memoryGuess.count < memorySequence.count else { return }
         memoryGuess.append(value)
         if memoryGuess.count == memorySequence.count {
             if memoryGuess == memorySequence {
                 memorySolvedRounds += 1
                 memoryRound += 1
-                memoryFeedbackKey = "child_games_memory_feedback_ok"
+                memoryFeedbackKey = "child_mnemo_games_05_feedback_ok"
+                if memorySolvedRounds < 3 {
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                        startMemoryRound()
+                    }
+                }
             } else {
-                memoryFeedbackKey = "child_games_memory_feedback_retry"
+                memoryFeedbackKey = "child_mnemo_games_05_feedback_retry"
+                memoryGuess = []
             }
+        }
+    }
+
+    private func resetMnemoCardDeck() {
+        let pairs: [(String, String)] = (1...6).map { index in
+            (
+                localizationManager.localized("child_mnemo_games_12_pair_\(index)_word"),
+                localizationManager.localized("child_mnemo_games_12_pair_\(index)_image")
+            )
+        }
+        var tiles: [MnemoCardTile] = []
+        for (index, pair) in pairs.enumerated() {
+            tiles.append(.init(pairId: index, label: pair.0, isImage: false))
+            tiles.append(.init(pairId: index, label: pair.1, isImage: true))
+        }
+        cardDeck = tiles.shuffled()
+        cardFlipped = []
+        cardMatched = []
+        cardFirstPick = nil
+        cardMatchScore = 0
+    }
+
+    private func cardFaceText(index: Int, tile: MnemoCardTile) -> String {
+        if cardMatched.contains(tile.pairId) {
+            return tile.label
+        }
+        return cardFlipped.contains(index) ? tile.label : "?"
+    }
+
+    private func selectMnemoCard(_ index: Int) {
+        guard cardMatchScore < 6 else { return }
+        let tile = cardDeck[index]
+        guard !cardMatched.contains(tile.pairId) else { return }
+        guard !cardFlipped.contains(index) else { return }
+
+        if let first = cardFirstPick {
+            cardFlipped.insert(index)
+            let firstTile = cardDeck[first]
+            if firstTile.pairId == tile.pairId {
+                cardMatched.insert(tile.pairId)
+                cardMatchScore += 1
+                cardFirstPick = nil
+            } else {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    cardFlipped.remove(first)
+                    cardFlipped.remove(index)
+                    cardFirstPick = nil
+                }
+            }
+        } else {
+            cardFlipped.insert(index)
+            cardFirstPick = index
         }
     }
 
@@ -3662,6 +4118,11 @@ private struct StoryExperienceHostView: View {
 
             if page.isEnding {
                 storyQuizCard
+                if MnemoFeatureFlags.storiesRecallHook {
+                    MnemoStoriesRecallHookBanner(storyTitle: story.title) {
+                        MasterLogger.shared.business("MNEMO-B14-T13 stories recall hook story=\(story.id)")
+                    }
+                }
                 Button(localizationManager.localized("child_interface_done")) {
                     Task { await onComplete() }
                 }
@@ -4266,10 +4727,50 @@ private struct KaraokeExperienceHostView: View {
     @State private var selectedTopic: String = "all"
     @State private var favoriteTitles: Set<String> = []
     @State private var favoritesLoaded = false
+    @State private var songRecallUnlocked = false
+    @State private var songRecallTarget: [String] = []
+    @State private var songRecallPicks: [String] = []
+    @State private var songRecallChoices: [String] = []
+    @State private var songRecallFeedbackKey: String?
+    @State private var showPictogramDrawingSheet = false
+    @State private var pictogramUIRevision = 0
     private let ticker = Timer.publish(every: 0.35, on: .main, in: .common).autoconnect()
 
     private var tracks: [KaraokeTrack] {
         [
+            KaraokeTrack(
+                title: localizationManager.localized("child_mnemo_song_track_1_title"),
+                artist: "ALADDIN Mnemo",
+                category: "mnemo",
+                topics: ["mnemo"],
+                lines: [
+                    .init(startSec: 0, endSec: 4, text: localizationManager.localized("child_mnemo_song_track_1_line_1")),
+                    .init(startSec: 4, endSec: 8, text: localizationManager.localized("child_mnemo_song_track_1_line_2")),
+                    .init(startSec: 8, endSec: 12, text: localizationManager.localized("child_mnemo_song_track_1_line_3"))
+                ]
+            ),
+            KaraokeTrack(
+                title: localizationManager.localized("child_mnemo_song_track_2_title"),
+                artist: "ALADDIN Mnemo",
+                category: "mnemo",
+                topics: ["mnemo"],
+                lines: [
+                    .init(startSec: 0, endSec: 4, text: localizationManager.localized("child_mnemo_song_track_2_line_1")),
+                    .init(startSec: 4, endSec: 8, text: localizationManager.localized("child_mnemo_song_track_2_line_2")),
+                    .init(startSec: 8, endSec: 12, text: localizationManager.localized("child_mnemo_song_track_2_line_3"))
+                ]
+            ),
+            KaraokeTrack(
+                title: localizationManager.localized("child_mnemo_song_track_3_title"),
+                artist: "ALADDIN Mnemo",
+                category: "mnemo",
+                topics: ["mnemo"],
+                lines: [
+                    .init(startSec: 0, endSec: 4, text: localizationManager.localized("child_mnemo_song_track_3_line_1")),
+                    .init(startSec: 4, endSec: 8, text: localizationManager.localized("child_mnemo_song_track_3_line_2")),
+                    .init(startSec: 8, endSec: 12, text: localizationManager.localized("child_mnemo_song_track_3_line_3"))
+                ]
+            ),
             KaraokeTrack(
                 title: "Солнечный день",
                 artist: "ALADDIN Kids",
@@ -4459,7 +4960,51 @@ private struct KaraokeExperienceHostView: View {
             Text(localizationManager.localized("child_content_music_title"))
                 .font(.system(size: 17, weight: .bold))
 
+            if songRecallUnlocked {
+                songRecallSection
+            } else {
+                karaokeMainSection
+            }
+        }
+        .padding(14)
+        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
+        .onReceive(ticker) { _ in
+            guard isPlaying, !songRecallUnlocked else { return }
+            let next = currentTime + 0.35
+            if next >= selectedTrack.duration {
+                currentTime = selectedTrack.duration
+                isPlaying = false
+                SoundEffectPlayer.shared.play(.success, priority: .high)
+                beginSongRecall()
+                MasterLogger.shared.business("P2-103 karaoke completed contentId=\(item.id) track=\(selectedTrack.title)")
+            } else {
+                currentTime = next
+            }
+        }
+        .onAppear {
+            loadFavoritesIfNeeded()
+        }
+        .sheet(isPresented: $showPictogramDrawingSheet) {
+            MnemoPictogramDrawingSheet(itemId: item.id) {
+                pictogramUIRevision += 1
+            }
+            .environmentObject(localizationManager)
+        }
+    }
+
+    private var karaokeMainSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            if MnemonicPictogramStore.supportsCoCreation(itemId: item.id), selectedCategory == "mnemo" {
+                MnemoPictogramEncodeCTA(
+                    localizationManager: localizationManager,
+                    itemId: item.id,
+                    onDrawTapped: handleSongPictogramEncodeTap
+                )
+                .id(pictogramUIRevision)
+            }
+
             Picker("", selection: $selectedCategory) {
+                Text(localizationManager.localized("child_songs_category_mnemo")).tag("mnemo")
                 Text(localizationManager.localized("child_songs_category_learning")).tag("learning")
                 Text(localizationManager.localized("child_songs_category_play")).tag("play")
                 Text(localizationManager.localized("child_songs_category_lullaby")).tag("lullaby")
@@ -4469,6 +5014,7 @@ private struct KaraokeExperienceHostView: View {
                 selectedTrackIndex = 0
                 currentTime = 0
                 isPlaying = false
+                resetSongRecall()
             }
 
             Picker("", selection: $selectedTopic) {
@@ -4496,6 +5042,7 @@ private struct KaraokeExperienceHostView: View {
             .onChange(of: selectedTrackIndex) { _ in
                 currentTime = 0
                 isPlaying = false
+                resetSongRecall()
                 MasterLogger.shared.business("P2-103 karaoke track selected contentId=\(item.id) track=\(selectedTrack.title)")
             }
 
@@ -4578,22 +5125,85 @@ private struct KaraokeExperienceHostView: View {
                 .buttonStyle(.bordered)
             }
         }
-        .padding(14)
-        .background(RoundedRectangle(cornerRadius: 12).fill(Color.white))
-        .onReceive(ticker) { _ in
-            guard isPlaying else { return }
-            let next = currentTime + 0.35
-            if next >= selectedTrack.duration {
-                currentTime = selectedTrack.duration
-                isPlaying = false
-                SoundEffectPlayer.shared.play(.success, priority: .high)
-                MasterLogger.shared.business("P2-103 karaoke completed contentId=\(item.id) track=\(selectedTrack.title)")
-            } else {
-                currentTime = next
+    }
+
+    private var songRecallSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text(localizationManager.localized("child_mnemo_song_recall_title"))
+                .font(.system(size: 16, weight: .bold))
+            Text(localizationManager.localized("child_mnemo_song_recall_prompt"))
+                .font(.system(size: 13, weight: .medium))
+                .foregroundColor(.secondary)
+
+            MnemoPictogramRecallHint(localizationManager: localizationManager, itemId: item.id)
+                .id(pictogramUIRevision)
+            if !songRecallPicks.isEmpty {
+                Text(songRecallPicks.joined(separator: " → "))
+                    .font(.system(size: 15, weight: .semibold))
+            }
+            LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 3), spacing: 8) {
+                ForEach(songRecallChoices, id: \.self) { word in
+                    Button(word) {
+                        appendSongRecallWord(word)
+                    }
+                    .buttonStyle(.bordered)
+                    .disabled(songRecallPicks.count >= songRecallTarget.count)
+                }
+            }
+            if let songRecallFeedbackKey {
+                Text(localizationManager.localized(songRecallFeedbackKey))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(songRecallFeedbackKey.contains("ok") ? .green : .orange)
+            }
+            if songRecallPicks == songRecallTarget, !songRecallTarget.isEmpty {
+                Text(localizationManager.localized("child_mnemo_reward_song"))
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.purple)
+                Button(localizationManager.localized("child_interface_done")) {
+                    MnemonicSRSStore.shared.recordSuccess(itemId: item.id)
+                    MnemonicRewardBridge.award(.songRecall, itemId: item.id)
+                    MnemonicSkillTracker.shared.recordSuccessfulRecall()
+                    Task { await onComplete() }
+                }
+                .buttonStyle(.borderedProminent)
             }
         }
-        .onAppear {
-            loadFavoritesIfNeeded()
+    }
+
+    private func handleSongPictogramEncodeTap() {
+        MasterLogger.shared.business("MNEMO-B11 pictogram encode CTA songs contentId=\(item.id) track=\(selectedTrack.title)")
+        showPictogramDrawingSheet = true
+    }
+
+    private func beginSongRecall() {
+        let words = selectedTrack.lines.prefix(3).map { line -> String in
+            line.text.split(separator: " ").first.map(String.init) ?? line.text
+        }
+        songRecallTarget = words
+        songRecallChoices = Array(Set(words + ["🎵", "🌟", "📚"])).shuffled()
+        songRecallPicks = []
+        songRecallFeedbackKey = nil
+        songRecallUnlocked = true
+    }
+
+    private func resetSongRecall() {
+        songRecallUnlocked = false
+        songRecallTarget = []
+        songRecallPicks = []
+        songRecallChoices = []
+        songRecallFeedbackKey = nil
+    }
+
+    private func appendSongRecallWord(_ word: String) {
+        guard songRecallPicks.count < songRecallTarget.count else { return }
+        songRecallPicks.append(word)
+        if songRecallPicks.count == songRecallTarget.count {
+            if songRecallPicks == songRecallTarget {
+                songRecallFeedbackKey = "child_mnemo_song_recall_ok"
+            } else {
+                songRecallFeedbackKey = "child_mnemo_song_recall_retry"
+                songRecallPicks = []
+            }
         }
     }
 

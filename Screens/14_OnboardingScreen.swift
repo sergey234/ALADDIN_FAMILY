@@ -754,6 +754,13 @@ struct OnboardingScreen: View {
     ]
 
     // ✅ НОВОЕ: Безопасная функция локализации с fallback
+    private func onboardingPage5Description() -> String {
+        let base = safeLocalized("onboarding_page5_desc")
+        let academy = safeLocalized(MnemoBrandChrome.onboardingTitleKey)
+        let detail = safeLocalized(MnemoBrandChrome.onboardingDescKey)
+        return "\(base)\n\n🧠 \(academy)\n\(detail)"
+    }
+
     private func safeLocalized(_ key: String, fallback: String? = nil) -> String {
         let localized = localizationManager.localized(key)
 
@@ -984,11 +991,11 @@ struct OnboardingScreen: View {
                 description: safeLocalized("onboarding_page4_desc"),
                 color: Color.red
             ),
-            // Страница 5: Обучение детей безопасности
+            // Страница 5: Обучение детей безопасности + Академия памяти
             OnboardingPage(
                 icon: "🎮",
                 title: safeLocalized("onboarding_page5_title"),
-                description: safeLocalized("onboarding_page5_desc"),
+                description: onboardingPage5Description(),
                 color: Color.purple
             ),
             // Страница 6: Интерфейс для людей 23+

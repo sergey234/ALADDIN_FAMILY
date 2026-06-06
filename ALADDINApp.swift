@@ -216,6 +216,13 @@ struct ALADDINApp: App {
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
             UserDefaults.standard.synchronize()
         }
+        if ProcessInfo.processInfo.arguments.contains("-UITestMnemoAcademy") {
+            UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            UserDefaults.standard.synchronize()
+            #if DEBUG
+            MnemonicSRSStore.shared.uiTestForceDue(itemId: "games.05")
+            #endif
+        }
         if ProcessInfo.processInfo.arguments.contains("-UITestCompanionSmoke")
             || ProcessInfo.processInfo.arguments.contains("-UITestWellnessNavSmoke") {
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
@@ -363,6 +370,11 @@ struct ALADDINApp: App {
                     if ProcessInfo.processInfo.arguments.contains("-UITestChildContentW4_4") {
                         navManager.currentScreen = .childContent
                     }
+                    if ProcessInfo.processInfo.arguments.contains("-UITestMnemoAcademy") {
+                        navManager.childContentCategory = ChildCategoryKey.games
+                        navManager.childContentAgeGroup = .school
+                        navManager.currentScreen = .childContent
+                    }
                     if ProcessInfo.processInfo.arguments.contains("-UITestChildInterface")
                         || (ProcessInfo.processInfo.arguments.contains("-UITestCompanionSmoke")
                             && !ProcessInfo.processInfo.arguments.contains("-UITestCompanionHome")) {
@@ -386,6 +398,11 @@ struct ALADDINApp: App {
                     LaunchDiagnostics.appendLifecycleTrace("WindowGroup.task END deferred bootstrap")
                 }
                 .onOpenURL { url in
+                    if let category = MnemoDeepLinkRouter.parseReviewCategory(from: url) {
+                        navigationManager.navigateToMnemoReview(category: category)
+                        return
+                    }
+
                     if let token = DevicePairingLinkParser.extractToken(from: url)?.trimmingCharacters(in: .whitespacesAndNewlines),
                        !token.isEmpty {
                         PendingAuthTokenStore.saveDeviceBindToken(token)
@@ -413,6 +430,10 @@ struct ALADDINApp: App {
                         }
                     }
                     consumePendingMagicAuthTokenIfNeeded()
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToMnemoReview"))) { notification in
+                    let category = notification.userInfo?["category"] as? String ?? ChildCategoryKey.games
+                    navigationManager.navigateToMnemoReview(category: category)
                 }
         }
     }
@@ -979,8 +1000,8 @@ struct ALADDINApp: App {
                         AnyView(EmptyView())
                     case .childContent:
                         AnyView(ChildContentScreen(
-                            category: ChildCategoryKey.games,
-                            ageGroup: .school
+                            category: navigationManager.childContentCategory,
+                            ageGroup: navigationManager.childContentAgeGroup
                         )
                         .id("childContent")
                         .environmentObject(navigationManager)
@@ -1120,6 +1141,7 @@ extension ALADDINApp {
         // Запрашиваем разрешение на push уведомления (асинхронно, не блокирует UI)
         Task {
             _ = await NotificationManager.shared.requestAuthorization()
+            await MnemonicNotificationScheduler.shared.rescheduleDailyReminder()
         }
 
         // Истина — persisted `UserDefaults`: `@AppStorage` в WindowGroup.onAppear может отставать
