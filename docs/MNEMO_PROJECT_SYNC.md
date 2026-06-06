@@ -6,7 +6,8 @@
 
 | Документ | Роль |
 |----------|------|
-| **Этот файл** | Полная синхронизация: что сделано, что осталось, файлы, тесты, флаги |
+| **Этот файл** | Полная синхронизация: что сделано, что осталось, файлы, тесты, флаги, **§10 API** |
+| `ALADDIN_JWT_API_ARCHITECTURE_COMPLETE.md` | HTTP/JWT SSOT; **§6.8** — cross-ref: Mnemo = local iOS, не REST |
 | `MNEMONICS_CHILD_IMPLEMENTATION_PLAN.md` §Q | Чекбоксы задач (источник для `mnemo_batch_progress.py`) |
 | `MNEMONICS_ML_HANDOFF.md` | Краткий handoff + архитектура + ограничения |
 | `MNEMONICS_CURSOR_BATCH_TRACKER.md` | Таблица батчей + команды gate |
@@ -375,7 +376,122 @@ Catalog banner: всегда **4 точки** (`MnemoAcademyPhase.catalogPhases`
 
 ---
 
-## 10. Промпт для следующей ML-сессии (Phase C)
+## 10. MnemoCore Public API (local iOS SSOT)
+
+> **Не HTTP.** Memory Academy живёт в `Core/Content/Mnemonics/` + `UserDefaults` / `Application Support`.  
+> REST/JWT — `ALADDIN_JWT_API_ARCHITECTURE_COMPLETE.md` §6.8. Handoff spine — `MNEMONICS_ML_HANDOFF.md` §14.
+
+### 10.1 Baseline & Memory Quotient — `MnemonicBaselineAssessment` (B12)
+
+| API | Возвращает | Когда |
+|-----|------------|-------|
+| `offerKind(childId:now:)` | `.initialBaseline` \| `.quarterlyRetest` \| `nil` | Gate: sem 1 week ≥10 для первого; retest каждые **90** дней + 1 session/calendar quarter |
+| `shouldOffer(childId:now:)` | `Bool` | `offerKind != nil` |
+| `isQuarterlyRetestDue(childId:now:)` | `Bool` | После baseline; ≥90 дней и нет session в текущем календарном квартале |
+| `daysUntilRetest(childId:now:)` | `Int?` | Дней до 90-day interval (0 = due) |
+| `nextRetestDate(childId:now:)` | `Date?` | max(interval, start next quarter) если в квартале уже был session |
+| `hasSession(inCalendarQuarterOf:childId:)` | `Bool` | Есть ли MQ-session в том же year+quarter |
+| `recordResult(correctCount:elapsedStudySeconds:…)` | `SessionResult` | Пишет session + MQ |
+| `latestResult` / `allResults` / `latestMemoryQuotient` | history | Parent trend (B12-T04) |
+| `trendPoints` / `memoryQuotientDelta` / `quarterLabel` | MQ UI | `MnemoParentMQTrendView` |
+| `memoryQuotient(correctCount:elapsedStudySeconds:)` | `Int` 0–100 | Static formula (85% accuracy + speed bonus) |
+
+**Constants:** `wordCount=5`, `timeLimitSeconds=120`, `baselineSemesterIndex=1`, `baselineWeekThreshold=10`, `retestIntervalDays=90`.
+
+**DEBUG launch args (UITest / smoke):**
+
+| Arg | Эффект |
+|-----|--------|
+| `-UITestMnemoBaseline` | Force offer: nil baseline → `.initialBaseline`, иначе `.quarterlyRetest` |
+| `-UITestMnemoBaselineRetest` | Force `.quarterlyRetest` если baseline уже есть |
+
+**Unit tests:** `MnemonicBaselineAssessmentTests` (17) — покрывает `offerKind`, retest, quarter cap, `nextRetestDate`, `daysUntilRetest`.
+
+### 10.2 SRS & Push — `MnemonicSRSStore` + `MnemonicNotificationScheduler` (B2, B10)
+
+| API | Назначение |
+|-----|------------|
+| `scheduleInitial(itemId:now:)` | Box 0, first review |
+| `recordSuccess(itemId:now:)` | Advance SRS box (1-3-7-14-30) |
+| `recordFailure(itemId:now:)` | Reset box → due tomorrow |
+| `dueItems(category:now:)` / `dueToday(category:now:)` | Due list / count |
+| `uiTestForceDue(itemId:now:)` | DEBUG: force due today |
+| `isICloudSyncEnabled` | Opt-in iCloud KVS (B10-T07) |
+| `MnemonicNotificationScheduler.totalDueCount` | Push copy «N items» |
+| `MnemonicNotificationScheduler.primaryReviewCategory` | Category с max due |
+| `rescheduleDailyReminder()` | async local notification |
+
+**Deeplink:** `MnemoDeepLinkRouter.parseReviewCategory` ← `aladdin://mnemo/review?category=games`  
+**Unit tests:** `MnemonicSRSStoreTests` (8) — success, failure, due filter, skill, journey, deeplink, scheduler, iCloud.
+
+### 10.3 Curriculum Spine — `MnemonicCurriculumSpine` (B9)
+
+| API | Назначение |
+|-----|------------|
+| `gate(for:childId:now:)` | Category-level `SemesterGate` (≥70% prior semester) |
+| `itemGate(forItemId:category:…)` | Item-level (study.01–30 split) |
+| `isUnlocked(_ semesterIndex:…)` | Semester accessible |
+| `masteryFraction(for:…)` | 0…1 progress heuristic |
+| `activeSemesterIndex` / `currentWeek(in:)` | Timeline |
+| `nextSemesterUnlockProgress` | Parent widget B14-T16 |
+| `requiredSemesterIndex(forItemId:category:)` | study blocks by semester |
+
+**DEBUG:** `-UITestMnemoSemesterLocked` → semesters ≥1 locked (`uiTestForceSemesterLocked`).
+
+### 10.4 Skill, Journey, Techniques
+
+| Type | Key API |
+|------|---------|
+| `MnemonicSkillTracker` | `recordSuccessfulRecall`, `recordAnchorPlaced`, `currentLevel`, `masteryPercent` |
+| `MnemonicTechniqueMastery` | `stage(for:)`, `recordSuccess`, `masterySummary` |
+| `MnemonicStudyTechniqueMap` | `technique(for:)`, `journeyStop(for:)`, `pickerOptions` |
+| `MnemonicJourneyPath` | `stopTitle(index:localization:)` — 40 stops |
+| `MnemonicRewardBridge` | `awardRecallAttempt`, `award(_ event:…)` — 🦄 micro-wins B14-T09 |
+
+### 10.5 Lesson flow & Chrome — `MnemoLessonFlow`, `MnemoCategoryChrome` (B1, B4, B14)
+
+| API | Назначение |
+|-----|------------|
+| `MnemoLessonFlow.supportsWarmup/TechniquePicker/Reflect` | Age gates 7+ / 13+ |
+| `MnemoLessonFlow.lessonPhaseIndicators` | Phase dots in lesson |
+| `MnemoCategoryChrome.labelKey/displayTitle/…` | 8 mnemo categories by age |
+| `MnemoBrandChrome.brandTitle/tagline/promise/…` | F16 brand (B1C) |
+| `MnemoAcademyPhase.catalogPhases` | Banner always 4 phases |
+
+### 10.6 Co-creation, Table, Capstone, Championship (B11–B13)
+
+| Type | Key API |
+|------|---------|
+| `MnemonicPictogramStore` | `savePNG`, `loadImage`, `hasPictogram`, `pictogramCount`, `supportsCoCreation` |
+| `MnemonicTableEngine` | `beginRound`, `transitionToRecall`, `pickCell`, `recordRecallSuccess` |
+| `MnemonicCapstoneStore` | `recordCompletion`, `hasCompleted` |
+| `MnemonicChampionshipStore` | `isUnlocked`, `makeSequence`, `recordResult`; DEBUG `-UITestMnemoChampionship` |
+
+### 10.7 Feature flags — `MnemoFeatureFlags` (B14)
+
+Keys: `mnemo.memoryHeroAvatars`, `teenExamHacksCopy`, `advancedNumberPegs`, `storiesRecallHook` (**ON** prod); `familyMemoryChallenge`, `companionVoiceReminder` (**OFF**).  
+Opt-in UI: `mnemo.companionVoiceReminder.optIn`, `mnemo.advancedNumberPegs.optIn`.
+
+### 10.8 UITest launch args (полный список)
+
+| Arg | Где обрабатывается | Эффект |
+|-----|-------------------|--------|
+| `-UITestSkipOnboarding` | `ALADDINApp` | Skip onboarding |
+| `-UITestMnemoAcademy` | `ALADDINApp` | Seed SRS `games.05` due; child catalog |
+| `-UITestMnemoSemesterLocked` | `MnemonicCurriculumSpine` | Lock semesters ≥1 |
+| `-UITestMnemoBaseline` | `MnemonicBaselineAssessment` | Force baseline/retest offer |
+| `-UITestMnemoBaselineRetest` | `MnemonicBaselineAssessment` | Force quarterly retest offer |
+| `-UITestMnemoChampionship` | `MnemonicChampionshipStore` | Unlock championship |
+
+**UITest suite:** `MnemoAcademyUITests` (5) — banner, 4 phases, SRS→lesson, semester lock, deeplink bypass guard.
+
+### 10.9 Accessibility IDs (smoke / UITest)
+
+`child_mnemo_academy_banner`, `child_mnemo_brand_title`, `child_mnemo_phase_label_0…3`, `child_mnemo_srs_due_badge`, `child_mnemo_semester_locked`, `child_mnemo_semester_progress`, `child_mnemo_lesson_phase_header`, `child_mnemo_baseline_sheet`, `aladdin_root_child_content`.
+
+---
+
+## 11. Промпт для следующей ML-сессии (Phase C)
 
 ```
 Рабочий корень: ALADDIN_NEW/mobile_apps/ALADDIN_iOS
@@ -388,7 +504,7 @@ Catalog banner: всегда **4 точки** (`MnemoAcademyPhase.catalogPhases`
 
 ---
 
-## 11. Жёсткие ограничения (всегда)
+## 12. Жёсткие ограничения (всегда)
 
 | Запрет | Причина |
 |--------|---------|

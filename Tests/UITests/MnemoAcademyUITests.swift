@@ -101,7 +101,11 @@ final class MnemoAcademyUITests: XCTestCase {
             XCTFail("Invalid mnemo review deeplink URL")
             return
         }
-        app.open(url)
+        if #available(iOS 16.4, *) {
+            app.open(url)
+        } else {
+            throw XCTSkip("XCUIApplication.open(URL) requires iOS 16.4+")
+        }
 
         XCTAssertTrue(app.otherElements["child_mnemo_semester_locked"].waitForExistence(timeout: 12))
         XCTAssertTrue(app.otherElements["aladdin_root_child_content"].exists)

@@ -9,6 +9,8 @@
 
 **Дополнение 2026-04-25 (iOS plan-fact + `smart_api_tester.py`):** см. **§6.3** в этом файле — итог по счётчику плана **174/178**, прогон тестера по `https://aladdin-ai.ru`, исправленный контракт `register-device` (`device_id` → `access_token`).
 
+**Дополнение 2026-06-06 (Memory Academy build 225):** см. **§6.8** — локальные iOS API MnemoCore (не REST); SSOT `docs/MNEMO_PROJECT_SYNC.md` §10.
+
 **Дополнение 2026-06-03 (backend fixes + OpenAPI SSOT):** см. **§6.7** — что уже на VPS, что в git; **`GET https://aladdin-ai.ru/openapi.json`** = **491 paths**; OpenAPI audit **534 ops → 0×5xx** (после фиксов `platform/profile`, `rewards/history`, wellness export/values-card).
 
 ---
@@ -572,6 +574,34 @@ python3 smart_api_tester.py --wellness-only
 - `docs/OPENAPI_CONFORMANT_AUDIT_20260602T212620.json`
 
 Полный wellness deploy (`scripts/deploy_wellness_p1.sh`) **не нужен** — точечные файлы уже на сервере.
+
+### 6.8) Memory Academy — local iOS API (build 225, не REST)
+
+**2026-06-06 · build 225 · 111/119 tasks · код 100%**
+
+Memory Academy (MnemoCore) — **локальные Swift API** + `UserDefaults` / `Application Support`. **Не входят** в OpenAPI / JWT audit. Единый реестр:
+
+| SSOT | Содержание |
+|------|------------|
+| **`docs/MNEMO_PROJECT_SYNC.md` §10** | Полный Public API: baseline/MQ, SRS, spine, flags, deeplink, UITest args |
+| `docs/MNEMONICS_ML_HANDOFF.md` §14 | Category→semester table + spine `gate` / `itemGate` |
+| `docs/MNEMONICS_CHILD_IMPLEMENTATION_PLAN.md` §Q | 119 tasks checklist |
+
+**Ключевые API (baseline B12, проверены unit-тестами в коде):**
+
+```swift
+MnemonicBaselineAssessment.shared.offerKind()  // .initialBaseline | .quarterlyRetest | nil
+MnemonicBaselineAssessment.shared.isQuarterlyRetestDue()
+MnemonicBaselineAssessment.shared.daysUntilRetest()
+MnemonicBaselineAssessment.shared.nextRetestDate()
+MnemonicBaselineAssessment.shared.hasSession(inCalendarQuarterOf:)
+```
+
+**DEBUG UITest:** `-UITestMnemoBaselineRetest` — force retest offer; `-UITestMnemoBaseline` — force any offer.
+
+**Deeplink (local routing, не HTTP):** `aladdin://mnemo/review?category=games` → `MnemoDeepLinkRouter`.
+
+**Phase C:** unit/UITest прогон — Xcode Test Navigator или `xcodebuild` без pipe; см. `MNEMO_PROJECT_SYNC.md` §6.
 
 ### 7) JWT TTL policy (normative)
 

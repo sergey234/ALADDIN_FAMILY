@@ -518,9 +518,19 @@ Unlock: `masteryFraction(semester N-1) ≥ 0.70` (`SemesterGate.unlockThresholdP
 
 ### 14.4 API spine
 
+> **Полный реестр:** `docs/MNEMO_PROJECT_SYNC.md` §10 (baseline, SRS, flags, UITest args, a11y IDs).
+
 ```swift
 MnemonicCurriculumSpine.shared.gate(for: category)       // category-level
 MnemonicCurriculumSpine.shared.itemGate(forItemId:category:) // item-level (study split)
+
+// Baseline / MQ (B12)
+MnemonicBaselineAssessment.shared.offerKind()            // .initialBaseline | .quarterlyRetest
+MnemonicBaselineAssessment.shared.isQuarterlyRetestDue()
+MnemonicBaselineAssessment.shared.daysUntilRetest()
+MnemonicBaselineAssessment.shared.nextRetestDate()
+MnemonicBaselineAssessment.shared.hasSession(inCalendarQuarterOf:)
+// DEBUG: -UITestMnemoBaselineRetest, -UITestMnemoBaseline
 ```
 
 ---
