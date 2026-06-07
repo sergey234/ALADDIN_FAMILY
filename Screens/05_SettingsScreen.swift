@@ -218,7 +218,7 @@ struct SettingsScreen: View {
 
                 settingRow(
                     icon: "brain.head.profile",
-                    title: "AI-помощник и 3 героя",
+                    title: localizationManager.localized("ai_data_sharing_title"),
                     subtitle: localizationManager.localized("ai_data_sharing_subtitle_extended"),
                     isEnabled: $aiDataSharingEnabled
                 )

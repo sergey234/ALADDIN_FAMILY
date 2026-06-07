@@ -3620,29 +3620,94 @@ class APIService: ObservableObject {
     }
     
     // MARK: - Dark Web Monitoring API
+
+    private struct DarkWebLeaksListResponse: Codable {
+        let items: [DarkWebLeakListItem]
+        let nextCursor: String?
+
+        enum CodingKeys: String, CodingKey {
+            case items
+            case nextCursor = "next_cursor"
+        }
+    }
+
+    private struct DarkWebLeakListItem: Codable {
+        let id: String
+        let dataType: String?
+        let leakDate: String?
+        let source: String?
+        let severity: String?
+        let status: String?
+
+        enum CodingKeys: String, CodingKey {
+            case id
+            case dataType = "data_type"
+            case leakDate = "leak_date"
+            case source, severity, status
+        }
+    }
+
+    private func darkWebUserIdQueryItem() -> String? {
+        guard let userId = FamilyLocalStore.currentJWTUserId()?.trimmingCharacters(in: .whitespacesAndNewlines),
+              !userId.isEmpty else {
+            return nil
+        }
+        return "user_id=\(userId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? userId)"
+    }
+
+    private func mapDarkWebLeakListItem(_ item: DarkWebLeakListItem) -> DarkWebLeak? {
+        let id = item.id.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !id.isEmpty else { return nil }
+        let leakDate = Self.parseISO8601Date(item.leakDate) ?? Date()
+        let dataType = LeakDataType(rawValue: item.dataType ?? "") ?? .email
+        let severity = LeakSeverity(rawValue: item.severity ?? "") ?? .medium
+        let status = LeakStatus(rawValue: item.status ?? "") ?? .new
+        return DarkWebLeak(
+            id: id,
+            dataType: dataType,
+            value: "***",
+            fullValue: nil,
+            leakDate: leakDate,
+            discoveryDate: leakDate,
+            source: item.source ?? "ALADDIN",
+            severity: severity,
+            status: status,
+            recommendations: []
+        )
+    }
     
-    /// Получить утечки данных
+    /// Получить утечки данных (prod: `/dark-web/leaks/list` + user scope)
     func getDarkWebLeaks(status: String? = nil, severity: String? = nil, completion: @escaping (Result<[DarkWebLeak], Error>) -> Void) {
-        var endpoint = AppConfig.Endpoint.darkWebLeaks
-        var queryItems: [String] = []
-        
+        var queryItems: [String] = ["limit=100"]
+        if let userQuery = darkWebUserIdQueryItem() {
+            queryItems.append(userQuery)
+        }
         if let status = status {
             queryItems.append("status=\(status)")
         }
         if let severity = severity {
             queryItems.append("severity=\(severity)")
         }
-        
-        if !queryItems.isEmpty {
-            endpoint += "?" + queryItems.joined(separator: "&")
+        let endpoint = AppConfig.Endpoint.darkWebLeaksList + "?" + queryItems.joined(separator: "&")
+
+        networkManager.get(endpoint: endpoint) { (result: Result<DarkWebLeaksListResponse, Error>) in
+            switch result {
+            case .success(let response):
+                let leaks = response.items.compactMap { self.mapDarkWebLeakListItem($0) }
+                completion(.success(leaks))
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
-        
-        networkManager.get(endpoint: endpoint, completion: completion)
     }
     
     /// Получить статистику Dark Web
     func getDarkWebStats(completion: @escaping (Result<DarkWebStats, Error>) -> Void) {
-        networkManager.get(endpoint: AppConfig.Endpoint.darkWebStats) { (result: Result<ComponentStatsDTO, Error>) in
+        var endpoint = AppConfig.Endpoint.darkWebStats
+        if let userQuery = darkWebUserIdQueryItem() {
+            endpoint += "?\(userQuery)"
+        }
+        networkManager.get(endpoint: endpoint) { (result: Result<ComponentStatsDTO, Error>) in
             switch result {
             case .success(let dto):
                 let stats = DarkWebStats(

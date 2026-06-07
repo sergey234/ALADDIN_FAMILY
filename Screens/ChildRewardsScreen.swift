@@ -361,11 +361,6 @@ struct ChildRewardsScreen: View {
             // Повторная проверка после установки
             let finalRole = UserDefaults.standard.string(forKey: "current_user_role") ?? "НЕ УСТАНОВЛЕНА"
             print("   📋 Финальная роль: '\(finalRole)'")
-            
-            Task {
-                VisualLogger.shared.log("🔄 Initial load triggered", level: .info, category: "CHILD_REWARDS.UI")
-                await runInitialLoad()
-            }
 
             // Hard-fallback: never keep the screen in endless initial loading.
             if !isInitialLoadCompleted && !initialLoadingFallbackScheduled {
@@ -480,21 +475,24 @@ struct ChildRewardsScreen: View {
             }
         }
         .onReceive(viewModel.$errorMessage) { message in
-            // ✅ ИСПРАВЛЕНИЕ: Локализуем ошибку "Ресурс не найден"
             if let errorMessage = message {
                 VisualLogger.shared.log("❌ ViewModel error = \(errorMessage)", level: .error, category: "CHILD_REWARDS.UI")
-                // Не держим экран в вечной initial-loading фазе, если API вернул ошибку/таймаут.
                 isInitialLoadCompleted = true
-                if errorMessage.contains("Ресурс не найден") || errorMessage.contains("Not Found") || errorMessage.contains("404") {
-                    loadErrorMessage = localizationManager.localized("child_rewards_error_resource_not_found")
-                } else {
-                    loadErrorMessage = errorMessage
-                }
+                loadErrorMessage = errorMessage
             } else {
                 VisualLogger.shared.log("ℹ️ ViewModel error cleared", level: .info, category: "CHILD_REWARDS.UI")
                 loadErrorMessage = nil
             }
         }
+        .task(id: rewardsLoadTaskId) {
+            VisualLogger.shared.log("🔄 Initial load triggered (.task)", level: .info, category: "CHILD_REWARDS.UI")
+            await runInitialLoad()
+        }
+    }
+
+    /// Стабильный id для `.task` — перезагрузка при смене выбранного ребёнка.
+    private var rewardsLoadTaskId: String {
+        effectiveChildId ?? "__default_child_rewards__"
     }
     
     // MARK: - Header

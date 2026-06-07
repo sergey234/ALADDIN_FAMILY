@@ -13,7 +13,6 @@ struct DarkWebMonitoringModal: View {
     
     @Binding var isPresented: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @EnvironmentObject private var analyticsViewModel: AnalyticsViewModel
     @StateObject private var viewModel = DarkWebMonitoringViewModel()
     
     // Фильтры
@@ -50,11 +49,16 @@ struct DarkWebMonitoringModal: View {
                     .ignoresSafeArea()
                 
                 VStack(spacing: 0) {
-                    // Статистика
+                    // Статистика — только с API (не из analytics aggregator)
                     if let stats = viewModel.stats {
-                        statsSection(stats: stats)
-                            .padding(.horizontal, Spacing.screenPadding)
-                            .padding(.top, Spacing.m)
+                        VStack(spacing: Spacing.xs) {
+                            statsSection(stats: stats)
+                            Text(localizationManager.localized("dark_web_data_source_server"))
+                                .font(.caption2)
+                                .foregroundColor(.textSecondary)
+                        }
+                        .padding(.horizontal, Spacing.screenPadding)
+                        .padding(.top, Spacing.m)
                     }
                     
                     // Вкладки
@@ -92,14 +96,8 @@ struct DarkWebMonitoringModal: View {
                 }
             }
         }
-        .task {
-            // Первичное применение агрегированных данных
-            viewModel.applyFrom(components: analyticsViewModel.componentsAnalytics)
-            // Дополнительно дотягиваем подробности (утечки/сканы), если нужно
+        .task(id: "\(filterStatus)-\(filterSeverity)") {
             await loadData()
-        }
-        .onReceive(analyticsViewModel.$componentsAnalytics) { components in
-            viewModel.applyFrom(components: components)
         }
         .overlay(alignment: .center) {
             if viewModel.isLoading {
@@ -518,6 +516,24 @@ struct DarkWebMonitoringModal: View {
             Text(localizationManager.localized("dark_web_no_leaks"))
                 .font(.body)
                 .foregroundColor(.textSecondary)
+                .multilineTextAlignment(.center)
+
+            Text(localizationManager.localized("dark_web_no_leaks_cta"))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+                .multilineTextAlignment(.center)
+
+            Button(action: { showDataInput = true }) {
+                HStack {
+                    Image(systemName: "magnifyingglass")
+                    Text(localizationManager.localized("dark_web_scan_start_button"))
+                }
+                .font(.body)
+                .foregroundColor(.primaryBlue)
+            }
+            .buttonStyle(PlainButtonStyle())
+            .disabled(!AppConfig.isDarkWebServerScanEnabled || viewModel.isLoading)
+            .opacity(AppConfig.isDarkWebServerScanEnabled ? 1 : 0.45)
         }
         .frame(maxWidth: .infinity)
         .padding(Spacing.xxl)

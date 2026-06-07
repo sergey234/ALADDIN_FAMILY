@@ -1891,6 +1891,8 @@
 "dark_web_action_change_password" = "Сменить пароль";
 "dark_web_scans_history" = "История сканирований";
 "dark_web_no_leaks" = "Утечек не найдено";
+"dark_web_no_leaks_cta" = "Запустите проверку — добавьте email или телефон";
+"dark_web_data_source_server" = "Данные с сервера ALADDIN";
 "dark_web_no_scans" = "Нет истории сканирований";
 "dark_web_scan_data_input_title" = "Введите данные для сканирования";
 "dark_web_scan_data_email" = "Email";

@@ -164,6 +164,60 @@ def _execute_write(sql: str, params: Dict[str, Any]) -> int:
         return int(getattr(res, "rowcount", 0) or 0)
 
 
+# Dark Web: scan audit rows must not inflate breach counters in prod UI.
+_DARK_WEB_SCAN_SOURCES: Tuple[str, ...] = ("scan_start", "scan_fast", "scan_secure")
+_dark_web_user_id_column: Optional[bool] = None
+
+
+def _dark_web_has_user_id_column(conn) -> bool:
+    """Probe once whether `darkweb.darkweb_leaks` has per-user scope."""
+    global _dark_web_user_id_column
+    if _dark_web_user_id_column is not None:
+        return _dark_web_user_id_column
+    row = conn.execute(text("""
+        SELECT 1
+        FROM information_schema.columns
+        WHERE table_schema = 'darkweb'
+          AND table_name = 'darkweb_leaks'
+          AND column_name = 'user_id'
+        LIMIT 1
+    """)).first()
+    _dark_web_user_id_column = row is not None
+    return _dark_web_user_id_column
+
+
+def _dark_web_breach_predicate(conn, user_id: Optional[str]) -> Tuple[str, Dict[str, Any]]:
+    """
+    SQL predicate for real breach rows only (excludes scan audit events).
+    Without user_id or without user_id column — returns empty set for prod honesty.
+    """
+    params: Dict[str, Any] = {}
+    parts = [
+        "source NOT IN ('scan_start', 'scan_fast', 'scan_secure')",
+    ]
+    if not user_id:
+        parts.append("1 = 0")
+    elif _dark_web_has_user_id_column(conn):
+        params["user_id"] = str(user_id)
+        parts.append("user_id::text = :user_id")
+    else:
+        parts.append("1 = 0")
+    return " AND ".join(parts), params
+
+
+def _dark_web_empty_stats() -> ReportStatsResponse:
+    return ReportStatsResponse(
+        total=0,
+        blocked=0,
+        allowed=0,
+        last_24h=0,
+        last_7d=0,
+        last_30d=0,
+        source="api_db",
+        timestamp=datetime.now(),
+    )
+
+
 async def _call_sfm_function(func_name: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
     """
     Вызвать SFM функцию через adapter
@@ -260,10 +314,13 @@ async def get_dark_web_stats(
     Returns:
         Статистика мониторинга Dark Web
     """
+    if not user_id:
+        return _dark_web_empty_stats()
     try:
         from app.database.database import engine  # type: ignore
         with engine.connect() as conn:
-            row = conn.execute(text("""
+            predicate, params = _dark_web_breach_predicate(conn, user_id)
+            row = conn.execute(text(f"""
                 SELECT
                   COUNT(*)::int AS total,
                   COALESCE(SUM(CASE WHEN status = 'resolved' THEN 1 ELSE 0 END),0)::int AS blocked,
@@ -272,7 +329,8 @@ async def get_dark_web_stats(
                   COALESCE(SUM(CASE WHEN leak_date >= NOW() - INTERVAL '7 days' THEN 1 ELSE 0 END),0)::int AS last_7d,
                   COALESCE(SUM(CASE WHEN leak_date >= NOW() - INTERVAL '30 days' THEN 1 ELSE 0 END),0)::int AS last_30d
                 FROM darkweb.darkweb_leaks
-            """)).mappings().first()
+                WHERE {predicate}
+            """), params).mappings().first()
         result = dict(row or {})
         result["source"] = "api_db"
         result["timestamp"] = datetime.now().isoformat()
@@ -536,23 +594,41 @@ async def reports_dark_web_leaks_compat() -> List[Dict[str, Any]]:
 
 @router.get("/dark-web/leaks/list", response_model=CursorListResponse)
 async def reports_dark_web_leaks(
-    limit: int = Query(5, ge=1, le=100),
+    user_id: Optional[str] = Query(None, description="ID пользователя"),
+    status: Optional[str] = Query(None, description="Фильтр по статусу (new, resolved, ...)"),
+    severity: Optional[str] = Query(None, description="Фильтр по критичности"),
+    limit: int = Query(50, ge=1, le=100),
     cursor: Optional[str] = Query(None, description="Opaque cursor, usually last leak_date"),
 ) -> CursorListResponse:
-    cond = "WHERE 1=1"
-    params: Dict[str, Any] = {"limit": limit}
-    if cursor:
-        cond += " AND leak_date < :cursor"
-        params["cursor"] = cursor
-    sql = f"""
-        SELECT id, data_type, leak_date, source, severity, status
-        FROM darkweb.darkweb_leaks
-        {cond}
-        ORDER BY leak_date DESC
-        LIMIT :limit
-    """
-    items, next_cursor = _fetch_list_from_db(sql, params)
-    return CursorListResponse(items=items, next_cursor=next_cursor)
+    if not user_id:
+        return CursorListResponse(items=[], next_cursor=None)
+    try:
+        from app.database.database import engine  # type: ignore
+        with engine.connect() as conn:
+            predicate, params = _dark_web_breach_predicate(conn, user_id)
+            cond = f"WHERE {predicate}"
+            if status:
+                cond += " AND status = :status"
+                params["status"] = status
+            if severity:
+                cond += " AND severity = :severity"
+                params["severity"] = severity
+            if cursor:
+                cond += " AND leak_date < :cursor"
+                params["cursor"] = cursor
+            params["limit"] = limit
+            sql = f"""
+                SELECT id, data_type, leak_date, source, severity, status
+                FROM darkweb.darkweb_leaks
+                {cond}
+                ORDER BY leak_date DESC
+                LIMIT :limit
+            """
+            items, next_cursor = _fetch_list_from_db(sql, params)
+            return CursorListResponse(items=items, next_cursor=next_cursor)
+    except Exception as e:
+        logger.error(f"DB list error dark-web leaks: {e}")
+        raise HTTPException(status_code=503, detail="Protection backend temporarily unavailable")
 
 
 @router.get("/dark-web/resolve", response_model=ReportCompatBoolResponse)

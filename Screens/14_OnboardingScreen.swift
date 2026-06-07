@@ -64,12 +64,12 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 1:
-            // OB_02: +1 строка вверх (28pt) — «безопасности»; desc/scrim как OB_04 D-lite
+            // OB_02: +2 строки вверх (56pt total) — «Ваш персональный агент безопасности»; desc/scrim как OB_04 D-lite
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 12, y: 412, width: 361, height: 78),
+                title: CGRect(x: 12, y: 384, width: 361, height: 78),
                 desc: CGRect(x: 12, y: 494, width: 370, height: 132),
-                scrim: CGRect(x: 0, y: 504, width: 393, height: 310),
+                scrim: CGRect(x: 0, y: 476, width: 393, height: 310),
                 scrimMaxOpacity: 0.42,
                 maxTitleLines: 3,
                 maxBodyLines: 5,
@@ -193,6 +193,9 @@ private func scrimGradientStops(for anchor: OnboardingFigmaAnchor) -> [Gradient.
         midLocation = 0.45
         midOpacity = 0.189
     case (504, 0.42):
+        midLocation = 0.45
+        midOpacity = 0.189
+    case (476, 0.42):
         midLocation = 0.45
         midOpacity = 0.189
     case (532, 0.38):

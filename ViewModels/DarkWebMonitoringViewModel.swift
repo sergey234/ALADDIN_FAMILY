@@ -34,27 +34,6 @@ class DarkWebMonitoringViewModel: ObservableObject {
     
     // MARK: - Public Methods
     
-    /// Применить агрегированную аналитику компонентов (без прямых сетевых запросов)
-    func applyFrom(components: ComponentsAnalytics?) {
-        guard let comp = components, let dw = comp.getStats(for: "dark_web_monitoring_agent") else {
-            self.stats = nil
-            return
-        }
-        let totalLeaks = dw.getIntMetric(key: "leaks_found")
-        let newLeaks = dw.getIntMetric(key: "new_leaks")
-        // Совместимые поля могут отсутствовать — используем нули
-        let resolved = dw.getIntMetric(key: "resolved_leaks")
-        let critical = dw.getIntMetric(key: "critical_leaks")
-        // lastScan отсутствует в агрегаторе — оставляем nil
-        self.stats = DarkWebStats(
-            totalLeaks: totalLeaks,
-            newLeaks: newLeaks,
-            resolvedLeaks: resolved,
-            criticalLeaks: critical,
-            lastScanDate: nil
-        )
-    }
-    
     func loadData(status: String? = nil, severity: String? = nil) async {
         // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед загрузкой
         guard AppConfig.authToken != nil else {
@@ -144,6 +123,14 @@ class DarkWebMonitoringViewModel: ObservableObject {
             self.scans = []
         }
     }
+
+    private static let emptyStats = DarkWebStats(
+        totalLeaks: 0,
+        newLeaks: 0,
+        resolvedLeaks: 0,
+        criticalLeaks: 0,
+        lastScanDate: nil
+    )
     
     func resolveLeak(leakId: String) async throws {
         try await withCheckedThrowingContinuation { continuation in

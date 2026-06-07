@@ -9,7 +9,7 @@ enum AIOutboundTextGate {
         var errorDescription: String? {
             switch self {
             case .optInRequired:
-                return "Включите «Облачный AI-помощник» в Настройках, чтобы отправлять вопросы помощнику."
+                return LocalizationManager.shared.localized("ai_error_consent_required")
             }
         }
     }

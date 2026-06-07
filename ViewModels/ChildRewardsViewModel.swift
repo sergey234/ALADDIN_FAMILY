@@ -63,11 +63,38 @@ final class ChildRewardsViewModel: ObservableObject {
                 referralRewards: referralRewards
             )
         } catch {
+            if Task.isCancelled || Self.isIgnorableLoadError(error) {
+                VisualLogger.shared.log("ℹ️ load() cancelled — no user-facing error", level: .info, category: "CHILD_REWARDS.API")
+                return
+            }
             if let networkError = error as? NetworkError, case .timeout = networkError {
                 VisualLogger.shared.log("⏱️ load() hard-timeout \(requestTimeoutSeconds)s", level: .warning, category: "CHILD_REWARDS.API")
+            } else {
+                VisualLogger.shared.log("❌ load() failed: \(error.localizedDescription)", level: .error, category: "CHILD_REWARDS.API")
             }
-            VisualLogger.shared.log("❌ load() failed: \(error.localizedDescription)", level: .error, category: "CHILD_REWARDS.API")
-            errorMessage = error.localizedDescription
+            let key = Self.localizationKey(for: error)
+            errorMessage = LocalizationManager.shared.localized(key)
+        }
+    }
+
+    /// Отмена задачи (уход с экрана, смена `.task`) — не ошибка для пользователя.
+    private static func isIgnorableLoadError(_ error: Error) -> Bool {
+        if error is CancellationError { return true }
+        if let urlError = error as? URLError, urlError.code == .cancelled { return true }
+        return false
+    }
+
+    private static func localizationKey(for error: Error) -> String {
+        let networkError = (error as? NetworkError) ?? NetworkError.from(error)
+        switch networkError {
+        case .notFound:
+            return "child_rewards_error_resource_not_found"
+        case .timeout, .noConnection, .serverUnavailable, .serviceUnavailable, .dnsResolutionFailed:
+            return "child_rewards_error_generic"
+        case .unauthorized, .forbidden:
+            return "child_rewards_error_generic"
+        default:
+            return "child_rewards_error_generic"
         }
     }
     

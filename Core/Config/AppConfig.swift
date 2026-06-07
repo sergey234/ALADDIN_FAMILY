@@ -241,6 +241,7 @@ struct AppConfig {
         
         // Dark Web Monitoring
         static let darkWebLeaks = "/api/reports/dark-web/leaks"
+        static let darkWebLeaksList = "/api/reports/dark-web/leaks/list"
         static let darkWebStats = "/api/reports/dark-web/stats"
         static let darkWebScans = "/api/reports/dark-web/scans"
         static let darkWebResolve = "/api/reports/dark-web/resolve"

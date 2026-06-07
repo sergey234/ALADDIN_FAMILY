@@ -1631,6 +1631,8 @@
 "dark_web_modal_title" = "Dark Web Monitoring";
 "dark_web_new_leaks" = "New";
 "dark_web_no_leaks" = "No leaks found";
+"dark_web_no_leaks_cta" = "Run a scan — add email or phone";
+"dark_web_data_source_server" = "Data from ALADDIN server";
 "dark_web_no_scans" = "No scan history";
 "dark_web_resolved" = "Resolved";
 "dark_web_scan_add_data" = "Add data for scanning";
