@@ -29,7 +29,7 @@ Prod URL: https://aladdin-ai.ru
 
 iOS фаза C (use_llm в API) уже в коде — нужен App Store / TestFlight билд после флага на prod.
 
-Не трогай: WELLNESS_CANARY_PERCENT (оставить 100), Sleep audio, Rive assets.
+Не трогай: WELLNESS_CANARY_PERCENT (оставить 100), Sleep audio. Rive = только 3× `Resources/Companion/*.riv` ([RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md)).
 Пароли не коммитить. После каждого шага — verify_wellness_prod.sh.
 ```
 

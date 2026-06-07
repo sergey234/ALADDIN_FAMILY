@@ -32,7 +32,7 @@ cd /Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 ./scripts/verify_wellness_reflective_prod.sh
 ```
 
-**Не в этом деплое (батч 7):** OpenRouter / Hermes keys, Parent LLM `llm_used`, Rive, sleep CDN, clinical `approved`.
+**Не в этом деплое (батч 7):** OpenRouter / Hermes keys, Parent LLM `llm_used`, **Rive** (3× `.riv` только iOS bundle — [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md)), sleep CDN. Clinical ✅.
 
 ---
 

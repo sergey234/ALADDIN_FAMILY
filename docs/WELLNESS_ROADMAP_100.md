@@ -151,7 +151,7 @@ iOS почти всегда передаёт `wellness_pillar` из `WellnessSes
 | **PG** | Перенести чтение wellness-данных в Postgres (запись уже dual-write) | `r100-1-04` |
 | **UX на телефоне** | TestFlight, навигация, подписи героев, без «столп» | `r100-0-01`, `r100-0-05`, `r100-3-hero-*` |
 
-**Rive, clinical, sleep, docs** — **в самом конце** (батч 7), когда Спринт A+B закрыты.
+**Rive** (единый: [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md) — **02b→07** 3× `.riv`, **07b** Wellness Hub), **clinical**, **sleep**, **docs** — **в самом конце** (батч 7).
 
 ---
 
@@ -338,7 +338,7 @@ iOS почти всегда передаёт `wellness_pillar` из `WellnessSes
 
 | id | Задача | DoD |
 |----|--------|-----|
-| `r100-7-07` | Rive | `.riv` на дорожку + `WellnessPillarEmotionView` |
+| `r100-7-07` | Rive **HERO-3-07b** | Те же 3× `Resources/Companion/*.riv` + Hub; art = **[COMPANION_HERO_ART_CANON](./COMPANION_HERO_ART_CANON.md)** 02b→07 — **[RIVE_MASTER_PLAN](./RIVE_MASTER_PLAN.md)** |
 | `r100-0-03` | **Hermes / OpenRouter keys** | `.env`: валидный `OPENROUTER_API_KEY` или `HERMES_OPENROUTER_API_KEYS`; `chat_once` без 401 |
 | `r100-0-04` | **Parent LLM live** | `FEATURE_WELLNESS_PARENT_LLM=1` + restart; playbook `use_llm=true` → `llm_used: true` |
 | `r100-7-08` | Sleep CDN | Реальные mp3 URL + iOS кэш (см. Часть 3г) |
@@ -386,7 +386,7 @@ curl -sS -H "Authorization: Bearer TOKEN" \
 | 11 | Unit CI | r100-2-11 | 2 | P1 | iOS |
 | 12 | E2E | r100-2-12 | 2 | P1 | QA |
 | 14 | Glossary | r100-2-14 | 2 | P2 | Docs |
-| 7 | Rive | r100-7-07 | **7 (конец)** | P1 | Design+iOS |
+| 7 | Rive (3 riv + 07b Hub) | r100-7-07 | **7 (конец)** | P1 | Art: [COMPANION_HERO_ART_CANON](./COMPANION_HERO_ART_CANON.md) |
 | 8 | Sleep CDN | r100-7-08 | **7 (конец)** | P1 | BE+iOS |
 | 10 | Clinical | r100-7-10 | **7 (конец)** | P0 | PO+внешний |
 | — | Hero taglines UI | r100-3-hero-* | **3** | P0 | iOS+BE |
@@ -409,7 +409,7 @@ curl -sS -H "Authorization: Bearer TOKEN" \
 | **Потом** | `r100-0-01`, `r100-0-05` | TestFlight + nav smoke |
 | **Потом** | `r100-1-04` | PG read после 7 дней dual-write |
 | **Потом** | `r100-5-stream`, `r100-5-voice` | Streaming + устойчивый голос |
-| **В конце** | `r100-7-07`, `r100-0-03`, `r100-0-04` | **Rive + OpenRouter/Hermes + Parent LLM** |
+| **В конце** | `r100-7-07`, `r100-0-03`, `r100-0-04` | **Rive** ([RIVE_MASTER_PLAN](./RIVE_MASTER_PLAN.md): 07 + 07b) **+ Hermes + Parent LLM** |
 | **В конце** | `r100-7-08`, `r100-7-10` | Sleep CDN, clinical → `approved` |
 | **Один прогон** | — | См. **[WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md)** — всё накопленное BE+iOS |
 
@@ -449,7 +449,7 @@ PO: выкат **после** закрытия нужного по плану. �
 
 Позже: r100-5-stream, r100-5-voice
 
-В конце (батч 7): r100-7-07 Rive + r100-0-03/0-04 Hermes keys + r100-7-08 sleep + r100-7-10 clinical
+В конце (батч 7): Rive [RIVE_MASTER_PLAN](./RIVE_MASTER_PLAN.md) (02b→07, 07b Hub QA) + r100-0-03/0-04 Hermes + r100-7-08 sleep. Clinical ✅ hero-x-30.
 
 Уже в репо (проверить на device + deploy BE): r100-3-hero-* taglines, без «Стиль по умолчанию»
 

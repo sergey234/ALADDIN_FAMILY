@@ -377,6 +377,17 @@ enum WellnessPillar: String, CaseIterable, Identifiable {
         }
         return WellnessPillar.allCases
     }
+
+    /// r100-7-07 / **HERO-3-07b** — на карточке Hub тот же 3× `.riv`, что в чате; дорожка = эмоция, не отдельный персонаж.
+    /// См. docs/COMPANION_HERO_ART_CANON.md · docs/WELLNESS_PILLAR_RIVE_PLAN.md (HERO-3-07b)
+    var companionHubPreviewEmotion: CompanionHeroEmotion {
+        switch self {
+        case .cognitive: return .thinking
+        case .behavioral: return .happy
+        case .humanistic: return .comfort
+        case .jung: return .curious
+        }
+    }
 }
 
 struct WellnessCheckinDraft: Codable, Equatable {

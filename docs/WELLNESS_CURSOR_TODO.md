@@ -134,7 +134,7 @@
 - [x] **p3-06** — Premium paywall (timeline, full assessments, packs)
 - [x] **p3-07** — Values card (ACT) optional в «Принять себя»
 - [x] **p3-08** — Senior: merge elderly health journal
-- [x] **p3-09** — Rive emotions 4 pillars + neuro TTS
+- [x] **p3-09** — Rive pillar map + neuro TTS (UI Hub = **HERO-3-07b**, 3× companion `.riv` — [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md))
 - [x] **p3-10** — Canary 5% → 100% + runbook
 - [x] **p3-11** — Postgres migration + encryption at rest
 - [x] **p3-12** — Premium ONLY after ethics + 48h crisis clean (`/premium/eligibility`, dreams gate)

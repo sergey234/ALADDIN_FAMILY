@@ -320,7 +320,7 @@ prefixed =
 | 0 | ADR: формат pack + контракт prefix; hero intros; clinical review шаблонов | p0-14 … p0-16 |
 | 1 | `wellness_prompt_builder`; cognitive + humanistic v1; router patch; smoke | p1-26 … p1-29 |
 | 2 | behavioral + jung packs; exercise 80/20 policy | p2-49 … p2-51 |
-| 3 | orchestrator выбирает `pack_version`; Rive по pillar (см. p3-09) | p3-20 |
+| 3 | orchestrator `pack_version`; Rive Hub = 3× companion `.riv` ([RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md) 07+07b) | p3-20 |
 
 #### 4.3.6 Запреты (не делать)
 

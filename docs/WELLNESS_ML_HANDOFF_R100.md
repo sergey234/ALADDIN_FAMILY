@@ -5,6 +5,7 @@
 > **Рабочая папка (ТОЛЬКО):** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
 > **Ядро wellness (старое):** **131/131** закрыто → [WELLNESS_CURSOR_TODO.md](./WELLNESS_CURSOR_TODO.md)  
 > **Дорожная карта «100%» (новое):** [WELLNESS_ROADMAP_100.md](./WELLNESS_ROADMAP_100.md) — todo id **`r100-*`**  
+> **Rive (единый):** [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md) — 3 героя, [COMPANION_HERO_ART_CANON](./COMPANION_HERO_ART_CANON.md)  
 > **Деплой (отложен PO):** [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md)
 
 ---
@@ -24,6 +25,7 @@
 4) docs/WELLNESS_DEPLOY_BACKLOG.md (деплой ОДНИМ прогоном — пока НЕ делать без PO)
 5) docs/WELLNESS_PLATFORM_MASTER_PLAN.md (архитектура v2.5)
 6) docs/WELLNESS_CURSOR_TODO.md (131 задача — все completed, справочник)
+7) docs/RIVE_MASTER_PLAN.md (Rive: только 3× .riv, 02b→07→07b; не 4 wellness riv)
 
 Продуктовая цель (главное для PO):
 - Три героя (Единорог, Аладдин, Джин) = ОДИН LLM + разные «костюмы» (persona + hero_flavor + дорожка wellness).
@@ -34,7 +36,7 @@
 
 Жёсткие решения PO:
 - Canary rollout ОТМЕНЁН (WELLNESS_CANARY_PERCENT=100).
-- OpenRouter/Hermes keys + Rive + clinical sign-off — БАТЧ 7 (в конце), не блокер локальной работы.
+- OpenRouter/Hermes keys + **Rive** (единый: [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md) — 3× `.riv`, 02b→07, 07b Hub) + clinical — БАТЧ 7 (в конце).
 - Деплой на VPS — после TestFlight/smoke, один прогон (см. DEPLOY_BACKLOG).
 
 Сервер: root@149.154.65.180, /opt/aladdin-backend, ~/.ssh/aladdin_server
@@ -151,7 +153,7 @@ Prod: https://aladdin-ai.ru
 
 ### 3.6 План / процесс
 
-- [WELLNESS_ROADMAP_100.md](./WELLNESS_ROADMAP_100.md) — батчи 0–7, **Hermes перенесён в батч 7** с Rive.
+- [WELLNESS_ROADMAP_100.md](./WELLNESS_ROADMAP_100.md) — батчи 0–7. Rive: [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md) (3× `.riv`, 02b→07, 07b Hub).
 - [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md) — очередь одного деплоя.
 - Скрипт `scripts/deploy_wellness_batch4.sh`.
 
@@ -198,7 +200,7 @@ Prod: https://aladdin-ai.ru
 | r100-5-ethics | 5 | Не ослаблять L3; parent не видит teen chat | **pending** | QA audit |
 | r100-6-store | 6 | App Store metadata | **pending** | PO |
 | r100-6-healthkit | 6 | HealthKit PO (Portal A или B) | **pending** | PO |
-| r100-7-07 | 7 | Rive `.riv` + PillarEmotion | **pending** | Design+iOS |
+| r100-7-07 | 7 | Rive Hub **07b** (те же 3 `.riv`; iOS wired) | **pending** | Ждёт **HERO-3-07** — **[RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md)** |
 | r100-7-08 | 7 | Sleep CDN mp3 | **pending** | BE+iOS |
 | r100-7-10 | 7 | Clinical → pack `approved` | **pending** | PO+внешний |
 | r100-7-docs | 7 | Docs «столп»→«дорожка» | **pending** | Docs |
@@ -212,7 +214,7 @@ Prod: https://aladdin-ai.ru
 5. **Деплой** — [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md).  
 6. **r100-0-02** verify 14/14.  
 7. Через 7 дней dual-write → **r100-1-04**.  
-8. **Батч 7** — Rive, ключи Hermes, clinical.
+8. **Батч 7** — Rive ([COMPANION_HERO_ART_CANON](./COMPANION_HERO_ART_CANON.md) 02b→07; QA чат + Wellness Hub), Hermes keys.
 
 ---
 
@@ -346,7 +348,7 @@ PYTHONPATH=. python3 -m pytest Tests/test_wellness_pillar_prompts.py -q
 - iOS TestFlight build
 - verify 14/14
 
-**Не в деплое сейчас:** OpenRouter, Rive, clinical `approved`.
+**Не в деплое сейчас:** OpenRouter, Rive (3× `.riv` — iOS bundle only, [RIVE_MASTER_PLAN](./RIVE_MASTER_PLAN.md)). Clinical ✅ hero-x-30.
 
 ---
 

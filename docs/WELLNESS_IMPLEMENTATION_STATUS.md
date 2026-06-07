@@ -17,6 +17,7 @@
 | [WELLNESS_CURSOR_TODO.md](./WELLNESS_CURSOR_TODO.md) | 131 задача p0–p18 — **все ☑, не переделывать** |
 | [WELLNESS_DEPLOY_BACKLOG.md](./WELLNESS_DEPLOY_BACKLOG.md) | Деплой одним прогоном (повторять после каждого BE-изменения) |
 | [WELLNESS_TESTFLIGHT_SMOKE_15.md](./WELLNESS_TESTFLIGHT_SMOKE_15.md) | 15 пунктов на device (r100-0-01) |
+| [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md) | **Единый Rive:** 3× `.riv` · 02b→07→07b · QA чат + Wellness Hub |
 
 ---
 
@@ -40,7 +41,7 @@ UI: «дорожка», не «столп». Parent playbook ≠ чат ребё
 1) TestFlight build **224** на device → r100-0-01 + hero-x-62 smoke
 2) Widget Extension в Xcode → r100-2-06 (~15 мин, MANUAL_WIDGET_SETUP.md)
 3) Через 7d dual-write → r100-1-04 PG read
-4) Батч 7: Hermes keys, Rive
+4) Батч 7: Hermes keys; Rive = COMPANION_HERO_ART_CANON 02b→07 (+ 07b Wellness Hub)
 
 Prod: https://aladdin-ai.ru · VPS root@149.154.65.180 · ~/.ssh/aladdin_server
 После BE deploy: ./scripts/verify_wellness_prod.sh → 14/14
@@ -220,7 +221,7 @@ Hero-x CI: ./scripts/verify_hero_x_phase6.sh + ./scripts/verify_companion_p0_pro
 | r100-5-ethics | 5 | L3 + parent не видит teen-chat | **completed** | QA (hero-x-63 gate) |
 | r100-6-store | 6 | App Store metadata | **pending** | PO |
 | r100-6-healthkit | 6 | HealthKit Portal A или rollback B | **pending** | PO |
-| r100-7-07 | 7 | Rive `.riv` + PillarEmotion | **pending** | Design+iOS |
+| r100-7-07 | 7 | Rive Hub = **HERO-3-07b** (3× companion `.riv`, iOS ✅) | **pending** | Ждёт **HERO-3-07** art |
 | r100-7-08 | 7 | Sleep stories MP3 CDN | **pending** | BE+iOS |
 | r100-7-10 | 7 | Clinical → pack `approved` | **completed** | hero-x-30 (2026-06-04) |
 | r100-7-docs | 7 | Внутренние docs «дорожка» | **pending** | Docs |
@@ -235,72 +236,90 @@ Hero-x CI: ./scripts/verify_hero_x_phase6.sh + ./scripts/verify_companion_p0_pro
 
 ---
 
-## 4. Оставшиеся 13 задач — что делать и с чего начать
+## 4. Оставшиеся 11 задач r100 — что делать и с чего начать
 
-> **Порядок для PO/ML (рекомендуемый):** 0-01 → 2-06 → (TestFlight снова) → 1-04 по календарю → батч 7.
+> **Трек:** только **r100** («герои + Companion»). **hero-x** — **37/37 ✅** (§2.6), сюда не входит.  
+> **Главный план:** [WELLNESS_ROADMAP_100.md](./WELLNESS_ROADMAP_100.md) (батчи 0–7, Часть 7 — пробелы).  
+> **Порядок для PO/ML:** r100-0-01 → r100-2-06 → r100-1-04 (по дате) → батч 7 (Hermes, Rive, sleep, docs).
 
-### r100-0-01 — TestFlight 15 пунктов (PO + device)
+Код r100 в основном готов (**28/39 completed**). Эти **11** — ручные шаги PO, инфра на VPS, Xcode target, медиа/дизайн и App Store; **не закрываются одним git-commit**.
+
+### 4.1 Сводка: 11 pending простым языком
+
+| ID | Простыми словами | Кто закрывает | Батч ([ROADMAP](./WELLNESS_ROADMAP_100.md)) | DoD / чеклист |
+|----|------------------|---------------|---------------------------------------------|---------------|
+| **r100-0-01** | Ручной прогон **TestFlight build 224** на iPhone: герои, wellness, голос, L3, приватность | PO + iOS | 0 (P0) | [WELLNESS_TESTFLIGHT_SMOKE_15.md](./WELLNESS_TESTFLIGHT_SMOKE_15.md) — 15 галочек |
+| **r100-0-03** | Ключи **Hermes/OpenRouter** на VPS в `.env`, чтобы LLM реально отвечал | PO + BE ops | **7** (конец) | `OPENROUTER_API_KEY` / `HERMES_*`; `chat_once` без 401 |
+| **r100-0-04** | **Playbook для родителя** с живым LLM (`llm_used: true`), не только JSON-фразы | BE ops (+ 0-03) | **7** | `FEATURE_WELLNESS_PARENT_LLM=1` + playbook `use_llm=true` |
+| **r100-1-04** | Включить **чтение wellness из Postgres** (`WELLNESS_PG_READ=1`) после dual-write | BE ops | 1 | ≥7 дней после старта dual-write (~2026-06-01) |
+| **r100-2-06** | **Widget Extension** в Xcode — код виджета есть, нет target в проекте | iOS ~15 мин | 2 | [MANUAL_WIDGET_SETUP.md](../MANUAL_WIDGET_SETUP.md) |
+| **r100-4-voice** | **Полировка скорости** голоса (STT→LLM→TTS), не «включить голос» | iOS | 4 | Субъективно быстрее на device |
+| **r100-6-store** | **App Store:** скриншоты, описание, privacy labels (без мед. обещаний) | PO | 6 | Материалы listing |
+| **r100-6-healthkit** | Решение PO: **HealthKit** (Portal A) или оставить без entitlement (B) | PO | 6 | [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md) |
+| **r100-7-07** | **Rive** — Hub: тот же герой что в чате; дорожка = цвет + эмоция | После **07** | **7** | [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md) |
+| **r100-7-08** | **Sleep stories** — реальные MP3 на CDN + проигрывание/кэш iOS | BE + iOS | **7** | URL в API, проверка на device |
+| **r100-7-docs** | В **внутренних docs** заменить «столп» → «дорожка» (в UI уже «дорожка») | Docs | **7** | Редакторский проход |
+
+**Не в этих 11 (уже закрыто):** `r100-7-10` Clinical → pack `approved` — **completed** (hero-x-30, 2026-06-04); см. §3 и [WELLNESS_CLINICAL_REVIEW.md](./WELLNESS_CLINICAL_REVIEW.md) Appendix C.
+
+### 4.2 Детали по каждой задаче
+
+#### r100-0-01 — TestFlight 15 пунктов (PO + device)
 
 - **Чеклист:** [WELLNESS_TESTFLIGHT_SMOKE_15.md](./WELLNESS_TESTFLIGHT_SMOKE_15.md)
 - **Билд:** **224** (hero-x UI: teen humor, one-pager, wisdom toggle l10n)
 - **Автотесты:** `WellnessCompanionNavUITests`, `WellnessModelsTests`
 - **Критерий done:** все 15 галочек на реальном iPhone
+- **Включает проверку** `r100-5-ethics` (**completed** в §3): L3 → helpline без шуток; родитель не видит teen-chat (пункты 12–14 smoke)
 
-### r100-2-06 — Widget Extension (~15 мин, Xcode)
+#### r100-2-06 — Widget Extension (~15 мин, Xcode)
 
 - **Инструкция:** [MANUAL_WIDGET_SETUP.md](../MANUAL_WIDGET_SETUP.md) + [WELLNESS_WIDGET_TARGET_CHECKLIST.md](./WELLNESS_WIDGET_TARGET_CHECKLIST.md)
 - **Код готов:** `ALADDINWidgets/WellnessCheckinWidget.swift`, `WellnessWidgetBridge` после check-in
 - **Критерий done:** виджет check-in на Home Screen, App Group
 
-### r100-1-04 — Postgres read cutover
+#### r100-1-04 — Postgres read cutover
 
 - **Когда:** ≥7 дней после `WELLNESS_PG_DUAL_WRITE=1` (старт ~2026-06-01)
 - **Док:** [WELLNESS_POSTGRES_MIGRATION.md](./WELLNESS_POSTGRES_MIGRATION.md)
 - **Действие:** `WELLNESS_PG_READ=1` на VPS + smoke + verify 14/14
 - **Не делать раньше срока**
 
-### r100-0-03 / r100-0-04 — Hermes + Parent LLM
+#### r100-0-03 / r100-0-04 — Hermes + Parent LLM
 
 - **Док:** [WELLNESS_POSTGRES_PARENT_LLM_HANDOFF.md](./WELLNESS_POSTGRES_PARENT_LLM_HANDOFF.md)
 - **PO:** ключи OpenRouter/Hermes на VPS
 - **Проверка:** `curl` parent playbook → `llm_used: true`
 
-### r100-4-voice — Latency polish
+#### r100-4-voice — Latency polish
 
 - **Файлы:** `CompanionVoiceSession.swift`, STT/TTS pipeline
 - **Цель:** субъективно быстрее STT→LLM→TTS на device
+- **Не путать с** `r100-5-voice` (**completed**) — там hold-to-talk и reconnect; здесь только **латентность/полировка**
 
-### r100-5-ethics — QA audit
-
-- L3 escalation → helpline без шуток героя
-- Родитель **не** видит дословный teen-chat
-- Связано с пунктами 12–14 TestFlight smoke
-
-### r100-6-store — App Store metadata
+#### r100-6-store — App Store metadata
 
 - Скриншоты, описание, privacy nutrition labels
 - Wellness + Companion в одном listing
 
-### r100-6-healthkit — HealthKit PO
+#### r100-6-healthkit — HealthKit PO
 
 - **A:** Portal profile + entitlement (sleep read)
-- **B:** оставить rollback build 222-style без entitlement (текущий 223)
+- **B:** оставить rollback build 222-style без entitlement (текущий канон **224**)
 - **Док:** [WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md](./WELLNESS_HEALTHKIT_ROLLBACK_PLAN.md)
 
-### r100-7-07 — Rive анимации
+#### r100-7-07 — Rive (HERO-3-07b, не отдельный art)
 
-- `.riv` assets + `WellnessPillarEmotionView` binding
+- **Единый план Rive:** [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md) — **02b → 07** (3 файла) → **07b** QA Wellness Hub
+- **Art:** только [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md) · `Resources/Companion/*.riv` — **не** 4× `wellness_*.riv`
+- **iOS:** `WellnessPillarEmotionView` + Hub ✅ — живой Rive после production **07**
+- **QA:** iPhone — чат + Wellness Hub; child 2 карточки — **один** выбранный герой
 
-### r100-7-08 — Sleep CDN
+#### r100-7-08 — Sleep CDN
 
 - MP3 URLs для sleep stories API + iOS player
 
-### r100-7-10 — Clinical sign-off
-
-- ✅ **completed** hero-x-30 (2026-06-04): все 4 pack `status: approved`
-- **Док:** [WELLNESS_CLINICAL_REVIEW.md](./WELLNESS_CLINICAL_REVIEW.md) Appendix C
-
-### r100-7-docs — Внутренние docs
+#### r100-7-docs — Внутренние docs
 
 - Заменить оставшиеся «столп» → «дорожка» в docs (не в UI — UI уже ok)
 
@@ -413,6 +432,9 @@ PYTHONPATH=. python3 -m pytest Tests/test_wellness_age_policy_device_auth.py -q
 | 11 | MANUAL_WIDGET_SETUP.md | r100-2-06 |
 | 12 | ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md | VPS SSH |
 | 13 | **WELLNESS_HERO_PERSONA_ENHANCEMENT_PLAN.md** v2 | **hero-x-* (37):** юмор balance, vedic secular, psychology, guard, golden set |
+| 14 | **RIVE_MASTER_PLAN.md** | **Единый Rive:** 3 героя, 02b→07→07b |
+| 15 | **WELLNESS_PILLAR_RIVE_PLAN.md** | r100-7-07 / 07b, маппинг pillar→emotion |
+| 16 | **COMPANION_HERO_ART_CANON.md** | PNG, Figma, export 3× `.riv` |
 
 ---
 

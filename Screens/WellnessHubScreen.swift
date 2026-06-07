@@ -464,6 +464,7 @@ struct WellnessHubScreen: View {
             Task { await selectPillar(pillar) }
         } label: {
             VStack(alignment: .leading, spacing: 8) {
+                WellnessPillarEmotionView(pillar: pillar.rawValue)
                 Text(WellnessAgeL10n.text(localizationManager, key: pillarTitleKey(pillar), ageBand: ageBand))
                     .font(.subheadline.bold())
                     .multilineTextAlignment(.leading)
