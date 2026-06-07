@@ -23,6 +23,7 @@ import logging
 import sys
 import os
 import json
+import uuid
 from sqlalchemy.engine import Result
 from sqlalchemy import text
 
@@ -109,6 +110,37 @@ class LocationAccuracyUpdateRequest(BaseModel):
 
 class DataCleanupStartRequest(BaseModel):
     categories: List[str]
+
+
+class DarkWebSecureScanRequest(BaseModel):
+    emailHash: Optional[str] = None
+    passwordHash: Optional[str] = None
+    method: str = "secure"
+
+
+class DarkWebFastScanRequest(BaseModel):
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    passport: Optional[str] = None
+    snils: Optional[str] = None
+    method: str = "fast"
+
+
+class DarkWebScanResultItem(BaseModel):
+    id: str
+    dataType: str
+    found: bool
+    leakDate: Optional[datetime] = None
+    source: Optional[str] = None
+    severity: Optional[str] = None
+    recommendations: List[str] = Field(default_factory=list)
+
+
+class DarkWebScanListResponse(BaseModel):
+    success: bool = True
+    data: List[DarkWebScanResultItem] = Field(default_factory=list)
+    message: Optional[str] = None
+    error: Optional[str] = None
 
 
 # =============================================================================
@@ -249,24 +281,85 @@ def _insert_darkweb_breach_row(
     source: str,
     severity: str = "medium",
     status: str = "new",
-) -> int:
-    """Real breach row scoped to user (sources scan_* excluded from stats)."""
-    return _execute_write(
-        """
-        INSERT INTO darkweb.darkweb_leaks
-            (id, user_id, data_type, value_or_hash, leak_date, source, severity, status, created_at)
-        VALUES
-            (gen_random_uuid(), :user_id, :data_type, decode(md5(random()::text), 'hex'),
-             CURRENT_TIMESTAMP, :source, :severity, :status, CURRENT_TIMESTAMP)
-        """,
-        {
-            "user_id": user_id,
-            "data_type": data_type,
-            "source": source,
-            "severity": severity,
-            "status": status,
-        },
-    )
+    leak_date: Optional[datetime] = None,
+    leak_id: Optional[str] = None,
+) -> str:
+    """Persist real breach row scoped to user; returns leak id (text)."""
+    from app.database.database import engine  # type: ignore
+
+    params: Dict[str, Any] = {
+        "user_id": user_id,
+        "data_type": data_type,
+        "source": source[:255],
+        "severity": severity,
+        "status": status,
+        "leak_id": leak_id or str(uuid.uuid4()),
+        "leak_date": leak_date or datetime.now(),
+    }
+    with engine.begin() as conn:
+        row = conn.execute(
+            text("""
+                INSERT INTO darkweb.darkweb_leaks
+                    (id, user_id, data_type, value_or_hash, leak_date, source, severity, status, created_at)
+                VALUES
+                    (CAST(:leak_id AS uuid), :user_id, :data_type, decode(md5(random()::text), 'hex'),
+                     :leak_date, :source, :severity, :status, CURRENT_TIMESTAMP)
+                RETURNING id::text
+            """),
+            params,
+        ).scalar()
+    return str(row)
+
+
+def _persist_scan_breaches(user_id: int, raw_results: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Insert found breaches to DB and attach persisted ids to scan result dicts."""
+    persisted: List[Dict[str, Any]] = []
+    for item in raw_results:
+        row = dict(item)
+        if not row.get("found"):
+            persisted.append(row)
+            continue
+        leak_dt_raw = row.get("leakDate")
+        leak_dt = datetime.now()
+        if isinstance(leak_dt_raw, str):
+            try:
+                leak_dt = datetime.fromisoformat(leak_dt_raw.replace("Z", "+00:00"))
+            except ValueError:
+                leak_dt = datetime.now()
+        leak_id = _insert_darkweb_breach_row(
+            user_id=user_id,
+            data_type=str(row.get("dataType") or "email"),
+            source=str(row.get("source") or "haveibeenpwned"),
+            severity=str(row.get("severity") or "medium"),
+            leak_date=leak_dt,
+            leak_id=row.get("id"),
+        )
+        row["id"] = leak_id
+        persisted.append(row)
+    return persisted
+
+
+def _coerce_scan_result_row(row: Dict[str, Any]) -> Dict[str, Any]:
+    out = dict(row)
+    leak_raw = out.get("leakDate")
+    if isinstance(leak_raw, str) and leak_raw:
+        try:
+            out["leakDate"] = datetime.fromisoformat(leak_raw.replace("Z", "+00:00"))
+        except ValueError:
+            out["leakDate"] = None
+    return out
+
+
+def _build_scan_list_response(
+    user_id: int,
+    method: str,
+    raw_results: List[Dict[str, Any]],
+    message: str,
+) -> DarkWebScanListResponse:
+    _insert_darkweb_scan_event(user_id, method)
+    merged = _persist_scan_breaches(user_id, raw_results)
+    items = [DarkWebScanResultItem(**_coerce_scan_result_row(row)) for row in merged]
+    return DarkWebScanListResponse(success=True, data=items, message=message, error=None)
 
 
 def _darkweb_scans_for_user(user_id: str, limit: int) -> List[Dict[str, Any]]:
@@ -737,18 +830,29 @@ async def reports_dark_web_scan_fast() -> ReportCompatBoolResponse:
     return ReportCompatBoolResponse(success=True, data=True, message="Fast dark web scan completed")
 
 
-@router.post("/dark-web/scan/fast", response_model=ReportCompatBoolResponse)
+@router.post("/dark-web/scan/fast", response_model=DarkWebScanListResponse)
 async def reports_dark_web_scan_fast_post(
+    request: DarkWebFastScanRequest,
     current_user: Dict[str, Any] = Depends(get_current_user),
-) -> ReportCompatBoolResponse:
-    """Register fast-scan audit in `darkweb.scan_events` (JWT user scope)."""
+) -> DarkWebScanListResponse:
+    """Fast scan: plaintext fields → HIBP/agent lookup → breach INSERT + iOS contract."""
+    from security.api.dark_web_scan_service import collect_fast_scan_results
+
     user_id = _user_id_int_from_jwt(current_user)
-    inserted = _insert_darkweb_scan_event(user_id, "scan_fast")
-    return ReportCompatBoolResponse(
-        success=True,
-        data=inserted > 0,
-        message="Fast dark web scan completed",
+    if not any([request.email, request.phone, request.passport, request.snils]):
+        return DarkWebScanListResponse(
+            success=False,
+            data=[],
+            message="No scan fields provided",
+            error="dark_web_scan_error_no_data",
+        )
+    raw = collect_fast_scan_results(
+        email=request.email,
+        phone=request.phone,
+        passport=request.passport,
+        snils=request.snils,
     )
+    return _build_scan_list_response(user_id, "scan_fast", raw, "Fast dark web scan completed")
 
 
 @router.get("/dark-web/scan/secure", response_model=ReportCompatBoolResponse)
@@ -756,18 +860,27 @@ async def reports_dark_web_scan_secure() -> ReportCompatBoolResponse:
     return ReportCompatBoolResponse(success=True, data=True, message="Secure dark web scan completed")
 
 
-@router.post("/dark-web/scan/secure", response_model=ReportCompatBoolResponse)
+@router.post("/dark-web/scan/secure", response_model=DarkWebScanListResponse)
 async def reports_dark_web_scan_secure_post(
+    request: DarkWebSecureScanRequest,
     current_user: Dict[str, Any] = Depends(get_current_user),
-) -> ReportCompatBoolResponse:
-    """Register secure-scan audit in `darkweb.scan_events` (JWT user scope)."""
+) -> DarkWebScanListResponse:
+    """Secure scan: hashes only → password SHA-1 HIBP check + iOS contract."""
+    from security.api.dark_web_scan_service import collect_secure_scan_results
+
     user_id = _user_id_int_from_jwt(current_user)
-    inserted = _insert_darkweb_scan_event(user_id, "scan_secure")
-    return ReportCompatBoolResponse(
-        success=True,
-        data=inserted > 0,
-        message="Secure dark web scan completed",
+    if not request.emailHash and not request.passwordHash:
+        return DarkWebScanListResponse(
+            success=False,
+            data=[],
+            message="No scan fields provided",
+            error="dark_web_scan_error_no_data",
+        )
+    raw = collect_secure_scan_results(
+        email_hash=request.emailHash,
+        password_hash=request.passwordHash,
     )
+    return _build_scan_list_response(user_id, "scan_secure", raw, "Secure dark web scan completed")
 
 
 @router.get("/dark-web/scans", response_model=List[Dict[str, Any]])

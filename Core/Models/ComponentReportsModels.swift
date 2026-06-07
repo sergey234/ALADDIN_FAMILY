@@ -1070,6 +1070,47 @@ struct DarkWebScanResult: Codable, Identifiable {
     let source: String?
     let severity: String?
     let recommendations: [String]?
+
+    enum CodingKeys: String, CodingKey {
+        case id, dataType, found, leakDate, source, severity, recommendations
+    }
+
+    init(
+        id: String,
+        dataType: String,
+        found: Bool,
+        leakDate: Date? = nil,
+        source: String? = nil,
+        severity: String? = nil,
+        recommendations: [String]? = nil
+    ) {
+        self.id = id
+        self.dataType = dataType
+        self.found = found
+        self.leakDate = leakDate
+        self.source = source
+        self.severity = severity
+        self.recommendations = recommendations
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        dataType = try container.decode(String.self, forKey: .dataType)
+        found = try container.decode(Bool.self, forKey: .found)
+        source = try container.decodeIfPresent(String.self, forKey: .source)
+        severity = try container.decodeIfPresent(String.self, forKey: .severity)
+        recommendations = try container.decodeIfPresent([String].self, forKey: .recommendations)
+        if let raw = try container.decodeIfPresent(String.self, forKey: .leakDate) {
+            let fractional = ISO8601DateFormatter()
+            fractional.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            leakDate = fractional.date(from: raw)
+                ?? ISO8601DateFormatter().date(from: raw)
+                ?? DateFormatter.iso8601.date(from: raw)
+        } else {
+            leakDate = nil
+        }
+    }
 }
 
 /// Хеш для безопасного сканирования

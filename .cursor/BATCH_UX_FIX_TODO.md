@@ -49,7 +49,7 @@
 - [x] **E9** Cleanup: DELETE 35 legacy rows на prod (`darkweb_leaks` = 0)
 - [x] **E10** `GET /dark-web/scans?user_id=` → `[]` / история из `scan_events`
 - [ ] **E11** iOS smoke на устройстве (модалка 0/0/0 + подпись ALADDIN)
-- [ ] **E12** Breach INSERT с `user_id` при реальном HIBP hit (когда scan вернёт findings)
+- [x] **E12** Контракт scan: `APIResponse<[DarkWebScanResult]>` + breach INSERT с `user_id` (fast/secure POST)
 
 ---
 
