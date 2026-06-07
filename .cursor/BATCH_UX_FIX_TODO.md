@@ -50,8 +50,13 @@
 - [x] **E10** `GET /dark-web/scans?user_id=` → `[]` / история из `scan_events`
 - [ ] **E11** iOS smoke на устройстве (модалка 0/0/0 + подпись ALADDIN)
 - [x] **E12** Контракт scan: `APIResponse<[DarkWebScanResult]>` + breach INSERT с `user_id` (fast/secure POST)
+- [ ] **E13** `HIBP_API_KEY` на VPS → реальный fast scan по email (фаза 1, бюджет ~$4.39/мес)
+- [x] **E14** Password secure scan: SHA-1 → Pwned Passwords (бесплатно, без HIBP ключа)
+- [x] **E15** Roadmap + `smoke_dark_web_prod.sh` + честный UX (`dark_web_coverage_note`)
+- [x] **E16** Prod fix: `user_id` BIGINT в `scan_events` / `darkweb_leaks` (scan 500)
 
 ---
 
-**Текущий фокус:** E11 device smoke  
-**Последнее обновление:** 2026-06-07 — follow-up E7–E10 на prod
+**Текущий фокус:** E11 device smoke; E13 отложен до бюджета HIBP  
+**План:** `.cursor/DARK_WEB_MONITORING_ROADMAP.md`  
+**Последнее обновление:** 2026-06-07 — max без HIBP: password scan + roadmap

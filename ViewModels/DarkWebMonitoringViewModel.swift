@@ -212,8 +212,9 @@ class DarkWebMonitoringViewModel: ObservableObject {
             }
             
             if let password = password, !password.isEmpty {
-                let hash = SHA256.hash(data: password.data(using: .utf8)!)
-                passwordHash = hash.compactMap { String(format: "%02x", $0) }.joined()
+                // HIBP Pwned Passwords API expects SHA-1 (40 hex), not SHA-256 — free, no API key.
+                let digest = Insecure.SHA1.hash(data: Data(password.utf8))
+                passwordHash = digest.map { String(format: "%02x", $0) }.joined()
             }
             
             guard emailHash != nil || passwordHash != nil else {

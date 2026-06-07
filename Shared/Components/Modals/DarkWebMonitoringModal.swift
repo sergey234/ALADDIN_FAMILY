@@ -56,6 +56,10 @@ struct DarkWebMonitoringModal: View {
                             Text(localizationManager.localized("dark_web_data_source_server"))
                                 .font(.caption2)
                                 .foregroundColor(.textSecondary)
+                            Text(localizationManager.localized("dark_web_coverage_note"))
+                                .font(.caption2)
+                                .foregroundColor(.textSecondary)
+                                .multilineTextAlignment(.center)
                         }
                         .padding(.horizontal, Spacing.screenPadding)
                         .padding(.top, Spacing.m)
