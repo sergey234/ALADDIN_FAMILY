@@ -3727,7 +3727,11 @@ class APIService: ObservableObject {
     
     /// Получить историю сканирований
     func getDarkWebScans(limit: Int = 20, completion: @escaping (Result<[DarkWebScan], Error>) -> Void) {
-        let endpoint = "\(AppConfig.Endpoint.darkWebScans)?limit=\(limit)"
+        var queryItems = ["limit=\(limit)"]
+        if let userQuery = darkWebUserIdQueryItem() {
+            queryItems.append(userQuery)
+        }
+        let endpoint = AppConfig.Endpoint.darkWebScans + "?" + queryItems.joined(separator: "&")
         networkManager.get(endpoint: endpoint, completion: completion)
     }
     

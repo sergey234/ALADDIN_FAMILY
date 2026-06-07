@@ -26,6 +26,12 @@ import json
 from sqlalchemy.engine import Result
 from sqlalchemy import text
 
+try:
+    from app.auth.auth import get_current_user
+except ImportError:
+    def get_current_user():  # type: ignore
+        raise HTTPException(status_code=503, detail="Auth module unavailable")
+
 # SFM Adapter import
 backend_path = "/opt/aladdin-backend"
 if backend_path not in sys.path:
@@ -216,6 +222,77 @@ def _dark_web_empty_stats() -> ReportStatsResponse:
         source="api_db",
         timestamp=datetime.now(),
     )
+
+
+def _user_id_int_from_jwt(current_user: Dict[str, Any]) -> int:
+    uid = current_user.get("user_id") or current_user.get("id") or current_user.get("sub")
+    try:
+        return int(str(uid))
+    except (TypeError, ValueError) as exc:
+        raise HTTPException(status_code=401, detail="Invalid user_id in token") from exc
+
+
+def _insert_darkweb_scan_event(user_id: int, method: str) -> int:
+    """Audit scan in darkweb.scan_events (not darkweb_leaks)."""
+    return _execute_write(
+        """
+        INSERT INTO darkweb.scan_events (id, user_id, method, status, created_at)
+        VALUES (gen_random_uuid(), :user_id, :method, 'completed', CURRENT_TIMESTAMP)
+        """,
+        {"user_id": user_id, "method": method},
+    )
+
+
+def _insert_darkweb_breach_row(
+    user_id: int,
+    data_type: str,
+    source: str,
+    severity: str = "medium",
+    status: str = "new",
+) -> int:
+    """Real breach row scoped to user (sources scan_* excluded from stats)."""
+    return _execute_write(
+        """
+        INSERT INTO darkweb.darkweb_leaks
+            (id, user_id, data_type, value_or_hash, leak_date, source, severity, status, created_at)
+        VALUES
+            (gen_random_uuid(), :user_id, :data_type, decode(md5(random()::text), 'hex'),
+             CURRENT_TIMESTAMP, :source, :severity, :status, CURRENT_TIMESTAMP)
+        """,
+        {
+            "user_id": user_id,
+            "data_type": data_type,
+            "source": source,
+            "severity": severity,
+            "status": status,
+        },
+    )
+
+
+def _darkweb_scans_for_user(user_id: str, limit: int) -> List[Dict[str, Any]]:
+    sql = """
+        SELECT id::text AS id,
+               created_at AS scan_date,
+               status
+        FROM darkweb.scan_events
+        WHERE user_id::text = :user_id
+        ORDER BY created_at DESC
+        LIMIT :limit
+    """
+    items, _ = _fetch_list_from_db(sql, {"user_id": user_id, "limit": limit})
+    formatted: List[Dict[str, Any]] = []
+    for row in items:
+        scan_dt = row.get("scan_date")
+        if hasattr(scan_dt, "isoformat"):
+            scan_dt = scan_dt.isoformat()
+        formatted.append({
+            "id": row.get("id"),
+            "scanDate": scan_dt,
+            "databasesScanned": 0,
+            "newLeaksFound": 0,
+            "status": row.get("status") or "completed",
+        })
+    return formatted
 
 
 async def _call_sfm_function(func_name: str, params: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
@@ -642,17 +719,12 @@ async def reports_dark_web_scan_start() -> ReportCompatBoolResponse:
 
 
 @router.post("/dark-web/scan/start", response_model=ReportCompatBoolResponse)
-async def reports_dark_web_scan_start_post() -> ReportCompatBoolResponse:
-    """Real write-path: create a domain event in `darkweb.darkweb_leaks` to refresh freshness."""
-    inserted = _execute_write(
-        """
-        INSERT INTO darkweb.darkweb_leaks
-            (id, data_type, value_or_hash, leak_date, source, severity, status, created_at)
-        VALUES
-            (gen_random_uuid(), 'email', decode(md5(random()::text), 'hex'), CURRENT_TIMESTAMP, 'scan_start', 'low', 'new', CURRENT_TIMESTAMP)
-        """,
-        {},
-    )
+async def reports_dark_web_scan_start_post(
+    current_user: Dict[str, Any] = Depends(get_current_user),
+) -> ReportCompatBoolResponse:
+    """Register scan audit in `darkweb.scan_events` (JWT user scope)."""
+    user_id = _user_id_int_from_jwt(current_user)
+    inserted = _insert_darkweb_scan_event(user_id, "scan_start")
     return ReportCompatBoolResponse(
         success=True,
         data=inserted > 0,
@@ -666,18 +738,12 @@ async def reports_dark_web_scan_fast() -> ReportCompatBoolResponse:
 
 
 @router.post("/dark-web/scan/fast", response_model=ReportCompatBoolResponse)
-async def reports_dark_web_scan_fast_post() -> ReportCompatBoolResponse:
-    """Real write-path: register fast-scan event for freshness in `darkweb.darkweb_leaks`."""
-    inserted = _execute_write(
-        """
-        INSERT INTO darkweb.darkweb_leaks
-            (id, data_type, value_or_hash, leak_date, source, severity, status, created_at)
-        VALUES
-            (gen_random_uuid(), 'email', decode(md5(random()::text), 'hex'),
-             CURRENT_TIMESTAMP, 'scan_fast', 'low', 'new', CURRENT_TIMESTAMP)
-        """,
-        {},
-    )
+async def reports_dark_web_scan_fast_post(
+    current_user: Dict[str, Any] = Depends(get_current_user),
+) -> ReportCompatBoolResponse:
+    """Register fast-scan audit in `darkweb.scan_events` (JWT user scope)."""
+    user_id = _user_id_int_from_jwt(current_user)
+    inserted = _insert_darkweb_scan_event(user_id, "scan_fast")
     return ReportCompatBoolResponse(
         success=True,
         data=inserted > 0,
@@ -691,18 +757,12 @@ async def reports_dark_web_scan_secure() -> ReportCompatBoolResponse:
 
 
 @router.post("/dark-web/scan/secure", response_model=ReportCompatBoolResponse)
-async def reports_dark_web_scan_secure_post() -> ReportCompatBoolResponse:
-    """Real write-path: register secure-scan event for freshness in `darkweb.darkweb_leaks`."""
-    inserted = _execute_write(
-        """
-        INSERT INTO darkweb.darkweb_leaks
-            (id, data_type, value_or_hash, leak_date, source, severity, status, created_at)
-        VALUES
-            (gen_random_uuid(), 'email', decode(md5(random()::text), 'hex'),
-             CURRENT_TIMESTAMP, 'scan_secure', 'low', 'new', CURRENT_TIMESTAMP)
-        """,
-        {},
-    )
+async def reports_dark_web_scan_secure_post(
+    current_user: Dict[str, Any] = Depends(get_current_user),
+) -> ReportCompatBoolResponse:
+    """Register secure-scan audit in `darkweb.scan_events` (JWT user scope)."""
+    user_id = _user_id_int_from_jwt(current_user)
+    inserted = _insert_darkweb_scan_event(user_id, "scan_secure")
     return ReportCompatBoolResponse(
         success=True,
         data=inserted > 0,
@@ -711,8 +771,17 @@ async def reports_dark_web_scan_secure_post() -> ReportCompatBoolResponse:
 
 
 @router.get("/dark-web/scans", response_model=List[Dict[str, Any]])
-async def reports_dark_web_scans() -> List[Dict[str, Any]]:
-    return []
+async def reports_dark_web_scans(
+    user_id: Optional[str] = Query(None, description="ID пользователя"),
+    limit: int = Query(20, ge=1, le=100),
+) -> List[Dict[str, Any]]:
+    if not user_id:
+        return []
+    try:
+        return _darkweb_scans_for_user(user_id, limit)
+    except Exception as e:
+        logger.error(f"DB list error dark-web scans: {e}")
+        raise HTTPException(status_code=503, detail="Protection backend temporarily unavailable")
 
 
 @router.get("/identity-theft/allow", response_model=ReportCompatBoolResponse)

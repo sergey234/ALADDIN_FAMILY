@@ -42,5 +42,16 @@
 
 ---
 
-**Текущий фокус:** follow-up — `user_id` в INSERT scan/breach + backfill HIBP  
-**Последнее обновление:** 2026-06-07 — E5/E6 на prod, миграция `user_id` на `darkweb.darkweb_leaks`
+## Batch E follow-up (prod)
+
+- [x] **E7** Коммит `d44bd61c` — batches A–E + migration `user_id`
+- [x] **E8** `darkweb.scan_events` + scan POST → JWT `user_id` (не в `darkweb_leaks`)
+- [x] **E9** Cleanup: DELETE 35 legacy rows на prod (`darkweb_leaks` = 0)
+- [x] **E10** `GET /dark-web/scans?user_id=` → `[]` / история из `scan_events`
+- [ ] **E11** iOS smoke на устройстве (модалка 0/0/0 + подпись ALADDIN)
+- [ ] **E12** Breach INSERT с `user_id` при реальном HIBP hit (когда scan вернёт findings)
+
+---
+
+**Текущий фокус:** E11 device smoke  
+**Последнее обновление:** 2026-06-07 — follow-up E7–E10 на prod

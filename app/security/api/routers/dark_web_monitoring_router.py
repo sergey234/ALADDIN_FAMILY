@@ -18,6 +18,7 @@ from sqlalchemy import text
 
 # ✅ ПОДКЛЮЧЕНИЕ К БД: Импортируем get_db для работы с базой данных
 from app.database.database import get_db
+from app.auth.auth import get_current_user
 
 # Создаем FastAPI Router с префиксом как в iOS AppConfig
 router = APIRouter(prefix="/api/reports/dark-web", tags=["Dark Web Reports"])
@@ -316,20 +317,25 @@ async def start_scan():
     """Запустить полное сканирование"""
     return {"success": True, "message": "Full scan started", "scanId": str(uuid.uuid4())}
 
+def _jwt_user_id_int(current_user: Dict[str, Any]) -> int:
+    uid = current_user.get("user_id") or current_user.get("id") or current_user.get("sub")
+    return int(str(uid))
+
+
 @router.post("/scan/secure")
-async def start_secure_scan(db: Session = Depends(get_db)):
-    """Запустить защищенное сканирование (real write-path для обновления freshness)."""
+async def start_secure_scan(
+    db: Session = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    """Запустить защищенное сканирование — audit в darkweb.scan_events."""
     try:
-        # Для backfill/honestness: создаем domain-event в таблицу, которая участвует в `analytics_freshness`.
-        # Без параметров сканирования в контракте здесь используем минимальную запись (hash) как триггер свежести.
+        user_id = _jwt_user_id_int(current_user)
         result = db.execute(
             text("""
-                INSERT INTO darkweb.darkweb_leaks
-                    (id, data_type, value_or_hash, leak_date, source, severity, status, created_at)
-                VALUES
-                    (gen_random_uuid(), 'email', decode(md5(random()::text), 'hex'), CURRENT_TIMESTAMP,
-                     'scan_secure', 'low', 'new', CURRENT_TIMESTAMP)
+                INSERT INTO darkweb.scan_events (id, user_id, method, status, created_at)
+                VALUES (gen_random_uuid(), :user_id, 'scan_secure', 'completed', CURRENT_TIMESTAMP)
             """),
+            {"user_id": user_id},
         )
         db.commit()
 
@@ -343,17 +349,19 @@ async def start_secure_scan(db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail=f"Failed to start secure scan: {str(e)}")
 
 @router.post("/scan/fast")
-async def start_fast_scan(db: Session = Depends(get_db)):
-    """Запустить быстрое сканирование (real write-path для обновления freshness)."""
+async def start_fast_scan(
+    db: Session = Depends(get_db),
+    current_user: Dict[str, Any] = Depends(get_current_user),
+):
+    """Запустить быстрое сканирование — audit в darkweb.scan_events."""
     try:
+        user_id = _jwt_user_id_int(current_user)
         result = db.execute(
             text("""
-                INSERT INTO darkweb.darkweb_leaks
-                    (id, data_type, value_or_hash, leak_date, source, severity, status, created_at)
-                VALUES
-                    (gen_random_uuid(), 'email', decode(md5(random()::text), 'hex'), CURRENT_TIMESTAMP,
-                     'scan_fast', 'low', 'new', CURRENT_TIMESTAMP)
+                INSERT INTO darkweb.scan_events (id, user_id, method, status, created_at)
+                VALUES (gen_random_uuid(), :user_id, 'scan_fast', 'completed', CURRENT_TIMESTAMP)
             """),
+            {"user_id": user_id},
         )
         db.commit()
 
