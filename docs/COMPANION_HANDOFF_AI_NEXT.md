@@ -70,10 +70,11 @@
 | # | ID | Кто | Действие |
 |---|-----|-----|----------|
 | 1 | ~~**PO**~~ | — | ✅ genie master = **OB_03 headfix** в CANON |
-| 2 | **HERO-3-07** | Аниматор | Rive Editor 360×480 → `unicorn.riv`, `aladdin.riv`, `genie.riv` → [ANIMATOR_BRIEF](./COMPANION_RIVE_ANIMATOR_BRIEF.md) · [EXPORT](./COMPANION_RIVE_EXPORT_CHECKLIST.md) |
-| 3 | **HERO-3-11b** | QA + iPhone | Device QA build **210+** (параллельно с 07) — [COMPANION_HERO3_11_QA_CHECKLIST.md](./COMPANION_HERO3_11_QA_CHECKLIST.md) |
-| 4 | **HERO-3-11c** | QA | MIMIC-Q после **production** `.riv` |
-| 5 | **GATE-P0 / GATE-EMO** | PO | После 11b + 07 |
+| 2 | **HERO-3-07** | Аниматор | [COMPANION_HERO_ART_CANON](./COMPANION_HERO_ART_CANON.md) 02b→07 → 3× `.riv` — [RIVE_MASTER_PLAN](./RIVE_MASTER_PLAN.md) |
+| 3 | **HERO-3-07b** | QA + iPhone | После 07: **Wellness Hub** + чат — один выбранный герой на pillar-карточках ([WELLNESS_PILLAR_RIVE_PLAN](./WELLNESS_PILLAR_RIVE_PLAN.md)) |
+| 4 | **HERO-3-11b** | QA + iPhone | [COMPANION_HERO3_11_QA_CHECKLIST.md](./COMPANION_HERO3_11_QA_CHECKLIST.md) |
+| 5 | **HERO-3-11c** | QA | MIMIC-Q после **production** `.riv` |
+| 6 | **GATE-P0 / GATE-EMO** | PO | После 11b + 07 + 07b |
 
 **Команды после `.riv`:**
 

@@ -30,9 +30,9 @@
 **Продуктовый принцип:** компаньон по умолчанию — **друг на все темы жизни**; безопасность ALADDIN — **суперсила по запросу**, не клетка (см. **§ CX** и handoff §19–20).
 
 **Следующая (без Rive):** [COMPANION_TASKS_WITHOUT_RIVE.md](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Handoff ML:** [COMPANION_ML_HANDOFF_2026-05-29.md](./COMPANION_ML_HANDOFF_2026-05-29.md)  
-**Rive (в конце):** **HERO-3-07** → 11c → GATE-EMO  
+**Rive (в конце):** [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md) — **02b → 07** (3 `.riv`) → **07b** Wellness Hub QA → 11c → GATE-EMO  
 
-**План 3 героев:** [COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md](./COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md)
+**План 3 героев:** [COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md](./COMPANION_HEROES_3_FIGMA_RIVE_PLAN.md) · art: [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md)
 
 > Полный список дублируется в **Cursor TODO** (панель задач агента) — по одному пункту на ID.  
 > **102 ≠ 47:** в матрице каждая фича Grok (A1, B9, F11…); в TODO — сжатые спринтовые задачи (одна P1-03 закрывает B11 и др.).
@@ -270,7 +270,8 @@ if caps.features["voice_realtime"]?.ui["mic_button"] == true { showMic() }
 | **HERO-3-04** | **BE:** Pydantic `^(aladdin\|unicorn\|genie)$` + cosmetics genie | Чат/state/cosmetics без 422 | 3 косметики genie в каталоге | **готово** |
 | **HERO-3-05** | **BE:** `companion_persona` — 3 ветки героя (§2.1 черновики) | Голос unicorn / aladdin / genie | prefix genie содержит «Джин», humor rules; ≠ aladdin | **готово** |
 | **HERO-3-06** | **iOS:** Hub 3 карточки; 🧞 только у genie; `genie.riv` в bundle | UX без путаниции | Child не видит genie; превью корректны | **готово** (emoji+labels; .riv ⏳ **07**) |
-| **HERO-3-07** | **Rive 2D:** export `unicorn.riv`, `aladdin.riv`, `genie.riv` | Живой 2D-друг | [ADR](./COMPANION_2D_VS_3D_ADR.md) · [чеклист](./COMPANION_RIVE_EXPORT_CHECKLIST.md); artboard **360×480**; SM `emotion` + `mouth_open`; &lt;500KB | ожидает (дизайн/Rive) |
+| **HERO-3-07** | **Rive 2D:** export `unicorn.riv`, `aladdin.riv`, `genie.riv` | Живой 2D-друг | [CANON](./COMPANION_HERO_ART_CANON.md) 02b→07 · [чеклист](./COMPANION_RIVE_EXPORT_CHECKLIST.md); **360×480**; &lt;500KB | ожидает (дизайн/Rive) |
+| **HERO-3-07b** | **iOS+QA:** Wellness Hub reuse 3 `.riv` (r100-7-07) | Тот же герой на pillar-карточках | [WELLNESS_PILLAR_RIVE_PLAN](./WELLNESS_PILLAR_RIVE_PLAN.md); iOS wired; QA после **07** | iOS ✅ · QA ⏳ |
 | **HERO-3-18** | **iOS:** диалоговый таймлайн §2.2 + debounce stream emotion | Фазы listening/thinking/speaking | 400 ms debounce; speaking min 1.2s без TTS; MOTION-Q1 | **готово** (iOS) |
 | **HERO-3-19** | **iOS:** lip-sync MVP `mouth_open` + procedural рот | Рот при TTS | Rive `setInput("mouth_open")`; procedural uses `lipSyncPhase`; MOTION-Q2 | **готово** (iOS) |
 | **HERO-3-08** | **iOS:** RiveRuntime + device UI | 08a compile ✅ · 08b UI ⏳ | `verify_companion_rive_ios_bundle.sh` | в работе |
@@ -294,6 +295,25 @@ if caps.features["voice_realtime"]?.ui["mic_button"] == true { showMic() }
 **GATE до .riv:** [GATE-HERO-3-IOS-α](./COMPANION_FINAL_PLAN_AND_VERIFICATION.md) (debounce, timeline, emoji, 1.2s, **23/24**).  
 **После каждого .riv:** MIMIC-Q1 скриншот-сетка 12 state на device (внутри **HERO-3-11**).  
 **Закрывает:** **P2-09** · **P1-08** · **P1-23** · **GATE-EMO** · матрица **21**
+
+### HERO-UX-AIL — Adaptive Immersive Layout (72–75% в голосе)
+
+> **План:** [COMPANION_HERO_IMMERSIVE_IMPLEMENTATION_PLAN.md](./COMPANION_HERO_IMMERSIVE_IMPLEMENTATION_PLAN.md) · ADR [GROK](./GROK_COMPANION_ARCHITECTURE_FOR_ALADDIN.md) §6.2b
+
+| ID | Задача | PR | Статус |
+|----|--------|-----|--------|
+| **HERO-UX-AIL-01** | `ConversationPresence` + `presenceMetrics` в `CompanionHeroLayout` | P0 | ✅ |
+| **HERO-UX-AIL-02** | `contentMode` fit / fillBottom в Raster + Animated + Avatar | P0 | ✅ |
+| **HERO-UX-AIL-03** | `resolvePresence()` + voice debounce 2s | P0 | ✅ |
+| **HERO-UX-AIL-04** | focused при `messages.count > 0` | P0 | ✅ |
+| **HERO-UX-AIL-05** | `onPresenceChange` → скрытие `homeTabBar` | P0 | ✅ |
+| **HERO-UX-AIL-06** | Компактный header + overlay top в immersive | P0 | ✅ |
+| **HERO-UX-AIL-07** | Выход immersive: тап верхней зоны | P0 | ✅ |
+| **HERO-UX-AIL-08** | ADR §6.2b + feature flag `heroImmersiveLayoutEnabled` | P0 | ✅ |
+| **HERO-UX-AIL-09** | P1: chip rail wellness/usage/memory в immersive (32 pt) | P1 | ✅ |
+| **HERO-UX-AIL-10** | P2: настройка родителя «крупный герой» (Mine) | P2 | ✅ |
+
+**Не блокирует:** HERO-3-07 · параллельно с export `.riv`.
 
 ### HERO-3 — сводка «6 шляп» (визуал + речь + движение)
 

@@ -1,0 +1,38 @@
+{
+  "fileKey": "vwKcGPUUEZjgayEHNn0BJM",
+  "frameSize": { "width": 360, "height": 480 },
+  "emotions": [
+    "idle", "listening", "thinking", "happy", "playful", "sad",
+    "comfort", "celebrate", "curious", "nostalgic", "excited", "alert"
+  ],
+  "heroes": {
+    "unicorn": {
+      "pageNodeId": "4:2",
+      "frames": {
+        "idle": "18:2", "listening": "18:8", "thinking": "18:14",
+        "happy": "18:20", "playful": "18:27", "sad": "18:34",
+        "comfort": "18:40", "celebrate": "18:46", "curious": "18:53",
+        "nostalgic": "18:59", "excited": "18:65", "alert": "18:72"
+      }
+    },
+    "aladdin": {
+      "pageNodeId": "5:2",
+      "frames": {
+        "idle": "19:2", "listening": "19:8", "thinking": "19:14",
+        "happy": "19:20", "playful": "19:27", "sad": "19:34",
+        "comfort": "19:40", "celebrate": "19:46", "curious": "19:53",
+        "nostalgic": "19:59", "excited": "19:65", "alert": "19:72"
+      }
+    },
+    "genie": {
+      "pageNodeId": "6:2",
+      "gridNodeId": "122:2",
+      "frames": {
+        "idle": "122:4", "listening": "122:6", "thinking": "122:8",
+        "happy": "122:10", "playful": "122:12", "sad": "122:14",
+        "comfort": "122:16", "celebrate": "122:18", "curious": "122:20",
+        "nostalgic": "122:22", "excited": "122:24", "alert": "122:26"
+      }
+    }
+  }
+}

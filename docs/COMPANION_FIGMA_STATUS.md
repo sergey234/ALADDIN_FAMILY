@@ -2,7 +2,7 @@
 
 **Файл:** [Companion-Heroes](https://www.figma.com/design/vwKcGPUUEZjgayEHNn0BJM/Companion-Heroes)  
 **Ключ:** `vwKcGPUUEZjgayEHNn0BJM`  
-**Проверено:** 2026-05-27 · **live MCP:** [COMPANION_FIGMA_AUDIT_LIVE_2026-05-28.md](./COMPANION_FIGMA_AUDIT_LIVE_2026-05-28.md) ✅ **36/36**
+**Проверено:** 2026-06-04 · **live MCP:** [COMPANION_FIGMA_AUDIT_LIVE_2026-06-04.md](./COMPANION_FIGMA_AUDIT_LIVE_2026-06-04.md) ✅ **36/36** (предыдущий: [2026-05-28](./COMPANION_FIGMA_AUDIT_LIVE_2026-05-28.md))
 
 ---
 
@@ -73,7 +73,7 @@
 
 | # | Кто | Действие |
 |---|-----|----------|
-| 1 | Дизайн | **02b** — 3 страницы × 12 фреймов в Figma |
+| 1 | Дизайн | ~~**02b**~~ ✅ 36/36 ([live 2026-06-04](./COMPANION_FIGMA_AUDIT_LIVE_2026-06-04.md)) |
 | 2 | Аниматор | **07** — Rive export ×3 |
 | 3 | QA | **11b** на build 210 (placeholder) |
 | 4 | QA | **11c** после production `.riv` |

@@ -41,8 +41,8 @@ echo "  Artboard 360×480 · 13 triggers + mouth_open"
 echo "  Docs: docs/COMPANION_RIVE_ANIMATOR_PLAN_SUPPLEMENT.md"
 echo ""
 
-echo "Current bundle:"
-python3 scripts/companion_riv_size_gate.py --dir "$RIV_DIR" || failed=1
+echo "Current bundle (max 500 KB, production min 25 KB):"
+python3 scripts/companion_riv_size_gate.py --dir "$RIV_DIR" --min-kb 25 || failed=1
 ./scripts/verify_companion_rive_ios_bundle.sh || failed=1
 
 echo ""

@@ -155,6 +155,22 @@
 
 **Состояния:** loading, streaming, offline (FAQ local только если разрешено политикой).
 
+### 6.2b Adaptive Immersive Layout (AIL) — утверждено 2026-06-04
+
+> **План реализации:** [COMPANION_HERO_IMMERSIVE_IMPLEMENTATION_PLAN.md](./COMPANION_HERO_IMMERSIVE_IMPLEMENTATION_PLAN.md)
+
+§6.2 описывает режим **standard** (56% зоны от GeometryReader «Главное», не от полного экрана; видимый герой при `scaledToFit` ≈ **36%** экрана — см. MASTER §5).
+
+| Режим | hero / chat (GR) | Масштаб | Когда |
+|-------|------------------|---------|-------|
+| **standard** | 0.56 / 0.28 | fit | Старт, пустой тред |
+| **focused** | 0.72 / 0.20 | fit | Есть сообщения (текст) |
+| **immersive** | 0.88 / 0.12 | fill, anchor bottom | Голос: listen / think / speak |
+
+**Цель immersive:** видимый герой **~72–75%** высоты экрана; tab bar скрыт на «Главное»; выход — тап верхней зоны / смена вкладки.
+
+**Не менять:** Figma/Rive artboard **360×480**; Hub **96 pt**; Wellness **48 pt**.
+
 ### 6.3 `CompanionSettingsScreen`
 
 - Выбор персонажа по умолчанию

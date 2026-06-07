@@ -1,7 +1,9 @@
 # 🧞 Companion — СТАРТ ДЛЯ СЛЕДУЮЩЕЙ ML-СИСТЕМЫ
 
-> **Открой этот файл первым.** Здесь — карта документов. **Главный handoff «доделать до 100%»:** [COMPANION_ML_HANDOFF_NEXT_SYSTEM.md](./COMPANION_ML_HANDOFF_NEXT_SYSTEM.md) · **План:** [COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md)  
-> **Дата:** 2026-05-29 · **Handoff №4** — [COMPANION_ML_HANDOFF_2026-05-29.md](./COMPANION_ML_HANDOFF_2026-05-29.md) · **Без Rive:** [COMPANION_TASKS_WITHOUT_RIVE.md](./COMPANION_TASKS_WITHOUT_RIVE.md) · **Код-спринты:** [CODE_PLAN](./COMPANION_CODE_PLAN_NO_RIVE.md) · [CODE_TODO](./COMPANION_CODE_TODO_TRACKER.md)
+> **Открой первым (Rive + что делать дальше):** [**COMPANION_ML_RIVE_HANDOFF_MASTER.md**](./COMPANION_ML_RIVE_HANDOFF_MASTER.md)  
+> **Контекст Figma/layout/AIL:** [**COMPANION_ML_MASTER_ONE_FILE.md**](./COMPANION_ML_MASTER_ONE_FILE.md)  
+> Этот файл — расширенная карта и каталог. **Handoff BE/deploy:** [COMPANION_ML_HANDOFF_NEXT_SYSTEM.md](./COMPANION_ML_HANDOFF_NEXT_SYSTEM.md) · **План:** [COMPANION_PLAN_TO_100_PERCENT.md](./COMPANION_PLAN_TO_100_PERCENT.md)  
+> **Дата:** 2026-06-04 (master) · 2026-05-29 (handoff) · **Rive:** [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md) · **Figma live:** [COMPANION_FIGMA_AUDIT_LIVE_2026-06-04.md](./COMPANION_FIGMA_AUDIT_LIVE_2026-06-04.md)
 
 ---
 
@@ -20,7 +22,8 @@
 | **Доделать** | [COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md](./COMPANION_ML_STAGE2_STAGE3_RUNBOOK.md) — TF215, Sprint 4–5 MVP, блок G |
 | **Cursor TODO** | [COMPANION_CURSOR_TODO_STAGE2_3.md](./COMPANION_CURSOR_TODO_STAGE2_3.md) — этап 2–3 |
 | **Что осталось (102)** | [COMPANION_WHAT_REMAINS.md](./COMPANION_WHAT_REMAINS.md) — все открытые задачи |
-| **Rive** | **Отложено** (12 задач) — не блокирует «100% без Rive» |
+| **Figma 02b** | ✅ **36/36** — [live 2026-06-04](./COMPANION_FIGMA_AUDIT_LIVE_2026-06-04.md) |
+| **Rive** | **HERO-3-07** блокер — [RIVE_MASTER_PLAN](./RIVE_MASTER_PLAN.md) |
 
 ### Что делать дальше (две параллельные дорожки)
 
@@ -125,7 +128,9 @@ flowchart LR
 
 ---
 
-## 4. Figma — правда на 2026-05-27
+## 4. Figma — правда на 2026-06-04
+
+> **Полная сводка (MCP, размеры, аудит):** [COMPANION_ML_MASTER_ONE_FILE.md](./COMPANION_ML_MASTER_ONE_FILE.md) §1–2.
 
 | Ресурс | URL / ключ |
 |--------|------------|
@@ -141,7 +146,7 @@ flowchart LR
 | `02_Aladdin_Human` | ✅ 12 frames |
 | `03_Genie` | ✅ 12 frames OB_03 headfix |
 
-Подробный аудит: [COMPANION_FIGMA_STATUS.md](./COMPANION_FIGMA_STATUS.md)
+Подробный аудит: [COMPANION_FIGMA_STATUS.md](./COMPANION_FIGMA_STATUS.md) · **live:** [COMPANION_FIGMA_AUDIT_LIVE_2026-06-04.md](./COMPANION_FIGMA_AUDIT_LIVE_2026-06-04.md) · MCP: [FIGMA_MCP_ENABLE.md](./FIGMA_MCP_ENABLE.md)
 
 **Размеры для 02b и 07:**
 
@@ -197,7 +202,8 @@ xcodebuild -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone 16' 
 
 | Файл | Назначение |
 |------|------------|
-| **COMPANION_ML_HANDOFF_START_HERE.md** | **Этот файл** — входная точка |
+| **COMPANION_ML_MASTER_ONE_FILE.md** | **Главный один файл** — Figma/Rive/layout/аудит |
+| **COMPANION_ML_HANDOFF_START_HERE.md** | **Этот файл** — расширенная карта |
 | **COMPANION_PROGRESS_TRACKER.md** | **102 задачи** `[x]`/`[ ]` — единственный источник прогресса |
 | **COMPANION_CODE_PLAN_NO_RIVE.md** | **Финальный план кода v2** — 3 героя всем, UX+mic, спринты 1–5 |
 | **COMPANION_CODE_TODO_TRACKER.md** | **Трекер кода v2** — 49 задач, галочки простым языком |

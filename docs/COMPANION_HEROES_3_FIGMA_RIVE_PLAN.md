@@ -1,7 +1,9 @@
 # Companion — 3 героя: Figma → Rive → приложение (согласовано)
 
-**Дата:** 26 мая 2026  
+**Дата:** 26 мая 2026 · **Rive unified PO:** 2026-06-04  
 **Статус:** утверждено продуктом (6 шляп: визуал §2 + **речь §2.1** + **движение §2.2** + **мимика §2.3**)  
+**Единый чеклист Rive:** [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md) · art paths: [COMPANION_HERO_ART_CANON.md](./COMPANION_HERO_ART_CANON.md)  
+**Wellness Hub:** **HERO-3-07b** — те же 3 `.riv`, без 4× wellness art — [WELLNESS_PILLAR_RIVE_PLAN.md](./WELLNESS_PILLAR_RIVE_PLAN.md)  
 **Связанные TODO:** `COMPANION_IMPLEMENTATION_TODOS.md` § **HERO-3**  
 **Код эмоций:** `CompanionHeroRiveMapping` · `companion_emotions.py` · iOS `CompanionHeroEmotion`
 
@@ -924,8 +926,9 @@ Companion/
 2. Экспорт трёх `.riv` → `Resources/Companion/` (DoD: §2.2 таблица 12 state).  
 3. Podfile: раскомментировать `pod 'RiveRuntime', '~> 6.0'` → `pod install`.  
 4. `CompanionHeroRiveHost` — три имени файлов: `unicorn`, `aladdin`, `genie`; `setInput` для обоих inputs.  
-5. Hub: иконки/превью — 🦄 / портрет человека / 🧞 только у `genie`.  
-6. Device: GATE-DIALOG **D10**, **MOTION-Q1…Q5**, косметика + Rive.
+5. Hub Companion: превью 96pt — 🦄 / человек / 🧞 только у `genie`.  
+6. **HERO-3-07b:** Wellness Hub — **те же 3 `.riv`**, 48pt, эмоция по pillar ([WELLNESS_PILLAR_RIVE_PLAN](./WELLNESS_PILLAR_RIVE_PLAN.md)); **не** 4× `wellness_*.riv`.  
+7. Device: GATE-DIALOG **D10**, **MOTION-Q1…Q5**; QA **чат + Wellness Hub** ([RIVE_MASTER_PLAN](./RIVE_MASTER_PLAN.md)).
 
 ---
 

@@ -3,7 +3,7 @@
 > **Единственный файл «где лежат картинки».** Не искать в чате — открывай этот документ.  
 > **Правило экспорта:** на макетах Companion и в `.riv` — **только герой**, без текста, UI, точек, wordmark.
 
-**Связанные:** [COMPANION_HERO_SOURCES_PO_2026-05-27.md](./COMPANION_HERO_SOURCES_PO_2026-05-27.md) · [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md) · [TRACKER](./COMPANION_PROGRESS_TRACKER.md)
+**Связанные:** [RIVE_MASTER_PLAN.md](./RIVE_MASTER_PLAN.md) · [COMPANION_HERO_SOURCES_PO_2026-05-27.md](./COMPANION_HERO_SOURCES_PO_2026-05-27.md) · [COMPANION_RIVE_EXPORT_CHECKLIST.md](./COMPANION_RIVE_EXPORT_CHECKLIST.md) · [WELLNESS_PILLAR_RIVE_PLAN.md](./WELLNESS_PILLAR_RIVE_PLAN.md) (07b) · [TRACKER](./COMPANION_PROGRESS_TRACKER.md)
 
 ---
 
@@ -133,8 +133,9 @@ family-friendly, no text on image, pastel lavender pink and golden palette
 flowchart TD
   A[PO art canon - этот файл] --> B[02b art-pass: 36 frames Figma]
   B --> C[07 Rive Editor: 3x .riv]
+  C --> C2[07b Wellness Hub reuse same riv]
   D[11b iPhone placeholder] --> E[GATE-P0]
-  C --> F[11c MIMIC + GATE-EMO]
+  C2 --> F[11c MIMIC + GATE-EMO]
 ```
 
 | Шаг | ID | Кто | Действие |
@@ -142,11 +143,12 @@ flowchart TD
 | **1** | **02b** | Дизайн / агент | Из master/OB вырезать **только героя** → вставить в **36 фреймов** 360×480 **без текста на арте** |
 | **2** | **07** | Аниматор | Rive Editor: import → State Machine `emotion` + `mouth_open` → export `unicorn.riv` `aladdin.riv` `genie.riv` |
 | **3** | — | Dev | Положить в `Resources/Companion/` → `python3 scripts/companion_riv_size_gate.py` |
-| **4** | **11b** | PO/QA | Device build **210**: D10, MOTION, MIMIC, SPEECH — [чеклист](./COMPANION_HERO3_11_QA_CHECKLIST.md) |
+| **3b** | **07b** | iOS | **Wellness Hub:** те же 3 `.riv`, `companion_selected_character_id`, превью **48pt**, эмоция по pillar — [WELLNESS_PILLAR_RIVE_PLAN.md](./WELLNESS_PILLAR_RIVE_PLAN.md) § «HERO-3-07b». **Не** рисовать 4× `wellness_*_hero.riv`. |
+| **4** | **11b** | PO/QA | Device: Companion Hub + **Wellness Hub** карточки — D10, MOTION, MIMIC — [чеклист](./COMPANION_HERO3_11_QA_CHECKLIST.md) |
 | **5** | **11c** | QA | После **07** — повтор MIMIC на production `.riv` |
 | **6** | GATE | Приёмка | GATE-P0 после 11b · GATE-EMO после 07+11c |
 
-**iOS-код менять не нужно** — только замена файлов в бандле.
+**После 07:** для Companion — только замена файлов в бандле; для Wellness — **отдельный art не нужен** (07b уже в коде, ждёт production `.riv`).
 
 ### Команды после `.riv`
 
