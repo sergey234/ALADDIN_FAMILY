@@ -1,0 +1,40 @@
+{
+  "installedAt": "2026-06-07T09:29:43Z",
+  "method": "aladdin-curated",
+  "eccVersion": "2.0.0-rc.1",
+  "components": [
+    "swift-rules",
+    "common-security",
+    "common-testing",
+    "skills:security-review,security-scan,verification-loop,tdd-workflow,swift-*",
+    "agents:swift-reviewer,swift-build-resolver,security-reviewer,build-error-resolver,e2e-runner"
+  ],
+  "mcpJson": "unchanged \u2014 audit in batch 7",
+  "hooks": {
+    "profile": "aladdin-minimal",
+    "config": ".cursor/hooks.json",
+    "sessionDir": ".cursor/session/",
+    "installedAt": "2026-06-07T09:35:00Z"
+  },
+  "agentsMdUpdated": "2026-06-07",
+  "batches": {
+    "0": "cursorignore",
+    "1-3": "ecc-curated + agentshield",
+    "4": "verification-loop only",
+    "5": "aladdin-hooks-minimal",
+    "6": "aladdin-telegram-bot-ops skill + pytest 31 passed",
+    "7": "mcp audit only B/87",
+    "8": "aladdin instincts skills x6",
+    "9": "AGENTS.md",
+    "10": "agentshield 0 critical; server health timeout from agent network"
+  },
+  "aladdinSkills": [
+    "aladdin-no-mock-bypass",
+    "aladdin-server-deploy",
+    "aladdin-telegram-bot-ops",
+    "aladdin-figma-ios-sync",
+    "aladdin-ios-release",
+    "aladdin-clean-backup"
+  ],
+  "completedAt": "2026-06-07"
+}

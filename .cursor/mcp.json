@@ -4,6 +4,10 @@
       "command": "/usr/local/bin/rivemcp",
       "args": [],
       "env": {}
+    },
+    "figma": {
+      "type": "http",
+      "url": "https://mcp.figma.com/mcp"
     }
   }
 }

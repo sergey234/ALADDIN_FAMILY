@@ -1,0 +1,33 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "node .cursor/hooks/aladdin-session-start.js",
+        "event": "sessionStart",
+        "description": "ALADDIN: workspace root, branch, previous session summary"
+      }
+    ],
+    "stop": [
+      {
+        "command": "node .cursor/hooks/aladdin-session-stop.js",
+        "event": "stop",
+        "description": "ALADDIN: save branch and git status to .cursor/session/last-summary.md"
+      }
+    ],
+    "beforeReadFile": [
+      {
+        "command": "node .cursor/hooks/before-read-file.js",
+        "event": "beforeReadFile",
+        "description": "Warn on .env, keys, credentials"
+      }
+    ],
+    "beforeSubmitPrompt": [
+      {
+        "command": "node .cursor/hooks/before-submit-prompt.js",
+        "event": "beforeSubmitPrompt",
+        "description": "Detect API keys and tokens in user prompts"
+      }
+    ]
+  }
+}

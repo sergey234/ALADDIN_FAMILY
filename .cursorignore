@@ -1,0 +1,31 @@
+# ALADDIN iOS — исключения для Cursor/агентов (ускоряет поиск, убирает зависания)
+# См. docs/ECC_INTEGRATION_PLAN.md
+
+**/*backup*
+**/*BACKUP*
+**/*Backup*
+**/*.backup*
+**/*.bak
+**/*.tmp
+**/NEW_BACKUP_*/
+**/BACKUP_*/
+**/*_BACKUP_*/
+**/*.swift.backup*
+**/*~*
+
+**/DerivedData/
+**/*.xcuserstate
+**/*.xcuserstate~*
+**/build/
+**/.build/
+
+**/.venv/
+**/venv/
+**/__pycache__/
+**/*.pyc
+
+**/*.tar.gz
+**/*.ipa
+**/*.dSYM
+
+**/0*_*.html
