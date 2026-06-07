@@ -39,6 +39,7 @@ struct CompanionHomeScreen: View {
     @State private var tab: Tab = .main
     @State private var availableCharacters: [CompanionCharacterDTO] = []
     @State private var wellnessTabReady = WellnessSessionStore.hasAcceptedConsent
+    @State private var mainConversationPresence: CompanionHeroLayout.ConversationPresence = .standard
 
     private let tabActiveColor = Color(hex: "C4B5FD")
     private let tabInactiveColor = Color(hex: "E2E8F0").opacity(0.82)
@@ -50,6 +51,10 @@ struct CompanionHomeScreen: View {
                 headerBar
                 tabContent
                 homeTabBar
+                    .frame(height: hidesMainTabBar ? 0 : nil)
+                    .opacity(hidesMainTabBar ? 0 : 1)
+                    .allowsHitTesting(!hidesMainTabBar)
+                    .clipped()
             }
         }
         .navigationBarHidden(true)
@@ -66,6 +71,19 @@ struct CompanionHomeScreen: View {
             tab = picked
             navigationManager.companionHomeTargetTab = nil
         }
+        .onChange(of: tab) { _ in
+            if tab != .main, mainConversationPresence == .immersive {
+                mainConversationPresence = .standard
+            }
+        }
+    }
+
+    private var hidesMainTabBar: Bool {
+        tab == .main && mainConversationPresence == .immersive
+    }
+
+    private var headerCompact: Bool {
+        tab == .main && mainConversationPresence == .immersive
     }
 
     private var headerBar: some View {
@@ -78,13 +96,19 @@ struct CompanionHomeScreen: View {
             }
             .accessibilityLabel(localizationManager.localized("companion_back"))
 
-            Text(localizationManager.localized("companion_home_title"))
-                .font(.headline.bold())
+            if !headerCompact {
+                Text(localizationManager.localized("companion_home_title"))
+                    .font(.headline.bold())
+            } else {
+                Text(CompanionHeroRiveMapping.heroBaseEmoji(characterId: selectedCharacterId))
+                    .font(.title3)
+            }
             Spacer()
         }
         .foregroundColor(.white)
         .padding(.horizontal, 16)
-        .padding(.vertical, 10)
+        .padding(.vertical, headerCompact ? 6 : 10)
+        .animation(.easeInOut(duration: 0.25), value: headerCompact)
     }
 
     @ViewBuilder
@@ -98,7 +122,12 @@ struct CompanionHomeScreen: View {
                     selectedCharacterId = id
                     activeThreadId = ""
                 },
-                onOpenMineTab: { tab = .mine }
+                onOpenMineTab: { tab = .mine },
+                onPresenceChange: { presence in
+                    withAnimation(.easeInOut(duration: 0.25)) {
+                        mainConversationPresence = presence
+                    }
+                }
             )
         case .wellness:
             if wellnessTabReady {

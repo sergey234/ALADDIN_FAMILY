@@ -20,7 +20,7 @@ final class SpeechPathTests: XCTestCase {
         XCTAssertEqual(SpeechRecognizerFactory.isSpeechInputAvailable(preferred: locale), cloud)
     }
 
-    func testCloudOnlyReturnsNonOnDeviceFlagWhenCloudExists() {
+    func testCloudOnlyReturnsNonOnDeviceFlagWhenCloudExists() throws {
         let locale = Locale(identifier: "en-US")
         guard let cloud = SpeechRecognizerFactory.cloudOnly(preferred: locale) else {
             throw XCTSkip("Cloud recognizer not available in CI/simulator")

@@ -6,6 +6,7 @@ struct CompanionHeroAnimatedView: View {
     let emotion: CompanionHeroEmotion
     let lipSyncPhase: CGFloat
     var stageStyle: CompanionHeroLayout.StageStyle = .hubThumbnail
+    var stageContentMode: CompanionHeroLayout.HeroStageContentMode = .fit
     var stageSize: CGSize = CGSize(
         width: CompanionHeroLayout.hubThumbnailDiameterPt,
         height: CompanionHeroLayout.hubThumbnailDiameterPt
@@ -78,6 +79,12 @@ struct CompanionHeroAnimatedView: View {
             }
 
             characterFace(t: t, mouthOpen: mouthOpen, fullBody: true)
+                .scaleEffect(
+                    stageContentMode == .fillBottom
+                        ? CompanionHeroLayout.stageFillScaleFactor(stageSize: stageSize)
+                        : 1,
+                    anchor: .bottom
+                )
         }
         .clipShape(
             RoundedRectangle(cornerRadius: CompanionHeroLayout.stageCornerRadius, style: .continuous)

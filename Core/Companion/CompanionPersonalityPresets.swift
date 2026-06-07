@@ -135,6 +135,27 @@ enum CompanionSettings {
     static func setCachedTeenHumorPreference(_ value: String) {
         UserDefaults.standard.set(value == "less" ? "less" : "normal", forKey: teenHumorKey)
     }
+
+    // MARK: - AIL P2 — закрепление размера героя (родитель)
+
+    static let heroPresencePinStorageKey = "companion_hero_presence_pin_v1"
+
+    enum HeroPresencePinMode: String, CaseIterable, Identifiable {
+        case auto
+        case alwaysFocused = "always_focused"
+        case alwaysStandard = "always_standard"
+
+        var id: String { rawValue }
+    }
+
+    static func cachedHeroPresencePinMode() -> HeroPresencePinMode {
+        let raw = UserDefaults.standard.string(forKey: heroPresencePinStorageKey) ?? HeroPresencePinMode.auto.rawValue
+        return HeroPresencePinMode(rawValue: raw) ?? .auto
+    }
+
+    static func setCachedHeroPresencePinMode(_ mode: HeroPresencePinMode) {
+        UserDefaults.standard.set(mode.rawValue, forKey: heroPresencePinStorageKey)
+    }
 }
 
 enum CompanionDisplayNames {

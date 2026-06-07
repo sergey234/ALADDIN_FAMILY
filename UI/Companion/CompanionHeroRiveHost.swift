@@ -111,6 +111,7 @@ struct CompanionHeroRiveRuntimeView: View {
     let emotion: CompanionHeroEmotion
     let lipSyncPhase: CGFloat
     let stageStyle: CompanionHeroLayout.StageStyle
+    var stageContentMode: CompanionHeroLayout.HeroStageContentMode = .fit
     let stageSize: CGSize
 
     @StateObject private var viewModel: RiveViewModel
@@ -122,6 +123,7 @@ struct CompanionHeroRiveRuntimeView: View {
         emotion: CompanionHeroEmotion,
         lipSyncPhase: CGFloat,
         stageStyle: CompanionHeroLayout.StageStyle = .hubThumbnail,
+        stageContentMode: CompanionHeroLayout.HeroStageContentMode = .fit,
         stageSize: CGSize = CGSize(
             width: CompanionHeroLayout.hubThumbnailDiameterPt,
             height: CompanionHeroLayout.hubThumbnailDiameterPt
@@ -131,6 +133,7 @@ struct CompanionHeroRiveRuntimeView: View {
         self.emotion = emotion
         self.lipSyncPhase = lipSyncPhase
         self.stageStyle = stageStyle
+        self.stageContentMode = stageContentMode
         self.stageSize = stageSize
         _viewModel = StateObject(
             wrappedValue: CompanionHeroRiveHost.makeRiveViewModel(characterId: characterId)
@@ -174,7 +177,11 @@ struct CompanionHeroRiveRuntimeView: View {
 
     @ViewBuilder
     private func rivStage(mouthOpen: CGFloat, frameIndex: Int) -> some View {
-        let content = ZStack {
+        let fillScale: CGFloat = {
+            guard stageStyle == .conversationFullBody, stageContentMode == .fillBottom else { return 1 }
+            return CompanionHeroLayout.stageFillScaleFactor(stageSize: stageSize)
+        }()
+        let scaled = ZStack {
             viewModel.view()
             CompanionHeroRiveInputsSync(
                 viewModel: viewModel,
@@ -184,11 +191,15 @@ struct CompanionHeroRiveRuntimeView: View {
             )
         }
         .frame(width: stageSize.width, height: stageSize.height)
+        .scaleEffect(fillScale, anchor: .bottom)
+        .frame(width: stageSize.width, height: stageSize.height, alignment: .bottom)
+        .clipped()
+
         switch stageStyle {
         case .hubThumbnail:
-            content.clipShape(Circle())
+            scaled.clipShape(Circle())
         case .conversationFullBody:
-            content.clipShape(
+            scaled.clipShape(
                 RoundedRectangle(cornerRadius: CompanionHeroLayout.stageCornerRadius, style: .continuous)
             )
         }

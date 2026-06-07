@@ -60,7 +60,7 @@ final class CompanionSmokeUITests: XCTestCase {
 
         let send = app.buttons["companion_send_button"]
         XCTAssertTrue(send.waitForExistence(timeout: 5))
-        XCTAssertFalse(send.isDisabled)
+        XCTAssertTrue(send.isEnabled)
         send.tap()
 
         // UI path exercised; network may fail offline — hero stage must remain.

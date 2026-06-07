@@ -22,6 +22,7 @@ struct CompanionConversationScreen: View {
     /// P1-13c: озвучка текстовых ответов (Моё → можно выключить).
     @AppStorage("companion_response_tts_enabled") private var responseTTSEnabled = true
     @AppStorage("companion_mic_coach_seen") private var micCoachSeen = false
+    @AppStorage(CompanionSettings.heroPresencePinStorageKey) private var heroPresencePinRaw: String = CompanionSettings.HeroPresencePinMode.auto.rawValue
     @State private var personalityPreset: String = "friendly"
     @State private var trustScore: Int = 10
     @State private var showCosmetics = false
@@ -88,6 +89,12 @@ struct CompanionConversationScreen: View {
     var availableCharacters: [CompanionCharacterDTO] = []
     var onSelectCharacter: ((String) -> Void)? = nil
     var onOpenMineTab: (() -> Void)? = nil
+    /// AIL §6.2b: уведомляет `CompanionHomeScreen` о смене chrome (tab bar / header).
+    var onPresenceChange: ((CompanionHeroLayout.ConversationPresence) -> Void)? = nil
+
+    @State private var conversationPresence: CompanionHeroLayout.ConversationPresence = .standard
+    @State private var userPinnedChrome = false
+    @State private var voiceIdleExitTask: Task<Void, Never>?
 
     private var isCloudAIEnabled: Bool {
         AppConfig.isAIDataSharingEnabled
@@ -119,83 +126,45 @@ struct CompanionConversationScreen: View {
     private var conversationBodyCore: some View {
         VStack(spacing: 0) {
             GeometryReader { geo in
-                let layout = CompanionHeroLayout.conversationMetrics(contentSize: geo.size)
+                let layout = CompanionHeroLayout.conversationMetrics(
+                    contentSize: geo.size,
+                    presence: conversationPresence
+                )
+                let bannerMode: CompanionConversationBannersSection.DisplayMode =
+                    layout.presence == .immersive ? .chips : .full
+                let activeWellnessPillar = WellnessSessionStore.activePillar.flatMap { WellnessPillar(rawValue: $0) }
+                let wellnessMoodEmoji = WellnessSessionStore.loadCheckin().map { moodEmoji($0.mood) }
                 VStack(spacing: 0) {
                     heroStage(layout: layout)
                         .contentShape(Rectangle())
                         .onTapGesture { isInputFocused = false }
-                    if usageSnapshot != nil {
-                        CompanionUsageBanner(usage: usageSnapshot)
-                            .padding(.horizontal, 12)
-                            .padding(.vertical, 4)
-                    }
-                    if let pillar = WellnessSessionStore.activePillar,
-                       let wp = WellnessPillar(rawValue: pillar) {
-                        HStack(spacing: 8) {
-                            Text(localizationManager.localized("wellness_chip_mood"))
-                                .font(.caption2.bold())
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(Color(hex: "A78BFA").opacity(0.25))
-                                .clipShape(Capsule())
-                            Image(systemName: "heart.text.square.fill")
-                                .foregroundStyle(Color(hex: "A78BFA"))
-                            Text(localizationManager.localized(wp.titleKey))
-                                .font(.caption.weight(.semibold))
-                            Spacer()
-                            if let checkin = WellnessSessionStore.loadCheckin() {
-                                Text(moodEmoji(checkin.mood))
-                            }
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(Color(hex: "8B5CF6").opacity(0.12))
-                        .accessibilityIdentifier("companion_wellness_pillar_banner")
-                    }
-                    if let companionEntryBanner, !companionEntryBanner.isEmpty {
-                        HStack(spacing: 8) {
-                            Image(systemName: "sparkles")
-                                .foregroundStyle(Color(hex: "A78BFA"))
-                            Text(companionEntryBanner)
-                                .font(.caption)
-                                .foregroundStyle(.primary)
-                            Spacer()
-                            Button {
-                                WellnessSessionStore.setCompanionEntryBanner(nil)
-                                self.companionEntryBanner = nil
-                            } label: {
-                                Image(systemName: "xmark.circle.fill")
-                                    .foregroundStyle(.secondary)
-                            }
-                            .accessibilityLabel(localizationManager.localized("companion_social_bridge_dismiss"))
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 8)
-                        .background(Color.mint.opacity(0.12))
-                        .accessibilityIdentifier("companion_wellness_mode_banner")
-                    }
-                    if let wellnessRecapLine, !wellnessRecapLine.isEmpty {
-                        HStack(alignment: .top, spacing: 8) {
-                            Image(systemName: "clock.arrow.circlepath")
-                                .font(.caption)
-                                .foregroundStyle(Color(hex: "8B5CF6"))
-                            Text(wellnessRecapLine)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                                .fixedSize(horizontal: false, vertical: true)
-                            Spacer(minLength: 0)
-                        }
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 6)
-                        .background(Color(hex: "8B5CF6").opacity(0.08))
-                        .accessibilityIdentifier("companion_wellness_recap_banner")
-                    }
-                    if memoryChipsEnabled, !memoryChips.isEmpty {
+                    CompanionConversationBannersSection(
+                        mode: bannerMode,
+                        usage: usageSnapshot,
+                        wellnessPillar: activeWellnessPillar,
+                        wellnessMoodEmoji: wellnessMoodEmoji,
+                        companionEntryBanner: companionEntryBanner,
+                        onDismissEntryBanner: {
+                            WellnessSessionStore.setCompanionEntryBanner(nil)
+                            companionEntryBanner = nil
+                        },
+                        wellnessRecapLine: wellnessRecapLine,
+                        memoryChipsEnabled: memoryChipsEnabled,
+                        memoryChipCount: memoryChips.count,
+                        onMemoryChipTap: { showFullChatHistory = true }
+                    )
+                    if bannerMode == .full, memoryChipsEnabled, !memoryChips.isEmpty {
                         companionMemoryChipsRow
                     }
-                    Divider().opacity(0.15)
+                    Divider().opacity(layout.presence == .immersive ? 0.05 : 0.15)
                     companionDialogueStrip
                         .frame(height: layout.chatZoneHeight)
+                        .background {
+                            if layout.presence == .immersive {
+                                RoundedRectangle(cornerRadius: 16, style: .continuous)
+                                    .fill(.ultraThinMaterial)
+                            }
+                        }
                         .contentShape(Rectangle())
                         .onTapGesture { isInputFocused = false }
                 }
@@ -370,16 +339,22 @@ struct CompanionConversationScreen: View {
             } else {
                 finishSpeakingPhase()
             }
+            syncConversationPresence()
         }
         .onChange(of: input) { newValue in
             CompanionOfflineStore.saveDraft(characterId: characterId, text: newValue)
         }
         .onChange(of: messages.count) { _ in
             persistConversationCache()
+            syncConversationPresence()
         }
         .onChange(of: characterId) { newId in
             input = CompanionOfflineStore.loadDraft(characterId: newId)
         }
+        .onChange(of: speechManager.isRecording) { _ in syncConversationPresence() }
+        .onChange(of: speechManager.isPreparingRecording) { _ in syncConversationPresence() }
+        .onChange(of: voiceSession.isAwaitingReply) { _ in syncConversationPresence() }
+        .onChange(of: heroPresencePinRaw) { _ in syncConversationPresence() }
     }
 
     private func handleConversationAppear() {
@@ -422,9 +397,15 @@ struct CompanionConversationScreen: View {
         if caps.voiceRealtimeEnabled && !micCoachSeen {
             showMicCoach = true
         }
+        syncConversationPresence()
     }
 
     private func handleConversationDisappear() {
+        voiceIdleExitTask?.cancel()
+        voiceIdleExitTask = nil
+        userPinnedChrome = false
+        conversationPresence = .standard
+        onPresenceChange?(.standard)
         if speechManager.isRecording {
             speechManager.stopRecording()
         }
@@ -441,34 +422,125 @@ struct CompanionConversationScreen: View {
         CompanionOfflineStore.saveMessages(threadId: resolveThreadId(), messages: messages)
     }
 
-    /// Сцена виртуального друга (~56% высоты), GROK §6.2 — не мини-аватар в шапке чата.
+    private var isVoiceActive: Bool {
+        speechManager.isRecording
+            || speechManager.isPreparingRecording
+            || voiceSession.isAwaitingReply
+            || speechOutput.isSpeaking
+    }
+
+    private func syncConversationPresence() {
+        guard AppConfig.heroImmersiveLayoutEnabled else {
+            voiceIdleExitTask?.cancel()
+            voiceIdleExitTask = nil
+            applyConversationPresence(.standard)
+            return
+        }
+
+        if isVoiceActive {
+            voiceIdleExitTask?.cancel()
+            voiceIdleExitTask = nil
+            if userPinnedChrome { userPinnedChrome = false }
+            applyConversationPresence(.immersive)
+            return
+        }
+
+        let target = CompanionHeroLayout.resolvePresence(
+            messagesEmpty: messages.isEmpty,
+            isVoiceActive: false,
+            userPinnedChrome: userPinnedChrome,
+            immersiveEnabled: true,
+            pinMode: heroPresencePinMode
+        )
+
+        if conversationPresence == .immersive, target != .immersive {
+            voiceIdleExitTask?.cancel()
+            voiceIdleExitTask = Task { @MainActor in
+                try? await Task.sleep(
+                    nanoseconds: UInt64(CompanionHeroLayout.immersiveVoiceIdleDebounceSec * 1_000_000_000)
+                )
+                guard !Task.isCancelled else { return }
+                applyConversationPresence(target)
+            }
+            return
+        }
+
+        voiceIdleExitTask?.cancel()
+        voiceIdleExitTask = nil
+        applyConversationPresence(target)
+    }
+
+    private func applyConversationPresence(_ next: CompanionHeroLayout.ConversationPresence) {
+        guard next != conversationPresence else { return }
+        withAnimation(.easeInOut(duration: 0.25)) {
+            conversationPresence = next
+        }
+        onPresenceChange?(next)
+    }
+
+    private func pinChromeFromImmersive() {
+        userPinnedChrome = true
+        voiceIdleExitTask?.cancel()
+        voiceIdleExitTask = nil
+        let next = CompanionHeroLayout.resolvePresence(
+            messagesEmpty: messages.isEmpty,
+            isVoiceActive: false,
+            userPinnedChrome: true,
+            immersiveEnabled: AppConfig.heroImmersiveLayoutEnabled,
+            pinMode: heroPresencePinMode
+        )
+        applyConversationPresence(next)
+    }
+
+    private var heroPresencePinMode: CompanionSettings.HeroPresencePinMode {
+        CompanionSettings.HeroPresencePinMode(rawValue: heroPresencePinRaw) ?? .auto
+    }
+
+    /// Сцена виртуального друга — AIL §6.2b (standard / focused / immersive).
     private func heroStage(layout: CompanionHeroLayout.ConversationMetrics) -> some View {
-        ZStack(alignment: .bottom) {
-            Color(.systemGroupedBackground).opacity(0.3)
+        ZStack(alignment: layout.statusOverlayAtTop ? .top : .bottom) {
+            if layout.presence != .immersive {
+                Color(.systemGroupedBackground).opacity(0.3)
+            }
             CompanionHeroAvatarView(
                 characterId: characterId,
                 emotion: heroEmotion,
                 lipSyncPhase: lipSyncPhase,
                 equippedCosmeticId: activeEquippedCosmetic,
                 stageStyle: .conversationFullBody,
+                stageContentMode: layout.contentMode,
                 stageSize: layout.stageSize
             )
             .padding(.horizontal, CompanionHeroLayout.stageHorizontalPadding)
-            .padding(.top, 6)
-            .padding(.bottom, CompanionHeroLayout.heroStatusOverlayHeight)
+            .padding(.top, layout.statusOverlayAtTop ? CompanionHeroLayout.heroStatusOverlayHeight + 4 : 6)
+            .padding(.bottom, layout.stageBottomInset)
             .accessibilityIdentifier("companion_hero_stage")
             if isChildProfile && caps.voiceRealtimeEnabled && embeddedInHome {
                 VStack {
                     Spacer()
                     childSceneSpeakButton
-                        .padding(.bottom, CompanionHeroLayout.heroStatusOverlayHeight + 12)
+                        .padding(.bottom, layout.stageBottomInset + 12)
                 }
             }
             heroStatusOverlay
         }
+        .overlay(alignment: .top) {
+            if layout.presence == .immersive {
+                Button(action: pinChromeFromImmersive) {
+                    Color.clear
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(localizationManager.localized("companion_immersive_show_chrome"))
+                .accessibilityIdentifier("companion_immersive_chrome_exit")
+            }
+        }
         .frame(height: layout.heroZoneHeight)
         .frame(maxWidth: .infinity)
         .clipped()
+        .animation(.easeInOut(duration: 0.25), value: layout.presence)
     }
 
     private var companionDialogueStrip: some View {
@@ -1121,6 +1193,7 @@ struct CompanionConversationScreen: View {
         await loadWellnessRecapIfNeeded()
         await loadCompanionMemoryChipsIfNeeded()
         restorePendingStreamIfNeeded()
+        await MainActor.run { syncConversationPresence() }
     }
 
     private var companionMemoryChipsRow: some View {

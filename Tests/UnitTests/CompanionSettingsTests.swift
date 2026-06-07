@@ -4,6 +4,7 @@ import XCTest
 final class CompanionSettingsTests: XCTestCase {
     override func tearDown() {
         UserDefaults.standard.removeObject(forKey: "companion_vedic_wisdom_enabled_v1")
+        UserDefaults.standard.removeObject(forKey: CompanionSettings.heroPresencePinStorageKey)
         super.tearDown()
     }
 
@@ -20,5 +21,12 @@ final class CompanionSettingsTests: XCTestCase {
 
     func testHumorHintKeys() {
         XCTAssertEqual(CompanionSettings.humorHintKey(for: "genie"), "companion_humor_hint_genie")
+    }
+
+    func testHeroPresencePinRoundTrip() {
+        CompanionSettings.setCachedHeroPresencePinMode(.alwaysFocused)
+        XCTAssertEqual(CompanionSettings.cachedHeroPresencePinMode(), .alwaysFocused)
+        CompanionSettings.setCachedHeroPresencePinMode(.auto)
+        XCTAssertEqual(CompanionSettings.cachedHeroPresencePinMode(), .auto)
     }
 }

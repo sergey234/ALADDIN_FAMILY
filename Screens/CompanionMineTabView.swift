@@ -11,6 +11,7 @@ struct CompanionMineTabView: View {
 
     @AppStorage("companion_equipped_cosmetic_id") private var equippedCosmeticId: String = ""
     @AppStorage("companion_response_tts_enabled") private var responseTTSEnabled = true
+    @AppStorage(CompanionSettings.heroPresencePinStorageKey) private var heroPresencePinRaw: String = CompanionSettings.HeroPresencePinMode.auto.rawValue
     @State private var trustScore: Int = 10
     @State private var threads: [CompanionThreadSummary] = []
     @State private var workspaces: [CompanionWorkspaceDTO] = []
@@ -57,6 +58,10 @@ struct CompanionMineTabView: View {
                 .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
                 .foregroundColor(.white)
                 .accessibilityIdentifier("companion_mine_tts_toggle")
+
+                if showsParentOps {
+                    heroPresencePinSection
+                }
 
                 CompanionCosmeticsSection(
                     characterId: selectedCharacterId,
@@ -133,6 +138,36 @@ struct CompanionMineTabView: View {
                 }
             }
         }
+    }
+
+    private var heroPresencePinSection: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(localizationManager.localized("companion_hero_pin_title"))
+                    .font(.subheadline.weight(.semibold))
+                Text(localizationManager.localized("companion_hero_pin_subtitle"))
+                    .font(.caption)
+                    .opacity(0.85)
+            }
+            Picker("", selection: $heroPresencePinRaw) {
+                Text(localizationManager.localized("companion_hero_pin_auto"))
+                    .tag(CompanionSettings.HeroPresencePinMode.auto.rawValue)
+                Text(localizationManager.localized("companion_hero_pin_always_focused"))
+                    .tag(CompanionSettings.HeroPresencePinMode.alwaysFocused.rawValue)
+                Text(localizationManager.localized("companion_hero_pin_always_standard"))
+                    .tag(CompanionSettings.HeroPresencePinMode.alwaysStandard.rawValue)
+            }
+            .pickerStyle(.segmented)
+            .onChange(of: heroPresencePinRaw) { newValue in
+                if let mode = CompanionSettings.HeroPresencePinMode(rawValue: newValue) {
+                    CompanionSettings.setCachedHeroPresencePinMode(mode)
+                }
+            }
+        }
+        .padding(14)
+        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .foregroundColor(.white)
+        .accessibilityIdentifier("companion_mine_hero_pin_section")
     }
 
     private var trustCard: some View {

@@ -7,6 +7,7 @@ struct CompanionHeroAvatarView: View {
     let lipSyncPhase: CGFloat
     var equippedCosmeticId: String = ""
     var stageStyle: CompanionHeroLayout.StageStyle = .hubThumbnail
+    var stageContentMode: CompanionHeroLayout.HeroStageContentMode = .fit
     var stageSize: CGSize = CGSize(
         width: CompanionHeroLayout.hubThumbnailDiameterPt,
         height: CompanionHeroLayout.hubThumbnailDiameterPt
@@ -63,6 +64,7 @@ struct CompanionHeroAvatarView: View {
                 emotion: emotion,
                 lipSyncPhase: lipSyncPhase,
                 stageStyle: stageStyle,
+                stageContentMode: stageContentMode,
                 stageSize: stageSize
             )
         } else if CompanionHeroRiveHost.shouldUseRiveRuntime(characterId: characterId) {
@@ -72,6 +74,7 @@ struct CompanionHeroAvatarView: View {
                 emotion: emotion,
                 lipSyncPhase: lipSyncPhase,
                 stageStyle: stageStyle,
+                stageContentMode: stageContentMode,
                 stageSize: stageSize
             )
             #else
@@ -80,6 +83,7 @@ struct CompanionHeroAvatarView: View {
                 emotion: emotion,
                 lipSyncPhase: lipSyncPhase,
                 stageStyle: stageStyle,
+                stageContentMode: stageContentMode,
                 stageSize: stageSize
             )
             #endif
@@ -98,6 +102,7 @@ struct CompanionHeroAvatarView: View {
                 emotion: emotion,
                 lipSyncPhase: lipSyncPhase,
                 stageStyle: stageStyle,
+                stageContentMode: stageContentMode,
                 stageSize: stageSize
             )
             #endif
@@ -107,6 +112,7 @@ struct CompanionHeroAvatarView: View {
                 emotion: emotion,
                 lipSyncPhase: lipSyncPhase,
                 stageStyle: stageStyle,
+                stageContentMode: stageContentMode,
                 stageSize: stageSize
             )
         }

@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// HERO-3-07 — production master PNG (360×480) до замены placeholder `.riv`.
 /// Файлы: `Resources/Companion/{unicorn,aladdin,genie}_master.png`
@@ -7,6 +8,7 @@ struct CompanionHeroRasterView: View {
     let emotion: CompanionHeroEmotion
     let lipSyncPhase: CGFloat
     var stageStyle: CompanionHeroLayout.StageStyle = .hubThumbnail
+    var stageContentMode: CompanionHeroLayout.HeroStageContentMode = .fit
     var stageSize: CGSize = CGSize(
         width: CompanionHeroLayout.hubThumbnailDiameterPt,
         height: CompanionHeroLayout.hubThumbnailDiameterPt
@@ -93,26 +95,49 @@ struct CompanionHeroRasterView: View {
         let bobY = emotionBobOffset(t: t, hub: hub)
         let scale = emotionScale(t: t, hub: hub)
         if let uiImage = CompanionHeroRiveHost.bundledMasterUIImage(characterId: characterId) {
-            Image(uiImage: uiImage)
-                .resizable()
-                .scaledToFit()
-                .scaleEffect(scale)
-                .offset(y: bobY)
-                .overlay(alignment: .bottom) {
-                    if mouthOpen > 0.05 {
-                        mouthOverlay(mouthOpen: mouthOpen, hub: hub)
-                    }
-                }
-                .accessibilityLabel(CompanionHeroRiveMapping.accessibilityLabel(emotion: emotion))
+            scaledMasterImage(uiImage: uiImage, hub: hub, bobY: bobY, scale: scale, mouthOpen: mouthOpen)
         } else {
             CompanionHeroAnimatedView(
                 characterId: characterId,
                 emotion: emotion,
                 lipSyncPhase: lipSyncPhase,
                 stageStyle: stageStyle,
+                stageContentMode: stageContentMode,
                 stageSize: stageSize
             )
         }
+    }
+
+    @ViewBuilder
+    private func scaledMasterImage(
+        uiImage: UIImage,
+        hub: Bool,
+        bobY: CGFloat,
+        scale: CGFloat,
+        mouthOpen: CGFloat
+    ) -> some View {
+        let image = Image(uiImage: uiImage)
+            .resizable()
+        Group {
+            switch stageContentMode {
+            case .fit:
+                image
+                    .scaledToFit()
+            case .fillBottom:
+                image
+                    .scaledToFill()
+                    .frame(width: stageSize.width, height: stageSize.height, alignment: .bottom)
+                    .clipped()
+            }
+        }
+        .scaleEffect(scale)
+        .offset(y: bobY)
+        .overlay(alignment: .bottom) {
+            if mouthOpen > 0.05 {
+                mouthOverlay(mouthOpen: mouthOpen, hub: hub)
+            }
+        }
+        .accessibilityLabel(CompanionHeroRiveMapping.accessibilityLabel(emotion: emotion))
     }
 
     @ViewBuilder
