@@ -238,7 +238,7 @@ struct FamilyProtectorView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
+            StormMeshBackground(variant: .family)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {
@@ -381,10 +381,7 @@ struct FamilyProtectorView: View {
             .frame(height: 20)
         }
         .padding(Spacing.l)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -455,13 +452,10 @@ struct FamilyProtectorView: View {
                 Spacer()
             }
             .padding(Spacing.m)
-            .background(
+            .stormGlassCard(cornerRadius: CornerRadius.medium)
+            .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(Color.backgroundMedium.opacity(0.5))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .stroke(Color.pink.opacity(0.3), lineWidth: 2)
-                    )
+                    .stroke(Color.pink.opacity(0.3), lineWidth: 2)
             )
         }
         .buttonStyle(PlainButtonStyle())
@@ -620,7 +614,7 @@ struct QuestDetailView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
+                StormMeshBackground(variant: .family)
                     .ignoresSafeArea()
                 
                 VStack(spacing: Spacing.l) {
@@ -745,10 +739,7 @@ struct QuestDetailView: View {
             }
         }
         .padding(Spacing.l)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .padding(.horizontal, Spacing.screenPadding)
     }
     

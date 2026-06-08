@@ -13,55 +13,63 @@ struct WellnessValuesCardSheet: View {
     private let options = ["kindness", "growth", "connection", "calm", "health"]
 
     var body: some View {
-        WellnessNavigationStack {
-            Form {
-                Section {
-                    Text(localizationManager.localized("wellness_values_card_title"))
-                    Text(localizationManager.localized("wellness_values_card_subtitle"))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-                Section {
-                    ForEach(options, id: \.self) { id in
-                        Button {
-                            toggle(id)
-                        } label: {
-                            HStack {
-                                Text(localizationManager.localized("wellness_values_\(id)"))
-                                Spacer()
-                                if selected.contains(id) {
-                                    Image(systemName: "checkmark.circle.fill")
+        ZStack {
+            StormMeshBackground(variant: .neutral)
+
+            WellnessNavigationStack {
+                Form {
+                    Section {
+                        Text(localizationManager.localized("wellness_values_card_title"))
+                        Text(localizationManager.localized("wellness_values_card_subtitle"))
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.75))
+                    }
+                    Section {
+                        ForEach(options, id: \.self) { id in
+                            Button {
+                                toggle(id)
+                            } label: {
+                                HStack {
+                                    Text(localizationManager.localized("wellness_values_\(id)"))
+                                    Spacer()
+                                    if selected.contains(id) {
+                                        Image(systemName: "checkmark.circle.fill")
+                                    }
                                 }
                             }
+                            .foregroundStyle(.white)
                         }
-                        .foregroundStyle(.primary)
+                    }
+                    Section {
+                        WellnessMultilineField(
+                            title: localizationManager.localized("wellness_values_note_placeholder"),
+                            text: $note,
+                            lineLimit: 2...4,
+                            minHeight: 64
+                        )
+                    }
+                    if let errorText {
+                        Text(errorText).foregroundStyle(.orange)
                     }
                 }
-                Section {
-                    WellnessMultilineField(
-                        title: localizationManager.localized("wellness_values_note_placeholder"),
-                        text: $note,
-                        lineLimit: 2...4,
-                        minHeight: 64
-                    )
-                }
-                if let errorText {
-                    Text(errorText).foregroundStyle(.orange)
-                }
-            }
-            .navigationTitle(localizationManager.localized("wellness_values_card_title"))
-            .toolbar {
-                ToolbarItem(placement: .confirmationAction) {
-                    Button(localizationManager.localized("wellness_checkin_save")) {
-                        Task { await save() }
+                .modifier(WellnessFormScrollBackgroundHidden())
+                .navigationTitle(localizationManager.localized("wellness_values_card_title"))
+                .toolbar {
+                    ToolbarItem(placement: .confirmationAction) {
+                        Button(localizationManager.localized("wellness_checkin_save")) {
+                            Task { await save() }
+                        }
+                        .disabled(saving || selected.isEmpty)
+                        .tint(.white)
                     }
-                    .disabled(saving || selected.isEmpty)
-                }
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(localizationManager.localized("wellness_premium_later")) { dismiss() }
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(localizationManager.localized("wellness_premium_later")) { dismiss() }
+                            .tint(.white)
+                    }
                 }
             }
         }
+        .foregroundColor(.white)
     }
 
     private func toggle(_ id: String) {
@@ -83,6 +91,17 @@ struct WellnessValuesCardSheet: View {
             dismiss()
         } catch {
             errorText = localizationManager.localized("wellness_error_network")
+        }
+    }
+}
+
+/// iOS 16+ hides Form scroll background; iOS 15 — no-op (mesh still visible at edges).
+private struct WellnessFormScrollBackgroundHidden: ViewModifier {
+    func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content.scrollContentBackground(.hidden)
+        } else {
+            content
         }
     }
 }

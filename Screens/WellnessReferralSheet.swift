@@ -16,39 +16,46 @@ struct WellnessReferralSheet: View {
     }
 
     var body: some View {
-        WellnessNavigationStack {
-            Group {
-                if isLoading {
-                    ProgressView(localizationManager.localized("wellness_helpline_loading"))
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                } else if let payload {
-                    ScrollView {
-                        VStack(alignment: .leading, spacing: 16) {
-                            Text(payload.disclaimer)
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
-                            ForEach(payload.lines) { line in
-                                helplineRow(line)
+        ZStack {
+            StormMeshBackground(variant: .premium)
+
+            WellnessNavigationStack {
+                Group {
+                    if isLoading {
+                        ProgressView(localizationManager.localized("wellness_helpline_loading"))
+                            .frame(maxWidth: .infinity, maxHeight: .infinity)
+                            .tint(.white)
+                    } else if let payload {
+                        ScrollView {
+                            VStack(alignment: .leading, spacing: 16) {
+                                Text(payload.disclaimer)
+                                    .font(.caption)
+                                    .foregroundColor(.white.opacity(0.75))
+                                ForEach(payload.lines) { line in
+                                    helplineRow(line)
+                                }
                             }
+                            .padding()
                         }
-                        .padding()
+                    } else if let errorText {
+                        Text(errorText)
+                            .foregroundStyle(.orange)
+                            .padding()
                     }
-                } else if let errorText {
-                    Text(errorText)
-                        .foregroundStyle(.orange)
-                        .padding()
                 }
-            }
-            .navigationTitle(localizationManager.localized("wellness_referral_title"))
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(localizationManager.localized("wellness_done")) {
-                        dismiss()
+                .navigationTitle(localizationManager.localized("wellness_referral_title"))
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(localizationManager.localized("wellness_done")) {
+                            dismiss()
+                        }
+                        .tint(.white)
                     }
                 }
             }
         }
+        .foregroundColor(.white)
         .wellnessSheetDetents()
         .task { await load() }
     }
@@ -70,8 +77,7 @@ struct WellnessReferralSheet: View {
                 }
                 .padding(12)
                 .frame(maxWidth: .infinity)
-                .background(Color.red.opacity(0.12))
-                .cornerRadius(12)
+                .stormGlassCard(cornerRadius: 12, accentStripColor: .red)
             }
             .buttonStyle(.plain)
         }

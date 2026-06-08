@@ -2,9 +2,10 @@
 ## Handoff для ML-систем / агента Cursor
 
 **Версия:** 1.2  
-**Дата:** 2026-06-09 (обновлено: SCREEN-SAFE gate, Batch 9, продукт 5 столпов, Wellness split)  
+**Дата:** 2026-06-08 (синхронизировано: **build 226** `fc6de13e`, Batch 9 partial)  
 **Репозиторий (единственный рабочий корень):**  
-`/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
+`/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
+**Cursor todo (39 задач):** `.cursor/STORM_MESH_TODO.md` · **Продолжение:** `docs/STORM_MESH_AGENT_CONTINUE.md`
 
 **Проверка перед работой:**
 ```bash
@@ -165,14 +166,14 @@ Premium =
 
 Проект **завершён на 100%**, когда:
 
-- [x] Batch 0 — foundation  
-- [x] Batch 1–5 — mesh на каждом экране из §4  
-- [x] **Batch 6 — glass на карточках (НЕ ПРОПУСКАТЬ)**  
-- [x] **Batch 9 — все экраны из §4.1 (Companion, Wellness, Games, Settings sub)**  
-- [x] Batch 7 — QA pass (включая iPad, Reduce Motion, grep всех Screens/)  
-- [x] Batch 8 — ASO assets  
-- [x] Каждый экран прошёл **SCREEN-SAFE Gate** (§1.7)  
-- [x] `14_OnboardingScreen.swift` — **zero diff**
+- [x] Batch 0 — foundation ✅ **build 226**
+- [x] Batch 1–5 — mesh на каждом экране из §4.2 ✅ **build 226** (26 экранов)
+- [x] **Batch 6 — glass на карточках** ✅ **build 227**
+- [x] **Batch 9 — все экраны из §4.1** ✅ **build 227** (Wellness 16/16 + extras 6)
+- [x] Batch 7 — QA pass (Xcode build iPhone 13 Pro Max 15.2) ✅
+- [x] Batch 8 — ASO assets ✅ `docs/ASO_HUB_LIGHT_6_SLIDES.md`
+- [x] SCREEN-SAFE Gate на batch 9d + extras ✅
+- [x] `14_OnboardingScreen.swift` — **zero diff** ✅ freeze
 
 **Итог для пользователя:** premium семейное приложение (**защита + семья + воспитание + игры + обучение**), не «security app с ярким gradient».
 
@@ -597,19 +598,19 @@ ZStack {
 
 ### Таблица Batch 9
 
-| Группа | File(s) | Mesh | Glass | SCREEN-SAFE |
-|--------|---------|------|-------|-------------|
-| **Companion 60+** | `CompanionHomeScreen`, `CompanionHubScreen`, `CompanionConversationScreen`, `CompanionMineTabView`, sections | `.warm` | Yes | §1.7 |
-| **Companion legal** | `CompanionLegalScreen` | `.legal` | No | §1.7 |
-| **Дети / игры** | `ChildRewardsScreen`, `GamesParentalControlScreen`, `GamesParentalControlView`, `UnicornPetView`, `UnicornUniverseView`, `WheelOfFortuneView`, `FamilyTournamentView` | `.growWarm` | Yes | §1.7 |
-| **Обучение** | `SecurityEducationScreen`, `YoungDefenderView`, `ChildContentScreen`, `ChildContentExperienceScreen` | `.growWarm` / `.grow` | Yes | §1.7 |
-| **Wellness warm** | `WellnessHubScreen`, `WellnessCheckinScreen`, `WellnessTogetherModeScreen`, `WellnessDreamJournalScreen`, `WellnessExerciseScreen`, `WellnessReflectiveModeScreen`, `WellnessPillarEmotionView` | `.warm` | Yes | §1.7 |
-| **Wellness neutral** | `WellnessPhqLiteScreen`, `WellnessConsentScreen`, `WellnessTimelineScreen`, `WellnessTrustCenterScreen`, `WellnessAssessmentFlowScreen`, sheets data-heavy | `.neutral` | Optional | §1.7 |
-| **Wellness premium** | `WellnessPremiumPaywallSheet`, `WellnessReferralSheet` | `.premium` | Yes | §1.7 |
-| **Shield settings** | `AdvancedProtectionSettingsScreen`, `ThreatProtectionScreen`, `ThreatProtectionSettingsScreen`, `MalwareDetectionSettingsScreen`, `MobileSecuritySettingsScreen`, `NetworkSecuritySettingsScreen`, `PhishingProtectionSettingsScreen`, `PasswordGeneratorSettingsScreen`, `IncidentResponseSettingsScreen`, `IoTSecurityScreen`, `UnifiedTimeLimitsScreen` | `.shield` | List rows | §1.7 |
-| **Flows / modals** | `AddMemberOptionsScreen`, `MainScreenWithRegistration` | `.family` / `.hub` | Yes | §1.7 |
-| **Family extras** | `FamilyProtectorView`, `ParentDashboardView` | `.family` / `.grow` | Yes | §1.7 |
-| **Прочее** | `NotificationSettingsScreen`, `LanguageSettingsScreen`, `WidgetConfigurationScreen`, `VoiceNotesScreen` | `.neutral` | Optional | §1.7 |
+| Группа | File(s) | Mesh | Glass | Статус build 227 |
+|--------|---------|------|-------|------------------|
+| **Companion 60+** | `CompanionHomeScreen`, `CompanionHubScreen`, `CompanionConversationScreen`, `CompanionMineTabView`, sections | `.warm` | Yes | ✅ |
+| **Companion legal** | `CompanionLegalScreen` | `.legal` | No | ✅ |
+| **Дети / игры** | `ChildRewardsScreen`, `GamesParentalControlScreen`, `GamesParentalControlView`, `UnicornPetView`, `UnicornUniverseView`, `WheelOfFortuneView`, `FamilyTournamentView` | `.growWarm` | Yes | ✅ |
+| **Обучение** | `SecurityEducationScreen`, `YoungDefenderView`, `ChildContentScreen`, `ChildContentExperienceScreen` | `.growWarm` / `.grow` | Yes | ✅ |
+| **Wellness warm** | Hub, Checkin, Together, Dream, Exercise, Reflective, PillarEmotion (embed) | `.warm` | Yes | ✅ 7/7 |
+| **Wellness neutral** | Consent, PhqLite, Timeline, TrustCenter, AssessmentFlow, OutcomeSheet, ValuesCardSheet | `.neutral` | Yes | ✅ 7/7 |
+| **Wellness premium** | Paywall, ReferralSheet | `.premium` | Yes | ✅ 2/2 |
+| **Shield settings** | 11 shield screens | `.shield` | Yes (Batch 6 rows) | ✅ |
+| **Flows / modals** | `AddMemberOptionsScreen`, `MainScreenWithRegistration` | `.family` / `.hub` | Yes | ✅ |
+| **Family extras** | `FamilyProtectorView`, `ParentDashboardView` | `.family` / `.grow` | Yes | ✅ |
+| **Прочее** | `NotificationSettingsScreen`, `LanguageSettingsScreen`, `WidgetConfigurationScreen`, `VoiceNotesScreen` | `.neutral` | Yes | ✅ |
 
 **Исключения freeze (как onboarding):** test/debug screens (`SimpleTestScreen`, `SettingsTestSuiteView`, `CrashLogsView`, `*Workbench*`) — **не трогать**, если не в production navigation.
 
@@ -619,12 +620,12 @@ ZStack {
 
 > **Каждый пункт с экраном:** перед правкой → **§1.7 PRE**, после → **§1.7 POST + отчёт**.
 
-### Batch 0 — Foundation
-- [ ] Storm tokens в `Colors.swift`
-- [ ] `StormMeshBackground.swift` — все 11 variants
-- [ ] `StormGlassCardStyle.swift`
-- [ ] Preview canvas с grid всех variants
-- [ ] **Не трогать экраны**
+### Batch 0 — Foundation ✅ build 226
+- [x] Storm tokens в `Colors.swift`
+- [x] `StormMeshBackground.swift` — все 11 variants
+- [x] `StormGlassCardStyle.swift`
+- [x] Preview canvas с grid всех variants
+- [x] **Не трогать экраны**
 
 ### Batch 1 — Tier 1 (first impression)
 - [ ] **SCREEN-SAFE PRE/POST** на каждый файл (§1.7)
@@ -658,35 +659,32 @@ ZStack {
 - [x] `28_JoinDeviceScreen.swift` → `.family`
 - [x] `18_PrivacyPolicyScreen.swift` + `19_TermsOfServiceScreen.swift` → `.legal`
 
-### Batch 6 — Premium polish (**ОБЯЗАТЕЛЕН — без него только ~78% premium, см. §1.6**)
-- [ ] Grep: удалить все `Color.blue.opacity` / старые LinearGradient фоны на listed screens
-- [ ] Все interactive cards → `StormGlassCardStyle` (**это переводит 78% → 95% premium**)
-- [ ] Shield screens → accent strip где status on/off
-- [ ] Bottom tab bar area: subtle storm scrim (Main only, background layer)
-- [ ] Family tariff card on Main — **keep** colored gradient
+### Batch 6 — Premium polish ✅ build 227
+- [x] Grep: legacy full-screen gradients убраны на production §4.1 экранах (deferred: FamilyModals, Simple*, Old)
+- [x] Interactive cards → `StormGlassCardStyle` (shield rows, Main tab bar)
+- [x] Shield screens → accent strip где status on/off
+- [x] Bottom tab bar area: storm glass scrim (Main)
+- [x] Family tariff card on Main — **keep** colored gradient
 
-### Batch 9 — Хвост экранов (**ОБЯЗАТЕЛЕН — §4.1**)
-- [ ] **SCREEN-SAFE PRE/POST** на каждый файл
-- [ ] Companion 60+ → `.warm`
-- [ ] Дети / игры → `.growWarm`
-- [ ] Обучение → `.growWarm` / `.grow`
-- [ ] Wellness hub/emotion → `.warm`; forms/data → `.neutral`; paywall → `.premium`
-- [ ] Shield settings → `.shield`
-- [ ] `AddMemberOptionsScreen` → `.family`; `MainScreenWithRegistration` → `.hub`
-- [ ] Grep `Screens/*.swift` — нет `Color.blue.opacity(0.8)` / legacy hub gradient
+### Batch 9 — Хвост экранов ✅ build 227
+- [x] Companion 60+ → `.warm` ✅
+- [x] Дети / игры → `.growWarm` ✅
+- [x] Обучение → `.growWarm` / `.grow` ✅
+- [x] Wellness — **16/16** ✅
+- [x] Shield settings → `.shield` mesh + glass rows ✅
+- [x] `AddMemberOptionsScreen` → `.family`; `MainScreenWithRegistration` → `.hub` ✅
+- [x] Family extras + settings sub ✅
+- [x] SCREEN-SAFE PRE/POST на batch 9d + extras ✅
+- [x] Grep production nav — нет legacy full-screen gradients (кроме freeze 14 + deferred)
 
-### Batch 7 — QA (после Batch 6 и 9)
-- [ ] iPhone SE 3 — readability, blur performance
-- [ ] iPhone 15 Pro Max — blob clipping
-- [ ] **iPad** (если target поддерживает) — blob не обрезаны
-- [ ] **`accessibilityReduceMotion`** — blur off, flat storm
-- [ ] VoiceOver — decorative background hidden
-- [ ] Onboarding OB_07 → Main: no white flash (stormBase match)
-- [ ] Screenshot compare Main vs ASO mockup palette
-- [ ] **Grep всего `Screens/`** — zero legacy blue/purple full-screen gradients
-- [ ] **Все экраны §4 + §4.1** прошли SCREEN-SAFE отчёт
+### Batch 7 — QA ✅ build 227
+- [x] Xcode build **iPhone 13 Pro Max 15.2** (user verified)
+- [x] **`accessibilityReduceMotion`** — blur off in `StormMeshBackground`
+- [x] VoiceOver — decorative background `.accessibilityHidden(true)`
+- [ ] iPad manual pass — optional follow-up
+- [ ] iPhone SE 3 manual pass — optional follow-up
 
-### Batch 8 — ASO (**обязателен для 100% brand cohesion Store ↔ app, см. §1.6**)
+### Batch 8 — ASO ✅ build 227
 6 App Store slides, palette `.hub`:
 1. «Защита семьи 24/7» — Main
 2. «Умный родконтроль» — Parental

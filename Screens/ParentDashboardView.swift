@@ -24,8 +24,12 @@ struct ParentDashboardView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                LazyVStack(spacing: 16) {
+            ZStack {
+                StormMeshBackground(variant: .grow)
+                    .ignoresSafeArea()
+
+                ScrollView {
+                    LazyVStack(spacing: 16) {
                 VStack(alignment: .leading, spacing: 8) {
                     Text(localizationManager.localized("parent_dashboard_title"))
                         .font(.system(size: 24, weight: .bold))
@@ -56,8 +60,7 @@ struct ParentDashboardView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding()
-                .background(Color.white.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .stormGlassCard(cornerRadius: 12)
 
                 activityDigestSection
                 learnedPanelSection
@@ -138,8 +141,7 @@ struct ParentDashboardView: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(10)
-                .background(Color.white.opacity(0.08))
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .stormGlassCard(cornerRadius: 12)
 
                 mirrorOverviewSection
 
@@ -167,8 +169,9 @@ struct ParentDashboardView: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
                 }
             }
+            }
+            .foregroundColor(.white)
             .padding()
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -216,8 +219,7 @@ struct ParentDashboardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding()
-        .background(Color.white.opacity(0.06))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .stormGlassCard(cornerRadius: 12)
     }
 
     private var parentReportExportSection: some View {
@@ -252,8 +254,7 @@ struct ParentDashboardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .stormGlassCard(cornerRadius: 12)
     }
 
     private var learnedPanelSection: some View {
@@ -281,8 +282,7 @@ struct ParentDashboardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .stormGlassCard(cornerRadius: 12)
         .accessibilityIdentifier("parent_dashboard_learned_panel")
     }
 
@@ -329,8 +329,7 @@ struct ParentDashboardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .stormGlassCard(cornerRadius: 12)
         .accessibilityIdentifier("parent_dashboard_mnemo_mastery")
     }
 
@@ -389,8 +388,7 @@ struct ParentDashboardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .stormGlassCard(cornerRadius: 12)
         .accessibilityIdentifier("parent_dashboard_mastery_levels")
     }
 
@@ -419,8 +417,7 @@ struct ParentDashboardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .stormGlassCard(cornerRadius: 12)
         .accessibilityIdentifier("parent_dashboard_roi_filter")
     }
 
@@ -439,8 +436,7 @@ struct ParentDashboardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .stormGlassCard(cornerRadius: 12)
         .accessibilityIdentifier("parent_dashboard_auto_digest")
     }
 
@@ -638,8 +634,7 @@ struct ParentDashboardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .stormGlassCard(cornerRadius: 12)
     }
 
     private func mirrorAudienceBlock(title: String, categories: [String]) -> some View {
@@ -748,8 +743,7 @@ private struct ParentDashboardTrendSection: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(10)
-        .background(Color.white.opacity(0.08))
-        .clipShape(RoundedRectangle(cornerRadius: 12))
+        .stormGlassCard(cornerRadius: 12)
     }
 
     private func legendDot(color: Color, text: String) -> some View {

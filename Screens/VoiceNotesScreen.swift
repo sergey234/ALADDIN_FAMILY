@@ -16,20 +16,26 @@ struct VoiceNotesScreen: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
-                LazyVStack(alignment: .leading, spacing: 12) {
-                    QuickRecorderBar(viewModel: viewModel)
-                        .environmentObject(localizationManager)
-                        .padding(.horizontal)
+            ZStack {
+                StormMeshBackground(variant: .neutral)
+                    .ignoresSafeArea()
 
-                    privacyBanner
+                ScrollView {
+                    LazyVStack(alignment: .leading, spacing: 12) {
+                        QuickRecorderBar(viewModel: viewModel)
+                            .environmentObject(localizationManager)
+                            .padding(.horizontal)
 
-                    notesContent
+                        privacyBanner
 
-                    callAssistantSection
+                        notesContent
+
+                        callAssistantSection
+                    }
+                    .padding(.bottom, 8)
                 }
-                .padding(.bottom, 8)
             }
+            .foregroundColor(.white)
             .searchable(text: $viewModel.searchText, prompt: localizationManager.localized("voice_notes_search_placeholder"))
             .safeAreaInset(edge: .bottom) {
                 if viewModel.canUndoDelete {

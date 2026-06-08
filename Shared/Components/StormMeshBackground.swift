@@ -345,3 +345,105 @@ struct StormMeshBackground_Previews: PreviewProvider {
     }
 }
 #endif
+
+// MARK: - Batch 8 ASO hub light slides (export via Xcode Preview)
+
+#if DEBUG
+enum ASOHubLightSlide: Int, CaseIterable, Identifiable {
+    case familyProtection = 1
+    case parentalControl
+    case childLearning
+    case aiParents
+    case devicesPanel
+    case tryFree
+
+    var id: Int { rawValue }
+
+    var title: String {
+        switch self {
+        case .familyProtection: return "Защита семьи 24/7"
+        case .parentalControl: return "Умный родконтроль"
+        case .childLearning: return "Обучение без страха"
+        case .aiParents: return "AI для родителей"
+        case .devicesPanel: return "Все устройства — одна панель"
+        case .tryFree: return "Попробуйте бесплатно"
+        }
+    }
+
+    var subtitle: String {
+        switch self {
+        case .familyProtection: return "Main · Storm hub v1.2"
+        case .parentalControl: return "Parental · grow mesh"
+        case .childLearning: return "Child · growWarm"
+        case .aiParents: return "AI Assistant · ai mesh"
+        case .devicesPanel: return "Devices · shield mesh"
+        case .tryFree: return "Tariffs · premium mesh"
+        }
+    }
+
+    var meshVariant: StormMeshVariant {
+        switch self {
+        case .familyProtection: return .hub
+        case .parentalControl: return .grow
+        case .childLearning: return .growWarm
+        case .aiParents: return .ai
+        case .devicesPanel: return .shield
+        case .tryFree: return .premium
+        }
+    }
+
+    var heroEmoji: String {
+        switch self {
+        case .familyProtection: return "🛡️"
+        case .parentalControl: return "👨‍👩‍👧"
+        case .childLearning: return "✨"
+        case .aiParents: return "🤖"
+        case .devicesPanel: return "📱"
+        case .tryFree: return "⭐"
+        }
+    }
+}
+
+struct ASOHubLightSlideView: View {
+    let slide: ASOHubLightSlide
+
+    var body: some View {
+        ZStack {
+            StormMeshBackground(variant: slide.meshVariant)
+
+            VStack(spacing: 20) {
+                Spacer()
+                Text(slide.heroEmoji)
+                    .font(.system(size: 72))
+                Text(slide.title)
+                    .font(.title.bold())
+                    .multilineTextAlignment(.center)
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 24)
+                Text(slide.subtitle)
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.85))
+                Spacer()
+                Text("ALADDIN · hub light premium")
+                    .font(.caption2.bold())
+                    .foregroundColor(Color.secondaryGold)
+                    .padding(.bottom, 32)
+            }
+        }
+        .frame(width: 393, height: 852)
+    }
+}
+
+struct ASOHubLightSlides_Previews: PreviewProvider {
+    static var previews: some View {
+        TabView {
+            ForEach(ASOHubLightSlide.allCases) { slide in
+                ASOHubLightSlideView(slide: slide)
+                    .previewDisplayName("ASO \(slide.rawValue)")
+            }
+        }
+        .tabViewStyle(.page)
+        .previewDisplayName("Batch 8 — ASO 6 slides hub light")
+    }
+}
+#endif

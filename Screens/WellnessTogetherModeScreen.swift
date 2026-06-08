@@ -12,56 +12,65 @@ struct WellnessTogetherModeScreen: View {
     @State private var timer: Timer?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                HStack {
-                    Button { stopAndBack() } label: {
-                        Image(systemName: "chevron.left")
+        ZStack {
+            StormMeshBackground(variant: .warm)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    HStack {
+                        Button { stopAndBack() } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.body.weight(.semibold))
+                        }
+                        Text(localizationManager.localized("wellness_together_title"))
+                            .font(.headline.bold())
+                        Spacer()
                     }
-                    Text(localizationManager.localized("wellness_together_title"))
-                        .font(.headline.bold())
-                    Spacer()
-                }
-                if let session {
-                    Text(introText(for: session))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    ForEach(session.steps, id: \.self) { step in
-                        Text("• \(step)")
-                            .font(.caption)
-                    }
-                    ZStack {
-                        Circle()
-                            .stroke(Color.purple.opacity(0.2), lineWidth: 12)
-                        Text(timeString(secondsLeft))
-                            .font(.system(size: 44, weight: .bold, design: .rounded))
-                        Text(phase == "in"
-                             ? localizationManager.localized("wellness_together_breathe_in")
-                             : localizationManager.localized("wellness_together_breathe_out"))
-                            .font(.caption)
-                            .offset(y: 56)
-                    }
-                    .frame(height: 200)
-                    .frame(maxWidth: .infinity)
-                    Button {
-                        if isRunning { pauseTimer() } else { startTimer() }
-                    } label: {
-                        Text(
-                            localizationManager.localized(
-                                isRunning ? "wellness_together_pause" : "wellness_together_start"
-                            )
-                        )
+                    if let session {
+                        Text(introText(for: session))
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.85))
+                        ForEach(session.steps, id: \.self) { step in
+                            Text("• \(step)")
+                                .font(.caption)
+                        }
+                        ZStack {
+                            Circle()
+                                .stroke(Color.white.opacity(0.25), lineWidth: 12)
+                            Text(timeString(secondsLeft))
+                                .font(.system(size: 44, weight: .bold, design: .rounded))
+                            Text(phase == "in"
+                                 ? localizationManager.localized("wellness_together_breathe_in")
+                                 : localizationManager.localized("wellness_together_breathe_out"))
+                                .font(.caption)
+                                .offset(y: 56)
+                        }
+                        .frame(height: 200)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
+                        .padding(16)
+                        .stormGlassCard(cornerRadius: CornerRadius.medium)
+                        Button {
+                            if isRunning { pauseTimer() } else { startTimer() }
+                        } label: {
+                            Text(
+                                localizationManager.localized(
+                                    isRunning ? "wellness_together_pause" : "wellness_together_start"
+                                )
+                            )
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Color(hex: "8B5CF6"))
+                    } else {
+                        ProgressView().tint(.white)
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.purple)
-                } else {
-                    ProgressView()
                 }
+                .padding()
             }
-            .padding()
         }
+        .foregroundColor(.white)
+        .navigationBarHidden(true)
         .onDisappear { pauseTimer() }
         .task { await loadSession() }
     }

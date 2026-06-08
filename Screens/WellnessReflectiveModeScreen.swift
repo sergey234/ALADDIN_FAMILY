@@ -11,31 +11,38 @@ struct WellnessReflectiveModeScreen: View {
     @State private var isSelecting = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                HStack {
-                    Button { navigationManager.goBack() } label: {
-                        Image(systemName: "chevron.left")
+        ZStack {
+            StormMeshBackground(variant: .warm)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    HStack {
+                        Button { navigationManager.goBack() } label: {
+                            Image(systemName: "chevron.left")
+                                .font(.body.weight(.semibold))
+                        }
+                        Text(localizationManager.localized("wellness_deep_explore_title"))
+                            .font(.headline.bold())
+                        Spacer()
                     }
-                    Text(localizationManager.localized("wellness_deep_explore_title"))
-                        .font(.headline.bold())
-                    Spacer()
-                }
-                Text(localizationManager.localized("wellness_deep_explore_subtitle"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                if isLoading {
-                    ProgressView().frame(maxWidth: .infinity)
-                } else if let errorText {
-                    Text(errorText).foregroundStyle(.orange)
-                } else {
-                    ForEach(modes) { mode in
-                        modeRow(mode)
+                    Text(localizationManager.localized("wellness_deep_explore_subtitle"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.85))
+                    if isLoading {
+                        ProgressView().frame(maxWidth: .infinity).tint(.white)
+                    } else if let errorText {
+                        Text(errorText).foregroundStyle(.orange)
+                    } else {
+                        ForEach(modes) { mode in
+                            modeRow(mode)
+                        }
                     }
                 }
+                .padding()
             }
-            .padding()
         }
+        .foregroundColor(.white)
+        .navigationBarHidden(true)
         .task { await loadModes() }
     }
 
@@ -48,12 +55,11 @@ struct WellnessReflectiveModeScreen: View {
                     .font(.subheadline.bold())
                 Text(modeHint(mode))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.white.opacity(0.85))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
-            .background(Color.indigo.opacity(0.1))
-            .cornerRadius(12)
+            .stormGlassCard(cornerRadius: 12)
         }
         .buttonStyle(.plain)
         .disabled(isSelecting)

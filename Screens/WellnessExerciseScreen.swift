@@ -17,22 +17,28 @@ struct WellnessExerciseScreen: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                header
-                if let errorText {
-                    Text(errorText).foregroundStyle(.orange)
+        ZStack {
+            StormMeshBackground(variant: .warm)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    header
+                    if let errorText {
+                        Text(errorText).foregroundStyle(.orange)
+                    }
+                    if let session {
+                        exerciseFlow(session)
+                    } else if isLoading {
+                        ProgressView().tint(.white)
+                    } else {
+                        catalogList
+                    }
                 }
-                if let session {
-                    exerciseFlow(session)
-                } else if isLoading {
-                    ProgressView()
-                } else {
-                    catalogList
-                }
+                .padding()
             }
-            .padding()
         }
+        .foregroundColor(.white)
+        .navigationBarHidden(true)
         .accessibilityIdentifier("wellness_exercise_screen")
         .task { await bootstrap() }
         .sheet(isPresented: $showOutcomeSheet) {
@@ -47,6 +53,7 @@ struct WellnessExerciseScreen: View {
         HStack {
             Button { navigationManager.goBack() } label: {
                 Image(systemName: "chevron.left")
+                    .font(.body.weight(.semibold))
             }
             Text(localizationManager.localized("wellness_exercise_title"))
                 .font(.headline.bold())
@@ -58,7 +65,7 @@ struct WellnessExerciseScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             Text(localizationManager.localized("wellness_exercise_pick"))
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
+                .foregroundColor(.white.opacity(0.85))
             ForEach(catalog) { item in
                 Button {
                     Task { await start(item) }
@@ -67,13 +74,12 @@ struct WellnessExerciseScreen: View {
                         Text(item.exerciseId.replacingOccurrences(of: "_", with: " "))
                             .font(.subheadline.bold())
                         if let hint = item.introHint, !hint.isEmpty {
-                            Text(hint).font(.caption).foregroundStyle(.secondary)
+                            Text(hint).font(.caption).foregroundColor(.white.opacity(0.85))
                         }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(12)
-                    .background(Color.purple.opacity(0.08))
-                    .cornerRadius(12)
+                    .stormGlassCard(cornerRadius: 12)
                 }
                 .buttonStyle(.plain)
             }
@@ -90,7 +96,7 @@ struct WellnessExerciseScreen: View {
                 )
             )
             .font(.caption.bold())
-            .foregroundStyle(.secondary)
+            .foregroundColor(.white.opacity(0.85))
             Text(s.hint)
                 .font(.body)
             if !s.completed {
@@ -107,6 +113,7 @@ struct WellnessExerciseScreen: View {
                         .padding(.vertical, 12)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(Color(hex: "8B5CF6"))
             } else {
                 Text(localizationManager.localized("wellness_exercise_done"))
                     .font(.headline)
@@ -117,6 +124,7 @@ struct WellnessExerciseScreen: View {
                         .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(.borderedProminent)
+                .tint(Color(hex: "8B5CF6"))
                 .accessibilityIdentifier("wellness_exercise_open_outcome")
                 Button {
                     navigationManager.popToWellnessHub()

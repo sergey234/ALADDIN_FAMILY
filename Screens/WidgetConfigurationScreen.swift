@@ -20,7 +20,7 @@ struct WidgetConfigurationScreen: View {
     var body: some View {
         ZStack {
             // Background
-            LinearGradient.backgroundGradient
+            StormMeshBackground(variant: .neutral)
                 .ignoresSafeArea()
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Фон экрана настройки виджетов")

@@ -12,69 +12,75 @@ struct WellnessTrustCenterScreen: View {
     @State private var showHelplineSheet = false
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                header
-                trustBlock(
-                    title: localizationManager.localized("wellness_trust_data_stored"),
-                    body: localizationManager.localized("wellness_trust_data_stored_body")
-                )
-                trustBlock(
-                    title: localizationManager.localized("wellness_trust_data_not_stored"),
-                    body: localizationManager.localized("wellness_trust_data_not_stored_body")
-                )
-                Text(localizationManager.localized("wellness_trust_escalation_title"))
-                    .font(.headline)
-                ForEach(["l0", "l1", "l2", "l3"], id: \.self) { level in
-                    Text(localizationManager.localized("wellness_trust_escalation_\(level)"))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                }
-                Text(localizationManager.localized("wellness_trust_crisis_no_chat_log"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                    .padding(.top, 4)
+        ZStack {
+            StormMeshBackground(variant: .neutral)
 
-                Button {
-                    showHelplineSheet = true
-                } label: {
-                    Label(
-                        localizationManager.localized("wellness_helpline_open"),
-                        systemImage: "phone.fill"
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    header
+                    trustBlock(
+                        title: localizationManager.localized("wellness_trust_data_stored"),
+                        body: localizationManager.localized("wellness_trust_data_stored_body")
                     )
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 12)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(.red)
-
-                Text(localizationManager.localized("wellness_teen_privacy_title"))
-                    .font(.headline)
-                Text(localizationManager.localized("wellness_teen_privacy_summary"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(localizationManager.localized("wellness_teen_privacy_crisis_only"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-                Text(localizationManager.localized("wellness_teen_privacy_none"))
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                if canEditShare {
-                    Toggle(
-                        localizationManager.localized("wellness_teen_parent_share_toggle"),
-                        isOn: $parentShareOn
+                    trustBlock(
+                        title: localizationManager.localized("wellness_trust_data_not_stored"),
+                        body: localizationManager.localized("wellness_trust_data_not_stored_body")
                     )
-                    .onChange(of: parentShareOn) { newValue in
-                        Task { await saveParentShare(newValue) }
+                    Text(localizationManager.localized("wellness_trust_escalation_title"))
+                        .font(.headline)
+                    ForEach(["l0", "l1", "l2", "l3"], id: \.self) { level in
+                        Text(localizationManager.localized("wellness_trust_escalation_\(level)"))
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.85))
+                    }
+                    Text(localizationManager.localized("wellness_trust_crisis_no_chat_log"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.75))
+                        .padding(.top, 4)
+
+                    Button {
+                        showHelplineSheet = true
+                    } label: {
+                        Label(
+                            localizationManager.localized("wellness_helpline_open"),
+                            systemImage: "phone.fill"
+                        )
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                    }
+                    .buttonStyle(.borderedProminent)
+                    .tint(.red)
+
+                    Text(localizationManager.localized("wellness_teen_privacy_title"))
+                        .font(.headline)
+                    Text(localizationManager.localized("wellness_teen_privacy_summary"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.75))
+                    Text(localizationManager.localized("wellness_teen_privacy_crisis_only"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.75))
+                    Text(localizationManager.localized("wellness_teen_privacy_none"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.75))
+
+                    if canEditShare {
+                        Toggle(
+                            localizationManager.localized("wellness_teen_parent_share_toggle"),
+                            isOn: $parentShareOn
+                        )
+                        .onChange(of: parentShareOn) { newValue in
+                            Task { await saveParentShare(newValue) }
+                        }
+                    }
+                    if let errorText {
+                        Text(errorText).foregroundStyle(.orange).font(.caption)
                     }
                 }
-                if let errorText {
-                    Text(errorText).foregroundStyle(.orange).font(.caption)
-                }
+                .padding()
             }
-            .padding()
         }
+        .foregroundColor(.white)
+        .navigationBarHidden(true)
         .task { await load() }
         .sheet(isPresented: $showHelplineSheet) {
             WellnessReferralSheet(level: "L2")
@@ -86,6 +92,7 @@ struct WellnessTrustCenterScreen: View {
         HStack {
             Button { navigationManager.goBack() } label: {
                 Image(systemName: "chevron.left")
+                    .font(.body.weight(.semibold))
             }
             Text(localizationManager.localized("wellness_trust_title"))
                 .font(.headline.bold())
@@ -96,8 +103,10 @@ struct WellnessTrustCenterScreen: View {
     private func trustBlock(title: String, body: String) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(title).font(.subheadline.bold())
-            Text(body).font(.caption).foregroundStyle(.secondary)
+            Text(body).font(.caption).foregroundColor(.white.opacity(0.75))
         }
+        .padding(12)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
 
     private func load() async {

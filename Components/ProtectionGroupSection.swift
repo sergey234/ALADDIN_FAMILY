@@ -46,15 +46,7 @@ struct ProtectionGroupSection: View {
             }
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.secondaryGold.opacity(0.2), lineWidth: 1)
-                )
-        )
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - Localization

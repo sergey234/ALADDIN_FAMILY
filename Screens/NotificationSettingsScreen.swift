@@ -62,7 +62,7 @@ struct NotificationSettingsScreen: View {
     var body: some View {
         ZStack {
             // Background
-            LinearGradient.backgroundGradient
+            StormMeshBackground(variant: .neutral)
                 .ignoresSafeArea()
             
             VStack(spacing: 0) {

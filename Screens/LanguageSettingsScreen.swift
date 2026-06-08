@@ -143,7 +143,7 @@ struct LanguageSettingsScreen: View {
     var body: some View {
         ZStack {
             // Фон
-            LinearGradient.backgroundGradient
+            StormMeshBackground(variant: .neutral)
                 .ignoresSafeArea()
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Фон настроек языка")

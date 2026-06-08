@@ -41,57 +41,66 @@ struct WellnessAssessmentFlowScreen: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                header
-                if let result {
-                    resultView(result)
-                } else if let schema {
-                    Text(schema.disclaimer)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    if step < schema.questions.count {
-                        Text(
-                            String(
-                                format: localizationManager.localized("wellness_assessment_progress"),
-                                step + 1,
-                                schema.questions.count
+        ZStack {
+            StormMeshBackground(variant: .neutral)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    header
+                    if let result {
+                        resultView(result)
+                    } else if let schema {
+                        Text(schema.disclaimer)
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.75))
+                        if step < schema.questions.count {
+                            Text(
+                                String(
+                                    format: localizationManager.localized("wellness_assessment_progress"),
+                                    step + 1,
+                                    schema.questions.count
+                                )
                             )
-                        )
-                        .font(.caption2)
-                        .foregroundStyle(.secondary)
-                        Text(schema.questions[step].text)
-                            .font(.body.bold())
-                        ForEach(schema.answerOptions) { opt in
-                            Button {
-                                answers[step] = opt.value
-                                if step < schema.questions.count - 1 {
-                                    step += 1
-                                } else {
-                                    Task { await submit() }
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.75))
+                            Text(schema.questions[step].text)
+                                .font(.body.bold())
+                            ForEach(schema.answerOptions) { opt in
+                                Button {
+                                    answers[step] = opt.value
+                                    if step < schema.questions.count - 1 {
+                                        step += 1
+                                    } else {
+                                        Task { await submit() }
+                                    }
+                                } label: {
+                                    Text(localizationManager.localized(opt.labelKey))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(12)
+                                        .stormGlassCard(cornerRadius: 10)
+                                        .overlay {
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .fill(
+                                                    answers[step] == opt.value
+                                                        ? Color(hex: "8B5CF6").opacity(0.25)
+                                                        : Color.clear
+                                                )
+                                        }
                                 }
-                            } label: {
-                                Text(localizationManager.localized(opt.labelKey))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(12)
-                                    .background(
-                                        answers[step] == opt.value
-                                            ? Color.purple.opacity(0.2)
-                                            : Color.gray.opacity(0.1)
-                                    )
-                                    .cornerRadius(10)
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
+                    } else if let errorText {
+                        Text(errorText).foregroundStyle(.orange)
+                    } else {
+                        ProgressView().tint(.white)
                     }
-                } else if let errorText {
-                    Text(errorText).foregroundStyle(.orange)
-                } else {
-                    ProgressView()
                 }
+                .padding()
             }
-            .padding()
         }
+        .foregroundColor(.white)
+        .navigationBarHidden(true)
         .task { await loadSchema() }
         .sheet(isPresented: $showReferralSheet) {
             WellnessReferralSheet(level: referralLevel)
@@ -103,6 +112,7 @@ struct WellnessAssessmentFlowScreen: View {
         HStack {
             Button { navigationManager.goBack() } label: {
                 Image(systemName: "chevron.left")
+                    .font(.body.weight(.semibold))
             }
             Text(localizationManager.localized(kind.titleKey))
                 .font(.headline.bold())
@@ -112,7 +122,7 @@ struct WellnessAssessmentFlowScreen: View {
 
     private func resultView(_ r: WellnessPhqSubmitResponse) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(r.disclaimer).font(.caption).foregroundStyle(.secondary)
+            Text(r.disclaimer).font(.caption).foregroundColor(.white.opacity(0.75))
             Text(String(format: localizationManager.localized("wellness_phq_result_score"), r.score))
                 .font(.title3.bold())
             if crisisFlag {
@@ -223,7 +233,7 @@ struct WellnessAssessmentsHubScreen: View {
                 }
                 Text(localizationManager.localized("wellness_assessment_disclaimer"))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.white.opacity(0.85))
                 assessmentRow(
                     titleKey: "wellness_assessment_phq_lite_title",
                     subtitleKey: "wellness_assessment_phq_lite_subtitle",
@@ -265,12 +275,11 @@ struct WellnessAssessmentsHubScreen: View {
                     .font(.subheadline.bold())
                 Text(localizationManager.localized(subtitleKey))
                     .font(.caption)
-                    .foregroundStyle(.secondary)
+                    .foregroundColor(.white.opacity(0.85))
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(14)
-            .background(Color.purple.opacity(0.08))
-            .cornerRadius(12)
+            .stormGlassCard(cornerRadius: 12)
         }
         .buttonStyle(.plain)
     }

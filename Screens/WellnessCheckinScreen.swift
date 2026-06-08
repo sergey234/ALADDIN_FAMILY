@@ -24,67 +24,80 @@ struct WellnessCheckinScreen: View {
     }
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 20) {
-                header
+        ZStack {
+            StormMeshBackground(variant: .warm)
 
-                Text(WellnessAgeL10n.text(localizationManager, key: "wellness_checkin_title", ageBand: ageBand))
-                    .font(.title3.bold())
-                Text(WellnessAgeL10n.text(localizationManager, key: "wellness_checkin_subtitle", ageBand: ageBand))
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+            ScrollView {
+                VStack(alignment: .leading, spacing: 20) {
+                    header
 
-                moodPicker
+                    Text(WellnessAgeL10n.text(localizationManager, key: "wellness_checkin_title", ageBand: ageBand))
+                        .font(.title3.bold())
+                    Text(WellnessAgeL10n.text(localizationManager, key: "wellness_checkin_subtitle", ageBand: ageBand))
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.85))
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(WellnessAgeL10n.text(localizationManager, key: "wellness_sleep_label", ageBand: ageBand))
-                        .font(.subheadline.weight(.semibold))
-                    Slider(value: $sleepHours, in: 3...12, step: 0.5)
-                    Text(String(format: localizationManager.localized("wellness_sleep_hours"), sleepHours))
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+                    moodPicker
 
-                VStack(alignment: .leading, spacing: 8) {
-                    Text(WellnessAgeL10n.text(localizationManager, key: "wellness_stress_label", ageBand: ageBand))
-                        .font(.subheadline.weight(.semibold))
-                    Slider(value: $stressLevel, in: 1...5, step: 1)
-                    HStack {
-                        Text(localizationManager.localized("wellness_stress_low"))
-                        Spacer()
-                        Text(localizationManager.localized("wellness_stress_high"))
-                    }
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
-                }
-
-                Button {
-                    saveCheckin()
-                } label: {
-                    Text(WellnessAgeL10n.text(localizationManager, key: "wellness_checkin_save", ageBand: ageBand))
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 14)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(Color(hex: "8B5CF6"))
-
-                if saved {
-                    if offlineQueued {
-                        Text(localizationManager.localized("wellness_checkin_offline_saved"))
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(WellnessAgeL10n.text(localizationManager, key: "wellness_sleep_label", ageBand: ageBand))
+                            .font(.subheadline.weight(.semibold))
+                        Slider(value: $sleepHours, in: 3...12, step: 0.5)
+                            .tint(Color(hex: "8B5CF6"))
+                        Text(String(format: localizationManager.localized("wellness_sleep_hours"), sleepHours))
                             .font(.caption)
-                            .foregroundStyle(.orange)
+                            .foregroundColor(.white.opacity(0.75))
                     }
+                    .padding(12)
+                    .stormGlassCard(cornerRadius: CornerRadius.medium)
+
+                    VStack(alignment: .leading, spacing: 8) {
+                        Text(WellnessAgeL10n.text(localizationManager, key: "wellness_stress_label", ageBand: ageBand))
+                            .font(.subheadline.weight(.semibold))
+                        Slider(value: $stressLevel, in: 1...5, step: 1)
+                            .tint(Color(hex: "8B5CF6"))
+                        HStack {
+                            Text(localizationManager.localized("wellness_stress_low"))
+                            Spacer()
+                            Text(localizationManager.localized("wellness_stress_high"))
+                        }
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.75))
+                    }
+                    .padding(12)
+                    .stormGlassCard(cornerRadius: CornerRadius.medium)
+
                     Button {
-                        navigationManager.navigateToCompanionHome(returnTo: .wellnessCheckin)
+                        saveCheckin()
                     } label: {
-                        Text(WellnessAgeL10n.text(localizationManager, key: "wellness_checkin_talk_after", ageBand: ageBand))
+                        Text(WellnessAgeL10n.text(localizationManager, key: "wellness_checkin_save", ageBand: ageBand))
                             .frame(maxWidth: .infinity)
+                            .padding(.vertical, 14)
                     }
-                    .buttonStyle(.bordered)
+                    .buttonStyle(.borderedProminent)
+                    .tint(Color(hex: "8B5CF6"))
+
+                    if saved {
+                        if offlineQueued {
+                            Text(localizationManager.localized("wellness_checkin_offline_saved"))
+                                .font(.caption)
+                                .foregroundStyle(.orange)
+                        }
+                        Button {
+                            navigationManager.navigateToCompanionHome(returnTo: .wellnessCheckin)
+                        } label: {
+                            Text(WellnessAgeL10n.text(localizationManager, key: "wellness_checkin_talk_after", ageBand: ageBand))
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(.white)
+                    }
                 }
+                .padding()
             }
-            .padding()
         }
+        .foregroundColor(.white)
+        .navigationBarHidden(true)
         .onAppear { loadDraft() }
     }
 
@@ -92,6 +105,7 @@ struct WellnessCheckinScreen: View {
         HStack {
             Button { navigationManager.goBack() } label: {
                 Image(systemName: "chevron.left")
+                    .font(.body.weight(.semibold))
             }
             Text(localizationManager.localized("nav_screen_wellness_checkin"))
                 .font(.headline.bold())
@@ -114,7 +128,11 @@ struct WellnessCheckinScreen: View {
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 10)
-                    .background(mood == item.id ? Color(hex: "8B5CF6").opacity(0.25) : Color.gray.opacity(0.12))
+                    .stormGlassCard(cornerRadius: 12)
+                    .overlay {
+                        RoundedRectangle(cornerRadius: 12)
+                            .fill(mood == item.id ? Color(hex: "8B5CF6").opacity(0.25) : Color.clear)
+                    }
                     .cornerRadius(12)
                 }
                 .buttonStyle(.plain)

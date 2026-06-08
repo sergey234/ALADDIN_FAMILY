@@ -12,44 +12,53 @@ struct WellnessPhqLiteScreen: View {
     @State private var errorText: String?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                header
-                if let result {
-                    resultView(result)
-                } else if let schema {
-                    Text(schema.disclaimer)
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                    if step < schema.questions.count {
-                        Text(schema.questions[step].text)
-                            .font(.body.bold())
-                        ForEach(schema.answerOptions) { opt in
-                            Button {
-                                answers[step] = opt.value
-                                if step < 4 {
-                                    step += 1
-                                } else {
-                                    Task { await submit() }
+        ZStack {
+            StormMeshBackground(variant: .neutral)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    header
+                    if let result {
+                        resultView(result)
+                    } else if let schema {
+                        Text(schema.disclaimer)
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.75))
+                        if step < schema.questions.count {
+                            Text(schema.questions[step].text)
+                                .font(.body.bold())
+                            ForEach(schema.answerOptions) { opt in
+                                Button {
+                                    answers[step] = opt.value
+                                    if step < 4 {
+                                        step += 1
+                                    } else {
+                                        Task { await submit() }
+                                    }
+                                } label: {
+                                    Text(localizationManager.localized(opt.labelKey))
+                                        .frame(maxWidth: .infinity, alignment: .leading)
+                                        .padding(12)
+                                        .stormGlassCard(cornerRadius: 10)
+                                        .overlay {
+                                            RoundedRectangle(cornerRadius: 10)
+                                                .fill(answers[step] == opt.value ? Color(hex: "8B5CF6").opacity(0.25) : Color.clear)
+                                        }
                                 }
-                            } label: {
-                                Text(localizationManager.localized(opt.labelKey))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(12)
-                                    .background(answers[step] == opt.value ? Color.purple.opacity(0.2) : Color.gray.opacity(0.1))
-                                    .cornerRadius(10)
+                                .buttonStyle(.plain)
                             }
-                            .buttonStyle(.plain)
                         }
+                    } else if let errorText {
+                        Text(errorText).foregroundStyle(.orange)
+                    } else {
+                        ProgressView().tint(.white)
                     }
-                } else if let errorText {
-                    Text(errorText).foregroundStyle(.orange)
-                } else {
-                    ProgressView()
                 }
+                .padding()
             }
-            .padding()
         }
+        .foregroundColor(.white)
+        .navigationBarHidden(true)
         .task { await loadSchema() }
     }
 
@@ -57,6 +66,7 @@ struct WellnessPhqLiteScreen: View {
         HStack {
             Button { navigationManager.goBack() } label: {
                 Image(systemName: "chevron.left")
+                    .font(.body.weight(.semibold))
             }
             Text(localizationManager.localized("wellness_assessment_phq_lite_title"))
                 .font(.headline.bold())
@@ -66,7 +76,7 @@ struct WellnessPhqLiteScreen: View {
 
     private func resultView(_ r: WellnessPhqSubmitResponse) -> some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text(r.disclaimer).font(.caption).foregroundStyle(.secondary)
+            Text(r.disclaimer).font(.caption).foregroundColor(.white.opacity(0.75))
             Text(String(format: localizationManager.localized("wellness_phq_result_score"), r.score))
                 .font(.title3.bold())
             if r.suggestProfessional {
@@ -82,6 +92,7 @@ struct WellnessPhqLiteScreen: View {
                     .frame(maxWidth: .infinity)
             }
             .buttonStyle(.borderedProminent)
+            .tint(Color(hex: "8B5CF6"))
         }
     }
 

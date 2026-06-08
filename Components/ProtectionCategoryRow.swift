@@ -50,10 +50,10 @@ struct ProtectionCategoryRow: View {
                 )
             }
         }
-        .padding(Spacing.s)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(isEnabled ? Color.successGreen.opacity(0.1) : Color.clear)
+        .padding(Spacing.m)
+        .stormGlassCard(
+            cornerRadius: CornerRadius.medium,
+            accentStripColor: isEnabled ? .statusProtected : nil
         )
         .contentShape(Rectangle())
         .onTapGesture {

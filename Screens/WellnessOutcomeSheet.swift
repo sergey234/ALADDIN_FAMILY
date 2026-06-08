@@ -48,71 +48,76 @@ struct WellnessOutcomeSheet: View {
     }
 
     var body: some View {
-        WellnessNavigationStack {
-            VStack(alignment: .leading, spacing: 20) {
-                if submitted {
-                    Label(
-                        localizationManager.localized("wellness_outcome_thanks"),
-                        systemImage: "checkmark.circle.fill"
-                    )
-                    .font(.headline)
-                    .foregroundStyle(.green)
-                    .frame(maxWidth: .infinity, alignment: .center)
-                    .padding(.top, 24)
-                    if let followUpHint, !followUpHint.isEmpty {
-                        Text(followUpHint)
-                            .font(.subheadline)
-                            .foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center)
-                            .frame(maxWidth: .infinity)
-                            .padding(.top, 8)
-                    }
-                } else {
-                    Text(WellnessAgeL10n.text(localizationManager, key: "wellness_outcome_title", ageBand: ageBand))
-                        .font(.title3.bold())
-                    Text(WellnessAgeL10n.text(localizationManager, key: "wellness_outcome_subtitle", ageBand: ageBand))
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    if let errorText {
-                        Text(errorText).font(.caption).foregroundStyle(.orange)
-                    }
-                    ForEach(Choice.allCases, id: \.self) { choice in
-                        Button {
-                            Task { await submit(choice) }
-                        } label: {
-                            HStack(spacing: 12) {
-                                Image(systemName: choice.icon)
-                                    .font(.title2)
-                                Text(localizationManager.localized(choice.titleKey))
-                                    .font(.body.bold())
-                                Spacer()
-                            }
-                            .padding()
-                            .frame(maxWidth: .infinity)
-                            .background(Color.purple.opacity(0.12))
-                            .cornerRadius(12)
+        ZStack {
+            StormMeshBackground(variant: .neutral)
+
+            WellnessNavigationStack {
+                VStack(alignment: .leading, spacing: 20) {
+                    if submitted {
+                        Label(
+                            localizationManager.localized("wellness_outcome_thanks"),
+                            systemImage: "checkmark.circle.fill"
+                        )
+                        .font(.headline)
+                        .foregroundStyle(.green)
+                        .frame(maxWidth: .infinity, alignment: .center)
+                        .padding(.top, 24)
+                        if let followUpHint, !followUpHint.isEmpty {
+                            Text(followUpHint)
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.85))
+                                .multilineTextAlignment(.center)
+                                .frame(maxWidth: .infinity)
+                                .padding(.top, 8)
                         }
-                        .buttonStyle(.plain)
-                        .disabled(isSubmitting)
-                        .accessibilityIdentifier("wellness_outcome_\(choice.rawValue)")
+                    } else {
+                        Text(WellnessAgeL10n.text(localizationManager, key: "wellness_outcome_title", ageBand: ageBand))
+                            .font(.title3.bold())
+                        Text(WellnessAgeL10n.text(localizationManager, key: "wellness_outcome_subtitle", ageBand: ageBand))
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.85))
+                        if let errorText {
+                            Text(errorText).font(.caption).foregroundStyle(.orange)
+                        }
+                        ForEach(Choice.allCases, id: \.self) { choice in
+                            Button {
+                                Task { await submit(choice) }
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: choice.icon)
+                                        .font(.title2)
+                                    Text(localizationManager.localized(choice.titleKey))
+                                        .font(.body.bold())
+                                    Spacer()
+                                }
+                                .padding()
+                                .frame(maxWidth: .infinity)
+                                .stormGlassCard(cornerRadius: 12)
+                            }
+                            .buttonStyle(.plain)
+                            .disabled(isSubmitting)
+                            .accessibilityIdentifier("wellness_outcome_\(choice.rawValue)")
+                        }
+                        if isSubmitting {
+                            ProgressView().frame(maxWidth: .infinity).tint(.white)
+                        }
                     }
-                    if isSubmitting {
-                        ProgressView().frame(maxWidth: .infinity)
-                    }
+                    Spacer()
                 }
-                Spacer()
-            }
-            .padding()
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .cancellationAction) {
-                    Button(localizationManager.localized("wellness_outcome_skip")) {
-                        close()
+                .padding()
+                .navigationBarTitleDisplayMode(.inline)
+                .toolbar {
+                    ToolbarItem(placement: .cancellationAction) {
+                        Button(localizationManager.localized("wellness_outcome_skip")) {
+                            close()
+                        }
+                        .tint(.white)
+                        .accessibilityIdentifier("wellness_outcome_skip")
                     }
-                    .accessibilityIdentifier("wellness_outcome_skip")
                 }
             }
         }
+        .foregroundColor(.white)
         .wellnessSheetDetents()
     }
 

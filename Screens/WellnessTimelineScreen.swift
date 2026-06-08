@@ -11,62 +11,74 @@ struct WellnessTimelineScreen: View {
     @State private var sharePDFURL: URL?
 
     var body: some View {
-        ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                header
-                if timeline != nil {
-                    Button {
-                        Task { await exportPDF() }
-                    } label: {
-                        Label(
-                            localizationManager.localized("wellness_pdf_share"),
-                            systemImage: "square.and.arrow.up"
-                        )
+        ZStack {
+            StormMeshBackground(variant: .neutral)
+
+            ScrollView {
+                VStack(alignment: .leading, spacing: 16) {
+                    header
+                    if timeline != nil {
+                        Button {
+                            Task { await exportPDF() }
+                        } label: {
+                            Label(
+                                localizationManager.localized("wellness_pdf_share"),
+                                systemImage: "square.and.arrow.up"
+                            )
+                        }
+                        .buttonStyle(.bordered)
+                        .tint(.white)
                     }
-                    .buttonStyle(.bordered)
-                }
-                if let timeline {
-                    if timeline.checkins.isEmpty && timeline.exercises.isEmpty {
-                        Text(localizationManager.localized("wellness_timeline_empty"))
-                            .foregroundStyle(.secondary)
-                    }
-                    if !timeline.checkins.isEmpty {
-                        Text(localizationManager.localized("wellness_timeline_mood_chart"))
-                            .font(.headline)
-                        ForEach(timeline.checkins) { row in
-                            HStack {
-                                Text(row.day)
-                                Spacer()
-                                Text(row.moodEmoji ?? "—")
-                                if let stress = row.stressLevel {
-                                    Text("· \(stress)/5").font(.caption)
+                    if let timeline {
+                        if timeline.checkins.isEmpty && timeline.exercises.isEmpty {
+                            Text(localizationManager.localized("wellness_timeline_empty"))
+                                .foregroundColor(.white.opacity(0.85))
+                        }
+                        if !timeline.checkins.isEmpty {
+                            Text(localizationManager.localized("wellness_timeline_mood_chart"))
+                                .font(.headline)
+                            ForEach(timeline.checkins) { row in
+                                HStack {
+                                    Text(row.day)
+                                    Spacer()
+                                    Text(row.moodEmoji ?? "—")
+                                    if let stress = row.stressLevel {
+                                        Text("· \(stress)/5").font(.caption)
+                                    }
                                 }
-                            }
-                            .padding(.vertical, 4)
-                        }
-                    }
-                    if !timeline.exercises.isEmpty {
-                        Text(localizationManager.localized("wellness_timeline_exercises"))
-                            .font(.headline)
-                            .padding(.top, 8)
-                        ForEach(timeline.exercises) { ex in
-                            HStack {
-                                Text(ex.exerciseType)
-                                Spacer()
-                                Text(ex.pillar)
-                                    .font(.caption)
-                                    .foregroundStyle(.secondary)
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .stormGlassCard(cornerRadius: 10)
                             }
                         }
+                        if !timeline.exercises.isEmpty {
+                            Text(localizationManager.localized("wellness_timeline_exercises"))
+                                .font(.headline)
+                                .padding(.top, 8)
+                            ForEach(timeline.exercises) { ex in
+                                HStack {
+                                    Text(ex.exerciseType)
+                                    Spacer()
+                                    Text(ex.pillar)
+                                        .font(.caption)
+                                        .foregroundColor(.white.opacity(0.75))
+                                }
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 8)
+                                .stormGlassCard(cornerRadius: 10)
+                            }
+                        }
+                    } else if let errorText {
+                        Text(errorText).foregroundStyle(.orange)
+                    } else {
+                        ProgressView().tint(.white)
                     }
-                } else if let errorText {
-                    Text(errorText).foregroundStyle(.orange)
-                } else {
-                    ProgressView()
                 }
+                .padding()
             }
-            .padding()
         }
+        .foregroundColor(.white)
+        .navigationBarHidden(true)
         .task { await load() }
         .sheet(isPresented: $showPaywall) {
             WellnessPremiumPaywallSheet()
@@ -86,6 +98,7 @@ struct WellnessTimelineScreen: View {
         HStack {
             Button { navigationManager.goBack() } label: {
                 Image(systemName: "chevron.left")
+                    .font(.body.weight(.semibold))
             }
             Text(localizationManager.localized("wellness_timeline_title"))
                 .font(.headline.bold())

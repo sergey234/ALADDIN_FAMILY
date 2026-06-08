@@ -252,10 +252,7 @@ struct MainScreen: View {
                 }
                 .padding(.vertical, 6)
                 .padding(.horizontal, 2)
-                .background(
-                    RoundedRectangle(cornerRadius: 20)
-                        .fill(Color.black.opacity(0.4))
-                )
+                .stormGlassCard(cornerRadius: 20)
                 .padding(.horizontal, 20)
                 .padding(.bottom, 20)
             }
