@@ -163,8 +163,7 @@ struct ChildRewardsScreen: View {
     var body: some View {
         ZStack {
             // Фон
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .growWarm)
 
             CelebrationParticleBurstView(kind: .achievementMagic, active: achievementBurstActive, onFinished: { achievementBurstActive = false })
                 .ignoresSafeArea()
@@ -559,10 +558,7 @@ struct ChildRewardsScreen: View {
         }
         .padding()
         .frame(maxWidth: .infinity)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.4))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -585,10 +581,7 @@ struct ChildRewardsScreen: View {
             }
         }
         .padding(Spacing.s)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -779,10 +772,7 @@ struct ChildRewardsScreen: View {
                 .foregroundColor(.successGreen)
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .padding(.horizontal, Spacing.screenPadding)
     }
 
@@ -1347,10 +1337,7 @@ struct ChildRewardsScreen: View {
             .padding(.horizontal, Spacing.screenPadding)
         }
         .padding(.vertical, Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -1397,10 +1384,7 @@ struct ChildRewardsScreen: View {
             }
         }
         .padding(.vertical, Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -1530,10 +1514,7 @@ struct ChildRewardsScreen: View {
             }
         }
         .padding(4)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -1642,13 +1623,11 @@ struct ChildRewardsScreen: View {
                 }
             }
             .padding(Spacing.m)
-            .background(
+            .stormGlassCard(cornerRadius: CornerRadius.medium)
+            .opacity(canAfford ? 1.0 : 0.75)
+            .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(canAfford ? Color.backgroundMedium.opacity(0.5) : Color.backgroundMedium.opacity(0.3))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .stroke(canAfford ? Color(hex: "A855F7").opacity(0.4) : Color.textSecondary.opacity(0.2), lineWidth: canAfford ? 2 : 1)
-                    )
+                    .stroke(canAfford ? Color(hex: "A855F7").opacity(0.4) : Color.textSecondary.opacity(0.2), lineWidth: canAfford ? 2 : 1)
             )
         }
         .buttonStyle(PressScaleButtonStyle())
@@ -1745,13 +1724,10 @@ struct ChildRewardsScreen: View {
                 .foregroundColor(operation.isReward ? .successGreen : .dangerRed)
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(operation.isReward ? Color.backgroundMedium.opacity(0.5) : Color.dangerRed.opacity(0.08))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .stroke(operation.isReward ? Color.textSecondary.opacity(0.2) : Color.dangerRed.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(operation.isReward ? Color.textSecondary.opacity(0.2) : Color.dangerRed.opacity(0.3), lineWidth: 1)
         )
     }
     
@@ -1858,13 +1834,10 @@ struct ChildRewardsScreen: View {
                 .foregroundColor(isReward ? .successGreen : .dangerRed)
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(isReward ? Color.backgroundMedium.opacity(0.5) : Color.dangerRed.opacity(0.08))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .stroke(isReward ? Color.textSecondary.opacity(0.2) : Color.dangerRed.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(isReward ? Color.textSecondary.opacity(0.2) : Color.dangerRed.opacity(0.3), lineWidth: 1)
         )
     }
     
@@ -1934,10 +1907,7 @@ struct ChildRewardsScreen: View {
             .frame(height: 8)
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
     
     // MARK: - Actions
@@ -2197,8 +2167,7 @@ struct AchievementRequestModal: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .growWarm)
                 
                 ScrollView {
                     VStack(spacing: Spacing.l) {
@@ -2268,13 +2237,10 @@ struct AchievementRequestModal: View {
                 }
             }
             .padding(Spacing.m)
-            .background(
+            .stormGlassCard(cornerRadius: CornerRadius.medium)
+            .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(selectedTemplate == template.title ? Color.successGreen.opacity(0.2) : Color.backgroundMedium.opacity(0.5))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .stroke(selectedTemplate == template.title ? Color.successGreen : Color.textSecondary.opacity(0.2), lineWidth: selectedTemplate == template.title ? 2 : 1)
-                    )
+                    .stroke(selectedTemplate == template.title ? Color.successGreen : Color.textSecondary.opacity(0.2), lineWidth: selectedTemplate == template.title ? 2 : 1)
             )
         }
         .buttonStyle(PlainButtonStyle())
@@ -2306,10 +2272,7 @@ struct AchievementRequestModal: View {
                 }
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
     
     private var sendButton: some View {
@@ -2371,10 +2334,7 @@ struct PurchaseConfirmationModal: View {
                         .foregroundColor(.textSecondary)
                 }
                 .padding(Spacing.m)
-                .background(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .fill(Color.backgroundMedium.opacity(0.4))
-                )
+                .stormGlassCard(cornerRadius: CornerRadius.medium)
                 .padding(.horizontal, Spacing.screenPadding)
                 
                 VStack(spacing: Spacing.s) {
@@ -2419,8 +2379,7 @@ struct PurchaseConfirmationModal: View {
             }
             .padding(.vertical, Spacing.l)
             .background(
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .growWarm)
             )
             .toolbar {
                 ToolbarItem(placement: .principal) {

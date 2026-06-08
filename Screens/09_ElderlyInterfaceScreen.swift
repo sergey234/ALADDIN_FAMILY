@@ -80,13 +80,8 @@ struct ElderlyInterfaceScreen: View {
         GeometryReader { geometry in
             let topCap = geometry.size.height * 0.25
             ZStack {
-                // Фон (зеленый как в wireframe для пожилых)
-                LinearGradient(
-                    colors: elderlyBackgroundColors,
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                // Фон — Storm Mesh warm light (Batch 4)
+                StormMeshBackground(variant: .warm)
                 
                 VStack(spacing: 0) {
                     // Простая навигация (~25% высоты экрана, как в детском интерфейсе)
@@ -367,10 +362,7 @@ struct ElderlyInterfaceScreen: View {
                     .foregroundColor(.white.opacity(0.9))
             }
             .padding(Spacing.xl)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.xl)
-                    .fill(Color.white.opacity(0.15))
-            )
+            .stormGlassCard(cornerRadius: CornerRadius.xl)
         }
         .buttonStyle(PlainButtonStyle())
         .sheet(isPresented: $showSecurityStatus) {
@@ -501,13 +493,10 @@ struct ElderlyInterfaceScreen: View {
                     .foregroundColor(.white.opacity(0.6))
             }
             .padding(Spacing.l)
-            .background(
+            .stormGlassCard(cornerRadius: CornerRadius.large)
+            .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .fill(Color.white.opacity(0.15))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.large)
-                            .stroke(color.opacity(0.3), lineWidth: 2)
-                    )
+                    .stroke(color.opacity(0.3), lineWidth: 2)
             )
         }
         .buttonStyle(PlainButtonStyle())
@@ -614,13 +603,10 @@ struct ElderlyInterfaceScreen: View {
             .accessibilityHint(localizationManager.localized("elderly_a11y_calls_family_hint"))
         }
         .padding(Spacing.l)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.white.opacity(0.15))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(Color.white.opacity(0.3), lineWidth: 1)
         )
         .padding(.horizontal, Spacing.screenPadding)
     }
@@ -772,13 +758,10 @@ struct ElderlyInterfaceScreen: View {
                     .foregroundColor(.white.opacity(0.6))
             }
             .padding(Spacing.l)
-            .background(
+            .stormGlassCard(cornerRadius: CornerRadius.large)
+            .overlay(
                 RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .fill(Color.white.opacity(0.15))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: CornerRadius.large)
-                            .stroke(color.opacity(0.3), lineWidth: 2)
-                    )
+                    .stroke(color.opacity(0.3), lineWidth: 2)
             )
         }
         .buttonStyle(PlainButtonStyle())

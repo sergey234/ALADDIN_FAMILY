@@ -15,8 +15,7 @@ struct ProtectionStatsScreen: View {
 
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .data)
 
             VStack(spacing: 0) {
                 // Навигационная панель
@@ -114,8 +113,7 @@ struct ProtectionStatsScreen: View {
             }
         }
         .padding(Spacing.l)
-        .background(Color.black.opacity(0.3))
-        .cornerRadius(Radius.m)
+        .stormGlassCard(cornerRadius: Radius.m)
         .overlay(
             RoundedRectangle(cornerRadius: Radius.m)
                 .stroke(Color.white.opacity(0.1), lineWidth: 1)
@@ -147,8 +145,7 @@ struct ProtectionStatsScreen: View {
             }
         }
         .padding(Spacing.l)
-        .background(Color.black.opacity(0.3))
-        .cornerRadius(Radius.m)
+        .stormGlassCard(cornerRadius: Radius.m)
         .overlay(
             RoundedRectangle(cornerRadius: Radius.m)
                 .stroke(Color.white.opacity(0.1), lineWidth: 1)
@@ -182,8 +179,7 @@ struct ProtectionStatsScreen: View {
             }
         }
         .padding(Spacing.l)
-        .background(Color.black.opacity(0.3))
-        .cornerRadius(Radius.m)
+        .stormGlassCard(cornerRadius: Radius.m)
         .overlay(
             RoundedRectangle(cornerRadius: Radius.m)
                 .stroke(Color.white.opacity(0.1), lineWidth: 1)
@@ -218,8 +214,7 @@ struct ProtectionStatsScreen: View {
             }
         }
         .padding(Spacing.l)
-        .background(Color.black.opacity(0.3))
-        .cornerRadius(Radius.m)
+        .stormGlassCard(cornerRadius: Radius.m)
         .overlay(
             RoundedRectangle(cornerRadius: Radius.m)
                 .stroke(Color.white.opacity(0.1), lineWidth: 1)
@@ -258,8 +253,7 @@ struct ProtectionStatsScreen: View {
             }
         }
         .padding(Spacing.l)
-        .background(Color.black.opacity(0.3))
-        .cornerRadius(Radius.m)
+        .stormGlassCard(cornerRadius: Radius.m)
         .overlay(
             RoundedRectangle(cornerRadius: Radius.m)
                 .stroke(Color.white.opacity(0.1), lineWidth: 1)

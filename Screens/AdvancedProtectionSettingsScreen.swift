@@ -83,8 +83,7 @@ struct AdvancedProtectionSettingsScreen: View {
             }
         }()
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .shield)
             
             VStack(spacing: 0) {
                 // Навигационная панель
@@ -1310,8 +1309,7 @@ private struct ThreatProtectionFlowSheet: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .shield)
                 
                 if let destination = destination {
                     destinationView(destination)
@@ -1425,8 +1423,7 @@ private struct SafariEnableGuideSheet: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .shield)
 
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Text(localizationManager.localized("content_block_guide_heading"))

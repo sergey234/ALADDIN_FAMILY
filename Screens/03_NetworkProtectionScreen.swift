@@ -82,15 +82,6 @@ struct NetworkProtectionScreen: View {
     
     // MARK: - Helper Views
     
-    private var backgroundShape: some View {
-        RoundedRectangle(cornerRadius: CornerRadius.large)
-            .fill(Color.backgroundMedium.opacity(0.5))
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
-    }
-
     private var networkSyncState: SyncState {
         syncEngine.latestStateByDomain[.networkProtection] ?? .idle
     }
@@ -107,9 +98,8 @@ struct NetworkProtectionScreen: View {
     
     var body: some View {
         ZStack {
-            // Background
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            // Фон — Storm Mesh shield light (Batch 2, режим C)
+            StormMeshBackground(variant: .shield)
             
             VStack(spacing: 0) {
                 // Navigation Bar с кнопкой назад
@@ -616,15 +606,10 @@ struct NetworkProtectionScreen: View {
             .buttonStyle(PlainButtonStyle())
         }
         .padding(Spacing.cardPadding)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 12)
-                        .stroke(Color(red: 1.0, green: 1.0, blue: 1.0).opacity(0.1), lineWidth: 1)
-                )
+        .stormGlassCard(
+            cornerRadius: 12,
+            accentStripColor: networkProtectionManager.isConnected ? .statusProtected : .stormIndigo
         )
-        .cardShadow()
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -652,15 +637,11 @@ struct NetworkProtectionScreen: View {
             Spacer()
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .warningOrange)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.warningOrange.opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .stroke(Color.warningOrange.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(Color.warningOrange.opacity(0.3), lineWidth: 1)
         )
-        .cardShadow()
         .padding(.horizontal, Spacing.screenPadding)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(localizationManager.localized("secure_connection_battery_saving_desc"))
@@ -707,8 +688,7 @@ struct NetworkProtectionScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(backgroundShape)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -950,8 +930,7 @@ struct NetworkProtectionScreen: View {
             .opacity(antivirusEnabled ? 1.0 : 0.5)
         }
         .padding(Spacing.cardPadding)
-        .background(backgroundShape)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
         .padding(.horizontal, Spacing.screenPadding)
         .onAppear {
             loadQuarantineStats()
@@ -1399,10 +1378,7 @@ struct SecurityFeatureCard: View {
         }
         .frame(maxWidth: .infinity)
         .padding(Spacing.s)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
 }
 
@@ -1429,8 +1405,7 @@ struct AntivirusScanHistoryModalView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .shield)
                 
                 if scanHistory.isEmpty {
                     VStack(spacing: Spacing.m) {
@@ -1567,8 +1542,7 @@ struct AntivirusQuarantineModalView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .shield)
                 
                 if quarantineManager.quarantinedFiles.isEmpty {
                     VStack(spacing: Spacing.m) {

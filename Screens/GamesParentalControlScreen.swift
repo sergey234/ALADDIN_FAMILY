@@ -27,9 +27,7 @@ struct GamesParentalControlScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .growWarm)
             
             VStack(spacing: 0) {
                 // Навигационная панель
@@ -205,11 +203,8 @@ struct GamesParentalControlScreen: View {
             }
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .opacity(isWheelEnabled ? 1.0 : 0.6)
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .opacity(isWheelEnabled ? 1.0 : 0.6)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -337,11 +332,8 @@ struct GamesParentalControlScreen: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .opacity(isEnabled.wrappedValue ? 1.0 : 0.6)
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .opacity(isEnabled.wrappedValue ? 1.0 : 0.6)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -449,10 +441,7 @@ struct GamesParentalControlScreen: View {
             }
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .padding(.horizontal, Spacing.screenPadding)
     }
     

@@ -26,8 +26,7 @@ struct WheelOfFortuneView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .growWarm)
             
             VStack(spacing: Spacing.l) {
                 // Заголовок
@@ -166,10 +165,7 @@ struct WheelOfFortuneView: View {
                 .foregroundColor(.primaryBlue)
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -200,10 +196,7 @@ struct WheelOfFortuneView: View {
             }
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .padding(.horizontal, Spacing.screenPadding)
     }
     

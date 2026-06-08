@@ -17,8 +17,7 @@ struct JoinDeviceScreen: View {
 
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .family)
 
             VStack(spacing: 0) {
                 ALADDINNavigationBar(
@@ -47,8 +46,7 @@ struct JoinDeviceScreen: View {
                             }
                             .padding(Spacing.cardPadding)
                             .frame(maxWidth: .infinity)
-                            .background(Color.backgroundMedium.opacity(0.4))
-                            .cornerRadius(CornerRadius.large)
+                            .stormGlassCard(cornerRadius: CornerRadius.large)
                             .overlay(
                                 RoundedRectangle(cornerRadius: CornerRadius.large)
                                     .stroke(Color.primaryBlue.opacity(0.5), lineWidth: 2)
@@ -98,8 +96,7 @@ struct JoinDeviceScreen: View {
                             .disabled(normalizedPin.count != 6 || isLoading)
                         }
                         .padding(Spacing.cardPadding)
-                        .background(Color.backgroundMedium.opacity(0.4))
-                        .cornerRadius(CornerRadius.large)
+                        .stormGlassCard(cornerRadius: CornerRadius.large)
                         .padding(.horizontal, Spacing.screenPadding)
                     }
                     .padding(.bottom, Spacing.xxl)

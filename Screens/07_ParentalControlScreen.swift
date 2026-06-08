@@ -171,9 +171,8 @@ struct ParentalControlScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            // Фон — Storm Mesh grow light (Batch 2, режим C)
+            StormMeshBackground(variant: .grow)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(localizationManager.localized("parental_accessibility_background"))
             
@@ -415,8 +414,11 @@ struct ParentalControlScreen: View {
             .cornerRadius(CornerRadius.medium)
         }
         .padding(Spacing.m)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .stroke(Color.secondaryGold.opacity(0.2), lineWidth: 1)
+        )
     }
 
     private var elderlySyncAuditBanner: some View {
@@ -565,8 +567,11 @@ struct ParentalControlScreen: View {
             }
         }
         .padding(Spacing.m)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .stroke(Color.secondaryGold.opacity(0.2), lineWidth: 1)
+        )
     }
     
     // MARK: - Parental Control Cards Grid
@@ -811,8 +816,11 @@ struct ParentalControlScreen: View {
             }
         }
         .padding(Spacing.m)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .stroke(Color.secondaryGold.opacity(0.2), lineWidth: 1)
+        )
     }
     
     // MARK: - Rewards Card
@@ -877,17 +885,6 @@ struct ParentalControlScreen: View {
         .buttonStyle(PlainButtonStyle())
         .cardShadow()
         .id("rewardsCard_\(actualBalance)")  // Принудительное обновление при изменении баланса
-    }
-    
-    // MARK: - Helper Views
-    
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: CornerRadius.large)
-            .fill(Color.backgroundMedium.opacity(0.5))
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(Color.secondaryGold.opacity(0.2), lineWidth: 1)
-            )
     }
     
     // MARK: - Data Loading

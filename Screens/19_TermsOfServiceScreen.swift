@@ -16,8 +16,7 @@ struct TermsOfServiceScreen: View {
     
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .legal)
                 .accessibilityElement()
                 .accessibilityLabel(localizationManager.localized("terms_of_service_background"))
             
@@ -87,15 +86,11 @@ struct TermsOfServiceScreen: View {
                 .multilineTextAlignment(.leading)
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.secondaryGold.opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
         )
-        .cardShadow()
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -174,15 +169,11 @@ struct TermsOfServiceScreen: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
         )
-        .cardShadow()
     }
 }
 

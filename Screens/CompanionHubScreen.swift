@@ -26,12 +26,9 @@ struct CompanionHubScreen: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color.purple.opacity(0.35), Color.blue.opacity(0.25)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            if !embeddedInHome {
+                StormMeshBackground(variant: .warm)
+            }
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 20) {
@@ -111,7 +108,7 @@ struct CompanionHubScreen: View {
                                         Image(systemName: "chevron.right")
                                     }
                                     .padding(12)
-                                    .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                                    .stormGlassCard(cornerRadius: 12)
                                 }
                                 .buttonStyle(.plain)
                                 .accessibilityLabel("\(thread.title), \(String(format: localizationManager.localized("companion_thread_meta"), thread.messageCount, thread.updatedAtDisplay))")
@@ -125,7 +122,7 @@ struct CompanionHubScreen: View {
                                 equippedCosmeticId: $equippedCosmeticId
                             )
                             .padding(12)
-                            .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                            .stormGlassCard(cornerRadius: 16)
                         }
 
                         if CompanionUserContext.companionAgeBand == "teen" {
@@ -165,7 +162,7 @@ struct CompanionHubScreen: View {
                                     Image(systemName: "chevron.right")
                                 }
                                 .padding()
-                                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                                .stormGlassCard(cornerRadius: 16)
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel(
@@ -246,7 +243,7 @@ struct CompanionHubScreen: View {
             }
         }
         .padding(12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .stormGlassCard(cornerRadius: 16)
     }
 
     private func loadHub() async {

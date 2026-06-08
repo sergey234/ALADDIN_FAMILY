@@ -138,9 +138,8 @@ struct TariffsScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            // Фон — Storm Mesh premium light (Batch 1b, режим C)
+            StormMeshBackground(variant: .premium)
             
             VStack(spacing: 0) {
                 // Навигационная панель
@@ -524,20 +523,14 @@ struct TariffsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(
-                            selectedTariff == tariff ?
-                            tariff.color :
-                            Color.white.opacity(0.1),
-                            lineWidth: selectedTariff == tariff ? 2 : 1
-                        )
+                .stroke(
+                    selectedTariff == tariff ? tariff.color : Color.clear,
+                    lineWidth: selectedTariff == tariff ? 2 : 0
                 )
         )
-        .cardShadow()
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -555,11 +548,7 @@ struct TariffsScreen: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(Spacing.cardPadding)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .padding(.horizontal, Spacing.screenPadding)
     }
 

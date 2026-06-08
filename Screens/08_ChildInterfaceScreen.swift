@@ -51,19 +51,10 @@ struct ChildInterfaceScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон (более яркий для детей)
-            LinearGradient(
-                colors: [
-                    Color.blue,
-                    Color.blue.opacity(0.8),
-                    Color.blue.opacity(0.6)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
-            .accessibilityElement(children: .ignore)
-            .accessibilityLabel(localizationManager.localized("child_interface_background"))
+            // Фон — Storm Mesh growWarm light (Batch 2, режим C)
+            StormMeshBackground(variant: .growWarm)
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(localizationManager.localized("child_interface_background"))
             
             VStack(spacing: 0) {
                 // Простая навигация для детей
@@ -248,10 +239,7 @@ struct ChildInterfaceScreen: View {
                 .foregroundColor(.white.opacity(0.8))
         }
         .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 16)
-                .fill(Color.white.opacity(0.15))
-        )
+        .stormGlassCard(cornerRadius: 16)
         .padding(.horizontal, 20)
     }
     
@@ -582,10 +570,7 @@ struct ChildInterfaceScreen: View {
             .frame(height: 12)
         }
         .padding(16)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white.opacity(0.15))
-        )
+        .stormGlassCard(cornerRadius: 12)
         .padding(.horizontal, 20)
     }
 

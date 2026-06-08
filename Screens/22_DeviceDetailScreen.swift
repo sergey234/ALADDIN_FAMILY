@@ -66,7 +66,9 @@ struct DeviceDetailScreen: View {
     }
     
     var body: some View {
-        ScrollView {
+        ZStack {
+            StormMeshBackground(variant: .shield)
+            ScrollView {
             VStack(spacing: Spacing.l) {
                 ALADDINNavigationBar(
                     title: "",
@@ -111,12 +113,7 @@ struct DeviceDetailScreen: View {
                         .accessibilityLabel(String(format: localizationManager.localized("device_detail_last_activity"), device.lastActive))
                 }
                 .padding(Spacing.cardPadding)
-                .background(
-                    LinearGradient.cardGradient
-                        .appGlassmorphism()
-                )
-                .cornerRadius(CornerRadius.large)
-                .cardShadow()
+                .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
                 .padding(.horizontal, Spacing.screenPadding)
                 
                 // Tab Selector
@@ -183,7 +180,7 @@ struct DeviceDetailScreen: View {
                 }
                 .padding(.horizontal, Spacing.screenPadding)
             }
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            }
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(String(format: localizationManager.localized("device_detail_accessibility"), device.name))
@@ -480,6 +477,8 @@ struct DeviceInfoView: View {
             // MAC адрес не приходит с сервера, поэтому скрываем если нет данных
             // InfoRow(icon: "antenna.radiowaves.left.and.right", title: localizationManager.localized("device_detail_info_mac"), value: "AA:BB:CC:DD:EE:FF", color: .orange)
         }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
         .padding(.horizontal, Spacing.screenPadding)
     }
 }
@@ -514,6 +513,8 @@ struct DeviceStatsView: View {
                     .padding()
             }
         }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
         .padding(.horizontal, Spacing.screenPadding)
     }
 }
@@ -646,8 +647,7 @@ struct ThreatItemRow: View {
             Spacer()
         }
         .padding(Spacing.m)
-        .background(LinearGradient.cardGradient.appGlassmorphism())
-        .cornerRadius(CornerRadius.medium)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(String(format: localizationManager.localized("device_detail_threat_accessibility"), name, severityText, time))
     }
@@ -679,6 +679,8 @@ struct DeviceSettingsView: View {
                 isOn: $isScanningEnabled
             )
         }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
         .padding(.horizontal, Spacing.screenPadding)
     }
 }

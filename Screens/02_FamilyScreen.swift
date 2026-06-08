@@ -1908,13 +1908,8 @@ struct FamilyScreen: View {
     
     var body: some View {
         ZStack {
-            // Background gradient
-            LinearGradient(
-                colors: [Color(red: 0.04, green: 0.07, blue: 0.16), Color(red: 0.12, green: 0.23, blue: 0.37), Color(red: 0.18, green: 0.31, blue: 0.56)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // Фон — Storm Mesh family light (Batch 1c, режим C)
+            StormMeshBackground(variant: .family)
             
             VStack(spacing: 0) {
                 // Header
@@ -2182,8 +2177,7 @@ struct FamilyScreen: View {
                             .accessibilityHint(localizationManager.localized("add_member_accessibility_hint"))
                         }
                         .padding(25)
-                        .background(Color.secondaryGold.opacity(0.15))
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .stormGlassCard(cornerRadius: 20)
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
                                 .stroke(Color.secondaryGold.opacity(0.4), lineWidth: 2)
@@ -2389,8 +2383,7 @@ struct FamilyScreen: View {
                             }
                         }
                         .padding(25)
-                        .background(Color.secondaryGold.opacity(0.15))
-                        .clipShape(RoundedRectangle(cornerRadius: 20))
+                        .stormGlassCard(cornerRadius: 20)
                         .overlay(
                             RoundedRectangle(cornerRadius: 20)
                                 .stroke(Color.secondaryGold.opacity(0.4), lineWidth: 2)
@@ -3170,15 +3163,11 @@ extension FamilyScreen {
             .id("rewardsCard_\(currentUnicornBalance)") // Принудительное обновление при изменении баланса
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                        .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
         )
-        .cardShadow()
     }
 }
 
@@ -4775,8 +4764,7 @@ struct FamilyModalBaseView<Content: View>: View {
     
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .family)
             
             VStack(spacing: 0) {
                 // Header
@@ -8909,7 +8897,7 @@ struct FamilyRolesHelpView: View {
                 }
                 .padding(Spacing.m)
             }
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .background(StormMeshBackground(variant: .family))
             .navigationTitle(localizationManager.currentLanguage == .russian ? "Роли и профили" : "Roles & Profiles")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {

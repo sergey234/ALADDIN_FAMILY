@@ -197,9 +197,8 @@ struct PaymentQRScreen: View {
     
     private func paymentQRScreenContent(viewModel: PaymentQRViewModel) -> some View {
         ZStack {
-            // Background
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            // Фон — Storm Mesh premium light (Batch 4)
+            StormMeshBackground(variant: .premium)
             
             ScrollView {
                 VStack(spacing: Spacing.l) {
@@ -283,12 +282,7 @@ struct PaymentQRScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Spacing.m)
-        .background(
-            LinearGradient.cardGradient
-                .appGlassmorphism()
-        )
-        .cornerRadius(CornerRadius.large)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - QR Tabs
@@ -413,12 +407,7 @@ struct PaymentQRScreen: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(Spacing.cardPadding)
-                .background(
-                    LinearGradient.cardGradient
-                        .appGlassmorphism()
-                )
-                .cornerRadius(CornerRadius.large)
-                .cardShadow()
+                .stormGlassCard(cornerRadius: CornerRadius.large)
             } else if viewModel.isLoading {
                 // ✅ УЛУЧШЕНИЕ: Показываем состояние загрузки QR кода, выровнено по центру
                 VStack(alignment: .center, spacing: Spacing.m) {
@@ -448,12 +437,7 @@ struct PaymentQRScreen: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(Spacing.cardPadding)
-                .background(
-                    LinearGradient.cardGradient
-                        .appGlassmorphism()
-                )
-                .cornerRadius(CornerRadius.large)
-                .cardShadow()
+                .stormGlassCard(cornerRadius: CornerRadius.large)
             } else {
                 // ✅ УЛУЧШЕНИЕ: Показываем ошибку с кнопкой "Обновить" если загрузка завершена, но QR нет, выровнено по центру
                 VStack(alignment: .center, spacing: Spacing.m) {
@@ -470,12 +454,7 @@ struct PaymentQRScreen: View {
                 }
                 .frame(maxWidth: .infinity, alignment: .center)
                 .padding(Spacing.cardPadding)
-                .background(
-                    LinearGradient.cardGradient
-                        .appGlassmorphism()
-                )
-                .cornerRadius(CornerRadius.large)
-                .cardShadow()
+                .stormGlassCard(cornerRadius: CornerRadius.large)
             }
         }
     }
@@ -605,12 +584,7 @@ struct PaymentQRScreen: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(
-            LinearGradient.cardGradient
-                .appGlassmorphism()
-        )
-        .cornerRadius(CornerRadius.large)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     private func instructionStep(number: Int, title: String, text: String) -> some View {
@@ -697,12 +671,7 @@ struct PaymentQRScreen: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(
-            LinearGradient.cardGradient
-                .appGlassmorphism()
-        )
-        .cornerRadius(CornerRadius.large)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     private func bankCard(bank: BankInfo) -> some View {
@@ -838,12 +807,7 @@ struct PaymentQRScreen: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(Spacing.cardPadding)
-        .background(
-            LinearGradient.cardGradient
-                .appGlassmorphism()
-        )
-        .cornerRadius(CornerRadius.large)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     private func infoRow(label: String, value: String) -> some View {

@@ -31,7 +31,7 @@ struct UnifiedTimeLimitsScreen: View {
                 }
                 .padding()
             }
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .background(StormMeshBackground(variant: .shield))
             .navigationTitle(localizationManager.localized("unified_time_limits_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

@@ -55,7 +55,7 @@ struct CompanionMineTabView: View {
                 }
                 .tint(.purple)
                 .padding(14)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .stormGlassCard(cornerRadius: 16)
                 .foregroundColor(.white)
                 .accessibilityIdentifier("companion_mine_tts_toggle")
 
@@ -69,7 +69,7 @@ struct CompanionMineTabView: View {
                     equippedCosmeticId: $equippedCosmeticId
                 )
                 .padding(12)
-                .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+                .stormGlassCard(cornerRadius: 16)
 
                 if showingOfflineCache {
                     Text(localizationManager.localized("companion_offline_cached_hint"))
@@ -99,7 +99,7 @@ struct CompanionMineTabView: View {
                     Label(localizationManager.localized("companion_mine_rules"), systemImage: "doc.text")
                         .frame(maxWidth: .infinity, alignment: .leading)
                         .padding(14)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                        .stormGlassCard(cornerRadius: 12)
                 }
                 .buttonStyle(.plain)
                 .foregroundColor(.white)
@@ -165,7 +165,7 @@ struct CompanionMineTabView: View {
             }
         }
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .stormGlassCard(cornerRadius: 16)
         .foregroundColor(.white)
         .accessibilityIdentifier("companion_mine_hero_pin_section")
     }
@@ -188,7 +188,7 @@ struct CompanionMineTabView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .stormGlassCard(cornerRadius: 16)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("companion_mine_trust_card")
     }
@@ -203,7 +203,7 @@ struct CompanionMineTabView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .stormGlassCard(cornerRadius: 16)
         .foregroundColor(.white)
         .accessibilityIdentifier("companion_mine_tools_card")
     }
@@ -234,7 +234,7 @@ struct CompanionMineTabView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(14)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 16))
+        .stormGlassCard(cornerRadius: 16)
         .foregroundColor(.white)
         .accessibilityIdentifier("companion_mine_cogs_card")
     }
@@ -271,7 +271,7 @@ struct CompanionMineTabView: View {
                             Image(systemName: "chevron.right")
                         }
                         .padding(12)
-                        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+                        .stormGlassCard(cornerRadius: 12)
                     }
                     .buttonStyle(.plain)
                     .foregroundColor(.white)
@@ -296,7 +296,7 @@ struct CompanionMineTabView: View {
             Image(systemName: "chevron.right")
         }
         .padding(12)
-        .background(.ultraThinMaterial, in: RoundedRectangle(cornerRadius: 12))
+        .stormGlassCard(cornerRadius: 12)
         .foregroundColor(.white)
         .accessibilityLabel("\(thread.title), \(String(format: localizationManager.localized("companion_thread_meta"), thread.messageCount, thread.updatedAtDisplay))")
     }

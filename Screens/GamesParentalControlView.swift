@@ -33,9 +33,7 @@ struct GamesParentalControlView: View {
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .growWarm)
             
             VStack(spacing: 0) {
                 // Навигационная панель
@@ -248,15 +246,12 @@ struct GamesParentalControlView: View {
             }
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.primaryBlue.opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.primaryBlue.opacity(0.3), lineWidth: 1)
-                )
-                .opacity(settingsManager.youngDefenderEnabled ? 1.0 : 0.6)
+                .stroke(Color.primaryBlue.opacity(0.3), lineWidth: 1)
         )
+        .opacity(settingsManager.youngDefenderEnabled ? 1.0 : 0.6)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -344,13 +339,10 @@ struct GamesParentalControlView: View {
             }
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color(hex: "A855F7").opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color(hex: "C084FC"), lineWidth: 1)
-                )
+                .stroke(Color(hex: "C084FC"), lineWidth: 1)
         )
         .padding(.horizontal, Spacing.screenPadding)
     }
@@ -429,15 +421,12 @@ struct GamesParentalControlView: View {
             }
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.pink.opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.pink.opacity(0.3), lineWidth: 1)
-                )
-                .opacity(settingsManager.protectorEnabled ? 1.0 : 0.6)
+                .stroke(Color.pink.opacity(0.3), lineWidth: 1)
         )
+        .opacity(settingsManager.protectorEnabled ? 1.0 : 0.6)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -543,15 +532,12 @@ struct GamesParentalControlView: View {
             }
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.warningOrange.opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.warningOrange.opacity(0.3), lineWidth: 1)
-                )
-                .opacity(settingsManager.tournamentEnabled ? 1.0 : 0.6)
+                .stroke(Color.warningOrange.opacity(0.3), lineWidth: 1)
         )
+        .opacity(settingsManager.tournamentEnabled ? 1.0 : 0.6)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -693,15 +679,12 @@ struct GamesParentalControlView: View {
             }
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.secondaryGold.opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
-                )
-                .opacity(settingsManager.shopEnabled ? 1.0 : 0.6)
+                .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
         )
+        .opacity(settingsManager.shopEnabled ? 1.0 : 0.6)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -733,10 +716,7 @@ struct GamesParentalControlView: View {
             }
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -775,13 +755,10 @@ struct GamesParentalControlView: View {
                     .foregroundColor(.textPrimary)
                     .frame(maxWidth: .infinity)
                     .padding(Spacing.m)
-                    .background(
+                    .stormGlassCard(cornerRadius: CornerRadius.medium)
+                    .overlay(
                         RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .fill(Color.backgroundMedium.opacity(0.5))
-                            .overlay(
-                                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                    .stroke(Color.textSecondary.opacity(0.3), lineWidth: 1)
-                            )
+                            .stroke(Color.textSecondary.opacity(0.3), lineWidth: 1)
                     )
             }
             .buttonStyle(PlainButtonStyle())

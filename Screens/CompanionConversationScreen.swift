@@ -117,7 +117,13 @@ struct CompanionConversationScreen: View {
 
     private var conversationStyledCore: some View {
         conversationBodyCore
-            .background(Color(.systemGroupedBackground))
+            .background {
+                if embeddedInHome {
+                    Color.clear
+                } else {
+                    StormMeshBackground(variant: .warm)
+                }
+            }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: conversationToolbarContent)
     }
@@ -157,14 +163,16 @@ struct CompanionConversationScreen: View {
                         companionMemoryChipsRow
                     }
                     Divider().opacity(layout.presence == .immersive ? 0.05 : 0.15)
-                    companionDialogueStrip
-                        .frame(height: layout.chatZoneHeight)
-                        .background {
-                            if layout.presence == .immersive {
-                                RoundedRectangle(cornerRadius: 16, style: .continuous)
-                                    .fill(.ultraThinMaterial)
-                            }
+                    Group {
+                        if layout.presence == .immersive {
+                            companionDialogueStrip
+                                .frame(height: layout.chatZoneHeight)
+                                .stormGlassCard(cornerRadius: 16)
+                        } else {
+                            companionDialogueStrip
+                                .frame(height: layout.chatZoneHeight)
                         }
+                    }
                         .contentShape(Rectangle())
                         .onTapGesture { isInputFocused = false }
                 }
@@ -654,7 +662,7 @@ struct CompanionConversationScreen: View {
         .padding(.horizontal, 16)
         .padding(.vertical, 10)
         .frame(maxWidth: .infinity)
-        .background(.ultraThinMaterial)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
 
     private var activeEquippedCosmetic: String {

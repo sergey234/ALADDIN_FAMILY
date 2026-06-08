@@ -31,9 +31,8 @@ struct ReferralScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            // Фон — Storm Mesh premium light (Batch 4)
+            StormMeshBackground(variant: .premium)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(localizationManager.localized("referral_background"))
             
@@ -183,8 +182,7 @@ struct ReferralScreen: View {
             .accessibilityLabel(localizationManager.localized("referral_invite_button"))
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - Your Stats
@@ -287,8 +285,7 @@ struct ReferralScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - Referral Code Section
@@ -374,8 +371,7 @@ struct ReferralScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - How It Works Card
@@ -448,15 +444,11 @@ struct ReferralScreen: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.primaryBlue.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(Color.primaryBlue.opacity(0.3), lineWidth: 1)
         )
-        .cardShadow()
     }
     
     // MARK: - Invitation Methods
@@ -535,8 +527,7 @@ struct ReferralScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - Rewards Section
@@ -602,8 +593,7 @@ struct ReferralScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - Referrals History
@@ -636,8 +626,7 @@ struct ReferralScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - Helper Views
@@ -770,15 +759,6 @@ struct ReferralScreen: View {
                 referral.status.localizedTitle(localizationManager)
             ) + ", \(referral.reward)"
         )
-    }
-    
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: CornerRadius.large)
-            .fill(Color.backgroundMedium.opacity(0.5))
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
     }
     
     // MARK: - Computed Properties

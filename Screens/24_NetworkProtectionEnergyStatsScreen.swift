@@ -18,7 +18,9 @@ struct NetworkProtectionEnergyStatsScreen: View {
     @State private var sessionTime: String = "0:00:00"
     
     var body: some View {
-        ScrollView {
+        ZStack {
+            StormMeshBackground(variant: .shield)
+            ScrollView {
             VStack(spacing: Spacing.l) {
                 ALADDINNavigationBar(
                     title: localizationManager.localized("network_protection_energy_title"),
@@ -71,12 +73,7 @@ struct NetworkProtectionEnergyStatsScreen: View {
                         .accessibilityLabel(localizationManager.localized("network_protection_energy_battery_efficient"))
                 }
                 .padding(Spacing.cardPadding)
-                .background(
-                    LinearGradient.cardGradient
-                        .appGlassmorphism()
-                )
-                .cornerRadius(CornerRadius.large)
-                .cardShadow()
+                .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
                 .padding(.horizontal, Spacing.screenPadding)
                 
                 // Period Selector
@@ -122,11 +119,7 @@ struct NetworkProtectionEnergyStatsScreen: View {
                         ComparisonRow(name: "Решение B", usage: 22.1, color: .dangerRed)
                     }
                     .padding(Spacing.m)
-                    .background(
-                        LinearGradient.cardGradient.appGlassmorphism()
-                    )
-                    .cornerRadius(CornerRadius.large)
-                    .cardShadow()
+                    .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
                 }
                 .padding(.horizontal, Spacing.screenPadding)
                 
@@ -143,7 +136,7 @@ struct NetworkProtectionEnergyStatsScreen: View {
                 }
                 .padding(.horizontal, Spacing.screenPadding)
             }
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+        }
         }
         .accessibilityElement(children: .contain)
         .accessibilityLabel(localizationManager.localized("network_protection_energy_accessibility"))
@@ -180,10 +173,7 @@ struct EnergyStatRow: View {
                 .foregroundColor(color)
         }
         .padding(Spacing.m)
-        .background(
-            LinearGradient.cardGradient.appGlassmorphism()
-        )
-        .cornerRadius(CornerRadius.medium)
+        .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .stormIndigo)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(label): \(value)")
     }
@@ -247,10 +237,7 @@ struct TipCard: View {
             Spacer()
         }
         .padding(Spacing.m)
-        .background(
-            LinearGradient.cardGradient.appGlassmorphism()
-        )
-        .cornerRadius(CornerRadius.medium)
+        .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .stormIndigo)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(String(format: localizationManager.localized("network_protection_energy_tip_format"), tip))
     }

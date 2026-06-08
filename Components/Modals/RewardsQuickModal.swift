@@ -29,8 +29,7 @@ struct RewardsQuickModal: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .growWarm)
                 
                 if isUserParent {
                     VStack(spacing: Spacing.l) {

@@ -204,11 +204,6 @@ struct CompanionHomeScreen: View {
 
 struct CompanionHomeBackground: View {
     var body: some View {
-        LinearGradient(
-            colors: [Color.purple.opacity(0.35), Color.blue.opacity(0.25)],
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
-        .ignoresSafeArea()
+        StormMeshBackground(variant: .warm)
     }
 }

@@ -14,8 +14,7 @@ struct ActivationCodeScreen: View {
     
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .premium)
             
             VStack(spacing: 0) {
                 ALADDINNavigationBar(
@@ -64,14 +63,7 @@ struct ActivationCodeScreen: View {
                 .foregroundColor(.textSecondary)
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.white.opacity(0.08))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .stroke(Color.white.opacity(0.12), lineWidth: 1)
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -179,14 +171,7 @@ struct ActivationCodeScreen: View {
             }
         }
         .padding()
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.white.opacity(0.05))
-        )
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .stroke(Color.white.opacity(0.1), lineWidth: 1)
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .padding(.horizontal, Spacing.screenPadding)
         .padding(.bottom, Spacing.xl)
     }
@@ -259,10 +244,7 @@ struct ActivationCodeScreen: View {
             }
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.blue.opacity(0.15))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
                 .stroke(Color.blue.opacity(0.5), lineWidth: 2)
@@ -349,13 +331,10 @@ struct ActivationCodeScreen: View {
             }
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.white.opacity(0.08))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .stroke(consentAccepted ? Color.primaryBlue.opacity(0.3) : Color.white.opacity(0.12), lineWidth: 1)
+                .stroke(consentAccepted ? Color.primaryBlue.opacity(0.3) : Color.secondaryGold.opacity(0.3), lineWidth: 1)
         )
         .padding(.horizontal, Spacing.screenPadding)
         .onAppear {

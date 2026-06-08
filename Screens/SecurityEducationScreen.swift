@@ -46,17 +46,7 @@ struct SecurityEducationScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient(
-                colors: [
-                    Color.blue,
-                    Color.blue.opacity(0.8),
-                    Color.blue.opacity(0.6)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            StormMeshBackground(variant: .growWarm)
             
             VStack(spacing: 0) {
                 // Заголовок
@@ -386,16 +376,7 @@ struct LessonDetailView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [
-                    Color.blue,
-                    Color.blue.opacity(0.8),
-                    Color.blue.opacity(0.6)
-                ],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            StormMeshBackground(variant: .growWarm)
             
             VStack(spacing: 20) {
                 Text(lesson.icon)

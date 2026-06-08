@@ -194,12 +194,7 @@ struct MainScreenWithRegistration: View {
     // MARK: - Helper Views
     
     private var backgroundView: some View {
-            LinearGradient(
-                colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+        StormMeshBackground(variant: .hub)
     }
             
     private var loadingView: some View {

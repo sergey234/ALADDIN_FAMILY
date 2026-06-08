@@ -24,15 +24,14 @@ struct AddMoreMemberCard: View {
             .frame(height: 90)
             .frame(maxWidth: .infinity)
             .padding(Spacing.s)
-            .background(Color.secondaryGold.opacity(0.05))
+            .stormGlassCard(cornerRadius: 10)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .strokeBorder(
-                        Color.secondaryGold.opacity(0.2),
+                        Color.secondaryGold.opacity(0.35),
                         style: StrokeStyle(lineWidth: 1, dash: [3, 3])
                     )
             )
-            .clipShape(RoundedRectangle(cornerRadius: 10))
         }
         .buttonStyle(PlainButtonStyle())
     }

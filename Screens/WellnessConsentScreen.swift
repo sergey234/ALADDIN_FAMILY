@@ -51,14 +51,7 @@ struct WellnessConsentScreen: View {
             .padding()
         }
         .navigationBarHidden(true)
-        .background(
-            LinearGradient(
-                colors: [Color(hex: "1E1B4B"), Color(hex: "312E81")],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        )
+        .background(StormMeshBackground(variant: .neutral))
         .foregroundColor(.white)
     }
 

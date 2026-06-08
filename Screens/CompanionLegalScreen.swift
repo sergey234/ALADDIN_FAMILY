@@ -16,7 +16,9 @@ struct CompanionLegalScreen: View {
     @State private var hasLoaded = false
 
     var body: some View {
-        ScrollView {
+        ZStack {
+            StormMeshBackground(variant: .legal)
+            ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 Text("Правила AI-компаньона")
                     .font(.title2.bold())
@@ -62,6 +64,7 @@ struct CompanionLegalScreen: View {
                 }
             }
             .padding()
+        }
         }
         .navigationTitle("Правила")
         .navigationBarTitleDisplayMode(.inline)
@@ -110,7 +113,7 @@ struct CompanionLegalScreen: View {
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color(.secondarySystemGroupedBackground), in: RoundedRectangle(cornerRadius: 12))
+        .stormGlassCard(cornerRadius: 12)
     }
 
     private func load() async {

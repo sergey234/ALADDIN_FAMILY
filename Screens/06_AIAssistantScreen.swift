@@ -110,13 +110,8 @@ struct AIAssistantScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient(
-                colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-                .ignoresSafeArea()
+            // Фон — Storm Mesh AI light (Batch 2, режим C)
+            StormMeshBackground(variant: .ai)
                 .accessibilityElement()
                 .accessibilityLabel(localizationManager.localized("ai_assistant_background"))
             
@@ -339,8 +334,11 @@ struct AIAssistantScreen: View {
             Spacer(minLength: 0)
         }
         .padding(12)
-        .background(Color.red.opacity(0.28))
-        .cornerRadius(12)
+        .stormGlassCard(cornerRadius: 12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.red.opacity(0.22))
+        )
     }
 
     private var aiConsentBanner: some View {
@@ -356,8 +354,11 @@ struct AIAssistantScreen: View {
             .foregroundColor(.yellow)
         }
         .padding(12)
-        .background(Color.orange.opacity(0.35))
-        .cornerRadius(12)
+        .stormGlassCard(cornerRadius: 12)
+        .overlay(
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color.orange.opacity(0.25))
+        )
     }
     
     // MARK: - Chat Bubble
@@ -566,6 +567,8 @@ struct AIAssistantScreen: View {
                 }
                 .accessibilityLabel(localizationManager.localized("app_feedback_star_accessibility"))
             }
+            .padding(Spacing.m)
+            .stormGlassCard(cornerRadius: 16)
             .padding(.horizontal, Spacing.screenPadding)
             .padding(.top, 8)
             .padding(.bottom, 8)

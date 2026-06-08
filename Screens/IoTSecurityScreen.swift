@@ -11,8 +11,7 @@ struct IoTSecurityScreen: View {
     var body: some View {
         ZStack {
             // Фон
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .shield)
             
             VStack(spacing: 0) {
                 // Навигационная панель

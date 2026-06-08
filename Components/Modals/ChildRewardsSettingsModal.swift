@@ -16,8 +16,7 @@ struct ChildRewardsSettingsModal: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .growWarm)
                 
                 ScrollView {
                     VStack(spacing: Spacing.l) {
@@ -155,15 +154,11 @@ struct ChildRewardsSettingsModal: View {
             }
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
         )
-        .cardShadow()
     }
     
     // MARK: - Info Card
@@ -190,15 +185,11 @@ struct ChildRewardsSettingsModal: View {
                 .fixedSize(horizontal: false, vertical: true)
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.primaryBlue.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(Color.primaryBlue.opacity(0.3), lineWidth: 1)
         )
-        .cardShadow()
     }
 }
 

@@ -19,8 +19,7 @@ struct UnicornUniverseView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .growWarm)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Фон экрана единорог-вселенной")
             
@@ -83,8 +82,7 @@ struct UnicornUniverseView: View {
             .accessibilityLabel("Сад с \(gardenCount) единорогами")
         }
         .padding(.horizontal, Spacing.screenPadding)
-        .cardShadow()
-        .appGlassmorphism()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Карточка сада единорогов")
     }
@@ -131,11 +129,7 @@ struct UnicornUniverseView: View {
             Spacer()
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Вид единорога: \(name) - \(desc)")
     }

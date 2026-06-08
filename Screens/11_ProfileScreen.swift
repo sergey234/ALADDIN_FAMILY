@@ -77,9 +77,8 @@ struct ProfileScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            // Фон — Storm Mesh neutral light (Batch 3, режим C)
+            StormMeshBackground(variant: .neutral)
             
             VStack(spacing: 0) {
                 // Навигационная панель (как в других экранах)
@@ -351,10 +350,7 @@ struct ProfileScreen: View {
         }
         .frame(maxWidth: .infinity)
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
     
     // MARK: - Profile Info
@@ -399,10 +395,7 @@ struct ProfileScreen: View {
                             Spacer()
                         }
                         .padding(Spacing.m)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .fill(Color.backgroundMedium.opacity(0.3))
-                        )
+                        .stormGlassCard(cornerRadius: CornerRadius.medium)
                     }
                     .buttonStyle(PlainButtonStyle())
                 }
@@ -438,10 +431,7 @@ struct ProfileScreen: View {
                             }
                         }
                         .padding(Spacing.m)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .fill(Color.backgroundMedium.opacity(0.3))
-                        )
+                        .stormGlassCard(cornerRadius: CornerRadius.medium)
                     }
                     .buttonStyle(PlainButtonStyle())
                     .disabled(isFamilyIdentityRepairingProfile)
@@ -511,10 +501,7 @@ struct ProfileScreen: View {
                     Spacer()
                 }
                 .padding(Spacing.m)
-                .background(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .fill(Color.backgroundMedium.opacity(0.3))
-                )
+                .stormGlassCard(cornerRadius: CornerRadius.medium)
                 
                 // Кнопки действий
                 if consentAccepted {
@@ -538,10 +525,7 @@ struct ProfileScreen: View {
                                 .foregroundColor(.textSecondary)
                         }
                         .padding(Spacing.m)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .fill(Color.backgroundMedium.opacity(0.3))
-                        )
+                        .stormGlassCard(cornerRadius: CornerRadius.medium)
                     }
                     
                     Button(action: {
@@ -563,10 +547,7 @@ struct ProfileScreen: View {
                                 .foregroundColor(.textSecondary)
                         }
                         .padding(Spacing.m)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .fill(Color.backgroundMedium.opacity(0.3))
-                        )
+                        .stormGlassCard(cornerRadius: CornerRadius.medium)
                     }
                     
                     // Отзыв согласия
@@ -595,10 +576,7 @@ struct ProfileScreen: View {
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         .padding(Spacing.m)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .fill(Color.backgroundMedium.opacity(0.3))
-                        )
+                        .stormGlassCard(cornerRadius: CornerRadius.medium)
                 }
             }
             .padding(.horizontal, Spacing.screenPadding)
@@ -678,11 +656,8 @@ struct ProfileScreen: View {
                             .font(.system(size: 14))
                             .foregroundColor(.textSecondary)
                     }
-                    .padding(Spacing.m)
-                    .background(
-                        RoundedRectangle(cornerRadius: CornerRadius.medium)
-                            .fill(Color.backgroundMedium.opacity(0.3))
-                    )
+                        .padding(Spacing.m)
+                        .stormGlassCard(cornerRadius: CornerRadius.medium)
                 }
             }
             .padding(.horizontal, Spacing.screenPadding)
@@ -725,10 +700,7 @@ struct ProfileScreen: View {
             Spacer()
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
     
     private func securityButton(icon: String, title: String, color: Color = .textPrimary, action: @escaping () -> Void = {}) -> some View {
@@ -747,11 +719,8 @@ struct ProfileScreen: View {
                     .font(.system(size: 12, weight: .semibold))
                     .foregroundColor(color)
             }
-            .padding(Spacing.m)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                    .fill(Color.backgroundMedium.opacity(0.3))
-            )
+                        .padding(Spacing.m)
+                        .stormGlassCard(cornerRadius: CornerRadius.medium)
         }
         .buttonStyle(PlainButtonStyle())
     }

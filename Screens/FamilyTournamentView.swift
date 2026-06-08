@@ -48,8 +48,7 @@ struct FamilyTournamentView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .growWarm)
             
             VStack(spacing: 0) {
                 // Header с кнопкой "← Назад"
@@ -361,10 +360,7 @@ struct FamilyTournamentView: View {
             }
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -410,9 +406,10 @@ struct FamilyTournamentView: View {
                 .foregroundColor(.primaryBlue)
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(rank == 1 ? Color(hex: "FFD700").opacity(0.1) : Color.backgroundMedium.opacity(0.5))
+                .stroke(rank == 1 ? Color(hex: "FFD700").opacity(0.4) : Color.clear, lineWidth: rank == 1 ? 2 : 0)
         )
     }
     
@@ -455,10 +452,7 @@ struct FamilyTournamentView: View {
                 .foregroundColor(.successGreen)
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .padding(.horizontal, Spacing.screenPadding)
     }
 }

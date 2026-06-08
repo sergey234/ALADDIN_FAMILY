@@ -138,11 +138,7 @@ struct ChildContentScreen: View {
     // MARK: - Background Gradient
     
     private var backgroundGradient: some View {
-        LinearGradient(
-            colors: gradientColors,
-            startPoint: .topLeading,
-            endPoint: .bottomTrailing
-        )
+        StormMeshBackground(variant: .growWarm)
     }
     
     private var gradientColors: [Color] {

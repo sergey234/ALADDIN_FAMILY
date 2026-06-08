@@ -56,13 +56,8 @@ struct MainScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон - красивый градиент как в SupportScreen
-            LinearGradient(
-                colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            // Фон — Storm Mesh hub (Batch 1a)
+            StormMeshBackground(variant: .hub)
             
             VStack(spacing: 0) {
                 // ✅ УДАЛЕНО: Декораторы времени и заряда/сети - они больше не нужны
@@ -505,14 +500,7 @@ struct MainScreen: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 80)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color.white.opacity(0.1))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                        )
-                                )
+                                .stormGlassCard(cornerRadius: 10)
                             }
                             .buttonStyle(PlainButtonStyle())
                             .accessibilityIdentifier("main_nav_network_protection")
@@ -540,14 +528,7 @@ struct MainScreen: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 80)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color.white.opacity(0.1))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                        )
-                                )
+                                .stormGlassCard(cornerRadius: 10)
                             }
                             .buttonStyle(PlainButtonStyle())
                             .accessibilityIdentifier("main_nav_tariffs")
@@ -574,14 +555,7 @@ struct MainScreen: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 80)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color.white.opacity(0.1))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                        )
-                                )
+                                .stormGlassCard(cornerRadius: 10)
                             }
                             .buttonStyle(PlainButtonStyle())
                             .accessibilityIdentifier("main_nav_senior_companion")
@@ -604,14 +578,7 @@ struct MainScreen: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 80)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color.white.opacity(0.1))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                        )
-                                )
+                                .stormGlassCard(cornerRadius: 10)
                             }
                             
                             // Настройки — через NavigationManager (не NavigationLink: иначе «Назад» → dismiss → ложный онбординг).
@@ -632,14 +599,7 @@ struct MainScreen: View {
                                 }
                                 .frame(maxWidth: .infinity)
                                 .frame(height: 80)
-                                .background(
-                                    RoundedRectangle(cornerRadius: 10)
-                                        .fill(Color.white.opacity(0.1))
-                                        .overlay(
-                                            RoundedRectangle(cornerRadius: 10)
-                                                .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                                        )
-                                )
+                                .stormGlassCard(cornerRadius: 10)
                             }
                             .buttonStyle(.plain)
                         }
@@ -933,14 +893,7 @@ struct MainScreen: View {
                                     )
                             }
                             .padding(10)
-                            .background(
-                                RoundedRectangle(cornerRadius: 10)
-                                    .fill(Color.secondaryGold.opacity(0.1))
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 10)
-                                            .stroke(Color.secondaryGold, lineWidth: 2)
-                                    )
-                            )
+                            .stormGlassCard(cornerRadius: 10)
                         }
                         }
                         .id("home_chat_segments_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffRowViewIdentity)")

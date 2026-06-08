@@ -64,13 +64,7 @@ struct AddMemberOptionsScreen: View {
     var body: some View {
         GeometryReader { proxy in
             ZStack {
-                // Фон
-                LinearGradient(
-                    colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)],
-                    startPoint: .topLeading,
-                    endPoint: .bottomTrailing
-                )
-                .ignoresSafeArea()
+                StormMeshBackground(variant: .family)
 
                 VStack(spacing: 16) {
                     // Кнопка назад — отступ с учётом safe area (Dynamic Island / чёлка)

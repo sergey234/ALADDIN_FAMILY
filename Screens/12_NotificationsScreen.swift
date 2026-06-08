@@ -19,9 +19,8 @@ struct NotificationsScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient(colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+            // Фон — Storm Mesh neutral light (Batch 4)
+            StormMeshBackground(variant: .neutral)
                 .accessibilityElement()
                 .accessibilityLabel(localizationManager.localized("notifications_background"))
             
@@ -146,8 +145,7 @@ struct NotificationsScreen: View {
             }
         }
         .padding(16)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - Notification Filters
@@ -167,8 +165,7 @@ struct NotificationsScreen: View {
             }
         }
         .padding(16)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - Notification Filter Card (Accordion)
@@ -304,15 +301,11 @@ struct NotificationsScreen: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(expandedFilter == filter ? filter.color.opacity(0.5) : Color.secondaryGold.opacity(0.3), lineWidth: expandedFilter == filter ? 2 : 1)
-                )
+                .stroke(expandedFilter == filter ? filter.color.opacity(0.5) : Color.secondaryGold.opacity(0.3), lineWidth: expandedFilter == filter ? 2 : 1)
         )
-        .cardShadow()
     }
     
     // MARK: - Notification List
@@ -395,8 +388,7 @@ struct NotificationsScreen: View {
             }
         }
         .padding(16)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - Helper Views
@@ -424,15 +416,6 @@ struct NotificationsScreen: View {
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title): \(value)")
-    }
-    
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .fill(Color.gray.opacity(0.3).opacity(0.5))
-            .overlay(
-                RoundedRectangle(cornerRadius: 12)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
     }
     
     // MARK: - Computed Properties
@@ -468,8 +451,7 @@ struct NotificationsScreen: View {
             .foregroundColor(.secondaryGold)
         }
         .padding(16)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
 
     private func healthRow(_ title: String, _ value: String) -> some View {

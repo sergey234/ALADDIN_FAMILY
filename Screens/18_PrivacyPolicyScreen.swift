@@ -17,8 +17,7 @@ struct PrivacyPolicyScreen: View {
     
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .legal)
                 .accessibilityElement()
                 .accessibilityLabel(localizationManager.localized("privacy_policy_background"))
             
@@ -95,15 +94,11 @@ struct PrivacyPolicyScreen: View {
                 .multilineTextAlignment(.leading)
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.primaryBlue.opacity(0.1))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.primaryBlue.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(Color.primaryBlue.opacity(0.3), lineWidth: 1)
         )
-        .cardShadow()
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -114,10 +109,7 @@ struct PrivacyPolicyScreen: View {
             tabButton(title: PrivacyTab.main.localizedTitle(localizationManager), tab: .main)
             tabButton(title: PrivacyTab.networkProtection.localizedTitle(localizationManager), tab: .networkProtection)
         }
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .padding(.horizontal, Spacing.screenPadding)
     }
     
@@ -230,15 +222,11 @@ struct PrivacyPolicyScreen: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(Color.secondaryGold.opacity(0.3), lineWidth: 1)
         )
-        .cardShadow()
     }
     
     // MARK: - Network Protection Section Card
@@ -305,15 +293,11 @@ struct PrivacyPolicyScreen: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(Color.primaryBlue.opacity(0.3), lineWidth: 1)
-                )
+                .stroke(Color.primaryBlue.opacity(0.3), lineWidth: 1)
         )
-        .cardShadow()
     }
     
     // MARK: - Fallback Content
@@ -358,8 +342,7 @@ struct PrivacyPolicyScreen: View {
             }
             .padding(Spacing.m)
         }
-        .background(Color.white)
-        .cornerRadius(12)
+        .stormGlassCard(cornerRadius: 12)
     }
     
     private func privacySection(title: String, content: String) -> some View {
@@ -374,10 +357,7 @@ struct PrivacyPolicyScreen: View {
                 .lineSpacing(4)
         }
         .padding(Spacing.s)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
 }
 

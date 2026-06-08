@@ -307,7 +307,7 @@ struct FamilyChatScreen: View {
 
     private var familyChatCoreChrome: some View {
         familyChatMainColumn
-            .background(LinearGradient.backgroundGradient.ignoresSafeArea())
+            .background(StormMeshBackground(variant: .family))
             .onReceive(Timer.publish(every: 8.0, on: .main, in: .common).autoconnect()) { _ in
                 if !isLoading && !isSending {
                     loadMessages(silent: true)
@@ -1267,11 +1267,12 @@ struct FamilyChatScreen: View {
                 .accessibilityLabel(localizationManager.localized("family_chat_send_button"))
                 .accessibilityHint(localizationManager.localized("family_chat_send_hint"))
             }
+            .padding(Spacing.m)
+            .stormGlassCard(cornerRadius: 16)
             .padding(.horizontal, Spacing.screenPadding)
             .padding(.top, 8)
             .padding(.bottom, 8)
         }
-        .background(LinearGradient.cardGradient.appGlassmorphism())
     }
 
     private func composerHeight(for text: String) -> CGFloat {

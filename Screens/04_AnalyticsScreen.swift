@@ -34,9 +34,8 @@ struct AnalyticsScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            // Фон — Storm Mesh data light (Batch 3, режим C)
+            StormMeshBackground(variant: .data)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(localizationManager.localized("analytics_accessibility_background"))
             
@@ -221,8 +220,7 @@ struct AnalyticsScreen: View {
         }
         .padding(.horizontal, Spacing.m)
         .padding(.vertical, Spacing.xs)
-        .background(Color.backgroundMedium.opacity(0.5))
-        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
     
     // MARK: - Main Stats (компактные карточки в 1 строку)
@@ -254,8 +252,7 @@ struct AnalyticsScreen: View {
             )
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - Threat Breakdown
@@ -288,8 +285,7 @@ struct AnalyticsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
 
     private func threatBreakdownEmptyText(_ kind: AnalyticsViewModel.ThreatBreakdownEmptyKind) -> String {
@@ -386,8 +382,7 @@ struct AnalyticsScreen: View {
             )
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
 
     // MARK: - Helper Views
@@ -474,10 +469,7 @@ struct AnalyticsScreen: View {
                 .foregroundColor(.textPrimary)
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(
             String(
@@ -486,15 +478,6 @@ struct AnalyticsScreen: View {
                 value
             )
         )
-    }
-    
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: CornerRadius.large)
-            .fill(Color.backgroundMedium.opacity(0.5))
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
     }
     
     private var effectivenessText: String {
@@ -735,8 +718,7 @@ struct AnalyticsScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
     // MARK: - Component Report Cards
@@ -796,8 +778,7 @@ private struct DebouncedDataSourceIndicator: View {
         }
         .padding(.horizontal, Spacing.m)
         .padding(.vertical, Spacing.xs)
-        .background(Color.backgroundMedium.opacity(0.5))
-        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .onAppear { displayed = dataSource }
         .onChange(of: dataSource) { newValue in
             pendingTask?.cancel()

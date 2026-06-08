@@ -74,12 +74,6 @@ struct SettingsScreen: View {
 
     // MARK: - UI Sections
 
-    /// Единый стиль групп строк (все секции Настроек).
-    private var settingsGroupedCardBackground: some View {
-        RoundedRectangle(cornerRadius: 12)
-            .fill(Color.secondary.opacity(0.05))
-    }
-
     private var navigationHeader: some View {
         ALADDINNavigationBar(
             title: viewModel.localizedStrings.settingsTitle,
@@ -110,11 +104,7 @@ struct SettingsScreen: View {
                 .accessibilityAddTraits(.isHeader)
 
             // Profile Card
-            ZStack {
-                RoundedRectangle(cornerRadius: 12)
-                    .fill(Color.secondary.opacity(0.05))
-
-                VStack(spacing: Spacing.m) {
+            VStack(spacing: Spacing.m) {
                     // Avatar and Name
             HStack(spacing: Spacing.m) {
                         ZStack {
@@ -168,8 +158,8 @@ struct SettingsScreen: View {
                     }
                     .accessibilityLabel(viewModel.localizedStrings.settingsProfileEditAccessibility)
                 }
-                .padding(Spacing.m)
-            }
+            .padding(Spacing.m)
+            .stormGlassCard(cornerRadius: 12)
         }
     }
 
@@ -264,8 +254,7 @@ struct SettingsScreen: View {
                     viewModel.showAdvancedProtection = true
                 }
             }
-            .background(settingsGroupedCardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .stormGlassCard(cornerRadius: 12)
         }
     }
 
@@ -295,8 +284,7 @@ struct SettingsScreen: View {
                     isEnabled: $viewModel.soundEnabled
                 )
             }
-            .background(settingsGroupedCardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .stormGlassCard(cornerRadius: 12)
         }
     }
 
@@ -405,8 +393,7 @@ struct SettingsScreen: View {
                     viewModel.showPositioningSystemPicker = true
                 }
             }
-            .background(settingsGroupedCardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .stormGlassCard(cornerRadius: 12)
         }
     }
     
@@ -469,8 +456,7 @@ struct SettingsScreen: View {
                         }
                     }
                 }
-                .background(settingsGroupedCardBackground)
-                .clipShape(RoundedRectangle(cornerRadius: 12))
+                .stormGlassCard(cornerRadius: 12)
             }
         }
         .onAppear {
@@ -548,8 +534,7 @@ struct SettingsScreen: View {
                 }
 
             }
-            .background(settingsGroupedCardBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 12))
+            .stormGlassCard(cornerRadius: 12)
         }
     }
 
@@ -557,9 +542,8 @@ struct SettingsScreen: View {
         
         var body: some View {
         ZStack {
-            // Фон
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            // Фон — Storm Mesh neutral light (Batch 3, режим C)
+            StormMeshBackground(variant: .neutral)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel(viewModel.localizedStrings.settingsAccessibilityBackground)
 

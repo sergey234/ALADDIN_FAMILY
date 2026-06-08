@@ -117,8 +117,7 @@ struct RewardsModalView: View {
         NavigationView {
             ZStack {
                 // Фон
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .growWarm)
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel("Фон модального окна вознаграждений")
                 
@@ -450,8 +449,11 @@ struct RewardsModalView: View {
                         .stroke(Color(hex: "A855F7").opacity(0.4), lineWidth: 2)
                 )
         )
-        .cardShadow()
-        .appGlassmorphism()
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
+            RoundedRectangle(cornerRadius: CornerRadius.large)
+                .stroke(Color(hex: "A855F7").opacity(0.4), lineWidth: 2)
+        )
         .padding(.horizontal, Spacing.screenPadding)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Карточка баланса единорогов")
@@ -597,15 +599,12 @@ struct RewardsModalView: View {
             }
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(reward.isEnabled.wrappedValue ? Color.secondaryGold.opacity(0.05) : Color.backgroundMedium.opacity(0.3))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .stroke(
-                            reward.isEnabled.wrappedValue ? Color.secondaryGold.opacity(0.3) : Color.textSecondary.opacity(0.2),
-                            lineWidth: 1
-                        )
+                .stroke(
+                    reward.isEnabled.wrappedValue ? Color.secondaryGold.opacity(0.3) : Color.textSecondary.opacity(0.2),
+                    lineWidth: 1
                 )
         )
     }
@@ -779,15 +778,12 @@ struct RewardsModalView: View {
             }
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(isEnabled || isLocked ? Color.primaryBlue.opacity(0.05) : Color.backgroundMedium.opacity(0.3))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .stroke(
-                            isEnabled || isLocked ? Color.primaryBlue.opacity(0.2) : Color.textSecondary.opacity(0.2),
-                            lineWidth: 1
-                        )
+                .stroke(
+                    isEnabled || isLocked ? Color.primaryBlue.opacity(0.2) : Color.textSecondary.opacity(0.2),
+                    lineWidth: 1
                 )
         )
     }
@@ -814,13 +810,10 @@ struct RewardsModalView: View {
         }
         .padding(Spacing.s)
         .frame(width: 100, height: 100)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .stroke(Color.textSecondary.opacity(0.2), lineWidth: 1)
-                )
+                .stroke(Color.textSecondary.opacity(0.2), lineWidth: 1)
         )
     }
     
@@ -907,11 +900,7 @@ struct RewardsModalView: View {
         }
         .padding(.vertical, Spacing.m)
         .padding(.horizontal, Spacing.screenPadding)  // ДОБАВЛЕН внешний padding
-        .background(
-            // ДОБАВЛЕН фоновый цвет для лучшей видимости
-            RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.large)
         .onAppear {
             print("🔍 DEBUG RewardsModalView: quickActions рендерится")
         }
@@ -998,11 +987,7 @@ struct RewardsModalView: View {
                 .accessibilityLabel("Награда: \(amount)")
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title): \(subtitle), награда \(amount)")
     }
@@ -1102,15 +1087,12 @@ struct RewardsModalView: View {
             }
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(earningWay.isEnabled.wrappedValue ? Color.successGreen.opacity(0.05) : Color.backgroundMedium.opacity(0.3))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .stroke(
-                            earningWay.isEnabled.wrappedValue ? Color.successGreen.opacity(0.3) : Color.textSecondary.opacity(0.2),
-                            lineWidth: 1
-                        )
+                .stroke(
+                    earningWay.isEnabled.wrappedValue ? Color.successGreen.opacity(0.3) : Color.textSecondary.opacity(0.2),
+                    lineWidth: 1
                 )
         )
     }
@@ -1196,11 +1178,7 @@ struct RewardsModalView: View {
                 .accessibilityLabel(amount)
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title): \(subtitle), \(amount)")
     }
@@ -1300,15 +1278,12 @@ struct RewardsModalView: View {
             }
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(punishmentReason.isEnabled.wrappedValue ? Color.dangerRed.opacity(0.05) : Color.backgroundMedium.opacity(0.3))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .stroke(
-                            punishmentReason.isEnabled.wrappedValue ? Color.dangerRed.opacity(0.3) : Color.textSecondary.opacity(0.2),
-                            lineWidth: 1
-                        )
+                .stroke(
+                    punishmentReason.isEnabled.wrappedValue ? Color.dangerRed.opacity(0.3) : Color.textSecondary.opacity(0.2),
+                    lineWidth: 1
                 )
         )
     }
@@ -1972,8 +1947,7 @@ struct RewardInputModal: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .growWarm)
                 
                 ScrollView {
                     VStack(spacing: Spacing.l) {
@@ -2016,9 +1990,10 @@ struct RewardInputModal: View {
                                                 .foregroundColor(.successGreen)
                                         }
                                         .padding(Spacing.m)
-                                        .background(
+                                        .stormGlassCard(cornerRadius: CornerRadius.medium)
+                                        .overlay(
                                             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                                .fill(selectedWay?.id == way.id ? Color.successGreen.opacity(0.2) : Color.backgroundMedium.opacity(0.5))
+                                                .stroke(selectedWay?.id == way.id ? Color.successGreen : Color.textSecondary.opacity(0.2), lineWidth: selectedWay?.id == way.id ? 2 : 1)
                                         )
                                     }
                                     .buttonStyle(PlainButtonStyle())
@@ -2040,10 +2015,7 @@ struct RewardInputModal: View {
                             TextField(localizationManager.localized("rewards_modal_custom_reason_placeholder"), text: $reason)
                                 .textFieldStyle(.plain)
                                 .padding(Spacing.m)
-                                .background(
-                                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                        .fill(Color.backgroundMedium.opacity(0.5))
-                                )
+                                .stormGlassCard(cornerRadius: CornerRadius.medium)
                                 .foregroundColor(.textPrimary)
                                 .padding(.horizontal, Spacing.screenPadding)
                                 .onChange(of: reason) { _ in
@@ -2064,10 +2036,7 @@ struct RewardInputModal: View {
                                 .keyboardType(.numberPad)
                                 .textFieldStyle(.plain)
                                 .padding(Spacing.m)
-                                .background(
-                                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                        .fill(Color.backgroundMedium.opacity(0.5))
-                                )
+                                .stormGlassCard(cornerRadius: CornerRadius.medium)
                                 .foregroundColor(.textPrimary)
                                 .padding(.horizontal, Spacing.screenPadding)
                         }
@@ -2172,8 +2141,7 @@ struct PunishInputModal: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .growWarm)
                 
                 ScrollView {
                     VStack(spacing: Spacing.l) {
@@ -2216,9 +2184,10 @@ struct PunishInputModal: View {
                                                 .foregroundColor(.dangerRed)
                                         }
                                         .padding(Spacing.m)
-                                        .background(
+                                        .stormGlassCard(cornerRadius: CornerRadius.medium)
+                                        .overlay(
                                             RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                                .fill(selectedReason?.id == item.id ? Color.dangerRed.opacity(0.2) : Color.backgroundMedium.opacity(0.5))
+                                                .stroke(selectedReason?.id == item.id ? Color.dangerRed : Color.textSecondary.opacity(0.2), lineWidth: selectedReason?.id == item.id ? 2 : 1)
                                         )
                                     }
                                     .buttonStyle(PlainButtonStyle())
@@ -2240,10 +2209,7 @@ struct PunishInputModal: View {
                             TextField(localizationManager.localized("rewards_modal_punish_custom_reason_placeholder"), text: $reason)
                                 .textFieldStyle(.plain)
                                 .padding(Spacing.m)
-                                .background(
-                                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                        .fill(Color.backgroundMedium.opacity(0.5))
-                                )
+                                .stormGlassCard(cornerRadius: CornerRadius.medium)
                                 .foregroundColor(.textPrimary)
                                 .padding(.horizontal, Spacing.screenPadding)
                                 .onChange(of: reason) { _ in
@@ -2264,10 +2230,7 @@ struct PunishInputModal: View {
                                 .keyboardType(.numberPad)
                                 .textFieldStyle(.plain)
                                 .padding(Spacing.m)
-                                .background(
-                                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                        .fill(Color.backgroundMedium.opacity(0.5))
-                                )
+                                .stormGlassCard(cornerRadius: CornerRadius.medium)
                                 .foregroundColor(.textPrimary)
                                 .padding(.horizontal, Spacing.screenPadding)
                         }
@@ -2346,8 +2309,7 @@ struct ShopManagementModal: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .growWarm)
                 
                 ScrollView {
                     VStack(spacing: Spacing.l) {
@@ -2365,7 +2327,7 @@ struct ShopManagementModal: View {
                                 .foregroundColor(.textSecondary)
                         }
                         .padding(Spacing.m)
-                        .background(Color.backgroundMedium.opacity(0.3))
+                        .stormGlassCard(cornerRadius: CornerRadius.medium)
                         .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
                         .padding(.horizontal, Spacing.screenPadding)
                         .padding(.top, Spacing.m)
@@ -2536,15 +2498,12 @@ struct ShopManagementModal: View {
             }
         }
         .padding(Spacing.m)
-        .background(
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .overlay(
             RoundedRectangle(cornerRadius: CornerRadius.large)
-                .fill(reward.isEnabled.wrappedValue ? Color.successGreen.opacity(0.05) : Color.backgroundMedium.opacity(0.3))
-                .overlay(
-                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                        .stroke(
-                            reward.isEnabled.wrappedValue ? Color.successGreen.opacity(0.3) : Color.textSecondary.opacity(0.2),
-                            lineWidth: 1
-                        )
+                .stroke(
+                    reward.isEnabled.wrappedValue ? Color.successGreen.opacity(0.3) : Color.textSecondary.opacity(0.2),
+                    lineWidth: 1
                 )
         )
         .padding(.horizontal, Spacing.screenPadding)
@@ -2572,8 +2531,7 @@ struct AddRewardModal: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .growWarm)
 
                 ScrollView {
                     VStack(spacing: Spacing.l) {
@@ -2602,7 +2560,7 @@ struct AddRewardModal: View {
                             TextField(localizationManager.localized("child_rewards_shop_field_name_placeholder"), text: $title)
                                 .textFieldStyle(.plain)
                                 .padding(Spacing.m)
-                                .background(Color.backgroundMedium.opacity(0.5))
+                                .stormGlassCard(cornerRadius: CornerRadius.medium)
                                 .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
                         }
 
@@ -2613,7 +2571,7 @@ struct AddRewardModal: View {
                             TextField(localizationManager.localized("child_rewards_shop_field_description_placeholder"), text: $desc)
                                 .textFieldStyle(.plain)
                                 .padding(Spacing.m)
-                                .background(Color.backgroundMedium.opacity(0.5))
+                                .stormGlassCard(cornerRadius: CornerRadius.medium)
                                 .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
                         }
 
@@ -2625,7 +2583,7 @@ struct AddRewardModal: View {
                                 .textFieldStyle(.plain)
                                 .keyboardType(.numberPad)
                                 .padding(Spacing.m)
-                                .background(Color.backgroundMedium.opacity(0.5))
+                                .stormGlassCard(cornerRadius: CornerRadius.medium)
                                 .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
                         }
 
@@ -2699,8 +2657,7 @@ struct EditRewardModal: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .growWarm)
 
                 ScrollView {
                     VStack(spacing: Spacing.l) {
@@ -2729,7 +2686,7 @@ struct EditRewardModal: View {
                             TextField(localizationManager.localized("child_rewards_shop_field_name_placeholder"), text: $title)
                                 .textFieldStyle(.plain)
                                 .padding(Spacing.m)
-                                .background(Color.backgroundMedium.opacity(0.5))
+                                .stormGlassCard(cornerRadius: CornerRadius.medium)
                                 .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
                         }
 
@@ -2740,7 +2697,7 @@ struct EditRewardModal: View {
                             TextField(localizationManager.localized("child_rewards_shop_field_description_placeholder"), text: $desc)
                                 .textFieldStyle(.plain)
                                 .padding(Spacing.m)
-                                .background(Color.backgroundMedium.opacity(0.5))
+                                .stormGlassCard(cornerRadius: CornerRadius.medium)
                                 .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
                         }
 
@@ -2752,7 +2709,7 @@ struct EditRewardModal: View {
                                 .textFieldStyle(.plain)
                                 .keyboardType(.numberPad)
                                 .padding(Spacing.m)
-                                .background(Color.backgroundMedium.opacity(0.5))
+                                .stormGlassCard(cornerRadius: CornerRadius.medium)
                                 .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
                         }
 

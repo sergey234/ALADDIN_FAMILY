@@ -10,6 +10,8 @@ struct WellnessPremiumPaywallSheet: View {
 
     var body: some View {
         WellnessNavigationStack {
+            ZStack {
+                StormMeshBackground(variant: .premium)
             VStack(alignment: .leading, spacing: 16) {
                 Text(localizationManager.localized("wellness_premium_title"))
                     .font(.title2.bold())
@@ -35,6 +37,7 @@ struct WellnessPremiumPaywallSheet: View {
                 .frame(maxWidth: .infinity)
             }
             .padding()
+            }
             .navigationTitle(localizationManager.localized("wellness_premium_title"))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {

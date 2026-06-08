@@ -60,6 +60,41 @@ extension Color {
     static let gradientStart = Color(hex: "#0a1128")
     static let gradientMiddle = Color(hex: "#1e3a5f")
     static let gradientEnd = Color(hex: "#2e5090")
+
+    // MARK: - Storm Mesh (грозовое небо + золото)
+
+    /// Ночное небо — база всех mesh-фонов
+    static let stormBase = Color(hex: "#070B14")
+
+    /// = backgroundDark
+    static let stormDeep = Color(hex: "#0F172A")
+
+    /// Blob «облако»
+    static let stormCloud = Color(hex: "#1E293B")
+
+    /// Грозовой indigo
+    static let stormIndigo = Color(hex: "#312E81")
+
+    /// Семья / воспитание
+    static let stormViolet = Color(hex: "#4C1D95")
+
+    /// Обучение детей (Grow)
+    static let stormTeal = Color(hex: "#0D9488")
+
+    /// AI, analytics
+    static let stormLightning = Color(hex: "#6366F1")
+
+    /// = secondaryGold
+    static let goldPrimary = Color(hex: "#F59E0B")
+
+    /// Blob под header (~18% в mesh)
+    static let goldSoft = Color(hex: "#F59E0B").opacity(0.18)
+
+    /// Elderly 60+, warm companion
+    static let goldWarm = Color(hex: "#D97706")
+
+    /// Child growWarm base (~8% светлее stormBase)
+    static let stormGrowWarmBase = Color(hex: "#0C1220")
     
     // MARK: - Text Colors
     

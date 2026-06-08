@@ -43,9 +43,8 @@ struct DevicesScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            // Фон — Storm Mesh shield light (Batch 3, режим C)
+            StormMeshBackground(variant: .shield)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Фон экрана устройств")
             
@@ -190,8 +189,7 @@ struct DevicesScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
     }
     
     // MARK: - Device Filters (Раздвигающиеся секции как в SupportScreen)
@@ -211,8 +209,7 @@ struct DevicesScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
     }
     
     private func filterSection(filter: DeviceFilter) -> some View {
@@ -296,10 +293,7 @@ struct DevicesScreen: View {
                 .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
     
     private func filterIcon(_ filter: DeviceFilter) -> String {
@@ -380,8 +374,7 @@ struct DevicesScreen: View {
             }
         }
         .padding(Spacing.cardPadding)
-        .background(cardBackground)
-        .cardShadow()
+        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
     }
     
     // MARK: - Functions
@@ -501,14 +494,6 @@ struct DevicesScreen: View {
         }
     }
     
-    private var cardBackground: some View {
-        RoundedRectangle(cornerRadius: CornerRadius.large)
-            .fill(Color.backgroundMedium.opacity(0.5))
-            .overlay(
-                RoundedRectangle(cornerRadius: CornerRadius.large)
-                    .stroke(Color.white.opacity(0.1), lineWidth: 1)
-            )
-    }
 }
 
 // MARK: - Device Card
@@ -556,10 +541,7 @@ struct DeviceCard: View {
             .accessibilityLabel("Статус: \(device.status.localizedName(localizationManager))")
         }
         .padding(Spacing.m)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .fill(Color.backgroundMedium.opacity(0.3))
-        )
+        .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .stormIndigo)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("Устройство \(device.name), владелец \(device.owner), статус \(device.status.localizedName(localizationManager))")
     }
@@ -708,9 +690,7 @@ struct AddDeviceView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                // Фон
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .shield)
                 
                 ScrollView {
                     VStack(spacing: Spacing.l) {
@@ -812,14 +792,7 @@ struct AddDeviceView: View {
                             }
                         }
                         .padding(Spacing.cardPadding)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.large)
-                                .fill(Color.backgroundMedium.opacity(0.5))
-                                .overlay(
-                                    RoundedRectangle(cornerRadius: CornerRadius.large)
-                                        .stroke(Color.white.opacity(0.1), lineWidth: 1)
-                                )
-                        )
+                        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
                         .padding(.horizontal, Spacing.screenPadding)
                         
                         // Кнопка добавления

@@ -22,8 +22,7 @@ struct PhishingProtectionSettingsScreen: View {
 
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .shield)
 
             VStack(spacing: 0) {
                 ALADDINNavigationBar(

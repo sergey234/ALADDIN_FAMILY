@@ -77,6 +77,43 @@ Mesh-variants отражают все пять (см. §4, §5 Batch 9).
 
 **Формула Lazyweb + before.click → ALADDIN:** см. **§9.1–9.2** (обязательно для агента).
 
+### 1.5.1 Light Premium — согласовано продуктом (2026-06-09)
+
+> **Эталон:** `01_MainScreen` + `StormMeshBackground(.hub)` v1.2 + `StormGlassCardStyle` frost v1.2.  
+> **Жёсткое правило:** **ни один in-app экран не темнее Main.** Только светлее или равно.  
+> **Цель:** грозовой matte premium (indigo + gold + стекло), **не** «тёмное приложение» и **не** чёрный void.
+
+**Формула (дополнение к §9):**
+```
+Lazyweb (glass + mesh mood) + before.click (navy + gold бренд)
++ Light Premium Rule (≤ Main v1.2 brightness)
+= ALADDIN единый premium
+```
+
+**Premium Layer (на все экраны):**
+| Слой | Компонент | Обязательно |
+|------|-----------|-------------|
+| Стекло | `.stormGlassCard()` — frost + gold rim 38% + shadow | ✅ **всегда** |
+| Фон | Режим A / B / C (ниже) | ✅ по матрице §4 |
+| Тексты / layout | freeze | ❌ не менять |
+
+**Три режима фона:**
+
+| Режим | Когда | Фон | Примеры |
+|-------|-------|-----|---------|
+| **A — Storm Light** | Hub, support, entry | `.hub` v1.2 (atmosphere + blobs + scrim ≤28%) | 01_Main, 13_Support |
+| **B — Chrome Only** | Forms, legal, часть Wellness | Приглушённый legacy gradient **или** flat light + **только glass** | 18/19 legal, Wellness PHQ/forms |
+| **C — Mood mesh light** | Family, child, tariffs, shield… | `.family` / `.premium` / `.shield`… с калибровкой v1.2 (atmosphere, scrim ≤30%, видимые indigo/gold blobs) | 02, 10, 03, 08… |
+
+**Mesh Light Calibration (перед каждым экраном режима A/C):**
+- [ ] База ≥ `stormDeep`, не `stormBase` без atmosphere
+- [ ] Не использовать `stormCloud` на тёмной базе как единственный blob
+- [ ] Scrim ≤ 30%, старт с y ≥ 0.65
+- [ ] Видимые blobs: indigo / gold / lightning (не только violet снизу)
+- [ ] Визуально **не темнее** эталона Main на симуляторе
+
+**Lazyweb / before.click — что добавляем:** см. **§9** + `docs/STORM_MESH_AGENT_CONTINUE.md` §«Ресурсы».
+
 ### Что НЕ входит в этот проект
 
 - Смена текстов / copy / тарифных названий
@@ -499,6 +536,51 @@ ZStack {
 
 **Правило для любого экрана не из таблицы (Batch 5c):** ближайший variant по домену — Shield→`.shield`, Family flow→`.family`, Child/Game/Learn→`.growWarm`, Pay→`.premium`, Legal→`.legal`, Care/60+→`.warm`, default→`.neutral`.
 
+### 4.2 Light Premium — матрица по каждому экрану (§1.5.1)
+
+> **Режим:** A = Storm Light (`.hub` v1.2) · B = Chrome Only (фон light/legacy + glass) · C = Mood mesh light (variant + calibration) · **—** = freeze  
+> **Статус:** ✅ done · ⏳ pending · ❌ skip  
+> **Правило:** ни один экран **не темнее** `01_MainScreen` v1.2
+
+| # | File | Variant | Mode | Glass | Статус | Исключения / Lazyweb+before.click |
+|---|------|---------|------|-------|--------|-----------------------------------|
+| 01 | `01_MainScreen.swift` | `.hub` v1.2 | A | grid+chat | ✅ | Family tariff gradient **не менять** |
+| 02 | `02_FamilyScreen.swift` | `.family` light | C | Yes | ✅ | Life360 roster mood |
+| 03 | `03_NetworkProtectionScreen.swift` | `.shield` light | C | Yes+accent | ✅ | Norton VPN; shield **без gold** на strip |
+| 04 | `04_AnalyticsScreen.swift` | `.data` light | C | Yes | ✅ | Banking stats |
+| 05 | `05_SettingsScreen.swift` | `.neutral` light | C | rows opt. | ✅ | iOS Settings calm |
+| 06 | `06_AIAssistantScreen.swift` | `.ai` light | C | input bar | ✅ | ChatGPT home; ASO AI slide |
+| 07 | `07_ParentalControlScreen.swift` | `.grow` light | C | Yes | ✅ | Qustodio trust |
+| 08 | `08_ChildInterfaceScreen.swift` | `.growWarm` light | C | Yes | ✅ | Khan Kids warmth |
+| 09 | `09_ElderlyInterfaceScreen.swift` | `.warm` light | C | Yes | ✅ | Calm large-type; CTA gradients freeze |
+| 10 | `10_TariffsScreen.swift` | `.premium` light | C | plan cards | ✅ | Headspace **chrome**, не dark void |
+| 11 | `11_ProfileScreen.swift` | `.neutral` light | C | opt. | ✅ | Revolut profile |
+| 12 | `12_NotificationsScreen.swift` | `.neutral` light | C | list | ✅ | — |
+| 13 | `13_SupportScreen.swift` | `.hub` v1.2 | A | Yes | ✅ | Intercom premium |
+| 14 | `14_OnboardingScreen.swift` | — | — | — | ❌ | **Freeze** OB_00–07 |
+| 18 | `18_PrivacyPolicyScreen.swift` | `.legal` | B | chrome | ✅ | flat light + readability |
+| 19 | `19_TermsOfServiceScreen.swift` | `.legal` | B | chrome | ✅ | flat light |
+| 20 | `20_DevicesScreen.swift` | `.shield` light | C | Yes | ✅ | Find My; ASO devices |
+| 21 | `21_ReferralScreen.swift` | `.premium` light | C | Yes | ✅ | Fintech referral |
+| 22 | `22_DeviceDetailScreen.swift` | `.shield` light | C | Yes+accent | ✅ | Device detail |
+| 23 | `23_FamilyChatScreen.swift` | `.family` light | C | composer | ✅ | **Bubbles не менять** |
+| 24 | `24_NetworkProtectionEnergyStatsScreen.swift` | `.shield` light | C | Yes+accent | ✅ | Usage UI |
+| 25 | `25_PaymentQRScreen.swift` | `.premium` light | C | Yes | ✅ | Fintech pay |
+| 26 | `26_ActivationCodeScreen.swift` | `.premium` light | C | Yes | ✅ | Redeem flow |
+| 27 | `27_ProtectionStatsScreen.swift` | `.data` light | C | Yes | ✅ | Stats |
+| 28 | `28_JoinDeviceScreen.swift` | `.family` light | C | Yes | ✅ | Invite warm |
+
+**Улучшения компонентов (согласовано):**
+
+| Версия | Что | Файл | Статус |
+|--------|-----|------|--------|
+| hub v1.0 | Первый mesh на Main | `StormMeshBackground` | заменён |
+| hub v1.1 | Золотой просвет blobs | `StormMeshBackground` | заменён |
+| **hub v1.2** | atmosphere + indigo/lightning/gold + scrim 28% | `StormMeshBackground` | ✅ **эталон** |
+| glass v1.2 | frost + indigo tint + rim + dual shadow | `StormGlassCardStyle` | ✅ |
+| §1.5.1 | Light Premium rule, режимы A/B/C | handoff | ✅ |
+| variants cal. | `.premium`/`.family`/`.shield` light | `StormMeshBackground` | ✅ |
+
 ---
 
 ## 4.1 Batch 9 — «Хвост экранов» (обязательно, иначе швы −10–15%)
@@ -546,33 +628,35 @@ ZStack {
 
 ### Batch 1 — Tier 1 (first impression)
 - [ ] **SCREEN-SAFE PRE/POST** на каждый файл (§1.7)
-- [ ] `01_MainScreen.swift` → `.hub` + glass grid cards
-- [ ] `10_TariffsScreen.swift` → `.premium`
-- [ ] `02_FamilyScreen.swift` → `.family`
+- [x] `01_MainScreen.swift` → режим **A** `.hub` v1.2 + glass (§4.2 ✅)
+- [x] `10_TariffsScreen.swift` → режим **C** `.premium` light + glass
+- [x] `02_FamilyScreen.swift` → режим **C** `.family` light + glass
 
 ### Batch 2 — Tier 2 (mission: Shield + Grow)
-- [ ] `07_ParentalControlScreen.swift` → `.grow`
-- [ ] `08_ChildInterfaceScreen.swift` → `.growWarm`
-- [ ] `03_NetworkProtectionScreen.swift` → `.shield` + accent strips
+- [x] `07_ParentalControlScreen.swift` → `.grow`
+- [x] `08_ChildInterfaceScreen.swift` → `.growWarm`
+- [x] `03_NetworkProtectionScreen.swift` → `.shield` + accent strips
 
 ### Batch 3 — Tier 3 (daily)
-- [ ] `06_AIAssistantScreen.swift` → `.ai`
-- [ ] `20_DevicesScreen.swift` + `22_DeviceDetailScreen.swift` → `.shield`
-- [ ] `04_AnalyticsScreen.swift` + `27_ProtectionStatsScreen.swift` → `.data`
-- [ ] `23_FamilyChatScreen.swift` → `.family`
+- [x] `06_AIAssistantScreen.swift` → `.ai`
+- [x] `20_DevicesScreen.swift` → `.shield`
+- [x] `22_DeviceDetailScreen.swift` → `.shield`
+- [x] `04_AnalyticsScreen.swift` + `27_ProtectionStatsScreen.swift` → `.data`
+- [x] `23_FamilyChatScreen.swift` → `.family`
 
 ### Batch 4 — Tier 4 (profile & service)
-- [ ] `11_ProfileScreen.swift` + `05_SettingsScreen.swift` → `.neutral`
-- [ ] `13_SupportScreen.swift` → `.hub`; `12_NotificationsScreen.swift` → `.neutral`
-- [ ] `09_ElderlyInterfaceScreen.swift` → `.warm`
-- [ ] `21_ReferralScreen.swift` → `.premium`
+- [x] `11_ProfileScreen.swift` + `05_SettingsScreen.swift` → `.neutral`
+- [x] `13_SupportScreen.swift` → `.hub`
+- [x] `12_NotificationsScreen.swift` → `.neutral`
+- [x] `09_ElderlyInterfaceScreen.swift` → `.warm`
+- [x] `21_ReferralScreen.swift` → `.premium`
 
 ### Batch 5 — Tier 5 (transactional & legal)
-- [ ] `24_NetworkProtectionEnergyStatsScreen.swift` → `.shield`
-- [ ] `25_PaymentQRScreen.swift` → `.premium`
-- [ ] `26_ActivationCodeScreen.swift` → `.premium`
-- [ ] `28_JoinDeviceScreen.swift` → `.family`
-- [ ] `18_PrivacyPolicyScreen.swift` + `19_TermsOfServiceScreen.swift` → `.legal`
+- [x] `24_NetworkProtectionEnergyStatsScreen.swift` → `.shield`
+- [x] `25_PaymentQRScreen.swift` → `.premium`
+- [x] `26_ActivationCodeScreen.swift` → `.premium`
+- [x] `28_JoinDeviceScreen.swift` → `.family`
+- [x] `18_PrivacyPolicyScreen.swift` + `19_TermsOfServiceScreen.swift` → `.legal`
 
 ### Batch 6 — Premium polish (**ОБЯЗАТЕЛЕН — без него только ~78% premium, см. §1.6**)
 - [ ] Grep: удалить все `Color.blue.opacity` / старые LinearGradient фоны на listed screens
@@ -782,8 +866,11 @@ Lazyweb                    before.click              ALADDIN
 | 2026-06-09 | §4.1 + Batch 9: Companion, Wellness split warm/neutral, Games, Learn |
 | 2026-06-09 | Продукт 5 столпов: Shield+Family+Grow+Play+Learn |
 | 2026-06-09 | Batch 7: iPad, Reduce Motion, grep all Screens/ |
+| 2026-06-09 | §1.5.1 Light Premium: Main v1.2 = потолок темноты; режимы A/B/C; glass везде |
+| 2026-06-09 | `.hub` v1.2: atmosphere layer, frost glass, indigo+gold+lightning blobs |
+| 2026-06-09 | Продукт: in-app светлее ASO; не «тёмное приложение», matte storm premium |
 
 ---
 
 **Конец handoff.**  
-Следующий шаг: `Batch 0` → затем `Batch 1a (01_MainScreen)`.
+**Эталон:** Main v1.2 ✅ · **Следующий шаг:** Batch 1b `10_TariffsScreen` (режим C `.premium` light + glass).

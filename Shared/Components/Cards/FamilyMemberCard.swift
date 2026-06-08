@@ -202,12 +202,11 @@ struct FamilyMemberCard: View {
             .frame(height: 90)
             .frame(maxWidth: .infinity)
             .padding(8)
-            .background(Color(red: 0.96, green: 0.62, blue: 0.04).opacity(0.1))
+            .stormGlassCard(cornerRadius: 10)
             .overlay(
                 RoundedRectangle(cornerRadius: 10)
                     .stroke(Color(red: 0.96, green: 0.62, blue: 0.04), lineWidth: 2)
             )
-            .clipShape(RoundedRectangle(cornerRadius: 10))
             }
             
             // ✅ УЛУЧШЕНИЕ ШАГА 1: Надёжная внешняя кнопка удаления (единственная)

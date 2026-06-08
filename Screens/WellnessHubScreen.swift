@@ -44,12 +44,7 @@ struct WellnessHubScreen: View {
 
     var body: some View {
         ZStack {
-            LinearGradient(
-                colors: [Color(hex: "1E1B4B"), Color(hex: "4C1D95"), Color(hex: "312E81")],
-                startPoint: .topLeading,
-                endPoint: .bottomTrailing
-            )
-            .ignoresSafeArea()
+            StormMeshBackground(variant: .warm)
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
@@ -190,7 +185,7 @@ struct WellnessHubScreen: View {
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.9))
                 .padding(10)
-                .background(Color.white.opacity(0.1))
+                .stormGlassCard(cornerRadius: CornerRadius.medium)
                 .cornerRadius(12)
         }
         if recap?.outcomeDue == true, let reminder = recap?.outcomeReminder {
@@ -368,7 +363,7 @@ struct WellnessHubScreen: View {
             }
         }
         .padding(12)
-        .background(Color.white.opacity(0.1))
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .cornerRadius(12)
         .accessibilityIdentifier("wellness_family_themes_card")
     }
@@ -440,7 +435,7 @@ struct WellnessHubScreen: View {
             }
         }
         .padding(10)
-        .background(Color.white.opacity(0.1))
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
         .cornerRadius(12)
     }
 
@@ -483,7 +478,7 @@ struct WellnessHubScreen: View {
             }
             .frame(maxWidth: .infinity, minHeight: 110, alignment: .topLeading)
             .padding(14)
-            .background(Color.white.opacity(0.12))
+            .stormGlassCard(cornerRadius: CornerRadius.medium)
             .overlay(
                 RoundedRectangle(cornerRadius: 16)
                     .stroke(Color.white.opacity(0.25), lineWidth: 1)

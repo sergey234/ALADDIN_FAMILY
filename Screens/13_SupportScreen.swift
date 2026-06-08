@@ -148,9 +148,8 @@ struct SupportScreen: View {
     
     var body: some View {
         ZStack {
-            // Фон
-            LinearGradient(colors: [Color.blue.opacity(0.8), Color.purple.opacity(0.6)], startPoint: .topLeading, endPoint: .bottomTrailing)
-                .ignoresSafeArea()
+            // Фон — Storm Mesh hub light (Batch 3, режим A)
+            StormMeshBackground(variant: .hub)
                 .accessibilityElement()
                 .accessibilityLabel(localizationManager.localized("support_background"))
             
@@ -251,10 +250,8 @@ struct SupportScreen: View {
                 .accessibilityHint(localizationManager.localized("support_search_hint"))
         }
         .padding()
-        .background(Color.gray.opacity(0.3))
-        .cornerRadius(8)
+        .stormGlassCard(cornerRadius: 8)
         .padding(.horizontal, 20)
-        .cardShadow()
         .accessibilityElement(children: .combine)
         .accessibilityLabel(localizationManager.localized("support_search_label"))
     }
@@ -332,17 +329,13 @@ struct SupportScreen: View {
                     .accessibilityLabel(localizationManager.localized("support_go"))
             }
             .padding(12)
-            .background(
+            .stormGlassCard(cornerRadius: 8)
+            .overlay(
                 RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.gray.opacity(0.3))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 8)
-                            .stroke(color.opacity(0.3), lineWidth: 1)
-                    )
+                    .stroke(color.opacity(0.3), lineWidth: 1)
             )
         }
         .buttonStyle(PlainButtonStyle())
-        .cardShadow()
         .appGlassmorphism()
         .accessibilityLabel("\(title): \(subtitle)")
         .accessibilityHint(String(format: localizationManager.localized("support_tap_hint"), title.lowercased()))
@@ -396,17 +389,13 @@ struct SupportScreen: View {
                         .foregroundColor(.red)
                 }
                 .padding(12)
-                .background(
+                .stormGlassCard(cornerRadius: 8)
+                .overlay(
                     RoundedRectangle(cornerRadius: 8)
-                        .fill(Color.gray.opacity(0.3))
-                        .overlay(
-                            RoundedRectangle(cornerRadius: 8)
-                                .stroke(Color.red.opacity(0.3), lineWidth: 1)
-                        )
+                        .stroke(Color.red.opacity(0.3), lineWidth: 1)
                 )
             }
             .buttonStyle(PlainButtonStyle())
-            .cardShadow()
             .padding(.horizontal, 20)
         }
         .sheet(isPresented: $showRoadsideAssistance) {
@@ -514,11 +503,7 @@ struct SupportScreen: View {
             }
         }
         .padding(12)
-        .background(
-            RoundedRectangle(cornerRadius: 8)
-                .fill(Color.gray.opacity(0.3))
-        )
-        .cardShadow()
+        .stormGlassCard(cornerRadius: 8)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(String(format: localizationManager.localized("support_faq_item"), item.wrappedValue.question))
     }

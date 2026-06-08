@@ -64,8 +64,7 @@ struct UnicornPetView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .growWarm)
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Фон экрана питомца-единорога")
             
@@ -150,12 +149,7 @@ struct UnicornPetView: View {
                 .accessibilityLabel(String(format: localizationManager.localized("unicorn_pet_stage"), getLocalizedEvolutionStage(evolutionStage)))
         }
         .padding(Spacing.l)
-        .background(
-            RoundedRectangle(cornerRadius: CornerRadius.xl)
-                .fill(Color.backgroundMedium.opacity(0.5))
-        )
-        .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
-        .appGlassmorphism()
+        .stormGlassCard(cornerRadius: CornerRadius.xl)
         .padding(.horizontal, Spacing.screenPadding)
         .accessibilityElement(children: .contain)
         .accessibilityLabel("Карточка питомца единорога")
@@ -299,11 +293,7 @@ struct UnicornPetView: View {
             }
             .frame(maxWidth: .infinity)
             .padding(Spacing.m)
-            .background(
-                RoundedRectangle(cornerRadius: 8)
-                    .fill(Color.backgroundMedium.opacity(0.5))
-            )
-            .shadow(color: Color.black.opacity(0.1), radius: 8, x: 0, y: 4)
+            .stormGlassCard(cornerRadius: 8)
         }
         .buttonStyle(PlainButtonStyle())
         .accessibilityLabel("\(title) - \(cost)")

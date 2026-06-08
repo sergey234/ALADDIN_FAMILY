@@ -326,8 +326,7 @@ struct YoungDefenderView: View {
     
     var body: some View {
         ZStack {
-            LinearGradient.backgroundGradient
-                .ignoresSafeArea()
+            StormMeshBackground(variant: .growWarm)
             
             VStack(spacing: 0) {
                 // Header с кнопкой "← Назад"
@@ -635,8 +634,7 @@ struct QuizView: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .growWarm)
 
                 CelebrationParticleBurstView(kind: .correctAnswerStars, active: starBurstActive, onFinished: { starBurstActive = false })
                     .ignoresSafeArea()

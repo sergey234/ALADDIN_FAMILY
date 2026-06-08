@@ -39,8 +39,7 @@ struct RewardsQuickModal: View {
     var body: some View {
         NavigationView {
             ZStack {
-                LinearGradient.backgroundGradient
-                    .ignoresSafeArea()
+                StormMeshBackground(variant: .growWarm)
                 
                 if isUserParent {
                     VStack(spacing: Spacing.l) {
@@ -59,9 +58,10 @@ struct RewardsQuickModal: View {
                         }
                         .frame(maxWidth: .infinity)
                         .padding(Spacing.l)
-                        .background(
+                        .stormGlassCard(cornerRadius: CornerRadius.large)
+                        .overlay(
                             RoundedRectangle(cornerRadius: CornerRadius.large)
-                                .fill(Color(hex: "A855F7").opacity(0.15))
+                                .stroke(Color(hex: "A855F7").opacity(0.4), lineWidth: 2)
                         )
                         .padding(.horizontal, Spacing.screenPadding)
                         

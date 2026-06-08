@@ -33,6 +33,8 @@ struct ChildContentExperienceScreen: View {
 
     var body: some View {
         NavigationView {
+            ZStack {
+                StormMeshBackground(variant: .growWarm)
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     headerCard
@@ -144,7 +146,7 @@ struct ChildContentExperienceScreen: View {
                 }
                 .padding(16)
             }
-            .background(Color.black.opacity(0.03))
+            }
             .dynamicTypeSize(.small ... .accessibility3)
             .navigationTitle(resolvedItemTitle)
             .navigationBarTitleDisplayMode(.inline)
@@ -185,10 +187,7 @@ struct ChildContentExperienceScreen: View {
             Spacer()
         }
         .padding(14)
-        .background(
-            RoundedRectangle(cornerRadius: 12)
-                .fill(Color.white)
-        )
+        .stormGlassCard(cornerRadius: 12)
         .accessibilityElement(children: .combine)
         .accessibilityIdentifier("child_experience_header_card")
     }
