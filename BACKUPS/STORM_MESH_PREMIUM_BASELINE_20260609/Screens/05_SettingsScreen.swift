@@ -1,0 +1,943 @@
+import SwiftUI
+import Combine
+
+// Master Logger for UI logging
+private let logger = MasterLogger.shared
+
+// AppCoordinator is accessed via shared instance
+
+// Spacing is imported from Shared/Styles/Spacing.swift
+
+typealias Language = String
+
+/// ⚙️ Settings Screen - MVVM ВЕРСИЯ БЕЗ КРАШЕЙ
+/// Экран настроек - управление приложением и профилем
+/// Источник дизайна: /mobile/wireframes/05_settings_screen.html
+struct SettingsScreen: View {
+    private enum HomeChatDefaultMode: String, CaseIterable {
+        case family
+        case ai
+        case last
+        case smart
+
+        func localizedTitle(_ localizationManager: LocalizationManager) -> String {
+            switch self {
+            case .family: return localizationManager.localized("settings_home_chat_mode_family")
+            case .ai: return localizationManager.localized("settings_home_chat_mode_ai")
+            case .last: return localizationManager.localized("settings_home_chat_mode_last")
+            case .smart: return localizationManager.localized("settings_home_chat_mode_smart")
+            }
+        }
+    }
+
+    @StateObject private var viewModel: SettingsViewModel
+    /// Singleton: только наблюдаем, не владеем через @StateObject (избегаем лишних objectWillChange / lock contention).
+    @ObservedObject private var syncEngine = SyncEngine.shared
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @State private var showVoiceNotesScreen: Bool = false
+
+    // ✅ BUILD 95: Встроенный просмотр логов крашей/диагностики прямо на устройстве
+    @State private var showCrashLogsView: Bool = false
+    @AppStorage("home_chat_default_mode") private var homeChatDefaultModeRaw: String = HomeChatDefaultMode.last.rawValue
+    @AppStorage(AppConfig.UserDefaultsKeys.aiDataSharingEnabled) private var aiDataSharingEnabled: Bool = false
+
+    // ✅ BUILD 100: Убран testLogger из struct - логирование перемещено в .onAppear
+    // Это предотвращает избыточное логирование при пересоздании View
+
+    // Конструктор с dependency injection
+    init(viewModel: SettingsViewModel) {
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
+
+    // Удобный конструктор для создания с mock сервисами
+    init() {
+        let viewModel = SettingsViewModel()
+        _viewModel = StateObject(wrappedValue: viewModel)
+    }
+    
+    // MARK: - Environment
+
+    @Environment(\.dismiss) private var dismiss
+
+    private var settingsSyncState: SyncState {
+        syncEngine.latestStateByDomain[.settings] ?? .idle
+    }
+
+    private var settingsSyncStatusTitle: String {
+        settingsSyncState.localizedTitle(using: localizationManager)
+    }
+
+    private var settingsSyncStatusColor: Color {
+        settingsSyncState.statusColor
+    }
+
+    // MARK: - UI Sections
+
+    /// Единый стиль групп строк (все секции Настроек).
+    private var settingsGroupedCardBackground: some View {
+        RoundedRectangle(cornerRadius: 12)
+            .fill(Color.secondary.opacity(0.05))
+    }
+
+    private var navigationHeader: some View {
+        ALADDINNavigationBar(
+            title: viewModel.localizedStrings.settingsTitle,
+            subtitle: viewModel.localizedStrings.settingsSubtitle,
+            showBackButton: true,
+            onBack: {
+                // Всегда на главную через NavigationManager (не dismiss NavigationLink — иначе MainScreen.task → онбординг).
+                if navigationManager.currentScreen == .settings {
+                    navigationManager.switchToMainScreen()
+                } else if navigationManager.canGoBack {
+                    navigationManager.goBack(reason: "settings_back")
+                } else {
+                    navigationManager.switchToMainScreen()
+                }
+            }
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel(viewModel.localizedStrings.settingsAccessibilityNavbar)
+    }
+    
+    private var profileSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(viewModel.localizedStrings.profileSection)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.textPrimary)
+                .padding(.bottom, Spacing.xs)
+                .accessibilityAddTraits(.isHeader)
+
+            // Profile Card
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(Color.secondary.opacity(0.05))
+
+                VStack(spacing: Spacing.m) {
+                    // Avatar and Name
+            HStack(spacing: Spacing.m) {
+                        ZStack {
+                Circle()
+                                .fill(Color.blue.opacity(0.2))
+                    .frame(width: 60, height: 60)
+
+                        Text(userInitial)
+                                .font(.title)
+                                .fontWeight(.bold)
+                                .foregroundColor(.blue)
+                        }
+                        .accessibilityLabel(viewModel.localizedStrings.profileAvatarAccessibility)
+                
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(userName)
+                                .font(.headline)
+                                .foregroundColor(.textPrimary)
+                                .accessibilityLabel(String(format: viewModel.localizedStrings.profileNameAccessibilityFormat, userName))
+                    
+                    Text(userAlias)
+                                .font(.subheadline)
+                                .foregroundColor(.textSecondary)
+                                .accessibilityLabel(String(format: viewModel.localizedStrings.profileEmailAccessibilityFormat, userAlias))
+
+                            Text(viewModel.localizedStrings.profileStatus)
+                        .font(.caption)
+                                .foregroundColor(.textSecondary)
+                                .accessibilityLabel(String(format: viewModel.localizedStrings.profileStatusAccessibilityFormat, viewModel.localizedStrings.profileStatus))
+                }
+                
+                Spacer()
+                    }
+                
+                    // Edit Button
+                Button(action: {
+                        print("🧪 DIRECT PRINT: Edit Profile button tapped")
+                        logger.buttonTap("Edit Profile", screen: "Settings")
+                        print("🧪 DIRECT PRINT: Logger called for Edit Profile")
+                        viewModel.showProfileEdit = true
+                    }) {
+                        HStack {
+                            Text(viewModel.localizedStrings.settingsProfileEditAccessibility)
+                                .fontWeight(.medium)
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundColor(.textSecondary)
+                        }
+                        .foregroundColor(.textPrimary)
+                        .padding(.vertical, Spacing.s)
+                    }
+                    .accessibilityLabel(viewModel.localizedStrings.settingsProfileEditAccessibility)
+                }
+                .padding(Spacing.m)
+            }
+        }
+    }
+
+    private var userInitial: String {
+        viewModel.displayName.isEmpty ? "?" : String(viewModel.displayName.prefix(1).uppercased())
+    }
+
+    private var userName: String {
+        viewModel.displayName.isEmpty ? viewModel.localizedStrings.profileNamePlaceholder : viewModel.displayName
+    }
+
+    private var userAlias: String {
+        viewModel.displayAlias.isEmpty ? viewModel.localizedStrings.profileEmailPlaceholder : viewModel.displayAlias
+    }
+
+    private var securitySection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(viewModel.localizedStrings.securitySection)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.textPrimary)
+                .padding(.bottom, Spacing.xs)
+                .accessibilityAddTraits(.isHeader)
+
+            VStack(spacing: 0) {
+                // Network Protection
+                settingRow(
+                    icon: "shield.fill",
+                    title: viewModel.localizedStrings.networkProtectionProtection,
+                    subtitle: viewModel.localizedStrings.networkProtectionProtectionSubtitle,
+                    isEnabled: $viewModel.isNetworkProtectionEnabled
+                )
+
+                Divider()
+
+                // Biometric Auth
+                settingRow(
+                    icon: "faceid",
+                    title: viewModel.localizedStrings.biometricAuth,
+                    subtitle: viewModel.localizedStrings.biometricAuthSubtitle,
+                    isEnabled: $viewModel.isBiometricEnabled,
+                    isBiometric: true
+                )
+                
+                Divider()
+
+                settingRow(
+                    icon: "brain.head.profile",
+                    title: localizationManager.localized("ai_data_sharing_title"),
+                    subtitle: localizationManager.localized("ai_data_sharing_subtitle_extended"),
+                    isEnabled: $aiDataSharingEnabled
+                )
+
+                Divider()
+
+                // Protection Level
+                            HStack {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(viewModel.localizedStrings.protectionLevel)
+                            .font(.headline)
+                            .foregroundColor(.textPrimary)
+
+                        Text(String(format: viewModel.localizedStrings.settingsProtectionLevelValueFormat, Int(viewModel.cachedProtectionLevel)))
+                            .font(.subheadline)
+                            .foregroundColor(.textSecondary)
+
+                        Text(viewModel.cachedProtectionLevelText)
+                            .font(.caption)
+                            .foregroundColor(viewModel.cachedProtectionColor)
+                    }
+
+                    Spacer()
+                                
+                                Button(action: {
+                        viewModel.showProtectionExplanation = true
+                                }) {
+                                    Image(systemName: "info.circle")
+                            .foregroundColor(.textSecondary)
+                    }
+                }
+                .padding(Spacing.m)
+                .accessibilityLabel(viewModel.localizedStrings.settingsProtectionLevelAccessibility)
+
+                Divider()
+
+                appNavigationRow(
+                    icon: "gearshape.2.fill",
+                    title: viewModel.localizedStrings.settingsAdvancedSettings,
+                    subtitle: localizationManager.localized("settings_advanced_subtitle")
+                ) {
+                    logger.buttonTap("Advanced Protection", screen: "Settings")
+                    viewModel.showAdvancedProtection = true
+                }
+            }
+            .background(settingsGroupedCardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    private var notificationsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(viewModel.localizedStrings.notificationsSection)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.textPrimary)
+                .padding(.bottom, Spacing.xs)
+                .accessibilityAddTraits(.isHeader)
+
+            VStack(spacing: 0) {
+                settingRow(
+                    icon: "bell.fill",
+                    title: viewModel.localizedStrings.pushNotifications,
+                    subtitle: viewModel.localizedStrings.pushNotificationsSubtitle,
+                    isEnabled: $viewModel.securityEnabled
+                )
+
+                Divider()
+
+                settingRow(
+                    icon: "speaker.wave.2.fill",
+                    title: viewModel.localizedStrings.soundNotifications,
+                    subtitle: viewModel.localizedStrings.soundNotificationsSubtitle,
+                    isEnabled: $viewModel.soundEnabled
+                )
+            }
+            .background(settingsGroupedCardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    private var appSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(viewModel.localizedStrings.appSection)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.textPrimary)
+                .padding(.bottom, Spacing.xs)
+                .accessibilityAddTraits(.isHeader)
+
+            VStack(spacing: 0) {
+                appNavigationRow(
+                    icon: "globe",
+                    title: viewModel.localizedStrings.language,
+                    subtitle: viewModel.languageSubtitle
+                ) {
+                    logger.buttonTap("Language Settings", screen: "Settings")
+                    viewModel.showLanguageSettings = true
+                }
+
+                Divider()
+
+                appNavigationRow(
+                    icon: "iphone.and.arrow.forward.inward",
+                    title: viewModel.localizedStrings.settingsJoinDeviceTitle,
+                    subtitle: viewModel.localizedStrings.settingsJoinDeviceSubtitle
+                ) {
+                    logger.buttonTap("Join family device", screen: "Settings")
+                    navigationManager.navigateTo(.joinDevice)
+                }
+
+                Divider()
+
+                appNavigationRow(
+                    icon: "waveform.badge.mic",
+                    title: localizationManager.localized("voice_notes_title"),
+                    subtitle: localizationManager.localized("voice_notes_settings_entry_subtitle")
+                ) {
+                    logger.buttonTap("Open Voice Notes", screen: "Settings")
+                    showVoiceNotesScreen = true
+                }
+
+                Divider()
+
+                VStack(spacing: Spacing.s) {
+                    HStack(spacing: Spacing.s) {
+                        Image(systemName: "bubble.left.and.bubble.right")
+                            .font(.system(size: 16))
+                            .foregroundColor(.primaryBlue)
+                            .frame(width: 24, height: 24, alignment: .leading)
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
+                            Text(localizationManager.localized("settings_home_chat_default_title"))
+                                .font(.body)
+                                .foregroundColor(.textPrimary)
+                            Text(localizationManager.localized("settings_home_chat_default_subtitle"))
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                                .lineLimit(2)
+                        }
+                        Spacer()
+                    }
+                    .padding(.horizontal, Spacing.m)
+                    .padding(.top, Spacing.s)
+
+                    Picker(
+                        localizationManager.localized("settings_home_chat_default_title"),
+                        selection: Binding<HomeChatDefaultMode>(
+                            get: { HomeChatDefaultMode(rawValue: homeChatDefaultModeRaw) ?? .last },
+                            set: { homeChatDefaultModeRaw = $0.rawValue }
+                        )
+                    ) {
+                        ForEach(HomeChatDefaultMode.allCases, id: \.rawValue) { mode in
+                            Text(mode.localizedTitle(localizationManager)).tag(mode)
+                        }
+                    }
+                    .pickerStyle(.segmented)
+                    .padding(.horizontal, Spacing.m)
+                    .padding(.bottom, Spacing.s)
+                }
+
+                Divider()
+
+                appNavigationRow(
+                    icon: "arrow.clockwise",
+                    title: viewModel.localizedStrings.updates,
+                    subtitle: viewModel.updatesSubtitle
+                ) {
+                    logger.buttonTap("Check Updates", screen: "Settings")
+                    viewModel.checkForUpdates()
+                }
+
+                Divider()
+
+                appNavigationRow(
+                    icon: viewModel.selectedPositioningSystem.icon,
+                    title: viewModel.localizedStrings.positioningSystemTitle,
+                    subtitle: viewModel.positioningSystemSubtitle
+                ) {
+                    VisualLogger.shared.log(
+                        "🛰️ Open Positioning System Picker",
+                        level: .info,
+                        category: "SETTINGS.POSITIONING"
+                    )
+                    viewModel.showPositioningSystemPicker = true
+                }
+            }
+            .background(settingsGroupedCardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+    
+    private var systemComponentsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            HStack {
+                Text(viewModel.localizedStrings.systemComponentsTitle)
+                    .font(.title2)
+                    .fontWeight(.bold)
+                    .foregroundColor(.textPrimary)
+                    .accessibilityAddTraits(.isHeader)
+                
+                Spacer()
+                
+                if viewModel.isLoadingComponents {
+                    ProgressView()
+                        .scaleEffect(0.8)
+                } else {
+                Button(action: {
+                        viewModel.loadComponents()
+                }) {
+                    Image(systemName: "arrow.clockwise")
+                            .foregroundColor(.blue)
+                            .rotationEffect(.degrees(viewModel.isLoadingComponents ? 360 : 0))
+                            .animation(viewModel.isLoadingComponents ? Animation.linear(duration: 1).repeatForever(autoreverses: false) : .default, value: viewModel.isLoadingComponents)
+                    }
+                    .disabled(viewModel.isLoadingComponents)
+                }
+            }
+            .padding(.bottom, Spacing.xs)
+
+            if let error = viewModel.componentsError {
+                HStack {
+                    Text(error)
+                        .foregroundColor(.red)
+                        .font(.caption)
+                    Spacer()
+                    Button(viewModel.localizedStrings.retry) {
+                        viewModel.loadComponents()
+                    }
+                    .foregroundColor(.blue)
+                    .font(.caption)
+                }
+                .padding(Spacing.m)
+                .background(Color.red.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
+            } else if viewModel.components.isEmpty {
+                Text(viewModel.localizedStrings.systemComponentsEmpty)
+                    .foregroundColor(.textSecondary)
+                    .padding(Spacing.m)
+                    .frame(maxWidth: .infinity, alignment: .center)
+            } else {
+                LazyVStack(spacing: 0) {
+                    ForEach(viewModel.components, id: \.componentId) { component in
+                        ComponentRow(
+                            component: component,
+                            description: viewModel.localizedStrings.systemComponentDescription
+                        ) {
+                            viewModel.toggleComponent(component)
+                        }
+                    }
+                }
+                .background(settingsGroupedCardBackground)
+                .clipShape(RoundedRectangle(cornerRadius: 12))
+            }
+        }
+        .onAppear {
+            if viewModel.isAdmin && viewModel.components.isEmpty {
+                viewModel.loadComponents()
+            }
+        }
+    }
+
+    private var additionalSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(viewModel.localizedStrings.additionalSection)
+                .font(.title2)
+                .fontWeight(.bold)
+                .foregroundColor(.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+                .padding(.bottom, Spacing.xs)
+
+            VStack(spacing: 0) {
+                appNavigationRow(
+                    icon: "questionmark.circle.fill",
+                    title: viewModel.localizedStrings.helpSupport,
+                    subtitle: viewModel.localizedStrings.helpSupportSubtitle
+                ) {
+                    viewModel.showSupportScreen = true
+                }
+
+                Divider()
+
+                // Политика конфиденциальности
+                settingsButton(
+                    "doc.text",
+                    viewModel.localizedStrings.privacyPolicy,
+                    viewModel.localizedStrings.privacyPolicySubtitle
+                ) {
+                    viewModel.showPrivacyPolicy = true
+                }
+
+                // Условия использования
+                settingsButton(
+                    "doc.plaintext",
+                    viewModel.localizedStrings.termsOfService,
+                    viewModel.localizedStrings.termsOfServiceSubtitle
+                ) {
+                    viewModel.showTermsOfService = true
+                }
+
+                // Согласие на обработку персональных данных
+                settingsButton(
+                    "checkmark.shield",
+                    viewModel.localizedStrings.settingsConsentPersonalData,
+                    viewModel.consentAccepted ? viewModel.localizedStrings.settingsConsentGranted : viewModel.localizedStrings.settingsConsentManage
+                ) {
+                    viewModel.showPrivacyPolicy = true
+                }
+
+                // Поделиться приложением
+                settingsButton(
+                    "square.and.arrow.up",
+                    viewModel.localizedStrings.shareApp,
+                    viewModel.localizedStrings.shareAppSubtitle
+                ) {
+                    viewModel.showShareSheet = true
+                }
+
+                Divider()
+
+                // ✅ BUILD 95: Диагностика (лог крашей/предупреждений памяти/Pre-Crash State)
+                settingsButton(
+                    "ladybug.fill",
+                    viewModel.localizedStrings.settingsDiagnosticsTitle,
+                    viewModel.localizedStrings.settingsDiagnosticsSubtitle
+                ) {
+                    showCrashLogsView = true
+                }
+
+            }
+            .background(settingsGroupedCardBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 12))
+        }
+    }
+
+    // MARK: - Body
+        
+        var body: some View {
+        ZStack {
+            // Фон
+            LinearGradient.backgroundGradient
+                .ignoresSafeArea()
+                .accessibilityElement(children: .ignore)
+                .accessibilityLabel(viewModel.localizedStrings.settingsAccessibilityBackground)
+
+            VStack(spacing: 0) {
+                // Навигационная панель
+                navigationHeader
+
+                HStack {
+                    Spacer()
+                    Text(settingsSyncStatusTitle)
+                        .font(.caption2.weight(.semibold))
+                        .foregroundColor(settingsSyncStatusColor)
+                        .padding(.horizontal, 10)
+                        .padding(.vertical, 4)
+                        .background(settingsSyncStatusColor.opacity(0.15))
+                        .clipShape(Capsule())
+                }
+                .padding(.horizontal, Spacing.screenPadding)
+                .padding(.top, Spacing.xs)
+
+                // Основной контент
+                ScrollView(.vertical, showsIndicators: false) {
+                    VStack(spacing: Spacing.l) {
+                        // Profile Section
+                        profileSection
+
+                        // Security Section
+                        securitySection
+
+                        // Notifications Section
+                        notificationsSection
+
+                        // App Section
+                        appSection
+
+                        // System Components (только для админов)
+                        if viewModel.isAdmin {
+                            systemComponentsSection
+                        }
+
+                        // Additional Section
+                        additionalSection
+
+                        // Отступ снизу
+                        Spacer(minLength: 100)
+                    }
+                    .padding(.horizontal, Spacing.screenPadding)
+                    .padding(.bottom, Spacing.xxl)
+                }
+                .accessibilityElement(children: .contain)
+                .accessibilityLabel(viewModel.localizedStrings.settingsAccessibilityList)
+            }
+        }
+        .navigationBarHidden(true)
+        .onAppear {
+            // ✅ BUILD 100: Логирование загрузки экрана перемещено из testLogger в .onAppear
+            // Это предотвращает избыточное логирование при пересоздании View
+            logger.screenLoad("SettingsScreen")
+            SettingsDiagnosticsLogger.shared.logSection(
+                "SettingsScreen",
+                function: #function,
+                message: "onAppear"
+            )
+            viewModel.initializeView()
+        }
+        .onDisappear {
+            SettingsDiagnosticsLogger.shared.logSection(
+                "SettingsScreen",
+                function: #function,
+                message: "onDisappear"
+            )
+        }
+        .sheet(isPresented: $viewModel.showProfileEdit) {
+            ProfileEditView()
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showLanguageSettings) {
+            LanguageSettingsScreen()
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showSupportScreen) {
+            SupportScreen()
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showPrivacyPolicy) {
+            PrivacyPolicyScreen()
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showTermsOfService) {
+            TermsOfServiceScreen()
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showShareSheet) {
+            ShareSheet(activityItems: [viewModel.localizedStrings.settingsShareMessage])
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $showCrashLogsView) {
+            CrashLogsView()
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showProtectionExplanation) {
+            ProtectionLevelExplanationModal(isPresented: $viewModel.showProtectionExplanation, currentTariff: viewModel.currentTariff)
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showAdvancedProtection) {
+            AdvancedProtectionSettingsScreen()
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showProtectionHistory) {
+            ProtectionLevelHistoryModal(isPresented: $viewModel.showProtectionHistory)
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showEmergencyContacts) {
+            EmergencyContactsView()
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showEmergencyNotifications) {
+            EmergencyNotificationsView()
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showVoiceControl) {
+            VoiceControlView()
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showChildProtectionCompliance) {
+            ComplianceView(section: .childProtection)
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showDataProtectionCompliance) {
+            ComplianceView(section: .dataProtection)
+                .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $viewModel.showPositioningSystemPicker) {
+            PositioningSystemPickerView(
+                selectedSystem: $viewModel.selectedPositioningSystem,
+                currentSystem: viewModel.currentPositioningSystem,
+                currentRegion: viewModel.currentRegionName
+            )
+            .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $showVoiceNotesScreen) {
+            VoiceNotesScreen()
+                .environmentObject(navigationManager)
+                .environmentObject(localizationManager)
+                .aladdinSheetPresentation()
+        }
+    }
+
+    // MARK: - Helper Functions
+
+    private func percentText(_ value: Int) -> String {
+        "\(value)%"
+    }
+
+    private func appNavigationRow(
+        icon: String,
+        title: String,
+        subtitle: String,
+        action: @escaping () -> Void
+    ) -> some View {
+        Button(action: action) {
+            HStack(spacing: Spacing.s) {
+                Image(systemName: icon)
+                    .font(.system(size: 16))
+                    .foregroundColor(.primaryBlue)
+                    .frame(width: 24, height: 24, alignment: .leading)
+                    .fixedSize(horizontal: true, vertical: false)
+
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(title)
+                        .font(.body)
+                        .foregroundColor(.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+
+                    Text(subtitle)
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(2)
+                }
+
+                Spacer()
+
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.textSecondary.opacity(0.6))
+            }
+            .padding(Spacing.m)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), \(subtitle)")
+        .accessibilityAddTraits(.isButton)
+    }
+
+    private func settingsButton(_ icon: String, _ title: String, _ subtitle: String, action: @escaping () -> Void) -> some View {
+        appNavigationRow(icon: icon, title: title, subtitle: subtitle, action: action)
+    }
+
+    private func settingRow(
+        icon: String,
+        title: String,
+        subtitle: String,
+        isEnabled: Binding<Bool>,
+        isBiometric: Bool = false
+    ) -> some View {
+        let binding: Binding<Bool> = isBiometric
+            ? Binding(
+                get: { isEnabled.wrappedValue },
+                set: { newValue in
+                    logger.toggleChanged("Biometric", newValue: newValue, screen: "Settings")
+                    VisualLogger.shared.log(
+                        "🔄 Biometric = \(newValue)",
+                        level: .info,
+                        category: "SETTINGS.UI"
+                    )
+                    isEnabled.wrappedValue = newValue
+                    viewModel.handleBiometricToggle(newValue)
+                }
+            )
+            : isEnabled
+
+        return HStack(spacing: Spacing.s) {
+            Image(systemName: icon)
+                .font(.system(size: 16))
+                .foregroundColor(.primaryBlue)
+                .frame(width: 24, alignment: .leading)
+                .fixedSize(horizontal: true, vertical: false)
+
+            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                Text(title)
+                    .font(.body)
+                    .foregroundColor(.textPrimary)
+
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .lineLimit(2)
+            }
+
+            Spacer()
+
+            Toggle("", isOn: binding)
+                .labelsHidden()
+                .onChange(of: binding.wrappedValue) { newValue in
+                    // Логируем в mini-log для видимости
+                    VisualLogger.shared.log(
+                        "🔄 \(title) = \(newValue)",
+                        level: .info,
+                        category: "SETTINGS.UI"
+                    )
+                }
+        }
+        .padding(Spacing.m)
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title), включено")
+    }
+
+    @ViewBuilder
+    private func protectionActionButton(title: String, icon: String, foreground: Color, background: Color, action: @escaping () -> Void) -> some View {
+        Button(action: action) {
+            // Важно: фиксируем "контентную" высоту кнопки, чтобы сетка 3-х кнопок выглядела ровно
+            // на разных размерах экранов (SE ↔ Pro Max), и чтобы 2 строки текста не "плясали".
+            VStack(spacing: Spacing.xs) {
+                Image(systemName: icon)
+                    .font(.system(size: 16, weight: .semibold))
+                    .frame(height: 18)
+
+                let displayTitle = title.contains("\n") ? title : title.uppercased()
+                Text(displayTitle)
+                    .font(.caption.bold())
+                    .lineLimit(2)
+                    .multilineTextAlignment(.center)
+                    .minimumScaleFactor(0.85)
+                    .allowsTightening(true)
+                    // Не даём словам "ломаться" по слогам и держим предсказуемую высоту:
+                    .fixedSize(horizontal: false, vertical: true)
+                    .frame(minHeight: 28, maxHeight: 28, alignment: .center)
+            }
+            .frame(height: 18 + Spacing.xs + 28, alignment: .center)
+            .foregroundColor(foreground)
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Spacing.s)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .fill(background)
+                    .overlay(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .stroke(Color.white.opacity(0.2), lineWidth: 0.5)
+                    )
+            )
+        }
+    }
+
+    private struct ComponentRow: View {
+        let component: SettingsComponentStatus
+        let description: String
+        let onToggle: () -> Void
+
+        var body: some View {
+            HStack {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(component.componentId.capitalized)
+                        .font(.headline)
+                        .foregroundColor(.textPrimary)
+
+                    Text(description)
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+
+                Spacer()
+
+                Toggle("", isOn: Binding(
+                    get: { component.isEnabled },
+                    set: { newValue in
+                        logger.toggleChanged("Component: \(component.componentId)", newValue: newValue, screen: "Settings")
+                        onToggle()
+                    }
+                ))
+                .labelsHidden()
+            }
+            .padding(Spacing.m)
+        }
+    }
+}
+// MARK: - Preview
+struct SettingsScreen_Previews: PreviewProvider {
+    static var previews: some View {
+        // Создаем mock ViewModel для preview
+        let mockViewModel = SettingsViewModel()
+        SettingsScreen(viewModel: mockViewModel)
+            .environmentObject(NavigationManager())
+            .environmentObject(LocalizationManager.shared)
+    }
+}
+
+// MARK: - Mock Services for Preview
+class MockNavigationService {
+    func navigateTo(_ screen: NavigationManager.ALADDINScreen) {}
+}
+
+class MockLocalizationService: LocalizationService {
+    var currentLanguage: Language = "russian"
+    var languageChanged: AnyPublisher<Language, Never> {
+        Just("russian").eraseToAnyPublisher()
+    }
+
+    func localized(_ key: String) -> String { key }
+    func localized(_ key: String, _ arguments: CVarArg...) -> String { key }
+}
+
+class MockNotificationService {
+    var notificationSettings = NotificationSettings()
+
+    func saveSettings() {}
+    func requestAuthorization() async -> Bool { true }
+    func sendLocalNotification(title: String, body: String, userInfo: [AnyHashable : Any]?) {}
+    func updateNotificationSettings(_ settings: NotificationSettings) {}
+}
+
+class MockSecurityService {
+    var biometricAuthAvailable: Bool = true
+    func authenticateWithBiometrics() async -> Bool { true }
+}
+
+class MockTariffService {
+    var currentTariff = "standard"
+    func createCard(localizationService: Any) -> Any {
+        return "mock card"
+    }
+}
+
+// ✅ ПРОДАКШН: Mock сервисы удалены - используются только реальные сервисы
+
+
+
+// MARK: - Preview Support (iOS 17+ only)
+// Note: Preview functionality available in Xcode 15+ with iOS 17+
+// For iOS 15.2 compatibility, previews are disabled
