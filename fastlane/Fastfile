@@ -8,47 +8,32 @@ require "open3"
 platform :ios do
   desc "Build archive for App Store with manual signing using existing certificates and profiles"
   lane :build_archive do |options|
-    # КРИТИЧЕСКИ ВАЖНО: Fastlane запускается из fastlane/ директории
-    # Нужно перейти в корень проекта, где находится ALADDIN.xcodeproj
     project_root = File.expand_path("..", __dir__)
     Dir.chdir(project_root) do
       puts "📁 Рабочая директория: #{Dir.pwd}"
       puts "📁 Проверка наличия проекта: #{File.exist?('ALADDIN.xcodeproj') ? '✅ найден' : '❌ не найден'}"
-      
-             # Переменные окружения из GitHub Secrets (уже установлены в workflow)
-             team_id = ENV["APPLE_TEAM_ID"]
-             keychain_path = ENV["KEYCHAIN_PATH"]
-             keychain_password = ENV["KEYCHAIN_PASSWORD"]
-             app_profile_uuid = ENV["APP_PROFILE_UUID"]
-             extension_profile_uuid = ENV["PROVISIONING_PROFILE_EXTENSION_UUID"] || app_profile_uuid # Fallback на app profile, если extension не указан
-             dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
-             
-             # ВАРИАНТ 3: НЕ указываем CODE_SIGN_IDENTITY - Xcode автоматически выберет сертификат из профиля
-             # Это решает проблему с несоответствием fingerprint между keychain и профилем
-             # Xcode сам найдет правильный сертификат, который встроен в provisioning profile
-             puts "🔐 Не указываем CODE_SIGN_IDENTITY - Xcode выберет сертификат из профиля автоматически"
-      
+
+      team_id = ENV["APPLE_TEAM_ID"]
+      app_profile_uuid = ENV["APP_PROFILE_UUID"]
+      extension_profile_uuid = ENV["PROVISIONING_PROFILE_EXTENSION_UUID"]
+      antifake_profile_uuid = ENV["PROVISIONING_PROFILE_ANTIFAKE_SHARE_UUID"]
+      dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
+
       puts "🔐 Team ID: #{team_id}"
       puts "🔐 Certificate: #{dist_cert_name}"
       puts "📋 App Profile UUID: #{app_profile_uuid}"
-      puts "📋 Extension Profile UUID: #{extension_profile_uuid}"
-      
-      if app_profile_uuid.nil? || app_profile_uuid.empty?
-        UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении")
-      end
-      
+      puts "📋 Content Blocker Profile UUID: #{extension_profile_uuid}"
+      puts "📋 Antifake Share Profile UUID: #{antifake_profile_uuid || '(automatic via -allowProvisioningUpdates)'}"
+
+      UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении") if app_profile_uuid.nil? || app_profile_uuid.empty?
       if extension_profile_uuid.nil? || extension_profile_uuid.empty?
-        UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен в окружении. Создайте отдельный provisioning profile для Content Blocker Extension.")
+        UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен. Нужен профиль для ALADDINContentBlocker.")
       end
-      
-      # Получить полные пути к профилям (ДО создания xcconfig)
+
       profile_dir = "#{ENV['HOME']}/Library/MobileDevice/Provisioning Profiles"
       app_profile_file = "#{profile_dir}/#{app_profile_uuid}.mobileprovision"
       extension_profile_file = "#{profile_dir}/#{extension_profile_uuid}.mobileprovision"
-      
-      puts "📋 Проверка путей к профилям:"
-      puts "   App profile: #{app_profile_file} (#{File.exist?(app_profile_file) ? '✅' : '❌'})"
-      puts "   Content Blocker profile: #{extension_profile_file} (#{File.exist?(extension_profile_file) ? '✅' : '❌'})"
+      antifake_profile_file = antifake_profile_uuid.to_s.empty? ? nil : "#{profile_dir}/#{antifake_profile_uuid}.mobileprovision"
 
       expected_app_group = "group.com.aladdin.family"
       validate_profile_app_group = lambda do |profile_path, profile_label, expected_bundle_id|
@@ -58,7 +43,7 @@ platform :ios do
 
         profile_xml, stderr, status = Open3.capture3("security", "cms", "-D", "-i", profile_path)
         unless status.success?
-          UI.user_error!("❌ #{profile_label}: не удалось прочитать provisioning profile (security cms). #{stderr}")
+          UI.user_error!("❌ #{profile_label}: не удалось прочитать provisioning profile. #{stderr}")
         end
 
         profile_name = profile_xml[/<key>Name<\/key>\s*<string>([^<]+)<\/string>/m, 1] || "unknown"
@@ -69,59 +54,69 @@ platform :ios do
         puts "📋 #{profile_label} App Group #{expected_app_group}: #{has_app_group ? '✅' : '❌'}"
 
         unless application_identifier.end_with?(".#{expected_bundle_id}")
-          UI.user_error!("❌ #{profile_label}: provisioning profile '#{profile_name}' не соответствует bundle id #{expected_bundle_id}. " \
-                         "Фактический application-identifier: #{application_identifier}")
+          UI.user_error!("❌ #{profile_label}: profile '#{profile_name}' не для bundle id #{expected_bundle_id}")
         end
-
         unless has_app_group
-          UI.user_error!("❌ #{profile_label}: provisioning profile '#{profile_name}' не содержит App Group #{expected_app_group}. " \
-                         "Пересоздайте профиль в Apple Developer Portal и обновите GitHub secret.")
+          UI.user_error!("❌ #{profile_label}: profile '#{profile_name}' без App Group #{expected_app_group}")
         end
 
         profile_name
       end
 
-      app_profile_name = validate_profile_app_group.call(app_profile_file, "App", "family.aladdin.ios")
-      extension_profile_name = validate_profile_app_group.call(extension_profile_file, "Content Blocker", "family.aladdin.ios.ALADDINContentBlocker")
-      
-      # Создать xcconfig файл с полными путями
+      validate_profile_app_group.call(app_profile_file, "App", "family.aladdin.ios")
+      validate_profile_app_group.call(extension_profile_file, "Content Blocker", "family.aladdin.ios.ALADDINContentBlocker")
+
+      antifake_manual = false
+      antifake_profile_name = nil
+      if antifake_profile_uuid && !antifake_profile_uuid.empty?
+        antifake_profile_name = validate_profile_app_group.call(
+          antifake_profile_file,
+          "Antifake Share",
+          "family.aladdin.ios.ALADDINAntifakeShare"
+        )
+        antifake_manual = true
+      end
+
       xcconfig_path = "./build/Release.xcconfig"
       sh("mkdir -p ./build")
-      
+
+      antifake_xcconfig = if antifake_manual
+        <<~ANTIFAKE
+          ALADDINAntifakeShare_CODE_SIGN_STYLE = Manual
+          ALADDINAntifakeShare_DEVELOPMENT_TEAM = #{team_id}
+          ALADDINAntifakeShare_PROVISIONING_PROFILE_SPECIFIER = #{antifake_profile_name}
+          ALADDINAntifakeShare_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINAntifakeShare
+        ANTIFAKE
+      else
+        <<~ANTIFAKE
+          ALADDINAntifakeShare_CODE_SIGN_STYLE = Automatic
+          ALADDINAntifakeShare_DEVELOPMENT_TEAM = #{team_id}
+          ALADDINAntifakeShare_PROVISIONING_PROFILE_SPECIFIER =
+          ALADDINAntifakeShare_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINAntifakeShare
+        ANTIFAKE
+      end
+
       xcconfig_content = <<~XCCONFIG
-      // Fastlane xcconfig for Manual signing
-      // ВАРИАНТ 3: НЕ указываем CODE_SIGN_IDENTITY - Xcode автоматически выберет сертификат из профиля
-      // Это решает проблему с несоответствием fingerprint между keychain и профилем
-      CODE_SIGN_STYLE = Manual
-      DEVELOPMENT_TEAM = #{team_id}
-      // НЕ указываем CODE_SIGN_IDENTITY - Xcode выберет из профиля
-      
-      // App target - ПРИНУДИТЕЛЬНО Manual signing
-      ALADDIN_CODE_SIGN_STYLE = Manual
-      ALADDIN_DEVELOPMENT_TEAM = #{team_id}
-      // Не переопределяем PROVISIONING_PROFILE_SPECIFIER: используем значение из project.pbxproj
-      ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
-      
-      // Content Blocker Extension target - ПРИНУДИТЕЛЬНО Manual signing
-      // Используем ОТДЕЛЬНЫЙ профиль для extension (требуется отдельный App ID)
-      ALADDINContentBlocker_CODE_SIGN_STYLE = Manual
-      ALADDINContentBlocker_DEVELOPMENT_TEAM = #{team_id}
-      // Не переопределяем PROVISIONING_PROFILE_SPECIFIER: используем значение из project.pbxproj
-      ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker
-    XCCONFIG
-    
+        CODE_SIGN_STYLE = Manual
+        DEVELOPMENT_TEAM = #{team_id}
+
+        ALADDIN_CODE_SIGN_STYLE = Manual
+        ALADDIN_DEVELOPMENT_TEAM = #{team_id}
+        ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
+
+        ALADDINContentBlocker_CODE_SIGN_STYLE = Manual
+        ALADDINContentBlocker_DEVELOPMENT_TEAM = #{team_id}
+        ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker
+
+        #{antifake_xcconfig}
+      XCCONFIG
+
       File.write(xcconfig_path, xcconfig_content)
       puts "✅ xcconfig создан: #{xcconfig_path}"
-      
-      # Собрать архив используя xcodebuild напрямую
-      # Fastlane может иметь проблемы с Manual signing, если проект настроен на Automatic
-      # Поэтому используем прямой вызов xcodebuild с полными путями к профилям
+
       archive_path = "./build/ALADDIN.xcarchive"
-      
-      puts "🔨 Сборка архива с Manual signing через Fastlane..."
-      puts "📁 Текущая директория: #{Dir.pwd}"
-      puts "📁 Проект существует: #{File.exist?('ALADDIN.xcodeproj') ? '✅' : '❌'}"
-      
+      antifake_sign_flag = antifake_manual ? "ALADDINAntifakeShare_CODE_SIGN_STYLE=Manual" : "ALADDINAntifakeShare_CODE_SIGN_STYLE=Automatic"
+
       xcodebuild_command = [
         "xcodebuild archive",
         "-project ALADDIN.xcodeproj",
@@ -132,64 +127,54 @@ platform :ios do
         "-destination 'generic/platform=iOS'",
         "CODE_SIGN_STYLE=Manual",
         "DEVELOPMENT_TEAM=#{team_id}",
-        # НЕ указываем CODE_SIGN_IDENTITY - Xcode выберет из профиля
         "ALADDIN_CODE_SIGN_STYLE=Manual",
         "ALADDINContentBlocker_CODE_SIGN_STYLE=Manual",
+        antifake_sign_flag,
         "-allowProvisioningUpdates"
       ].join(" ")
-      
+
       sh(xcodebuild_command)
-      
       puts "✅ Архив создан: #{archive_path}"
-      
-      # Вернуть путь к архиву
       archive_path
     end
   end
-  
+
   desc "Export IPA from archive"
   lane :export_ipa do |options|
     archive_path = options[:archive_path] || "./build/ALADDIN.xcarchive"
     export_path = options[:export_path] || "./build/export"
-    
     team_id = ENV["APPLE_TEAM_ID"]
-    
-    # Получить UUID профилей из окружения (уже установлены в workflow)
     app_profile_uuid = ENV["APP_PROFILE_UUID"]
     extension_profile_uuid = ENV["PROVISIONING_PROFILE_EXTENSION_UUID"]
-    
-    if app_profile_uuid.nil? || app_profile_uuid.empty?
-      UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении")
+    antifake_profile_uuid = ENV["PROVISIONING_PROFILE_ANTIFAKE_SHARE_UUID"]
+
+    UI.user_error!("❌ APP_PROFILE_UUID не установлен") if app_profile_uuid.nil? || app_profile_uuid.empty?
+    UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен") if extension_profile_uuid.nil? || extension_profile_uuid.empty?
+
+    profiles = {
+      "family.aladdin.ios" => app_profile_uuid,
+      "family.aladdin.ios.ALADDINContentBlocker" => extension_profile_uuid
+    }
+    if antifake_profile_uuid && !antifake_profile_uuid.empty?
+      profiles["family.aladdin.ios.ALADDINAntifakeShare"] = antifake_profile_uuid
     end
-    
-    if extension_profile_uuid.nil? || extension_profile_uuid.empty?
-      UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен в окружении")
-    end
-    
-    # Используем отдельный профиль для extension
-    content_blocker_profile_uuid = extension_profile_uuid
-    
-    # Создать ExportOptions.plist
+
     export_options_path = "./build/ExportOptions.plist"
     export_options = {
       method: "app-store",
       teamID: team_id,
       signingStyle: "manual",
-      provisioningProfiles: {
-        "family.aladdin.ios" => app_profile_uuid,
-        "family.aladdin.ios.ALADDINContentBlocker" => content_blocker_profile_uuid
-      }
+      provisioningProfiles: profiles
     }
-    
-    require 'plist'
+
+    require "plist"
     File.write(export_options_path, export_options.to_plist)
-    
-    puts "🔨 Экспорт IPA..."
+
     sh("xcodebuild -exportArchive",
        "-archivePath #{archive_path}",
        "-exportPath #{export_path}",
        "-exportOptionsPlist #{export_options_path}")
-    
+
     puts "✅ IPA экспортирован: #{export_path}"
     export_path
   end
