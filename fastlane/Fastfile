@@ -82,9 +82,11 @@ platform :ios do
 
       antifake_xcconfig = if antifake_manual
         <<~ANTIFAKE
+          ALADDINAntifakeShare_CODE_SIGN_IDENTITY = Apple Distribution
           ALADDINAntifakeShare_CODE_SIGN_STYLE = Manual
           ALADDINAntifakeShare_DEVELOPMENT_TEAM = #{team_id}
-          ALADDINAntifakeShare_PROVISIONING_PROFILE_SPECIFIER = #{antifake_profile_name}
+          ALADDINAntifakeShare_PROVISIONING_PROFILE_SPECIFIER = #{antifake_profile_uuid}
+          ALADDINAntifakeShare_PROVISIONING_PROFILE = #{antifake_profile_uuid}
           ALADDINAntifakeShare_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINAntifakeShare
         ANTIFAKE
       else
@@ -149,8 +151,14 @@ platform :ios do
         "ALADDINContentBlocker_CODE_SIGN_STYLE=Manual",
         antifake_sign_flag
       ]
-      xcodebuild_args << antifake_profile_clear unless antifake_profile_clear.empty?
-      xcodebuild_args << "-allowProvisioningUpdates"
+      if antifake_manual
+        xcodebuild_args << "ALADDINAntifakeShare_CODE_SIGN_IDENTITY=Apple Distribution"
+        xcodebuild_args << "ALADDINAntifakeShare_PROVISIONING_PROFILE_SPECIFIER=#{antifake_profile_uuid}"
+        xcodebuild_args << "ALADDINAntifakeShare_PROVISIONING_PROFILE=#{antifake_profile_uuid}"
+      else
+        xcodebuild_args << antifake_profile_clear unless antifake_profile_clear.empty?
+        xcodebuild_args << "-allowProvisioningUpdates"
+      end
 
       sh(*xcodebuild_args)
       puts "✅ Архив создан: #{archive_path}"
