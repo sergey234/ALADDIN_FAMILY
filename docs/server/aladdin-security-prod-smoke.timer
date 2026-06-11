@@ -1,0 +1,11 @@
+[Unit]
+Description=Run ALADDIN security prod smoke every 15 minutes (B-OPS-22)
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=15min
+AccuracySec=1min
+Persistent=true
+
+[Install]
+WantedBy=timers.target

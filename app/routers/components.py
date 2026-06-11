@@ -95,6 +95,20 @@ class UpdateStatusRequest(BaseModel):
 # СПИСОК ВСЕХ 42 КОМПОНЕНТОВ
 # ============================================
 
+COMPONENT_ID_ALIASES = {
+    "phishing_protection": "phishing_protection_agent",
+    "malware_detection": "malware_detection_agent",
+    "mobile_security": "mobile_security_agent",
+    "network_security": "network_security_agent",
+    "incident_response": "incident_response_agent",
+    "password_security": "password_security_agent",
+}
+
+
+def resolve_component_id(component_id: str) -> str:
+    return COMPONENT_ID_ALIASES.get(component_id, component_id)
+
+
 ALL_COMPONENTS = [
     # NetworkProtectionScreen (10)
     "crash_detection_agent",
@@ -356,6 +370,7 @@ async def get_component_status(
     """
     # ✅ ФАЗА 2: Получить реальный user_id из токена
     user_id = current_user["id"]
+    component_id = resolve_component_id(component_id)
     
     # ✅ РЕАЛИЗАЦИЯ: Проверка существования компонента
     if component_id not in ALL_COMPONENTS:
@@ -390,6 +405,7 @@ async def enable_component(
     """
     # ✅ ФАЗА 2: Получить реальный user_id из токена
     user_id = current_user["id"]
+    component_id = resolve_component_id(component_id)
     
     # ✅ STRUCTURED LOGGING: Логирование включения компонента
     logger.info(
@@ -430,6 +446,7 @@ async def disable_component(
     """
     # ✅ ФАЗА 2: Получить реальный user_id из токена
     user_id = current_user["id"]
+    component_id = resolve_component_id(component_id)
     
     # ✅ STRUCTURED LOGGING: Логирование выключения компонента
     logger.info(
@@ -470,6 +487,7 @@ async def get_component_configuration(
     """
     # ✅ ФАЗА 2: Получить реальный user_id из токена
     user_id = current_user["id"]
+    component_id = resolve_component_id(component_id)
     
     # ✅ РЕАЛИЗАЦИЯ: Проверка существования компонента
     if component_id not in ALL_COMPONENTS:
@@ -515,6 +533,7 @@ async def update_component_configuration(
     """
     # ✅ ФАЗА 2: Получить реальный user_id из токена
     user_id = current_user["id"]
+    component_id = resolve_component_id(component_id)
     
     # ✅ РЕАЛИЗАЦИЯ: Проверка существования компонента
     if component_id not in ALL_COMPONENTS:
@@ -616,6 +635,7 @@ async def update_component_status_compat(
     Внутри маршрутизируем на реальную enable/disable-логику (запись в БД).
     """
     user_id = current_user["id"]
+    component_id = resolve_component_id(component_id)
 
     if component_id not in ALL_COMPONENTS:
         raise HTTPException(status_code=404, detail=f"Component {component_id} not found")

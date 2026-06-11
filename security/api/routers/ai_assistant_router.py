@@ -58,6 +58,11 @@ try:
     from security.services.ai_capabilities_manifest import static_capabilities_payload
     from security.services.ai_intent_router import classify_intent, intent_requires_live_sfm, KB_ONLY_INTENTS
     from security.services.hermes_client import chat_once as hermes_chat_once, hermes_available
+    from security.services.companion_llm_metrics import log_from_tools as log_llm_path_metrics
+    from security.services.llm_providers.openrouter_direct_client import (
+        chat_once as openrouter_direct_chat,
+        direct_fallback_enabled,
+    )
 except ImportError:
     from ai_response_helpers import (  # type: ignore
         dev_fallback_chat,
@@ -69,6 +74,11 @@ except ImportError:
     from ai_capabilities_manifest import static_capabilities_payload  # type: ignore
     from ai_intent_router import classify_intent, intent_requires_live_sfm, KB_ONLY_INTENTS  # type: ignore
     from hermes_client import chat_once as hermes_chat_once, hermes_available  # type: ignore
+    from companion_llm_metrics import log_from_tools as log_llm_path_metrics  # type: ignore
+    from openrouter_direct_client import (  # type: ignore
+        chat_once as openrouter_direct_chat,
+        direct_fallback_enabled,
+    )
 
 try:
     from security.services.ai_prompt_gate import (
@@ -345,6 +355,46 @@ def _hermes_prompt_for_chat(
     return cloud_message, []
 
 
+def _try_openrouter_direct_answer(
+    *,
+    cloud_message: str,
+    intent_id: str,
+    ui_context: str,
+    user_id: Optional[str] = None,
+) -> Optional[ChatMessageResponse]:
+    """Hermes 402 / timeout → compact OpenRouter prompt (free-tier friendly)."""
+    if not direct_fallback_enabled():
+        return None
+    ok, text, err = openrouter_direct_chat(
+        cloud_message,
+        ui_context=ui_context,
+    )
+    if not ok or not text.strip() or is_probable_mock_response(text):
+        logger.warning("OpenRouter direct fallback failed intent=%s err=%s", intent_id, err)
+        return None
+    tools = [f"openrouter:{os.getenv('OPENROUTER_DIRECT_MODEL', 'deepseek-v4-flash')}"]
+    if cloud_message.strip():
+        _safe_record_chat_exchange(
+            user_id=user_id,
+            user_message_redacted=cloud_message[:500],
+            assistant_message=text,
+            ui_context=ui_context,
+        )
+    log_llm_path_metrics(
+        ui_context=ui_context,
+        llm_path="openrouter_direct",
+        intent=intent_id,
+        tools_used=tools,
+        user_id=user_id,
+        message_len=len(cloud_message),
+    )
+    return _chat_response_from_hermes(
+        response_text=text,
+        intent_id=intent_id,
+        tools_used=tools,
+    )
+
+
 def _try_hermes_answer(
     *,
     cloud_message: str,
@@ -573,8 +623,10 @@ async def _ai_companion_context_chat(
     """
     user_id = user["user_id"] or "anonymous"
     cloud_message = _llm_message_or_http422(request.message, field="message")
+    hermes_err: Optional[str] = None
     if hermes_available():
         ok, text, err = hermes_chat_once(cloud_message, skill=None)
+        hermes_err = err
         if ok and text.strip() and not is_probable_mock_response(text):
             if cloud_message.strip():
                 _safe_record_chat_exchange(
@@ -583,7 +635,7 @@ async def _ai_companion_context_chat(
                     assistant_message=text,
                     ui_context="companion",
                 )
-            return ChatMessageResponse(
+            resp = ChatMessageResponse(
                 response=text,
                 confidence=0.88,
                 suggestions=[],
@@ -595,7 +647,26 @@ async def _ai_companion_context_chat(
                 tools_used=["hermes:companion"],
                 suggested_actions=[],
             )
-        logger.warning("Companion Hermes path failed: %s", err)
+            log_llm_path_metrics(
+                ui_context="companion",
+                llm_path="hermes",
+                intent="companion_chat",
+                tools_used=resp.tools_used,
+                user_id=user_id,
+                message_len=len(cloud_message),
+            )
+            return resp
+        logger.warning("Companion Hermes path failed: %s", hermes_err)
+
+    or_resp = _try_openrouter_direct_answer(
+        cloud_message=cloud_message,
+        intent_id="companion_chat",
+        ui_context="companion",
+        user_id=user_id,
+    )
+    if or_resp:
+        or_resp.intent = "companion_chat"
+        return or_resp
 
     if SFM_ADAPTER_AVAILABLE and sfm_adapter:
         sfm_message = _companion_user_turn_for_sfm(cloud_message)
@@ -625,6 +696,15 @@ async def _ai_companion_context_chat(
                         sfm_aggregates=data.get("sfm_aggregates"),
                     )
                 response.intent = "companion_chat"
+                log_llm_path_metrics(
+                    ui_context="companion",
+                    llm_path="sfm",
+                    intent="companion_chat",
+                    tools_used=tools_used,
+                    user_id=user_id,
+                    message_len=len(cloud_message),
+                    hermes_err_redacted=(hermes_err[:200] if hermes_err else None),
+                )
                 return response
         logger.warning("Companion SFM fallback failed: %s", message)
 
@@ -697,6 +777,14 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
                     rag_result.sources[:3],
                     rag_result.tools_used,
                 )
+                log_llm_path_metrics(
+                    ui_context=request.context,
+                    llm_path="kb_rag",
+                    intent=intent.intent_id,
+                    tools_used=rag_result.tools_used,
+                    user_id=user_id,
+                    message_len=len(cloud_message),
+                )
                 return response
         except Exception as rag_exc:
             logger.warning("kb_rag path skipped: %s", rag_exc)
@@ -746,13 +834,29 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
                     intent.intent_id,
                     tools,
                 )
+                log_llm_path_metrics(
+                    ui_context=request.context,
+                    llm_path="hermes",
+                    intent=intent.intent_id,
+                    tools_used=tools,
+                    user_id=user_id,
+                    message_len=len(cloud_message),
+                )
                 return response
             logger.warning("Hermes primary path failed intent=%s err=%s", intent.intent_id, err)
             if err and ("402" in err or "credits" in err.lower() or "openrouter" in err.lower()):
                 logger.error(
-                    "Hermes/OpenRouter unavailable (credits or API). intent=%s — falling back to SFM rules.",
+                    "Hermes/OpenRouter unavailable (credits or API). intent=%s — trying direct OpenRouter.",
                     intent.intent_id,
                 )
+            or_resp = _try_openrouter_direct_answer(
+                cloud_message=cloud_message,
+                intent_id=intent.intent_id,
+                ui_context=request.context,
+                user_id=user_id,
+            )
+            if or_resp:
+                return or_resp
             if intent.kb_only and not mock_allowed():
                 raise_service_unavailable()
 
@@ -832,6 +936,15 @@ async def ai_assistant_chat(request: ChatMessageRequest, user: dict = Depends(ge
             intent.intent_id,
             path,
             response.tools_used,
+        )
+        log_llm_path_metrics(
+            ui_context=request.context,
+            llm_path=path,
+            intent=intent.intent_id,
+            tools_used=response.tools_used,
+            user_id=user_id,
+            message_len=len(cloud_message),
+            hermes_err_redacted=None,
         )
         return response
     except HTTPException:

@@ -26,6 +26,7 @@ from pydantic import BaseModel, Field
 
 from app.auth.auth import get_current_user_optional
 from app.database.database import SessionLocal
+from app.services.malware_service import analyze_file_bytes
 from app.services.user_malware_threats import upsert_threats_from_scan
 
 logger = logging.getLogger(__name__)
@@ -33,8 +34,6 @@ logger = logging.getLogger(__name__)
 router = APIRouter(prefix="/api/antivirus", tags=["antivirus"])
 
 _MAX_BYTES = 25 * 1024 * 1024
-
-_EICAR_MARKER = b"EICAR-STANDARD-ANTIVIRUS-TEST-FILE"
 
 
 class FileScanRequest(BaseModel):
@@ -82,32 +81,30 @@ async def scan_uploaded_file(
             detail=f"decoded file exceeds {_MAX_BYTES} bytes",
         )
 
-    threats: List[ThreatItem] = []
-    clean = True
-    recommendations: List[str] = [
-        "Server scan is heuristic; keep local AV enabled.",
-    ]
-
-    if _EICAR_MARKER in decoded.upper():
-        clean = False
-        threats.append(
-            ThreatItem(
-                id="eicar-test",
-                name="EICAR test file",
-                description="Standard anti-malware test string detected.",
-                severity="low",
-                confidence=1.0,
-            )
+    analysis = analyze_file_bytes(
+        file_name=payload.file_name,
+        file_size=payload.file_size,
+        decoded=decoded,
+        file_hash=payload.file_hash,
+    )
+    threats = [
+        ThreatItem(
+            id=t["id"],
+            name=t["name"],
+            type=t.get("type", "signature"),
+            severity=t.get("severity", "low"),
+            description=t.get("description", ""),
+            confidence=float(t.get("confidence", 1.0)),
         )
-        recommendations.insert(0, "Test signature only — safe to delete the file.")
-
+        for t in analysis.get("threats_found", [])
+    ]
     scan_time = time.perf_counter() - t0
     response = FileScanResponse(
-        clean=clean,
+        clean=bool(analysis.get("clean", True)),
         threats_found=threats,
-        recommendations=recommendations,
+        recommendations=analysis.get("recommendations") or [],
         scan_time=round(scan_time, 4),
-        confidence=0.99 if clean else 1.0,
+        confidence=float(analysis.get("confidence", 0.99)),
     )
 
     if current_user and threats:

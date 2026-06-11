@@ -7,10 +7,6 @@ import UniformTypeIdentifiers
 // Master Logger for UI logging
 private let logger = MasterLogger.shared
 
-// ✅ Settings Modal - scope issue в Xcode
-// Modal существует и работает, но имеет проблему с module resolution
-// Временно отключен до настройки Xcode target/modules
-
 /**
  * 🔒 Network Protection Screen
  * Полноценный экран защиты сети
@@ -64,6 +60,7 @@ struct NetworkProtectionScreen: View {
     @State private var showNetworkSecuritySettings = false
     @State private var showCrashDetectionAlert = false
     @State private var showCrashDetectionSettings = false
+    @State private var showRoadsideAssistance = false
 
     // Временный тестовый триггер для демонстрации модала
     @State private var testCrashDetection = false
@@ -245,16 +242,17 @@ struct NetworkProtectionScreen: View {
             )
             .environmentObject(localizationManager)
         }
-        // ⚠️ SETTINGS MODAL: Temporarily disabled due to Xcode scope issue
-        // Modal exists at Shared/Components/Modals/CrashDetectionSettingsModal.swift
-        // Requires Xcode module/target configuration to resolve
-        // .sheet(isPresented: $showCrashDetectionSettings) {
-        //     CrashDetectionSettingsModal(
-        //         componentId: "crash_detection_agent",
-        //         isPresented: $showCrashDetectionSettings
-        //     )
-        //     .environmentObject(localizationManager)
-        // }
+        .sheet(isPresented: $showCrashDetectionSettings) {
+            CrashDetectionSettingsModal(
+                componentId: "crash_detection_agent",
+                isPresented: $showCrashDetectionSettings
+            )
+            .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showRoadsideAssistance) {
+            RoadsideAssistanceView()
+                .environmentObject(localizationManager)
+        }
         // ✅ УДАЛЕНО: .sheet для showingStatistics и showingHelp (Quick Actions удалены)
         .withToast()
         .fileImporter(
@@ -307,12 +305,12 @@ struct NetworkProtectionScreen: View {
                     title: localizationManager.localized("component.crash_detection_agent.title"),
                     description: localizationManager.localized("component.crash_detection_agent.desc"),
                     isEnabled: $viewModel.crashDetectionEnabled,
-                    hasSettings: false, // ⚠️ Temporarily disabled due to scope issue
+                    hasSettings: true,
                     onToggle: { newValue in
                         logger.toggleChanged("Crash Detection", newValue: newValue, screen: "NetworkProtection")
                         viewModel.toggleCrashDetectionSync(newValue)
-                    }
-                    // onSettingsTap: { showCrashDetectionSettings = true } // ⚠️ Temporarily disabled
+                    },
+                    onSettingsTap: { showCrashDetectionSettings = true }
                 )
                 
                 if viewModel.crashDetectionUnavailableOnThisDevice {
@@ -368,11 +366,12 @@ struct NetworkProtectionScreen: View {
                     title: localizationManager.localized("component.roadside_assistance_agent.title"),
                     description: localizationManager.localized("component.roadside_assistance_agent.desc"),
                     isEnabled: $viewModel.roadsideAssistanceEnabled,
-                    hasSettings: false,
+                    hasSettings: true,
                     onToggle: { newValue in
                         logger.toggleChanged("Roadside Assistance", newValue: newValue, screen: "NetworkProtection")
                         viewModel.toggleRoadsideAssistanceSync(newValue)
-                    }
+                    },
+                    onSettingsTap: { showRoadsideAssistance = true }
                 )
                 
                 SecurityFeatureRow(

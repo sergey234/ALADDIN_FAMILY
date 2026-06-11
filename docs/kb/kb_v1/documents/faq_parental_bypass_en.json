@@ -1,0 +1,15 @@
+{
+  "id": "faq_parental_bypass_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What is bypass protection?",
+  "body": "What is bypass protection?\n\nBypass protection helps parents see when a child tries to get around family rules.\n\nWhat is tracked:\nâ¢ Incognito and private browsing\nâ¢ Tor and anonymous browsers\nâ¢ Proxies, tunnels, and network-protection bypass\n\nParents get a report of bypass attempts â no mock responses in production.\n\nâ ALADDIN helps keep rules fair, not punish every click.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [
+    "обход",
+    "bypass",
+    "инкогнито",
+    "tor"
+  ],
+  "kb_version": "kb_v1"
+}

@@ -1,0 +1,13 @@
+{
+  "id": "faq_location_threats_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What are location threats?",
+  "body": "What are location threats?\n\nLocation is information about where you are. The danger is:\nâ¢ Scammers can find out where you live\nâ¢ Understand when you're not home\nâ¢ Track you\nâ¢ Use it for theft\n\nIt's like if someone knew where you are every minute!\n\nâ ALADDIN protects information about your location.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [
+    "геолокация",
+    "местоположение"
+  ],
+  "kb_version": "kb_v1"
+}

@@ -151,13 +151,7 @@ jobs:
           
     - name: Run Unit Tests
       run: |
-        xcodebuild test \
-          -project ALADDIN.xcodeproj \
-          -scheme ALADDIN \
-          -destination 'platform=iOS Simulator,name=iPhone 13' \
-          -configuration Debug \
-          -enableCodeCoverage YES \
-          -resultBundlePath TestResults.xcresult
+        bash scripts/run_security_core_tests.sh
           
     - name: Generate Code Coverage Report
       run: |

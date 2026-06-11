@@ -1,0 +1,14 @@
+{
+  "id": "faq_how_network_protection_works_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "How does network protection work?",
+  "body": "How does network protection work?\n\nNetwork protection is like an underground tunnel. When you're online:\nâ¢ Usually: Your phone â Provider â Internet (everyone sees where you're going)\nâ¢ With network protection: Your phone â Encrypted tunnel â Internet (no one sees!)\n\nIt's like invisibility - the internet sees that someone is online, but doesn't know who exactly!\n\nâ ALADDIN uses network protection to protect all your data.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [
+    "защита сети",
+    "vpn",
+    "туннель"
+  ],
+  "kb_version": "kb_v1"
+}

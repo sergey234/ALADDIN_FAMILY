@@ -60,7 +60,73 @@ except ImportError:
 try:
     from app.routers import protection
     protection_router_available = True
+    try:
+        from app.routers import security_sfm_router
+        security_sfm_router_available = True
+    except ImportError:
+        security_sfm_router_available = False
+    try:
+        from app.routers import antifake
+        antifake_router_available = True
+    except ImportError:
+        antifake_router_available = False
+    try:
+        from app.routers import darkweb
+        darkweb_router_available = True
+    except ImportError:
+        darkweb_router_available = False
+    try:
+        from app.routers import identity_theft
+        identity_theft_router_available = True
+    except ImportError:
+        identity_theft_router_available = False
+    try:
+        from app.routers import data_cleanup
+        data_cleanup_router_available = True
+    except ImportError:
+        data_cleanup_router_available = False
+    try:
+        from app.routers import location_bubble
+        location_bubble_router_available = True
+    except ImportError:
+        location_bubble_router_available = False
+    try:
+        from app.routers import malware
+        malware_router_available = True
+    except ImportError:
+        malware_router_available = False
+    try:
+        from app.routers import phishing
+        phishing_router_available = True
+    except ImportError:
+        phishing_router_available = False
+    try:
+        from app.routers import iot as iot_explicit
+        iot_explicit_router_available = True
+    except ImportError:
+        iot_explicit_router_available = False
+    try:
+        from app.routers import mobile_security
+        mobile_security_router_available = True
+    except ImportError:
+        mobile_security_router_available = False
+    try:
+        from app.routers import parental_monitoring
+        parental_monitoring_router_available = True
+    except ImportError:
+        parental_monitoring_router_available = False
 except ImportError:
+    antifake_router_available = False
+    darkweb_router_available = False
+    identity_theft_router_available = False
+    data_cleanup_router_available = False
+    location_bubble_router_available = False
+    malware_router_available = False
+    phishing_router_available = False
+    iot_explicit_router_available = False
+    mobile_security_router_available = False
+    parental_monitoring_router_available = False
+    security_sfm_router_available = False
     # Если файл находится в docs/server, используем прямой импорт
     import sys
     import os
@@ -72,6 +138,17 @@ except ImportError:
     except ImportError:
         print("⚠️ Предупреждение: PROTECTION_API_ENDPOINTS не найден. Endpoints для защиты будут недоступны.")
         protection_router_available = False
+        security_sfm_router_available = False
+        antifake_router_available = False
+        darkweb_router_available = False
+        identity_theft_router_available = False
+        data_cleanup_router_available = False
+        location_bubble_router_available = False
+        malware_router_available = False
+        phishing_router_available = False
+        iot_explicit_router_available = False
+        mobile_security_router_available = False
+        parental_monitoring_router_available = False
 
 # ✅ ДОБАВЛЕНО: Импортируем роутер для Family API
 try:
@@ -153,6 +230,18 @@ try:
     misc_other_compat_available = True
 except ImportError:
     misc_other_compat_available = False
+
+try:
+    from app.routers import devices as devices_router_module
+    devices_router_available = True
+except ImportError:
+    devices_router_available = False
+
+try:
+    from app.routers import location_bubble_legacy_deprecation
+    location_bubble_legacy_deprecation_available = True
+except ImportError:
+    location_bubble_legacy_deprecation_available = False
 
 try:
     from app.routers import content_compat
@@ -259,13 +348,9 @@ except ImportError as e:
     print(f"⚠️ parental_control_router недоступен: {e}")
     parental_control_available = False
 
-# ✅ ДОБАВЛЕНО: Импортируем IoT Router
-try:
-    from security.api.routers.iot_router import router as iot_router
-    iot_available = True
-except ImportError as e:
-    print(f"⚠️ iot_router недоступен: {e}")
-    iot_available = False
+# Legacy security.api iot_router disabled — app.routers.iot is canonical (B1-08).
+iot_available = False
+iot_router = None
 
 # ✅ ДОБАВЛЕНО: Импортируем Notifications Router
 try:
@@ -341,14 +426,8 @@ except ImportError as e:
     telegram_ai_bot_available = False
     telegram_ai_bot_router = None
 
-# ✅ ЗАДАЧА 21: Импортируем Components Router
-try:
-    from security.api.routers.components_router import router as components_router
-    components_router_available = True
-except ImportError as e:
-    print(f"⚠️ components_router недоступен: {e}")
-    components_router_available = False
-    components_router = None
+# Legacy security components_router (mock fallbacks) — disabled; use app.routers.components (B1-07).
+components_router = None
 
 # ✅ ЗАДАЧА 23: Импортируем System Router
 try:
@@ -535,6 +614,7 @@ class SfmMockTo503Middleware(BaseHTTPMiddleware):
                 or b'"source":"sfm_fallback"' in body
                 or b'"source":"sfm_error"' in body
                 or b'"result":"mock_fallback"' in body
+                or b"mock-real-protection" in body
             ):
                 return JSONResponse(
                     status_code=404,
@@ -760,6 +840,111 @@ if protection_router_available:
 else:
     print("⚠️ Роутер Protection API недоступен")
 
+if security_sfm_router_available:
+    try:
+        app.include_router(security_sfm_router.router)
+        print("✅ Роутер Security SFM (explicit mapping) подключен")
+    except NameError:
+        print("⚠️ Не удалось подключить security_sfm_router")
+else:
+    print("⚠️ security_sfm_router недоступен")
+
+if antifake_router_available:
+    try:
+        app.include_router(antifake.router)
+        print("✅ Роутер Antifake API подключен: /api/antifake/*")
+    except NameError:
+        print("⚠️ Не удалось подключить antifake router")
+else:
+    print("⚠️ antifake router недоступен")
+
+if darkweb_router_available:
+    try:
+        app.include_router(darkweb.router)
+        print("✅ Роутер Darkweb API подключен: /api/darkweb/*")
+    except NameError:
+        print("⚠️ Не удалось подключить darkweb router")
+else:
+    print("⚠️ darkweb router недоступен")
+
+if identity_theft_router_available:
+    try:
+        app.include_router(identity_theft.router)
+        print("✅ Роутер Identity Theft API подключен: /api/identity-theft/*")
+    except NameError:
+        print("⚠️ Не удалось подключить identity_theft router")
+else:
+    print("⚠️ identity_theft router недоступен")
+
+if data_cleanup_router_available:
+    try:
+        app.include_router(data_cleanup.router)
+        print("✅ Роутер Data Cleanup API подключен: /api/data-cleanup/*")
+    except NameError:
+        print("⚠️ Не удалось подключить data_cleanup router")
+else:
+    print("⚠️ data_cleanup router недоступен")
+
+if location_bubble_router_available:
+    try:
+        app.include_router(location_bubble.router)
+        print("✅ Роутер Location Bubble API подключен: /api/location-bubble/*")
+    except NameError:
+        print("⚠️ Не удалось подключить location_bubble router")
+    if location_bubble_legacy_deprecation_available:
+        try:
+            app.include_router(location_bubble_legacy_deprecation.router)
+            print("✅ SEC-P2-03: legacy /api/location/bubble → 410 deprecation router")
+        except Exception as e:
+            print(f"⚠️ location_bubble legacy deprecation: {e}")
+else:
+    print("⚠️ location_bubble router недоступен")
+
+if malware_router_available:
+    try:
+        app.include_router(malware.router)
+        print("✅ Роутер Malware API подключен: POST /api/malware/scan")
+    except NameError:
+        print("⚠️ Не удалось подключить malware router")
+else:
+    print("⚠️ malware router недоступен")
+
+if phishing_router_available:
+    try:
+        app.include_router(phishing.router)
+        print("✅ Роутер Phishing API подключен: /api/phishing/*")
+    except NameError:
+        print("⚠️ Не удалось подключить phishing router")
+else:
+    print("⚠️ phishing router недоступен")
+
+if iot_explicit_router_available:
+    try:
+        app.include_router(iot_explicit.router)
+        print("✅ Роутер IoT API подключен: /api/iot/* (agent scan)")
+    except NameError:
+        print("⚠️ Не удалось подключить iot router")
+else:
+    print("⚠️ iot explicit router недоступен")
+
+if mobile_security_router_available:
+    try:
+        app.include_router(mobile_security.router)
+        print("✅ Роутер Mobile Security API подключен: /api/mobile/*")
+    except NameError:
+        print("⚠️ Не удалось подключить mobile_security router")
+else:
+    print("⚠️ mobile_security router недоступен")
+
+if parental_monitoring_router_available:
+    try:
+        app.include_router(parental_monitoring.router)
+        print("✅ Роутер Parental Monitoring API подключен: /api/parental-control/monitoring/*")
+    except NameError:
+        print("⚠️ Не удалось подключить parental_monitoring router")
+else:
+    print("⚠️ parental_monitoring router недоступен")
+
 # ✅ ДОБАВЛЕНО: Добавлен роутер для Family API
 if family_router_available:
     try:
@@ -858,6 +1043,15 @@ if parental_compat_available:
 else:
     print("⚠️ Роутер Parental compat недоступен")
 
+if devices_router_available:
+    try:
+        app.include_router(devices_router_module.router)
+        print("✅ Роутер Devices API подключен: /api/devices/* (SEC-P2-05)")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить devices router: {e}")
+else:
+    print("⚠️ devices router недоступен")
+
 if misc_other_compat_available:
     try:
         app.include_router(misc_other_compat.router, tags=["misc-other-compat"])
@@ -938,18 +1132,30 @@ if parental_control_available:
     except Exception as e:
         print(f"❌ Ошибка подключения Parental Control: {e}")
 
-# ✅ ДОБАВЛЕНО: Подключение IoT Router
-if iot_available:
-    try:
-        app.include_router(iot_router)
-        print("✅ Роутер IoT подключен")
-    except Exception as e:
-        print(f"❌ Ошибка подключения IoT: {e}")
+# Legacy security.api IoT router skipped (B1-08).
+print("ℹ️ security.api iot_router skipped (explicit app.routers.iot)")
 
-app.include_router(location_router)
+# SEC-06: explicit /api/location-bubble/* wins; legacy /api/location/bubble/* not used by iOS smoke contract.
+if location_bubble_router_available:
+    print("ℹ️ security.api location_bubble_router skipped (explicit /api/location-bubble/* SEC-06)")
+else:
+    app.include_router(location_router)
+
 app.include_router(anti_tracker_router)
+
+# SEC-06: explicit + legacy data-cleanup share prefix but different paths (/start vs /scan) — keep both.
+if data_cleanup_router_available:
+    print("ℹ️ explicit data-cleanup active; legacy data_cleanup_router kept for /scan /remove /preferences")
 app.include_router(data_cleanup_router)
+
+# SEC-06: identity explicit wins on /detect collision; legacy keeps monitor-snils, alerts, consent.
+if identity_theft_router_available:
+    print("ℹ️ explicit identity-theft active; legacy identity_router kept for unique SNILS/consent paths")
 app.include_router(identity_router)
+
+# SEC-06 / SEC-P2-01: explicit darkweb wins on /check and /breaches; legacy keeps start-monitoring paths.
+if darkweb_router_available:
+    print("ℹ️ explicit darkweb active; legacy dark_web_router kept for monitoring-only paths")
 app.include_router(dark_web_router)
 app.include_router(driving_router)
 app.include_router(ai_categories_router)
@@ -1012,15 +1218,8 @@ if kb_router_available and kb_router is not None:
     except Exception as e:
         print(f"❌ Ошибка подключения KB RAG: {e}")
 
-# ✅ ЗАДАЧА 21: Подключение Components Router
-if components_router_available and components_router is not None:
-    try:
-        app.include_router(components_router)
-        print("✅ Роутер Components подключен")
-    except Exception as e:
-        print(f"❌ Ошибка подключения Components: {e}")
-else:
-    print("⚠️ Components Router недоступен (components_router is None)")
+# Legacy security.api components_router disabled (B1-07) — app.routers.components is canonical.
+print("ℹ️ security.api components_router skipped (explicit app.routers.components only)")
 
 # ✅ ЗАДАЧА 23: Подключение System Router
 if system_router_available:
@@ -1249,14 +1448,24 @@ async def wildcard_handler(request: Request, path: str):
         "reports/",
         "family/",
         "parental/",
-        # /api/parental-control/* — отдельный префикс от /api/parental/* (bypass); без явного роутера не отдавать SFM-mock.
         "parental-control/",
         "components/",
         "auth/",
         "metrics/",
         "subscription/",
-        # Не отдавать суб-пути /api/devices/* через SFM mock (деталка/настройки/delete — только явные роутеры).
         "devices/",
+        # SEC-INFRA B0-05: security hubs — explicit routers only (no wildcard mock)
+        "protection/",
+        "darkweb/",
+        "antifake/",
+        "deepfake/",
+        "identity-theft/",
+        "data-cleanup/",
+        "location-bubble/",
+        "malware/",
+        "phishing/",
+        "iot/",
+        "mobile/",
     )
     if normalized_path.startswith(critical_prefixes):
         return JSONResponse(

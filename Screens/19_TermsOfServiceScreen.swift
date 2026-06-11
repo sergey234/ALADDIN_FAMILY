@@ -436,7 +436,9 @@ extension TermsSection {
                 localizationManager.localized("terms_section_network_protection_content_2"),
                 localizationManager.localized("terms_section_network_protection_content_3"),
                 localizationManager.localized("terms_section_network_protection_content_4"),
-                localizationManager.localized("terms_section_network_protection_content_5")
+                localizationManager.localized("terms_section_network_protection_content_5"),
+                localizationManager.localized("terms_section_network_protection_content_6"),
+                localizationManager.localized("terms_section_network_protection_content_7")
             ]
         case .restrictions:
             return [

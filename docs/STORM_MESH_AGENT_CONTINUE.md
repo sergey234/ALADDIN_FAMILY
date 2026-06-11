@@ -6,7 +6,7 @@
 
 ---
 
-## Build 227 — что вошло (локально, commit по запросу)
+## Build 227 — что вошло (`ef680f00` on `master`)
 
 **Batch 9d Wellness — 16/16 ✅**
 - Warm (C): Hub, Checkin, Together, Dream, Exercise, Reflective (+ PillarEmotion embed in hub cards)

@@ -12,12 +12,19 @@ from __future__ import annotations
 import logging
 from datetime import datetime
 from pathlib import Path
-from typing import Dict, List, Optional, Sequence, Tuple
-
-import cv2
-import numpy as np
+from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from security.base import SecurityBase
+
+from app.security.ml_lazy_loader import get_cv2, get_numpy
+
+
+def _cv2():
+    return get_cv2()
+
+
+def _np():
+    return get_numpy()
 
 
 class FakeDocumentsAgent(SecurityBase):
@@ -66,7 +73,7 @@ class FakeDocumentsAgent(SecurityBase):
             return self._empty_result(reason="file_not_found")
 
         try:
-            image = cv2.imread(str(image_path))
+            image = _cv2().imread(str(image_path))
             if image is None:
                 return self._empty_result(reason="invalid_image")
 
@@ -118,8 +125,9 @@ class FakeDocumentsAgent(SecurityBase):
     # --------------------------------------------------------------------- #
     # ВСПОМОГАТЕЛЬНЫЕ МЕТОДЫ
     # --------------------------------------------------------------------- #
-    def _analyze_image_quality(self, image: np.ndarray) -> float:
+    def _analyze_image_quality(self, image: Any) -> float:
         """Анализирует общее качество изображения."""
+        cv2 = _cv2()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         
         # Проверка разрешения
@@ -136,8 +144,9 @@ class FakeDocumentsAgent(SecurityBase):
         # Низкое качество может указывать на подделку
         return 1.0 - quality
 
-    def _analyze_consistency(self, image: np.ndarray) -> float:
+    def _analyze_consistency(self, image: Any) -> float:
         """Проверяет консистентность изображения (однородность фона, текста)."""
+        cv2 = _cv2()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         
         # Разделение на области (фон и текст)
@@ -151,8 +160,10 @@ class FakeDocumentsAgent(SecurityBase):
         
         return consistency
 
-    def _analyze_artifacts(self, image: np.ndarray) -> float:
+    def _analyze_artifacts(self, image: Any) -> float:
         """Выявляет артефакты редактирования (клонирование, размытие, шум)."""
+        cv2 = _cv2()
+        np = _np()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         
         # Детекция краёв
@@ -170,8 +181,9 @@ class FakeDocumentsAgent(SecurityBase):
         
         return artifacts
 
-    def _analyze_sharpness(self, image: np.ndarray) -> float:
+    def _analyze_sharpness(self, image: Any) -> float:
         """Анализирует резкость изображения."""
+        cv2 = _cv2()
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
         
         # Метрика резкости через лапласиан

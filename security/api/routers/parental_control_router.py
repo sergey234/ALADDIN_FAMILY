@@ -1050,7 +1050,7 @@ def _ensure_parental_monitoring_events_table(db: Session) -> None:
                 """
                 CREATE TABLE IF NOT EXISTS parental_monitoring_events (
                     id BIGSERIAL PRIMARY KEY,
-                    user_id INTEGER NOT NULL,
+                    user_id BIGINT NOT NULL,
                     kind VARCHAR(64) NOT NULL,
                     payload JSONB NOT NULL DEFAULT '{}'::jsonb,
                     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
@@ -1744,24 +1744,9 @@ async def get_bypass_manager_status():
     }
 
 
-@router.get("/monitoring/detail", response_model=ParentalMonitoringDetailResponse)
-async def get_parental_monitoring_detail(
-    childId: Optional[str] = Query(None, alias="childId"),
-    db: Session = Depends(get_db),
-    current_user: dict = Depends(get_current_user),
-):
-    """
-    GET /api/parental-control/monitoring/detail
-    Единый ответ для модалок мониторинга/отчётов: parental_reports.content + parental_monitoring_events.
-    Пустые списки — норма, без демо-строк.
-    """
-    target = _resolve_target_user_id(childId, current_user, db)
-    if target is None:
-        return ParentalMonitoringDetailResponse()
-    return _build_parental_monitoring_detail(db, target)
+# SEC-P2-04: monitoring/detail + monitoring/events — explicit app.routers.parental_monitoring only.
 
 
-@router.post("/monitoring/events")
 async def ingest_parental_monitoring_events(
     payload: MonitoringIngestRequest,
     db: Session = Depends(get_db),

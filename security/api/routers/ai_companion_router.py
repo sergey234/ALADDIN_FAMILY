@@ -21,6 +21,7 @@ import json
 import logging
 import os
 import secrets
+import time
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 
@@ -52,6 +53,7 @@ try:
         get_current_user,
         ai_assistant_chat,
     )
+    from security.services.companion_llm_metrics import log_from_tools as log_llm_path_metrics
 except ImportError:
     from ai_assistant_router import (  # type: ignore
         ChatMessageRequest,
@@ -61,6 +63,7 @@ except ImportError:
         get_current_user,
         ai_assistant_chat,
     )
+    from companion_llm_metrics import log_from_tools as log_llm_path_metrics  # type: ignore
 
 try:
     from security.services.ai_platform.config import AppId
@@ -1365,6 +1368,8 @@ async def companion_chat(
     if not usage.allowed:
         raise HTTPException(status_code=429, detail=usage.reason or "usage_limit")
 
+    _llm_t0 = time.time()
+
     if not check_rate_limit(user_id, subscription_level):
         raise HTTPException(
             status_code=429,
@@ -1898,6 +1903,17 @@ async def companion_chat(
         )
     elif ethics.level == "L2":
         wellness_actions = _wellness_chat_actions("L2", chat_loc, ["social_bridge"])
+
+    log_llm_path_metrics(
+        ui_context="companion",
+        tools_used=merged_tools,
+        intent=intent_id,
+        user_id=user_id,
+        character_id=body.character_id,
+        chat_mode=body.chat_mode,
+        latency_ms=int((time.time() - _llm_t0) * 1000),
+        message_len=len(safe_message),
+    )
 
     return CompanionChatResponse(
         response=safe_response,

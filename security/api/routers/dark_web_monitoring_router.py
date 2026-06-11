@@ -254,7 +254,12 @@ async def health_check(agent: DarkWebMonitoringAgent = Depends(get_agent)):
         )
 
 
-@router.post("/check", response_model=CheckEmailResponse, summary="Проверка email на утечки")
+@router.post(
+    "/check",
+    response_model=CheckEmailResponse,
+    summary="Проверка email на утечки",
+    include_in_schema=False,
+)
 async def check_email_breach(
     request: CheckEmailRequest,
     token: str = Depends(require_auth_dependency),
@@ -392,30 +397,4 @@ async def get_monitoring_status(
         )
 
 
-@router.get("/breaches", response_model=BreachesResponse, summary="Получение всех утечек")
-async def get_breaches(
-    token: str = Depends(require_auth_dependency),
-    agent: DarkWebMonitoringAgent = Depends(get_agent)
-):
-    """
-    Получение списка всех найденных утечек из активных мониторингов.
-
-    Требует авторизации.
-    """
-    try:
-        threats = agent.collect_threats()
-        analyzed_threats = agent.analyze_threats(threats) if threats else []
-
-        return BreachesResponse(
-            success=True,
-            threats=threats,
-            analyzed_threats=analyzed_threats,
-            total_threats=len(threats),
-            collected_at=datetime.now().isoformat()
-        )
-    except Exception as e:
-        logger.error(f"Ошибка получения утечек: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Ошибка при получении утечек: {str(e)}"
-        )
+# SEC-P2-01: /breaches served by explicit app.routers.darkweb (registered first in main.py).

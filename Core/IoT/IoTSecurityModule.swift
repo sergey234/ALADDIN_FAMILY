@@ -123,10 +123,18 @@ class IoTSecurityModule: ObservableObject {
         guard let homeId = currentHomeId else {
             throw IoTSecurityError.missingHomeId
         }
-        
+
         try await loadStatus(homeId: homeId)
     }
-    
+
+    /// POST `/api/iot/fix/{threatId}` — B5-04.
+    func fixThreat(threatId: String) async throws {
+        _ = try await apiService.fixIoTThreat(threatId: threatId)
+        if let homeId = currentHomeId {
+            try await loadStatus(homeId: homeId)
+        }
+    }
+
     // MARK: - Helpers
     
     /// Маппинг уровня защиты 0–5 в проценты 0–100 для UI

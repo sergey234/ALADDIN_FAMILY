@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// 👴 Elderly Interface Screen
 /// Интерфейс для людей 60+ - упрощённый с крупными элементами
@@ -43,7 +44,8 @@ struct ElderlyInterfaceScreen: View {
     // Данные здоровья (загружаются из UserDefaults)
     @State private var medications: [Medication] = []
     @State private var appointments: [DoctorAppointment] = []
-    @State private var bloodPressure: BloodPressureReading = BloodPressureReading(systolic: 120, diastolic: 80, date: "08.10")
+    @State private var bloodPressure: BloodPressureReading = .empty
+    @State private var weeklyPressureByDay: [String: String] = [:]
     
     // Данные семьи (синхронизируются с family_members_list)
     @State private var familyMembers: [ElderlyFamilyMember] = []
@@ -145,9 +147,12 @@ struct ElderlyInterfaceScreen: View {
             .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showBloodPressure) {
-            BloodPressureModal(isPresented: $showBloodPressure, bloodPressure: $bloodPressure, onSave: {
-                saveBloodPressure()
-            })
+            BloodPressureModal(
+                isPresented: $showBloodPressure,
+                bloodPressure: $bloodPressure,
+                weeklyPressureByDay: $weeklyPressureByDay,
+                onSave: { saveBloodPressure() }
+            )
             .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showHealthJournal) {
@@ -203,8 +208,10 @@ struct ElderlyInterfaceScreen: View {
             loadMedications()
             loadAppointments()
             loadBloodPressure()
+            loadWeeklyPressureCache()
             runDataIntegrityAudit()
             Task {
+                await syncElderlyHealthFromServer()
                 await loadElderlyContentFeed()
             }
         }
@@ -444,7 +451,9 @@ struct ElderlyInterfaceScreen: View {
                 healthCard(
                     icon: "🩺",
                     title: localizationManager.localized("elderly_interface_blood_pressure"),
-                    subtitle: localizationManager.localized("elderly_interface_last_reading", bloodPressure.systolic, bloodPressure.diastolic, bloodPressure.date),
+                    subtitle: bloodPressure.isEmpty
+                        ? localizationManager.localized("elderly_blood_pressure_no_reading")
+                        : localizationManager.localized("elderly_interface_last_reading", bloodPressure.systolic, bloodPressure.diastolic, bloodPressure.date),
                     color: .red,
                     action: { showBloodPressure = true },
                     accessibilityHint: localizationManager.localized("elderly_a11y_opens_details_hint")
@@ -1128,11 +1137,36 @@ struct ElderlyInterfaceScreen: View {
     }
     
     // MARK: - Blood Pressure Management
+
+    private func elderlyUserId() -> String? {
+        let stored = (UserDefaults.standard.string(forKey: "user_id") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return stored.isEmpty ? nil : stored
+    }
+
+    private func elderlyDeviceId() -> String {
+        UIDevice.current.identifierForVendor?.uuidString ?? "ios-elderly-device"
+    }
+
+    private func loadWeeklyPressureCache() {
+        guard let raw = UserDefaults.standard.data(forKey: "elderly_blood_pressure_weekly"),
+              let decoded = try? JSONDecoder().decode([String: String].self, from: raw) else {
+            weeklyPressureByDay = [:]
+            return
+        }
+        weeklyPressureByDay = decoded
+    }
+
+    private func persistWeeklyPressureCache() {
+        guard let encoded = try? JSONEncoder().encode(weeklyPressureByDay) else { return }
+        UserDefaults.standard.set(encoded, forKey: "elderly_blood_pressure_weekly")
+    }
     
     private func loadBloodPressure() {
         if let savedSystolic = UserDefaults.standard.object(forKey: "elderly_blood_pressure_systolic") as? Int,
            let savedDiastolic = UserDefaults.standard.object(forKey: "elderly_blood_pressure_diastolic") as? Int,
-           let savedDate = UserDefaults.standard.string(forKey: "elderly_blood_pressure_date") {
+           savedSystolic > 0, savedDiastolic > 0 {
+            let savedDate = UserDefaults.standard.string(forKey: "elderly_blood_pressure_date") ?? ""
             bloodPressure = BloodPressureReading(
                 systolic: savedSystolic,
                 diastolic: savedDiastolic,
@@ -1140,19 +1174,119 @@ struct ElderlyInterfaceScreen: View {
             )
             print("✅ Загружено давление: \(savedSystolic)/\(savedDiastolic) (\(savedDate))")
         } else {
-            // Используем дефолтные значения
-            print("⚠️ Нет сохранённых данных давления, используются дефолтные значения")
+            bloodPressure = .empty
+            print("ℹ️ Нет сохранённых данных давления — empty state")
         }
     }
     
     private func saveBloodPressure() {
+        guard !bloodPressure.isEmpty else {
+            UserDefaults.standard.removeObject(forKey: "elderly_blood_pressure_systolic")
+            UserDefaults.standard.removeObject(forKey: "elderly_blood_pressure_diastolic")
+            UserDefaults.standard.removeObject(forKey: "elderly_blood_pressure_date")
+            persistWeeklyPressureCache()
+            return
+        }
+
         UserDefaults.standard.set(bloodPressure.systolic, forKey: "elderly_blood_pressure_systolic")
         UserDefaults.standard.set(bloodPressure.diastolic, forKey: "elderly_blood_pressure_diastolic")
         UserDefaults.standard.set(bloodPressure.date, forKey: "elderly_blood_pressure_date")
+        persistWeeklyPressureCache()
         print("✅ Сохранено давление: \(bloodPressure.systolic)/\(bloodPressure.diastolic) (\(bloodPressure.date))")
+
+        guard let userId = elderlyUserId() else { return }
+        APIService.shared.updateBloodPressure(
+            userId: userId,
+            systolic: bloodPressure.systolic,
+            diastolic: bloodPressure.diastolic,
+            recordedAt: ISO8601DateFormatter().string(from: Date()),
+            deviceId: elderlyDeviceId()
+        ) { result in
+            switch result {
+            case .success:
+                print("✅ Blood pressure synced to server")
+            case .failure(let error):
+                print("⚠️ Blood pressure server sync failed: \(error.localizedDescription)")
+            }
+        }
         
-        // Уведомляем другие экраны об изменении
         NotificationCenter.default.post(name: UserDefaults.didChangeNotification, object: nil)
+    }
+
+    private func syncElderlyHealthFromServer() async {
+        guard let userId = elderlyUserId() else { return }
+        let deviceId = elderlyDeviceId()
+
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            APIService.shared.syncMedications(userId: userId, deviceId: deviceId) { result in
+                if case .success(let response) = result {
+                    let mapped = response.medications.map {
+                        Medication(name: $0.name, time: $0.timeOfDay ?? "", taken: false)
+                    }
+                    if !mapped.isEmpty {
+                        Task { @MainActor in
+                            self.medications = mapped
+                            self.saveMedications()
+                        }
+                    }
+                }
+                continuation.resume()
+            }
+        }
+
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            APIService.shared.syncAppointments(userId: userId, deviceId: deviceId) { result in
+                if case .success(let response) = result {
+                    let formatter = ISO8601DateFormatter()
+                    let mapped = response.appointments.compactMap { item -> DoctorAppointment? in
+                        guard let parsed = formatter.date(from: item.dateTime) else { return nil }
+                        let dateFormatter = DateFormatter()
+                        dateFormatter.dateFormat = "dd.MM"
+                        let timeFormatter = DateFormatter()
+                        timeFormatter.dateFormat = "HH:mm"
+                        return DoctorAppointment(
+                            date: dateFormatter.string(from: parsed),
+                            doctor: item.title,
+                            time: timeFormatter.string(from: parsed)
+                        )
+                    }
+                    if !mapped.isEmpty {
+                        Task { @MainActor in
+                            self.appointments = mapped
+                            self.saveAppointments()
+                        }
+                    }
+                }
+                continuation.resume()
+            }
+        }
+
+        await withCheckedContinuation { (continuation: CheckedContinuation<Void, Never>) in
+            APIService.shared.syncBloodPressure(userId: userId, deviceId: deviceId) { result in
+                if case .success(let response) = result {
+                    Task { @MainActor in
+                        if !response.weeklyByDay.isEmpty {
+                            self.weeklyPressureByDay = response.weeklyByDay
+                            self.persistWeeklyPressureCache()
+                        }
+                        if let latest = response.readings.max(by: { $0.recordedAt < $1.recordedAt }),
+                           latest.systolic > 0, latest.diastolic > 0 {
+                            let dateFormatter = DateFormatter()
+                            dateFormatter.dateFormat = "dd.MM"
+                            if let parsed = ISO8601DateFormatter().date(from: latest.recordedAt) {
+                                self.bloodPressure = BloodPressureReading(
+                                    systolic: latest.systolic,
+                                    diastolic: latest.diastolic,
+                                    date: dateFormatter.string(from: parsed)
+                                )
+                                self.saveBloodPressure()
+                            }
+                        }
+                    }
+                }
+                continuation.resume()
+            }
+        }
     }
 
     private func loadPersistedContacts() -> [FamilyContact] {
@@ -1918,6 +2052,10 @@ struct BloodPressureReading: Identifiable {
     let systolic: Int
     let diastolic: Int
     let date: String
+
+    var isEmpty: Bool { systolic <= 0 || diastolic <= 0 }
+
+    static let empty = BloodPressureReading(systolic: 0, diastolic: 0, date: "")
 }
 
 struct ElderlyHealthSyncReport: Codable {
@@ -2761,6 +2899,7 @@ struct AddAppointmentSheet: View {
 struct BloodPressureModal: View {
     @Binding var isPresented: Bool
     @Binding var bloodPressure: BloodPressureReading
+    @Binding var weeklyPressureByDay: [String: String]
     @EnvironmentObject private var localizationManager: LocalizationManager
     let onSave: () -> Void
     @State private var pressureReadings: [BloodPressureReading] = []
@@ -2797,13 +2936,20 @@ struct BloodPressureModal: View {
                     Text(localizationManager.localized("elderly_blood_pressure_last_measurement"))
                         .font(.system(size: 20, weight: .bold))
                     
-                    Text("\(bloodPressure.systolic)/\(bloodPressure.diastolic)")
-                        .font(.system(size: 48, weight: .bold))
-                        .foregroundColor(.red)
-                    
-                    Text("\(localizationManager.localized("elderly_blood_pressure_date_label")) \(bloodPressure.date)")
-                        .font(.system(size: 16))
-                        .foregroundColor(.secondary)
+                    if bloodPressure.isEmpty {
+                        Text(localizationManager.localized("elderly_blood_pressure_no_reading"))
+                            .font(.system(size: 22, weight: .semibold))
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                    } else {
+                        Text("\(bloodPressure.systolic)/\(bloodPressure.diastolic)")
+                            .font(.system(size: 48, weight: .bold))
+                            .foregroundColor(.red)
+
+                        Text("\(localizationManager.localized("elderly_blood_pressure_date_label")) \(bloodPressure.date)")
+                            .font(.system(size: 16))
+                            .foregroundColor(.secondary)
+                    }
                 }
                 .padding()
                 .background(Color.gray.opacity(0.1))
@@ -2866,7 +3012,12 @@ struct BloodPressureModal: View {
                     systolic: $newSystolic,
                     diastolic: $newDiastolic,
                     date: $newDate,
-                    onSave: onSave
+                    onSave: {
+                        if bloodPressure.systolic > 0, bloodPressure.diastolic > 0, !newDate.isEmpty {
+                            weeklyPressureByDay[newDate] = "\(bloodPressure.systolic)/\(bloodPressure.diastolic)"
+                        }
+                        onSave()
+                    }
                 )
                 .environmentObject(localizationManager)
             }
@@ -2886,21 +3037,11 @@ struct BloodPressureModal: View {
     }
     
     private func getPressureForDay(_ day: String) -> String {
-        // Моковые данные для демонстрации
-        let mockData = [
-            "Пн": "120/80",
-            "Вт": "125/82",
-            "Ср": "",
-            "Чт": "118/78",
-            "Пт": "",
-            "Сб": "122/79",
-            "Вс": ""
-        ]
-        return mockData[day] ?? ""
+        let value = weeklyPressureByDay[day] ?? ""
+        return value.isEmpty ? "—" : value
     }
     
     private func editPressureForDay(_ day: String) {
-        // Логика редактирования давления для конкретного дня
         newDate = day
         showAddReading = true
     }

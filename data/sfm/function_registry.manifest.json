@@ -1,0 +1,8 @@
+{
+  "version": "1.0",
+  "canonical_path": "/opt/aladdin-backend/app/data/sfm/function_registry.json",
+  "legacy_sync_path": "/opt/aladdin-backend/data/sfm/function_registry.json",
+  "functions_count": 1074,
+  "sha256": "3470407744a449041d3367b59504cb352f3be1b308772ecca541ff5cb003e40b",
+  "updated_at": "2026-06-09"
+}

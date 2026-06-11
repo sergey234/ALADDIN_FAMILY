@@ -432,43 +432,7 @@ async def monitor_snils(
         )
 
 
-@router.post("/monitor-credit", response_model=MonitorCreditResponse, summary="Мониторинг кредитного отчета")
-async def monitor_credit(
-    request: MonitorCreditRequest,
-    token: str = Depends(require_auth_dependency),
-    agent: RussianIdentityTheftProtectionAgent = Depends(get_agent)
-):
-    """
-    Запуск мониторинга кредитного отчета через НБКИ и ОКБ.
-
-    Требует авторизации и согласия пользователя на доступ к кредитному отчету (152-ФЗ).
-    """
-    try:
-        result = agent.monitor_credit_report(user_id=request.user_id)
-
-        if not result.get("success", False):
-            return MonitorCreditResponse(
-                success=False,
-                error=result.get("error", "unknown_error"),
-                message=result.get("message", ""),
-                checked_at=datetime.now().isoformat()
-            )
-
-        return MonitorCreditResponse(
-            success=True,
-            nbki_available=result.get("nbki_available", False),
-            okb_available=result.get("okb_available", False),
-            suspicious_changes=result.get("suspicious_changes", 0),
-            risk_score=result.get("risk_score", 0.0),
-            severity=result.get("severity", "low"),
-            checked_at=result.get("checked_at", datetime.now().isoformat())
-        )
-    except Exception as e:
-        logger.error(f"Ошибка мониторинга кредитного отчета для {request.user_id}: {e}")
-        raise HTTPException(
-            status_code=500,
-            detail=f"Ошибка при мониторинге кредитного отчета: {str(e)}"
-        )
+# SEC-P2-02: legacy POST /monitor-credit removed — use explicit /monitor/credit or /monitor-credit.
 
 
 @router.post("/check", response_model=CheckFraudDatabaseResponse, summary="Проверка в базе мошенников")
@@ -525,7 +489,12 @@ async def check_fraud_database(
         )
 
 
-@router.post("/detect", response_model=DetectIdentityTheftResponse, summary="Обнаружение кражи личности")
+@router.post(
+    "/detect",
+    response_model=DetectIdentityTheftResponse,
+    summary="Обнаружение кражи личности",
+    include_in_schema=False,
+)
 async def detect_identity_theft(
     request: DetectIdentityTheftRequest,
     token: str = Depends(require_auth_dependency),

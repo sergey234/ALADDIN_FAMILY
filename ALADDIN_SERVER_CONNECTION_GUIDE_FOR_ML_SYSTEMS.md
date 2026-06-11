@@ -736,3 +736,39 @@ ssh -i ~/.ssh/aladdin_server root@149.154.65.180 \
 
 Документация плана: `docs/WELLNESS_HERO_PERSONA_ENHANCEMENT_PLAN.md`, smoke TestFlight: `docs/COMPANION_HERO_X62_SMOKE.md`.
 
+---
+
+## 🧠 **SFM TRUTH — единая проверка (обязательно для security ML)**
+
+**Проблема:** ML-системы путались: «SFM нет», «SFM неполный», «1074 работает» — из‑за неверного пути import, stub-файла в корне и ложного health на `:8003`.
+
+**Правда:**
+
+| Что | Канонический путь |
+|-----|-------------------|
+| Код SFM | `/opt/aladdin-backend/app/security/safe_function_manager.py` (~4866 строк) |
+| Registry | `/opt/aladdin-backend/data/sfm/function_registry.json` |
+| HTTP | `http://127.0.0.1:8003` (`aladdin-sfm-core.service`) |
+| **НЕ искать** | `/opt/aladdin-backend/security/safe_function_manager.py` |
+| **НЕ импортировать** | `/opt/aladdin-backend/safe_function_manager.py` (43-строчный stub) |
+
+**Первая команда для любой ML (до отчётов о SFM):**
+
+```bash
+ssh -i ~/.ssh/aladdin_server root@149.154.65.180 \
+  'bash /opt/aladdin-backend/docs/server/sfm_truth_check.sh'
+```
+
+Или после деплоя `B-OPS-13`:
+
+```bash
+ssh -i ~/.ssh/aladdin_server root@149.154.65.180 \
+  'curl -s http://127.0.0.1:8003/api/sfm/status | python3 -m json.tool'
+```
+
+**PASS только если:** `sfm_loaded: true`, `registry_count >= 1000`, `fallback_mode: false`.
+
+**Запрещено** писать «SFM работает» по одному `GET /api/health` или `status:success` от execute.
+
+**Документация:** `docs/SFM_ML_QUICKSTART.md` · `docs/SFM_SINGLE_SOURCE_OF_TRUTH.md` · handoff: `ML_SYSTEM_HANDOFF_SECURITY_100_PERCENT.md`
+

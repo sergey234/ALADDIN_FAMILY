@@ -1,6 +1,6 @@
 # Storm Mesh — Cursor Todo (39 задач)
 
-**Синхронизировано:** 2026-06-08 · **Build:** 227 (local, pending commit)  
+**Синхронизировано:** 2026-06-08 · **Build:** 227 (`ef680f00` on `master`)  
 **Handoff:** `docs/STORM_MESH_PREMIUM_DESIGN_HANDOFF.md` · **Continue:** `docs/STORM_MESH_AGENT_CONTINUE.md`
 
 **Счёт:** 38 ✅ · 1 ❌ skip = 39

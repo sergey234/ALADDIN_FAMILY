@@ -7,6 +7,7 @@ struct MobileSecuritySettingsScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var syncEngine = SyncEngine.shared
     @StateObject private var viewModel = MobileSecuritySettingsViewModel()
+    @StateObject private var scanViewModel = DeviceMobilePanelViewModel()
 
     private var syncState: SyncState {
         syncEngine.latestStateByDomain[.networkProtection] ?? .idle
@@ -108,10 +109,9 @@ struct MobileSecuritySettingsScreen: View {
                         PrimaryButton(
                             title: localizationManager.localized("mobile_security.security_check"),
                             icon: "checkmark.shield",
-                            isLoading: false
+                            isLoading: scanViewModel.isRunningScan
                         ) {
-                            // TODO: Запустить проверку безопасности устройства
-                            print("🔐 Запуск проверки безопасности устройства...")
+                            Task { await scanViewModel.runSecurityCheck() }
                         }
                     }
                     .padding(.horizontal, Spacing.screenPadding)

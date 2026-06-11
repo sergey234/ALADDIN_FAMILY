@@ -3,8 +3,10 @@
   "locale": "en",
   "topic": "security_faq",
   "title": "What does the system protect?",
-  "body": "What does the system protect?\n\nALADDIN protects against 100+ types of dangers on the internet. It's like a security guard for your phone - it doesn't let bad things in and protects you from viruses, scammers and dangerous sites.\n\nOur system works 24/7 and checks everything that happens on your device.",
+  "body": "What does the system protect?\n\nALADDIN helps protect against major online risks. Features depend on your plan. Like a guard for your phone â warns about viruses, scammers and dangerous sites.\n\nThe system works 24/7 and monitors activity on your device.",
   "source": "UnifiedFAQCatalog",
-  "keywords": [],
+  "keywords": [
+    "what protects"
+  ],
   "kb_version": "kb_v1"
 }

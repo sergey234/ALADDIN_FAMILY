@@ -2,7 +2,7 @@
 ## Handoff для ML-систем / агента Cursor
 
 **Версия:** 1.2  
-**Дата:** 2026-06-08 (синхронизировано: **build 226** `fc6de13e`, Batch 9 partial)  
+**Дата:** 2026-06-08 (синхронизировано: **build 227** `ef680f00`, Batch 6–9 + ASO ✅)  
 **Репозиторий (единственный рабочий корень):**  
 `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
 **Cursor todo (39 задач):** `.cursor/STORM_MESH_TODO.md` · **Продолжение:** `docs/STORM_MESH_AGENT_CONTINUE.md`

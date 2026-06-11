@@ -1,0 +1,14 @@
+{
+  "id": "faq_roadside_assistance_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What is roadside assistance?",
+  "body": "What is roadside assistance?\n\nRoadside assistance is a breakdown request from Network Protection.\n\nHow it works:\n1. You describe the problem (flat tire, battery, accident)\n2. With your consent, location is shared\n3. Family and emergency contacts receive the alert\n\nIt's like a \"I need help on the road\" button in your pocket!\n\nâ ALADDIN sends the request only when you tap the button yourself.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [
+    "дорога",
+    "поломка",
+    "roadside"
+  ],
+  "kb_version": "kb_v1"
+}

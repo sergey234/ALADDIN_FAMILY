@@ -117,10 +117,6 @@ private let logger = MasterLogger.shared
             return data
         }
         guard let result = json["result"], !(result is NSNull) else {
-            if decodeType == ParentalMonitoringDetailResponse.self,
-               path.contains("monitoring/detail") {
-                return emptyParentalMonitoringDetailPayload()
-            }
             return data
         }
         if let dict = result as? [String: Any] {
@@ -131,40 +127,8 @@ private let logger = MasterLogger.shared
             if !t.isEmpty, let inner = t.data(using: .utf8) {
                 return inner
             }
-            if t.isEmpty,
-               decodeType == ParentalMonitoringDetailResponse.self,
-               path.contains("monitoring/detail") {
-                return emptyParentalMonitoringDetailPayload()
-            }
-        }
-        // Шлюз с `function`/`result`, но `result` не строка и не объект — не даём декодеру падать по корню.
-        if decodeType == ParentalMonitoringDetailResponse.self,
-           path.contains("monitoring/detail"),
-           json["top_sites"] == nil,
-           json["function"] != nil,
-           json.keys.contains("result") {
-            return emptyParentalMonitoringDetailPayload()
         }
         return data
-    }
-
-    private static func emptyParentalMonitoringDetailPayload() -> Data {
-        let summary: [String: Any] = [
-            "browser_sites_week": 0,
-            "apps_used_week": 0,
-            "contacts_active": 0
-        ]
-        let o: [String: Any] = [
-            "top_sites": [],
-            "top_apps": [],
-            "browser_history": [],
-            "app_history": [],
-            "peak_hours": [],
-            "suspicious": [],
-            "contacts": [],
-            "summary": summary
-        ]
-        return (try? JSONSerialization.data(withJSONObject: o)) ?? Data()
     }
 
     // ✅ ЗАДАЧА 62: Rate Limiting

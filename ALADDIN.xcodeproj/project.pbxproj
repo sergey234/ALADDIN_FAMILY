@@ -30,6 +30,40 @@
 		5E00581F2EC4B1CF00024F7E /* ProtectionCategoryRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E00581E2EC4B1CF00024F7E /* ProtectionCategoryRow.swift */; };
 		5E0058212EC4B21A00024F7E /* ProtectionGroupSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058202EC4B21A00024F7E /* ProtectionGroupSection.swift */; };
 		5E0058232EC4B2EB00024F7E /* ThreatProtectionSettingsScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058222EC4B2EB00024F7E /* ThreatProtectionSettingsScreen.swift */; };
+		AFHUB22F90000100C7D34B /* AntifakeHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFHUB12F90000100C7D34B /* AntifakeHubScreen.swift */; };
+		PRVHUB22F90000100C7D34B /* PrivacyHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRVHUB12F90000100C7D34B /* PrivacyHubScreen.swift */; };
+		IDHUB22F90000100C7D34B /* IdentityHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDHUB12F90000100C7D34B /* IdentityHubScreen.swift */; };
+		IDDET22F90000100C7D34B /* IdentityDetectViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDDET12F90000100C7D34B /* IdentityDetectViewModel.swift */; };
+		IDMON22F90000100C7D34B /* IdentityMonitorViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDMON12F90000100C7D34B /* IdentityMonitorViewModel.swift */; };
+		IDFRD22F90000100C7D34B /* IdentityFraudThreatCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDFRD12F90000100C7D34B /* IdentityFraudThreatCatalog.swift */; };
+		IDCOV22F90000100C7D34B /* IdentityHubThreatCoverageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDCOV12F90000100C7D34B /* IdentityHubThreatCoverageView.swift */; };
+		DVHUB22F90000100C7D34B /* DeviceHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVHUB12F90000100C7D34B /* DeviceHubScreen.swift */; };
+		DVSCN22F90000100C7D34B /* DeviceScanModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVSCN12F90000100C7D34B /* DeviceScanModels.swift */; };
+		DVTHR22F90000100C7D34B /* DeviceThreatCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVTHR12F90000100C7D34B /* DeviceThreatCatalog.swift */; };
+		DVSRC22F90000100C7D34B /* DeviceScanResultCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVSRC12F90000100C7D34B /* DeviceScanResultCard.swift */; };
+		DVCOV22F90000100C7D34B /* DeviceHubThreatCoverageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVCOV12F90000100C7D34B /* DeviceHubThreatCoverageView.swift */; };
+		DVCYB22F90000100C7D34B /* DeviceCyberScanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVCYB12F90000100C7D34B /* DeviceCyberScanViewModel.swift */; };
+		DVCMP22F90000100C7D34B /* DeviceComponentsScanViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVCMP12F90000100C7D34B /* DeviceComponentsScanViewModel.swift */; };
+		DVMOB22F90000100C7D34B /* DeviceMobilePanelViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVMOB12F90000100C7D34B /* DeviceMobilePanelViewModel.swift */; };
+		DVIOT22F90000100C7D34B /* DeviceIoTPanelViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVIOT12F90000100C7D34B /* DeviceIoTPanelViewModel.swift */; };
+		IDDETT22F90000100C7D34B /* IdentityDetectViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDDETT12F90000100C7D34B /* IdentityDetectViewModelTests.swift */; };
+		IDMONT22F90000100C7D34B /* IdentityMonitorViewModelTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDMONT12F90000100C7D34B /* IdentityMonitorViewModelTests.swift */; };
+		IDFRDT22F90000100C7D34B /* IdentityFraudThreatCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDFRDT12F90000100C7D34B /* IdentityFraudThreatCatalogTests.swift */; };
+		DVTHRT22F90000100C7D34B /* DeviceThreatCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVTHRT12F90000100C7D34B /* DeviceThreatCatalogTests.swift */; };
+		DVEICT22F90000100C7D34B /* DeviceEicarScanTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = DVEICT12F90000100C7D34B /* DeviceEicarScanTests.swift */; };
+		FCHLD22F90000100C7D34B /* FamilyChildThreatCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCHLD12F90000100C7D34B /* FamilyChildThreatCatalog.swift */; };
+		FCHCV22F90000100C7D34B /* FamilyChildThreatCoverageView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCHCV12F90000100C7D34B /* FamilyChildThreatCoverageView.swift */; };
+		PRMON22F90000100C7D34B /* ParentalMonitoringValidation.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRMON12F90000100C7D34B /* ParentalMonitoringValidation.swift */; };
+		GEOGC22F90000100C7D34B /* GeofenceGeocodingService.swift in Sources */ = {isa = PBXBuildFile; fileRef = GEOGC12F90000100C7D34B /* GeofenceGeocodingService.swift */; };
+		PRMEX22F90000100C7D34B /* ParentalMonitoringReportExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRMEX12F90000100C7D34B /* ParentalMonitoringReportExporter.swift */; };
+		PRMGR22F90000100C7D34B /* ParentalControlReportsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRMGR12F90000100C7D34B /* ParentalControlReportsManager.swift */; };
+		FCHLDT22F90000100C7D34B /* FamilyChildThreatCatalogTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FCHLDT12F90000100C7D34B /* FamilyChildThreatCatalogTests.swift */; };
+		PRMONT22F90000100C7D34B /* ParentalMonitoringValidationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRMONT12F90000100C7D34B /* ParentalMonitoringValidationTests.swift */; };
+		IDATT22F90000100C7D34B /* IdentityTheftAttemptsParsingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = IDATT12F90000100C7D34B /* IdentityTheftAttemptsParsingTests.swift */; };
+		AFVMC22F90000100C7D34B /* AntifakeTextCheckViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVMC12F90000100C7D34B /* AntifakeTextCheckViewModel.swift */; };
+		AFVRD22F90000100C7D34B /* AntifakeVerdictCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVRD12F90000100C7D34B /* AntifakeVerdictCard.swift */; };
+		AFMED22F90000100C7D34B /* AntifakeMediaCheckView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFMED12F90000100C7D34B /* AntifakeMediaCheckView.swift */; };
+		AFMVM22F90000100C7D34B /* AntifakeMediaCheckViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFMVM12F90000100C7D34B /* AntifakeMediaCheckViewModel.swift */; };
 		5E0058252EC4E69100024F7E /* ThreatItemRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058242EC4E69100024F7E /* ThreatItemRow.swift */; };
 		5E0058272EC4FC5E00024F7E /* ChildRewardsSettingsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058262EC4FC5D00024F7E /* ChildRewardsSettingsModal.swift */; };
 		5E0058292EC605FC00024F7E /* ParentalControlFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E0058282EC605FC00024F7E /* ParentalControlFeature.swift */; };
@@ -84,12 +118,24 @@
 		5E32FFF72EAD23BB000574C4 /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF62EAD23BB000574C4 /* PrimaryButton.swift */; };
 		5E32FFF92EAD24D2000574C4 /* InfoRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF82EAD24D2000574C4 /* InfoRow.swift */; };
 		5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */; };
+		SECVRD22F90000100C7D34B /* SecurityVerdictModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = SECVRD12F90000100C7D34B /* SecurityVerdictModels.swift */; };
+		PRMGATE22F90000100C7D34B /* PremiumGateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRMGATE12F90000100C7D34B /* PremiumGateHandler.swift */; };
+		AFPRM22F90000100C7D34B /* AntifakeHubPremiumCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFPRM12F90000100C7D34B /* AntifakeHubPremiumCoordinator.swift */; };
+		AFIPG22F90000100C7D34B /* AntifakeInlinePremiumGateCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFIPG12F90000100C7D34B /* AntifakeInlinePremiumGateCard.swift */; };
+		SECVRDT22F90000100C7D34B /* SecurityVerdictModelsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = SECVRDT12F90000100C7D34B /* SecurityVerdictModelsTests.swift */; };
 		5E32FFFD2EAD25BC000574C4 /* KeychainManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */; };
 		5E32FFFF2EAD25F5000574C4 /* CacheManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */; };
 		5E4D25572FD6BA6B00F9D6B4 /* RiveRuntime in Frameworks */ = {isa = PBXBuildFile; productRef = C0MPRVPD12F90000100C7D34B /* RiveRuntime */; };
 		5E5978072F60A0BD00854BDE /* DateFormatterService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E5978062F60A0BC00854BDE /* DateFormatterService.swift */; };
 		5E61A0A12EFB38ED0039093A /* blockerList.json in Resources */ = {isa = PBXBuildFile; fileRef = 5E61A0A02EFB38ED0039093A /* blockerList.json */; };
 		5E61A0A72EFB38ED0039093A /* ALADDINContentBlocker.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AFSh0022F90000100C7D34B /* AntifakeSharePayloadStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFSh0012F90000100C7D34B /* AntifakeSharePayloadStore.swift */; };
+		AFSh0032F90000100C7D34B /* AntifakeSharePayloadStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFSh0012F90000100C7D34B /* AntifakeSharePayloadStore.swift */; };
+		AFSh0052F90000100C7D34B /* AntifakeDeepLinkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFSh0042F90000100C7D34B /* AntifakeDeepLinkRouter.swift */; };
+		AFSh0072F90000100C7D34B /* ShareViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFSh0062F90000100C7D34B /* ShareViewController.swift */; };
+		AFSh0112F90000100C7D34B /* ALADDINAntifakeShare.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AFSh0102F90000100C7D34B /* ALADDINAntifakeShare.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AFSh0222F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFSh0252F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift */; };
+		AFSh0242F90000100C7D34B /* AntifakeDeepLinkRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFSh0232F90000100C7D34B /* AntifakeDeepLinkRouterTests.swift */; };
 		5E61A0AC2EFB38ED0039093A /* ActionRequestHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E61A0AD2EFB38ED0039093A /* ActionRequestHandler.swift */; };
 		5E6C6AFE2F34C97800F6FFEA /* GeofenceModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6AFD2F34C97800F6FFEA /* GeofenceModels.swift */; };
 		5E6C6B002F34C98400F6FFEA /* LocationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E6C6AFF2F34C98400F6FFEA /* LocationManager.swift */; };
@@ -543,6 +589,13 @@
 			remoteGlobalIDString = 5E61A09D2EFB38ED0039093A;
 			remoteInfo = ALADDINContentBlocker;
 		};
+		AFSh0122F90000100C7D34B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AFSh0172F90000100C7D34B;
+			remoteInfo = ALADDINAntifakeShare;
+		};
 		B5001008 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A0FFFFF6 /* Project object */;
@@ -566,6 +619,7 @@
 			dstSubfolder = PlugIns;
 			files = (
 				5E61A0A72EFB38ED0039093A /* ALADDINContentBlocker.appex in Embed App Extensions */,
+				AFSh0112F90000100C7D34B /* ALADDINAntifakeShare.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 		};
@@ -596,6 +650,48 @@
 		5E00581E2EC4B1CF00024F7E /* ProtectionCategoryRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionCategoryRow.swift; path = Components/ProtectionCategoryRow.swift; sourceTree = "<group>"; };
 		5E0058202EC4B21A00024F7E /* ProtectionGroupSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ProtectionGroupSection.swift; path = Components/ProtectionGroupSection.swift; sourceTree = "<group>"; };
 		5E0058222EC4B2EB00024F7E /* ThreatProtectionSettingsScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ThreatProtectionSettingsScreen.swift; sourceTree = "<group>"; };
+		AFHUB12F90000100C7D34B /* AntifakeHubScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AntifakeHubScreen.swift; sourceTree = "<group>"; };
+		PRVHUB12F90000100C7D34B /* PrivacyHubScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PrivacyHubScreen.swift; sourceTree = "<group>"; };
+		IDHUB12F90000100C7D34B /* IdentityHubScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IdentityHubScreen.swift; sourceTree = "<group>"; };
+		IDDET12F90000100C7D34B /* IdentityDetectViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IdentityDetectViewModel.swift; path = ViewModels/IdentityDetectViewModel.swift; sourceTree = "<group>"; };
+		IDMON12F90000100C7D34B /* IdentityMonitorViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IdentityMonitorViewModel.swift; path = ViewModels/IdentityMonitorViewModel.swift; sourceTree = "<group>"; };
+		IDFRD12F90000100C7D34B /* IdentityFraudThreatCatalog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IdentityFraudThreatCatalog.swift; path = Shared/Models/IdentityFraudThreatCatalog.swift; sourceTree = "<group>"; };
+		IDCOV12F90000100C7D34B /* IdentityHubThreatCoverageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = IdentityHubThreatCoverageView.swift; path = Shared/Components/IdentityHubThreatCoverageView.swift; sourceTree = "<group>"; };
+		DVHUB12F90000100C7D34B /* DeviceHubScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DeviceHubScreen.swift; sourceTree = "<group>"; };
+		DVSCN12F90000100C7D34B /* DeviceScanModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceScanModels.swift; path = Shared/Models/DeviceScanModels.swift; sourceTree = "<group>"; };
+		DVTHR12F90000100C7D34B /* DeviceThreatCatalog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceThreatCatalog.swift; path = Shared/Models/DeviceThreatCatalog.swift; sourceTree = "<group>"; };
+		DVSRC12F90000100C7D34B /* DeviceScanResultCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceScanResultCard.swift; path = Shared/Components/DeviceScanResultCard.swift; sourceTree = "<group>"; };
+		DVCOV12F90000100C7D34B /* DeviceHubThreatCoverageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceHubThreatCoverageView.swift; path = Shared/Components/DeviceHubThreatCoverageView.swift; sourceTree = "<group>"; };
+		DVCYB12F90000100C7D34B /* DeviceCyberScanViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceCyberScanViewModel.swift; path = ViewModels/DeviceCyberScanViewModel.swift; sourceTree = "<group>"; };
+		DVCMP12F90000100C7D34B /* DeviceComponentsScanViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceComponentsScanViewModel.swift; path = ViewModels/DeviceComponentsScanViewModel.swift; sourceTree = "<group>"; };
+		DVMOB12F90000100C7D34B /* DeviceMobilePanelViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceMobilePanelViewModel.swift; path = ViewModels/DeviceMobilePanelViewModel.swift; sourceTree = "<group>"; };
+		DVIOT12F90000100C7D34B /* DeviceIoTPanelViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DeviceIoTPanelViewModel.swift; path = ViewModels/DeviceIoTPanelViewModel.swift; sourceTree = "<group>"; };
+		DVTHRT12F90000100C7D34B /* DeviceThreatCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceThreatCatalogTests.swift; sourceTree = "<group>"; };
+		DVEICT12F90000100C7D34B /* DeviceEicarScanTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceEicarScanTests.swift; sourceTree = "<group>"; };
+		FCHLD12F90000100C7D34B /* FamilyChildThreatCatalog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChildThreatCatalog.swift; path = Shared/Models/FamilyChildThreatCatalog.swift; sourceTree = "<group>"; };
+		FCHCV12F90000100C7D34B /* FamilyChildThreatCoverageView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyChildThreatCoverageView.swift; path = Shared/Components/FamilyChildThreatCoverageView.swift; sourceTree = "<group>"; };
+		PRMON12F90000100C7D34B /* ParentalMonitoringValidation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalMonitoringValidation.swift; path = Shared/Models/ParentalMonitoringValidation.swift; sourceTree = "<group>"; };
+		GEOGC12F90000100C7D34B /* GeofenceGeocodingService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceGeocodingService.swift; path = Core/Services/GeofenceGeocodingService.swift; sourceTree = "<group>"; };
+		PRMEX12F90000100C7D34B /* ParentalMonitoringReportExporter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalMonitoringReportExporter.swift; path = Core/Content/Parent/ParentalMonitoringReportExporter.swift; sourceTree = "<group>"; };
+		PRMGR12F90000100C7D34B /* ParentalControlReportsManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalControlReportsManager.swift; path = Core/Managers/ParentalControlReportsManager.swift; sourceTree = "<group>"; };
+		FCHLDT12F90000100C7D34B /* FamilyChildThreatCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyChildThreatCatalogTests.swift; sourceTree = "<group>"; };
+		PRMONT12F90000100C7D34B /* ParentalMonitoringValidationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ParentalMonitoringValidationTests.swift; sourceTree = "<group>"; };
+		IDDETT12F90000100C7D34B /* IdentityDetectViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityDetectViewModelTests.swift; sourceTree = "<group>"; };
+		IDFRDT12F90000100C7D34B /* IdentityFraudThreatCatalogTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityFraudThreatCatalogTests.swift; sourceTree = "<group>"; };
+		IDMONT12F90000100C7D34B /* IdentityMonitorViewModelTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityMonitorViewModelTests.swift; sourceTree = "<group>"; };
+		IDATT12F90000100C7D34B /* IdentityTheftAttemptsParsingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IdentityTheftAttemptsParsingTests.swift; sourceTree = "<group>"; };
+		AFSh0012F90000100C7D34B /* AntifakeSharePayloadStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeSharePayloadStore.swift; path = Shared/AntifakeShare/AntifakeSharePayloadStore.swift; sourceTree = "<group>"; };
+		AFSh0042F90000100C7D34B /* AntifakeDeepLinkRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeDeepLinkRouter.swift; path = Core/Security/AntifakeDeepLinkRouter.swift; sourceTree = "<group>"; };
+		AFSh0062F90000100C7D34B /* ShareViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
+		AFSh0082F90000100C7D34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AFSh0092F90000100C7D34B /* ALADDINAntifakeShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINAntifakeShare.entitlements; sourceTree = "<group>"; };
+		AFSh0102F90000100C7D34B /* ALADDINAntifakeShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINAntifakeShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AFSh0232F90000100C7D34B /* AntifakeDeepLinkRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeDeepLinkRouterTests.swift; sourceTree = "<group>"; };
+		AFSh0252F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeSharePayloadStoreTests.swift; sourceTree = "<group>"; };
+		AFVMC12F90000100C7D34B /* AntifakeTextCheckViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTextCheckViewModel.swift; path = ViewModels/AntifakeTextCheckViewModel.swift; sourceTree = "<group>"; };
+		AFVRD12F90000100C7D34B /* AntifakeVerdictCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeVerdictCard.swift; path = Shared/Components/AntifakeVerdictCard.swift; sourceTree = "<group>"; };
+		AFMED12F90000100C7D34B /* AntifakeMediaCheckView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeMediaCheckView.swift; path = Shared/Components/AntifakeMediaCheckView.swift; sourceTree = "<group>"; };
+		AFMVM12F90000100C7D34B /* AntifakeMediaCheckViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeMediaCheckViewModel.swift; path = ViewModels/AntifakeMediaCheckViewModel.swift; sourceTree = "<group>"; };
 		5E0058242EC4E69100024F7E /* ThreatItemRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ThreatItemRow.swift; path = Components/ThreatItemRow.swift; sourceTree = "<group>"; };
 		5E0058262EC4FC5D00024F7E /* ChildRewardsSettingsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ChildRewardsSettingsModal.swift; path = Components/Modals/ChildRewardsSettingsModal.swift; sourceTree = "<group>"; };
 		5E0058282EC605FC00024F7E /* ParentalControlFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ParentalControlFeature.swift; path = Shared/Models/ParentalControlFeature.swift; sourceTree = "<group>"; };
@@ -652,6 +748,11 @@
 		5E32FFF62EAD23BB000574C4 /* PrimaryButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PrimaryButton.swift; path = Shared/Components/Buttons/PrimaryButton.swift; sourceTree = "<group>"; };
 		5E32FFF82EAD24D2000574C4 /* InfoRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InfoRow.swift; path = Shared/Components/InfoRow.swift; sourceTree = "<group>"; };
 		5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityManager.swift; path = Core/Security/SecurityManager.swift; sourceTree = "<group>"; };
+		SECVRD12F90000100C7D34B /* SecurityVerdictModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityVerdictModels.swift; path = Core/Models/SecurityVerdictModels.swift; sourceTree = "<group>"; };
+		PRMGATE12F90000100C7D34B /* PremiumGateHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PremiumGateHandler.swift; path = Core/Security/PremiumGateHandler.swift; sourceTree = "<group>"; };
+		AFPRM12F90000100C7D34B /* AntifakeHubPremiumCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeHubPremiumCoordinator.swift; path = Core/Security/AntifakeHubPremiumCoordinator.swift; sourceTree = "<group>"; };
+		AFIPG12F90000100C7D34B /* AntifakeInlinePremiumGateCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeInlinePremiumGateCard.swift; path = Shared/Components/AntifakeInlinePremiumGateCard.swift; sourceTree = "<group>"; };
+		SECVRDT12F90000100C7D34B /* SecurityVerdictModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityVerdictModelsTests.swift; sourceTree = "<group>"; };
 		5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = KeychainManager.swift; path = Core/Security/KeychainManager.swift; sourceTree = "<group>"; };
 		5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CacheManager.swift; path = Core/Cache/CacheManager.swift; sourceTree = "<group>"; };
 		5E52F96E2327006C6FF7CB3D /* DefaultContentAPIClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DefaultContentAPIClient.swift; path = Core/Content/Sync/DefaultContentAPIClient.swift; sourceTree = "<group>"; };
@@ -1139,6 +1240,11 @@
 			files = (
 			);
 		};
+		AFSh0152F90000100C7D34B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -1154,6 +1260,13 @@
 				A4AAA203 /* ViewModels/ChildRewardsViewModel.swift */,
 				A4AAA211 /* AntivirusManager.swift */,
 				A4AAA213 /* EmptyStateView.swift */,
+				AFVRD12F90000100C7D34B /* AntifakeVerdictCard.swift */,
+				IDCOV12F90000100C7D34B /* IdentityHubThreatCoverageView.swift */,
+				DVSRC12F90000100C7D34B /* DeviceScanResultCard.swift */,
+				DVCOV12F90000100C7D34B /* DeviceHubThreatCoverageView.swift */,
+				FCHCV12F90000100C7D34B /* FamilyChildThreatCoverageView.swift */,
+				AFMED12F90000100C7D34B /* AntifakeMediaCheckView.swift */,
+				AFIPG12F90000100C7D34B /* AntifakeInlinePremiumGateCard.swift */,
 				A4AAA215 /* JWTTokenManager.swift */,
 				B70001232F90000100ABC001 /* Core/Audio/VoiceNoteWaveformSampler.swift */,
 			);
@@ -1168,6 +1281,16 @@
 				5E61A0A42EFB38ED0039093A /* Info.plist */,
 			);
 			path = ALADDINContentBlocker;
+			sourceTree = "<group>";
+		};
+		AFSh0212F90000100C7D34B /* ALADDINAntifakeShare */ = {
+			isa = PBXGroup;
+			children = (
+				AFSh0062F90000100C7D34B /* ShareViewController.swift */,
+				AFSh0082F90000100C7D34B /* Info.plist */,
+				AFSh0092F90000100C7D34B /* ALADDINAntifakeShare.entitlements */,
+			);
+			path = ALADDINAntifakeShare;
 			sourceTree = "<group>";
 		};
 		5EC308E12EA6AB8B00C7D34B /* Screens */ = {
@@ -1247,6 +1370,10 @@
 				C0MCHP12F90000100C7D34B /* CompanionUsageBanner+Chip.swift */,
 				C0MBNR12F90000100C7D34B /* CompanionConversationBannersSection.swift */,
 				5E0058222EC4B2EB00024F7E /* ThreatProtectionSettingsScreen.swift */,
+				AFHUB12F90000100C7D34B /* AntifakeHubScreen.swift */,
+				PRVHUB12F90000100C7D34B /* PrivacyHubScreen.swift */,
+				IDHUB12F90000100C7D34B /* IdentityHubScreen.swift */,
+				DVHUB12F90000100C7D34B /* DeviceHubScreen.swift */,
 				5EC308FF2EA6AB8C00C7D34B /* GamesParentalControlView.swift */,
 				5EC309062EA6AB8C00C7D34B /* LanguageSettingsScreen.swift */,
 				5EC308E62EA6AB8B00C7D34B /* MainScreenWithRegistration.swift */,
@@ -1365,13 +1492,22 @@
 				5E0798262F17D77500D20CF6 /* ComponentReportsModels.swift */,
 				5E0798222F17D54500D20CF6 /* PositioningSystemPickerView.swift */,
 				5E0798342F17DC0C00D20CF6 /* PositioningSystemService.swift */,
+				GEOGC12F90000100C7D34B /* GeofenceGeocodingService.swift */,
 				5E0798202F17D2C200D20CF6 /* PasswordGeneratorModal.swift */,
 				5E07981E2F17D2AB00D20CF6 /* FamilyNotificationSettingsModal.swift */,
 				5E07981C2F17D29400D20CF6 /* DarkWebMonitoringModal.swift */,
 				5E07982C2F17D9C500D20CF6 /* DarkWebMonitoringViewModel.swift */,
+				AFVMC12F90000100C7D34B /* AntifakeTextCheckViewModel.swift */,
+				AFMVM12F90000100C7D34B /* AntifakeMediaCheckViewModel.swift */,
 				5E07981A2F17D28200D20CF6 /* IdentityTheftModal.swift */,
 				4939F9FBCAB0451CA5AC66AB /* CrashDetectionAlertModal.swift */,
 				5E07982E2F17D9EB00D20CF6 /* IdentityTheftViewModel.swift */,
+				IDDET12F90000100C7D34B /* IdentityDetectViewModel.swift */,
+				DVCYB12F90000100C7D34B /* DeviceCyberScanViewModel.swift */,
+				DVCMP12F90000100C7D34B /* DeviceComponentsScanViewModel.swift */,
+				DVMOB12F90000100C7D34B /* DeviceMobilePanelViewModel.swift */,
+				DVIOT12F90000100C7D34B /* DeviceIoTPanelViewModel.swift */,
+				IDMON12F90000100C7D34B /* IdentityMonitorViewModel.swift */,
 				5E0798182F17D26E00D20CF6 /* PrivacyReportsModal.swift */,
 				5E0798302F17DA1E00D20CF6 /* PrivacyReportsViewModel.swift */,
 				5E0798162F17D23E00D20CF6 /* AICategoriesModal.swift */,
@@ -1451,6 +1587,7 @@
 				WELLOOP12F90000100C7D34B /* WellnessLoopCoordinator.swift */,
 				C0MPMDL12F90000100C7D34B /* CompanionModels.swift */,
 				WELLMDL12F90000100C7D34B /* WellnessModels.swift */,
+				SECVRD12F90000100C7D34B /* SecurityVerdictModels.swift */,
 				B700011D2F90000100ABC001 /* Core/Audio/SpeechRecognitionErrorClassifier.swift */,
 				B700011F2F90000100ABC001 /* Core/Audio/VoiceNotePlaybackController.swift */,
 				B70001212F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceLevelBarsView.swift */,
@@ -1496,6 +1633,7 @@
 				5E00580E2EC473DA00024F7E /* PaymentQRViewModelProtectionTests.swift */,
 				A4AAA101 /* GamesSettingsManager.swift */,
 				B1000030 /* ParentalControlManager.swift */,
+				PRMGR12F90000100C7D34B /* ParentalControlReportsManager.swift */,
 				5E0058002EC3C4C600024F7E /* ALADDINTextField.swift */,
 				5E0058022EC3C4F900024F7E /* ALADDINTextField.swift */,
 				5E0058042EC3C50500024F7E /* ALADDINToggle.swift */,
@@ -1518,6 +1656,10 @@
 				5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */,
 				E2PEND0102F1E50000E2EE01 /* PendingAuthTokenStore.swift */,
 				5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */,
+				PRMGATE12F90000100C7D34B /* PremiumGateHandler.swift */,
+				AFSh0042F90000100C7D34B /* AntifakeDeepLinkRouter.swift */,
+				AFSh0012F90000100C7D34B /* AntifakeSharePayloadStore.swift */,
+				AFPRM12F90000100C7D34B /* AntifakeHubPremiumCoordinator.swift */,
 				B1000100B1000100B1000100 /* ProtectionFeature.swift */,
 				B1000110B1000110B1000110 /* ProtectionLevelHistory.swift */,
 				5E32FFF82EAD24D2000574C4 /* InfoRow.swift */,
@@ -1542,6 +1684,7 @@
 				B5001300 /* Tests */,
 				A0FFFFFF,
 				5E61A09F2EFB38ED0039093A /* ALADDINContentBlocker */,
+				AFSh0212F90000100C7D34B /* ALADDINAntifakeShare */,
 				B5003000 /* Products */,
 				5E0057FF2EC3B4DC00024F7E /* Recovered References */,
 			);
@@ -1650,6 +1793,7 @@
 				MNEM0093B2C3D4E5F6070847 /* MnemoOptionalFeatures.swift */,
 				4FDBBBD7CDF6DB4F1892F436 /* ParentDashboardSystems.swift */,
 				E7B800012F730001 /* ParentDashboardReportExporter.swift */,
+				PRMEX12F90000100C7D34B /* ParentalMonitoringReportExporter.swift */,
 				EE833BC78CCFCA19CB5FB223 /* AudioManager.swift */,
 				9294095CBC99B0A6246CCD6D /* SoundEffectPlayer.swift */,
 				W5B20000 /* BackgroundMusicController.swift */,
@@ -1680,6 +1824,11 @@
 				5EC309482EA793FE00C7D34B /* Shared/Components/SecondaryButton.swift */,
 				5EC3094A2EA7943A00C7D34B /* Shared/Models/FunctionStatus.swift */,
 				A4AAA007 /* ThreatProtectionCategory.swift */,
+				IDFRD12F90000100C7D34B /* IdentityFraudThreatCatalog.swift */,
+				DVSCN12F90000100C7D34B /* DeviceScanModels.swift */,
+				DVTHR12F90000100C7D34B /* DeviceThreatCatalog.swift */,
+				FCHLD12F90000100C7D34B /* FamilyChildThreatCatalog.swift */,
+				PRMON12F90000100C7D34B /* ParentalMonitoringValidation.swift */,
 				A4BBB100 /* RemoteNotificationsService.swift */,
 				A4BBB006 /* LocalThreatDatabase.swift */,
 				5EC3092F2EA6CCBD00C7D34B /* Styles */,
@@ -1734,6 +1883,17 @@
 				B5001115 /* AudioInterruptionTests.swift */,
 				B5001117 /* SpeechPathTests.swift */,
 				B5001118 /* WellnessModelsTests.swift */,
+				SECVRDT12F90000100C7D34B /* SecurityVerdictModelsTests.swift */,
+				IDDETT12F90000100C7D34B /* IdentityDetectViewModelTests.swift */,
+				IDMONT12F90000100C7D34B /* IdentityMonitorViewModelTests.swift */,
+				IDFRDT12F90000100C7D34B /* IdentityFraudThreatCatalogTests.swift */,
+				DVTHRT12F90000100C7D34B /* DeviceThreatCatalogTests.swift */,
+				DVEICT12F90000100C7D34B /* DeviceEicarScanTests.swift */,
+				FCHLDT12F90000100C7D34B /* FamilyChildThreatCatalogTests.swift */,
+				PRMONT12F90000100C7D34B /* ParentalMonitoringValidationTests.swift */,
+				IDATT12F90000100C7D34B /* IdentityTheftAttemptsParsingTests.swift */,
+				AFSh0232F90000100C7D34B /* AntifakeDeepLinkRouterTests.swift */,
+				AFSh0252F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift */,
 				E7B800012F730011 /* ParentDashboardReportExporterTests.swift */,
 				A3C000012F740021 /* W3W4DigestAndLimitsTests.swift */,
 				PBUD0002 /* PerformanceBudgetTests.swift */,
@@ -1776,6 +1936,7 @@
 				B5001010 /* ALADDINUnitTests.xctest */,
 				B5002010 /* ALADDINUITests.xctest */,
 				5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */,
+				AFSh0102F90000100C7D34B /* ALADDINAntifakeShare.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1807,6 +1968,21 @@
 			productReference = 5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		AFSh0172F90000100C7D34B /* ALADDINAntifakeShare */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AFSh0182F90000100C7D34B /* Build configuration list for PBXNativeTarget "ALADDINAntifakeShare" */;
+			buildPhases = (
+				AFSh0142F90000100C7D34B /* Sources */,
+				AFSh0152F90000100C7D34B /* Frameworks */,
+				AFSh0162F90000100C7D34B /* Resources */,
+			);
+			buildRules = (
+			);
+			name = ALADDINAntifakeShare;
+			productName = ALADDINAntifakeShare;
+			productReference = AFSh0102F90000100C7D34B /* ALADDINAntifakeShare.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		A0FFFFFD /* ALADDIN */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A100000D /* Build configuration list for PBXNativeTarget "ALADDIN" */;
@@ -1820,6 +1996,7 @@
 			);
 			dependencies = (
 				5E61A0A62EFB38ED0039093A /* PBXTargetDependency */,
+				AFSh0132F90000100C7D34B /* PBXTargetDependency */,
 			);
 			name = ALADDIN;
 			packageProductDependencies = (
@@ -1875,6 +2052,9 @@
 					5E61A09D2EFB38ED0039093A = {
 						CreatedOnToolsVersion = 13.2.1;
 					};
+					AFSh0172F90000100C7D34B = {
+						CreatedOnToolsVersion = 16.0;
+					};
 					A0FFFFFD = {
 						CreatedOnToolsVersion = 16.0;
 					};
@@ -1908,6 +2088,7 @@
 				B5001000 /* ALADDINUnitTests */,
 				B5002000 /* ALADDINUITests */,
 				5E61A09D2EFB38ED0039093A /* ALADDINContentBlocker */,
+				AFSh0172F90000100C7D34B /* ALADDINAntifakeShare */,
 			);
 		};
 /* End PBXProject section */
@@ -1917,6 +2098,11 @@
 			isa = PBXResourcesBuildPhase;
 			files = (
 				5E61A0A12EFB38ED0039093A /* blockerList.json in Resources */,
+			);
+		};
+		AFSh0162F90000100C7D34B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
 			);
 		};
 		A0FFFFFC /* Resources */ = {
@@ -1938,6 +2124,13 @@
 			isa = PBXSourcesBuildPhase;
 			files = (
 				5E61A0AC2EFB38ED0039093A /* ActionRequestHandler.swift in Sources */,
+			);
+		};
+		AFSh0142F90000100C7D34B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				AFSh0072F90000100C7D34B /* ShareViewController.swift in Sources */,
+				AFSh0032F90000100C7D34B /* AntifakeSharePayloadStore.swift in Sources */,
 			);
 		};
 		A0FFFFFA /* Sources */ = {
@@ -2263,6 +2456,12 @@
 				WELPRM22F90000100C7D34B /* WellnessPremiumFunnel.swift in Sources */,
 				WELLOOP22F90000100C7D34B /* WellnessLoopCoordinator.swift in Sources */,
 				WELLMDL22F90000100C7D34B /* WellnessModels.swift in Sources */,
+				SECVRD22F90000100C7D34B /* SecurityVerdictModels.swift in Sources */,
+				PRMGATE22F90000100C7D34B /* PremiumGateHandler.swift in Sources */,
+				AFSh0022F90000100C7D34B /* AntifakeSharePayloadStore.swift in Sources */,
+				AFSh0052F90000100C7D34B /* AntifakeDeepLinkRouter.swift in Sources */,
+				AFPRM22F90000100C7D34B /* AntifakeHubPremiumCoordinator.swift in Sources */,
+				AFIPG22F90000100C7D34B /* AntifakeInlinePremiumGateCard.swift in Sources */,
 				WELLCON22F90000100C7D34B /* WellnessConsentScreen.swift in Sources */,
 				WELLHUB22F90000100C7D34B /* WellnessHubScreen.swift in Sources */,
 				WELLCHK22F90000100C7D34B /* WellnessCheckinScreen.swift in Sources */,
@@ -2384,6 +2583,32 @@
 				5EB01F3A2EC8721300168BE9 /* MockAPIService.swift in Sources */,
 				5E0058152EC4A6D700024F7E /* ProtectionSettingsManager.swift in Sources */,
 				5E0058232EC4B2EB00024F7E /* ThreatProtectionSettingsScreen.swift in Sources */,
+				AFHUB22F90000100C7D34B /* AntifakeHubScreen.swift in Sources */,
+				PRVHUB22F90000100C7D34B /* PrivacyHubScreen.swift in Sources */,
+				IDHUB22F90000100C7D34B /* IdentityHubScreen.swift in Sources */,
+				IDDET22F90000100C7D34B /* IdentityDetectViewModel.swift in Sources */,
+				IDMON22F90000100C7D34B /* IdentityMonitorViewModel.swift in Sources */,
+				IDFRD22F90000100C7D34B /* IdentityFraudThreatCatalog.swift in Sources */,
+				IDCOV22F90000100C7D34B /* IdentityHubThreatCoverageView.swift in Sources */,
+				DVHUB22F90000100C7D34B /* DeviceHubScreen.swift in Sources */,
+				DVSCN22F90000100C7D34B /* DeviceScanModels.swift in Sources */,
+				DVTHR22F90000100C7D34B /* DeviceThreatCatalog.swift in Sources */,
+				DVSRC22F90000100C7D34B /* DeviceScanResultCard.swift in Sources */,
+				DVCOV22F90000100C7D34B /* DeviceHubThreatCoverageView.swift in Sources */,
+				FCHLD22F90000100C7D34B /* FamilyChildThreatCatalog.swift in Sources */,
+				FCHCV22F90000100C7D34B /* FamilyChildThreatCoverageView.swift in Sources */,
+				PRMON22F90000100C7D34B /* ParentalMonitoringValidation.swift in Sources */,
+				GEOGC22F90000100C7D34B /* GeofenceGeocodingService.swift in Sources */,
+				PRMEX22F90000100C7D34B /* ParentalMonitoringReportExporter.swift in Sources */,
+				PRMGR22F90000100C7D34B /* ParentalControlReportsManager.swift in Sources */,
+				DVCYB22F90000100C7D34B /* DeviceCyberScanViewModel.swift in Sources */,
+				DVCMP22F90000100C7D34B /* DeviceComponentsScanViewModel.swift in Sources */,
+				DVMOB22F90000100C7D34B /* DeviceMobilePanelViewModel.swift in Sources */,
+				DVIOT22F90000100C7D34B /* DeviceIoTPanelViewModel.swift in Sources */,
+				AFVMC22F90000100C7D34B /* AntifakeTextCheckViewModel.swift in Sources */,
+				AFVRD22F90000100C7D34B /* AntifakeVerdictCard.swift in Sources */,
+				AFMED22F90000100C7D34B /* AntifakeMediaCheckView.swift in Sources */,
+				AFMVM22F90000100C7D34B /* AntifakeMediaCheckViewModel.swift in Sources */,
 				5E00581F2EC4B1CF00024F7E /* ProtectionCategoryRow.swift in Sources */,
 				5E0058112EC4A65A00024F7E /* ProtectionGroup.swift in Sources */,
 				B6000003 /* IoTSecurityModule.swift in Sources */,
@@ -2436,6 +2661,17 @@
 				B5001215 /* AudioInterruptionTests.swift in Sources */,
 				B5001217 /* SpeechPathTests.swift in Sources */,
 				B5001218 /* WellnessModelsTests.swift in Sources */,
+				SECVRDT22F90000100C7D34B /* SecurityVerdictModelsTests.swift in Sources */,
+				IDDETT22F90000100C7D34B /* IdentityDetectViewModelTests.swift in Sources */,
+				IDMONT22F90000100C7D34B /* IdentityMonitorViewModelTests.swift in Sources */,
+				IDFRDT22F90000100C7D34B /* IdentityFraudThreatCatalogTests.swift in Sources */,
+				DVTHRT22F90000100C7D34B /* DeviceThreatCatalogTests.swift in Sources */,
+				DVEICT22F90000100C7D34B /* DeviceEicarScanTests.swift in Sources */,
+				FCHLDT22F90000100C7D34B /* FamilyChildThreatCatalogTests.swift in Sources */,
+				PRMONT22F90000100C7D34B /* ParentalMonitoringValidationTests.swift in Sources */,
+				IDATT22F90000100C7D34B /* IdentityTheftAttemptsParsingTests.swift in Sources */,
+				AFSh0222F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift in Sources */,
+				AFSh0242F90000100C7D34B /* AntifakeDeepLinkRouterTests.swift in Sources */,
 				E7B800012F730012 /* ParentDashboardReportExporterTests.swift in Sources */,
 				A3C000012F740022 /* W3W4DigestAndLimitsTests.swift in Sources */,
 				PBUD0004 /* PerformanceBudgetTests.swift in Sources */,
@@ -2477,6 +2713,11 @@
 			isa = PBXTargetDependency;
 			target = 5E61A09D2EFB38ED0039093A /* ALADDINContentBlocker */;
 			targetProxy = 5E61A0A52EFB38ED0039093A /* PBXContainerItemProxy */;
+		};
+		AFSh0132F90000100C7D34B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AFSh0172F90000100C7D34B /* ALADDINAntifakeShare */;
+			targetProxy = AFSh0122F90000100C7D34B /* PBXContainerItemProxy */;
 		};
 		B5001007 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2551,6 +2792,75 @@
 				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "ALADDINContentBlocker App Store Distribution new";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.10;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AFSh0192F90000100C7D34B /* Debug configuration for PBXNativeTarget "ALADDINAntifakeShare" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 227;
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ALADDINAntifakeShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Проверить в ALADDIN";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINAntifakeShare;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.10;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AFSh0202F90000100C7D34B /* Release configuration for PBXNativeTarget "ALADDINAntifakeShare" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 227;
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ALADDINAntifakeShare/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "Проверить в ALADDIN";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINAntifakeShare;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "ALADDINAntifakeShare App Store Distribution";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -2859,6 +3169,14 @@
 			buildConfigurations = (
 				5E61A0A92EFB38ED0039093A /* Debug configuration for PBXNativeTarget "ALADDINContentBlocker" */,
 				5E61A0AA2EFB38ED0039093A /* Release configuration for PBXNativeTarget "ALADDINContentBlocker" */,
+			);
+			defaultConfigurationName = Release;
+		};
+		AFSh0182F90000100C7D34B /* Build configuration list for PBXNativeTarget "ALADDINAntifakeShare" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AFSh0192F90000100C7D34B /* Debug configuration for PBXNativeTarget "ALADDINAntifakeShare" */,
+				AFSh0202F90000100C7D34B /* Release configuration for PBXNativeTarget "ALADDINAntifakeShare" */,
 			);
 			defaultConfigurationName = Release;
 		};

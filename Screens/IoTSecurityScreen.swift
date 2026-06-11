@@ -6,7 +6,7 @@ struct IoTSecurityScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @StateObject private var iotModule = IoTSecurityModule()
-    @State private var homeId: String = "home_default" // TODO: Получить из настроек
+    @State private var homeId: String = IoTHomeIdResolver.current
     
     var body: some View {
         ZStack {
@@ -46,8 +46,12 @@ struct IoTSecurityScreen: View {
                             threats: iotModule.threatsDetected,
                             onFix: { threatId in
                                 Task {
-                                    // TODO: Реализовать исправление угрозы
-                                    print("Исправление угрозы: \(threatId)")
+                                    do {
+                                        try await iotModule.fixThreat(threatId: threatId)
+                                        await refreshData()
+                                    } catch {
+                                        print("❌ Ошибка исправления угрозы: \(error)")
+                                    }
                                 }
                             }
                         )

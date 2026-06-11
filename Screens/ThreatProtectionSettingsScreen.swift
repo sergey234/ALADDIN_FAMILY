@@ -38,6 +38,9 @@ struct ThreatProtectionSettingsScreen: View {
                     .padding(.bottom, Spacing.xxl)
                 }
             }
+            .onAppear {
+                settingsManager.loadSettingsFromServer { _ in }
+            }
         }
         .navigationBarHidden(true)
         .id("protection_settings_lang_\(localizationManager.currentLanguage.rawValue)")

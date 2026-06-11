@@ -1,42 +1,47 @@
 """
-============================================
-PROTECTION API: Endpoints для категорий защиты
-============================================
-Сервер: 149.154.65.180
-Дата: 17 декабря 2025
-============================================
-API для управления категориями защиты (138 функций)
+PROTECTION API — 9 canonical categories, PostgreSQL persist, SFM activate (B0 / W09).
 """
+import logging
+from datetime import datetime, timezone
+from typing import Any, Dict, List, Optional
 
-from fastapi import APIRouter, HTTPException, Request, Depends
-from typing import Optional, Dict, Any, List
-from datetime import datetime
-from pydantic import BaseModel
-
-# ✅ ФАЗА 2: Авторизация с реальным user_id
-from app.auth.auth import get_current_user
-
-# ✅ RATE LIMITING: Импорт slowapi для защиты от злоупотреблений
+from fastapi import APIRouter, Depends, HTTPException, Request
+from pydantic import BaseModel, Field
 from slowapi import Limiter
 from slowapi.util import get_remote_address
 
-router = APIRouter(prefix="/api/protection", tags=["protection"])  # ✅ ИСПРАВЛЕНИЕ: prefix должен быть /api/protection
+from app.auth.auth import get_current_user
+from app.services.protection_sfm_bridge import (
+    activate_agents_for_category,
+    deactivate_agents_for_category,
+)
+from app.services.protection_store import (
+    CANONICAL_CATEGORIES,
+    get_protection_settings,
+    upsert_protection_settings,
+)
 
-# ✅ RATE LIMITING: Инициализация Limiter (60 запросов в минуту на IP)
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/api/protection", tags=["protection"])
 limiter = Limiter(key_func=get_remote_address)
 
+ALL_CATEGORIES = list(CANONICAL_CATEGORIES)
 
-# ============================================
-# МОДЕЛИ ЗАПРОСОВ И ОТВЕТОВ
-# ============================================
 
 class CategoryRequest(BaseModel):
     categoryId: str
 
 
 class ProtectionSettings(BaseModel):
-    categories: Dict[str, bool]
+    enabledCategories: Dict[str, bool] = Field(default_factory=dict)
     globalLevel: int = 95
+
+
+class ProtectionSettingsResponse(BaseModel):
+    settings: ProtectionSettings
+    lastUpdated: str
+    version: str = "1.0.0"
 
 
 class ProtectionStatusResponse(BaseModel):
@@ -62,329 +67,177 @@ class ProtectionStatsResponse(BaseModel):
     byCategory: Dict[str, int]
 
 
-class ProtectionSettingsResponse(BaseModel):
-    settings: ProtectionSettings
-    lastUpdated: str
-    version: str = "1.0.0"
-
-
 class APIResponse(BaseModel):
     success: bool
     data: Any = None
     message: Optional[str] = None
 
 
-# ============================================
-# СПИСОК ВСЕХ КАТЕГОРИЙ ЗАЩИТЫ
-# ============================================
-
-ALL_CATEGORIES = [
-    "cyberThreats",      # 10 функций
-    "fraud",             # 12 функций
-    "childThreats",      # 17 функций
-    "networkThreats",    # 11 функций
-    "deviceProtection",  # 12 функций
-    "dataProtection",    # 11 функций
-    "identityProtection", # 11 функций
-    "socialEngineering", # 10 функций
-    "advancedThreats",   # 11 функций
-    "dataLeaks",         # 12 функций
-    "deepfakes",         # 8 функций
-]
-
-
-# ============================================
-# ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ
-# ============================================
-
-def get_protection_settings_from_db(user_id: int) -> ProtectionSettings:
-    """
-    Получить настройки защиты из БД.
-    TODO: Реализовать реальный запрос к БД
-    """
-    # Временная заглушка - возвращаем дефолтные настройки
-    return ProtectionSettings(
-        categories={category: False for category in ALL_CATEGORIES},
-        globalLevel=95
+def _to_response_model(stored: Dict[str, Any]) -> ProtectionSettingsResponse:
+    return ProtectionSettingsResponse(
+        settings=ProtectionSettings(
+            enabledCategories=stored["enabledCategories"],
+            globalLevel=stored.get("globalLevel", 95),
+        ),
+        lastUpdated=stored.get("updated_at", datetime.now(timezone.utc).isoformat()),
+        version="1.0.0",
     )
 
-
-def update_protection_settings_in_db(
-    user_id: int,
-    settings: ProtectionSettings
-) -> ProtectionSettings:
-    """
-    Обновить настройки защиты в БД.
-    TODO: Реализовать реальный запрос к БД
-    """
-    # Временная заглушка - возвращаем обновленные настройки
-    return settings
-
-
-# ============================================
-# ENDPOINT 1: GET /protection/settings
-# ============================================
 
 @router.get("/settings", response_model=ProtectionSettingsResponse)
-@limiter.limit("60/minute")  # ✅ RATE LIMITING: 60 запросов в минуту на IP
-async def get_protection_settings(
+@limiter.limit("60/minute")
+async def get_protection_settings_endpoint(
     request: Request,
-    current_user: dict = Depends(get_current_user)  # ✅ ФАЗА 2: Реальный пользователь из токена
+    current_user: dict = Depends(get_current_user),
 ):
-    """
-    Получить настройки защиты.
-    
-    Требуется авторизация (токен в заголовке Authorization: Bearer {token})
-    """
-    # ✅ ФАЗА 2: Получить реальный user_id из токена
     user_id = current_user["id"]
-    
-    # ✅ STRUCTURED LOGGING: Логирование запроса настроек
-    #     logger.info(
-    #         "protection_settings_requested",
-    #         user_id=user_id,
-    #         timestamp=datetime.now().isoformat()
-    # )
-    
-    # ✅ РЕАЛИЗАЦИЯ: Получить настройки из БД
-    settings = get_protection_settings_from_db(user_id)
-    
-    return ProtectionSettingsResponse(
-        settings=settings,
-        lastUpdated=datetime.now().isoformat(),
-        version="1.0.0"
-    )
+    stored = get_protection_settings(user_id)
+    return _to_response_model(stored)
 
-
-# ============================================
-# ENDPOINT 2: POST /protection/settings
-# ============================================
 
 @router.post("/settings", response_model=APIResponse)
-@limiter.limit("60/minute")  # ✅ RATE LIMITING: 60 запросов в минуту на IP
-async def update_protection_settings(
+@limiter.limit("60/minute")
+async def update_protection_settings_endpoint(
     settings: ProtectionSettings,
     request: Request,
-    current_user: dict = Depends(get_current_user)  # ✅ ФАЗА 2: Реальный пользователь из токена
+    current_user: dict = Depends(get_current_user),
 ):
-    """
-    Обновить настройки защиты.
-    
-    Требуется авторизация.
-    """
-    # ✅ ФАЗА 2: Получить реальный user_id из токена
     user_id = current_user["id"]
-    
-    # ✅ РЕАЛИЗАЦИЯ: Обновить настройки в БД
-    updated_settings = update_protection_settings_in_db(user_id, settings)
-    
-    # TODO: Активировать/деактивировать категории на сервере
-    # Например, вызвать методы активации соответствующих агентов
-    
-    return APIResponse(
-        success=True,
-        data=True,
-        message="Settings updated successfully"
+    upsert_protection_settings(
+        user_id,
+        settings.enabledCategories,
+        settings.globalLevel,
     )
+    return APIResponse(success=True, data=True, message="Settings updated successfully")
 
-
-# ============================================
-# ENDPOINT 3: GET /protection/status
-# ============================================
 
 @router.get("/status", response_model=ProtectionStatusResponse)
-@limiter.limit("60/minute")  # ✅ RATE LIMITING: 60 запросов в минуту на IP
-async def get_protection_status(
+@limiter.limit("60/minute")
+async def get_protection_status_endpoint(
     request: Request,
-    current_user: dict = Depends(get_current_user)  # ✅ ФАЗА 2: Реальный пользователь из токена
+    current_user: dict = Depends(get_current_user),
 ):
-    """
-    Получить статус защиты.
-    
-    Требуется авторизация.
-    """
-    # ✅ ФАЗА 2: Получить реальный user_id из токена
     user_id = current_user["id"]
-    
-    # ✅ РЕАЛИЗАЦИЯ: Получить статус из БД
-    # TODO: Реализовать реальный запрос к БД
-    # Временная заглушка - возвращаем дефолтный статус
+    stored = get_protection_settings(user_id)
+    enabled = sum(1 for v in stored["enabledCategories"].values() if v)
     return ProtectionStatusResponse(
-        isProtected=True,
-        level=95,
+        isProtected=enabled > 0,
+        level=stored.get("globalLevel", 95),
         threatsBlocked=0,
-        lastScan=datetime.now().isoformat()
+        lastScan=datetime.now(timezone.utc).isoformat(),
     )
 
 
-# ============================================
-# ENDPOINT 4: GET /protection/threat-scenarios
-# ============================================
-
 @router.get("/threat-scenarios", response_model=List[ThreatScenarioResponse])
-@limiter.limit("60/minute")  # ✅ RATE LIMITING: 60 запросов в минуту на IP
-async def get_threat_scenarios(
+@limiter.limit("60/minute")
+async def get_threat_scenarios_endpoint(
     request: Request,
-    current_user: dict = Depends(get_current_user)  # ✅ ФАЗА 2: Реальный пользователь из токена
+    current_user: dict = Depends(get_current_user),
 ):
-    """
-    Получить сценарии угроз.
-    
-    Требуется авторизация.
-    """
-    
-    # ✅ РЕАЛИЗАЦИЯ: Получить сценарии угроз
-    # TODO: Реализовать реальный запрос к БД или файлу конфигурации
-    # Временная заглушка - возвращаем пустой список
+    _ = current_user
     return []
 
 
-# ============================================
-# ENDPOINT 5: POST /protection/enable
-# ============================================
-
 @router.post("/enable", response_model=APIResponse)
-@limiter.limit("60/minute")  # ✅ RATE LIMITING: 60 запросов в минуту на IP
+@limiter.limit("60/minute")
 async def enable_protection_category(
     request_body: CategoryRequest,
     request: Request,
-    current_user: dict = Depends(get_current_user)  # ✅ ФАЗА 2: Реальный пользователь из токена
+    current_user: dict = Depends(get_current_user),
 ):
-    """
-    Включить категорию защиты.
-    
-    Требуется авторизация.
-    """
-    # ✅ ФАЗА 2: Получить реальный user_id из токена
     user_id = current_user["id"]
-    
-    # ✅ STRUCTURED LOGGING: Логирование включения категории
+    category_id = request_body.categoryId
+
+    if category_id not in ALL_CATEGORIES:
+        raise HTTPException(status_code=404, detail=f"Category {category_id} not found")
+
     logger.info(
-        "protection_category_enabled",
-        category_id=request_body.categoryId,
-        user_id=user_id,
-        timestamp=datetime.now().isoformat()
+        "protection_category_enabled category_id=%s user_id=%s",
+        category_id,
+        user_id,
     )
-    
-    # ✅ РЕАЛИЗАЦИЯ: Проверка существования категории
-    if request_body.categoryId not in ALL_CATEGORIES:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Category {request_body.categoryId} not found"
-        )
-    
-    # ✅ РЕАЛИЗАЦИЯ: Обновить настройки в БД
-    settings = get_protection_settings_from_db(user_id)
-    settings.categories[request_body.categoryId] = True
-    update_protection_settings_in_db(user_id, settings)
-    
-    # TODO: Здесь можно добавить логику активации категории на сервере
-    # Например, вызвать метод активации соответствующих агентов
-    
+
+    stored = get_protection_settings(user_id)
+    stored["enabledCategories"][category_id] = True
+    upsert_protection_settings(
+        user_id,
+        stored["enabledCategories"],
+        stored.get("globalLevel", 95),
+    )
+
+    sfm_result = activate_agents_for_category(category_id)
+
     return APIResponse(
         success=True,
-        data=True,
-        message=f"Category {request_body.categoryId} enabled"
+        data={"sfm": sfm_result},
+        message=f"Category {category_id} enabled",
     )
 
 
-# ============================================
-# ENDPOINT 6: POST /protection/disable
-# ============================================
-
 @router.post("/disable", response_model=APIResponse)
-@limiter.limit("60/minute")  # ✅ RATE LIMITING: 60 запросов в минуту на IP
+@limiter.limit("60/minute")
 async def disable_protection_category(
     request_body: CategoryRequest,
     request: Request,
-    current_user: dict = Depends(get_current_user)  # ✅ ФАЗА 2: Реальный пользователь из токена
+    current_user: dict = Depends(get_current_user),
 ):
-    """
-    Выключить категорию защиты.
-    
-    Требуется авторизация.
-    """
-    # ✅ ФАЗА 2: Получить реальный user_id из токена
     user_id = current_user["id"]
-    
-    # ✅ РЕАЛИЗАЦИЯ: Проверка существования категории
-    if request_body.categoryId not in ALL_CATEGORIES:
-        raise HTTPException(
-            status_code=404,
-            detail=f"Category {request_body.categoryId} not found"
-        )
-    
-    # ✅ РЕАЛИЗАЦИЯ: Обновить настройки в БД
-    settings = get_protection_settings_from_db(user_id)
-    settings.categories[request_body.categoryId] = False
-    update_protection_settings_in_db(user_id, settings)
-    
-    # TODO: Здесь можно добавить логику деактивации категории на сервере
-    # Например, вызвать метод деактивации соответствующих агентов
-    
+    category_id = request_body.categoryId
+
+    if category_id not in ALL_CATEGORIES:
+        raise HTTPException(status_code=404, detail=f"Category {category_id} not found")
+
+    stored = get_protection_settings(user_id)
+    stored["enabledCategories"][category_id] = False
+    upsert_protection_settings(
+        user_id,
+        stored["enabledCategories"],
+        stored.get("globalLevel", 95),
+    )
+
+    sfm_result = deactivate_agents_for_category(category_id)
+
     return APIResponse(
         success=True,
-        data=True,
-        message=f"Category {request_body.categoryId} disabled"
+        data={"sfm": sfm_result},
+        message=f"Category {category_id} disabled",
     )
 
 
-# ============================================
-# ENDPOINT 7: GET /protection/stats
-# ============================================
-
 @router.get("/stats", response_model=ProtectionStatsResponse)
-@limiter.limit("60/minute")  # ✅ RATE LIMITING: 60 запросов в минуту на IP
-async def get_protection_stats(
+@limiter.limit("60/minute")
+async def get_protection_stats_endpoint(
     request: Request,
-    current_user: dict = Depends(get_current_user)  # ✅ ФАЗА 2: Реальный пользователь из токена
+    current_user: dict = Depends(get_current_user),
 ):
-    """
-    Получить статистику защиты.
-    
-    Требуется авторизация.
-    """
-    # ✅ ФАЗА 2: Получить реальный user_id из токена
-    user_id = current_user["id"]
-    
-    # ✅ РЕАЛИЗАЦИЯ: Получить статистику из БД
-    # TODO: Реализовать реальный запрос к БД
-    # Временная заглушка - возвращаем дефолтную статистику
+    _ = current_user
     return ProtectionStatsResponse(
         totalThreats=0,
         blockedThreats=0,
-        byCategory={category: 0 for category in ALL_CATEGORIES}
+        byCategory={category: 0 for category in ALL_CATEGORIES},
     )
 
-
-# ============================================
-# ENDPOINT 8: POST /protection/sync
-# ============================================
 
 @router.post("/sync", response_model=APIResponse)
-@limiter.limit("60/minute")  # ✅ RATE LIMITING: 60 запросов в минуту на IP
-async def sync_protection_settings(
+@limiter.limit("60/minute")
+async def sync_protection_settings_endpoint(
     settings: ProtectionSettings,
     request: Request,
-    current_user: dict = Depends(get_current_user)  # ✅ ФАЗА 2: Реальный пользователь из токена
+    current_user: dict = Depends(get_current_user),
 ):
-    """
-    Синхронизировать настройки защиты.
-    
-    Требуется авторизация.
-    """
-    # ✅ ФАЗА 2: Получить реальный user_id из токена
     user_id = current_user["id"]
-    
-    # ✅ РЕАЛИЗАЦИЯ: Синхронизировать настройки в БД
-    update_protection_settings_in_db(user_id, settings)
-    
-    # TODO: Активировать/деактивировать категории на сервере
-    # Например, вызвать методы активации соответствующих агентов
-    
-    return APIResponse(
-        success=True,
-        data=True,
-        message="Settings synchronized successfully"
+    upsert_protection_settings(
+        user_id,
+        settings.enabledCategories,
+        settings.globalLevel,
     )
 
+    for category_id, enabled in settings.enabledCategories.items():
+        if category_id not in ALL_CATEGORIES:
+            continue
+        if enabled:
+            activate_agents_for_category(category_id)
+        else:
+            deactivate_agents_for_category(category_id)
+
+    return APIResponse(success=True, data=True, message="Settings synchronized successfully")

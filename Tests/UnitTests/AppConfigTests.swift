@@ -47,7 +47,45 @@ class AppConfigTests: XCTestCase {
     }
     
     func testBuildNumber() throws {
-        XCTAssertEqual(AppConfig.buildNumber, "224")
+        XCTAssertEqual(AppConfig.buildNumber, "227")
+    }
+
+    // MARK: - Explicit Security API (B2-00 / GATE-D)
+
+    func testExplicitSecurityEndpointsUseCanonicalPaths() throws {
+        let endpoint = AppConfig.Endpoint.self
+        let forbiddenPrefixes = [
+            "/api/reports/dark-web/",
+            "/api/reports/identity-theft/",
+            "/api/reports/privacy/location/",
+            "/api/reports/privacy/cleanup/",
+        ]
+        let securityPaths: [String] = [
+            endpoint.darkWebStats,
+            endpoint.darkWebLeaks,
+            endpoint.darkWebScanStart,
+            endpoint.identityTheftStats,
+            endpoint.identityTheftAttempts,
+            endpoint.identityTheftDetect,
+            endpoint.locationStats,
+            endpoint.locationBubble,
+            endpoint.dataCleanupStart,
+            endpoint.antifakeCheckText,
+            endpoint.antifakeCheckUrl,
+            endpoint.parentalMonitoringDetail,
+            endpoint.mobileScan,
+            endpoint.malwareQuickScan,
+            endpoint.malwareThreats,
+        ]
+        for path in securityPaths {
+            for prefix in forbiddenPrefixes where path.hasPrefix(prefix) {
+                XCTFail("Security path still uses legacy reports prefix: \(path)")
+            }
+        }
+        XCTAssertTrue(endpoint.darkWebStats.hasPrefix("/api/darkweb/"))
+        XCTAssertTrue(endpoint.antifakeCheckText.hasPrefix("/api/antifake/"))
+        XCTAssertTrue(endpoint.locationBubble.hasPrefix("/api/location-bubble/"))
+        XCTAssertTrue(endpoint.dataCleanupStart.hasPrefix("/api/data-cleanup/"))
     }
 
     func testApiContractVersionNonEmpty() throws {
@@ -70,8 +108,8 @@ class AppConfigTests: XCTestCase {
     
     func testAPIBaseURL() throws {
         let baseURL = AppConfig.apiBaseURL
-        XCTAssertTrue(baseURL.contains("api"))
-        XCTAssertTrue(baseURL.hasPrefix("http"))
+        XCTAssertTrue(baseURL.contains("aladdin-ai.ru"))
+        XCTAssertTrue(baseURL.hasPrefix("https://"))
     }
     
     func testAPIKey() throws {

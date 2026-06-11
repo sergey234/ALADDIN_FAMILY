@@ -13,15 +13,13 @@ from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, Any, Optional, Tuple
 from datetime import datetime
 
-# Backend path for SFM imports
-backend_path = "/opt/aladdin-backend"
+# app/ must resolve before backend/security shadow package
+backend_path = os.environ.get("ALADDIN_BACKEND_PATH", "/opt/aladdin-backend")
+app_path = os.environ.get("ALADDIN_APP_PATH", "/opt/aladdin-backend/app")
 if backend_path not in sys.path:
-    sys.path.insert(0, backend_path)
-
-# Add security module path
-security_path = "/opt/aladdin-backend/security"
-if security_path not in sys.path:
-    sys.path.insert(0, security_path)
+    sys.path.append(backend_path)
+if app_path not in sys.path:
+    sys.path.insert(0, app_path)
 
 # Import complete function mapping
 try:

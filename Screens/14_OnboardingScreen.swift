@@ -64,12 +64,12 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 1:
-            // OB_02: +2 строки вверх (56pt total) — «Ваш персональный агент безопасности»; desc/scrim как OB_04 D-lite
+            // OB_02: +3 строки вверх (84pt total) — title «безопасности» не обрезается hero
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 12, y: 384, width: 361, height: 78),
-                desc: CGRect(x: 12, y: 494, width: 370, height: 132),
-                scrim: CGRect(x: 0, y: 476, width: 393, height: 310),
+                title: CGRect(x: 12, y: 356, width: 361, height: 78),
+                desc: CGRect(x: 12, y: 466, width: 370, height: 132),
+                scrim: CGRect(x: 0, y: 448, width: 393, height: 310),
                 scrimMaxOpacity: 0.42,
                 maxTitleLines: 3,
                 maxBodyLines: 5,
@@ -700,17 +700,17 @@ struct OnboardingScreen: View {
     // ✅ НОВОЕ: Fallback тексты на случай проблем с локализацией
     private let fallbackTexts: [String: String] = [
         "onboarding_page1_title": "Защита всей семьи в кармане",
-        "onboarding_page1_desc": "Комплексная система защиты от более 100 видов киберугроз",
+        "onboarding_page1_desc": "Комплексная система защиты от основных киберугроз",
         "onboarding_page2_title": "Ваш персональный агент безопасности",
         "onboarding_page2_desc": "ИИ охраняет вашу семью 24/7 + Многоуровневая система защиты ⭐⭐⭐⭐⭐! Военные технологии шифрования",
         "onboarding_page3_title": "Родительский контроль",
         "onboarding_page3_desc": "Система обучения детей безопасности. Вы видите всю активность детей в интернете. Самообучающаяся система защиты AI",
         "onboarding_page4_title": "Аналитика рисков",
-        "onboarding_page4_desc": "Система ALADDIN AI предсказывает, обнаруживает и предотвращает киберугрозы. Постоянно обучается и улучшается.",
+        "onboarding_page4_desc": "Система ALADDIN AI анализирует, обнаруживает и предупреждает о киберугрозах. Постоянно обучается и улучшается.",
         "onboarding_page5_title": "Защита для детей!",
         "onboarding_page5_desc": "Дети не смогут посещать опасные сайты, онлайн-казино, взрослые сайты или совершать покупки в играх и стриминговых сервисах",
         "onboarding_page6_title": "Защита для людей 23+",
-        "onboarding_page6_desc": "AI распознает фейковые звонки, новости, сообщения и видео. Защита от поддельных голосов и номеров.",
+        "onboarding_page6_desc": "AI проверяет фейковые звонки, новости, сообщения и видео. Защита от поддельных голосов и номеров.",
         "onboarding_page7_title": "Присоединяйтесь к ALADDIN",
         "onboarding_page7_desc": "Спокойствие близких - бесценно. Защита начинается сегодня!",
         "onboarding_skip": "Пропустить",
@@ -729,17 +729,17 @@ struct OnboardingScreen: View {
 
     private let fallbackTextsEnglish: [String: String] = [
         "onboarding_page1_title": "Family protection in your pocket",
-        "onboarding_page1_desc": "A complete protection system against cyber threats",
+        "onboarding_page1_desc": "Comprehensive protection against major cyber threats",
         "onboarding_page2_title": "Your personal security assistant",
-        "onboarding_page2_desc": "AI protects your family 24/7",
+        "onboarding_page2_desc": "AI guards your family 24/7 + Multi-layer protection ⭐⭐⭐⭐⭐! Military-grade encryption",
         "onboarding_page3_title": "Parental control",
         "onboarding_page3_desc": "See and protect your children's digital activity",
         "onboarding_page4_title": "Risk analytics",
-        "onboarding_page4_desc": "ALADDIN AI system predicts, detects and prevents cyber threats. It constantly learns and improves.",
+        "onboarding_page4_desc": "ALADDIN AI analyzes, detects and warns about cyber threats. It constantly learns and improves.",
         "onboarding_page5_title": "Protection for kids",
         "onboarding_page5_desc": "Block unsafe websites and risky content",
         "onboarding_page6_title": "Protection for 23+ users",
-        "onboarding_page6_desc": "Detect fraud calls, fake news, and spoofed voices",
+        "onboarding_page6_desc": "AI checks fake calls, news, messages and video. Protection from spoofed voices and numbers.",
         "onboarding_page7_title": "Join ALADDIN",
         "onboarding_page7_desc": "Protect your loved ones starting today",
         "onboarding_skip": "Skip",

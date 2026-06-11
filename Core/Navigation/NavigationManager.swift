@@ -29,6 +29,20 @@ class NavigationManager: ObservableObject {
     @Published var pendingMnemoOpenItemId: String? = nil
     @Published var pendingMnemoOpenFirstDue: Bool = false
 
+    /// Share Extension / `aladdin://antifake/check` — prefill Antifake Hub text tab.
+    @Published var pendingAntifakeSharePayload: AntifakeSharePayload? = nil
+
+    /// Analytics / threat category → Privacy Hub initial tab.
+    @Published var pendingPrivacyHubTab: PrivacyHubTab? = nil
+
+    /// Analytics / threat category → Identity Hub initial tab.
+    @Published var pendingIdentityHubTab: IdentityHubTab? = nil
+    @Published var pendingDeviceHubTab: DeviceHubTab? = nil
+
+    /// Fraud matrix (B4-05) / deep links → Antifake Hub initial tab + optional text/url mode.
+    @Published var pendingAntifakeHubTab: AntifakeHubTab? = nil
+    @Published var pendingAntifakeTextMode: AntifakeTextInputMode? = nil
+
     /// Экран, на который возвращаемся из «Мир героев» (если стек навигации пуст/сброшен).
     @Published private(set) var companionReturnScreen: ALADDINScreen?
 
@@ -115,6 +129,10 @@ class NavigationManager: ObservableObject {
         case threatProtectionSettings = "ThreatProtectionSettingsScreen"
         case iotSecurity = "IoTSecurityScreen"
         case advancedProtection = "AdvancedProtectionSettingsScreen"
+        case antifakeHub = "AntifakeHubScreen"
+        case privacyHub = "PrivacyHubScreen"
+        case identityHub = "IdentityHubScreen"
+        case deviceHub = "DeviceHubScreen"
         
         // Дополнительные экраны
         case mainWithRegistration = "MainScreenWithRegistration"
@@ -192,6 +210,10 @@ class NavigationManager: ObservableObject {
             case .threatProtectionSettings: return "Настройки защиты"
             case .iotSecurity: return "IoT безопасность"
             case .advancedProtection: return "Расширенная защита"
+            case .antifakeHub: return "Antifake Hub"
+            case .privacyHub: return "Privacy Hub"
+            case .identityHub: return "Identity Hub"
+            case .deviceHub: return "Device Hub"
             }
         }
         
@@ -259,6 +281,10 @@ class NavigationManager: ObservableObject {
             case .threatProtectionSettings: return "gearshape.2.fill"
             case .iotSecurity: return "wifi"
             case .advancedProtection: return "lock.shield.fill"
+            case .antifakeHub: return "theatermasks.fill"
+            case .privacyHub: return "lock.shield.fill"
+            case .identityHub: return "person.badge.shield.checkmark.fill"
+            case .deviceHub: return "shield.lefthalf.filled"
             case .qrCode: return "qrcode"
             case .invitationCode: return "keyboard"
             }
@@ -699,6 +725,38 @@ class NavigationManager: ObservableObject {
         var history = navigationStack.map { $0.displayName }
         history.append(currentScreen.displayName)
         return history
+    }
+
+    /// Opens Antifake Hub with text/url prefill from Share Extension or deep link.
+    func navigateToAntifakeShareCheck(payload: AntifakeSharePayload) {
+        pendingAntifakeSharePayload = payload
+        navigateTo(.antifakeHub)
+        appendLog("🛡️ navigateToAntifakeShareCheck mode=\(payload.mode.rawValue)")
+    }
+
+    func navigateToPrivacyHub(tab: PrivacyHubTab = .darkWeb) {
+        pendingPrivacyHubTab = tab
+        navigateTo(.privacyHub)
+        appendLog("🔒 navigateToPrivacyHub tab=\(tab.rawValue)")
+    }
+
+    func navigateToIdentityHub(tab: IdentityHubTab = .detect) {
+        pendingIdentityHubTab = tab
+        navigateTo(.identityHub)
+        appendLog("🛡️ navigateToIdentityHub tab=\(tab.rawValue)")
+    }
+
+    func navigateToDeviceHub(tab: DeviceHubTab = .cyber) {
+        pendingDeviceHubTab = tab
+        navigateTo(.deviceHub)
+        appendLog("🛡️ navigateToDeviceHub tab=\(tab.rawValue)")
+    }
+
+    func navigateToAntifakeHub(tab: AntifakeHubTab = .text, textMode: AntifakeTextInputMode? = nil) {
+        pendingAntifakeHubTab = tab
+        pendingAntifakeTextMode = textMode
+        navigateTo(.antifakeHub)
+        appendLog("🛡️ navigateToAntifakeHub tab=\(tab.rawValue) textMode=\(textMode?.rawValue ?? "nil")")
     }
 
     /// Opens mnemo catalog for SRS review (push / deep link / SRS badge).

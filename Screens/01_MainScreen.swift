@@ -471,7 +471,7 @@ struct MainScreen: View {
                             GridItem(.flexible()),
                             GridItem(.flexible())
                         ], spacing: 15) {
-                            // Антивирус карточка (вместо VPN)
+                            // Защита Aladdin карточка (вместо VPN)
                             Button(action: {
                                 navigationManager.navigateTo(.networkProtection)
                             }) {
@@ -479,7 +479,7 @@ struct MainScreen: View {
                                     HStack(spacing: 8) {
                                         Text("🛡️")
                                             .font(.system(size: 20))
-                                            .accessibilityLabel("Иконка антивируса")
+                                            .accessibilityLabel("Иконка защиты")
                                         Text(antivirusEnabled ? "🟢" : "🔴")
                                             .font(.system(size: 24))
                                             .accessibilityLabel(antivirusEnabled ? "Статус: Активен" : "Статус: Отключен")
@@ -488,7 +488,7 @@ struct MainScreen: View {
                                     Text(localizationManager.localized("main_antivirus_title"))
                                         .font(.system(size: 12, weight: .semibold))
                                         .foregroundColor(.white)
-                                        .accessibilityLabel("Название: Антивирус Аладин")
+                                        .accessibilityLabel("Название: Защита Aladdin")
                                     
                                     Text(localizationManager.localized("main_antivirus_subtitle"))
                                         .font(.system(size: 10))
@@ -501,7 +501,7 @@ struct MainScreen: View {
                             }
                             .buttonStyle(PlainButtonStyle())
                             .accessibilityIdentifier("main_nav_network_protection")
-                            .accessibilityLabel("Антивирус Аладин - \(antivirusEnabled ? "Активен" : "Отключен")")
+                            .accessibilityLabel("Защита Aladdin - \(antivirusEnabled ? "Активен" : "Отключен")")
                             .accessibilityHint("Нажмите для открытия экрана защиты")
                             
                             // Тарифы карточка

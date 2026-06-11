@@ -1,0 +1,23 @@
+[Unit]
+Description=ALADDIN SFM Core HTTP (:8003)
+After=network.target postgresql.service
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/aladdin-backend/app
+Environment=PYTHONPATH=/opt/aladdin-backend/app:/opt/aladdin-backend
+EnvironmentFile=-/opt/aladdin-backend/.env
+ExecStart=/opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/start_sfm_core_http.py
+Restart=on-failure
+RestartSec=5
+StartLimitIntervalSec=300
+StartLimitBurst=5
+
+# B-OPS-21: health 503 when sfm_loaded=false → systemd marks unhealthy
+ExecStartPost=/bin/sleep 3
+ExecStartPost=/bin/sh -c 'curl -sf -m 5 http://127.0.0.1:8003/api/health >/dev/null || exit 1'
+
+[Install]
+WantedBy=multi-user.target

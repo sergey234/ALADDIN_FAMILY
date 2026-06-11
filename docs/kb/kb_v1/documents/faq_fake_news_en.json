@@ -3,8 +3,10 @@
   "locale": "en",
   "topic": "security_faq",
   "title": "What is fake news?",
-  "body": "What is fake news?\n\nFake news is false information that spreads as truth:\n• \"Scientists found a cure for all diseases!\" (lie)\n• \"Earthquake in Moscow!\" (lie, if it didn't happen)\n• \"All banks are closing!\" (lie)\n\nThis is done to deceive people or sow panic.\n\n✅ ALADDIN checks news and shows whether it's true or not.",
+  "body": "What is fake news?\n\nFake news is false information that spreads as truth:\nâ¢ \"Scientists found a cure for all diseases!\" (lie)\nâ¢ \"Earthquake in Moscow!\" (lie, if it didn't happen)\nâ¢ \"All banks are closing!\" (lie)\n\nThis is done to deceive people or sow panic.\n\nâ ALADDIN assesses credibility and warns about misinformation risks.",
   "source": "UnifiedFAQCatalog",
-  "keywords": [],
+  "keywords": [
+    "fake news"
+  ],
   "kb_version": "kb_v1"
 }

@@ -1,0 +1,14 @@
+{
+  "id": "faq_sms_scam_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What is SMS fraud?",
+  "body": "What is SMS fraud?\n\nSMS fraud is deceptive messages on your phone:\nâ¢ \"You won! Transfer money to receive prize\"\nâ¢ \"Your bank account is blocked. Follow the link\"\nâ¢ \"Your package is delayed. Pay for delivery\"\n\nâ NEVER transfer money to strangers via SMS!\n\nâ ALADDIN checks links in SMS and warns of deception.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [
+    "sms",
+    "смс",
+    "smishing"
+  ],
+  "kb_version": "kb_v1"
+}

@@ -53,6 +53,8 @@ Rules с `alwaysApply: false` (Figma, bypass, bot, companion) — Cursor под�
 | Изменения `.swift` | Rules `swift-*.mdc` + agent `swift-reviewer` |
 | Ошибки сборки Xcode | Agent `swift-build-resolver` или `build-error-resolver` |
 | Деплой backend `149.154.65.180` | Rule `aladdin-server-connection.mdc` + `ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md` |
+| **SFM статус (перед любым отчётом о SFM)** | **`docs/SFM_ML_QUICKSTART.md`** → `docs/server/sfm_truth_check.sh` · спека: `docs/SFM_SINGLE_SOURCE_OF_TRUTH.md` |
+| Security 100% / 138 / antifake | **`ML_SYSTEM_HANDOFF_SECURITY_100_PERCENT.md`** + `.cursor/IMPLEMENTATION_BATCHES_TODO.md` |
 | Деплой Telegram-бота | Rule `telegram-shop-bot-deploy.mdc` — **не** в iOS-коммиты (`no-telegram-bot-in-ios-release.mdc`) |
 | Figma ↔ iOS онбординг | Rules `figma-mcp-onboarding-main.mdc`, `onboarding-figma-ios-sync-mandatory.mdc` + skill `figma-use` (prerequisite) |
 | Перед релизом / merge | Skill `verification-loop` + smoke на сервере |

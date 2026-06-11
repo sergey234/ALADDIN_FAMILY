@@ -324,6 +324,81 @@ struct IdentityTheftAttempt: Identifiable, Codable {
     let action: AttemptAction
     let severity: AttemptSeverity
     let details: String?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case dataType
+        case requestSource
+        case timestamp
+        case action
+        case severity
+        case details
+    }
+
+    init(
+        id: String,
+        dataType: IdentityDataType,
+        requestSource: String,
+        timestamp: Date,
+        action: AttemptAction,
+        severity: AttemptSeverity,
+        details: String? = nil
+    ) {
+        self.id = id
+        self.dataType = dataType
+        self.requestSource = requestSource
+        self.timestamp = timestamp
+        self.action = action
+        self.severity = severity
+        self.details = details
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        id = try container.decode(String.self, forKey: .id)
+        dataType = try container.decode(IdentityDataType.self, forKey: .dataType)
+        requestSource = try container.decodeIfPresent(String.self, forKey: .requestSource) ?? "api"
+        timestamp = try Self.decodeTimestamp(from: container)
+        action = try container.decode(AttemptAction.self, forKey: .action)
+        severity = try container.decode(AttemptSeverity.self, forKey: .severity)
+        details = Self.decodeDetails(from: container)
+    }
+
+    private static func decodeTimestamp(from container: KeyedDecodingContainer<CodingKeys>) throws -> Date {
+        if let date = try? container.decode(Date.self, forKey: .timestamp) {
+            return date
+        }
+        let raw = try container.decode(String.self, forKey: .timestamp)
+        if let date = DateFormatter.iso8601.date(from: raw) {
+            return date
+        }
+        let fallback = DateFormatter()
+        fallback.dateFormat = "yyyy-MM-dd'T'HH:mm:ssZ"
+        fallback.locale = Locale(identifier: "en_US_POSIX")
+        fallback.timeZone = TimeZone(secondsFromGMT: 0)
+        if let date = fallback.date(from: raw) {
+            return date
+        }
+        throw DecodingError.dataCorruptedError(
+            forKey: .timestamp,
+            in: container,
+            debugDescription: "Cannot decode timestamp \(raw)"
+        )
+    }
+
+    private static func decodeDetails(from container: KeyedDecodingContainer<CodingKeys>) -> String? {
+        guard container.contains(.details), (try? container.decodeNil(forKey: .details)) != true else {
+            return nil
+        }
+        if let text = try? container.decode(String.self, forKey: .details) {
+            let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
+            return trimmed.isEmpty ? nil : trimmed
+        }
+        if let dict = try? container.decode([String: String].self, forKey: .details), !dict.isEmpty {
+            return dict.map { "\($0.key): \($0.value)" }.sorted().joined(separator: " · ")
+        }
+        return nil
+    }
     
     var formattedTimestamp: String {
         let formatter = DateFormatter()
@@ -404,6 +479,23 @@ struct IdentityTheftStats: Codable {
     let blockedAttempts: Int
     let suspiciousActivities: Int
     let byDataType: [String: Int] // "passport": 12, "snils": 8
+}
+
+/// GET `/api/identity-theft/attempts` envelope (B4-03).
+struct IdentityTheftAttemptsEnvelope: Codable {
+    let attempts: [IdentityTheftAttempt]
+    let total: Int?
+    let source: String?
+    let agent: String?
+}
+
+enum IdentityTheftResponseGuard {
+    private static let forbiddenSources: Set<String> = ["sfm_mock", "mock", "sfm_stub", "mock-real-protection"]
+
+    static func rejectsMock(source: String?) -> Bool {
+        guard let source else { return false }
+        return forbiddenSources.contains(source.lowercased())
+    }
 }
 
 // MARK: - Privacy Reports Models

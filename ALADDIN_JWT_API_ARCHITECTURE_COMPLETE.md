@@ -1,8 +1,8 @@
 # 🔐 **ALADDIN JWT & API АРХИТЕКТУРА - ПОЛНЫЙ СПРАВОЧНИК**
 
 **Дата создания:** 4 марта 2026 года  
-**Дата обновления:** 3 июня 2026 года (v2.7.0: OpenAPI 491 paths / 534 ops, 0×5xx после фиксов platform/profile + rewards/history, deploy-status §6.7)  
-**Версия:** 2.7.0 (prod backend fixes 2026-06-03 + OpenAPI SSOT на `https://aladdin-ai.ru/openapi.json`)  
+**Дата обновления:** 10 июня 2026 года (v2.8.1: §6.9 antifake call/metrics wire B2-06/12; LOC gate doc)  
+**Версия:** 2.8.1 (Antifake Hub 8/12 iOS wire; all `/api/antifake/*` in APIService)  
 **Статус (JWT/API):** ✅ **RELEASE GATE PASS (LIVE VERIFIED)** (R75 / §6.1) + OpenAPI audit **0×5xx** (2026-06-03, §6.7)  
 **Статус (общий релиз):** ❌ **NO_GO** (блокер `rel-15` 24h soak, см. `docs/release/release-gate-report.json` / `docs/release/go-no-go.md`)
 **Цель документа:** Единый источник истины (SSOT) для архитектуры JWT и API.
@@ -10,6 +10,8 @@
 **Дополнение 2026-04-25 (iOS plan-fact + `smart_api_tester.py`):** см. **§6.3** в этом файле — итог по счётчику плана **174/178**, прогон тестера по `https://aladdin-ai.ru`, исправленный контракт `register-device` (`device_id` → `access_token`).
 
 **Дополнение 2026-06-06 (Memory Academy build 225):** см. **§6.8** — локальные iOS API MnemoCore (не REST); SSOT `docs/MNEMO_PROJECT_SYNC.md` §10.
+
+**Дополнение 2026-06-10 (Security 100% / Antifake Hub iOS):** см. **§6.9** — explicit B1 routers + iOS `AppConfig` / `APIService` для `/api/antifake/*`; матрица `docs/IOS_EXPLICIT_API_MATRIX.md`; batch-трекер `.cursor/IMPLEMENTATION_BATCHES_TODO.md` (**70/129**).
 
 **Дополнение 2026-06-03 (backend fixes + OpenAPI SSOT):** см. **§6.7** — что уже на VPS, что в git; **`GET https://aladdin-ai.ru/openapi.json`** = **491 paths**; OpenAPI audit **534 ops → 0×5xx** (после фиксов `platform/profile`, `rewards/history`, wellness export/values-card).
 
@@ -603,6 +605,83 @@ MnemonicBaselineAssessment.shared.hasSession(inCalendarQuarterOf:)
 
 **Phase C:** unit/UITest прогон — Xcode Test Navigator или `xcodebuild` без pipe; см. `MNEMO_PROJECT_SYNC.md` §6.
 
+### 6.9) Explicit Security API — Antifake Hub (B1 backend + B2 iOS wire)
+
+**2026-06-10 · GATE-D PASS · iOS BATCH 2: 8/12 · LOC:** `docs/LOCALIZATION_BATCH_GATE.md`
+
+Канонический SSOT для путей iOS↔backend: **`docs/IOS_EXPLICIT_API_MATRIX.md`**.  
+Legacy **`/api/deepfake/*`**, **`/api/fake-news/*`**, **`/api/reports/*`** для security — **запрещены** в новом iOS-коде (см. `docs/APISERVICE_SECURITY_PATH_AUDIT.md`).
+
+#### Роутер (backend B1-01)
+
+| Файл | Префикс | Auth | Premium |
+|------|---------|------|---------|
+| `app/routers/antifake.py` | `/api/antifake` | JWT `Bearer` | 403 `premium_required` |
+
+Prod smoke: `docs/server/test_antifake_prod_smoke.py` (входит в `test_security_prod_smoke.py` orchestrator).
+
+#### Explicit endpoints ↔ iOS
+
+| Method | Path | `AppConfig.Endpoint` | `APIService` (iOS) | Async | Wire status |
+|--------|------|----------------------|--------------------|-------|-------------|
+| POST | `/api/antifake/check/text` | `antifakeCheckText` | `antifakeCheckText(text:mode:)` | sync | ✅ B2-04 |
+| POST | `/api/antifake/check/url` | `antifakeCheckUrl` | `antifakeCheckUrl(url:)` | sync | ✅ B2-04 |
+| POST | `/api/antifake/check/audio` | `antifakeCheckAudio` | `antifakeUploadMedia(kind:.audio,…)` | job | ✅ B2-05 |
+| POST | `/api/antifake/check/video` | `antifakeCheckVideo` | `antifakeUploadMedia(kind:.video,…)` | job | ✅ B2-05 |
+| POST | `/api/antifake/check/document` | `antifakeCheckDocument` | `antifakeUploadMedia(kind:.document,…)` | job | ✅ B2-05 |
+| POST | `/api/antifake/call/analyze` | `antifakeCallAnalyze` | `antifakeUploadMedia(kind:.call,…)` + Form `caller_id`/`display_name` | job | ✅ B2-06 |
+| GET | `/api/antifake/jobs/{id}` | `antifakeJob(id:)` | `antifakePollJob(jobId:)` | poll | ✅ B2-05 |
+| GET | `/api/antifake/metrics` | `antifakeMetrics` | `getAntifakeMetrics()` | sync | ✅ B2-12 |
+
+**Upload:** multipart `file` (max **25 MB**), `Content-Type: multipart/form-data`, `Authorization: Bearer <JWT>`.  
+**Sync body (text):** `{ "text": "…", "mode": "news" }`. **Sync body (url):** `{ "url": "https://…" }`.
+
+#### Response contract (`SecurityVerdict`)
+
+```json
+{
+  "verdict": "likely_fake | uncertain | likely_real",
+  "confidence": 0.0,
+  "reasons": ["…"],
+  "source": "real_agent",
+  "agent": "…",
+  "job_id": "uuid-or-null",
+  "checked_at": "ISO8601",
+  "premium_required": false,
+  "status": "queued | processing | completed | failed"
+}
+```
+
+**Prod policy:** iOS отклоняет `source` ∈ `{sfm_mock, mock, sfm_stub, sfm_fallback, …}` — `SecurityVerdict.validateForProduction()`.  
+**403 premium:** `PremiumGateHandler` → Tariffs sheet.
+
+#### iOS UI (один Hub, не 100 экранов)
+
+| Артефакт | Тип | Назначение |
+|----------|-----|------------|
+| `Screens/AntifakeHubScreen.swift` | **1 Hub screen** (4 tabs) | Text · Audio · Video · Call |
+| `Shared/Components/AntifakeVerdictCard.swift` | component | Verdict card |
+| `Shared/Components/AntifakeMediaCheckView.swift` | component | File pick + upload + poll |
+| `ViewModels/AntifakeTextCheckViewModel.swift` | ViewModel | text/url sync |
+| `ViewModels/AntifakeMediaCheckViewModel.swift` | ViewModel | audio/video/document jobs |
+
+Навигация: категория **`deepfakes`** → `NavigationManager.antifakeHub` (B2-03).  
+`AdvancedProtectionSettingsScreen` **остаётся** для других входов (Settings); deepfakes **не** ведёт туда.
+
+#### Другие explicit security domains (B1, iOS wire pending)
+
+| Domain | Prefix | iOS Hub / modal | Batch |
+|--------|--------|-----------------|-------|
+| Dark Web | `/api/darkweb/*` | `DarkWebMonitoringModal` (legacy wire OK) | B3 |
+| Identity | `/api/identity-theft/*` | `IdentityTheftModal` | B4 |
+| Data Cleanup | `/api/data-cleanup/*` | Privacy Hub (pending) | B3 |
+| Location Bubble | `/api/location-bubble/*` | Privacy Hub (pending) | B3 |
+| Malware/AV | `/api/malware/*`, `/api/antivirus/scan` | Device Hub (pending) | B5 |
+| Mobile | `/api/mobile/*` | Device Hub (pending) | B5 |
+| Parental monitoring | `/api/parental-control/monitoring/*` | Family modals (pending) | B6 |
+
+> **Важно:** таблица роутеров § «ДЕТАЛЬНЫЙ АНАЛИЗ ВСЕХ РОУТЕРОВ» ниже по документу **частично устарела** (pre-B1). Для security-domains после 2026-06-09 опирайтесь на **`docs/IOS_EXPLICIT_API_MATRIX.md`** и `app/routers/*.py`, а не на legacy `security/api/routers/*` пути в старых секциях.
+
 ### 7) JWT TTL policy (normative)
 
 | Token flow | Intended use | TTL | Notes |
@@ -1007,6 +1086,10 @@ func post<T>(endpoint: String, requiresAuth: Bool = true) {
 
 ## 🛣️ **ДЕТАЛЬНЫЙ АНАЛИЗ ВСЕХ РОУТЕРОВ (22+)**
 
+> **⚠️ ARCHIVE (pre-B1, до 2026-06-09):** таблицы ниже описывают **legacy** `security/api/routers/*` и ранний снимок `app/routers/`.  
+> **Для Security 100% после B1** используйте: **§6.9**, `docs/IOS_EXPLICIT_API_MATRIX.md`, `app/routers/{antifake,darkweb,identity_theft,...}.py`.  
+> Пути вроде `/api/location/*` (без `-bubble`), `/api/reports/*`, `/api/deepfake/*` — **deprecated** для нового iOS-кода.
+
 ### **МетоДология анализа роутеров:**
 
 Анализ проведен путем:
@@ -1036,6 +1119,7 @@ func post<T>(endpoint: String, requiresAuth: Bool = true) {
 | **Crash Detection** | `crash_detection_router.py` | `/api/crash-detection` | Детекция аварий | 7 | ✅ Работает |
 | **Data Cleanup** | `data_cleanup_router.py` | `/api/data-cleanup` | Очистка данных | 8 | ✅ Работает |
 | **Dark Web Monitoring** | `dark_web_monitoring_router.py` | `/api/darkweb` | Мониторинг даркнета | 3 | ✅ Работает |
+| **Antifake (explicit B1)** | `app/routers/antifake.py` | `/api/antifake` | Deepfake / fake news checks | 8 | ✅ B1-01 GATE-D |
 | **Driving Reports** | `driving_reports_router.py` | `/api/driving-reports` | Отчеты о вождении | 4 | ✅ Работает |
 | **Identity Theft Protection** | `identity_theft_protection_router.py` | `/api/identity-theft` | Защита от кражи личности | 7 | ✅ Работает |
 | **Location Bubble** | `location_bubble_router.py` | `/api/location` | Геозоны безопасности | 5 | ✅ Работает |

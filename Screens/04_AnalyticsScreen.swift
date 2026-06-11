@@ -658,7 +658,7 @@ struct AnalyticsScreen: View {
                     metrics: getRealMetrics(for: "dark_web_monitoring_agent"),
                     color: .dangerRed,
                     badgeCount: getRealBadgeCount(for: "dark_web_monitoring_agent"),
-                    onTap: { showDarkWebMonitoringModal = true }
+                    onTap: { navigationManager.navigateToPrivacyHub(tab: .darkWeb) }
                 )
                 
                 // ✅ ВАРИАНТ 4: Защита кражи личности (реальные данные)
@@ -669,7 +669,7 @@ struct AnalyticsScreen: View {
                     metrics: getRealMetrics(for: "russian_identity_theft_protection_agent"),
                     color: .primaryBlue,
                     badgeCount: getRealBadgeCount(for: "russian_identity_theft_protection_agent"),
-                    onTap: { showIdentityTheftModal = true }
+                    onTap: { navigationManager.navigateToIdentityHub(tab: .attempts) }
                 )
                 
                 // ✅ ВАРИАНТ 4: Пузырь местоположения (реальные данные)
@@ -680,7 +680,7 @@ struct AnalyticsScreen: View {
                     metrics: getRealMetrics(for: "location_bubble_agent"),
                     color: .primaryBlue,
                     badgeCount: getRealBadgeCount(for: "location_bubble_agent"),
-                    onTap: { showPrivacyReportsModal = true }
+                    onTap: { navigationManager.navigateToPrivacyHub(tab: .location) }
                 )
                 
                 // ✅ ВАРИАНТ 4: Очистка данных (реальные данные)
@@ -691,7 +691,7 @@ struct AnalyticsScreen: View {
                     metrics: getRealMetrics(for: "personal_data_cleanup_agent"),
                     color: .primaryBlue,
                     badgeCount: getRealBadgeCount(for: "personal_data_cleanup_agent"),
-                    onTap: { showPrivacyReportsModal = true }
+                    onTap: { navigationManager.navigateToPrivacyHub(tab: .cleanup) }
                 )
                 
                 // ✅ ВАРИАНТ 4: Блокировка трекеров (реальные данные)

@@ -602,7 +602,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .responsibility:
             return [
                 "Отсутствие сбора персональных данных",
-                "Полная анонимность пользователей",
+                "Анонимная модель аккаунта (роль и возрастная группа)",
                 "Соответствие требованиям 152-ФЗ",
                 "Регулярный аудит системы"
             ]
@@ -670,7 +670,7 @@ enum VPNSection: String, CaseIterable {
         switch self {
         case .noLogs: return "Что мы НЕ собираем"
         case .encryption: return "3 вида военного шифрования"
-        case .servers: return "50+ серверов по всему миру"
+        case .servers: return "5+ серверов защиты сети"
         case .features: return "Дополнительная защита"
         case .energy: return "Экономия батареи"
         }
@@ -692,7 +692,7 @@ enum VPNSection: String, CaseIterable {
                 "AES-256-GCM: банковский сейф, военный уровень ⭐⭐⭐⭐⭐",
                 "ChaCha20-Poly1305: быстрое и надёжное ⚡⭐⭐⭐⭐⭐",
                 "XChaCha20-Poly1305: квантовая защита будущего ⭐⭐⭐⭐⭐+",
-                "Все 3 вида: НЕВОЗМОЖНО взломать"
+                "Все 3 вида: стойкость военного уровня"
             ]
         case .servers:
             return [

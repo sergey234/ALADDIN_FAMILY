@@ -10,6 +10,13 @@ import threading
 from typing import Dict, Any, Optional, List
 from datetime import datetime
 
+_APP_PATH = os.environ.get("ALADDIN_APP_PATH", "/opt/aladdin-backend/app")
+_BACKEND_PATH = os.environ.get("ALADDIN_BACKEND_PATH", "/opt/aladdin-backend")
+if _BACKEND_PATH not in sys.path:
+    sys.path.append(_BACKEND_PATH)
+if _APP_PATH not in sys.path:
+    sys.path.insert(0, _APP_PATH)
+
 # SFM Singleton instance
 _sfm_instance = None
 _sfm_lock = threading.Lock()
@@ -314,9 +321,9 @@ class OptimizedSFM:
             "timestamp": datetime.utcnow().isoformat()
         }
 
-def get_sfm() -> OptimizedSFM:
+def get_sfm():
     """
-    Get SFM singleton instance with fast initialization
+    Get SFM singleton — real SafeFunctionManager in production; no OptimizedSFM mock.
     """
     global _sfm_instance
 
@@ -324,11 +331,33 @@ def get_sfm() -> OptimizedSFM:
         with _sfm_lock:
             if _sfm_instance is None:
                 start_time = time.time()
-                _sfm_instance = OptimizedSFM()
-                init_time = time.time() - start_time
-                print(f"🚀 SFM singleton initialized in {init_time:.2f} seconds")
+                if ORIGINAL_SFM_AVAILABLE and SafeFunctionManager is not None:
+                    _sfm_instance = SafeFunctionManager()
+                    print(
+                        f"✅ Real SFM loaded in {time.time() - start_time:.2f}s "
+                        f"({len(_sfm_instance.functions)} functions)"
+                    )
+                elif os.environ.get("ALADDIN_ALLOW_SFM_MOCK") == "1":
+                    _sfm_instance = OptimizedSFM()
+                    print(
+                        f"⚠️ Mock OptimizedSFM (dev only) in {time.time() - start_time:.2f}s"
+                    )
+                else:
+                    print(
+                        "⚠️ SafeFunctionManager unavailable — use :8003 HTTP execute (no mock)"
+                    )
+                    return None
 
     return _sfm_instance
 
-# For compatibility
-sfm = get_sfm()
+
+def _lazy_sfm_compat():
+    try:
+        return get_sfm()
+    except Exception as exc:
+        print(f"⚠️ sfm compat init deferred: {exc}")
+        return None
+
+
+# For compatibility (must not crash gunicorn import)
+sfm = _lazy_sfm_compat()

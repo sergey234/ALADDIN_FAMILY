@@ -3,8 +3,10 @@
   "locale": "en",
   "topic": "security_faq",
   "title": "How does the system protect people 60+?",
-  "body": "How does the system protect people 60+?\n\nFor grandparents we made special protection:\n\n• We block calls from scammers (they often target people 60+)\n• We check sites before they open\n• A simple interface—clear even if you are not used to smartphones\n• Voice control (say “call my grandson” and the call starts)\n• Red SOS—get help quickly",
+  "body": "How does the system protect people 60+?\n\nFor grandparents we made special protection:\n\nâ¢ We warn about calls from scammers (they often target people 60+)\nâ¢ We check sites before they open\nâ¢ A simple interfaceâclear even if you are not used to smartphones\nâ¢ Red SOSâget help quickly",
   "source": "UnifiedFAQCatalog",
-  "keywords": [],
+  "keywords": [
+    "protect elderly"
+  ],
   "kb_version": "kb_v1"
 }

@@ -2410,6 +2410,33 @@ class APIService: ObservableObject {
         let request = UpdateAppointmentRequest(appointmentId: appointmentId, userId: userId, title: title, description: description, dateTime: dateTime, location: location, contactName: contactName, contactPhone: contactPhone, reminderMinutes: reminderMinutes, isCompleted: isCompleted, deviceId: deviceId, version: version)
         networkManager.post(endpoint: AppConfig.Endpoint.elderlyAppointmentsUpdate, body: request, completion: completion)
     }
+
+    func syncBloodPressure(userId: String, deviceId: String, lastSyncTimestamp: String? = nil, completion: @escaping (Result<SyncBloodPressureResponse, Error>) -> Void) {
+        let request = SyncBloodPressureRequest(userId: userId, deviceId: deviceId, lastSyncTimestamp: lastSyncTimestamp)
+        networkManager.post(endpoint: AppConfig.Endpoint.elderlyBloodPressureSync, body: request, completion: completion)
+    }
+
+    func updateBloodPressure(
+        readingId: String? = nil,
+        userId: String,
+        systolic: Int,
+        diastolic: Int,
+        recordedAt: String? = nil,
+        weekdayKey: String? = nil,
+        deviceId: String? = nil,
+        completion: @escaping (Result<BloodPressureReadingResponse, Error>) -> Void
+    ) {
+        let request = UpdateBloodPressureRequest(
+            readingId: readingId,
+            userId: userId,
+            systolic: systolic,
+            diastolic: diastolic,
+            recordedAt: recordedAt,
+            weekdayKey: weekdayKey,
+            deviceId: deviceId
+        )
+        networkManager.post(endpoint: AppConfig.Endpoint.elderlyBloodPressureUpdate, body: request, completion: completion)
+    }
     
     // ✅ ДОБАВЛЕНО: 2FA API (для синхронизации между устройствами)
     
@@ -3104,9 +3131,8 @@ class APIService: ObservableObject {
     /// Запустить сканирование IoT устройств
     func startIoTScan(homeId: String) async throws -> APIResponse<String> {
         return try await withCheckedThrowingContinuation { continuation in
-            // ✅ BUILD 115: Защита от двойного вызова continuation.resume()
             var hasResumed = false
-            
+
             struct EmptyBody: Codable {}
             let endpoint = AppConfig.Endpoint.iotScan.replacingOccurrences(of: "{homeId}", with: homeId)
             networkManager.post(endpoint: endpoint, body: EmptyBody()) { (result: Result<APIResponse<String>, Error>) in
@@ -3119,7 +3145,7 @@ class APIService: ObservableObject {
             }
         }
     }
-    
+
     /// Исправить угрозу
     func fixIoTThreat(threatId: String) async throws -> APIResponse<Bool> {
         return try await withCheckedThrowingContinuation { continuation in
@@ -3209,13 +3235,25 @@ class APIService: ObservableObject {
            let encoded = childId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) {
             endpoint += "?childId=\(encoded)"
         }
-        networkManager.get(endpoint: endpoint) { result in
+        networkManager.get(endpoint: endpoint) { (result: Result<ParentalMonitoringDetailResponse, Error>) in
+            let validated: Result<ParentalMonitoringDetailResponse, Error>
+            switch result {
+            case .success(let detail):
+                do {
+                    try detail.validateForProduction()
+                    validated = .success(detail)
+                } catch {
+                    validated = .failure(error)
+                }
+            case .failure(let error):
+                validated = .failure(error)
+            }
             Self.parentalMonitoringDetailCoalesceLock.lock()
             Self.parentalMonitoringDetailInflight.remove(key)
             let callbacks = Self.parentalMonitoringDetailWaiters.removeValue(forKey: key) ?? []
             Self.parentalMonitoringDetailCoalesceLock.unlock()
             for cb in callbacks {
-                cb(result)
+                cb(validated)
             }
         }
     }
@@ -3831,23 +3869,35 @@ class APIService: ObservableObject {
     
     // MARK: - Identity Theft Protection API
     
-    /// Получить попытки кражи личности
-    func getIdentityTheftAttempts(action: String? = nil, severity: String? = nil, completion: @escaping (Result<[IdentityTheftAttempt], Error>) -> Void) {
-        var endpoint = AppConfig.Endpoint.identityTheftAttempts
-        var queryItems: [String] = []
-        
-        if let action = action {
-            queryItems.append("action=\(action)")
+    /// Получить попытки кражи личности (B4-03 — envelope decode + client filters).
+    func getIdentityTheftAttempts(
+        action: String? = nil,
+        severity: String? = nil,
+        limit: Int = 50,
+        completion: @escaping (Result<[IdentityTheftAttempt], Error>) -> Void
+    ) {
+        let cappedLimit = min(max(limit, 1), 100)
+        var endpoint = "\(AppConfig.Endpoint.identityTheftAttempts)?limit=\(cappedLimit)"
+
+        networkManager.get(endpoint: endpoint) { (result: Result<IdentityTheftAttemptsEnvelope, Error>) in
+            switch result {
+            case .success(let envelope):
+                if IdentityTheftResponseGuard.rejectsMock(source: envelope.source) {
+                    completion(.failure(SecurityVerdictValidationError.mockSourceRejected(envelope.source ?? "mock")))
+                    return
+                }
+                var attempts = envelope.attempts
+                if let action, action != "all" {
+                    attempts = attempts.filter { $0.action.rawValue == action }
+                }
+                if let severity, severity != "all" {
+                    attempts = attempts.filter { $0.severity.rawValue == severity }
+                }
+                completion(.success(attempts))
+            case .failure(let error):
+                completion(.failure(error))
+            }
         }
-        if let severity = severity {
-            queryItems.append("severity=\(severity)")
-        }
-        
-        if !queryItems.isEmpty {
-            endpoint += "?" + queryItems.joined(separator: "&")
-        }
-        
-        networkManager.get(endpoint: endpoint, completion: completion)
     }
     
     /// Получить статистику защиты от кражи личности
@@ -3873,6 +3923,10 @@ class APIService: ObservableObject {
     func allowIdentityTheftAttempt(attemptId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
         struct AllowRequest: Codable {
             let attemptId: String
+
+            enum CodingKeys: String, CodingKey {
+                case attemptId = "attempt_id"
+            }
         }
         networkManager.post(
             endpoint: AppConfig.Endpoint.identityTheftAllow,
@@ -3885,6 +3939,10 @@ class APIService: ObservableObject {
     func blockIdentityTheftAttempt(attemptId: String, completion: @escaping (Result<APIResponse<Bool>, Error>) -> Void) {
         struct BlockRequest: Codable {
             let attemptId: String
+
+            enum CodingKeys: String, CodingKey {
+                case attemptId = "attempt_id"
+            }
         }
         networkManager.post(
             endpoint: AppConfig.Endpoint.identityTheftBlock,
@@ -3903,6 +3961,369 @@ class APIService: ObservableObject {
             body: WhitelistRequest(source: source),
             completion: completion
         )
+    }
+
+    /// POST `/api/identity-theft/detect` — SNILS identity theft check (B4-02).
+    func detectIdentityTheft(
+        snils: String,
+        completion: @escaping (Result<SecurityVerdict, Error>) -> Void
+    ) {
+        struct DetectRequest: Codable {
+            let snils: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.identityTheftDetect,
+            body: DetectRequest(snils: snils),
+            completion: { [weak self] (result: Result<SecurityVerdict, Error>) in
+                self?.completeValidatedAntifakeVerdict(result, completion: completion)
+            }
+        )
+    }
+
+    /// POST `/api/identity-theft/monitor/credit` — credit monitor agent (B4-04).
+    func monitorIdentityCredit(completion: @escaping (Result<SecurityVerdict, Error>) -> Void) {
+        struct EmptyBody: Codable {}
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.identityTheftMonitorCredit,
+            body: EmptyBody(),
+            completion: { [weak self] (result: Result<SecurityVerdict, Error>) in
+                self?.completeValidatedAntifakeVerdict(result, completion: completion)
+            }
+        )
+    }
+
+    // MARK: - Device Hub scans (B5)
+
+    /// POST `/api/malware/scan` — quick malware scan (B5-02).
+    func runMalwareQuickScan(
+        scope: String = "quick",
+        completion: @escaping (Result<DeviceAgentScanResult, Error>) -> Void
+    ) {
+        struct ScanRequest: Codable { let scope: String }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.malwareQuickScan,
+            body: ScanRequest(scope: scope),
+            completion: { [weak self] (result: Result<DeviceAgentScanResult, Error>) in
+                self?.completeValidatedDeviceScan(result, completion: completion)
+            }
+        )
+    }
+
+    /// POST `/api/mobile/security/check` — mobile security check (B5-03 / comp-03).
+    func runMobileSecurityCheck(
+        deviceId: String? = nil,
+        completion: @escaping (Result<DeviceAgentScanResult, Error>) -> Void
+    ) {
+        struct ScanRequest: Codable {
+            let deviceId: String?
+
+            enum CodingKeys: String, CodingKey {
+                case deviceId = "device_id"
+            }
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.mobileSecurityCheck,
+            body: ScanRequest(deviceId: deviceId),
+            completion: { [weak self] (result: Result<DeviceAgentScanResult, Error>) in
+                self?.completeValidatedDeviceScan(result, completion: completion)
+            }
+        )
+    }
+
+    /// POST `/api/mobile/scan` — app inventory scan (mob-02).
+    func runMobileDeviceScan(
+        deviceId: String? = nil,
+        completion: @escaping (Result<DeviceAgentScanResult, Error>) -> Void
+    ) {
+        struct ScanRequest: Codable {
+            let deviceId: String?
+
+            enum CodingKeys: String, CodingKey {
+                case deviceId = "device_id"
+            }
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.mobileScan,
+            body: ScanRequest(deviceId: deviceId),
+            completion: { [weak self] (result: Result<DeviceAgentScanResult, Error>) in
+                self?.completeValidatedDeviceScan(result, completion: completion)
+            }
+        )
+    }
+
+    /// POST `/api/ai/assistant/report_incident` — incident response drill (B5-03 / comp-04).
+    func reportSecurityIncident(
+        type: String,
+        description: String,
+        completion: @escaping (Result<DeviceIncidentReportResult, Error>) -> Void
+    ) {
+        struct IncidentRequest: Codable {
+            let type: String
+            let description: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.aiAssistantReportIncident,
+            body: IncidentRequest(type: type, description: description),
+            completion: { (result: Result<DeviceIncidentReportResult, Error>) in
+                switch result {
+                case .success(let payload):
+                    do {
+                        try payload.validateForProduction()
+                        completion(.success(payload))
+                    } catch {
+                        completion(.failure(error))
+                    }
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
+        )
+    }
+
+    /// EICAR antivirus file scan (B5-09).
+    func runEicarTestScan() async throws -> APIService.MalwareFileScanAPIResponse {
+        try await uploadFileForScanAsync(
+            fileData: DeviceScanSourceValidator.eicarPayload,
+            fileName: "eicar.txt",
+            fileSize: Int64(DeviceScanSourceValidator.eicarPayload.count),
+            checksum: nil
+        )
+    }
+
+    private func completeValidatedDeviceScan(
+        _ result: Result<DeviceAgentScanResult, Error>,
+        completion: @escaping (Result<DeviceAgentScanResult, Error>) -> Void
+    ) {
+        switch result {
+        case .success(let scan):
+            do {
+                try scan.validateForProduction()
+                completion(.success(scan))
+            } catch {
+                completion(.failure(error))
+            }
+        case .failure(let error):
+            if PremiumGateHandler.outcome(from: error).requiresUpgrade {
+                completion(.failure(SecurityVerdictPremiumRequiredError(message: nil)))
+                return
+            }
+            completion(.failure(error))
+        }
+    }
+
+    // MARK: - Antifake API (B2-04 — explicit `/api/antifake/check/*`, no mock)
+
+    /// POST `/api/antifake/check/text` — sync text analysis.
+    func antifakeCheckText(
+        text: String,
+        mode: String = "news",
+        completion: @escaping (Result<SecurityVerdict, Error>) -> Void
+    ) {
+        struct CheckTextRequest: Codable {
+            let text: String
+            let mode: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.antifakeCheckText,
+            body: CheckTextRequest(text: text, mode: mode),
+            completion: { [weak self] (result: Result<SecurityVerdict, Error>) in
+                self?.completeValidatedAntifakeVerdict(result, completion: completion)
+            }
+        )
+    }
+
+    /// POST `/api/antifake/check/url` — sync URL analysis.
+    func antifakeCheckUrl(
+        url: String,
+        completion: @escaping (Result<SecurityVerdict, Error>) -> Void
+    ) {
+        struct CheckUrlRequest: Codable {
+            let url: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.antifakeCheckUrl,
+            body: CheckUrlRequest(url: url),
+            completion: { [weak self] (result: Result<SecurityVerdict, Error>) in
+                self?.completeValidatedAntifakeVerdict(result, completion: completion)
+            }
+        )
+    }
+
+    /// POST multipart `/api/antifake/check/{audio|video|document}` → job enqueue or immediate verdict (B2-05).
+    func antifakeUploadMedia(
+        kind: AntifakeMediaKind,
+        fileData: Data,
+        filename: String,
+        mimeType: String,
+        extraFormFields: [String: String]? = nil,
+        completion: @escaping (Result<AntifakeJobEnqueueResult, Error>) -> Void
+    ) {
+        guard fileData.count <= Self.antifakeMaxUploadBytes else {
+            completion(.failure(NetworkError.badRequest("file_too_large")))
+            return
+        }
+
+        Task {
+            _ = await JWTTokenManager.shared.refreshTokenIfNeeded()
+            guard let token = AppConfig.authToken else {
+                completion(.failure(NetworkError.unauthorized("Токен авторизации отсутствует")))
+                return
+            }
+
+            let endpoint = kind.uploadEndpoint
+            guard let url = URL(string: AppConfig.apiBaseURL + endpoint) else {
+                completion(.failure(NetworkError.invalidURL))
+                return
+            }
+
+            let boundary = "Boundary-\(UUID().uuidString)"
+            var request = URLRequest(url: url)
+            request.httpMethod = "POST"
+            request.cachePolicy = .reloadIgnoringLocalCacheData
+            request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+            var body = Data()
+            body.append("--\(boundary)\r\n".data(using: .utf8)!)
+            body.append("Content-Disposition: form-data; name=\"file\"; filename=\"\(filename)\"\r\n".data(using: .utf8)!)
+            body.append("Content-Type: \(mimeType)\r\n\r\n".data(using: .utf8)!)
+            body.append(fileData)
+            body.append("\r\n".data(using: .utf8)!)
+            if let extraFormFields {
+                for (name, value) in extraFormFields where !value.isEmpty {
+                    Self.appendMultipartFormField(to: &body, boundary: boundary, name: name, value: value)
+                }
+            }
+            body.append("--\(boundary)--\r\n".data(using: .utf8)!)
+            request.httpBody = body
+
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                DispatchQueue.main.async {
+                    if let error {
+                        completion(.failure(error))
+                        return
+                    }
+                    guard let httpResponse = response as? HTTPURLResponse else {
+                        completion(.failure(NetworkError.invalidResponse))
+                        return
+                    }
+                    guard let data else {
+                        completion(.failure(NetworkError.noData))
+                        return
+                    }
+                    guard (200...299).contains(httpResponse.statusCode) else {
+                        let outcome = PremiumGateHandler.outcome(httpStatus: httpResponse.statusCode, data: data)
+                        completion(.failure(Self.error(from: outcome, statusCode: httpResponse.statusCode, data: data)))
+                        return
+                    }
+                    do {
+                        completion(.success(try SecurityVerdictParsers.decodeJobEnqueueResult(from: data)))
+                    } catch {
+                        completion(.failure(error))
+                    }
+                }
+            }.resume()
+        }
+    }
+
+    /// GET `/api/antifake/metrics` — user job stats (B2-12).
+    func getAntifakeMetrics(completion: @escaping (Result<AntifakeMetricsResponse, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.antifakeMetrics, completion: completion)
+    }
+
+    private static func appendMultipartFormField(to body: inout Data, boundary: String, name: String, value: String) {
+        body.append("--\(boundary)\r\n".data(using: .utf8)!)
+        body.append("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".data(using: .utf8)!)
+        body.append("\(value)\r\n".data(using: .utf8)!)
+    }
+
+    /// GET `/api/antifake/jobs/{id}` — poll async job until completed (B2-05).
+    func antifakePollJob(
+        jobId: String,
+        completion: @escaping (Result<AntifakeJobPollOutcome, Error>) -> Void
+    ) {
+        Task {
+            _ = await JWTTokenManager.shared.refreshTokenIfNeeded()
+            guard let token = AppConfig.authToken else {
+                completion(.failure(NetworkError.unauthorized("Токен авторизации отсутствует")))
+                return
+            }
+
+            let endpoint = AppConfig.Endpoint.antifakeJob(id: jobId)
+            guard let url = URL(string: AppConfig.apiBaseURL + endpoint) else {
+                completion(.failure(NetworkError.invalidURL))
+                return
+            }
+
+            var request = URLRequest(url: url)
+            request.httpMethod = "GET"
+            request.cachePolicy = .reloadIgnoringLocalCacheData
+            request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+
+            URLSession.shared.dataTask(with: request) { data, response, error in
+                DispatchQueue.main.async {
+                    if let error {
+                        completion(.failure(error))
+                        return
+                    }
+                    guard let httpResponse = response as? HTTPURLResponse else {
+                        completion(.failure(NetworkError.invalidResponse))
+                        return
+                    }
+                    guard let data else {
+                        completion(.failure(NetworkError.noData))
+                        return
+                    }
+                    guard (200...299).contains(httpResponse.statusCode) else {
+                        let outcome = PremiumGateHandler.outcome(httpStatus: httpResponse.statusCode, data: data)
+                        completion(.failure(Self.error(from: outcome, statusCode: httpResponse.statusCode, data: data)))
+                        return
+                    }
+                    do {
+                        completion(.success(try SecurityVerdictParsers.decodeJobPoll(from: data)))
+                    } catch {
+                        completion(.failure(error))
+                    }
+                }
+            }.resume()
+        }
+    }
+
+    private static let antifakeMaxUploadBytes = 25 * 1024 * 1024
+
+    private static func error(from outcome: PremiumGateOutcome, statusCode: Int, data: Data) -> Error {
+        switch outcome {
+        case .premiumRequired(let message):
+            return NetworkError.forbidden(message ?? "premium_required")
+        case .forbidden(let message):
+            return NetworkError.forbidden(message)
+        case .other(let networkError):
+            return networkError
+        case .allowed:
+            let detail = parseFastAPIErrorDetail(from: data)
+            return NetworkError.from(httpStatusCode: statusCode, message: detail)
+        }
+    }
+
+    private func completeValidatedAntifakeVerdict(
+        _ result: Result<SecurityVerdict, Error>,
+        completion: @escaping (Result<SecurityVerdict, Error>) -> Void
+    ) {
+        switch result {
+        case .success(let verdict):
+            do {
+                try verdict.validateForProduction()
+                if verdict.premiumRequired {
+                    completion(.failure(SecurityVerdictPremiumRequiredError(message: nil)))
+                    return
+                }
+                completion(.success(verdict))
+            } catch {
+                completion(.failure(error))
+            }
+        case .failure(let error):
+            completion(.failure(error))
+        }
     }
     
     // MARK: - Privacy Reports API

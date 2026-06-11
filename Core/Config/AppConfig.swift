@@ -143,7 +143,7 @@ struct AppConfig {
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "226"
+    static let minimumClientBuildForApiContract = "227"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -239,32 +239,66 @@ struct AppConfig {
         static let drivingStats = "/api/reports/driving/stats"
         static let drivingExport = "/api/reports/driving/export"
         
-        // Dark Web Monitoring
-        static let darkWebLeaks = "/api/reports/dark-web/leaks"
-        static let darkWebLeaksList = "/api/reports/dark-web/leaks/list"
-        static let darkWebStats = "/api/reports/dark-web/stats"
-        static let darkWebScans = "/api/reports/dark-web/scans"
-        static let darkWebResolve = "/api/reports/dark-web/resolve"
-        static let darkWebScanStart = "/api/reports/dark-web/scan/start"
-        static let darkWebScanSecure = "/api/reports/dark-web/scan/secure"
-        static let darkWebScanFast = "/api/reports/dark-web/scan/fast"
-        
-        // Identity Theft
-        static let identityTheftAttempts = "/api/reports/identity-theft/attempts"
-        static let identityTheftStats = "/api/reports/identity-theft/stats"
-        static let identityTheftAllow = "/api/reports/identity-theft/allow"
-        static let identityTheftBlock = "/api/reports/identity-theft/block"
-        static let identityTheftWhitelist = "/api/reports/identity-theft/whitelist"
-        
-        // Privacy Reports
-        static let locationStats = "/api/reports/privacy/location/stats"
-        static let locationRequests = "/api/reports/privacy/location/requests"
-        static let locationAllow = "/api/reports/privacy/location/allow"
-        static let locationBlock = "/api/reports/privacy/location/block"
-        static let locationUpdateAccuracy = "/api/reports/privacy/location/update-accuracy"
-        static let dataCleanupStats = "/api/reports/privacy/cleanup/stats"
-        static let dataCleanupRecords = "/api/reports/privacy/cleanup/records"
-        static let dataCleanupStart = "/api/reports/privacy/cleanup/start"
+        // MARK: Explicit Security API (B1 canonical — docs/IOS_EXPLICIT_API_MATRIX.md)
+
+        // Antifake (B2-01)
+        static let antifakeCheckText = "/api/antifake/check/text"
+        static let antifakeCheckUrl = "/api/antifake/check/url"
+        static let antifakeCheckAudio = "/api/antifake/check/audio"
+        static let antifakeCheckVideo = "/api/antifake/check/video"
+        static let antifakeCheckDocument = "/api/antifake/check/document"
+        static let antifakeCallAnalyze = "/api/antifake/call/analyze"
+        static func antifakeJob(id: String) -> String { "/api/antifake/jobs/\(id)" }
+        static let antifakeMetrics = "/api/antifake/metrics"
+
+        // Dark Web Monitoring (explicit B1-02)
+        static let darkWebLeaks = "/api/darkweb/leaks"
+        static let darkWebLeaksList = "/api/darkweb/leaks"
+        static let darkWebStats = "/api/darkweb/stats"
+        static let darkWebScans = "/api/darkweb/scans"
+        static let darkWebResolve = "/api/darkweb/resolve"
+        static let darkWebScanStart = "/api/darkweb/scan/start"
+        /// Alias → canonical `/api/darkweb/scan/start` (legacy name kept for call sites)
+        static let darkWebScanSecure = "/api/darkweb/scan/start"
+        /// Fast check path on explicit router
+        static let darkWebScanFast = "/api/darkweb/check"
+
+        // Identity Theft (explicit B1-03)
+        static let identityTheftAttempts = "/api/identity-theft/attempts"
+        static let identityTheftStats = "/api/identity-theft/stats"
+        static let identityTheftDetect = "/api/identity-theft/detect"
+        static let identityTheftMonitorCredit = "/api/identity-theft/monitor/credit"
+        static let identityTheftCheckFraud = "/api/identity-theft/check/fraud"
+        static let identityTheftAllow = "/api/identity-theft/allow"
+        static let identityTheftBlock = "/api/identity-theft/block"
+        /// Legacy-only until SEC-06-P2; may 404 on explicit stack
+        static let identityTheftWhitelist = "/api/identity-theft/whitelist"
+
+        // Location Bubble + Data Cleanup (explicit B1-04/05)
+        static let locationStats = "/api/location-bubble/stats"
+        static let locationRequests = "/api/location-bubble/requests"
+        static let locationAllow = "/api/location-bubble/allow"
+        static let locationBlock = "/api/location-bubble/block"
+        static let locationUpdateAccuracy = "/api/location-bubble/update-accuracy"
+        static let locationBubbleSettings = "/api/location-bubble/settings"
+        static let dataCleanupStats = "/api/data-cleanup/stats"
+        static let dataCleanupRecords = "/api/data-cleanup/records"
+        static let dataCleanupStart = "/api/data-cleanup/start"
+
+        // Parental Monitoring (explicit B1-10)
+        static let parentalMonitoringDetail = "/api/parental-control/monitoring/detail"
+        static let parentalMonitoringEvents = "/api/parental-control/monitoring/events"
+
+        // Mobile Security (explicit B1-09)
+        static let mobileAppLock = "/api/mobile/app_lock"
+        static let mobileBiometric = "/api/mobile/biometric"
+        static let mobileSecurityCheck = "/api/mobile/security/check"
+        static let mobileScan = "/api/mobile/scan"
+
+        // Phishing (B5-03)
+        static let phishingSensitivity = "/api/phishing/sensitivity"
+
+        // Privacy Reports (anti-tracker — legacy, no explicit B1 yet)
         static let antiTrackerStats = "/api/reports/privacy/tracker/stats"
         static let topTrackers = "/api/reports/privacy/tracker/top"
         static let trackerWhitelist = "/api/reports/privacy/tracker/whitelist"
@@ -465,8 +499,6 @@ struct AppConfig {
         static let getAccessRequests = "/api/v1/parental-control/access-requests"
         static let handleAccessRequest = "/api/v1/parental-control/access-requests"
         static let getStats = "/api/parental-control/stats"
-        static let parentalMonitoringDetail = "/api/parental-control/monitoring/detail"
-        static let parentalMonitoringEvents = "/api/parental-control/monitoring/events"
         static let updateLimits = "/api/parental/limits"
         static let blockDevice = "/api/parental/block"
         
@@ -540,6 +572,8 @@ struct AppConfig {
         static let elderlyMedicationsUpdate = "/api/elderly/medications/update"
         static let elderlyAppointmentsSync = "/api/elderly/appointments/sync"
         static let elderlyAppointmentsUpdate = "/api/elderly/appointments/update"
+        static let elderlyBloodPressureSync = "/api/elderly/blood-pressure/sync"
+        static let elderlyBloodPressureUpdate = "/api/elderly/blood-pressure/update"
 
         // Content sync (Phase 2 / Phase 9)
         static let contentManifest = "/api/content/manifest"
@@ -596,6 +630,7 @@ struct AppConfig {
         static let malwareThreats = "/api/malware/threats"
         static let malwareThreatsByStatus = "/api/malware/threats"  // Используем query параметр ?status=
         static let malwareQuarantineAction = "/api/malware/quarantine/action"
+        static let malwareQuickScan = "/api/malware/scan"
         /// Загрузка файла на серверное сканирование (канонический путь бэкенда; при отсутствии — 404, клиент обрабатывает мягко)
         static let malwareFileScan = "/api/antivirus/scan"
         
@@ -635,7 +670,7 @@ struct AppConfig {
         static let notificationsStats = "/api/notifications/stats"
 
         // Location & Privacy
-        static let locationBubble = "/api/reports/privacy/location/bubble"
+        static let locationBubble = "/api/location-bubble/generate"
         static let locationSend = "/api/reports/privacy/location/send"
         static let geofences = "/api/v1/parental-control/location/geofences"
         static let geofenceTrack = "/api/v1/parental-control/location/track"
@@ -781,7 +816,7 @@ extension AppConfig {
         return true
     }
 
-    /// Продуктовый рубильник: серверные POST сканирования Dark Web (`/api/reports/dark-web/scan/*`).
+    /// Продуктовый рубильник: серверные POST сканирования Dark Web (`/api/darkweb/scan/*`, `/api/darkweb/check`).
     /// Выключить: `UserDefaults.standard.set(false, forKey: UserDefaultsKeys.darkWebServerScanEnabled)`.
     static var isDarkWebServerScanEnabled: Bool {
         if UserDefaults.standard.object(forKey: UserDefaultsKeys.darkWebServerScanEnabled) != nil {

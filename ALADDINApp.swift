@@ -398,6 +398,15 @@ struct ALADDINApp: App {
                     LaunchDiagnostics.appendLifecycleTrace("WindowGroup.task END deferred bootstrap")
                 }
                 .onOpenURL { url in
+                    if AntifakeDeepLinkRouter.isAntifakeCheckDeepLink(url) {
+                        if let payload = AntifakeSharePayloadStore.consume() {
+                            navigationManager.navigateToAntifakeShareCheck(payload: payload)
+                        } else {
+                            navigationManager.navigateTo(.antifakeHub)
+                        }
+                        return
+                    }
+
                     if let category = MnemoDeepLinkRouter.parseReviewCategory(from: url) {
                         navigationManager.navigateToMnemoReview(category: category)
                         return
@@ -1044,6 +1053,29 @@ struct ALADDINApp: App {
                         )
                     case .advancedProtection:
                         AnyView(AdvancedProtectionSettingsScreen().id("advancedProtection").environmentObject(navigationManager).environmentObject(localizationManager))
+                    case .antifakeHub:
+                        AnyView(AntifakeHubScreen()
+                            .id("antifakeHub")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                            .environmentObject(SubscriptionManager.shared))
+                    case .privacyHub:
+                        AnyView(PrivacyHubScreen()
+                            .id("privacyHub")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .identityHub:
+                        AnyView(IdentityHubScreen()
+                            .id("identityHub")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                            .environmentObject(SubscriptionManager.shared))
+                    case .deviceHub:
+                        AnyView(DeviceHubScreen()
+                            .id("deviceHub")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                            .environmentObject(SubscriptionManager.shared))
                     case .qrCode:
                         AnyView(QRScannerModal(onCodeScanned: { _ in }).id("qrCode").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .invitationCode:

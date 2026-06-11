@@ -1,0 +1,13 @@
+{
+  "id": "faq_anonymity_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What is internet anonymity?",
+  "body": "What is internet anonymity?\n\nAnonymity means you are harder to track online:\nâ¢ Your IP may be hidden with network protection\nâ¢ Less data about your actions\nâ¢ Your location stays more private\nâ¢ Harder for others to spy on you\n\nIt's like a disguise â activity exists, but you are harder to identify!\n\nâ ALADDIN Premium with network protection improves privacy; absolute anonymity online is not possible.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [
+    "анонимность",
+    "приватность"
+  ],
+  "kb_version": "kb_v1"
+}

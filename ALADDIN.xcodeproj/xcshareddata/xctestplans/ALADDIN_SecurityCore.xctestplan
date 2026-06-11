@@ -1,0 +1,84 @@
+{
+  "configurations" : [
+    {
+      "id" : "SEC-CORE-0001-0000-0000-000000000001",
+      "name" : "Security Core Unit",
+      "options" : {
+        "targetForVariableExpansion" : {
+          "containerPath" : "container:ALADDIN.xcodeproj",
+          "identifier" : "A0FFFFFD",
+          "name" : "ALADDIN"
+        }
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "testTimeoutsEnabled" : true
+  },
+  "testTargets" : [
+    {
+      "enabled" : true,
+      "target" : {
+        "containerPath" : "container:ALADDIN.xcodeproj",
+        "identifier" : "B5001000",
+        "name" : "ALADDINUnitTests"
+      },
+      "selectedTests" : {
+        "suites" : [
+          {
+            "name" : "AppConfigTests"
+          },
+          {
+            "name" : "SecurityVerdictModelsTests"
+          },
+          {
+            "name" : "DeviceEicarScanTests"
+          },
+          {
+            "name" : "DeviceThreatCatalogTests"
+          },
+          {
+            "name" : "IdentityMonitorViewModelTests"
+          },
+          {
+            "name" : "IdentityFraudThreatCatalogTests"
+          },
+          {
+            "name" : "FamilyChildThreatCatalogTests"
+          },
+          {
+            "name" : "ParentalMonitoringValidationTests"
+          },
+          {
+            "name" : "AntifakeSharePayloadStoreTests"
+          },
+          {
+            "name" : "AntifakeDeepLinkRouterTests"
+          },
+          {
+            "name" : "AIPIIRedactorTests"
+          },
+          {
+            "name" : "FamilyE2EECryptoEngineTests"
+          },
+          {
+            "name" : "DEFENSIVEJWTTests"
+          },
+          {
+            "name" : "WellnessModelsTests"
+          },
+          {
+            "name" : "NetworkManagerTests"
+          },
+          {
+            "name" : "APIServiceTests"
+          },
+          {
+            "name" : "LocalizationManagerTests"
+          }
+        ]
+      }
+    }
+  ],
+  "version" : 1
+}

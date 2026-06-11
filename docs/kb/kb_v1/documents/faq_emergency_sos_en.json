@@ -1,0 +1,14 @@
+{
+  "id": "faq_emergency_sos_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "How does SOS for 60+ work?",
+  "body": "How does SOS for 60+ work?\n\nSOS for people 60+ is the red button in the simple interface.\n\nWhat happens:\nâ¢ You press SOS\nâ¢ Family and emergency contacts get an alert\nâ¢ You can quickly ask for help\n\nâ ï¸ This is not medical care and not a substitute for 112!\n\nâ ALADDIN helps your family know you need help.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [
+    "sos",
+    "экстренно",
+    "60+"
+  ],
+  "kb_version": "kb_v1"
+}

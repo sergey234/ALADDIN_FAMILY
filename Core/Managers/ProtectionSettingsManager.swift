@@ -45,25 +45,21 @@ class ProtectionSettingsManager: ObservableObject {
     func loadSettingsFromServer(completion: @escaping (Result<ProtectionSettings, Error>) -> Void) {
         isLoading = true
         errorMessage = nil
-        
-        // TODO: Реализовать загрузку с сервера через APIService
-        // APIService.shared.getProtectionSettings { [weak self] result in
-        //     self?.isLoading = false
-        //     switch result {
-        //     case .success(let response):
-        //         self?.settings = response.settings
-        //         self?.saveSettings()
-        //         completion(.success(response.settings))
-        //     case .failure(let error):
-        //         self?.errorMessage = error.localizedDescription
-        //         completion(.failure(error))
-        //     }
-        // }
-        
-        // Временная заглушка
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-            self?.isLoading = false
-            completion(.success(self?.settings ?? ProtectionSettings()))
+
+        APIService.shared.getProtectionSettings { [weak self] result in
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                self.isLoading = false
+                switch result {
+                case .success(let response):
+                    self.settings = response.settings
+                    self.saveSettings()
+                    completion(.success(response.settings))
+                case .failure(let error):
+                    self.errorMessage = error.localizedDescription
+                    completion(.failure(error))
+                }
+            }
         }
     }
     

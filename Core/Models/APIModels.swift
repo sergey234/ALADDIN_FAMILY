@@ -3877,6 +3877,41 @@ struct UpdateAppointmentRequest: Codable {
     let version: Int?
 }
 
+struct BloodPressureReadingResponse: Codable {
+    let readingId: String
+    let userId: String
+    let systolic: Int
+    let diastolic: Int
+    let recordedAt: String
+    let weekdayKey: String?
+    let deviceId: String?
+    let lastModified: String
+    let version: Int
+}
+
+struct SyncBloodPressureRequest: Codable {
+    let userId: String
+    let deviceId: String
+    let lastSyncTimestamp: String?
+}
+
+struct SyncBloodPressureResponse: Codable {
+    let userId: String
+    let readings: [BloodPressureReadingResponse]
+    let weeklyByDay: [String: String]
+    let lastSyncTimestamp: String
+}
+
+struct UpdateBloodPressureRequest: Codable {
+    let readingId: String?
+    let userId: String
+    let systolic: Int
+    let diastolic: Int
+    let recordedAt: String?
+    let weekdayKey: String?
+    let deviceId: String?
+}
+
 // Прогресс игр
 struct GameProgressResponse: Codable, Identifiable {
     let id: String  // gameId

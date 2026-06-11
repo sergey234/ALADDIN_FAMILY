@@ -1,1 +1,1 @@
-# Application services (DB-backed helpers).
+# ALADDIN app services package

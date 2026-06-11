@@ -16,10 +16,9 @@ import os
 import re
 from typing import Dict, List, Optional, Sequence, Tuple
 
-import torch
-from transformers import AutoModelForSequenceClassification, AutoTokenizer, pipeline
-
 from security.base import SecurityBase
+
+from app.security.ml_lazy_loader import get_torch, get_transformers
 
 
 DEFAULT_MODEL_NAME = "unitary/toxic-bert"
@@ -111,19 +110,27 @@ class FakeNewsDetectionAgent(SecurityBase):
         self.threshold_low = threshold_low
         self.threshold_medium = threshold_medium
         self.threshold_high = threshold_high
+        torch = get_torch()
         self.device = device if device is not None else (-1 if not torch.cuda.is_available() else 0)
 
-        self._tokenizer: Optional[AutoTokenizer] = None
-        self._model: Optional[AutoModelForSequenceClassification] = None
+        self._tokenizer = None
+        self._model = None
         self._pipeline = None
-
-        self._load_pipeline()
+        self._pipeline_ready = False
 
     # --------------------------------------------------------------------- #
     # МЕТОДЫ ИНИЦИАЛИЗАЦИИ
     # --------------------------------------------------------------------- #
-    def _load_pipeline(self) -> None:
-        """Загружает токенайзер, модель и инициализирует inference pipeline."""
+    def _ensure_pipeline(self) -> None:
+        """Lazy-load BERT pipeline on first inference (worker path only)."""
+        if self._pipeline_ready:
+            return
+        transformers = get_transformers()
+        torch = get_torch()
+        AutoTokenizer = transformers.AutoTokenizer
+        AutoModelForSequenceClassification = transformers.AutoModelForSequenceClassification
+        pipeline = transformers.pipeline
+
         try:
             self.logger.info(
                 "Загружаю FakeNewsDetection модель %s (device=%s)", self.model_name, self.device
@@ -138,9 +145,14 @@ class FakeNewsDetectionAgent(SecurityBase):
                 return_all_scores=True,
                 truncation=True,
             )
+            self._pipeline_ready = True
         except Exception as exc:
             self.logger.error("Не удалось загрузить модель %s: %s", self.model_name, exc)
             raise
+
+    def _load_pipeline(self) -> None:
+        """Backward-compatible alias for lazy pipeline init."""
+        self._ensure_pipeline()
 
     # --------------------------------------------------------------------- #
     # ПУБЛИЧНЫЕ МЕТОДЫ АНАЛИЗА
@@ -159,6 +171,8 @@ class FakeNewsDetectionAgent(SecurityBase):
         prepared_text = (text or "").strip()
         if not prepared_text:
             return self._empty_result(reason="empty_text")
+
+        self._ensure_pipeline()
 
         # ML модель предсказание
         model_score = self._predict_probability(prepared_text)
@@ -212,6 +226,7 @@ class FakeNewsDetectionAgent(SecurityBase):
         if self._pipeline is None:
             raise RuntimeError("Fake news pipeline не загружен")
 
+        torch = get_torch()
         with torch.no_grad():
             predictions = self._pipeline(text)
 

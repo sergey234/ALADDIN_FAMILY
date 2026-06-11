@@ -1,0 +1,5 @@
+# Phase 2-lite: direct OpenRouter when Hermes CLI prompt exceeds free-tier (402)
+FEATURE_OPENROUTER_DIRECT_FALLBACK=1
+OPENROUTER_DIRECT_MODEL=deepseek/deepseek-v4-flash
+OPENROUTER_DIRECT_TIMEOUT_SEC=45
+OPENROUTER_DIRECT_MAX_TOKENS=1024

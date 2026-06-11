@@ -7,6 +7,7 @@ struct IncidentResponseSettingsScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var syncEngine = SyncEngine.shared
     @StateObject private var viewModel = IncidentResponseSettingsViewModel()
+    @StateObject private var scanViewModel = DeviceComponentsScanViewModel()
 
     private var syncState: SyncState {
         syncEngine.latestStateByDomain[.networkProtection] ?? .idle
@@ -103,10 +104,9 @@ struct IncidentResponseSettingsScreen: View {
                         PrimaryButton(
                             title: localizationManager.localized("incident_response.test_response"),
                             icon: "exclamationmark.triangle",
-                            isLoading: false
+                            isLoading: scanViewModel.runningKind == .incident
                         ) {
-                            // TODO: Запустить тест системы реагирования
-                            print("🚨 Запуск тестирования системы реагирования...")
+                            Task { await scanViewModel.runScan(.incident) }
                         }
                     }
                     .padding(.horizontal, Spacing.screenPadding)

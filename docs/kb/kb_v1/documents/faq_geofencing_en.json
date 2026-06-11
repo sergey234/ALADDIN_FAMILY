@@ -1,0 +1,15 @@
+{
+  "id": "faq_geofencing_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What are geofences?",
+  "body": "What are geofences?\n\nGeofences are safe places on the map for family members.\n\nHow it works:\n1. A parent creates a zone (home, school, activities)\n2. Sets address and radius\n3. Gets notified when a child enters or leaves the zone\n\nIt's like a virtual fence around important places!\n\nâ ALADDIN helps you know loved ones are in a safe zone â with consent.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [
+    "геозона",
+    "геозоны",
+    "geofence",
+    "местоположение"
+  ],
+  "kb_version": "kb_v1"
+}

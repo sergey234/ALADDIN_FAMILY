@@ -580,7 +580,9 @@ enum PrivacyMainSection: String, CaseIterable {
                 localizationManager.localized("privacy_policy_section_protection_content_3"),
                 localizationManager.localized("privacy_policy_section_protection_content_4"),
                 localizationManager.localized("privacy_policy_section_protection_content_5"),
-                localizationManager.localized("privacy_policy_section_protection_content_6")
+                localizationManager.localized("privacy_policy_section_protection_content_6"),
+                localizationManager.localized("privacy_policy_section_protection_content_7"),
+                localizationManager.localized("privacy_policy_section_protection_content_8")
             ]
         case .rights:
             return [
@@ -726,7 +728,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .responsibility:
             return [
                 "Отсутствие сбора персональных данных",
-                "Полная анонимность пользователей",
+                "Анонимная модель аккаунта (роль и возрастная группа)",
                 "Соответствие требованиям 152-ФЗ",
                 "Регулярный аудит системы"
             ]
@@ -832,7 +834,7 @@ enum NetworkProtectionSection: String, CaseIterable {
                 "AES-256-GCM: банковский сейф, военный уровень ⭐⭐⭐⭐⭐",
                 "ChaCha20-Poly1305: быстрое и надёжное ⚡⭐⭐⭐⭐⭐",
                 "XChaCha20-Poly1305: квантовая защита будущего ⭐⭐⭐⭐⭐+",
-                "Все 3 вида: НЕВОЗМОЖНО взломать"
+                "Все 3 вида: стойкость военного уровня"
             ]
         }
     }

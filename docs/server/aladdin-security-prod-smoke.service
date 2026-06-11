@@ -1,0 +1,14 @@
+[Unit]
+Description=ALADDIN security domain prod smoke (B-OPS-22)
+After=network.target aladdin-backend.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/aladdin-backend
+Environment=PYTHONPATH=/opt/aladdin-backend
+ExecStart=/opt/aladdin-backend/venv/bin/python3 /opt/aladdin-backend/docs/server/test_security_prod_smoke.py
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

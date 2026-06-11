@@ -7,6 +7,7 @@ struct NetworkSecuritySettingsScreen: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @ObservedObject private var syncEngine = SyncEngine.shared
     @StateObject private var viewModel = NetworkSecuritySettingsViewModel()
+    @StateObject private var scanViewModel = DeviceComponentsScanViewModel()
 
     private var syncState: SyncState {
         syncEngine.latestStateByDomain[.networkProtection] ?? .idle
@@ -108,10 +109,9 @@ struct NetworkSecuritySettingsScreen: View {
                         PrimaryButton(
                             title: localizationManager.localized("network_security.network_scan"),
                             icon: "wifi",
-                            isLoading: false
+                            isLoading: scanViewModel.runningKind == .network
                         ) {
-                            // TODO: Запустить сканирование сети
-                            print("🛡️ Запуск сканирования сети...")
+                            Task { await scanViewModel.runScan(.network) }
                         }
                     }
                     .padding(.horizontal, Spacing.screenPadding)

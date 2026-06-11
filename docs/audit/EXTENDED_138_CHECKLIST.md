@@ -4,7 +4,9 @@
 
 Источник таксономии: `ПОЛНЫЙ_АНАЛИЗ_42_КОМПОНЕНТОВ_И_138_ФУНКЦИЙ.md` (100 угроз + 32 родительских + 6 доп.).
 
-Колонки: **api_hint** — типовые REST/SFM пути (заполнить при аудите); **verify** — `TBD` | `ok`.
+**L3 criterion (B-QA-01):** `verify=ok` = L3 smoke по `docs/server/L3_SMOKE_CONTRACT.md`, **не** HTTP 200 alone. Детали: `docs/release/QA_01_EXTENDED138_L3_CRITERION.md`. iOS TestFlight L3 → `B-QA-02`.
+
+Колонки: **api_hint** — типовые REST/SFM пути (заполнить при аудите); **verify** — `TBD` | `ok` (L3 only).
 
 | № | Группа | Функция (продукт) | api_hint | verify |
 |---|--------|-------------------|----------|--------|

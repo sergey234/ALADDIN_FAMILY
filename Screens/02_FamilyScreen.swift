@@ -3776,6 +3776,7 @@ struct FamilyMonitoringModal: View {
     @Binding var isPresented: Bool
     @Binding var isEnabled: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
     
     @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
     @AppStorage("parental_selected_child") private var legacySelectedChild: String = ""
@@ -3862,6 +3863,14 @@ struct FamilyMonitoringModal: View {
 
                 FamilyNetworkLayersLocalStatusBlock()
                     .environmentObject(localizationManager)
+
+                Divider()
+                    .background(Color.white.opacity(0.2))
+                    .padding(.vertical, Spacing.s)
+
+                FamilyChildThreatCoverageView()
+                    .environmentObject(localizationManager)
+                    .environmentObject(navigationManager)
                 
                 Divider()
                     .background(Color.white.opacity(0.2))
@@ -4197,36 +4206,21 @@ struct FamilyLocationModal: View {
     
     // ✅ ИНТЕГРАЦИЯ: Загрузка и мониторинг геозон
     private func loadAndMonitorGeofences() {
-        // Загружаем геозоны из UserDefaults
         let geofencesKey = "geofences_settings"
         guard let data = UserDefaults.standard.data(forKey: geofencesKey),
               let decoded = try? JSONDecoder().decode([GeofenceItemCodable].self, from: data) else {
             print("⚠️ FamilyLocationModal: Геозоны не найдены")
             return
         }
-        
-        // Мониторим каждую геозону через LocationManager
-        for geofenceCodable in decoded {
-            // Получаем координаты из адреса (здесь нужна геокодировка)
-            // Для примера используем координаты Москвы
-            let center = CLLocationCoordinate2D(latitude: 55.7558, longitude: 37.6173)
-            
-            do {
-                // Используем координаты по умолчанию (Москва)
-                // TODO: Добавить геокодировку адреса для получения реальных координат
-                let geofenceCenter = center
-                
-                let geofence = GeofenceItem(
-                    name: geofenceCodable.name,
-                    address: geofenceCodable.address,
-                    radius: geofenceCodable.radius
-                )
-                
-                try locationManager.startMonitoring(geofence: geofence, center: geofenceCenter)
-                print("✅ FamilyLocationModal: Геозона '\(geofence.name)' добавлена в мониторинг")
-            } catch {
-                print("❌ FamilyLocationModal: Ошибка добавления геозоны '\(geofenceCodable.name)': \(error.localizedDescription)")
-            }
+
+        let geofences = decoded.map {
+            GeofenceItem(id: $0.id, name: $0.name, address: $0.address, radius: $0.radius, isActive: $0.isActive)
+        }
+
+        Task { @MainActor in
+            let coordinates = await GeofenceGeocodingService.shared.syncCoordinates(for: geofences)
+            locationManager.loadAndMonitorGeofences(geofences, coordinates: coordinates)
+            print("✅ FamilyLocationModal: Геозоны с геокодировкой — \(coordinates.count)/\(geofences.count)")
         }
     }
     
@@ -4352,6 +4346,10 @@ struct FamilyReportsModal: View {
     @State private var showTopApps = false
     @State private var showUsageHours = false
     @State private var showBypassAttempts = false
+    @State private var isExportingReport = false
+    @State private var showReportShareSheet = false
+    @State private var exportedReportURL: URL?
+    @State private var exportErrorMessage: String?
     
     @State private var suspiciousActivityCount: Int = 0
     @State private var bypassAttemptsCount: Int = 0
@@ -4380,6 +4378,16 @@ struct FamilyReportsModal: View {
                     description: localizationManager.localized("family_weekly_report_desc"),
                     buttonTitle: localizationManager.localized("family_view"),
                     action: { showWeeklyReport = true }
+                )
+
+                FamilyConfigButtonItem(
+                    icon: "📄",
+                    title: localizationManager.localized("family_monitoring_export_pdf"),
+                    description: localizationManager.localized("family_monitoring_export_pdf_desc"),
+                    buttonTitle: isExportingReport
+                        ? localizationManager.localized("family_monitoring_export_in_progress")
+                        : localizationManager.localized("family_monitoring_export_pdf_button"),
+                    action: { exportMonitoringPDF() }
                 )
                 
                 // 2. Подозрительная активность - Badge Item
@@ -4507,7 +4515,62 @@ struct FamilyReportsModal: View {
         .onChange(of: selectedChildId) { _ in
             loadReportsStatistics()
         }
+        .sheet(isPresented: $showReportShareSheet, onDismiss: { exportedReportURL = nil }) {
+            if let exportedReportURL {
+                ShareSheet(activityItems: [exportedReportURL])
+            }
+        }
+        .alert(
+            localizationManager.localized("family_monitoring_export_failed_title"),
+            isPresented: Binding(
+                get: { exportErrorMessage != nil },
+                set: { if !$0 { exportErrorMessage = nil } }
+            )
+        ) {
+            Button(localizationManager.localized("common_ok"), role: .cancel) {}
+        } message: {
+            Text(exportErrorMessage ?? "")
+        }
         .withVisualLogger()
+    }
+    
+    private func exportMonitoringPDF() {
+        guard !isExportingReport else { return }
+        isExportingReport = true
+        let cid = effectiveChildId.isEmpty ? nil : effectiveChildId
+        ParentalControlManager.shared.getMonitoringDetail(childId: cid) { result in
+            DispatchQueue.main.async {
+                isExportingReport = false
+                switch result {
+                case .success(let detail):
+                    let labels = ParentalMonitoringReportLabels(
+                        reportTitle: localizationManager.localized("family_monitoring_export_pdf"),
+                        generatedLabel: localizationManager.localized("family_monitoring_export_generated"),
+                        summarySectionTitle: localizationManager.localized("family_statistics_week_detailed"),
+                        browserSitesLabel: localizationManager.localized("family_monitoring_browser_total_sites"),
+                        appsUsedLabel: localizationManager.localized("family_apps"),
+                        contactsActiveLabel: localizationManager.localized("family_contacts"),
+                        screenTimeLabel: localizationManager.localized("family_screen_time"),
+                        websitesBlockedLabel: localizationManager.localized("family_blocked_attempts"),
+                        threatsBlockedLabel: localizationManager.localized("family_suspicious_activity_title"),
+                        topSitesSectionTitle: localizationManager.localized("family_top_5_sites"),
+                        topAppsSectionTitle: localizationManager.localized("family_top_5_apps"),
+                        suspiciousSectionTitle: localizationManager.localized("family_suspicious_activity")
+                    )
+                    if let url = ParentalControlReportsManager.shared.exportMonitoringDetailToPDF(detail, labels: labels) {
+                        exportedReportURL = url
+                        showReportShareSheet = true
+                    } else {
+                        exportErrorMessage = localizationManager.localized("family_monitoring_export_failed_generic")
+                    }
+                case .failure(let error):
+                    exportErrorMessage = String(
+                        format: localizationManager.localized("family_monitoring_export_failed_format"),
+                        error.localizedDescription
+                    )
+                }
+            }
+        }
     }
     
     // Загрузка списка детей из family_members_list
@@ -6569,7 +6632,9 @@ struct GeofencesSettingsModal: View {
     private func loadGeofences() {
         if let data = UserDefaults.standard.data(forKey: geofencesKey),
            let decoded = try? JSONDecoder().decode([GeofenceItemCodable].self, from: data) {
-            geofences = decoded.map { GeofenceItem(name: $0.name, address: $0.address, radius: $0.radius) }
+            geofences = decoded.map {
+                GeofenceItem(id: $0.id, name: $0.name, address: $0.address, radius: $0.radius, isActive: $0.isActive)
+            }
         } else {
             // Значения по умолчанию - используем локализованные строки
             geofences = [
@@ -6581,9 +6646,14 @@ struct GeofencesSettingsModal: View {
     
     // Сохранение геозон в UserDefaults
     private func saveGeofences() {
-        let codable = geofences.map { GeofenceItemCodable(name: $0.name, address: $0.address, radius: $0.radius) }
+        let codable = geofences.map {
+            GeofenceItemCodable(id: $0.id, name: $0.name, address: $0.address, radius: $0.radius, isActive: $0.isActive)
+        }
         if let encoded = try? JSONEncoder().encode(codable) {
             UserDefaults.standard.set(encoded, forKey: geofencesKey)
+        }
+        Task { @MainActor in
+            _ = await GeofenceGeocodingService.shared.syncCoordinates(for: geofences)
         }
     }
     
@@ -8879,19 +8949,14 @@ struct FamilyRolesHelpView: View {
     var body: some View {
         NavigationView {
             ScrollView {
-                let ru = localizationManager.currentLanguage == .russian
                 VStack(alignment: .leading, spacing: 14) {
-                    Text(ru ? "Apple Family Sharing не равен профилям ALADDIN." : "Apple Family Sharing is different from ALADDIN app profiles.")
+                    Text(localizationManager.localized("family_roles_help_title"))
                         .font(.headline)
                         .foregroundColor(.textPrimary)
-                    Text(ru
-                         ? "В ALADDIN роли (parent/elderly/child/teen) определяют, кто может менять состав семьи, лимиты и чувствительные настройки внутри приложения."
-                         : "In ALADDIN, roles (parent/elderly/child/teen) define who can manage roster, limits, and sensitive settings inside the app.")
+                    Text(localizationManager.localized("family_roles_help_body_roles"))
                         .font(.body)
                         .foregroundColor(.textSecondary)
-                    Text(ru
-                         ? "Family Sharing в iOS отвечает за покупки, подписки и Ask to Buy на уровне Apple ID, но не заменяет app-level permissions ALADDIN."
-                         : "iOS Family Sharing controls purchases, subscriptions, and Ask to Buy at Apple ID level, but does not replace ALADDIN app-level permissions.")
+                    Text(localizationManager.localized("family_roles_help_body_apple_sharing"))
                         .font(.body)
                         .foregroundColor(.textSecondary)
                 }

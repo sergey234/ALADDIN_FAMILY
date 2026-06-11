@@ -1,48 +1,52 @@
 #!/usr/bin/env bash
-# OPS-04 — early LLM cost alert (cron on VPS, e.g. hourly).
-# Env: COMPANION_COST_ALERT_RUB_DAY (default 500), COMPANION_DB_PATH, optional TELEGRAM_BOT_TOKEN + CHAT_ID
+# Алерт: доля SFM fallback > порога за последний час (Phase 2.4).
 set -euo pipefail
 
-THRESHOLD_RUB="${COMPANION_COST_ALERT_RUB_DAY:-500}"
-DB="${COMPANION_DB_PATH:-/opt/aladdin-backend/data/companion_platform.db}"
-LOG="${COMPANION_COST_LOG:-/var/log/aladdin-backend/companion_llm_cost.log}"
-mkdir -p "$(dirname "${LOG}")" 2>/dev/null || true
+LOG="${COMPANION_LLM_METRICS_LOG:-/var/log/aladdin-backend/companion_llm.log}"
+THRESHOLD_PCT="${COMPANION_LLM_SFM_ALERT_PCT:-3}"
+WINDOW_SEC="${COMPANION_LLM_ALERT_WINDOW_SEC:-3600}"
 
-if [[ ! -f "${DB}" ]]; then
-  echo "WARN: DB not found ${DB}" >&2
+if [[ ! -f "$LOG" ]]; then
+  echo "WARN: log missing $LOG (no data yet)"
   exit 0
 fi
 
-ESTIMATE_RUB=$(python3 - <<'PY'
-import os, sqlite3
-db = os.environ.get("COMPANION_DB_PATH", "/opt/aladdin-backend/data/companion_platform.db")
-conn = sqlite3.connect(db)
-cur = conn.cursor()
-# usage_counters: messages today × rough cost + voice seconds
-try:
-    cur.execute(
-        "SELECT COALESCE(SUM(messages_today),0), COALESCE(SUM(voice_seconds_month),0) FROM usage_counters"
-    )
-    msgs, voice_sec = cur.fetchone() or (0, 0)
-except sqlite3.OperationalError:
-    msgs, voice_sec = 0, 0
-conn.close()
-# MVP heuristic (руб): ~0.05/msg + ~0.02/voice_min
-cost = float(msgs) * 0.05 + (float(voice_sec) / 60.0) * 1.2
-print(int(cost))
+NOW="$(date +%s)"
+CUTOFF=$((NOW - WINDOW_SEC))
+
+read -r TOTAL SFM <<< "$(python3 - "$LOG" "$CUTOFF" <<'PY'
+import json, sys
+path, cutoff = sys.argv[1], int(sys.argv[2])
+total = sfm = 0
+with open(path, encoding="utf-8", errors="ignore") as f:
+    for line in f:
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if int(row.get("ts", 0)) < cutoff:
+            continue
+        total += 1
+        if row.get("llm_path") == "sfm":
+            sfm += 1
+print(total, sfm)
 PY
-)
+)"
 
-echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) estimate_rub=${ESTIMATE_RUB} threshold=${THRESHOLD_RUB}" >> "${LOG}" 2>/dev/null || true
-
-if [[ "${ESTIMATE_RUB}" -ge "${THRESHOLD_RUB}" ]]; then
-  MSG="ALADDIN Companion LLM cost alert: ~${ESTIMATE_RUB} RUB (threshold ${THRESHOLD_RUB}/day). Check usage_counters and logs."
-  echo "${MSG}" >&2
-  if [[ -n "${TELEGRAM_BOT_TOKEN:-}" && -n "${TELEGRAM_CHAT_ID:-}" ]]; then
-    curl -sS -m 10 -X POST "https://api.telegram.org/bot${TELEGRAM_BOT_TOKEN}/sendMessage" \
-      -d "chat_id=${TELEGRAM_CHAT_ID}" --data-urlencode "text=${MSG}" >/dev/null || true
-  fi
-  exit 2
+if [[ "${TOTAL:-0}" -lt 10 ]]; then
+  echo "OK: sample too small (total=$TOTAL)"
+  exit 0
 fi
 
-echo "OK: estimate ${ESTIMATE_RUB} RUB < ${THRESHOLD_RUB}"
+PCT=$((100 * SFM / TOTAL))
+echo "companion_llm last_hour: total=$TOTAL sfm=$SFM pct=${PCT}% threshold=${THRESHOLD_PCT}%"
+
+if [[ "$PCT" -ge "$THRESHOLD_PCT" ]]; then
+  echo "ALERT: SFM fallback ${PCT}% >= ${THRESHOLD_PCT}% — check OpenRouter / Hermes"
+  exit 2
+fi
+echo "OK"
+exit 0

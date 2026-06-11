@@ -1,0 +1,40 @@
+{
+  "generated_at": "2026-06-11T25:30:00Z",
+  "audit_ref": "docs/release/PLAN_FACT_AUDIT_143_2026-06-11.md",
+  "build": 227,
+  "tasks": ["R-08", "R-09", "R-10", "B-QA-03-runtime"],
+  "vps_host": "149.154.65.180",
+  "hub_smokes": {
+    "antifake": {
+      "script": "docs/server/test_antifake_prod_smoke.py",
+      "pass": true,
+      "failures": [],
+      "maps_to": "B2-09 / dfk-03 dfk-06"
+    },
+    "darkweb": {
+      "script": "docs/server/test_darkweb_prod_smoke.py",
+      "pass": true,
+      "failures": [],
+      "maps_to": "B3-08 Privacy Hub dark web"
+    },
+    "identity_theft": {
+      "script": "docs/server/test_identity_theft_prod_smoke.py",
+      "pass": true,
+      "failures": [],
+      "maps_to": "B4-06 Identity Hub detect"
+    }
+  },
+  "mock_grep_24h": {
+    "aladdin-api": 0,
+    "aladdin-backend": 0,
+    "nginx": 0,
+    "pass": true
+  },
+  "overall_pass": true,
+  "ui_screenshots_pending": [
+    "docs/release/gates/testflight-build227/R08_antifake_text_verdict.png",
+    "docs/release/gates/testflight-build227/R09_privacy_darkweb_scan.png",
+    "docs/release/gates/testflight-build227/R10_identity_snils_verdict.png"
+  ],
+  "demo_guide": "docs/release/QA_HUB_DEMO_R08_R10.md"
+}

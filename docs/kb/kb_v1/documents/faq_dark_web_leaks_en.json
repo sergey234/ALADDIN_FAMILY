@@ -1,0 +1,14 @@
+{
+  "id": "faq_dark_web_leaks_en",
+  "locale": "en",
+  "topic": "security_faq",
+  "title": "What are dark web leaks?",
+  "body": "What are dark web leaks?\n\nThe dark web is a hidden part of the internet where stolen data is sold.\n\nWhat can leak:\nâ¢ Emails and passwords\nâ¢ Phone numbers\nâ¢ Data from hacked websites\n\nIt's like a black market for your personal information!\n\nâ ALADDIN Privacy Hub checks whether your data appeared and suggests next steps.",
+  "source": "UnifiedFAQCatalog",
+  "keywords": [
+    "темная сеть",
+    "dark web",
+    "утечка"
+  ],
+  "kb_version": "kb_v1"
+}

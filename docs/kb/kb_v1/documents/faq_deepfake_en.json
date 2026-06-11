@@ -3,8 +3,10 @@
   "locale": "en",
   "topic": "security_faq",
   "title": "What are Deepfake videos?",
-  "body": "What are Deepfake videos?\n\nDeepfake is a video where one person's face is replaced with another's using a computer.\n\nThis is very dangerous:\n• Scammers can make a video where you say something you didn't say\n• Can deceive your friends\n• Use for blackmail\n\nIt's like a mask that can't be removed!\n\n✅ ALADDIN Premium detects fake videos and warns.",
+  "body": "What are Deepfake videos?\n\nDeepfake is a video where one person's face is replaced with another's using a computer.\n\nThis is very dangerous:\nâ¢ Scammers can make a video where you say something you didn't say\nâ¢ Can deceive your friends\nâ¢ Use for blackmail\n\nIt's like a mask that can't be removed!\n\nâ ALADDIN Premium checks suspicious video (analysis may take time) and warns you.",
   "source": "UnifiedFAQCatalog",
-  "keywords": [],
+  "keywords": [
+    "deepfake"
+  ],
   "kb_version": "kb_v1"
 }

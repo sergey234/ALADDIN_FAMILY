@@ -80,13 +80,13 @@ extension ThreatProtectionCategory {
             .cyberThreats: CategoryConfiguration(
                 requiredTariff: TariffType.free,
                 benefit: "Блокирует вирусы, трояны, фишинг",
-                settingsScreen: NavigationManager.ALADDINScreen.deviceDetail,
+                settingsScreen: NavigationManager.ALADDINScreen.deviceHub,
                 group: ProtectionGroup.devices
             ),
             .fraud: CategoryConfiguration(
                 requiredTariff: TariffType.personal,
                 benefit: "Предотвращает финансовое мошенничество",
-                settingsScreen: NavigationManager.ALADDINScreen.profile,
+                settingsScreen: NavigationManager.ALADDINScreen.identityHub,
                 group: ProtectionGroup.finance
             ),
             .childThreats: CategoryConfiguration(
@@ -98,13 +98,13 @@ extension ThreatProtectionCategory {
             .dataLeaks: CategoryConfiguration(
                 requiredTariff: TariffType.personal,
                 benefit: "Предупреждает об утечках данных",
-                settingsScreen: NavigationManager.ALADDINScreen.deviceDetail,
+                settingsScreen: NavigationManager.ALADDINScreen.privacyHub,
                 group: ProtectionGroup.devices
             ),
             .deepfakes: CategoryConfiguration(
                 requiredTariff: TariffType.premium,
                 benefit: "Обнаруживает поддельные видео и аудио",
-                settingsScreen: NavigationManager.ALADDINScreen.advancedProtection,
+                settingsScreen: NavigationManager.ALADDINScreen.antifakeHub,
                 group: ProtectionGroup.premium
             ),
             .internetThreats: CategoryConfiguration(
@@ -116,7 +116,7 @@ extension ThreatProtectionCategory {
             .mobileThreats: CategoryConfiguration(
                 requiredTariff: TariffType.personal,
                 benefit: "Блокирует вредные приложения",
-                settingsScreen: NavigationManager.ALADDINScreen.deviceDetail,
+                settingsScreen: NavigationManager.ALADDINScreen.deviceHub,
                 group: ProtectionGroup.devices
             ),
             .familyThreats: CategoryConfiguration(
@@ -128,7 +128,7 @@ extension ThreatProtectionCategory {
             .iotThreats: CategoryConfiguration(
                 requiredTariff: TariffType.family,
                 benefit: "Защищает умные устройства",
-                settingsScreen: NavigationManager.ALADDINScreen.iotSecurity,
+                settingsScreen: NavigationManager.ALADDINScreen.deviceHub,
                 group: ProtectionGroup.family
             )
         ]

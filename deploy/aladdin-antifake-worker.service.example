@@ -1,0 +1,17 @@
+# B2-10 — systemd unit example (worker-only ML deps; not gunicorn :8002)
+[Unit]
+Description=ALADDIN Antifake ML Worker (lazy cv2/transformers)
+After=network.target redis.service
+
+[Service]
+Type=simple
+User=aladdin
+WorkingDirectory=/opt/aladdin-backend
+Environment=PYTHONPATH=/opt/aladdin-backend
+ExecStartPre=/opt/aladdin-backend/venv/bin/python3 -m app.workers.antifake_ml_worker --warm
+ExecStart=/opt/aladdin-backend/venv/bin/rq worker aladdin-antifake --url redis://127.0.0.1:6379/0
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

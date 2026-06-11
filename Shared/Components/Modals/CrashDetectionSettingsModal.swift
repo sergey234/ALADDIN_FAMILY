@@ -13,6 +13,7 @@ struct CrashDetectionSettingsModal: View {
     private let toastManager = ToastManager.shared
     private let componentAnalytics = ComponentAnalytics.shared
     private let crashDetectionManager = CrashDetectionManager.shared
+    private let apiService = APIService.shared
 
     @State private var sensitivity: CrashDetectionSensitivity = .medium
     @State private var isLoading: Bool = false
@@ -27,7 +28,6 @@ struct CrashDetectionSettingsModal: View {
             }
         ) {
             VStack(spacing: Spacing.l) {
-                // Предупреждение о ложных срабатываниях
                 VStack(alignment: .leading, spacing: Spacing.s) {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
@@ -50,7 +50,6 @@ struct CrashDetectionSettingsModal: View {
                         .stroke(Color.orange.opacity(0.3), lineWidth: 1)
                 )
 
-                // Настройки чувствительности
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Text(localizationManager.localized("crash_settings_detection_title"))
                         .font(.h4)
@@ -61,6 +60,7 @@ struct CrashDetectionSettingsModal: View {
                             SensitivityOptionRow(
                                 sensitivity: sensitivityOption,
                                 isSelected: sensitivity == sensitivityOption,
+                                localizationManager: localizationManager,
                                 onSelect: {
                                     sensitivity = sensitivityOption
                                     componentAnalytics.trackSettingToggle(
@@ -68,14 +68,12 @@ struct CrashDetectionSettingsModal: View {
                                         settingKey: "sensitivity",
                                         enabled: true
                                     )
-                                    print("🔄 CrashDetection: sensitivity = \(sensitivityOption.rawValue)")
                                 }
                             )
                         }
                     }
                 }
 
-                // Информация о батарее
                 VStack(alignment: .leading, spacing: Spacing.s) {
                     HStack {
                         Image(systemName: "battery.100")
@@ -106,16 +104,41 @@ struct CrashDetectionSettingsModal: View {
         SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_load_complete", state: .synced)
     }
 
+    private func resolvedUserId() -> String? {
+        let stored = (UserDefaults.standard.string(forKey: "user_id") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return stored.isEmpty ? nil : stored
+    }
+
     private func saveSettings() {
+        guard let userId = resolvedUserId() else {
+            toastManager.showError(localizationManager.localized("crash_settings_save_error"))
+            return
+        }
+
         isLoading = true
         SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_start", state: .syncing)
 
         Task {
             do {
-                // Сохранить чувствительность
                 crashDetectionManager.setSensitivity(sensitivity)
 
-                // Сохранить в конфигурацию компонента
+                let apiResponse = try await apiService.updateCrashDetectionSettings(
+                    userId: userId,
+                    sensitivity: sensitivity.gForceThreshold,
+                    geofenceRadius: 1000.0
+                )
+                guard apiResponse.success else {
+                    throw NSError(
+                        domain: "CrashDetectionSettings",
+                        code: -1,
+                        userInfo: [NSLocalizedDescriptionKey: localizationManager.localized("crash_settings_save_error")]
+                    )
+                }
+
+                _ = try await apiService.startCrashDetectionMonitoring()
+                try await crashDetectionManager.startMonitoring()
+
                 let configuration = ComponentConfiguration(
                     isEnabled: true,
                     priority: .critical,
@@ -126,24 +149,26 @@ struct CrashDetectionSettingsModal: View {
                         "batteryOptimization": AnyCodable(true),
                     ]
                 )
-
                 try await configurationService.saveConfiguration(
                     componentId: componentId,
                     configuration: configuration
                 )
 
                 await MainActor.run {
-                    toastManager.showSuccess("Настройки сохранены")
+                    toastManager.showSuccess(localizationManager.localized("crash_settings_save_success"))
                     isPresented = false
                 }
                 SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_complete", state: .synced)
-
             } catch {
                 await MainActor.run {
-                    toastManager.showError("Ошибка сохранения настроек")
+                    toastManager.showError(localizationManager.localized("crash_settings_save_error"))
                 }
                 print("❌ CrashDetectionSettingsModal: Ошибка сохранения: \(error.localizedDescription)")
-                SyncEngine.shared.publish(domain: .networkProtection, operation: "crash_detection_modal_save_error", state: .error(error.localizedDescription))
+                SyncEngine.shared.publish(
+                    domain: .networkProtection,
+                    operation: "crash_detection_modal_save_error",
+                    state: .error(error.localizedDescription)
+                )
             }
 
             await MainActor.run {
@@ -158,17 +183,18 @@ struct CrashDetectionSettingsModal: View {
 struct SensitivityOptionRow: View {
     let sensitivity: CrashDetectionSensitivity
     let isSelected: Bool
+    let localizationManager: LocalizationManager
     let onSelect: () -> Void
 
     var body: some View {
         Button(action: onSelect) {
             HStack {
                 VStack(alignment: .leading, spacing: Spacing.xs) {
-                    Text(sensitivity.displayName)
+                    Text(sensitivity.localizedTitle(using: localizationManager))
                         .font(.body)
                         .foregroundColor(.textPrimary)
 
-                    Text(getSensitivityDescription(sensitivity))
+                    Text(sensitivity.localizedDescription(using: localizationManager))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                 }
@@ -197,15 +223,28 @@ struct SensitivityOptionRow: View {
         }
         .buttonStyle(.plain)
     }
+}
 
-    private func getSensitivityDescription(_ sensitivity: CrashDetectionSensitivity) -> String {
-        switch sensitivity {
+extension CrashDetectionSensitivity {
+    func localizedTitle(using localizationManager: LocalizationManager) -> String {
+        switch self {
         case .low:
-            return "Меньше ложных срабатываний, но может пропустить аварию"
+            return localizationManager.localized("crash_sensitivity_low_label")
         case .medium:
-            return "Оптимальный баланс между обнаружением и ложными срабатываниями"
+            return localizationManager.localized("crash_sensitivity_medium_label")
         case .high:
-            return "Максимальная чувствительность, больше ложных срабатываний"
+            return localizationManager.localized("crash_sensitivity_high_label")
+        }
+    }
+
+    func localizedDescription(using localizationManager: LocalizationManager) -> String {
+        switch self {
+        case .low:
+            return localizationManager.localized("crash_sensitivity_low_desc")
+        case .medium:
+            return localizationManager.localized("crash_sensitivity_medium_desc")
+        case .high:
+            return localizationManager.localized("crash_sensitivity_high_desc")
         }
     }
 }

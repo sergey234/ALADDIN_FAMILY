@@ -123,6 +123,45 @@ class SyncAppointmentsResponse(BaseModel):
     lastSyncTimestamp: datetime = Field(..., description="Время синхронизации")
 
 
+class BloodPressureReadingResponse(BaseModel):
+    """Ответ с измерением давления"""
+    readingId: str = Field(..., description="ID измерения")
+    userId: str = Field(..., description="ID пользователя")
+    systolic: int = Field(..., ge=0, le=300, description="Систолическое давление")
+    diastolic: int = Field(..., ge=0, le=200, description="Диастолическое давление")
+    recordedAt: datetime = Field(..., description="Дата и время измерения")
+    weekdayKey: Optional[str] = Field(None, description="Ключ дня недели (локализованный label)")
+    deviceId: Optional[str] = Field(None, description="ID устройства")
+    lastModified: datetime = Field(..., description="Время последнего изменения")
+    version: int = Field(1, description="Версия", ge=1)
+
+
+class SyncBloodPressureRequest(BaseModel):
+    """Запрос на синхронизацию измерений давления"""
+    userId: str = Field(..., description="ID пользователя")
+    deviceId: str = Field(..., description="ID устройства")
+    lastSyncTimestamp: Optional[datetime] = Field(None, description="Время последней синхронизации")
+
+
+class SyncBloodPressureResponse(BaseModel):
+    """Ответ на синхронизацию измерений давления"""
+    userId: str = Field(..., description="ID пользователя")
+    readings: List[BloodPressureReadingResponse] = Field(default_factory=list)
+    weeklyByDay: Dict[str, str] = Field(default_factory=dict, description="День недели → значение")
+    lastSyncTimestamp: datetime = Field(..., description="Время синхронизации")
+
+
+class UpdateBloodPressureRequest(BaseModel):
+    """Запрос на создание/обновление измерения давления"""
+    readingId: Optional[str] = Field(None, description="ID измерения")
+    userId: str = Field(..., description="ID пользователя")
+    systolic: int = Field(..., ge=0, le=300)
+    diastolic: int = Field(..., ge=0, le=200)
+    recordedAt: Optional[datetime] = Field(None)
+    weekdayKey: Optional[str] = Field(None, max_length=32)
+    deviceId: Optional[str] = Field(None)
+
+
 class UpdateAppointmentRequest(BaseModel):
     """Запрос на обновление встречи"""
     appointmentId: Optional[str] = Field(None, description="ID встречи (если обновление существующей)")
@@ -272,3 +311,65 @@ async def update_appointment(
     except Exception as e:
         logger.error(f"Error updating appointment: {e}")
         raise HTTPException(status_code=500, detail=f"Ошибка обновления встречи: {str(e)}")
+
+
+@router.post("/blood-pressure/sync", response_model=SyncBloodPressureResponse)
+async def sync_blood_pressure(
+    request: SyncBloodPressureRequest
+) -> SyncBloodPressureResponse:
+    """Синхронизировать измерения давления между устройствами."""
+    try:
+        if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+            try:
+                result = await sfm_adapter.sync_blood_pressure(**request.dict())
+                if result:
+                    return SyncBloodPressureResponse(**result)
+            except Exception as e:
+                logger.warning(f"SFM Adapter error: {e}, using fallback")
+
+        return SyncBloodPressureResponse(
+            userId=request.userId,
+            readings=[],
+            weeklyByDay={},
+            lastSyncTimestamp=datetime.now()
+        )
+    except Exception as e:
+        logger.error(f"Error syncing blood pressure: {e}")
+        raise HTTPException(status_code=500, detail=f"Ошибка синхронизации давления: {str(e)}")
+
+
+@router.post("/blood-pressure/update", response_model=BloodPressureReadingResponse)
+async def update_blood_pressure(
+    request: UpdateBloodPressureRequest
+) -> BloodPressureReadingResponse:
+    """Создать или обновить измерение давления."""
+    try:
+        if request.systolic <= 0 or request.diastolic <= 0:
+            raise HTTPException(status_code=422, detail="systolic and diastolic must be positive")
+
+        if SFM_ADAPTER_AVAILABLE and sfm_adapter:
+            try:
+                result = await sfm_adapter.update_blood_pressure(**request.dict())
+                if result:
+                    return BloodPressureReadingResponse(**result)
+            except Exception as e:
+                logger.warning(f"SFM Adapter error: {e}, using fallback")
+
+        reading_id = request.readingId or f"bp_{datetime.now().timestamp()}"
+        recorded = request.recordedAt or datetime.now()
+        return BloodPressureReadingResponse(
+            readingId=reading_id,
+            userId=request.userId,
+            systolic=request.systolic,
+            diastolic=request.diastolic,
+            recordedAt=recorded,
+            weekdayKey=request.weekdayKey,
+            deviceId=request.deviceId,
+            lastModified=datetime.now(),
+            version=1
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error updating blood pressure: {e}")
+        raise HTTPException(status_code=500, detail=f"Ошибка обновления давления: {str(e)}")

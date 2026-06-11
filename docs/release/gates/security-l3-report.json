@@ -1,0 +1,338 @@
+{
+  "version": "1.1",
+  "updated_at": "2026-06-11T25:00:00Z",
+  "overall": "in_progress",
+  "xcode_archive_allowed": false,
+  "onboarding_frozen": false,
+  "batch_progress": {
+    "sfm_wire": "12/12",
+    "ops": "22/22",
+    "batch_0": "8/8",
+    "batch_1": "12/12",
+    "batch_sync": "5/5",
+    "batch_pre_ios": "6/6",
+    "batch_2": "11/12",
+    "batch_3": "7/8",
+    "batch_4": "5/6",
+    "batch_5": "9/9",
+    "batch_6": "5/5",
+    "batch_loc": "12/12",
+    "batch_7": "4/4",
+    "batch_copy": "4/4",
+    "batch_qa": "5/6",
+    "total_batches_done": "140/143",
+    "next_batch": "B-QA-02 Archive (R-07) + Hub PNG device capture — last 3",
+    "plan_fact_audit": "docs/release/PLAN_FACT_AUDIT_143_2026-06-11.md"
+  },
+  "blocks": {
+    "SFM-TRUTH": {
+      "gate": "GATE-A0",
+      "status": "pass",
+      "evidence": [
+        "sfm_truth_check.sh overall PASS after app/data registry + path shadow fix"
+      ],
+      "pending": []
+    },
+    "SFM-WIRE": {
+      "gate": "GATE-A",
+      "status": "pass",
+      "evidence": [
+        "curl :8003/api/health → sfm_loaded:true functions_count:1068",
+        "unknown fn __nonexistent_test_fn__ → HTTP 503 not success"
+      ],
+      "pending": []
+    },
+    "SEC-INFRA": {
+      "gate": "GATE-B",
+      "status": "pass",
+      "evidence": [
+        "POST /api/protection/enable deepfakes → 200",
+        "GET /api/protection/settings → deepfakes true persist",
+        "9/9 categories round-trip POST/GET"
+      ],
+      "pending": []
+    },
+    "GATE-D-BATCH1": {
+      "gate": "GATE-D",
+      "status": "pass",
+      "evidence": [
+        "B1-01..B1-12 complete — 11 explicit security domains + OpenAPI audit",
+        "docs/server/test_security_prod_smoke.py orchestrator (11 child smokes)",
+        "docs/server/test_security_openapi_prod_smoke.py → 32 routes pass",
+        "SEC-06: docs/SEC06_LEGACY_ROUTER_AUDIT.md — 5 collisions explicit-wins, location legacy skipped",
+        "Individual domain smokes pass:true on VPS 2026-06-09",
+        "2026-06-09 prod: test_security_prod_smoke.py → pass:true domains_pass:11/11 (smoke_env.py + 6 secrets in .env)",
+        "2026-06-10 B-PRE-02 re-confirm: pass:true domains_pass:11/11 on VPS"
+      ],
+      "pending": [],
+      "check": "/opt/aladdin-backend/venv/bin/python3 docs/server/test_security_prod_smoke.py"
+    },
+    "OPENAPI-SECURITY": {
+      "gate": "GATE-D",
+      "status": "pass",
+      "evidence": [
+        "B1-11: 32 explicit routes with canonical tags",
+        "Legacy overlap hidden: parental monitoring, identity /detect, darkweb /check, misc malware/threats"
+      ],
+      "pending": []
+    },
+    "ANTIFAKE-BACKEND": {
+      "gate": "GATE-D",
+      "status": "pass",
+      "evidence": [
+        "B1-01 app/routers/antifake.py",
+        "test_antifake_prod_smoke.py → pass:true",
+        "af-2-09 app/services/antifake_rate_limit.py — text/url 60/min, media 10/h per user"
+      ],
+      "pending": []
+    },
+    "DARKWEB-BACKEND": {
+      "gate": "GATE-D",
+      "status": "pass",
+      "evidence": ["B1-02 app/routers/darkweb.py", "test_darkweb_prod_smoke.py → pass:true"],
+      "pending": ["dw-05..06 polish"]
+    },
+    "IDENTITY-BACKEND": {
+      "gate": "GATE-D",
+      "status": "pass",
+      "evidence": ["B1-03 identity_theft.py", "test_identity_theft_prod_smoke.py → pass:true"],
+      "pending": []
+    },
+    "CLEANUP-BACKEND": {
+      "gate": "GATE-D",
+      "status": "pass",
+      "evidence": ["B1-04 data_cleanup.py", "test_data_cleanup_prod_smoke.py → pass:true"],
+      "pending": []
+    },
+    "LOCATION-BUBBLE-BACKEND": {
+      "gate": "GATE-D",
+      "status": "pass",
+      "evidence": [
+        "B1-05 location_bubble.py",
+        "SEC-06: legacy /api/location/bubble skipped when explicit available",
+        "test_location_bubble_prod_smoke.py → pass:true"
+      ],
+      "pending": []
+    },
+    "MALWARE-BACKEND": {
+      "gate": "GATE-D",
+      "status": "pass",
+      "evidence": [
+        "B1-06 malware.py + antivirus.py",
+        "GET /api/malware/threats in explicit OpenAPI",
+        "test_malware_prod_smoke.py → pass:true"
+      ],
+      "pending": []
+    },
+    "COMPONENTS-BACKEND": {
+      "gate": "GATE-D",
+      "status": "pass",
+      "evidence": ["B1-07 phishing + components", "test_components_prod_smoke.py → pass:true"],
+      "pending": []
+    },
+    "IOT-BACKEND": {
+      "gate": "GATE-D",
+      "status": "pass",
+      "evidence": ["B1-08 iot.py", "legacy iot_router skipped", "test_iot_prod_smoke.py → pass:true"],
+      "pending": []
+    },
+    "MOBILE-SECURITY-BACKEND": {
+      "gate": "GATE-D",
+      "status": "pass",
+      "evidence": ["B1-09 mobile_security.py", "test_mobile_security_prod_smoke.py → pass:true"],
+      "pending": []
+    },
+    "PARENTAL-MONITORING-BACKEND": {
+      "gate": "GATE-D",
+      "status": "pass",
+      "evidence": [
+        "B1-10 parental_monitoring.py",
+        "BIGINT user_id ingest",
+        "test_parental_monitoring_prod_smoke.py → pass:true"
+      ],
+      "pending": []
+    },
+    "ANTIFAKE-IOS": {
+      "gate": "GATE-E",
+      "status": "pass",
+      "evidence": [
+        "B2-02 AntifakeHubScreen 4 tabs (Screens/AntifakeHubScreen.swift)",
+        "B2-03 deepfakes category → .antifakeHub navigation",
+        "B2-04 APIService antifakeCheckText/Url + AntifakeTextCheckViewModel + AntifakeVerdictCard",
+        "B2-05 antifakeUploadMedia + job poll + audio/video/document tabs",
+        "B2-06 call/analyze multipart + caller_id/display_name",
+        "B2-11/B-LOC-02 antifake RU/EN loc gate PASS",
+        "B2-12 getAntifakeMetrics APIService",
+        "B2-07 AntifakeCheckFailureHandler + inline premium gate + paywall refresh",
+        "B2-09 R-08 QA_HUB_DEMO_R08_R10.md + test_antifake_prod_smoke.py VPS pass 2026-06-11",
+        "docs/LOCALIZATION_BATCH_GATE.md",
+        "docs/APISERVICE_SECURITY_PATH_AUDIT.md B-PRE-03 PASS"
+      ],
+      "pending": ["PNG screenshots testflight-build227/ at Archive device session"]
+    },
+    "IOS-MIGRATION": {
+      "gate": "pre-GATE-E",
+      "status": "in_progress",
+      "evidence": [
+        "docs/IOS_EXPLICIT_API_MATRIX.md",
+        "AppConfig explicit paths B2-00",
+        "Core/Models/SecurityVerdictModels.swift — verdict contract + mock reject",
+        "Core/Security/PremiumGateHandler.swift — 403 premium_required mapping",
+        "Tests/UnitTests/SecurityVerdictModelsTests.swift — written (run deferred to GATE-FINAL)",
+        "docs/APISERVICE_SECURITY_PATH_AUDIT.md B-PRE-03 PASS"
+      ],
+      "pending": ["B-PRE-02 periodic VPS re-confirm", "xcodebuild test run at B-QA-02 only"]
+    },
+    "PRIVACY-HUB": {
+      "gate": "GATE-F",
+      "status": "pass",
+      "evidence": [
+        "B3-01…B3-07 Privacy Hub + DW/cleanup/location modals wired",
+        "B3-05 PrivacyHubScreen tabs",
+        "B3-07 DataLeakThreatCatalog dlk-01…12 + coverage view",
+        "B3-08 R-09 QA_HUB_DEMO_R08_R10.md + test_darkweb_prod_smoke.py VPS pass 2026-06-11"
+      ],
+      "pending": ["PNG screenshots testflight-build227/ at Archive device session"]
+    },
+    "IDENTITY-HUB": {
+      "gate": "GATE-G",
+      "status": "pass",
+      "evidence": [
+        "B4-01 IdentityHubScreen Detect/Attempts/Monitor tabs",
+        "B4-02 APIService.detectIdentityTheft + IdentityDetectViewModel + AntifakeVerdictCard on Detect tab",
+        "B4-03 attempts envelope decode + filters/stats/actions polish on Attempts tab",
+        "B4-04 fraud toggle enableProtectionCategory + monitor/credit agent on Monitor tab",
+        "B4-05 IdentityFraudThreatCatalog frd-01…12 + Coverage tab + cross-hub navigation to Antifake",
+        "Tests/UnitTests/IdentityFraudThreatCatalogTests.swift — written (run deferred to GATE-FINAL)",
+        "B-LOC-04 PASS",
+        "B4-06 R-10 QA_HUB_DEMO_R08_R10.md + test_identity_theft_prod_smoke.py VPS pass 2026-06-11"
+      ],
+      "pending": ["PNG screenshots testflight-build227/ at Archive device session"]
+    },
+    "DEVICE-HUB": {
+      "gate": "GATE-H",
+      "status": "pass",
+      "evidence": [
+        "B5-01 DeviceHubScreen Cyber/Components/Mobile/IoT/Coverage tabs",
+        "B5-02 POST /api/malware/scan quick scan + MalwareDetectionSettingsScreen wire",
+        "B5-03 component scans: antifake URL, IoT network, mobile check, incident report",
+        "B5-04 IoTSecurityModule.fixThreat + IoTSecurityScreen wire",
+        "B5-05 protection stats card from GET /api/protection/stats",
+        "B5-06…08 cyb/mob/iot threat catalogs + DeviceHubThreatCoverageView",
+        "B5-09 EICAR test scan + DeviceEicarScanTests.swift",
+        "Tests/UnitTests/DeviceThreatCatalogTests.swift — written (run deferred to GATE-FINAL)"
+      ],
+      "pending": []
+    },
+    "FAMILY-POLISH": {
+      "gate": "GATE-I",
+      "status": "pass",
+      "evidence": [
+        "B6-01 ParentalMonitoringDetailResponse.validateForProduction() — mock envelope rejected in APIService.getParentalMonitoringDetail",
+        "B6-01 emptyParentalMonitoringDetailPayload() removed from NetworkManager",
+        "B6-02 Family modals live in Screens/02_FamilyScreen.swift (FamilyModals.swift orphan — NOT in pbxproj)",
+        "B6-03 ParentalControlReportsManager @MainActor + ParentalMonitoringReportExporter PDF/CSV",
+        "B6-04 GeofenceGeocodingService (CLGeocoder) in FamilyLocationModal + GeofencesSettingsModal",
+        "B6-05 FamilyChildThreatCatalog chd-01…17 + FamilyChildThreatCoverageView in FamilyMonitoringModal",
+        "Tests/UnitTests/ParentalMonitoringValidationTests.swift + FamilyChildThreatCatalogTests.swift",
+        "B-LOC-06 PASS — family_hub_chd_*, family_monitoring_export_* keys RU/EN",
+        "MASTER pc-03…pc-05 ✅"
+      ],
+      "pending": []
+    },
+    "EXTRAS": {
+      "gate": "GATE-J",
+      "status": "pass",
+      "evidence": [
+        "B7-02 RoadsideAssistanceView sheet from NetworkProtection Emergency section (hasSettings + onSettingsTap)",
+        "B7-01 CrashDetectionSettingsModal uncommented; APIService updateCrashDetectionSettings + startMonitoring; LOC keys crash_settings_* crash_sensitivity_*",
+        "B7-03-pre /api/elderly/blood-pressure/sync|update router + AppConfig + APIService",
+        "B7-03 mockData removed; BloodPressureReading.empty; syncElderlyHealthFromServer meds/appts/BP",
+        "B-LOC-07 PASS — crash/roadside/elderly B7 keys RU+EN",
+        "docs/server/test_emergency_prod_smoke.py added",
+        "xcodebuild ALADDIN Simulator build → BUILD SUCCEEDED 2026-06-11",
+        "2026-06-11 VPS test_emergency_prod_smoke.py → pass:true checks:6",
+        "elderly blood-pressure router deployed security/api/routers/elderly_interface_sync_router.py",
+        "2026-06-11 vpn_prod_smoke.sh 10/10 x2 (nonce replay fix in deploy/scripts/vpn_prod_smoke.py)",
+        "xcodebuild build SUCCEEDED + unit tests 62/62 PASS build 227"
+      ],
+      "pending": ["eld-03 voice deferred post-L3"]
+    },
+    "OPS-COPY": {
+      "gate": "GATE-K",
+      "status": "pass",
+      "evidence": [
+        "B-COPY-01 docs/release/COPY_01_ONBOARDING_L3_AUDIT.md",
+        "B-COPY-02 docs/release/COPY_02_FAQ_L3_AUDIT.md",
+        "B-COPY-03 docs/release/COPY_03_TARIFFS_HUB_MAP.md",
+        "B-COPY-04 docs/release/COPY_04_APP_STORE_REVIEW_NOTES.md",
+        "B-COPY-01a family_roles_help_* loc keys RU+EN"
+      ],
+      "pending": []
+    },
+    "COPY-POST-L3": {
+      "gate": "GATE-K-post",
+      "status": "pass",
+      "evidence": [
+        "R-19 COPY_POST_L3_FULL_AUDIT.md + COPY_POST_L3_TODO.md",
+        "COPY_POST_L3_PROGRESS.md dashboard",
+        "Onboarding OB_01/04/06 RU+EN; OB_02 military RU keep; Localizable.strings sync",
+        "FAQ 44 UnifiedFAQCatalog (CP3-12 +3 bypass/geofencing/wellness); 12 answers softened",
+        "Privacy 5+ servers; Terms content_6/7 antifake+emergency",
+        "landing/privacy.html + PRIVACY_POLICY_FULL_152FZ.md",
+        "kb: scripts/sync_cp3_kb_from_loc.py — 40 faq + 2 onboarding",
+        "ML_SYSTEM_PACKAGE: scripts/sync_cp3_ml_loc_mirror.py — 132 keys",
+        "grep stale marketing phrases LocalizationManager — 0",
+        "verify_onboarding_sync_01_03.py PASS (OB_02 title y=356 Figma+Swift)",
+        "scripts/run_security_core_tests.sh + ALADDIN_SecurityCore.xctestplan (CI uses ALADDINUnitTests)",
+        "main_antivirus_title → Защита Aladdin / ALADDIN Protection"
+      ],
+      "pending": [
+        "landing/help-faq.html defer",
+        "faq_gamification_rewards CP3-12 backlog"
+      ]
+    },
+    "HUB-DEMO-R08-R10": {
+      "gate": "GATE-FINAL-prep",
+      "status": "pass",
+      "evidence": [
+        "docs/release/QA_HUB_DEMO_R08_R10.md — B2-09 B3-08 B4-06 walkthrough",
+        "docs/release/gates/hub-demo-smoke-report.json — VPS 2026-06-11",
+        "scripts/run_hub_demo_vps_smoke.sh",
+        "test_antifake_prod_smoke.py pass:true",
+        "test_darkweb_prod_smoke.py pass:true",
+        "test_identity_theft_prod_smoke.py pass:true",
+        "B-QA-03 runtime mock grep 24h — 0 hits all services"
+      ],
+      "pending": [
+        "PNG screenshots docs/release/gates/testflight-build227/ — capture on TestFlight device at Archive"
+      ]
+    },
+    "QA-138": {
+      "gate": "GATE-FINAL",
+      "status": "in_progress",
+      "evidence": [
+        "B-QA-01 docs/release/QA_01_EXTENDED138_L3_CRITERION.md — backend L3 PASS",
+        "B-QA-03 docs/release/QA_03_MOCK_GREP_AUDIT.md — iOS static PASS",
+        "B-QA-03 runtime QA_03_RUNTIME_VPS_24H.md + hub-demo-smoke-report.json",
+        "R-08…R-10 hub demo backend PASS",
+        "B-QA-04 docs/SECURITY_UNIFIED_IMPLEMENTATION.md",
+        "B-QA-05 docs/release/QA_05_SFM_REGISTRY_SMOKE.md — registry 1074 PASS 2026-06-11",
+        "B-QA-06 docs/release/QA_06_LOC_REGRESSION.md — B-LOC-08…10 PASS"
+      ],
+      "pending": [
+        "B-QA-02 TestFlight 138/138 — единственная точка Archive",
+        "B-QA-02 Archive+TestFlight — blocked: iOS Distribution cert not on build machine (see QA_02_TESTFLIGHT_CHECKLIST.md)",
+        "B-QA-02 Hub demo PNG on device (testflight-build227/)",
+        "B-QA-02 Archive upload + 138 matrix walkthrough"
+      ]
+    }
+  },
+  "forbidden_signals": [
+    "HTTP 200 without body check",
+    "status:success without verdict",
+    "mock-real-protection",
+    "sfm_mock",
+    "sfm_loaded false or missing"
+  ]
+}

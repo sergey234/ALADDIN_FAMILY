@@ -103,17 +103,17 @@ def main() -> int:
     record("GET /sub active account", st == 200 and "vless://" in body, body.split("\n", 1)[0][:80])
 
     wg_body = json.dumps({"telegram_user_id": TEST_TID}).encode()
-    st, body = http(secret, "POST", "/internal/v1/wg/conf", wg_body, nonce="smoke-wg-conf")
+    st, body = http(secret, "POST", "/internal/v1/wg/conf", wg_body, nonce=f"smoke-wg-{time.time_ns()}")
     record("POST /internal/v1/wg/conf", st in (200, 503), f"{st}")
 
     ovpn_body = json.dumps({"telegram_user_id": TEST_TID}).encode()
-    st, body = http(secret, "POST", "/internal/v1/ovpn/conf", ovpn_body, nonce="smoke-ovpn-conf")
+    st, body = http(secret, "POST", "/internal/v1/ovpn/conf", ovpn_body, nonce=f"smoke-ovpn-{time.time_ns()}")
     record("POST /internal/v1/ovpn/conf", st == 200 and "remote " in body, f"{st}")
 
-    st, body = http(secret, "GET", "/internal/v1/egress/catalog", nonce="smoke-egress")
+    st, body = http(secret, "GET", "/internal/v1/egress/catalog", nonce=f"smoke-egress-{time.time_ns()}")
     record("GET /internal/v1/egress/catalog", st == 200 and "primary" in body, str(st))
 
-    st, body = http(secret, "GET", "/internal/v1/locations/catalog", nonce="smoke-loc")
+    st, body = http(secret, "GET", "/internal/v1/locations/catalog", nonce=f"smoke-loc-{time.time_ns()}")
     record("GET /internal/v1/locations/catalog", st == 200 and '"lines"' in body, str(st))
 
     try:
