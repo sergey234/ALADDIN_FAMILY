@@ -63,8 +63,8 @@ platform :ios do
         profile_name
       end
 
-      validate_profile_app_group.call(app_profile_file, "App", "family.aladdin.ios")
-      validate_profile_app_group.call(extension_profile_file, "Content Blocker", "family.aladdin.ios.ALADDINContentBlocker")
+      app_profile_name = validate_profile_app_group.call(app_profile_file, "App", "family.aladdin.ios")
+      extension_profile_name = validate_profile_app_group.call(extension_profile_file, "Content Blocker", "family.aladdin.ios.ALADDINContentBlocker")
 
       antifake_manual = false
       antifake_profile_name = nil
@@ -97,16 +97,19 @@ platform :ios do
       end
 
       xcconfig_content = <<~XCCONFIG
-        CODE_SIGN_STYLE = Manual
         DEVELOPMENT_TEAM = #{team_id}
 
         ALADDIN_CODE_SIGN_STYLE = Manual
         ALADDIN_DEVELOPMENT_TEAM = #{team_id}
         ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
+        ALADDIN_PROVISIONING_PROFILE_SPECIFIER = #{app_profile_uuid}
+        ALADDIN_PROVISIONING_PROFILE = #{app_profile_uuid}
 
         ALADDINContentBlocker_CODE_SIGN_STYLE = Manual
         ALADDINContentBlocker_DEVELOPMENT_TEAM = #{team_id}
         ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker
+        ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = #{extension_profile_uuid}
+        ALADDINContentBlocker_PROVISIONING_PROFILE = #{extension_profile_uuid}
 
         #{antifake_xcconfig}
       XCCONFIG
@@ -116,24 +119,40 @@ platform :ios do
 
       archive_path = "./build/ALADDIN.xcarchive"
       antifake_sign_flag = antifake_manual ? "ALADDINAntifakeShare_CODE_SIGN_STYLE=Manual" : "ALADDINAntifakeShare_CODE_SIGN_STYLE=Automatic"
+      antifake_profile_clear = antifake_manual ? "" : "ALADDINAntifakeShare_PROVISIONING_PROFILE_SPECIFIER="
 
-      xcodebuild_command = [
-        "xcodebuild archive",
-        "-project ALADDIN.xcodeproj",
-        "-scheme ALADDIN",
-        "-configuration Release",
-        "-xcconfig #{xcconfig_path}",
-        "-archivePath #{archive_path}",
-        "-destination 'generic/platform=iOS'",
-        "CODE_SIGN_STYLE=Manual",
+      api_key_id = ENV["APP_STORE_CONNECT_API_KEY_ID"]
+      api_issuer_id = ENV["APP_STORE_CONNECT_ISSUER_ID"]
+      api_key_path = ENV["APP_STORE_CONNECT_API_KEY_PATH"]
+      if (api_key_path.nil? || api_key_path.empty?) && api_key_id && !api_key_id.empty?
+        api_key_path = "#{ENV['HOME']}/.appstoreconnect/private_keys/AuthKey_#{api_key_id}.p8"
+      end
+      if !antifake_manual && api_key_id && !api_key_id.empty? && api_issuer_id && !api_issuer_id.empty? && api_key_path && File.exist?(api_key_path)
+        ENV["APP_STORE_CONNECT_API_KEY_ID"] = api_key_id
+        ENV["APP_STORE_CONNECT_ISSUER_ID"] = api_issuer_id
+        ENV["APP_STORE_CONNECT_API_KEY_PATH"] = api_key_path
+        puts "✅ App Store Connect API key configured for automatic AntifakeShare provisioning"
+      elsif !antifake_manual
+        puts "⚠️  AntifakeShare automatic signing requires App Store Connect API key (-allowProvisioningUpdates)"
+      end
+
+      xcodebuild_args = [
+        "xcodebuild", "archive",
+        "-project", "ALADDIN.xcodeproj",
+        "-scheme", "ALADDIN",
+        "-configuration", "Release",
+        "-xcconfig", xcconfig_path,
+        "-archivePath", archive_path,
+        "-destination", "generic/platform=iOS",
         "DEVELOPMENT_TEAM=#{team_id}",
         "ALADDIN_CODE_SIGN_STYLE=Manual",
         "ALADDINContentBlocker_CODE_SIGN_STYLE=Manual",
-        antifake_sign_flag,
-        "-allowProvisioningUpdates"
-      ].join(" ")
+        antifake_sign_flag
+      ]
+      xcodebuild_args << antifake_profile_clear unless antifake_profile_clear.empty?
+      xcodebuild_args << "-allowProvisioningUpdates"
 
-      sh(xcodebuild_command)
+      sh(*xcodebuild_args)
       puts "✅ Архив создан: #{archive_path}"
       archive_path
     end
