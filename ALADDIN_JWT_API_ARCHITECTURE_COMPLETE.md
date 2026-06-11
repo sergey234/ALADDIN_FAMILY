@@ -1,8 +1,8 @@
 # 🔐 **ALADDIN JWT & API АРХИТЕКТУРА - ПОЛНЫЙ СПРАВОЧНИК**
 
 **Дата создания:** 4 марта 2026 года  
-**Дата обновления:** 10 июня 2026 года (v2.8.1: §6.9 antifake call/metrics wire B2-06/12; LOC gate doc)  
-**Версия:** 2.8.1 (Antifake Hub 8/12 iOS wire; all `/api/antifake/*` in APIService)  
+**Дата обновления:** 11 июня 2026 года (v2.8.2: build 228 closeout — CI signing fix for ALADDINAntifakeShare, antifake_rate_limit deployed; all new APIs from 140+ task plan documented)  
+**Версия:** 2.8.2 (build 228; Antifake rate limiting + explicit B1 routers fully in §6.9; 491 paths in OpenAPI)  
 **Статус (JWT/API):** ✅ **RELEASE GATE PASS (LIVE VERIFIED)** (R75 / §6.1) + OpenAPI audit **0×5xx** (2026-06-03, §6.7)  
 **Статус (общий релиз):** ❌ **NO_GO** (блокер `rel-15` 24h soak, см. `docs/release/release-gate-report.json` / `docs/release/go-no-go.md`)
 **Цель документа:** Единый источник истины (SSOT) для архитектуры JWT и API.
@@ -12,6 +12,12 @@
 **Дополнение 2026-06-06 (Memory Academy build 225):** см. **§6.8** — локальные iOS API MnemoCore (не REST); SSOT `docs/MNEMO_PROJECT_SYNC.md` §10.
 
 **Дополнение 2026-06-10 (Security 100% / Antifake Hub iOS):** см. **§6.9** — explicit B1 routers + iOS `AppConfig` / `APIService` для `/api/antifake/*`; матрица `docs/IOS_EXPLICIT_API_MATRIX.md`; batch-трекер `.cursor/IMPLEMENTATION_BATCHES_TODO.md` (**70/129**).
+
+**Дополнение 2026-06-11 (build 228 closeout + CI signing):** 
+- Все новые API из плана 140+ задач (в т.ч. antifake + rate limiting) задокументированы в **§6.9**.
+- CI: ALADDINAntifakeShare переведён на Automatic signing (`project.pbxproj` Release), убран глобальный `CODE_SIGN_STYLE=Manual`, ASC API env для `-allowProvisioningUpdates`.
+- `app/services/antifake_rate_limit.py` задеплоен на VPS; per-bucket лимиты (text_url 60/min, media 10/h) + premium gate.
+- Номер сборки 228 во всех файлах (Info.plist, project.pbxproj ×8, AppConfig.swift ×2, тесты).
 
 **Дополнение 2026-06-03 (backend fixes + OpenAPI SSOT):** см. **§6.7** — что уже на VPS, что в git; **`GET https://aladdin-ai.ru/openapi.json`** = **491 paths**; OpenAPI audit **534 ops → 0×5xx** (после фиксов `platform/profile`, `rewards/history`, wellness export/values-card).
 
@@ -619,6 +625,12 @@ Legacy **`/api/deepfake/*`**, **`/api/fake-news/*`**, **`/api/reports/*`** дл�
 | `app/routers/antifake.py` | `/api/antifake` | JWT `Bearer` | 403 `premium_required` |
 
 Prod smoke: `docs/server/test_antifake_prod_smoke.py` (входит в `test_security_prod_smoke.py` orchestrator).
+
+**Rate limiting (af-2-09, new in 140+ task plan):**  
+`app/services/antifake_rate_limit.py` — per-user, per-bucket (`text_url`, `media`) с sliding window.  
+- text/url: 60 запросов / 60 сек  
+- media (audio/video/document/call): 10 / час  
+Вызывается в каждом handler'е `/check/*` **до** бизнес-логики. При превышении → 429. Интегрировано с premium gate.
 
 #### Explicit endpoints ↔ iOS
 
