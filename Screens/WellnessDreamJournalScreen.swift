@@ -59,6 +59,7 @@ struct WellnessDreamJournalScreen: View {
             }
         }
         .navigationBarHidden(true)
+        .accessibilityIdentifier("wellness_dream_journal_screen")
         .task { await load() }
         .sheet(isPresented: $showDisclaimerSheet) {
             dreamDisclaimerSheet
@@ -72,6 +73,7 @@ struct WellnessDreamJournalScreen: View {
                     .font(.body.weight(.semibold))
                     .foregroundColor(.white)
             }
+            .accessibilityIdentifier("wellness_subpage_back")
             Text(localizationManager.localized("wellness_dream_title"))
                 .font(.headline.bold())
                 .foregroundColor(.white)
@@ -119,16 +121,26 @@ struct WellnessDreamJournalScreen: View {
     }
 
     private func load() async {
+        errorText = nil
+        let local = WellnessDreamLocalStore.load()
         do {
-            dreams = try await WellnessAPIService.shared.fetchDreams().dreams
+            let remote = try await WellnessAPIService.shared.fetchDreams().dreams
+            WellnessDreamLocalStore.clearSynced(with: remote)
+            dreams = WellnessDreamLocalStore.mergeWithRemote(remote)
         } catch {
-            errorText = localizationManager.localized("wellness_dream_unavailable")
+            dreams = local
+            if dreams.isEmpty {
+                errorText = localizationManager.localized("wellness_dream_unavailable")
+            } else {
+                errorText = localizationManager.localized("wellness_dream_offline_saved")
+            }
         }
     }
 
     private func save() async {
         let text = dreamText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
+        errorText = nil
         do {
             try await WellnessAPIService.shared.postDream(
                 text: text,
@@ -138,26 +150,67 @@ struct WellnessDreamJournalScreen: View {
             moodTag = ""
             await load()
         } catch {
-            errorText = localizationManager.localized("wellness_dream_unavailable")
+            WellnessDreamLocalStore.append(
+                text: text,
+                moodTag: moodTag.isEmpty ? nil : moodTag
+            )
+            dreamText = ""
+            moodTag = ""
+            dreams = WellnessDreamLocalStore.load()
+            errorText = localizationManager.localized("wellness_dream_offline_saved")
         }
     }
 }
 
-// MARK: - Readable input on dark wellness backgrounds
+// MARK: - Offline store (ux-6-06)
 
-private struct WellnessReadableInputModifier: ViewModifier {
-    func body(content: Content) -> some View {
-        content
-            .padding(10)
-            .background(Color.white.opacity(0.96))
-            .cornerRadius(10)
-            .foregroundColor(Color.primary)
-            .accentColor(Color(hex: "8B5CF6"))
+private enum WellnessDreamLocalStore {
+    private static let entriesKey = "wellness_dream_journal_offline_v1"
+    private static let nextIdKey = "wellness_dream_journal_offline_next_id"
+    private static let maxEntries = 50
+
+    static func load() -> [WellnessDreamEntry] {
+        guard let data = UserDefaults.standard.data(forKey: entriesKey) else { return [] }
+        return (try? JSONDecoder().decode([WellnessDreamEntry].self, from: data)) ?? []
     }
-}
 
-private extension View {
-    func wellnessReadableInput() -> some View {
-        modifier(WellnessReadableInputModifier())
+    static func append(text: String, moodTag: String?) {
+        var entries = load()
+        let nextId = (UserDefaults.standard.object(forKey: nextIdKey) as? Int) ?? -1
+        let entry = WellnessDreamEntry(
+            id: nextId,
+            dreamText: text,
+            moodTag: moodTag,
+            createdAt: ISO8601DateFormatter().string(from: Date())
+        )
+        UserDefaults.standard.set(nextId - 1, forKey: nextIdKey)
+        entries.insert(entry, at: 0)
+        if entries.count > maxEntries {
+            entries = Array(entries.prefix(maxEntries))
+        }
+        persist(entries)
+    }
+
+    static func mergeWithRemote(_ remote: [WellnessDreamEntry]) -> [WellnessDreamEntry] {
+        let local = load()
+        guard !local.isEmpty else { return remote }
+        let remoteTexts = Set(remote.map { $0.dreamText.trimmingCharacters(in: .whitespacesAndNewlines) })
+        let pendingLocal = local.filter {
+            !remoteTexts.contains($0.dreamText.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        return (remote + pendingLocal).sorted { $0.createdAt > $1.createdAt }
+    }
+
+    static func clearSynced(with remote: [WellnessDreamEntry]) {
+        let remoteTexts = Set(remote.map { $0.dreamText.trimmingCharacters(in: .whitespacesAndNewlines) })
+        let remaining = load().filter {
+            !remoteTexts.contains($0.dreamText.trimmingCharacters(in: .whitespacesAndNewlines))
+        }
+        persist(remaining)
+    }
+
+    private static func persist(_ entries: [WellnessDreamEntry]) {
+        guard let data = try? JSONEncoder().encode(entries) else { return }
+        UserDefaults.standard.set(data, forKey: entriesKey)
     }
 }

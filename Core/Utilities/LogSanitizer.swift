@@ -1,4 +1,5 @@
 import Foundation
+import UIKit
 
 /**
  * 🛡️ Log Sanitizer - Защита чувствительных данных в логах
@@ -311,5 +312,22 @@ class LogSanitizer {
         }
 
         return result
+    }
+}
+
+// MARK: - SF Symbol fallbacks (iOS 17+, fix-sf)
+
+enum SFSymbolCompat {
+    static func resolve(_ preferred: String, fallback: String) -> String {
+        if UIImage(systemName: preferred) != nil { return preferred }
+        return fallback
+    }
+
+    static var joinDevice: String {
+        resolve("iphone.and.arrow.forward.inward", fallback: "iphone.and.arrow.forward")
+    }
+
+    static var voiceNotes: String {
+        resolve("waveform.badge.mic", fallback: "waveform")
     }
 }

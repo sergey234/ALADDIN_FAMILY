@@ -349,35 +349,23 @@ class SettingsViewModel: ObservableObject {
 
         }
 
-        // Push / звук: всегда пишем в NotificationManager.shared — Settings открывается через init()
-        // без инжекта NotificationService, иначе тумблеры не сохраняются между заходами на экран.
-        $securityEnabled
-            .dropFirst()
-            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.main)
-            .sink { [weak self] enabled in
-                guard let self = self, !self.suppressRemoteNotificationServerLoop else { return }
-                var settings = NotificationManager.shared.notificationSettings
-                settings.securityEnabled = enabled
-                NotificationManager.shared.updateNotificationSettings(settings)
-                Task { @MainActor in
-                    NotificationAppSettingsSync.shared.schedulePushAfterLocalChange()
-                }
+        // Push / звук: один debounced POST на пару тумблеров (fix-settings-02).
+        Publishers.CombineLatest(
+            $securityEnabled.dropFirst(),
+            $soundEnabled.dropFirst()
+        )
+        .debounce(for: .milliseconds(300), scheduler: DispatchQueue.main)
+        .sink { [weak self] security, sound in
+            guard let self, !self.suppressRemoteNotificationServerLoop else { return }
+            var settings = NotificationManager.shared.notificationSettings
+            settings.securityEnabled = security
+            settings.soundEnabled = sound
+            NotificationManager.shared.updateNotificationSettings(settings)
+            Task { @MainActor in
+                NotificationAppSettingsSync.shared.schedulePushAfterLocalChange()
             }
-            .store(in: &cancellables)
-
-        $soundEnabled
-            .dropFirst()
-            .debounce(for: .milliseconds(200), scheduler: DispatchQueue.main)
-            .sink { [weak self] enabled in
-                guard let self = self, !self.suppressRemoteNotificationServerLoop else { return }
-                var settings = NotificationManager.shared.notificationSettings
-                settings.soundEnabled = enabled
-                NotificationManager.shared.updateNotificationSettings(settings)
-                Task { @MainActor in
-                    NotificationAppSettingsSync.shared.schedulePushAfterLocalChange()
-                }
-            }
-            .store(in: &cancellables)
+        }
+        .store(in: &cancellables)
 
         // Sync "Network Protection" toggle with existing network protection settings profile.
         // В текущем контракте Settings-тумблер мапится на `antivirusEnabled` внутри network settings.
@@ -478,22 +466,23 @@ class SettingsViewModel: ObservableObject {
         soundEnabled = s.soundEnabled
     }
 
+    /// Конец bootstrap (pull с сервера или ошибка) — снова разрешаем PATCH (fix-settings-01).
+    func finishNotificationSettingsBootstrap() {
+        suppressRemoteNotificationServerLoop = false
+    }
+
     /// Применить удалённые настройки (сервер при открытии экрана имеет приоритет над локальным кэшем тумблеров).
     func applyRemoteNotificationAppSettings(masterEnabled: Bool, pushEnabled: Bool, soundEnabled serverSound: Bool) {
         let push = masterEnabled && pushEnabled
         let sound = masterEnabled && serverSound
-        // Следующий run loop — не во время текущего layout pass.
-        DispatchQueue.main.async { [weak self] in
-            guard let self else { return }
-            self.suppressRemoteNotificationServerLoop = true
-            self.securityEnabled = push
-            self.soundEnabled = sound
-            var settings = NotificationManager.shared.notificationSettings
-            settings.securityEnabled = push
-            settings.soundEnabled = sound
-            NotificationManager.shared.updateNotificationSettings(settings)
-            self.suppressRemoteNotificationServerLoop = false
-        }
+        suppressRemoteNotificationServerLoop = true
+        securityEnabled = push
+        soundEnabled = sound
+        var settings = NotificationManager.shared.notificationSettings
+        settings.securityEnabled = push
+        settings.soundEnabled = sound
+        NotificationManager.shared.updateNotificationSettings(settings)
+        suppressRemoteNotificationServerLoop = false
     }
 
     // MARK: - Public Methods
@@ -507,6 +496,7 @@ class SettingsViewModel: ObservableObject {
             guard let self else { return }
             defer { self.isInitializing = false }
 
+            self.suppressRemoteNotificationServerLoop = true
             self.syncNotificationTogglesFromManager()
             print("✅ SettingsViewModel: MVVM initialization successful")
 
@@ -872,21 +862,22 @@ extension SettingsViewModel {
 // MARK: - Notification Initialization
 extension SettingsViewModel {
     func initializeNotifications() {
-        // Инициализация системы уведомлений
-        guard let notificationService = notificationService else {
-            print("❌ NotificationService не доступен")
-            return
-        }
-
         Task {
-            let granted = await notificationService.requestAuthorization()
-            if granted {
-                print("🔔 Разрешение на уведомления получено")
-                // Можно добавить дополнительную логику при успешном разрешении
-            } else {
-                print("🔕 Разрешение на уведомления отклонено")
-                // Можно добавить обработку отказа в разрешениях
+            if let notificationService {
+                let granted = await notificationService.requestAuthorization()
+                logNotificationAuthResult(granted)
+                return
             }
+            let granted = await NotificationManager.shared.requestAuthorization()
+            logNotificationAuthResult(granted)
+        }
+    }
+
+    private func logNotificationAuthResult(_ granted: Bool) {
+        if granted {
+            print("🔔 Разрешение на уведомления получено")
+        } else {
+            print("🔕 Разрешение на уведомления отклонено")
         }
     }
 }

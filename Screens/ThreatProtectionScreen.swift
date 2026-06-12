@@ -39,7 +39,7 @@ struct ThreatProtectionScreen: View {
                         protectionSummaryCard
                             .padding(.horizontal, Spacing.screenPadding)
                         
-                        antifakeQuickAccessCard
+                        AntifakeQuickAccessCard()
                             .padding(.horizontal, Spacing.screenPadding)
                         
                         // Группы функций защиты (включая IoT‑защиту внутри семейной группы)
@@ -123,41 +123,172 @@ struct ThreatProtectionScreen: View {
             "protection_benefit_iot"
         ]
     }
-    
-    private var antifakeQuickAccessCard: some View {
-        Button {
-            HapticFeedback.selection()
-            if tariffManager.isCategoryAvailable(.deepfakes) {
-                navigationManager.navigateTo(.antifakeHub)
-            } else {
-                navigationManager.navigateTo(.tariffs)
-            }
-        } label: {
-            HStack(spacing: Spacing.m) {
-                Text("🎭")
-                    .font(.system(size: 32))
-                VStack(alignment: .leading, spacing: Spacing.xxs) {
-                    Text(localizationManager.localized("protection_antifake_card_title"))
-                        .font(.headline)
-                        .foregroundColor(.textPrimary)
-                    Text(localizationManager.localized("protection_antifake_card_subtitle"))
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                        .multilineTextAlignment(.leading)
+}
+
+// MARK: - Antifake quick access (ux-1-06 — Защита + каталог)
+
+struct AntifakeQuickAccessCard: View {
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @StateObject private var tariffManager = TariffManager.shared
+    @State private var showAppleLimits = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Button {
+                openHub()
+            } label: {
+                HStack(spacing: Spacing.m) {
+                    Text("🎭")
+                        .font(.system(size: 32))
+                    VStack(alignment: .leading, spacing: Spacing.xxs) {
+                        Text(localizationManager.localized("protection_antifake_card_title"))
+                            .font(.headline)
+                            .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("protection_antifake_card_subtitle"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .multilineTextAlignment(.leading)
+                        Text(localizationManager.localized("protection_antifake_card_footnote"))
+                            .font(.caption2)
+                            .foregroundColor(.textSecondary.opacity(0.9))
+                            .multilineTextAlignment(.leading)
+                    }
+                    Spacer()
+                    Text(localizationManager.localized("protection_open_check_button"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.primaryBlue)
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.primaryBlue)
                 }
-                Spacer()
-                Text(localizationManager.localized("protection_open_check_button"))
-                    .font(.caption.weight(.semibold))
-                    .foregroundColor(.primaryBlue)
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.semibold))
+                .padding(Spacing.m)
+                .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .primaryBlue)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("antifake_quick_access_card")
+            .accessibilityLabel(localizationManager.localized("protection_antifake_card_title"))
+
+            Button {
+                showAppleLimits = true
+            } label: {
+                Label(localizationManager.localized("antifake_how_it_works"), systemImage: "info.circle")
+                    .font(.caption.weight(.medium))
                     .foregroundColor(.primaryBlue)
             }
-            .padding(Spacing.m)
-            .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .primaryBlue)
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("antifake_apple_limits_link")
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel(localizationManager.localized("protection_antifake_card_title"))
+        .sheet(isPresented: $showAppleLimits) {
+            AntifakeAppleLimitsSheet()
+                .environmentObject(localizationManager)
+        }
+    }
+
+    private func openHub() {
+        HapticFeedback.selection()
+        if tariffManager.isCategoryAvailable(.deepfakes) {
+            navigationManager.navigateTo(.antifakeHub)
+        } else {
+            navigationManager.navigateTo(.tariffs)
+        }
+    }
+}
+
+// MARK: - Apple limits (af-8-07)
+
+struct AntifakeAppleLimitsSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                StormMeshBackground(variant: .shield)
+                ScrollView {
+                    VStack(alignment: .leading, spacing: Spacing.l) {
+                        Text(localizationManager.localized("antifake_apple_limits_intro"))
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.9))
+
+                        limitsSection(
+                            titleKey: "antifake_apple_limits_can_title",
+                            bulletKeys: [
+                                "antifake_apple_limits_can_1",
+                                "antifake_apple_limits_can_2",
+                                "antifake_apple_limits_can_3",
+                                "antifake_apple_limits_can_4",
+                                "antifake_apple_limits_can_5"
+                            ],
+                            accent: .successGreen
+                        )
+
+                        limitsSection(
+                            titleKey: "antifake_apple_limits_cannot_title",
+                            bulletKeys: [
+                                "antifake_apple_limits_cannot_1",
+                                "antifake_apple_limits_cannot_2",
+                                "antifake_apple_limits_cannot_3",
+                                "antifake_apple_limits_cannot_4",
+                                "antifake_apple_limits_cannot_5"
+                            ],
+                            accent: .warningOrange
+                        )
+
+                        VStack(alignment: .leading, spacing: Spacing.s) {
+                            Text(localizationManager.localized("antifake_apple_limits_calls_title"))
+                                .font(.headline)
+                                .foregroundColor(.white)
+                            Text(localizationManager.localized("antifake_apple_limits_calls_body"))
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.88))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(Spacing.m)
+                        .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .primaryBlue)
+
+                        Text(localizationManager.localized("antifake_apple_limits_disclaimer"))
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.75))
+                    }
+                    .padding(Spacing.screenPadding)
+                    .padding(.bottom, Spacing.xxl)
+                }
+            }
+            .navigationTitle(localizationManager.localized("antifake_apple_limits_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(localizationManager.localized("antifake_close")) {
+                        dismiss()
+                    }
+                }
+            }
+        }
+        .navigationViewStyle(.stack)
+        .accessibilityIdentifier("antifake_apple_limits_sheet")
+    }
+
+    private func limitsSection(titleKey: String, bulletKeys: [String], accent: Color) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized(titleKey))
+                .font(.headline)
+                .foregroundColor(.white)
+            ForEach(bulletKeys, id: \.self) { key in
+                HStack(alignment: .top, spacing: Spacing.xs) {
+                    Circle()
+                        .fill(accent)
+                        .frame(width: 6, height: 6)
+                        .padding(.top, 6)
+                    Text(localizationManager.localized(key))
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.88))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: accent)
     }
 }
 

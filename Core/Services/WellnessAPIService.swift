@@ -265,6 +265,9 @@ final class WellnessAPIService {
     }
 
     func fetchReflectiveModes() async throws -> WellnessReflectiveModesResponse {
+        if WellnessUITestSupport.isNavSmoke {
+            return WellnessUITestSupport.reflectiveModesFixture
+        }
         let loc = LocalizationManager.shared.aiResponseLanguageCode.prefix(2).lowercased()
         return try await get("\(AppConfig.Endpoint.wellnessReflectiveModes)?locale=\(loc)")
     }
@@ -311,7 +314,10 @@ final class WellnessAPIService {
     }
 
     func fetchTimeline(days: Int = 14) async throws -> WellnessTimelineResponse {
-        try await get("\(AppConfig.Endpoint.wellnessTimeline)?days=\(days)")
+        if WellnessUITestSupport.isNavSmoke {
+            return WellnessTimelineResponse(days: days, checkins: [], exercises: [])
+        }
+        return try await get("\(AppConfig.Endpoint.wellnessTimeline)?days=\(days)")
     }
 
     func postDream(text: String, moodTag: String?) async throws {
@@ -327,7 +333,17 @@ final class WellnessAPIService {
     }
 
     func fetchPremiumEligibility() async throws -> WellnessPremiumEligibilityResponse {
-        try await get(AppConfig.Endpoint.wellnessPremiumEligibility)
+        if WellnessUITestSupport.isNavSmoke {
+            return WellnessPremiumEligibilityResponse(
+                ok: true,
+                allowed: true,
+                eligible: true,
+                reason: nil,
+                messageKey: nil,
+                subscriptionActive: true
+            )
+        }
+        return try await get(AppConfig.Endpoint.wellnessPremiumEligibility)
     }
 
     func fetchPdfLabels() async throws -> [String: String] {

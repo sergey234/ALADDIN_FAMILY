@@ -60,7 +60,8 @@ class MasterLogger {
         // Настройка уровней логирования
         #if DEBUG
         maxLogLevel = .trace  // В DEBUG все уровни
-        self._enableVisualLogging = true // ✅ BUILD 115: Включаем VisualLogger по умолчанию в DEBUG режиме
+        // Visual overlay off by default — Xcode console достаточно; включается через enable_visual_logging
+        self._enableVisualLogging = false
         #else
         maxLogLevel = .info   // В RELEASE только INFO и выше
         #endif
@@ -168,7 +169,8 @@ class MasterLogger {
             let fileName = (file as NSString).lastPathComponent
             let fullMessage = "[\(category.rawValue)] \(message)"
 
-            // 1. SettingsDiagnosticsLogger
+            #if DEBUG
+            // 1. SettingsDiagnosticsLogger (DEBUG — полный ring buffer)
             switch level {
             case .trace, .debug, .info:
                 self.settingsLogger.logFunction(function, message: fullMessage, section: category.rawValue)
@@ -179,6 +181,19 @@ class MasterLogger {
             case .fatal:
                 self.settingsLogger.logCritical(function, message: fullMessage, section: category.rawValue)
             }
+            #else
+            // RELEASE (perf-0-03): warn+ в SettingsDiagnosticsLogger, без дубля info/trace
+            switch level {
+            case .warn:
+                self.settingsLogger.logFunction(function, message: "WARNING: \(fullMessage)", section: category.rawValue)
+            case .error:
+                self.settingsLogger.logError(function, message: fullMessage, section: category.rawValue)
+            case .fatal:
+                self.settingsLogger.logCritical(function, message: fullMessage, section: category.rawValue)
+            case .trace, .debug, .info:
+                break
+            }
+            #endif
 
             // 2. Visual Logger (если включено)
             if self.enableVisualLogging {

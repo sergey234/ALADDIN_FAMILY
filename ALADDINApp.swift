@@ -252,8 +252,8 @@ struct ALADDINApp: App {
     /// Единый источник статистики главной / профиля (семья, устройства, угрозы).
     @StateObject private var mainViewModel = MainViewModel()
     @AppStorage("selected_theme") private var selectedTheme: String = "light"
-    // ✅ BUILD 95: Показ VisualLogger overlay в RELEASE/TestFlight по флагу
-    @AppStorage("enable_visual_logging_release") private var enableVisualLoggingRelease: Bool = false
+    /// VisualLogger overlay (симулятор/устройство). По умолчанию выкл — логи в Xcode Console.
+    @AppStorage("enable_visual_logging") private var enableVisualLogging: Bool = false
     // ✅ BUILD 95: Используем @AppStorage вместо UserDefaults для предотвращения рекурсии
     @AppStorage(AppConfig.UserDefaultsKeys.hasCompletedOnboarding) private var hasCompletedOnboarding: Bool = false
     // ✅ BUILD 96: Используем @AppStorage вместо UserDefaults для предотвращения рекурсии
@@ -660,15 +660,12 @@ struct ALADDINApp: App {
                 }
             }
             .preferredColorScheme(preferredColorScheme)
+            .onChange(of: enableVisualLogging) { enabled in
+                MasterLogger.shared.updateSettings(enableVisual: enabled)
+            }
             .overlay(alignment: .bottomTrailing) {
-                Group {
-                    #if DEBUG
+                if enableVisualLogging {
                     visualLoggerOverlay()
-                    #else
-                    if enableVisualLoggingRelease {
-                        visualLoggerOverlay()
-                    }
-                    #endif
                 }
             }
             .overlay {

@@ -140,6 +140,9 @@ struct NetworkProtectionScreen: View {
                         // Security Features
                         securityFeaturesCard
                         
+                        AntifakeQuickAccessCard()
+                            .padding(.horizontal, Spacing.screenPadding)
+                        
                         // ✅ НОВЫЕ РАЗДЕЛЫ: Компоненты безопасности (42 компонента)
                         componentsSections
                         

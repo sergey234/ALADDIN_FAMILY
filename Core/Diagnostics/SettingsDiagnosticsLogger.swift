@@ -11,8 +11,20 @@ class SettingsDiagnosticsLogger {
     
     // MARK: - Properties
     
-    /// Флаг включения логирования (работает в RELEASE)
+    /// Флаг включения логирования (verbose ring buffer — DEBUG; warn+ в RELEASE)
+    #if DEBUG
     static let ENABLE_LOGS = true
+    #else
+    static let ENABLE_LOGS = true
+    #endif
+
+    private func shouldPersist(level: LogLevel) -> Bool {
+        #if DEBUG
+        return true
+        #else
+        return level == .warning || level == .error || level == .critical
+        #endif
+    }
 
     /// Subsystem для фильтра в Console.app (совпадает с bundle приложения).
     static var logSubsystem: String {
@@ -164,12 +176,14 @@ class SettingsDiagnosticsLogger {
         let safeMessage = entry.formattedMessage.count > 500 ?
             String(entry.formattedMessage.prefix(500)) + "..." : entry.formattedMessage
 
-        // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Сначала print() для немедленного отображения в Xcode
-        // Это гарантирует, что логи будут видны даже если os_log не работает
-        // Используем прямой print() - он работает на любом потоке
+        // DEBUG: print для Xcode. RELEASE: только os_log (без дубля print).
+        #if DEBUG
         print("🔍 SETTINGS_DIAG: \(safeMessage)")
+        #endif
 
-        // 1. Системный лог (Console.app): `Logger` + строка без эмодзи — в DEBUG и Release.
+        guard shouldPersist(level: level) else { return }
+
+        // 1. Системный лог (Console.app): `Logger` + строка без эмодзи.
         let messageForOSLog = removeEmoji(safeMessage)
         switch level {
         case .info:

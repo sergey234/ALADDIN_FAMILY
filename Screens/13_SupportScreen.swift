@@ -230,6 +230,8 @@ struct SupportScreen: View {
                         
                         // Способы связи
                         contactMethods
+
+                        antifakeShareHelpSection
                         
                         // ✅ ЗАДАЧА 26: Помощь на дороге
                         roadsideAssistanceSection
@@ -254,8 +256,13 @@ struct SupportScreen: View {
             Color.clear.frame(height: 12)
         }
         .task {
-            print("🚨 SupportScreen загружен!")
             initializeFAQItems()
+        }
+        .onAppear {
+            SupportScreenPerformanceGuard.setVisible(true)
+        }
+        .onDisappear {
+            SupportScreenPerformanceGuard.setVisible(false)
         }
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("support_lang_\(localizationManager.currentLanguage.rawValue)")
@@ -404,6 +411,90 @@ struct SupportScreen: View {
     private func openSupportURL(_ urlString: String) {
         guard let url = URL(string: urlString) else { return }
         UIApplication.shared.open(url)
+    }
+
+    // MARK: - Antifake Share (ux-1-09)
+
+    private var antifakeShareHelpSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("support_antifake_share_title"))
+                .font(.title2)
+                .foregroundColor(.primary)
+                .padding(.horizontal, 20)
+                .accessibilityAddTraits(.isHeader)
+
+            VStack(alignment: .leading, spacing: 12) {
+                Text(localizationManager.localized("support_antifake_share_subtitle"))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+
+                antifakeShareStep(number: 1, textKey: "support_antifake_share_step1")
+                antifakeShareStep(number: 2, textKey: "support_antifake_share_step2")
+                antifakeShareStep(number: 3, textKey: "support_antifake_share_step3")
+                antifakeShareStep(number: 4, textKey: "support_antifake_share_step4")
+
+                Text(localizationManager.localized("support_antifake_share_note"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Button {
+                    openAntifakeHubFromSupport()
+                } label: {
+                    HStack {
+                        Image(systemName: "shield.lefthalf.filled")
+                        Text(localizationManager.localized("support_antifake_share_open_hub"))
+                            .font(.subheadline.bold())
+                        Spacer()
+                        Image(systemName: "chevron.right")
+                    }
+                    .foregroundColor(.white)
+                    .padding(12)
+                    .background(
+                        LinearGradient(
+                            colors: [Color(hex: "7C3AED"), Color(hex: "5B21B6")],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(10)
+                }
+                .buttonStyle(PlainButtonStyle())
+            }
+            .padding(14)
+            .background(Color(.secondarySystemBackground).opacity(0.92))
+            .cornerRadius(12)
+            .overlay(
+                RoundedRectangle(cornerRadius: 12)
+                    .stroke(Color.purple.opacity(0.25), lineWidth: 1)
+            )
+            .padding(.horizontal, 20)
+        }
+        .accessibilityElement(children: .contain)
+    }
+
+    private func antifakeShareStep(number: Int, textKey: String) -> some View {
+        HStack(alignment: .top, spacing: 10) {
+            Text("\(number)")
+                .font(.caption.bold())
+                .foregroundColor(.white)
+                .frame(width: 22, height: 22)
+                .background(Circle().fill(Color.purple.opacity(0.85)))
+            Text(localizationManager.localized(textKey))
+                .font(.subheadline)
+                .foregroundColor(.primary)
+                .fixedSize(horizontal: false, vertical: true)
+        }
+    }
+
+    private func openAntifakeHubFromSupport() {
+        if navigationManager.currentScreen == .support {
+            navigationManager.navigateTo(.antifakeHub)
+            return
+        }
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.35) {
+            navigationManager.navigateTo(.antifakeHub)
+        }
     }
     
     // MARK: - Roadside Assistance Section (✅ ЗАДАЧА 26)
@@ -599,8 +690,16 @@ struct SupportScreen: View {
         VStack(alignment: .leading, spacing: 12) {
             // Вопрос
             Button(action: {
-                withAnimation(.spring()) {
-                    item.wrappedValue.isExpanded.toggle()
+                withAnimation(.easeOut(duration: 0.2)) {
+                    let togglingId = item.wrappedValue.id
+                    let expanding = !item.wrappedValue.isExpanded
+                    for index in faqItems.indices {
+                        if faqItems[index].id == togglingId {
+                            faqItems[index].isExpanded = expanding
+                        } else {
+                            faqItems[index].isExpanded = false
+                        }
+                    }
                 }
             }) {
                 HStack(spacing: 12) {

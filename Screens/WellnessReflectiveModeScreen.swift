@@ -9,6 +9,7 @@ struct WellnessReflectiveModeScreen: View {
     @State private var isLoading = true
     @State private var errorText: String?
     @State private var isSelecting = false
+    @State private var pendingMode: WellnessReflectiveModeItem?
 
     var body: some View {
         ZStack {
@@ -16,18 +17,8 @@ struct WellnessReflectiveModeScreen: View {
 
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
-                    HStack {
-                        Button { navigationManager.wellnessGoBack() } label: {
-                            Image(systemName: "chevron.left")
-                                .font(.body.weight(.semibold))
-                        }
-                        Text(localizationManager.localized("wellness_deep_explore_title"))
-                            .font(.headline.bold())
-                        Spacer()
-                    }
-                    Text(localizationManager.localized("wellness_deep_explore_subtitle"))
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.85))
+                    header
+                    infoBlock
                     if isLoading {
                         ProgressView().frame(maxWidth: .infinity).tint(.white)
                     } else if let errorText {
@@ -43,12 +34,72 @@ struct WellnessReflectiveModeScreen: View {
         }
         .foregroundColor(.white)
         .navigationBarHidden(true)
+        .accessibilityIdentifier("wellness_reflective_screen")
         .task { await loadModes() }
+        .confirmationDialog(
+            localizationManager.localized("wellness_reflective_confirm_title"),
+            isPresented: Binding(
+                get: { pendingMode != nil },
+                set: { if !$0 { pendingMode = nil } }
+            ),
+            titleVisibility: .visible
+        ) {
+            Button(localizationManager.localized("wellness_reflective_confirm_continue")) {
+                if let mode = pendingMode {
+                    pendingMode = nil
+                    Task { await proceedToCompanion(mode) }
+                }
+            }
+            Button(localizationManager.localized("wellness_reflective_confirm_cancel"), role: .cancel) {
+                pendingMode = nil
+            }
+        } message: {
+            if let mode = pendingMode {
+                Text(
+                    String(
+                        format: localizationManager.localized("wellness_reflective_confirm_message"),
+                        modeLabel(mode)
+                    )
+                )
+            }
+        }
+    }
+
+    private var header: some View {
+        HStack {
+            Button { navigationManager.wellnessGoBack() } label: {
+                Image(systemName: "chevron.left")
+                    .font(.body.weight(.semibold))
+            }
+            .accessibilityIdentifier("wellness_subpage_back")
+            Text(localizationManager.localized("wellness_deep_explore_title"))
+                .font(.headline.bold())
+            Spacer()
+        }
+    }
+
+    private var infoBlock: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Label(
+                localizationManager.localized("wellness_reflective_info_title"),
+                systemImage: "bubble.left.and.bubble.right.fill"
+            )
+            .font(.subheadline.bold())
+            Text(localizationManager.localized("wellness_deep_explore_subtitle"))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.9))
+            Text(localizationManager.localized("wellness_reflective_info_body"))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.8))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(12)
+        .stormGlassCard(cornerRadius: 12, accentStripColor: Color(hex: "8B5CF6"))
     }
 
     private func modeRow(_ mode: WellnessReflectiveModeItem) -> some View {
         Button {
-            Task { await selectMode(mode) }
+            pendingMode = mode
         } label: {
             VStack(alignment: .leading, spacing: 6) {
                 Text(modeLabel(mode))
@@ -104,7 +155,7 @@ struct WellnessReflectiveModeScreen: View {
         }
     }
 
-    private func selectMode(_ mode: WellnessReflectiveModeItem) async {
+    private func proceedToCompanion(_ mode: WellnessReflectiveModeItem) async {
         isSelecting = true
         errorText = nil
         defer { isSelecting = false }

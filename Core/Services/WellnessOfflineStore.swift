@@ -81,3 +81,25 @@ enum WellnessOfflineStore {
         setConsentCached(true)
     }
 }
+
+// MARK: - UI test fixtures (ux-5-05)
+
+enum WellnessUITestSupport {
+    static var isNavSmoke: Bool {
+        ProcessInfo.processInfo.arguments.contains("-UITestWellnessNavSmoke")
+    }
+
+    static var reflectiveModesFixture: WellnessReflectiveModesResponse {
+        WellnessReflectiveModesResponse(
+            modes: [
+                WellnessReflectiveModeItem(
+                    id: "uitest_reflect",
+                    label: "UITest reflective",
+                    hint: "Smoke",
+                    labelKey: nil,
+                    hintKey: nil
+                )
+            ]
+        )
+    }
+}

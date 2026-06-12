@@ -79,6 +79,7 @@ struct WellnessTimelineScreen: View {
         }
         .foregroundColor(.white)
         .navigationBarHidden(true)
+        .accessibilityIdentifier("wellness_timeline_screen")
         .task { await load() }
         .sheet(isPresented: $showPaywall) {
             WellnessPremiumPaywallSheet()
@@ -100,6 +101,7 @@ struct WellnessTimelineScreen: View {
                 Image(systemName: "chevron.left")
                     .font(.body.weight(.semibold))
             }
+            .accessibilityIdentifier("wellness_subpage_back")
             Text(localizationManager.localized("wellness_timeline_title"))
                 .font(.headline.bold())
             Spacer()

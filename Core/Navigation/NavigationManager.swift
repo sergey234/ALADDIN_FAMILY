@@ -242,7 +242,7 @@ class NavigationManager: ObservableObject {
             case .privacyPolicy: return "doc.text.fill"
             case .termsOfService: return "doc.plaintext.fill"
             case .devices: return "iphone"
-            case .joinDevice: return "iphone.and.arrow.forward.inward"
+            case .joinDevice: return SFSymbolCompat.joinDevice
             case .referral: return "gift.fill"
             case .deviceDetail: return "info.circle.fill"
             case .familyChat: return "message.fill"

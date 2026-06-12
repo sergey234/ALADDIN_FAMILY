@@ -159,7 +159,7 @@ private extension VoiceNotesScreen {
 
     var emptyState: some View {
         VStack(spacing: 10) {
-            Image(systemName: "waveform.badge.mic")
+            Image(systemName: SFSymbolCompat.voiceNotes)
                 .font(.system(size: 28))
                 .foregroundColor(.secondary)
             Text(localizationManager.localized(emptyTitleKey))

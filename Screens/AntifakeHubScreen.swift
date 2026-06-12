@@ -10,6 +10,7 @@ struct AntifakeHubScreen: View {
 
     @State private var selectedTab: AntifakeHubTab = .text
     @State private var showPremiumPaywall = false
+    @State private var showAppleLimits = false
     @State private var sharePrefill: AntifakeSharePayload?
     @State private var pendingTextMode: AntifakeTextInputMode?
 
@@ -52,6 +53,10 @@ struct AntifakeHubScreen: View {
         .onChange(of: navigationManager.pendingAntifakeTextMode) { _ in
             applyPendingHubNavigationIfNeeded()
         }
+        .sheet(isPresented: $showAppleLimits) {
+            AntifakeAppleLimitsSheet()
+                .environmentObject(localizationManager)
+        }
     }
 
     private func applyPendingHubNavigationIfNeeded() {
@@ -71,6 +76,16 @@ struct AntifakeHubScreen: View {
             title: localizationManager.localized("antifake_hub_title"),
             subtitle: localizationManager.localized("antifake_hub_subtitle"),
             showBackButton: true,
+            showProfileButton: false,
+            showListButton: false,
+            rightButtons: [
+                NavigationActionButton(
+                    icon: "info.circle",
+                    accessibilityLabel: localizationManager.localized("antifake_how_it_works")
+                ) {
+                    showAppleLimits = true
+                }
+            ],
             onBack: { navigationManager.goBack() }
         )
     }

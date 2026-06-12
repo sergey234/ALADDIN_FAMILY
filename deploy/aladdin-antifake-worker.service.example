@@ -9,7 +9,11 @@ User=aladdin
 WorkingDirectory=/opt/aladdin-backend
 Environment=PYTHONPATH=/opt/aladdin-backend
 ExecStartPre=/opt/aladdin-backend/venv/bin/python3 -m app.workers.antifake_ml_worker --warm
-ExecStart=/opt/aladdin-backend/venv/bin/rq worker aladdin-antifake --url redis://127.0.0.1:6379/0
+ExecStart=/opt/aladdin-backend/venv/bin/python3 -m app.workers.antifake_ml_worker --listen
+Environment=ANTIFAKE_REDIS_URL=redis://127.0.0.1:6379/0
+Environment=ANTIFAKE_QUEUE_NAME=aladdin-antifake
+Environment=ANTIFAKE_UPLOAD_DIR=/var/lib/aladdin/antifake/uploads
+Environment=ANTIFAKE_ASYNC_MEDIA=true
 Restart=on-failure
 RestartSec=5
 

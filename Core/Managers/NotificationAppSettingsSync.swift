@@ -56,14 +56,20 @@ final class NotificationAppSettingsSync {
             self?.pushCurrentLocalToServer()
         }
         debouncedPushWorkItem = work
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4, execute: work)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5, execute: work)
     }
 
     /// Pull с сервера при открытии настроек; серверный ответ имеет приоритет над локальными `@Published` для двух тумблеров.
     func pullFromServer(into viewModel: SettingsViewModel) {
-        guard KeychainManager.shared.loadString(forKey: .authToken) != nil else { return }
+        guard KeychainManager.shared.loadString(forKey: .authToken) != nil else {
+            viewModel.finishNotificationSettingsBootstrap()
+            return
+        }
         let uid = settingsUserId()
-        guard !uid.isEmpty else { return }
+        guard !uid.isEmpty else {
+            viewModel.finishNotificationSettingsBootstrap()
+            return
+        }
 
         APIService.shared.getNotificationSettingsApp(userId: uid) { result in
             Task { @MainActor in
@@ -77,7 +83,7 @@ final class NotificationAppSettingsSync {
                     self.setStoredRemoteVersion(r.version)
                     UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.notificationAppSettingsSyncPending)
                 case .failure:
-                    break
+                    viewModel.finishNotificationSettingsBootstrap()
                 }
             }
         }

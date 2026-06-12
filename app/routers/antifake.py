@@ -18,8 +18,10 @@ from app.services.antifake_jobs_store import (
     metrics_for_user,
 )
 from app.services.antifake_premium import user_has_antifake_access
+from app.services.antifake_queue import enqueue_media_job
 from app.services.antifake_rate_limit import check_rate_limit
 from app.services.antifake_service import check_media, check_text, check_url
+from app.services.antifake_upload_store import save_upload
 
 logger = logging.getLogger(__name__)
 
@@ -128,13 +130,30 @@ async def _enqueue_media_job(
 
     user_id = int(user["id"])
     job_id = create_job(user_id, job_type)
-    started = time.perf_counter()
+    file_name = upload.filename or "upload"
 
+    file_path = save_upload(
+        user_id=user_id,
+        job_id=job_id,
+        file_bytes=raw,
+        file_name=file_name,
+    )
+
+    if enqueue_media_job(
+        job_id=job_id,
+        job_type=job_type,
+        file_path=str(file_path),
+        extra=extra,
+    ):
+        logger.info("antifake_media_queued job=%s type=%s user=%s", job_id, job_type, user_id)
+        return {"job_id": job_id, "status": "queued", "type": job_type}
+
+    started = time.perf_counter()
     try:
         verdict = _validate_verdict(
             check_media(
                 media_type=job_type,
-                file_name=upload.filename or "upload",
+                file_name=file_name,
                 file_bytes=raw,
                 extra=extra,
             )
@@ -149,6 +168,10 @@ async def _enqueue_media_job(
     except Exception as exc:
         fail_job(job_id, str(exc))
         raise HTTPException(status_code=503, detail=str(exc)) from exc
+    finally:
+        from app.services.antifake_upload_store import delete_upload
+
+        delete_upload(file_path)
 
 
 @router.post("/check/audio", status_code=202, response_model=None, include_in_schema=False)

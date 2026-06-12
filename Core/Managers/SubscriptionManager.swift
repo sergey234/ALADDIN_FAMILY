@@ -2088,6 +2088,10 @@ extension SubscriptionManager {
     /// 🔄 Sync subscription data with server when online
     @MainActor
     func syncWithServer() async {
+        guard !SupportScreenPerformanceGuard.isSupportVisible else {
+            logger.network("📡 Skipping sync — Support screen visible")
+            return
+        }
         guard !isOfflineMode else {
             logger.network("📡 Skipping sync - offline mode")
             return
@@ -2339,6 +2343,7 @@ extension SubscriptionManager {
 
     /// 📤 Send pending events to server
     @MainActor private func flushPendingEvents() async {
+        guard !SupportScreenPerformanceGuard.isSupportVisible else { return }
         guard !isOfflineMode else { return }
 
         pruneExpiredEventsLocked()

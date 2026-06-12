@@ -1,0 +1,3 @@
+# Antifake async worker (af-3-01) — install on VPS alongside aladdin-backend
+redis>=5.0
+rq>=1.16

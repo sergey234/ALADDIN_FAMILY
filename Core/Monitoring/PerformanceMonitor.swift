@@ -439,3 +439,34 @@ extension NetworkManager {
         task.resume()
     }
 }
+
+// MARK: - Support screen perf guard (PERF-2)
+
+/// Пока открыт экран Помощи — откладываем тяжёлый фоновый sync/metrics (FPS Support ~36).
+enum SupportScreenPerformanceGuard {
+    private static let lock = NSLock()
+    private static var visibleCount = 0
+
+    static var isSupportVisible: Bool {
+        lock.lock()
+        defer { lock.unlock() }
+        return visibleCount > 0
+    }
+
+    static func setVisible(_ visible: Bool) {
+        lock.lock()
+        if visible {
+            visibleCount += 1
+        } else {
+            visibleCount = max(0, visibleCount - 1)
+        }
+        let becameHidden = visibleCount == 0 && !visible
+        lock.unlock()
+
+        if becameHidden {
+            Task { @MainActor in
+                await SubscriptionManager.shared.forceSync()
+            }
+        }
+    }
+}

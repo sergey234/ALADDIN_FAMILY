@@ -336,9 +336,13 @@ struct MainScreen: View {
             }
         }
         .onAppear {
-            // Primary trigger: единый onAppear-проход синка и коалесцированного обновления дашборда.
-            Task { await subscriptionManager.syncSubscriptionOnMainScreenAppear() }
-            mainViewModel.requestRefreshDebounced()
+            // perf-1-01: subscription sync отложен — не блокирует первый кадр (.task уже вызвал onAppear).
+            guard hasAppeared else { return }
+            Task {
+                try? await Task.sleep(nanoseconds: 1_200_000_000)
+                await subscriptionManager.syncSubscriptionOnMainScreenAppear()
+                mainViewModel.requestRefreshDebounced()
+            }
         }
         .onChange(of: scenePhase) { newPhase in
             guard newPhase == .active else { return }

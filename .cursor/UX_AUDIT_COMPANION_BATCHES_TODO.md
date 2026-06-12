@@ -1,7 +1,8 @@
 # UX Audit — Companion / Wellness / Antifake (2026-06-12)
 
-**Источник:** отзыв пользователя build 229 · **Build:** 229  
+**Источник:** отзыв пользователя build 229 · **Build:** 230 (commit `32387ab0`)  
 **Рабочий корень:** `ALADDIN_iOS`  
+**Мастер-реестр всех задач:** `.cursor/ALADDIN_MASTER_TODO.md` (36 Cursor ids + ~100 детальных id)  
 **Связанные планы:** `.cursor/IMPLEMENTATION_BATCHES_TODO.md` (143 security), `docs/WELLNESS_CURSOR_TODO.md` (131 wellness)
 
 > **ПРАВИЛО:** каждый batch — отдельный commit/PR; не смешивать с `telegram_stars_shop_bot/`.
@@ -42,6 +43,42 @@
 
 ---
 
+## Карта Antifake — честно: что видит пользователь vs код
+
+### Что вы видите (build 230) — это нормально
+
+**Главная** → «Защита Aladdin» → `03_NetworkProtectionScreen`:
+
+1. Экстренная помощь  
+2. **Защита от угроз** (фишинг, malware, mobile, сеть, IoT) — **только тумблеры**  
+3. Автоматическая система защиты  
+4. Безопасность паролей  
+
+**Antifake Hub на этом экране НЕТ.** Карточки «Проверить ссылку» и Deepfakes — на **другом** экране (`ThreatProtectionScreen`), до которого **нет ссылки** с Главной.
+
+### Antifake Hub (когда откроется) — 4 вкладки
+
+| Вкладка | Что проверяет |
+|---------|---------------|
+| **Текст** | Текст или **ссылка** на новость/пост (режимы «Текст» / «Ссылка») |
+| **Голос** | Аудиофайл |
+| **Видео** | Видеофайл |
+| **Звонок** | Запись звонка |
+
+Тариф **Premium**. «Новости» = вкладка **Текст**, не отдельная кнопка.
+
+### Скрытые входы (не в меню приложения)
+
+| Вход | Как |
+|------|-----|
+| Share | Safari/Telegram → **Поделиться** → «Проверить в ALADDIN» (включить в «Изменить») |
+| Device/Identity Hub | Coverage deepfake → Hub (если знаете путь) |
+| Уведомления | Редко → `ThreatProtectionScreen` |
+
+**Fix P0:** ux-1-06 — карточка Antifake на `03_NetworkProtectionScreen`.
+
+---
+
 ## Batch 1 — Antifake: найти на телефоне (discoverability)
 
 **Проблема:** пользователь не видит antifake после 140+ задач.  
@@ -49,11 +86,29 @@
 
 | ID | Задача | Файлы | Статус |
 |----|--------|-------|--------|
-| ux-1-01 | В **Защита → Deepfakes**: кнопка **«Открыть проверку»** рядом с тумблером (короткий тап = toggle, кнопка/chevron = Hub) | `ProtectionCategoryRow.swift`, `ProtectionGroupSection.swift`, `ThreatProtectionScreen.swift` | ⬜ |
-| ux-1-02 | **Заметная карточка в Защите** (верх экрана): «Проверить ссылку · голос · видео» → Antifake Hub | `ThreatProtectionScreen.swift` | ⬜ |
-| ux-1-03 | Короткая подсказка при первом заходе в Hub (3 шага) | sheet / `UserDefaults` once | ⬜ |
-| ux-1-04 | Обновить `docs/release/QA_HUB_DEMO_R08_R10.md` — путь: **Защита → Открыть проверку** | docs | ⬜ |
-| ux-1-05 | *(опционально P2)* Analytics / Identity coverage — без дублирования карточки | hub cards | ⬜ |
+| ux-1-01 | Кнопка «Открыть проверку» у Deepfakes | `ProtectionCategoryRow.swift` | ✅ на `ThreatProtectionScreen` — **пользователь не видит** |
+| ux-1-02 | Карточка «Проверить ссылку·голос·видео» | `ThreatProtectionScreen.swift` | ✅ — **пользователь не видит** |
+| ux-1-06 | **P0** Карточка Antifake на **`03_NetworkProtectionScreen`** — **между `securityFeaturesCard` и `componentsSections`** (до аккордеона «Экстренная помощь»); reuse `antifakeQuickAccessCard` из `ThreatProtectionScreen` | `03_NetworkProtectionScreen.swift` | ⬜ |
+| ux-1-07 | *(опционально, если карточки мало)* строка в аккордеоне «Защита от угроз» — **отложить**, сначала только ux-1-06 | — | P2 |
+| ux-1-08 | Ссылка `ThreatProtectionScreen` ↔ `NetworkProtection` или merge экранов | nav | ⬜ |
+| ux-1-09 | **P1** Подсказка Share: Safari → Поделиться → «Проверить в ALADDIN» | Support / Settings | ⬜ |
+| ux-1-03 | Coachmark первого входа в Hub (3 шага) | sheet | ⬜ |
+| ux-1-04 | QA doc: путь **Главная → Защита Aladdin → Проверить фейк** | docs | ⬜ |
+| ux-1-05 | Device/Identity coverage — без дубля если есть ux-1-06 | hub cards | P2 |
+| ux-1-10 | **P1** Честный copy: карточка + Hub — «звонок = запись после разговора», не автоблок | `LocalizationManager.swift` | ⬜ |
+
+### AF-VISION — дорога к «идеалу» (связь с `.cursor/ANTIFAKE_PRODUCTION_TODO.md`)
+
+**Важно:** «100% перехват всех звонков в эфире» на **обычном** сотовом звонке iOS **не разрешает Apple**. Реалистичная цель — **максимальная защита в рамках iOS** (≈85–90% ценности для семьи).
+
+| Фаза | Срок | Что получает пользователь | Батчи |
+|------|------|---------------------------|-------|
+| **M1 Ручная** (сейчас→) | 2–3 нед | Hub на экране Защиты, проверка текста/URL мгновенно, медиа/звонок по файлу, вердикт | ux-1-06, af-3, af-10, af-11 |
+| **M2 Проактивная** | +4–6 нед | Метка «мошенник?» на номере (Call Directory), push после звонка «Проверить?», Share из Safari/TG | af-4-02…05, ux-1-09 |
+| **M3 Полуавто** | +6–8 нед | Виджет «5 сек — проверить голос» во время разговора (с согласия), история проверок, AI-ассистент | af-4-04, af-6-08 |
+| **M4 Нельзя на iOS** | — | Слушать все PSTN-звонки в фоне, класть трубку по ML без списка номеров, перехват FaceTime/видеочата | **не обещать** |
+
+Полный техплан: `.cursor/ANTIFAKE_MASTER_ROADMAP.md` · 72+ задачи `af-*`.
 
 ---
 
@@ -155,8 +210,10 @@
 
 | ID | Задача | Файлы | Статус |
 |----|--------|-------|--------|
-| ux-6-01 | **P0** Fix цвета поля ввода (тёмный glass input / `.primary` на field) | `WellnessDreamJournalScreen.swift`, `WellnessSwiftUICompat.swift` | ⬜ |
-| ux-6-02 | Одна строка disclaimer + sheet «Подробнее» (см. copy выше) | `LocalizationManager.swift`, `WellnessDreamJournalScreen.swift` | ⬜ |
+| ux-6-01 | **P0** Fix цвета поля ввода — **глобально** `WellnessMultilineField.wellnessReadableInput()` | `WellnessSwiftUICompat.swift` | ✅ |
+| ux-6-01b | Audit всех wellness TextField (Exercise, Values, Check-in notes) | все `Wellness*.swift` | ✅ Exercise; ⬜ Values Form contrast |
+| ux-6-06 | **P0** «Дневник снов пока недоступен» — API/флаг `FEATURE_WELLNESS_JUNG` на VPS + offline save локально | `WellnessDreamJournalScreen`, `wellness_router.py` | ⬜ |
+| ux-6-02 | Одна строка disclaimer + sheet «Подробнее» (см. copy выше) | `LocalizationManager.swift`, `WellnessDreamJournalScreen.swift` | ✅ |
 | ux-6-03 | Placeholder поля: «Опиши сон своими словами…» | `LocalizationManager.swift` | ⬜ |
 | ux-6-04 | Проверить сохранение + отображение в списке ниже | `WellnessAPIService` | ⬜ |
 | ux-6-05 | Первый визит: один coachmark (опционально P2) | `UserDefaults` | ⬜ |
@@ -181,16 +238,50 @@
 
 ---
 
-## Batch 8 — Глубокое исследование: «Не удалось выбрать направление»
+## Batch 8 — Глубокое исследование
 
-**Ошибка:** `wellness_error_pillar` при `setSessionPillar` API fail (не при загрузке карточек).
+### Логика продукта (как задумано в коде)
+
+Экран **«Глубокое исследование»** — это **не отдельные упражнения**, а **5 входов в разговор с героем** с разным «pillar» (стилем ответа):
+
+| Карточка | id | Pillar | Что происходит при тапе |
+|----------|-----|--------|-------------------------|
+| Просто побудь рядом | `presence` | humanistic | → вкладка **Главная** (чат с героем), баннер «Принять себя» |
+| Разбери глубоко | `deep_explore` | jung | → чат, образы/метафоры |
+| Взгляд со стороны | `structured_view` | cognitive | → чат, факты vs интерпретации |
+| Слепые зоны | `blind_spots` | jung | → чат, мягко про паттерны |
+| Только вопрос | `single_question` | humanistic | → чат, один вопрос без нравоучений |
+
+**Код:** `WellnessReflectiveModeScreen.selectMode` → `navigateToCompanionHome(returnTo: .wellnessReflective)` — **переход на героя — ожидаемое поведение**, не баг.
+
+**UX-проблема:** пользователь ожидает контент **внутри карточки**, а получает смену экрана без предупреждения.
+
+### Тексты для экрана (простой язык — внедрить в L10n)
+
+**Подзаголовок экрана** (`wellness_deep_explore_subtitle`) — **без отрицания** («отдельного экрана нет» убрать: это техжаргон для разработчиков, не для пользователя):
+> «Выберите формат — откроется **разговор с героем** в этом стиле.»
+
+**Под каждой карточкой** (заменить `wellness_mode_*_hint`):
+
+| Карточка | Текст для пользователя |
+|----------|------------------------|
+| Просто побудь рядом | «Спокойный разговор без советов — как „принять себя“» |
+| Разбери глубоко | «Поговорим об образах и снах. Это метафоры, не диагноз» |
+| Взгляд со стороны | «Разделим, что факт, а что — ваши догадки» |
+| Слепые зоны | «Мягко посмотрим на привычные реакции» |
+| Только вопрос | «Один честный вопрос — без нравоучений» |
+
+**Баннер перед переходом** (ux-8-05): «Сейчас откроется чат с героем в формате „…“. Продолжить?»
 
 | ID | Задача | Файлы | Статус |
 |----|--------|-------|--------|
 | ux-8-01 | Smoke: `POST /api/wellness/session/pillar` на VPS | server | ⬜ |
-| ux-8-02 | Offline fallback: локально set pillar без API | `WellnessSessionStore` | ⬜ |
-| ux-8-03 | После выбора карточки — `finishWellnessFlow` pattern для back | `WellnessReflectiveModeScreen.swift` | ⬜ |
-| ux-8-04 | Показать 5 карточек с описанием что откроется (чат с героем) | copy review | ⬜ |
+| ux-8-02 | Offline fallback: локально set pillar без API | `WellnessReflectiveModeScreen` | ✅ |
+| ux-8-03 | Back из чата → «Глубокое исследование» (`returnTo: .wellnessReflective`) | `NavigationManager` | ✅ в коде |
+| ux-8-04 | Copy на карточках — таблица выше в L10n | `LocalizationManager.swift` | ⬜ |
+| ux-8-07 | **P1** Info-блок вверху экрана «Глубокое исследование» (subtitle + иконка 💬) | `WellnessReflectiveModeScreen` | ⬜ |
+| ux-8-05 | **P1** Sheet «Продолжить в чате?» перед `navigateToCompanionHome` | `WellnessReflectiveModeScreen` | ⬜ |
+| ux-8-06 | **P2** Опционально: промпт-экран внутри карточки | product | ⬜ |
 
 ---
 
@@ -207,7 +298,89 @@
 
 ---
 
-## Batch 10 — Глобальная производительность UI
+## Batch PERF-0 — VisualLogger / MasterLogger / SETTINGS_DIAG (симулятор)
+
+**Проблема:** мини-экран «📋 логи Все» в симуляторе (DEBUG) — `VisualLogView` в `ALADDINApp` overlay. На реальном устройстве (RELEASE) по умолчанию **не показывается**.
+
+**Влияние на perf (симулятор):** **ДА, заметное**
+- Каждый лог → `DispatchQueue.main.async` → `@Published logs` → перерисовка overlay
+- Сохранение в UserDefaults на каждую строку
+- Сетевые логи (`metrics/upload`, family/stats) обновляют UI 10–30 раз/сек
+- Дубли: `MasterLogger` → `SettingsDiagnosticsLogger` + `VisualLogger` + `print`
+- Искажает FPS-метрики в симуляторе (Support 36 FPS мог быть частично из-за overlay + фоновый sync)
+
+**Решение:** Xcode Console достаточно для ежедневной отладки. Overlay — opt-in.
+
+| ID | Задача | Файлы | Статус |
+|----|--------|-------|--------|
+| perf-0-01 | VisualLogger overlay **выкл по умолчанию** (DEBUG + RELEASE); флаг `enable_visual_logging` | `ALADDINApp.swift`, `MasterLogger.swift`, `VisualLogger.swift` | ✅ |
+| perf-0-02 | `VisualLogger.log` — no-op когда overlay выкл (не трогать main thread) | `VisualLogger.swift` | ✅ |
+| perf-0-03 | RELEASE: один канал логов — убрать дубль SETTINGS_DIAG + MasterLogger + print | `SettingsDiagnosticsLogger.swift`, `MasterLogger.swift` | ⬜ |
+| perf-0-04 | Док: как включить overlay на устройстве (`UserDefaults enable_visual_logging=true`) | `.cursor/rules/aladdin-diagnostic-exports.mdc` | ⬜ |
+
+---
+
+## Batch PERF-1 — Главная: cold start < 300 ms UI, данные < 1 с
+
+**Замер из логов:** `MainDashboard` **3.154 с** (сеть ~0.44 с, overhead ~2.7 с).
+
+| ID | Задача | Файлы | Статус |
+|----|--------|-------|--------|
+| perf-1-01 | **Один bootstrap** загрузки: убрать дубль `.task onAppear` + `.onAppear requestRefreshDebounced` | `01_MainScreen.swift`, `MainViewModel.swift` | ⬜ |
+| perf-1-02 | `endScreenLoad` — по первому интерактивному кадру, не после subscription sync | `MainViewModel.swift`, `PerformanceMonitor.swift` | ⬜ |
+| perf-1-03 | Skeleton / кеш дашборда мгновенно; API в фоне | `01_MainScreen.swift` | ⬜ |
+| perf-1-04 | Lazy init `AntivirusManager` (не на первом paint главной) | `AntivirusManager.swift` | ⬜ |
+| perf-1-05 | Отложить `MetricsService` + `PerformanceMonitor` на +2 с после launch | `ALADDINApp.swift`, `PerformanceMonitor.swift` | ⬜ |
+| perf-1-06 | Отложить `syncSubscriptionOnMainScreenAppear` до после первого кадра | `01_MainScreen.swift`, `SubscriptionManager.swift` | ⬜ |
+
+**Цель:** первый интерактивный кадр **< 300 ms**, полные данные дашборда **< 1 с**.
+
+---
+
+## Batch PERF-2 — Support FPS + фоновая нагрузка
+
+**Истинная причина FPS 36:** не только FAQ — совпадение с `syncWithServer`, `POST subscription/events/batch`, `MetricsService upload`, memory timer.
+
+| ID | Задача | Файлы | Статус |
+|----|--------|-------|--------|
+| perf-2-01 | Отложить `syncWithServer` / metrics batch пока открыт Support | `SubscriptionManager.swift`, `13_SupportScreen.swift` | ⬜ |
+| perf-2-02 | `MetricsService` — очередь off main thread | `MetricsService` (найти файл) | ⬜ |
+| perf-2-03 | FAQ: одна раскрытая карточка; убрать `.spring()` на 10 карточках | `13_SupportScreen.swift` | ⬜ |
+| perf-2-04 | Instruments Time Profiler: Support scroll 5 с | QA runbook | ⬜ |
+
+---
+
+## Batch FIX-NOTIF — NotificationService недоступен
+
+**Причина:** `SettingsScreen` → `SettingsViewModel()` без DI → `notificationService == nil`.
+
+| ID | Задача | Файлы | Статус |
+|----|--------|-------|--------|
+| fix-notif-01 | `initializeNotifications()` через `NotificationManager.shared` если DI nil | `SettingsViewModel.swift` | ⬜ |
+| fix-notif-02 | Или inject `NotificationServiceAdapter` из `AppCoordinator` | `05_SettingsScreen.swift` | ⬜ |
+| fix-notif-03 | Симулятор: понятный hint «push недоступен», не `❌` | `SettingsViewModel.swift` | ⬜ |
+
+---
+
+## Batch FIX-SF — SF Symbols iOS 17
+
+| ID | Задача | Файлы | Статус |
+|----|--------|-------|--------|
+| fix-sf-01 | `iphone.and.arrow.forward.inward` → fallback `iphone.and.arrow.forward` | `05_SettingsScreen.swift`, `NavigationManager.swift` | ⬜ |
+| fix-sf-02 | `waveform.badge.mic` → fallback `waveform` / `mic.fill` | `05_SettingsScreen.swift`, `VoiceNotesScreen.swift` | ⬜ |
+
+---
+
+## Batch FIX-SETTINGS — тройное сохранение notifications
+
+| ID | Задача | Файлы | Статус |
+|----|--------|-------|--------|
+| fix-settings-01 | Флаг `suppressRemoteNotificationServerLoop` на init Settings | `SettingsViewModel.swift` | ⬜ |
+| fix-settings-02 | Один debounced POST вместо 2× `/api/settings/notifications/update` | `SettingsViewModel.swift`, `NotificationAppSettingsSync` | ⬜ |
+
+---
+
+## Batch 10 — Глобальная производительность навигации
 
 | ID | Задача | Статус |
 |----|--------|--------|
@@ -218,14 +391,16 @@
 
 ---
 
-## Приоритет выполнения (рекомендация)
+## Приоритет выполнения (актуально 2026-06-11)
 
 | Приоритет | Batch | Почему |
 |-----------|-------|--------|
-| P0 | **5** (back nav), **6** (dreams input), **2** (IoT 404) | Блокеры UX, красные ошибки |
-| P1 | **3** (support freeze), **7** (hero loading), **8** (deep explore) | Ежедневное использование |
-| P2 | **4** (contacts), **9** (legal copy), **1** (antifake find) | Контент/ discoverability |
-| P3 | **10** (global perf) | Системная оптимизация |
+| P0 | **PERF-1** (главная 3.1 с), **ux-2-deploy** ✅, **ux-verify-01** | Холодный старт — главная боль |
+| P0 | **perf-0** ✅ overlay off | Честные замеры в симуляторе |
+| P1 | **PERF-2**, **FIX-NOTIF**, **ux-5-04** | FPS Support, push в настройках, wellness back |
+| P1 | **3** ✅ код, **7** ✅ код — device QA | Support / Hero |
+| P2 | **FIX-SF**, **FIX-SETTINGS**, **ux-7-04/05**, **ux-8-04** | Полировка |
+| P2 | **ux-1-03**, **ux-5-05** UITest | Discoverability + regression |
 
 ---
 
@@ -252,7 +427,7 @@
 
 ## ВЕРИФИКАЦИЯ: каждое предложение отзыва (честный статус)
 
-> **Важно:** правки есть в **локальном коде**, commit/push **не делался**. На телефоне build 229 поведение **ещё старое**, пока не соберёте новый билд.
+> **Build 230** запушен (`32387ab0`). UX-батчи 1–9 в коде. **PERF-0** (VisualLogger off) — локально, не в 230. VPS IoT deploy — ✅.
 
 ### Пункт 1 — Antifake / 140+ задач: где на телефоне?
 
@@ -266,16 +441,17 @@
 
 | Ваше замечание | Статус | Детали |
 |----------------|--------|--------|
-| Тумблер IoT → красная ошибка | 🟡 **Частично** | iOS: редирект в Device Hub + нормальные тексты ошибок. Backend: `iot_security_agent` в `components.py` — **нужен deploy на VPS** |
-| На телефоне сейчас | 🔴 **Может остаться 404** | Пока сервер не обновлён |
+| Тумблер IoT → красная ошибка | 🟡 **Частично** | iOS: редирект в Device Hub + нормальные тексты. Backend: `iot_security_agent` — **deploy VPS ✅** (403 auth, не 404) |
+| На телефоне сейчас | 🟡 **Проверить на build 230** | После deploy повторить toggle IoT |
 
 ### Пункт 3 — Помощь зависает + медленно везде
 
 | Ваше замечание | Статус | Детали |
 |----------------|--------|--------|
 | Support — ничего не нажимается | 🟡 **Код готов** | FAQ 10+«ещё», debounce 300ms, убран glass, Telegram сверху — `13_SupportScreen.swift` |
-| Переходы 1–2 сек везде | 🔴 **Не сделано** | Batch 10: Instruments, отложенные `.task`, audit NavigationManager |
-| Мгновенный отклик | ⬜ **Цель не достигнута** | ux-10-01…04 |
+| Переходы 1–2 сек везде | 🔴 **Подтверждено логами** | Главная 3.15 с — **PERF-1**; навигация — ux-10 |
+| Мгновенный отклик | ⬜ **Цель не достигнута** | perf-1-01…06, ux-10-01…04 |
+| FPS Support 36 | 🟡 **Анализ** | Overlay логов (симулятор) + фоновый sync — **PERF-0** ✅ + **PERF-2** |
 
 ### Пункт 4 — Контакты: Telegram, убрать адрес
 
@@ -349,7 +525,7 @@
 |-------------|---------|
 | «Каждое слово отработано» | 🔴 **ОПРОВЕРГАЮ** — ~70% в коде, ~30% открыто (perf, VPS, QA на устройстве, подсказки чипов, все UITest) |
 | «Назад на все карточки AI поддержки» | 🟡 **ЧАСТИЧНО ПОДТВЕРЖДАЮ** — основные 7 экранов в коде; опросы и edge cases — риск; **на build 229 ещё сломано** |
-| «Antifake найдёте на телефоне» | 🟡 **После нового билда** — путь: Защита → карточка / «Открыть проверку» |
+| «Antifake найдёте на телефоне» | 🔴 **ОПРОВЕРГАЮ для вашего пути** — Hub есть в коде, но **не на экране Защиты**; нужен ux-1-06 |
 | «IoT исправлен» | 🟡 **После deploy VPS** |
 | «Support не зависает» | 🟡 **После нового билда** |
 | «Сны — текст виден» | ✅ **В коде да** |
@@ -359,16 +535,56 @@
 
 ## Оставшиеся задачи (актуальный backlog)
 
-| ID | Batch | Задача | Приоритет |
-|----|-------|--------|-----------|
-| ux-verify-01 | QA | Собрать билд с локальными правками и пройти 8 пунктов на устройстве | P0 |
-| ux-2-deploy | 2 | Deploy `components.py` на VPS 149.154.65.180:8002 | P0 |
-| ux-5-04 | 5 | Assessments hub/flow: `navigateToWellnessScreen` вместо `navigateTo` | P0 |
-| ux-5-05 | 5 | UITest: back из Dreams, Reflective, Timeline → AI поддержка | P1 |
-| ux-7-04 | 7 | Tooltip/sheet: что значат чипы (доверие, настроение, шаги) | P1 |
-| ux-7-05 | 7 | Глобальный контраст StormMesh (не только companion) | P2 |
-| ux-8-01 | 8 | Smoke VPS: `POST /api/wellness/session/pillar` | P1 |
-| ux-8-04 | 8 | Copy на 5 карточках глубокого исследования | P2 |
-| ux-1-03 | 1 | Coachmark первого входа в Antifake Hub | P2 |
-| ux-10-01…04 | 10 | Глобальная perf навигации <200ms | P1 |
-| ux-commit | — | Commit + push UX batches (по запросу) | — |
+### Цели perf
+- Первый интерактивный кадр главной: **< 300 ms**
+- Полные данные дашборда: **< 1 с**
+- Переход между экранами (ощущение): **< 200 ms**
+
+### Сводная таблица батчей
+
+| Batch | Приоритет | Статус | Cursor todo id |
+|-------|-----------|--------|----------------|
+| VPS-IoT | P0 | ✅ deploy | ux-2-iot |
+| PERF-0 VisualLogger | P0 | ✅ overlay off (локально) | perf-0-logger |
+| PERF-1 Главная | P0 | ⬜ | perf-1-main |
+| PERF-2 Support | P1 | ⬜ | perf-2-support |
+| FIX-NOTIF | P1 | ⬜ | fix-notif |
+| FIX-SF | P2 | ⬜ | fix-sf |
+| FIX-SETTINGS | P2 | ⬜ | fix-settings |
+| UX batches 1–9 | mixed | 🟡 код в 230, QA ⬜ | ux-* |
+| Batch 10 nav | P1 | ⬜ | ux-10-perf |
+
+### Детальный backlog
+
+| ID | Batch | Задача | Приоритет | Статус |
+|----|-------|--------|-----------|--------|
+| ux-verify-01 | QA | Build 230 + PERF-0 на симуляторе: 8 пунктов отзыва на устройстве | P0 | ⬜ |
+| ux-2-deploy | 2 | Deploy `components.py` VPS | P0 | ✅ |
+| perf-0-01…02 | PERF-0 | VisualLogger off by default | P0 | ✅ |
+| perf-0-03 | PERF-0 | Убрать дубли SETTINGS_DIAG в RELEASE | P2 | ⬜ |
+| perf-1-01…06 | PERF-1 | Главная cold start | P0 | ⬜ |
+| perf-2-01…04 | PERF-2 | Support FPS + metrics off main | P1 | ⬜ |
+| fix-notif-01…03 | FIX-NOTIF | Push / NotificationService в Settings | P1 | ⬜ |
+| fix-sf-01…02 | FIX-SF | SF Symbol fallbacks iOS 17 | P2 | ⬜ |
+| fix-settings-01…02 | FIX-SETTINGS | Один save notifications | P2 | ⬜ |
+| ux-6-01 | 6 | Глобальный readable input wellness | P0 | ✅ |
+| ux-6-06 | 6 | Dream journal API/offline | P0 | ⬜ |
+| ux-1-06…09 | 1 | Antifake на NetworkProtection + Share help | P0/P1 | ⬜ |
+| ux-8-04…07 | 8 | Reflective: copy + banner + confirm | P1 | ⬜ |
+| ux-5-04 | 5 | Assessments: `navigateToWellnessScreen` | P1 | ⬜ |
+| ux-5-05 | 5 | UITest wellness back nav | P1 | ⬜ |
+| ux-7-04 | 7 | Tooltip чипов героя | P1 | ⬜ |
+| ux-7-05 | 7 | Глобальный контраст StormMesh | P2 | ⬜ |
+| ux-8-01 | 8 | Smoke VPS wellness pillar | P1 | ⬜ |
+| ux-8-04 | 8 | Copy 5 карточек reflective | P2 | ⬜ |
+| ux-1-03 | 1 | Antifake coachmark | P2 | ⬜ |
+| ux-10-01…04 | 10 | Nav perf <200ms | P1 | ⬜ |
+| ux-commit | — | Commit PERF-0 + perf fixes (по запросу) | — | ⬜ |
+
+### Шум в логах (не блокеры)
+
+| Симптом | Причина | Действие |
+|---------|---------|----------|
+| `boringssl_metrics` | Apple system | Игнорировать |
+| Дубли SETTINGS_DIAG + MasterLogger | Два канала | perf-0-03 |
+| `Notification settings saved` ×3 | init + pullFromServer + sinks | fix-settings-01 |

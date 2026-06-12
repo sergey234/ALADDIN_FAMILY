@@ -48,6 +48,87 @@ def _register_device(device_id: str) -> str:
     return token
 
 
+def _multipart_audio(token: str, extra_headers: dict | None) -> tuple[int, dict]:
+    """Minimal WAV upload — af-11 media path (sync or queued)."""
+    boundary = "AntifakeSmokeBoundary"
+    wav_header = (
+        b"RIFF$\x00\x00\x00WAVEfmt \x10\x00\x00\x00\x01\x00\x01\x00"
+        b"\x44\xac\x00\x00\x88X\x01\x00\x02\x00\x10\x00data\x00\x00\x00\x00"
+    )
+    body = bytearray()
+    body.extend(f"--{boundary}\r\n".encode())
+    body.extend(b'Content-Disposition: form-data; name="file"; filename="smoke.wav"\r\n')
+    body.extend(b"Content-Type: audio/wav\r\n\r\n")
+    body.extend(wav_header)
+    body.extend(f"\r\n--{boundary}--\r\n".encode())
+
+    headers = {"Content-Type": f"multipart/form-data; boundary={boundary}"}
+    if extra_headers:
+        headers.update(extra_headers)
+    headers["Authorization"] = f"Bearer {token}"
+
+    req = urllib.request.Request(
+        f"{BASE}/api/antifake/check/audio",
+        data=bytes(body),
+        headers=headers,
+        method="POST",
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=60) as resp:
+            raw = resp.read().decode()
+            return resp.status, json.loads(raw) if raw else {}
+    except urllib.error.HTTPError as exc:
+        raw = exc.read().decode()
+        try:
+            return exc.code, json.loads(raw)
+        except json.JSONDecodeError:
+            return exc.code, {"raw": raw}
+
+
+def _smoke_media_job_poll(token: str, smoke_headers: dict) -> list[str]:
+    failures: list[str] = []
+    code, body = _multipart_audio(token, smoke_headers)
+    if code not in (200, 202):
+        failures.append(f"check/audio expected 200/202 got {code}: {body}")
+        return failures
+
+    status = body.get("status")
+    job_id = body.get("job_id")
+    if status == "completed":
+        if body.get("verdict") not in ("likely_fake", "uncertain", "likely_real"):
+            failures.append(f"audio sync invalid verdict {body}")
+        return failures
+
+    if status != "queued" or not job_id:
+        failures.append(f"audio expected queued/completed got {body}")
+        return failures
+
+    for _ in range(30):
+        poll_code, poll_body = _request(
+            "GET",
+            f"/api/antifake/jobs/{job_id}",
+            None,
+            token,
+            extra_headers=smoke_headers,
+        )
+        if poll_code != 200:
+            failures.append(f"jobs poll expected 200 got {poll_code}")
+            return failures
+        if poll_body.get("status") == "completed" or poll_body.get("verdict"):
+            if poll_body.get("verdict") not in ("likely_fake", "uncertain", "likely_real"):
+                failures.append(f"audio poll invalid verdict {poll_body}")
+            return failures
+        if poll_body.get("status") == "failed":
+            failures.append(f"audio job failed: {poll_body}")
+            return failures
+        import time
+
+        time.sleep(1)
+
+    failures.append("audio job poll timeout")
+    return failures
+
+
 def main() -> int:
     failures: list[str] = []
 
@@ -109,6 +190,21 @@ def main() -> int:
         failures.append(f"check/url expected 200 got {code}")
     elif url_body.get("verdict") not in ("likely_fake", "uncertain", "likely_real"):
         failures.append(f"url invalid verdict {url_body}")
+
+    code, metrics = _request(
+        "GET",
+        "/api/antifake/metrics",
+        None,
+        token,
+        extra_headers=smoke_headers,
+    )
+    if code != 200:
+        failures.append(f"metrics expected 200 got {code}: {metrics}")
+    elif "checks_total" not in metrics:
+        failures.append(f"metrics missing checks_total: {metrics}")
+
+    if os.environ.get("ANTIFAKE_SMOKE_POLL_JOB") == "1" and smoke_headers:
+        failures.extend(_smoke_media_job_poll(token, smoke_headers))
 
     report = {"pass": len(failures) == 0, "failures": failures}
     print(json.dumps(report, indent=2, ensure_ascii=False))

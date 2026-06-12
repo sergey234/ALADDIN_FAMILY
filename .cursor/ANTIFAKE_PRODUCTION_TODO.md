@@ -1,6 +1,9 @@
 # Anti-Fake Production — Cursor Todo (100% deepfakes)
 
-**Создано:** 2026-06-09 · **Цель:** полноценная прод-защита от фейков (голос · видео · звонки · новости · документы · URL) **без mock / wildcard / пустых `result`**.  
+**Создано:** 2026-06-09 · **Обновлено:** 2026-06-11  
+**Мастер-план (single source):** `.cursor/ANTIFAKE_MASTER_ROADMAP.md`  
+**Тексты Apple limits:** `docs/ANTIFAKE_APPLE_LIMITS_AND_CLAIMS.md`  
+**Цель:** полноценная прод-защита от фейков (голос · видео · звонки · новости · документы · URL) **без mock / wildcard / пустых `result`**.  
 **Синхронизация:** `.cursor/SECURITY_138_MASTER_TODO.md` § AF — **обновлять оба файла** при закрытии `af-*` задач.  
 **Общий план 138:** `docs/SECURITY_138_GAP_ANALYSIS.md`  
 **Связанный аудит:** разговор 2026-06-09 (прод-тесты SSH `~/.ssh/aladdin_server`, `aladdin-ai.ru`).  
@@ -116,12 +119,12 @@ Async: `POST` → `{ "job_id": "uuid", "status": "queued" }` · `GET /jobs/{id}`
 
 | ID | Задача | Статус |
 |----|--------|--------|
-| `af-3-01` | Job queue (Redis + RQ worker unit `aladdin-antifake-worker.service`) | ⬜ |
-| `af-3-02` | Таблица `antifake_jobs` (id, user_id, type, status, verdict JSON, latency_ms) | ⬜ |
-| `af-3-03` | Worker: audio → voice cloning score | ⬜ |
-| `af-3-04` | Worker: video → deepfake face/voice sync score | ⬜ |
-| `af-3-05` | Worker: document → fake_documents_agent | ⬜ |
-| `af-3-06` | `GET /api/antifake/metrics` — checks_total, fake_detected, p95_latency (user scope) | ⬜ |
+| `af-3-01` | Job queue (Redis + RQ worker unit `aladdin-antifake-worker.service`) | ✅ код |
+| `af-3-02` | Таблица `antifake_jobs` (id, user_id, type, status, verdict JSON, latency_ms) | ✅ |
+| `af-3-03` | Worker: audio → voice cloning score | ✅ via SFM + rule_engine fallback |
+| `af-3-04` | Worker: video → deepfake face/voice sync score | ✅ via SFM + rule_engine fallback |
+| `af-3-05` | Worker: document → fake_documents_agent | ✅ lazy loader path |
+| `af-3-06` | `GET /api/antifake/metrics` — checks_total, fake_detected, p95_latency (user scope) | ✅ by_type |
 | `af-3-07` | Prometheus/Grafana или structured logs + daily rollup cron | ⬜ |
 
 ---
@@ -193,6 +196,7 @@ Async: `POST` → `{ "job_id": "uuid", "status": "queued" }` · `GET /jobs/{id}`
 | `af-8-04` | App Store screenshot + review notes: демо Antifake Hub | ⬜ |
 | `af-8-05` | Privacy Nutrition Labels: audio/video upload disclosure | ⬜ |
 | `af-8-06` | `docs/ANTIFAKE_USER_FACING_CLAIMS.md` — approved marketing list | ⬜ |
+| `af-8-07` | In-app экран «Ограничения Apple» (Hub ℹ️ + Помощь) — текст из `docs/ANTIFAKE_APPLE_LIMITS_AND_CLAIMS.md` | ⬜ |
 
 ---
 
@@ -215,11 +219,11 @@ Async: `POST` → `{ "job_id": "uuid", "status": "queued" }` · `GET /jobs/{id}`
 
 | ID | Задача | Статус |
 |----|--------|--------|
-| `af-10-01` | `client_max_body_size` для `/api/antifake/check/*` (env, default 100MB video) | ⬜ |
-| `af-10-02` | Timeout proxy_read 300s только для antifake upload paths | ⬜ |
-| `af-10-03` | systemd: `aladdin-antifake-worker` + restart policy | ⬜ |
-| `af-10-04` | Deploy script + rollback; rsync `app/routers/antifake.py` | ⬜ |
-| `af-10-05` | Post-deploy: `test_antifake_prod_smoke.py` на prod (SSH) | ⬜ |
+| `af-10-01` | `client_max_body_size` для `/api/antifake/check/*` (env, default 100MB video) | ✅ snippet |
+| `af-10-02` | Timeout proxy_read 300s только для antifake upload paths | ✅ snippet |
+| `af-10-03` | systemd: `aladdin-antifake-worker` + restart policy | ✅ example + deploy script |
+| `af-10-04` | Deploy script + rollback; rsync antifake modules | ✅ `scripts/deploy_antifake_m1.sh` |
+| `af-10-05` | Post-deploy: `test_antifake_prod_smoke.py` на prod (SSH) | ✅ в deploy script |
 
 ---
 

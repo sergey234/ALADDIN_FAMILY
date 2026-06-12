@@ -1,0 +1,22 @@
+# af-10-01 / af-10-02 — nginx upload limits for antifake media (include inside server { })
+#
+# Install:
+#   sudo cp deploy/nginx/antifake-upload-limits.conf.example /etc/nginx/snippets/aladdin-antifake-upload.conf
+#   include /etc/nginx/snippets/aladdin-antifake-upload.conf;  # in aladdin-ai.ru server block
+#   sudo nginx -t && sudo systemctl reload nginx
+
+location ~ ^/api/antifake/check/(audio|video|document)$ {
+    client_max_body_size 100m;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+    proxy_request_buffering off;
+    proxy_pass http://127.0.0.1:8002;
+}
+
+location = /api/antifake/call/analyze {
+    client_max_body_size 100m;
+    proxy_read_timeout 300s;
+    proxy_send_timeout 300s;
+    proxy_request_buffering off;
+    proxy_pass http://127.0.0.1:8002;
+}

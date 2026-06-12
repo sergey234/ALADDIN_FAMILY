@@ -533,6 +533,7 @@ struct WellnessHubScreen: View {
         }
         .buttonStyle(.bordered)
         .tint(.white.opacity(0.85))
+        .accessibilityIdentifier("wellness_hub_timeline_button")
     }
 
     private var exerciseButton: some View {
@@ -565,6 +566,7 @@ struct WellnessHubScreen: View {
         }
         .buttonStyle(.bordered)
         .tint(.purple.opacity(0.9))
+        .accessibilityIdentifier("wellness_hub_reflective_button")
     }
 
     private func outcomeReminderBanner(_ reminder: WellnessOutcomeReminderDTO) -> some View {
@@ -641,6 +643,7 @@ struct WellnessHubScreen: View {
         }
         .buttonStyle(.bordered)
         .tint(.indigo.opacity(0.9))
+        .accessibilityIdentifier("wellness_hub_dream_button")
     }
 
     private var companionButton: some View {

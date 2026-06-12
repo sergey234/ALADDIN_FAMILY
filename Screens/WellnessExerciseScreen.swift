@@ -104,7 +104,6 @@ struct WellnessExerciseScreen: View {
                     title: localizationManager.localized("wellness_exercise_answer_placeholder"),
                     text: $answerText
                 )
-                .textFieldStyle(.roundedBorder)
                 Button {
                     Task { await advance(s) }
                 } label: {

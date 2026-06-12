@@ -47,21 +47,44 @@ struct WellnessMultilineField: View {
     var minHeight: CGFloat = 88
 
     var body: some View {
-        if #available(iOS 16.0, *) {
-            TextField(title, text: $text, axis: .vertical)
-                .lineLimit(lineLimit)
-        } else {
-            ZStack(alignment: .topLeading) {
-                if text.isEmpty {
-                    Text(title)
-                        .foregroundStyle(Color(UIColor.placeholderText))
-                        .padding(.horizontal, 5)
-                        .padding(.vertical, 8)
-                        .allowsHitTesting(false)
+        Group {
+            if #available(iOS 16.0, *) {
+                TextField(title, text: $text, axis: .vertical)
+                    .lineLimit(lineLimit)
+            } else {
+                ZStack(alignment: .topLeading) {
+                    if text.isEmpty {
+                        Text(title)
+                            .foregroundStyle(Color(UIColor.placeholderText))
+                            .padding(.horizontal, 5)
+                            .padding(.vertical, 8)
+                            .allowsHitTesting(false)
+                    }
+                    TextEditor(text: $text)
+                        .frame(minHeight: minHeight)
                 }
-                TextEditor(text: $text)
-                    .frame(minHeight: minHeight)
             }
         }
+        .wellnessReadableInput()
+    }
+}
+
+// MARK: - Readable text input on dark StormMesh wellness screens
+
+struct WellnessReadableInputModifier: ViewModifier {
+    func body(content: Content) -> some View {
+        content
+            .padding(10)
+            .background(Color.white.opacity(0.96))
+            .cornerRadius(10)
+            .foregroundColor(Color.primary)
+            .accentColor(Color(hex: "8B5CF6"))
+    }
+}
+
+extension View {
+    /// Тёмный читаемый текст на белом поле — для всех wellness TextField/TextEditor на тёмном фоне.
+    func wellnessReadableInput() -> some View {
+        modifier(WellnessReadableInputModifier())
     }
 }

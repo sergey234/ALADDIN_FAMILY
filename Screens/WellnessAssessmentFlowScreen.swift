@@ -268,7 +268,8 @@ struct WellnessAssessmentsHubScreen: View {
     ) -> some View {
         Button {
             WellnessSessionStore.setAssessmentFlowKind(kind)
-            navigationManager.navigateTo(.wellnessAssessmentFlow)
+            let returnTo = navigationManager.wellnessReturnScreen ?? .wellnessAssessmentsHub
+            navigationManager.navigateToWellnessScreen(.wellnessAssessmentFlow, returnTo: returnTo)
         } label: {
             VStack(alignment: .leading, spacing: 6) {
                 Text(localizationManager.localized(titleKey))

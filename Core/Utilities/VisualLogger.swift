@@ -32,6 +32,11 @@ class VisualLogger: ObservableObject {
     
     @Published var logs: [LogEntry] = []
     @Published var isVisible: Bool = true
+
+    /// Совпадает с `UserDefaults` key `enable_visual_logging` / MasterLogger.
+    static var isOverlayEnabled: Bool {
+        UserDefaults.standard.bool(forKey: "enable_visual_logging")
+    }
     @Published var showErrorOnly: Bool = false
     @Published var showCopySuccess: Bool = false
     @Published var lastExportPath: String? = nil
@@ -270,6 +275,7 @@ class VisualLogger: ObservableObject {
     private var isLoggingInProgress = false
     
     func log(_ message: String, level: LogLevel = .info, category: String = "SYSTEM", file: String = #file, line: Int = #line) { // ✅ BUILD 115: Добавляем категорию лога
+        guard Self.isOverlayEnabled else { return }
         // ✅ BUILD 113: Внутренняя асинхронность для разрыва петли рекурсии
         // Все операции с UserDefaults и массивом logs должны быть на Main Thread асинхронно
         DispatchQueue.main.async { [weak self] in

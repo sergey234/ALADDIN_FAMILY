@@ -32,8 +32,8 @@ class MetricsService {
     private var lastUploadTime: Date?
     private let queue = DispatchQueue(label: "com.aladdin.metrics", attributes: .concurrent)
 
-    // Timer для автоматической отправки
-    private var uploadTimer: Timer?
+    // Timer для автоматической отправки (off main — PERF-2)
+    private var uploadTimer: DispatchSourceTimer?
 
     // MARK: - Init
 
@@ -53,7 +53,7 @@ class MetricsService {
     }
 
     deinit {
-        uploadTimer?.invalidate()
+        uploadTimer?.cancel()
     }
 
     // MARK: - Public Methods
@@ -217,22 +217,25 @@ class MetricsService {
      * Запуск периодической отправки метрик
      */
     private func startPeriodicUpload() {
-        DispatchQueue.main.async {
-            self.uploadTimer = Timer.scheduledTimer(
-                withTimeInterval: self.uploadInterval,
-                repeats: true
-            ) { [weak self] _ in
-                self?.queue.async {
-                    self?.uploadMetricsNow()
-                }
-            }
+        let timer = DispatchSource.makeTimerSource(queue: queue)
+        timer.schedule(deadline: .now() + uploadInterval, repeating: uploadInterval)
+        timer.setEventHandler { [weak self] in
+            guard let self else { return }
+            if SupportScreenPerformanceGuard.isSupportVisible { return }
+            self.uploadMetricsNow()
         }
+        timer.resume()
+        uploadTimer = timer
     }
 
     /**
      * Отправка метрик на сервер немедленно
      */
     private func uploadMetricsNow(completion: ((Result<Void, Error>) -> Void)? = nil) {
+        if SupportScreenPerformanceGuard.isSupportVisible {
+            completion?(.success(()))
+            return
+        }
         // Проверяем, есть ли метрики для отправки
         guard !pendingMetrics.isEmpty else {
             completion?(.success(()))

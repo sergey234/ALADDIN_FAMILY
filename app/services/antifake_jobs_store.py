@@ -92,6 +92,22 @@ def fail_job(job_id: str, error: str) -> None:
         )
 
 
+def mark_job_processing(job_id: str) -> None:
+    ensure_table()
+    now = datetime.now(timezone.utc)
+    with engine.begin() as conn:
+        conn.execute(
+            text(
+                """
+                UPDATE antifake_jobs
+                SET status = 'processing', updated_at = :now
+                WHERE id = CAST(:id AS UUID) AND status = 'queued'
+                """
+            ),
+            {"id": job_id, "now": now},
+        )
+
+
 def get_job(job_id: str, user_id: int) -> Optional[Dict[str, Any]]:
     ensure_table()
     with engine.connect() as conn:
@@ -143,9 +159,27 @@ def metrics_for_user(user_id: int) -> Dict[str, Any]:
             {"user_id": int(user_id)},
         ).mappings().first()
 
+        type_rows = conn.execute(
+            text(
+                """
+                SELECT job_type, COUNT(*) AS cnt
+                FROM antifake_jobs
+                WHERE user_id = :user_id AND status = 'completed'
+                GROUP BY job_type
+                """
+            ),
+            {"user_id": int(user_id)},
+        ).mappings().all()
+
+    by_type = {"text": 0, "audio": 0, "video": 0, "call": 0, "document": 0}
+    for item in type_rows:
+        key = str(item["job_type"] or "")
+        if key in by_type:
+            by_type[key] = int(item["cnt"] or 0)
+
     return {
         "checks_total": int(row["checks_total"] or 0),
         "fake_detected": int(row["fake_detected"] or 0),
-        "by_type": {"text": 0, "audio": 0, "video": 0, "call": 0},
+        "by_type": by_type,
         "latency_p95_ms": int(row["avg_latency_ms"] or 0),
     }

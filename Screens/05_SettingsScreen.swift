@@ -310,7 +310,7 @@ struct SettingsScreen: View {
                 Divider()
 
                 appNavigationRow(
-                    icon: "iphone.and.arrow.forward.inward",
+                    icon: SFSymbolCompat.joinDevice,
                     title: viewModel.localizedStrings.settingsJoinDeviceTitle,
                     subtitle: viewModel.localizedStrings.settingsJoinDeviceSubtitle
                 ) {
@@ -321,7 +321,7 @@ struct SettingsScreen: View {
                 Divider()
 
                 appNavigationRow(
-                    icon: "waveform.badge.mic",
+                    icon: SFSymbolCompat.voiceNotes,
                     title: localizationManager.localized("voice_notes_title"),
                     subtitle: localizationManager.localized("voice_notes_settings_entry_subtitle")
                 ) {
@@ -599,22 +599,8 @@ struct SettingsScreen: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            // ✅ BUILD 100: Логирование загрузки экрана перемещено из testLogger в .onAppear
-            // Это предотвращает избыточное логирование при пересоздании View
             logger.screenLoad("SettingsScreen")
-            SettingsDiagnosticsLogger.shared.logSection(
-                "SettingsScreen",
-                function: #function,
-                message: "onAppear"
-            )
             viewModel.initializeView()
-        }
-        .onDisappear {
-            SettingsDiagnosticsLogger.shared.logSection(
-                "SettingsScreen",
-                function: #function,
-                message: "onDisappear"
-            )
         }
         .sheet(isPresented: $viewModel.showProfileEdit) {
             ProfileEditView()
