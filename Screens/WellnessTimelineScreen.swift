@@ -96,7 +96,7 @@ struct WellnessTimelineScreen: View {
 
     private var header: some View {
         HStack {
-            Button { navigationManager.goBack() } label: {
+            Button { navigationManager.wellnessGoBack() } label: {
                 Image(systemName: "chevron.left")
                     .font(.body.weight(.semibold))
             }

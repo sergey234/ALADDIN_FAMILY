@@ -40,7 +40,7 @@ struct WellnessConsentScreen: View {
 
                 if !embeddedInHome {
                     Button {
-                        navigationManager.goBack()
+                        navigationManager.wellnessGoBack()
                     } label: {
                         Text(localizationManager.localized("wellness_consent_decline"))
                             .frame(maxWidth: .infinity)

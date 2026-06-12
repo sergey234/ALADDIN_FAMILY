@@ -46,6 +46,18 @@ struct CompanionDialogueStrip: View {
                     .frame(maxWidth: .infinity, alignment: .trailing)
             }
 
+            if isSending {
+                HStack(spacing: 8) {
+                    ProgressView()
+                        .controlSize(.small)
+                    Text(localizationManager.localized("companion_sending_reply"))
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .accessibilityIdentifier("companion_sending_indicator")
+            }
+
             if let (idx, assistant) = lastAssistantPair {
                 Text(assistant.text.isEmpty ? "…" : assistant.text)
                     .font(.title3.weight(.medium))

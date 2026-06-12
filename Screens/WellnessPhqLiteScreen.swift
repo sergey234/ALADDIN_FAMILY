@@ -64,7 +64,7 @@ struct WellnessPhqLiteScreen: View {
 
     private var header: some View {
         HStack {
-            Button { navigationManager.goBack() } label: {
+            Button { navigationManager.wellnessGoBack() } label: {
                 Image(systemName: "chevron.left")
                     .font(.body.weight(.semibold))
             }
@@ -86,7 +86,7 @@ struct WellnessPhqLiteScreen: View {
                 Text(localizationManager.localized("wellness_assessment_result_mild"))
             }
             Button {
-                navigationManager.goBack()
+                navigationManager.wellnessGoBack()
             } label: {
                 Text(localizationManager.localized("wellness_assessment_finish"))
                     .frame(maxWidth: .infinity)

@@ -119,6 +119,7 @@ ALL_COMPONENTS = [
     "malware_detection_agent",
     "mobile_security_agent",
     "network_security_agent",
+    "iot_security_agent",
     "incident_response_agent",
     "password_security_agent",
     

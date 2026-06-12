@@ -19,58 +19,63 @@ struct CompanionLegalScreen: View {
         ZStack {
             StormMeshBackground(variant: .legal)
             ScrollView {
-            VStack(alignment: .leading, spacing: 16) {
-                Text("Правила AI-компаньона")
-                    .font(.title2.bold())
+                VStack(alignment: .leading, spacing: 16) {
+                    Text(localizationManager.localized("companion_legal_title"))
+                        .font(.title2.bold())
+                        .foregroundColor(.white)
 
-                Text("Для детей и родителей. Соответствие COPPA и 152-ФЗ «О персональных данных».")
-                    .font(.subheadline)
-                    .foregroundStyle(.secondary)
+                    Text(localizationManager.localized("companion_legal_subtitle"))
+                        .font(.subheadline)
+                        .foregroundColor(.white.opacity(0.85))
 
-                if isLoading {
-                    ProgressView()
-                } else if let errorText {
-                    Text(errorText).foregroundStyle(.orange)
-                } else {
-                    ForEach(sections) { section in
-                        legalBlock(section)
+                    if isLoading {
+                        ProgressView()
+                            .tint(.white)
+                    } else if let errorText {
+                        Text(errorText).foregroundStyle(.orange)
+                    } else {
+                        ForEach(sections) { section in
+                            legalBlock(section)
+                        }
                     }
-                }
 
-                VStack(alignment: .leading, spacing: 10) {
-                    Text("Полные документы")
-                        .font(.headline)
-                    Button("Политика конфиденциальности") { showPrivacy = true }
-                    Button("Пользовательское соглашение") { showTerms = true }
-                }
-                .padding(.top, 8)
-
-                Text("Вопросы: support@aladdin-ai.ru")
-                    .font(.caption)
-                    .foregroundStyle(.secondary)
-
-                if let onAcknowledge {
-                    Button {
-                        onAcknowledge()
-                    } label: {
-                        Text("Понятно, продолжить")
-                            .font(.body.bold())
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text(localizationManager.localized("companion_legal_full_docs"))
+                            .font(.headline)
+                            .foregroundColor(.white)
+                        Button(localizationManager.localized("companion_legal_privacy")) { showPrivacy = true }
+                            .foregroundColor(Color(hex: "C4B5FD"))
+                        Button(localizationManager.localized("companion_legal_terms")) { showTerms = true }
+                            .foregroundColor(Color(hex: "C4B5FD"))
                     }
-                    .buttonStyle(.borderedProminent)
-                    .tint(.purple)
                     .padding(.top, 8)
+
+                    Text(localizationManager.localized("companion_legal_contact"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.8))
+
+                    if let onAcknowledge {
+                        Button {
+                            onAcknowledge()
+                        } label: {
+                            Text(localizationManager.localized("companion_legal_ack"))
+                                .font(.body.bold())
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, 14)
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(.purple)
+                        .padding(.top, 8)
+                    }
                 }
+                .padding()
             }
-            .padding()
         }
-        }
-        .navigationTitle("Правила")
+        .navigationTitle(localizationManager.localized("companion_legal_nav_title"))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .confirmationAction) {
-                Button("Закрыть") {
+                Button(localizationManager.localized("companion_legal_close")) {
                     if let onAcknowledge {
                         onAcknowledge()
                     } else {
@@ -107,13 +112,15 @@ struct CompanionLegalScreen: View {
         VStack(alignment: .leading, spacing: 6) {
             Text(section.title)
                 .font(.headline)
+                .foregroundColor(.white)
             Text(section.body)
                 .font(.subheadline)
-                .foregroundStyle(.primary)
+                .foregroundColor(.white.opacity(0.9))
         }
         .padding(12)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .stormGlassCard(cornerRadius: 12)
+        .background(Color.white.opacity(0.12))
+        .cornerRadius(12)
     }
 
     private func load() async {
@@ -124,7 +131,7 @@ struct CompanionLegalScreen: View {
             let resp = try await CompanionAPIService.shared.fetchLegal()
             sections = resp.sections
         } catch {
-            sections = CompanionLegalSection.offlineFallback
+            sections = CompanionLegalSection.offlineFallback(localizationManager: localizationManager)
             errorText = nil
         }
     }

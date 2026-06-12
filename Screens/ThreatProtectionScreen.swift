@@ -39,6 +39,9 @@ struct ThreatProtectionScreen: View {
                         protectionSummaryCard
                             .padding(.horizontal, Spacing.screenPadding)
                         
+                        antifakeQuickAccessCard
+                            .padding(.horizontal, Spacing.screenPadding)
+                        
                         // Группы функций защиты (включая IoT‑защиту внутри семейной группы)
                         VStack(spacing: Spacing.l) {
                             ForEach(ProtectionGroup.allCases) { group in
@@ -119,6 +122,42 @@ struct ThreatProtectionScreen: View {
             "protection_benefit_data",
             "protection_benefit_iot"
         ]
+    }
+    
+    private var antifakeQuickAccessCard: some View {
+        Button {
+            HapticFeedback.selection()
+            if tariffManager.isCategoryAvailable(.deepfakes) {
+                navigationManager.navigateTo(.antifakeHub)
+            } else {
+                navigationManager.navigateTo(.tariffs)
+            }
+        } label: {
+            HStack(spacing: Spacing.m) {
+                Text("🎭")
+                    .font(.system(size: 32))
+                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                    Text(localizationManager.localized("protection_antifake_card_title"))
+                        .font(.headline)
+                        .foregroundColor(.textPrimary)
+                    Text(localizationManager.localized("protection_antifake_card_subtitle"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                        .multilineTextAlignment(.leading)
+                }
+                Spacer()
+                Text(localizationManager.localized("protection_open_check_button"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.primaryBlue)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.primaryBlue)
+            }
+            .padding(Spacing.m)
+            .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .primaryBlue)
+        }
+        .buttonStyle(.plain)
+        .accessibilityLabel(localizationManager.localized("protection_antifake_card_title"))
     }
 }
 

@@ -474,8 +474,7 @@ struct NetworkProtectionScreen: View {
                         viewModel.toggleIotSecuritySync(newValue)
                     },
                     onSettingsTap: {
-                        // Переход на отдельный экран IoT‑защиты
-                        navigationManager.navigateTo(.iotSecurity)
+                        navigationManager.navigateToDeviceHub(tab: .iot)
                     }
                 )
             }

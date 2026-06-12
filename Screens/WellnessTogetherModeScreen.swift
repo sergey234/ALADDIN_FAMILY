@@ -121,6 +121,6 @@ struct WellnessTogetherModeScreen: View {
 
     private func stopAndBack() {
         pauseTimer()
-        navigationManager.goBack()
+        navigationManager.wellnessGoBack()
     }
 }

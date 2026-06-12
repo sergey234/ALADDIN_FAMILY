@@ -117,6 +117,9 @@ struct SupportScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var searchText: String = ""
+    @State private var debouncedSearchText: String = ""
+    @State private var faqVisibleCount: Int = 10
+    @State private var searchDebounceTask: Task<Void, Never>?
     
     // ✅ ЗАДАЧА 26: Roadside Assistance
     @State private var showRoadsideAssistance: Bool = false
@@ -148,12 +151,24 @@ struct SupportScreen: View {
     }
 
     private var filteredFAQIndices: [Int] {
-        let query = searchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let query = debouncedSearchText.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
         guard !query.isEmpty else { return Array(faqItems.indices) }
         return faqItems.indices.filter { idx in
             faqItems[idx].question.lowercased().contains(query) ||
             faqItems[idx].answer.lowercased().contains(query)
         }
+    }
+
+    private var displayedFAQIndices: [Int] {
+        let filtered = filteredFAQIndices
+        let isSearching = !debouncedSearchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        if isSearching { return filtered }
+        return Array(filtered.prefix(faqVisibleCount))
+    }
+
+    private var hasMoreFAQ: Bool {
+        debouncedSearchText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty &&
+        filteredFAQIndices.count > faqVisibleCount
     }
     
     // MARK: - Body
@@ -219,6 +234,8 @@ struct SupportScreen: View {
                         // ✅ ЗАДАЧА 26: Помощь на дороге
                         roadsideAssistanceSection
                         
+                        telegramAboveFAQ
+                        
                         // FAQ
                         faqSection
                         
@@ -246,6 +263,20 @@ struct SupportScreen: View {
             // Переинициализируем FAQ при смене языка
             initializeFAQItems()
         }
+        .onChange(of: searchText) { newValue in
+            searchDebounceTask?.cancel()
+            searchDebounceTask = Task {
+                try? await Task.sleep(nanoseconds: 300_000_000)
+                guard !Task.isCancelled else { return }
+                await MainActor.run {
+                    debouncedSearchText = newValue
+                    faqVisibleCount = 10
+                }
+            }
+        }
+        .safeAreaInset(edge: .bottom, spacing: 0) {
+            telegramStickyBar
+        }
     }
     
     // MARK: - Search Bar
@@ -262,7 +293,8 @@ struct SupportScreen: View {
                 .accessibilityHint(localizationManager.localized("support_search_hint"))
         }
         .padding()
-        .stormGlassCard(cornerRadius: 8)
+        .background(Color(.secondarySystemBackground).opacity(0.92))
+        .cornerRadius(8)
         .padding(.horizontal, 20)
         .accessibilityElement(children: .combine)
         .accessibilityLabel(localizationManager.localized("support_search_label"))
@@ -281,9 +313,9 @@ struct SupportScreen: View {
             
             VStack(spacing: 8) {
                 contactButton(
-                    icon: "💬",
-                    title: localizationManager.localized("support_chat"),
-                    subtitle: localizationManager.localized("support_chat_subtitle"),
+                    systemIcon: "paperplane.fill",
+                    title: localizationManager.localized("support_telegram_write"),
+                    subtitle: localizationManager.localized("support_telegram_subtitle"),
                     color: .blue
                 ) {
                     openSupportURL(AppConfig.supportTelegramURL)
@@ -313,12 +345,28 @@ struct SupportScreen: View {
         .accessibilityLabel(localizationManager.localized("support_contact_methods"))
     }
     
-    private func contactButton(icon: String, title: String, subtitle: String, color: Color, action: @escaping () -> Void) -> some View {
+    private func contactButton(
+        icon: String? = nil,
+        systemIcon: String? = nil,
+        title: String,
+        subtitle: String,
+        color: Color,
+        action: @escaping () -> Void
+    ) -> some View {
         Button(action: action) {
             HStack(spacing: 12) {
-                Text(icon)
-                    .font(.system(size: 32))
-                    .accessibilityLabel(String(format: localizationManager.localized("support_icon_label"), title))
+                Group {
+                    if let systemIcon {
+                        Image(systemName: systemIcon)
+                            .font(.system(size: 28, weight: .semibold))
+                            .foregroundColor(color)
+                    } else {
+                        Text(icon ?? "💬")
+                            .font(.system(size: 32))
+                    }
+                }
+                .frame(width: 36, height: 36)
+                .accessibilityLabel(String(format: localizationManager.localized("support_icon_label"), title))
                 
                 VStack(alignment: .leading, spacing: 4) {
                     Text(title)
@@ -341,14 +389,14 @@ struct SupportScreen: View {
                     .accessibilityLabel(localizationManager.localized("support_go"))
             }
             .padding(12)
-            .stormGlassCard(cornerRadius: 8)
+            .background(Color(.secondarySystemBackground).opacity(0.92))
+            .cornerRadius(8)
             .overlay(
                 RoundedRectangle(cornerRadius: 8)
                     .stroke(color.opacity(0.3), lineWidth: 1)
             )
         }
         .buttonStyle(PlainButtonStyle())
-        .appGlassmorphism()
         .accessibilityLabel("\(title): \(subtitle)")
         .accessibilityHint(String(format: localizationManager.localized("support_tap_hint"), title.lowercased()))
     }
@@ -452,6 +500,65 @@ struct SupportScreen: View {
         }
     }
     
+    // MARK: - Telegram (above FAQ + sticky)
+
+    private var telegramAboveFAQ: some View {
+        Button {
+            openSupportURL(AppConfig.supportTelegramURL)
+        } label: {
+            HStack(spacing: 12) {
+                Image(systemName: "paperplane.fill")
+                    .font(.title3.weight(.semibold))
+                    .foregroundColor(.white)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(localizationManager.localized("support_telegram_write"))
+                        .font(.body.bold())
+                        .foregroundColor(.white)
+                    Text(localizationManager.localized("support_telegram_subtitle"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.85))
+                }
+                Spacer()
+                Image(systemName: "arrow.up.right")
+                    .foregroundColor(.white.opacity(0.9))
+            }
+            .padding(14)
+            .background(
+                LinearGradient(
+                    colors: [Color.blue, Color.blue.opacity(0.75)],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                )
+            )
+            .cornerRadius(12)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, 20)
+        .accessibilityLabel(localizationManager.localized("support_telegram_write"))
+    }
+
+    private var telegramStickyBar: some View {
+        Button {
+            openSupportURL(AppConfig.supportTelegramURL)
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "paperplane.fill")
+                Text(localizationManager.localized("support_telegram_write"))
+                    .font(.subheadline.bold())
+                Spacer()
+                Text("@AladdinchatAI_bot")
+                    .font(.caption)
+                    .opacity(0.9)
+            }
+            .foregroundColor(.white)
+            .padding(.horizontal, 16)
+            .padding(.vertical, 10)
+            .background(Color.blue.opacity(0.95))
+        }
+        .buttonStyle(PlainButtonStyle())
+        .accessibilityLabel(localizationManager.localized("support_telegram_write"))
+    }
+
     // MARK: - FAQ Section
     
     private var faqSection: some View {
@@ -463,9 +570,23 @@ struct SupportScreen: View {
                 .accessibilityLabel(localizationManager.localized("support_faq_label"))
                 .accessibilityAddTraits(.isHeader)
             
-            VStack(spacing: 8) {
-                ForEach(filteredFAQIndices, id: \.self) { idx in
+            LazyVStack(spacing: 8) {
+                ForEach(displayedFAQIndices, id: \.self) { idx in
                     faqCard(item: $faqItems[idx])
+                }
+                if hasMoreFAQ {
+                    Button {
+                        withAnimation(.easeOut(duration: 0.2)) {
+                            faqVisibleCount += 10
+                        }
+                    } label: {
+                        Text(localizationManager.localized("support_faq_show_more"))
+                            .font(.subheadline.bold())
+                            .foregroundColor(.blue)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 12)
+                    }
+                    .buttonStyle(PlainButtonStyle())
                 }
             }
             .padding(.horizontal, 20)
@@ -515,7 +636,8 @@ struct SupportScreen: View {
             }
         }
         .padding(12)
-        .stormGlassCard(cornerRadius: 8)
+        .background(Color(.secondarySystemBackground).opacity(0.88))
+        .cornerRadius(8)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(String(format: localizationManager.localized("support_faq_item"), item.wrappedValue.question))
     }

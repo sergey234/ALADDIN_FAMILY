@@ -132,6 +132,7 @@ struct CompanionConversationBannersSection: View {
                 .foregroundStyle(Color(hex: "A78BFA"))
             Text(localizationManager.localized(pillar.titleKey))
                 .font(.caption.weight(.semibold))
+                .foregroundStyle(Color.white.opacity(0.95))
             Spacer()
             if let wellnessMoodEmoji {
                 Text(wellnessMoodEmoji)
@@ -149,7 +150,7 @@ struct CompanionConversationBannersSection: View {
                 .foregroundStyle(Color(hex: "A78BFA"))
             Text(text)
                 .font(.caption)
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.white.opacity(0.92))
             Spacer()
             Button(action: onDismissEntryBanner) {
                 Image(systemName: "xmark.circle.fill")
@@ -170,7 +171,7 @@ struct CompanionConversationBannersSection: View {
                 .foregroundStyle(Color(hex: "8B5CF6"))
             Text(text)
                 .font(.caption)
-                .foregroundStyle(.secondary)
+                .foregroundStyle(Color.white.opacity(0.82))
                 .fixedSize(horizontal: false, vertical: true)
             Spacer(minLength: 0)
         }
@@ -212,8 +213,12 @@ struct CompanionConversationBannersSection: View {
         bannerChipLabel(icon: icon, label: label, tint: tint)
             .padding(.horizontal, 8)
             .padding(.vertical, 4)
-            .background(tint.opacity(0.18))
+            .background(tint.opacity(0.42))
             .clipShape(Capsule())
+            .overlay(
+                Capsule()
+                    .stroke(Color.white.opacity(0.22), lineWidth: 0.5)
+            )
             .accessibilityElement(children: .combine)
             .accessibilityLabel(accessibilityLabel)
             .accessibilityIdentifier(id)
@@ -226,7 +231,7 @@ struct CompanionConversationBannersSection: View {
                 .foregroundStyle(tint)
             Text(label)
                 .font(.caption2.weight(.semibold))
-                .foregroundStyle(.primary)
+                .foregroundStyle(Color.white.opacity(0.95))
                 .lineLimit(1)
         }
     }

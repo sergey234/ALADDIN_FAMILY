@@ -75,6 +75,10 @@ struct ProtectionGroupSection: View {
         let isCategoryAvailable = tariffManager.isCategoryAvailable(category)
         
         if isCategoryAvailable {
+            if category == .iotThreats {
+                navigationManager.navigateToDeviceHub(tab: .iot)
+                return
+            }
             // ✅ Функция доступна → переход на экран настроек
             if let settingsScreen = category.settingsScreen {
                 navigationManager.navigateTo(settingsScreen)

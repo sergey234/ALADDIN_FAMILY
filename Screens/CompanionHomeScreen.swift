@@ -59,7 +59,12 @@ struct CompanionHomeScreen: View {
         }
         .navigationBarHidden(true)
         .onAppear {
-            tab = initialTab
+            if let raw = navigationManager.companionHomeTargetTab, let picked = Tab(rawValue: raw) {
+                tab = picked
+                navigationManager.companionHomeTargetTab = nil
+            } else {
+                tab = initialTab
+            }
             wellnessTabReady = WellnessSessionStore.hasAcceptedConsent
             if let initialCharacterId, !initialCharacterId.isEmpty {
                 selectedCharacterId = initialCharacterId

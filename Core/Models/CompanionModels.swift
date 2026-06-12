@@ -120,28 +120,30 @@ struct CompanionLegalSection: Codable, Identifiable, Equatable {
     let title: String
     let body: String
 
-    static let offlineFallback: [CompanionLegalSection] = [
-        CompanionLegalSection(
-            id: "ai_disclosure",
-            title: "Искусственный интеллект",
-            body: "Ответы героев создаёт ИИ. Это не человек. Не сообщай пароли и личные данные."
-        ),
-        CompanionLegalSection(
-            id: "coppa_152fz",
-            title: "COPPA и 152-ФЗ",
-            body: "Родитель управляет доступом и памятью компаньона в настройках семьи."
-        ),
-        CompanionLegalSection(
-            id: "voice_recognition_primary",
-            title: "Голос (Apple)",
-            body: "Сначала речь распознаётся на iPhone через Apple (Siri). ALADDIN получает только текст."
-        ),
-        CompanionLegalSection(
-            id: "voice_stt_fallback",
-            title: "Запасной путь ALADDIN",
-            body: "Если Apple не справилась, короткая запись (до 15 с) может обработаться на сервере ALADDIN и сразу удалиться. Включено только с «Облачным AI»."
-        ),
-    ]
+    static func offlineFallback(localizationManager: LocalizationManager) -> [CompanionLegalSection] {
+        [
+            CompanionLegalSection(
+                id: "ai_disclosure",
+                title: localizationManager.localized("companion_legal_offline_ai_title"),
+                body: localizationManager.localized("companion_legal_offline_ai_body")
+            ),
+            CompanionLegalSection(
+                id: "coppa_152fz",
+                title: localizationManager.localized("companion_legal_offline_parent_title"),
+                body: localizationManager.localized("companion_legal_offline_parent_body")
+            ),
+            CompanionLegalSection(
+                id: "voice_recognition_primary",
+                title: localizationManager.localized("companion_legal_offline_voice_title"),
+                body: localizationManager.localized("companion_legal_offline_voice_body")
+            ),
+            CompanionLegalSection(
+                id: "wellness_disclaimer",
+                title: localizationManager.localized("companion_legal_offline_wellness_title"),
+                body: localizationManager.localized("companion_legal_offline_wellness_body")
+            ),
+        ]
+    }
 }
 
 struct CompanionLegalResponse: Codable {

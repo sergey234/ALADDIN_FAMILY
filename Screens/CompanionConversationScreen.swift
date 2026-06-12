@@ -33,6 +33,7 @@ struct CompanionConversationScreen: View {
     @State private var sessionId: String = ""
     @State private var heroEmotion: CompanionHeroEmotion = .idle
     @State private var isSending = false
+    @State private var isLoadingState = true
     @State private var lipSyncPhase: CGFloat = 0
     @State private var errorText: String?
     @State private var feedbackBusyId: UUID?
@@ -116,7 +117,24 @@ struct CompanionConversationScreen: View {
     }
 
     private var conversationStyledCore: some View {
-        conversationBodyCore
+        ZStack {
+            conversationBodyCore
+            if isLoadingState {
+                Color.black.opacity(0.25)
+                    .ignoresSafeArea()
+                VStack(spacing: 12) {
+                    ProgressView()
+                        .scaleEffect(1.2)
+                    Text(localizationManager.localized("companion_loading_hero"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(.white)
+                }
+                .padding(24)
+                .background(Color.black.opacity(0.45))
+                .cornerRadius(16)
+                .accessibilityIdentifier("companion_loading_overlay")
+            }
+        }
             .background {
                 if embeddedInHome {
                     Color.clear
@@ -1167,6 +1185,8 @@ struct CompanionConversationScreen: View {
     }
 
     private func loadState() async {
+        isLoadingState = true
+        defer { isLoadingState = false }
         if !activeThreadId.isEmpty {
             sessionId = activeThreadId
             await loadThreadHistory(threadId: activeThreadId)

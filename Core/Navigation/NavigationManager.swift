@@ -392,6 +392,17 @@ class NavigationManager: ObservableObject {
         navigateTo(screen)
     }
 
+    /// Назад с wellness subpage: в Hub / Companion+AI поддержка, не на Main.
+    func wellnessGoBack() {
+        if wellnessReturnScreen != nil {
+            finishWellnessFlow()
+        } else if currentScreen != .wellnessHub {
+            popToWellnessHub()
+        } else {
+            goBack()
+        }
+    }
+
     /// После outcome/упражнения: Hub, Companion+вкладка Wellness, или явный return.
     func finishWellnessFlow() {
         let target = wellnessReturnScreen

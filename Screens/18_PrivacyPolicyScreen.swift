@@ -615,7 +615,6 @@ enum PrivacyMainSection: String, CaseIterable {
             return [
                 localizationManager.localized("privacy_policy_section_contacts_content_1"),
                 localizationManager.localized("privacy_policy_section_contacts_content_2"),
-                localizationManager.localized("privacy_policy_section_contacts_content_3"),
                 localizationManager.localized("privacy_policy_section_contacts_content_4")
             ]
         case .wellness:
@@ -734,10 +733,9 @@ enum PrivacyMainSection: String, CaseIterable {
             ]
         case .contacts:
             return [
-                "Email: sergey21-02-84@list.ru",
+                "Telegram: @AladdinchatAI_bot",
                 "Телефон: +7 (927) 005-15-77",
-                "Адрес: Россия, г. Самара",
-                "Чат в приложении ALADDIN AI"
+                "Чат в приложении ALADDIN"
             ]
         case .wellness:
             return [

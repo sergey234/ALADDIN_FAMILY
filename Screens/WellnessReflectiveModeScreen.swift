@@ -17,7 +17,7 @@ struct WellnessReflectiveModeScreen: View {
             ScrollView {
                 VStack(alignment: .leading, spacing: 16) {
                     HStack {
-                        Button { navigationManager.goBack() } label: {
+                        Button { navigationManager.wellnessGoBack() } label: {
                             Image(systemName: "chevron.left")
                                 .font(.body.weight(.semibold))
                         }
@@ -109,13 +109,12 @@ struct WellnessReflectiveModeScreen: View {
         errorText = nil
         defer { isSelecting = false }
         let p = pillar(for: mode.id)
+        WellnessSessionStore.setActivePillar(p)
+        WellnessSessionStore.setExercisePillar(p)
         do {
             _ = try await WellnessAPIService.shared.setSessionPillar(p, forceSwitch: true)
-            WellnessSessionStore.setActivePillar(p)
-            WellnessSessionStore.setExercisePillar(p)
         } catch {
-            errorText = localizationManager.localized("wellness_error_pillar")
-            return
+            // Офлайн / сервер недоступен — pillar уже сохранён локально, продолжаем.
         }
         let label = modeLabel(mode)
         let banner = String(

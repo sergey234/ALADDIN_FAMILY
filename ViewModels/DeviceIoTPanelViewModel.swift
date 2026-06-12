@@ -167,11 +167,19 @@ final class DeviceIoTPanelViewModel: ObservableObject {
     }
 
     private func handleError(_ error: Error) {
-        let presentation = AntifakeCheckFailureHandler.present(
-            error: error,
-            localizationManager: localizationManager
-        )
-        requiresPremiumUpgrade = presentation.requiresPremiumUpgrade
-        errorMessage = presentation.errorMessage
+        let gateOutcome = PremiumGateHandler.outcome(from: error)
+        if gateOutcome.requiresUpgrade {
+            requiresPremiumUpgrade = true
+            errorMessage = gateOutcome.premiumMessage
+                ?? localizationManager.localized("antifake_premium_required_body")
+            return
+        }
+        requiresPremiumUpgrade = false
+        switch NetworkError.from(error) {
+        case .notFound:
+            errorMessage = localizationManager.localized("device_hub_iot_not_found")
+        default:
+            errorMessage = localizationManager.localized("device_hub_iot_enable_failed")
+        }
     }
 }

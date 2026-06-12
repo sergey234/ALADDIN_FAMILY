@@ -28,6 +28,13 @@ struct ProtectionCategoryRow: View {
             
             Spacer()
             
+            if isAvailable, category.settingsScreen != nil {
+                Button(action: onDetailsTap) {
+                    openHubLabel
+                }
+                .buttonStyle(.plain)
+            }
+            
             // Переключатель или баннер
             if isAvailable {
                 ALADDINToggle(isOn: $isEnabled)
@@ -57,17 +64,30 @@ struct ProtectionCategoryRow: View {
         )
         .contentShape(Rectangle())
         .onTapGesture {
-            if isAvailable {
-                // Переключение только для доступных категорий
-                withAnimation {
-                    isEnabled.toggle()
-                }
-                HapticFeedback.selection()
-            } else {
-                // Для недоступных - переход на тарифы
-                onDetailsTap()
-            }
+            guard !isAvailable else { return }
+            onDetailsTap()
         }
+    }
+    
+    @ViewBuilder
+    private var openHubLabel: some View {
+        let titleKey = category == .deepfakes
+            ? "protection_open_check_button"
+            : "protection_open_hub_button"
+        HStack(spacing: 4) {
+            Text(localizationManager.localized(titleKey))
+                .font(.caption.weight(.semibold))
+            Image(systemName: "chevron.right")
+                .font(.caption2.weight(.semibold))
+        }
+        .foregroundColor(.primaryBlue)
+        .padding(.horizontal, Spacing.xs)
+        .padding(.vertical, Spacing.xxs)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.small)
+                .fill(Color.primaryBlue.opacity(0.12))
+        )
+        .accessibilityLabel(localizationManager.localized(titleKey))
     }
 }
 
