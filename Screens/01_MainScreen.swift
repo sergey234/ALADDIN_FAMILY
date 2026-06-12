@@ -29,7 +29,6 @@ struct MainScreen: View {
     @EnvironmentObject private var mainViewModel: MainViewModel
     @State private var hasAppeared = false
     @EnvironmentObject private var subscriptionManager: SubscriptionManager
-    @ObservedObject private var antivirusManager = AntivirusManager.shared
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
     @State private var profileImage: UIImage? = nil

@@ -303,4 +303,22 @@ extension ThreatProtectionCategory {
             ]
         }
     }
+
+    /// ux-2-04: единый маршрут «Открыть хаб» (IoT → Device Hub /iot).
+    @MainActor
+    func openDetails(using navigationManager: NavigationManager, tariffManager: TariffManager) {
+        guard tariffManager.isCategoryAvailable(self) else {
+            navigationManager.navigateTo(.tariffs)
+            return
+        }
+        if self == .iotThreats {
+            navigationManager.navigateToDeviceHub(tab: .iot)
+            return
+        }
+        if let settingsScreen {
+            navigationManager.navigateTo(settingsScreen)
+        } else {
+            navigationManager.navigateTo(.threatProtectionSettings)
+        }
+    }
 }

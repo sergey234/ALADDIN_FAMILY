@@ -679,8 +679,8 @@ class MainViewModel: ObservableObject {
             if pendingFamilyStatsRefresh {
                 print("   - ✅ Принудительное обновление дашборда (изменился состав семьи — ждём /api/family/stats)")
             }
-            print("   - ✅ Запускаем loadDashboardData()...")
-            loadDashboardData()
+            print("   - ✅ Запускаем requestRefreshDebounced() (perf-1: coalesce cold-start API)...")
+            requestRefreshDebounced()
         } else {
             print("   - ⏭️ Пропускаем загрузку (данные свежие)")
             // Всё равно обновляем статус, если он устарел

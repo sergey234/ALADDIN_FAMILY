@@ -256,6 +256,8 @@ struct SupportScreen: View {
             Color.clear.frame(height: 12)
         }
         .task {
+            try? await Task.sleep(nanoseconds: 200_000_000)
+            guard !Task.isCancelled else { return }
             initializeFAQItems()
         }
         .onAppear {

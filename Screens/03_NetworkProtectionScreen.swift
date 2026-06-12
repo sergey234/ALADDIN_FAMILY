@@ -258,6 +258,14 @@ struct NetworkProtectionScreen: View {
         }
         // ✅ УДАЛЕНО: .sheet для showingStatistics и showingHelp (Quick Actions удалены)
         .withToast()
+        .onAppear {
+            if navigationManager.pendingNetworkProtectionExpandThreat {
+                navigationManager.pendingNetworkProtectionExpandThreat = false
+                withAnimation(.easeOut(duration: 0.2)) {
+                    threatProtectionExpanded = true
+                }
+            }
+        }
         .fileImporter(
             isPresented: $showAntivirusFileImporter,
             allowedContentTypes: [.item],

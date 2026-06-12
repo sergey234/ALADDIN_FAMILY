@@ -977,14 +977,21 @@ struct CompanionConversationScreen: View {
                             isInputFocused = true
                         } label: {
                             Text(domain.label)
-                                .font(.caption.weight(.medium))
+                                .font(.caption.weight(.semibold))
+                                .foregroundStyle(Color.white.opacity(0.95))
                                 .padding(.horizontal, 12)
                                 .padding(.vertical, 8)
-                                .background(Color.purple.opacity(0.12))
+                                .background(Color(hex: "8B5CF6").opacity(0.38))
                                 .clipShape(Capsule())
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.white.opacity(0.28), lineWidth: 0.5)
+                                )
                         }
                         .accessibilityLabel(domain.label)
-                        .accessibilityHint(domain.starterPrompt)
+                        .accessibilityHint(
+                            localizationManager.localized("companion_domains_chip_hint")
+                        )
                     }
                 }
             }
@@ -1234,12 +1241,17 @@ struct CompanionConversationScreen: View {
                 HStack(spacing: 8) {
                     ForEach(memoryChips.prefix(6)) { item in
                         Text(item.summary)
-                            .font(.caption2)
+                            .font(.caption2.weight(.semibold))
+                            .foregroundStyle(Color.white.opacity(0.92))
                             .lineLimit(2)
                             .padding(.horizontal, 10)
                             .padding(.vertical, 6)
-                            .background(Color(hex: "6366F1").opacity(0.12))
+                            .background(Color(hex: "6366F1").opacity(0.38))
                             .clipShape(Capsule())
+                            .overlay(
+                                Capsule()
+                                    .stroke(Color.white.opacity(0.22), lineWidth: 0.5)
+                            )
                             .accessibilityIdentifier("companion_memory_chip")
                     }
                 }

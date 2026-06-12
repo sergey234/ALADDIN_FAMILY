@@ -36,6 +36,7 @@ struct CompanionHomeScreen: View {
     @StateObject private var caps = CompanionCapabilitiesService.shared
     @AppStorage("companion_selected_character_id") private var selectedCharacterId: String = "unicorn"
     @AppStorage("companion_active_thread_id") private var activeThreadId: String = ""
+    @AppStorage("companion_home_last_tab") private var persistedTabRaw: Int = Tab.wellness.rawValue
     @State private var tab: Tab = .main
     @State private var availableCharacters: [CompanionCharacterDTO] = []
     @State private var wellnessTabReady = WellnessSessionStore.hasAcceptedConsent
@@ -61,7 +62,10 @@ struct CompanionHomeScreen: View {
         .onAppear {
             if let raw = navigationManager.companionHomeTargetTab, let picked = Tab(rawValue: raw) {
                 tab = picked
+                persistedTabRaw = picked.rawValue
                 navigationManager.companionHomeTargetTab = nil
+            } else if let picked = Tab(rawValue: persistedTabRaw) {
+                tab = picked
             } else {
                 tab = initialTab
             }
@@ -74,10 +78,12 @@ struct CompanionHomeScreen: View {
         .onChange(of: navigationManager.companionHomeTargetTab) { raw in
             guard let raw, let picked = Tab(rawValue: raw) else { return }
             tab = picked
+            persistedTabRaw = picked.rawValue
             navigationManager.companionHomeTargetTab = nil
         }
-        .onChange(of: tab) { _ in
-            if tab != .main, mainConversationPresence == .immersive {
+        .onChange(of: tab) { newTab in
+            persistedTabRaw = newTab.rawValue
+            if newTab != .main, mainConversationPresence == .immersive {
                 mainConversationPresence = .standard
             }
         }

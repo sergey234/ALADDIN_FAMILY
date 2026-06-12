@@ -70,26 +70,7 @@ struct ProtectionGroupSection: View {
     
     private func navigateToCategoryDetails(_ category: ThreatProtectionCategory) {
         HapticFeedback.selection()
-        
-        // Проверяем доступность категории
-        let isCategoryAvailable = tariffManager.isCategoryAvailable(category)
-        
-        if isCategoryAvailable {
-            if category == .iotThreats {
-                navigationManager.navigateToDeviceHub(tab: .iot)
-                return
-            }
-            // ✅ Функция доступна → переход на экран настроек
-            if let settingsScreen = category.settingsScreen {
-                navigationManager.navigateTo(settingsScreen)
-            } else {
-                // Если нет специфичного экрана → общий экран настроек защиты
-                navigationManager.navigateTo(.threatProtectionSettings)
-            }
-        } else {
-            // ✅ Функция недоступна → ВСЕГДА на Тарифы (не на VPN или другие экраны!)
-            navigationManager.navigateTo(.tariffs)
-        }
+        category.openDetails(using: navigationManager, tariffManager: tariffManager)
     }
 }
 

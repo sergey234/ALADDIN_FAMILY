@@ -51,6 +51,9 @@ class NavigationManager: ObservableObject {
 
     /// Вкладка CompanionHome после `finishWellnessFlow` (0 main, 1 wellness, 2 heroes, 3 mine).
     @Published var companionHomeTargetTab: Int?
+
+    /// ux-1-08: при редиректе `.threatProtection` → `.networkProtection` раскрыть блок угроз.
+    @Published var pendingNetworkProtectionExpandThreat: Bool = false
     
     // ✅ Стартовый экран: читаем только флаг онбординга (без записи), чтобы первый кадр SwiftUI
     // не строил OnboardingScreen до `WindowGroup.onAppear` → `initializeNavigation`.
@@ -341,11 +344,14 @@ class NavigationManager: ObservableObject {
     
     /// Переход к экрану
     func navigateTo(_ screen: ALADDINScreen) {
-        logger.navigation(from: currentScreen.displayName, to: screen.displayName, function: #function)
-        
+        let resolved = Self.resolveNavigationTarget(for: screen, navigationManager: self)
+        #if DEBUG
+        logger.navigation(from: currentScreen.displayName, to: resolved.displayName, function: #function)
+        #endif
+
         // ✅ ИСПРАВЛЕНИЕ: Весь NavigationManager работает под @MainActor,
         // поэтому выполняем изменения синхронно, без DispatchQueue.main.async.
-        if case .paymentQR = screen {
+        if case .paymentQR = resolved {
             if currentScreen == .paymentQR {
                 appendLog("⚠️ navigateTo(.paymentQR) отклонён: уже на PaymentQR")
                 return
@@ -369,9 +375,25 @@ class NavigationManager: ObservableObject {
         }
 
         navigationStack.append(currentScreen)
-        currentScreen = screen
+        currentScreen = resolved
         objectWillChange.send()
-        appendLog("➡️ navigateTo(\(screen)) | стек = \(navigationStack)")
+        #if DEBUG
+        appendLog("➡️ navigateTo(\(resolved)) | стек = \(navigationStack)")
+        #endif
+    }
+
+    /// ux-1-08 / ux-10: единая точка alias + без лишней работы на hot path.
+    private static func resolveNavigationTarget(
+        for screen: ALADDINScreen,
+        navigationManager: NavigationManager
+    ) -> ALADDINScreen {
+        switch screen {
+        case .threatProtection:
+            navigationManager.pendingNetworkProtectionExpandThreat = true
+            return .networkProtection
+        default:
+            return screen
+        }
     }
 
     /// «Мир героев» — запоминаем экран-источник для корректного «Назад».
