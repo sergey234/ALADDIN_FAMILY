@@ -42,6 +42,7 @@ class NavigationManager: ObservableObject {
     /// Fraud matrix (B4-05) / deep links → Antifake Hub initial tab + optional text/url mode.
     @Published var pendingAntifakeHubTab: AntifakeHubTab? = nil
     @Published var pendingAntifakeTextMode: AntifakeTextInputMode? = nil
+    @Published var pendingAntifakePostCallPrompt: Bool = false
 
     /// Экран, на который возвращаемся из «Мир героев» (если стек навигации пуст/сброшен).
     @Published private(set) var companionReturnScreen: ALADDINScreen?
@@ -785,11 +786,28 @@ class NavigationManager: ObservableObject {
         appendLog("🛡️ navigateToDeviceHub tab=\(tab.rawValue)")
     }
 
-    func navigateToAntifakeHub(tab: AntifakeHubTab = .text, textMode: AntifakeTextInputMode? = nil) {
+    func navigateToAntifakeHub(
+        tab: AntifakeHubTab = .text,
+        textMode: AntifakeTextInputMode? = nil,
+        postCallPrompt: Bool = false
+    ) {
         pendingAntifakeHubTab = tab
         pendingAntifakeTextMode = textMode
+        if postCallPrompt {
+            pendingAntifakePostCallPrompt = true
+            UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingAntifakePostCallCheck)
+        }
         navigateTo(.antifakeHub)
-        appendLog("🛡️ navigateToAntifakeHub tab=\(tab.rawValue) textMode=\(textMode?.rawValue ?? "nil")")
+        appendLog("🛡️ navigateToAntifakeHub tab=\(tab.rawValue) textMode=\(textMode?.rawValue ?? "nil") postCallPrompt=\(postCallPrompt)")
+    }
+
+    /// af-4-03: consume one-shot post-call upload prompt (NavigationManager + UserDefaults).
+    func consumeAntifakePostCallPromptIfNeeded() -> Bool {
+        let shouldShow = pendingAntifakePostCallPrompt
+            || UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.pendingAntifakePostCallCheck)
+        pendingAntifakePostCallPrompt = false
+        UserDefaults.standard.removeObject(forKey: AppConfig.UserDefaultsKeys.pendingAntifakePostCallCheck)
+        return shouldShow
     }
 
     /// Opens mnemo catalog for SRS review (push / deep link / SRS badge).

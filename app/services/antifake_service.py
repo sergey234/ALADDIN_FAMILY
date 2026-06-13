@@ -28,6 +28,36 @@ FAKE_TEXT_PATTERNS: Tuple[Tuple[str, str], ...] = (
     ("scam", "ваш счёт заблокирован"),
 )
 
+AUTHORITY_SPOOF_LABELS = (
+    "банк",
+    "bank",
+    "сбер",
+    "втб",
+    "тинькофф",
+    "tinkoff",
+    "police",
+    "полици",
+    "налог",
+    "tax",
+    "gosuslugi",
+    "госуслуг",
+    "support",
+    "apple",
+    "microsoft",
+    "мтс",
+    "beeline",
+    "мегафон",
+)
+
+GENERIC_CALLER_LABELS = (
+    "unknown",
+    "wireless",
+    "неизвест",
+    "private",
+    "скрыт",
+    "anonymous",
+)
+
 SUSPICIOUS_URL_PATTERNS = (
     r"@",
     r"\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3}",
@@ -230,6 +260,72 @@ def check_url(url: str) -> Dict[str, Any]:
     return fallback()
 
 
+def _normalize_phone_digits(value: str) -> str:
+    return re.sub(r"\D", "", value or "")
+
+
+def _analyze_caller_spoof_heuristics(
+    caller_id: Optional[str],
+    display_name: Optional[str],
+) -> Tuple[List[str], float]:
+    """af-4-05: metadata-only spoof hints (caller_id vs display_name)."""
+    reasons: List[str] = []
+    score = 0.0
+
+    cid = _normalize_phone_digits(caller_id or "")
+    dn = (display_name or "").strip()
+    dn_lower = dn.lower()
+    dn_digits = _normalize_phone_digits(dn)
+
+    if not cid and not dn:
+        return reasons, score
+
+    if dn_digits and cid and dn_digits != cid and len(dn_digits) >= 7:
+        reasons.append("display_number_mismatch")
+        score += 0.35
+
+    if dn and any(label in dn_lower for label in AUTHORITY_SPOOF_LABELS):
+        if not cid:
+            reasons.append("authority_label_no_caller_id")
+            score += 0.25
+        elif len(cid) >= 10 and not cid.startswith(("7800", "8800", "7495")):
+            reasons.append("authority_label_personal_number")
+            score += 0.4
+
+    if cid and dn and not dn_digits:
+        if not any(label in dn_lower for label in GENERIC_CALLER_LABELS):
+            if len(cid) >= 10 and any(label in dn_lower for label in AUTHORITY_SPOOF_LABELS):
+                reasons.append("authority_name_non_service_number")
+                score += 0.3
+
+    return reasons, min(1.0, score)
+
+
+def _merge_call_spoof_into_verdict(
+    base: Dict[str, Any],
+    spoof_reasons: List[str],
+    spoof_score: float,
+) -> Dict[str, Any]:
+    if not spoof_reasons:
+        return base
+
+    merged_reasons = list(base.get("reasons") or []) + spoof_reasons
+    confidence = max(float(base.get("confidence") or 0.0), spoof_score)
+    verdict = base.get("verdict") or "uncertain"
+    if spoof_score >= 0.35:
+        verdict = _verdict_from_score(confidence)
+
+    return _build_response(
+        verdict=verdict,
+        confidence=confidence,
+        reasons=merged_reasons[:8],
+        source=str(base.get("source") or "rule_engine"),
+        agent=f"call_spoof+{base.get('agent', 'call')}",
+        job_id=base.get("job_id"),
+        premium_required=bool(base.get("premium_required")),
+    )
+
+
 def check_media(
     *,
     media_type: str,
@@ -239,7 +335,7 @@ def check_media(
 ) -> Dict[str, Any]:
     """Run media check — sync lightweight probe; full worker in af-3."""
     extra = extra or {}
-    if media_type == "audio":
+    if media_type in ("audio", "call"):
         agent = AUDIO_AGENT
     elif media_type == "video":
         agent = VIDEO_AGENTS[0]
@@ -269,4 +365,13 @@ def check_media(
             agent=f"heuristic_{media_type}",
         )
 
-    return _normalize_sfm_result(outcome, agent=agent, fallback_fn=fallback)
+    base = _normalize_sfm_result(outcome, agent=agent, fallback_fn=fallback)
+
+    if media_type == "call":
+        spoof_reasons, spoof_score = _analyze_caller_spoof_heuristics(
+            extra.get("caller_id"),
+            extra.get("display_name"),
+        )
+        return _merge_call_spoof_into_verdict(base, spoof_reasons, spoof_score)
+
+    return base

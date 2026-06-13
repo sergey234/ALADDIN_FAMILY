@@ -174,7 +174,23 @@ class ProtectionSettingsManager: ObservableObject {
         
         if updated {
             saveSettings()
+            saveSettingsToServer { [weak self] result in
+                if case .failure(let error) = result {
+                    print("⚠️ ProtectionSettingsManager: Ошибка синхронизации enableForTariff: \(error.localizedDescription)")
+                }
+                guard tariffType == .premium else { return }
+                APIService.shared.enableProtectionCategory(ThreatProtectionCategory.deepfakes.rawValue) { _ in }
+            }
+        } else if tariffType == .premium, !settings.isEnabled(.deepfakes) {
+            syncPremiumDeepfakesIfNeeded(for: tariffType)
         }
+    }
+
+    /// af-5-04: включить deepfakes локально и на сервере, если тариф Premium+.
+    func syncPremiumDeepfakesIfNeeded(for tariffType: TariffType) {
+        guard isCategoryAvailable(.deepfakes, in: tariffType), !settings.isEnabled(.deepfakes) else { return }
+        enableCategory(.deepfakes)
+        APIService.shared.enableProtectionCategory(ThreatProtectionCategory.deepfakes.rawValue) { _ in }
     }
     
     /// Проверить, доступна ли категория для тарифа

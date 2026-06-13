@@ -13,6 +13,7 @@ struct AntifakeHubScreen: View {
     @State private var showAppleLimits = false
     @State private var sharePrefill: AntifakeSharePayload?
     @State private var pendingTextMode: AntifakeTextInputMode?
+    @State private var showPostCallUploadPrompt = false
 
     private var hasPremiumAccess: Bool {
         _ = protectionSettingsManager.settings
@@ -56,6 +57,9 @@ struct AntifakeHubScreen: View {
         )
         .onAppear {
             applyPendingHubNavigationIfNeeded()
+            if hasPremiumAccess {
+                ProtectionSettingsManager.shared.syncPremiumDeepfakesIfNeeded(for: tariffManager.currentTariff)
+            }
         }
         .onChange(of: navigationManager.pendingAntifakeHubTab) { _ in
             applyPendingHubNavigationIfNeeded()
@@ -70,6 +74,10 @@ struct AntifakeHubScreen: View {
     }
 
     private func applyPendingHubNavigationIfNeeded() {
+        if navigationManager.consumeAntifakePostCallPromptIfNeeded() {
+            showPostCallUploadPrompt = true
+            selectedTab = .call
+        }
         if let tab = navigationManager.pendingAntifakeHubTab {
             navigationManager.pendingAntifakeHubTab = nil
             selectedTab = tab
@@ -165,7 +173,8 @@ struct AntifakeHubScreen: View {
                     hintKey: "antifake_call_hint",
                     systemImage: "phone.arrow.up.right.fill",
                     panelId: "antifake_call_panel",
-                    showPremiumPaywall: $showPremiumPaywall
+                    showPremiumPaywall: $showPremiumPaywall,
+                    showPostCallUploadPrompt: $showPostCallUploadPrompt
                 )
                 .environmentObject(localizationManager)
             }

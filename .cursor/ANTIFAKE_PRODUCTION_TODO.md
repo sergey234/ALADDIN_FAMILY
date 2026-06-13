@@ -1,6 +1,7 @@
 # Anti-Fake Production — Cursor Todo (100% deepfakes)
 
-**Создано:** 2026-06-09 · **Обновлено:** 2026-06-11  
+**Создано:** 2026-06-09 · **Обновлено:** 2026-06-13 · **Build:** **232**  
+**SSOT:** `docs/release/MASTER_STATUS_INDEX.md`  
 **Мастер-план (single source):** `.cursor/ANTIFAKE_MASTER_ROADMAP.md`  
 **Тексты Apple limits:** `docs/ANTIFAKE_APPLE_LIMITS_AND_CLAIMS.md`  
 **Цель:** полноценная прод-защита от фейков (голос · видео · звонки · новости · документы · URL) **без mock / wildcard / пустых `result`**.  
@@ -10,7 +11,7 @@
 **Полный техспек:** `docs/ANTIFAKE_PRODUCTION_PLAN.md`  
 **Prod policy:** `ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md` § PRODUCTION HARD RULE — `sfm_mock`, `mock_fallback`, `3.0.0-mock-real-protection` **запрещены** для antifake.
 
-**Счёт:** **18 / 72** задач ✅ (backend af-2 + infra; iOS Hub pending)
+**Счёт:** **38 / 72** задач ✅ (backend + Hub B2 + **build 232 M2/M3**)
 
 ---
 
@@ -133,14 +134,15 @@ Async: `POST` → `{ "job_id": "uuid", "status": "queued" }` · `GET /jobs/{id}`
 
 | ID | Задача | Статус |
 |----|--------|--------|
-| `af-4-01` | Продуктовый scope doc: что именно обещаем по «фейковым звонкам» | ⬜ |
-| `af-4-02` | `CallKit` / **Call Directory Extension** target в Xcode | ⬜ |
-| `af-4-03` | Post-call flow: пользователь сохраняет запись → `POST /api/antifake/call/analyze` | ⬜ |
-| `af-4-04` | Live chunk (опционально v2): AVAudioEngine 3–5 s sample during call | ⬜ |
-| `af-4-05` | Caller ID spoof heuristics server-side (номер vs display name mismatch rules) | ⬜ |
-| `af-4-06` | Email spoof: `POST /check/text` mode=email_headers (Reply-To, SPF hints в тексте) | ⬜ |
-| `af-4-07` | Dating profile: `check/text` + image URL → document pipeline | ⬜ |
-| `af-4-08` | Entitlements + App Store Privacy manifest для микрофона/звонков | ⬜ |
+| `af-4-01` | Продуктовый scope doc: что именно обещаем по «фейковым звонкам» | ✅ `docs/ANTIFAKE_CALLS_PRODUCT_SCOPE.md` |
+| `af-4-02` | `CallKit` / **Call Directory Extension** target в Xcode | ✅ build 232 |
+| `af-4-03` | Post-call flow: local push → Hub (запись → analyze опционально) | ✅ build 232 |
+| `af-4-04` | Live chunk: AVAudioEngine 5 s quick voice (вкладка Audio) | ✅ build 232 |
+| `af-4-05` | Caller ID spoof heuristics server-side | ✅ build 232 |
+| `af-4-06` | Email spoof: `POST /check/text` mode=email_headers | ⬜ |
+| `af-4-07` | Dating profile: `check/text` + image URL | ⬜ |
+| `af-4-08` | Entitlements + App Store Privacy manifest для микрофона/звонков | 🟡 Call Directory entitlements ✅ |
+| `af-4-09` | Call Directory sync API + App Group blacklist | ✅ build 232 |
 
 ---
 
@@ -151,7 +153,7 @@ Async: `POST` → `{ "job_id": "uuid", "status": "queued" }` · `GET /jobs/{id}`
 | `af-5-01` | `ProtectionSettings` Codable ↔ server `{ categories, globalLevel }` adapter | ⬜ |
 | `af-5-02` | Раскомментировать + починить `loadSettingsFromServer()` | ⬜ |
 | `af-5-03` | `saveSettingsToServer` — POST schema match; conflict resolution server wins | ⬜ |
-| `af-5-04` | `enableProtectionCategory("deepfakes")` при Premium activate | ⬜ |
+| `af-5-04` | `enableProtectionCategory("deepfakes")` при Premium activate | ✅ build 232 |
 | `af-5-05` | `AppConfig.Endpoint` — все `/api/antifake/*` | ✅ B2-00 |
 | `af-5-06` | Unit tests: encode/decode settings round-trip | ⬜ |
 
@@ -161,14 +163,14 @@ Async: `POST` → `{ "job_id": "uuid", "status": "queued" }` · `GET /jobs/{id}`
 
 | ID | Задача | Статус |
 |----|--------|--------|
-| `af-6-01` | `AntifakeHubScreen` — Storm Mesh `.shield`, 4 входа: Текст · Голос · Видео · Звонок | ⬜ |
-| `af-6-02` | `AntifakeTextCheckView` — ввод / paste → verdict card | ⬜ |
-| `af-6-03` | `AntifakeAudioCheckView` — запись или файл → job poll UI | ⬜ |
-| `af-6-04` | `AntifakeVideoCheckView` — picker → upload progress → poll | ⬜ |
-| `af-6-05` | `AntifakeCallCheckView` — import recording + spoof tips | ⬜ |
-| `af-6-06` | Navigation: `ThreatProtectionCategory.deepfakes` → **AntifakeHub** (не generic advanced) | ⬜ |
-| `af-6-07` | Premium gate UI + paywall CTA | ⬜ |
-| `af-6-08` | `AntifakeHistoryStore` — локально последние 50 проверок (verdict, type, date) | ⬜ |
+| `af-6-01` | `AntifakeHubScreen` — Storm Mesh `.shield`, 4 входа | ✅ B2 |
+| `af-6-02` | `AntifakeTextCheckView` — ввод / paste → verdict card | ✅ B2 |
+| `af-6-03` | `AntifakeAudioCheckView` — запись или файл → job poll UI | ✅ B2 |
+| `af-6-04` | `AntifakeVideoCheckView` — picker → upload progress → poll | ✅ B2 |
+| `af-6-05` | `AntifakeCallCheckView` — import recording + spoof tips | ✅ B2 |
+| `af-6-06` | Navigation: deepfakes → **AntifakeHub** | ✅ B2 + bypass build 232 |
+| `af-6-07` | Premium gate UI + paywall CTA | ✅ B2 · TEMP bypass QA |
+| `af-6-08` | `AntifakeHistoryStore` — локально последние 50 проверок | ✅ build 232 |
 | `af-6-09` | Локализация RU/EN всех строк antifake | ✅ B2-11 / `docs/LOCALIZATION_BATCH_GATE.md` |
 | `af-6-10` | `27_ProtectionStatsScreen` — подтянуть реальные metrics с `/api/antifake/metrics` | ⬜ |
 

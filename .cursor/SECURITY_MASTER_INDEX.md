@@ -1,9 +1,10 @@
 # ALADDIN Security — мастер-индекс всех документов и задач
 
-**Обновлено:** 2026-06-11 (v1.7 — **137/143** · **6 осталось** = R-07 Archive)  
-**Старт реализации:** SFM-WIRE → B1 → Hubs B2–B6 → B7 → SEC-P2 → **R-19** → **R-08…10** → QA  
+**Обновлено:** 2026-06-13 (v1.8 — **137/143** · **build 232** · **6 осталось** = R-07 Archive)  
+**SSOT:** `docs/release/MASTER_STATUS_INDEX.md` ← **единая точка входа**  
+**Старт реализации:** SFM-WIRE → B1 → Hubs B2–B6 → B7 → SEC-P2 → **R-19** → **R-08…10** → build **232** → QA  
 **Онбординг:** R-19 COPY-POST-L3 ✅ (marketing sync)  
-**Финальный аудит:** `docs/release/PLAN_FACT_AUDIT_143_2026-06-11.md`
+**Финальный аудит:** `docs/release/PLAN_FACT_AUDIT_143_2026-06-13.md`
 
 ---
 
@@ -11,10 +12,11 @@
 
 | Порядок | Документ | Зачем |
 |---------|----------|-------|
-| 0 | **`ML_SYSTEM_HANDOFF_SECURITY_100_PERCENT.md`** | **Передать следующей ML-системе** |
+| 0 | **`docs/release/MASTER_STATUS_INDEX.md`** | **Единый SSOT — начинать здесь** |
+| 0b | **`ML_SYSTEM_HANDOFF_SECURITY_100_PERCENT.md`** | **Передать следующей ML-системе** |
 | 1 | **Этот файл** | Карта всего |
 | 2 | `.cursor/IMPLEMENTATION_BATCHES_TODO.md` | **Главный todo по батчам (137/143)** |
-| 2b | `docs/release/PLAN_FACT_AUDIT_143_2026-06-11.md` | **План–факт + автотесты** |
+| 2b | `docs/release/PLAN_FACT_AUDIT_143_2026-06-13.md` | **План–факт + build 232** |
 | 3 | `docs/OPS_ANTI_REGRESSION_GATES.md` | Чтобы не слетало + честные ML-проверки |
 | 4 | `docs/SECURITY_UNIFIED_100_PERCENT_PLAN.md` | Продуктовый план 100% |
 | 5 | `docs/SFM_SERVER_FORENSIC_REPORT.md` | Что на VPS с SFM |
@@ -59,7 +61,9 @@
 
 | Файл | Роль |
 |------|------|
-| **`docs/release/PLAN_FACT_AUDIT_143_2026-06-11.md`** | **Финальный план–факт + автотесты** |
+| **`docs/release/MASTER_STATUS_INDEX.md`** | **Единый SSOT build 232** |
+| **`docs/release/PLAN_FACT_AUDIT_143_2026-06-13.md`** | **Финальный план–факт + build 232** |
+| `docs/release/PLAN_FACT_AUDIT_143_2026-06-11.md` | Архив (2026-06-11) |
 | `docs/release/COPY_POST_L3_PROGRESS.md` | R-19 + счёт 137/143 |
 | `docs/release/QA_HUB_DEMO_R08_R10.md` | Hub demo R-08…10 |
 | `docs/release/gates/hub-demo-smoke-report.json` | VPS hub smokes evidence |

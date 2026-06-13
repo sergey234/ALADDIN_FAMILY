@@ -1,7 +1,9 @@
 {
-  "generated_at": "2026-06-11T25:30:00Z",
-  "audit_ref": "docs/release/PLAN_FACT_AUDIT_143_2026-06-11.md",
-  "build": 227,
+  "generated_at": "2026-06-13T12:00:00Z",
+  "audit_ref": "docs/release/PLAN_FACT_AUDIT_143_2026-06-13.md",
+  "master_status_index": "docs/release/MASTER_STATUS_INDEX.md",
+  "build": 232,
+  "commit": "3cfcf256",
   "tasks": ["R-08", "R-09", "R-10", "B-QA-03-runtime"],
   "vps_host": "149.154.65.180",
   "hub_smokes": {

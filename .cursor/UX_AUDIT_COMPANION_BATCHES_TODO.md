@@ -3,7 +3,8 @@
 **Источник:** отзыв пользователя build 229 · **Build:** 230 (commit `32387ab0`)  
 **Рабочий корень:** `ALADDIN_iOS`  
 **Мастер-реестр всех задач:** `.cursor/ALADDIN_MASTER_TODO.md` (36 Cursor ids + ~100 детальных id)  
-**Связанные планы:** `.cursor/IMPLEMENTATION_BATCHES_TODO.md` (143 security), `docs/WELLNESS_CURSOR_TODO.md` (131 wellness)
+**Связанные планы:** `.cursor/IMPLEMENTATION_BATCHES_TODO.md` (143 security), `docs/WELLNESS_CURSOR_TODO.md` (131 wellness)  
+**SSOT:** `docs/release/MASTER_STATUS_INDEX.md` · **Build:** **232** (2026-06-13)
 
 > **ПРАВИЛО:** каждый batch — отдельный commit/PR; не смешивать с `telegram_stars_shop_bot/`.
 
@@ -89,7 +90,7 @@
 | ux-1-01 | Кнопка «Открыть проверку» у Deepfakes | `ProtectionCategoryRow.swift` | ✅ на `ThreatProtectionScreen` — **пользователь не видит** |
 | ux-1-02 | Карточка «Проверить ссылку·голос·видео» | `ThreatProtectionScreen.swift` | ✅ — **пользователь не видит** |
 | ux-1-06 | **P0** Карточка Antifake на **`03_NetworkProtectionScreen`** — **между `securityFeaturesCard` и `componentsSections`** (до аккордеона «Экстренная помощь»); reuse `antifakeQuickAccessCard` из `ThreatProtectionScreen` | `03_NetworkProtectionScreen.swift` | ⬜ |
-| ux-1-07 | *(опционально, если карточки мало)* строка в аккордеоне «Защита от угроз» — **отложить**, сначала только ux-1-06 | — | P2 |
+| ux-1-07 | Строка в аккордеоне «Защита от угроз» → Hub | `03_NetworkProtectionScreen` | P2 ✅ build 232 |
 | ux-1-08 | Ссылка `ThreatProtectionScreen` ↔ `NetworkProtection` или merge экранов | nav | ⬜ |
 | ux-1-09 | **P1** Подсказка Share: Safari → Поделиться → «Проверить в ALADDIN» | Support / Settings | ⬜ |
 | ux-1-03 | Coachmark первого входа в Hub (3 шага) | sheet | ⬜ |
@@ -211,12 +212,12 @@
 | ID | Задача | Файлы | Статус |
 |----|--------|-------|--------|
 | ux-6-01 | **P0** Fix цвета поля ввода — **глобально** `WellnessMultilineField.wellnessReadableInput()` | `WellnessSwiftUICompat.swift` | ✅ |
-| ux-6-01b | Audit всех wellness TextField (Exercise, Values, Check-in notes) | все `Wellness*.swift` | ✅ Exercise; ⬜ Values Form contrast |
-| ux-6-06 | **P0** «Дневник снов пока недоступен» — API/флаг `FEATURE_WELLNESS_JUNG` на VPS + offline save локально | `WellnessDreamJournalScreen`, `wellness_router.py` | ⬜ |
+| ux-6-01b | Audit всех wellness TextField (Exercise, Values, Check-in notes) | все `Wellness*.swift` | ✅ Exercise; ✅ Values build 232 |
+| ux-6-06 | **P0** «Дневник снов пока недоступен» — API/флаг `FEATURE_WELLNESS_JUNG` на VPS + offline save локально | `WellnessDreamJournalScreen`, `wellness_router.py` | 🟡 offline ✅ |
 | ux-6-02 | Одна строка disclaimer + sheet «Подробнее» (см. copy выше) | `LocalizationManager.swift`, `WellnessDreamJournalScreen.swift` | ✅ |
-| ux-6-03 | Placeholder поля: «Опиши сон своими словами…» | `LocalizationManager.swift` | ⬜ |
-| ux-6-04 | Проверить сохранение + отображение в списке ниже | `WellnessAPIService` | ⬜ |
-| ux-6-05 | Первый визит: один coachmark (опционально P2) | `UserDefaults` | ⬜ |
+| ux-6-03 | Placeholder поля сна | `LocalizationManager.swift` | ✅ build 232 |
+| ux-6-04 | Проверить сохранение + отображение в списке ниже | `WellnessAPIService` | ✅ |
+| ux-6-05 | Первый визит: один coachmark (опционально P2) | `UserDefaults` | ✅ build 232 |
 
 ---
 
@@ -281,7 +282,7 @@
 | ux-8-04 | Copy на карточках — таблица выше в L10n | `LocalizationManager.swift` | ⬜ |
 | ux-8-07 | **P1** Info-блок вверху экрана «Глубокое исследование» (subtitle + иконка 💬) | `WellnessReflectiveModeScreen` | ⬜ |
 | ux-8-05 | **P1** Sheet «Продолжить в чате?» перед `navigateToCompanionHome` | `WellnessReflectiveModeScreen` | ⬜ |
-| ux-8-06 | **P2** Опционально: промпт-экран внутри карточки | product | ⬜ |
+| ux-8-06 | **P2** Опционально: промпт-экран внутри карточки | product | ✅ build 232 |
 
 ---
 
@@ -421,7 +422,7 @@
 
 ---
 
-*UX Audit v1.1 · верификация по коду 2026-06-11 · attach in Cursor: `.cursor/UX_AUDIT_COMPANION_BATCHES_TODO.md`*
+*UX Audit v1.2 · build 232 · SSOT `docs/release/MASTER_STATUS_INDEX.md`*
 
 ---
 
@@ -568,9 +569,10 @@
 | fix-sf-01…02 | FIX-SF | SF Symbol fallbacks iOS 17 | P2 | ⬜ |
 | fix-settings-01…02 | FIX-SETTINGS | Один save notifications | P2 | ⬜ |
 | ux-6-01 | 6 | Глобальный readable input wellness | P0 | ✅ |
-| ux-6-06 | 6 | Dream journal API/offline | P0 | ⬜ |
-| ux-1-06…09 | 1 | Antifake на NetworkProtection + Share help | P0/P1 | ⬜ |
-| ux-8-04…07 | 8 | Reflective: copy + banner + confirm | P1 | ⬜ |
+| ux-6-06 | 6 | Dream journal API/offline | P0 | 🟡 |
+| ux-1-06 | 1 | Antifake карточка NetworkProtection | P0 | 🟡 |
+| ux-1-07 | 1 | Antifake accordion → Hub | P2 | ✅ build 232 |
+| ux-8-04…07 | 8 | Reflective: copy + banner + confirm | P1 | 🟡 ux-8-06 ✅ |
 | ux-5-04 | 5 | Assessments: `navigateToWellnessScreen` | P1 | ⬜ |
 | ux-5-05 | 5 | UITest wellness back nav | P1 | ⬜ |
 | ux-7-04 | 7 | Tooltip чипов героя | P1 | ⬜ |

@@ -17,6 +17,7 @@ platform :ios do
       app_profile_uuid = ENV["APP_PROFILE_UUID"]
       extension_profile_uuid = ENV["PROVISIONING_PROFILE_EXTENSION_UUID"]
       antifake_profile_uuid = ENV["PROVISIONING_PROFILE_ANTIFAKE_SHARE_UUID"]
+      call_directory_profile_uuid = ENV["PROVISIONING_PROFILE_CALL_DIRECTORY_UUID"]
       dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
 
       puts "🔐 Team ID: #{team_id}"
@@ -24,6 +25,7 @@ platform :ios do
       puts "📋 App Profile UUID: #{app_profile_uuid}"
       puts "📋 Content Blocker Profile UUID: #{extension_profile_uuid}"
       puts "📋 Antifake Share Profile UUID: #{antifake_profile_uuid || '(automatic via -allowProvisioningUpdates)'}"
+      puts "📋 Call Directory Profile UUID: #{call_directory_profile_uuid || '(automatic via -allowProvisioningUpdates)'}"
 
       UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении") if app_profile_uuid.nil? || app_profile_uuid.empty?
       if extension_profile_uuid.nil? || extension_profile_uuid.empty?
@@ -34,6 +36,7 @@ platform :ios do
       app_profile_file = "#{profile_dir}/#{app_profile_uuid}.mobileprovision"
       extension_profile_file = "#{profile_dir}/#{extension_profile_uuid}.mobileprovision"
       antifake_profile_file = antifake_profile_uuid.to_s.empty? ? nil : "#{profile_dir}/#{antifake_profile_uuid}.mobileprovision"
+      call_directory_profile_file = call_directory_profile_uuid.to_s.empty? ? nil : "#{profile_dir}/#{call_directory_profile_uuid}.mobileprovision"
 
       expected_app_group = "group.com.aladdin.family"
       validate_profile_app_group = lambda do |profile_path, profile_label, expected_bundle_id|
@@ -77,6 +80,17 @@ platform :ios do
         antifake_manual = true
       end
 
+      call_directory_manual = false
+      call_directory_profile_name = nil
+      if call_directory_profile_uuid && !call_directory_profile_uuid.empty?
+        call_directory_profile_name = validate_profile_app_group.call(
+          call_directory_profile_file,
+          "Call Directory",
+          "family.aladdin.ios.ALADDINCallDirectory"
+        )
+        call_directory_manual = true
+      end
+
       xcconfig_path = "./build/Release.xcconfig"
       sh("mkdir -p ./build")
 
@@ -98,6 +112,24 @@ platform :ios do
         ANTIFAKE
       end
 
+      call_directory_xcconfig = if call_directory_manual
+        <<~CALLDIR
+          ALADDINCallDirectory_CODE_SIGN_IDENTITY = Apple Distribution
+          ALADDINCallDirectory_CODE_SIGN_STYLE = Manual
+          ALADDINCallDirectory_DEVELOPMENT_TEAM = #{team_id}
+          ALADDINCallDirectory_PROVISIONING_PROFILE_SPECIFIER = #{call_directory_profile_uuid}
+          ALADDINCallDirectory_PROVISIONING_PROFILE = #{call_directory_profile_uuid}
+          ALADDINCallDirectory_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINCallDirectory
+        CALLDIR
+      else
+        <<~CALLDIR
+          ALADDINCallDirectory_CODE_SIGN_STYLE = Automatic
+          ALADDINCallDirectory_DEVELOPMENT_TEAM = #{team_id}
+          ALADDINCallDirectory_PROVISIONING_PROFILE_SPECIFIER =
+          ALADDINCallDirectory_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINCallDirectory
+        CALLDIR
+      end
+
       xcconfig_content = <<~XCCONFIG
         DEVELOPMENT_TEAM = #{team_id}
 
@@ -114,6 +146,7 @@ platform :ios do
         ALADDINContentBlocker_PROVISIONING_PROFILE = #{extension_profile_uuid}
 
         #{antifake_xcconfig}
+        #{call_directory_xcconfig}
       XCCONFIG
 
       File.write(xcconfig_path, xcconfig_content)
@@ -122,6 +155,9 @@ platform :ios do
       archive_path = "./build/ALADDIN.xcarchive"
       antifake_sign_flag = antifake_manual ? "ALADDINAntifakeShare_CODE_SIGN_STYLE=Manual" : "ALADDINAntifakeShare_CODE_SIGN_STYLE=Automatic"
       antifake_profile_clear = antifake_manual ? "" : "ALADDINAntifakeShare_PROVISIONING_PROFILE_SPECIFIER="
+      call_directory_sign_flag = call_directory_manual ? "ALADDINCallDirectory_CODE_SIGN_STYLE=Manual" : "ALADDINCallDirectory_CODE_SIGN_STYLE=Automatic"
+      call_directory_profile_clear = call_directory_manual ? "" : "ALADDINCallDirectory_PROVISIONING_PROFILE_SPECIFIER="
+      needs_provisioning_updates = !antifake_manual || !call_directory_manual
 
       api_key_id = ENV["APP_STORE_CONNECT_API_KEY_ID"]
       api_issuer_id = ENV["APP_STORE_CONNECT_ISSUER_ID"]
@@ -137,6 +173,9 @@ platform :ios do
       elsif !antifake_manual
         puts "⚠️  AntifakeShare automatic signing requires App Store Connect API key (-allowProvisioningUpdates)"
       end
+      if !call_directory_manual
+        puts "⚠️  CallDirectory automatic signing requires App Store Connect API key (-allowProvisioningUpdates)"
+      end
 
       xcodebuild_args = [
         "xcodebuild", "archive",
@@ -149,7 +188,8 @@ platform :ios do
         "DEVELOPMENT_TEAM=#{team_id}",
         "ALADDIN_CODE_SIGN_STYLE=Manual",
         "ALADDINContentBlocker_CODE_SIGN_STYLE=Manual",
-        antifake_sign_flag
+        antifake_sign_flag,
+        call_directory_sign_flag
       ]
       if antifake_manual
         xcodebuild_args << "ALADDINAntifakeShare_CODE_SIGN_IDENTITY=Apple Distribution"
@@ -157,6 +197,15 @@ platform :ios do
         xcodebuild_args << "ALADDINAntifakeShare_PROVISIONING_PROFILE=#{antifake_profile_uuid}"
       else
         xcodebuild_args << antifake_profile_clear unless antifake_profile_clear.empty?
+      end
+      if call_directory_manual
+        xcodebuild_args << "ALADDINCallDirectory_CODE_SIGN_IDENTITY=Apple Distribution"
+        xcodebuild_args << "ALADDINCallDirectory_PROVISIONING_PROFILE_SPECIFIER=#{call_directory_profile_uuid}"
+        xcodebuild_args << "ALADDINCallDirectory_PROVISIONING_PROFILE=#{call_directory_profile_uuid}"
+      else
+        xcodebuild_args << call_directory_profile_clear unless call_directory_profile_clear.empty?
+      end
+      if needs_provisioning_updates
         xcodebuild_args << "-allowProvisioningUpdates"
       end
 
@@ -174,6 +223,7 @@ platform :ios do
     app_profile_uuid = ENV["APP_PROFILE_UUID"]
     extension_profile_uuid = ENV["PROVISIONING_PROFILE_EXTENSION_UUID"]
     antifake_profile_uuid = ENV["PROVISIONING_PROFILE_ANTIFAKE_SHARE_UUID"]
+    call_directory_profile_uuid = ENV["PROVISIONING_PROFILE_CALL_DIRECTORY_UUID"]
 
     UI.user_error!("❌ APP_PROFILE_UUID не установлен") if app_profile_uuid.nil? || app_profile_uuid.empty?
     UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен") if extension_profile_uuid.nil? || extension_profile_uuid.empty?
@@ -184,6 +234,9 @@ platform :ios do
     }
     if antifake_profile_uuid && !antifake_profile_uuid.empty?
       profiles["family.aladdin.ios.ALADDINAntifakeShare"] = antifake_profile_uuid
+    end
+    if call_directory_profile_uuid && !call_directory_profile_uuid.empty?
+      profiles["family.aladdin.ios.ALADDINCallDirectory"] = call_directory_profile_uuid
     end
 
     export_options_path = "./build/ExportOptions.plist"

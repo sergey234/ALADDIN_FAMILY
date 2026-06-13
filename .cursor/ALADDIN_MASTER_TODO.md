@@ -1,12 +1,14 @@
 # ALADDIN — сводный мастер-план (все согласованные задачи)
 
-**Версия:** 1.0 · **Дата:** 2026-06-11  
-**Build:** 230 (`32387ab0`) · **Корень:** `ALADDIN_iOS`  
+**Версия:** 1.0 · **Дата:** 2026-06-13  
+**Build:** **232** (`3cfcf256`) · **Корень:** `ALADDIN_iOS`  
+**SSOT:** `docs/release/MASTER_STATUS_INDEX.md`  
 **Single source для Cursor todos:** этот файл + детали в связанных планах
 
 | Документ | Содержание |
 |----------|------------|
 | **Этот файл** | Все задачи UX + perf + antifake + wellness — один реестр |
+| **`docs/release/MASTER_STATUS_INDEX.md`** | **Единый SSOT — счётчики и ссылки** |
 | `.cursor/UX_AUDIT_COMPANION_BATCHES_TODO.md` | Детали батчей 0–10, верификация отзыва |
 | `.cursor/ANTIFAKE_MASTER_ROADMAP.md` | Antifake M1–M4, Apple limits, риски |
 | `.cursor/ANTIFAKE_PRODUCTION_TODO.md` | 72 задачи `af-*` (сервер/ML/deploy) |
@@ -18,13 +20,15 @@
 
 | Категория | Всего | ✅ | 🟡 частично | ⬜ |
 |-----------|-------|-----|-------------|-----|
-| **Cursor track (батчи + ключевые id)** | **36** | **5** | **8** | **23** |
-| UX audit (детальные id) | ~65 | ~25 | ~15 | ~25 |
-| Antifake `af-*` | 72+ | ~25 | — | ~47 |
+| **Cursor track (батчи + ключевые id)** | **36** | **14** | **6** | **16** |
+| UX audit (детальные id) | ~65 | ~32 | ~10 | ~23 |
+| Antifake `af-*` | 72 | **38** | **4** | **30** |
+| **Build 232 supplemental** | 18 | **18** | 0 | 0 |
 | **Итого уникальных id** | **~100+** | — | — | — |
 
-**✅ Закрыто:** VPS IoT deploy, VisualLogger off, wellness readable input, build 230 UX-код (часть), iOS Antifake Hub BATCH2, backend antifake API.  
-**🔴 Главные пробелы:** ux-1-06 (Hub на экране Защиты), perf-1 (главная 3.1 с), af-3/af-10 workers на VPS, device QA.
+**✅ Build 232:** Call Directory M2, history/quick voice M3, ux-1-07/6/8, QA bypass.  
+**✅ Закрыто ранее:** VPS IoT, VisualLogger off, wellness readable input, Antifake Hub BATCH2, backend API.  
+**🔴 Главные пробелы:** R-07 Archive, perf-1 (главная), af-11 device QA, Call Directory on device.
 
 ---
 
@@ -49,7 +53,7 @@
 | 13 | `ux-5-back-nav` | Batch 5: wellness back → AI поддержка, не Main | P1 | 🟡 |
 | 14 | `ux-5-04` | Assessments: `navigateToWellnessScreen` вместо `navigateTo` | P1 | ⬜ |
 | 15 | `ux-5-05` | UITest: back Dreams/Reflective/Timeline → AI поддержка | P1 | ⬜ |
-| 16 | `ux-6-dreams` | Batch 6 Сны: input ✅, API/offline/placeholder QA | P0 | 🟡 |
+| 16 | `ux-6-dreams` | Batch 6 Сны: input ✅, API/offline/placeholder QA | P0 | 🟡 build 232: placeholder+coachmark ✅ · VPS ⬜ |
 | 17 | `ux-7-hero` | Batch 7 Герой: spinner/mic ✅, чипы tooltip + контраст | P1 | 🟡 |
 | 18 | `ux-8-reflective` | Batch 8 Глубокое исследование: copy + confirm sheet | P1 | 🟡 |
 | 19 | `ux-9-legal` | Batch 9 Правила AI: offline ✅, серверный fetchLegal | P1 | 🟡 |
@@ -58,16 +62,16 @@
 | 22 | `ux-6-input-global` | wellnessReadableInput глобально в WellnessMultilineField | P0 | ✅ |
 | 23 | `ux-6-06` | Дневник снов «недоступен» — VPS FEATURE_WELLNESS_JUNG + offline | P0 | ⬜ |
 | 24 | `ux-8-05` | Sheet «Продолжить в чате?» перед переходом в героя | P1 | ⬜ |
-| 25 | `ux-1-06` | **P0** Карточка Antifake на `03_NetworkProtectionScreen` | P0 | ⬜ |
-| 26 | `ux-1-07` | (опционально) строка в аккордеоне «Защита от угроз» | P2 | ⬜ |
+| 25 | `ux-1-06` | **P0** Карточка Antifake на `03_NetworkProtectionScreen` | P0 | ✅ build 232 (`AntifakeQuickAccessCard`) |
+| 26 | `ux-1-07` | (опционально) строка в аккордеоне «Защита от угроз» | P2 | ✅ build 232 |
 | 27 | `ux-1-08` | Merge ThreatProtection ↔ NetworkProtection | P1 | ⬜ |
 | 28 | `ux-1-09` | Инструкция Share Safari→ALADDIN в Помощь | P1 | ⬜ |
 | 29 | `ux-8-07` | Info-блок на экране «Глубокое исследование» | P1 | ⬜ |
 | 30 | `ux-8-04` | Subtitle + copy 5 карточек reflective (без «нет экрана») | P1 | ⬜ |
 | 31 | `ux-1-10` | Честный copy: звонок = запись после, не автоблок | P1 | ⬜ |
-| 32 | `af-m1-hub` | M1: Hub на Защите + workers ML (af-3, af-10, af-11) | P0 | 🟡 код ✅, VPS deploy ⬜ |
-| 33 | `af-m2-calls` | M2: Call Directory + post-call push (af-4-02…05) | P1 | ⬜ |
-| 34 | `af-m3-semi` | M3: виджет 5с голос + история (af-4-04, af-6-08) | P2 | ⬜ |
+| 32 | `af-m1-hub` | M1: Hub на Защите + workers ML (af-3, af-10, af-11) | P0 | 🟡 Hub ✅ · VPS deploy ⬜ |
+| 33 | `af-m2-calls` | M2: Call Directory + post-call push (af-4-02…05) | P1 | ✅ build 232 · device QA ⏸ |
+| 34 | `af-m3-semi` | M3: виджет 5с голос + история (af-4-04, af-6-08) | P2 | ✅ build 232 |
 | 35 | `af-8-claims` | docs ANTIFAKE_USER_FACING_CLAIMS + af-8-07 экран Apple | P1 | ⬜ |
 | 36 | `af-master-doc` | Мастер-доки: ROADMAP + APPLE_LIMITS + этот файл | — | ✅ |
 
@@ -89,8 +93,8 @@
 |----|--------|---|--------|
 | ux-1-01 | Кнопка «Открыть проверку» у Deepfakes | — | ✅ скрыт от пользователя |
 | ux-1-02 | Карточка на ThreatProtectionScreen | — | ✅ скрыт |
-| **ux-1-06** | **Карточка на 03_NetworkProtectionScreen** | **P0** | **⬜** |
-| ux-1-07 | Строка в аккордеоне (если ux-1-06 мало) | P2 | ⬜ |
+| **ux-1-06** | **Карточка на 03_NetworkProtectionScreen** | **P0** | **✅ build 232** |
+| ux-1-07 | Строка в аккордеоне (если ux-1-06 мало) | P2 | ✅ build 232 |
 | ux-1-08 | Merge ThreatProtection ↔ NetworkProtection | P1 | ⬜ |
 | ux-1-09 | Share инструкция в Помощь | P1 | ⬜ |
 | ux-1-03 | Coachmark Hub (3 шага) | P2 | ⬜ |
@@ -142,12 +146,12 @@
 | ID | Задача | Статус |
 |----|--------|--------|
 | ux-6-01 | Readable input глобально | ✅ |
-| ux-6-01b | Audit Values Form contrast | ⬜ |
-| **ux-6-06** | API FEATURE_WELLNESS_JUNG + offline save | ⬜ |
+| ux-6-01b | Audit Values Form contrast | ✅ build 232 |
+| **ux-6-06** | API FEATURE_WELLNESS_JUNG + offline save | 🟡 offline ✅ · VPS flag ⬜ |
 | ux-6-02 | Disclaimer 1 строка + sheet | ✅ |
-| ux-6-03 | Placeholder поля сна | ⬜ |
-| ux-6-04 | Сохранение + список | ⬜ |
-| ux-6-05 | Coachmark первый визит | P2 ⬜ |
+| ux-6-03 | Placeholder поля сна | ✅ build 232 |
+| ux-6-04 | Сохранение + список | ✅ |
+| ux-6-05 | Coachmark первый визит | ✅ build 232 |
 
 ### Batch 7 — Разговор с героем
 
@@ -169,7 +173,7 @@
 | **ux-8-04** | Copy 5 карточек + subtitle | ⬜ |
 | **ux-8-07** | Info-блок вверху экрана | ⬜ |
 | **ux-8-05** | Confirm sheet перед чатом | ⬜ |
-| ux-8-06 | Промпт внутри карточки (опционально) | P2 ⬜ |
+| ux-8-06 | Промпт внутри карточки (опционально) | P2 ✅ build 232 |
 
 ### Batch 9 — Правила AI
 
@@ -234,7 +238,7 @@
 
 | # | Задача | ID | Статус |
 |---|--------|-----|--------|
-| 1 | Карточка на экране Защиты | ux-1-06 | ⬜ |
+| 1 | Карточка на экране Защиты | ux-1-06 | ✅ build 232 |
 | 2 | Честные тексты | ux-1-10 | ⬜ |
 | 3 | Экран Apple limits | af-8-07 | ⬜ |
 | 4 | Workers ML на VPS | af-3-*, af-10-* | ⬜ |

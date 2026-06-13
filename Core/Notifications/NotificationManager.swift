@@ -1020,6 +1020,16 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             )
             return
         }
+
+        if let deepLink = userInfo["deepLink"] as? String,
+           let url = URL(string: deepLink),
+           AntifakeDeepLinkRouter.isPostCallCheckDeepLink(url) {
+            NotificationCenter.default.post(
+                name: NSNotification.Name("NavigateToAntifakePostCallCheck"),
+                object: nil
+            )
+            return
+        }
         
         // TODO: Обработка обычного нажатия
         print("📱 Default notification action triggered")

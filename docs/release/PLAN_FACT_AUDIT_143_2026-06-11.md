@@ -1,5 +1,7 @@
 # План–факт аудит 143 задач — финальный отчёт
 
+> **⚠️ Superseded:** см. актуальный [`PLAN_FACT_AUDIT_143_2026-06-13.md`](PLAN_FACT_AUDIT_143_2026-06-13.md) и [`MASTER_STATUS_INDEX.md`](MASTER_STATUS_INDEX.md). Этот файл — архив 2026-06-11.
+
 **Дата:** 2026-06-11 · **Счёт:** **137 / 143** ✅ · **Осталось:** **6** (R-07 Archive block)  
 **SSOT счётчик:** `docs/release/gates/security-l3-report.json` · **Трекер:** `.cursor/IMPLEMENTATION_BATCHES_TODO.md`
 

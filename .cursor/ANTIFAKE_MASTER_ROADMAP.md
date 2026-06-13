@@ -1,6 +1,7 @@
 # Antifake — мастер-план ALADDIN (итоговый)
 
-**Версия:** 1.0 · **Дата:** 2026-06-11  
+**Версия:** 1.1 · **Дата:** 2026-06-13 · **Build:** **232**  
+**SSOT:** `docs/release/MASTER_STATUS_INDEX.md`
 **Корень:** `ALADDIN_iOS`  
 **Single source для Cursor todos:** `.cursor/ALADDIN_MASTER_TODO.md` (36 пунктов)  
 **Связанные файлы:**
@@ -16,15 +17,15 @@
 
 | Область | Сделано (~%) | Главный пробел |
 |---------|--------------|----------------|
-| **iOS Hub UI** | ~85% | Нет входа с экрана Защиты (`ux-1-06`) |
-| **iOS Share / deep link** | ~90% | Нет инструкции в Помощь (`ux-1-09`) |
-| **iOS звонки (live)** | ~5% | Call Directory, post-call — не начато |
+| **iOS Hub UI** | ~95% | Device QA Call Directory |
+| **iOS Share / deep link** | ~95% | Инструкция в Помощь (`ux-1-09`) |
+| **iOS звонки (live)** | ~70% | Call Directory ✅ код · device QA ⏸ |
 | **Backend API** | ~80% | Роутеры есть, workers на prod частично |
 | **Backend ML workers** | ~40% | `af-3`, `af-10` деплой worker + nginx |
 | **Copy / legal** | ~10% | Apple limits, честный маркетинг |
 | **E2E prod QA** | ~30% | `af-11` gate |
 
-**Критический путь сейчас:** `ux-1-06` → `af-10` worker на VPS → `af-11` smoke → `af-8` честные тексты → `af-4` Call Directory.
+**Критический путь сейчас:** R-07 Archive → device QA Call Directory → `af-11` smoke → `af-8` честные тексты → отключить QA bypass.
 
 ---
 
@@ -53,13 +54,13 @@
 
 | Компонент | ID | Приоритет |
 |-----------|-----|-----------|
-| Карточка Antifake на **реальном** экране Защиты (`03_NetworkProtectionScreen`) | `ux-1-06` | **P0** |
-| Честный copy (звонок = после записи, не автоблок) | `ux-1-10` | P1 |
-| Экран «Ограничения Apple» в Hub / Помощь | `af-8-07` | P1 |
-| Call Directory Extension (метка «мошенник») | `af-4-02` | P1 |
-| Post-call push «Проверить запись?» | `af-4-03` | P1 |
-| Виджет «5 сек — проверить голос» | `af-4-04` | P2 |
-| История 50 проверок | `af-6-08` | P2 |
+| Карточка Antifake на **реальном** экране Защиты | `ux-1-06` | **P0** | 🟡 accordion ux-1-07 ✅ |
+| Честный copy (звонок = после записи, не автоблок) | `ux-1-10` | P1 | ⬜ |
+| Экран «Ограничения Apple» в Hub / Помощь | `af-8-07` | P1 | ⬜ |
+| Call Directory Extension (метка «мошенник») | `af-4-02` | P1 | ✅ build 232 · device ⏸ |
+| Post-call push «Проверить запись?» | `af-4-03` | P1 | 🟡 build 232 |
+| Виджет «5 сек — проверить голос» | `af-4-04` | P2 | ✅ build 232 |
+| История 50 проверок | `af-6-08` | P2 | ✅ build 232 |
 | AI Assistant tool antifake | `af-7-03`, `af-7-04` | P2 |
 | Вкладка «Документ» в Hub (отдельно от видео) | `af-9-06` | P2 |
 | Paste/clipboard prompt | M2 | P2 |

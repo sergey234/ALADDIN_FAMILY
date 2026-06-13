@@ -4,6 +4,7 @@ import UniformTypeIdentifiers
 struct AntifakeMediaCheckView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @Binding var showPremiumPaywall: Bool
+    @Binding var showPostCallUploadPrompt: Bool
     @StateObject private var viewModel: AntifakeMediaCheckViewModel
     @State private var showFileImporter = false
 
@@ -18,10 +19,12 @@ struct AntifakeMediaCheckView: View {
         hintKey: String,
         systemImage: String,
         panelId: String,
-        showPremiumPaywall: Binding<Bool>
+        showPremiumPaywall: Binding<Bool>,
+        showPostCallUploadPrompt: Binding<Bool> = .constant(false)
     ) {
         _viewModel = StateObject(wrappedValue: AntifakeMediaCheckViewModel(mediaKind: mediaKind))
         _showPremiumPaywall = showPremiumPaywall
+        _showPostCallUploadPrompt = showPostCallUploadPrompt
         self.titleKey = titleKey
         self.hintKey = hintKey
         self.systemImage = systemImage
@@ -37,6 +40,10 @@ struct AntifakeMediaCheckView: View {
             Text(localizationManager.localized(hintKey))
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.85))
+
+            if viewModel.mediaKind == .call, showPostCallUploadPrompt {
+                postCallUploadBanner
+            }
 
             if viewModel.mediaKind == .call {
                 callMetadataFields
@@ -125,6 +132,33 @@ struct AntifakeMediaCheckView: View {
         ) { result in
             Task { await ingestFileImport(result) }
         }
+    }
+
+    private var postCallUploadBanner: some View {
+        HStack(alignment: .top, spacing: Spacing.s) {
+            Image(systemName: "phone.badge.checkmark")
+                .foregroundColor(.secondaryGold)
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(localizationManager.localized("antifake_post_call_banner_title"))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white)
+                Text(localizationManager.localized("antifake_post_call_banner_body"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.85))
+            }
+            Spacer(minLength: 0)
+            Button {
+                showPostCallUploadPrompt = false
+            } label: {
+                Image(systemName: "xmark.circle.fill")
+                    .foregroundColor(.white.opacity(0.55))
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(localizationManager.localized("common_close"))
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .accessibilityIdentifier("\(panelId)_post_call_banner")
     }
 
     private var callMetadataFields: some View {

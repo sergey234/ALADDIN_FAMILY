@@ -1,6 +1,9 @@
 {
-  "version": "1.1",
-  "updated_at": "2026-06-11T25:00:00Z",
+  "version": "1.2",
+  "updated_at": "2026-06-13T12:00:00Z",
+  "ios_build": 232,
+  "ios_commit": "3cfcf256",
+  "master_status_index": "docs/release/MASTER_STATUS_INDEX.md",
   "overall": "in_progress",
   "xcode_archive_allowed": false,
   "onboarding_frozen": false,
@@ -11,18 +14,19 @@
     "batch_1": "12/12",
     "batch_sync": "5/5",
     "batch_pre_ios": "6/6",
-    "batch_2": "11/12",
-    "batch_3": "7/8",
-    "batch_4": "5/6",
+    "batch_2": "12/12",
+    "batch_3": "8/8",
+    "batch_4": "6/6",
     "batch_5": "9/9",
     "batch_6": "5/5",
     "batch_loc": "12/12",
     "batch_7": "4/4",
     "batch_copy": "4/4",
     "batch_qa": "5/6",
-    "total_batches_done": "140/143",
-    "next_batch": "B-QA-02 Archive (R-07) + Hub PNG device capture — last 3",
-    "plan_fact_audit": "docs/release/PLAN_FACT_AUDIT_143_2026-06-11.md"
+    "total_batches_done": "137/143",
+    "build_232_supplemental": "18/18",
+    "next_batch": "B-QA-02 Archive (R-07) + Hub PNG device capture — last 6",
+    "plan_fact_audit": "docs/release/PLAN_FACT_AUDIT_143_2026-06-13.md"
   },
   "blocks": {
     "SFM-TRUTH": {

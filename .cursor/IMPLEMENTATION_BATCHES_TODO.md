@@ -2,20 +2,21 @@
 
 **Создано:** 2026-06-09 · **Forensic:** `docs/SFM_SERVER_FORENSIC_REPORT.md`  
 **Единый план:** `docs/SECURITY_UNIFIED_100_PERCENT_PLAN.md`  
-**Онбординг:** ✅ COPY-POST-L3 (R-19) — `COPY_POST_L3_PROGRESS.md`
+**Онбординг:** ✅ COPY-POST-L3 (R-19) — `COPY_POST_L3_PROGRESS.md`  
+**SSOT индекс:** `docs/release/MASTER_STATUS_INDEX.md` ← **начинать здесь**
 
 > **ПРАВИЛО:** каждый batch доводим до **100%** — без «частично» в отчётах. Gate PASS только с evidence.
 
 **Мастер-индекс:** `.cursor/SECURITY_MASTER_INDEX.md`  
-**План–факт аудит:** `docs/release/PLAN_FACT_AUDIT_143_2026-06-11.md` ← **финальный отчёт + тесты**  
+**План–факт аудит:** `docs/release/PLAN_FACT_AUDIT_143_2026-06-13.md` ← **build 232**  
 **Handoff для ML:** `ML_SYSTEM_HANDOFF_SECURITY_100_PERCENT.md` ← передать следующей ML-системе  
 **Анти-регрессия:** `docs/OPS_ANTI_REGRESSION_GATES.md`  
 **L3 smoke:** `docs/server/L3_SMOKE_CONTRACT.md`  
 **SFM правда для ML:** `docs/SFM_SINGLE_SOURCE_OF_TRUTH.md` · quickstart: `docs/SFM_ML_QUICKSTART.md`  
-**Счёт:** **140 / 143** total ✅ (**114 / 131** impl + **12 / 12** LOC ✅ + **COPY 4/4** + **R-19** ✅ + **R-08…10** ✅) · Backend **100%** · **BATCH 2/3/4: 12/12, 8/8, 6/6** ✅ · **BATCH QA: 5/6** · **B-PRE 6/6** ✅  
+**Счёт:** **137 / 143** total ✅ (**114 / 131** impl + **12 / 12** LOC ✅ + **COPY 4/4** + **R-19** ✅ + **R-08…10** ✅) · Backend **100%** · **BATCH 2/3/4: 12/12, 8/8, 6/6** ✅ · **BATCH QA: 5/6** · **B-PRE 6/6** ✅ · **Build 232 supplemental: 18/18** ✅  
 **LOC SSOT:** `docs/LOCALIZATION_BATCH_GATE.md` — RU/EN gate для каждого batch 1…131  
 **Archive / TestFlight (B-QA-02):** ⏸ **самый последний шаг** — на твоём Mac с Apple ID (см. ниже)  
-**Сейчас:** R-07 B-QA-02 Archive + PNG screenshots (**последний блок**, 6/143 осталось)
+**Сейчас:** R-07 B-QA-02 Archive + PNG screenshots (**последний блок**, 6/143 осталось) · build **232** committed
 
 **Матрица iOS↔backend:** `docs/IOS_EXPLICIT_API_MATRIX.md`
 
@@ -46,7 +47,19 @@
 
 **Как делали:** backend → Hubs B2–B6 → B7 emergency → SEC-P2 → R-19 marketing → R-08…10 VPS demos → QA docs. **Archive (R-07) — последний блок на Mac.**
 
-**Следующий шаг:** **R-07 B-QA-02** Archive + TestFlight + PNG `testflight-build227/` (см. `PLAN_FACT_AUDIT_143_2026-06-11.md`).
+**Следующий шаг:** **R-07 B-QA-02** Archive + TestFlight + PNG `testflight-build227/` (см. `PLAN_FACT_AUDIT_143_2026-06-13.md`).
+
+### Build 232 supplemental (2026-06-13) — ✅ 18/18 код
+
+| ID | Факт | Commit |
+|----|------|--------|
+| af-m2 Call Directory + sync + post-call | ✅ | `3cfcf256` |
+| af-m3 history 50 + quick voice 5s | ✅ | same |
+| ux-1-07 accordion antifake | ✅ | same |
+| ux-6-03/05/01b, ux-8-06 | ✅ | same |
+| QA bypass Premium (TEMP) | ✅ | same |
+
+См. `docs/release/MASTER_STATUS_INDEX.md` §2.
 
 ### BATCH 1 — детальный план–факт
 

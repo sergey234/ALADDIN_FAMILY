@@ -420,9 +420,19 @@ iOS paths: docs/IOS_EXPLICIT_API_MATRIX.md
 
 ---
 
-## 12. Состояние на 2026-06-11 (план–факт для следующей ML)
+## 12. Состояние на 2026-06-13 (build 232)
 
-> **SSOT:** `docs/release/PLAN_FACT_AUDIT_143_2026-06-11.md` · `security-l3-report.json` → **137/143**
+> **SSOT:** `docs/release/MASTER_STATUS_INDEX.md` · `PLAN_FACT_AUDIT_143_2026-06-13.md` · **137/143** + supplemental **18/18**
+
+### 12.0 Build 232 supplemental (2026-06-13) ✅ код
+
+| Область | Commit | Evidence |
+|---------|--------|----------|
+| AF M2 Call Directory + sync + post-call | `3cfcf256` | `ALADDINCallDirectory/`, `AntifakeCallDirectorySyncService` |
+| AF M3 history 50 + quick voice 5s | same | `AntifakeCheckHistoryStore`, `AntifakeQuickVoiceCaptureView` |
+| UX ux-1-07, ux-6-03/05/01b, ux-8-06 | same | Wellness + NetworkProtection screens |
+| QA TEMP bypass Premium | same | `AntifakeAccessPolicy` — **отключить перед App Store** |
+| xcodebuild | 2026-06-13 | BUILD SUCCEEDED build **232** |
 
 ### 12.1 Закрыто (не переделывать без регрессии)
 
@@ -460,7 +470,7 @@ iOS paths: docs/IOS_EXPLICIT_API_MATRIX.md
 | LOC | B-LOC-06 ✅ | keys `family_hub_chd_*`, `family_monitoring_export_*` в `LocalizationManager.swift` RU+EN |
 | Tests | unit (run at GATE-FINAL) | `ParentalMonitoringValidationTests.swift`, `FamilyChildThreatCatalogTests.swift` |
 
-**Build:** `xcodebuild -scheme ALADDIN -destination 'platform=iOS Simulator,id=82789999-A1C3-4B10-A2B9-CFE6BBB24ECF' build` → **BUILD SUCCEEDED** (2026-06-10).
+**Build:** `xcodebuild -scheme ALADDIN -destination 'platform=iOS Simulator,id=82789999-A1C3-4B10-A2B9-CFE6BBB24ECF' build` → **BUILD SUCCEEDED** (2026-06-13, build **232**, commit `3cfcf256`).
 
 **pbxproj:** при добавлении файлов — полные пути (`Shared/Models/…`, `ViewModels/…`), иначе «Build input files cannot be found».
 

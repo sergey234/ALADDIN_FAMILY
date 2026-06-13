@@ -399,7 +399,7 @@ struct ALADDINApp: App {
                 }
                 .onOpenURL { url in
                     if AntifakeDeepLinkRouter.isPostCallCheckDeepLink(url) {
-                        navigationManager.navigateToAntifakeHub(tab: .call)
+                        navigationManager.navigateToAntifakeHub(tab: .call, postCallPrompt: true)
                         return
                     }
                     if AntifakeDeepLinkRouter.isAntifakeCheckDeepLink(url) {
@@ -447,6 +447,9 @@ struct ALADDINApp: App {
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToMnemoReview"))) { notification in
                     let category = notification.userInfo?["category"] as? String ?? ChildCategoryKey.games
                     navigationManager.navigateToMnemoReview(category: category)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToAntifakePostCallCheck"))) { _ in
+                    navigationManager.navigateToAntifakeHub(tab: .call, postCallPrompt: true)
                 }
         }
     }
