@@ -315,6 +315,10 @@ extension ThreatProtectionCategory {
             navigationManager.navigateToDeviceHub(tab: .iot)
             return
         }
+        if self == .deepfakes {
+            AntifakeAccessPolicy.openHubOrPaywall(using: navigationManager)
+            return
+        }
         if let settingsScreen {
             navigationManager.navigateTo(settingsScreen)
         } else {

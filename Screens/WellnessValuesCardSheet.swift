@@ -20,9 +20,10 @@ struct WellnessValuesCardSheet: View {
                 Form {
                     Section {
                         Text(localizationManager.localized("wellness_values_card_title"))
+                            .foregroundColor(.white)
                         Text(localizationManager.localized("wellness_values_card_subtitle"))
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.75))
+                            .foregroundColor(.white.opacity(0.85))
                     }
                     Section {
                         ForEach(options, id: \.self) { id in
@@ -31,13 +32,14 @@ struct WellnessValuesCardSheet: View {
                             } label: {
                                 HStack {
                                     Text(localizationManager.localized("wellness_values_\(id)"))
+                                        .foregroundColor(.white)
                                     Spacer()
                                     if selected.contains(id) {
                                         Image(systemName: "checkmark.circle.fill")
+                                            .foregroundColor(Color(hex: "C4B5FD"))
                                     }
                                 }
                             }
-                            .foregroundStyle(.white)
                         }
                     }
                     Section {

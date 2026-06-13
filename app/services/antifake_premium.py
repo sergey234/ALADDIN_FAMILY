@@ -22,7 +22,8 @@ def user_has_antifake_access(user: Dict[str, Any], smoke_secret: str | None = No
     if expected and smoke_secret and smoke_secret == expected:
         return True
 
-    if os.environ.get("ANTIFAKE_ALLOW_FREE") == "1":
+    # TEMP QA: allow all authenticated users while testing Hub (set ANTIFAKE_ALLOW_FREE=0 before prod).
+    if os.environ.get("ANTIFAKE_ALLOW_FREE", "1") == "1":
         return True
 
     sub = user.get("subscription") or {}

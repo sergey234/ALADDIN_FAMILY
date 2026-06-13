@@ -254,3 +254,20 @@ async def antifake_metrics(
 ):
     _require_premium(current_user, request)
     return metrics_for_user(int(current_user["id"]))
+
+
+@router.get("/call-directory")
+async def antifake_call_directory(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+):
+    """Numbers for iOS Call Directory extension (af-4-02 / af-4-09)."""
+    _require_premium(current_user, request)
+    # Seed list — production syncs from fraud DB / user reports.
+    return {
+        "identified": [
+            {"phone": "74951234567", "label": "Возможный мошенник?"},
+            {"phone": "78005553535", "label": "Возможный мошенник?"},
+        ],
+        "blocked": [],
+    }

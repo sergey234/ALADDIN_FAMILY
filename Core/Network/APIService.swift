@@ -4231,6 +4231,11 @@ class APIService: ObservableObject {
         networkManager.get(endpoint: AppConfig.Endpoint.antifakeMetrics, completion: completion)
     }
 
+    /// GET `/api/antifake/call-directory` — identified/blocked numbers for CallKit (af-m2).
+    func getAntifakeCallDirectory(completion: @escaping (Result<AntifakeCallDirectoryAPIResponse, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.antifakeCallDirectory, completion: completion)
+    }
+
     private static func appendMultipartFormField(to body: inout Data, boundary: String, name: String, value: String) {
         body.append("--\(boundary)\r\n".data(using: .utf8)!)
         body.append("Content-Disposition: form-data; name=\"\(name)\"\r\n\r\n".data(using: .utf8)!)

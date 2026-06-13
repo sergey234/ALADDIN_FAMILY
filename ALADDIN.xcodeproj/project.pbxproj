@@ -579,6 +579,18 @@
 		WELLTS22F90000100C7D34B /* Core/Models/WellnessTogetherSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLTS12F90000100C7D34B /* Core/Models/WellnessTogetherSession.swift */; };
 		WELLVAL22F90000100C7D34B /* WellnessValuesCardSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLVAL12F90000100C7D34B /* WellnessValuesCardSheet.swift */; };
 		WELPRM22F90000100C7D34B /* WellnessPremiumFunnel.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELPRM12F90000100C7D34B /* WellnessPremiumFunnel.swift */; };
+
+		AFCD0112F90000200C7D34B /* ALADDINCallDirectory.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AFCD0102F90000200C7D34B /* ALADDINCallDirectory.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		AFCD0022F90000200C7D34B /* CallDirectoryHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0012F90000200C7D34B /* CallDirectoryHandler.swift */; };
+		AFCD0052F90000200C7D34B /* AntifakeCallDirectoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0032F90000200C7D34B /* AntifakeCallDirectoryStore.swift */; };
+		AFCD0042F90000200C7D34B /* AntifakeCallDirectoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0032F90000200C7D34B /* AntifakeCallDirectoryStore.swift */; };
+		AFCD0312F90000200C7D34B /* AntifakeAccessPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0302F90000200C7D34B /* AntifakeAccessPolicy.swift */; };
+		AFCD0332F90000200C7D34B /* AntifakeCheckHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0322F90000200C7D34B /* AntifakeCheckHistoryStore.swift */; };
+		AFCD0352F90000200C7D34B /* AntifakeCallDirectorySyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0342F90000200C7D34B /* AntifakeCallDirectorySyncService.swift */; };
+		AFCD0372F90000200C7D34B /* AntifakeCallObserverService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0362F90000200C7D34B /* AntifakeCallObserverService.swift */; };
+		AFCD0392F90000200C7D34B /* AntifakeCallDirectorySettingsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0382F90000200C7D34B /* AntifakeCallDirectorySettingsCard.swift */; };
+		AFCD0412F90000200C7D34B /* AntifakeCheckHistorySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0402F90000200C7D34B /* AntifakeCheckHistorySection.swift */; };
+		AFCD0432F90000200C7D34B /* AntifakeQuickVoiceCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0422F90000200C7D34B /* AntifakeQuickVoiceCaptureView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -595,6 +607,13 @@
 			proxyType = 1;
 			remoteGlobalIDString = AFSh0172F90000100C7D34B;
 			remoteInfo = ALADDINAntifakeShare;
+		};
+		AFCD0122F90000200C7D34B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = AFCD0172F90000200C7D34B;
+			remoteInfo = ALADDINCallDirectory;
 		};
 		B5001008 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
@@ -620,6 +639,7 @@
 			files = (
 				5E61A0A72EFB38ED0039093A /* ALADDINContentBlocker.appex in Embed App Extensions */,
 				AFSh0112F90000100C7D34B /* ALADDINAntifakeShare.appex in Embed App Extensions */,
+				AFCD0112F90000200C7D34B /* ALADDINCallDirectory.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 		};
@@ -1216,6 +1236,19 @@
 		WELLTS12F90000100C7D34B /* Core/Models/WellnessTogetherSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Models/WellnessTogetherSession.swift; sourceTree = "<group>"; };
 		WELLVAL12F90000100C7D34B /* WellnessValuesCardSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessValuesCardSheet.swift; sourceTree = "<group>"; };
 		WELPRM12F90000100C7D34B /* WellnessPremiumFunnel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessPremiumFunnel.swift; path = Core/Services/WellnessPremiumFunnel.swift; sourceTree = "<group>"; };
+
+		AFCD0012F90000200C7D34B /* CallDirectoryHandler.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CallDirectoryHandler.swift; sourceTree = "<group>"; };
+		AFCD0092F90000200C7D34B /* ALADDINCallDirectory.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINCallDirectory.entitlements; sourceTree = "<group>"; };
+		AFCD0082F90000200C7D34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AFCD0102F90000200C7D34B /* ALADDINCallDirectory.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINCallDirectory.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		AFCD0032F90000200C7D34B /* AntifakeCallDirectoryStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallDirectoryStore.swift; path = Shared/AntifakeCallDirectory/AntifakeCallDirectoryStore.swift; sourceTree = "<group>"; };
+		AFCD0302F90000200C7D34B /* AntifakeAccessPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeAccessPolicy.swift; path = Core/Security/AntifakeAccessPolicy.swift; sourceTree = "<group>"; };
+		AFCD0322F90000200C7D34B /* AntifakeCheckHistoryStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCheckHistoryStore.swift; path = Core/Security/AntifakeCheckHistoryStore.swift; sourceTree = "<group>"; };
+		AFCD0342F90000200C7D34B /* AntifakeCallDirectorySyncService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallDirectorySyncService.swift; path = Core/Security/AntifakeCallDirectorySyncService.swift; sourceTree = "<group>"; };
+		AFCD0362F90000200C7D34B /* AntifakeCallObserverService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallObserverService.swift; path = Core/Security/AntifakeCallObserverService.swift; sourceTree = "<group>"; };
+		AFCD0382F90000200C7D34B /* AntifakeCallDirectorySettingsCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallDirectorySettingsCard.swift; path = Shared/Components/AntifakeCallDirectorySettingsCard.swift; sourceTree = "<group>"; };
+		AFCD0402F90000200C7D34B /* AntifakeCheckHistorySection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCheckHistorySection.swift; path = Shared/Components/AntifakeCheckHistorySection.swift; sourceTree = "<group>"; };
+		AFCD0422F90000200C7D34B /* AntifakeQuickVoiceCaptureView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeQuickVoiceCaptureView.swift; path = Shared/Components/AntifakeQuickVoiceCaptureView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1281,6 +1314,17 @@
 				5E61A0A42EFB38ED0039093A /* Info.plist */,
 			);
 			path = ALADDINContentBlocker;
+			sourceTree = "<group>";
+		};
+
+		AFCD0212F90000200C7D34B /* ALADDINCallDirectory */ = {
+			isa = PBXGroup;
+			children = (
+				AFCD0012F90000200C7D34B /* CallDirectoryHandler.swift */,
+				AFCD0082F90000200C7D34B /* Info.plist */,
+				AFCD0092F90000200C7D34B /* ALADDINCallDirectory.entitlements */,
+			);
+			path = ALADDINCallDirectory;
 			sourceTree = "<group>";
 		};
 		AFSh0212F90000100C7D34B /* ALADDINAntifakeShare */ = {
@@ -1685,6 +1729,7 @@
 				A0FFFFFF,
 				5E61A09F2EFB38ED0039093A /* ALADDINContentBlocker */,
 				AFSh0212F90000100C7D34B /* ALADDINAntifakeShare */,
+				AFCD0212F90000200C7D34B /* ALADDINCallDirectory */,
 				B5003000 /* Products */,
 				5E0057FF2EC3B4DC00024F7E /* Recovered References */,
 			);
@@ -1937,6 +1982,7 @@
 				B5002010 /* ALADDINUITests.xctest */,
 				5E61A09E2EFB38ED0039093A /* ALADDINContentBlocker.appex */,
 				AFSh0102F90000100C7D34B /* ALADDINAntifakeShare.appex */,
+				AFCD0102F90000200C7D34B /* ALADDINCallDirectory.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -1983,6 +2029,21 @@
 			productReference = AFSh0102F90000100C7D34B /* ALADDINAntifakeShare.appex */;
 			productType = "com.apple.product-type.app-extension";
 		};
+		AFCD0172F90000200C7D34B /* ALADDINCallDirectory */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AFCD0182F90000200C7D34B /* Build configuration list for PBXNativeTarget "ALADDINCallDirectory" */;
+			buildPhases = (
+				AFCD0142F90000200C7D34B /* Sources */,
+				AFCD0152F90000200C7D34B /* Frameworks */,
+				AFCD0162F90000200C7D34B /* Resources */,
+			);
+			buildRules = (
+			);
+			name = ALADDINCallDirectory;
+			productName = ALADDINCallDirectory;
+			productReference = AFCD0102F90000200C7D34B /* ALADDINCallDirectory.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		A0FFFFFD /* ALADDIN */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = A100000D /* Build configuration list for PBXNativeTarget "ALADDIN" */;
@@ -1997,6 +2058,7 @@
 			dependencies = (
 				5E61A0A62EFB38ED0039093A /* PBXTargetDependency */,
 				AFSh0132F90000100C7D34B /* PBXTargetDependency */,
+				AFCD0132F90000200C7D34B /* PBXTargetDependency */,
 			);
 			name = ALADDIN;
 			packageProductDependencies = (
@@ -2055,6 +2117,9 @@
 					AFSh0172F90000100C7D34B = {
 						CreatedOnToolsVersion = 16.0;
 					};
+					AFCD0172F90000200C7D34B = {
+						CreatedOnToolsVersion = 16.0;
+					};
 					A0FFFFFD = {
 						CreatedOnToolsVersion = 16.0;
 					};
@@ -2089,6 +2154,7 @@
 				B5002000 /* ALADDINUITests */,
 				5E61A09D2EFB38ED0039093A /* ALADDINContentBlocker */,
 				AFSh0172F90000100C7D34B /* ALADDINAntifakeShare */,
+				AFCD0172F90000200C7D34B /* ALADDINCallDirectory */,
 			);
 		};
 /* End PBXProject section */
@@ -2458,6 +2524,14 @@
 				WELLMDL22F90000100C7D34B /* WellnessModels.swift in Sources */,
 				SECVRD22F90000100C7D34B /* SecurityVerdictModels.swift in Sources */,
 				PRMGATE22F90000100C7D34B /* PremiumGateHandler.swift in Sources */,
+				AFCD0042F90000200C7D34B /* AntifakeCallDirectoryStore.swift in Sources */,
+				AFCD0312F90000200C7D34B /* AntifakeAccessPolicy.swift in Sources */,
+				AFCD0332F90000200C7D34B /* AntifakeCheckHistoryStore.swift in Sources */,
+				AFCD0352F90000200C7D34B /* AntifakeCallDirectorySyncService.swift in Sources */,
+				AFCD0372F90000200C7D34B /* AntifakeCallObserverService.swift in Sources */,
+				AFCD0392F90000200C7D34B /* AntifakeCallDirectorySettingsCard.swift in Sources */,
+				AFCD0412F90000200C7D34B /* AntifakeCheckHistorySection.swift in Sources */,
+				AFCD0432F90000200C7D34B /* AntifakeQuickVoiceCaptureView.swift in Sources */,
 				AFSh0022F90000100C7D34B /* AntifakeSharePayloadStore.swift in Sources */,
 				AFSh0052F90000100C7D34B /* AntifakeDeepLinkRouter.swift in Sources */,
 				AFPRM22F90000100C7D34B /* AntifakeHubPremiumCoordinator.swift in Sources */,
@@ -2706,6 +2780,27 @@
 				W1N000012F90000100WELL01 /* WellnessCompanionNavUITests.swift in Sources */,
 			);
 		};
+
+		AFCD0142F90000200C7D34B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				AFCD0022F90000200C7D34B /* CallDirectoryHandler.swift in Sources */,
+				AFCD0052F90000200C7D34B /* AntifakeCallDirectoryStore.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AFCD0152F90000200C7D34B /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AFCD0162F90000200C7D34B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -2718,6 +2813,11 @@
 			isa = PBXTargetDependency;
 			target = AFSh0172F90000100C7D34B /* ALADDINAntifakeShare */;
 			targetProxy = AFSh0122F90000100C7D34B /* PBXContainerItemProxy */;
+		};
+		AFCD0132F90000200C7D34B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = AFCD0172F90000200C7D34B /* ALADDINCallDirectory */;
+			targetProxy = AFCD0122F90000200C7D34B /* PBXContainerItemProxy */;
 		};
 		B5001007 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
@@ -2741,7 +2841,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 231;
+				CURRENT_PROJECT_VERSION = 232;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2775,7 +2875,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 231;
+				CURRENT_PROJECT_VERSION = 232;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2810,7 +2910,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 231;
+				CURRENT_PROJECT_VERSION = 232;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2844,7 +2944,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 231;
+				CURRENT_PROJECT_VERSION = 232;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3002,7 +3102,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 231;
+				CURRENT_PROJECT_VERSION = 232;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -3035,7 +3135,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 231;
+				CURRENT_PROJECT_VERSION = 232;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -3067,7 +3167,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 231;
+				CURRENT_PROJECT_VERSION = 232;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3093,7 +3193,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 231;
+				CURRENT_PROJECT_VERSION = 232;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3117,7 +3217,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 231;
+				CURRENT_PROJECT_VERSION = 232;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3142,7 +3242,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 231;
+				CURRENT_PROJECT_VERSION = 232;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3160,6 +3260,66 @@
 				TEST_TARGET_NAME = ALADDIN;
 			};
 			name = Release;
+		};
+
+		AFCD0192F90000200C7D34B /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 232;
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINCallDirectory;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		AFCD0202F90000200C7D34B /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 232;
+				DEVELOPMENT_TEAM = 6CJVBBUGSN;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINCallDirectory;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		AFCD0182F90000200C7D34B /* Build configuration list for PBXNativeTarget "ALADDINCallDirectory" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AFCD0192F90000200C7D34B /* Debug */,
+				AFCD0202F90000200C7D34B /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCBuildConfiguration section */
 

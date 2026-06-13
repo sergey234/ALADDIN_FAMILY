@@ -139,11 +139,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "231"
+    static let buildNumber = "232"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "231"
+    static let minimumClientBuildForApiContract = "232"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -250,6 +250,7 @@ struct AppConfig {
         static let antifakeCallAnalyze = "/api/antifake/call/analyze"
         static func antifakeJob(id: String) -> String { "/api/antifake/jobs/\(id)" }
         static let antifakeMetrics = "/api/antifake/metrics"
+        static let antifakeCallDirectory = "/api/antifake/call-directory"
 
         // Dark Web Monitoring (explicit B1-02)
         static let darkWebLeaks = "/api/darkweb/leaks"
@@ -801,6 +802,10 @@ extension AppConfig {
         static let companionHeroImmersiveLayoutEnabled = "companion_hero_immersive_layout_enabled"
         /// Черновик из диктофона → AI Помощник.
         static let pendingAIAssistantDraftMessage = "pending_ai_assistant_draft_message"
+        /// Post-call notification tapped → open Antifake call tab (af-4-03).
+        static let pendingAntifakePostCallCheck = "pending_antifake_post_call_check"
+        /// Dream journal first-visit coachmark (ux-6-05).
+        static let wellnessDreamJournalCoachmarkSeen = "wellness_dream_journal_coachmark_seen"
     }
 
     /// Opt-in: облачный AI-ассистент (текст уходит на aladdin-ai.ru после redact).

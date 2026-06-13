@@ -398,6 +398,10 @@ struct ALADDINApp: App {
                     LaunchDiagnostics.appendLifecycleTrace("WindowGroup.task END deferred bootstrap")
                 }
                 .onOpenURL { url in
+                    if AntifakeDeepLinkRouter.isPostCallCheckDeepLink(url) {
+                        navigationManager.navigateToAntifakeHub(tab: .call)
+                        return
+                    }
                     if AntifakeDeepLinkRouter.isAntifakeCheckDeepLink(url) {
                         if let payload = AntifakeSharePayloadStore.consume() {
                             navigationManager.navigateToAntifakeShareCheck(payload: payload)
@@ -551,6 +555,7 @@ struct ALADDINApp: App {
 #endif
         LaunchDiagnostics.appendStartupTrace("runDeferredLaunchBootstrapIfNeeded END")
         LaunchDiagnostics.appendLifecycleTrace("runDeferredLaunchBootstrapIfNeeded END")
+        AntifakeCallObserverService.shared.startIfNeeded()
     }
 
     @MainActor

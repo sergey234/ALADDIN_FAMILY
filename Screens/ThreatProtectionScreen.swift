@@ -187,11 +187,7 @@ struct AntifakeQuickAccessCard: View {
 
     private func openHub() {
         HapticFeedback.selection()
-        if tariffManager.isCategoryAvailable(.deepfakes) {
-            navigationManager.navigateTo(.antifakeHub)
-        } else {
-            navigationManager.navigateTo(.tariffs)
-        }
+        AntifakeAccessPolicy.openHubOrPaywall(using: navigationManager)
     }
 }
 

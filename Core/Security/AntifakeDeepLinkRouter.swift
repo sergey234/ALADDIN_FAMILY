@@ -11,7 +11,14 @@ enum AntifakeDeepLinkRouter {
               url.host?.lowercased() == host else { return false }
 
         let trimmedPath = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
-        return trimmedPath.isEmpty || trimmedPath == checkPath
+        return trimmedPath.isEmpty || trimmedPath == checkPath || trimmedPath == "call-check"
+    }
+
+    static func isPostCallCheckDeepLink(_ url: URL) -> Bool {
+        guard url.scheme?.lowercased() == scheme,
+              url.host?.lowercased() == host else { return false }
+        let trimmedPath = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        return trimmedPath == "call-check"
     }
 
     static func checkURL(mode: AntifakeShareMode? = nil) -> URL {

@@ -10,6 +10,7 @@ struct WellnessReflectiveModeScreen: View {
     @State private var errorText: String?
     @State private var isSelecting = false
     @State private var pendingMode: WellnessReflectiveModeItem?
+    @State private var promptMode: WellnessReflectiveModeItem?
 
     var body: some View {
         ZStack {
@@ -36,6 +37,9 @@ struct WellnessReflectiveModeScreen: View {
         .navigationBarHidden(true)
         .accessibilityIdentifier("wellness_reflective_screen")
         .task { await loadModes() }
+        .sheet(item: $promptMode) { mode in
+            reflectivePromptSheet(mode)
+        }
         .confirmationDialog(
             localizationManager.localized("wellness_reflective_confirm_title"),
             isPresented: Binding(
@@ -99,7 +103,7 @@ struct WellnessReflectiveModeScreen: View {
 
     private func modeRow(_ mode: WellnessReflectiveModeItem) -> some View {
         Button {
-            pendingMode = mode
+            promptMode = mode
         } label: {
             VStack(alignment: .leading, spacing: 6) {
                 Text(modeLabel(mode))
@@ -175,5 +179,39 @@ struct WellnessReflectiveModeScreen: View {
         WellnessSessionStore.setCompanionEntryBanner(banner)
         WellnessSessionStore.requestMicHighlight()
         navigationManager.navigateToCompanionHome(returnTo: .wellnessReflective)
+    }
+
+    private func reflectivePromptSheet(_ mode: WellnessReflectiveModeItem) -> some View {
+        NavigationView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(modeLabel(mode))
+                    .font(.title3.bold())
+                Text(modeHint(mode))
+                    .font(.body)
+                    .foregroundColor(.secondary)
+                Spacer()
+                Button {
+                    promptMode = nil
+                    pendingMode = mode
+                } label: {
+                    Text(localizationManager.localized("wellness_reflective_prompt_continue"))
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 12)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Color(hex: "8B5CF6"))
+            }
+            .padding()
+            .navigationTitle(localizationManager.localized("wellness_reflective_prompt_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(localizationManager.localized("wellness_reflective_confirm_cancel")) {
+                        promptMode = nil
+                    }
+                }
+            }
+        }
+        .accessibilityIdentifier("wellness_reflective_prompt_sheet")
     }
 }

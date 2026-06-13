@@ -80,6 +80,11 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
                 finalVerdict = try await pollUntilComplete(jobId: job.jobId)
             }
             verdict = finalVerdict
+            AntifakeHistoryRecorder.record(
+                verdict: finalVerdict,
+                kind: mediaKind.rawValue,
+                summary: selectedFilename ?? mediaKind.rawValue
+            )
             return true
         } catch {
             handleCheckError(error)

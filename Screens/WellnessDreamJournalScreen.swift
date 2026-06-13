@@ -10,6 +10,7 @@ struct WellnessDreamJournalScreen: View {
     @State private var moodTag = ""
     @State private var errorText: String?
     @State private var showDisclaimerSheet = false
+    @State private var showCoachmark = false
 
     var body: some View {
         ZStack {
@@ -20,7 +21,7 @@ struct WellnessDreamJournalScreen: View {
                     header
                     disclaimerRow
                     WellnessMultilineField(
-                        title: localizationManager.localized("wellness_dream_prompt"),
+                        title: localizationManager.localized("wellness_dream_placeholder"),
                         text: $dreamText
                     )
                     .wellnessReadableInput()
@@ -61,6 +62,14 @@ struct WellnessDreamJournalScreen: View {
         .navigationBarHidden(true)
         .accessibilityIdentifier("wellness_dream_journal_screen")
         .task { await load() }
+        .onAppear { presentCoachmarkIfNeeded() }
+        .alert(localizationManager.localized("wellness_dream_coachmark_title"), isPresented: $showCoachmark) {
+            Button(localizationManager.localized("common_ok")) {
+                UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.wellnessDreamJournalCoachmarkSeen)
+            }
+        } message: {
+            Text(localizationManager.localized("wellness_dream_coachmark_body"))
+        }
         .sheet(isPresented: $showDisclaimerSheet) {
             dreamDisclaimerSheet
         }
@@ -118,6 +127,11 @@ struct WellnessDreamJournalScreen: View {
             }
         }
         .environmentObject(localizationManager)
+    }
+
+    private func presentCoachmarkIfNeeded() {
+        guard !UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.wellnessDreamJournalCoachmarkSeen) else { return }
+        showCoachmark = true
     }
 
     private func load() async {

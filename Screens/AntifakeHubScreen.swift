@@ -16,7 +16,7 @@ struct AntifakeHubScreen: View {
 
     private var hasPremiumAccess: Bool {
         _ = protectionSettingsManager.settings
-        return tariffManager.isCategoryAvailable(.deepfakes)
+        return AntifakeAccessPolicy.isHubAvailable(tariffManager: tariffManager)
     }
 
     var body: some View {
@@ -30,9 +30,19 @@ struct AntifakeHubScreen: View {
                     .padding(.bottom, Spacing.s)
 
                 ScrollView(.vertical, showsIndicators: false) {
-                    tabContent
-                        .padding(.horizontal, Spacing.screenPadding)
-                        .padding(.bottom, Spacing.xxl)
+                    VStack(spacing: Spacing.l) {
+                        if hasPremiumAccess {
+                            AntifakeCallDirectorySettingsCard()
+                                .environmentObject(localizationManager)
+                        }
+                        tabContent
+                        if hasPremiumAccess {
+                            AntifakeCheckHistorySection()
+                                .environmentObject(localizationManager)
+                        }
+                    }
+                    .padding(.horizontal, Spacing.screenPadding)
+                    .padding(.bottom, Spacing.xxl)
                 }
             }
         }
@@ -134,6 +144,8 @@ struct AntifakeHubScreen: View {
                     prefillTextMode: $pendingTextMode
                 )
             case .audio:
+                AntifakeQuickVoiceCaptureView(showPremiumPaywall: $showPremiumPaywall)
+                    .environmentObject(localizationManager)
                 AntifakeMediaCheckView(
                     mediaKind: .audio,
                     titleKey: "antifake_audio_title",

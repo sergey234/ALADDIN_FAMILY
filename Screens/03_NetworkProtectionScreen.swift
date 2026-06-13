@@ -417,6 +417,8 @@ struct NetworkProtectionScreen: View {
                 subtitle: localizationManager.localized("component.threat_protection.subtitle"),
                 isExpanded: $threatProtectionExpanded
             ) {
+                antifakeAccordionEntry
+
                 // 1. Защита от фишинга
                 SecurityFeatureRow(
                     componentId: "phishing_protection_agent",
@@ -563,6 +565,37 @@ struct NetworkProtectionScreen: View {
             }
             #endif
         }
+    }
+
+    /// ux-1-07 — второй вход в Antifake из аккордеона «Защита от угроз».
+    private var antifakeAccordionEntry: some View {
+        Button {
+            HapticFeedback.selection()
+            AntifakeAccessPolicy.openHubOrPaywall(using: navigationManager)
+        } label: {
+            HStack(spacing: Spacing.m) {
+                Text("🎭")
+                    .font(.title3)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(localizationManager.localized("protection_antifake_card_title"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.textPrimary)
+                    Text(localizationManager.localized("protection_antifake_accordion_subtitle"))
+                        .font(.caption)
+                        .foregroundColor(.textSecondary)
+                }
+                Spacer()
+                Text(localizationManager.localized("protection_open_check_button"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.primaryBlue)
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.primaryBlue)
+            }
+            .padding(.vertical, Spacing.s)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("antifake_accordion_entry")
     }
     
     // MARK: - Безопасное соединение Status Card (компактная версия)
