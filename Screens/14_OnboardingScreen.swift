@@ -88,10 +88,10 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 1:
-            // OB_02: title +1 line up (28pt) — desc unchanged; «безопасности» не обрезается hero на device
+            // OB_02: title y−28 (328), h+28 (106) — 3 строки «…безопасности» без clip; device +28pt up
             return OnboardingFigmaAnchor(
                 wordmark: nil,
-                title: CGRect(x: 12, y: 356, width: 361, height: 78),
+                title: CGRect(x: 12, y: 328, width: 361, height: 106),
                 desc: CGRect(x: 12, y: 466, width: 370, height: 132),
                 scrim: CGRect(x: 0, y: 448, width: 393, height: 310),
                 scrimMaxOpacity: 0.42,
@@ -451,20 +451,35 @@ private struct OnboardingFigmaAnchoredContent: View {
         let bodyFont: Font = .system(size: OnboardingReadableLayout.bodyFontSize, weight: .regular)
         let bodyColor: Color = isOB07 ? .white.opacity(0.75) : .white.opacity(0.92)
 
-        OnboardingWholeWordText(
-            text: text,
-            font: isTitle ? titleFont : bodyFont,
-            color: isTitle ? .white : bodyColor,
-            lineSpacing: isTitle ? 4 : 6,
-            maxLines: maxLines,
-            minimumScaleFactor: isTitle ? 0.85 : 0.9
-        )
-        .frame(
-            width: frame.width * scaleX,
-            height: frame.height * textVScale,
-            alignment: .top
-        )
-        .clipped()
+        Group {
+            if isTitle {
+                OnboardingWholeWordText(
+                    text: text,
+                    font: titleFont,
+                    color: .white,
+                    lineSpacing: 4,
+                    maxLines: maxLines,
+                    minimumScaleFactor: 0.85
+                )
+                .frame(width: frame.width * scaleX, alignment: .top)
+                .fixedSize(horizontal: false, vertical: true)
+            } else {
+                OnboardingWholeWordText(
+                    text: text,
+                    font: bodyFont,
+                    color: bodyColor,
+                    lineSpacing: 6,
+                    maxLines: maxLines,
+                    minimumScaleFactor: 0.9
+                )
+                .frame(
+                    width: frame.width * scaleX,
+                    height: frame.height * textVScale,
+                    alignment: .top
+                )
+                .clipped()
+            }
+        }
         .offset(
             x: frame.origin.x * scaleX,
             y: yPos(frame.origin.y + screenYOffset)
@@ -736,8 +751,8 @@ struct OnboardingScreen: View {
         "onboarding_page4_desc": "Система ALADDIN AI анализирует, обнаруживает и предупреждает о киберугрозах. Постоянно обучается и улучшается.",
         "onboarding_page5_title": "Защита для детей!",
         "onboarding_page5_desc": "Дети не смогут посещать опасные сайты, онлайн-казино, взрослые сайты или совершать покупки в играх и стриминговых сервисах",
-        "onboarding_page6_title": "Защита для людей 23+",
-        "onboarding_page6_desc": "AI проверяет фейковые звонки, новости, сообщения и видео. Защита от поддельных голосов и номеров.",
+        "onboarding_page6_title": "Antifake для людей 18+",
+        "onboarding_page6_desc": "AI помогает проверить подозрительный звонок, новости, сообщения и видео.",
         "onboarding_page7_title": "Присоединяйтесь к ALADDIN",
         "onboarding_page7_desc": "Спокойствие близких - бесценно. Защита начинается сегодня!",
         "onboarding_skip": "Пропустить",
@@ -765,8 +780,8 @@ struct OnboardingScreen: View {
         "onboarding_page4_desc": "ALADDIN AI analyzes, detects and warns about cyber threats. It constantly learns and improves.",
         "onboarding_page5_title": "Protection for kids",
         "onboarding_page5_desc": "Block unsafe websites and risky content",
-        "onboarding_page6_title": "Protection for 23+ users",
-        "onboarding_page6_desc": "AI checks fake calls, news, messages and video. Protection from spoofed voices and numbers.",
+        "onboarding_page6_title": "Antifake for people 18+",
+        "onboarding_page6_desc": "AI helps check a suspicious call, news, messages and video.",
         "onboarding_page7_title": "Join ALADDIN",
         "onboarding_page7_desc": "Protect your loved ones starting today",
         "onboarding_skip": "Skip",
