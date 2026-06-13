@@ -20,6 +20,12 @@ platform :ios do
       call_directory_profile_uuid = ENV["PROVISIONING_PROFILE_CALL_DIRECTORY_UUID"]
       dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
 
+      if call_directory_profile_uuid.to_s.empty?
+        puts "⚠️  PROVISIONING_PROFILE_CALL_DIRECTORY_UUID not set — skipping Call Directory extension for this archive"
+        puts "    Add GitHub secret PROVISIONING_PROFILE_CALL_DIRECTORY for App Store builds with Call Directory"
+        sh("bash scripts/ci_disable_call_directory_embed.sh")
+      end
+
       puts "🔐 Team ID: #{team_id}"
       puts "🔐 Certificate: #{dist_cert_name}"
       puts "📋 App Profile UUID: #{app_profile_uuid}"

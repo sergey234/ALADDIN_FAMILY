@@ -68,6 +68,8 @@ struct ChildInterfaceScreen: View {
                         
                         // НОВОЕ: Возрастные табы
                         ageTabs
+
+                        memoryAcademyHomeCard
                         
                         // 🦄 Мои единороги
                         unicornBalanceCard
@@ -404,6 +406,67 @@ struct ChildInterfaceScreen: View {
             }
         }
         .padding(.horizontal, 20)
+    }
+
+    // MARK: - Memory Academy home card (moved from onboarding OB_05)
+
+    private var memoryAcademyHomeCard: some View {
+        Button(action: {
+            HapticFeedback.impact(.medium)
+            navigateToContent(category: defaultMnemoCategory(for: selectedAge))
+        }) {
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                HStack(spacing: Spacing.s) {
+                    Text("🧠")
+                        .font(.system(size: 28))
+                    Text(MnemoBrandChrome.brandTitle(ageGroup: selectedAge, localization: localizationManager))
+                        .font(.title3.bold())
+                        .foregroundColor(.white)
+                        .accessibilityIdentifier("child_mnemo_home_brand_title")
+                    Spacer(minLength: 0)
+                    Image(systemName: "arrow.right.circle.fill")
+                        .font(.system(size: 22))
+                        .foregroundColor(.yellow.opacity(0.9))
+                }
+
+                Text(MnemoBrandChrome.brandTagline(ageGroup: selectedAge, localization: localizationManager))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white.opacity(0.92))
+                    .accessibilityIdentifier("child_mnemo_home_tagline")
+
+                Text(localizationManager.localized(MnemoBrandChrome.promiseKey))
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.85))
+
+                Text(localizationManager.localized("child_mnemo_home_methods_line"))
+                    .font(.caption.weight(.medium))
+                    .foregroundColor(.yellow.opacity(0.92))
+                    .accessibilityIdentifier("child_mnemo_home_methods_line")
+            }
+            .padding(Spacing.l)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(
+                LinearGradient(
+                    colors: [Color(hex: "4C1D95"), Color(hex: "7C3AED")],
+                    startPoint: .topLeading,
+                    endPoint: .bottomTrailing
+                )
+            )
+            .cornerRadius(CornerRadius.large)
+            .shadow(color: Color(hex: "7C3AED").opacity(0.35), radius: 10, x: 0, y: 4)
+        }
+        .buttonStyle(PlainButtonStyle())
+        .padding(.horizontal, Spacing.screenPadding)
+        .accessibilityIdentifier("child_mnemo_home_card")
+    }
+
+    private func defaultMnemoCategory(for age: AgeGroup) -> String {
+        switch age {
+        case .kids: return ChildCategoryKey.songs
+        case .school: return ChildCategoryKey.games
+        case .teen: return ChildCategoryKey.music
+        case .youngAdult: return ChildCategoryKey.education
+        }
     }
     
     // MARK: - Big Buttons Grid

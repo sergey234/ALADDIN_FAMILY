@@ -46,8 +46,32 @@ private struct OnboardingFigmaAnchor {
     let scrimMaxOpacity: CGFloat
     let maxTitleLines: Int
     let maxBodyLines: Int
+    /// Extra screen-space Y offset for title only (negative = move up). OB_02 device tweak.
+    let titleScreenYOffset: CGFloat
     /// Только OB_07 (`case 6`). Не выводить из Y: у OB_01 тоже wordmark и title.y > 480.
     let layoutMode: OnboardingFigmaLayoutMode
+
+    init(
+        wordmark: CGRect? = nil,
+        title: CGRect,
+        desc: CGRect,
+        scrim: CGRect,
+        scrimMaxOpacity: CGFloat,
+        maxTitleLines: Int,
+        maxBodyLines: Int,
+        titleScreenYOffset: CGFloat = 0,
+        layoutMode: OnboardingFigmaLayoutMode = .standard
+    ) {
+        self.wordmark = wordmark
+        self.title = title
+        self.desc = desc
+        self.scrim = scrim
+        self.scrimMaxOpacity = scrimMaxOpacity
+        self.maxTitleLines = maxTitleLines
+        self.maxBodyLines = maxBodyLines
+        self.titleScreenYOffset = titleScreenYOffset
+        self.layoutMode = layoutMode
+    }
 
     static func forContentIndex(_ index: Int) -> OnboardingFigmaAnchor? {
         switch index {
@@ -64,7 +88,7 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 1:
-            // OB_02: +3 строки вверх (84pt total) — title «безопасности» не обрезается hero
+            // OB_02: title +1 line up (28pt) — desc unchanged; «безопасности» не обрезается hero на device
             return OnboardingFigmaAnchor(
                 wordmark: nil,
                 title: CGRect(x: 12, y: 356, width: 361, height: 78),
@@ -73,6 +97,7 @@ private struct OnboardingFigmaAnchor {
                 scrimMaxOpacity: 0.42,
                 maxTitleLines: 3,
                 maxBodyLines: 5,
+                titleScreenYOffset: -28,
                 layoutMode: .standard
             )
         case 2:
@@ -388,7 +413,8 @@ private struct OnboardingFigmaAnchoredContent: View {
                     scaleX: scaleX,
                     textVScale: textVScale,
                     yPos: yPos,
-                    maxLines: anchor.maxTitleLines
+                    maxLines: anchor.maxTitleLines,
+                    screenYOffset: anchor.titleScreenYOffset
                 )
                 .accessibilityAddTraits(.isHeader)
 
@@ -416,7 +442,8 @@ private struct OnboardingFigmaAnchoredContent: View {
         scaleX: CGFloat,
         textVScale: CGFloat,
         yPos: (CGFloat) -> CGFloat,
-        maxLines: Int
+        maxLines: Int,
+        screenYOffset: CGFloat = 0
     ) -> some View {
         let titleFont: Font = isOB07
             ? .system(size: 24, weight: .semibold)
@@ -440,7 +467,7 @@ private struct OnboardingFigmaAnchoredContent: View {
         .clipped()
         .offset(
             x: frame.origin.x * scaleX,
-            y: yPos(frame.origin.y)
+            y: yPos(frame.origin.y + screenYOffset)
         )
     }
 }
@@ -758,10 +785,7 @@ struct OnboardingScreen: View {
 
     // ✅ НОВОЕ: Безопасная функция локализации с fallback
     private func onboardingPage5Description() -> String {
-        let base = safeLocalized("onboarding_page5_desc")
-        let academy = safeLocalized(MnemoBrandChrome.onboardingTitleKey)
-        let detail = safeLocalized(MnemoBrandChrome.onboardingDescKey)
-        return "\(base)\n\n🧠 \(academy)\n\(detail)"
+        safeLocalized("onboarding_page5_desc")
     }
 
     private func safeLocalized(_ key: String, fallback: String? = nil) -> String {
