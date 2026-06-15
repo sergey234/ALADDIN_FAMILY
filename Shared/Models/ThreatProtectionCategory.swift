@@ -102,7 +102,7 @@ extension ThreatProtectionCategory {
                 group: ProtectionGroup.devices
             ),
             .deepfakes: CategoryConfiguration(
-                requiredTariff: TariffType.premium,
+                requiredTariff: TariffType.family,
                 benefit: "Обнаруживает поддельные видео и аудио",
                 settingsScreen: NavigationManager.ALADDINScreen.antifakeHub,
                 group: ProtectionGroup.premium

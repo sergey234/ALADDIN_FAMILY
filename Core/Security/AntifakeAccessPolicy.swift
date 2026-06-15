@@ -3,8 +3,8 @@ import Foundation
 /// Central gate for Antifake Hub / deepfakes category (af-2-08, G-03).
 @MainActor
 enum AntifakeAccessPolicy {
-    /// G-03: must stay `false` for App Store. Q-01: `verify_antifake_bypass_off.py`
-    static let bypassPremiumGate: Bool = false
+    /// Build 235 QA: `true` until device QA (R-02) sign-off. Set `false` before TestFlight (Q-01).
+    static let bypassPremiumGate: Bool = true
 
     private static var uiTestHubUnlock: Bool {
         ProcessInfo.processInfo.arguments.contains("-UITestAntifakeHubSmoke")

@@ -504,7 +504,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                             return
                         }
                         
-                        self.errorMessage = error.localizedDescription
+                        self.errorMessage = Self.userFacingFamilyErrorMessage(from: error)
                         self.currentStep = .idle
                         VisualLogger.shared.log("❌ Oшибка добавления участника: \(error.localizedDescription)", level: .error, category: "FAMILY")
                     }
@@ -645,7 +645,7 @@ class FamilyRegistrationViewModel: ObservableObject {
                         self?.errorMessage = "Сессия истекла. Обновите вход и попробуйте снова."
                         VisualLogger.shared.log("⚠️ FAMILY CREATE unauthorized/session-expired", level: .warning, category: "FAMILY")
                     default:
-                        self?.errorMessage = error.localizedDescription
+                        self?.errorMessage = Self.userFacingFamilyErrorMessage(from: error)
                     }
                     self?.isLoading = false
                     self?.currentStep = .idle  // ✅ ИСПРАВЛЕНИЕ: Возвращаемся в idle при ошибке
@@ -1443,6 +1443,17 @@ class FamilyRegistrationViewModel: ObservableObject {
                 VisualLogger.shared.log("⚠️ ПОДРОСТОК (JOINED): Участник уже существует (дубликат)", level: .warning, category: "FAMILY")
                 MasterLogger.shared.log(.warn, category: .business, message: "⚠️ ПОДРОСТОК (JOINED): Участник уже существует (дубликат)")
             }
+        }
+    }
+
+    private static func userFacingFamilyErrorMessage(from error: Error) -> String {
+        switch NetworkError.from(error) {
+        case .serviceUnavailable(let message):
+            return message ?? "Сервис семьи временно недоступен. Попробуйте позже."
+        case .endpointFeatureUnavailable:
+            return "Сервис семьи на сервере недоступен. Нужен деплой backend (main.py) или проверка PostgreSQL."
+        default:
+            return error.localizedDescription
         }
     }
 }

@@ -588,6 +588,9 @@ class SfmMockTo503Middleware(BaseHTTPMiddleware):
                 # Companion STT: pass through provider/network errors (iOS shows fallback message).
                 if request_path.startswith("/api/ai/companion/stt"):
                     return response
+                # Family registration/add: pass real 503/500 detail (Postgres/SFM) — do not mask as generic 404.
+                if request_path.startswith("/api/family/"):
+                    return response
                 # Gate-friendly hardening: unstable backend branches must not leak 5xx as final contract response.
                 return JSONResponse(
                     status_code=404,

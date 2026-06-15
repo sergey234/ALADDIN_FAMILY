@@ -1,7 +1,7 @@
 # Build 232 — согласованный план (опросник 2026-06-13)
 
 **SSOT сессии:** этот файл · **Release SSOT:** [`docs/release/BUILD_232_RELEASE_SUMMARY.md`](../docs/release/BUILD_232_RELEASE_SUMMARY.md)  
-**Bypass revert (P0-4):** ✅ `bypassPremiumGate=false` (G-03, 2026-06-15)
+**Bypass revert (P0-4):** ⏸ QA build 235 — `bypassPremiumGate=true` until R-02 device sign-off (G-03 off again before TestFlight)
 
 ---
 
