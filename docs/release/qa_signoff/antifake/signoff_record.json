@@ -1,0 +1,19 @@
+{
+  "feature": "antifake",
+  "task_id": "af-R-02",
+  "status": "pending_device_qa",
+  "tester": null,
+  "build": null,
+  "device_ios": null,
+  "signed_at": null,
+  "checks": {
+    "extension_on": { "pass": false, "attachment": null, "notes": null },
+    "sync_n_ge_100": { "pass": false, "attachment": null, "notes": null },
+    "incoming_call_label": { "pass": false, "attachment": null, "notes": null },
+    "extension_off_orange": { "pass": false, "attachment": null, "notes": null },
+    "en_locale_label": { "pass": false, "attachment": null, "notes": null },
+    "post_call_notification": { "pass": false, "attachment": null, "notes": null },
+    "post_call_deep_link": { "pass": false, "attachment": null, "notes": null },
+    "post_call_toggle_off": { "pass": false, "attachment": null, "notes": null }
+  }
+}

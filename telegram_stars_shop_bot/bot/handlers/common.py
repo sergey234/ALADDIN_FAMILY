@@ -9,10 +9,20 @@ from bot.handlers.hub import orders_first_page_html, profile_body_html
 from bot.keyboards.shop_kb import (
     channel_member_open_menu_kb,
     channel_subscribe_kb,
+    feedback_csat_kb,
     hub_menu_kb,
     onboarding_language_kb,
 )
-from bot.services import analytics_repo, branding_media, captcha_repo, onboarding_gate, users_repo, vpn_referral_repo
+from bot.services import (
+    acquisition_repo,
+    analytics_repo,
+    branding_media,
+    captcha_repo,
+    feedback_repo,
+    onboarding_gate,
+    users_repo,
+    vpn_referral_repo,
+)
 from bot.services.channel_gate import channel_gate_enabled, user_is_channel_member
 from bot.services.marketing import (
     CHANNEL_GATE_PHOTO_CAPTION_MAX,
@@ -90,6 +100,32 @@ async def cmd_start(message: Message, command: CommandObject, settings: Settings
     except Exception:
         pass
     payload = (command.args or "").strip()
+    acq_meta = acquisition_repo.parse_start_payload(payload)
+    if payload.startswith("ref_"):
+        acq_meta["source"] = "referral"
+        acq_meta["product_hint"] = acq_meta.get("product_hint") or "shop"
+    elif payload.startswith("r_") or payload.startswith("r-"):
+        acq_meta["source"] = "referral"
+        acq_meta["product_hint"] = acq_meta.get("product_hint") or "vpn"
+    try:
+        await acquisition_repo.touch_user_acquisition(
+            conn,
+            user_id=message.from_user.id,
+            source=acq_meta.get("source", "unknown"),
+            campaign=acq_meta.get("campaign", ""),
+            creative=acq_meta.get("creative", ""),
+        )
+    except Exception:
+        pass
+    try:
+        await analytics_repo.log_event(
+            conn,
+            user_id=message.from_user.id,
+            event_type="offer_impression",
+            meta=acq_meta,
+        )
+    except Exception:
+        pass
     if payload.startswith("ref_"):
         raw = payload.removeprefix("ref_")
         try:
@@ -289,3 +325,62 @@ async def cmd_menu(message: Message, settings: Settings, conn) -> None:
     except Exception:
         pass
     await message.answer(ONBOARDING_SCREEN_2, reply_markup=hub_menu_kb(settings))
+
+
+@router.callback_query(F.data.startswith("fb:nps:"))
+async def feedback_nps_callback(cb: CallbackQuery, settings: Settings, conn) -> None:
+    if not settings.feature_feedback_collection_enabled:
+        await cb.answer("Опросы временно отключены.")
+        return
+    raw = (cb.data or "").split(":")
+    if len(raw) != 3:
+        await cb.answer()
+        return
+    try:
+        score = int(raw[2])
+    except ValueError:
+        await cb.answer()
+        return
+    if score < 0 or score > 10:
+        await cb.answer()
+        return
+    await feedback_repo.save_feedback(
+        conn,
+        user_id=cb.from_user.id,
+        kind="nps",
+        score=score,
+        product_scope="shop",
+    )
+    await cb.message.answer(
+        "Спасибо! Теперь оцените удовлетворенность (CSAT) по шкале 1-5:",
+        reply_markup=feedback_csat_kb(),
+    )
+    await cb.answer("NPS сохранен")
+
+
+@router.callback_query(F.data.startswith("fb:csat:"))
+async def feedback_csat_callback(cb: CallbackQuery, settings: Settings, conn) -> None:
+    if not settings.feature_feedback_collection_enabled:
+        await cb.answer("Опросы временно отключены.")
+        return
+    raw = (cb.data or "").split(":")
+    if len(raw) != 3:
+        await cb.answer()
+        return
+    try:
+        score = int(raw[2])
+    except ValueError:
+        await cb.answer()
+        return
+    if score < 1 or score > 5:
+        await cb.answer()
+        return
+    await feedback_repo.save_feedback(
+        conn,
+        user_id=cb.from_user.id,
+        kind="csat",
+        score=score,
+        product_scope="shop",
+    )
+    await cb.message.answer("Спасибо за отзыв! Это помогает улучшать сервис.")
+    await cb.answer("CSAT сохранен")

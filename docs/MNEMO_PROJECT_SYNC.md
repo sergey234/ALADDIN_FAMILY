@@ -1,12 +1,13 @@
 # ALADDIN Memory Academy — Project Sync (единый источник истины для ML)
 
-**Updated:** 2026-06-06  
+**Updated:** 2026-06-14  
 **Рабочий корень:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`  
-**Прогресс:** **111 / 119 задач (93%)** · **Код: 100%** · **Phase C (QA): 8 задач осталось**
+**Прогресс:** **119 / 119 задач (100%)** · **Код + Phase C: DONE**
 
 | Документ | Роль |
 |----------|------|
 | **Этот файл** | Полная синхронизация: что сделано, что осталось, файлы, тесты, флаги, **§10 API** |
+| `docs/MNEMO_ACADEMY_18_TASKS.md` | **18 задач catalog-fix batch** (2026-06-13) — статус код vs Phase C |
 | `ALADDIN_JWT_API_ARCHITECTURE_COMPLETE.md` | HTTP/JWT SSOT; **§6.8** — cross-ref: Mnemo = local iOS, не REST |
 | `MNEMONICS_CHILD_IMPLEMENTATION_PLAN.md` §Q | Чекбоксы задач (источник для `mnemo_batch_progress.py`) |
 | `MNEMONICS_ML_HANDOFF.md` | Краткий handoff + архитектура + ограничения |
@@ -15,8 +16,8 @@
 
 ```bash
 cd ALADDIN_NEW/mobile_apps/ALADDIN_iOS
-python3 scripts/mnemo_batch_progress.py          # 111/119
-python3 scripts/child_localization_gate.py --mnemo-full  # 389 keys PASS
+python3 scripts/mnemo_batch_progress.py          # 119/119
+python3 scripts/child_localization_gate.py --mnemo-full  # 397 keys PASS
 ```
 
 ---
@@ -27,57 +28,56 @@ python3 scripts/child_localization_gate.py --mnemo-full  # 389 keys PASS
 |------|----------|--------|
 | **A** | v2 код B0–B7 + B10 SRS/push код | ✅ **DONE** |
 | **B** | v3 код B9–B15 (spine, pictogram, MQ, table, parent, optional) | ✅ **DONE** |
-| **C** | Сборка, xcodebuild test, manual QA, F1–F15 sign-off | ⏳ **8 задач** |
+| **C** | Сборка, xcodebuild test, manual QA, F1–F15 sign-off | ✅ **DONE** (2026-06-14) |
 
 **Правило:** `xcodebuild test` и полная сборка — **только Phase C** (по запросу пользователя в конце).
 
 ---
 
-## 2. Оставшиеся 8 задач (Phase C)
+## 2. Phase C — выполнено (2026-06-14)
 
-| ID | Тип | Что сделать | Артефакт / команда |
-|----|-----|-------------|-------------------|
-| **B8-T02** | Unit | Прогнать MnemoCore v2 suites | `./scripts/mnemo_run_tests.sh` (unit часть) |
-| **B8-T03** | UITest | Прогнать B8-T03 тесты (код ✅) | `MnemoAcademyUITests` — banner, 4 phases, SRS→lesson |
-| **B8-T04** | Manual | Smoke 4 возраста × 8 мнемо-категорий | Документировать PASS в manual matrix |
-| **B8-T05** | Sign-off | F1–F10 → `[x]` в §N.5 | После T02–T04 green |
-| **B9-T08** | Unit | Прогнать unlock/mastery tests | Частично в `MnemoCoreV3Tests` (20 tests, код ✅) |
-| **B10-T08** | Unit | failure + notifications tests | Написать/прогнать при Phase C |
-| **B15-T04** | Manual | 8 семестров × 4 возраста | Manual matrix + §N.5 F11 |
-| **B15-T05** | Sign-off | F1–F15 все `[x]` | Финальный MNEMO 100% |
+| ID | Тип | Статус | Артефакт |
+|----|-----|--------|----------|
+| **B8-T02** | Unit | ✅ | `mnemo_run_tests.sh` / Xcode Cmd+U, 15.2 sim |
+| **B8-T03** | UITest | ✅ | `MnemoAcademyUITests` |
+| **B8-T04** | Manual | ✅ | `MNEMO_B8_MANUAL_SMOKE_4x8.md` PASS |
+| **B8-T05** | Sign-off | ✅ | F1–F10 `[x]` §N.5 |
+| **B9-T08** | Unit | ✅ | `MnemoCoreV3Tests` unlock/mastery |
+| **B10-T08** | Unit | ✅ | `MnemonicSRSStoreTests` |
+| **B15-T04** | Manual | ✅ | `MNEMO_B15_MANUAL_SMOKE_8x4.md` PASS |
+| **B15-T05** | Sign-off | ✅ | F1–F15 `[x]` §N.5 |
 
-### Порядок Phase C (рекомендуемый)
+### Команды Phase C (архив)
 
 ```
-1. python3 scripts/child_localization_gate.py --mnemo-full
-2. ./scripts/mnemo_run_tests.sh                    # все unit + UITest
-3. Manual B8-T04 (4×8) + B15-T04 (8×4)
-4. §N.5: отметить F1–F15
-5. §Q: отметить B8-T02–T05, B9-T08, B10-T08, B15-T04–T05
+1. python3 scripts/child_localization_gate.py --mnemo-full   ✅
+2. ./scripts/mnemo_phase_c_quick.sh  (после Cmd+B, sim 15.2)
+3. Manual matrices — PASS в docs
+4. §N.5 F1–F15 + §Q — все [x]
 ```
 
 ---
 
 ## 3. F-flags (§N.5) — sign-off
 
-| Flag | Код готов? | Sign-off | Owner batch |
-|------|------------|----------|-------------|
-| F1 | ✅ labels по возрасту | ⏳ | B8-T05 |
-| F2 | ✅ SRS + skill | ⏳ | B8-T05 |
-| F3 | ✅ study 4 фазы | ⏳ | B8-T05 |
-| F4 | ✅ games.05 recall | ⏳ | B8-T05 |
-| F5 | ✅ 30 study page_2 | ⏳ | B8-T05 |
-| F6 | ✅ songs…education recall | ⏳ | B8-T05 |
-| F7 | ✅ MnemonicRewardBridge | ⏳ | B8-T05 |
-| F8 | ✅ parent mastery % | ⏳ | B8-T05 |
-| F9 | ✅ gate PASS (389 keys) | ⏳ formal | B8-T05 |
-| F10 | ⏳ device smoke | ⏳ | B8-T04 |
-| F11 | ✅ spine UI + UITest код | ⏳ run + manual | B15-T03/T04/T05 |
-| F12 | ✅ baseline + MQ UI | ⏳ | B15-T05 |
-| F13 | ✅ push + deeplink код | ⏳ | B15-T05 |
-| F14 | ✅ pictogram recall | ✅ | B15 |
-| F15 | ✅ study.09 table | ⏳ | B15-T05 |
-| F16 | ✅ Brand Academy | ✅ | B1C |
+| Flag | Код | Sign-off | Batch |
+|------|-----|----------|-------|
+| F1 | ✅ | ✅ 2026-06-14 | B8-T05 |
+| F2 | ✅ | ✅ | B8-T05 |
+| F3 | ✅ | ✅ | B8-T05 |
+| F4 | ✅ | ✅ | B8-T05 |
+| F5 | ✅ | ✅ | B8-T05 |
+| F6 | ✅ | ✅ | B8-T05 |
+| F7 | ✅ | ✅ | B8-T05 |
+| F8 | ✅ | ✅ | B8-T05 |
+| F9 | ✅ gate 397 keys | ✅ | B8-T05 |
+| F10 | ✅ | ✅ manual 4×8 | B8-T04 |
+| F11 | ✅ | ✅ manual 8×4 | B15-T04 |
+| F12 | ✅ | ✅ | B15-T05 |
+| F13 | ✅ | ✅ | B15-T05 |
+| F14 | ✅ | ✅ | B15 |
+| F15 | ✅ | ✅ | B15-T05 |
+| F16 | ✅ | ✅ | B1C |
 
 ---
 
@@ -496,9 +496,7 @@ Opt-in UI: `mnemo.companionVoiceReminder.optIn`, `mnemo.advancedNumberPegs.optIn
 ```
 Рабочий корень: ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 Прочитай docs/MNEMO_PROJECT_SYNC.md (этот файл) + §Q + MNEMONICS_ML_HANDOFF.md
-Прогресс: 111/119. Весь КОД готов. NEXT: Phase C только (8 задач).
-НЕ пиши новый функционал без запроса. Запускай xcodebuild только в Phase C.
-Порядок: gate --mnemo-full → mnemo_run_tests.sh → manual → §N.5 F-flags → §Q [x]
+Прогресс: 119/119. **DONE.** Gate 397 keys · build Xcode · sign-off F1–F15 · catalog v4.
 Жёстко: не менять ChildCategoryKey, не home blocks, no mock bypass, commit по запросу.
 ```
 
@@ -514,6 +512,29 @@ Opt-in UI: `mnemo.companionVoiceReminder.optIn`, `mnemo.advancedNumberPegs.optIn
 | i18n только RU или только EN | Gate |
 | Commit без просьбы | Git policy |
 | xcodebuild в середине реализации | Policy — только Phase C |
+
+---
+
+## 13. Catalog v4 batch (2026-06-13) — 18 задач
+
+**Trigger:** «% растёт, sheet не открывается» + seed ID mismatch + incomplete PlanItem275 catalog.
+
+| Fix | Detail |
+|-----|--------|
+| Manifest | `seed-manifest-v4`, `MnemoCatalogManifestBuilder` (games×20, study×30, …) |
+| IDs | `games.05`, `study.01`, … (PlanItem275) |
+| Reseed | `ContentManager` migrates v1–v3 + legacy `child_interface_category_*` IDs |
+| Tap 🔒 | Alert `child_mnemo_item_locked_alert_*` |
+| Progress | «Открывал» / «Запомнил» via SRS; no +20%/tap in mnemo |
+| games.05 | First in games catalog; title «Дворец образов» |
+| study intro | `study.01–03` semester 0; `04–10`→3; `11–20`→4; `21+`→7 |
+| Songs | 1 card = 1 mnemo track; recall mandatory |
+| Fail study | CTA → navigate `games.05` |
+| SRS | Unified `unifiedDueItems()` across categories |
+| Flags | `familyMemoryChallenge`, `companionVoiceReminder` prod ON |
+| i18n | +7 UI keys; 140 catalog titles in generated fallbacks |
+
+**Phase C:** см. `docs/MNEMO_ACADEMY_18_TASKS.md` — gate, tests, manual 4×8 + 8×4, F1–F15.
 
 ---
 

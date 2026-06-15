@@ -1,7 +1,7 @@
 # Build 232 — согласованный план (опросник 2026-06-13)
 
 **SSOT сессии:** этот файл · **Release SSOT:** [`docs/release/BUILD_232_RELEASE_SUMMARY.md`](../docs/release/BUILD_232_RELEASE_SUMMARY.md)  
-**Bypass revert (P0-4):** ⏸ перед TestFlight / prod
+**Bypass revert (P0-4):** ✅ `bypassPremiumGate=false` (G-03, 2026-06-15)
 
 ---
 
@@ -27,7 +27,7 @@
 
 | ID | Задача |
 |----|--------|
-| P0-4 | Revert QA bypass: `bypassPremiumGate=false`, `ANTIFAKE_ALLOW_FREE=0` |
+| P0-4 | Revert QA bypass: `bypassPremiumGate=false`, `ANTIFAKE_ALLOW_FREE=0` | ✅ G-03/B-10 |
 | — | Device QA Call Directory |
 
 ---

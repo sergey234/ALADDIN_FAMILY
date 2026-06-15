@@ -3,10 +3,12 @@ from __future__ import annotations
 
 import os
 import re
+import time
 from pathlib import Path
 from typing import Optional
 
-_DEFAULT_DIR = Path(os.environ.get("ANTIFAKE_UPLOAD_DIR", "/tmp/aladdin-antifake/uploads"))
+_DEFAULT_DIR = Path(os.environ.get("ANTIFAKE_UPLOAD_DIR", "/var/lib/aladdin/antifake/uploads"))
+UPLOAD_TTL_SEC = int(os.environ.get("ANTIFAKE_UPLOAD_TTL_SEC", str(15 * 60)))
 
 
 def upload_root() -> Path:
@@ -21,6 +23,7 @@ def _safe_name(name: str) -> str:
 
 
 def save_upload(*, user_id: int, job_id: str, file_bytes: bytes, file_name: str) -> Path:
+    cleanup_stale_uploads()
     user_dir = upload_root() / str(user_id)
     user_dir.mkdir(parents=True, exist_ok=True)
     path = user_dir / f"{job_id}_{_safe_name(file_name)}"
@@ -29,7 +32,16 @@ def save_upload(*, user_id: int, job_id: str, file_bytes: bytes, file_name: str)
 
 
 def read_upload(path: str | Path) -> bytes:
-    return Path(path).read_bytes()
+    from app.services.antifake_security import assert_upload_path_under_root
+
+    upload_path = assert_upload_path_under_root(path, upload_root())
+    if not upload_path.is_file():
+        return b""
+    age = time.time() - upload_path.stat().st_mtime
+    if age > UPLOAD_TTL_SEC:
+        delete_upload(upload_path)
+        return b""
+    return upload_path.read_bytes()
 
 
 def delete_upload(path: str | Path) -> None:
@@ -47,3 +59,22 @@ def cleanup_user_uploads(user_id: int, *, keep_job_id: Optional[str] = None) -> 
         if keep_job_id and keep_job_id in item.name:
             continue
         delete_upload(item)
+
+
+def cleanup_stale_uploads(*, ttl_sec: Optional[int] = None) -> int:
+    """B-08: remove uploads older than TTL (default 15 min). Returns deleted count."""
+    ttl = ttl_sec if ttl_sec is not None else UPLOAD_TTL_SEC
+    cutoff = time.time() - ttl
+    deleted = 0
+    root = upload_root()
+    for user_dir in root.iterdir():
+        if not user_dir.is_dir():
+            continue
+        for item in user_dir.iterdir():
+            try:
+                if item.stat().st_mtime < cutoff:
+                    delete_upload(item)
+                    deleted += 1
+            except OSError:
+                continue
+    return deleted

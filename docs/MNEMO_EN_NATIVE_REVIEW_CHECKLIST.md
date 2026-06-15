@@ -2,7 +2,7 @@
 
 **Scope:** ~400 `child_mnemo_*` + `parent_mnemo_*` EN strings in `LocalizationManager.swift`  
 **Gate:** `python3 scripts/child_localization_gate.py --mnemo-full` — **389 keys PASS**  
-**Project sync:** `docs/MNEMO_PROJECT_SYNC.md` (111/119)  
+**Project sync:** `docs/MNEMO_PROJECT_SYNC.md` (119/119)  
 **Run tests/build:** Phase C only (end of project)
 
 ---

@@ -32,9 +32,11 @@ final class MnemoCoreV3Tests: XCTestCase {
         XCTAssertEqual(gate.requiredSemesterIndex, 0)
     }
 
-    func testStudyItemSemesterSplit_3_4_7() {
+    func testStudyItemSemesterSplit_intro_3_4_7() {
         let spine = MnemonicCurriculumSpine.shared
-        XCTAssertEqual(spine.requiredSemesterIndex(forItemId: "study.01", category: ChildCategoryKey.study), 3)
+        XCTAssertEqual(spine.requiredSemesterIndex(forItemId: "study.01", category: ChildCategoryKey.study), 0)
+        XCTAssertEqual(spine.requiredSemesterIndex(forItemId: "study.03", category: ChildCategoryKey.study), 0)
+        XCTAssertEqual(spine.requiredSemesterIndex(forItemId: "study.04", category: ChildCategoryKey.study), 3)
         XCTAssertEqual(spine.requiredSemesterIndex(forItemId: "study.10", category: ChildCategoryKey.study), 3)
         XCTAssertEqual(spine.requiredSemesterIndex(forItemId: "study.11", category: ChildCategoryKey.study), 4)
         XCTAssertEqual(spine.requiredSemesterIndex(forItemId: "study.20", category: ChildCategoryKey.study), 4)
@@ -68,10 +70,11 @@ final class MnemoCoreV3Tests: XCTestCase {
         XCTAssertEqual(saturated.remainingPercent, 0)
     }
 
-    func testItemGate_study01_requiresSemesterThree() {
+    func testItemGate_study01_introOpenWithoutSemesterThree() {
         let spine = MnemonicCurriculumSpine(defaults: suite)
         let gate = spine.itemGate(forItemId: "study.01", category: ChildCategoryKey.study)
-        XCTAssertEqual(gate.requiredSemesterIndex, 3)
+        XCTAssertEqual(gate.requiredSemesterIndex, 0)
+        XCTAssertTrue(gate.isAccessible)
         XCTAssertEqual(gate.unlockThresholdPercent, 70)
     }
 
@@ -166,6 +169,53 @@ final class MnemoCoreV3Tests: XCTestCase {
     func testJourneyPath_stopKeyUsesZeroPaddedIndex() {
         XCTAssertEqual(MnemonicJourneyPath.stopLocalizationKey(index: 1), "child_mnemo_journey_stop_01")
         XCTAssertEqual(MnemonicJourneyPath.stopLocalizationKey(index: 40), "child_mnemo_journey_stop_40")
+    }
+
+    func testMnemoItemProgress_recallPercentFromSRSBox() {
+        let suite = UserDefaults(suiteName: "test.mnemo.item.progress.\(UUID().uuidString)")!
+        let store = MnemonicSRSStore(defaults: suite)
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        let itemId = "games.05"
+        XCTAssertEqual(MnemoItemProgress.recallPercent(for: itemId, store: store), 0)
+        store.scheduleInitial(itemId: itemId, now: now)
+        store.recordSuccess(itemId: itemId, now: now)
+        XCTAssertEqual(MnemoItemProgress.recallPercent(for: itemId, store: store), 25)
+        XCTAssertFalse(MnemoItemProgress.hasOpened(progress: nil))
+        let opened = ContentProgress(
+            contentId: itemId,
+            completionPercent: 0,
+            attempts: 1,
+            lastOpenedAt: now,
+            completedAt: nil
+        )
+        XCTAssertTrue(MnemoItemProgress.hasOpened(progress: opened))
+    }
+
+    // MARK: - Catalog manifest (PlanItem275 v4)
+
+    func testCatalogManifestBuilder_games05FirstAndFullStudyCount() {
+        let categories = [
+            ContentCategory(
+                id: ChildCategoryKey.games,
+                titleKey: "child_interface_category_games",
+                icon: "gamecontroller.fill",
+                ageBand: .school_7_12
+            ),
+            ContentCategory(
+                id: ChildCategoryKey.study,
+                titleKey: "child_interface_category_study",
+                icon: "book.fill",
+                ageBand: .school_7_12
+            )
+        ]
+        let games = MnemoCatalogManifestBuilder.items(for: ChildCategoryKey.games, ageBand: .school_7_12)
+        XCTAssertEqual(games.first?.id, "games.05")
+        XCTAssertEqual(games.count, 20)
+        let study = MnemoCatalogManifestBuilder.items(for: ChildCategoryKey.study, ageBand: .school_7_12)
+        XCTAssertEqual(study.count, 30)
+        let all = MnemoCatalogManifestBuilder.allMnemoItems(categories: categories)
+        XCTAssertEqual(all.filter { $0.categoryId == ChildCategoryKey.games }.count, 20)
+        XCTAssertEqual(all.filter { $0.categoryId == ChildCategoryKey.study }.count, 30)
     }
 
     // MARK: - Technique mastery + micro-wins (B14-T09)

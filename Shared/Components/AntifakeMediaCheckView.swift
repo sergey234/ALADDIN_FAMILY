@@ -7,11 +7,21 @@ struct AntifakeMediaCheckView: View {
     @Binding var showPostCallUploadPrompt: Bool
     @StateObject private var viewModel: AntifakeMediaCheckViewModel
     @State private var showFileImporter = false
+    @State private var showMediaUploadConsent = false
+    @State private var pendingSubmitAfterConsent = false
 
     private let titleKey: String
     private let hintKey: String
     private let systemImage: String
     private let panelId: String
+
+    private var mediaProbeFootnoteKey: String? {
+        switch viewModel.mediaKind {
+        case .audio: return "antifake_audio_probe_footnote"
+        case .video: return "antifake_video_probe_footnote"
+        case .call, .document: return nil
+        }
+    }
 
     init(
         mediaKind: AntifakeMediaKind,
@@ -40,6 +50,19 @@ struct AntifakeMediaCheckView: View {
             Text(localizationManager.localized(hintKey))
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.85))
+
+            if let probeKey = mediaProbeFootnoteKey {
+                Text(localizationManager.localized(probeKey))
+                    .font(.caption)
+                    .foregroundColor(.warningOrange.opacity(0.9))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("\(panelId)_probe_footnote")
+            }
+
+            Text(localizationManager.localized("antifake_upload_max_hint"))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.65))
+                .accessibilityIdentifier("\(panelId)_upload_limit_hint")
 
             if viewModel.mediaKind == .call, showPostCallUploadPrompt {
                 postCallUploadBanner
@@ -107,30 +130,68 @@ struct AntifakeMediaCheckView: View {
                 isDisabled: !viewModel.canSubmit
             ) {
                 Task {
-                    let ok = await viewModel.submitCheck()
-                    if viewModel.requiresPremiumUpgrade {
-                        showPremiumPaywall = true
-                    } else if ok {
-                        HapticFeedback.notification(.success)
-                    } else if viewModel.errorMessage != nil {
-                        HapticFeedback.notification(.error)
+                    if needsMediaUploadConsent {
+                        pendingSubmitAfterConsent = true
+                        showMediaUploadConsent = true
+                        return
                     }
+                    await performSubmitCheck()
                 }
             }
             .accessibilityIdentifier("\(panelId)_check_button")
 
             if let verdict = viewModel.verdict {
-                AntifakeVerdictCard(verdict: verdict)
+                AntifakeVerdictCard(
+                    verdict: verdict,
+                    reportPhone: viewModel.mediaKind == .call ? viewModel.callerId : nil
+                )
                     .environmentObject(localizationManager)
             }
         }
         .accessibilityIdentifier(panelId)
+        .accessibilityLabel(localizationManager.localized(titleKey))
+        .accessibilityHint(localizationManager.localized(hintKey))
         .fileImporter(
             isPresented: $showFileImporter,
             allowedContentTypes: AntifakeMediaCheckViewModel.allowedContentTypes(for: viewModel.mediaKind),
             allowsMultipleSelection: false
         ) { result in
             Task { await ingestFileImport(result) }
+        }
+        .onAppear {
+            if viewModel.mediaKind == .call {
+                AntifakeLastCallContext.applyPrefillIfNeeded(to: viewModel)
+            }
+        }
+        .alert(localizationManager.localized("antifake_media_consent_title"), isPresented: $showMediaUploadConsent) {
+            Button(localizationManager.localized("antifake_media_consent_decline"), role: .cancel) {
+                pendingSubmitAfterConsent = false
+            }
+            Button(localizationManager.localized("antifake_media_consent_accept")) {
+                UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.antifakeMediaUploadConsentGiven)
+                if pendingSubmitAfterConsent {
+                    pendingSubmitAfterConsent = false
+                    Task { await performSubmitCheck() }
+                }
+            }
+        } message: {
+            Text(localizationManager.localized("antifake_media_consent_body"))
+        }
+    }
+
+    private var needsMediaUploadConsent: Bool {
+        !UserDefaults.standard.bool(forKey: AppConfig.UserDefaultsKeys.antifakeMediaUploadConsentGiven)
+    }
+
+    @MainActor
+    private func performSubmitCheck() async {
+        let ok = await viewModel.submitCheck()
+        if viewModel.requiresPremiumUpgrade {
+            showPremiumPaywall = true
+        } else if ok {
+            HapticFeedback.notification(.success)
+        } else if viewModel.errorMessage != nil {
+            HapticFeedback.notification(.error)
         }
     }
 

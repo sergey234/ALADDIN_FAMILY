@@ -154,6 +154,82 @@ CREATE TABLE IF NOT EXISTS outbound_webhook_events (
 );
 CREATE INDEX IF NOT EXISTS idx_outbound_webhooks_pending
 ON outbound_webhook_events(status, next_attempt_at);
+
+CREATE TABLE IF NOT EXISTS marketing_spend_daily (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    spend_date TEXT NOT NULL,
+    source TEXT NOT NULL,
+    campaign TEXT NOT NULL,
+    spend_rub REAL NOT NULL DEFAULT 0,
+    clicks INTEGER NOT NULL DEFAULT 0,
+    impressions INTEGER NOT NULL DEFAULT 0,
+    meta_json TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(spend_date, source, campaign)
+);
+CREATE INDEX IF NOT EXISTS idx_marketing_spend_date ON marketing_spend_daily(spend_date);
+CREATE INDEX IF NOT EXISTS idx_marketing_spend_source_campaign ON marketing_spend_daily(source, campaign);
+
+CREATE TABLE IF NOT EXISTS user_acquisition (
+    user_id INTEGER PRIMARY KEY,
+    first_source TEXT NOT NULL DEFAULT 'unknown',
+    first_campaign TEXT NOT NULL DEFAULT '',
+    first_creative TEXT NOT NULL DEFAULT '',
+    last_source TEXT NOT NULL DEFAULT 'unknown',
+    last_campaign TEXT NOT NULL DEFAULT '',
+    last_creative TEXT NOT NULL DEFAULT '',
+    first_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+    last_seen_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_user_acq_first_source_campaign ON user_acquisition(first_source, first_campaign);
+CREATE INDEX IF NOT EXISTS idx_user_acq_last_seen ON user_acquisition(last_seen_at);
+
+CREATE TABLE IF NOT EXISTS metrics_daily (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    metric_date TEXT NOT NULL,
+    metric_key TEXT NOT NULL,
+    product_scope TEXT NOT NULL DEFAULT 'all',
+    value_num REAL,
+    value_den REAL,
+    value_pct REAL,
+    meta_json TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+    UNIQUE(metric_date, metric_key, product_scope)
+);
+CREATE INDEX IF NOT EXISTS idx_metrics_daily_date ON metrics_daily(metric_date);
+CREATE INDEX IF NOT EXISTS idx_metrics_daily_key_scope ON metrics_daily(metric_key, product_scope);
+
+CREATE TABLE IF NOT EXISTS user_feedback (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    product_scope TEXT NOT NULL DEFAULT 'all',
+    kind TEXT NOT NULL,
+    score INTEGER NOT NULL,
+    comment TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE INDEX IF NOT EXISTS idx_user_feedback_kind_time ON user_feedback(kind, created_at);
+CREATE INDEX IF NOT EXISTS idx_user_feedback_product_time ON user_feedback(product_scope, created_at);
+CREATE INDEX IF NOT EXISTS idx_user_feedback_user_time ON user_feedback(user_id, created_at);
+
+CREATE TABLE IF NOT EXISTS support_tickets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    external_ticket_id TEXT,
+    user_id INTEGER,
+    product_scope TEXT NOT NULL DEFAULT 'all',
+    status TEXT NOT NULL DEFAULT 'open',
+    opened_at TEXT NOT NULL DEFAULT (datetime('now')),
+    closed_at TEXT,
+    meta_json TEXT,
+    created_at TEXT NOT NULL DEFAULT (datetime('now')),
+    updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+);
+CREATE UNIQUE INDEX IF NOT EXISTS idx_support_tickets_external ON support_tickets(external_ticket_id)
+WHERE external_ticket_id IS NOT NULL;
+CREATE INDEX IF NOT EXISTS idx_support_tickets_status_time ON support_tickets(status, opened_at);
+CREATE INDEX IF NOT EXISTS idx_support_tickets_product_time ON support_tickets(product_scope, opened_at);
 """
 
 
@@ -352,6 +428,77 @@ async def migrate_legacy(conn: aiosqlite.Connection) -> None:
         );
         CREATE INDEX IF NOT EXISTS idx_outbound_webhooks_pending
         ON outbound_webhook_events(status, next_attempt_at);
+        CREATE TABLE IF NOT EXISTS marketing_spend_daily (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            spend_date TEXT NOT NULL,
+            source TEXT NOT NULL,
+            campaign TEXT NOT NULL,
+            spend_rub REAL NOT NULL DEFAULT 0,
+            clicks INTEGER NOT NULL DEFAULT 0,
+            impressions INTEGER NOT NULL DEFAULT 0,
+            meta_json TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE(spend_date, source, campaign)
+        );
+        CREATE INDEX IF NOT EXISTS idx_marketing_spend_date ON marketing_spend_daily(spend_date);
+        CREATE INDEX IF NOT EXISTS idx_marketing_spend_source_campaign ON marketing_spend_daily(source, campaign);
+        CREATE TABLE IF NOT EXISTS user_acquisition (
+            user_id INTEGER PRIMARY KEY,
+            first_source TEXT NOT NULL DEFAULT 'unknown',
+            first_campaign TEXT NOT NULL DEFAULT '',
+            first_creative TEXT NOT NULL DEFAULT '',
+            last_source TEXT NOT NULL DEFAULT 'unknown',
+            last_campaign TEXT NOT NULL DEFAULT '',
+            last_creative TEXT NOT NULL DEFAULT '',
+            first_seen_at TEXT NOT NULL DEFAULT (datetime('now')),
+            last_seen_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_user_acq_first_source_campaign ON user_acquisition(first_source, first_campaign);
+        CREATE INDEX IF NOT EXISTS idx_user_acq_last_seen ON user_acquisition(last_seen_at);
+        CREATE TABLE IF NOT EXISTS metrics_daily (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            metric_date TEXT NOT NULL,
+            metric_key TEXT NOT NULL,
+            product_scope TEXT NOT NULL DEFAULT 'all',
+            value_num REAL,
+            value_den REAL,
+            value_pct REAL,
+            meta_json TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now')),
+            UNIQUE(metric_date, metric_key, product_scope)
+        );
+        CREATE INDEX IF NOT EXISTS idx_metrics_daily_date ON metrics_daily(metric_date);
+        CREATE INDEX IF NOT EXISTS idx_metrics_daily_key_scope ON metrics_daily(metric_key, product_scope);
+        CREATE TABLE IF NOT EXISTS user_feedback (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NOT NULL,
+            product_scope TEXT NOT NULL DEFAULT 'all',
+            kind TEXT NOT NULL,
+            score INTEGER NOT NULL,
+            comment TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE INDEX IF NOT EXISTS idx_user_feedback_kind_time ON user_feedback(kind, created_at);
+        CREATE INDEX IF NOT EXISTS idx_user_feedback_product_time ON user_feedback(product_scope, created_at);
+        CREATE INDEX IF NOT EXISTS idx_user_feedback_user_time ON user_feedback(user_id, created_at);
+        CREATE TABLE IF NOT EXISTS support_tickets (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            external_ticket_id TEXT,
+            user_id INTEGER,
+            product_scope TEXT NOT NULL DEFAULT 'all',
+            status TEXT NOT NULL DEFAULT 'open',
+            opened_at TEXT NOT NULL DEFAULT (datetime('now')),
+            closed_at TEXT,
+            meta_json TEXT,
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            updated_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+        CREATE UNIQUE INDEX IF NOT EXISTS idx_support_tickets_external ON support_tickets(external_ticket_id)
+        WHERE external_ticket_id IS NOT NULL;
+        CREATE INDEX IF NOT EXISTS idx_support_tickets_status_time ON support_tickets(status, opened_at);
+        CREATE INDEX IF NOT EXISTS idx_support_tickets_product_time ON support_tickets(product_scope, opened_at);
         CREATE TABLE IF NOT EXISTS admin_audit_log (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             created_at TEXT NOT NULL DEFAULT (datetime('now')),

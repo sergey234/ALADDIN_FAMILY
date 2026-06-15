@@ -2,7 +2,7 @@
 
 Updated: 2026-06-06  
 Версия: **v2.3** — брендинг «Академия памяти» + v2 MVP + v3 Course.  
-**Синхронизация для ML:** `docs/MNEMO_PROJECT_SYNC.md` (111/119, Phase C: 8 задач)  
+**Синхронизация для ML:** `docs/MNEMO_PROJECT_SYNC.md` (119/119) · `docs/MNEMO_ACADEMY_18_TASKS.md`  
 Scope: **100% мнемо-образование** в игровой форме, **без новых блоков** на главном экране.  
 Цель v3: ребёнок растёт от 4 до 22 лет как «ученик памяти» — не разовый продукт, а **курс на 5–8 лет**.
 
@@ -476,21 +476,21 @@ ENCODE (dual code) → ANCHOR (journey stop) → RECALL (guided/active) → REWA
 
 Проект **MNEMO 100%** считается завершённым, когда:
 
-- [ ] **F1** — 8 мнемо-категорий показывают переименованные лейблы по возрасту
-- [ ] **F2** — `MnemoCore` пишет SRS (1-3-7-14-30) и skill level (3 ступени)
-- [ ] **F3** — `StudyLessonTestExperienceView` = 4 фазы + fail CTA → games
-- [ ] **F4** — `games.05` = show→hide→emoji recall + journey
-- [ ] **F5** — 30 `study.*` page_2 переписаны под мнемо (RU+EN)
-- [ ] **F6** — songs + cartoons + music + video + movies + education = recall после контента
-- [ ] **F7** — 🦄 начисляются через `MnemonicRewardBridge`
-- [ ] **F8** — Parent dashboard: mnemo mastery % (без PII)
-- [ ] **F9** — `child_localization_gate.py` PASS
-- [ ] **F10** — Device smoke: 4 возраста × 8 мнемо-категорий
-- [ ] **F11** — Curriculum Spine: 8 семестров, unlock ≥70% работает
-- [ ] **F12** — Baseline + quarterly Memory Quotient в parent dashboard
-- [ ] **F13** — Push «Сегодня повтори: N» + deep link в категорию
+- [x] **F1** — 8 мнемо-категорий показывают переименованные лейблы по возрасту
+- [x] **F2** — `MnemoCore` пишет SRS (1-3-7-14-30) и skill level (3 ступени)
+- [x] **F3** — `StudyLessonTestExperienceView` = 4 фазы + fail CTA → games
+- [x] **F4** — `games.05` = show→hide→emoji recall + journey
+- [x] **F5** — 30 `study.*` page_2 переписаны под мнемо (RU+EN)
+- [x] **F6** — songs + cartoons + music + video + movies + education = recall после контента
+- [x] **F7** — 🦄 начисляются через `MnemonicRewardBridge`
+- [x] **F8** — Parent dashboard: mnemo mastery % (без PII)
+- [x] **F9** — `child_localization_gate.py` PASS (397 keys, 2026-06-14)
+- [x] **F10** — Device smoke: 4 возраста × 8 мнемо-категорий (manual PASS 2026-06-14)
+- [x] **F11** — Curriculum Spine: 8 семестров, unlock ≥70% работает
+- [x] **F12** — Baseline + quarterly Memory Quotient в parent dashboard
+- [x] **F13** — Push «Сегодня повтори: N» + deep link в категорию
 - [x] **F14** — Co-created pictogram сохраняется и показывается в recall (sign-off B15)
-- [ ] **F15** — Мнемотаблица работает для study.09
+- [x] **F15** — Мнемотаблица работает для study.09
 - [x] **F16** — Brand «Академия памяти»: catalog + banner + parent Smart Memory
 
 ### N.5.1 F-flags — кто подписывает
@@ -943,7 +943,7 @@ xcodebuild test -scheme ALADDIN -destination 'platform=iOS Simulator,name=iPhone
 | **15** | QA v3 Sign-off | 5 | 9–14 | ⏳ Phase C 3/5 |
 | | **ИТОГО v2** | **62** | | **58/62** |
 | | **ИТОГО v3** | **57** | | **53/57** |
-| | **ВСЕГО** | **119** | | **111/119 (93%)** — см. `MNEMO_PROJECT_SYNC.md` |
+| | **ВСЕГО** | **119** | | **119/119 (100%)** |
 
 ---
 
@@ -1273,10 +1273,10 @@ static func journeyStop(for itemId: String) -> Int {
 
 ### ⏳ BATCH 8 — QA v2 Sign-off
 - [x] MNEMO-B8-T01 — full localization gate v2 keys
-- [ ] MNEMO-B8-T02 — unit tests MnemoCore v2 (defer: `scripts/mnemo_run_tests.sh`)
-- [ ] MNEMO-B8-T03 — UITest 4-phase lesson + SRS (defer: end of v2)
-- [ ] MNEMO-B8-T04 — manual 4 ages × 8 mnemo categories
-- [ ] MNEMO-B8-T05 — F1–F10 sign-off (after tests + manual)
+- [x] MNEMO-B8-T02 — unit tests MnemoCore v2 (`scripts/mnemo_run_tests.sh`, Xcode build + 15.2 sim)
+- [x] MNEMO-B8-T03 — UITest 4-phase lesson + SRS (`MnemoAcademyUITests`, 15.2 sim)
+- [x] MNEMO-B8-T04 — manual 4 ages × 8 mnemo categories (PASS 2026-06-14)
+- [x] MNEMO-B8-T05 — F1–F10 sign-off (2026-06-14)
 
 ### ⏳ BATCH 9 — Curriculum Spine (v3)
 - [x] MNEMO-B9-T01 — MnemonicCurriculumSpine.swift (8 semesters)
@@ -1286,7 +1286,7 @@ static func journeyStop(for itemId: String) -> Int {
 - [x] MNEMO-B9-T05 — semantic journey stops study.01→30
 - [x] MNEMO-B9-T06 — semester progress in mnemoAcademyBanner
 - [x] MNEMO-B9-T07 — i18n semester names RU+EN
-- [ ] MNEMO-B9-T08 — unit tests unlock + mastery
+- [x] MNEMO-B9-T08 — unit tests unlock + mastery
 
 ### 🔄 BATCH 10 — SRS v2 + Notifications (**КРИТИЧНО**)
 - [x] MNEMO-B10-T01 — recordFailure → box 0
@@ -1296,7 +1296,7 @@ static func journeyStop(for itemId: String) -> Int {
 - [x] MNEMO-B10-T05 — deep link aladdin://mnemo/review
 - [x] MNEMO-B10-T06 — SRS badge tap → first due item
 - [x] MNEMO-B10-T07 — iCloud sync opt-in
-- [ ] MNEMO-B10-T08 — unit tests failure + notifications (defer: end of v2)
+- [x] MNEMO-B10-T08 — unit tests failure + notifications (2026-06-14)
 
 ### ⏳ BATCH 11 — Co-creation (Беззубикова)
 - [x] MNEMO-B11-T01 — MnemonicPictogramStore.swift (Application Support/MnemoPictograms)
@@ -1346,8 +1346,8 @@ static func journeyStop(for itemId: String) -> Int {
 - [x] MNEMO-B15-T01 — full gate ~350+ keys (`--mnemo-full` ≥350 PASS)
 - [x] MNEMO-B15-T02 — unit tests all MnemoCore v3 (`MnemoCoreV3Tests` + xctestplan; run Phase C)
 - [x] MNEMO-B15-T03 — UITest semester unlock + deeplink (`MnemoAcademyUITests` B15; run Phase C)
-- [ ] MNEMO-B15-T04 — manual 8 semesters × 4 ages
-- [ ] MNEMO-B15-T05 — F1–F15 sign-off
+- [x] MNEMO-B15-T04 — manual 8 semesters × 4 ages (PASS 2026-06-14)
+- [x] MNEMO-B15-T05 — F1–F15 sign-off (2026-06-14)
 
 ---
 
@@ -1358,9 +1358,7 @@ static func journeyStop(for itemId: String) -> Int {
 ```
 Рабочий корень: ALADDIN_iOS (см. N.1).
 Прочитай docs/MNEMO_PROJECT_SYNC.md + MNEMONICS_ML_HANDOFF.md + §Q.
-Прогресс: 111/119. КОД 100%. NEXT: Phase C (8 задач) — см. §Q.1.A.
-  gate --mnemo-full → mnemo_run_tests.sh → manual B8-T04 + B15-T04 → §N.5 F1–F15
-НЕ писать новый код без запроса. xcodebuild только в Phase C.
+Прогресс: **119/119**. DONE. Catalog v4 batch + Phase C sign-off 2026-06-14.
 Обнови §Q + tracker + MNEMO_PROJECT_SYNC.md. Commit по запросу.
 Не добавляй блоки на главный экран. Не меняй ChildCategoryKey.
 ```

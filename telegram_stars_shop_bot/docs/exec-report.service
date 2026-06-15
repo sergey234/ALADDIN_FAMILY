@@ -1,0 +1,10 @@
+[Unit]
+Description=ALADDIN Telegram Shop Weekly Executive Report (one-shot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/aladdin-telegram-shop-bot/current_app
+EnvironmentFile=/opt/aladdin-telegram-shop-bot/shared/.env
+ExecStart=/opt/aladdin-telegram-shop-bot/venv/bin/python -c "import asyncio; from aiogram import Bot; from bot.config import load_settings; from bot.services.exec_report import send_exec_report_once; s=load_settings(); b=Bot(s.bot_token); asyncio.run(send_exec_report_once(b,s)); asyncio.run(b.session.close())"

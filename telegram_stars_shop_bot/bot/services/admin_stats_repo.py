@@ -55,6 +55,10 @@ class DashboardAgg:
     stars_revenue_rub: float
     premium_units_sold: int
     premium_revenue_rub: float
+    vpn_units_sold: int = 0
+    vpn_revenue_rub: float = 0.0
+    arppu_rub: float = 0.0
+    vpn_revenue_share_pct: float = 0.0
     distinct_referrers: int = 0
 
 
@@ -78,7 +82,12 @@ async def aggregate_dashboard(
             COALESCE(SUM(CASE WHEN o.product_kind = 'premium' THEN 1 ELSE 0 END), 0) AS prem_n,
             COALESCE(SUM(CASE
                 WHEN o.product_kind = 'premium'
-                THEN o.rub_after_discounts ELSE 0 END), 0) AS prem_rev
+                THEN o.rub_after_discounts ELSE 0 END), 0) AS prem_rev,
+            COALESCE(SUM(CASE WHEN o.product_kind = 'vpn' THEN 1 ELSE 0 END), 0) AS vpn_n,
+            COALESCE(SUM(CASE
+                WHEN o.product_kind = 'vpn'
+                THEN o.rub_after_discounts ELSE 0 END), 0) AS vpn_rev,
+            COUNT(DISTINCT o.user_id) AS paying_users
         FROM orders o
         WHERE o.status = 'completed' {clause}
     """
@@ -96,16 +105,336 @@ async def aggregate_dashboard(
     )
     dr_row = await cur_dr.fetchone()
     distinct_ref = int(dr_row["c"] or 0) if dr_row else 0
+    rev = float(row["revenue"] or 0)
+    paying_users = int(row["paying_users"] or 0)
+    vpn_rev = float(row["vpn_rev"] or 0)
+    arppu = round(rev / paying_users, 2) if paying_users > 0 else 0.0
+    vpn_share = round(100.0 * vpn_rev / rev, 2) if rev > 0.0001 else 0.0
     return DashboardAgg(
-        revenue_rub=float(row["revenue"] or 0),
+        revenue_rub=rev,
         orders_count=int(row["cnt"] or 0),
         net_profit_rub=float(row["netp"] or 0),
         stars_units_sold=int(row["stars_u"] or 0),
         stars_revenue_rub=float(row["stars_rev"] or 0),
         premium_units_sold=int(row["prem_n"] or 0),
         premium_revenue_rub=float(row["prem_rev"] or 0),
+        vpn_units_sold=int(row["vpn_n"] or 0),
+        vpn_revenue_rub=vpn_rev,
+        arppu_rub=arppu,
+        vpn_revenue_share_pct=vpn_share,
         distinct_referrers=distinct_ref,
     )
+
+
+def _created_period_clause(days: int | None) -> tuple[str, tuple[Any, ...]]:
+    if days is None:
+        return "", ()
+    if days in (-1, 0):
+        return (" AND date(created_at) = date('now')", ())
+    return (" AND date(created_at) >= date('now', ?)", (f"-{int(days)} days",))
+
+
+async def payment_funnel_metrics(conn: aiosqlite.Connection, *, days: int | None) -> dict[str, float | int]:
+    cc, cp = _created_period_clause(days)
+    cur_created = await conn.execute(
+        f"SELECT COUNT(*) AS c FROM orders WHERE 1=1 {cc}",
+        cp,
+    )
+    created_n = int((await cur_created.fetchone())["c"] or 0)
+    cur_paid = await conn.execute(
+        f"""
+        SELECT COUNT(*) AS c FROM orders
+        WHERE status IN ('paid', 'processing', 'completed', 'refunded', 'payment_disputed') {cc}
+        """,
+        cp,
+    )
+    paid_n = int((await cur_paid.fetchone())["c"] or 0)
+    cur_completed = await conn.execute(
+        f"SELECT COUNT(*) AS c FROM orders WHERE status = 'completed' {cc}",
+        cp,
+    )
+    completed_n = int((await cur_completed.fetchone())["c"] or 0)
+    paid_rate = round(100.0 * paid_n / created_n, 2) if created_n else 0.0
+    completed_from_paid = round(100.0 * completed_n / paid_n, 2) if paid_n else 0.0
+    completed_from_created = round(100.0 * completed_n / created_n, 2) if created_n else 0.0
+    return {
+        "funnel_created_orders": created_n,
+        "funnel_paid_orders": paid_n,
+        "funnel_completed_orders": completed_n,
+        "funnel_paid_rate_pct": paid_rate,
+        "funnel_completed_from_paid_pct": completed_from_paid,
+        "funnel_completed_from_created_pct": completed_from_created,
+    }
+
+
+async def webhook_sla_metrics(conn: aiosqlite.Connection, *, days: int | None) -> dict[str, float | int]:
+    cc, cp = _created_period_clause(days)
+    cur = await conn.execute(
+        f"""
+        SELECT
+            COUNT(*) AS total_n,
+            COALESCE(SUM(CASE WHEN status = 'delivered' THEN 1 ELSE 0 END), 0) AS delivered_n,
+            COALESCE(SUM(CASE WHEN attempts > 1 THEN 1 ELSE 0 END), 0) AS retry_n,
+            COALESCE(SUM(CASE WHEN status IN ('pending', 'failed') THEN 1 ELSE 0 END), 0) AS backlog_n
+        FROM outbound_webhook_events
+        WHERE 1=1 {cc}
+        """,
+        cp,
+    )
+    row = await cur.fetchone()
+    total = int(row["total_n"] or 0)
+    delivered = int(row["delivered_n"] or 0)
+    retry_n = int(row["retry_n"] or 0)
+    backlog = int(row["backlog_n"] or 0)
+    success_pct = round(100.0 * delivered / total, 2) if total else 0.0
+    retry_pct = round(100.0 * retry_n / total, 2) if total else 0.0
+
+    cur2 = await conn.execute(
+        f"""
+        SELECT (julianday(delivered_at) - julianday(created_at)) * 86400.0 AS lat
+        FROM outbound_webhook_events
+        WHERE status = 'delivered' AND delivered_at IS NOT NULL {cc}
+        """,
+        cp,
+    )
+    vals = []
+    for r in await cur2.fetchall():
+        if r["lat"] is not None:
+            vals.append(float(r["lat"]))
+    p95 = _percentile_95(vals)
+    p50 = None
+    if vals:
+        s = sorted(vals)
+        p50 = float(s[len(s) // 2])
+
+    return {
+        "webhook_total": total,
+        "webhook_delivered": delivered,
+        "webhook_success_rate_pct": success_pct,
+        "webhook_retry_rate_pct": retry_pct,
+        "webhook_backlog": backlog,
+        "webhook_latency_p50_sec": round(p50, 3) if p50 is not None else -1.0,
+        "webhook_latency_p95_sec": round(p95, 3) if p95 is not None else -1.0,
+    }
+
+
+async def cross_sell_metrics(
+    conn: aiosqlite.Connection,
+    *,
+    days: int | None,
+    window_days: int = 30,
+) -> dict[str, float | int]:
+    """
+    Cross-sell по completed-заказам:
+    - stars/premium -> vpn в течение N дней
+    - vpn -> stars/premium в течение N дней
+    """
+    w = max(1, int(window_days))
+    cc, cp = _period_clause_plain(days)
+    cur = await conn.execute(
+        f"""
+        WITH completed AS (
+            SELECT user_id, product_kind, COALESCE(completed_at, updated_at) AS ts
+            FROM orders
+            WHERE status = 'completed' {cc}
+        ),
+        sp_first AS (
+            SELECT user_id, MIN(ts) AS first_ts
+            FROM completed
+            WHERE product_kind IN ('stars', 'gift', 'premium')
+            GROUP BY user_id
+        ),
+        vpn_first AS (
+            SELECT user_id, MIN(ts) AS first_ts
+            FROM completed
+            WHERE product_kind = 'vpn'
+            GROUP BY user_id
+        ),
+        sp_to_vpn AS (
+            SELECT COUNT(*) AS c FROM sp_first s
+            WHERE EXISTS (
+                SELECT 1 FROM completed c
+                WHERE c.user_id = s.user_id
+                  AND c.product_kind = 'vpn'
+                  AND julianday(c.ts) - julianday(s.first_ts) BETWEEN 0 AND ?
+            )
+        ),
+        vpn_to_sp AS (
+            SELECT COUNT(*) AS c FROM vpn_first v
+            WHERE EXISTS (
+                SELECT 1 FROM completed c
+                WHERE c.user_id = v.user_id
+                  AND c.product_kind IN ('stars', 'gift', 'premium')
+                  AND julianday(c.ts) - julianday(v.first_ts) BETWEEN 0 AND ?
+            )
+        )
+        SELECT
+            (SELECT COUNT(*) FROM sp_first) AS sp_base,
+            (SELECT c FROM sp_to_vpn) AS sp_to_vpn_n,
+            (SELECT COUNT(*) FROM vpn_first) AS vpn_base,
+            (SELECT c FROM vpn_to_sp) AS vpn_to_sp_n
+        """,
+        (*cp, w, w),
+    )
+    row = await cur.fetchone()
+    sp_base = int(row["sp_base"] or 0)
+    sp_to_vpn = int(row["sp_to_vpn_n"] or 0)
+    vpn_base = int(row["vpn_base"] or 0)
+    vpn_to_sp = int(row["vpn_to_sp_n"] or 0)
+    return {
+        "cross_sell_sp_base": sp_base,
+        "cross_sell_sp_to_vpn_n": sp_to_vpn,
+        "cross_sell_sp_to_vpn_pct": round(100.0 * sp_to_vpn / sp_base, 2) if sp_base else 0.0,
+        "cross_sell_vpn_base": vpn_base,
+        "cross_sell_vpn_to_sp_n": vpn_to_sp,
+        "cross_sell_vpn_to_sp_pct": round(100.0 * vpn_to_sp / vpn_base, 2) if vpn_base else 0.0,
+    }
+
+
+async def retention_metrics(conn: aiosqlite.Connection, *, days: int | None) -> dict[str, float | int]:
+    """
+    D7/D30 retention по first completed order (cohort).
+    """
+    cc, cp = _period_clause_plain(days)
+    cur = await conn.execute(
+        f"""
+        WITH first_completed AS (
+            SELECT user_id, MIN(date(COALESCE(completed_at, updated_at))) AS d0
+            FROM orders
+            WHERE status='completed' {cc}
+            GROUP BY user_id
+        ),
+        d7 AS (
+            SELECT COUNT(*) AS c FROM first_completed f
+            WHERE EXISTS (
+                SELECT 1 FROM orders o
+                WHERE o.user_id = f.user_id
+                  AND o.status='completed'
+                  AND date(COALESCE(o.completed_at, o.updated_at)) > f.d0
+                  AND julianday(date(COALESCE(o.completed_at, o.updated_at))) - julianday(f.d0) <= 7
+            )
+        ),
+        d30 AS (
+            SELECT COUNT(*) AS c FROM first_completed f
+            WHERE EXISTS (
+                SELECT 1 FROM orders o
+                WHERE o.user_id = f.user_id
+                  AND o.status='completed'
+                  AND date(COALESCE(o.completed_at, o.updated_at)) > f.d0
+                  AND julianday(date(COALESCE(o.completed_at, o.updated_at))) - julianday(f.d0) <= 30
+            )
+        )
+        SELECT
+            (SELECT COUNT(*) FROM first_completed) AS cohort_n,
+            (SELECT c FROM d7) AS d7_n,
+            (SELECT c FROM d30) AS d30_n
+        """,
+        cp,
+    )
+    row = await cur.fetchone()
+    base = int(row["cohort_n"] or 0)
+    d7_n = int(row["d7_n"] or 0)
+    d30_n = int(row["d30_n"] or 0)
+    return {
+        "retention_cohort_size": base,
+        "retention_d7_n": d7_n,
+        "retention_d30_n": d30_n,
+        "retention_d7_pct": round(100.0 * d7_n / base, 2) if base else 0.0,
+        "retention_d30_pct": round(100.0 * d30_n / base, 2) if base else 0.0,
+    }
+
+
+async def acquisition_metrics(conn: aiosqlite.Connection, *, days: int | None) -> dict[str, float | int]:
+    """
+    CAC/CTR/CR на основе spend + attribution + events.
+    """
+    cc, cp = _created_period_clause(days)
+    cur_spend = await conn.execute(
+        f"SELECT COALESCE(SUM(spend_rub), 0) AS spend FROM marketing_spend_daily WHERE 1=1 {cc.replace('created_at', 'spend_date')}",
+        cp,
+    )
+    spend = float((await cur_spend.fetchone())["spend"] or 0)
+
+    cur_paid = await conn.execute(
+        f"""
+        SELECT COUNT(DISTINCT o.user_id) AS c
+        FROM orders o
+        LEFT JOIN user_acquisition ua ON ua.user_id = o.user_id
+        WHERE o.status='completed'
+          AND ua.first_source IN ('tg_ads', 'partner', 'tg_channel')
+          {cc.replace('created_at', 'o.created_at')}
+        """,
+        cp,
+    )
+    paid_users = int((await cur_paid.fetchone())["c"] or 0)
+    cac = round(spend / paid_users, 2) if paid_users else 0.0
+
+    ac, ap = _analytics_period_clause(days)
+    cur_ev = await conn.execute(
+        f"""
+        SELECT
+            COALESCE(SUM(CASE WHEN event_type='offer_impression' THEN 1 ELSE 0 END),0) AS impr,
+            COALESCE(SUM(CASE WHEN event_type='offer_click' THEN 1 ELSE 0 END),0) AS clk,
+            COALESCE(SUM(CASE WHEN event_type='order_created' THEN 1 ELSE 0 END),0) AS ord
+        FROM analytics_events
+        WHERE 1=1 {ac}
+        """,
+        ap,
+    )
+    row = await cur_ev.fetchone()
+    impr = int(row["impr"] or 0)
+    clk = int(row["clk"] or 0)
+    ord_n = int(row["ord"] or 0)
+    ctr = round(100.0 * clk / impr, 2) if impr else 0.0
+    cr = round(100.0 * ord_n / clk, 2) if clk else 0.0
+    return {
+        "acq_spend_rub": spend,
+        "acq_paid_users": paid_users,
+        "acq_cac_rub": cac,
+        "acq_offer_impressions": impr,
+        "acq_offer_clicks": clk,
+        "acq_orders_created_events": ord_n,
+        "acq_ctr_pct": ctr,
+        "acq_cr_pct": cr,
+    }
+
+
+async def feedback_metrics(conn: aiosqlite.Connection, *, days: int | None) -> dict[str, float | int]:
+    cc, cp = _created_period_clause(days)
+    cur = await conn.execute(
+        f"""
+        SELECT
+            COALESCE(SUM(CASE WHEN kind='nps' THEN 1 ELSE 0 END), 0) AS nps_n,
+            COALESCE(SUM(CASE WHEN kind='nps' AND score >= 9 THEN 1 ELSE 0 END), 0) AS nps_promoters,
+            COALESCE(SUM(CASE WHEN kind='nps' AND score <= 6 THEN 1 ELSE 0 END), 0) AS nps_detractors,
+            COALESCE(AVG(CASE WHEN kind='nps' THEN score END), 0) AS nps_avg,
+            COALESCE(SUM(CASE WHEN kind='csat' THEN 1 ELSE 0 END), 0) AS csat_n,
+            COALESCE(SUM(CASE WHEN kind='csat' AND score >= 4 THEN 1 ELSE 0 END), 0) AS csat_positive,
+            COALESCE(AVG(CASE WHEN kind='csat' THEN score END), 0) AS csat_avg
+        FROM user_feedback
+        WHERE 1=1 {cc}
+        """,
+        cp,
+    )
+    row = await cur.fetchone()
+    nps_n = int(row["nps_n"] or 0)
+    nps_prom = int(row["nps_promoters"] or 0)
+    nps_det = int(row["nps_detractors"] or 0)
+    csat_n = int(row["csat_n"] or 0)
+    csat_pos = int(row["csat_positive"] or 0)
+    nps_score = round(100.0 * (nps_prom - nps_det) / nps_n, 2) if nps_n else 0.0
+    csat_pct = round(100.0 * csat_pos / csat_n, 2) if csat_n else 0.0
+    return {
+        "nps_responses": nps_n,
+        "nps_promoters": nps_prom,
+        "nps_detractors": nps_det,
+        "nps_score": nps_score,
+        "nps_avg": round(float(row["nps_avg"] or 0.0), 2),
+        "csat_responses": csat_n,
+        "csat_positive": csat_pos,
+        "csat_pct": csat_pct,
+        "csat_avg": round(float(row["csat_avg"] or 0.0), 2),
+    }
 
 
 async def top_referrers(

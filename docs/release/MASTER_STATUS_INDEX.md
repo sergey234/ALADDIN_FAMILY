@@ -1,6 +1,6 @@
 # ALADDIN — единый мастер-индекс статуса (SSOT)
 
-**Обновлено:** 2026-06-13 · **Build:** **232** (supplemental commit) · **Ветка:** `master`  
+**Обновлено:** 2026-06-15 · **Build:** **232**  
 **Канонический репозиторий:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
 
 > **Начинайте отсюда.** Один документ — ссылки на все трекеры, аудиты и gate-артефакты.  
@@ -14,7 +14,8 @@
 |------|------|--------|--------|
 | **Security batches (направление 143)** | **137 / 143** ✅ | Код + VPS + COPY + Hub demos | **R-07 Archive** (6 пунктов) |
 | **Build 232 supplemental** (UX + AF M2/M3 + CI/copy) | **28 / 28** ✅ | Код + xcodebuild PASS 2026-06-13 | P0-4 bypass revert, device QA |
-| **Antifake `af-*` детальный бэклог** | **38 / 72** ✅ | Hub B2 + M2/M3 build 232 | Workers VPS, af-11 QA gate |
+| **Antifake v4 (`af-A-01…O-03`)** | **72 / 134** ✅ | C,A,F,M,I,L + ML-100% prod | **Batch B** → E → N → R → Device |
+| **Antifake legacy `af-*` бэклог** | **38 / 72** ✅ | Hub B2 + M2/M3 build 232 | superseded by v4 REGISTRY |
 | **Cursor master (36 id)** | **14 / 36** ✅ | См. `.cursor/ALADDIN_MASTER_TODO.md` | perf-1, Archive, device QA |
 
 **xcodebuild (2026-06-13 supplemental):** `BUILD SUCCEEDED` · iPhone 13 Pro Max sim 18.4 · build **232**  
@@ -43,7 +44,8 @@
 | P0-1/P0-2 | CI 4 extensions | `Fastfile`, `check-secrets.yml` |
 | P1-8 | Call Directory MARKETING_VERSION 1.0.0 | `ALADDINCallDirectory/Info.plist` |
 
-**⏸ Не блокирует merge, нужно до App Store:** `bypassPremiumGate = false`, `ANTIFAKE_ALLOW_FREE=0`, device QA Call Directory.
+**⏸ До App Store submit:** device QA Call Directory (D-01…D-04, E-06, R-02).  
+**✅ G-03/B-10:** `bypassPremiumGate=false`, `ANTIFAKE_ALLOW_FREE=0`.
 
 ---
 
@@ -68,8 +70,12 @@
 |----------|------|
 | **[`.cursor/IMPLEMENTATION_BATCHES_TODO.md`](../.cursor/IMPLEMENTATION_BATCHES_TODO.md)** | **143 batch-задачи** — SFM, B1–B7, COPY, QA |
 | **[`.cursor/ALADDIN_MASTER_TODO.md`](../.cursor/ALADDIN_MASTER_TODO.md)** | Сводный реестр UX + perf + antifake (36 Cursor id) |
-| **[`.cursor/ANTIFAKE_MASTER_ROADMAP.md`](../.cursor/ANTIFAKE_MASTER_ROADMAP.md)** | Antifake M1–M4, Apple limits, риски |
-| **[`.cursor/ANTIFAKE_PRODUCTION_TODO.md`](../.cursor/ANTIFAKE_PRODUCTION_TODO.md)** | 72 задачи `af-*` (сервер/ML/iOS детально) |
+| **[`.cursor/ANTIFAKE_UNIFIED_MASTER.md`](../.cursor/ANTIFAKE_UNIFIED_MASTER.md)** | **Antifake — единая точка входа (~280 задач, архитектура, gates)** |
+| **[`.cursor/ANTIFAKE_V4_TASK_REGISTRY.md`](../.cursor/ANTIFAKE_V4_TASK_REGISTRY.md)** | **Antifake v4 — 134 задачи, SSOT статусов (111 ✅)** |
+| **[`.cursor/ANTIFAKE_V4_DOC_INDEX.md`](../.cursor/ANTIFAKE_V4_DOC_INDEX.md)** | **Карта antifake документов + порядок sync** |
+| **[`.cursor/ANTIFAKE_TOP_TIER_PLAN.md`](../.cursor/ANTIFAKE_TOP_TIER_PLAN.md)** | План v4.2, фазы, DoD |
+| **[`.cursor/ANTIFAKE_MASTER_ROADMAP.md`](../.cursor/ANTIFAKE_MASTER_ROADMAP.md)** | Antifake M1–M4, архитектура (legacy af-* refs) |
+| **[`.cursor/ANTIFAKE_PRODUCTION_TODO.md`](../.cursor/ANTIFAKE_PRODUCTION_TODO.md)** | Legacy 72 `af-*` — не v4 ID |
 | **[`.cursor/UX_AUDIT_COMPANION_BATCHES_TODO.md`](../.cursor/UX_AUDIT_COMPANION_BATCHES_TODO.md)** | UX audit батчи 0–10, wellness, perf |
 | **[`.cursor/SECURITY_MASTER_INDEX.md`](../.cursor/SECURITY_MASTER_INDEX.md)** | Карта всех security-документов |
 

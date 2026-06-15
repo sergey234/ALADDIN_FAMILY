@@ -15,6 +15,7 @@ from bot.services import (
     admin_audit_repo,
     admin_charts,
     admin_stats_repo,
+    analytics_repo,
     balance_repo,
     contest_repo,
     marketing,
@@ -22,6 +23,7 @@ from bot.services import (
     vpn_admin_support_repo,
     vpn_api_client,
 )
+from bot.services.exec_report import build_exec_report_text
 from bot.services.admin_crypto_paid_gate import crypto_manual_paid_gate_applies
 from bot.services.admin_order_ff import ff_context_from_order_row, format_fulfillment_admin_block
 from bot.services.alerts import send_alert
@@ -145,6 +147,9 @@ def _admin_stats_main_kb() -> InlineKeyboardMarkup:
                 InlineKeyboardButton(text="CSV 30д", callback_data="ast:csv:30"),
                 InlineKeyboardButton(text="CSV всё", callback_data="ast:csv:all"),
             ],
+            [
+                InlineKeyboardButton(text="Executive report", callback_data="ast:exec:7"),
+            ],
         ]
     )
 
@@ -156,6 +161,12 @@ def _format_dashboard_html(
     top_refs: list,
     rm: dict[str, float | int],
     funnel: dict[str, float | int] | None = None,
+    pay_funnel: dict[str, float | int] | None = None,
+    webhook_sla: dict[str, float | int] | None = None,
+    cross_sell: dict[str, float | int] | None = None,
+    retention: dict[str, float | int] | None = None,
+    acquisition: dict[str, float | int] | None = None,
+    feedback: dict[str, float | int] | None = None,
     vpn_rm: dict[str, float | int] | None = None,
     vpn_cp: dict[str, float | int] | None = None,
     vpn_health_html: str | None = None,
@@ -173,7 +184,11 @@ def _format_dashboard_html(
         f"<b>{esc(f'{agg.stars_revenue_rub:.2f}')} ₽</b>",
         "<b>Premium</b> (покупок / ₽): "
         f"<code>{esc(str(agg.premium_units_sold))}</code> / "
-        f"<b>{esc(f'{agg.premium_revenue_rub:.2f}')} ₽</b>\n",
+        f"<b>{esc(f'{agg.premium_revenue_rub:.2f}')} ₽</b>",
+        "<b>VPN</b> (покупок / ₽): "
+        f"<code>{esc(str(agg.vpn_units_sold))}</code> / "
+        f"<b>{esc(f'{agg.vpn_revenue_rub:.2f}')} ₽</b>\n",
+        f"ARPPU: <b>{esc(f'{agg.arppu_rub:.2f}')} ₽</b> · VPN share: <b>{esc(f'{agg.vpn_revenue_share_pct:.2f}')}%</b>\n",
         f"Уникальных рефереров (с выданными): <code>{esc(str(agg.distinct_referrers))}</code>",
     ]
     if funnel is not None:
@@ -187,6 +202,65 @@ def _format_dashboard_html(
             )
         else:
             lines.append("<i>Воронка: нет событий входа (/start, /menu) за период.</i>")
+    if pay_funnel is not None:
+        cr = int(pay_funnel.get("funnel_created_orders", 0) or 0)
+        pd = int(pay_funnel.get("funnel_paid_orders", 0) or 0)
+        cd = int(pay_funnel.get("funnel_completed_orders", 0) or 0)
+        lines.append(
+            "\n<b>Payment funnel</b>\n"
+            f"• created: <code>{esc(str(cr))}</code> · paid: <code>{esc(str(pd))}</code> · completed: <code>{esc(str(cd))}</code>\n"
+            f"• paid rate: <b>{esc(str(pay_funnel.get('funnel_paid_rate_pct', 0)))}%</b> · "
+            f"completed/paid: <b>{esc(str(pay_funnel.get('funnel_completed_from_paid_pct', 0)))}%</b>"
+        )
+    if webhook_sla is not None:
+        lines.append(
+            "\n<b>Webhook SLA</b>\n"
+            f"• success: <b>{esc(str(webhook_sla.get('webhook_success_rate_pct', 0)))}%</b> · "
+            f"retry: <code>{esc(str(webhook_sla.get('webhook_retry_rate_pct', 0)))}%</code>\n"
+            f"• p50/p95: <code>{esc(str(webhook_sla.get('webhook_latency_p50_sec', -1.0)))}</code> / "
+            f"<code>{esc(str(webhook_sla.get('webhook_latency_p95_sec', -1.0)))}</code> sec · "
+            f"backlog: <code>{esc(str(webhook_sla.get('webhook_backlog', 0)))}</code>"
+        )
+    if cross_sell is not None:
+        lines.append(
+            "\n<b>Cross-sell (30d)</b>\n"
+            f"• Stars/Premium → VPN: <code>{esc(str(cross_sell.get('cross_sell_sp_to_vpn_n', 0)))}</code> "
+            f"из <code>{esc(str(cross_sell.get('cross_sell_sp_base', 0)))}</code> "
+            f"(<b>{esc(str(cross_sell.get('cross_sell_sp_to_vpn_pct', 0)))}%</b>)\n"
+            f"• VPN → Stars/Premium: <code>{esc(str(cross_sell.get('cross_sell_vpn_to_sp_n', 0)))}</code> "
+            f"из <code>{esc(str(cross_sell.get('cross_sell_vpn_base', 0)))}</code> "
+            f"(<b>{esc(str(cross_sell.get('cross_sell_vpn_to_sp_pct', 0)))}%</b>)"
+        )
+    if retention is not None:
+        lines.append(
+            "\n<b>Retention</b>\n"
+            f"• Cohort: <code>{esc(str(retention.get('retention_cohort_size', 0)))}</code>\n"
+            f"• D7: <code>{esc(str(retention.get('retention_d7_n', 0)))}</code> "
+            f"(<b>{esc(str(retention.get('retention_d7_pct', 0)))}%</b>) · "
+            f"D30: <code>{esc(str(retention.get('retention_d30_n', 0)))}</code> "
+            f"(<b>{esc(str(retention.get('retention_d30_pct', 0)))}%</b>)"
+        )
+    if acquisition is not None:
+        spend_s = f"{float(acquisition.get('acq_spend_rub', 0.0)):.2f}"
+        cac_s = f"{float(acquisition.get('acq_cac_rub', 0.0)):.2f}"
+        lines.append(
+            "\n<b>Acquisition</b>\n"
+            f"• spend: <code>{esc(spend_s)}</code> ₽ · "
+            f"paid users: <code>{esc(str(acquisition.get('acq_paid_users', 0)))}</code> · "
+            f"CAC: <b>{esc(cac_s)}</b> ₽\n"
+            f"• CTR: <code>{esc(str(acquisition.get('acq_ctr_pct', 0)))}%</code> · "
+            f"CR: <code>{esc(str(acquisition.get('acq_cr_pct', 0)))}%</code>"
+        )
+    if feedback is not None:
+        lines.append(
+            "\n<b>NPS / CSAT</b>\n"
+            f"• NPS: <b>{esc(str(feedback.get('nps_score', 0)))}%</b> · "
+            f"avg: <code>{esc(str(feedback.get('nps_avg', 0)))} / 10</code> · "
+            f"responses: <code>{esc(str(feedback.get('nps_responses', 0)))}</code>\n"
+            f"• CSAT: <b>{esc(str(feedback.get('csat_pct', 0)))}%</b> · "
+            f"avg: <code>{esc(str(feedback.get('csat_avg', 0)))} / 5</code> · "
+            f"responses: <code>{esc(str(feedback.get('csat_responses', 0)))}</code>"
+        )
     if vpn_rm is not None:
         vst = int(vpn_rm.get("vpn_ref_starts", 0) or 0)
         gnt = int(vpn_rm.get("vpn_ref_grants", 0) or 0)
@@ -401,6 +475,36 @@ async def cmd_admin(message: Message, settings: Settings, conn) -> None:
     top = await admin_stats_repo.top_referrers(conn, days=7, limit=3)
     rm = await admin_stats_repo.referral_metrics(conn, days=7)
     funnel = await admin_stats_repo.funnel_metrics(conn, days=7)
+    pay_funnel = (
+        await admin_stats_repo.payment_funnel_metrics(conn, days=7)
+        if settings.feature_split_metrics_enabled
+        else None
+    )
+    webhook_sla = (
+        await admin_stats_repo.webhook_sla_metrics(conn, days=7)
+        if settings.feature_split_metrics_enabled
+        else None
+    )
+    cross_sell = (
+        await admin_stats_repo.cross_sell_metrics(conn, days=7, window_days=30)
+        if settings.feature_split_metrics_enabled
+        else None
+    )
+    retention = (
+        await admin_stats_repo.retention_metrics(conn, days=7)
+        if settings.feature_split_metrics_enabled
+        else None
+    )
+    acquisition = (
+        await admin_stats_repo.acquisition_metrics(conn, days=7)
+        if settings.feature_split_metrics_enabled
+        else None
+    )
+    feedback = (
+        await admin_stats_repo.feedback_metrics(conn, days=7)
+        if settings.feature_feedback_metrics_enabled
+        else None
+    )
     vpn_rm, vpn_cp, vpn_h = await _vpn_admin_dashboard_extras(conn, settings, days=7)
     dash = _format_dashboard_html(
         period_label="7 дней",
@@ -408,6 +512,12 @@ async def cmd_admin(message: Message, settings: Settings, conn) -> None:
         top_refs=top,
         rm=rm,
         funnel=funnel,
+        pay_funnel=pay_funnel,
+        webhook_sla=webhook_sla,
+        cross_sell=cross_sell,
+        retention=retention,
+        acquisition=acquisition,
+        feedback=feedback,
         vpn_rm=vpn_rm,
         vpn_cp=vpn_cp,
         vpn_health_html=vpn_h,
@@ -449,6 +559,32 @@ async def admin_stats_callbacks(cb: CallbackQuery, settings: Settings, conn) -> 
             top = await admin_stats_repo.top_referrers(conn, days=days, limit=3)
             rm = await admin_stats_repo.referral_metrics(conn, days=days)
             funnel = await admin_stats_repo.funnel_metrics(conn, days=days)
+            pay_funnel = (
+                await admin_stats_repo.payment_funnel_metrics(conn, days=days)
+                if settings.feature_split_metrics_enabled
+                else None
+            )
+            webhook_sla = (
+                await admin_stats_repo.webhook_sla_metrics(conn, days=days)
+                if settings.feature_split_metrics_enabled
+                else None
+            )
+            cross_sell = (
+                await admin_stats_repo.cross_sell_metrics(conn, days=days, window_days=30)
+                if settings.feature_split_metrics_enabled
+                else None
+            )
+            retention = (
+                await admin_stats_repo.retention_metrics(conn, days=days)
+                if settings.feature_split_metrics_enabled
+                else None
+            )
+            acquisition = (
+                await admin_stats_repo.acquisition_metrics(conn, days=days)
+                if settings.feature_split_metrics_enabled
+                else None
+            )
+            feedback = await admin_stats_repo.feedback_metrics(conn, days=days)
             vpn_rm, vpn_cp, vpn_h = await _vpn_admin_dashboard_extras(conn, settings, days=days)
             top_prof = await admin_stats_repo.top_products_by_profit(conn, days=days, limit=5)
             tlines = ["\n<b>Топ товаров по прибыли</b>\n"]
@@ -469,6 +605,12 @@ async def admin_stats_callbacks(cb: CallbackQuery, settings: Settings, conn) -> 
                     top_refs=top,
                     rm=rm,
                     funnel=funnel,
+                    pay_funnel=pay_funnel,
+                    webhook_sla=webhook_sla,
+                    cross_sell=cross_sell,
+                    retention=retention,
+                    acquisition=acquisition,
+                    feedback=feedback if settings.feature_feedback_metrics_enabled else None,
                     vpn_rm=vpn_rm,
                     vpn_cp=vpn_cp,
                     vpn_health_html=vpn_h,
@@ -545,6 +687,33 @@ async def admin_stats_callbacks(cb: CallbackQuery, settings: Settings, conn) -> 
                 caption=f"Выданные заказы ({esc(_period_human(days))})",
             )
             await cb.answer("Файл отправлен")
+            return
+        if kind == "exec":
+            short_days = int(arg) if arg.isdigit() else 7
+            short_days = max(1, min(90, short_days))
+            long_days = max(short_days, 30)
+            agg_short = await admin_stats_repo.aggregate_dashboard(conn, days=short_days)
+            agg_long = await admin_stats_repo.aggregate_dashboard(conn, days=long_days)
+            pay_short = await admin_stats_repo.payment_funnel_metrics(conn, days=short_days)
+            webhook_short = await admin_stats_repo.webhook_sla_metrics(conn, days=short_days)
+            cross_short = await admin_stats_repo.cross_sell_metrics(conn, days=short_days, window_days=30)
+            ret_short = await admin_stats_repo.retention_metrics(conn, days=short_days)
+            acq_short = await admin_stats_repo.acquisition_metrics(conn, days=short_days)
+            now = datetime.now(timezone.utc).strftime("%Y-%m-%d %H:%M UTC")
+            text = build_exec_report_text(
+                generated_at=now,
+                short_days=short_days,
+                long_days=long_days,
+                agg_short=agg_short,
+                agg_long=agg_long,
+                pay_short=pay_short,
+                webhook_short=webhook_short,
+                cross_short=cross_short,
+                ret_short=ret_short,
+                acq_short=acq_short,
+            )
+            await cb.message.edit_text(text, reply_markup=_admin_stats_main_kb())
+            await cb.answer()
             return
     except Exception:
         await cb.answer("Ошибка", show_alert=True)
@@ -979,9 +1148,27 @@ async def admin_set_status(cb: CallbackQuery, settings: Settings, conn) -> None:
         from bot.services.vpn_payment_hook import schedule_vpn_provision_after_paid
 
         schedule_vpn_provision_after_paid(settings, order_id)
+        try:
+            await analytics_repo.log_event(
+                conn,
+                user_id=int(order["user_id"]),
+                event_type="checkout_paid",
+                meta={"order_id": order_id, "payment_method": str(order["payment_method"] or "")},
+            )
+        except Exception:
+            pass
 
     if new_status == "completed" and prev_status != "completed":
         await apply_completed_side_effects(conn, order_id, settings)
+        try:
+            await analytics_repo.log_event(
+                conn,
+                user_id=int(order["user_id"]),
+                event_type="order_completed",
+                meta={"order_id": order_id, "payment_method": str(order["payment_method"] or "")},
+            )
+        except Exception:
+            pass
 
     audit_action = "adm:paid_break_glass" if action == "paidbg" else f"adm:{action}"
     await _audit_admin(

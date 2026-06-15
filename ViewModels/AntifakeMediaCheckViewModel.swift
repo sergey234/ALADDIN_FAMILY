@@ -22,6 +22,13 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
     private static let pollIntervalNanoseconds: UInt64 = 1_000_000_000
     private static let maxPollAttempts = 30
 
+    private static let slaSeconds: [AntifakeMediaKind: Int] = [
+        .audio: 120,
+        .video: 300,
+        .call: 180,
+        .document: 120
+    ]
+
     init(
         mediaKind: AntifakeMediaKind,
         apiService: APIService? = nil,
@@ -76,20 +83,34 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
             case .completed(let verdict):
                 finalVerdict = verdict
             case .enqueued(let job):
-                statusMessage = localizationManager.localized("antifake_job_analyzing")
+                statusMessage = slaStatusMessage()
                 finalVerdict = try await pollUntilComplete(jobId: job.jobId)
             }
             verdict = finalVerdict
+            AntifakeAnalytics.trackCheckComplete(
+                kind: mediaKind.rawValue,
+                verdict: finalVerdict.verdict.rawValue,
+                source: finalVerdict.source
+            )
             AntifakeHistoryRecorder.record(
                 verdict: finalVerdict,
                 kind: mediaKind.rawValue,
                 summary: selectedFilename ?? mediaKind.rawValue
             )
+            if mediaKind == .call {
+                AntifakeLastCallContext.save(callerId: callerId, displayName: displayName)
+            }
             return true
         } catch {
             handleCheckError(error)
             return false
         }
+    }
+
+    private func slaStatusMessage() -> String {
+        let seconds = Self.slaSeconds[mediaKind] ?? 120
+        let template = localizationManager.localized("antifake_job_analyzing_sla")
+        return String(format: template, locale: localizationManager.locale, "\(seconds)")
     }
 
     private func uploadMedia(fileData: Data, filename: String) async throws -> AntifakeJobEnqueueResult {

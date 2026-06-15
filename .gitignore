@@ -50,3 +50,4 @@ secrets/elevenlabs.api_key
 
 # Cursor session memory (hooks batch 5)
 .cursor/session/last-summary.md
+tools/hermes_desktop/*.dmg

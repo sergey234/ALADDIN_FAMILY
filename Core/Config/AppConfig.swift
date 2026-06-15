@@ -139,11 +139,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "233"
+    static let buildNumber = "234"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "233"
+    static let minimumClientBuildForApiContract = "234"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -251,6 +251,12 @@ struct AppConfig {
         static func antifakeJob(id: String) -> String { "/api/antifake/jobs/\(id)" }
         static let antifakeMetrics = "/api/antifake/metrics"
         static let antifakeCallDirectory = "/api/antifake/call-directory"
+        static let antifakeReport = "/api/antifake/report"
+        static let antifakeAppeal = "/api/antifake/appeal"
+        static let antifakeWhitelist = "/api/antifake/whitelist"
+        static let antifakeFamilyPushToken = "/api/antifake/family/push-token"
+        static let antifakeFamilyReports = "/api/antifake/family/reports"
+        static let antifakeFamilyCDStatus = "/api/antifake/family/cd-status"
 
         // Dark Web Monitoring (explicit B1-02)
         static let darkWebLeaks = "/api/darkweb/leaks"
@@ -804,6 +810,15 @@ extension AppConfig {
         static let pendingAIAssistantDraftMessage = "pending_ai_assistant_draft_message"
         /// Post-call notification tapped → open Antifake call tab (af-4-03).
         static let pendingAntifakePostCallCheck = "pending_antifake_post_call_check"
+        /// E-05: user toggle for post-call reminder push (default on).
+        static let antifakePostCallReminderEnabled = "antifake_post_call_reminder_enabled"
+        /// E-08: last post-call push timestamp (cooldown 15 min).
+        static let antifakePostCallLastPushAt = "antifake_post_call_last_push_at"
+        /// E-07: last caller id entered on call check.
+        static let antifakeLastCallerId = "antifake_last_caller_id"
+        static let antifakeLastDisplayName = "antifake_last_display_name"
+        /// N-05: one-time consent before first media upload to server.
+        static let antifakeMediaUploadConsentGiven = "antifake_media_upload_consent_given"
         /// Dream journal first-visit coachmark (ux-6-05).
         static let wellnessDreamJournalCoachmarkSeen = "wellness_dream_journal_coachmark_seen"
     }
@@ -811,6 +826,14 @@ extension AppConfig {
     /// Opt-in: облачный AI-ассистент (текст уходит на aladdin-ai.ru после redact).
     static var isAIDataSharingEnabled: Bool {
         UserDefaults.standard.bool(forKey: UserDefaultsKeys.aiDataSharingEnabled)
+    }
+
+    /// E-05: post-call antifake reminder (default enabled).
+    static var isAntifakePostCallReminderEnabled: Bool {
+        if UserDefaults.standard.object(forKey: UserDefaultsKeys.antifakePostCallReminderEnabled) != nil {
+            return UserDefaults.standard.bool(forKey: UserDefaultsKeys.antifakePostCallReminderEnabled)
+        }
+        return true
     }
 
     /// AIL §6.2b: adaptive hero layout (standard / focused / immersive). `false` → только 0.56/0.28.

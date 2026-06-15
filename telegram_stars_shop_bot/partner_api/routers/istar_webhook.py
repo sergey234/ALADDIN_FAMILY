@@ -9,7 +9,7 @@ from fastapi import APIRouter, Depends, HTTPException, Request, status
 
 from bot.config import Settings
 from bot.db.database import connect
-from bot.services import orders_repo
+from bot.services import analytics_repo, orders_repo
 from bot.services.buyer_order_notify import (
     buyer_message_istar_completed,
     buyer_message_istar_failed,
@@ -148,6 +148,15 @@ async def istar_webhook(
     conn2 = await connect(settings.database_path)
     try:
         await apply_completed_side_effects(conn2, order_id_out, settings)
+        try:
+            await analytics_repo.log_event(
+                conn2,
+                user_id=int(row["user_id"]),
+                event_type="order_completed",
+                meta={"order_id": order_id_out, "payment_method": str(row["payment_method"] or "")},
+            )
+        except Exception:
+            pass
     finally:
         await conn2.close()
 

@@ -1,9 +1,11 @@
 import SwiftUI
 
-/// Last 50 antifake checks (af-m3 / af-6-08).
+/// Last 50 antifake checks (af-m3 / af-6-08 / J-04 PDF export).
 struct AntifakeCheckHistorySection: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var entries: [AntifakeCheckHistoryEntry] = []
+    @State private var sharePDFURL: URL?
+    @State private var showShareSheet = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
@@ -13,6 +15,12 @@ struct AntifakeCheckHistorySection: View {
                     .foregroundColor(.white)
                 Spacer()
                 if !entries.isEmpty {
+                    Button(localizationManager.localized("antifake_history_export_pdf")) {
+                        exportPDF()
+                    }
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.primaryBlue)
+                    .accessibilityIdentifier("antifake_history_export_pdf")
                     Button(localizationManager.localized("antifake_history_clear")) {
                         AntifakeCheckHistoryStore.clear()
                         entries = []
@@ -46,6 +54,27 @@ struct AntifakeCheckHistorySection: View {
         .stormGlassCard(cornerRadius: CornerRadius.large)
         .accessibilityIdentifier("antifake_history_section")
         .onAppear { entries = AntifakeCheckHistoryStore.load() }
+        .sheet(isPresented: $showShareSheet, onDismiss: { sharePDFURL = nil }) {
+            if let sharePDFURL {
+                ShareSheet(activityItems: [sharePDFURL])
+            }
+        }
+    }
+
+    private func exportPDF() {
+        let labels = AntifakeCheckHistoryPDFExporter.Labels(
+            title: localizationManager.localized("antifake_history_export_pdf_title"),
+            generated: localizationManager.localized("antifake_history_export_pdf_generated"),
+            kindColumn: localizationManager.localized("antifake_history_export_pdf_kind"),
+            verdictColumn: localizationManager.localized("antifake_history_export_pdf_verdict"),
+            summaryColumn: localizationManager.localized("antifake_history_export_pdf_summary"),
+            dateColumn: localizationManager.localized("antifake_history_export_pdf_date"),
+            empty: localizationManager.localized("antifake_history_empty")
+        )
+        if let url = try? AntifakeCheckHistoryPDFExporter.export(entries: entries, labels: labels) {
+            sharePDFURL = url
+            showShareSheet = true
+        }
     }
 
     private func historyRow(_ entry: AntifakeCheckHistoryEntry) -> some View {

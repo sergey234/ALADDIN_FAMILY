@@ -580,9 +580,9 @@ struct NetworkProtectionScreen: View {
                     Text(localizationManager.localized("protection_antifake_card_title"))
                         .font(.subheadline.weight(.semibold))
                         .foregroundColor(.textPrimary)
-                    Text(localizationManager.localized("protection_antifake_accordion_subtitle"))
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
+                        .accessibilityAddTraits(.isHeader)
+                    AntifakeQuickAccessCopyLines(line3Font: .caption2)
+                        .environmentObject(localizationManager)
                 }
                 Spacer()
                 Text(localizationManager.localized("protection_open_check_button"))
@@ -596,6 +596,8 @@ struct NetworkProtectionScreen: View {
         }
         .buttonStyle(.plain)
         .accessibilityIdentifier("antifake_accordion_entry")
+        .accessibilityLabel(AntifakeQuickAccessCopy.accessibilityLabel(localizationManager: localizationManager))
+        .accessibilityHint(localizationManager.localized("protection_open_check_button"))
     }
     
     // MARK: - Безопасное соединение Status Card (компактная версия)

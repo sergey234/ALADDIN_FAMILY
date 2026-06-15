@@ -91,6 +91,7 @@ final class MnemoAcademyUITests: XCTestCase {
 
         itemProgress.tap()
         XCTAssertFalse(waitForLessonPhaseHeader(timeout: 4), "Locked item tap must not open lesson")
+        XCTAssertTrue(app.alerts.firstMatch.waitForExistence(timeout: 4), "Locked item tap should show semester alert")
     }
 
     func testMnemoReviewDeepLinkDoesNotBypassSemesterLock() throws {

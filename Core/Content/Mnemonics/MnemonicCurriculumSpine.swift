@@ -149,11 +149,12 @@ final class MnemonicCurriculumSpine {
         semesterIndices(containing: category).first
     }
 
-    /// Item-level semester for study.* split across semesters 3, 4, and 7.
+    /// Item-level semester for study.* — intro 01–03 open without semester 3; 04–10 → sem 3; 11–20 → sem 4; 21+ → sem 7.
     func requiredSemesterIndex(forItemId itemId: String, category: String) -> Int {
         if category == ChildCategoryKey.study,
            itemId.hasPrefix("study."),
            let num = Int(itemId.replacingOccurrences(of: "study.", with: "")) {
+            if num <= 3 { return 0 }
             if num <= 10 { return 3 }
             if num <= 20 { return 4 }
             return 7

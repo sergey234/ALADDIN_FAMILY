@@ -4231,9 +4231,143 @@ class APIService: ObservableObject {
         networkManager.get(endpoint: AppConfig.Endpoint.antifakeMetrics, completion: completion)
     }
 
-    /// GET `/api/antifake/call-directory` — identified/blocked numbers for CallKit (af-m2).
-    func getAntifakeCallDirectory(completion: @escaping (Result<AntifakeCallDirectoryAPIResponse, Error>) -> Void) {
-        networkManager.get(endpoint: AppConfig.Endpoint.antifakeCallDirectory, completion: completion)
+    /// GET `/api/antifake/call-directory` — identified/blocked numbers for CallKit (af-m2 / C-09).
+    func getAntifakeCallDirectory(
+        since: String? = nil,
+        completion: @escaping (Result<AntifakeCallDirectoryAPIResponse, Error>) -> Void
+    ) {
+        var query: [String: String]?
+        if let since, !since.isEmpty {
+            query = ["since": since]
+        }
+        networkManager.get(
+            endpoint: AppConfig.Endpoint.antifakeCallDirectory,
+            queryParams: query,
+            completion: completion
+        )
+    }
+
+    /// POST `/api/antifake/report` — crowd scam report after completed check (I-01 / I-08).
+    func antifakeReportScam(
+        jobId: String,
+        phone: String,
+        label: String? = nil,
+        note: String? = nil,
+        completion: @escaping (Result<AntifakeReportSubmissionResponse, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let jobId: String
+            let phone: String
+            let label: String?
+            let note: String?
+
+            enum CodingKeys: String, CodingKey {
+                case jobId = "job_id"
+                case phone
+                case label
+                case note
+            }
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.antifakeReport,
+            body: Body(jobId: jobId, phone: phone, label: label, note: note),
+            completion: completion
+        )
+    }
+
+    /// POST `/api/antifake/appeal` — dispute «не мошенник» (I-06).
+    func antifakeAppealScam(
+        jobId: String,
+        phone: String,
+        note: String? = nil,
+        completion: @escaping (Result<AntifakeReportSubmissionResponse, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let jobId: String
+            let phone: String
+            let note: String?
+
+            enum CodingKeys: String, CodingKey {
+                case jobId = "job_id"
+                case phone
+                case note
+            }
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.antifakeAppeal,
+            body: Body(jobId: jobId, phone: phone, note: note),
+            completion: completion
+        )
+    }
+
+    /// POST `/api/antifake/whitelist` — add trusted numbers (I-05).
+    func antifakeAddWhitelist(
+        phones: [String],
+        completion: @escaping (Result<AntifakeWhitelistMutateResponse, Error>) -> Void
+    ) {
+        struct Body: Codable { let phones: [String] }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.antifakeWhitelist,
+            body: Body(phones: phones),
+            completion: completion
+        )
+    }
+
+    /// GET `/api/antifake/whitelist` — list trusted numbers (I-05).
+    func antifakeListWhitelist(completion: @escaping (Result<AntifakeWhitelistResponse, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.antifakeWhitelist, completion: completion)
+    }
+
+    /// POST `/api/antifake/family/push-token` — L-01 parent alert token.
+    func antifakeRegisterFamilyPushToken(
+        _ token: String,
+        completion: @escaping (Result<AntifakeFamilyPushTokenResponse, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let token: String
+            let platform: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.antifakeFamilyPushToken,
+            body: Body(token: token, platform: "ios"),
+            completion: completion
+        )
+    }
+
+    /// GET `/api/antifake/family/reports` — L-03 shared family scam reports.
+    func getAntifakeFamilyReports(
+        completion: @escaping (Result<AntifakeFamilyReportsResponse, Error>) -> Void
+    ) {
+        networkManager.get(endpoint: AppConfig.Endpoint.antifakeFamilyReports, completion: completion)
+    }
+
+    /// POST `/api/antifake/family/cd-status` — L-05 member CD heartbeat.
+    func reportAntifakeFamilyCDStatus(
+        extensionEnabled: Bool,
+        syncedCount: Int,
+        completion: @escaping (Result<AntifakeFamilyCDSavedResponse, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let extensionEnabled: Bool
+            let syncedCount: Int
+
+            enum CodingKeys: String, CodingKey {
+                case extensionEnabled = "extension_enabled"
+                case syncedCount = "synced_count"
+            }
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.antifakeFamilyCDStatus,
+            body: Body(extensionEnabled: extensionEnabled, syncedCount: syncedCount),
+            completion: completion
+        )
+    }
+
+    /// GET `/api/antifake/family/cd-status` — L-05 parent dashboard.
+    func getAntifakeFamilyCDStatus(
+        completion: @escaping (Result<AntifakeFamilyCDStatusResponse, Error>) -> Void
+    ) {
+        networkManager.get(endpoint: AppConfig.Endpoint.antifakeFamilyCDStatus, completion: completion)
     }
 
     private static func appendMultipartFormField(to body: inout Data, boundary: String, name: String, value: String) {

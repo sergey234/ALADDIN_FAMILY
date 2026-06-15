@@ -81,7 +81,9 @@ final class ContentSeedProvider {
         ]
 
         var items: [ContentItem] = []
-        for category in categories {
+        items.append(contentsOf: MnemoCatalogManifestBuilder.allMnemoItems(categories: categories))
+
+        for category in categories where !MnemoCatalogManifestBuilder.isMnemoCategory(category.id) {
             let titles = seedTitles(for: category.id)
             for (index, title) in titles.enumerated() {
                 items.append(
@@ -108,10 +110,10 @@ final class ContentSeedProvider {
         }
 
         return ContentManifest(
-            manifestVersion: 2,
+            manifestVersion: 3,
             generatedAt: Date(),
             minSupportedAppVersion: "1.0.0",
-            checksumSHA256: "seed-manifest-v2",
+            checksumSHA256: "seed-manifest-v4",
             signature: nil,
             categories: categories,
             items: items
@@ -169,7 +171,12 @@ final class ContentSeedProvider {
         case ChildCategoryKey.stories:
             return ["child_seed_stories_1", "child_seed_stories_2", "child_seed_stories_3"]
         case ChildCategoryKey.games:
-            return ["child_seed_games_1", "child_seed_games_2", "child_seed_games_3"]
+            return [
+                "child_seed_games_1",
+                "child_seed_games_2",
+                "child_seed_games_3",
+                "child_seed_games_4"
+            ]
         case ChildCategoryKey.study:
             return ["child_seed_study_1", "child_seed_study_2", "child_seed_study_3"]
         case ChildCategoryKey.safety:

@@ -105,6 +105,18 @@ class Settings(BaseSettings):
         default="https://aladdin-ai.ru/v1/legal/terms",
         validation_alias="TERMS_OF_SERVICE_URL",
     )
+    public_offer_url: str = Field(
+        default="https://aladdin-ai.ru/v1/legal/offer",
+        validation_alias="PUBLIC_OFFER_URL",
+    )
+    refund_policy_url: str = Field(
+        default="https://aladdin-ai.ru/v1/legal/refund",
+        validation_alias="REFUND_POLICY_URL",
+    )
+    news_channel_page_url: str = Field(
+        default="https://aladdin-ai.ru/news.html",
+        validation_alias="NEWS_CHANNEL_PAGE_URL",
+    )
 
     # Обязательная подписка на канал перед покупкой (бот должен быть админом канала).
     # ID: @username или -100… ; пусто = проверка отключена.
@@ -238,6 +250,72 @@ class Settings(BaseSettings):
     ops_heartbeat_interval_seconds: int = Field(
         default=1800, validation_alias="OPS_HEARTBEAT_INTERVAL_SECONDS"
     )
+    # KPI alerts в watchdog (split-core). OPS_WATCHDOG_KPI_DAYS=0 отключает блок KPI.
+    ops_watchdog_kpi_days: int = Field(default=7, validation_alias="OPS_WATCHDOG_KPI_DAYS")
+    # Payment funnel: minimum paid-rate from created orders.
+    ops_alert_payment_success_min_pct: float = Field(
+        default=85.0, validation_alias="OPS_ALERT_PAYMENT_SUCCESS_MIN_PCT"
+    )
+    ops_alert_payment_min_created_orders: int = Field(
+        default=20, validation_alias="OPS_ALERT_PAYMENT_MIN_CREATED_ORDERS"
+    )
+    # Webhook SLA: minimum success-rate and maximum p95 latency.
+    ops_alert_webhook_success_min_pct: float = Field(
+        default=95.0, validation_alias="OPS_ALERT_WEBHOOK_SUCCESS_MIN_PCT"
+    )
+    ops_alert_webhook_p95_max_sec: float = Field(
+        default=60.0, validation_alias="OPS_ALERT_WEBHOOK_P95_MAX_SEC"
+    )
+    ops_alert_webhook_min_events: int = Field(default=20, validation_alias="OPS_ALERT_WEBHOOK_MIN_EVENTS")
+    # Retention D7: minimum retention percentage for cohort with enough size.
+    ops_alert_retention_d7_min_pct: float = Field(
+        default=8.0, validation_alias="OPS_ALERT_RETENTION_D7_MIN_PCT"
+    )
+    ops_alert_retention_min_cohort: int = Field(
+        default=30, validation_alias="OPS_ALERT_RETENTION_MIN_COHORT"
+    )
+    # CAC: maximum acceptable CAC in RUB (<=0 disables this alert).
+    ops_alert_cac_max_rub: float = Field(default=0.0, validation_alias="OPS_ALERT_CAC_MAX_RUB")
+    ops_alert_cac_min_paid_users: int = Field(default=5, validation_alias="OPS_ALERT_CAC_MIN_PAID_USERS")
+    # Weekly executive report (split-core KPI) в Telegram админам.
+    exec_report_enabled: bool = Field(default=False, validation_alias="EXEC_REPORT_ENABLED")
+    exec_report_interval_seconds: int = Field(
+        default=604800, validation_alias="EXEC_REPORT_INTERVAL_SECONDS"
+    )
+    exec_report_days_short: int = Field(default=7, validation_alias="EXEC_REPORT_DAYS_SHORT")
+    exec_report_days_long: int = Field(default=30, validation_alias="EXEC_REPORT_DAYS_LONG")
+    # NPS/CSAT survey automation.
+    feedback_survey_enabled: bool = Field(default=False, validation_alias="FEEDBACK_SURVEY_ENABLED")
+    feedback_survey_interval_seconds: int = Field(
+        default=21600, validation_alias="FEEDBACK_SURVEY_INTERVAL_SECONDS"
+    )
+    feedback_survey_cooldown_days: int = Field(default=30, validation_alias="FEEDBACK_SURVEY_COOLDOWN_DAYS")
+    feedback_survey_lookback_days: int = Field(default=45, validation_alias="FEEDBACK_SURVEY_LOOKBACK_DAYS")
+    feedback_survey_batch_size: int = Field(default=50, validation_alias="FEEDBACK_SURVEY_BATCH_SIZE")
+    # Feature flags / staged rollout.
+    feature_split_metrics_enabled: bool = Field(default=True, validation_alias="FEATURE_SPLIT_METRICS_ENABLED")
+    feature_feedback_metrics_enabled: bool = Field(default=True, validation_alias="FEATURE_FEEDBACK_METRICS_ENABLED")
+    feature_feedback_collection_enabled: bool = Field(
+        default=True, validation_alias="FEATURE_FEEDBACK_COLLECTION_ENABLED"
+    )
+    # Data quality checks for metrics layer.
+    data_quality_checks_enabled: bool = Field(default=False, validation_alias="DATA_QUALITY_CHECKS_ENABLED")
+    data_quality_checks_interval_seconds: int = Field(
+        default=21600, validation_alias="DATA_QUALITY_CHECKS_INTERVAL_SECONDS"
+    )
+    data_quality_lookback_days: int = Field(default=7, validation_alias="DATA_QUALITY_LOOKBACK_DAYS")
+    data_quality_max_orders_missing_kind: int = Field(
+        default=0, validation_alias="DATA_QUALITY_MAX_ORDERS_MISSING_KIND"
+    )
+    data_quality_max_orders_missing_profit_snapshot: int = Field(
+        default=0, validation_alias="DATA_QUALITY_MAX_ORDERS_MISSING_PROFIT_SNAPSHOT"
+    )
+    data_quality_min_event_schema_v2_pct: float = Field(
+        default=95.0, validation_alias="DATA_QUALITY_MIN_EVENT_SCHEMA_V2_PCT"
+    )
+    data_quality_max_unattributed_paid_pct: float = Field(
+        default=20.0, validation_alias="DATA_QUALITY_MAX_UNATTRIBUTED_PAID_PCT"
+    )
 
     # Входящий вебхук «платёж подтверждён» (HMAC тела, заголовок X-Payment-Signature).
     payment_webhook_secret: str = Field(default="", validation_alias="PAYMENT_WEBHOOK_SECRET")
@@ -255,6 +333,48 @@ class Settings(BaseSettings):
     lava_invoice_expire_minutes: int = Field(default=720, validation_alias="LAVA_INVOICE_EXPIRE_MINUTES")
     # Список service_id через запятую (пусто = LAVA покажет все доступные методы проекта).
     lava_include_services: str = Field(default="card,sbp", validation_alias="LAVA_INCLUDE_SERVICES")
+
+    # Cardlink (https://cardlink.link) — фиат ₽: карта / СБП, postback на Partner API.
+    cardlink_enabled: bool = Field(default=False, validation_alias="CARDLINK_ENABLED")
+    cardlink_shop_id: str = Field(default="", validation_alias="CARDLINK_SHOP_ID")
+    cardlink_api_token: str = Field(default="", validation_alias="CARDLINK_API_TOKEN")
+    cardlink_api_base: str = Field(default="https://cardlink.link", validation_alias="CARDLINK_API_BASE")
+    cardlink_success_url: str = Field(
+        default="https://aladdin-ai.ru/v1/payment/success",
+        validation_alias="CARDLINK_SUCCESS_URL",
+    )
+    cardlink_fail_url: str = Field(
+        default="https://aladdin-ai.ru/v1/payment/fail",
+        validation_alias="CARDLINK_FAIL_URL",
+    )
+    # Должен совпадать с Result URL в ЛК Cardlink (часто нельзя изменить после создания проекта).
+    cardlink_hook_url: str = Field(
+        default="https://aladdin-ai.ru/v1/payments/cardlink-webhook",
+        validation_alias="CARDLINK_HOOK_URL",
+    )
+    cardlink_refund_url: str = Field(
+        default="https://aladdin-ai.ru/v1/payments/cardlink-refund",
+        validation_alias="CARDLINK_REFUND_URL",
+    )
+    cardlink_chargeback_url: str = Field(
+        default="https://aladdin-ai.ru/v1/payments/cardlink-chargeback",
+        validation_alias="CARDLINK_CHARGEBACK_URL",
+    )
+    cardlink_currency_in: str = Field(default="RUB", validation_alias="CARDLINK_CURRENCY_IN")
+    cardlink_locale: str = Field(default="ru", validation_alias="CARDLINK_LOCALE")
+    cardlink_bill_ttl_seconds: int = Field(default=43200, validation_alias="CARDLINK_BILL_TTL_SECONDS")
+    cardlink_payer_pays_commission: int = Field(default=1, ge=0, le=1, validation_alias="CARDLINK_PAYER_PAYS_COMMISSION")
+    # BANK_CARD | SBP | пусто = выбор на форме Cardlink.
+    cardlink_payment_method: str = Field(default="", validation_alias="CARDLINK_PAYMENT_METHOD")
+    cardlink_payment_name: str = Field(
+        default="AIMonkey Stars | Premium",
+        validation_alias="CARDLINK_PAYMENT_NAME",
+    )
+    # Deep link после оплаты на success/fail страницах (кнопка «Вернуться в бот»).
+    cardlink_return_bot_url: str = Field(
+        default="https://t.me/AiMonkeyStars_bot",
+        validation_alias="CARDLINK_RETURN_BOT_URL",
+    )
 
     # Ckassa (ЦК) - фиат ₽ по API как в WooCommerce-модуле: do-pay/anonymous + callback cbUrl.
     # https://api2.ckassa.ru/api-shop/rs/wordpress/do-pay/anonymous

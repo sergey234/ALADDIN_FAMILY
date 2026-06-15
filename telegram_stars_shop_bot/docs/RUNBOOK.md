@@ -285,3 +285,72 @@ systemctl status --no-pager ops-watchdog.timer
 cd /opt/aladdin-telegram-shop-bot/current_app
 /opt/aladdin-telegram-shop-bot/venv/bin/python -m bot.services.ops_watchdog
 ```
+
+## 14. Data quality checks (metrics)
+
+Цель: автоматически ловить деградации данных перед тем, как KPI начнут вводить в заблуждение.
+
+Ключевые env:
+
+- `DATA_QUALITY_CHECKS_ENABLED=true`
+- `DATA_QUALITY_CHECKS_INTERVAL_SECONDS=21600`
+- `DATA_QUALITY_LOOKBACK_DAYS=7`
+- `DATA_QUALITY_MAX_ORDERS_MISSING_KIND=0`
+- `DATA_QUALITY_MAX_ORDERS_MISSING_PROFIT_SNAPSHOT=0`
+- `DATA_QUALITY_MIN_EVENT_SCHEMA_V2_PCT=95`
+- `DATA_QUALITY_MAX_UNATTRIBUTED_PAID_PCT=20`
+
+Что проверяется:
+
+- completed-заказы без `product_kind`;
+- completed-заказы без `profit_snapshot_at`;
+- доля `analytics_events` с `schema_version=v2`;
+- доля paid users без атрибуции (`user_acquisition.first_source='unknown'`).
+
+Алерты: `PROBLEM/RECOVERY` через существующий канал `send_alert` (Telegram/PagerDuty).
+
+Timer (опционально, если не используете in-process loop в `bot.main`):
+
+```bash
+cp /opt/aladdin-telegram-shop-bot/current_app/docs/data-quality-checks.service /etc/systemd/system/data-quality-checks.service
+cp /opt/aladdin-telegram-shop-bot/current_app/docs/data-quality-checks.timer /etc/systemd/system/data-quality-checks.timer
+systemctl daemon-reload
+systemctl enable --now data-quality-checks.timer
+systemctl status --no-pager data-quality-checks.timer
+```
+
+## 15. Feature flags (staged rollout)
+
+Флаги для безопасного поэтапного включения:
+
+- `FEATURE_SPLIT_METRICS_ENABLED` — payment/webhook/cross-sell/retention/acquisition блоки в `/admin`;
+- `FEATURE_FEEDBACK_METRICS_ENABLED` — NPS/CSAT блок в `/admin`;
+- `FEATURE_FEEDBACK_COLLECTION_ENABLED` — прием NPS/CSAT callback-оценок;
+- `FEEDBACK_SURVEY_ENABLED` — автопросы NPS/CSAT;
+- `EXEC_REPORT_ENABLED` — weekly executive report.
+
+Рекомендуемый порядок:
+
+1. Включить `FEATURE_SPLIT_METRICS_ENABLED` и проверить `/admin` (7/30/all).
+2. Включить `EXEC_REPORT_ENABLED` (1-2 цикла, сверка с `/admin`).
+3. Включить `FEATURE_FEEDBACK_COLLECTION_ENABLED`, затем `FEATURE_FEEDBACK_METRICS_ENABLED`.
+4. Включить `FEEDBACK_SURVEY_ENABLED` с маленьким `FEEDBACK_SURVEY_BATCH_SIZE` (например 10).
+5. Включить `DATA_QUALITY_CHECKS_ENABLED`.
+
+## 16. Post-release monitoring (7 дней)
+
+Каждый день в первые 7 дней:
+
+1. Проверить `/admin` и weekly report на расхождения > 2-3%.
+2. Проверить watchdog и data-quality алерты (`PROBLEM`/`RECOVERY`).
+3. Проверить KPI-минимумы:
+   - payment success не ниже порога;
+   - webhook success/p95 в рамках порога;
+   - schema v2 coverage не ниже порога;
+   - unattributed paid users не выше порога.
+4. Проверить feedback funnel:
+   - есть `feedback_prompt_sent`;
+   - есть ответы `nps`/`csat` в `user_feedback`.
+5. При деградации:
+   - временно выключить фичу флагом (без деплоя);
+   - зафиксировать причину и corrective action в операционном журнале.

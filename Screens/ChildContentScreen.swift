@@ -58,6 +58,13 @@ struct ChildContentScreen: View {
     @State private var teenLastArtifactKey: String = "child_creative_output_v2_none"
     @State private var extensionRequestStatus: String?
     @State private var showMnemoBaselineAssessment = false
+    @State private var mnemoItemLockAlert: MnemoItemLockAlertPayload?
+
+    private struct MnemoItemLockAlertPayload: Identifiable {
+        let id = UUID()
+        let title: String
+        let message: String
+    }
     
     // MARK: - Body
     
@@ -109,7 +116,9 @@ struct ChildContentScreen: View {
                 }
             }
         }
-        .sheet(item: $selectedExperience) { presentation in
+        .sheet(item: $selectedExperience, onDismiss: {
+            Task { await refreshDisplayedItemProgress() }
+        }) { presentation in
             ChildContentExperienceScreen(
                 item: presentation.item,
                 route: presentation.route
@@ -122,6 +131,13 @@ struct ChildContentScreen: View {
         .sheet(isPresented: $showMnemoBaselineAssessment) {
             MnemoBaselineAssessmentView()
                 .environmentObject(localizationManager)
+        }
+        .alert(item: $mnemoItemLockAlert) { payload in
+            SwiftUI.Alert(
+                title: Text(payload.title),
+                message: Text(payload.message),
+                dismissButton: .default(Text(localizationManager.localized("common_ok")))
+            )
         }
         .accessibilityIdentifier("aladdin_root_child_content")
         .onAppear {
@@ -167,7 +183,7 @@ struct ChildContentScreen: View {
     }
 
     private var mnemoDueTodayCount: Int {
-        MnemonicSRSStore.shared.dueToday(category: category)
+        MnemonicSRSStore.shared.unifiedDueToday()
     }
 
     private var mnemoActiveSemester: MnemonicCurriculumSpine.Semester? {
@@ -250,9 +266,26 @@ struct ChildContentScreen: View {
         )
     }
 
-    private func mnemoItemIsLocked(_ itemId: String) -> Bool {
+    private func mnemoItemIsLocked(_ itemId: String, category overrideCategory: String? = nil) -> Bool {
         guard isMnemoAcademyCategory else { return false }
-        return !MnemonicCurriculumSpine.shared.itemGate(forItemId: itemId, category: category).isAccessible
+        let cat = overrideCategory ?? category
+        return !MnemonicCurriculumSpine.shared.itemGate(forItemId: itemId, category: cat).isAccessible
+    }
+
+    private func presentMnemoItemLockAlert(for itemId: String) {
+        let gate = MnemonicCurriculumSpine.shared.itemGate(forItemId: itemId, category: category)
+        let semesterTitle = MnemonicCurriculumSpine.shared.semester(at: gate.requiredSemesterIndex)
+            .map { localizationManager.localized($0.titleKey) } ?? ""
+        let message = String(
+            format: localizationManager.localized("child_mnemo_item_locked_alert_message"),
+            semesterTitle,
+            gate.remainingPercent,
+            gate.unlockThresholdPercent
+        )
+        mnemoItemLockAlert = MnemoItemLockAlertPayload(
+            title: localizationManager.localized("child_mnemo_item_locked_alert_title"),
+            message: message
+        )
     }
 
     // MARK: - Data Loading
@@ -301,13 +334,24 @@ struct ChildContentScreen: View {
             targetItemId = pending
         } else if navigationManager.pendingMnemoOpenFirstDue {
             navigationManager.pendingMnemoOpenFirstDue = false
-            targetItemId = MnemonicSRSStore.shared.dueItems(category: category).first
+            targetItemId = MnemonicSRSStore.shared.unifiedDueItems().first
         } else {
             return
         }
 
-        guard let targetItemId,
-              !mnemoItemIsLocked(targetItemId),
+        guard let targetItemId else { return }
+
+        let targetCategory = MnemoItemProgress.categoryId(for: targetItemId) ?? category
+        if targetCategory != category {
+            navigationManager.navigateToMnemoReview(
+                category: targetCategory,
+                openFirstDue: false,
+                itemId: targetItemId
+            )
+            return
+        }
+
+        guard !mnemoItemIsLocked(targetItemId),
               let item = contentItems.first(where: { $0.id == targetItemId }),
               let route = ContentExperienceResolver.shared.resolve(for: item) else { return }
 
@@ -315,9 +359,23 @@ struct ChildContentScreen: View {
     }
 
     private func openFirstDueMnemoItem() {
-        guard let itemId = MnemonicSRSStore.shared.dueItems(category: category).first,
-              !mnemoItemIsLocked(itemId),
-              let item = contentItems.first(where: { $0.id == itemId }),
+        let dueIds = MnemonicSRSStore.shared.unifiedDueItems()
+        guard let firstDue = dueIds.first(where: {
+            let cat = MnemoItemProgress.categoryId(for: $0) ?? category
+            return !mnemoItemIsLocked($0, category: cat)
+        }) else { return }
+
+        let targetCategory = MnemoItemProgress.categoryId(for: firstDue) ?? category
+        if targetCategory != category {
+            navigationManager.navigateToMnemoReview(
+                category: targetCategory,
+                openFirstDue: false,
+                itemId: firstDue
+            )
+            return
+        }
+
+        guard let item = contentItems.first(where: { $0.id == firstDue }),
               let route = ContentExperienceResolver.shared.resolve(for: item) else { return }
         selectedExperience = ContentExperiencePresentation(item: item, route: route)
     }
@@ -730,9 +788,28 @@ struct ChildContentScreen: View {
     private var averageCategoryProgress: Double {
         guard !contentItems.isEmpty else { return 0 }
         let total = contentItems.reduce(0.0) { acc, item in
-            acc + (progressById[item.id]?.completionPercent ?? 0)
+            if isMnemoAcademyCategory {
+                return acc + Double(MnemoItemProgress.recallPercent(for: item.id))
+            }
+            return acc + (progressById[item.id]?.completionPercent ?? 0)
         }
         return total / Double(contentItems.count)
+    }
+
+    /// Reload opened/recall progress after lesson sheet closes (mnemo uses SRS, not tap-%).
+    private func refreshDisplayedItemProgress() async {
+        var updated = progressById
+        for item in contentItems {
+            if let progress = await ContentManager.shared.loadProgress(contentId: item.id) {
+                updated[item.id] = progress
+            }
+        }
+        await MainActor.run {
+            progressById = updated
+            refreshDailyJourneyStep()
+            refreshSchoolJourneyPacing()
+            refreshTeenJourneyAutonomy()
+        }
     }
 
     private var childContentOverallProgressCard: some View {
@@ -1111,10 +1188,27 @@ struct ChildContentScreen: View {
     private var dataDrivenContent: some View {
         VStack(spacing: 12) {
             ForEach(displayedContentItems, id: \.id) { item in
-                let pct = min(100, max(0, progressById[item.id]?.completionPercent ?? 0))
+                let pct = itemProgressPercent(for: item)
                 let resolvedTitle = localizedContentTitle(for: item)
                 let itemLocked = mnemoItemIsLocked(item.id)
-                AnimatedButton(tone: animatedTone(for: item), haptics: true, playsSound: !itemLocked) {
+                AnimatedButton(
+                    tone: animatedTone(for: item),
+                    haptics: true,
+                    playsSound: true,
+                    isDisabled: false
+                ) {
+                    if itemLocked {
+                        await MainActor.run {
+                            presentMnemoItemLockAlert(for: item.id)
+                            mascotResetToken = UUID()
+                            mascotEmotion = .supportive
+                            mascotActivity = .active
+                            SoundEffectPlayer.shared.play(.warning, priority: .medium)
+                            scheduleMascotReset(to: .neutral, activity: .idle, delay: 0.75)
+                        }
+                        return .error
+                    }
+
                     let result = await trackContentOpen(item)
                     await MainActor.run {
                         switch result {
@@ -1163,7 +1257,7 @@ struct ChildContentScreen: View {
                                     .font(.system(size: 12, weight: .medium))
                                     .foregroundColor(.white.opacity(0.72))
                                 Spacer()
-                                Text(progressText(for: item.id))
+                                Text(isMnemoAcademyCategory ? mnemoProgressLabel(for: item.id) : progressText(for: item.id))
                                     .font(.system(size: 13, weight: .semibold))
                                     .foregroundColor(.white.opacity(0.9))
                             }
@@ -1217,7 +1311,11 @@ struct ChildContentScreen: View {
                     .opacity(itemLocked ? 0.72 : 1)
                 }
                 .accessibilityLabel(resolvedTitle)
-                .accessibilityValue([progressText(for: item.id), lastOpenedDescription(for: item.id)].joined(separator: " · "))
+                .accessibilityValue(
+                    isMnemoAcademyCategory
+                        ? [mnemoProgressLabel(for: item.id), lastOpenedDescription(for: item.id)].joined(separator: " · ")
+                        : [progressText(for: item.id), lastOpenedDescription(for: item.id)].joined(separator: " · ")
+                )
                 .accessibilityIdentifier("child_content_row_\(item.id)")
                 .contextMenu {
                     Button(localizationManager.localized("child_interface_done")) {
@@ -1231,8 +1329,39 @@ struct ChildContentScreen: View {
     }
 
     private func localizedContentTitle(for item: ContentItem) -> String {
+        if MnemoCatalogManifestBuilder.isMnemoCategory(item.categoryId) {
+            if let title = MnemoCatalogTitles.localizedTitle(for: item.id, localization: localizationManager) {
+                return title
+            }
+            if let fallback = MnemoCatalogTitles.fallbackTitle(
+                for: item.id,
+                locale: localizationManager.locale.identifier
+            ) {
+                return fallback
+            }
+        }
         let localized = localizationManager.localized(item.metadata.title)
         return localized == item.metadata.title ? item.metadata.title : localized
+    }
+
+    private func itemProgressPercent(for item: ContentItem) -> Double {
+        if isMnemoAcademyCategory {
+            return Double(MnemoItemProgress.recallPercent(for: item.id))
+        }
+        return min(100, max(0, progressById[item.id]?.completionPercent ?? 0))
+    }
+
+    private func mnemoProgressLabel(for contentId: String) -> String {
+        let recall = MnemoItemProgress.recallPercent(for: contentId)
+        let opened = MnemoItemProgress.hasOpened(progress: progressById[contentId])
+        let openedText = localizationManager.localized(
+            opened ? "child_mnemo_progress_opened_yes" : "child_mnemo_progress_opened_no"
+        )
+        let recalledText = String(
+            format: localizationManager.localized("child_mnemo_progress_recalled"),
+            recall
+        )
+        return "\(openedText) · \(recalledText)"
     }
 
     private var displayedContentItems: [ContentItem] {
@@ -1338,6 +1467,10 @@ struct ChildContentScreen: View {
     }
 
     private func trackContentOpen(_ item: ContentItem) async -> AnimatedButtonFlash {
+        if isMnemoAcademyCategory, mnemoItemIsLocked(item.id) {
+            return .error
+        }
+
         if !TimeTracker.shared.canStartSession() {
             if recoveryBonusAttempts > 0 {
                 await MainActor.run {
@@ -1359,22 +1492,24 @@ struct ChildContentScreen: View {
         let wasCompleted = progress.completionPercent >= 100
         progress.attempts += 1
         progress.lastOpenedAt = Date()
-        if progress.completionPercent < 100 {
-            progress.completionPercent = min(100, progress.completionPercent + 20)
-            if progress.completionPercent >= 100 {
-                progress.completedAt = Date()
+        if !isMnemoAcademyCategory {
+            if progress.completionPercent < 100 {
+                progress.completionPercent = min(100, progress.completionPercent + 20)
+                if progress.completionPercent >= 100 {
+                    progress.completedAt = Date()
+                }
             }
-        }
-        if ageGroup == .kids, !creativeOutputDone, progress.completionPercent >= 100 {
-            progress.completionPercent = 80
-            progress.completedAt = nil
+            if ageGroup == .kids, !creativeOutputDone, progress.completionPercent >= 100 {
+                progress.completionPercent = 80
+                progress.completedAt = nil
+            }
         }
         try? await ContentManager.shared.saveProgress(progress)
         ProgressTracker.shared.recordOpen(contentId: item.id)
         TimeTracker.shared.addUsage(seconds: max(60, item.metadata.estimatedDurationSec ?? 300))
         ContentManager.shared.recordPersonalizationInteraction(for: item)
-        let completedNow = progress.completionPercent >= 100
-        let deltaPercent = max(0, progress.completionPercent - previousPercent)
+        let completedNow = !isMnemoAcademyCategory && progress.completionPercent >= 100
+        let deltaPercent = isMnemoAcademyCategory ? 0 : max(0, progress.completionPercent - previousPercent)
         let rewardDelta = rewardPoints(forDeltaPercent: deltaPercent, completedNow: completedNow, wasCompleted: wasCompleted)
         await MainActor.run {
             progressById[item.id] = progress
@@ -1405,6 +1540,28 @@ struct ChildContentScreen: View {
                 mascotActivity = .active
                 SoundEffectPlayer.shared.play(.warning, priority: .medium)
                 scheduleMascotReset(to: .neutral, activity: .idle, delay: 0.75)
+            }
+            return
+        }
+        if isMnemoAcademyCategory {
+            var progress = await ContentManager.shared.loadProgress(contentId: item.id)
+                ?? ContentProgress(contentId: item.id, completionPercent: 0, attempts: 0, lastOpenedAt: nil, completedAt: nil)
+            progress.lastOpenedAt = Date()
+            try? await ContentManager.shared.saveProgress(progress)
+            ProgressTracker.shared.recordCompletion(contentId: item.id)
+            ContentManager.shared.recordPersonalizationInteraction(for: item)
+            await MainActor.run {
+                progressById[item.id] = progress
+                refreshDailyJourneyStep()
+                refreshSchoolJourneyPacing()
+                refreshTeenJourneyAutonomy()
+                clearAdaptiveErrorStreak()
+                registerSessionForSurprise()
+                mascotResetToken = UUID()
+                mascotEmotion = .happy
+                mascotActivity = .active
+                SoundEffectPlayer.shared.play(.success, priority: .medium)
+                scheduleMascotReset(to: .neutral, activity: .idle, delay: 0.85)
             }
             return
         }
@@ -1452,7 +1609,10 @@ struct ChildContentScreen: View {
     }
 
     private func isCompleted(_ contentId: String) -> Bool {
-        (progressById[contentId]?.completionPercent ?? 0) >= 100
+        if isMnemoAcademyCategory {
+            return MnemoItemProgress.recallPercent(for: contentId) >= 100
+        }
+        return (progressById[contentId]?.completionPercent ?? 0) >= 100
     }
 
     private func refreshDailyJourneyStep() {

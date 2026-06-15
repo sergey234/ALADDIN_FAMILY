@@ -12,6 +12,7 @@ from aiogram.types import CallbackQuery, Message
 
 from bot.config import Settings
 from bot.keyboards.shop_kb import (
+    cardlink_payment_kb,
     ckassa_payment_kb,
     confirm_order_kb,
     crypto_providers_kb,
@@ -32,6 +33,7 @@ from bot.services.crypto_pay_api import (
     create_crypto_pay_invoice_checkout_meta,
     crypto_pay_invoice_api_ready,
 )
+from bot.services.cardlink_api import cardlink_checkout_configured, create_cardlink_bill_meta
 from bot.services.ckassa_api import ckassa_checkout_configured, create_ckassa_payment_meta
 from bot.services.lava_api import create_invoice_payment_meta, lava_checkout_configured
 from bot.services.xrocket_pay_api import create_xrocket_invoice_checkout_meta, xrocket_invoice_api_ready
@@ -133,6 +135,18 @@ async def _present_fiat_checkout(
     ck_ext: str | None = None
     pay_lava: str | None = None
     ext_lava: str | None = None
+    pay_cardlink: str | None = None
+    ext_cardlink: str | None = None
+
+    if cardlink_checkout_configured(settings):
+        pay_cardlink, ext_cardlink = await create_cardlink_bill_meta(
+            settings,
+            order_id=order_id,
+            sum_rub=rub_due,
+            description=product_title,
+            telegram_user_id=buyer_user_id,
+            telegram_username=un or None,
+        )
 
     if multi_lane:
         if not solo_bc:
@@ -154,7 +168,11 @@ async def _present_fiat_checkout(
                     sum_rub=rub_due,
                     comment=memo[:255],
                 )
-            if ck_url and pay_lava:
+            if pay_cardlink:
+                await orders_repo.set_invoice_provider_metadata(
+                    conn, order_id=order_id, provider="cardlink", external_id=ext_cardlink
+                )
+            elif ck_url and pay_lava:
                 await orders_repo.set_invoice_provider_metadata(
                     conn, order_id=order_id, provider="multi", external_id=None
                 )
@@ -167,11 +185,16 @@ async def _present_fiat_checkout(
                     conn, order_id=order_id, provider="lava", external_id=ext_lava
                 )
         else:
-            await orders_repo.set_invoice_provider_metadata(
-                conn, order_id=order_id, provider="ckassa_bc", external_id=None
-            )
+            if pay_cardlink:
+                await orders_repo.set_invoice_provider_metadata(
+                    conn, order_id=order_id, provider="cardlink", external_id=ext_cardlink
+                )
+            else:
+                await orders_repo.set_invoice_provider_metadata(
+                    conn, order_id=order_id, provider="ckassa_bc", external_id=None
+                )
 
-        if univers or ck_url or pay_lava:
+        if univers or ck_url or pay_lava or pay_cardlink:
             rub_s = esc(f"{float(rub_due):.2f}")
             oid_s = esc(str(order_id))
             order_memo = f"ORDER{order_id}"
@@ -245,8 +268,18 @@ async def _present_fiat_checkout(
                         "Другой способ оплаты картой или СБП. Статус обновится после оплаты по данным LAVA.",
                     ]
                 )
+            if pay_cardlink:
+                parts.extend(
+                    [
+                        "",
+                        "<b>💳 Cardlink</b>",
+                        "Оплата картой или СБП. Статус «Оплачен» обновится автоматически после webhook.",
+                    ]
+                )
+            ru = esc((settings.refund_policy_url or "https://aladdin-ai.ru/v1/legal/refund").strip())
             parts.append(
-                "\n<i>До появления «Выдан» сохраните квитанцию из банка. Возвраты - только через поддержку по правилам магазина.</i>"
+                "\n<i>Цифровые товары, оказанные в полном объёме («выдан»), — возврату не подлежат. "
+                f"До выдачи — <a href=\"{ru}\">политика возвратов</a>.</i>"
             )
             await cb.message.edit_text(
                 intro_html + "\n".join(parts),
@@ -254,6 +287,7 @@ async def _present_fiat_checkout(
                     universal_url=univers or None,
                     ckassa_shop_url=ck_url,
                     lava_url=pay_lava,
+                    cardlink_url=pay_cardlink,
                     bc_claim_order_id=order_id if univers else None,
                     support_order_url=sup_u,
                 ),
@@ -280,6 +314,25 @@ async def _present_fiat_checkout(
             intro_html + fx + missing_multi + f"\n\n<b>{esc(instr.title)}</b>\n{instr.body_html}",
             reply_markup=hub_menu_kb(),
         )
+        return
+
+    if pay_cardlink:
+        await orders_repo.set_invoice_provider_metadata(
+            conn, order_id=order_id, provider="cardlink", external_id=ext_cardlink
+        )
+        rub_s = esc(f"{float(rub_due):.2f}")
+        tail = (
+            fx
+            + f"\n\n<b>Сумма: {rub_s} ₽</b> — на странице проверьте ту же сумму.\n"
+            "После оплаты заказ <b>встанет в очередь</b> на выдачу Stars, Premium или VPN.\n"
+            "<b>Что сделать:</b>\n"
+            "1) Нажмите <b>«Оплатить в ₽ (Cardlink)»</b> ниже.\n"
+            "2) Оплатите картой или СБП на странице Cardlink.\n"
+            "3) <b>«Мои заказы»</b> — ждите <b>«Оплачен»</b> (обычно 1–2 минуты).\n"
+            "4) Статус не сменился — <b>Поддержка</b> с номером заказа.\n"
+            "\n<i>Защищённый эквайринг Cardlink. Дальше — автоматическая или ручная выдача по политике магазина.</i>"
+        )
+        await cb.message.edit_text(intro_html + tail, reply_markup=cardlink_payment_kb(pay_cardlink))
         return
 
     if ckassa_checkout_configured(settings):
@@ -877,6 +930,9 @@ async def open_product(cb: CallbackQuery, products: list[Product], settings: Set
         await analytics_repo.log_event(
             conn, user_id=cb.from_user.id, event_type="product_view", meta={"product_id": pid}
         )
+        await analytics_repo.log_event(
+            conn, user_id=cb.from_user.id, event_type="offer_click", meta={"product_id": pid}
+        )
     except Exception:
         pass
 
@@ -902,6 +958,9 @@ async def premium_pick_dest(cb: CallbackQuery, products: list[Product], settings
     try:
         await analytics_repo.log_event(
             conn, user_id=cb.from_user.id, event_type="product_view", meta={"product_id": pid}
+        )
+        await analytics_repo.log_event(
+            conn, user_id=cb.from_user.id, event_type="offer_click", meta={"product_id": pid}
         )
     except Exception:
         pass
@@ -959,6 +1018,15 @@ async def choose_payment(cb: CallbackQuery, state: FSMContext, products: list[Pr
         await cb.answer("Товар не найден", show_alert=True)
         return
     p = pmap[pid]
+    try:
+        await analytics_repo.log_event(
+            conn,
+            user_id=cb.from_user.id,
+            event_type="checkout_start",
+            meta={"product_id": pid, "payment_method": method},
+        )
+    except Exception:
+        pass
     data = await state.get_data()
     premium_self = bool(data.get("premium_self"))
 
@@ -1146,6 +1214,12 @@ async def order_submit(
                 event_type="order_created",
                 meta={"order_id": order_id, "product_id": p.id},
             )
+            await analytics_repo.log_event(
+                conn,
+                user_id=cb.from_user.id,
+                event_type="checkout_paid",
+                meta={"order_id": order_id, "product_id": p.id, "payment_method": "bal"},
+            )
         except Exception:
             pass
         from bot.services.vpn_payment_hook import schedule_vpn_provision_after_paid
@@ -1237,6 +1311,15 @@ async def order_submit(
             from bot.services.vpn_payment_hook import schedule_vpn_provision_after_paid
 
             schedule_vpn_provision_after_paid(settings, order_id)
+            try:
+                await analytics_repo.log_event(
+                    conn,
+                    user_id=cb.from_user.id,
+                    event_type="checkout_paid",
+                    meta={"order_id": order_id, "product_id": p.id, "payment_method": pm},
+                )
+            except Exception:
+                pass
             if pk == "vpn":
                 from bot.services.vpn_post_purchase_delivery import (
                     vpn_paid_summary_html,

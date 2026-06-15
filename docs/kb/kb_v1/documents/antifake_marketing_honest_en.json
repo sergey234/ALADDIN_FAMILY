@@ -1,0 +1,14 @@
+{
+  "id": "antifake_marketing_honest_en",
+  "locale": "en",
+  "topic": "antifake_marketing",
+  "title": "Antifake Hub",
+  "body": "Text, links, voice, video â when you choose to check\n\nAuthenticity checks require Family or Premium. We do not show demo verdicts without real analysis.\n\nText, links, audio, and video â on your request\n\nPost-call recording checks + Call Directory labels\n\nResults with reasons and a not-a-legal-verdict disclaimer\n\nWe do not collect or upload your address book for antifake. Phone numbers are sent only when you enter them manually or attach a call recording.\n\n---\n\n# Antifake — продуктовый scope «фейковые звонки» (af-4-01)\n\n**Build:** 232 · **Статус:** SSOT для маркетинга, FAQ, App Store Review Notes  \n**Связанные id:** `af-4-01`, `af-4-03`, `af-4-05`, `af-8-06`, `ux-1-10`\n\n---\n\n## Что мы обещаем (честно)\n\n| Обещание | Как в продукте | Когда |\n|----------|----------------|-------|\n| Проверка **записи** телефонного разговора после звонка | Hub → вкладка «Звонок» → загрузить файл → `POST /api/antifake/call/analyze` | ✅ build 232 |\n| Подсказка **после** завершения звонка загрузить запись | Local push + deep link `aladdin://antifake/call-check` → баннер на вкладке «Звонок» | ✅ build 232 |\n| Метка «возможный мошенник?» для номеров из **синхронизированного списка** | Call Directory Extension + `GET /api/antifake/call-directory` | ✅ build 232 (seed + sync) |\n| Эвристики **spoof** (номер ≠ отображаемое имя) при анализе записи | Server: `caller_id` + `display_name` в `/call/analyze` | ✅ build 232 |\n| Короткая проверка голоса **по кнопке** (5 с) | Hub → вкладка «Голос» | ✅ build 232 |\n\n**Формулировка для пользователя:**  \n«ALADDIN помогает проверить подозрительный звонок **после разговора** — по записи, если она у вас есть, и по подсказкам по номеру. Э",
+  "source": "sync_antifake_marketing_kb",
+  "keywords": [
+    "antifake",
+    "calls",
+    "call directory"
+  ],
+  "kb_version": "kb_v1"
+}

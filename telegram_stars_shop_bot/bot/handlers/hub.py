@@ -619,10 +619,22 @@ def _kb_privacy_support(settings: Settings) -> InlineKeyboardMarkup:
     b = InlineKeyboardBuilder()
     pu = (settings.privacy_policy_url or "").strip()
     tu = (settings.terms_of_service_url or "").strip()
+    ou = (settings.public_offer_url or "").strip()
+    ru = (settings.refund_policy_url or "").strip()
+    nu = (settings.news_channel_page_url or "").strip()
+    ch = (settings.required_channel_invite_url or settings.official_channel_invite_url or "").strip()
+    if ou:
+        b.row(InlineKeyboardButton(text="📜 Публичная оферта", url=ou))
+    if ru:
+        b.row(InlineKeyboardButton(text="↩️ Политика возвратов", url=ru))
     if pu:
         b.row(InlineKeyboardButton(text="📄 Политика конфиденциальности", url=pu))
     if tu:
         b.row(InlineKeyboardButton(text="📄 Пользовательское соглашение", url=tu))
+    if nu:
+        b.row(InlineKeyboardButton(text="📢 Новостной канал", url=nu))
+    elif ch:
+        b.row(InlineKeyboardButton(text="📢 Новостной канал", url=ch))
     b.row(InlineKeyboardButton(text="ℹ️ Частые вопросы", callback_data="sup:faq"))
     b.row(InlineKeyboardButton(text="💳 Оплата и зачисление", callback_data="sup:payfaq"))
     if settings.ui_show_vpn:

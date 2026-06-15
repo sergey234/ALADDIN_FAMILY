@@ -97,7 +97,10 @@ def get_fake_news_agent():
         return _fake_news_agent
     with _lock:
         if _fake_news_agent is None:
-            from security.ai_agents.fake_news_detection_agent import FakeNewsDetectionAgent
+            try:
+                from app.security.ai_agents.fake_news_detection_agent import FakeNewsDetectionAgent
+            except ImportError:
+                from security.ai_agents.fake_news_detection_agent import FakeNewsDetectionAgent
 
             _fake_news_agent = FakeNewsDetectionAgent()
     return _fake_news_agent
@@ -123,6 +126,83 @@ def run_text_check(text: str, mode: str = "news") -> dict:
 def run_document_check(image_path: str) -> dict:
     agent = get_fake_documents_agent()
     return agent.detect_fake_document(image_path)
+
+
+MAX_VIDEO_PROBE_BYTES = 512 * 1024
+
+
+def probe_audio_bytes(file_bytes: bytes) -> dict:
+    """F-11: lightweight audio probe when SFM unavailable (worker path)."""
+    if not file_bytes:
+        return {
+            "verdict": "uncertain",
+            "confidence": 0.2,
+            "reasons": ["empty_file"],
+            "source": "audio_probe",
+        }
+    reasons: list[str] = []
+    score = 0.25
+    if len(file_bytes) < 512:
+        reasons.append("audio_too_short")
+        score = 0.35
+    header = file_bytes[:12]
+    if header[:4] == b"RIFF" and b"WAVE" in file_bytes[:16]:
+        reasons.append("wav_container")
+    elif file_bytes[:3] == b"ID3" or file_bytes[:2] == b"\xff\xfb":
+        reasons.append("mp3_container")
+    else:
+        reasons.append("unknown_audio_container")
+        score = max(score, 0.4)
+    return {
+        "verdict": "uncertain",
+        "confidence": score,
+        "reasons": reasons[:4],
+        "source": "audio_probe",
+    }
+
+
+def probe_video_bytes(file_bytes: bytes) -> dict:
+    """F-02: cv2 frame probe when available; honest uncertain otherwise."""
+    if not file_bytes:
+        return {
+            "verdict": "uncertain",
+            "confidence": 0.2,
+            "reasons": ["empty_file"],
+            "source": "video_probe",
+        }
+    reasons: list[str] = ["video_bytes_received"]
+    score = 0.3
+    try:
+        cv2 = get_cv2()
+        np = get_numpy()
+        buf = np.frombuffer(file_bytes[: MAX_VIDEO_PROBE_BYTES], dtype=np.uint8)
+        # JPEG/PNG magic — quick sanity; MP4 needs container parse
+        if buf.size >= 3 and bytes(buf[:3]) == b"\xff\xd8\xff":
+            reasons.append("jpeg_magic")
+        arr = cv2.imdecode(buf, cv2.IMREAD_COLOR)
+        if arr is not None and arr.size > 0:
+            h, w = arr.shape[:2]
+            reasons.append(f"frame_decoded_{w}x{h}")
+            gray = cv2.cvtColor(arr, cv2.COLOR_BGR2GRAY)
+            blur = float(cv2.Laplacian(gray, cv2.CV_64F).var())
+            if blur < 35.0:
+                reasons.append("low_detail_frame")
+                score = max(score, 0.55)
+            else:
+                reasons.append("frame_detail_ok")
+        else:
+            reasons.append("cv2_no_frame")
+    except ImportError:
+        reasons.append("cv2_unavailable")
+    except Exception:
+        reasons.append("video_probe_error")
+    # F-02: probe never returns likely_fake — hints only (full ML via worker/SFM).
+    return {
+        "verdict": "uncertain",
+        "confidence": min(0.69, score),
+        "reasons": reasons[:6],
+        "source": "video_probe",
+    }
 
 
 def lazy_singleton(factory: Callable[[], T]) -> Callable[[], T]:

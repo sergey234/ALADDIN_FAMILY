@@ -1,0 +1,14 @@
+{
+  "id": "antifake_landing_copy_en",
+  "locale": "en",
+  "topic": "antifake_marketing",
+  "title": "Antifake landing copy",
+  "body": "# Antifake — landing & KB copy (G-02 SSOT)\n\n**Sync:** `python3 scripts/sync_antifake_marketing_kb.py`  \n**Gate:** `python3 scripts/verify_antifake_marketing_claims.py`\n\n---\n\n## Hero card (RU)\n\n**Заголовок:** Защита от фейков  \n**Текст:** Проверяйте текст, ссылки, голос и видео **по вашему запросу**. После звонка — загрузите запись, если она у вас есть. Метки на входящих — только для номеров из синхронизированной базы. ALADDIN **не слушает** обычные звонки в фоне.\n\n## Hero card (EN)\n\n**Title:** Protection from fakes  \n**Body:** Check text, links, voice, and video **when you tap Check**. After a call, upload a recording if you have one. Incoming labels apply only to numbers from the synced database. ALADDIN **does not listen** to regular calls in the background.\n\n---\n\n## Landing FAQ (RU)\n\n**В:** Слушает ли ALADDIN все мои звонки?  \n**О:** Нет. iOS не даёт сторонним приложениям доступ к разговору по SIM. Вы сами загружаете запись **после** звонка или включаете метки Call Directory по списку номеров.\n\n**В:** Это как Truecaller?  \n**О:** Нет. Мы не строим глобальную телефонную книгу. Семейный antifake: проверка контента по запросу + метки из нашей базы.\n\n---\n\n## Premium limits (paywall / tariffs)\n\n- Аудио и видео — асинхронная обработка (до нескольких минут).\n- Вердикт: likely_fake / uncertain / likely_real — не «100% мошенник».\n- Call Directory — только номера из базы, не все незнакомые.\n\n---\n\n## Contact harvest (G-07)\n\nALADDIN **не собирает** адресную книгу для antifake. Номера передаются только если вы вводите их вручную или загружаете запись звонка.\n",
+  "source": "sync_antifake_marketing_kb",
+  "keywords": [
+    "landing",
+    "marketing",
+    "antifake"
+  ],
+  "kb_version": "kb_v1"
+}

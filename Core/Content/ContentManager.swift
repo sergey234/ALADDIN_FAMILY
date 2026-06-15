@@ -155,7 +155,13 @@ final class ContentManager: ObservableObject {
         }
 
         // Force migration from legacy local seed snapshots.
-        if manifest.checksumSHA256 == "seed-manifest-v1" {
+        if manifest.checksumSHA256 == "seed-manifest-v1"
+            || manifest.checksumSHA256 == "seed-manifest-v2"
+            || manifest.checksumSHA256 == "seed-manifest-v3" {
+            return true
+        }
+
+        if manifest.items.count(where: { $0.id.hasPrefix("child_interface_category_games.") }) > 0 {
             return true
         }
 

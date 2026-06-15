@@ -11,6 +11,7 @@ import aiosqlite
 import httpx
 
 from bot.config import Settings, load_settings
+from bot.services import admin_stats_repo
 from bot.services.alerts import send_alert
 
 _STATE_FILE = Path("/tmp/aladdin_ops_watchdog_state.json")
@@ -98,6 +99,92 @@ async def _webhook_backlog_count(db_path: Path) -> int:
             return int(row[0] if row else 0)
     except Exception:
         return 0
+
+
+def _evaluate_kpi_thresholds(
+    *,
+    settings: Settings,
+    days: int,
+    payment: dict[str, float | int],
+    webhook: dict[str, float | int],
+    retention: dict[str, float | int],
+    acquisition: dict[str, float | int],
+) -> dict[str, tuple[bool, str, str]]:
+    checks: dict[str, tuple[bool, str, str]] = {}
+
+    created_n = int(payment.get("funnel_created_orders", 0) or 0)
+    paid_rate = float(payment.get("funnel_paid_rate_pct", 0.0) or 0.0)
+    payment_problem = (
+        created_n >= max(1, int(settings.ops_alert_payment_min_created_orders))
+        and paid_rate < float(settings.ops_alert_payment_success_min_pct)
+    )
+    checks["kpi_payment_success_rate"] = (
+        payment_problem,
+        (
+            f"payment success low: paid_rate={paid_rate:.2f}% "
+            f"threshold={float(settings.ops_alert_payment_success_min_pct):.2f}% "
+            f"created={created_n} window={days}d"
+        ),
+        f"payment success recovered: paid_rate={paid_rate:.2f}% created={created_n} window={days}d",
+    )
+
+    webhook_total = int(webhook.get("webhook_total", 0) or 0)
+    webhook_success = float(webhook.get("webhook_success_rate_pct", 0.0) or 0.0)
+    webhook_p95 = float(webhook.get("webhook_latency_p95_sec", -1.0) or -1.0)
+    webhook_problem = False
+    if webhook_total >= max(1, int(settings.ops_alert_webhook_min_events)):
+        if webhook_success < float(settings.ops_alert_webhook_success_min_pct):
+            webhook_problem = True
+        p95_max = float(settings.ops_alert_webhook_p95_max_sec)
+        if p95_max > 0 and webhook_p95 >= 0 and webhook_p95 > p95_max:
+            webhook_problem = True
+    checks["kpi_webhook_sla"] = (
+        webhook_problem,
+        (
+            f"webhook SLA degraded: success={webhook_success:.2f}% "
+            f"(min {float(settings.ops_alert_webhook_success_min_pct):.2f}%), "
+            f"p95={webhook_p95:.3f}s (max {float(settings.ops_alert_webhook_p95_max_sec):.3f}s), "
+            f"events={webhook_total} window={days}d"
+        ),
+        (
+            f"webhook SLA recovered: success={webhook_success:.2f}% "
+            f"p95={webhook_p95:.3f}s events={webhook_total} window={days}d"
+        ),
+    )
+
+    cohort_n = int(retention.get("retention_cohort_size", 0) or 0)
+    d7 = float(retention.get("retention_d7_pct", 0.0) or 0.0)
+    retention_problem = (
+        cohort_n >= max(1, int(settings.ops_alert_retention_min_cohort))
+        and d7 < float(settings.ops_alert_retention_d7_min_pct)
+    )
+    checks["kpi_retention_d7"] = (
+        retention_problem,
+        (
+            f"retention D7 low: d7={d7:.2f}% "
+            f"threshold={float(settings.ops_alert_retention_d7_min_pct):.2f}% "
+            f"cohort={cohort_n} window={days}d"
+        ),
+        f"retention D7 recovered: d7={d7:.2f}% cohort={cohort_n} window={days}d",
+    )
+
+    cac_max = float(settings.ops_alert_cac_max_rub)
+    paid_users = int(acquisition.get("acq_paid_users", 0) or 0)
+    cac = float(acquisition.get("acq_cac_rub", 0.0) or 0.0)
+    cac_problem = (
+        cac_max > 0
+        and paid_users >= max(1, int(settings.ops_alert_cac_min_paid_users))
+        and cac > cac_max
+    )
+    checks["kpi_cac"] = (
+        cac_problem,
+        (
+            f"CAC high: cac={cac:.2f} ₽ threshold={cac_max:.2f} ₽ "
+            f"paid_users={paid_users} window={days}d"
+        ),
+        f"CAC recovered: cac={cac:.2f} ₽ paid_users={paid_users} window={days}d",
+    )
+    return checks
 
 
 async def _emit_problem_or_recovery(
@@ -198,6 +285,46 @@ async def run_watchdog_once(settings: Settings) -> None:
         problem_body=f"outbound webhook backlog high: count={backlog} threshold={backlog_warn}",
         recovery_body=f"outbound webhook backlog recovered: count={backlog}",
     )
+
+    kpi_days = int(settings.ops_watchdog_kpi_days)
+    if kpi_days > 0 and settings.database_path.exists():
+        try:
+            async with aiosqlite.connect(settings.database_path) as kpi_conn:
+                kpi_conn.row_factory = aiosqlite.Row
+                payment = await admin_stats_repo.payment_funnel_metrics(kpi_conn, days=kpi_days)
+                webhook = await admin_stats_repo.webhook_sla_metrics(kpi_conn, days=kpi_days)
+                retention = await admin_stats_repo.retention_metrics(kpi_conn, days=kpi_days)
+                acquisition = await admin_stats_repo.acquisition_metrics(kpi_conn, days=kpi_days)
+            kpi_checks = _evaluate_kpi_thresholds(
+                settings=settings,
+                days=kpi_days,
+                payment=payment,
+                webhook=webhook,
+                retention=retention,
+                acquisition=acquisition,
+            )
+            for check_name, (is_problem, problem_body, recovery_body) in kpi_checks.items():
+                await _emit_problem_or_recovery(
+                    settings,
+                    state,
+                    check_name=check_name,
+                    is_problem_now=is_problem,
+                    severity_problem="warning",
+                    problem_body=problem_body,
+                    recovery_body=recovery_body,
+                )
+        except Exception:
+            await _emit_problem_or_recovery(
+                settings,
+                state,
+                check_name="kpi_metrics_fetch",
+                is_problem_now=True,
+                severity_problem="warning",
+                problem_body=f"failed to collect KPI metrics for watchdog window={kpi_days}d",
+                recovery_body="KPI metrics collection restored",
+            )
+    else:
+        state.setdefault("problems", {})["kpi_metrics_fetch"] = False
 
     any_problem = any(bool(v) for v in state.get("problems", {}).values())
     now = time.time()

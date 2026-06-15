@@ -2392,6 +2392,8 @@ struct FamilyScreen: View {
                         // Parental Controls - НОВАЯ ВЕРСИЯ С КАРТОЧКАМИ 2x3 (только родитель/пожилой в ростере)
                         if canManageFamilyRoster {
                             parentalControlsSection
+                            AntifakeFamilyCDParentCard()
+                                .environmentObject(localizationManager)
                         }
                     }
                     .padding(.horizontal, 20)

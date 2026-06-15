@@ -799,6 +799,18 @@ struct ElderlyInterfaceScreen: View {
             
             // Безопасность - Защита от мошенников
             bigElderlyButton(
+                icon: "📞",
+                title: localizationManager.localized("antifake_elderly_one_tap_call_title"),
+                subtitle: localizationManager.localized("antifake_elderly_one_tap_call_subtitle"),
+                color: .dangerRed,
+                accessibilityHint: localizationManager.localized("antifake_elderly_one_tap_call_hint"),
+                action: {
+                    navigationManager.navigateToAntifakeHub(tab: .call, postCallPrompt: true)
+                    HapticFeedback.notification(.success)
+                }
+            )
+
+            bigElderlyButton(
                 icon: "🛡️",
                 title: localizationManager.localized("elderly_interface_big_button_protection"),
                 subtitle: localizationManager.localized("elderly_interface_big_button_protection_subtitle"),
@@ -976,8 +988,8 @@ struct ElderlyInterfaceScreen: View {
 
     private func runQuickSecurityAction() {
         isSecurityEnabled = true
-        blockedContactsCount = max(blockedContactsCount, 0)
-        criticalActionStatusMessage = localizationManager.localized("elderly_interface_protection_enabled")
+        navigationManager.navigateToAntifakeHub(tab: .call, postCallPrompt: true)
+        criticalActionStatusMessage = localizationManager.localized("antifake_elderly_one_tap_opened")
     }
 
     // Phase 9.2 start: integrity check + normalization for critical 60+ data.

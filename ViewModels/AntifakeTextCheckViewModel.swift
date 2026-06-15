@@ -94,6 +94,11 @@ final class AntifakeTextCheckViewModel: ObservableObject {
                 result = try await performUrlCheck(payload)
             }
             verdict = result
+            AntifakeAnalytics.trackCheckComplete(
+                kind: inputMode.rawValue,
+                verdict: result.verdict.rawValue,
+                source: result.source
+            )
             AntifakeHistoryRecorder.record(
                 verdict: result,
                 kind: inputMode.rawValue,

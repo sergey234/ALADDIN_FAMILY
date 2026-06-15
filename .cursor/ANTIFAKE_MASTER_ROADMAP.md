@@ -1,11 +1,15 @@
 # Antifake — мастер-план ALADDIN (итоговый)
 
-**Версия:** 1.1 · **Дата:** 2026-06-13 · **Build:** **232**  
-**SSOT:** `docs/release/MASTER_STATUS_INDEX.md`
+> **Единая точка входа:** [ANTIFAKE_UNIFIED_MASTER.md](./ANTIFAKE_UNIFIED_MASTER.md)  
+> **v4 SSOT (134 задачи, 111 ✅):** [ANTIFAKE_V4_TASK_REGISTRY.md](./ANTIFAKE_V4_TASK_REGISTRY.md)  
+> Этот файл — **архитектура и legacy `af-3-*` ID**. Статусы v4 — только в REGISTRY + UNIFIED.
+
+**Версия:** 1.3 · **Дата:** 2026-06-15 · **Build:** **232**  
+**План v4.1:** `.cursor/ANTIFAKE_TOP_TIER_PLAN.md`  
+**Cursor TODO ID:** `af-{TASK-ID}` (A-01…O-03)  
 **Корень:** `ALADDIN_iOS`  
-**Single source для Cursor todos:** `.cursor/ALADDIN_MASTER_TODO.md` (36 пунктов)  
 **Связанные файлы:**
-- `.cursor/ANTIFAKE_PRODUCTION_TODO.md` — 72 задачи `af-*` (детальный бэклог)
+- `.cursor/ANTIFAKE_PRODUCTION_TODO.md` — legacy `af-*` бэклог (не v4 ID)
 - `.cursor/UX_AUDIT_COMPANION_BATCHES_TODO.md` — UX + perf + wellness
 - `.cursor/IMPLEMENTATION_BATCHES_TODO.md` — BATCH 2 iOS ✅
 - `docs/ANTIFAKE_PRODUCTION_PLAN.md` — техспек API
@@ -17,15 +21,13 @@
 
 | Область | Сделано (~%) | Главный пробел |
 |---------|--------------|----------------|
-| **iOS Hub UI** | ~95% | Device QA Call Directory |
-| **iOS Share / deep link** | ~95% | Инструкция в Помощь (`ux-1-09`) |
-| **iOS звонки (live)** | ~70% | Call Directory ✅ код · device QA ⏸ |
-| **Backend API** | ~80% | Роутеры есть, workers на prod частично |
-| **Backend ML workers** | ~40% | `af-3`, `af-10` деплой worker + nginx |
-| **Copy / legal** | ~10% | Apple limits, честный маркетинг |
-| **E2E prod QA** | ~30% | `af-11` gate |
+| **iOS Hub UI** | ~98% | Device QA Call Directory (D-batch) |
+| **Backend API** | ~90% | Batch B hardening (nginx, cron, OpenAPI) |
+| **Backend ML workers** | ~85% | B-04 verify, B-08 TTL cron on prod |
+| **Copy / legal** | ~70% | G-batch marketing, N-01 manifest |
+| **E2E prod QA** | ~75% | R-01 TestFlight checklist, D-batch |
 
-**Критический путь сейчас:** R-07 Archive → device QA Call Directory → `af-11` smoke → `af-8` честные тексты → отключить QA bypass.
+**Критический путь сейчас:** Batch **B** → E → N → R → **Device D-01…D-04** → G-03 bypass off.
 
 ---
 

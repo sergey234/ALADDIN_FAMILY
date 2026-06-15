@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 
 from bot.config import Settings
 from bot.db.database import connect
+from bot.services import analytics_repo
 from bot.services.hmac_util import verify_hmac_sha256_hex
 from bot.services.partner_outbound import emit_order_status_changed
 from bot.services.provider_mark_paid import mark_order_paid_idempotent
@@ -117,6 +118,20 @@ async def payment_provider_webhook(
         new_status = res.new_status
         order_id_out = res.order_id
         await conn.commit()
+        if new_status == "paid" and order_id_out is not None:
+            order = await connect(settings.database_path)
+            try:
+                row = await order.execute("SELECT user_id, payment_method FROM orders WHERE id = ?", (order_id_out,))
+                r = await row.fetchone()
+                if r is not None:
+                    await analytics_repo.log_event(
+                        order,
+                        user_id=int(r["user_id"]),
+                        event_type="checkout_paid",
+                        meta={"order_id": order_id_out, "payment_method": str(r["payment_method"] or "")},
+                    )
+            finally:
+                await order.close()
     except HTTPException:
         await conn.rollback()
         raise

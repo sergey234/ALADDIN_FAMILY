@@ -9,12 +9,24 @@ import Combine
 struct ChildContentExperienceScreen: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
 
     let item: ContentItem
     let route: ContentExperienceRoute
     let onComplete: () async -> Void
     
     private var resolvedItemTitle: String {
+        if MnemoCatalogManifestBuilder.isMnemoCategory(item.categoryId) {
+            if let title = MnemoCatalogTitles.localizedTitle(for: item.id, localization: localizationManager) {
+                return title
+            }
+            if let fallback = MnemoCatalogTitles.fallbackTitle(
+                for: item.id,
+                locale: localizationManager.locale.identifier
+            ) {
+                return fallback
+            }
+        }
         let localized = localizationManager.localized(item.metadata.title)
         return localized == item.metadata.title ? item.metadata.title : localized
     }
@@ -106,6 +118,7 @@ struct ChildContentExperienceScreen: View {
                     } else if route == .lesson, item.categoryId == ChildCategoryKey.study {
                         StudyLessonTestExperienceView(item: item, onComplete: onComplete)
                             .environmentObject(localizationManager)
+                            .environmentObject(navigationManager)
                             .accessibilityIdentifier("child_experience_category_study")
                             .accessibilityLabel(localizationManager.localized("child_accessibility_category_study"))
                     } else if route == .song {
@@ -2194,7 +2207,9 @@ private struct StudyQuestion: Identifiable {
 }
 
 private struct StudyLessonTestExperienceView: View {
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
 
     let item: ContentItem
     let onComplete: () async -> Void
@@ -2770,6 +2785,15 @@ private struct StudyLessonTestExperienceView: View {
                             Text(localizationManager.localized("child_mnemo_fail_cta_games"))
                                 .font(.system(size: 13, weight: .medium))
                                 .foregroundColor(.secondary)
+                            Button(localizationManager.localized("child_mnemo_fail_cta_games_action")) {
+                                dismiss()
+                                navigationManager.navigateToMnemoReview(
+                                    category: ChildCategoryKey.games,
+                                    openFirstDue: false,
+                                    itemId: "games.05"
+                                )
+                            }
+                            .buttonStyle(.bordered)
                             Button(localizationManager.localized("child_study_retry_test")) {
                                 restartTest()
                             }
@@ -4720,7 +4744,7 @@ private struct KaraokeExperienceHostView: View {
     @State private var selectedTrackIndex: Int = 0
     @State private var currentTime: TimeInterval = 0
     @State private var isPlaying: Bool = false
-    @State private var selectedCategory: String = "learning"
+    @State private var selectedCategory: String = "mnemo"
     @State private var accompanimentOn = true
     @State private var accompanimentLevel: Double = 0.65
     @State private var selectedTopic: String = "all"
@@ -4733,7 +4757,21 @@ private struct KaraokeExperienceHostView: View {
     @State private var songRecallFeedbackKey: String?
     @State private var showPictogramDrawingSheet = false
     @State private var pictogramUIRevision = 0
+    @State private var songRecallCompleted = false
     private let ticker = Timer.publish(every: 0.35, on: .main, in: .common).autoconnect()
+
+    /// One catalog card (`songs.01`…`songs.15`) → one mnemo track + mandatory recall.
+    private var isBoundMnemoSongCard: Bool {
+        item.categoryId == ChildCategoryKey.songs && item.id.hasPrefix("songs.")
+    }
+
+    private var boundMnemoTrackIndex: Int? {
+        guard isBoundMnemoSongCard,
+              let num = Int(item.id.replacingOccurrences(of: "songs.", with: "")) else { return nil }
+        let mnemoTracks = tracks.filter { $0.category == "mnemo" }
+        guard !mnemoTracks.isEmpty else { return nil }
+        return min(max(0, num - 1), mnemoTracks.count - 1)
+    }
 
     private var tracks: [KaraokeTrack] {
         [
@@ -4942,7 +4980,14 @@ private struct KaraokeExperienceHostView: View {
     }
 
     private var filteredTracks: [KaraokeTrack] {
-        tracks.filter { track in
+        if isBoundMnemoSongCard {
+            let mnemo = tracks.filter { $0.category == "mnemo" }
+            if let idx = boundMnemoTrackIndex, mnemo.indices.contains(idx) {
+                return [mnemo[idx]]
+            }
+            return mnemo
+        }
+        return tracks.filter { track in
             track.category == selectedCategory
                 && (selectedTopic == "all" || track.topics.contains(selectedTopic))
         }
@@ -4982,6 +5027,14 @@ private struct KaraokeExperienceHostView: View {
         }
         .onAppear {
             loadFavoritesIfNeeded()
+            if isBoundMnemoSongCard {
+                selectedCategory = "mnemo"
+                selectedTopic = "all"
+                if let idx = boundMnemoTrackIndex {
+                    selectedTrackIndex = idx
+                }
+            }
+            MnemonicSRSStore.shared.scheduleInitial(itemId: item.id)
         }
         .sheet(isPresented: $showPictogramDrawingSheet) {
             MnemoPictogramDrawingSheet(itemId: item.id) {
@@ -4993,7 +5046,8 @@ private struct KaraokeExperienceHostView: View {
 
     private var karaokeMainSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            if MnemonicPictogramStore.supportsCoCreation(itemId: item.id), selectedCategory == "mnemo" {
+            if MnemonicPictogramStore.supportsCoCreation(itemId: item.id),
+               (isBoundMnemoSongCard || selectedCategory == "mnemo") {
                 MnemoPictogramEncodeCTA(
                     localizationManager: localizationManager,
                     itemId: item.id,
@@ -5002,47 +5056,49 @@ private struct KaraokeExperienceHostView: View {
                 .id(pictogramUIRevision)
             }
 
-            Picker("", selection: $selectedCategory) {
-                Text(localizationManager.localized("child_songs_category_mnemo")).tag("mnemo")
-                Text(localizationManager.localized("child_songs_category_learning")).tag("learning")
-                Text(localizationManager.localized("child_songs_category_play")).tag("play")
-                Text(localizationManager.localized("child_songs_category_lullaby")).tag("lullaby")
-            }
-            .pickerStyle(.segmented)
-            .onChange(of: selectedCategory) { _ in
-                selectedTrackIndex = 0
-                currentTime = 0
-                isPlaying = false
-                resetSongRecall()
-            }
-
-            Picker("", selection: $selectedTopic) {
-                Text(localizationManager.localized("child_songs_topic_all")).tag("all")
-                Text(localizationManager.localized("child_songs_topic_numbers")).tag("numbers")
-                Text(localizationManager.localized("child_songs_topic_colors")).tag("colors")
-                Text(localizationManager.localized("child_songs_topic_animals")).tag("animals")
-                Text(localizationManager.localized("child_songs_topic_seasons")).tag("seasons")
-                Text(localizationManager.localized("child_songs_topic_rhythm")).tag("rhythm")
-            }
-            .pickerStyle(.menu)
-            .onChange(of: selectedTopic) { _ in
-                selectedTrackIndex = 0
-                currentTime = 0
-                isPlaying = false
-            }
-
-            Picker("", selection: $selectedTrackIndex) {
-                let list = filteredTracks.isEmpty ? tracks : filteredTracks
-                ForEach(Array(list.enumerated()), id: \.offset) { index, track in
-                    Text("\(index + 1)").tag(index)
+            if !isBoundMnemoSongCard {
+                Picker("", selection: $selectedCategory) {
+                    Text(localizationManager.localized("child_songs_category_mnemo")).tag("mnemo")
+                    Text(localizationManager.localized("child_songs_category_learning")).tag("learning")
+                    Text(localizationManager.localized("child_songs_category_play")).tag("play")
+                    Text(localizationManager.localized("child_songs_category_lullaby")).tag("lullaby")
                 }
-            }
-            .pickerStyle(.segmented)
-            .onChange(of: selectedTrackIndex) { _ in
-                currentTime = 0
-                isPlaying = false
-                resetSongRecall()
-                MasterLogger.shared.business("P2-103 karaoke track selected contentId=\(item.id) track=\(selectedTrack.title)")
+                .pickerStyle(.segmented)
+                .onChange(of: selectedCategory) { _ in
+                    selectedTrackIndex = 0
+                    currentTime = 0
+                    isPlaying = false
+                    resetSongRecall()
+                }
+
+                Picker("", selection: $selectedTopic) {
+                    Text(localizationManager.localized("child_songs_topic_all")).tag("all")
+                    Text(localizationManager.localized("child_songs_topic_numbers")).tag("numbers")
+                    Text(localizationManager.localized("child_songs_topic_colors")).tag("colors")
+                    Text(localizationManager.localized("child_songs_topic_animals")).tag("animals")
+                    Text(localizationManager.localized("child_songs_topic_seasons")).tag("seasons")
+                    Text(localizationManager.localized("child_songs_topic_rhythm")).tag("rhythm")
+                }
+                .pickerStyle(.menu)
+                .onChange(of: selectedTopic) { _ in
+                    selectedTrackIndex = 0
+                    currentTime = 0
+                    isPlaying = false
+                }
+
+                Picker("", selection: $selectedTrackIndex) {
+                    let list = filteredTracks.isEmpty ? tracks : filteredTracks
+                    ForEach(Array(list.enumerated()), id: \.offset) { index, track in
+                        Text("\(index + 1)").tag(index)
+                    }
+                }
+                .pickerStyle(.segmented)
+                .onChange(of: selectedTrackIndex) { _ in
+                    currentTime = 0
+                    isPlaying = false
+                    resetSongRecall()
+                    MasterLogger.shared.business("P2-103 karaoke track selected contentId=\(item.id) track=\(selectedTrack.title)")
+                }
             }
 
             Text("\(selectedTrack.title) • \(selectedTrack.artist)")
@@ -5118,10 +5174,12 @@ private struct KaraokeExperienceHostView: View {
 
                 Spacer()
 
-                Button(localizationManager.localized("child_interface_done")) {
-                    Task { await onComplete() }
+                if !isBoundMnemoSongCard {
+                    Button(localizationManager.localized("child_interface_done")) {
+                        Task { await onComplete() }
+                    }
+                    .buttonStyle(.bordered)
                 }
-                .buttonStyle(.bordered)
             }
         }
     }

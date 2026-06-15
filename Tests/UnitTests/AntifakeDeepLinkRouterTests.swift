@@ -23,4 +23,11 @@ final class AntifakeDeepLinkRouterTests: XCTestCase {
         XCTAssertEqual(url.host, "antifake")
         XCTAssertTrue(url.absoluteString.contains("mode=text"))
     }
+
+    func testPostCallCheckDeepLinkDistinctFromTextCheck() {
+        let postCall = URL(string: "aladdin://antifake/call-check")!
+        let text = URL(string: "aladdin://antifake/check")!
+        XCTAssertTrue(AntifakeDeepLinkRouter.isPostCallCheckDeepLink(postCall))
+        XCTAssertFalse(AntifakeDeepLinkRouter.isPostCallCheckDeepLink(text))
+    }
 }

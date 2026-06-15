@@ -13,6 +13,7 @@ from aiogram.types import BotCommand
 from bot.config import Settings, load_settings
 from bot.sentry_util import init_sentry_bot
 from bot.db.database import connect
+from bot.services.cardlink_api import cardlink_checkout_configured
 from bot.services.ckassa_api import ckassa_checkout_configured
 from bot.services.lava_api import lava_checkout_configured
 from bot.support_links import telegram_support_base
@@ -27,6 +28,9 @@ from bot.middlewares.throttling import ThrottleMiddleware
 from bot.logutil import slog
 from bot.services.catalog import load_products
 from bot.services.break_glass_monitor import break_glass_report_loop
+from bot.services.data_quality_checks import data_quality_checks_loop
+from bot.services.exec_report import exec_report_loop
+from bot.services.feedback_survey import feedback_survey_loop
 from bot.services.vpn_ops_health import vpn_ops_health_loop
 from bot.services.pending_payment_ttl import pending_payment_ttl_loop
 from bot.services.stuck_orders_monitor import stuck_paid_orders_loop
@@ -73,9 +77,14 @@ async def run() -> None:
             "Прод: CKASSA_TEST_MODE=false, ShopToken/SecKey из ЛК Ckassa, CKASSA_CALLBACK_PUBLIC_URL публичный HTTPS."
         )
     univers = (getattr(settings, "ckassa_bc_universal_payment_url", "") or "").strip()
-    if not univers and not ckassa_checkout_configured(settings) and not lava_checkout_configured(settings):
+    if (
+        not univers
+        and not cardlink_checkout_configured(settings)
+        and not ckassa_checkout_configured(settings)
+        and not lava_checkout_configured(settings)
+    ):
         logger.warning(
-            "Fiat: не задана CKASSA_BC_UNIVERSAL_PAYMENT_URL и не настроены Ckassa Shop API / LAVA - "
+            "Fiat: не задана CKASSA_BC_UNIVERSAL_PAYMENT_URL и не настроены Cardlink / Ckassa Shop API / LAVA - "
             "покупатели при «Карта / СБП» увидят текст без кнопки оплаты. Добавьте переменные в shared/.env "
             "(см. telegram_stars_shop_bot/env.example, docs/ML_SYSTEM_HANDOFF_FINAL.md §4)."
         )
@@ -103,6 +112,9 @@ async def run() -> None:
     break_glass_task: asyncio.Task | None = None
     vpn_ops_health_task: asyncio.Task | None = None
     vpn_expiry_notify_task: asyncio.Task | None = None
+    exec_report_task: asyncio.Task | None = None
+    feedback_survey_task: asyncio.Task | None = None
+    data_quality_task: asyncio.Task | None = None
     if int(settings.stuck_paid_alert_hours) > 0 or int(settings.stuck_processing_alert_minutes) > 0:
         stuck_task = asyncio.create_task(stuck_paid_orders_loop(bot, settings))
     if int(settings.break_glass_report_interval_seconds) > 0:
@@ -115,6 +127,12 @@ async def run() -> None:
         and settings.resolved_vpn_db_path() is not None
     ):
         vpn_expiry_notify_task = asyncio.create_task(vpn_expiry_notify_loop(bot, settings))
+    if settings.exec_report_enabled and int(settings.exec_report_interval_seconds) > 0:
+        exec_report_task = asyncio.create_task(exec_report_loop(bot, settings))
+    if settings.feedback_survey_enabled and int(settings.feedback_survey_interval_seconds) > 0:
+        feedback_survey_task = asyncio.create_task(feedback_survey_loop(bot, settings))
+    if settings.data_quality_checks_enabled and int(settings.data_quality_checks_interval_seconds) > 0:
+        data_quality_task = asyncio.create_task(data_quality_checks_loop(settings))
     try:
         await dp.start_polling(bot)
     finally:
@@ -141,6 +159,18 @@ async def run() -> None:
             vpn_expiry_notify_task.cancel()
             with contextlib.suppress(asyncio.CancelledError):
                 await vpn_expiry_notify_task
+        if exec_report_task is not None:
+            exec_report_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await exec_report_task
+        if feedback_survey_task is not None:
+            feedback_survey_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await feedback_survey_task
+        if data_quality_task is not None:
+            data_quality_task.cancel()
+            with contextlib.suppress(asyncio.CancelledError):
+                await data_quality_task
         await conn.close()
 
 

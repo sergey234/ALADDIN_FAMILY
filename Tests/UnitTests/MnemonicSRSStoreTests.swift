@@ -80,4 +80,19 @@ final class MnemonicSRSStoreTests: XCTestCase {
         let reloaded = MnemonicSRSStore(defaults: suite)
         XCTAssertTrue(reloaded.isICloudSyncEnabled)
     }
+
+    func testUnifiedDueItems_andRecallMasteryPercent() {
+        let suite = UserDefaults(suiteName: "test.mnemo.srs.unified.\(UUID().uuidString)")!
+        let store = MnemonicSRSStore(defaults: suite)
+        let now = Date(timeIntervalSince1970: 1_700_000_000)
+        store.scheduleInitial(itemId: "games.05", now: now)
+        store.scheduleInitial(itemId: "study.03", now: now)
+        XCTAssertEqual(store.unifiedDueToday(now: now), 2)
+        XCTAssertEqual(store.unifiedDueItems(now: now).count, 2)
+        XCTAssertEqual(store.categoryId(for: "games.05"), ChildCategoryKey.games)
+        XCTAssertEqual(store.categoryId(for: "study.03"), ChildCategoryKey.study)
+        XCTAssertEqual(store.recallMasteryPercent(itemId: "games.05"), 0)
+        store.recordSuccess(itemId: "games.05", now: now)
+        XCTAssertEqual(store.recallMasteryPercent(itemId: "games.05"), 25)
+    }
 }

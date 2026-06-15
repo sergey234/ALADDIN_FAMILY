@@ -1,6 +1,9 @@
 # Anti-Fake Production — Cursor Todo (100% deepfakes)
 
-**Создано:** 2026-06-09 · **Обновлено:** 2026-06-13 · **Build:** **232**  
+> **⚠️ Legacy ID (`af-1…af-11`, `af-3-*`). Для исполнения используйте:**  
+> **[ANTIFAKE_UNIFIED_MASTER.md](./ANTIFAKE_UNIFIED_MASTER.md)** · [ANTIFAKE_V4_TASK_REGISTRY.md](./ANTIFAKE_V4_TASK_REGISTRY.md) (**111/134 ✅**)
+
+**Создано:** 2026-06-09 · **Обновлено:** 2026-06-15 · **Build:** **232**  
 **SSOT:** `docs/release/MASTER_STATUS_INDEX.md`  
 **Мастер-план (single source):** `.cursor/ANTIFAKE_MASTER_ROADMAP.md`  
 **Тексты Apple limits:** `docs/ANTIFAKE_APPLE_LIMITS_AND_CLAIMS.md`  

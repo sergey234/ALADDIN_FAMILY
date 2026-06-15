@@ -29,7 +29,9 @@ enum AntifakeCheckHistoryStore {
     }
 
     static func append(kind: String, summary: String, verdict: String) {
-        let trimmed = summary.trimmingCharacters(in: .whitespacesAndNewlines)
+        let trimmed = AntifakePhonePrivacy.redactPhonesInText(
+            summary.trimmingCharacters(in: .whitespacesAndNewlines)
+        )
         guard !trimmed.isEmpty else { return }
         var entries = load()
         entries.insert(

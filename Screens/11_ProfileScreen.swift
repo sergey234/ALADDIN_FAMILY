@@ -1054,6 +1054,7 @@ struct DeleteAccountView: View {
     private func clearLocalData() {
         // Очистка локальных данных
         StorageManager.shared.clearAllData()
+        AntifakePrivacyWipe.wipeAllLocalData()
         
         // Очистка токена авторизации
         AppConfig.authToken = nil

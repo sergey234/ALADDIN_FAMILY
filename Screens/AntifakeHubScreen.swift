@@ -35,6 +35,8 @@ struct AntifakeHubScreen: View {
                         if hasPremiumAccess {
                             AntifakeCallDirectorySettingsCard()
                                 .environmentObject(localizationManager)
+                            AntifakeFamilyReportsSection()
+                                .environmentObject(localizationManager)
                         }
                         tabContent
                         if hasPremiumAccess {
@@ -49,6 +51,8 @@ struct AntifakeHubScreen: View {
         }
         .navigationBarHidden(true)
         .accessibilityIdentifier("antifake_hub_root")
+        .accessibilityLabel(localizationManager.localized("antifake_hub_title"))
+        .accessibilityHint(localizationManager.localized("antifake_hub_subtitle"))
         .antifakePremiumPaywallSheet(
             isPresented: $showPremiumPaywall,
             navigationManager: navigationManager,
@@ -135,6 +139,8 @@ struct AntifakeHubScreen: View {
                 }
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("antifake_hub_tab_\(tab.rawValue)")
+                .accessibilityLabel(localizationManager.localized(tab.titleKey))
+                .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
             }
         }
     }
@@ -143,6 +149,7 @@ struct AntifakeHubScreen: View {
     private var tabContent: some View {
         if !hasPremiumAccess {
             premiumGateCard
+            premiumLockedTabPreview
         } else {
             switch selectedTab {
             case .text:
@@ -186,18 +193,78 @@ struct AntifakeHubScreen: View {
             Label(localizationManager.localized("antifake_premium_required_title"), systemImage: "lock.shield.fill")
                 .font(.headline)
                 .foregroundColor(.white)
+                .accessibilityAddTraits(.isHeader)
 
-            Text(localizationManager.localized("antifake_premium_required_body"))
+            Text(localizationManager.localized("antifake_premium_gate_honest_body"))
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.85))
+
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                premiumBullet("antifake_premium_gate_bullet_1")
+                premiumBullet("antifake_premium_gate_bullet_2")
+                premiumBullet("antifake_premium_gate_bullet_3")
+            }
+
+            Text(localizationManager.localized("antifake_premium_gate_no_demo"))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.7))
+
+            Text(localizationManager.localized("antifake_premium_limits_footnote"))
+                .font(.caption2)
+                .foregroundColor(.white.opacity(0.65))
 
             PrimaryButton(localizationManager.localized("protection_upgrade_tariff")) {
                 showPremiumPaywall = true
             }
+            .accessibilityLabel(localizationManager.localized("protection_upgrade_tariff"))
         }
         .padding(Spacing.l)
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .warningOrange)
         .accessibilityIdentifier("antifake_hub_premium_gate")
+        .accessibilityLabel(localizationManager.localized("antifake_premium_required_title"))
+        .accessibilityHint(localizationManager.localized("antifake_premium_gate_no_demo"))
+    }
+
+    private func premiumBullet(_ key: String) -> some View {
+        HStack(alignment: .top, spacing: Spacing.s) {
+            Image(systemName: "checkmark.seal.fill")
+                .foregroundColor(.secondaryGold)
+                .accessibilityHidden(true)
+            Text(localizationManager.localized(key))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.9))
+        }
+    }
+
+    private var premiumLockedTabPreview: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized("antifake_premium_locked_tabs_title"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.white.opacity(0.75))
+                .accessibilityAddTraits(.isHeader)
+            HStack(spacing: Spacing.xs) {
+                ForEach(AntifakeHubTab.allCases) { tab in
+                    VStack(spacing: 4) {
+                        Image(systemName: tab.iconName)
+                        Text(localizationManager.localized(tab.titleKey))
+                            .font(.caption2)
+                            .lineLimit(1)
+                    }
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, Spacing.s)
+                    .foregroundColor(.white.opacity(0.35))
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .stroke(Color.white.opacity(0.15), lineWidth: 1)
+                    )
+                    .accessibilityLabel(localizationManager.localized(tab.titleKey))
+                    .accessibilityHint(localizationManager.localized("antifake_premium_locked_tab_hint"))
+                }
+            }
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .accessibilityIdentifier("antifake_hub_locked_tabs_preview")
     }
 }
 

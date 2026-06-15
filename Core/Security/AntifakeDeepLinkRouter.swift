@@ -21,6 +21,22 @@ enum AntifakeDeepLinkRouter {
         return trimmedPath == "call-check"
     }
 
+    static func isFamilyAlertDeepLink(_ url: URL) -> Bool {
+        guard url.scheme?.lowercased() == scheme,
+              url.host?.lowercased() == host else { return false }
+        let trimmedPath = url.path.trimmingCharacters(in: CharacterSet(charactersIn: "/"))
+        return trimmedPath == "family-alert"
+    }
+
+    static func parseJobIdHint(from url: URL) -> String? {
+        guard let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let raw = components.queryItems?.first(where: { $0.name == "job_id" })?.value else {
+            return nil
+        }
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
+    }
+
     static func checkURL(mode: AntifakeShareMode? = nil) -> URL {
         var components = URLComponents()
         components.scheme = scheme
@@ -40,5 +56,16 @@ enum AntifakeDeepLinkRouter {
             return nil
         }
         return AntifakeShareMode(rawValue: raw)
+    }
+
+    /// E-07: optional caller hint from deep link query (iOS cannot expose number from CallKit).
+    static func parseCallerIdHint(from url: URL) -> String? {
+        guard isPostCallCheckDeepLink(url),
+              let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+              let raw = components.queryItems?.first(where: { $0.name == "caller_id" })?.value else {
+            return nil
+        }
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        return trimmed.isEmpty ? nil : trimmed
     }
 }

@@ -19,7 +19,7 @@
 | **Hub UX** | `AntifakeQuickAccessCard` на экране Защиты, accordion ux-1-07 |
 | **Wellness** | Placeholder/coachmark снов, contrast Values Form, reflective prompt |
 
-### Supplemental (commit после `3cfcf256`)
+### Supplemental (commit `e1088652`)
 
 | ID | Задача | Файлы |
 |----|--------|-------|
@@ -81,15 +81,18 @@ xcodebuild -scheme ALADDIN \
 | **[`MASTER_STATUS_INDEX.md`](MASTER_STATUS_INDEX.md)** | Единый индекс всех треков |
 | **[`ANTIFAKE_CALLS_PRODUCT_SCOPE.md`](../ANTIFAKE_CALLS_PRODUCT_SCOPE.md)** | Честные обещания по звонкам |
 | **[`ANTIFAKE_APPLE_LIMITS_AND_CLAIMS.md`](../ANTIFAKE_APPLE_LIMITS_AND_CLAIMS.md)** | Apple limits + маркетинг |
-| **[`.cursor/ANTIFAKE_PRODUCTION_TODO.md`](../../.cursor/ANTIFAKE_PRODUCTION_TODO.md)** | 72 задачи `af-*` |
+| **[`.cursor/ANTIFAKE_V4_TASK_REGISTRY.md`](../../.cursor/ANTIFAKE_V4_TASK_REGISTRY.md)** | **v4 SSOT — 134 задачи, 72 ✅ (2026-06-15)** |
+| **[`.cursor/ANTIFAKE_V4_DOC_INDEX.md`](../../.cursor/ANTIFAKE_V4_DOC_INDEX.md)** | Карта всех antifake документов |
+| **[`.cursor/ANTIFAKE_PRODUCTION_TODO.md`](../../.cursor/ANTIFAKE_PRODUCTION_TODO.md)** | Legacy 72 `af-*` (не v4 ID) |
 
 ---
 
 ## 6. Осталось до App Store
 
-1. P0-4 — revert QA bypass (iOS + backend env)
-2. Device QA — Call Directory в Настройки → Телефон → Блокировка и идентификация
-3. R-07 — Archive + TestFlight (направление 143)
+1. **G-03 / Q-01** — revert QA bypass (iOS + CI) — ⏸ v4 Ф3
+2. **D-01…D-04** — Device QA Call Directory (v4 batch D)
+3. **R-07** — Archive + TestFlight (направление 143)
+4. **Текущий v4 фокус:** Batch B → E → N → R — см. [ANTIFAKE_V4_DOC_INDEX.md](../../.cursor/ANTIFAKE_V4_DOC_INDEX.md)
 
 ---
 

@@ -16,7 +16,7 @@ import os
 import re
 from typing import Dict, List, Optional, Sequence, Tuple
 
-from security.base import SecurityBase
+from app.security.core.security_base import SecurityBase
 
 from app.security.ml_lazy_loader import get_torch, get_transformers
 
@@ -64,6 +64,14 @@ class FakeNewsDetectionAgent(SecurityBase):
             "не жди",
             "срочно",
         ),
+        "financial_scam": (
+            "переведите деньги",
+            "send money immediately",
+            "send money",
+            "ваш счёт заблокирован",
+            "your account is blocked",
+            "verify your account",
+        ),
         "conspiracy": (
             "government cover-up",
             "big pharma",
@@ -110,8 +118,7 @@ class FakeNewsDetectionAgent(SecurityBase):
         self.threshold_low = threshold_low
         self.threshold_medium = threshold_medium
         self.threshold_high = threshold_high
-        torch = get_torch()
-        self.device = device if device is not None else (-1 if not torch.cuda.is_available() else 0)
+        self.device = device if device is not None else -1
 
         self._tokenizer = None
         self._model = None
@@ -125,8 +132,10 @@ class FakeNewsDetectionAgent(SecurityBase):
         """Lazy-load BERT pipeline on first inference (worker path only)."""
         if self._pipeline_ready:
             return
-        transformers = get_transformers()
         torch = get_torch()
+        if self.device == -1 and torch.cuda.is_available():
+            self.device = 0
+        transformers = get_transformers()
         AutoTokenizer = transformers.AutoTokenizer
         AutoModelForSequenceClassification = transformers.AutoModelForSequenceClassification
         pipeline = transformers.pipeline
@@ -157,6 +166,31 @@ class FakeNewsDetectionAgent(SecurityBase):
     # --------------------------------------------------------------------- #
     # ПУБЛИЧНЫЕ МЕТОДЫ АНАЛИЗА
     # --------------------------------------------------------------------- #
+    def detect_fake_news_heuristic(self, text: str, metadata: Optional[Dict] = None) -> Dict:
+        """Pattern/structure analysis without torch (F-12 prod fallback)."""
+        prepared_text = (text or "").strip()
+        if not prepared_text:
+            return self._empty_result(reason="empty_text")
+
+        pattern_hits = self._match_fake_news_patterns(prepared_text.lower())
+        structural_flags = self._analyze_structure(prepared_text, metadata)
+        fake_score = self._combine_scores(0.0, pattern_hits, structural_flags)
+        credibility_level = self._score_to_level(fake_score)
+
+        return {
+            "text_preview": prepared_text[:200],
+            "model_score": 0.0,
+            "fake_score": round(fake_score, 4),
+            "credibility_level": credibility_level,
+            "pattern_hits": pattern_hits,
+            "structural_flags": structural_flags,
+            "has_metadata": metadata is not None,
+            "model_name": "heuristic_only",
+            "timestamp": datetime.utcnow().isoformat() + "Z",
+            "recommendations": self._recommendations_for_level(credibility_level),
+            "inference_mode": "heuristic_only",
+        }
+
     def detect_fake_news(self, text: str, metadata: Optional[Dict] = None) -> Dict:
         """
         Анализирует текст на наличие признаков фейковых новостей.
@@ -172,7 +206,11 @@ class FakeNewsDetectionAgent(SecurityBase):
         if not prepared_text:
             return self._empty_result(reason="empty_text")
 
-        self._ensure_pipeline()
+        try:
+            self._ensure_pipeline()
+        except Exception as exc:
+            self.logger.warning("FakeNews pipeline unavailable, heuristic-only: %s", exc)
+            return self.detect_fake_news_heuristic(text, metadata)
 
         # ML модель предсказание
         model_score = self._predict_probability(prepared_text)
@@ -291,6 +329,8 @@ class FakeNewsDetectionAgent(SecurityBase):
         # Критические комбинации паттернов
         if "sensationalism" in pattern_hits and "no_sources" in pattern_hits:
             score = max(score, 0.9)
+        elif "financial_scam" in pattern_hits and "urgency_manipulation" in pattern_hits:
+            score = max(score, 0.88)
         elif "conspiracy" in pattern_hits and "emotional_manipulation" in pattern_hits:
             score = max(score, 0.85)
 

@@ -37,6 +37,14 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
     }
 
     private func schedulePostCallCheckNotification() async {
+        let lastPush = UserDefaults.standard.double(forKey: AppConfig.UserDefaultsKeys.antifakePostCallLastPushAt)
+        let now = Date().timeIntervalSince1970
+        guard AntifakePostCallPolicy.shouldScheduleNotification(
+            reminderEnabled: AppConfig.isAntifakePostCallReminderEnabled,
+            lastPushAt: lastPush,
+            now: now
+        ) else { return }
+
         UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingAntifakePostCallCheck)
         let content = UNMutableNotificationContent()
         content.title = LocalizationManager.shared.localized("antifake_post_call_title")
@@ -50,5 +58,6 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
             trigger: trigger
         )
         try? await UNUserNotificationCenter.current().add(request)
+        UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: AppConfig.UserDefaultsKeys.antifakePostCallLastPushAt)
     }
 }

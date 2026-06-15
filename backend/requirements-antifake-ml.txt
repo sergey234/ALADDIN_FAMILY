@@ -1,0 +1,5 @@
+# F-13 — SFM BERT text path (CPU VPS x86_64 Linux)
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch>=2.2.0,<2.6
+transformers>=4.40.0,<5
+safetensors>=0.4.0

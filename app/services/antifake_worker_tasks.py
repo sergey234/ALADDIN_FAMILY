@@ -60,6 +60,14 @@ def process_media_job(
             verdict.get("verdict"),
             latency_ms,
         )
+        if job_type == "call":
+            from app.services.antifake_fraud_ingest import maybe_ingest_from_call_verdict
+
+            maybe_ingest_from_call_verdict(
+                verdict,
+                caller_id=(extra or {}).get("caller_id"),
+                display_name=(extra or {}).get("display_name"),
+            )
         return verdict
     except Exception as exc:
         fail_job(job_id, str(exc))

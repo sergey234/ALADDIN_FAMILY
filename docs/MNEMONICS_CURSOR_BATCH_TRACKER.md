@@ -1,20 +1,20 @@
 # ALADDIN Memory Academy — Cursor Batch Tracker
 
-**Updated:** 2026-06-06  
+**Updated:** 2026-06-14  
 **Master plan:** `docs/MNEMONICS_CHILD_IMPLEMENTATION_PLAN.md` (v2.3)  
 **Полная синхронизация (для ML):** `docs/MNEMO_PROJECT_SYNC.md` ← **читать первым**  
+**18 задач catalog v4:** `docs/MNEMO_ACADEMY_18_TASKS.md`  
 **Краткий handoff:** `docs/MNEMONICS_ML_HANDOFF.md`
 
 ## Summary
 
 | Part | Batches | Tasks | Done | Pending | Progress |
 |------|---------|-------|------|---------|----------|
-| **v2 MVP (Part 1)** | 0, 1C, 1–8 | 62 | 58 | 4 | **94%** |
-| **v3 Course (Part 2)** | 9–15 | 57 | 53 | 4 | **93%** |
-| **TOTAL** | **16** | **119** | **111** | **8** | **93%** |
+| **v2 MVP (Part 1)** | 0, 1C, 1–8 | 62 | 62 | 0 | **100%** |
+| **v3 Course (Part 2)** | 9–15 | 57 | 57 | 0 | **100%** |
+| **TOTAL** | **16** | **119** | **119** | **0** | **100%** |
 
-**Код реализации:** ✅ **100%** (111 задач с кодом/docs)  
-**Phase C (QA):** ⏳ **8 задач** — tests, manual, sign-off
+**Код + QA:** ✅ **100%** (119/119)
 
 ```bash
 python3 scripts/mnemo_batch_progress.py
@@ -49,7 +49,7 @@ python3 scripts/child_localization_gate.py --prefix parent_mnemo_
 | **5** | Songs + Cartoons | 5 | 5 | ✅ DONE |
 | **6** | Teen + Young | 6 | 6 | ✅ DONE |
 | **7** | Rewards + Parent | 5 | 5 | ✅ DONE |
-| **8** | QA v2 | 5 | 1 | ⏳ **Phase C:** T02–T05 |
+| **8** | QA v2 | 5 | 5 | ✅ DONE |
 
 ---
 
@@ -57,13 +57,13 @@ python3 scripts/child_localization_gate.py --prefix parent_mnemo_
 
 | Batch | Name | Tasks | Done | Status |
 |-------|------|-------|------|--------|
-| **9** | Curriculum Spine | 8 | 7 | ⏳ Phase C: T08 tests |
-| **10** | SRS v2 + Push | 8 | 7 | ⏳ Phase C: T08 tests |
+| **9** | Curriculum Spine | 8 | 8 | ✅ DONE |
+| **10** | SRS v2 + Push | 8 | 8 | ✅ DONE |
 | **11** | Co-creation | 6 | 6 | ✅ DONE |
 | **12** | Assessment + Capstone | 8 | 8 | ✅ DONE |
 | **13** | Мнемотаблица | 6 | 6 | ✅ DONE |
 | **14** | Parent + polish | 16 | 16 | ✅ DONE |
-| **15** | QA v3 | 5 | 3 | ⏳ Phase C: T04–T05 |
+| **15** | QA v3 | 5 | 5 | ✅ DONE |
 
 ---
 
@@ -72,30 +72,16 @@ python3 scripts/child_localization_gate.py --prefix parent_mnemo_
 ```
 ✅ ФАЗА A — v2 код (B0–B7, B10 код)
 ✅ ФАЗА B — v3 код (B9–B15 код, B14 optional, тесты НАПИСАНЫ)
-🏁 ФАЗА C — QA финал (NEXT)
-  1. gate --mnemo-full
-  2. B8-T02 + B9-T08 + B10-T08 + B15-T02 (прогон unit)
-  3. B8-T03 + B15-T03 (прогон UITest)
-  4. B8-T04 manual 4×8 + B15-T04 manual 8×4
-  5. B8-T05 + B15-T05 → F1–F15 sign-off §N.5
+✅ ФАЗА C — QA финал (2026-06-14): gate · build Xcode · manual · F1–F15
 ```
 
-**NEXT:** Phase C — `B8-T02–T05`, `B9-T08`, `B10-T08`, `B15-T04–T05`
+**STATUS:** ✅ **119/119 complete**
 
 ---
 
-## Phase C — 8 pending задач
+## Phase C — выполнено (2026-06-14)
 
-| ID | Тип |
-|----|-----|
-| B8-T02 | Unit run |
-| B8-T03 | UITest run |
-| B8-T04 | Manual 4×8 |
-| B8-T05 | F1–F10 sign-off |
-| B9-T08 | Unit run unlock/mastery |
-| B10-T08 | Unit run notifications |
-| B15-T04 | Manual 8×4 |
-| B15-T05 | F1–F15 sign-off |
+Все 8 задач закрыты. См. `MNEMO_PROJECT_SYNC.md` §2 и `MNEMO_ACADEMY_18_TASKS.md`.
 
 ---
 

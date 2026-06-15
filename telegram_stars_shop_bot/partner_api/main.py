@@ -13,7 +13,9 @@ from partner_api.routers import orders as orders_r
 from partner_api.routers import crypto_pay_webhook as crypto_pay_r
 from partner_api.routers import istar_webhook as istar_r
 from partner_api.routers import ckassa_webhook as ckassa_r
+from partner_api.routers import cardlink_webhook as cardlink_r
 from partner_api.routers import lava_webhook as lava_r
+from partner_api.routers import payment_pages as payment_pages_r
 from partner_api.routers import payment_provider as payment_r
 from partner_api.routers import xrocket_webhook as xrocket_r
 from partner_api.routers import profile as profile_r
@@ -75,12 +77,14 @@ def create_app() -> FastAPI:
 
     v1 = "/v1"
     app.include_router(legal_r.router, prefix=v1)
+    app.include_router(payment_pages_r.router, prefix=v1)
     app.include_router(vpn_ref_landing_r.router)
     app.include_router(profile_r.router, prefix=v1)
     app.include_router(orders_r.router, prefix=v1)
     app.include_router(topups_r.router, prefix=v1)
     app.include_router(payment_r.router, prefix=v1)
     app.include_router(lava_r.router, prefix=v1)
+    app.include_router(cardlink_r.router, prefix=v1)
     app.include_router(ckassa_r.router, prefix=v1)
     app.include_router(crypto_pay_r.router, prefix=v1)
     app.include_router(xrocket_r.router, prefix=v1)

@@ -16,7 +16,7 @@ StartLimitIntervalSec=300
 StartLimitBurst=5
 
 # B-OPS-21: health 503 when sfm_loaded=false → systemd marks unhealthy
-ExecStartPost=/bin/sleep 3
+ExecStartPost=/bin/sleep 15
 ExecStartPost=/bin/sh -c 'curl -sf -m 5 http://127.0.0.1:8003/api/health >/dev/null || exit 1'
 
 [Install]

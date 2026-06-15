@@ -98,6 +98,7 @@ def _delete_user_rows_sync(user_id: int) -> None:
             ("DELETE FROM aladdin_family_devices WHERE user_id = :uid_text", {"uid_text": uid_text}),
             ("DELETE FROM family_chat_reactions WHERE user_id = :uid", {"uid": user_id}),
             ("DELETE FROM family_chat_messages WHERE sender_user_id = :uid", {"uid": user_id}),
+            ("DELETE FROM antifake_jobs WHERE user_id = :uid", {"uid": user_id}),
         ):
             try:
                 with db.begin_nested():
@@ -115,6 +116,13 @@ def _delete_user_rows_sync(user_id: int) -> None:
         raise
     finally:
         gen.close()
+
+    try:
+        from app.services.antifake_upload_store import cleanup_user_uploads
+
+        cleanup_user_uploads(int(user_id))
+    except Exception:
+        pass
 
 
 async def _delete_account_impl(

@@ -1,13 +1,17 @@
 # ALADDIN — сводный мастер-план (все согласованные задачи)
 
-**Версия:** 1.0 · **Дата:** 2026-06-13  
+**Версия:** 1.1 · **Дата:** 2026-06-14  
 **Build:** **232** (`3cfcf256`) · **Корень:** `ALADDIN_iOS`  
 **SSOT:** `docs/release/MASTER_STATUS_INDEX.md`  
 **Single source для Cursor todos:** этот файл + детали в связанных планах
 
+> **Antifake v4 (134 задачи, 72 ✅, 43 open):** SSOT — [ANTIFAKE_V4_TASK_REGISTRY.md](./ANTIFAKE_V4_TASK_REGISTRY.md) · индекс docs — [ANTIFAKE_V4_DOC_INDEX.md](./ANTIFAKE_V4_DOC_INDEX.md) · план [ANTIFAKE_TOP_TIER_PLAN.md](./ANTIFAKE_TOP_TIER_PLAN.md). Не смешивать с `af-1…af-11` и `af-batch-*` ниже.
+
 | Документ | Содержание |
 |----------|------------|
 | **Этот файл** | Все задачи UX + perf + antifake + wellness — один реестр |
+| **`.cursor/ANTIFAKE_V4_TASK_REGISTRY.md`** | **Antifake v4 — 134 задач (SSOT ID, 72 ✅)** |
+| **`.cursor/ANTIFAKE_V4_DOC_INDEX.md`** | **Карта всех antifake документов** |
 | **`docs/release/MASTER_STATUS_INDEX.md`** | **Единый SSOT — счётчики и ссылки** |
 | `.cursor/UX_AUDIT_COMPANION_BATCHES_TODO.md` | Детали батчей 0–10, верификация отзыва |
 | `.cursor/ANTIFAKE_MASTER_ROADMAP.md` | Antifake M1–M4, Apple limits, риски |

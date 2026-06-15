@@ -60,6 +60,10 @@ def _sfm_status_payload() -> Dict[str, Any]:
         "runtime_functions_count": runtime_count,
         "code_path": os.path.join(APP_PATH, "security/safe_function_manager.py"),
         "load_error": sfm_load_error,
+        "active_executions": len(sfm.active_executions) if sfm is not None else 0,
+        "max_concurrent_functions": (
+            getattr(sfm, "max_concurrent_functions", None) if sfm is not None else None
+        ),
         "timestamp": datetime.utcnow().isoformat(),
     }
 

@@ -9,6 +9,7 @@ WorkingDirectory=/opt/aladdin-backend
 Environment="PATH=/opt/aladdin-backend/venv/bin"
 Environment=DISABLE_SFM_MOCK=1
 Environment=PYTHONPATH=/opt/aladdin-backend
+Environment=ANTIFAKE_UPLOAD_DIR=/var/lib/aladdin/antifake/uploads
 ExecStart=/opt/aladdin-backend/venv/bin/gunicorn -w 2 -k uvicorn.workers.UvicornWorker main:app -b 0.0.0.0:8002
 Restart=always
 RestartSec=10

@@ -224,7 +224,8 @@ struct ALADDINApp: App {
             #endif
         }
         if ProcessInfo.processInfo.arguments.contains("-UITestCompanionSmoke")
-            || ProcessInfo.processInfo.arguments.contains("-UITestWellnessNavSmoke") {
+            || ProcessInfo.processInfo.arguments.contains("-UITestWellnessNavSmoke")
+            || ProcessInfo.processInfo.arguments.contains("-UITestAntifakeHubSmoke") {
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
             UserDefaults.standard.set("child", forKey: "current_user_role")
             UserDefaults.standard.set("2026-05-26", forKey: "companion_legal_ack_version")
@@ -387,6 +388,9 @@ struct ALADDINApp: App {
                     if ProcessInfo.processInfo.arguments.contains("-UITestWellnessNavSmoke") {
                         navManager.companionHomeTargetTab = 1
                     }
+                    if ProcessInfo.processInfo.arguments.contains("-UITestAntifakeHubSmoke") {
+                        navManager.currentScreen = .antifakeHub
+                    }
                     consumePendingMagicAuthTokenIfNeeded()
                     LaunchDiagnostics.appendStartupTrace("initializeNavigation finished; currentScreen=\(navigationManager.currentScreen.rawValue)")
                 }
@@ -398,7 +402,14 @@ struct ALADDINApp: App {
                     LaunchDiagnostics.appendLifecycleTrace("WindowGroup.task END deferred bootstrap")
                 }
                 .onOpenURL { url in
+                    if AntifakeDeepLinkRouter.isFamilyAlertDeepLink(url) {
+                        navigationManager.navigateToAntifakeHub(tab: .text)
+                        return
+                    }
                     if AntifakeDeepLinkRouter.isPostCallCheckDeepLink(url) {
+                        if let caller = AntifakeDeepLinkRouter.parseCallerIdHint(from: url) {
+                            AntifakeLastCallContext.save(callerId: caller, displayName: "")
+                        }
                         navigationManager.navigateToAntifakeHub(tab: .call, postCallPrompt: true)
                         return
                     }

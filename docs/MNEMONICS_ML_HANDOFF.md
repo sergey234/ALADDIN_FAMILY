@@ -3,7 +3,7 @@
 **Updated:** 2026-06-06  
 **Версия плана:** v2.3 (`docs/MNEMONICS_CHILD_IMPLEMENTATION_PLAN.md`)  
 **Полная синхронизация:** `docs/MNEMO_PROJECT_SYNC.md` ← **для другой ML: читать первым**  
-**Прогресс:** **111 / 119 (93%)** · код ✅ **100%** · Phase C: **8 задач**
+**Прогресс:** **119 / 119 (100%)** · код ✅ · Phase C ✅ **2026-06-14**
 
 ---
 
@@ -41,7 +41,7 @@
 
 ### 0.4 С чего начать (NEXT SESSION) — **Phase C only**
 
-**Весь код готов (111/119).** Новый функционал не писать без явного запроса.
+**Весь проект готов (119/119).** Новый функционал не писать без явного запроса.
 
 | # | ID | Действие |
 |---|-----|----------|
@@ -72,7 +72,7 @@
 ```
 Ты завершаешь ALADDIN Memory Academy — Phase C (QA).
 
-1. Прочитай docs/MNEMO_PROJECT_SYNC.md (полная синхронизация 111/119).
+1. Прочитай docs/MNEMO_PROJECT_SYNC.md (полная синхронизация 119/119).
 2. Рабочий корень: ALADDIN_NEW/mobile_apps/ALADDIN_iOS
 3. Создай TodoWrite merge=false с 8 pending из §Q.1.A:
    B8-T02, B8-T03, B8-T04, B8-T05, B9-T08, B10-T08, B15-T04, B15-T05
@@ -564,7 +564,7 @@ MnemonicBaselineAssessment.shared.hasSession(inCalendarQuarterOf:)
 
 | Шляпа | Вывод |
 |-------|-------|
-| 🤍 Белая | **111/119**; B14 optional + B15-T03 code ✅; **Phase C** tests/build/manual осталось 8 задач |
+| 🤍 Белая | **119/119**; catalog v4 + Phase C sign-off 2026-06-14 |
 | 🔴 Красная | План зрелый; главный риск — B14 scope (16 tasks) + mastery 70% heuristic |
 | ⚫ Чёрная | `categoryBoost` false unlock → B9-T08; Companion → flag; gate churn → **incremental gate**; banner extracted |
 | 🟡 Жёлтая | Same ID new soul (zero migration); deferred QA для agents; SRS+push+deeplink wired; 8 semesters longitudinal; B11 co-creation + B12 MQ |

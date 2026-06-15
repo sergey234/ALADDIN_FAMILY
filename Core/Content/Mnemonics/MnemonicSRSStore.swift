@@ -51,6 +51,33 @@ final class MnemonicSRSStore {
         dueItems(category: category, now: now).count
     }
 
+    /// Unified «Повтори сегодня» queue across all mnemo categories.
+    func unifiedDueItems(now: Date = Date()) -> [String] {
+        dueItems(category: nil, now: now)
+    }
+
+    func unifiedDueToday(now: Date = Date()) -> Int {
+        unifiedDueItems(now: now).count
+    }
+
+    /// Recall mastery 0…100 derived from SRS box (0→0%, 1→25%, …, 4→100%).
+    func recallMasteryPercent(itemId: String) -> Int {
+        guard let entry = entries[itemId] else { return 0 }
+        return min(100, max(0, entry.box * 25))
+    }
+
+    func categoryId(for itemId: String) -> String? {
+        if itemId.hasPrefix("songs.") { return ChildCategoryKey.songs }
+        if itemId.hasPrefix("games.") { return ChildCategoryKey.games }
+        if itemId.hasPrefix("study.") { return ChildCategoryKey.study }
+        if itemId.hasPrefix("cartoons.") { return ChildCategoryKey.cartoons }
+        if itemId.hasPrefix("music.") { return ChildCategoryKey.music }
+        if itemId.hasPrefix("video.") { return ChildCategoryKey.video }
+        if itemId.hasPrefix("movies.") { return ChildCategoryKey.movies }
+        if itemId.hasPrefix("education.") { return ChildCategoryKey.education }
+        return nil
+    }
+
     func dueItems(category: String? = nil, now: Date = Date()) -> [String] {
         let start = Calendar.current.startOfDay(for: now)
         return entries.values

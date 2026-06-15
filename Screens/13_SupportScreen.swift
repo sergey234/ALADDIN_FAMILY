@@ -60,7 +60,10 @@ enum UnifiedFAQCatalog {
         UnifiedFAQEntry(id: "faq_geofencing", icon: "🗺️", questionKey: "faq_geofencing", answerKey: "faq_geofencing_answer", keywords: ["геозона", "геозоны", "geofence", "местоположение"]),
         UnifiedFAQEntry(id: "faq_wellness_support", icon: "💚", questionKey: "faq_wellness_support", answerKey: "faq_wellness_support_answer", keywords: ["wellness", "настроение", "эмоциональная поддержка", "самопомощь"]),
         UnifiedFAQEntry(id: "faq_cancel_subscription", icon: "💳", questionKey: "faq_cancel_subscription", answerKey: "faq_cancel_subscription_answer", keywords: ["подписка", "отменить подписку"]),
-        UnifiedFAQEntry(id: "faq_ai_how_works", icon: "🤖", questionKey: "faq_ai_how_works", answerKey: "faq_ai_how_works_answer", keywords: ["учишь", "обуча", "обучен", "как работает ai", "что умеешь", "что можешь", "кто ты", "ты кто", "нейросет", "искусственный интеллект", "ai aladdin"])
+        UnifiedFAQEntry(id: "faq_ai_how_works", icon: "🤖", questionKey: "faq_ai_how_works", answerKey: "faq_ai_how_works_answer", keywords: ["учишь", "обуча", "обучен", "как работает ai", "что умеешь", "что можешь", "кто ты", "ты кто", "нейросет", "искусственный интеллект", "ai aladdin"]),
+        UnifiedFAQEntry(id: "faq_antifake_apple_limits", icon: "📱", questionKey: "faq_antifake_apple_limits", answerKey: "faq_antifake_apple_limits_answer", keywords: ["antifake", "apple", "ios", "ограничения", "звонки", "call directory"]),
+        UnifiedFAQEntry(id: "faq_antifake_call_directory", icon: "☎️", questionKey: "faq_antifake_call_directory", answerKey: "faq_antifake_call_directory_answer", keywords: ["метка", "call directory", "мошенник", "синхронизация номеров"]),
+        UnifiedFAQEntry(id: "faq_antifake_after_call", icon: "📞", questionKey: "faq_antifake_after_call", answerKey: "faq_antifake_after_call_answer", keywords: ["после звонка", "запись звонка", "post-call", "проверить звонок"])
     ]
 
     static func localizedItems(localize: (String) -> String) -> [UnifiedFAQItem] {

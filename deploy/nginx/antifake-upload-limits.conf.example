@@ -6,7 +6,7 @@
 #   sudo nginx -t && sudo systemctl reload nginx
 
 location ~ ^/api/antifake/check/(audio|video|document)$ {
-    client_max_body_size 100m;
+    client_max_body_size 25m;
     proxy_read_timeout 300s;
     proxy_send_timeout 300s;
     proxy_request_buffering off;
@@ -14,7 +14,7 @@ location ~ ^/api/antifake/check/(audio|video|document)$ {
 }
 
 location = /api/antifake/call/analyze {
-    client_max_body_size 100m;
+    client_max_body_size 25m;
     proxy_read_timeout 300s;
     proxy_send_timeout 300s;
     proxy_request_buffering off;

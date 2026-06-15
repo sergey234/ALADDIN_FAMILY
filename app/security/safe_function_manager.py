@@ -9,6 +9,7 @@ ALADDIN Security System - Safe Function Manager
 """
 
 import hashlib
+import os
 import threading
 import time
 from datetime import datetime
@@ -241,7 +242,13 @@ class SafeFunctionManager(SecurityBase):
 
         # Конфигурация менеджера
         self.auto_test_interval = config.get("auto_test_interval", 3600) if config else 3600  # 1 час
-        self.max_concurrent_functions = config.get("max_concurrent_functions", 50) if config else 50
+        self.max_concurrent_functions = int(
+            os.environ.get(
+                "SFM_MAX_CONCURRENT",
+                config.get("max_concurrent_functions", 50) if config else 50,
+            )
+        )
+        self.stale_execution_seconds = int(os.environ.get("SFM_STALE_EXECUTION_SEC", "300"))
         self.function_timeout = config.get("function_timeout", 300) if config else 300  # 5 минут
         self.enable_auto_management = config.get("enable_auto_management", False) if config else False
 
@@ -1136,6 +1143,30 @@ class SafeFunctionManager(SecurityBase):
 
         return True
 
+    def _purge_stale_active_executions(self) -> int:
+        """F-01: drop leaked slots (cache-hit bug / crashed handlers) before 422 limit."""
+        if not self.active_executions:
+            return 0
+        max_age = max(30, int(getattr(self, "stale_execution_seconds", 300)))
+        now = datetime.now()
+        stale_ids: List[str] = []
+        for execution_id, meta in self.active_executions.items():
+            started = meta.get("start_time")
+            if not isinstance(started, datetime):
+                stale_ids.append(execution_id)
+                continue
+            age = (now - started).total_seconds()
+            if age >= max_age:
+                stale_ids.append(execution_id)
+        for execution_id in stale_ids:
+            self.active_executions.pop(execution_id, None)
+        if stale_ids:
+            self.log_activity(
+                f"F-01: purged {len(stale_ids)} stale SFM execution slots",
+                "warning",
+            )
+        return len(stale_ids)
+
     def execute_function(self, function_id: str, params: Optional[Dict[str, Any]] = None) -> Tuple[bool, Any, str]:
         """
         Выполнение функции
@@ -1181,6 +1212,8 @@ class SafeFunctionManager(SecurityBase):
                         f"Функция {function_id} не активна " f"(статус: {function.status.value})",
                     )
 
+                self._purge_stale_active_executions()
+
                 # Проверка лимита одновременных выполнений
                 if len(self.active_executions) >= self.max_concurrent_functions:
                     return (False, None, "Достигнут лимит одновременных выполнений")
@@ -1200,35 +1233,35 @@ class SafeFunctionManager(SecurityBase):
             args_hash = hashlib.md5(json.dumps(params or {}, sort_keys=True).encode()).hexdigest()
 
             cached_result = self.get_cached_result(function_id, args_hash)
-            if cached_result is not None:
-                # Результат найден в кэше
-                self.log_activity(f"Результат получен из кэша для {function_id}", "debug")
-                return True, cached_result, "Результат получен из кэша"
-
-            # Выполнение функции
-            start_time = time.time()
             try:
-                result = self._execute_function_handler(function_id, params or {})
-                execution_time = time.time() - start_time
+                if cached_result is not None:
+                    # Результат найден в кэше
+                    self.log_activity(f"Результат получен из кэша для {function_id}", "debug")
+                    return True, cached_result, "Результат получен из кэша"
 
-                # Сохранение результата в кэш
-                self.cache_result(function_id, args_hash, result)
+                # Выполнение функции
+                start_time = time.time()
+                try:
+                    result = self._execute_function_handler(function_id, params or {})
+                    execution_time = time.time() - start_time
 
-                # Обновление статистики
-                self._update_function_stats(function_id, True, execution_time)
+                    # Сохранение результата в кэш
+                    self.cache_result(function_id, args_hash, result)
 
-                self.log_activity(f"Функция {function_id} выполнена успешно за " f"{execution_time:.2f}с")
-                return True, result, "Функция выполнена успешно"
+                    # Обновление статистики
+                    self._update_function_stats(function_id, True, execution_time)
 
-            except Exception as e:
-                execution_time = time.time() - start_time
-                self._update_function_stats(function_id, False, execution_time)
+                    self.log_activity(f"Функция {function_id} выполнена успешно за " f"{execution_time:.2f}с")
+                    return True, result, "Функция выполнена успешно"
 
-                self.log_activity(f"Ошибка выполнения функции {function_id}: {e}", "error")
-                return False, None, f"Ошибка выполнения: {e}"
+                except Exception as e:
+                    execution_time = time.time() - start_time
+                    self._update_function_stats(function_id, False, execution_time)
 
+                    self.log_activity(f"Ошибка выполнения функции {function_id}: {e}", "error")
+                    return False, None, f"Ошибка выполнения: {e}"
             finally:
-                # Удаление из активных выполнений
+                # F-01: cache-hit раньше не снимал слот → лимит 422 на prod
                 with self.execution_lock:
                     if execution_id in self.active_executions:
                         del self.active_executions[execution_id]
@@ -3725,7 +3758,10 @@ class SafeFunctionManager(SecurityBase):
             def fake_news_detection_handler(*args, **kwargs):
                 """Обработчик FakeNewsDetectionAgent"""
                 try:
-                    from security.ai_agents.fake_news_detection_agent import FakeNewsDetectionAgent
+                    try:
+                        from app.security.ai_agents.fake_news_detection_agent import FakeNewsDetectionAgent
+                    except ImportError:
+                        from security.ai_agents.fake_news_detection_agent import FakeNewsDetectionAgent
 
                     model_name = kwargs.get("model_name")
                     agent = FakeNewsDetectionAgent(model_name=model_name)

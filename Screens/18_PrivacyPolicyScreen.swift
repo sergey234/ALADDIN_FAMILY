@@ -429,6 +429,7 @@ enum PrivacyMainSection: String, CaseIterable {
     case responsibility = "Ответственность"
     case contacts = "Контакты"
     case wellness = "Эмоциональная поддержка (Wellness)"
+    case antifake = "Проверка подлинности (Antifake)"
     case final = "Заключительные положения"
     
     var emoji: String {
@@ -447,6 +448,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .responsibility: return "🤝"
         case .contacts: return "📞"
         case .wellness: return "💜"
+        case .antifake: return "🛡️"
         case .final: return "📜"
         }
     }
@@ -467,6 +469,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .responsibility: return localizationManager.localized("privacy_policy_section_responsibility")
         case .contacts: return localizationManager.localized("privacy_policy_section_contacts")
         case .wellness: return localizationManager.localized("privacy_policy_section_wellness")
+        case .antifake: return localizationManager.localized("privacy_policy_section_antifake")
         case .final: return localizationManager.localized("privacy_policy_section_final")
         }
     }
@@ -487,6 +490,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .responsibility: return localizationManager.localized("privacy_policy_section_responsibility_subtitle")
         case .contacts: return localizationManager.localized("privacy_policy_section_contacts_subtitle")
         case .wellness: return localizationManager.localized("privacy_policy_section_wellness_subtitle")
+        case .antifake: return localizationManager.localized("privacy_policy_section_antifake_subtitle")
         case .final: return localizationManager.localized("privacy_policy_section_final_subtitle")
         }
     }
@@ -512,6 +516,7 @@ enum PrivacyMainSection: String, CaseIterable {
         case .responsibility: return "Гарантии Оператора"
         case .contacts: return "Техподдержка и вопросы"
         case .wellness: return "Самопомощь и цифровой друг (ИИ)"
+        case .antifake: return "Звонки, проверки и Call Directory"
         case .final: return "Вступление в силу"
         }
     }
@@ -626,6 +631,14 @@ enum PrivacyMainSection: String, CaseIterable {
                 localizationManager.localized("privacy_policy_section_wellness_content_5"),
                 localizationManager.localized("privacy_policy_section_wellness_content_6"),
                 localizationManager.localized("privacy_policy_section_wellness_content_7")
+            ]
+        case .antifake:
+            return [
+                localizationManager.localized("privacy_policy_section_antifake_content_1"),
+                localizationManager.localized("privacy_policy_section_antifake_content_2"),
+                localizationManager.localized("privacy_policy_section_antifake_content_3"),
+                localizationManager.localized("privacy_policy_section_antifake_content_4"),
+                localizationManager.localized("privacy_policy_section_antifake_content_5")
             ]
         case .final:
             return [
@@ -745,6 +758,14 @@ enum PrivacyMainSection: String, CaseIterable {
                 "При признаках кризиса — подсказки обратиться к взрослому или на линию помощи",
                 "Можно отозвать согласие и удалить данные в настройках раздела",
                 "Не заменяет психотерапию, психиатрию и экстренную помощь"
+            ]
+        case .antifake:
+            return [
+                "Antifake — проверка подозрительных звонков и сообщений по вашей инициативе",
+                "Номера телефонов хэшируются в логах; полный номер не сохраняется в аналитике",
+                "Call Directory — локальная метка на экране входящего звонка после синхронизации",
+                "Медиа для проверки загружается только с вашего согласия и удаляется после обработки",
+                "Мы не собираем и не продаём вашу телефонную книгу"
             ]
         case .final:
             return [

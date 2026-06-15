@@ -616,6 +616,12 @@ async def nav_vpn(cb: CallbackQuery, settings: Settings, conn) -> None:
         return
     await cb.answer()
     await _vpn_log(conn, cb.from_user.id, "vpn_nav_marketing")
+    await _vpn_log(
+        conn,
+        cb.from_user.id,
+        "offer_impression",
+        meta={"product_hint": "vpn", "positioning_variant": "utility"},
+    )
     await _send_or_edit_vpn_marketing(cb.message, settings, show_continue=True)
 
 

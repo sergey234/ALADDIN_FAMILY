@@ -68,6 +68,12 @@ def complete_job(job_id: str, verdict: Dict[str, Any], latency_ms: int) -> None:
                 "now": now,
             },
         )
+    try:
+        from app.services.antifake_family_notify import maybe_notify_parents_likely_fake
+
+        maybe_notify_parents_likely_fake(job_id=job_id, verdict=verdict)
+    except Exception:
+        pass
 
 
 def fail_job(job_id: str, error: str) -> None:
@@ -140,6 +146,55 @@ def get_job(job_id: str, user_id: int) -> Optional[Dict[str, Any]]:
     }
 
 
+def _funnel_metrics_for_user(user_id: int) -> Dict[str, Any]:
+    """M-02: enable → sync → check funnel (no PII)."""
+    checks_total = 0
+    cd_enabled = False
+    cd_synced_count = 0
+    ensure_table()
+    try:
+        with engine.connect() as conn:
+            checks_total = int(
+                conn.execute(
+                    text(
+                        """
+                        SELECT COUNT(*) FROM antifake_jobs
+                        WHERE user_id = :user_id AND status = 'completed'
+                        """
+                    ),
+                    {"user_id": int(user_id)},
+                ).scalar()
+                or 0
+            )
+            try:
+                cd_row = conn.execute(
+                    text(
+                        """
+                        SELECT extension_enabled, synced_count
+                        FROM antifake_family_cd_status
+                        WHERE user_id = :user_id
+                        ORDER BY updated_at DESC
+                        LIMIT 1
+                        """
+                    ),
+                    {"user_id": int(user_id)},
+                ).mappings().first()
+                if cd_row:
+                    cd_enabled = bool(cd_row["extension_enabled"])
+                    cd_synced_count = int(cd_row["synced_count"] or 0)
+            except Exception:
+                pass
+    except Exception:
+        checks_total = 0
+
+    return {
+        "cd_extension_enabled": cd_enabled,
+        "cd_synced_count": cd_synced_count,
+        "checks_completed": checks_total,
+        "funnel_ready": cd_enabled and cd_synced_count > 0 and checks_total > 0,
+    }
+
+
 def metrics_for_user(user_id: int) -> Dict[str, Any]:
     ensure_table()
     with engine.connect() as conn:
@@ -151,7 +206,11 @@ def metrics_for_user(user_id: int) -> Dict[str, Any]:
                     COUNT(*) FILTER (
                         WHERE verdict->>'verdict' = 'likely_fake'
                     ) AS fake_detected,
-                    COALESCE(AVG(latency_ms), 0) AS avg_latency_ms
+                    COALESCE(AVG(latency_ms), 0) AS avg_latency_ms,
+                    COALESCE(
+                        PERCENTILE_CONT(0.95) WITHIN GROUP (ORDER BY latency_ms),
+                        0
+                    ) AS p95_latency_ms
                 FROM antifake_jobs
                 WHERE user_id = :user_id AND status = 'completed'
                 """
@@ -177,9 +236,15 @@ def metrics_for_user(user_id: int) -> Dict[str, Any]:
         if key in by_type:
             by_type[key] = int(item["cnt"] or 0)
 
+    from app.services.antifake_service import MODEL_VERSION, SLA_MS
+
     return {
         "checks_total": int(row["checks_total"] or 0),
         "fake_detected": int(row["fake_detected"] or 0),
         "by_type": by_type,
-        "latency_p95_ms": int(row["avg_latency_ms"] or 0),
+        "latency_p95_ms": int(row["p95_latency_ms"] or row["avg_latency_ms"] or 0),
+        "avg_latency_ms": int(row["avg_latency_ms"] or 0),
+        "model_version": MODEL_VERSION,
+        "funnel": _funnel_metrics_for_user(user_id),
+        "sla_ms": dict(SLA_MS),
     }

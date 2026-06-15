@@ -1,0 +1,34 @@
+---
+description: Antifake v4 Cursor TODO — SSOT REGISTRY, merge-only updates, no list collapse
+alwaysApply: true
+---
+
+# Antifake v4 — Cursor TODO policy
+
+**SSOT:** `.cursor/ANTIFAKE_V4_TASK_REGISTRY.md` · **Unified:** `.cursor/ANTIFAKE_UNIFIED_MASTER.md` · **Index:** `.cursor/ANTIFAKE_V4_DOC_INDEX.md`
+
+## Full list structure (~156 rows)
+
+- `meta-total` (1)
+- Batch headers `hdr-*` (21): ml100, d, c, a, f, j, b, e, n, r, i, l, m, p, g, q, ph3-bypass, h, k, o
+- `ref-server-guide` (1)
+- Atomic tasks `af-A-01` … `af-O-03` (**134**)
+
+## Mandatory TodoWrite rules
+
+1. **Closing one task:** only `TodoWrite` with `merge: true` and a single `af-*` id (or small batch of ids being closed).
+2. **Never** `merge: false` unless the user explicitly writes: «восстанови TODO из REGISTRY» (or equivalent).
+3. **Never** replace the full list with a short batch-only list (e.g. 8 items for B-03…B-09).
+4. On close: REGISTRY ✅ → `ANTIFAKE_TOP_TIER_PLAN.md` ✅ → then `merge: true` on matching `af-*`.
+
+## Work order (Phase 1, no iPhone until end)
+
+```
+C✅ → A✅ → F✅ → J✅ (except J-04) → B✅ → E → N → R → Phase2 → Phase3 → DEVICE (D-01…D-04)
+```
+
+**Work order:** code/UI first; simulator builds & device QA last.
+
+**Current next batch:** DEVICE (D-01…04, D-09, E-06, R-02). Code gates: `verify_antifake_all_static.sh` ✅.
+
+**Done:** G-03/Q-01 bypass off, J-04 PDF, D-06/07/08/10 code, all Phase 1+2 batches.

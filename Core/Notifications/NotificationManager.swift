@@ -159,6 +159,11 @@ class NotificationManager: NSObject, ObservableObject {
                     #if DEBUG
                     print("📱 Register device token result: \(result)")
                     #endif
+                    APIService.shared.antifakeRegisterFamilyPushToken(token) { antifakeResult in
+                        #if DEBUG
+                        print("📱 Antifake family push token: \(antifakeResult)")
+                        #endif
+                    }
                     continuation.resume()
                 }
             }

@@ -1,0 +1,20 @@
+{
+  "batch": "DEVICE",
+  "status": "pending_physical_qa",
+  "build": null,
+  "device_ios": null,
+  "tester": null,
+  "tasks": {
+    "D-01": { "pass": false, "notes": "Archive or sim build via scripts/archive_antifake_device_build.sh" },
+    "D-02": { "pass": false, "notes": "TestFlight install on iPhone" },
+    "D-03": { "pass": false, "notes": "Extension ON + sync" },
+    "D-04": { "pass": false, "notes": "Incoming call label screenshot", "attachment": null },
+    "D-06": { "pass": true, "notes": "ANTIFAKE_CALL_DIRECTORY_DEVICE_QA.md" },
+    "D-07": { "pass": false, "notes": "identified vs blocked" },
+    "D-08": { "pass": false, "notes": "Extension OFF orange status" },
+    "D-09": { "pass": false, "notes": "Airplane mode resync" },
+    "D-10": { "pass": false, "notes": "EN locale label" },
+    "E-06": { "pass": false, "notes": "Post-call device QA" },
+    "R-02": { "pass": false, "notes": "QA sign-off attachments" }
+  }
+}

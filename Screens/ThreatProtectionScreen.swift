@@ -145,14 +145,9 @@ struct AntifakeQuickAccessCard: View {
                         Text(localizationManager.localized("protection_antifake_card_title"))
                             .font(.headline)
                             .foregroundColor(.textPrimary)
-                        Text(localizationManager.localized("protection_antifake_card_subtitle"))
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                            .multilineTextAlignment(.leading)
-                        Text(localizationManager.localized("protection_antifake_card_footnote"))
-                            .font(.caption2)
-                            .foregroundColor(.textSecondary.opacity(0.9))
-                            .multilineTextAlignment(.leading)
+                            .accessibilityAddTraits(.isHeader)
+                        AntifakeQuickAccessCopyLines()
+                            .environmentObject(localizationManager)
                     }
                     Spacer()
                     Text(localizationManager.localized("protection_open_check_button"))
@@ -167,7 +162,8 @@ struct AntifakeQuickAccessCard: View {
             }
             .buttonStyle(.plain)
             .accessibilityIdentifier("antifake_quick_access_card")
-            .accessibilityLabel(localizationManager.localized("protection_antifake_card_title"))
+            .accessibilityLabel(AntifakeQuickAccessCopy.accessibilityLabel(localizationManager: localizationManager))
+            .accessibilityHint(localizationManager.localized("protection_open_check_button"))
 
             Button {
                 showAppleLimits = true
@@ -246,6 +242,17 @@ struct AntifakeAppleLimitsSheet: View {
                         Text(localizationManager.localized("antifake_apple_limits_disclaimer"))
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.75))
+
+                        limitsSection(
+                            titleKey: "antifake_family_faq_title",
+                            bulletKeys: [
+                                "antifake_family_faq_1",
+                                "antifake_family_faq_2",
+                                "antifake_family_faq_3",
+                                "antifake_family_faq_4"
+                            ],
+                            accent: .secondaryGold
+                        )
                     }
                     .padding(Spacing.screenPadding)
                     .padding(.bottom, Spacing.xxl)

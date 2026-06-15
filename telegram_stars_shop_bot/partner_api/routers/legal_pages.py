@@ -12,6 +12,10 @@ _REPO_ROOT = Path(__file__).resolve().parents[2]
 _PRIVACY_PATH = _REPO_ROOT / "legal" / "privacy_policy_ru.txt"
 _TERMS_PATH = _REPO_ROOT / "legal" / "terms_of_service_ru.txt"
 _OFFER_PATH = _REPO_ROOT / "legal" / "public_offer_ru.txt"
+_REFUND_PATH = _REPO_ROOT / "legal" / "refund_policy_ru.txt"
+
+_NEWS_CHANNEL_URL = "https://t.me/+xwj4zZo4bNphZjVi"
+_SHOP_BOT_URL = "https://t.me/AiMonkeyStars_bot"
 
 router = APIRouter(tags=["legal"])
 
@@ -58,3 +62,32 @@ async def terms_of_service_page() -> HTMLResponse:
 async def public_offer_page() -> HTMLResponse:
     body = _read_text(_OFFER_PATH)
     return HTMLResponse(_html_page("Публичная оферта", body))
+
+
+@router.get("/legal/refund", response_class=HTMLResponse)
+async def refund_policy_page() -> HTMLResponse:
+    body = _read_text(_REFUND_PATH)
+    return HTMLResponse(_html_page("Политика возвратов", body))
+
+
+@router.get("/legal/news", response_class=HTMLResponse)
+async def news_channel_page() -> HTMLResponse:
+    body = f"""НОВОСТНОЙ КАНАЛ МАГАЗИНА AiMonkey Stars | Premium | AiMonkeyVPN
+
+Официальный Telegram-канал магазина цифровых товаров и услуг:
+{_NEWS_CHANNEL_URL}
+
+В канале публикуются:
+- новости магазина и обновления ассортимента;
+- изменения тарифов и условий;
+- технические уведомления и статус работы сервисов;
+- акции и специальные предложения.
+
+Telegram-бот для покупок: {_SHOP_BOT_URL}
+
+Публичная оферта: https://aladdin-ai.ru/v1/legal/offer
+Политика возвратов: https://aladdin-ai.ru/v1/legal/refund
+Политика конфиденциальности: https://aladdin-ai.ru/v1/legal/privacy
+
+© 2026 AiMonkeyStars."""
+    return HTMLResponse(_html_page("Новостной канал", body))

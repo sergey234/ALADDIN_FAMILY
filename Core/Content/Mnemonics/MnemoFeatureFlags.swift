@@ -2,7 +2,7 @@ import Foundation
 
 /// B14 optional v3 features. Prod preset **4–22 v1** (2026-06-06):
 /// ON by default: memoryHeroAvatars, teenExamHacksCopy, advancedNumberPegs, storiesRecallHook
-/// OFF by default: familyMemoryChallenge (enable after QA), companionVoiceReminder (wave 2)
+/// ON after mnemo QA pass (2026-06): familyMemoryChallenge, companionVoiceReminder
 /// Explicit UserDefaults value always overrides prod default.
 enum MnemoFeatureFlags {
     private static let defaults = UserDefaults.standard
@@ -21,11 +21,11 @@ enum MnemoFeatureFlags {
     }
 
     static var familyMemoryChallenge: Bool {
-        resolved("mnemo.familyMemoryChallenge", prodDefault: false)
+        resolved("mnemo.familyMemoryChallenge", prodDefault: true)
     }
 
     static var companionVoiceReminder: Bool {
-        resolved("mnemo.companionVoiceReminder", prodDefault: false)
+        resolved("mnemo.companionVoiceReminder", prodDefault: true)
     }
 
     static var storiesRecallHook: Bool {

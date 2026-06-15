@@ -207,6 +207,18 @@ def referral_faq_html(settings: Settings) -> str:
     )
 
 
+def refund_policy_blurb_html(settings: Settings) -> str:
+    """Единый текст о возвратах для FAQ бота."""
+    ru = esc((settings.refund_policy_url or "https://aladdin-ai.ru/v1/legal/refund").strip())
+    return (
+        "<b>Возвраты</b>\n"
+        "Цифровые товары, оказанные в полном объёме (<b>«выдан»</b>), — <b>возврату не подлежат</b>.\n"
+        "До выдачи (просрочка 3 дней, ошибочное списание): заявка в «Поддержку» — "
+        "14 дней, рассмотрение до 10 раб. дн., возврат на те же реквизиты в полном объёме. "
+        f"<a href=\"{ru}\">Политика возвратов</a>."
+    )
+
+
 def payment_faq_html(settings: Settings) -> str:
     """Текст для кнопки «Оплата и зачисление» (Поддержка): без имён .env, для покупателей и партнёров-юзеров."""
     uni = (getattr(settings, "ckassa_bc_universal_payment_url", "") or "").strip()
@@ -248,7 +260,7 @@ def payment_faq_html(settings: Settings) -> str:
         "<b>USDT в счёте (Crypto Pay / xRocket)</b>\n"
         "Итог в USDT берите из <b>готового счёта</b> - он может чуть отличаться от ориентира в рублях в боте (курс ставит сервис счёта).\n\n"
         "<b>Приглашение друзей, скидка, бонус на покупки</b> — в «Мой профиль» / «Как работает приглашение».\n\n"
-        "<b>Возвраты</b> - не гарантируем по умолчанию; по согласованию в поддержке, если виноват сбой с нашей стороны."
+        f"{refund_policy_blurb_html(settings)}\n"
     )
     return head + uni_extra + tail
 
@@ -260,8 +272,14 @@ def privacy_screen_html(settings: Settings) -> str:
     ]
     pu = (settings.privacy_policy_url or "").strip()
     tu = (settings.terms_of_service_url or "").strip()
-    if pu or tu:
+    ou = (settings.public_offer_url or "").strip()
+    ru = (settings.refund_policy_url or "").strip()
+    if pu or tu or ou or ru:
         parts.append("<b>Документы</b> (публичные страницы, как в аналогичных сервисах):\n")
+        if ou:
+            parts.append(f"• <a href=\"{esc(ou)}\">Публичная оферта</a>\n")
+        if ru:
+            parts.append(f"• <a href=\"{esc(ru)}\">Политика возвратов</a>\n")
         if pu:
             parts.append(f"• <a href=\"{esc(pu)}\">Политика конфиденциальности</a>\n")
         if tu:
@@ -353,7 +371,6 @@ def faq_comprehensive_html(settings: Settings) -> str:
         "В меню: «С баланса» / «С баланса частично» при оформлении.\n\n"
         "<b>• Розыгрыши в каналах</b>\n"
         "Не ведём от имени бота; к админам того канала.\n\n"
-        "<b>• Возвраты</b>\n"
-        "По умолчанию не гарантируем; в редких случаях при нашей ошибке - через поддержку с доказательствами.\n\n"
-        "<i>Юридика - кнопки в «Поддержка» (политика, соглашение).</i>"
+        f"{refund_policy_blurb_html(settings).replace('<b>Возвраты', '<b>• Возвраты', 1)}\n\n"
+        "<i>Юридика - кнопки в «Поддержка» (оферта, политика возвратов).</i>"
     )

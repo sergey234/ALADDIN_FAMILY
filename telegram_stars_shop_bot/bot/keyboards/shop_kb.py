@@ -202,11 +202,20 @@ def ckassa_payment_kb(pay_url: str) -> InlineKeyboardMarkup:
     return b.as_markup()
 
 
+def cardlink_payment_kb(pay_url: str) -> InlineKeyboardMarkup:
+    """Кнопка на страницу оплаты Cardlink (карта / СБП)."""
+    b = InlineKeyboardBuilder()
+    b.row(InlineKeyboardButton(text="💳 Оплатить в ₽ (Cardlink)", url=pay_url))
+    b.row(InlineKeyboardButton(text="🏠 В главное меню", callback_data="nav:hub"))
+    return b.as_markup()
+
+
 def fiat_checkout_options_kb(
     *,
     universal_url: str | None,
     ckassa_shop_url: str | None,
     lava_url: str | None,
+    cardlink_url: str | None = None,
     bc_claim_order_id: int | None = None,
     support_order_url: str | None = None,
 ) -> InlineKeyboardMarkup:
@@ -232,6 +241,8 @@ def fiat_checkout_options_kb(
         )
     if lava_url:
         b.row(InlineKeyboardButton(text="💳 LAVA: карта / СБП", url=lava_url))
+    if cardlink_url:
+        b.row(InlineKeyboardButton(text="💳 Cardlink: карта / СБП", url=cardlink_url))
     if universal_url and bc_claim_order_id is not None and bc_claim_order_id > 0:
         b.row(
             InlineKeyboardButton(
@@ -332,6 +343,25 @@ def confirm_order_kb(*, cancel_callback: str = "order:cancel") -> InlineKeyboard
     b = InlineKeyboardBuilder()
     b.row(InlineKeyboardButton(text="✅ Создать заказ", callback_data="order:submit"))
     b.row(InlineKeyboardButton(text="⬅️ Назад", callback_data=cancel_callback))
+    return b.as_markup()
+
+
+def feedback_nps_kb() -> InlineKeyboardMarkup:
+    b = InlineKeyboardBuilder()
+    b.row(*(InlineKeyboardButton(text=str(i), callback_data=f"fb:nps:{i}") for i in range(0, 6)))
+    b.row(*(InlineKeyboardButton(text=str(i), callback_data=f"fb:nps:{i}") for i in range(6, 11)))
+    return b.as_markup()
+
+
+def feedback_csat_kb() -> InlineKeyboardMarkup:
+    b = InlineKeyboardBuilder()
+    b.row(
+        InlineKeyboardButton(text="1", callback_data="fb:csat:1"),
+        InlineKeyboardButton(text="2", callback_data="fb:csat:2"),
+        InlineKeyboardButton(text="3", callback_data="fb:csat:3"),
+        InlineKeyboardButton(text="4", callback_data="fb:csat:4"),
+        InlineKeyboardButton(text="5", callback_data="fb:csat:5"),
+    )
     return b.as_markup()
 
 

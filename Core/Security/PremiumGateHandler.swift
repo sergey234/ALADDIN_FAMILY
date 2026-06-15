@@ -190,6 +190,8 @@ enum AntifakeCheckFailureHandler {
             message = localizationManager.localized("antifake_error_job_not_found")
         case .timeout:
             message = localizationManager.localized("antifake_error_job_timeout")
+        case .tooManyRequests:
+            message = localizationManager.localized("antifake_error_rate_limit")
         case .serviceUnavailable, .badGateway, .internalServerError:
             message = localizationManager.localized("antifake_error_service_unavailable")
         default:
