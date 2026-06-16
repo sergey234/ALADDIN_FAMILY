@@ -91,6 +91,23 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
         }
     }
 
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(verdict, forKey: .verdict)
+        try container.encode(confidence, forKey: .confidence)
+        // Keep `fake_risk` aligned with `confidence` for forward-compatible API logging/transport.
+        try container.encode(confidence, forKey: .fakeRisk)
+        try container.encode(reasons, forKey: .reasons)
+        try container.encode(source, forKey: .source)
+        try container.encodeIfPresent(agent, forKey: .agent)
+        try container.encodeIfPresent(jobId, forKey: .jobId)
+        if let checkedAt {
+            try container.encode(SecurityVerdictParsers.iso8601.string(from: checkedAt), forKey: .checkedAt)
+        }
+        try container.encode(premiumRequired, forKey: .premiumRequired)
+        try container.encodeIfPresent(status, forKey: .status)
+    }
+
     /// Rejects mock / wildcard envelopes — prod policy (B-OPS-07, af-0-06).
     func validateForProduction() throws {
         let normalized = source.lowercased()
