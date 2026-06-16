@@ -32,14 +32,10 @@ struct AntifakeHubScreen: View {
 
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
-                        if hasPremiumAccess {
-                            AntifakeCallDirectorySettingsCard()
-                                .environmentObject(localizationManager)
-                            AntifakeFamilyReportsSection()
-                                .environmentObject(localizationManager)
-                        }
                         tabContent
                         if hasPremiumAccess {
+                            AntifakeFamilyReportsSection()
+                                .environmentObject(localizationManager)
                             AntifakeCheckHistorySection()
                                 .environmentObject(localizationManager)
                         }
@@ -174,12 +170,7 @@ struct AntifakeHubScreen: View {
                 AntifakeVideoCheckPanel(showPremiumPaywall: $showPremiumPaywall)
                     .environmentObject(localizationManager)
             case .call:
-                AntifakeMediaCheckView(
-                    mediaKind: .call,
-                    titleKey: "antifake_call_title",
-                    hintKey: "antifake_call_hint",
-                    systemImage: "phone.arrow.up.right.fill",
-                    panelId: "antifake_call_panel",
+                AntifakeCallTabView(
                     showPremiumPaywall: $showPremiumPaywall,
                     showPostCallUploadPrompt: $showPostCallUploadPrompt
                 )

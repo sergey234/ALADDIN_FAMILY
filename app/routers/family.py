@@ -89,6 +89,36 @@ def _ensure_family_indexes(db) -> None:
     except Exception as e:
         # Не блокируем бизнес-операцию, но логируем
         logger.warning("family_indexes_ensure_failed", error=str(e))
+_PG_INT_MAX = 2_147_483_647
+
+
+def _lookup_or_create_user_id_for_device(db, device_id: str, device_type: Optional[str] = None) -> Optional[int]:
+    """Map device_id → users.id; create row if missing (legacy oversized pseudo JWT subjects)."""
+    device_id = device_id.strip()
+    if not device_id:
+        return None
+    row = db.execute(
+        text("SELECT id FROM users WHERE device_id = :device_id ORDER BY id DESC LIMIT 1"),
+        {"device_id": device_id},
+    ).fetchone()
+    if row and row[0] is not None:
+        return int(row[0])
+    inserted = db.execute(
+        text(
+            """
+            INSERT INTO users (device_id, device_type)
+            VALUES (:device_id, :device_type)
+            ON CONFLICT (device_id) DO UPDATE
+                SET device_type = COALESCE(EXCLUDED.device_type, users.device_type)
+            RETURNING id
+            """
+        ),
+        {"device_id": device_id, "device_type": device_type or "ios"},
+    ).fetchone()
+    db.commit()
+    return int(inserted[0]) if inserted and inserted[0] is not None else None
+
+
 def _resolve_user_id_from_claim(current_user: dict) -> int:
     """Resolve stable integer user_id from JWT claims.
 
@@ -104,10 +134,31 @@ def _resolve_user_id_from_claim(current_user: dict) -> int:
     if raw_id is None:
         raw_id = current_user.get("sub")
 
+    # Device JWT: always prefer users.device_id → users.id (hash pseudo-ids overflow PG INTEGER).
+    claim_device_id = current_user.get("device_id")
+    if isinstance(claim_device_id, str) and claim_device_id.strip() and get_postgres_db:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            resolved = _lookup_or_create_user_id_for_device(
+                db,
+                claim_device_id,
+                current_user.get("device_type") if isinstance(current_user.get("device_type"), str) else None,
+            )
+            if resolved is not None:
+                return resolved
+        finally:
+            gen.close()
+
     if isinstance(raw_id, int):
+        if raw_id > _PG_INT_MAX:
+            raise HTTPException(status_code=401, detail="Invalid user_id in token")
         return raw_id
     if isinstance(raw_id, str) and raw_id.strip().isdigit():
-        return int(raw_id.strip())
+        parsed = int(raw_id.strip())
+        if parsed > _PG_INT_MAX:
+            raise HTTPException(status_code=401, detail="Invalid user_id in token")
+        return parsed
 
     # Legacy compatibility path:
     # token might carry non-numeric id, while device identifier may be in `device_id` or `sub`.

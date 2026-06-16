@@ -586,6 +586,23 @@ chmod +x scripts/aladdin_server_connect_and_setup.sh
 
 **Продуктовое правило «одна активная семья»:** `docs/FAMILY_MEMBERSHIP_PRODUCT.md`.
 
+### 12.0) Family prod smoke gate (2026-06-16, обязательно при auth/family)
+
+После изменений `app/routers/auth_router.py` и/или `app/routers/family.py` **не** выкатывать вручную только `scp` — использовать:
+
+```bash
+cd ALADDIN_iOS
+./scripts/deploy_family_backend.sh root 149.154.65.180 ~/.ssh/aladdin_server
+```
+
+Скрипт: локальные static gates → backup → `py_compile` → restart `aladdin-backend` → **blocking** `docs/server/test_family_prod_smoke.py` (device overflow → create → members).
+
+**Периодический контроль на VPS:** `aladdin-family-prod-smoke.timer` (каждые 30 мин). Timestamp: `/var/lib/aladdin/family_smoke_last_success.timestamp`.
+
+**Алерты:** crontab `family_ops_alerts.py --check-all --notify` каждые 15 мин (journal `family_create_error` + stale smoke).
+
+Rollback: `docs/server/RUNBOOK_FAMILY_DEPLOY_ROLLBACK.md` · план: `docs/server/FAMILY_PROD_SMOKE_IMPLEMENTATION_PLAN.md`.
+
 **Геймификация, OpenAPI и iOS (важно):**
 
 1. **Импорт роутера:** в `main.py` геймификация подключается только если `from security.api.routers.gamification_router import router` выполняется без ошибки. Если в venv **нет** зависимостей из `backend/requirements.txt` (типичный случай — отсутствует **`python-jose`**, ошибка `No module named 'jose'`), флаг `gamification_router_available` остаётся `false`, и **весь** префикс `/api/gamification/*` пропадает из OpenAPI.

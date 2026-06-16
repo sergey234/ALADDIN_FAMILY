@@ -19,6 +19,25 @@
 
 ---
 
+## 0. Автоматический prod smoke (рекомендуется)
+
+На VPS каждые **30 мин** (`aladdin-family-prod-smoke.timer`):
+
+```bash
+cd /opt/aladdin-backend
+FAMILY_REMEDIATE_NOTIFY=1 ./scripts/family_smoke_with_remediate.sh
+```
+
+Цепочка: smoke → при FAIL **restart API** → smoke (до 2 раз). Помогает при временных глюках; при баге в коде — Telegram «need developer».
+
+Прямой smoke без remediate: `./venv/bin/python3 docs/server/test_family_prod_smoke.py`
+
+После деплоя `auth_router.py` / `family.py`: `./scripts/deploy_family_backend.sh` (blocking smoke).
+
+Документация: `docs/server/FAMILY_PROD_SMOKE_IMPLEMENTATION_PLAN.md` · rollback: `docs/server/RUNBOOK_FAMILY_DEPLOY_ROLLBACK.md`
+
+---
+
 ## 1. Health (опционально для :8002)
 
 ```bash

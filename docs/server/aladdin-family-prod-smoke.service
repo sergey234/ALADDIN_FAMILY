@@ -1,0 +1,18 @@
+[Unit]
+Description=ALADDIN Family API prod smoke (register-device → create → members)
+After=network.target aladdin-backend.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/aladdin-backend
+Environment=PYTHONPATH=/opt/aladdin-backend
+Environment=FAMILY_SMOKE_BASE=http://127.0.0.1:8002
+Environment=FAMILY_SMOKE_TIMESTAMP_FILE=/var/lib/aladdin/family_smoke_last_success.timestamp
+Environment=FAMILY_REMEDIATE_NOTIFY=1
+Environment=FAMILY_SMOKE_RETRY_AFTER_RESTART=2
+ExecStart=/opt/aladdin-backend/scripts/family_smoke_with_remediate.sh
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

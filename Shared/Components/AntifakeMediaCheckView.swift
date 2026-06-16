@@ -14,6 +14,7 @@ struct AntifakeMediaCheckView: View {
     private let hintKey: String
     private let systemImage: String
     private let panelId: String
+    private let showsPanelTitle: Bool
 
     private var mediaProbeFootnoteKey: String? {
         switch viewModel.mediaKind {
@@ -30,7 +31,8 @@ struct AntifakeMediaCheckView: View {
         systemImage: String,
         panelId: String,
         showPremiumPaywall: Binding<Bool>,
-        showPostCallUploadPrompt: Binding<Bool> = .constant(false)
+        showPostCallUploadPrompt: Binding<Bool> = .constant(false),
+        showsPanelTitle: Bool = true
     ) {
         _viewModel = StateObject(wrappedValue: AntifakeMediaCheckViewModel(mediaKind: mediaKind))
         _showPremiumPaywall = showPremiumPaywall
@@ -39,13 +41,16 @@ struct AntifakeMediaCheckView: View {
         self.hintKey = hintKey
         self.systemImage = systemImage
         self.panelId = panelId
+        self.showsPanelTitle = showsPanelTitle
     }
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
-            Label(localizationManager.localized(titleKey), systemImage: systemImage)
-                .font(.headline)
-                .foregroundColor(.white)
+            if showsPanelTitle {
+                Label(localizationManager.localized(titleKey), systemImage: systemImage)
+                    .font(.headline)
+                    .foregroundColor(.white)
+            }
 
             Text(localizationManager.localized(hintKey))
                 .font(.subheadline)

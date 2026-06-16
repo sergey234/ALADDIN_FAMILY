@@ -610,6 +610,7 @@
 		AFCD0392F90000200C7D34B /* AntifakeCallDirectorySettingsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0382F90000200C7D34B /* AntifakeCallDirectorySettingsCard.swift */; };
 		AFCD0412F90000200C7D34B /* AntifakeCheckHistorySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0402F90000200C7D34B /* AntifakeCheckHistorySection.swift */; };
 		AFCD0432F90000200C7D34B /* AntifakeQuickVoiceCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0422F90000200C7D34B /* AntifakeQuickVoiceCaptureView.swift */; };
+		AFCT0492F90000200C7D34B /* AntifakeCallTabView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCT0482F90000200C7D34B /* AntifakeCallTabView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -1287,6 +1288,7 @@
 		AFCD0382F90000200C7D34B /* AntifakeCallDirectorySettingsCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallDirectorySettingsCard.swift; path = Shared/Components/AntifakeCallDirectorySettingsCard.swift; sourceTree = "<group>"; };
 		AFCD0402F90000200C7D34B /* AntifakeCheckHistorySection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCheckHistorySection.swift; path = Shared/Components/AntifakeCheckHistorySection.swift; sourceTree = "<group>"; };
 		AFCD0422F90000200C7D34B /* AntifakeQuickVoiceCaptureView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeQuickVoiceCaptureView.swift; path = Shared/Components/AntifakeQuickVoiceCaptureView.swift; sourceTree = "<group>"; };
+		AFCT0482F90000200C7D34B /* AntifakeCallTabView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallTabView.swift; path = Shared/Components/AntifakeCallTabView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -2594,6 +2596,7 @@
 				AFCD0392F90000200C7D34B /* AntifakeCallDirectorySettingsCard.swift in Sources */,
 				AFCD0412F90000200C7D34B /* AntifakeCheckHistorySection.swift in Sources */,
 				AFCD0432F90000200C7D34B /* AntifakeQuickVoiceCaptureView.swift in Sources */,
+				AFCT0492F90000200C7D34B /* AntifakeCallTabView.swift in Sources */,
 				AFSh0022F90000100C7D34B /* AntifakeSharePayloadStore.swift in Sources */,
 				AFSh0052F90000100C7D34B /* AntifakeDeepLinkRouter.swift in Sources */,
 				AFPRM22F90000100C7D34B /* AntifakeHubPremiumCoordinator.swift in Sources */,
@@ -2910,7 +2913,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 235;
+				CURRENT_PROJECT_VERSION = 236;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2944,7 +2947,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 235;
+				CURRENT_PROJECT_VERSION = 236;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2979,7 +2982,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 235;
+				CURRENT_PROJECT_VERSION = 236;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3013,7 +3016,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 235;
+				CURRENT_PROJECT_VERSION = 236;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3171,7 +3174,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 235;
+				CURRENT_PROJECT_VERSION = 236;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -3204,7 +3207,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 235;
+				CURRENT_PROJECT_VERSION = 236;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -3236,7 +3239,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 235;
+				CURRENT_PROJECT_VERSION = 236;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3262,7 +3265,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 235;
+				CURRENT_PROJECT_VERSION = 236;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3286,7 +3289,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 235;
+				CURRENT_PROJECT_VERSION = 236;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3311,7 +3314,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 235;
+				CURRENT_PROJECT_VERSION = 236;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3336,7 +3339,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 235;
+				CURRENT_PROJECT_VERSION = 236;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -3361,7 +3364,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 235;
+				CURRENT_PROJECT_VERSION = 236;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;

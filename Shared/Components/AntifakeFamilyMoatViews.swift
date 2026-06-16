@@ -4,62 +4,124 @@ import SwiftUI
 
 struct AntifakeFamilyReportsSection: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @State private var isExpanded = false
     @State private var reports: [AntifakeFamilySharedReport] = []
     @State private var isLoading = false
     @State private var loadError: String?
+    @State private var hasLoadedOnce = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            Label(
-                localizationManager.localized("antifake_family_reports_title"),
-                systemImage: "person.3.fill"
-            )
-            .font(.headline)
-            .foregroundColor(.white)
+            Button {
+                withAnimation(.easeInOut(duration: 0.2)) {
+                    isExpanded.toggle()
+                }
+                HapticFeedback.selection()
+                if isExpanded, !hasLoadedOnce {
+                    Task { await loadReports() }
+                }
+            } label: {
+                HStack(alignment: .top, spacing: Spacing.s) {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Label(
+                            localizationManager.localized("antifake_family_reports_title"),
+                            systemImage: "person.3.fill"
+                        )
+                        .font(.headline)
+                        .foregroundColor(.white)
 
-            Text(localizationManager.localized("antifake_family_reports_subtitle"))
-                .font(.caption)
-                .foregroundColor(.white.opacity(0.75))
+                        Text(localizationManager.localized("antifake_family_reports_subtitle"))
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.75))
+                            .multilineTextAlignment(.leading)
 
-            if isLoading {
-                ProgressView()
-                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
-            } else if let loadError {
-                Text(loadError)
-                    .font(.caption)
-                    .foregroundColor(.warningOrange)
-            } else if reports.isEmpty {
-                Text(localizationManager.localized("antifake_family_reports_empty"))
-                    .font(.subheadline)
-                    .foregroundColor(.white.opacity(0.7))
-            } else {
-                ForEach(reports) { report in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(report.phoneMasked)
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundColor(.white)
-                            if let label = report.label, !label.isEmpty {
-                                Text(label)
-                                    .font(.caption)
-                                    .foregroundColor(.white.opacity(0.75))
-                            }
-                        }
-                        Spacer()
-                        if let conf = report.jobConfidence {
-                            Text("\(conf)%")
-                                .font(.caption.weight(.semibold))
-                                .foregroundColor(.dangerRed)
+                        if !isExpanded {
+                            Text(localizationManager.localized("antifake_family_reports_collapsed_hint"))
+                                .font(.caption2)
+                                .foregroundColor(.white.opacity(0.6))
+                                .multilineTextAlignment(.leading)
                         }
                     }
-                    .padding(.vertical, Spacing.xxs)
+
+                    Spacer(minLength: Spacing.s)
+
+                    if !isExpanded, !reports.isEmpty {
+                        Text("\(reports.count)")
+                            .font(.caption.weight(.bold))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, Spacing.s)
+                            .padding(.vertical, 4)
+                            .background(Color.secondaryGold.opacity(0.45))
+                            .clipShape(Capsule())
+                            .accessibilityIdentifier("antifake_family_reports_count_badge")
+                    }
+
+                    Image(systemName: isExpanded ? "chevron.up" : "chevron.down")
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.white.opacity(0.7))
                 }
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("antifake_family_reports_header")
+            .accessibilityLabel(localizationManager.localized("antifake_family_reports_title"))
+            .accessibilityValue(
+                isExpanded
+                    ? localizationManager.localized("accordion_expanded", localizationManager.localized("antifake_family_reports_title"))
+                    : localizationManager.localized("accordion_collapsed", localizationManager.localized("antifake_family_reports_title"))
+            )
+            .accessibilityHint(
+                isExpanded
+                    ? localizationManager.localized("accordion_collapse_hint")
+                    : localizationManager.localized("accordion_expand_hint")
+            )
+
+            if isExpanded {
+                expandedContent
+                    .transition(.opacity.combined(with: .move(edge: .top)))
             }
         }
         .padding(Spacing.m)
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .secondaryGold)
         .accessibilityIdentifier("antifake_family_reports_section")
-        .task { await loadReports() }
+    }
+
+    @ViewBuilder
+    private var expandedContent: some View {
+        if isLoading {
+            ProgressView()
+                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+        } else if let loadError {
+            Text(loadError)
+                .font(.caption)
+                .foregroundColor(.warningOrange)
+        } else if reports.isEmpty {
+            Text(localizationManager.localized("antifake_family_reports_empty"))
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.7))
+                .accessibilityIdentifier("antifake_family_reports_empty")
+        } else {
+            ForEach(reports) { report in
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(report.phoneMasked)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.white)
+                        if let label = report.label, !label.isEmpty {
+                            Text(label)
+                                .font(.caption)
+                                .foregroundColor(.white.opacity(0.75))
+                        }
+                    }
+                    Spacer()
+                    if let conf = report.jobConfidence {
+                        Text("\(conf)%")
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.dangerRed)
+                    }
+                }
+                .padding(.vertical, Spacing.xxs)
+            }
+        }
     }
 
     @MainActor
@@ -70,6 +132,7 @@ struct AntifakeFamilyReportsSection: View {
             APIService.shared.getAntifakeFamilyReports { continuation.resume(returning: $0) }
         }
         isLoading = false
+        hasLoadedOnce = true
         switch result {
         case .success(let payload):
             reports = payload.reports

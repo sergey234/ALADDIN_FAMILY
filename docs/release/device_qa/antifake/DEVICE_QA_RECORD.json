@@ -4,17 +4,34 @@
   "build": null,
   "device_ios": null,
   "tester": null,
+  "hub_ux_version": "af-ux-v2",
   "tasks": {
     "D-01": { "pass": false, "notes": "Archive or sim build via scripts/archive_antifake_device_build.sh" },
     "D-02": { "pass": false, "notes": "TestFlight install on iPhone" },
-    "D-03": { "pass": false, "notes": "Extension ON + sync" },
-    "D-04": { "pass": false, "notes": "Incoming call label screenshot", "attachment": null },
-    "D-06": { "pass": true, "notes": "ANTIFAKE_CALL_DIRECTORY_DEVICE_QA.md" },
+    "D-03": { "pass": false, "notes": "Hub → Call tab → Incoming labels → enable ALADDIN Call Filter in Settings → Sync" },
+    "D-04": { "pass": false, "notes": "Incoming call label screenshot (+7 495 123-45-67 or QA number)", "attachment": null },
+    "D-06": { "pass": true, "notes": "ANTIFAKE_CALL_DIRECTORY_DEVICE_QA.md (af-ux-10 checklist)" },
     "D-07": { "pass": false, "notes": "identified vs blocked" },
-    "D-08": { "pass": false, "notes": "Extension OFF orange status" },
+    "D-08": { "pass": false, "notes": "Extension OFF → orange banner on Call tab CD card" },
     "D-09": { "pass": false, "notes": "Airplane mode resync" },
-    "D-10": { "pass": false, "notes": "EN locale label" },
-    "E-06": { "pass": false, "notes": "Post-call device QA" },
-    "R-02": { "pass": false, "notes": "QA sign-off attachments" }
+    "D-10": { "pass": false, "notes": "EN locale label Possible scam?" },
+    "E-06": { "pass": false, "notes": "Post-call recording upload on Call tab section A" },
+    "R-02": { "pass": false, "notes": "QA sign-off attachments" },
+    "af-ux-10": {
+      "pass": false,
+      "notes": "Physical iPhone: ALADDIN Call Filter in Settings + label on incoming. See ANTIFAKE_CALL_DIRECTORY_DEVICE_QA.md §af-ux-10",
+      "checklist": {
+        "extension_in_settings": false,
+        "sync_on_call_tab": false,
+        "incoming_label": false,
+        "no_cd_card_on_text_audio_video": false,
+        "not_installed_banner_if_no_extension": false
+      }
+    },
+    "af-ux-16": {
+      "pass": false,
+      "notes": "Family reports collapsed by default; expand on tap",
+      "code_complete": true
+    }
   }
 }

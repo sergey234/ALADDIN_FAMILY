@@ -50,6 +50,47 @@ except ImportError as e:
 router = APIRouter(tags=["auth"])
 security = HTTPBearer()
 
+# PostgreSQL INTEGER max — device pseudo-ids from SHA256 can exceed this.
+_PG_INT_MAX = 2_147_483_647
+
+
+def _ensure_db_user_for_device(db: Session, device_id: str, device_type: Optional[str] = None) -> int:
+    """Return stable users.id for a device; never use oversized hash pseudo-ids in PG INTEGER columns."""
+    device_id = device_id.strip()
+    if not device_id:
+        raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="device_id is required")
+
+    row = db.execute(
+        text("SELECT id FROM users WHERE device_id = :device_id LIMIT 1"),
+        {"device_id": device_id},
+    ).fetchone()
+    if row and row[0] is not None:
+        uid = int(row[0])
+        if device_type:
+            db.execute(
+                text("UPDATE users SET device_type = :device_type WHERE id = :id"),
+                {"device_type": device_type, "id": uid},
+            )
+            db.commit()
+        return uid
+
+    inserted = db.execute(
+        text(
+            """
+            INSERT INTO users (device_id, device_type)
+            VALUES (:device_id, :device_type)
+            ON CONFLICT (device_id) DO UPDATE
+                SET device_type = COALESCE(EXCLUDED.device_type, users.device_type)
+            RETURNING id
+            """
+        ),
+        {"device_id": device_id, "device_type": device_type or "ios"},
+    ).fetchone()
+    db.commit()
+    if not inserted or inserted[0] is None:
+        raise HTTPException(status_code=500, detail="Failed to register device user")
+    return int(inserted[0])
+
 
 def _prepare_token_data(raw: dict) -> dict:
     """Companion platform JWT claims (app_id, age_band, limits)."""
@@ -378,7 +419,7 @@ async def register(login_data: LoginRequest, db: Session = Depends(get_db)):
 
 
 @router.post("/auth/register-device", response_model=LoginResponse)
-async def register_device(request: DeviceRegisterRequest):
+async def register_device(request: DeviceRegisterRequest, db: Session = Depends(get_db)):
     """
     Anonymous device registration endpoint expected by mobile app and release gates.
     Returns access/refresh tokens without mock/fallback envelopes.
@@ -390,12 +431,12 @@ async def register_device(request: DeviceRegisterRequest):
                 detail="device_id is required",
             )
 
-        # Deterministic pseudo user id for device-only auth flow.
-        pseudo_user_id = int(hashlib.sha256(request.device_id.encode()).hexdigest()[:8], 16)
+        # Persist device → users.id (INTEGER-safe). Hash pseudo-ids overflow PG INTEGER.
+        db_user_id = _ensure_db_user_for_device(db, request.device_id, request.device_type)
         token_data = {
-            "user_id": pseudo_user_id,
-            "id": pseudo_user_id,
-            "sub": str(pseudo_user_id),
+            "user_id": db_user_id,
+            "id": db_user_id,
+            "sub": str(db_user_id),
             "device_id": request.device_id,
             "device_type": request.device_type,
             "type": "device_auth",
@@ -449,7 +490,12 @@ async def refresh_token(refresh_data: RefreshTokenRequest, db: Session = Depends
         
         # ✅ BUILD 122: Для device tokens используем sub вместо user_id
         if token_type == "device_refresh":
-            user_id = payload.get("sub") or payload.get("device_id")
+            device_id = payload.get("device_id")
+            if isinstance(device_id, str) and device_id.strip():
+                user_id = _ensure_db_user_for_device(db, device_id, payload.get("device_type"))
+            else:
+                raw = payload.get("sub") or payload.get("user_id") or payload.get("id")
+                user_id = int(raw) if raw is not None and str(raw).isdigit() else raw
             email = None  # Device tokens не имеют email
         else:
             user_id = payload.get("user_id") or payload.get("id")
@@ -460,12 +506,20 @@ async def refresh_token(refresh_data: RefreshTokenRequest, db: Session = Depends
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 detail="Токен не содержит необходимых данных"
             )
+
+        if token_type == "device_refresh":
+            user_id = int(user_id)
+            if user_id > _PG_INT_MAX:
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Invalid device token subject",
+                )
         
         # Создаем новые токены
         token_data = {
             "user_id": user_id,
             "id": user_id,
-            "sub": user_id,  # ✅ Для device tokens
+            "sub": str(user_id),
             "email": email,
             "device_id": payload.get("device_id"),  # ✅ Сохраняем device_id
             "type": "device_auth" if token_type == "device_refresh" else "access"  # ✅ Тип нового токена

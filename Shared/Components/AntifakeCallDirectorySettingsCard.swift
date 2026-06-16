@@ -41,6 +41,21 @@ struct AntifakeCallDirectorySettingsCard: View {
                 .accessibilityIdentifier("antifake_call_directory_disabled_banner")
             }
 
+            if enabledStatus == .unknown {
+                HStack(alignment: .top, spacing: Spacing.xs) {
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .foregroundColor(.warningOrange)
+                    Text(localizationManager.localized("antifake_call_directory_not_installed_banner"))
+                        .font(.caption2)
+                        .foregroundColor(.warningOrange)
+                }
+                .padding(Spacing.s)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.warningOrange.opacity(0.15))
+                .cornerRadius(CornerRadius.small)
+                .accessibilityIdentifier("antifake_call_directory_not_installed_banner")
+            }
+
             VStack(spacing: Spacing.s) {
                 SecondaryButton(
                     localizationManager.localized("antifake_call_directory_open_settings"),
@@ -63,8 +78,6 @@ struct AntifakeCallDirectorySettingsCard: View {
                     .font(.caption2)
                     .foregroundColor(syncSucceeded ? .successGreen : .warningOrange)
             }
-
-            postCallReminderToggle
         }
         .padding(Spacing.m)
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .primaryBlue)
@@ -85,27 +98,14 @@ struct AntifakeCallDirectorySettingsCard: View {
         case .disabled:
             return localizationManager.localized("antifake_call_directory_status_disabled")
         case .unknown:
-            return localizationManager.localized("antifake_call_directory_status_unknown")
+            return localizationManager.localized("antifake_call_directory_status_not_installed")
         @unknown default:
-            return localizationManager.localized("antifake_call_directory_status_unknown")
+            return localizationManager.localized("antifake_call_directory_status_not_installed")
         }
     }
 
     private var statusColor: Color {
         enabledStatus == .enabled ? .successGreen : .warningOrange
-    }
-
-    private var postCallReminderToggle: some View {
-        Toggle(isOn: Binding(
-            get: { AppConfig.isAntifakePostCallReminderEnabled },
-            set: { UserDefaults.standard.set($0, forKey: AppConfig.UserDefaultsKeys.antifakePostCallReminderEnabled) }
-        )) {
-            Text(localizationManager.localized("antifake_post_call_reminder_toggle"))
-                .font(.caption)
-                .foregroundColor(.white.opacity(0.9))
-        }
-        .toggleStyle(SwitchToggleStyle(tint: .secondaryGold))
-        .accessibilityIdentifier("antifake_post_call_reminder_toggle")
     }
 
     private func refreshStatus() async {
@@ -244,17 +244,26 @@ private struct AntifakeCallDirectorySetupSheet: View {
                             .foregroundColor(.textSecondary)
                             .fixedSize(horizontal: false, vertical: true)
                         Toggle(isOn: .constant(true)) {
-                            Text("ALADDIN")
+                            Text(localizationManager.localized("antifake_call_directory_extension_name"))
                                 .font(.caption.weight(.semibold))
                         }
                         .toggleStyle(SwitchToggleStyle(tint: .successGreen))
                         .disabled(true)
-                        .accessibilityLabel("ALADDIN")
+                        .accessibilityLabel(localizationManager.localized("antifake_call_directory_extension_name"))
                         .accessibilityHint(localizationManager.localized("antifake_call_directory_setup_retry_title"))
                     }
                     .padding(Spacing.m)
                     .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .warningOrange)
                     .accessibilityIdentifier("antifake_call_directory_setup_retry")
+
+                    SecondaryButton(
+                        localizationManager.localized("antifake_call_directory_open_settings_app"),
+                        icon: "gearshape.fill"
+                    ) {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    }
                 }
                 .padding(Spacing.screenPadding)
             }
