@@ -19,6 +19,25 @@ cd /opt/aladdin-backend && ANTIFAKE_SMOKE_BASE=http://127.0.0.1:8002 ./venv/bin/
 | 422 active_executions | Slot leak | F-01 purge in SFM; restart `aladdin-sfm-core` |
 | Smoke B-11 fail | SFM not healthy | See rows above |
 | Smoke Q-07 fail | SFM up but not real_agent | Verify fake_news handler + torch |
+| `aladdin-sfm-prod-smoke` exit **22** every 15m | `curl -f` in `sfm_prod_smoke.sh` treats HTTP **503** (unknown fn) as error | Remove `-f`; check `%{http_code}==503`. Fixed af-smoke-01 (2026-06-16). |
+| Smoke truth FAIL + `sfm_loaded: false` | SFM core down or import fail | Run `docs/server/sfm_auto_remediate.sh` or `systemctl restart aladdin-sfm-core` |
+
+## SFM prod smoke exit codes
+
+| Exit | Meaning |
+|------|---------|
+| 0 | PASS — truth check OK + unknown fn → 503 |
+| 1 | Truth check FAIL (`sfm_loaded` false / registry) |
+| 2 | Unknown function did not return HTTP 503 |
+| 22 | **Legacy bug:** `curl -f` on 503 — must not occur after af-smoke-01 |
+
+## Aggregate verify (deploy / on-call)
+
+```bash
+bash /opt/aladdin-backend/docs/server/verify_prod_smoke_all.sh
+```
+
+Runs `sfm_prod_smoke.sh` (+ auto-remediate on failure) and `test_antifake_prod_smoke.py`.
 
 ## Restart sequence
 

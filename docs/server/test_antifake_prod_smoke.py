@@ -14,6 +14,7 @@ from smoke_env import smoke_secret
 BASE = os.environ.get("ANTIFAKE_SMOKE_BASE", "http://127.0.0.1:8002")
 SFM_BASE = os.environ.get("ANTIFAKE_SMOKE_SFM_BASE", "http://127.0.0.1:8003")
 FORBIDDEN = ("sfm_mock", "mock-real-protection", "mock_fallback", '"status":"success"')
+ALLOWED_VERDICTS = ("likely_fake", "uncertain", "likely_real", "insufficient_data")
 
 
 def _request(
@@ -121,7 +122,7 @@ def _smoke_media_job_poll(token: str, smoke_headers: dict, path: str, label: str
     status = body.get("status")
     job_id = body.get("job_id")
     if status == "completed":
-        if body.get("verdict") not in ("likely_fake", "uncertain", "likely_real"):
+        if body.get("verdict") not in ALLOWED_VERDICTS:
             failures.append(f"{label} sync invalid verdict {body}")
         return failures
 
@@ -141,7 +142,7 @@ def _smoke_media_job_poll(token: str, smoke_headers: dict, path: str, label: str
             failures.append(f"{label} jobs poll expected 200 got {poll_code}")
             return failures
         if poll_body.get("status") == "completed" or poll_body.get("verdict"):
-            if poll_body.get("verdict") not in ("likely_fake", "uncertain", "likely_real"):
+            if poll_body.get("verdict") not in ALLOWED_VERDICTS:
                 failures.append(f"{label} poll invalid verdict {poll_body}")
             return failures
         if poll_body.get("status") == "failed":
@@ -223,12 +224,14 @@ def main() -> int:
     else:
         verdict = body.get("verdict")
         source = body.get("source")
-        if verdict not in ("likely_fake", "uncertain", "likely_real"):
+        if verdict not in ALLOWED_VERDICTS:
             failures.append(f"invalid verdict {verdict}")
         if source in ("sfm_mock", "mock", "sfm_stub"):
             failures.append(f"mock source {source}")
         if body.get("confidence") is None:
             failures.append("missing confidence")
+        if body.get("fake_risk") is None:
+            failures.append("missing fake_risk")
         # Q-06: golden scam must use AI path + strong verdict when SFM healthy or local_ml fallback
         if source not in ("real_agent", "local_ml"):
             failures.append(f"Q-06 golden scam expected real_agent|local_ml got {source!r}")
@@ -236,6 +239,26 @@ def main() -> int:
             failures.append(f"Q-06 golden scam expected likely_fake got {verdict!r} conf={body.get('confidence')}")
         if sfm_loaded and source != "real_agent":
             failures.append(f"Q-07 sfm_loaded true but golden scam source={source!r} expected real_agent")
+
+    if smoke_headers:
+        code, short_body = _request(
+            "POST",
+            "/api/antifake/check/text",
+            {"text": "12+12=24", "mode": "news"},
+            token,
+            extra_headers=smoke_headers,
+            timeout=90,
+        )
+        if code != 200:
+            failures.append(f"Q-08 short text expected 200 got {code}: {short_body}")
+        elif short_body.get("verdict") != "insufficient_data":
+            failures.append(
+                f"Q-08 short neutral text expected insufficient_data got {short_body.get('verdict')!r}"
+            )
+        elif short_body.get("fake_risk") not in (0, 0.0):
+            failures.append(f"Q-08 short text expected fake_risk=0 got {short_body.get('fake_risk')}")
+        elif "text_too_short" not in (short_body.get("reasons") or []):
+            failures.append(f"Q-08 short text missing text_too_short reason: {short_body}")
 
     code, url_body = _request(
         "POST",
@@ -246,7 +269,7 @@ def main() -> int:
     )
     if code != 200:
         failures.append(f"check/url expected 200 got {code}")
-    elif url_body.get("verdict") not in ("likely_fake", "uncertain", "likely_real"):
+    elif url_body.get("verdict") not in ALLOWED_VERDICTS:
         failures.append(f"url invalid verdict {url_body}")
 
     code, metrics = _request(

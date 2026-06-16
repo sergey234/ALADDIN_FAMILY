@@ -41,7 +41,7 @@ if curl -sf -m 3 http://127.0.0.1:8003/api/sfm/status >/tmp/sfm_status.json 2>/d
 else
   # Fallback probe: old health + execute unknown fn
   health=$(curl -sf -m 3 http://127.0.0.1:8003/api/health 2>/dev/null || echo '{}')
-  unknown=$(curl -sf -m 3 -X POST http://127.0.0.1:8003/api/execute \
+  unknown=$(curl -s -m 3 -X POST http://127.0.0.1:8003/api/execute \
     -H 'Content-Type: application/json' \
     -d '{"function":"__sfm_truth_probe__","params":{}}' 2>/dev/null || echo '{}')
   if echo "$unknown" | grep -q '"status":"success"'; then

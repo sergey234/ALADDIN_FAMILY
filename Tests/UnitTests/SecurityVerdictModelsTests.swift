@@ -114,4 +114,22 @@ final class SecurityVerdictModelsTests: XCTestCase {
         }
         XCTAssertEqual(verdict.verdict, .likelyReal)
     }
+
+    func testDecodeInsufficientDataVerdict() throws {
+        let json = """
+        {
+          "verdict": "insufficient_data",
+          "confidence": 0.0,
+          "fake_risk": 0.0,
+          "reasons": ["text_too_short"],
+          "source": "real_agent",
+          "agent": "fake_news_detection_agent",
+          "premium_required": false
+        }
+        """
+        let verdict = try SecurityVerdictParsers.decodeVerdict(from: Data(json.utf8))
+        XCTAssertEqual(verdict.verdict, .insufficientData)
+        XCTAssertEqual(verdict.confidence, 0, accuracy: 0.001)
+        XCTAssertEqual(verdict.fakeRisk, 0, accuracy: 0.001)
+    }
 }

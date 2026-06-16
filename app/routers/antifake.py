@@ -145,7 +145,7 @@ def _require_premium(user: Dict[str, Any], request: Request) -> None:
 
 def _validate_verdict(payload: Dict[str, Any]) -> Dict[str, Any]:
     verdict = payload.get("verdict")
-    if verdict not in ("likely_fake", "uncertain", "likely_real"):
+    if verdict not in ("likely_fake", "uncertain", "likely_real", "insufficient_data"):
         raise HTTPException(status_code=503, detail="invalid_verdict_contract")
     source = str(payload.get("source", ""))
     if source in ("sfm_mock", "mock", "sfm_stub", "sfm_fallback"):

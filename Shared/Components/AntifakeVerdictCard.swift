@@ -15,43 +15,8 @@ struct AntifakeVerdictCard: View {
     @State private var reportFeedback: String?
     @State private var reportError: String?
 
-    private var accentColor: Color {
-        switch verdict.verdict {
-        case .likelyFake: return .dangerRed
-        case .uncertain: return .warningOrange
-        case .likelyReal: return .successGreen
-        }
-    }
-
-    private var iconName: String {
-        switch verdict.verdict {
-        case .likelyFake: return "exclamationmark.shield.fill"
-        case .uncertain: return "questionmark.circle.fill"
-        case .likelyReal: return "checkmark.shield.fill"
-        }
-    }
-
-    private var verdictTitleKey: String {
-        switch verdict.verdict {
-        case .likelyFake: return "antifake_verdict_likely_fake"
-        case .uncertain: return "antifake_verdict_uncertain"
-        case .likelyReal: return "antifake_verdict_likely_real"
-        }
-    }
-
-    private var sourceBadgeKey: String {
-        let normalized = verdict.source.lowercased()
-        if normalized.contains("probe")
-            || (normalized.contains("heuristic") && !normalized.contains("local_ml")) {
-            return "antifake_verdict_source_probe"
-        }
-        if normalized.contains("real")
-            || normalized.contains("agent")
-            || normalized.contains("sfm")
-            || normalized.contains("local_ml") {
-            return "antifake_verdict_source_ai"
-        }
-        return "antifake_verdict_source_rules"
+    private var presentation: AntifakeVerdictPresentation {
+        verdict.presentation
     }
 
     private var topReasons: [String] {
@@ -102,11 +67,14 @@ struct AntifakeVerdictCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             HStack {
-                Label(localizationManager.localized(verdictTitleKey), systemImage: iconName)
+                Label(
+                    localizationManager.localized(presentation.verdictTitleKey),
+                    systemImage: presentation.iconName
+                )
                     .font(.headline)
                     .foregroundColor(.white)
                 Spacer()
-                Text(localizationManager.localized(sourceBadgeKey))
+                Text(localizationManager.localized(presentation.sourceBadgeKey))
                     .font(.caption2.weight(.semibold))
                     .padding(.horizontal, Spacing.s)
                     .padding(.vertical, 4)
@@ -114,18 +82,31 @@ struct AntifakeVerdictCard: View {
                     .clipShape(Capsule())
             }
 
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                HStack {
-                    Text(localizationManager.localized("antifake_verdict_confidence"))
-                        .font(.subheadline)
-                        .foregroundColor(.white.opacity(0.75))
-                    Spacer()
-                    Text("\(Int((verdict.confidence * 100).rounded()))%")
+            if presentation.showsRiskMeter {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    HStack(alignment: .firstTextBaseline) {
+                        Text(localizationManager.localized("antifake_verdict_fake_risk"))
+                            .font(.subheadline)
+                            .foregroundColor(.white.opacity(0.75))
+                        Spacer()
+                        Text(
+                            localizationManager.localized(
+                                "antifake_verdict_fake_risk_value",
+                                presentation.riskPercent,
+                                localizationManager.localized(presentation.riskLevelKey)
+                            )
+                        )
                         .font(.subheadline.weight(.semibold))
-                        .foregroundColor(accentColor)
+                        .foregroundColor(presentation.accentColor)
+                    }
+                    ProgressView(value: presentation.fakeRisk)
+                        .tint(presentation.accentColor)
                 }
-                ProgressView(value: min(max(verdict.confidence, 0), 1))
-                    .tint(accentColor)
+            } else {
+                Text(localizationManager.localized("antifake_verdict_insufficient_hint"))
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.85))
+                    .fixedSize(horizontal: false, vertical: true)
             }
 
             if !topReasons.isEmpty {
@@ -136,8 +117,8 @@ struct AntifakeVerdictCard: View {
                 ForEach(Array(topReasons.enumerated()), id: \.offset) { _, reason in
                     HStack(alignment: .top, spacing: Spacing.xs) {
                         Text("•")
-                            .foregroundColor(accentColor)
-                        Text(reason)
+                            .foregroundColor(presentation.accentColor)
+                        Text(presentation.localizedReason(reason, localizationManager: localizationManager))
                             .font(.subheadline)
                             .foregroundColor(.white.opacity(0.9))
                             .fixedSize(horizontal: false, vertical: true)
@@ -189,7 +170,7 @@ struct AntifakeVerdictCard: View {
                 .foregroundColor(.white.opacity(0.55))
         }
         .padding(Spacing.l)
-        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: accentColor)
+        .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: presentation.accentColor)
         .accessibilityIdentifier("antifake_verdict_card")
         .sheet(isPresented: $showReportSheet) {
             reportSheet(isAppeal: false)

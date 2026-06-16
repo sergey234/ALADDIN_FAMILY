@@ -36,6 +36,7 @@ SLA_MS = {
 }
 
 MODEL_VERSION = os.environ.get("ANTIFAKE_MODEL_VERSION", "antifake-v1.0.0")
+MIN_TEXT_ANALYSIS_CHARS = 40
 
 FAKE_TEXT_PATTERNS: Tuple[Tuple[str, str], ...] = (
     ("sensationalism", "шокирующая правда"),
@@ -148,9 +149,11 @@ def _build_response(
 ) -> Dict[str, Any]:
     if source in FORBIDDEN_SOURCES:
         raise ValueError(f"forbidden source {source}")
+    fake_risk = round(max(0.0, min(1.0, confidence)), 3)
     return {
         "verdict": verdict,
-        "confidence": round(max(0.0, min(1.0, confidence)), 3),
+        "confidence": fake_risk,
+        "fake_risk": fake_risk,
         "reasons": reasons[:8],
         "source": source,
         "agent": agent,
@@ -188,6 +191,14 @@ def _analyze_text_heuristic(text: str, mode: str = "news") -> Dict[str, Any]:
         score = max(score, 0.68)
     elif len(hits) >= 2 and "scam" in hits:
         score = max(score, 0.66)
+    if not hits and len(lowered) < MIN_TEXT_ANALYSIS_CHARS:
+        return _build_response(
+            verdict="insufficient_data",
+            confidence=0.0,
+            reasons=["text_too_short"],
+            source="rule_engine",
+            agent="heuristic_text",
+        )
     return _build_response(
         verdict=_verdict_from_score(score if hits else 0.1),
         confidence=score if hits else 0.15,
@@ -300,6 +311,20 @@ def _normalize_local_ml_text_result(
     """F-12: map FakeNewsDetectionAgent output → antifake verdict contract."""
     fake_score = float(result.get("fake_score") or result.get("model_score") or 0.0)
     credibility = str(result.get("credibility_level") or "").lower()
+    pattern_hits = result.get("pattern_hits") or {}
+    structural_flags = result.get("structural_flags") or {}
+    has_pattern_hits = isinstance(pattern_hits, dict) and bool(pattern_hits)
+    too_short = isinstance(structural_flags, dict) and bool(structural_flags.get("too_short"))
+
+    if too_short and not has_pattern_hits and fake_score < 0.35:
+        return _build_response(
+            verdict="insufficient_data",
+            confidence=0.0,
+            reasons=["text_too_short"],
+            source=source,
+            agent=agent or f"local_{TEXT_AGENT}",
+        )
+
     if credibility in ("fake", "suspicious") or fake_score >= 0.65:
         verdict = "likely_fake"
     elif fake_score >= 0.35 or credibility == "low_credibility":
@@ -308,12 +333,11 @@ def _normalize_local_ml_text_result(
         verdict = "likely_real"
 
     reasons: List[str] = []
-    pattern_hits = result.get("pattern_hits") or {}
     if isinstance(pattern_hits, dict):
         for category in pattern_hits:
             if category not in reasons:
                 reasons.append(str(category))
-    for flag, active in (result.get("structural_flags") or {}).items():
+    for flag, active in structural_flags.items():
         if active and str(flag) not in reasons:
             reasons.append(str(flag))
     if not reasons:

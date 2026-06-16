@@ -7,6 +7,7 @@ enum SecurityVerdictKind: String, Codable, CaseIterable, Sendable {
     case likelyFake = "likely_fake"
     case uncertain = "uncertain"
     case likelyReal = "likely_real"
+    case insufficientData = "insufficient_data"
 }
 
 enum AntifakeJobStatus: String, Codable, Sendable {
@@ -37,6 +38,7 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
     enum CodingKeys: String, CodingKey {
         case verdict
         case confidence
+        case fakeRisk = "fake_risk"
         case reasons
         case source
         case agent
@@ -71,7 +73,11 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: CodingKeys.self)
         verdict = try container.decode(SecurityVerdictKind.self, forKey: .verdict)
-        confidence = try container.decodeIfPresent(Double.self, forKey: .confidence) ?? 0
+        if let explicitRisk = try container.decodeIfPresent(Double.self, forKey: .fakeRisk) {
+            confidence = explicitRisk
+        } else {
+            confidence = try container.decodeIfPresent(Double.self, forKey: .confidence) ?? 0
+        }
         reasons = try container.decodeIfPresent([String].self, forKey: .reasons) ?? []
         source = try container.decodeIfPresent(String.self, forKey: .source) ?? ""
         agent = try container.decodeIfPresent(String.self, forKey: .agent)

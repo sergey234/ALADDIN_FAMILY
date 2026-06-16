@@ -119,6 +119,8 @@
 		5E32FFF72EAD23BB000574C4 /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF62EAD23BB000574C4 /* PrimaryButton.swift */; };
 		5E32FFF92EAD24D2000574C4 /* InfoRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFF82EAD24D2000574C4 /* InfoRow.swift */; };
 		5E32FFFB2EAD2570000574C4 /* SecurityManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */; };
+		AFVPRES22F90000100C7D34B /* AntifakeVerdictPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVPRES12F90000100C7D34B /* AntifakeVerdictPresentation.swift */; };
+		AFVPREST22F90000100C7D34B /* AntifakeVerdictPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVPREST12F90000100C7D34B /* AntifakeVerdictPresentationTests.swift */; };
 		SECVRD22F90000100C7D34B /* SecurityVerdictModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = SECVRD12F90000100C7D34B /* SecurityVerdictModels.swift */; };
 		PRMGATE22F90000100C7D34B /* PremiumGateHandler.swift in Sources */ = {isa = PBXBuildFile; fileRef = PRMGATE12F90000100C7D34B /* PremiumGateHandler.swift */; };
 		AFPRM22F90000100C7D34B /* AntifakeHubPremiumCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFPRM12F90000100C7D34B /* AntifakeHubPremiumCoordinator.swift */; };
@@ -790,11 +792,12 @@
 		5E32FFF82EAD24D2000574C4 /* InfoRow.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = InfoRow.swift; path = Shared/Components/InfoRow.swift; sourceTree = "<group>"; };
 		5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityManager.swift; path = Core/Security/SecurityManager.swift; sourceTree = "<group>"; };
 		SECVRD12F90000100C7D34B /* SecurityVerdictModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = SecurityVerdictModels.swift; path = Core/Models/SecurityVerdictModels.swift; sourceTree = "<group>"; };
+		AFVPRES12F90000100C7D34B /* AntifakeVerdictPresentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeVerdictPresentation.swift; path = Core/Models/AntifakeVerdictPresentation.swift; sourceTree = "<group>"; };
 		PRMGATE12F90000100C7D34B /* PremiumGateHandler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PremiumGateHandler.swift; path = Core/Security/PremiumGateHandler.swift; sourceTree = "<group>"; };
 		AFPRM12F90000100C7D34B /* AntifakeHubPremiumCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeHubPremiumCoordinator.swift; path = Core/Security/AntifakeHubPremiumCoordinator.swift; sourceTree = "<group>"; };
 		AFIPG12F90000100C7D34B /* AntifakeInlinePremiumGateCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeInlinePremiumGateCard.swift; path = Shared/Components/AntifakeInlinePremiumGateCard.swift; sourceTree = "<group>"; };
 		AFQA012F90000100C7D34B /* AntifakeQuickAccessCopy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeQuickAccessCopy.swift; path = Shared/Components/AntifakeQuickAccessCopy.swift; sourceTree = "<group>"; };
-		SECVRDT12F90000100C7D34B /* SecurityVerdictModelsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SecurityVerdictModelsTests.swift; sourceTree = "<group>"; };
+		AFVPREST12F90000100C7D34B /* AntifakeVerdictPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeVerdictPresentationTests.swift; sourceTree = "<group>"; };
 		5E32FFFC2EAD25BC000574C4 /* KeychainManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = KeychainManager.swift; path = Core/Security/KeychainManager.swift; sourceTree = "<group>"; };
 		5E32FFFE2EAD25F5000574C4 /* CacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CacheManager.swift; path = Core/Cache/CacheManager.swift; sourceTree = "<group>"; };
 		5E52F96E2327006C6FF7CB3D /* DefaultContentAPIClient.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DefaultContentAPIClient.swift; path = Core/Content/Sync/DefaultContentAPIClient.swift; sourceTree = "<group>"; };
@@ -1676,6 +1679,7 @@
 				C0MPMDL12F90000100C7D34B /* CompanionModels.swift */,
 				WELLMDL12F90000100C7D34B /* WellnessModels.swift */,
 				SECVRD12F90000100C7D34B /* SecurityVerdictModels.swift */,
+				AFVPRES12F90000100C7D34B /* AntifakeVerdictPresentation.swift */,
 				B700011D2F90000100ABC001 /* Core/Audio/SpeechRecognitionErrorClassifier.swift */,
 				B700011F2F90000100ABC001 /* Core/Audio/VoiceNotePlaybackController.swift */,
 				B70001212F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceLevelBarsView.swift */,
@@ -1977,6 +1981,7 @@
 				B5001117 /* SpeechPathTests.swift */,
 				B5001118 /* WellnessModelsTests.swift */,
 				SECVRDT12F90000100C7D34B /* SecurityVerdictModelsTests.swift */,
+				AFVPREST12F90000100C7D34B /* AntifakeVerdictPresentationTests.swift */,
 				IDDETT12F90000100C7D34B /* IdentityDetectViewModelTests.swift */,
 				IDMONT12F90000100C7D34B /* IdentityMonitorViewModelTests.swift */,
 				IDFRDT12F90000100C7D34B /* IdentityFraudThreatCatalogTests.swift */,
@@ -2580,6 +2585,7 @@
 				WELLOOP22F90000100C7D34B /* WellnessLoopCoordinator.swift in Sources */,
 				WELLMDL22F90000100C7D34B /* WellnessModels.swift in Sources */,
 				SECVRD22F90000100C7D34B /* SecurityVerdictModels.swift in Sources */,
+				AFVPRES22F90000100C7D34B /* AntifakeVerdictPresentation.swift in Sources */,
 				PRMGATE22F90000100C7D34B /* PremiumGateHandler.swift in Sources */,
 				AFCD0042F90000200C7D34B /* AntifakeCallDirectoryStore.swift in Sources */,
 				AFCD0312F90000200C7D34B /* AntifakeAccessPolicy.swift in Sources */,
@@ -2803,6 +2809,7 @@
 				B5001217 /* SpeechPathTests.swift in Sources */,
 				B5001218 /* WellnessModelsTests.swift in Sources */,
 				SECVRDT22F90000100C7D34B /* SecurityVerdictModelsTests.swift in Sources */,
+		AFVPREST22F90000100C7D34B /* AntifakeVerdictPresentationTests.swift in Sources */,
 				IDDETT22F90000100C7D34B /* IdentityDetectViewModelTests.swift in Sources */,
 				IDMONT22F90000100C7D34B /* IdentityMonitorViewModelTests.swift in Sources */,
 				IDFRDT22F90000100C7D34B /* IdentityFraudThreatCatalogTests.swift in Sources */,
@@ -2913,7 +2920,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 236;
+				CURRENT_PROJECT_VERSION = 237;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2947,7 +2954,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 236;
+				CURRENT_PROJECT_VERSION = 237;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -2982,7 +2989,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 236;
+				CURRENT_PROJECT_VERSION = 237;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3016,7 +3023,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 236;
+				CURRENT_PROJECT_VERSION = 237;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3174,7 +3181,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 236;
+				CURRENT_PROJECT_VERSION = 237;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -3207,7 +3214,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 236;
+				CURRENT_PROJECT_VERSION = 237;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -3239,7 +3246,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 236;
+				CURRENT_PROJECT_VERSION = 237;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3265,7 +3272,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 236;
+				CURRENT_PROJECT_VERSION = 237;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3289,7 +3296,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 236;
+				CURRENT_PROJECT_VERSION = 237;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3314,7 +3321,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 236;
+				CURRENT_PROJECT_VERSION = 237;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3339,7 +3346,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 236;
+				CURRENT_PROJECT_VERSION = 237;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -3364,7 +3371,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 236;
+				CURRENT_PROJECT_VERSION = 237;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;

@@ -3,8 +3,8 @@ import Foundation
 /// Central gate for Antifake Hub / deepfakes category (af-2-08, G-03).
 @MainActor
 enum AntifakeAccessPolicy {
-    /// Build 235 QA: `true` until device QA (R-02) sign-off. Set `false` before TestFlight (Q-01).
-    static let bypassPremiumGate: Bool = true
+    /// Build 237: production premium gate enforced. UITest uses `-UITestAntifakeHubSmoke`.
+    static let bypassPremiumGate: Bool = false
 
     private static var uiTestHubUnlock: Bool {
         ProcessInfo.processInfo.arguments.contains("-UITestAntifakeHubSmoke")

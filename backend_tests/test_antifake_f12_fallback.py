@@ -50,6 +50,28 @@ class AntifakeF12FallbackTests(unittest.TestCase):
         out = _analyze_text_heuristic(SCAM_TEXT)
         self.assertEqual(out["verdict"], "likely_fake")
 
+    def test_heuristic_short_neutral_insufficient_data(self):
+        out = _analyze_text_heuristic("12+12=24")
+        self.assertEqual(out["verdict"], "insufficient_data")
+        self.assertEqual(out.get("fake_risk"), 0.0)
+        self.assertIn("text_too_short", out.get("reasons", []))
+
+    def test_normalize_local_ml_too_short_insufficient(self):
+        from app.services.antifake_service import _normalize_local_ml_text_result
+
+        out = _normalize_local_ml_text_result(
+            {
+                "fake_score": 0.15,
+                "credibility_level": "credible",
+                "pattern_hits": {},
+                "structural_flags": {"too_short": True},
+            },
+            source="real_agent",
+            agent="fake_news_detection_agent",
+        )
+        self.assertEqual(out["verdict"], "insufficient_data")
+        self.assertEqual(out.get("fake_risk"), 0.0)
+
     def test_allowed_ai_sources(self):
         self.assertIn("real_agent", ALLOWED_AI_SOURCES)
         self.assertIn("local_ml", ALLOWED_AI_SOURCES)
