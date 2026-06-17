@@ -157,4 +157,14 @@ final class SecurityVerdictModelsTests: XCTestCase {
         tariffManager.saveTariff(.free, pullServerAfterSave: false)
         XCTAssertFalse(tariffManager.isCategoryAvailable(.deepfakes))
     }
+
+    func testCompanionHeroRiveHostHasRasterFallbackForBundledMasters() {
+        XCTAssertTrue(CompanionHeroRiveHost.hasRasterFallback(characterId: "unicorn"))
+        XCTAssertTrue(CompanionHeroRiveHost.hasRasterFallback(characterId: "aladdin"))
+        XCTAssertTrue(CompanionHeroRiveHost.hasRasterFallback(characterId: "genie"))
+    }
+
+    func testCompanionHeroStateMachineContract() {
+        XCTAssertEqual(CompanionHeroRiveHost.stateMachineName, "HeroSM")
+    }
 }

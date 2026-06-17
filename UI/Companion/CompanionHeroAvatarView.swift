@@ -67,7 +67,7 @@ struct CompanionHeroAvatarView: View {
                 stageContentMode: stageContentMode,
                 stageSize: stageSize
             )
-        } else if CompanionHeroRiveHost.shouldUseRiveRuntime(characterId: characterId) {
+        } else if CompanionHeroRiveHost.shouldAttemptRiveRuntime(characterId: characterId) {
             #if canImport(RiveRuntime)
             CompanionHeroRiveRuntimeView(
                 characterId: characterId,
@@ -75,25 +75,6 @@ struct CompanionHeroAvatarView: View {
                 lipSyncPhase: lipSyncPhase,
                 stageStyle: stageStyle,
                 stageContentMode: stageContentMode,
-                stageSize: stageSize
-            )
-            #else
-            CompanionHeroAnimatedView(
-                characterId: characterId,
-                emotion: emotion,
-                lipSyncPhase: lipSyncPhase,
-                stageStyle: stageStyle,
-                stageContentMode: stageContentMode,
-                stageSize: stageSize
-            )
-            #endif
-        } else if CompanionHeroRiveHost.hasBundledRiv(characterId: characterId),
-                  CompanionHeroRiveHost.shouldUseRiveRuntime(characterId: characterId) {
-            #if canImport(RiveRuntime)
-            CompanionHeroStageShellView(
-                characterId: characterId,
-                emotion: emotion,
-                stageStyle: stageStyle,
                 stageSize: stageSize
             )
             #else
