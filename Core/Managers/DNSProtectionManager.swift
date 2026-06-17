@@ -35,24 +35,48 @@ class DNSProtectionManager: ObservableObject {
 
     private var lastEnableRequestAt: Date?
     private var dnsSaveRetryUsed = false
+    private var lastStatusLoadAt: Date?
+    private var statusLoadInFlight = false
+    
+    private let statusLoadMinInterval: TimeInterval = 2.0
     
     private let dnsSettingsManager = NEDNSSettingsManager.shared()
     
     private init() {
-        loadStatus()
+        loadStatus(force: true)
     }
     
-    /// Загрузить текущий статус профиля DNS
-    func loadStatus() {
+    /// Загрузить текущий статус профиля DNS (throttled; без notification loop).
+    func loadStatus(force: Bool = false) {
+        if statusLoadInFlight { return }
+        let now = Date()
+        if !force, let last = lastStatusLoadAt, now.timeIntervalSince(last) < statusLoadMinInterval {
+            return
+        }
+        statusLoadInFlight = true
+        lastStatusLoadAt = now
+
         dnsSettingsManager.loadFromPreferences { [weak self] error in
             DispatchQueue.main.async {
+                guard let self else { return }
+                self.statusLoadInFlight = false
                 if let error = error {
+                    #if DEBUG
                     print("⚠️ DNS Manager: Failed to load preferences: \(error.localizedDescription)")
+                    #endif
                     return
                 }
-                self?.isEnabled = self?.dnsSettingsManager.dnsSettings != nil
-                print("🌐 DNS Manager: Status loaded (Enabled: \(self?.isEnabled ?? false))")
-                self?.postNetworkLayerIndicatorsChanged(trackAnalytics: false, source: "status_load")
+                let newEnabled = self.dnsSettingsManager.dnsSettings != nil
+                let changed = newEnabled != self.isEnabled
+                self.isEnabled = newEnabled
+                #if DEBUG
+                if changed || force {
+                    print("🌐 DNS Manager: Status loaded (Enabled: \(newEnabled))")
+                }
+                #endif
+                if changed {
+                    self.postNetworkLayerIndicatorsChanged(trackAnalytics: false, source: "status_load")
+                }
             }
         }
     }

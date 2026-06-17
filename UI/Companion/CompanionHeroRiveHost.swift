@@ -1,9 +1,14 @@
 import SwiftUI
 import UIKit
+import os.log
 
 /// P1-08 / HERO-3-08 — хост: bundled `.riv` + RiveRuntime (если подключён).
 enum CompanionHeroRiveHost {
     private static let masterImageCache = NSCache<NSString, UIImage>()
+    private static let heroLog = OSLog(
+        subsystem: Bundle.main.bundleIdentifier ?? "family.aladdin.ios",
+        category: "CompanionHero"
+    )
     /// Placeholder `.riv` из репо ~15 KB; production export обычно &gt; 25 KB.
     static let productionRivMinBytes: Int = 25_000
     /// iOS контракт (см. `scripts/companion_07_verify_unicorn_riv.py`).
@@ -48,6 +53,34 @@ enum CompanionHeroRiveHost {
 
     static func shouldUseRiveRuntime(characterId: String) -> Bool {
         shouldAttemptRiveRuntime(characterId: characterId)
+    }
+
+    #if DEBUG
+    static func debugHeroPathLabel(characterId: String, usesRive: Bool) -> String {
+        let riv = rivBaseName(characterId: characterId)
+        if usesRive { return "RIVE \(riv)" }
+        if isSimulatorIOS15MetalUnstable { return "PNG iOS15-sim" }
+        if !isProductionRiv(characterId: characterId) { return "PNG placeholder-riv" }
+        return "PNG fallback"
+    }
+    #endif
+
+    /// Release-safe: Console.app filter `CompanionHero`.
+    static func logHeroPath(characterId: String, renderPath: String, vmStatus: String) {
+        let rivName = rivBaseName(characterId: characterId)
+        let bytes: Int = {
+            guard let url = bundledRivURL(characterId: characterId) else { return 0 }
+            return (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+        }()
+        os_log(
+            "[CompanionHero] path=%{public}@ character=%{public}@ rivBytes=%d vm=%{public}@",
+            log: heroLog,
+            type: .info,
+            renderPath,
+            rivName,
+            bytes,
+            vmStatus
+        )
     }
 
     static func rivBaseName(characterId: String) -> String {
@@ -147,6 +180,14 @@ enum CompanionHeroRiveHost {
         fireEmotionTrigger(on: viewModel, emotion: emotion)
     }
 
+    static func applyRiveMouthOnly(to viewModel: RiveViewModel, mouthOpen: CGFloat) {
+        applyMouthOpen(to: viewModel, mouthOpen: mouthOpen)
+    }
+
+    static func applyRiveEmotionTrigger(to viewModel: RiveViewModel, emotion: CompanionHeroEmotion) {
+        fireEmotionTrigger(on: viewModel, emotion: emotion)
+    }
+
     private static func applyMouthOpen(to viewModel: RiveViewModel, mouthOpen: CGFloat) {
         let value = Float(mouthOpen)
         for name in mouthInputCandidates where viewModel.numberInput(named: name) != nil {
@@ -168,10 +209,19 @@ import RiveRuntime
 
 @MainActor
 final class CompanionRiveViewModelHolder: ObservableObject {
+    private static var cache: [String: RiveViewModel] = [:]
     let viewModel: RiveViewModel?
 
     init(characterId: String) {
-        viewModel = CompanionHeroRiveHost.makeRiveViewModel(characterId: characterId)
+        if let cached = Self.cache[characterId] {
+            viewModel = cached
+            return
+        }
+        let created = CompanionHeroRiveHost.makeRiveViewModel(characterId: characterId)
+        if let created {
+            Self.cache[characterId] = created
+        }
+        viewModel = created
     }
 }
 
@@ -186,6 +236,7 @@ struct CompanionHeroRiveRuntimeView: View {
     @StateObject private var holder: CompanionRiveViewModelHolder
     @Environment(\.scenePhase) private var scenePhase
     @State private var isVisible = false
+    @State private var didLogPath = false
 
     init(
         characterId: String,
@@ -211,17 +262,18 @@ struct CompanionHeroRiveRuntimeView: View {
         Group {
             if let viewModel = holder.viewModel {
                 if shouldRenderRive {
-                    TimelineView(.animation(minimumInterval: 1 / 30)) { timeline in
+                    TimelineView(.animation(minimumInterval: 1 / 20)) { timeline in
                         let t = timeline.date.timeIntervalSinceReferenceDate
                         let lipActive = emotion == .speaking || lipSyncPhase > 0
                         let mouthOpen = CompanionHeroLipSync.proceduralMouthOpen(isActive: lipActive, time: t)
-                        rivStage(viewModel: viewModel, mouthOpen: mouthOpen, frameIndex: Int(t * 30))
+                        rivStage(viewModel: viewModel, mouthOpen: mouthOpen)
                     }
                 } else {
                     fallbackHeroView
                 }
             } else {
                 fallbackHeroView
+                    .onAppear { logRenderPathOnce(path: "PNG", vmStatus: "nil") }
             }
         }
         .onAppear { isVisible = true }
@@ -263,19 +315,28 @@ struct CompanionHeroRiveRuntimeView: View {
     }
 
     @ViewBuilder
-    private func rivStage(viewModel: RiveViewModel, mouthOpen: CGFloat, frameIndex: Int) -> some View {
+    private func rivStage(viewModel: RiveViewModel, mouthOpen: CGFloat) -> some View {
         let fillScale: CGFloat = {
             guard stageStyle == .conversationFullBody, stageContentMode == .fillBottom else { return 1 }
             return CompanionHeroLayout.stageFillScaleFactor(stageSize: stageSize)
         }()
-        let scaled = ZStack {
+        let scaled = ZStack(alignment: .topLeading) {
             viewModel.view()
             CompanionHeroRiveInputsSync(
                 viewModel: viewModel,
                 emotion: emotion,
                 mouthOpen: mouthOpen,
-                frameIndex: frameIndex
+                characterId: characterId
             )
+            #if DEBUG
+            Text(CompanionHeroRiveHost.debugHeroPathLabel(characterId: characterId, usesRive: true))
+                .font(.caption2.monospaced())
+                .padding(4)
+                .background(.black.opacity(0.55))
+                .foregroundStyle(.green)
+                .clipShape(RoundedRectangle(cornerRadius: 4))
+                .padding(6)
+            #endif
         }
         .frame(width: stageSize.width, height: stageSize.height)
         .scaleEffect(fillScale, anchor: .bottom)
@@ -291,27 +352,46 @@ struct CompanionHeroRiveRuntimeView: View {
             )
         }
     }
+
+    private func logRenderPathOnce(path: String, vmStatus: String) {
+        guard !didLogPath else { return }
+        didLogPath = true
+        CompanionHeroRiveHost.logHeroPath(characterId: characterId, renderPath: path, vmStatus: vmStatus)
+    }
 }
 
-/// Проброс `emotion` + `mouth_open` на каждый кадр TimelineView (30 fps).
+/// Lip-sync на mouth_open; эмоция — trigger только при смене emotion.
 private struct CompanionHeroRiveInputsSync: View {
     let viewModel: RiveViewModel
     let emotion: CompanionHeroEmotion
     let mouthOpen: CGFloat
-    let frameIndex: Int
+    let characterId: String
+
+    @State private var didLogPath = false
+
+    private var mouthQuantized: Int { Int(mouthOpen * 16) }
 
     var body: some View {
         Color.clear
             .frame(width: 0, height: 0)
-            .task(id: "\(emotion.rawValue)-\(frameIndex)") { sync() }
-    }
-
-    private func sync() {
-        CompanionHeroRiveHost.applyRiveInputs(
-            to: viewModel,
-            emotion: emotion,
-            mouthOpen: mouthOpen
-        )
+            .onAppear {
+                if !didLogPath {
+                    didLogPath = true
+                    CompanionHeroRiveHost.logHeroPath(
+                        characterId: characterId,
+                        renderPath: "RIVE",
+                        vmStatus: "ok"
+                    )
+                }
+                CompanionHeroRiveHost.applyRiveEmotionTrigger(to: viewModel, emotion: emotion)
+                CompanionHeroRiveHost.applyRiveMouthOnly(to: viewModel, mouthOpen: mouthOpen)
+            }
+            .onChange(of: emotion) { newEmotion in
+                CompanionHeroRiveHost.applyRiveEmotionTrigger(to: viewModel, emotion: newEmotion)
+            }
+            .onChange(of: mouthQuantized) { _ in
+                CompanionHeroRiveHost.applyRiveMouthOnly(to: viewModel, mouthOpen: mouthOpen)
+            }
     }
 }
 #endif

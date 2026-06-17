@@ -40,10 +40,7 @@ class APIService: ObservableObject {
     let networkManager: NetworkManager
 
     // ✅ ИСПРАВЛЕНИЕ: Исправляем singleton паттерн - один экземпляр NetworkManager
-    private static let sharedNetworkManager: NetworkManager = {
-        print("🔧 APIService: Создание singleton NetworkManager")
-        return NetworkManager()
-    }()
+    private static let sharedNetworkManager: NetworkManager = NetworkManager.shared
 
     // ✅ ИСПРАВЛЕНИЕ: Кешируем APIService для избежания повторного создания
     private static var _sharedAPIService: APIService?
@@ -4475,7 +4472,14 @@ class APIService: ObservableObject {
     /// Получить историю запросов местоположения
     func getLocationRequests(limit: Int = 50, completion: @escaping (Result<[LocationRequest], Error>) -> Void) {
         let endpoint = "\(AppConfig.Endpoint.locationRequests)?limit=\(limit)"
-        networkManager.get(endpoint: endpoint, completion: completion)
+        networkManager.get(endpoint: endpoint) { (result: Result<LocationRequestsListResponse, Error>) in
+            switch result {
+            case .success(let wrapper):
+                completion(.success(wrapper.requests))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
     }
     
     /// Получить статистику очистки данных

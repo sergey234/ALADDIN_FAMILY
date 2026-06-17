@@ -42,6 +42,8 @@ struct NetworkProtectionScreen: View {
     @AppStorage("antivirus_scan_downloads") private var scanDownloads = true
     @AppStorage("antivirus_quarantine_threats") private var quarantineThreats = true
     @State private var isApplyingAntivirusQuickSettings = false
+    @State private var hasLoadedAntivirusQuickSettings = false
+    @State private var lastAntivirusQuickSettingsLoadAt: Date?
     
     // Структура для истории сканирований
     struct ScanHistoryItem: Identifiable {
@@ -1199,6 +1201,15 @@ struct NetworkProtectionScreen: View {
     /// Загружает quick-настройки антивируса из server component configuration.
     /// Используется guard-флаг, чтобы избежать лишней обратной синхронизации в onChange.
     private func loadAntivirusQuickSettingsFromServer() {
+        let now = Date()
+        if hasLoadedAntivirusQuickSettings,
+           let last = lastAntivirusQuickSettingsLoadAt,
+           now.timeIntervalSince(last) < 45 {
+            return
+        }
+        hasLoadedAntivirusQuickSettings = true
+        lastAntivirusQuickSettingsLoadAt = now
+
         Task {
             do {
                 let config = try await configurationService.getConfiguration(for: "malware_detection_agent")

@@ -508,8 +508,12 @@ final class SpeechManager: ObservableObject {
                 if let result {
                     let text = result.bestTranscription.formattedString
                     if !text.isEmpty {
-                        self.latestPartialTranscript = text
-                        self.livePartialTranscript = text
+                        self.runOnMain {
+                            self.latestPartialTranscript = text
+                            if self.livePartialTranscript != text {
+                                self.livePartialTranscript = text
+                            }
+                        }
                     }
                     if result.isFinal {
                         self.logger.business("🎤 SpeechManager: Final transcript (\(text.count) chars)")

@@ -863,12 +863,7 @@ extension SettingsViewModel {
 extension SettingsViewModel {
     func initializeNotifications() {
         Task {
-            if let notificationService {
-                let granted = await notificationService.requestAuthorization()
-                logNotificationAuthResult(granted)
-                return
-            }
-            let granted = await NotificationManager.shared.requestAuthorization()
+            let granted = await NotificationManager.shared.requestAuthorizationIfNeeded()
             logNotificationAuthResult(granted)
         }
     }

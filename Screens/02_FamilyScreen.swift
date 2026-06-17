@@ -84,6 +84,7 @@ struct FamilyScreen: View {
     // Ретраи для частичных ответов сервера при синхронизации
     @State private var partialSyncRetryCount: Int = 0
     private let maxPartialSyncRetries: Int = 3
+    @State private var isFamilyRosterHydrating = false
     
     // Новые состояния для родительского контроля (7 карточек)
     @State private var showContentBlockModal: Bool = false
@@ -356,6 +357,38 @@ struct FamilyScreen: View {
     }
     
     // MARK: - Family Members Management
+
+    private func hasCachedMembersInStorage() -> Bool {
+        guard FamilyLocalStore.validatePersistedRosterAgainstCurrentFamily(),
+              let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
+              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData) else {
+            return false
+        }
+        return !deduplicateFamilyMembers(decoded).isEmpty
+    }
+
+    /// Синхронная гидратация из UserDefaults до первого кадра — убирает flash «Список пуст» при 1 member в кэше.
+    private func hydrateFamilyMembersFromStorageImmediate() {
+        UserDefaults.standard.synchronize()
+        guard FamilyLocalStore.validatePersistedRosterAgainstCurrentFamily() else {
+            if familyMembers.isEmpty { isFamilyRosterHydrating = false }
+            return
+        }
+        guard let savedData = UserDefaults.standard.data(forKey: familyMembersKey),
+              let decoded = try? JSONDecoder().decode([FamilyMemberData].self, from: savedData),
+              !decoded.isEmpty else {
+            isFamilyRosterHydrating = false
+            return
+        }
+        let deduped = deduplicateFamilyMembers(decoded)
+        if familyMembers.isEmpty {
+            familyMembers = deduped
+            #if DEBUG
+            print("✅ [hydrateFamilyMembersFromStorageImmediate] \(deduped.count) member(s) from UserDefaults")
+            #endif
+        }
+        isFamilyRosterHydrating = false
+    }
     
     // Загрузка участников семьи из UserDefaults и синхронизация с API
     private func loadFamilyMembers() {
@@ -364,7 +397,11 @@ struct FamilyScreen: View {
             return
         }
         isFamilyLoadInProgress = true
-        defer { isFamilyLoadInProgress = false }
+        isFamilyRosterHydrating = familyMembers.isEmpty && hasCachedMembersInStorage()
+        defer {
+            isFamilyLoadInProgress = false
+            isFamilyRosterHydrating = false
+        }
 
         logger.business("Loading family members from storage")
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: Синхронизируем UserDefaults перед чтением
@@ -2337,6 +2374,20 @@ struct FamilyScreen: View {
                                 }
                             }
                             // Пустое состояние — CTA «Создать семью» или «Добавить первого участника»
+                            else if isFamilyRosterHydrating
+                                || isFamilyLoadInProgress
+                                || isFamilySyncInProgress
+                                || (familyMembers.isEmpty && hasCachedMembersInStorage()) {
+                                VStack(spacing: Spacing.m) {
+                                    ProgressView()
+                                        .tint(.secondaryGold)
+                                    Text(localizationManager.localized("family_members_loading"))
+                                        .font(.subheadline)
+                                        .foregroundColor(.white.opacity(0.7))
+                                }
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.l)
+                            }
                             else {
                                 VStack(spacing: Spacing.m) {
                                     Text("👨‍👩‍👧‍👦")
@@ -2630,6 +2681,7 @@ struct FamilyScreen: View {
         }
         .onAppear {
             logger.screenLoad("FamilyScreen")
+            hydrateFamilyMembersFromStorageImmediate()
             // Не сбрасываем admin_add_mode сразу: ждём подтверждения сервера или таймаут
             let addTs = UserDefaults.standard.double(forKey: "admin_add_recent_ts")
             let nowTs = Date().timeIntervalSince1970
@@ -4065,6 +4117,8 @@ struct FamilyLocationModal: View {
     @State private var geofencesCount: Int = 2
     @State private var geofencesList: String = ""
     @State private var isLoadingLocationData: Bool = false
+    @State private var locationPermissionBlocked = false
+    @State private var showLocationPermissionAlert = false
     
     // Статистика событий сегодня (загружается из UserDefaults)
     @State private var todayEvents: [LocationEvent] = []
@@ -4082,9 +4136,24 @@ struct FamilyLocationModal: View {
                 FamilyContentBlockItem(
                     icon: "📍",
                     title: localizationManager.localized("family_location"),
-                    description: "\(locationStatus) • \(locationLastUpdate)",
+                    description: locationPermissionBlocked
+                        ? localizationManager.localized("family_location_permission_denied")
+                        : "\(locationStatus) • \(locationLastUpdate)",
                     isEnabled: $isLocationEnabledState
                 )
+
+                if locationPermissionBlocked {
+                    Button {
+                        if let url = URL(string: UIApplication.openSettingsURLString) {
+                            UIApplication.shared.open(url)
+                        }
+                    } label: {
+                        Text(localizationManager.localized("family_location_open_settings"))
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
                 
                 // 2. Геозоны - Config Button Item
                 FamilyConfigButtonItem(
@@ -4156,10 +4225,12 @@ struct FamilyLocationModal: View {
         }
         .id("location_modal_lang_\(localizationManager.currentLanguage.rawValue)")
         .onAppear {
-            // ✅ ИНТЕГРАЦИЯ: Запрос разрешения и запуск Significant-Change
+            refreshLocationPermissionUX()
             setupLocationServices()
-            // Загружаем статистику при открытии модала
             loadLocationStatistics()
+        }
+        .onChange(of: locationManager.authorizationStatus) { _ in
+            refreshLocationPermissionUX()
         }
         .onChange(of: isLocationEnabledState) { newValue in
             VisualLogger.shared.log(
@@ -4185,14 +4256,52 @@ struct FamilyLocationModal: View {
             print("✅ SOS button: \(newValue ? "ON" : "OFF")")
         }
         .withVisualLogger()
+        .alert(
+            localizationManager.localized("family_location_permission_alert_title"),
+            isPresented: $showLocationPermissionAlert
+        ) {
+            Button(localizationManager.localized("family_location_open_settings")) {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+            }
+            Button(localizationManager.localized("common_cancel"), role: .cancel) {}
+        } message: {
+            Text(localizationManager.localized("family_location_permission_alert_body"))
+        }
+    }
+
+    private func refreshLocationPermissionUX() {
+        switch locationManager.authorizationStatus {
+        case .denied, .restricted:
+            locationPermissionBlocked = true
+            locationStatus = localizationManager.localized("family_location_permission_denied")
+            locationLastUpdate = localizationManager.localized("family_location_open_settings_hint")
+        case .notDetermined:
+            locationPermissionBlocked = false
+        default:
+            locationPermissionBlocked = false
+        }
     }
     
     // ✅ ИНТЕГРАЦИЯ: Настройка LocationManager
     private func setupLocationServices() {
         print("📍 FamilyLocationModal: Настройка LocationManager...")
+        refreshLocationPermissionUX()
+
+        switch locationManager.authorizationStatus {
+        case .denied, .restricted:
+            showLocationPermissionAlert = true
+            return
+        case .notDetermined:
+            locationManager.requestAuthorization(always: false)
+            return
+        default:
+            break
+        }
         
-        // Запрос разрешения Always (для Significant-Change и Region Monitoring)
-        if locationManager.authorizationStatus != .authorizedAlways {
+        // Запрос Always только если WhenInUse уже есть (upgrade path)
+        if locationManager.authorizationStatus == .authorizedWhenInUse {
             locationManager.requestAuthorization(always: true)
         }
         
@@ -4232,16 +4341,39 @@ struct FamilyLocationModal: View {
         
         // ✅ ИНТЕГРАЦИЯ: Получение текущего местоположения
         Task {
+            refreshLocationPermissionUX()
+            guard !locationPermissionBlocked else { return }
             do {
                 let currentLocation = try await locationManager.getCurrentLocation()
                 print("✅ FamilyLocationModal: Текущее местоположение: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude)")
                 
-                // Обновляем статус местоположения
-                DispatchQueue.main.async {
+                await MainActor.run {
                     self.locationStatus = String(format: "📍 %.4f, %.4f", currentLocation.coordinate.latitude, currentLocation.coordinate.longitude)
                     self.locationLastUpdate = String(format: localizationManager.localized("family_min_ago_format"), 0)
                 }
+            } catch let error as LocationManagerError {
+                await MainActor.run {
+                    self.locationStatus = error.localizedDescription
+                    self.locationLastUpdate = localizationManager.localized("family_location_unavailable_hint")
+                    if case .authorizationDenied = error {
+                        self.locationPermissionBlocked = true
+                        self.showLocationPermissionAlert = true
+                    }
+                }
+                print("⚠️ FamilyLocationModal: \(error.localizedDescription)")
+            } catch let error as CLError {
+                await MainActor.run {
+                    self.locationStatus = localizationManager.localized("family_location_unavailable_hint")
+                    self.locationLastUpdate = error.code == .locationUnknown
+                        ? localizationManager.localized("family_location_signal_weak_hint")
+                        : error.localizedDescription
+                }
+                print("⚠️ FamilyLocationModal: CLError \(error.code.rawValue): \(error.localizedDescription)")
             } catch {
+                await MainActor.run {
+                    self.locationStatus = localizationManager.localized("family_location_unavailable_hint")
+                    self.locationLastUpdate = error.localizedDescription
+                }
                 print("⚠️ FamilyLocationModal: Ошибка получения местоположения: \(error.localizedDescription)")
             }
         }

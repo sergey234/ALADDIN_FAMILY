@@ -369,23 +369,55 @@ struct CompanionFeatureGate: Codable {
 struct CompanionFeatureUI: Codable {
     let flags: [String: Bool]
     let characters: [String]?
+    /// Server metadata strings: `provider`, `tts_provider`, `hero_visual_tier`, …
+    let strings: [String: String]
+    /// Server metadata string lists: `chat_modes`, …
+    let stringArrays: [String: [String]]
+    /// Server metadata integers: `audio_retention_seconds`, …
+    let integers: [String: Int]
 
-    init(flags: [String: Bool] = [:], characters: [String]? = nil) {
+    init(
+        flags: [String: Bool] = [:],
+        characters: [String]? = nil,
+        strings: [String: String] = [:],
+        stringArrays: [String: [String]] = [:],
+        integers: [String: Int] = [:]
+    ) {
         self.flags = flags
         self.characters = characters
+        self.strings = strings
+        self.stringArrays = stringArrays
+        self.integers = integers
     }
 
     func flag(_ key: String) -> Bool? {
         flags[key]
     }
 
+    func string(_ key: String) -> String? {
+        strings[key]
+    }
+
+    func stringArray(_ key: String) -> [String]? {
+        stringArrays[key]
+    }
+
+    func integer(_ key: String) -> Int? {
+        integers[key]
+    }
+
     init(from decoder: Decoder) throws {
         let container = try decoder.container(keyedBy: DynamicCodingKey.self)
         var parsedFlags: [String: Bool] = [:]
         var parsedCharacters: [String]?
+        var parsedStrings: [String: String] = [:]
+        var parsedStringArrays: [String: [String]] = [:]
+        var parsedIntegers: [String: Int] = [:]
 
         for key in container.allKeys {
-            if key.stringValue == "characters" {
+            let name = key.stringValue
+
+            if name == "characters" {
                 if let list = try? container.decode([String].self, forKey: key) {
                     parsedCharacters = list
                 } else if (try? container.decodeNil(forKey: key)) == true {
@@ -398,19 +430,65 @@ struct CompanionFeatureUI: Codable {
                 continue
             }
 
+            if name == "chat_modes" {
+                if let list = try? container.decode([String].self, forKey: key) {
+                    parsedStringArrays[name] = list
+                } else if (try? container.decodeNil(forKey: key)) == true {
+                    continue
+                } else {
+                    #if DEBUG
+                    print("⚠️ CompanionFeatureUI: unexpected `chat_modes` type")
+                    #endif
+                }
+                continue
+            }
+
+            if name == "audio_retention_seconds" {
+                if let value = try? container.decode(Int.self, forKey: key) {
+                    parsedIntegers[name] = value
+                } else if let value = try? container.decode(Double.self, forKey: key) {
+                    parsedIntegers[name] = Int(value)
+                } else if (try? container.decodeNil(forKey: key)) == true {
+                    continue
+                } else {
+                    #if DEBUG
+                    print("⚠️ CompanionFeatureUI: unexpected `audio_retention_seconds` type")
+                    #endif
+                }
+                continue
+            }
+
+            if name == "provider" || name == "tts_provider" || name == "hero_visual_tier" {
+                if let value = try? container.decode(String.self, forKey: key) {
+                    parsedStrings[name] = value
+                } else if (try? container.decodeNil(forKey: key)) == true {
+                    continue
+                } else {
+                    #if DEBUG
+                    print("⚠️ CompanionFeatureUI: unexpected `\(name)` type")
+                    #endif
+                }
+                continue
+            }
+
             if let value = try? container.decode(Bool.self, forKey: key) {
-                parsedFlags[key.stringValue] = value
+                parsedFlags[name] = value
+            } else if let value = try? container.decode(Int.self, forKey: key) {
+                parsedFlags[name] = value != 0
             } else if (try? container.decodeNil(forKey: key)) == true {
                 continue
             } else {
                 #if DEBUG
-                print("⚠️ CompanionFeatureUI: unsupported ui key `\(key.stringValue)`")
+                print("⚠️ CompanionFeatureUI: unsupported ui key `\(name)`")
                 #endif
             }
         }
 
         flags = parsedFlags
         characters = parsedCharacters
+        strings = parsedStrings
+        stringArrays = parsedStringArrays
+        integers = parsedIntegers
     }
 
     func encode(to encoder: Encoder) throws {
@@ -420,6 +498,15 @@ struct CompanionFeatureUI: Codable {
         }
         if let characters {
             try container.encode(characters, forKey: DynamicCodingKey("characters"))
+        }
+        for (key, value) in strings {
+            try container.encode(value, forKey: DynamicCodingKey(key))
+        }
+        for (key, value) in stringArrays {
+            try container.encode(value, forKey: DynamicCodingKey(key))
+        }
+        for (key, value) in integers {
+            try container.encode(value, forKey: DynamicCodingKey(key))
         }
     }
 }

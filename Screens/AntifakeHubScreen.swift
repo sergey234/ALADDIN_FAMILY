@@ -307,6 +307,8 @@ struct AntifakeTextCheckView: View {
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.85))
 
+            pasteFromClipboardRow
+
             inputField
 
             if viewModel.requiresPremiumUpgrade {
@@ -399,6 +401,27 @@ struct AntifakeTextCheckView: View {
         }
     }
 
+    private var pasteFromClipboardRow: some View {
+        HStack {
+            Spacer()
+            Button {
+                viewModel.pasteFromClipboard()
+                HapticFeedback.selection()
+            } label: {
+                Label(
+                    localizationManager.localized("antifake_paste_button"),
+                    systemImage: "doc.on.clipboard"
+                )
+                .font(.caption.weight(.semibold))
+                .foregroundColor(viewModel.hasClipboardContent ? .secondaryGold : .white.opacity(0.45))
+            }
+            .buttonStyle(.plain)
+            .disabled(!viewModel.hasClipboardContent)
+            .accessibilityIdentifier("antifake_paste_button")
+            .accessibilityHint(localizationManager.localized("antifake_paste_button_hint"))
+        }
+    }
+
     @ViewBuilder
     private var inputField: some View {
         switch viewModel.inputMode {
@@ -408,18 +431,57 @@ struct AntifakeTextCheckView: View {
                 .padding(Spacing.s)
                 .stormGlassCard(cornerRadius: CornerRadius.medium)
                 .accessibilityIdentifier("antifake_text_input")
+                .accessibilityLabel(localizationManager.localized("antifake_mode_text"))
         case .url:
-            TextField(
-                localizationManager.localized("antifake_url_placeholder"),
-                text: $viewModel.inputUrl
-            )
-            .textInputAutocapitalization(.never)
-            .autocorrectionDisabled()
-            .keyboardType(.URL)
-            .padding(Spacing.m)
-            .stormGlassCard(cornerRadius: CornerRadius.medium)
-            .accessibilityIdentifier("antifake_url_input")
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                fieldLabel(localizationManager.localized("antifake_url_field_label"))
+                TextField(
+                    localizationManager.localized("antifake_url_placeholder"),
+                    text: $viewModel.inputUrl
+                )
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .keyboardType(.URL)
+                .padding(Spacing.m)
+                .stormGlassCard(cornerRadius: CornerRadius.medium)
+                .accessibilityIdentifier("antifake_url_input")
+            }
+        case .contact:
+            VStack(alignment: .leading, spacing: Spacing.s) {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    fieldLabel(localizationManager.localized("antifake_contact_caller_label"))
+                    TextField(
+                        localizationManager.localized("antifake_call_caller_id_placeholder"),
+                        text: $viewModel.callerId
+                    )
+                    .textInputAutocapitalization(.never)
+                    .autocorrectionDisabled()
+                    .keyboardType(.phonePad)
+                    .padding(Spacing.m)
+                    .stormGlassCard(cornerRadius: CornerRadius.medium)
+                    .accessibilityIdentifier("antifake_contact_caller_input")
+                }
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    fieldLabel(localizationManager.localized("antifake_contact_name_label"))
+                    TextField(
+                        localizationManager.localized("antifake_call_display_name_placeholder"),
+                        text: $viewModel.displayName
+                    )
+                    .textInputAutocapitalization(.words)
+                    .autocorrectionDisabled()
+                    .padding(Spacing.m)
+                    .stormGlassCard(cornerRadius: CornerRadius.medium)
+                    .accessibilityIdentifier("antifake_contact_name_input")
+                }
+            }
         }
+    }
+
+    private func fieldLabel(_ title: String) -> some View {
+        Text(title)
+            .font(.caption.weight(.semibold))
+            .foregroundColor(.white.opacity(0.9))
+            .accessibilityAddTraits(.isHeader)
     }
 }
 

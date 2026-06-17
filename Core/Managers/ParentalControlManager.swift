@@ -80,7 +80,6 @@ struct FamilyControlsReadiness: Sendable {
     // MARK: - Dependencies
     
     private let apiService: APIService
-    private let networkManager: NetworkManager
     
     // MARK: - Published Properties
     
@@ -112,23 +111,9 @@ struct FamilyControlsReadiness: Sendable {
     // MARK: - Initialization
     
     init(
-        apiService: APIService? = nil,
-        networkManager: NetworkManager? = nil
+        apiService: APIService? = nil
     ) {
-        // ✅ ИСПРАВЛЕНИЕ: Правильная инициализация в правильном порядке
-        // Сначала инициализируем NetworkManager
-        if let networkManager = networkManager {
-            self.networkManager = networkManager
-        } else {
-            self.networkManager = NetworkManager()
-        }
-
-        // Затем инициализируем APIService
-        if let apiService = apiService {
-            self.apiService = apiService
-        } else {
-            self.apiService = APIService(networkManager: self.networkManager)
-        }
+        self.apiService = apiService ?? APIService.shared
         
         // Проверяем текущий статус авторизации
         self.familyAuthStatus = AuthorizationCenter.shared.authorizationStatus

@@ -27,7 +27,8 @@ struct AIAssistantScreen: View {
     @State private var holdDragTranslation: CGFloat = 0
     @State private var holdWillCancel = false
     @State private var showFeedbackSheet = false
-    @State private var showDemoServerBanner = false
+    @State private var showSlowAIHint = false
+    @State private var slowAIHintTask: Task<Void, Never>?
     @State private var showWellnessReferralSheet = false
     /// Снимок SyncEngine — не читаем @Published singleton в body (watchdog / layout deadlock).
     @State private var aiSyncStateDisplay: SyncState = .idle
@@ -208,6 +209,12 @@ struct AIAssistantScreen: View {
                         // Индикатор загрузки
                         if isLoading {
                     TypingIndicatorView(typingUsers: [localizationManager.localized("ai_assistant_title")])
+                            if showSlowAIHint {
+                                Text(localizationManager.localized("ai_assistant_slow_hint"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                                    .padding(.top, 4)
+                            }
                         }
 
                         // Spacer для клавиатуры
@@ -245,7 +252,9 @@ struct AIAssistantScreen: View {
         }
         .onChange(of: speechManager.livePartialTranscript) { transcript in
             guard speechManager.isRecording, !transcript.isEmpty else { return }
-            messageText = transcript
+            if messageText != transcript {
+                messageText = transcript
+            }
         }
         .onReceive(
             SyncEngine.shared.events
@@ -617,6 +626,23 @@ struct AIAssistantScreen: View {
         return CGFloat(clampedLines * 24 + 20)
     }
     
+    private func beginAILoading() {
+        isLoading = true
+        showSlowAIHint = false
+        slowAIHintTask?.cancel()
+        slowAIHintTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 4_000_000_000)
+            guard !Task.isCancelled, isLoading else { return }
+            showSlowAIHint = true
+        }
+    }
+
+    private func endAILoading() {
+        slowAIHintTask?.cancel()
+        showSlowAIHint = false
+        isLoading = false
+    }
+
     private func sendMessage() {
         guard !messageText.isEmpty else {
             logger.warn("AI Assistant: Attempted to send empty message")
@@ -652,7 +678,7 @@ struct AIAssistantScreen: View {
         if context == "feedback" {
             messages.append(ChatMessage(text: rawMessage, isUser: true, time: currentTime()))
             saveMessages()
-            isLoading = true
+            beginAILoading()
             logger.business("🤖 AI Assistant: Detected feedback message, sending to feedback system")
             sendFeedbackMessage(rawMessage)
             return
@@ -662,7 +688,7 @@ struct AIAssistantScreen: View {
             let prepared = try AIOutboundTextGate.prepareUserMessage(rawMessage)
             messages.append(ChatMessage(text: prepared.displayText, isUser: true, time: currentTime()))
             saveMessages()
-            isLoading = true
+            beginAILoading()
             logger.business("🤖 AI Assistant: Sending regular message to AI (redactions=\(prepared.redactionCount))")
             sendRegularMessage(prepared.cloudText, displayMessage: prepared.displayText, context: context)
         } catch let error as InputSanitizer.SanitizationError {
@@ -697,7 +723,7 @@ struct AIAssistantScreen: View {
             sessionId: currentFeedbackSessionId()
         ) { [self] result in
             DispatchQueue.main.async {
-                isLoading = false
+                endAILoading()
 
                 switch result {
                 case .success:
@@ -874,7 +900,7 @@ struct AIAssistantScreen: View {
                 toolsUsed: ["faq:\(faqMatch.id)"],
                 preview: faqMatch.answer
             )
-            isLoading = false
+            endAILoading()
             let faqResponse = ChatMessage(
                 text: localizationManager.localized("ai_assistant_faq_footer", faqMatch.answer, faqMatch.id),
                 isUser: false,
@@ -890,7 +916,7 @@ struct AIAssistantScreen: View {
         let responseLanguage = localizationManager.aiResponseLanguageCode
         APIService.shared.sendMessageToAI(message: message, context: context, responseLanguage: responseLanguage) { [self] result in
             DispatchQueue.main.async {
-                isLoading = false
+                endAILoading()
 
                 switch result {
                 case .success(let response):
@@ -958,6 +984,10 @@ struct AIAssistantScreen: View {
                         errorMessage = localizationManager.localized("ai_error_pii_blocked")
                     } else if errLower.contains("429") || errLower.contains("rate limit") {
                         errorMessage = localizationManager.localized("ai_error_rate_limit")
+                    } else if errLower.contains("timed out")
+                                || errLower.contains("timeout")
+                                || (error as? URLError)?.code == .timedOut {
+                        errorMessage = localizationManager.localized("ai_error_timeout")
                     } else {
                         errorMessage = String(
                             format: localizationManager.localized("ai_assistant_error_response_failed"),
@@ -970,6 +1000,8 @@ struct AIAssistantScreen: View {
                             ? localizationManager.localized("ai_error_gateway_retry")
                             : (errLower.contains("503") || errLower.contains("unavailable")
                             ? localizationManager.localized("ai_error_service_unavailable")
+                            : (errLower.contains("timed out") || errLower.contains("timeout") || (error as? URLError)?.code == .timedOut)
+                            ? localizationManager.localized("ai_error_timeout")
                             : localizationManager.localized("ai_assistant_error_generic_retry")),
                         isUser: false,
                         time: currentTime()

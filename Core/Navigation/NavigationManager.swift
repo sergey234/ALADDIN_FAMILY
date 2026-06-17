@@ -350,6 +350,11 @@ class NavigationManager: ObservableObject {
         logger.navigation(from: currentScreen.displayName, to: resolved.displayName, function: #function)
         #endif
 
+        if currentScreen == resolved {
+            appendLog("⚠️ navigateTo(\(resolved)) отклонён: уже на экране")
+            return
+        }
+
         // ✅ ИСПРАВЛЕНИЕ: Весь NavigationManager работает под @MainActor,
         // поэтому выполняем изменения синхронно, без DispatchQueue.main.async.
         if case .paymentQR = resolved {
@@ -603,7 +608,11 @@ class NavigationManager: ObservableObject {
             return
         }
         
-        let previousScreen = navigationStack.removeLast()
+        var previousScreen = navigationStack.removeLast()
+        while previousScreen == currentScreen, !navigationStack.isEmpty {
+            appendLog("🧹 goBack: пропуск дубля \(previousScreen) в стеке")
+            previousScreen = navigationStack.removeLast()
+        }
         print("🔍 DEBUG NavigationManager.goBack: Было \(currentScreen), Возвращаемся к \(previousScreen)")
         
         currentScreen = previousScreen
@@ -628,6 +637,10 @@ class NavigationManager: ObservableObject {
     /// Переход к экрану с очисткой стека
     func navigateToRoot(_ screen: ALADDINScreen) {
         logger.navigation(from: currentScreen.displayName, to: "<-- Root (\(screen.displayName))", function: #function) // Логируем переход к корню
+        if currentScreen == screen && navigationStack.isEmpty {
+            appendLog("⚠️ navigateToRoot(\(screen)) no-op: уже корневой экран")
+            return
+        }
         appendLog("⬆️ navigateToRoot(\(screen)) | до очистки стека = \(navigationStack)")
         navigationStack.removeAll()
         currentScreen = screen
@@ -796,6 +809,10 @@ class NavigationManager: ObservableObject {
         if postCallPrompt {
             pendingAntifakePostCallPrompt = true
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingAntifakePostCallCheck)
+        }
+        if currentScreen == .antifakeHub {
+            appendLog("🛡️ navigateToAntifakeHub: уже на Hub — обновили tab=\(tab.rawValue)")
+            return
         }
         navigateTo(.antifakeHub)
         appendLog("🛡️ navigateToAntifakeHub tab=\(tab.rawValue) textMode=\(textMode?.rawValue ?? "nil") postCallPrompt=\(postCallPrompt)")

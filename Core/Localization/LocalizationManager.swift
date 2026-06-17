@@ -87,6 +87,8 @@ class LocalizationManager: ObservableObject {
 
         normalizeDiscontinuedUserFacingLanguages()
 
+        warmBundleTablesAtLaunch()
+
 #if DEBUG
         // ✅ BUILD 115: LocalizationDiagnostics.runInitialChecks перенесен в ALADDINApp.onAppear
 #endif
@@ -3095,6 +3097,8 @@ class LocalizationManager: ObservableObject {
             "ai_error_rate_limit": "Слишком много запросов. Подождите или обновите тариф.",
             "ai_error_consent_required": "Включите умного помощника в Настройках, чтобы отправлять вопросы.",
             "ai_error_gateway_retry": "Сервер AI временно перегружен (ошибка шлюза 502). Подождите 10–20 секунд и отправьте вопрос снова.",
+            "ai_error_timeout": "Ответ AI занимает слишком долго. Проверьте сеть и попробуйте короче сформулировать вопрос.",
+            "ai_assistant_slow_hint": "AI обрабатывает запрос — это может занять до 30 секунд…",
             "ai_assistant_demo_server_banner": "Шаблонный ответ по продукту ALADDIN (не нейросеть на все темы). Спросите про защиту, VPN, семью или угрозы.",
             "faq_ai_how_works": "Как работает AI-помощник?",
             "faq_ai_how_works_answer": "AI-помощник ALADDIN не обучается на вашем телефоне и не запоминает переписку для тренировки модели. Он отвечает по справочнику приложения и по актуальным данным защиты с сервера (статус модулей, угрозы, семья). Для ответов с сервера включите умного помощника в Настройках.",
@@ -5778,11 +5782,18 @@ class LocalizationManager: ObservableObject {
             "antifake_tab_call": "Звонок",
             "antifake_premium_required_title": "Нужен Premium",
             "antifake_premium_required_body": "Проверки antifake доступны на тарифе Premium.",
-            "antifake_text_hint": "Вставьте текст новости, сообщения или описание профиля.",
-            "antifake_url_hint": "Вставьте ссылку на новость, пост или профиль для проверки.",
+            "antifake_text_hint": "Вставьте текст новости, сообщения или описание профиля. Можно скопировать и вставить из буфера.",
+            "antifake_url_hint": "Вставьте ссылку на статью, сайт, видео или пост для проверки.",
             "antifake_url_placeholder": "https://example.com/article",
+            "antifake_url_field_label": "Ссылка",
+            "antifake_contact_hint": "Укажите номер звонящего и имя из контактов — можно вставить из буфера.",
+            "antifake_contact_caller_label": "Номер звонящего",
+            "antifake_contact_name_label": "Имя в контактах",
+            "antifake_paste_button": "Вставить",
+            "antifake_paste_button_hint": "Вставить скопированный текст или ссылку из буфера обмена",
             "antifake_mode_text": "Текст",
             "antifake_mode_url": "Ссылка",
+            "antifake_mode_contact": "Контакт",
             "antifake_verdict_likely_fake": "Вероятно подделка",
             "antifake_verdict_uncertain": "Неясно",
             "antifake_verdict_likely_real": "Вероятно подлинное",
@@ -7126,6 +7137,7 @@ class LocalizationManager: ObservableObject {
             "devices_list_accessibility": "Список устройств семьи",
             "devices_list_empty_title": "Пока нет устройств",
             "devices_list_empty_subtitle": "Нажмите «Добавить» выше или откройте экран «Семья», если участники ещё не сохранены на этом устройстве.",
+            "devices_list_empty_with_family_subtitle": "В семье уже есть участники, но это устройство ещё не в списке. Нажмите «Добавить» или привяжите телефон в разделе «Семья».",
             "devices_load_failed": "Не удалось загрузить список.",
             "api_error_endpoint_feature_unavailable": "Эта операция на сервере сейчас недоступна. Попробуйте позже или напишите в поддержку.",
             "api_error_endpoint_feature_unavailable_reason": "Сервер ещё не включил полный цикл для этого запроса.",
@@ -7691,6 +7703,14 @@ class LocalizationManager: ObservableObject {
             "family_add_member": "Добавить участника",
             "family_add_first_member": "➕ Добавить первого участника",
             "family_no_members": "Нет участников семьи",
+            "family_members_loading": "Загружаем участников семьи…",
+            "family_location_permission_denied": "Доступ к геолокации запрещён",
+            "family_location_open_settings": "Открыть Настройки",
+            "family_location_open_settings_hint": "Разрешите геолокацию в Настройках iOS",
+            "family_location_unavailable_hint": "Местоположение недоступно",
+            "family_location_signal_weak_hint": "Сигнал GPS слабый — попробуйте на улице",
+            "family_location_permission_alert_title": "Нужна геолокация",
+            "family_location_permission_alert_body": "Разрешите доступ к местоположению в Настройках iOS, чтобы видеть статус и геозоны.",
             "family_create_family_prompt": "Создайте семью на сервере, чтобы приглашать близких и синхронизировать защиту.",
             "family_blocked_sites": "Заблокированные сайты",
             "family_blocked_apps": "Заблокированные приложения",
@@ -7862,6 +7882,8 @@ class LocalizationManager: ObservableObject {
             "roadside_eta": "Прибытие через: %@",
             "roadside_provider": "Служба: %@",
             "roadside_history": "История обращений",
+            "roadside_history_empty": "История пока пуста",
+            "roadside_history_unavailable": "История недоступна на этом сервере",
             "roadside_location_error": "Не удалось определить местоположение",
             "close": "Закрыть",
             
@@ -11713,6 +11735,14 @@ class LocalizationManager: ObservableObject {
             "family_add_member_title": "Add member",
             "family_add_first_member": "➕ Add first member",
             "family_no_members": "No family members",
+            "family_members_loading": "Loading family members…",
+            "family_location_permission_denied": "Location access denied",
+            "family_location_open_settings": "Open Settings",
+            "family_location_open_settings_hint": "Allow location in iOS Settings",
+            "family_location_unavailable_hint": "Location unavailable",
+            "family_location_signal_weak_hint": "Weak GPS signal — try outdoors",
+            "family_location_permission_alert_title": "Location required",
+            "family_location_permission_alert_body": "Allow location access in iOS Settings to see status and geofences.",
             "family_create_family_prompt": "Create your family on the server to invite relatives and sync protection.",
             "family_parental_control": "PARENTAL CONTROL",
             "family_settings": "Settings",
@@ -12430,6 +12460,7 @@ Settings
             "devices_form_hint_syncing_owners": "Refreshing owners from the server…",
             "devices_list_empty_title": "No devices yet",
             "devices_list_empty_subtitle": "Tap Add above, or open Family if members are not saved on this device yet.",
+            "devices_list_empty_with_family_subtitle": "Your family has members, but this device is not listed yet. Tap Add or link this phone in Family.",
             "devices_load_failed": "Could not load the list.",
             "api_error_endpoint_feature_unavailable": "This action isn’t available on the server right now. Try again later or contact support.",
             "api_error_endpoint_feature_unavailable_reason": "The server hasn’t enabled the full flow for this request yet.",
@@ -12462,6 +12493,8 @@ Settings
             "ai_error_rate_limit": "Too many requests. Please wait or upgrade your plan.",
             "ai_error_consent_required": "Turn on the smart assistant in Settings to send questions.",
             "ai_error_gateway_retry": "The AI server is temporarily overloaded (gateway error 502). Wait 10–20 seconds and try again.",
+            "ai_error_timeout": "The AI reply is taking too long. Check your network and try a shorter question.",
+            "ai_assistant_slow_hint": "AI is working on your request — this can take up to 30 seconds…",
             "ai_assistant_demo_server_banner": "Template ALADDIN product answer (not a general-purpose neural net). Ask about protection, VPN, family, or threats.",
             "faq_ai_how_works": "How does the AI assistant work?",
             "faq_ai_how_works_answer": "The ALADDIN AI assistant does not train on your phone or store chats to train a model. It answers from the in-app knowledge base and live protection data from the server. Turn on the smart assistant in Settings for server replies.",
@@ -14912,11 +14945,18 @@ Settings
             "antifake_tab_call": "Call",
             "antifake_premium_required_title": "Premium required",
             "antifake_premium_required_body": "Antifake checks are available on the Premium plan.",
-            "antifake_text_hint": "Paste news text, a message, or a profile description.",
-            "antifake_url_hint": "Paste a link to news, a post, or a profile to analyze.",
+            "antifake_text_hint": "Paste news text, a message, or a profile description. You can copy and paste from the clipboard.",
+            "antifake_url_hint": "Paste a link to an article, site, video, or post to analyze.",
             "antifake_url_placeholder": "https://example.com/article",
+            "antifake_url_field_label": "Link",
+            "antifake_contact_hint": "Enter the caller number and contact name — you can paste from the clipboard.",
+            "antifake_contact_caller_label": "Caller number",
+            "antifake_contact_name_label": "Contact name",
+            "antifake_paste_button": "Paste",
+            "antifake_paste_button_hint": "Paste copied text or link from the clipboard",
             "antifake_mode_text": "Text",
             "antifake_mode_url": "Link",
+            "antifake_mode_contact": "Contact",
             "antifake_verdict_likely_fake": "Likely fake",
             "antifake_verdict_uncertain": "Uncertain",
             "antifake_verdict_likely_real": "Likely authentic",
@@ -15641,6 +15681,8 @@ Settings
             "roadside_eta": "ETA: %@",
             "roadside_provider": "Provider: %@",
             "roadside_history": "Request History",
+            "roadside_history_empty": "No requests yet",
+            "roadside_history_unavailable": "History is not available on this server",
             "roadside_location_error": "Failed to determine location",
             "close": "Close",
             
@@ -18122,6 +18164,20 @@ Settings
     // Доступ к Dictionary в Swift не потокобезопасен, что вызывает Dictionary.resize краш.
     private let lock = NSLock()
     private var bundleTableCache: [Language: [String: String]] = [:]
+    private var bundleTableWarmed: Set<Language> = []
+
+    /// Один раз при старте — не парсить `.strings` внутри `ScrollView.body`.
+    private func warmBundleTablesAtLaunch() {
+        lock.lock()
+        defer { lock.unlock() }
+        ensureBundleTableLoaded(for: currentLanguage)
+        if currentLanguage != .russian {
+            ensureBundleTableLoaded(for: .russian)
+        }
+        if currentLanguage != .english {
+            ensureBundleTableLoaded(for: .english)
+        }
+    }
 
     /**
      * Получить локализованную строку из словаря переводов
@@ -18173,56 +18229,54 @@ Settings
     }
 
     private func localizedFromBundle(key: String, language: Language) -> String? {
+        ensureBundleTableLoaded(for: language)
+        return bundleTableCache[language]?[key]
+    }
+
+    /// Один раз читаем Localizable.strings с диска на язык (не на каждый ключ — иначе watchdog на main).
+    private func ensureBundleTableLoaded(for language: Language) {
+        if bundleTableWarmed.contains(language) { return }
+
+        var merged: [String: String] = [:]
         let bundles: [Bundle] = [Bundle.main, Bundle(for: LocalizationManager.self)]
+        let directSubdirs = [
+            "\(language.rawValue).lproj",
+            "Localization/\(language.rawValue).lproj",
+            "Resources/Localization/\(language.rawValue).lproj"
+        ]
+
         for container in bundles {
-            let directSubdirs = [
-                "\(language.rawValue).lproj",
-                "Localization/\(language.rawValue).lproj",
-                "Resources/Localization/\(language.rawValue).lproj"
-            ]
             for subdir in directSubdirs {
-                if let value = container.path(forResource: "Localizable", ofType: "strings", inDirectory: subdir)
-                    .flatMap({ NSDictionary(contentsOfFile: $0) as? [String: String] })?[key] {
-                    return value
+                if let path = container.path(forResource: "Localizable", ofType: "strings", inDirectory: subdir),
+                   let dict = NSDictionary(contentsOfFile: path) as? [String: String] {
+                    merged.merge(dict) { _, new in new }
+                    break
                 }
             }
 
             if let path = container.path(forResource: language.rawValue, ofType: "lproj"),
-               let bundle = Bundle(path: path) {
-                let value = NSLocalizedString(key, tableName: "Localizable", bundle: bundle, value: key, comment: "")
-                if value != key {
-                    return value
-                }
+               let bundle = Bundle(path: path),
+               let stringsPath = bundle.path(forResource: "Localizable", ofType: "strings"),
+               let dict = NSDictionary(contentsOfFile: stringsPath) as? [String: String] {
+                merged.merge(dict) { _, new in new }
             }
 
-            if let cached = loadLocalizedTableFromAnyBundlePath(language: language, container: container),
-               let value = cached[key] {
-                return value
+            let languageSegment = "/\(language.rawValue).lproj/"
+            let stringURLs = container.urls(forResourcesWithExtension: "strings", subdirectory: nil) ?? []
+            for url in stringURLs where url.lastPathComponent == "Localizable.strings" && url.path.contains(languageSegment) {
+                if let dict = NSDictionary(contentsOf: url) as? [String: String] {
+                    merged.merge(dict) { _, new in new }
+                }
             }
         }
-        return nil
+
+        bundleTableCache[language] = merged
+        bundleTableWarmed.insert(language)
     }
 
     private func loadLocalizedTableFromAnyBundlePath(language: Language, container: Bundle) -> [String: String]? {
-        if let cached = bundleTableCache[language] {
-            return cached
-        }
-
-        let languageSegment = "/\(language.rawValue).lproj/"
-        let stringURLs = container.urls(forResourcesWithExtension: "strings", subdirectory: nil) ?? []
-        for url in stringURLs {
-            let path = url.path
-            if path.contains(languageSegment),
-               url.lastPathComponent == "Localizable.strings",
-               let dict = NSDictionary(contentsOf: url) as? [String: String] {
-                bundleTableCache[language] = dict
-                return dict
-            }
-        }
-
-        // Cache negative lookup to avoid repeated full scans.
-        bundleTableCache[language] = [:]
-        return nil
+        ensureBundleTableLoaded(for: language)
+        return bundleTableCache[language]
     }
     /**
      * Получить локализованную строку с параметрами

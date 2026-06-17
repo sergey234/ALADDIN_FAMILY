@@ -10,6 +10,9 @@ import Combine
 
 @MainActor
 class ProtectionSettingsViewModel: ObservableObject {
+
+    /// Единый экземпляр для AdvancedProtection — не пересоздаём VM при каждом push экрана.
+    static let shared = ProtectionSettingsViewModel()
     
     // MARK: - Dependencies
     
@@ -88,10 +91,9 @@ class ProtectionSettingsViewModel: ObservableObject {
         errorMessage = nil
         
         // ✅ ЭТАП 2: Проверка токена перед загрузкой
-        guard AppConfig.authToken != nil else {
-            print("⚠️ ProtectionSettingsViewModel: Токен отсутствует, используем демо режим")
+        guard TokenValidator.hasUsableAPISession else {
+            print("⚠️ ProtectionSettingsViewModel: Нет API-сессии, используем локальный кэш")
             isLoading = false
-            // Загружаем из кэша или используем дефолтные значения
             await updateLocalStatuses()
             return
         }

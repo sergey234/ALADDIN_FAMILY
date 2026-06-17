@@ -41,6 +41,7 @@ class NotificationManager: NSObject, ObservableObject {
     private let persistedSecurityEventsKey = "persistedSecurityEventsV1"
     private let persistedSecurityEventsMaxCount = 200
     private let persistedSecurityEventsMaxAge: TimeInterval = 7 * 24 * 60 * 60
+    private var didRequestAuthorizationThisSession = false
     
     // MARK: - Init
     
@@ -65,6 +66,7 @@ class NotificationManager: NSObject, ObservableObject {
     func requestAuthorization() async -> Bool {
         // ВРЕМЕННО ОТКЛЮЧЕНО: logger.business("Requesting notification authorization from user")
         print("🔔 Requesting notification authorization from user")
+        didRequestAuthorizationThisSession = true
         do {
             let granted = try await notificationCenter.requestAuthorization(
                 options: [.alert, .badge, .sound, .provisional]
@@ -83,6 +85,27 @@ class NotificationManager: NSObject, ObservableObject {
             print("❌ Notification authorization error: \(error)")
             return false
         }
+    }
+
+    /// Запрашивает разрешение только если статус `.notDetermined` и ещё не спрашивали в этой сессии.
+    func requestAuthorizationIfNeeded() async -> Bool {
+        let settings = await notificationCenter.notificationSettings()
+        let status = settings.authorizationStatus
+        let alreadyAuthorized = status == .authorized || status == .provisional
+        await MainActor.run {
+            self.isAuthorized = alreadyAuthorized
+        }
+        if status != .notDetermined {
+            didRequestAuthorizationThisSession = true
+            if alreadyAuthorized {
+                await registerForRemoteNotifications()
+            }
+            return alreadyAuthorized
+        }
+        guard !didRequestAuthorizationThisSession else {
+            return isAuthorized
+        }
+        return await requestAuthorization()
     }
     
     /**

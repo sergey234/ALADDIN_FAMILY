@@ -28,15 +28,9 @@ struct AdditionalFeature: Identifiable, Hashable {
         return currentLevel >= requiredLevel
     }
     
-    /// Уровень тарифа (для сравнения)
+    /// Уровень тарифа (для сравнения) — единый SSOT: `TariffType.featureAccessTier` (trial = premium).
     private func getTariffLevel(_ tariff: TariffType) -> Int {
-        switch tariff {
-        case .trial: return 0    // Trial уровень
-        case .free: return 1     // Free уровень
-        case .personal: return 2 // Personal уровень
-        case .family: return 3   // Family уровень
-        case .premium: return 4  // Premium уровень
-        }
+        tariff.featureAccessTier
     }
 
     // MARK: - Hashable

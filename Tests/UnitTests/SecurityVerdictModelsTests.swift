@@ -158,6 +158,30 @@ final class SecurityVerdictModelsTests: XCTestCase {
         XCTAssertFalse(tariffManager.isCategoryAvailable(.deepfakes))
     }
 
+    func testTrialParentalControlFeatureAccessMatchesPremium() {
+        let premiumRewards = ParentalControlModule.rewards.features(for: .premium)
+        let trialRewards = ParentalControlModule.rewards.features(for: .trial)
+        XCTAssertEqual(trialRewards.count, premiumRewards.count)
+        XCTAssertTrue(
+            ParentalControlFeature(
+                id: "rewards_premium",
+                titleKey: "tariff_parental_rewards_premium_premium",
+                descriptionKey: nil,
+                module: .rewards,
+                requiredTariff: .premium
+            ).isAvailable(for: .trial)
+        )
+        XCTAssertFalse(
+            ParentalControlFeature(
+                id: "rewards_premium",
+                titleKey: "tariff_parental_rewards_premium_premium",
+                descriptionKey: nil,
+                module: .rewards,
+                requiredTariff: .premium
+            ).isAvailable(for: .free)
+        )
+    }
+
     func testCompanionHeroRiveHostHasRasterFallbackForBundledMasters() {
         XCTAssertTrue(CompanionHeroRiveHost.hasRasterFallback(characterId: "unicorn"))
         XCTAssertTrue(CompanionHeroRiveHost.hasRasterFallback(characterId: "aladdin"))

@@ -20,6 +20,7 @@ final class FamilyLocalStorePersistenceTests: XCTestCase {
 
         XCTAssertNil(UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey))
         XCTAssertEqual(FamilyLocalStore.loadPersistedFamilyId(), testFamilyId)
+        XCTAssertEqual(KeychainManager.shared.loadString(forKey: .familyId), testFamilyId)
     }
 
     func testLoadPersistedFamilyIdMigratesLegacyUserDefaults() {

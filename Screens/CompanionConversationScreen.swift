@@ -336,7 +336,7 @@ struct CompanionConversationScreen: View {
         .onDisappear(perform: handleConversationDisappear)
         .onChange(of: speechManager.livePartialTranscript) { partial in
             guard speechManager.isRecording || speechManager.isPreparingRecording else { return }
-            if !partial.isEmpty {
+            if !partial.isEmpty, input != partial {
                 input = partial
             }
         }
@@ -762,7 +762,8 @@ struct CompanionConversationScreen: View {
                 .padding()
             }
             .onChange(of: messages.count) { _ in
-                if let last = messages.last?.id {
+                guard let last = messages.last?.id else { return }
+                DispatchQueue.main.async {
                     withAnimation { proxy.scrollTo(last, anchor: .bottom) }
                 }
             }
@@ -799,7 +800,7 @@ struct CompanionConversationScreen: View {
                             Label(localizationManager.localized("companion_mode_think"), systemImage: chatMode == "think" ? "checkmark" : "sparkles")
                         }
                     } label: {
-                        Image(systemName: "slider.horizontal.2.square")
+                        Image(systemName: SFSymbolCompat.sliderHorizontal2Square)
                     }
                     .accessibilityLabel(localizationManager.localized("companion_mode_picker"))
                 }

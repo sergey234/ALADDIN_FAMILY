@@ -1,0 +1,20 @@
+---
+description: Log analysis Ep1–Ep6 — Cursor TODO never delete, only merge and mark completed
+globs:
+  - "**/docs/LOG_ANALYSIS_MASTER_PLAN.md"
+alwaysApply: true
+---
+
+# Log Analysis TODO — SSOT
+
+**Документ:** `docs/LOG_ANALYSIS_MASTER_PLAN.md`
+
+## Обязательные правила
+
+1. **Никогда не удалять** задачи из Cursor TODO (id `ep*`, `startup-*`, `hero-*`, `hero-prebuild-*`, `ep-final-simulator-build`).
+2. Обновлять только через **`merge: true`** — менять `status`, не заменять весь список.
+3. Выполненные задачи помечать `completed`, но **оставлять в списке**.
+4. Новые задачи из логов добавлять с новым id (`epN-NN-...`), не перезаписывая старые.
+5. **СБОРКА И СИМУЛЯТОР — ТОЛЬКО В САМОМ КОНЦЕ.** Перед ней закрыть **ПРЕДФИНАЛ** (`hero-prebuild-*`) и открытые P1.
+6. Разрешены без сборки: `verify_*.py`, `verify_companion_rive_ios_bundle.sh`, правки Swift/ассетов, Rive Editor export.
+7. После изменения статусов — синхронизировать `docs/LOG_ANALYSIS_MASTER_PLAN.md`.

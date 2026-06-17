@@ -14,6 +14,12 @@ final class CompanionAPIService {
     private var stateCache: [String: (response: CompanionStateResponse, fetchedAt: Date)] = [:]
     private var stateInFlight: [String: Task<CompanionStateResponse, Error>] = [:]
     private let stateCacheTTL: TimeInterval = 12
+    private var charactersCache: (response: [CompanionCharacterDTO], fetchedAt: Date)?
+    private var charactersInFlight: Task<[CompanionCharacterDTO], Error>?
+    private let charactersCacheTTL: TimeInterval = 60
+    private var domainsCache: [String: (response: [CompanionLifeDomainDTO], fetchedAt: Date)] = [:]
+    private var domainsInFlight: [String: Task<[CompanionLifeDomainDTO], Error>] = [:]
+    private let domainsCacheTTL: TimeInterval = 60
 
     private init() {
         network = APIService.shared.networkManager
@@ -119,35 +125,73 @@ final class CompanionAPIService {
         }
     }
 
-    func fetchCharacters() async throws -> [CompanionCharacterDTO] {
-        try await withCheckedThrowingContinuation { continuation in
-            network.get(
-                endpoint: AppConfig.Endpoint.aiCompanionCharacters,
-                requiresAuth: true,
-                additionalHeaders: familyScopeHeaders()
-            ) { (result: Result<CompanionCharactersResponse, Error>) in
-                continuation.resume(with: result.map(\.characters))
+    func fetchCharacters(forceRefresh: Bool = false) async throws -> [CompanionCharacterDTO] {
+        let now = Date()
+        if !forceRefresh,
+           let cached = charactersCache,
+           now.timeIntervalSince(cached.fetchedAt) < charactersCacheTTL {
+            return cached.response
+        }
+        if !forceRefresh, let inflight = charactersInFlight {
+            return try await inflight.value
+        }
+
+        let task = Task<[CompanionCharacterDTO], Error> {
+            try await withCheckedThrowingContinuation { continuation in
+                network.get(
+                    endpoint: AppConfig.Endpoint.aiCompanionCharacters,
+                    requiresAuth: true,
+                    additionalHeaders: familyScopeHeaders()
+                ) { (result: Result<CompanionCharactersResponse, Error>) in
+                    continuation.resume(with: result.map(\.characters))
+                }
             }
         }
+        charactersInFlight = task
+        defer { charactersInFlight = nil }
+
+        let characters = try await task.value
+        charactersCache = (characters, now)
+        return characters
     }
 
     func fetchLifeDomains(
         locale: String = "ru",
-        securityExpertMode: Bool = false
+        securityExpertMode: Bool = false,
+        forceRefresh: Bool = false
     ) async throws -> [CompanionLifeDomainDTO] {
-        var path = "\(AppConfig.Endpoint.aiCompanionDomains)?locale=\(locale)"
-        if securityExpertMode {
-            path += "&security_expert_mode=true"
+        let cacheKey = "\(locale)|\(securityExpertMode)"
+        let now = Date()
+        if !forceRefresh,
+           let cached = domainsCache[cacheKey],
+           now.timeIntervalSince(cached.fetchedAt) < domainsCacheTTL {
+            return cached.response
         }
-        return try await withCheckedThrowingContinuation { continuation in
-            network.get(
-                endpoint: path,
-                requiresAuth: true,
-                additionalHeaders: familyScopeHeaders()
-            ) { (result: Result<CompanionLifeDomainsResponse, Error>) in
-                continuation.resume(with: result.map(\.domains))
+        if !forceRefresh, let inflight = domainsInFlight[cacheKey] {
+            return try await inflight.value
+        }
+
+        let task = Task<[CompanionLifeDomainDTO], Error> {
+            var path = "\(AppConfig.Endpoint.aiCompanionDomains)?locale=\(locale)"
+            if securityExpertMode {
+                path += "&security_expert_mode=true"
+            }
+            return try await withCheckedThrowingContinuation { continuation in
+                network.get(
+                    endpoint: path,
+                    requiresAuth: true,
+                    additionalHeaders: familyScopeHeaders()
+                ) { (result: Result<CompanionLifeDomainsResponse, Error>) in
+                    continuation.resume(with: result.map(\.domains))
+                }
             }
         }
+        domainsInFlight[cacheKey] = task
+        defer { domainsInFlight[cacheKey] = nil }
+
+        let domains = try await task.value
+        domainsCache[cacheKey] = (domains, now)
+        return domains
     }
 
     func fetchLegal(locale: String = "ru") async throws -> CompanionLegalResponse {

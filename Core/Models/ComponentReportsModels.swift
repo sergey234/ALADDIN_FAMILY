@@ -516,6 +516,12 @@ struct LocationRequest: Identifiable, Codable {
     }
 }
 
+/// `GET /api/location-bubble/requests` — сервер отдаёт обёртку, не голый массив.
+struct LocationRequestsListResponse: Codable {
+    let requests: [LocationRequest]
+    let total: Int?
+}
+
 enum LocationRequestAction: String, Codable {
     case blocked = "blocked"
     case allowed = "allowed"

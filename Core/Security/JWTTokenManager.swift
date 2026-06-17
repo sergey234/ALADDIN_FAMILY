@@ -11,6 +11,8 @@ final class JWTTokenManager: @unchecked Sendable {
     // ✅ Защита от множественных одновременных запросов на обновление токена
     private var isRefreshing = false
     private var refreshTask: Task<Bool, Never>?
+    private var lastJwtValidityDiagAt: Date?
+    private let jwtValidityDiagCooldown: TimeInterval = 60
     
     private init() {}
 
@@ -27,6 +29,23 @@ final class JWTTokenManager: @unchecked Sendable {
         #if DEBUG
         print(message())
         #endif
+    }
+
+    private func jwtDiagValidToken(expirationDate: Date, timeUntilExpiration: TimeInterval) {
+        if let last = lastJwtValidityDiagAt,
+           Date().timeIntervalSince(last) < jwtValidityDiagCooldown {
+            return
+        }
+        lastJwtValidityDiagAt = Date()
+        if timeUntilExpiration > 86400 * 2 {
+            let days = max(1, Int(timeUntilExpiration / 86400))
+            jwtDiag("✅ JWT действителен ещё ~\(days) дн. (истекает: \(expirationDate))")
+        } else if timeUntilExpiration > 3600 {
+            let hours = Int(timeUntilExpiration / 3600)
+            jwtDiag("✅ JWT действителен ещё ~\(hours) ч (истекает: \(expirationDate))")
+        } else {
+            jwtDiag("✅ JWT действителен ещё \(Int(timeUntilExpiration)) с (истекает: \(expirationDate))")
+        }
     }
     
     // MARK: - Token Expiration Check
@@ -51,15 +70,7 @@ final class JWTTokenManager: @unchecked Sendable {
             jwtDiag("⚠️ JWT Token истёк \(Int(timeSinceExpiration)) секунд назад (истёк: \(expirationDate))")
         } else {
             let timeUntilExpiration = expirationDate.timeIntervalSinceNow
-            if timeUntilExpiration > 86400 * 2 {
-                let days = max(1, Int(timeUntilExpiration / 86400))
-                jwtDiag("✅ JWT действителен ещё ~\(days) дн. (истекает: \(expirationDate))")
-            } else if timeUntilExpiration > 3600 {
-                let hours = Int(timeUntilExpiration / 3600)
-                jwtDiag("✅ JWT действителен ещё ~\(hours) ч (истекает: \(expirationDate))")
-            } else {
-                jwtDiag("✅ JWT действителен ещё \(Int(timeUntilExpiration)) с (истекает: \(expirationDate))")
-            }
+            jwtDiagValidToken(expirationDate: expirationDate, timeUntilExpiration: timeUntilExpiration)
         }
         
         return isExpired
@@ -155,7 +166,6 @@ final class JWTTokenManager: @unchecked Sendable {
         
         // Проверяем, не истёк ли токен
         if !isTokenExpired(accessToken) {
-            jwtDiag("✅ JWT: Access token действителен, обновление не требуется")
             return false // Возвращаем false - токен не был обновлен
         }
         

@@ -597,6 +597,7 @@
 		AFCD0352F90000200C7D34B /* AntifakeCallDirectorySyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0342F90000200C7D34B /* AntifakeCallDirectorySyncService.swift */; };
 		AFCD0372F90000200C7D34B /* AntifakeCallObserverService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0362F90000200C7D34B /* AntifakeCallObserverService.swift */; };
 		AFLC002F90000200C7D34B /* AntifakeLastCallContext.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFLC001F90000200C7D34B /* AntifakeLastCallContext.swift */; };
+		AFTIC22F90000100C7D34B /* AntifakeTextInputClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFTIC12F90000100C7D34B /* AntifakeTextInputClassifier.swift */; };
 		AFAN002F90000200C7D34B /* AntifakeAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFAN001F90000200C7D34B /* AntifakeAnalytics.swift */; };
 		AFCD0512F90000200C7D34B /* AntifakeCallDirectoryLabelPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0502F90000200C7D34B /* AntifakeCallDirectoryLabelPolicy.swift */; };
 		AFCD0532F90000200C7D34B /* AntifakeCheckHistoryPDFExporter.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0522F90000200C7D34B /* AntifakeCheckHistoryPDFExporter.swift */; };
@@ -606,6 +607,7 @@
 		AFNP002F90000200C7D34B /* AntifakePhonePrivacy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFNP001F90000200C7D34B /* AntifakePhonePrivacy.swift */; };
 		AFNP004F90000200C7D34B /* AntifakePrivacyWipe.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFNP003F90000200C7D34B /* AntifakePrivacyWipe.swift */; };
 		AFNP006F90000200C7D34B /* AntifakePhonePrivacyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFNP005F90000200C7D34B /* AntifakePhonePrivacyTests.swift */; };
+		AFTIC42F90000100C7D34B /* AntifakeTextInputClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFTIC32F90000100C7D34B /* AntifakeTextInputClassifierTests.swift */; };
 		AFNP008F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AFNP007F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
 		AFNP010F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AFNP009F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
 		AFPR002F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AFPR001F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
@@ -1276,6 +1278,7 @@
 		AFCD0342F90000200C7D34B /* AntifakeCallDirectorySyncService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallDirectorySyncService.swift; path = Core/Security/AntifakeCallDirectorySyncService.swift; sourceTree = "<group>"; };
 		AFCD0362F90000200C7D34B /* AntifakeCallObserverService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallObserverService.swift; path = Core/Security/AntifakeCallObserverService.swift; sourceTree = "<group>"; };
 		AFLC001F90000200C7D34B /* AntifakeLastCallContext.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeLastCallContext.swift; path = Core/Security/AntifakeLastCallContext.swift; sourceTree = "<group>"; };
+		AFTIC12F90000100C7D34B /* AntifakeTextInputClassifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTextInputClassifier.swift; path = Core/Security/AntifakeTextInputClassifier.swift; sourceTree = "<group>"; };
 		AFAN001F90000200C7D34B /* AntifakeAnalytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeAnalytics.swift; path = Core/Security/AntifakeAnalytics.swift; sourceTree = "<group>"; };
 		AFCD0502F90000200C7D34B /* AntifakeCallDirectoryLabelPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallDirectoryLabelPolicy.swift; path = Core/Security/AntifakeCallDirectoryLabelPolicy.swift; sourceTree = "<group>"; };
 		AFCD0522F90000200C7D34B /* AntifakeCheckHistoryPDFExporter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCheckHistoryPDFExporter.swift; path = Core/Security/AntifakeCheckHistoryPDFExporter.swift; sourceTree = "<group>"; };
@@ -1285,6 +1288,7 @@
 		AFNP001F90000200C7D34B /* AntifakePhonePrivacy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakePhonePrivacy.swift; path = Core/Security/AntifakePhonePrivacy.swift; sourceTree = "<group>"; };
 		AFNP003F90000200C7D34B /* AntifakePrivacyWipe.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakePrivacyWipe.swift; path = Core/Security/AntifakePrivacyWipe.swift; sourceTree = "<group>"; };
 		AFNP005F90000200C7D34B /* AntifakePhonePrivacyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakePhonePrivacyTests.swift; sourceTree = "<group>"; };
+		AFTIC32F90000100C7D34B /* AntifakeTextInputClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeTextInputClassifierTests.swift; sourceTree = "<group>"; };
 		AFNP007F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AFNP009F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AFPR001F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -1750,6 +1754,7 @@
 				5E32FFFA2EAD2570000574C4 /* SecurityManager.swift */,
 				PRMGATE12F90000100C7D34B /* PremiumGateHandler.swift */,
 				AFSh0042F90000100C7D34B /* AntifakeDeepLinkRouter.swift */,
+				AFTIC12F90000100C7D34B /* AntifakeTextInputClassifier.swift */,
 				AFSh0012F90000100C7D34B /* AntifakeSharePayloadStore.swift */,
 				AFPRM12F90000100C7D34B /* AntifakeHubPremiumCoordinator.swift */,
 				B1000100B1000100B1000100 /* ProtectionFeature.swift */,
@@ -1994,6 +1999,7 @@
 				AFPC003F90000200C7D34B /* AntifakePostCallFlowTests.swift */,
 				AFCD0542F90000200C7D34B /* AntifakeCallDirectoryStoreTests.swift */,
 				AFNP005F90000200C7D34B /* AntifakePhonePrivacyTests.swift */,
+				AFTIC32F90000100C7D34B /* AntifakeTextInputClassifierTests.swift */,
 				AFSh0252F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift */,
 				E7B800012F730011 /* ParentDashboardReportExporterTests.swift */,
 				A3C000012F740021 /* W3W4DigestAndLimitsTests.swift */,
@@ -2593,6 +2599,7 @@
 				AFCD0352F90000200C7D34B /* AntifakeCallDirectorySyncService.swift in Sources */,
 				AFCD0372F90000200C7D34B /* AntifakeCallObserverService.swift in Sources */,
 				AFLC002F90000200C7D34B /* AntifakeLastCallContext.swift in Sources */,
+				AFTIC22F90000100C7D34B /* AntifakeTextInputClassifier.swift in Sources */,
 				AFAN002F90000200C7D34B /* AntifakeAnalytics.swift in Sources */,
 				AFCD0512F90000200C7D34B /* AntifakeCallDirectoryLabelPolicy.swift in Sources */,
 				AFCD0532F90000200C7D34B /* AntifakeCheckHistoryPDFExporter.swift in Sources */,
@@ -2823,6 +2830,7 @@
 				AFPC004F90000200C7D34B /* AntifakePostCallFlowTests.swift in Sources */,
 				AFCD0552F90000200C7D34B /* AntifakeCallDirectoryStoreTests.swift in Sources */,
 				AFNP006F90000200C7D34B /* AntifakePhonePrivacyTests.swift in Sources */,
+				AFTIC42F90000100C7D34B /* AntifakeTextInputClassifierTests.swift in Sources */,
 				E7B800012F730012 /* ParentDashboardReportExporterTests.swift in Sources */,
 				A3C000012F740022 /* W3W4DigestAndLimitsTests.swift in Sources */,
 				PBUD0004 /* PerformanceBudgetTests.swift in Sources */,

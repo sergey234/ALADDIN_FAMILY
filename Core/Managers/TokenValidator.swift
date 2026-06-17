@@ -130,3 +130,15 @@ class TokenValidator {
         return isValid
     }
 }
+
+extension TokenValidator {
+    /// Сессия пригодна для API (не показывать «демо» при валидном JWT).
+    static var hasUsableAPISession: Bool {
+        switch validateCurrentToken() {
+        case .valid, .needsRefresh:
+            return true
+        case .none, .expired, .invalid:
+            return false
+        }
+    }
+}

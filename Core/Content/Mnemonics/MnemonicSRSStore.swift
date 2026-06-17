@@ -8,7 +8,8 @@ final class MnemonicSRSStore {
     private let storageKey = "child.mnemo.srs.v1"
     private let iCloudEnabledKey = "child.mnemo.srs.icloud_enabled"
     private let reviewIntervalsDays = [1, 3, 7, 14, 30]
-    private let ubiquitousStore = NSUbiquitousKeyValueStore.default
+    /// Ленивая инициализация — не трогаем `NSUbiquitousKeyValueStore` при старте без явного iCloud sync.
+    private var ubiquitousStore: NSUbiquitousKeyValueStore?
 
     private struct Entry: Codable {
         var itemId: String
@@ -22,9 +23,6 @@ final class MnemonicSRSStore {
     init(defaults: UserDefaults = .standard) {
         self.defaults = defaults
         load()
-        if isICloudSyncEnabled {
-            mergeFromICloudIfAvailable()
-        }
     }
 
     var isICloudSyncEnabled: Bool {
@@ -151,18 +149,27 @@ final class MnemonicSRSStore {
         let rows = Array(entries.values)
         guard let data = try? JSONEncoder().encode(rows) else { return }
         defaults.set(data, forKey: storageKey)
-        if isICloudSyncEnabled {
-            ubiquitousStore.set(data, forKey: storageKey)
-            ubiquitousStore.synchronize()
+        if isICloudSyncEnabled, let cloud = resolveUbiquitousStore() {
+            cloud.set(data, forKey: storageKey)
+            cloud.synchronize()
         }
         Task {
             await MnemonicNotificationScheduler.shared.rescheduleDailyReminder()
         }
     }
 
+    private func resolveUbiquitousStore() -> NSUbiquitousKeyValueStore? {
+        guard isICloudSyncEnabled else { return nil }
+        if ubiquitousStore == nil {
+            ubiquitousStore = NSUbiquitousKeyValueStore.default
+        }
+        return ubiquitousStore
+    }
+
     private func mergeFromICloudIfAvailable() {
         guard isICloudSyncEnabled,
-              let data = ubiquitousStore.data(forKey: storageKey),
+              let cloud = resolveUbiquitousStore(),
+              let data = cloud.data(forKey: storageKey),
               let decoded = try? JSONDecoder().decode([Entry].self, from: data)
         else { return }
         let cloudEntries = Dictionary(uniqueKeysWithValues: decoded.map { ($0.itemId, $0) })

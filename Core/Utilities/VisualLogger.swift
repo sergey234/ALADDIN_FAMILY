@@ -419,9 +419,47 @@ class VisualLogger: ObservableObject {
 /// Writes to Documents `startup_trace.txt` / `app_lifecycle_trace.txt` so diagnostics survive Xcode disconnect and SIGKILL.
 enum LaunchDiagnostics {
     private static let ioQueue = DispatchQueue(label: "com.aladdin.launchDiagnostics.io", qos: .utility)
+    private static let bufferLock = NSLock()
+    private static var startupBuffer: [String] = []
+    private static var startupPhaseEnded = false
 
     static func appendStartupTrace(_ message: String) {
-        appendLine(message, fileName: "startup_trace.txt", consolePrefix: "STARTUP_TRACE")
+        let ts = ISO8601DateFormatter().string(from: Date())
+        let line = "[\(ts)] \(message)"
+        bufferLock.lock()
+        let ended = startupPhaseEnded
+        if !ended {
+            startupBuffer.append(line)
+        }
+        bufferLock.unlock()
+        if ended {
+            appendLine(line + "\n", fileName: "startup_trace.txt", consolePrefix: "STARTUP_TRACE")
+        }
+    }
+
+    /// Сбрасывает буфер startup-событий одним атомарным write (без склейки строк при параллельных print).
+    static func finishStartupTracePhase() {
+        bufferLock.lock()
+        guard !startupPhaseEnded else {
+            bufferLock.unlock()
+            return
+        }
+        startupPhaseEnded = true
+        let lines = startupBuffer
+        startupBuffer.removeAll()
+        bufferLock.unlock()
+
+        guard !lines.isEmpty else { return }
+        let block = lines.joined(separator: "\n") + "\n"
+        ioQueue.async {
+            writeBlock(block, fileName: "startup_trace.txt")
+            #if DEBUG
+            print("🧭 STARTUP_TRACE_SUMMARY (\(lines.count) events)")
+            for line in lines {
+                print("🧭 STARTUP_TRACE: \(line)")
+            }
+            #endif
+        }
     }
 
     static func appendLifecycleTrace(_ message: String) {
@@ -432,25 +470,29 @@ enum LaunchDiagnostics {
         let ts = ISO8601DateFormatter().string(from: Date())
         let line = "[\(ts)] \(message)\n"
         ioQueue.async {
-            let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
-            let fileURL = (docs ?? FileManager.default.temporaryDirectory).appendingPathComponent(fileName)
-            do {
-                if FileManager.default.fileExists(atPath: fileURL.path) {
-                    let handle = try FileHandle(forWritingTo: fileURL)
-                    defer { try? handle.close() }
-                    try handle.seekToEnd()
-                    if let data = line.data(using: .utf8) {
-                        try handle.write(contentsOf: data)
-                    }
-                } else {
-                    try line.write(to: fileURL, atomically: true, encoding: .utf8)
-                }
-            } catch {
-                print("⚠️ LaunchDiagnostics write failed (\(fileName)): \(error)")
-            }
+            writeBlock(line, fileName: fileName)
             #if DEBUG
             print("🧭 \(consolePrefix): \(message)")
             #endif
+        }
+    }
+
+    private static func writeBlock(_ block: String, fileName: String) {
+        let docs = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first
+        let fileURL = (docs ?? FileManager.default.temporaryDirectory).appendingPathComponent(fileName)
+        do {
+            if FileManager.default.fileExists(atPath: fileURL.path) {
+                let handle = try FileHandle(forWritingTo: fileURL)
+                defer { try? handle.close() }
+                try handle.seekToEnd()
+                if let data = block.data(using: .utf8) {
+                    try handle.write(contentsOf: data)
+                }
+            } else {
+                try block.write(to: fileURL, atomically: true, encoding: .utf8)
+            }
+        } catch {
+            print("⚠️ LaunchDiagnostics write failed (\(fileName)): \(error)")
         }
     }
 }

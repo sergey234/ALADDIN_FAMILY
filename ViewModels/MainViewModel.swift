@@ -148,6 +148,12 @@ class MainViewModel: ObservableObject {
         DispatchQueue.main.asyncAfter(deadline: .now() + delay, execute: work)
     }
 
+    /// Счётчик устройств: если API вернул 0, но в семье есть участники — минимум 1 (текущий телефон).
+    private static func reconcileDevicesProtectedCount(apiCount: Int, familyMembers: Int) -> Int {
+        if apiCount > 0 { return apiCount }
+        return familyMembers > 0 ? 1 : 0
+    }
+
     /// Счётчик устройств на главной/профиле = тот же `GET /api/devices` и та же дедупликация по `id`, что на экране «Устройства».
     private static func deduplicatedDeviceCount(_ list: [DeviceResponse]) -> Int {
         var seen = Set<String>()
@@ -166,7 +172,10 @@ class MainViewModel: ObservableObject {
             Task { @MainActor in
                 guard let self = self else { return }
                 if case .success(let list) = result {
-                    self.devicesProtected = Self.deduplicatedDeviceCount(list)
+                    self.devicesProtected = Self.reconcileDevicesProtectedCount(
+                        apiCount: Self.deduplicatedDeviceCount(list),
+                        familyMembers: self.familyMembers
+                    )
                 }
                 UserDefaults.standard.set(false, forKey: AppConfig.UserDefaultsKeys.pendingMainDashboardDevicesRefresh)
                 NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
@@ -262,33 +271,33 @@ class MainViewModel: ObservableObject {
         print("🔄 MainViewModel: Загружаем данные дашборда из API... (attempt \(currentAttempt)/\(maxAttempts))")
         #endif
         
-        // ✅ ПРОВЕРКА ТОКЕНА: Если нет токена, не делаем API вызов
-        let hasAuthToken = keychainManager.isDataAvailable(forKey: .authToken)
-        print("🔐 MainViewModel: Проверка токена авторизации")
-        print("   - Токен найден: \(hasAuthToken ? "✅ ДА" : "❌ НЕТ")")
-        if hasAuthToken {
-            if let token = keychainManager.loadString(forKey: .authToken) {
-                print("   - Токен: \(token.prefix(20))...")
+        // ✅ ПРОВЕРКА СЕССИИ: ждём SubscriptionManager, не показываем «демо» при валидном JWT
+        if !TokenValidator.hasUsableAPISession {
+            if !SubscriptionManager.shared.isInitialized && currentAttempt == 1 {
+                #if DEBUG
+                print("⏳ MainViewModel: Сессия ещё не готова — ждём SubscriptionManager…")
+                #endif
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.8) { [weak self] in
+                    self?.loadDashboardDataWithRetry(maxAttempts: maxAttempts, currentAttempt: currentAttempt)
+                }
+                isLoading = false
+                isLoadingDashboard = false
+                PerformanceMonitor.shared.endScreenLoad("MainDashboard")
+                return
             }
-        }
 
-        if !hasAuthToken {
-            // ❌ НЕТ ТОКЕНА: Ждём инициализации SubscriptionManager (Phase 1/2 fix)
             #if DEBUG
-            print("⚠️ MainViewModel: Токен отсутствует. Ожидаем инициализацию SubscriptionManager...")
+            print("ℹ️ MainViewModel: Нет API-сессии — пропускаем загрузку дашборда")
             #else
-            print("❌ MainViewModel: Токен отсутствует - требуется авторизация")
+            print("❌ MainViewModel: Требуется авторизация")
             #endif
 
-            // Не сбрасываем данные агрессивно — сохраняем предыдущее состояние
             Task { @MainActor [weak self] in
                 guard let self = self else { return }
                 self.isLoading = false
                 self.isLoadingDashboard = false
                 PerformanceMonitor.shared.endScreenLoad("MainDashboard")
-
                 #if DEBUG
-                // В DEBUG не сбрасываем в 0 — оставляем предыдущие значения или ставим минимальные
                 if self.familyMembers == 0 {
                     self.familyMembers = 1
                     self.devicesProtected = 1
@@ -303,7 +312,7 @@ class MainViewModel: ObservableObject {
             return
         }
 
-        // ✅ ЕСТЬ ТОКЕН: Делаем API вызов
+        // ✅ ЕСТЬ СЕССИЯ: Делаем API вызов
         let timeoutInterval: TimeInterval = 10.0
         let timeoutWorkItem = DispatchWorkItem { [weak self] in
             guard let self = self else { return }
@@ -396,14 +405,23 @@ class MainViewModel: ObservableObject {
                     if let devicesResult = devicesListResult {
                         switch devicesResult {
                         case .success(let list):
-                            self.devicesProtected = Self.deduplicatedDeviceCount(list)
+                            self.devicesProtected = Self.reconcileDevicesProtectedCount(
+                                apiCount: Self.deduplicatedDeviceCount(list),
+                                familyMembers: self.familyMembers
+                            )
                             print("   - Устройства (из /api/devices, dedupe): \(self.devicesProtected)")
                         case .failure(let err):
-                            self.devicesProtected = fallbackDevices
+                            self.devicesProtected = Self.reconcileDevicesProtectedCount(
+                                apiCount: fallbackDevices,
+                                familyMembers: self.familyMembers
+                            )
                             print("   - Устройства: список API недоступен, используем family/stats: \(fallbackDevices) (\(err.localizedDescription))")
                         }
                     } else {
-                        self.devicesProtected = fallbackDevices
+                        self.devicesProtected = Self.reconcileDevicesProtectedCount(
+                            apiCount: fallbackDevices,
+                            familyMembers: self.familyMembers
+                        )
                     }
 
                     self.isLoading = false
@@ -578,11 +596,10 @@ class MainViewModel: ObservableObject {
         let isDebugToken = isUsingDebugTokens()
 
         if isDebugToken {
-            print("🔐 MainViewModel: Debug токены не работают с сервером - работаем в offline режиме")
-            // Для debug токенов не очищаем их и не отправляем на логин
-            // Просто показываем сообщение и работаем с дефолтными данными
+            print("🔐 MainViewModel: Debug токены не работают с сервером — локальный режим")
             isLoading = false
-            errorMessage = "Работа в демо-режиме с тестовыми данными"
+            isLoadingDashboard = false
+            errorMessage = nil
             NotificationCenter.default.post(name: NSNotification.Name("MainViewModelDataUpdated"), object: nil)
             return
         }

@@ -37,13 +37,28 @@ class ComponentConfigurationService: ObservableObject {
     
     /// Получить конфигурацию компонента
     func getConfiguration(for componentId: String) async throws -> ComponentConfiguration {
-        // Проверить кэш
-        if let cached = configurations[componentId] {
+        if let cached = configurations[componentId],
+           let fetchedAt = configurationFetchedAt[componentId],
+           Date().timeIntervalSince(fetchedAt) < configurationFetchTTL {
             return cached
         }
+        if let inflight = configurationInFlight[componentId] {
+            return try await inflight.value
+        }
 
-        // Загрузить из API
-        return try await loadConfigurationFromAPI(for: componentId)
+        let task = Task<ComponentConfiguration, Error> { [weak self] in
+            guard let self else {
+                throw ComponentError.unknown(NSError(domain: "ComponentConfigurationService", code: -1))
+            }
+            return try await self.loadConfigurationFromAPI(for: componentId)
+        }
+        configurationInFlight[componentId] = task
+        defer { configurationInFlight[componentId] = nil }
+
+        let config = try await task.value
+        configurations[componentId] = config
+        configurationFetchedAt[componentId] = Date()
+        return config
     }
     
     /// Сохранить конфигурацию компонента
@@ -62,6 +77,7 @@ class ComponentConfigurationService: ObservableObject {
             componentId: componentId,
             configuration: configuration
         )
+        configurationFetchedAt[componentId] = Date()
 
         // Сохранить в кэш
         await cacheManager.saveConfiguration(componentId: componentId, configuration: configuration)
@@ -107,6 +123,12 @@ class ComponentConfigurationService: ObservableObject {
     // MARK: - Parental monitoring bot (`parental_control_bot`)
 
     private var parentalMonitoringBotComponentId: String { "parental_control_bot" }
+    private var lastParentalMonitoringSave: (messages: Bool, screenshots: Bool)?
+    private var lastParentalMonitoringSaveAt: Date?
+    private let parentalMonitoringSaveDedupeWindow: TimeInterval = 2
+    private var configurationFetchedAt: [String: Date] = [:]
+    private var configurationInFlight: [String: Task<ComponentConfiguration, Error>] = [:]
+    private let configurationFetchTTL: TimeInterval = 45
 
     /// Загрузка флагов `parental_messages_monitoring` / `parental_screenshots_enabled` с сервера (компонентная конфигурация).
     func loadParentalMonitoringTogglesFromServer() async -> (messages: Bool?, screenshots: Bool?) {
@@ -126,17 +148,30 @@ class ComponentConfigurationService: ObservableObject {
     }
 
     func saveParentalMonitoringTogglesToServer(messagesEnabled: Bool, screenshotsEnabled: Bool) async throws {
+        let payload = (messagesEnabled, screenshotsEnabled)
+        if let last = lastParentalMonitoringSave,
+           last == payload,
+           let at = lastParentalMonitoringSaveAt,
+           Date().timeIntervalSince(at) < parentalMonitoringSaveDedupeWindow {
+            return
+        }
+
+        let existing = try? await getConfiguration(for: parentalMonitoringBotComponentId)
+        var merged = existing?.additionalSettings ?? [:]
+        merged["messagesMonitoringEnabled"] = AnyCodable(messagesEnabled)
+        merged["screenshotsEnabled"] = AnyCodable(screenshotsEnabled)
+        merged["parental_messages_monitoring"] = AnyCodable(messagesEnabled)
+        merged["parental_screenshots_enabled"] = AnyCodable(screenshotsEnabled)
+
         let configuration = ComponentConfiguration(
-            isEnabled: true,
-            priority: .normal,
-            additionalSettings: [
-                "messagesMonitoringEnabled": AnyCodable(messagesEnabled),
-                "screenshotsEnabled": AnyCodable(screenshotsEnabled),
-                "parental_messages_monitoring": AnyCodable(messagesEnabled),
-                "parental_screenshots_enabled": AnyCodable(screenshotsEnabled)
-            ]
+            isEnabled: existing?.isEnabled ?? true,
+            priority: existing?.priority ?? .normal,
+            additionalSettings: merged
         )
         try await saveConfiguration(componentId: parentalMonitoringBotComponentId, configuration: configuration)
+        configurationFetchedAt[parentalMonitoringBotComponentId] = Date()
+        lastParentalMonitoringSave = payload
+        lastParentalMonitoringSaveAt = Date()
     }
 
 }

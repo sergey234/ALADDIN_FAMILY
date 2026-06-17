@@ -177,9 +177,8 @@ class NetworkProtectionViewModel: ObservableObject {
         let prioritizedItems = createPrioritizedLoadItems()
 
         // Режим без сессии (локальный кэш тумблеров)
-        if AppConfig.authToken == nil {
-            // Локальный режим (без токена): загружаем из UserDefaults
-            await loadDemoModeStatuses(prioritizedItems: prioritizedItems)
+        if !TokenValidator.hasUsableAPISession {
+            await loadLocalCacheStatuses(prioritizedItems: prioritizedItems)
         } else {
             // Продакшен режим: загружаем из API
             await loadProductionModeStatuses(prioritizedItems: prioritizedItems)
@@ -188,7 +187,7 @@ class NetworkProtectionViewModel: ObservableObject {
         print("✅ NetworkProtectionViewModel: Загрузка статусов завершена")
     }
 
-    private func loadDemoModeStatuses(prioritizedItems: [(id: String, priority: ComponentLoadPriority)]) async {
+    private func loadLocalCacheStatuses(prioritizedItems: [(id: String, priority: ComponentLoadPriority)]) async {
         // Локальный режим: статусы из UserDefaults (кэш тумблеров)
         // ✅ BUILD 104: УБРАЛИ await MainActor.run {} - метод уже на @MainActor
         for item in prioritizedItems {
@@ -204,15 +203,15 @@ class NetworkProtectionViewModel: ObservableObject {
         // Продакшен режим: загружаем из API
         // ✅ BUILD 104: УБРАЛИ await MainActor.run {} - метод уже на @MainActor
         // ✅ ЭТАП 2: Проверка токена перед загрузкой
-        guard AppConfig.authToken != nil else {
-            print("⚠️ NetworkProtectionViewModel: Токен отсутствует, загружаем локальный кэш тумблеров")
-            await loadDemoModeStatuses(prioritizedItems: prioritizedItems)
+        guard TokenValidator.hasUsableAPISession else {
+            print("⚠️ NetworkProtectionViewModel: Нет API-сессии, загружаем локальный кэш тумблеров")
+            await loadLocalCacheStatuses(prioritizedItems: prioritizedItems)
             return
         }
         
         for item in prioritizedItems {
             do {
-                let status = try await APIService.shared.getComponentStatus(componentId: item.id)
+                let status = try await statusService.getStatus(for: item.id, priority: .normal)
                 self.updateStatusForComponent(componentId: item.id, status: status)
             } catch {
                 // ✅ ЭТАП 3: Обработка unauthorized

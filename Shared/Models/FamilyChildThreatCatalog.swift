@@ -71,7 +71,7 @@ enum FamilyChildThreat: String, CaseIterable, Identifiable, Sendable {
     var systemImage: String {
         switch self {
         case .chd01, .chd07, .chd10: return "eye.trianglebadge.exclamationmark"
-        case .chd02, .chd16: return "bubble.left.and.exclamationmark"
+        case .chd02, .chd16: return SFSymbolCompat.bubbleLeftExclamation
         case .chd03: return "doc.richtext"
         case .chd04: return "location.circle.fill"
         case .chd05, .chd08, .chd17: return "gamecontroller.fill"

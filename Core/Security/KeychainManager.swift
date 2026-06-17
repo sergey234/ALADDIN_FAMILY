@@ -102,6 +102,8 @@ class KeychainManager {
         
         if status == errSecSuccess {
             return result as? Data
+        } else if status == errSecItemNotFound {
+            return nil
         } else {
             print("❌ KeychainManager: Failed to load data for key \(key.rawValue). Status: \(status)")
             return nil

@@ -325,6 +325,14 @@ struct DevicesScreen: View {
         case .inactive: return devices.filter { $0.status == .inactive || $0.status == .blocked }.count
         }
     }
+
+    private var cachedFamilyMemberCount: Int {
+        guard let data = UserDefaults.standard.data(forKey: FamilyLocalStore.familyMembersKey),
+              let members = try? JSONDecoder().decode([FamilyMemberResponse].self, from: data) else {
+            return 0
+        }
+        return members.count
+    }
     
     // MARK: - Device List
     
@@ -349,7 +357,13 @@ struct DevicesScreen: View {
                         .font(.bodyBold)
                         .foregroundColor(.textPrimary)
                         .multilineTextAlignment(.center)
-                    Text(localizationManager.localized("devices_list_empty_subtitle"))
+                    Text(
+                        localizationManager.localized(
+                            cachedFamilyMemberCount > 0
+                                ? "devices_list_empty_with_family_subtitle"
+                                : "devices_list_empty_subtitle"
+                        )
+                    )
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)

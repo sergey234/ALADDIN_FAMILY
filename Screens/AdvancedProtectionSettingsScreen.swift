@@ -16,9 +16,15 @@ struct AdvancedProtectionSettingsScreen: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @StateObject private var viewModel = ProtectionSettingsViewModel()
+    @ObservedObject private var viewModel = ProtectionSettingsViewModel.shared
     @ObservedObject private var contentBlockerManager = ContentBlockerManager.shared
-    @ObservedObject private var componentStatusService = ComponentStatusService.shared
+
+    /// Throttle повторных onAppear / scenePhase.active — убирает burst init/load.
+    @State private var lastScreenDataRefresh: Date?
+    private let screenDataRefreshMinInterval: TimeInterval = 30
+
+    /// Снимок счётчика угроз — без @ObservedObject ComponentStatusService (иначе body×100+ при каждом status).
+    @State private var threatEnabledCountSnapshot: Int = 0
 
     // MARK: - Family (AppStorage/UserDefaults)
     @AppStorage("parental_messages_monitoring") private var isMessagesMonitoringEnabled: Bool = false
@@ -67,21 +73,19 @@ struct AdvancedProtectionSettingsScreen: View {
     @State private var threatDestination: ThreatDestination? = nil
     
     // MARK: - Initialization
-    
+
+    private static var didLogInitThisSession = false
+
     init() {
-        if Self.ENABLE_CRASH_LOGS {
-            logger.logFunction("init", message: "ВЫЗВАН", section: "AdvancedProtection")
+        if Self.ENABLE_CRASH_LOGS, !Self.didLogInitThisSession {
+            Self.didLogInitThisSession = true
+            SettingsDiagnosticsLogger.shared.logFunction("init", message: "ВЫЗВАН (once per session)", section: "AdvancedProtection")
         }
     }
     
     // MARK: - Body
     
     var body: some View {
-        let _ = {
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("body", message: "НАЧАЛО", section: "AdvancedProtection")
-            }
-        }()
         ZStack {
             StormMeshBackground(variant: .shield)
             
@@ -110,10 +114,7 @@ struct AdvancedProtectionSettingsScreen: View {
         .navigationBarHidden(true)
         .id("advanced_protection_settings_screen_lang_\(localizationManager.currentLanguage.rawValue)")
         .onAppear {
-            refreshContentBlockerStatus()
-            loadFamilyStats()
-            refreshThreatStatuses()
-            loadParentalMonitoringSettingsFromServer()
+            loadScreenDataIfNeeded()
         }
         .withVisualLogger()
         .alert(localizationManager.localized("advanced_safari_status_error"), isPresented: Binding(
@@ -145,10 +146,7 @@ struct AdvancedProtectionSettingsScreen: View {
         }
         .onChange(of: scenePhase) { newPhase in
             if newPhase == .active {
-                refreshContentBlockerStatus()
-                loadFamilyStats()
-                refreshThreatStatuses()
-                loadParentalMonitoringSettingsFromServer()
+                loadScreenDataIfNeeded()
             }
         }
         .sheet(item: $safariSettingsSheet) { sheet in
@@ -347,13 +345,7 @@ struct AdvancedProtectionSettingsScreen: View {
     // MARK: - Components Sections
     
     private var componentsSections: some View {
-        let _ = {
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("componentsSections", message: "НАЧАЛО", section: "AdvancedProtection")
-            }
-        }()
-        
-        return VStack(spacing: Spacing.l) {
+        VStack(spacing: Spacing.l) {
             // Safari (Content Blocker)
             SettingsAccordion(
                 icon: "🌐",
@@ -653,6 +645,22 @@ struct AdvancedProtectionSettingsScreen: View {
     }
 
     // MARK: - Safari helpers
+
+    private func loadScreenDataIfNeeded(force: Bool = false) {
+        let now = Date()
+        if !force,
+           let lastRefresh = lastScreenDataRefresh,
+           now.timeIntervalSince(lastRefresh) < screenDataRefreshMinInterval {
+            syncThreatEnabledCountSnapshot()
+            return
+        }
+        lastScreenDataRefresh = now
+        syncThreatEnabledCountSnapshot()
+        refreshContentBlockerStatus()
+        loadFamilyStats()
+        refreshThreatStatuses()
+        loadParentalMonitoringSettingsFromServer()
+    }
     
     private func refreshContentBlockerStatus() {
         if Self.ENABLE_CRASH_LOGS {
@@ -682,9 +690,19 @@ struct AdvancedProtectionSettingsScreen: View {
         if Self.ENABLE_CRASH_LOGS {
             logger.logFunction("refreshThreatStatuses", message: "НАЧАЛО", section: "AdvancedProtection")
         }
-        
+
         Task {
-            await componentStatusService.refreshCriticalComponents()
+            await ComponentStatusService.shared.refreshCriticalComponents()
+            await MainActor.run {
+                syncThreatEnabledCountSnapshot()
+            }
+        }
+    }
+
+    private func syncThreatEnabledCountSnapshot() {
+        let statuses = ComponentStatusService.shared.componentStatuses
+        threatEnabledCountSnapshot = threatComponentIds.reduce(0) { acc, id in
+            acc + ((statuses[id]?.isEnabled ?? false) ? 1 : 0)
         }
     }
     
@@ -697,51 +715,42 @@ struct AdvancedProtectionSettingsScreen: View {
         ]
     }
     
-    private var threatEnabledCount: Int {
-        threatComponentIds.reduce(0) { acc, id in
-            let isEnabled = componentStatusService.componentStatuses[id]?.isEnabled ?? false
-            return acc + (isEnabled ? 1 : 0)
-        }
-    }
-    
     private var threatAggregateStatusText: String {
-        if threatEnabledCount == 0 {
+        if threatEnabledCountSnapshot == 0 {
             return localizationManager.localized("advanced_threat_status_off")
         }
-        if threatEnabledCount == threatComponentIds.count {
+        if threatEnabledCountSnapshot == threatComponentIds.count {
             return localizationManager.localized("advanced_threat_status_on")
         }
         return String(
             format: localizationManager.localized("advanced_threat_status_partial"),
-            threatEnabledCount,
+            threatEnabledCountSnapshot,
             threatComponentIds.count
         )
     }
     
     private var threatAggregateIsOn: Bool {
-        threatEnabledCount == threatComponentIds.count
+        threatEnabledCountSnapshot == threatComponentIds.count
     }
     
     private func setThreatAggregate(isOn: Bool) {
         if Self.ENABLE_CRASH_LOGS {
             logger.logFunction("setThreatAggregate", message: "НАЧАЛО, isOn = \(isOn)", section: "AdvancedProtection")
         }
-        
+
         Task {
+            let service = ComponentStatusService.shared
             for componentId in threatComponentIds {
-                try? await componentStatusService.updateStatus(componentId: componentId, isEnabled: isOn)
+                try? await service.updateStatus(componentId: componentId, isEnabled: isOn)
+            }
+            await MainActor.run {
+                syncThreatEnabledCountSnapshot()
             }
         }
     }
     
     private var threatProtectionAggregatorCard: some View {
-        let _ = {
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("threatProtectionAggregatorCard", message: "НАЧАЛО", section: "AdvancedProtection")
-            }
-        }()
-        
-        return VStack(spacing: Spacing.s) {
+        VStack(spacing: Spacing.s) {
             HStack(alignment: .top, spacing: Spacing.m) {
                 Text("🛡️")
                     .font(.system(size: 24))
@@ -989,12 +998,6 @@ struct AdvancedProtectionSettingsScreen: View {
         configureAction: @escaping () -> Void,
         trigger: SafariSettingsSheet
     ) -> some View {
-        let _ = {
-            if Self.ENABLE_CRASH_LOGS {
-                logger.logFunction("safariCard", message: "НАЧАЛО для '\(title)'", section: "AdvancedProtection")
-            }
-        }()
-        
         let statusText: String = {
             switch contentBlockerManager.status {
             case .enabled:
@@ -1251,7 +1254,7 @@ struct AdvancedProtectionSettingsScreen: View {
         SyncEngine.shared.publish(domain: .settings, operation: "advanced_parental_monitoring_change_pending", state: .pending)
         parentalMonitoringSyncTask?.cancel()
         parentalMonitoringSyncTask = Task {
-            try? await Task.sleep(nanoseconds: 250_000_000)
+            try? await Task.sleep(nanoseconds: 500_000_000)
             if Task.isCancelled { return }
             await syncParentalMonitoringSettingsToServer()
         }

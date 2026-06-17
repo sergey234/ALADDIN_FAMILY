@@ -17,6 +17,7 @@ struct CompanionHeroRasterView: View {
     @State private var pulse = false
     @Environment(\.scenePhase) private var scenePhase
     @State private var isVisible = false
+    @State private var didLogPath = false
 
     private var unit: CGFloat { CompanionHeroLayout.scaleUnit(for: min(stageSize.width, stageSize.height)) }
 
@@ -47,6 +48,14 @@ struct CompanionHeroRasterView: View {
         .onAppear {
             pulse = true
             isVisible = true
+            if !didLogPath {
+                didLogPath = true
+                CompanionHeroRiveHost.logHeroPath(
+                    characterId: characterId,
+                    renderPath: "PNG",
+                    vmStatus: "n/a"
+                )
+            }
         }
         .onDisappear { isVisible = false }
         .onChange(of: emotion) { _ in pulse.toggle() }
@@ -65,17 +74,18 @@ struct CompanionHeroRasterView: View {
 
     @ViewBuilder
     private func hubStage(t: TimeInterval, mouthOpen: CGFloat) -> some View {
-        ZStack {
+        ZStack(alignment: .topLeading) {
             Circle()
                 .fill(CompanionHeroRiveMapping.backgroundGradient(for: emotion))
             masterImage(t: t, mouthOpen: mouthOpen, hub: true)
+            debugPathBadge
         }
         .clipShape(Circle())
     }
 
     @ViewBuilder
     private func fullBodyStage(t: TimeInterval, mouthOpen: CGFloat) -> some View {
-        ZStack {
+        ZStack(alignment: .topLeading) {
             RoundedRectangle(cornerRadius: CompanionHeroLayout.stageCornerRadius, style: .continuous)
                 .fill(
                     CompanionHeroRiveMapping.stageBackground(
@@ -84,10 +94,24 @@ struct CompanionHeroRasterView: View {
                     )
                 )
             masterImage(t: t, mouthOpen: mouthOpen, hub: false)
+            debugPathBadge
         }
         .clipShape(
             RoundedRectangle(cornerRadius: CompanionHeroLayout.stageCornerRadius, style: .continuous)
         )
+    }
+
+    @ViewBuilder
+    private var debugPathBadge: some View {
+        #if DEBUG
+        Text(CompanionHeroRiveHost.debugHeroPathLabel(characterId: characterId, usesRive: false))
+            .font(.caption2.monospaced())
+            .padding(4)
+            .background(.black.opacity(0.55))
+            .foregroundStyle(.orange)
+            .clipShape(RoundedRectangle(cornerRadius: 4))
+            .padding(6)
+        #endif
     }
 
     @ViewBuilder
@@ -155,18 +179,22 @@ struct CompanionHeroRasterView: View {
         if emotion.suppressesPlayfulVisuals { return 0 }
         let amp: CGFloat = {
             switch emotion {
+            case .idle: return hub ? 4 * unit : 8 * unit
             case .listening: return hub ? 3 * unit : 5 * unit
             case .thinking: return hub ? 2 * unit : 4 * unit
             case .playful, .excited, .celebrate: return hub ? 4 * unit : 8 * unit
-            default: return hub ? 1.5 * unit : 3 * unit
+            default: return hub ? 2 * unit : 5 * unit
             }
         }()
-        let speed = emotion == .thinking ? 1.2 : 2.4
+        let speed = emotion == .thinking ? 1.2 : (emotion == .idle ? 1.5 : 2.4)
         return sin(t * speed) * amp
     }
 
     private func emotionScale(t: TimeInterval, hub: Bool) -> CGFloat {
         if emotion.suppressesPlayfulVisuals { return 1 }
+        if emotion == .idle {
+            return 1 + (hub ? 0.015 : 0.02) * sin(t * 1.5)
+        }
         if emotion == .playful || emotion == .excited {
             return 1 + (hub ? 0.03 : 0.05) * sin(t * 3)
         }

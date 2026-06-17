@@ -14,6 +14,12 @@ struct RoadsideAssistanceView: View {
     @State private var errorMessage: String? = nil
     @State private var activeRequest: RoadsideRequest? = nil
     @State private var requestHistory: [RoadsideRequest] = []
+    @State private var historyLoaded: Bool = false
+    @State private var historyGatewayDisabled: Bool = UserDefaults.standard.bool(
+        forKey: RoadsideAssistanceView.historyGatewayDisabledKey
+    )
+    
+    private static let historyGatewayDisabledKey = "roadside_history_gateway_disabled"
     
     private let apiService = APIService.shared
     private let locationManager = CLLocationManager()
@@ -34,7 +40,7 @@ struct RoadsideAssistanceView: View {
                         }
                         
                         // История обращений
-                        if !requestHistory.isEmpty {
+                        if historyLoaded {
                             historySection
                         }
                     }
@@ -142,8 +148,20 @@ struct RoadsideAssistanceView: View {
                 .font(.title3)
                 .foregroundColor(.textPrimary)
             
-            ForEach(requestHistory) { request in
-                HistoryRow(request: request)
+            if requestHistory.isEmpty {
+                Text(
+                    localizationManager.localized(
+                        historyGatewayDisabled
+                            ? "roadside_history_unavailable"
+                            : "roadside_history_empty"
+                    )
+                )
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+            } else {
+                ForEach(requestHistory) { request in
+                    HistoryRow(request: request)
+                }
             }
         }
         .padding()
@@ -195,12 +213,25 @@ struct RoadsideAssistanceView: View {
     }
     
     private func loadHistory() {
+        if UserDefaults.standard.bool(forKey: Self.historyGatewayDisabledKey) {
+            historyGatewayDisabled = true
+            historyLoaded = true
+            requestHistory = []
+            return
+        }
+
         apiService.getRoadsideAssistanceHistory { result in
+            historyLoaded = true
             switch result {
             case .success(let history):
                 requestHistory = history
-            case .failure:
-                break
+            case .failure(let error):
+                // Gateway disabled / feature off → 404; treat as empty history, no error UI.
+                if case .notFound = NetworkError.from(error) {
+                    requestHistory = []
+                    historyGatewayDisabled = true
+                    UserDefaults.standard.set(true, forKey: Self.historyGatewayDisabledKey)
+                }
             }
         }
     }

@@ -10,6 +10,8 @@
 | Документ | Содержание |
 |----------|------------|
 | **Этот файл** | Все задачи UX + perf + antifake + wellness — один реестр |
+| **`docs/LOG_ANALYSIS_MASTER_PLAN.md`** | **Общий план: Companion Hero (27) + Log Analysis Ep1–Ep6 (47)** |
+| **`docs/COMPANION_ML_HANDOFF_HERO_ANIMATION_AND_PERF.md`** | **Handoff ML — детали анимации героев, билд 240** |
 | **`.cursor/ANTIFAKE_V4_TASK_REGISTRY.md`** | **Antifake v4 — 134 задач (SSOT ID, 72 ✅)** |
 | **`.cursor/ANTIFAKE_V4_DOC_INDEX.md`** | **Карта всех antifake документов** |
 | **`docs/release/MASTER_STATUS_INDEX.md`** | **Единый SSOT — счётчики и ссылки** |

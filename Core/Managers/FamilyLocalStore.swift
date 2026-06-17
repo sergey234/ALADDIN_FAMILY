@@ -79,7 +79,9 @@ enum FamilyLocalStore {
         }
         if let uid = currentJWTUserId() {
             KeychainManager.shared.save(newId, scopedKey: scopedFamilyIdKey(forUserId: uid))
-            KeychainManager.shared.delete(forKey: .familyId)
+            // Зеркало в legacy Keychain — не delete: после GET /family/members логи показывали
+            // delete(.familyId) и пустой id у RecoveryCodeStorageManager / старых читателей.
+            KeychainManager.shared.save(newId, forKey: .familyId)
         } else {
             KeychainManager.shared.save(newId, forKey: .familyId)
         }

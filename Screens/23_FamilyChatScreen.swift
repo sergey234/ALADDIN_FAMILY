@@ -248,8 +248,10 @@ struct FamilyChatScreen: View {
                 }
             }
             .onChange(of: messages.count) { _ in
-                if let lastMessage = messages.last {
-                    scrollToMessage(lastMessage.id, proxy: proxy)
+                guard let lastMessage = messages.last else { return }
+                let messageId = lastMessage.id
+                DispatchQueue.main.async {
+                    scrollToMessage(messageId, proxy: proxy)
                 }
             }
             .accessibilityElement(children: .contain)
@@ -1601,9 +1603,9 @@ struct FamilyChatScreen: View {
         let now = Date()
         if now.timeIntervalSince(lastTypingSignalAt) >= 1.2 {
             webSocket?.sendTyping()
+            apiService.sendTypingIndicator(familyId: getFamilyId()) { _ in }
             lastTypingSignalAt = now
         }
-        apiService.sendTypingIndicator(familyId: getFamilyId()) { _ in }
 
         typingStopWorkItem?.cancel()
         let stopTask = DispatchWorkItem {

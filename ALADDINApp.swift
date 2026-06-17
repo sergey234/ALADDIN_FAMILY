@@ -204,7 +204,16 @@ struct ALADDINApp: App {
     private enum LifecycleKeys {
         static let lastScenePhase = "lifecycle_last_scene_phase"
         static let gracefulTerminateMarker = "lifecycle_graceful_terminate"
+        static let lifecycleCheckpointMarker = "lifecycle_checkpoint"
         static let lastLaunchTimestamp = "lifecycle_last_launch_ts"
+    }
+
+    private static func markLifecycleCheckpoint(_ reason: String) {
+        let defaults = UserDefaults.standard
+        defaults.set(true, forKey: LifecycleKeys.lifecycleCheckpointMarker)
+        defaults.set(true, forKey: LifecycleKeys.gracefulTerminateMarker)
+        defaults.synchronize()
+        LaunchDiagnostics.appendLifecycleTrace("lifecycle checkpoint: \(reason)")
     }
 
     // 🔍 ТЕСТОВОЕ ЛОГИРОВАНИЕ - проверяем работу при старте приложения
@@ -327,12 +336,15 @@ struct ALADDINApp: App {
         let defaults = UserDefaults.standard
         let lastPhase = defaults.string(forKey: LifecycleKeys.lastScenePhase) ?? "unknown"
         let terminatedGracefully = defaults.bool(forKey: LifecycleKeys.gracefulTerminateMarker)
-        if !terminatedGracefully && (lastPhase == "active" || lastPhase == "inactive") {
+        let hadLifecycleCheckpoint = defaults.bool(forKey: LifecycleKeys.lifecycleCheckpointMarker)
+        let hadCleanShutdown = terminatedGracefully || hadLifecycleCheckpoint
+        if !hadCleanShutdown && (lastPhase == "active" || lastPhase == "inactive") {
             LaunchDiagnostics.appendLifecycleTrace("⚠️ Inferred previous unclean termination (likely kill/watchdog). lastPhase=\(lastPhase)")
         } else {
-            LaunchDiagnostics.appendLifecycleTrace("Previous termination marker: graceful=\(terminatedGracefully), lastPhase=\(lastPhase)")
+            LaunchDiagnostics.appendLifecycleTrace("Previous termination marker: graceful=\(hadCleanShutdown), lastPhase=\(lastPhase)")
         }
         defaults.set(false, forKey: LifecycleKeys.gracefulTerminateMarker)
+        defaults.set(false, forKey: LifecycleKeys.lifecycleCheckpointMarker)
         defaults.set(Date().timeIntervalSince1970, forKey: LifecycleKeys.lastLaunchTimestamp)
         defaults.synchronize()
         ContentBackgroundSyncScheduler.shared.registerIfNeeded()
@@ -400,6 +412,7 @@ struct ALADDINApp: App {
                     await runDeferredLaunchBootstrapIfNeeded()
                     LaunchDiagnostics.appendStartupTrace("WindowGroup.task END deferred bootstrap")
                     LaunchDiagnostics.appendLifecycleTrace("WindowGroup.task END deferred bootstrap")
+                    LaunchDiagnostics.finishStartupTracePhase()
                 }
                 .onOpenURL { url in
                     if AntifakeDeepLinkRouter.isFamilyAlertDeepLink(url) {
@@ -624,19 +637,22 @@ struct ALADDINApp: App {
                 UserDefaults.standard.set(newPhase == .active ? "active" : newPhase == .inactive ? "inactive" : "background", forKey: LifecycleKeys.lastScenePhase)
                 LaunchDiagnostics.appendLifecycleTrace("scenePhase changed -> \(newPhase)")
                 if newPhase == .active {
+                    UserDefaults.standard.set(false, forKey: LifecycleKeys.lifecycleCheckpointMarker)
                     print("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
                     Task { @MainActor in
                         await SubscriptionManager.shared.performThrottledTrialExpiryCheckIfNeeded()
                     }
                     ContentBackgroundSyncScheduler.shared.triggerForegroundRefresh()
                 } else if newPhase == .background {
+                    Self.markLifecycleCheckpoint("scenePhase.background")
                     ContentBackgroundSyncScheduler.shared.scheduleNextRefresh()
                 }
             }
+            .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
+                Self.markLifecycleCheckpoint("UIApplication.willResignActive")
+            }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
-                UserDefaults.standard.set(true, forKey: LifecycleKeys.gracefulTerminateMarker)
-                UserDefaults.standard.synchronize()
-                LaunchDiagnostics.appendLifecycleTrace("UIApplication.willTerminateNotification received -> graceful terminate marker set")
+                Self.markLifecycleCheckpoint("UIApplication.willTerminate")
             }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SessionExpired"))) { notification in
                 guard !isHandlingSessionExpiredGlobal else {
@@ -1186,9 +1202,9 @@ extension ALADDINApp {
         _ = NotificationManager.shared
         // ✅ BUILD 113: Убрано логирование для абсолютной тишины на старте навигации
 
-        // Запрашиваем разрешение на push уведомления (асинхронно, не блокирует UI)
+        // Запрашиваем разрешение на push уведомления (асинхронно, не блокирует UI; без дубля с Settings)
         Task {
-            _ = await NotificationManager.shared.requestAuthorization()
+            _ = await NotificationManager.shared.requestAuthorizationIfNeeded()
             await MnemonicNotificationScheduler.shared.rescheduleDailyReminder()
         }
 
@@ -1220,7 +1236,7 @@ extension ALADDINApp {
             navigationManager.currentScreen = .onboarding
         } else {
             print("🟢 ONBOARDING: Пройден (UserDefaults) — переходим на главный экран")
-            navigationManager.currentScreen = .main
+            navigationManager.navigateToRoot(.main)
         }
 
         print("🛠️ [ALADDINApp.initializeNavigation] Текущий экран ПОСЛЕ проверки: \(navigationManager.currentScreen)")

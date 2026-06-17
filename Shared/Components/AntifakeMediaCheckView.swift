@@ -202,7 +202,7 @@ struct AntifakeMediaCheckView: View {
 
     private var postCallUploadBanner: some View {
         HStack(alignment: .top, spacing: Spacing.s) {
-            Image(systemName: "phone.badge.checkmark")
+            Image(systemName: SFSymbolCompat.phoneBadgeCheckmark)
                 .foregroundColor(.secondaryGold)
             VStack(alignment: .leading, spacing: Spacing.xs) {
                 Text(localizationManager.localized("antifake_post_call_banner_title"))
@@ -229,26 +229,36 @@ struct AntifakeMediaCheckView: View {
 
     private var callMetadataFields: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            TextField(
-                localizationManager.localized("antifake_call_caller_id_placeholder"),
-                text: $viewModel.callerId
-            )
-            .textInputAutocapitalization(.never)
-            .autocorrectionDisabled()
-            .keyboardType(.phonePad)
-            .padding(Spacing.m)
-            .stormGlassCard(cornerRadius: CornerRadius.medium)
-            .accessibilityIdentifier("\(panelId)_caller_id")
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(localizationManager.localized("antifake_contact_caller_label"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.white.opacity(0.9))
+                TextField(
+                    localizationManager.localized("antifake_call_caller_id_placeholder"),
+                    text: $viewModel.callerId
+                )
+                .textInputAutocapitalization(.never)
+                .autocorrectionDisabled()
+                .keyboardType(.phonePad)
+                .padding(Spacing.m)
+                .stormGlassCard(cornerRadius: CornerRadius.medium)
+                .accessibilityIdentifier("\(panelId)_caller_id")
+            }
 
-            TextField(
-                localizationManager.localized("antifake_call_display_name_placeholder"),
-                text: $viewModel.displayName
-            )
-            .textInputAutocapitalization(.words)
-            .autocorrectionDisabled()
-            .padding(Spacing.m)
-            .stormGlassCard(cornerRadius: CornerRadius.medium)
-            .accessibilityIdentifier("\(panelId)_display_name")
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(localizationManager.localized("antifake_contact_name_label"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.white.opacity(0.9))
+                TextField(
+                    localizationManager.localized("antifake_call_display_name_placeholder"),
+                    text: $viewModel.displayName
+                )
+                .textInputAutocapitalization(.words)
+                .autocorrectionDisabled()
+                .padding(Spacing.m)
+                .stormGlassCard(cornerRadius: CornerRadius.medium)
+                .accessibilityIdentifier("\(panelId)_display_name")
+            }
         }
     }
 

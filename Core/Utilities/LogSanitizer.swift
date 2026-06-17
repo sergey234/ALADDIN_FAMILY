@@ -330,4 +330,22 @@ enum SFSymbolCompat {
     static var voiceNotes: String {
         resolve("waveform.badge.mic", fallback: "waveform")
     }
+
+    static var phoneBadgeCheckmark: String {
+        if #available(iOS 17.0, *) {
+            return resolve("phone.badge.checkmark", fallback: "phone.fill")
+        }
+        return "phone.fill"
+    }
+
+    static var bubbleLeftExclamation: String {
+        if #available(iOS 17.0, *) {
+            return resolve("bubble.left.and.exclamationmark", fallback: "exclamationmark.bubble.fill")
+        }
+        return "exclamationmark.bubble.fill"
+    }
+
+    static var sliderHorizontal2Square: String {
+        resolve("slider.horizontal.2.square", fallback: "slider.horizontal.3")
+    }
 }

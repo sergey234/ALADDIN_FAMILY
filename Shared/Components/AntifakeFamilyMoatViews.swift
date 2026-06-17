@@ -153,7 +153,7 @@ struct AntifakeFamilyCDParentCard: View {
         VStack(alignment: .leading, spacing: Spacing.s) {
             Label(
                 localizationManager.localized("antifake_family_cd_title"),
-                systemImage: "phone.badge.checkmark"
+                systemImage: SFSymbolCompat.phoneBadgeCheckmark
             )
             .font(.headline)
             .foregroundColor(.white)

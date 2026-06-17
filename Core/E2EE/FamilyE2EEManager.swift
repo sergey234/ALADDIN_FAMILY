@@ -11,6 +11,12 @@ final class FamilyE2EEManager: ObservableObject {
 
     private let api = APIService.shared
     private var bootstrappingFamilyId: String?
+    private var lastSuccessfulBootstrapFamilyId: String?
+    private var lastSuccessfulBootstrapAt: Date?
+    private let bootstrapCooldown: TimeInterval = 45
+    private var devicesCache: [String: (items: [E2EEDeviceListItem], fetchedAt: Date)] = [:]
+    private var senderKeysCache: [String: (items: [E2EESenderKeyDistributionItem], fetchedAt: Date)] = [:]
+    private let e2eeKeysFetchTTL: TimeInterval = 30
 
     private init() {}
 
@@ -25,6 +31,13 @@ final class FamilyE2EEManager: ObservableObject {
             return
         }
         if bootstrappingFamilyId == fid { return }
+        if lastSuccessfulBootstrapFamilyId == fid,
+           let at = lastSuccessfulBootstrapAt,
+           Date().timeIntervalSince(at) < bootstrapCooldown,
+           isReady,
+           FamilyE2EECryptoEngine.loadFamilyKey(familyId: fid) != nil {
+            return
+        }
         bootstrappingFamilyId = fid
         defer { bootstrappingFamilyId = nil }
 
@@ -34,6 +47,10 @@ final class FamilyE2EEManager: ObservableObject {
             try await ensureLocalFamilyKey(familyId: fid)
             isReady = FamilyE2EECryptoEngine.loadFamilyKey(familyId: fid) != nil
             lastError = isReady ? nil : "E2EE key not established"
+            if isReady {
+                lastSuccessfulBootstrapFamilyId = fid
+                lastSuccessfulBootstrapAt = Date()
+            }
         } catch {
             if let ne = error as? NetworkError, case .internalServerError = ne {
                 FamilyE2EEDeviceIdentity.resetLocalIdentity()
@@ -43,7 +60,11 @@ final class FamilyE2EEManager: ObservableObject {
                     try await ensureLocalFamilyKey(familyId: fid)
                     isReady = FamilyE2EECryptoEngine.loadFamilyKey(familyId: fid) != nil
                     lastError = isReady ? nil : "E2EE key not established"
-                    if isReady { return }
+                    if isReady {
+                        lastSuccessfulBootstrapFamilyId = fid
+                        lastSuccessfulBootstrapAt = Date()
+                        return
+                    }
                 } catch {
                     // fall through to user-visible error
                 }
@@ -178,14 +199,7 @@ final class FamilyE2EEManager: ObservableObject {
     }
 
     private func ingestRemoteDistributions(familyId: String) async throws {
-        let items = try await withCheckedThrowingContinuation { (cont: CheckedContinuation<[E2EESenderKeyDistributionItem], Error>) in
-            api.fetchFamilyE2EESenderKeys(familyId: familyId) { result in
-                switch result {
-                case .success(let list): cont.resume(returning: list.items)
-                case .failure(let err): cont.resume(throwing: err)
-                }
-            }
-        }
+        let items = try await fetchSenderKeys(familyId: familyId)
 
         let devices = try await fetchDevices(familyId: familyId)
         let byDevice = Dictionary(uniqueKeysWithValues: devices.map { ($0.deviceId, $0) })
@@ -268,7 +282,11 @@ final class FamilyE2EEManager: ObservableObject {
     }
 
     private func fetchDevices(familyId: String) async throws -> [E2EEDeviceListItem] {
-        try await withCheckedThrowingContinuation { (cont: CheckedContinuation<[E2EEDeviceListItem], Error>) in
+        if let cached = devicesCache[familyId],
+           Date().timeIntervalSince(cached.fetchedAt) < e2eeKeysFetchTTL {
+            return cached.items
+        }
+        let items = try await withCheckedThrowingContinuation { (cont: CheckedContinuation<[E2EEDeviceListItem], Error>) in
             api.fetchFamilyE2EEDevices(familyId: familyId) { result in
                 switch result {
                 case .success(let resp): cont.resume(returning: resp.devices)
@@ -276,6 +294,30 @@ final class FamilyE2EEManager: ObservableObject {
                 }
             }
         }
+        devicesCache[familyId] = (items, Date())
+        return items
+    }
+
+    private func fetchSenderKeys(familyId: String) async throws -> [E2EESenderKeyDistributionItem] {
+        if let cached = senderKeysCache[familyId],
+           Date().timeIntervalSince(cached.fetchedAt) < e2eeKeysFetchTTL {
+            return cached.items
+        }
+        let items = try await withCheckedThrowingContinuation { (cont: CheckedContinuation<[E2EESenderKeyDistributionItem], Error>) in
+            api.fetchFamilyE2EESenderKeys(familyId: familyId) { result in
+                switch result {
+                case .success(let list): cont.resume(returning: list.items)
+                case .failure(let err): cont.resume(throwing: err)
+                }
+            }
+        }
+        senderKeysCache[familyId] = (items, Date())
+        return items
+    }
+
+    private func invalidateKeysCache(familyId: String) {
+        devicesCache.removeValue(forKey: familyId)
+        senderKeysCache.removeValue(forKey: familyId)
     }
 
     private func postDistribution(familyId: String, distributionMessage: String) async throws {
@@ -287,10 +329,13 @@ final class FamilyE2EEManager: ObservableObject {
         try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, Error>) in
             api.distributeFamilyE2EESenderKey(request: body) { result in
                 switch result {
-                case .success: cont.resume()
-                case .failure(let err): cont.resume(throwing: err)
+                case .success:
+                    cont.resume()
+                case .failure(let err):
+                    cont.resume(throwing: err)
                 }
             }
         }
+        invalidateKeysCache(familyId: familyId)
     }
 }

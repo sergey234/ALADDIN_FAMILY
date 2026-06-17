@@ -20,34 +20,6 @@
                ReferencedContainer = "container:ALADDIN.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "NO"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B5001000"
-               BuildableName = "ALADDINUnitTests.xctest"
-               BlueprintName = "ALADDINUnitTests"
-               ReferencedContainer = "container:ALADDIN.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
-         <BuildActionEntry
-            buildForTesting = "YES"
-            buildForRunning = "NO"
-            buildForProfiling = "NO"
-            buildForArchiving = "NO"
-            buildForAnalyzing = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B5002000"
-               BuildableName = "ALADDINUITests.xctest"
-               BlueprintName = "ALADDINUITests"
-               ReferencedContainer = "container:ALADDIN.xcodeproj">
-            </BuildableReference>
-         </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
@@ -56,26 +28,6 @@
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
       <Testables>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B5001000"
-               BuildableName = "ALADDINUnitTests.xctest"
-               BlueprintName = "ALADDINUnitTests"
-               ReferencedContainer = "container:ALADDIN.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
-         <TestableReference
-            skipped = "NO">
-            <BuildableReference
-               BuildableIdentifier = "primary"
-               BlueprintIdentifier = "B5002000"
-               BuildableName = "ALADDINUITests.xctest"
-               BlueprintName = "ALADDINUITests"
-               ReferencedContainer = "container:ALADDIN.xcodeproj">
-            </BuildableReference>
-         </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
@@ -98,20 +50,9 @@
             ReferencedContainer = "container:ALADDIN.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
-      <CommandLineArguments>
-         <CommandLineArgument
-            argument = "-RESET_ONBOARDING"
-            isEnabled = "NO">
-         </CommandLineArgument>
-      </CommandLineArguments>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "DISABLE_SSL_PINNING"
-            value = "1"
-            isEnabled = "NO">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "RESET_ONBOARDING"
             value = "1"
             isEnabled = "YES">
          </EnvironmentVariable>

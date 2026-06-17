@@ -32,6 +32,29 @@ final class CompanionCapabilitiesService: ObservableObject {
         uiFlag(module: "companion_server_stt", key: "server_stt_fallback", defaultValue: false)
     }
 
+    /// STT backend id from capabilities (`yandex_speechkit`, `openai_whisper`, `none`).
+    var serverSttProvider: String? {
+        payload?.features?["companion_server_stt"]?.ui?.string("provider")
+    }
+
+    var audioRetentionSeconds: Int? {
+        payload?.features?["companion_server_stt"]?.ui?.integer("audio_retention_seconds")
+    }
+
+    /// TTS backend id (`elevenlabs`, `avspeech`, …).
+    var ttsProvider: String? {
+        payload?.features?["companion_neuro_tts"]?.ui?.string("tts_provider")
+    }
+
+    /// Hero visual tier gate (`all`, `premium_only`, …).
+    var heroVisualTier: String? {
+        payload?.features?["companion_neuro_tts"]?.ui?.string("hero_visual_tier")
+    }
+
+    var chatModes: [String] {
+        payload?.features?["companion"]?.ui?.stringArray("chat_modes") ?? []
+    }
+
     var companionEnabled: Bool {
         featureEnabled("companion")
     }

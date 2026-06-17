@@ -13,7 +13,7 @@ struct AntifakeCallDirectorySettingsCard: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            Label(localizationManager.localized("antifake_call_directory_title"), systemImage: "phone.badge.checkmark")
+            Label(localizationManager.localized("antifake_call_directory_title"), systemImage: SFSymbolCompat.phoneBadgeCheckmark)
                 .font(.headline)
                 .foregroundColor(.white)
 

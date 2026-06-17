@@ -13,6 +13,14 @@ private let logger = MasterLogger.shared
  */
 
 @MainActor class NetworkManager: NSObject, ObservableObject {
+
+    /// Единый экземпляр для APIService, ParentalControlManager и прочих потребителей (startup-05).
+    static let shared: NetworkManager = {
+        #if DEBUG
+        print("🔧 NetworkManager: создание app-wide singleton")
+        #endif
+        return NetworkManager()
+    }()
     
     // ✅ ДОБАВЛЕНО: Logger для Production логирования (nonisolated: доступ из nonisolated init)
     nonisolated private static let networkLogger = OSLog(

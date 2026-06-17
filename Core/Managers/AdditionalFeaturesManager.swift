@@ -32,12 +32,28 @@ class AdditionalFeaturesManager: ObservableObject {
     /// Активировать дополнительные функции для тарифа
     func enableForTariff(_ tariffType: TariffType) async throws {
         let featuresToActivate = getFeaturesForTariff(tariffType)
-        print("🔄 AdditionalFeaturesManager: Активация \(featuresToActivate.count) дополнительных функций для \(tariffType.rawValue)")
-        // Активируем каждую функцию
+        var newlyActivated: [String] = []
+        var skippedAlready = 0
+
         for feature in featuresToActivate {
-            try await enableFeature(feature)
+            guard !isFeatureActivated(feature.id) else {
+                skippedAlready += 1
+                continue
+            }
+            // TODO: Реализовать реальный API вызов
+            // try await apiService.enableAdditionalFeature(featureId: feature.id)
+            activatedFeatures.insert(feature.id)
+            newlyActivated.append(feature.id)
         }
-        print("✅ AdditionalFeaturesManager: Активировано \(featuresToActivate.count) дополнительных функций")
+
+        if !newlyActivated.isEmpty {
+            saveActivatedFeatures()
+        }
+
+        print(
+            "✅ AdditionalFeaturesManager: tariff=\(tariffType.rawValue) " +
+            "activated=\(newlyActivated.count) skipped=\(skippedAlready) total=\(featuresToActivate.count)"
+        )
     }
     /// Проверить, активирована ли функция
     func isFeatureActivated(_ featureId: String) -> Bool {
@@ -49,22 +65,6 @@ class AdditionalFeaturesManager: ObservableObject {
         return allFeatures.filter { isFeatureActivated($0.id) }
     }
     // MARK: - Private Methods
-    /// Активировать конкретную функцию
-    private func enableFeature(_ feature: AdditionalFeature) async throws {
-        // Проверяем, не активирована ли уже
-        guard !isFeatureActivated(feature.id) else {
-            print("⚠️ AdditionalFeaturesManager: Функция \(feature.id) уже активирована")
-            return
-        }
-
-        // TODO: Реализовать реальный API вызов
-        // try await apiService.enableAdditionalFeature(featureId: feature.id)
-
-        // Пока что просто симулируем успешную активацию
-        self.activatedFeatures.insert(feature.id)
-        self.saveActivatedFeatures()
-        print("✅ AdditionalFeaturesManager: Функция \(feature.id) активирована")
-    }
     /// Получить функции для тарифа
     private func getFeaturesForTariff(_ tariffType: TariffType) -> [AdditionalFeature] {
         return tariffType.allAdditionalFeatures()

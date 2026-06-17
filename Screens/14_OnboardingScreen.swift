@@ -1206,7 +1206,7 @@ struct OnboardingScreen: View {
                     Task { @MainActor in
                         UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
                     }
-                    navigationManager.navigateTo(.main)
+                    navigationManager.navigateToRoot(.main)
                 }
             )
             .aladdinSheetPresentation()
@@ -1363,10 +1363,14 @@ struct OnboardingScreen: View {
                                 UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
                             }
 
-                            // ✅ ИСПРАВЛЕНИЕ: НЕ создаем demo токены - приложение работает в демо режиме
-                            print("ℹ️ OnboardingScreen: Онбординг завершен - приложение работает в демо режиме")
+                            // Не путать «нет регистрации» с «демо» при уже валидном JWT
+                            if TokenValidator.hasUsableAPISession {
+                                print("✅ OnboardingScreen: Онбординг завершён, активная сессия — переход на главный")
+                            } else {
+                                print("ℹ️ OnboardingScreen: Онбординг завершён без JWT — локальный режим до регистрации")
+                            }
 
-                            navigationManager.navigateTo(.main)
+                            navigationManager.navigateToRoot(.main)
                             print("✅ OnboardingScreen: Онбординг завершён, переход на главный экран")
                         }
                     }) {
