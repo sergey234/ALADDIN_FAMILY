@@ -209,13 +209,7 @@ class TariffManager: ObservableObject {
     
     /// Получить уровень тарифа (для сравнения)
     private func tariffLevel(_ tariffType: TariffType) -> Int {
-        switch tariffType {
-        case .trial: return 0
-        case .free: return 1
-        case .personal: return 2
-        case .family: return 3
-        case .premium: return 4
-        }
+        tariffType.featureAccessTier
     }
 }
 

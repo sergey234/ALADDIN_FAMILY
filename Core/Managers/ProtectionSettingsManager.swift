@@ -178,15 +178,15 @@ class ProtectionSettingsManager: ObservableObject {
                 if case .failure(let error) = result {
                     print("⚠️ ProtectionSettingsManager: Ошибка синхронизации enableForTariff: \(error.localizedDescription)")
                 }
-                guard tariffType == .premium else { return }
+                guard tariffType == .premium || tariffType == .trial else { return }
                 APIService.shared.enableProtectionCategory(ThreatProtectionCategory.deepfakes.rawValue) { _ in }
             }
-        } else if tariffType == .premium, !settings.isEnabled(.deepfakes) {
+        } else if (tariffType == .premium || tariffType == .trial), !settings.isEnabled(.deepfakes) {
             syncPremiumDeepfakesIfNeeded(for: tariffType)
         }
     }
 
-    /// af-5-04: включить deepfakes локально и на сервере, если тариф Premium+.
+    /// af-5-04: включить deepfakes локально и на сервере, если тариф Premium или активный Trial.
     func syncPremiumDeepfakesIfNeeded(for tariffType: TariffType) {
         guard isCategoryAvailable(.deepfakes, in: tariffType), !settings.isEnabled(.deepfakes) else { return }
         enableCategory(.deepfakes)
@@ -195,19 +195,7 @@ class ProtectionSettingsManager: ObservableObject {
     
     /// Проверить, доступна ли категория для тарифа
     func isCategoryAvailable(_ category: ThreatProtectionCategory, in tariffType: TariffType) -> Bool {
-        let requiredTariff = category.requiredTariff
-        return tariffLevel(tariffType) >= tariffLevel(requiredTariff)
-    }
-    
-    /// Получить уровень тарифа (для сравнения)
-    private func tariffLevel(_ tariffType: TariffType) -> Int {
-        switch tariffType {
-        case .trial: return 0    // Trial уровень
-        case .free: return 1     // Free уровень
-        case .personal: return 2 // Personal уровень
-        case .family: return 3   // Family уровень
-        case .premium: return 4  // Premium уровень (максимум)
-        }
+        tariffType.featureAccessTier >= category.requiredTariff.featureAccessTier
     }
     
     // MARK: - Get Status

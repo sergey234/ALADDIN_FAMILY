@@ -10,6 +10,18 @@ extension TariffType {
     static func fromSubscriptionLevel(_ level: SubscriptionLevel) -> TariffType {
         TariffType(rawValue: level.rawValue) ?? .free
     }
+
+    /// Числовой tier для сравнения доступности функций защиты.
+    /// Trial = premium: 14 дней «полный доступ» (тарифы) + backend antifake (`trial` в PREMIUM_LEVELS).
+    var featureAccessTier: Int {
+        switch self {
+        case .trial: return 4
+        case .free: return 1
+        case .personal: return 2
+        case .family: return 3
+        case .premium: return 4
+        }
+    }
 }
 
 /// Модель категории угроз для каталога «100 видов защиты».
@@ -102,7 +114,7 @@ extension ThreatProtectionCategory {
                 group: ProtectionGroup.devices
             ),
             .deepfakes: CategoryConfiguration(
-                requiredTariff: TariffType.family,
+                requiredTariff: TariffType.premium,
                 benefit: "Обнаруживает поддельные видео и аудио",
                 settingsScreen: NavigationManager.ALADDINScreen.antifakeHub,
                 group: ProtectionGroup.premium

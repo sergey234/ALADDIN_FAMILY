@@ -132,4 +132,29 @@ final class SecurityVerdictModelsTests: XCTestCase {
         XCTAssertEqual(verdict.confidence, 0, accuracy: 0.001)
         XCTAssertEqual(verdict.fakeRisk, 0, accuracy: 0.001)
     }
+
+    // MARK: - Antifake / trial access (G-03 + 14-day trial)
+
+    func testTrialFeatureAccessTierMatchesPremium() {
+        XCTAssertEqual(TariffType.trial.featureAccessTier, TariffType.premium.featureAccessTier)
+        XCTAssertGreaterThan(TariffType.trial.featureAccessTier, TariffType.family.featureAccessTier)
+    }
+
+    @MainActor
+    func testTrialTariffUnlocksDeepfakesForAntifakeHub() {
+        let settings = ProtectionSettingsManager.shared
+        XCTAssertTrue(settings.isCategoryAvailable(.deepfakes, in: .trial))
+        XCTAssertTrue(settings.isCategoryAvailable(.deepfakes, in: .premium))
+        XCTAssertFalse(settings.isCategoryAvailable(.deepfakes, in: .free))
+        XCTAssertFalse(settings.isCategoryAvailable(.deepfakes, in: .personal))
+    }
+
+    @MainActor
+    func testTariffManagerTrialAllowsDeepfakesCategory() {
+        let tariffManager = TariffManager.shared
+        tariffManager.saveTariff(.trial, pullServerAfterSave: false)
+        XCTAssertTrue(tariffManager.isCategoryAvailable(.deepfakes))
+        tariffManager.saveTariff(.free, pullServerAfterSave: false)
+        XCTAssertFalse(tariffManager.isCategoryAvailable(.deepfakes))
+    }
 }
