@@ -6,6 +6,8 @@ final class ContentBackgroundSyncScheduler {
 
     private let taskIdentifier = "family.aladdin.ios.content.refresh"
     private var isRegistered = false
+    private var lastForegroundRefreshAt: Date?
+    private let foregroundRefreshMinInterval: TimeInterval = 25
 
     private init() {}
 
@@ -33,8 +35,14 @@ final class ContentBackgroundSyncScheduler {
     }
 
     func triggerForegroundRefresh() {
+        let now = Date()
+        if let last = lastForegroundRefreshAt,
+           now.timeIntervalSince(last) < foregroundRefreshMinInterval {
+            return
+        }
+        lastForegroundRefreshAt = now
         Task {
-            await ContentManager.shared.autoRefreshIfNeeded(force: true)
+            await ContentManager.shared.autoRefreshIfNeeded(force: false)
         }
     }
 

@@ -830,7 +830,7 @@ struct FamilyLocationModal: View {
         
         // Запрос разрешения Always (для Significant-Change и Region Monitoring)
         if locationManager.authorizationStatus != .authorizedAlways {
-            locationManager.requestAuthorization(always: true)
+            locationManager.requestAlwaysUpgradeIfEligible()
         }
         
         // Запуск Significant-Change Location Service

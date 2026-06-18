@@ -25,6 +25,8 @@ struct AdvancedProtectionSettingsScreen: View {
 
     /// Снимок счётчика угроз — без @ObservedObject ComponentStatusService (иначе body×100+ при каждом status).
     @State private var threatEnabledCountSnapshot: Int = 0
+    @State private var threatAggregateApplyTask: Task<Void, Never>?
+    @State private var isApplyingThreatAggregate = false
 
     // MARK: - Family (AppStorage/UserDefaults)
     @AppStorage("parental_messages_monitoring") private var isMessagesMonitoringEnabled: Bool = false
@@ -734,18 +736,30 @@ struct AdvancedProtectionSettingsScreen: View {
     }
     
     private func setThreatAggregate(isOn: Bool) {
+        if isApplyingThreatAggregate { return }
+        threatAggregateApplyTask?.cancel()
+        threatAggregateApplyTask = Task {
+            try? await Task.sleep(nanoseconds: 400_000_000)
+            guard !Task.isCancelled else { return }
+            await applyThreatAggregate(isOn: isOn)
+        }
+    }
+
+    private func applyThreatAggregate(isOn: Bool) async {
+        guard !isApplyingThreatAggregate else { return }
+        isApplyingThreatAggregate = true
+        defer { isApplyingThreatAggregate = false }
+
         if Self.ENABLE_CRASH_LOGS {
             logger.logFunction("setThreatAggregate", message: "НАЧАЛО, isOn = \(isOn)", section: "AdvancedProtection")
         }
 
-        Task {
-            let service = ComponentStatusService.shared
-            for componentId in threatComponentIds {
-                try? await service.updateStatus(componentId: componentId, isEnabled: isOn)
-            }
-            await MainActor.run {
-                syncThreatEnabledCountSnapshot()
-            }
+        let service = ComponentStatusService.shared
+        for componentId in threatComponentIds {
+            try? await service.updateStatus(componentId: componentId, isEnabled: isOn)
+        }
+        await MainActor.run {
+            syncThreatEnabledCountSnapshot()
         }
     }
     

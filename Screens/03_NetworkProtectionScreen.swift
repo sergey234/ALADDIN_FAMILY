@@ -343,6 +343,12 @@ struct NetworkProtectionScreen: View {
                 // Диагностика: не попадает в пользовательские Release-сборки
                 Button(action: {
                     logger.buttonTap("Test Crash Detection", screen: "NetworkProtection")
+                    guard LocationManager.shared.hasRequiredAuthorization() else {
+                        ToastManager.shared.showWarning(
+                            localizationManager.localized("crash_detection_location_required_for_test")
+                        )
+                        return
+                    }
                     Task {
                         await CrashDetectionManager.shared.simulateCrashForDiagnostics(gForce: 5.0)
                     }

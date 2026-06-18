@@ -1,6 +1,9 @@
 import Foundation
 import CoreLocation
 import Combine
+import AVFoundation
+import Contacts
+import CoreMotion
 
 /**
  * 📍 LocationManager
@@ -125,7 +128,8 @@ class LocationManager: NSObject, ObservableObject {
     
     /// Запрос разрешения на геолокацию
     /// - Parameter always: Если true, запрашивает "Always" разрешение (для фона)
-    func requestAuthorization(always: Bool = true) {
+    /// - Parameter always: `false` по умолчанию (ep6-09) — Always только для фоновых сценариев.
+    func requestAuthorization(always: Bool = false) {
         let currentStatus = locationManager.authorizationStatus
         
         switch currentStatus {
@@ -157,6 +161,18 @@ class LocationManager: NSObject, ObservableObject {
         }
     }
     
+    /// Upgrade path: Always — только если уже есть WhenInUse (ep6-09).
+    func requestAlwaysUpgradeIfEligible() {
+        let status = locationManager.authorizationStatus
+        guard status == .authorizedWhenInUse else {
+            if status == .notDetermined {
+                requestAuthorization(always: false)
+            }
+            return
+        }
+        requestAuthorization(always: true)
+    }
+
     /// Проверка, есть ли необходимое разрешение
     func hasRequiredAuthorization(forBackground: Bool = false) -> Bool {
         let status = locationManager.authorizationStatus
@@ -694,6 +710,60 @@ extension LocationManager: CLLocationManagerDelegate {
     nonisolated func locationManager(_ manager: CLLocationManager, didStartMonitoringFor region: CLRegion) {
         Task { @MainActor in
             print("✅ LocationManager: Мониторинг геозоны '\(region.identifier)' успешно запущен")
+        }
+    }
+}
+
+// MARK: - Sensitive permissions (ep5-09)
+
+enum SensitivePermissionCoordinator {
+
+    static func requestCameraIfNeeded() async -> Bool {
+        let status = AVCaptureDevice.authorizationStatus(for: .video)
+        switch status {
+        case .authorized:
+            return true
+        case .notDetermined:
+            return await AVCaptureDevice.requestAccess(for: .video)
+        default:
+            return false
+        }
+    }
+
+    static func requestContactsIfNeeded() async -> Bool {
+        let status = CNContactStore.authorizationStatus(for: .contacts)
+        switch status {
+        case .authorized:
+            return true
+        case .notDetermined:
+            return await withCheckedContinuation { continuation in
+                CNContactStore().requestAccess(for: .contacts) { granted, _ in
+                    continuation.resume(returning: granted)
+                }
+            }
+        default:
+            return false
+        }
+    }
+
+    static func requestMotionIfNeeded() async -> Bool {
+        guard CMMotionActivityManager.isActivityAvailable() else { return false }
+        switch CMMotionActivityManager.authorizationStatus() {
+        case .authorized:
+            return true
+        case .notDetermined:
+            return await withCheckedContinuation { continuation in
+                let manager = CMMotionActivityManager()
+                manager.queryActivityStarting(
+                    from: Date().addingTimeInterval(-60),
+                    to: Date(),
+                    to: .main
+                ) { _, _ in
+                    continuation.resume(returning: CMMotionActivityManager.authorizationStatus() == .authorized)
+                }
+            }
+        default:
+            return false
         }
     }
 }

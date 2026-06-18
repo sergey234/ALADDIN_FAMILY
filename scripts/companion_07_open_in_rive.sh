@@ -5,6 +5,7 @@ set -euo pipefail
 ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 HERO="${1:-unicorn}"
 REV="$ROOT/Resources/Companion/${HERO}_source.rev"
+AMP_REV="$ROOT/Resources/Companion/unicorn_golden_amp.rev"
 DRAFT_REV="$ROOT/Resources/Companion/unicorn_mcp_draft.rev"
 PNG="$ROOT/Resources/Companion/${HERO}_master.png"
 ASSETS="$ROOT/docs/assets"
@@ -15,7 +16,10 @@ if [[ ! -d "/Applications/Rive.app" ]]; then
 fi
 
 pick_source() {
-  if [[ -f "$REV" ]]; then
+  # hero-prebuild-01: amp keyframes live in unicorn_golden_amp.rev (not _source.rev)
+  if [[ "$HERO" == "unicorn" && -f "$AMP_REV" ]]; then
+    echo "$AMP_REV"
+  elif [[ -f "$REV" ]]; then
     echo "$REV"
   elif [[ "$HERO" == "unicorn" && -f "$DRAFT_REV" ]]; then
     echo "$DRAFT_REV"

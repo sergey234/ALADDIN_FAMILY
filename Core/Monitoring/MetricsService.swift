@@ -34,6 +34,9 @@ class MetricsService {
 
     // Timer для автоматической отправки (off main — PERF-2)
     private var uploadTimer: DispatchSourceTimer?
+    private var metricsUploadRetryCount = 0
+    private let maxMetricsUploadRetries = 2
+    private let metricsUploadRetryDelay: TimeInterval = 2.0
 
     // MARK: - Init
 
@@ -280,10 +283,27 @@ class MetricsService {
                        log: Self.metricsLogger,
                        type: .info)
 
+                self.metricsUploadRetryCount = 0
                 self.lastUploadTime = Date()
                 completion?(.success(()))
 
             case .failure(let error):
+                let retryable = Self.isRetryableMetricsUploadError(error)
+                if retryable, self.metricsUploadRetryCount < self.maxMetricsUploadRetries {
+                    self.metricsUploadRetryCount += 1
+                    self.queue.async(flags: .barrier) {
+                        self.pendingMetrics.insert(contentsOf: metricsToUpload, at: 0)
+                    }
+                    #if DEBUG
+                    print("⚠️ MetricsService: retry \(self.metricsUploadRetryCount)/\(self.maxMetricsUploadRetries) after \(error.localizedDescription)")
+                    #endif
+                    self.queue.asyncAfter(deadline: .now() + self.metricsUploadRetryDelay) {
+                        self.uploadMetricsNow(completion: completion)
+                    }
+                    return
+                }
+
+                self.metricsUploadRetryCount = 0
                 // В случае ошибки возвращаем метрики обратно в очередь
                 self.queue.async(flags: .barrier) {
                     self.pendingMetrics.insert(contentsOf: metricsToUpload, at: 0)
@@ -308,6 +328,25 @@ class MetricsService {
      */
     private func getDeviceId() -> String {
         return UIDevice.current.identifierForVendor?.uuidString ?? "unknown"
+    }
+
+    /// ep2-09 / ep6-10: broken pipe (EPIPE) и connection reset (-1005) — transient, retry queue.
+    private static func isRetryableMetricsUploadError(_ error: Error) -> Bool {
+        let ns = error as NSError
+        if ns.domain == NSURLErrorDomain {
+            let code = ns.code
+            if code == URLError.networkConnectionLost.rawValue || code == -1005 {
+                return true
+            }
+        }
+        if ns.domain == NSPOSIXErrorDomain && ns.code == 32 {
+            return true
+        }
+        let message = ns.localizedDescription.lowercased()
+        if message.contains("broken pipe") {
+            return true
+        }
+        return false
     }
 }
 

@@ -56,6 +56,7 @@ final class AntifakePostCallFlowTests: XCTestCase {
         )
     }
 
+    @MainActor
     func testLastCallContextPrefillAndConsume() {
         let cidKey = AppConfig.UserDefaultsKeys.antifakeLastCallerId
         let nameKey = AppConfig.UserDefaultsKeys.antifakeLastDisplayName

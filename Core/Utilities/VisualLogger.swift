@@ -423,6 +423,14 @@ enum LaunchDiagnostics {
     private static var startupBuffer: [String] = []
     private static var startupPhaseEnded = false
 
+    /// startup-07: системный шум URLSession/libboringssl — не считать багом приложения.
+    static let knownSystemNoiseSubstrings = ["boringssl", "libboringssl", "nw_protocol"]
+
+    static func isKnownSystemNoise(_ line: String) -> Bool {
+        let lower = line.lowercased()
+        return knownSystemNoiseSubstrings.contains(where: { lower.contains($0) })
+    }
+
     static func appendStartupTrace(_ message: String) {
         let ts = ISO8601DateFormatter().string(from: Date())
         let line = "[\(ts)] \(message)"

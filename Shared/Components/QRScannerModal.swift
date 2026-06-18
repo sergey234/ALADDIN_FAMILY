@@ -114,6 +114,15 @@ class QRScanner: NSObject, ObservableObject, AVCaptureMetadataOutputObjectsDeleg
     }
 
     private func setupCamera() {
+        Task {
+            guard await SensitivePermissionCoordinator.requestCameraIfNeeded() else { return }
+            await MainActor.run {
+                self.configureCaptureSession()
+            }
+        }
+    }
+
+    private func configureCaptureSession() {
         guard let videoCaptureDevice = AVCaptureDevice.default(for: .video) else { return }
 
         let videoInput: AVCaptureDeviceInput

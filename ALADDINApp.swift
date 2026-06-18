@@ -650,6 +650,7 @@ struct ALADDINApp: App {
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willResignActiveNotification)) { _ in
                 Self.markLifecycleCheckpoint("UIApplication.willResignActive")
+                UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
                 Self.markLifecycleCheckpoint("UIApplication.willTerminate")

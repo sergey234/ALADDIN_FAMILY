@@ -73,92 +73,80 @@ class NetworkProtectionViewModel: ObservableObject {
     // MARK: - Public Methods - Synchronous (BUILD 107)
     
     func toggleCrashDetectionSync(_ newValue: Bool) {
-        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.crashDetectionEnabled = newValue
-        
-        // Затем асинхронно запускаем логику сохранения и аналитики
-        Task { @MainActor in 
-            await toggleCrashDetection(newValue) 
+        scheduleDebouncedToggle(componentId: "crash_detection_agent", newValue: newValue) { [weak self] value in
+            await self?.toggleCrashDetection(value)
         }
     }
     
     func toggleRoadsideAssistanceSync(_ newValue: Bool) {
-        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.roadsideAssistanceEnabled = newValue
-        
-        // Затем асинхронно запускаем логику сохранения и аналитики
-        Task { @MainActor in 
-            await toggleRoadsideAssistance(newValue) 
+        scheduleDebouncedToggle(componentId: "roadside_assistance_agent", newValue: newValue) { [weak self] value in
+            await self?.toggleRoadsideAssistance(value)
         }
     }
     
     func toggleEmergencyResponseSync(_ newValue: Bool) {
-        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.emergencyResponseEnabled = newValue
-        
-        // Затем асинхронно запускаем логику сохранения
-        Task { @MainActor in await toggleEmergencyResponse(newValue) }
+        scheduleDebouncedToggle(componentId: "emergency_response_bot", newValue: newValue) { [weak self] value in
+            await self?.toggleEmergencyResponse(value)
+        }
     }
     
     func toggleEmergencyEventSync(_ newValue: Bool) {
-        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.emergencyEventEnabled = newValue
-        
-        // Затем асинхронно запускаем логику сохранения
-        Task { @MainActor in await toggleEmergencyEvent(newValue) }
+        scheduleDebouncedToggle(componentId: "emergency_event_manager", newValue: newValue) { [weak self] value in
+            await self?.toggleEmergencyEvent(value)
+        }
     }
     
     func togglePhishingProtectionSync(_ newValue: Bool) {
-        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.phishingProtectionEnabled = newValue
-        
-        // Затем асинхронно запускаем логику сохранения
-        Task { @MainActor in await togglePhishingProtection(newValue) }
+        scheduleDebouncedToggle(componentId: "phishing_protection_agent", newValue: newValue) { [weak self] value in
+            await self?.togglePhishingProtection(value)
+        }
     }
     
     func toggleMalwareDetectionSync(_ newValue: Bool) {
-        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.malwareDetectionEnabled = newValue
-        
-        // Затем асинхронно запускаем логику сохранения
-        Task { @MainActor in await toggleMalwareDetection(newValue) }
+        scheduleDebouncedToggle(componentId: "malware_detection_agent", newValue: newValue) { [weak self] value in
+            await self?.toggleMalwareDetection(value)
+        }
     }
     
     func toggleMobileSecuritySync(_ newValue: Bool) {
-        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.mobileSecurityEnabled = newValue
-        
-        // Затем асинхронно запускаем логику сохранения
-        Task { @MainActor in await toggleMobileSecurity(newValue) }
+        scheduleDebouncedToggle(componentId: "mobile_security_agent", newValue: newValue) { [weak self] value in
+            await self?.toggleMobileSecurity(value)
+        }
     }
     
     func toggleNetworkSecuritySync(_ newValue: Bool) {
-        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.networkSecurityEnabled = newValue
-        
-        // Затем асинхронно запускаем логику сохранения
-        Task { @MainActor in await toggleNetworkSecurity(newValue) }
+        scheduleDebouncedToggle(componentId: "network_security_agent", newValue: newValue) { [weak self] value in
+            await self?.toggleNetworkSecurity(value)
+        }
     }
     
     func toggleIotSecuritySync(_ newValue: Bool) {
         self.iotSecurityEnabled = newValue
-        Task { @MainActor in await toggleIotSecurity(newValue) }
+        scheduleDebouncedToggle(componentId: "iot_security_agent", newValue: newValue) { [weak self] value in
+            await self?.toggleIotSecurity(value)
+        }
     }
     
     func toggleIncidentResponseSync(_ newValue: Bool) {
-        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.incidentResponseEnabled = newValue
-        
-        // Затем асинхронно запускаем логику сохранения
-        Task { @MainActor in await toggleIncidentResponse(newValue) }
+        scheduleDebouncedToggle(componentId: "incident_response_agent", newValue: newValue) { [weak self] value in
+            await self?.toggleIncidentResponse(value)
+        }
     }
     
     func togglePasswordSecuritySync(_ newValue: Bool) {
-        // ✅ BUILD 114: Сначала мгновенно обновляем UI
         self.passwordSecurityEnabled = newValue
-        
-        // Затем асинхронно запускаем логику сохранения
-        Task { @MainActor in await togglePasswordSecurity(newValue) }
+        scheduleDebouncedToggle(componentId: "password_security_agent", newValue: newValue) { [weak self] value in
+            await self?.togglePasswordSecurity(value)
+        }
     }
 
     // MARK: - Public Methods - Asynchronous (Core Logic)
@@ -303,9 +291,14 @@ class NetworkProtectionViewModel: ObservableObject {
                 crashDetectionUnavailableOnThisDevice = true
                 crashDetectionUnavailableReason = crashDetection.crashDetectionUnsupportedReason ?? error.localizedDescription
             }
+            #if targetEnvironment(simulator)
+            toastManager.showWarning(crashDetectionUnavailableReason ?? error.localizedDescription)
+            print("⚠️ NetworkProtectionViewModel: Crash Detection на симуляторе — \(error.localizedDescription)")
+            #else
             componentAnalytics.trackComponentError(componentId: componentId, error: error)
             toastManager.showError(error.localizedDescription)
             print("❌ NetworkProtectionViewModel: Не удалось запустить Crash Detection на устройстве: \(error.localizedDescription)")
+            #endif
             return
         }
 
@@ -481,6 +474,21 @@ class NetworkProtectionViewModel: ObservableObject {
     /// которое может вызвать повторное переключение тумблера → рекурсия
     private var isToggling = false
     private let togglingLock = NSLock()
+    private var toggleDebounceTasks: [String: Task<Void, Never>] = [:]
+    private let toggleDebounceIntervalNs: UInt64 = 400_000_000
+
+    private func scheduleDebouncedToggle(
+        componentId: String,
+        newValue: Bool,
+        action: @escaping (Bool) async -> Void
+    ) {
+        toggleDebounceTasks[componentId]?.cancel()
+        toggleDebounceTasks[componentId] = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: toggleDebounceIntervalNs)
+            guard !Task.isCancelled else { return }
+            await action(newValue)
+        }
+    }
 
     private func toggleComponent(
         componentId: String,

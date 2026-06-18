@@ -69,11 +69,12 @@ enum AntifakeTextInputClassifier {
     }
 
     static func isLikelyPhone(_ string: String) -> Bool {
-        let digits = string.filter { $0.isNumber }
-        guard digits.count >= 7, digits.count <= 15 else { return false }
+        let digitChars = string.filter { $0.isNumber }
+        guard digitChars.count >= 7, digitChars.count <= 15 else { return false }
         let allowed = CharacterSet(charactersIn: "+-() .")
+        let digitScalars = CharacterSet.decimalDigits
         let stripped = string.unicodeScalars.filter {
-            $0.isASCII && ($0.properties.isNumeric || allowed.contains($0))
+            $0.isASCII && (digitScalars.contains($0) || allowed.contains($0))
         }
         return stripped.count >= string.unicodeScalars.count - 2
     }

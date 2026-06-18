@@ -297,7 +297,7 @@ struct AntifakeTextCheckView: View {
     @Binding var showPremiumPaywall: Bool
     @Binding var sharePrefill: AntifakeSharePayload?
     @Binding var prefillTextMode: AntifakeTextInputMode?
-    @StateObject private var viewModel = AntifakeTextCheckViewModel()
+    @StateObject private var viewModel = AntifakeTextCheckViewModel(localizationManager: .shared)
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
@@ -517,7 +517,7 @@ struct AntifakeHubScreen_Previews: PreviewProvider {
     static var previews: some View {
         AntifakeHubScreen()
             .environmentObject(NavigationManager())
-            .environmentObject(LocalizationManager())
+            .environmentObject(LocalizationManager.shared)
             .environmentObject(SubscriptionManager.shared)
     }
 }

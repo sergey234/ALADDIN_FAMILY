@@ -92,6 +92,15 @@ struct APIResponseValidator {
         else if let metricsResponse = response as? MetricsUploadResponse {
             try validateMetricsUploadResponse(metricsResponse)
         }
+        else if let offlineSync = response as? SyncOfflineStorageResponse {
+            try validateSyncOfflineStorageResponse(offlineSync)
+        }
+        else if let verdict = response as? SecurityVerdict {
+            try validateSecurityVerdictResponse(verdict)
+        }
+        else if let componentStatus = response as? ComponentStatus {
+            try validateComponentStatusResponse(componentStatus)
+        }
         else {
             switch response {
             case let analytics as AnalyticsResponse:
@@ -579,6 +588,36 @@ struct APIResponseValidator {
     
     // MARK: - Helper Methods
 
+    private static func validateSyncOfflineStorageResponse(_ response: SyncOfflineStorageResponse) throws {
+        guard !response.userId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw ValidationError.emptyField(field: "userId")
+        }
+        guard response.totalSize >= 0 else {
+            throw ValidationError.invalidValue(field: "totalSize", value: response.totalSize, reason: "должно быть >= 0")
+        }
+        guard !response.lastSyncTimestamp.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw ValidationError.emptyField(field: "lastSyncTimestamp")
+        }
+    }
+
+    private static func validateSecurityVerdictResponse(_ response: SecurityVerdict) throws {
+        guard (0.0 ... 1.0).contains(response.confidence) else {
+            throw ValidationError.invalidRange(field: "confidence", value: response.confidence, range: "0.0-1.0")
+        }
+        guard !response.source.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw ValidationError.emptyField(field: "source")
+        }
+        if response.source.lowercased().contains("mock") {
+            throw SecurityVerdictValidationError.mockSourceRejected(response.source)
+        }
+    }
+
+    private static func validateComponentStatusResponse(_ response: ComponentStatus) throws {
+        guard !response.componentId.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty else {
+            throw ValidationError.emptyField(field: "componentId")
+        }
+    }
+
     private static func isValidURL(_ string: String) -> Bool {
         guard let url = URL(string: string) else { return false }
         return url.scheme != nil && url.host != nil
@@ -592,7 +631,8 @@ struct APIResponseValidator {
             "ServerComponentConfigurationResponse",
             "UpdateResponse",
             "DataCleanupStats",
-            "AntiTrackerStats"
+            "AntiTrackerStats",
+            "BypassStats"
         ]
         return safeTypePrefixes.contains(where: { typeName.contains($0) })
     }

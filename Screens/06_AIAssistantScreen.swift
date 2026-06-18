@@ -30,6 +30,7 @@ struct AIAssistantScreen: View {
     @State private var showSlowAIHint = false
     @State private var slowAIHintTask: Task<Void, Never>?
     @State private var showWellnessReferralSheet = false
+    @State private var showDemoServerBanner = false
     /// Снимок SyncEngine — не читаем @Published singleton в body (watchdog / layout deadlock).
     @State private var aiSyncStateDisplay: SyncState = .idle
 
