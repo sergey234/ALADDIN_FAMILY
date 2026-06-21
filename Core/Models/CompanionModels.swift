@@ -885,6 +885,23 @@ struct CompanionStreamDonePayload: Codable {
         case trustStreakDays = "trust_streak_days"
         case suggestedActions = "suggested_actions"
     }
+
+    /// Pseudo-stream when `/stream` is unavailable but `/chat` works.
+    static func fromChat(_ chat: CompanionChatResponse) -> CompanionStreamDonePayload {
+        CompanionStreamDonePayload(
+            response: chat.response,
+            characterId: chat.characterId,
+            emotion: chat.emotion,
+            trustScore: chat.trustScore,
+            trustLevel: chat.trustLevel,
+            trustDelta: chat.trustDelta,
+            done: true,
+            showSocialBridge: chat.showSocialBridge,
+            socialBridgeSuggestions: chat.socialBridgeSuggestions,
+            trustStreakDays: chat.trustStreakDays,
+            suggestedActions: chat.suggestedActions
+        )
+    }
 }
 
 struct CompanionChatBubble: Identifiable {

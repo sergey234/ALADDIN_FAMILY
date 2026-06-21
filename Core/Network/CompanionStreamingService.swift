@@ -1,9 +1,15 @@
 import Foundation
+import os.log
 
 /// SSE-стрим companion с resume после обрыва сети (P1-06, B16).
 @MainActor
 final class CompanionStreamingService: ObservableObject {
     static let shared = CompanionStreamingService()
+
+    private static let streamLog = OSLog(
+        subsystem: Bundle.main.bundleIdentifier ?? "family.aladdin.ios",
+        category: "CompanionStream"
+    )
 
     @Published private(set) var isStreaming = false
     @Published private(set) var canResume = false
@@ -89,6 +95,32 @@ final class CompanionStreamingService: ObservableObject {
             canResume = false
             onComplete(accumulatedText, doneMeta)
         } catch {
+            if !(error is CancellationError),
+               cloudMessage.isEmpty == false,
+               shouldFallbackStreamToChat(error) {
+                do {
+                    let meta = try await deliverViaChatFallback(
+                        message: cloudMessage,
+                        characterId: characterId,
+                        sessionId: sessionId,
+                        securityExpertMode: securityExpertMode,
+                        chatMode: chatMode,
+                        workspaceId: workspaceId,
+                        attachments: attachments,
+                        onEmotion: onEmotion,
+                        onToken: onToken
+                    )
+                    accumulatedText = meta.response ?? accumulatedText
+                    clearStreamState()
+                    canResume = false
+                    onComplete(accumulatedText, meta)
+                    return
+                } catch {
+                    Self.logStream(
+                        "chat_fallback_failed status=\((error as NSError).code) detail=\(error.localizedDescription)"
+                    )
+                }
+            }
             if !(error is CancellationError) {
                 saveStreamState()
                 canResume = !accumulatedText.isEmpty
@@ -270,8 +302,11 @@ final class CompanionStreamingService: ObservableObject {
         }
         request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
+        Self.logStream("POST \(url.absoluteString) context=\(context) resumeFrom=\(resumeFromIndex)")
+
         let (bytes, response) = try await URLSession.shared.bytes(for: request)
         if let http = response as? HTTPURLResponse, !(200...299).contains(http.statusCode) {
+            Self.logStream("HTTP \(http.statusCode) url=\(url.absoluteString)")
             throw NSError(
                 domain: "CompanionStream",
                 code: http.statusCode,
@@ -303,6 +338,51 @@ final class CompanionStreamingService: ObservableObject {
             }
         }
         continuation.finish()
+    }
+
+    /// Prod может отдавать 404 на `/stream` (nginx / старый deploy) — тогда отвечаем через `/chat`.
+    private static func shouldFallbackStreamToChat(_ error: Error) -> Bool {
+        let ns = error as NSError
+        guard ns.domain == "CompanionStream" else { return false }
+        return ns.code == 404 || ns.code == 405 || ns.code == 502 || ns.code == 503
+    }
+
+    private func deliverViaChatFallback(
+        message: String,
+        characterId: String,
+        sessionId: String?,
+        securityExpertMode: Bool,
+        chatMode: String,
+        workspaceId: String?,
+        attachments: [CompanionAttachmentPayload],
+        onEmotion: ((String) -> Void)?,
+        onToken: @escaping (String) -> Void
+    ) async throws -> CompanionStreamDonePayload {
+        Self.logStream("fallback_to_chat character=\(characterId)")
+        let response = try await CompanionAPIService.shared.sendChat(
+            message: message,
+            characterId: characterId,
+            sessionId: sessionId,
+            inputMode: "text",
+            securityExpertMode: securityExpertMode,
+            chatMode: chatMode,
+            workspaceId: workspaceId,
+            attachments: attachments
+        )
+        onEmotion?(response.emotion)
+        let words = response.response.split(whereSeparator: \.isWhitespace)
+        for word in words {
+            let token = "\(word) "
+            accumulatedText += token
+            lastTokenIndex += 1
+            onToken(token)
+            try await Task.sleep(nanoseconds: 20_000_000)
+        }
+        return CompanionStreamDonePayload.fromChat(response)
+    }
+
+    private static func logStream(_ message: String) {
+        os_log("[CompanionStream] %{public}@", log: streamLog, type: .info, message)
     }
 
     private struct SavedState: Codable {

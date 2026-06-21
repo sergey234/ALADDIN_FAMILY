@@ -29,8 +29,9 @@ def main() -> int:
         print(f"FAIL: size < {MIN_BYTES} (placeholder)")
         return 1
     missing = [t for t in TRIGGERS if t.encode() not in data]
-    if b"mouth_open" not in data:
-        missing.append("mouth_open")
+    mouth_markers = (b"mouth_open", b"mouthOpen", b"MouthOpen")
+    if not any(m in data for m in mouth_markers):
+        missing.append("mouth_open|mouthOpen")
     if b"HeroSM" not in data:
         missing.append("HeroSM")
     if missing:

@@ -13,8 +13,21 @@ enum CompanionHeroRiveHost {
     static let productionRivMinBytes: Int = 25_000
     /// iOS контракт (см. `scripts/companion_07_verify_unicorn_riv.py`).
     static let stateMachineName = "HeroSM"
-    private static let artboardNameCandidates: [String?] = ["Hero360", nil]
     private static let mouthInputCandidates = ["mouth_open", "mouthOpen", "MouthOpen"]
+
+    /// Production `.riv` artboard names differ per hero (runtime export vs editor `Hero360`).
+    private static func artboardNameCandidates(for characterId: String) -> [String?] {
+        switch rivBaseName(characterId: characterId) {
+        case "unicorn":
+            return ["unicorn_master_crop_360x480", "Hero360", nil]
+        case "aladdin":
+            return ["aladdin_master_crop_360x480", "Hero360", nil]
+        case "genie":
+            return ["genie_master_crop_360x480", "Hero360", nil]
+        default:
+            return ["Hero360", nil]
+        }
+    }
 
     /// Симулятор iOS 15.x: известные падения Rive/Metal (`currentDrawable`, sampler binding). QA Rive — на device.
     static var isSimulatorIOS15MetalUnstable: Bool {
@@ -64,6 +77,17 @@ enum CompanionHeroRiveHost {
         return "PNG fallback"
     }
     #endif
+
+    private static func logRiveLoadFailure(characterId: String, reason: String, detail: String = "") {
+        os_log(
+            "[CompanionHero] rive_load_fail character=%{public}@ reason=%{public}@ detail=%{public}@",
+            log: heroLog,
+            type: .error,
+            rivBaseName(characterId: characterId),
+            reason,
+            detail
+        )
+    }
 
     /// Release-safe: Console.app filter `CompanionHero`.
     static func logHeroPath(characterId: String, renderPath: String, vmStatus: String) {
@@ -122,24 +146,58 @@ enum CompanionHeroRiveHost {
     #if canImport(RiveRuntime)
     /// Загрузка bundled `.riv` из `Companion/` (не `webURL` / `file://`).
     static func makeRiveViewModel(characterId: String) -> RiveViewModel? {
-        guard let url = bundledRivURL(characterId: characterId),
-              let data = try? Data(contentsOf: url) else {
+        guard let url = bundledRivURL(characterId: characterId) else {
+            logRiveLoadFailure(characterId: characterId, reason: "missing_bundle_url")
+            return nil
+        }
+        guard let data = try? Data(contentsOf: url) else {
+            logRiveLoadFailure(characterId: characterId, reason: "read_data_failed", detail: url.lastPathComponent)
             return nil
         }
         guard let file = try? RiveFile(data: data, loadCdn: false) else {
+            logRiveLoadFailure(characterId: characterId, reason: "rive_file_decode_failed", detail: "\(data.count)b")
             return nil
         }
 
-        for artboardName in artboardNameCandidates {
-            if let viewModel = attemptViewModel(file: file, artboardName: artboardName, stateMachineName: stateMachineName) {
+        let candidates = artboardNameCandidates(for: characterId)
+        for artboardName in candidates {
+            if let viewModel = attemptViewModel(
+                file: file,
+                artboardName: artboardName,
+                stateMachineName: stateMachineName
+            ) {
+                os_log(
+                    "[CompanionHero] rive_load_ok character=%{public}@ artboard=%{public}@ sm=%{public}@",
+                    log: heroLog,
+                    type: .info,
+                    rivBaseName(characterId: characterId),
+                    artboardName ?? "(default)",
+                    stateMachineName
+                )
                 return viewModel
             }
         }
-        for artboardName in artboardNameCandidates {
-            if let viewModel = attemptViewModel(file: file, artboardName: artboardName, stateMachineName: nil) {
+        for artboardName in candidates {
+            if let viewModel = attemptViewModel(
+                file: file,
+                artboardName: artboardName,
+                stateMachineName: nil
+            ) {
+                os_log(
+                    "[CompanionHero] rive_load_ok character=%{public}@ artboard=%{public}@ sm=(none)",
+                    log: heroLog,
+                    type: .info,
+                    rivBaseName(characterId: characterId),
+                    artboardName ?? "(default)"
+                )
                 return viewModel
             }
         }
+        logRiveLoadFailure(
+            characterId: characterId,
+            reason: "no_artboard_or_state_machine",
+            detail: candidates.compactMap { $0 ?? "default" }.joined(separator: ",")
+        )
         return nil
     }
 
