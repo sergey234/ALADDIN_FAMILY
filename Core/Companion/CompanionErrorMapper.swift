@@ -7,6 +7,11 @@ enum CompanionErrorMapper {
             return gate.errorDescription ?? localizationManager.localized("companion_conversation_send_failed")
         }
 
+        let stream = error as NSError
+        if stream.domain == "CompanionStream", stream.code == 404 {
+            return localizationManager.localized("companion_conversation_send_failed")
+        }
+
         let networkError = NetworkError.from(error)
         if case .tooManyRequests(let detail) = networkError {
             return rateLimitMessage(detail: detail, localizationManager: localizationManager)

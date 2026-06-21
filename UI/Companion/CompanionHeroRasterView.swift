@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import os.log
 
 /// HERO-3-07 — production master PNG (360×480) до замены placeholder `.riv`.
 /// Файлы: `Resources/Companion/{unicorn,aladdin,genie}_master.png`
@@ -50,10 +51,18 @@ struct CompanionHeroRasterView: View {
             isVisible = true
             if !didLogPath {
                 didLogPath = true
+                let reason = CompanionHeroRiveHost.pngFallbackReason(characterId: characterId)
                 CompanionHeroRiveHost.logHeroPath(
                     characterId: characterId,
                     renderPath: "PNG",
                     vmStatus: "n/a"
+                )
+                os_log(
+                    "[CompanionHero] png_reason=%{public}@ character=%{public}@",
+                    log: OSLog(subsystem: Bundle.main.bundleIdentifier ?? "family.aladdin.ios", category: "CompanionHero"),
+                    type: .info,
+                    reason,
+                    characterId
                 )
             }
         }

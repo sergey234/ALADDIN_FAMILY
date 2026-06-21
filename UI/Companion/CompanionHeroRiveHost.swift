@@ -71,12 +71,20 @@ enum CompanionHeroRiveHost {
     #if DEBUG
     static func debugHeroPathLabel(characterId: String, usesRive: Bool) -> String {
         let riv = rivBaseName(characterId: characterId)
-        if usesRive { return "RIVE \(riv)" }
-        if isSimulatorIOS15MetalUnstable { return "PNG iOS15-sim" }
-        if !isProductionRiv(characterId: characterId) { return "PNG placeholder-riv" }
-        return "PNG fallback"
+        if usesRive { return "b\(AppConfig.buildNumber) RIVE \(riv)" }
+        if isSimulatorIOS15MetalUnstable { return "b\(AppConfig.buildNumber) PNG iOS15-sim" }
+        if !isProductionRiv(characterId: characterId) { return "b\(AppConfig.buildNumber) PNG placeholder-riv" }
+        return "b\(AppConfig.buildNumber) PNG fallback"
     }
     #endif
+
+    /// Почему показываем PNG вместо Rive (Console: `CompanionHero`).
+    static func pngFallbackReason(characterId: String) -> String {
+        if isSimulatorIOS15MetalUnstable { return "ios15_simulator_rive_disabled" }
+        if !isProductionRiv(characterId: characterId) { return "riv_placeholder_or_missing" }
+        if !hasRasterFallback(characterId: characterId) { return "no_png_master" }
+        return "rive_runtime_load_failed_or_not_visible"
+    }
 
     private static func logRiveLoadFailure(characterId: String, reason: String, detail: String = "") {
         os_log(
@@ -155,7 +163,11 @@ enum CompanionHeroRiveHost {
             return nil
         }
         guard let file = try? RiveFile(data: data, loadCdn: false) else {
-            logRiveLoadFailure(characterId: characterId, reason: "rive_file_decode_failed", detail: "\(data.count)b")
+            logRiveLoadFailure(
+                characterId: characterId,
+                reason: "rive_file_decode_failed",
+                detail: "\(data.count)b fmt=\(riveFormatLabel(data))"
+            )
             return nil
         }
 
@@ -199,6 +211,11 @@ enum CompanionHeroRiveHost {
             detail: candidates.compactMap { $0 ?? "default" }.joined(separator: ",")
         )
         return nil
+    }
+
+    private static func riveFormatLabel(_ data: Data) -> String {
+        guard data.count >= 6, data.starts(with: [0x52, 0x49, 0x56, 0x45]) else { return "not_rive" }
+        return "v\(data[4]).\(data[5])"
     }
 
     private static func attemptViewModel(

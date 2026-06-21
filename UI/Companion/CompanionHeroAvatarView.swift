@@ -21,6 +21,7 @@ struct CompanionHeroAvatarView: View {
                 cosmeticFrame
             }
             heroCore
+                .id(characterId)
             if let symbol = CompanionCosmeticVisuals.overlaySymbol(for: equippedCosmeticId) {
                 Image(systemName: symbol)
                     .font(.system(size: 12 * unit, weight: .bold))

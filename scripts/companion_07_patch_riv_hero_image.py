@@ -75,9 +75,12 @@ def patch_riv(template: bytes, png: bytes, renames: tuple[tuple[bytes, bytes], .
             raise ValueError(f"Label {new!r} longer than {old!r} — unsafe patch")
         padded = new + b"\x00" * (len(old) - len(new))
         out = out.replace(old, padded, 1)
-    for name in (b"HeroSM", b"mouth_open", b"idle", b"listening", b"speaking"):
+    for name in (b"HeroSM", b"idle", b"listening", b"speaking"):
         if name not in out:
             raise ValueError(f"Missing SM marker {name!r} after patch")
+    mouth_markers = (b"mouth_open", b"mouthOpen", b"MouthOpen")
+    if not any(m in out for m in mouth_markers):
+        raise ValueError("Missing mouth_open|mouthOpen after patch")
     return out
 
 

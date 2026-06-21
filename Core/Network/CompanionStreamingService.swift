@@ -51,6 +51,9 @@ final class CompanionStreamingService: ObservableObject {
 
         defer { isStreaming = false }
 
+        Self.logStream("streamMessage build=\(AppConfig.buildNumber) character=\(characterId)")
+        print("[CompanionStream] streamMessage build=\(AppConfig.buildNumber) character=\(characterId)")
+
         let cloudMessage: String
         do {
             if message.isEmpty {
@@ -383,6 +386,7 @@ final class CompanionStreamingService: ObservableObject {
 
     private static func logStream(_ message: String) {
         os_log("[CompanionStream] %{public}@", log: streamLog, type: .info, message)
+        print("[CompanionStream] \(message)")
     }
 
     private struct SavedState: Codable {
