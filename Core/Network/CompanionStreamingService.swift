@@ -97,7 +97,7 @@ final class CompanionStreamingService: ObservableObject {
         } catch {
             if !(error is CancellationError),
                cloudMessage.isEmpty == false,
-               shouldFallbackStreamToChat(error) {
+               Self.shouldFallbackStreamToChat(error) {
                 do {
                     let meta = try await deliverViaChatFallback(
                         message: cloudMessage,
