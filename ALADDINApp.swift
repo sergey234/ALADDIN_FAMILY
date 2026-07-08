@@ -435,6 +435,15 @@ struct ALADDINApp: App {
                         return
                     }
 
+                    if CompanionDeepLinkRouter.isCompanionTalkDeepLink(url) {
+                        navigationManager.navigateToCompanionTalkNow()
+                        return
+                    }
+                    if CompanionDeepLinkRouter.isWellnessCheckinDeepLink(url) {
+                        navigationManager.navigateToWellnessCheckinFromDeepLink()
+                        return
+                    }
+
                     if let category = MnemoDeepLinkRouter.parseReviewCategory(from: url) {
                         navigationManager.navigateToMnemoReview(category: category)
                         return
@@ -474,6 +483,16 @@ struct ALADDINApp: App {
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToAntifakePostCallCheck"))) { _ in
                     navigationManager.navigateToAntifakeHub(tab: .call, postCallPrompt: true)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToWellnessWindDown"))) { _ in
+                    WellnessSessionStore.setOpenSleepStoriesOnAppear(true)
+                    navigationManager.navigateTo(.wellnessHub)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToCompanionTalkNow"))) { _ in
+                    navigationManager.navigateToCompanionTalkNow()
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToWellnessCheckin"))) { _ in
+                    navigationManager.navigateToWellnessCheckinFromDeepLink()
                 }
         }
     }
@@ -1015,6 +1034,21 @@ struct ALADDINApp: App {
                     case .wellnessTogether:
                         AnyView(WellnessTogetherModeScreen()
                             .id("wellnessTogether")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessExamMode:
+                        AnyView(WellnessExamModeScreen()
+                            .id("wellnessExamMode")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessOneThing:
+                        AnyView(WellnessOneThingSessionScreen()
+                            .id("wellnessOneThing")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .wellnessPsychLibrary:
+                        AnyView(DigitalPsychologyLibraryScreen()
+                            .id("wellnessPsychLibrary")
                             .environmentObject(navigationManager)
                             .environmentObject(localizationManager))
                     case .familyTournament:

@@ -10,6 +10,11 @@ enum WellnessSessionStore {
     private static let ageBandKey = "wellness_age_band_cache"
     private static let companionBannerKey = "wellness_companion_entry_banner_v1"
     private static let highlightMicKey = "wellness_companion_highlight_mic_v1"
+    private static let pendingExerciseIdKey = "wellness_pending_exercise_id_v1"
+    private static let openSleepStoriesKey = "wellness_open_sleep_stories_v1"
+    private static let windDownEnabledKey = "wellness_wind_down_enabled_v1"
+    private static let windDownBedtimeHourKey = "wellness_wind_down_hour_v1"
+    private static let windDownBedtimeMinuteKey = "wellness_wind_down_minute_v1"
 
     static var cachedAgeBand: String? {
         UserDefaults.standard.string(forKey: ageBandKey)
@@ -107,6 +112,59 @@ enum WellnessSessionStore {
             UserDefaults.standard.set(false, forKey: highlightMicKey)
         }
         return flag
+    }
+
+    static var pendingExerciseId: String? {
+        let v = UserDefaults.standard.string(forKey: pendingExerciseIdKey)?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        return (v?.isEmpty == false) ? v : nil
+    }
+
+    static func setPendingExerciseId(_ id: String?) {
+        if let id, !id.isEmpty {
+            UserDefaults.standard.set(id, forKey: pendingExerciseIdKey)
+        } else {
+            UserDefaults.standard.removeObject(forKey: pendingExerciseIdKey)
+        }
+    }
+
+    static func consumePendingExerciseId() -> String? {
+        let id = pendingExerciseId
+        setPendingExerciseId(nil)
+        return id
+    }
+
+    static var shouldOpenSleepStories: Bool {
+        UserDefaults.standard.bool(forKey: openSleepStoriesKey)
+    }
+
+    static func setOpenSleepStoriesOnAppear(_ enabled: Bool) {
+        UserDefaults.standard.set(enabled, forKey: openSleepStoriesKey)
+    }
+
+    static func consumeOpenSleepStories() -> Bool {
+        let flag = shouldOpenSleepStories
+        if flag { setOpenSleepStoriesOnAppear(false) }
+        return flag
+    }
+
+    static var windDownEnabled: Bool {
+        UserDefaults.standard.bool(forKey: windDownEnabledKey)
+    }
+
+    static func setWindDownEnabled(_ enabled: Bool) {
+        UserDefaults.standard.set(enabled, forKey: windDownEnabledKey)
+    }
+
+    static var windDownBedtime: (hour: Int, minute: Int) {
+        let hour = UserDefaults.standard.object(forKey: windDownBedtimeHourKey) as? Int ?? 22
+        let minute = UserDefaults.standard.object(forKey: windDownBedtimeMinuteKey) as? Int ?? 30
+        return (max(0, min(23, hour)), max(0, min(59, minute)))
+    }
+
+    static func setWindDownBedtime(hour: Int, minute: Int) {
+        UserDefaults.standard.set(max(0, min(23, hour)), forKey: windDownBedtimeHourKey)
+        UserDefaults.standard.set(max(0, min(59, minute)), forKey: windDownBedtimeMinuteKey)
     }
 }
 

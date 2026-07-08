@@ -135,6 +135,7 @@ struct CompanionHubScreen: View {
 
                         ForEach(characters) { hero in
                             Button {
+                                CompanionHeroRouter.markUserOverride(characterId: hero.id)
                                 selectedCharacterId = hero.id
                                 activeThreadId = ""
                                 if let onHeroPicked {

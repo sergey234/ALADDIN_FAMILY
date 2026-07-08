@@ -52,6 +52,9 @@ struct AntifakeCallTabView: View {
             .environmentObject(localizationManager)
             .accessibilityIdentifier("antifake_call_section_incoming")
 
+            AntifakeVoiceFraudThresholdCard()
+                .environmentObject(localizationManager)
+
             AntifakeCallDirectorySettingsCard()
                 .environmentObject(localizationManager)
         }

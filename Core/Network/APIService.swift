@@ -4244,6 +4244,22 @@ class APIService: ObservableObject {
         )
     }
 
+    /// fws-06 — voice fraud / Call Directory sensitivity.
+    func getAntifakeSettings(completion: @escaping (Result<AntifakeSettingsResponse, Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.antifakeSettings, completion: completion)
+    }
+
+    func putAntifakeSettings(
+        thresholdPercent: Int,
+        completion: @escaping (Result<AntifakeSettingsResponse, Error>) -> Void
+    ) {
+        networkManager.put(
+            endpoint: AppConfig.Endpoint.antifakeSettings,
+            body: AntifakeSettingsUpdateBody(voiceFraudThresholdPercent: thresholdPercent),
+            completion: completion
+        )
+    }
+
     /// POST `/api/antifake/report` — crowd scam report after completed check (I-01 / I-08).
     func antifakeReportScam(
         jobId: String,
@@ -4365,6 +4381,92 @@ class APIService: ObservableObject {
         completion: @escaping (Result<AntifakeFamilyCDStatusResponse, Error>) -> Void
     ) {
         networkManager.get(endpoint: AppConfig.Endpoint.antifakeFamilyCDStatus, completion: completion)
+    }
+
+    // MARK: - fws-01 Family safe-word
+
+    func getFamilySafeWordStatus(
+        completion: @escaping (Result<FamilySafeWordStatusResponse, Error>) -> Void
+    ) {
+        networkManager.get(endpoint: AppConfig.Endpoint.familySafeWord, completion: completion)
+    }
+
+    func setFamilySafeWord(
+        phrase: String,
+        completion: @escaping (Result<FamilySafeWordSetResponse, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let phrase: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.familySafeWord,
+            body: Body(phrase: phrase),
+            completion: completion
+        )
+    }
+
+    func verifyFamilySafeWord(
+        phrase: String,
+        context: String = "antifake",
+        completion: @escaping (Result<FamilySafeWordVerifyResponse, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let phrase: String
+            let context: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.familySafeWordVerify,
+            body: Body(phrase: phrase, context: context),
+            completion: completion
+        )
+    }
+
+    // MARK: - fws-02 Family habit reminders
+
+    func getFamilyHabitReminders(
+        completion: @escaping (Result<FamilyHabitRemindersResponse, Error>) -> Void
+    ) {
+        networkManager.get(endpoint: AppConfig.Endpoint.familyHabitReminders, completion: completion)
+    }
+
+    func setFamilyHabitReminders<T: Encodable>(
+        body: T,
+        completion: @escaping (Result<FamilyHabitRemindersSaveResponse, Error>) -> Void
+    ) {
+        networkManager.post(endpoint: AppConfig.Endpoint.familyHabitReminders, body: body, completion: completion)
+    }
+
+    func getFamilyIncidents(
+        since: String? = nil,
+        completion: @escaping (Result<FamilyIncidentFeedResponse, Error>) -> Void
+    ) {
+        var query: [String: String] = [:]
+        if let since, !since.isEmpty {
+            query["since"] = since
+        }
+        networkManager.get(
+            endpoint: AppConfig.Endpoint.familyIncidents,
+            queryParams: query.isEmpty ? nil : query,
+            completion: completion
+        )
+    }
+
+    func createWellnessHabit(
+        ifThen: String,
+        completion: @escaping (Result<WellnessHabitCreateResponse, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let ifThen: String
+
+            enum CodingKeys: String, CodingKey {
+                case ifThen = "if_then"
+            }
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.wellnessHabits,
+            body: Body(ifThen: ifThen),
+            completion: completion
+        )
     }
 
     private static func appendMultipartFormField(to body: inout Data, boundary: String, name: String, value: String) {

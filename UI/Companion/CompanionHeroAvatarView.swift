@@ -215,4 +215,16 @@ enum CompanionHeroRiveMapping {
         case .idle: return "Герой ждёт"
         }
     }
+
+    /// fws-h04 — map wellness pillar / session kind to Rive emotion.
+    static func emotionForWellnessSession(pillar: String?, sessionKind: String? = nil) -> CompanionHeroEmotion {
+        let kind = (sessionKind ?? "").lowercased()
+        if kind == "wind_down" || kind == "sleep" {
+            return .comfort
+        }
+        if let p = WellnessPillar(rawValue: (pillar ?? "").lowercased()) {
+            return p.companionSessionEmotion
+        }
+        return .idle
+    }
 }

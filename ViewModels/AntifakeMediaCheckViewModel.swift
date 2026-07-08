@@ -12,10 +12,12 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
     @Published var requiresPremiumUpgrade = false
     @Published var callerId = ""
     @Published var displayName = ""
+    @Published var previewURL: URL?
 
     let mediaKind: AntifakeMediaKind
 
     private var fileData: Data?
+    private var previewTempURL: URL?
     private let apiService: APIService
     private let localizationManager: LocalizationManager
 
@@ -44,16 +46,20 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
     }
 
     func setSelectedFile(data: Data, filename: String) {
+        removePreviewFile()
         fileData = data
         selectedFilename = filename
         verdict = nil
         errorMessage = nil
         statusMessage = nil
+        previewURL = writePreviewFile(data: data, filename: filename)
     }
 
     func clearSelection() {
+        removePreviewFile()
         fileData = nil
         selectedFilename = nil
+        previewURL = nil
         verdict = nil
         errorMessage = nil
         statusMessage = nil
@@ -201,5 +207,27 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
             case .document: return "application/octet-stream"
             }
         }
+    }
+
+    private func writePreviewFile(data: Data, filename: String) -> URL? {
+        guard mediaKind == .audio || mediaKind == .video || mediaKind == .call else { return nil }
+        let ext = (filename as NSString).pathExtension
+        let safeExt = ext.isEmpty ? "bin" : ext
+        let url = FileManager.default.temporaryDirectory
+            .appendingPathComponent("antifake_preview_\(UUID().uuidString).\(safeExt)")
+        do {
+            try data.write(to: url, options: .atomic)
+            previewTempURL = url
+            return url
+        } catch {
+            return nil
+        }
+    }
+
+    private func removePreviewFile() {
+        if let url = previewTempURL {
+            try? FileManager.default.removeItem(at: url)
+        }
+        previewTempURL = nil
     }
 }

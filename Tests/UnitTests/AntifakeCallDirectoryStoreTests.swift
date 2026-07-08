@@ -47,4 +47,21 @@ final class AntifakeCallDirectoryStoreTests: XCTestCase {
             "Custom bank scam"
         )
     }
+
+    func testResolvedLabelVoiceFraudSentinel() {
+        let defaultLabel = "Possible scam?"
+        let voiceLabel = "Possible AI voice scam?"
+        XCTAssertEqual(
+            AntifakeCallDirectoryLabelPolicy.resolvedLabel(
+                AntifakeCallDirectoryLabelPolicy.voiceFraudSentinel,
+                defaultLabel: defaultLabel,
+                voiceLabel: voiceLabel
+            ),
+            voiceLabel
+        )
+        XCTAssertEqual(
+            AntifakeCallDirectoryLabelPolicy.resolvedLabel(nil, defaultLabel: defaultLabel, voiceLabel: voiceLabel),
+            defaultLabel
+        )
+    }
 }

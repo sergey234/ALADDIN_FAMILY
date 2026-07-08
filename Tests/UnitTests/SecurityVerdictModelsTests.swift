@@ -8,9 +8,12 @@ final class SecurityVerdictModelsTests: XCTestCase {
         {
           "verdict": "likely_fake",
           "confidence": 0.91,
-          "reasons": ["suspicious domain"],
+          "reasons": ["url_phishing_path"],
+          "sources": [
+            {"id": "phishing_awareness", "title_key": "antifake_source_phishing_awareness", "url": "https://example.com"}
+          ],
           "source": "real_agent",
-          "agent": "fake_news_detection_agent",
+          "agent": "heuristic_url",
           "job_id": null,
           "checked_at": "2026-06-10T12:00:00.000Z",
           "premium_required": false
@@ -19,7 +22,8 @@ final class SecurityVerdictModelsTests: XCTestCase {
         let verdict = try SecurityVerdictParsers.decodeVerdict(from: Data(json.utf8))
         XCTAssertEqual(verdict.verdict, .likelyFake)
         XCTAssertEqual(verdict.confidence, 0.91, accuracy: 0.001)
-        XCTAssertEqual(verdict.source, "real_agent")
+        XCTAssertEqual(verdict.sources.count, 1)
+        XCTAssertEqual(verdict.sources.first?.id, "phishing_awareness")
         XCTAssertTrue(verdict.isLikelyThreat)
     }
 

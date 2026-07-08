@@ -535,10 +535,33 @@ struct MainScreen: View {
                             .accessibilityLabel("Тарифы - Выбор плана")
                             .accessibilityHint("Нажмите для открытия экрана тарифов")
                             
+                            // fws-h06 — 1-tap talk with last hero.
+                            Button(action: {
+                                navigationManager.navigateToCompanionTalkNow()
+                            }) {
+                                VStack(spacing: 8) {
+                                    Text("💬")
+                                        .font(.system(size: 20))
+                                    Text(localizationManager.localized("wellness_talk_now_title"))
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .multilineTextAlignment(.center)
+                                    Text(localizationManager.localized("wellness_talk_now_subtitle"))
+                                        .font(.system(size: 10))
+                                        .foregroundColor(.white.opacity(0.8))
+                                        .multilineTextAlignment(.center)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 80)
+                                .stormGlassCard(cornerRadius: 10)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .accessibilityIdentifier("main_nav_talk_now")
+
                             // P2-14 — Senior 60+: тёплый вход в Companion (Аладдин, calm).
                             Button(action: {
                                 UserDefaults.standard.set(true, forKey: "companion_senior_entry")
-                                UserDefaults.standard.set("aladdin", forKey: "companion_selected_character_id")
+                                CompanionHeroRouter.markUserOverride(characterId: "aladdin")
                                 navigationManager.navigateToCompanionHome(returnTo: .main)
                             }) {
                                 VStack(spacing: 8) {
@@ -604,7 +627,16 @@ struct MainScreen: View {
                             .buttonStyle(.plain)
                         }
                         .padding(.horizontal, 20)
-                        
+
+                        AntifakeTransferCheckCTA()
+                            .environmentObject(localizationManager)
+                            .environmentObject(navigationManager)
+                            .padding(.horizontal, 20)
+
+                        WellnessCrisisOneTapCTA()
+                            .environmentObject(localizationManager)
+                            .padding(.horizontal, 20)
+
                         // FAMILY статус - большая карточка
                         VStack(spacing: 12) {
                             // Заголовок с капсулой статуса

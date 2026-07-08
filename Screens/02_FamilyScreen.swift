@@ -2440,6 +2440,16 @@ struct FamilyScreen: View {
                                 .stroke(Color.secondaryGold.opacity(0.4), lineWidth: 2)
                         )
                         
+                        // fws-01: семейное кодовое слово — видят все участники; настраивают parent/elderly
+                        if !familyMembers.isEmpty {
+                            FamilySafeWordCard(members: familyMembers)
+                                .environmentObject(localizationManager)
+                            FamilyHabitRemindersSection(members: familyMembers)
+                                .environmentObject(localizationManager)
+                            FamilyIncidentFeedView(members: familyMembers)
+                                .environmentObject(localizationManager)
+                        }
+
                         // Parental Controls - НОВАЯ ВЕРСИЯ С КАРТОЧКАМИ 2x3 (только родитель/пожилой в ростере)
                         if canManageFamilyRoster {
                             parentalControlsSection

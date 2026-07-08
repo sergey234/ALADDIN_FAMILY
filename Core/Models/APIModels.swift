@@ -2540,6 +2540,17 @@ struct ComponentsHealthResponse: Codable {
     let degradedComponents: Int
     let criticalComponents: Int
     let lastCheck: String?  // ISO дата
+
+    enum CodingKeys: String, CodingKey {
+        case overallHealth = "overall_health"
+        case totalComponents = "total_components"
+        case enabledComponents = "enabled_components"
+        case disabledComponents = "disabled_components"
+        case healthyComponents = "healthy_components"
+        case degradedComponents = "degraded_components"
+        case criticalComponents = "critical_components"
+        case lastCheck = "last_check"
+    }
 }
 
 // ✅ ЗАДАЧА 24-25: Roadside Assistance Models

@@ -51,7 +51,7 @@
 "onboarding_page5_desc" = "Дети не смогут посещать опасные сайты, онлайн-казино, взрослые сайты или совершать покупки в играх и стриминговых сервисах";
 "onboarding_page6_title" = "Antifake для людей 18+";
 "onboarding_page6_desc" = "AI помогает проверить подозрительный звонок, новости, сообщения и видео.";
-"onboarding_page7_title" = "Присоединяйтесь к ALADDIN";
+"onboarding_page7_title" = "Присоединяйтесь к ALADDIN!";
 "onboarding_page7_desc" = "Спокойствие близких - бесценно. Защита начинается сегодня!";
 "onboarding_data_collection_info" = "Мы собираем только обезличенные данные для обеспечения безопасности.";
 "onboarding_privacy_policy_link" = "Политика конфиденциальности";
@@ -1242,7 +1242,7 @@
 "component.cancel" = "Отмена";
 
 /* Разделы компонентов */
-"component.emergency_help.title" = "Экстренная помощь";
+"component.emergency_help.title" = "Экстренная помощь на дорогах";
 "component.emergency_help.subtitle" = "Быстрая помощь в критических ситуациях";
 "component.threat_protection.title" = "Защита от угроз";
 "component.threat_protection.subtitle" = "Защита от различных видов угроз";

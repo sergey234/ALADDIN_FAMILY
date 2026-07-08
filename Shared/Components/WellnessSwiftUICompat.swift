@@ -87,4 +87,12 @@ extension View {
     func wellnessReadableInput() -> some View {
         modifier(WellnessReadableInputModifier())
     }
+
+    /// `scrollContentBackground(.hidden)` is iOS 16+.
+    func wellnessScrollContentBackgroundHidden() -> some View {
+        if #available(iOS 16.0, *) {
+            return AnyView(scrollContentBackground(.hidden))
+        }
+        return AnyView(self)
+    }
 }

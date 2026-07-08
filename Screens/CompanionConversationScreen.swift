@@ -74,6 +74,8 @@ struct CompanionConversationScreen: View {
     @State private var lifeDomains: [CompanionLifeDomainDTO] = []
     @State private var showSocialBridgeBanner = false
     @State private var showWellnessReferralSheet = false
+    @State private var showL3CrisisFullScreen = false
+    @State private var crisisInputBlocked = false
     @State private var companionEntryBanner: String?
     @State private var wellnessRecapLine: String?
     @State private var memoryChips: [CompanionMemoryItemDTO] = []
@@ -309,6 +311,10 @@ struct CompanionConversationScreen: View {
             WellnessReferralSheet(level: "L2")
                 .environmentObject(localizationManager)
         }
+        .fullScreenCover(isPresented: $showL3CrisisFullScreen) {
+            WellnessReferralSheet(level: "L3", notifyParentsOnLoad: false)
+                .environmentObject(localizationManager)
+        }
     }
 
     @ViewBuilder
@@ -384,6 +390,16 @@ struct CompanionConversationScreen: View {
     }
 
     private func handleConversationAppear() {
+        if !CompanionHeroRouter.userOverride {
+            let allowed = availableCharacters.isEmpty
+                ? CompanionHeroRouter.allHeroIDs
+                : availableCharacters.map(\.id)
+            characterId = CompanionHeroRouter.applyDefaultIfNeeded(
+                entryPoint: CompanionHeroRouter.entryPointForCurrentLaunch(),
+                wellnessPillar: WellnessSessionStore.activePillar,
+                allowedCharacterIds: allowed
+            )
+        }
         companionEntryBanner = WellnessSessionStore.companionEntryBanner
         if WellnessSessionStore.consumeMicHighlight() {
             highlightMicPulse = true
@@ -617,6 +633,7 @@ struct CompanionConversationScreen: View {
                         ForEach(availableCharacters) { hero in
                             let isSelected = hero.id == characterId
                             Button {
+                                CompanionHeroRouter.markUserOverride(characterId: hero.id)
                                 characterId = hero.id
                                 activeThreadId = ""
                                 sessionId = ""
@@ -1000,17 +1017,28 @@ struct CompanionConversationScreen: View {
     }
 
     private var socialBridgeBanner: some View {
-        VStack(alignment: .leading, spacing: 6) {
+        VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized("companion_social_bridge_title"))
                 .font(.caption.weight(.semibold))
             Text(localizationManager.localized("companion_social_bridge_body"))
                 .font(.caption2)
                 .foregroundStyle(.secondary)
-            Button {
-                showSocialBridgeBanner = false
-            } label: {
-                Text(localizationManager.localized("companion_social_bridge_dismiss"))
-                    .font(.caption.weight(.semibold))
+            HStack(spacing: Spacing.s) {
+                Button {
+                    navigationManager.navigateTo(.family)
+                    showSocialBridgeBanner = false
+                } label: {
+                    Text(localizationManager.localized("companion_social_bridge_family_cta"))
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.bordered)
+                Button {
+                    showSocialBridgeBanner = false
+                } label: {
+                    Text(localizationManager.localized("companion_social_bridge_dismiss"))
+                        .font(.caption.weight(.semibold))
+                }
+                .buttonStyle(.plain)
             }
         }
         .padding(10)
@@ -1018,6 +1046,7 @@ struct CompanionConversationScreen: View {
         .background(Color.blue.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: 10))
         .accessibilityElement(children: .combine)
+        .accessibilityIdentifier("companion_social_bridge_banner")
     }
 
     private var inputBar: some View {
@@ -1043,6 +1072,12 @@ struct CompanionConversationScreen: View {
                 .font(.caption2)
                 .foregroundStyle(.secondary)
             }
+            if crisisInputBlocked {
+                Text(localizationManager.localized("wellness_crisis_deep_blocked"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(.orange)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
             HStack(spacing: 10) {
                 if !isChildProfile {
                     attachmentPickerMenu
@@ -1051,6 +1086,7 @@ struct CompanionConversationScreen: View {
                     .textFieldStyle(.roundedBorder)
                     .focused($isInputFocused)
                     .submitLabel(.send)
+                    .disabled(crisisInputBlocked)
                     .accessibilityIdentifier("companion_message_input")
                     .onSubmit {
                         Task { await sendText() }
@@ -1068,15 +1104,15 @@ struct CompanionConversationScreen: View {
                         .accessibilityHint(isChildProfile
                             ? localizationManager.localized("companion_mic_hold_hint_child")
                             : localizationManager.localized("companion_voice_input_hint"))
-                        .opacity((speechManager.isPreparingRecording || voiceSession.isAwaitingReply || speechOutput.isSpeaking) ? 0.5 : 1.0)
-                        .allowsHitTesting(!(speechManager.isPreparingRecording || speechManager.isStoppingRecording || speechManager.isMicrophoneCoolingDown || voiceSession.isAwaitingReply || speechOutput.isSpeaking))
+                        .opacity((speechManager.isPreparingRecording || voiceSession.isAwaitingReply || speechOutput.isSpeaking || crisisInputBlocked) ? 0.5 : 1.0)
+                        .allowsHitTesting(!(speechManager.isPreparingRecording || speechManager.isStoppingRecording || speechManager.isMicrophoneCoolingDown || voiceSession.isAwaitingReply || speechOutput.isSpeaking || crisisInputBlocked))
                 }
                 Button {
                     Task { await sendText() }
                 } label: {
                     Image(systemName: "paperplane.fill")
                 }
-                .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending)
+                .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending || crisisInputBlocked)
                 .accessibilityIdentifier("companion_send_button")
                 .accessibilityLabel(localizationManager.localized("companion_conversation_send"))
             }
@@ -1228,6 +1264,7 @@ struct CompanionConversationScreen: View {
         }
         await loadWellnessRecapIfNeeded()
         await loadCompanionMemoryChipsIfNeeded()
+        await refreshCrisisCooldownStatus()
         restorePendingStreamIfNeeded()
         await MainActor.run { syncConversationPresence() }
     }
@@ -1276,6 +1313,18 @@ struct CompanionConversationScreen: View {
         } catch {
             memoryChipsEnabled = false
             memoryChips = []
+        }
+    }
+
+    private func refreshCrisisCooldownStatus() async {
+        guard WellnessSessionStore.hasAcceptedConsent else { return }
+        do {
+            let payload = try await WellnessAPIService.shared.fetchCrisisStatus()
+            if payload.crisis?.cooldownActive == true {
+                crisisInputBlocked = true
+            }
+        } catch {
+            // Non-fatal: companion still works; L3 block applies after live crisis response.
         }
     }
 
@@ -1431,6 +1480,12 @@ struct CompanionConversationScreen: View {
         streamEmotionDebouncer.cancel()
         applySocialBridge(from: meta)
         attachSuggestedActions(at: index, actions: meta?.suggestedActions)
+        if meta?.intent == "companion_crisis_support" {
+            heroEmotion = .comfort
+            crisisInputBlocked = true
+            showL3CrisisFullScreen = true
+            Task { await refreshCrisisCooldownStatus() }
+        }
         if let meta, let score = meta.trustScore {
             trustScore = score
         }
@@ -1484,6 +1539,11 @@ struct CompanionConversationScreen: View {
 
     private func sendText() async {
         isInputFocused = false
+        guard !crisisInputBlocked else {
+            errorText = localizationManager.localized("wellness_crisis_deep_blocked")
+            showL3CrisisFullScreen = true
+            return
+        }
         let text = input.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else { return }
         guard isCloudAIEnabled else {

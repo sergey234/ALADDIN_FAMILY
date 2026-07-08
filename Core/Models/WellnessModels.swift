@@ -193,6 +193,7 @@ struct WellnessPhqSubmitResponse: Codable {
     let disclaimer: String
     let escalationLevel: String?
     let crisisFlag: Bool?
+    let openCrisisSheet: Bool?
 
     enum CodingKeys: String, CodingKey {
         case ok
@@ -202,6 +203,17 @@ struct WellnessPhqSubmitResponse: Codable {
         case disclaimer
         case escalationLevel = "escalation_level"
         case crisisFlag = "crisis_flag"
+        case openCrisisSheet = "open_crisis_sheet"
+    }
+}
+
+struct WellnessCrisisOpenResponse: Codable {
+    let ok: Bool?
+    let parentsNotified: Bool?
+
+    enum CodingKeys: String, CodingKey {
+        case ok
+        case parentsNotified = "parents_notified"
     }
 }
 
@@ -317,6 +329,25 @@ struct WellnessReferralResponse: Codable {
     let lines: [WellnessReferralLine]
 }
 
+struct WellnessCrisisStatusDTO: Codable {
+    let cooldownActive: Bool
+    let cooldownHours: Int?
+    let hoursRemaining: Double?
+    let lastL3At: String?
+
+    enum CodingKeys: String, CodingKey {
+        case cooldownActive = "cooldown_active"
+        case cooldownHours = "cooldown_hours"
+        case hoursRemaining = "hours_remaining"
+        case lastL3At = "last_l3_at"
+    }
+}
+
+struct WellnessCrisisStatusResponse: Codable {
+    let ok: Bool?
+    let crisis: WellnessCrisisStatusDTO?
+}
+
 struct WellnessOutcomeRequestBody: Encodable {
     let pillar: String
     let helpful: Int
@@ -379,14 +410,19 @@ enum WellnessPillar: String, CaseIterable, Identifiable {
     }
 
     /// r100-7-07 / **HERO-3-07b** — на карточке Hub тот же 3× `.riv`, что в чате; дорожка = эмоция, не отдельный персонаж.
-    /// См. docs/COMPANION_HERO_ART_CANON.md · docs/WELLNESS_PILLAR_RIVE_PLAN.md (HERO-3-07b)
+    /// fws-h04 — pillar→emotion: cognitive→thinking, behavioral→celebrate (proud), wind-down→comfort (calm).
     var companionHubPreviewEmotion: CompanionHeroEmotion {
         switch self {
         case .cognitive: return .thinking
-        case .behavioral: return .happy
+        case .behavioral: return .celebrate
         case .humanistic: return .comfort
         case .jung: return .curious
         }
+    }
+
+    /// fws-h04 — fullscreen wellness session emotion (one-thing, wind-down, exercise).
+    var companionSessionEmotion: CompanionHeroEmotion {
+        companionHubPreviewEmotion
     }
 }
 
@@ -683,6 +719,20 @@ struct WellnessFamilyThemeItem: Codable, Identifiable {
     }
 }
 
+struct WellnessFamilyPhqLiteBand: Codable {
+    let severity: String?
+    let scoreBand: String?
+    let suggestProfessional: Bool?
+    let updatedAt: String?
+
+    enum CodingKeys: String, CodingKey {
+        case severity
+        case scoreBand = "score_band"
+        case suggestProfessional = "suggest_professional"
+        case updatedAt = "updated_at"
+    }
+}
+
 struct WellnessFamilyAggregate: Codable {
     let daysWithCheckin: Int?
     let avgMoodScore: Double?
@@ -690,6 +740,7 @@ struct WellnessFamilyAggregate: Codable {
     let escalationHint: String?
     let message: String?
     let moodTrendLabel: String?
+    let phqLite: WellnessFamilyPhqLiteBand?
 
     enum CodingKeys: String, CodingKey {
         case daysWithCheckin = "days_with_checkin"
@@ -698,6 +749,7 @@ struct WellnessFamilyAggregate: Codable {
         case escalationHint = "escalation_hint"
         case message
         case moodTrendLabel = "mood_trend_label"
+        case phqLite = "phq_lite"
     }
 }
 
@@ -730,6 +782,9 @@ struct WellnessParentPlaybookResponse: Codable {
     let subtitleKey: String
     let phrases: [WellnessParentPlaybookPhrase]
     let llmUsed: Bool?
+    let heroId: String?
+    let heroHeaderKey: String?
+    let teenAggregate: WellnessTeenAggregateDTO?
 
     enum CodingKeys: String, CodingKey {
         case ok
@@ -737,6 +792,9 @@ struct WellnessParentPlaybookResponse: Codable {
         case subtitleKey = "subtitle_key"
         case phrases
         case llmUsed = "llm_used"
+        case heroId = "hero_id"
+        case heroHeaderKey = "hero_header_key"
+        case teenAggregate = "teen_aggregate"
     }
 }
 

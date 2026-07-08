@@ -26,6 +26,7 @@ enum AntifakeCallDirectorySyncService {
     static func syncFromServer(apiService: APIService? = nil) async -> AntifakeCallDirectorySyncOutcome {
         let service = apiService ?? APIService.shared
         let defaultLabel = LocalizationManager.shared.localized("antifake_call_directory_identification_label")
+        let voiceLabel = LocalizationManager.shared.localized("antifake_call_directory_voice_label")
         let existing = AntifakeCallDirectoryStore.load()
         let sinceQuery = deltaSinceParameter(from: existing.updatedAt)
 
@@ -36,10 +37,11 @@ enum AntifakeCallDirectorySyncService {
         case .success(let payload):
             let identified = payload.identified.compactMap { item -> AntifakeCallDirectoryIdentifiedEntry? in
                 guard let phone = AntifakeCallDirectoryStore.parsePhoneNumber(item.phone) else { return nil }
-                let rawLabel = item.label ?? defaultLabel
-                let label = AntifakeCallDirectoryLabelPolicy.relocalizeIfKnownDefault(
+                let rawLabel = item.label
+                let label = AntifakeCallDirectoryLabelPolicy.resolvedLabel(
                     rawLabel,
-                    currentDefault: defaultLabel
+                    defaultLabel: defaultLabel,
+                    voiceLabel: voiceLabel
                 )
                 return AntifakeCallDirectoryIdentifiedEntry(
                     phoneNumber: phone,

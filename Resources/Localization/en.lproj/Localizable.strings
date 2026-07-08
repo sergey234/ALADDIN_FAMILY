@@ -1110,7 +1110,7 @@
 "component.cancel" = "Cancel";
 
 /* Component Sections */
-"component.emergency_help.title" = "Emergency Help";
+"component.emergency_help.title" = "Emergency Roadside Help";
 "component.emergency_help.subtitle" = "Quick help in critical situations";
 "component.threat_protection.title" = "Threat Protection";
 "component.threat_protection.subtitle" = "Protection from various threats";

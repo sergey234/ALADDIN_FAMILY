@@ -71,6 +71,7 @@ struct CompanionHomeScreen: View {
             }
             wellnessTabReady = WellnessSessionStore.hasAcceptedConsent
             if let initialCharacterId, !initialCharacterId.isEmpty {
+                CompanionHeroRouter.markUserOverride(characterId: initialCharacterId)
                 selectedCharacterId = initialCharacterId
             }
             Task { await loadCharacters() }
@@ -130,6 +131,7 @@ struct CompanionHomeScreen: View {
                 embeddedInHome: true,
                 availableCharacters: availableCharacters,
                 onSelectCharacter: { id in
+                    CompanionHeroRouter.markUserOverride(characterId: id)
                     selectedCharacterId = id
                     activeThreadId = ""
                 },
@@ -155,6 +157,7 @@ struct CompanionHomeScreen: View {
                 showsHistory: false,
                 showsCosmetics: false,
                 onHeroPicked: { id in
+                    CompanionHeroRouter.markUserOverride(characterId: id)
                     selectedCharacterId = id
                     activeThreadId = ""
                     tab = .main
@@ -206,6 +209,15 @@ struct CompanionHomeScreen: View {
         let fetched = (try? await CompanionAPIService.shared.fetchCharacters()) ?? []
         let allowed = Set(caps.allowedCharactersFromCapabilities)
         availableCharacters = fetched.filter { allowed.contains($0.id) }
+        if initialCharacterId == nil || initialCharacterId?.isEmpty == true {
+            if !CompanionHeroRouter.userOverride {
+                selectedCharacterId = CompanionHeroRouter.applyDefaultIfNeeded(
+                    entryPoint: CompanionHeroRouter.entryPointForCurrentLaunch(),
+                    wellnessPillar: WellnessSessionStore.activePillar,
+                    allowedCharacterIds: availableCharacters.map(\.id)
+                )
+            }
+        }
         if !availableCharacters.contains(where: { $0.id == selectedCharacterId }),
            let first = availableCharacters.first {
             selectedCharacterId = first.id

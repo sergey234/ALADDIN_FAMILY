@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-"""P1-25, P1-29, P2-11 unit tests."""
+"""P1-25, P1-29, P2-11, fws-h03 unit tests."""
 
 from __future__ import annotations
 
@@ -7,7 +7,7 @@ import unittest
 
 
 class CompanionEthicsTests(unittest.TestCase):
-    def test_l3_crisis_response(self):
+    def test_l3_crisis_response_ru(self):
         from security.services.ai_platform.companion_ethics import evaluate_companion_ethics, ETHICS_L3
 
         r = evaluate_companion_ethics("я хочу покончить с собой")
@@ -15,12 +15,45 @@ class CompanionEthicsTests(unittest.TestCase):
         self.assertTrue(r.crisis)
         self.assertIn("112", r.response_prefix)
 
-    def test_l2_social_bridge(self):
+    def test_l3_en_kill_myself(self):
+        from security.services.ai_platform.companion_ethics import evaluate_companion_ethics, ETHICS_L3
+
+        r = evaluate_companion_ethics("I want to kill myself")
+        self.assertEqual(r.level, ETHICS_L3)
+        self.assertTrue(r.crisis)
+
+    def test_l2_social_bridge_ru(self):
         from security.services.ai_platform.companion_ethics import evaluate_companion_ethics, ETHICS_L2
 
         r = evaluate_companion_ethics("мне кажется никому я не нужен")
         self.assertEqual(r.level, ETHICS_L2)
         self.assertTrue(r.social_bridge_hint)
+
+    def test_l2_en_nobody_needs_me(self):
+        from security.services.ai_platform.companion_ethics import evaluate_companion_ethics, ETHICS_L2
+
+        r = evaluate_companion_ethics("I feel like nobody needs me")
+        self.assertEqual(r.level, ETHICS_L2)
+        self.assertTrue(r.social_bridge_hint)
+
+    def test_l1_en_lonely(self):
+        from security.services.ai_platform.companion_ethics import evaluate_companion_ethics, ETHICS_L1
+
+        r = evaluate_companion_ethics("I feel so lonely today")
+        self.assertEqual(r.level, ETHICS_L1)
+        self.assertFalse(r.crisis)
+
+    def test_crisis_hero_phrase_unicorn(self):
+        from security.services.ai_platform.companion_ethics import companion_crisis_response_for_hero
+
+        text = companion_crisis_response_for_hero("unicorn", "ru")
+        self.assertIn("взросл", text.lower())
+
+    def test_crisis_hero_phrase_aladdin_en(self):
+        from security.services.ai_platform.companion_ethics import companion_crisis_response_for_hero
+
+        text = companion_crisis_response_for_hero("aladdin", "en")
+        self.assertIn("112", text)
 
 
 class CompanionSecurityExpertTests(unittest.TestCase):

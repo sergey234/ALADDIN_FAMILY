@@ -24,6 +24,7 @@ struct WellnessHubScreen: View {
     @State private var showOutcomeSheet = false
     @State private var showReferralSheet = false
     @State private var showPremiumPaywall = false
+    @State private var showSleepStories = false
     @State private var referralLevel = "L2"
     @State private var traumaBanner: WellnessTraumaCheckResponse?
     @State private var alliance: WellnessAllianceDTO?
@@ -41,6 +42,7 @@ struct WellnessHubScreen: View {
         return legacySelectedChild
     }
     private var isTeenOrOlder: Bool { !isChild }
+    private var isStudentBand: Bool { ageBand == "student" }
 
     var body: some View {
         ZStack {
@@ -72,7 +74,12 @@ struct WellnessHubScreen: View {
         }
         .accessibilityIdentifier(embeddedInHome ? "wellness_hub_embedded_root" : "wellness_hub_root")
         .navigationBarHidden(true)
-        .onAppear { hydrateFromCache() }
+        .onAppear {
+            hydrateFromCache()
+            if WellnessSessionStore.consumeOpenSleepStories() {
+                showSleepStories = true
+            }
+        }
         .task { await refreshHub() }
         .sheet(isPresented: $showReferralSheet) {
             WellnessReferralSheet(level: referralLevel)
@@ -91,6 +98,10 @@ struct WellnessHubScreen: View {
             WellnessPremiumPaywallSheet()
                 .environmentObject(localizationManager)
                 .environmentObject(navigationManager)
+        }
+        .sheet(isPresented: $showSleepStories) {
+            WellnessSleepStoriesSheet()
+                .environmentObject(localizationManager)
         }
     }
 
@@ -212,7 +223,12 @@ struct WellnessHubScreen: View {
         if let parentPlaybook, ageBand == "parent" || ageBand == "senior" {
             parentPlaybookCard(parentPlaybook)
         }
+        WellnessCrisisOneTapCTA()
+            .environmentObject(localizationManager)
         timelineButton
+        if ageBand == "teen" {
+            teenPhqLiteButton
+        }
         if suggestPhq && isTeenOrOlder {
             phqButton
         }
@@ -225,7 +241,100 @@ struct WellnessHubScreen: View {
         if ageBand == "parent" || ageBand == "senior" {
             togetherButton
         }
+        w3ToolsSection
         trustButton
+    }
+
+    @ViewBuilder
+    private var w3ToolsSection: some View {
+        if isTeenOrOlder {
+            examModeButton
+            oneThingButton
+        }
+        if isTeenOrOlder && ageBand == "teen" {
+            WellnessStudentModeCard()
+                .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
+        }
+        if isStudentBand {
+            studentBeforeClassButton
+        }
+        if ageBand == "teen" || ageBand == "student" {
+            PhoneDetoxChallengeCard()
+                .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
+        }
+        psychLibraryButton
+        WellnessIfThenPlanCard()
+            .environmentObject(localizationManager)
+        WellnessWindDownCard {
+            showSleepStories = true
+        }
+        .environmentObject(localizationManager)
+    }
+
+    private var examModeButton: some View {
+        Button {
+            openWellnessScreen(.wellnessExamMode)
+        } label: {
+            Label(
+                localizationManager.localized("wellness_exam_hub_cta"),
+                systemImage: "graduationcap.fill"
+            )
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+        }
+        .buttonStyle(.bordered)
+        .tint(.orange)
+        .accessibilityIdentifier("wellness_hub_exam_mode")
+    }
+
+    private var oneThingButton: some View {
+        Button {
+            openWellnessScreen(.wellnessOneThing)
+        } label: {
+            Label(
+                localizationManager.localized("wellness_one_thing_hub_cta"),
+                systemImage: "target"
+            )
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+        }
+        .buttonStyle(.bordered)
+        .tint(Color(hex: "8B5CF6"))
+        .accessibilityIdentifier("wellness_hub_one_thing")
+    }
+
+    private var studentBeforeClassButton: some View {
+        Button {
+            openWellnessScreen(.wellnessExamMode)
+        } label: {
+            Label(
+                localizationManager.localized("wellness_student_before_class_cta"),
+                systemImage: "book.fill"
+            )
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+        }
+        .buttonStyle(.bordered)
+        .tint(.orange)
+        .accessibilityIdentifier("wellness_hub_before_class")
+    }
+
+    private var psychLibraryButton: some View {
+        Button {
+            openWellnessScreen(.wellnessPsychLibrary)
+        } label: {
+            Label(
+                localizationManager.localized("psych_library_hub_cta"),
+                systemImage: "books.vertical.fill"
+            )
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+        }
+        .buttonStyle(.bordered)
+        .tint(.cyan)
+        .accessibilityIdentifier("wellness_hub_psych_library")
     }
 
     private var pillarGridSkeleton: some View {
@@ -339,6 +448,18 @@ struct WellnessHubScreen: View {
                     if let trend = agg.moodTrendLabel {
                         Text(trend).font(.caption2).foregroundColor(.orange)
                     }
+                    if let phq = agg.phqLite, let severity = phq.severity, !severity.isEmpty {
+                        HStack(spacing: 6) {
+                            Image(systemName: "heart.text.square")
+                                .font(.caption2)
+                            Text(String(
+                                format: localizationManager.localized("wellness_family_phq_lite_band"),
+                                phqSeverityLabel(severity)
+                            ))
+                            .font(.caption2)
+                        }
+                        .foregroundColor(phq.suggestProfessional == true ? .orange : .white.opacity(0.85))
+                    }
                 }
                 Text(localizationManager.localized("wellness_family_no_transcript"))
                     .font(.caption2)
@@ -377,6 +498,22 @@ struct WellnessHubScreen: View {
             } label: {
                 HStack(alignment: .top, spacing: 8) {
                     VStack(alignment: .leading, spacing: 4) {
+                        if let heroId = payload.heroId {
+                            Text(
+                                String(
+                                    format: localizationManager.localized(
+                                        payload.heroHeaderKey ?? "wellness_parent_playbook_hero_aladdin"
+                                    ),
+                                    CompanionHeroRiveMapping.heroBaseEmoji(characterId: heroId),
+                                    CompanionDisplayNames.heroName(
+                                        characterId: heroId,
+                                        localizationManager: localizationManager
+                                    )
+                                )
+                            )
+                            .font(.caption.bold())
+                            .foregroundColor(.secondaryGold)
+                        }
                         Text(localizationManager.localized("wellness_parent_playbook_title"))
                             .font(.subheadline.bold())
                             .multilineTextAlignment(.leading)
@@ -396,6 +533,28 @@ struct WellnessHubScreen: View {
 
             if isParentPlaybookExpanded {
                 VStack(alignment: .leading, spacing: 6) {
+                    if let agg = payload.teenAggregate, agg.shared == true {
+                        if let streak = agg.lowMoodStreakDays, streak >= 2 {
+                            Text(
+                                String(
+                                    format: localizationManager.localized("wellness_parent_aggregate_mood"),
+                                    streak
+                                )
+                            )
+                            .font(.caption2)
+                            .foregroundColor(.orange.opacity(0.9))
+                        }
+                        if let detox = agg.detoxDaysCompleted, detox > 0 {
+                            Text(
+                                String(
+                                    format: localizationManager.localized("wellness_parent_aggregate_detox"),
+                                    detox
+                                )
+                            )
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.85))
+                        }
+                    }
                     ForEach(payload.phrases) { phrase in
                         Text("• \(phrase.text)")
                             .font(.caption2)
@@ -417,6 +576,15 @@ struct WellnessHubScreen: View {
             if text != key { return text }
         }
         return theme.label
+    }
+
+    private func phqSeverityLabel(_ severity: String) -> String {
+        switch severity.lowercased() {
+        case "moderate", "moderately_severe", "severe":
+            return localizationManager.localized("wellness_assessment_result_moderate")
+        default:
+            return localizationManager.localized("wellness_assessment_result_mild")
+        }
     }
 
     private func streaksBanner(_ s: WellnessStreaksPayload) -> some View {
@@ -503,6 +671,22 @@ struct WellnessHubScreen: View {
         }
         .buttonStyle(.bordered)
         .tint(.orange)
+    }
+
+    private var teenPhqLiteButton: some View {
+        Button {
+            openWellnessScreen(.wellnessPhqLite)
+        } label: {
+            Label(
+                localizationManager.localized("wellness_assessment_phq_lite_title"),
+                systemImage: "heart.text.square"
+            )
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+        }
+        .buttonStyle(.bordered)
+        .tint(Color(hex: "8B5CF6"))
+        .accessibilityIdentifier("wellness_teen_phq_lite_button")
     }
 
     private var trustButton: some View {
@@ -913,11 +1097,12 @@ struct WellnessHubScreen: View {
 
     private func loadFamilyThemesIfParent() async {
         guard ageBand == "parent" || ageBand == "senior" else { return }
+        let teenId = teenUserIdForParent.trimmingCharacters(in: .whitespacesAndNewlines)
         parentPlaybook = try? await WellnessAPIService.shared.fetchParentPlaybook(
             topic: "support",
+            teenUserId: teenId.isEmpty ? nil : teenId,
             useLlm: true
         )
-        let teenId = teenUserIdForParent.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !teenId.isEmpty else { return }
         familyThemes = try? await WellnessAPIService.shared.fetchFamilyThemes(teenUserId: teenId)
     }

@@ -446,6 +446,39 @@
 		C0MPOFF22F90000100C7D34B /* CompanionOfflineStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPOFF12F90000100C7D34B /* CompanionOfflineStore.swift */; };
 		C0MPPRS22F90000100C7D34B /* CompanionPersonalitySection.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPPRS12F90000100C7D34B /* CompanionPersonalitySection.swift */; };
 		C0MPPST22F90000100C7D34B /* CompanionPersonalityPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPPST12F90000100C7D34B /* CompanionPersonalityPresets.swift */; };
+		C0MPHDR22F90000100C7D34B /* CompanionHeroRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPHDR12F90000100C7D34B /* CompanionHeroRouter.swift */; };
+		FWSW0122F90000100C7D34B /* FamilySafeWordHasher.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSW0112F90000100C7D34B /* FamilySafeWordHasher.swift */; };
+		FWSW0222F90000100C7D34B /* FamilySafeWordService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSW0212F90000100C7D34B /* FamilySafeWordService.swift */; };
+		FWSW0322F90000100C7D34B /* FamilySafeWordViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSW0312F90000100C7D34B /* FamilySafeWordViews.swift */; };
+		FWS20222F90000100C7D34B /* FamilyHabitRemindersModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20112F90000100C7D34B /* FamilyHabitRemindersModels.swift */; };
+		FWS20322F90000100C7D34B /* FamilyHabitRemindersScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20212F90000100C7D34B /* FamilyHabitRemindersScheduler.swift */; };
+		FWS20422F90000100C7D34B /* FamilyHabitRemindersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20312F90000100C7D34B /* FamilyHabitRemindersService.swift */; };
+		FWS20522F90000100C7D34B /* FamilyHabitRemindersSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20412F90000100C7D34B /* FamilyHabitRemindersSection.swift */; };
+		FWS20622F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20512F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift */; };
+		FWS20722F90000100C7D34B /* AntifakeTransferCheckCTA.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20612F90000100C7D34B /* AntifakeTransferCheckCTA.swift */; };
+		FWS20822F90000100C7D34B /* AntifakeConfidenceRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20812F90000100C7D34B /* AntifakeConfidenceRingView.swift */; };
+		FWS20922F90000100C7D34B /* AntifakeMediaPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20912F90000100C7D34B /* AntifakeMediaPreviewView.swift */; };
+		FWS20A22F90000100C7D34B /* FamilyIncidentFeedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20A12F90000100C7D34B /* FamilyIncidentFeedModels.swift */; };
+		FWS20B22F90000100C7D34B /* FamilyIncidentFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20B12F90000100C7D34B /* FamilyIncidentFeedService.swift */; };
+		FWS20C22F90000100C7D34B /* FamilyIncidentFeedView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20C12F90000100C7D34B /* FamilyIncidentFeedView.swift */; };
+		FWS20D22F90000100C7D34B /* DebugSFMHealthSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20D12F90000100C7D34B /* DebugSFMHealthSection.swift */; };
+		FWS21322F90000100C7D34B /* WellnessCrisisOneTapCTA.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS21312F90000100C7D34B /* WellnessCrisisOneTapCTA.swift */; };
+		FWS31422F90000100C7D34B /* WellnessExamModeScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS31412F90000100C7D34B /* WellnessExamModeScreen.swift */; };
+		FWS31522F90000100C7D34B /* WellnessOneThingSessionScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS31512F90000100C7D34B /* WellnessOneThingSessionScreen.swift */; };
+		FWS31622F90000100C7D34B /* DigitalPsychologyLibraryScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS31612F90000100C7D34B /* DigitalPsychologyLibraryScreen.swift */; };
+		FWS31722F90000100C7D34B /* WellnessW3Models.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS31712F90000100C7D34B /* WellnessW3Models.swift */; };
+		FWS31822F90000100C7D34B /* WellnessSocialGoalsCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS31812F90000100C7D34B /* WellnessSocialGoalsCard.swift */; };
+		FWS31922F90000100C7D34B /* WellnessIfThenPlanCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS31912F90000100C7D34B /* WellnessIfThenPlanCard.swift */; };
+		FWS31A22F90000100C7D34B /* WindDownScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS31A12F90000100C7D34B /* WindDownScheduler.swift */; };
+		FWS31B22F90000100C7D34B /* WellnessSleepStoriesSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS31B12F90000100C7D34B /* WellnessSleepStoriesSheet.swift */; };
+		FWS4W0212F90000100C7D34B /* ElderlyFallDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS4W0112F90000100C7D34B /* ElderlyFallDetectionService.swift */; };
+		FWS4W0412F90000100C7D34B /* PhoneDetoxChallengeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS4W0312F90000100C7D34B /* PhoneDetoxChallengeCard.swift */; };
+		FWS4W0612F90000100C7D34B /* WellnessStudentModeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS4W0512F90000100C7D34B /* WellnessStudentModeCard.swift */; };
+		FWS4W0812F90000100C7D34B /* CompanionDeepLinkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS4W0712F90000100C7D34B /* CompanionDeepLinkRouter.swift */; };
+		FWS31C22F90000100C7D34B /* WellnessWindDownCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS31C12F90000100C7D34B /* WellnessWindDownCard.swift */; };
+		FWS0622F90000100C7D34B /* AntifakeSettingsModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS0612F90000100C7D34B /* AntifakeSettingsModels.swift */; };
+		FWS0632F90000100C7D34B /* AntifakeSettingsService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS062A2F90000100C7D34B /* AntifakeSettingsService.swift */; };
+		FWS0642F90000100C7D34B /* AntifakeVoiceFraudThresholdCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS06412F90000100C7D34B /* AntifakeVoiceFraudThresholdCard.swift */; };
 		C0MPRAS22F90000100C7D34B /* CompanionHeroRasterView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPRAS12F90000100C7D34B /* CompanionHeroRasterView.swift */; };
 		C0MPRIV22F90000100C7D34B /* CompanionHeroRiveHost.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPRIV12F90000100C7D34B /* CompanionHeroRiveHost.swift */; };
 		C0MPSHL22F90000100C7D34B /* CompanionHeroStageShellView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0MPSHL12F90000100C7D34B /* CompanionHeroStageShellView.swift */; };
@@ -465,6 +498,10 @@
 		CMPAIL03 /* CompanionHeroLayoutPresenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CMPAIL02 /* CompanionHeroLayoutPresenceTests.swift */; };
 		CMPDBT03 /* CompanionStreamEmotionDebouncerTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CMPDBT02 /* CompanionStreamEmotionDebouncerTests.swift */; };
 		CMPSET03 /* CompanionSettingsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CMPSET02 /* CompanionSettingsTests.swift */; };
+		CMPHDR03 /* CompanionHeroRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = CMPHDR02 /* CompanionHeroRouterTests.swift */; };
+		FWSWT032F90000100C7D34B /* FamilySafeWordHasherTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWSWT022F90000100C7D34B /* FamilySafeWordHasherTests.swift */; };
+		FWS20T32F90000100C7D34B /* FamilyHabitRemindersPolicyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20T22F90000100C7D34B /* FamilyHabitRemindersPolicyTests.swift */; };
+		FWS20T52F90000100C7D34B /* AntifakeConfidenceRingTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20T42F90000100C7D34B /* AntifakeConfidenceRingTests.swift */; };
 		D0E0E0E0D0E0E0E0D0E0E0E1 /* MicroInteractionStyles.swift in Sources */ = {isa = PBXBuildFile; fileRef = D0E0E0E0D0E0E0E0D0E0E0E0 /* MicroInteractionStyles.swift */; };
 		D45B3CF25BA5F021571AAD43 /* ImplementationPlanProgressValues.swift in Sources */ = {isa = PBXBuildFile; fileRef = C422BEE58F91FA0A69D6E136 /* ImplementationPlanProgressValues.swift */; };
 		D7C400012F71B001A0000002 /* ChildRosterReconcilePolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = D7C400012F71B001A0000001 /* ChildRosterReconcilePolicy.swift */; };
@@ -1125,6 +1162,39 @@
 		C0MPOFF12F90000100C7D34B /* CompanionOfflineStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionOfflineStore.swift; path = Core/Companion/CompanionOfflineStore.swift; sourceTree = "<group>"; };
 		C0MPPRS12F90000100C7D34B /* CompanionPersonalitySection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionPersonalitySection.swift; sourceTree = "<group>"; };
 		C0MPPST12F90000100C7D34B /* CompanionPersonalityPresets.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionPersonalityPresets.swift; path = Core/Companion/CompanionPersonalityPresets.swift; sourceTree = "<group>"; };
+		C0MPHDR12F90000100C7D34B /* CompanionHeroRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionHeroRouter.swift; path = Core/Companion/CompanionHeroRouter.swift; sourceTree = "<group>"; };
+		FWSW0112F90000100C7D34B /* FamilySafeWordHasher.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySafeWordHasher.swift; path = Core/Family/FamilySafeWordHasher.swift; sourceTree = "<group>"; };
+		FWSW0212F90000100C7D34B /* FamilySafeWordService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySafeWordService.swift; path = Core/Family/FamilySafeWordService.swift; sourceTree = "<group>"; };
+		FWSW0312F90000100C7D34B /* FamilySafeWordViews.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilySafeWordViews.swift; path = Shared/Components/FamilySafeWordViews.swift; sourceTree = "<group>"; };
+		FWS20112F90000100C7D34B /* FamilyHabitRemindersModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersModels.swift; path = Core/Family/FamilyHabitRemindersModels.swift; sourceTree = "<group>"; };
+		FWS20212F90000100C7D34B /* FamilyHabitRemindersScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersScheduler.swift; path = Core/Family/FamilyHabitRemindersScheduler.swift; sourceTree = "<group>"; };
+		FWS20312F90000100C7D34B /* FamilyHabitRemindersService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersService.swift; path = Core/Family/FamilyHabitRemindersService.swift; sourceTree = "<group>"; };
+		FWS20412F90000100C7D34B /* FamilyHabitRemindersSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersSection.swift; path = Shared/Components/FamilyHabitRemindersSection.swift; sourceTree = "<group>"; };
+		FWS20512F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeFamilyPushRegistrar.swift; path = Core/Family/AntifakeFamilyPushRegistrar.swift; sourceTree = "<group>"; };
+		FWS20612F90000100C7D34B /* AntifakeTransferCheckCTA.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTransferCheckCTA.swift; path = Shared/Components/AntifakeTransferCheckCTA.swift; sourceTree = "<group>"; };
+		FWS20812F90000100C7D34B /* AntifakeConfidenceRingView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeConfidenceRingView.swift; path = Shared/Components/AntifakeConfidenceRingView.swift; sourceTree = "<group>"; };
+		FWS20912F90000100C7D34B /* AntifakeMediaPreviewView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeMediaPreviewView.swift; path = Shared/Components/AntifakeMediaPreviewView.swift; sourceTree = "<group>"; };
+		FWS20A12F90000100C7D34B /* FamilyIncidentFeedModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyIncidentFeedModels.swift; path = Core/Family/FamilyIncidentFeedModels.swift; sourceTree = "<group>"; };
+		FWS20B12F90000100C7D34B /* FamilyIncidentFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyIncidentFeedService.swift; path = Core/Family/FamilyIncidentFeedService.swift; sourceTree = "<group>"; };
+		FWS20C12F90000100C7D34B /* FamilyIncidentFeedView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyIncidentFeedView.swift; path = Shared/Components/FamilyIncidentFeedView.swift; sourceTree = "<group>"; };
+		FWS20D12F90000100C7D34B /* DebugSFMHealthSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = DebugSFMHealthSection.swift; path = Shared/Components/DebugSFMHealthSection.swift; sourceTree = "<group>"; };
+		FWS21312F90000100C7D34B /* WellnessCrisisOneTapCTA.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessCrisisOneTapCTA.swift; path = Shared/Components/WellnessCrisisOneTapCTA.swift; sourceTree = "<group>"; };
+		FWS31412F90000100C7D34B /* WellnessExamModeScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessExamModeScreen.swift; sourceTree = "<group>"; };
+		FWS31512F90000100C7D34B /* WellnessOneThingSessionScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessOneThingSessionScreen.swift; sourceTree = "<group>"; };
+		FWS31612F90000100C7D34B /* DigitalPsychologyLibraryScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = DigitalPsychologyLibraryScreen.swift; sourceTree = "<group>"; };
+		FWS31712F90000100C7D34B /* WellnessW3Models.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessW3Models.swift; path = Core/Models/WellnessW3Models.swift; sourceTree = "<group>"; };
+		FWS31812F90000100C7D34B /* WellnessSocialGoalsCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessSocialGoalsCard.swift; path = Shared/Components/WellnessSocialGoalsCard.swift; sourceTree = "<group>"; };
+		FWS31912F90000100C7D34B /* WellnessIfThenPlanCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessIfThenPlanCard.swift; path = Shared/Components/WellnessIfThenPlanCard.swift; sourceTree = "<group>"; };
+		FWS31A12F90000100C7D34B /* WindDownScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WindDownScheduler.swift; path = Core/Wellness/WindDownScheduler.swift; sourceTree = "<group>"; };
+		FWS31B12F90000100C7D34B /* WellnessSleepStoriesSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessSleepStoriesSheet.swift; path = Shared/Components/WellnessSleepStoriesSheet.swift; sourceTree = "<group>"; };
+		FWS4W0112F90000100C7D34B /* ElderlyFallDetectionService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ElderlyFallDetectionService.swift; path = Core/Elderly/ElderlyFallDetectionService.swift; sourceTree = "<group>"; };
+		FWS4W0312F90000100C7D34B /* PhoneDetoxChallengeCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PhoneDetoxChallengeCard.swift; path = Shared/Components/PhoneDetoxChallengeCard.swift; sourceTree = "<group>"; };
+		FWS4W0512F90000100C7D34B /* WellnessStudentModeCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessStudentModeCard.swift; path = Shared/Components/WellnessStudentModeCard.swift; sourceTree = "<group>"; };
+		FWS4W0712F90000100C7D34B /* CompanionDeepLinkRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionDeepLinkRouter.swift; path = Core/Companion/CompanionDeepLinkRouter.swift; sourceTree = "<group>"; };
+		FWS31C12F90000100C7D34B /* WellnessWindDownCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessWindDownCard.swift; path = Shared/Components/WellnessWindDownCard.swift; sourceTree = "<group>"; };
+		FWS0612F90000100C7D34B /* AntifakeSettingsModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeSettingsModels.swift; path = Core/Security/AntifakeSettingsModels.swift; sourceTree = "<group>"; };
+		FWS062A2F90000100C7D34B /* AntifakeSettingsService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeSettingsService.swift; path = Core/Security/AntifakeSettingsService.swift; sourceTree = "<group>"; };
+		FWS06412F90000100C7D34B /* AntifakeVoiceFraudThresholdCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeVoiceFraudThresholdCard.swift; path = Shared/Components/AntifakeVoiceFraudThresholdCard.swift; sourceTree = "<group>"; };
 		C0MPRAS12F90000100C7D34B /* CompanionHeroRasterView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionHeroRasterView.swift; path = ../UI/Companion/CompanionHeroRasterView.swift; sourceTree = "<group>"; };
 		C0MPRIV12F90000100C7D34B /* CompanionHeroRiveHost.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionHeroRiveHost.swift; path = ../UI/Companion/CompanionHeroRiveHost.swift; sourceTree = "<group>"; };
 		C0MPSHL12F90000100C7D34B /* CompanionHeroStageShellView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = CompanionHeroStageShellView.swift; path = ../UI/Companion/CompanionHeroStageShellView.swift; sourceTree = "<group>"; };
@@ -1144,6 +1214,10 @@
 		CMPAIL02 /* CompanionHeroLayoutPresenceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionHeroLayoutPresenceTests.swift; sourceTree = "<group>"; };
 		CMPDBT02 /* CompanionStreamEmotionDebouncerTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionStreamEmotionDebouncerTests.swift; sourceTree = "<group>"; };
 		CMPSET02 /* CompanionSettingsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionSettingsTests.swift; sourceTree = "<group>"; };
+		CMPHDR02 /* CompanionHeroRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompanionHeroRouterTests.swift; sourceTree = "<group>"; };
+		FWSWT022F90000100C7D34B /* FamilySafeWordHasherTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilySafeWordHasherTests.swift; sourceTree = "<group>"; };
+		FWS20T22F90000100C7D34B /* FamilyHabitRemindersPolicyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FamilyHabitRemindersPolicyTests.swift; sourceTree = "<group>"; };
+		FWS20T42F90000100C7D34B /* AntifakeConfidenceRingTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeConfidenceRingTests.swift; sourceTree = "<group>"; };
 		D0E0E0E0D0E0E0E0D0E0E0E0 /* MicroInteractionStyles.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = MicroInteractionStyles.swift; sourceTree = "<group>"; };
 		D7C400012F71B001A0000001 /* ChildRosterReconcilePolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ChildRosterReconcilePolicy.swift; path = Core/Profile/ChildRosterReconcilePolicy.swift; sourceTree = "<group>"; };
 		DB095637317CC3D261CB777C /* ContentVersionManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentVersionManager.swift; path = Core/Content/Versioning/ContentVersionManager.swift; sourceTree = "<group>"; };
@@ -1446,6 +1520,9 @@
 				WELLOC12F90000100C7D34B /* WellnessOutcomeSheet.swift */,
 				WELLRF12F90000100C7D34B /* WellnessReflectiveModeScreen.swift */,
 				WELLTO12F90000100C7D34B /* WellnessTogetherModeScreen.swift */,
+				FWS31412F90000100C7D34B /* WellnessExamModeScreen.swift */,
+				FWS31512F90000100C7D34B /* WellnessOneThingSessionScreen.swift */,
+				FWS31612F90000100C7D34B /* DigitalPsychologyLibraryScreen.swift */,
 				WELLRFL12F90000100C7D34B /* WellnessReferralSheet.swift */,
 				WELLPAY12F90000100C7D34B /* WellnessPremiumPaywallSheet.swift */,
 				WELLVAL12F90000100C7D34B /* WellnessValuesCardSheet.swift */,
@@ -1666,6 +1743,34 @@
 				C0MPSPK12F90000100C7D34B /* CompanionSpeechOutput.swift */,
 				C0MPNTS12F90000100C7D34B /* CompanionNeuroTTSPlayer.swift */,
 				C0MPPST12F90000100C7D34B /* CompanionPersonalityPresets.swift */,
+				C0MPHDR12F90000100C7D34B /* CompanionHeroRouter.swift */,
+				FWS4W0712F90000100C7D34B /* CompanionDeepLinkRouter.swift */,
+				FWSW0112F90000100C7D34B /* FamilySafeWordHasher.swift */,
+				FWSW0212F90000100C7D34B /* FamilySafeWordService.swift */,
+				FWSW0312F90000100C7D34B /* FamilySafeWordViews.swift */,
+				FWS20112F90000100C7D34B /* FamilyHabitRemindersModels.swift */,
+				FWS20212F90000100C7D34B /* FamilyHabitRemindersScheduler.swift */,
+				FWS20312F90000100C7D34B /* FamilyHabitRemindersService.swift */,
+				FWS20412F90000100C7D34B /* FamilyHabitRemindersSection.swift */,
+				FWS20512F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift */,
+				FWS0612F90000100C7D34B /* AntifakeSettingsModels.swift */,
+				FWS062A2F90000100C7D34B /* AntifakeSettingsService.swift */,
+				FWS20612F90000100C7D34B /* AntifakeTransferCheckCTA.swift */,
+				FWS20812F90000100C7D34B /* AntifakeConfidenceRingView.swift */,
+				FWS20912F90000100C7D34B /* AntifakeMediaPreviewView.swift */,
+				FWS20A12F90000100C7D34B /* FamilyIncidentFeedModels.swift */,
+				FWS20B12F90000100C7D34B /* FamilyIncidentFeedService.swift */,
+				FWS20C12F90000100C7D34B /* FamilyIncidentFeedView.swift */,
+				FWS20D12F90000100C7D34B /* DebugSFMHealthSection.swift */,
+				FWS21312F90000100C7D34B /* WellnessCrisisOneTapCTA.swift */,
+				FWS31812F90000100C7D34B /* WellnessSocialGoalsCard.swift */,
+				FWS31912F90000100C7D34B /* WellnessIfThenPlanCard.swift */,
+				FWS31B12F90000100C7D34B /* WellnessSleepStoriesSheet.swift */,
+				FWS31C12F90000100C7D34B /* WellnessWindDownCard.swift */,
+				FWS4W0312F90000100C7D34B /* PhoneDetoxChallengeCard.swift */,
+				FWS4W0512F90000100C7D34B /* WellnessStudentModeCard.swift */,
+				FWS4W0112F90000100C7D34B /* ElderlyFallDetectionService.swift */,
+				FWS06412F90000100C7D34B /* AntifakeVoiceFraudThresholdCard.swift */,
 				C0MPERR12F90000100C7D34B /* CompanionErrorMapper.swift */,
 				C0MPOFF12F90000100C7D34B /* CompanionOfflineStore.swift */,
 				C0MPTLS12F90000100C7D34B /* CompanionLastToolsStore.swift */,
@@ -1680,8 +1785,10 @@
 				WELLSSN12F90000100C7D34B /* WellnessSessionStore.swift */,
 				WELPRM12F90000100C7D34B /* WellnessPremiumFunnel.swift */,
 				WELLOOP12F90000100C7D34B /* WellnessLoopCoordinator.swift */,
+				FWS31A12F90000100C7D34B /* WindDownScheduler.swift */,
 				C0MPMDL12F90000100C7D34B /* CompanionModels.swift */,
 				WELLMDL12F90000100C7D34B /* WellnessModels.swift */,
+				FWS31712F90000100C7D34B /* WellnessW3Models.swift */,
 				SECVRD12F90000100C7D34B /* SecurityVerdictModels.swift */,
 				AFVPRES12F90000100C7D34B /* AntifakeVerdictPresentation.swift */,
 				B700011D2F90000100ABC001 /* Core/Audio/SpeechRecognitionErrorClassifier.swift */,
@@ -2007,6 +2114,10 @@
 				FBK0002 /* FeedbackSystemTests.swift */,
 				CMPDBT02 /* CompanionStreamEmotionDebouncerTests.swift */,
 				CMPSET02 /* CompanionSettingsTests.swift */,
+				CMPHDR02 /* CompanionHeroRouterTests.swift */,
+				FWSWT022F90000100C7D34B /* FamilySafeWordHasherTests.swift */,
+				FWS20T22F90000100C7D34B /* FamilyHabitRemindersPolicyTests.swift */,
+				FWS20T42F90000100C7D34B /* AntifakeConfidenceRingTests.swift */,
 				CMPAIL02 /* CompanionHeroLayoutPresenceTests.swift */,
 				A11204002F900221A1120403 /* ContentManifestSigningTests.swift */,
 				A11204002F900221A1120404 /* ContentPayloadDiskCachePolicyTests.swift */,
@@ -2570,6 +2681,36 @@
 				C0MPSPK22F90000100C7D34B /* CompanionSpeechOutput.swift in Sources */,
 				C0MPNTS22F90000100C7D34B /* CompanionNeuroTTSPlayer.swift in Sources */,
 				C0MPPST22F90000100C7D34B /* CompanionPersonalityPresets.swift in Sources */,
+				C0MPHDR22F90000100C7D34B /* CompanionHeroRouter.swift in Sources */,
+				FWS4W0812F90000100C7D34B /* CompanionDeepLinkRouter.swift in Sources */,
+				FWSW0122F90000100C7D34B /* FamilySafeWordHasher.swift in Sources */,
+				FWSW0222F90000100C7D34B /* FamilySafeWordService.swift in Sources */,
+				FWSW0322F90000100C7D34B /* FamilySafeWordViews.swift in Sources */,
+				FWS20222F90000100C7D34B /* FamilyHabitRemindersModels.swift in Sources */,
+				FWS20322F90000100C7D34B /* FamilyHabitRemindersScheduler.swift in Sources */,
+				FWS20422F90000100C7D34B /* FamilyHabitRemindersService.swift in Sources */,
+				FWS20522F90000100C7D34B /* FamilyHabitRemindersSection.swift in Sources */,
+				FWS20622F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift in Sources */,
+				FWS20722F90000100C7D34B /* AntifakeTransferCheckCTA.swift in Sources */,
+				FWS20822F90000100C7D34B /* AntifakeConfidenceRingView.swift in Sources */,
+				FWS20922F90000100C7D34B /* AntifakeMediaPreviewView.swift in Sources */,
+				FWS20A22F90000100C7D34B /* FamilyIncidentFeedModels.swift in Sources */,
+				FWS20B22F90000100C7D34B /* FamilyIncidentFeedService.swift in Sources */,
+				FWS20C22F90000100C7D34B /* FamilyIncidentFeedView.swift in Sources */,
+				FWS20D22F90000100C7D34B /* DebugSFMHealthSection.swift in Sources */,
+				FWS21322F90000100C7D34B /* WellnessCrisisOneTapCTA.swift in Sources */,
+				FWS31422F90000100C7D34B /* WellnessExamModeScreen.swift in Sources */,
+				FWS31522F90000100C7D34B /* WellnessOneThingSessionScreen.swift in Sources */,
+				FWS31622F90000100C7D34B /* DigitalPsychologyLibraryScreen.swift in Sources */,
+				FWS31722F90000100C7D34B /* WellnessW3Models.swift in Sources */,
+				FWS31822F90000100C7D34B /* WellnessSocialGoalsCard.swift in Sources */,
+				FWS31922F90000100C7D34B /* WellnessIfThenPlanCard.swift in Sources */,
+				FWS31A22F90000100C7D34B /* WindDownScheduler.swift in Sources */,
+				FWS31B22F90000100C7D34B /* WellnessSleepStoriesSheet.swift in Sources */,
+				FWS31C22F90000100C7D34B /* WellnessWindDownCard.swift in Sources */,
+				FWS4W0412F90000100C7D34B /* PhoneDetoxChallengeCard.swift in Sources */,
+				FWS4W0612F90000100C7D34B /* WellnessStudentModeCard.swift in Sources */,
+				FWS4W0212F90000100C7D34B /* ElderlyFallDetectionService.swift in Sources */,
 				C0MPERR22F90000100C7D34B /* CompanionErrorMapper.swift in Sources */,
 				C0MPOFF22F90000100C7D34B /* CompanionOfflineStore.swift in Sources */,
 				C0MPTLS22F90000100C7D34B /* CompanionLastToolsStore.swift in Sources */,
@@ -2602,6 +2743,9 @@
 				AFTIC22F90000100C7D34B /* AntifakeTextInputClassifier.swift in Sources */,
 				AFAN002F90000200C7D34B /* AntifakeAnalytics.swift in Sources */,
 				AFCD0512F90000200C7D34B /* AntifakeCallDirectoryLabelPolicy.swift in Sources */,
+				FWS0622F90000100C7D34B /* AntifakeSettingsModels.swift in Sources */,
+				FWS0632F90000100C7D34B /* AntifakeSettingsService.swift in Sources */,
+				FWS0642F90000100C7D34B /* AntifakeVoiceFraudThresholdCard.swift in Sources */,
 				AFCD0532F90000200C7D34B /* AntifakeCheckHistoryPDFExporter.swift in Sources */,
 				AFPC002F90000200C7D34B /* AntifakePostCallPolicy.swift in Sources */,
 				AFNP002F90000200C7D34B /* AntifakePhonePrivacy.swift in Sources */,
@@ -2837,6 +2981,10 @@
 				FBK0003 /* FeedbackSystemTests.swift in Sources */,
 				CMPDBT03 /* CompanionStreamEmotionDebouncerTests.swift in Sources */,
 				CMPSET03 /* CompanionSettingsTests.swift in Sources */,
+				CMPHDR03 /* CompanionHeroRouterTests.swift in Sources */,
+				FWSWT032F90000100C7D34B /* FamilySafeWordHasherTests.swift in Sources */,
+				FWS20T32F90000100C7D34B /* FamilyHabitRemindersPolicyTests.swift in Sources */,
+				FWS20T52F90000100C7D34B /* AntifakeConfidenceRingTests.swift in Sources */,
 				CMPAIL03 /* CompanionHeroLayoutPresenceTests.swift in Sources */,
 				A11204002F900221A1120413 /* ContentManifestSigningTests.swift in Sources */,
 				A11204002F900221A1120414 /* ContentPayloadDiskCachePolicyTests.swift in Sources */,

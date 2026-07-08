@@ -57,6 +57,6 @@ struct WellnessCheckinWidgetView: View {
             Text(entry.tapHint).font(.caption2).foregroundStyle(.secondary)
         }
         .padding(8)
-        .widgetURL(URL(string: "aladdin://wellness/checkin"))
+        .widgetURL(URL(string: "aladdin://companion/talk"))
     }
 }

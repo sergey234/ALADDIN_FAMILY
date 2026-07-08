@@ -871,6 +871,7 @@ struct CompanionStreamDonePayload: Codable {
     let socialBridgeSuggestions: [String]?
     let trustStreakDays: Int?
     let suggestedActions: [CompanionSuggestedActionDTO]?
+    let intent: String?
 
     enum CodingKeys: String, CodingKey {
         case response
@@ -884,6 +885,7 @@ struct CompanionStreamDonePayload: Codable {
         case socialBridgeSuggestions = "social_bridge_suggestions"
         case trustStreakDays = "trust_streak_days"
         case suggestedActions = "suggested_actions"
+        case intent
     }
 
     /// Pseudo-stream when `/stream` is unavailable but `/chat` works.
@@ -899,7 +901,8 @@ struct CompanionStreamDonePayload: Codable {
             showSocialBridge: chat.showSocialBridge,
             socialBridgeSuggestions: chat.socialBridgeSuggestions,
             trustStreakDays: chat.trustStreakDays,
-            suggestedActions: chat.suggestedActions
+            suggestedActions: chat.suggestedActions,
+            intent: chat.intent
         )
     }
 }

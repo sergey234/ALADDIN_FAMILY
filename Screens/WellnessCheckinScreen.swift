@@ -10,6 +10,7 @@ struct WellnessCheckinScreen: View {
     @State private var stressLevel: Double = 3
     @State private var saved = false
     @State private var offlineQueued = false
+    @State private var socialGoals: WellnessSocialGoalsBlock?
 
     private let moods: [(id: String, emoji: String, key: String)] = [
         ("great", "😊", "wellness_mood_great"),
@@ -82,6 +83,13 @@ struct WellnessCheckinScreen: View {
                             Text(localizationManager.localized("wellness_checkin_offline_saved"))
                                 .font(.caption)
                                 .foregroundStyle(.orange)
+                        }
+                        if let socialGoals, socialGoals.show {
+                            WellnessSocialGoalsCard(block: socialGoals) {
+                                self.socialGoals = nil
+                            }
+                            .environmentObject(localizationManager)
+                            .environmentObject(navigationManager)
                         }
                         Button {
                             navigationManager.navigateToCompanionHome(returnTo: .wellnessCheckin)
@@ -161,14 +169,18 @@ struct WellnessCheckinScreen: View {
         WellnessWidgetBridge.syncFromCheckin(moodId: mood, localizationManager: localizationManager)
         saved = true
         offlineQueued = false
+        socialGoals = nil
         HapticFeedback.impact(.light)
         Task {
             do {
-                try await WellnessAPIService.shared.postCheckin(
+                let response = try await WellnessAPIService.shared.postCheckin(
                     mood: mood,
                     sleepHours: sleepHours,
                     stressLevel: Int(stressLevel)
                 )
+                if response.socialGoals?.show == true {
+                    socialGoals = response.socialGoals
+                }
                 await applyCheckinLoopForCompanion()
             } catch {
                 offlineQueued = true

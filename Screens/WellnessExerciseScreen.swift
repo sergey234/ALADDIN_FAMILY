@@ -88,6 +88,11 @@ struct WellnessExerciseScreen: View {
 
     private func exerciseFlow(_ s: WellnessExerciseSessionDTO) -> some View {
         VStack(alignment: .leading, spacing: 12) {
+            if let label = thoughtRecordStepLabel(for: s) {
+                Text(label)
+                    .font(.caption.bold())
+                    .foregroundColor(.secondaryGold)
+            }
             Text(
                 String(
                     format: localizationManager.localized("wellness_exercise_step"),
@@ -145,12 +150,39 @@ struct WellnessExerciseScreen: View {
             session = active
             return
         }
+        if let pendingId = WellnessSessionStore.consumePendingExerciseId() {
+            do {
+                let resp = try await WellnessAPIService.shared.startExercise(
+                    pillar: pillar,
+                    exerciseId: pendingId
+                )
+                session = resp.session
+                answerText = ""
+                return
+            } catch {
+                errorText = localizationManager.localized("wellness_error_pillar")
+            }
+        }
         do {
             let resp = try await WellnessAPIService.shared.fetchExerciseCatalog(pillar: pillar)
             catalog = resp.exercises
         } catch {
             errorText = localizationManager.localized("wellness_error_offline_pillars")
         }
+    }
+
+    /// fws-23 — CBT thought record step labels (4 cognitive steps + action).
+    private func thoughtRecordStepLabel(for session: WellnessExerciseSessionDTO) -> String? {
+        guard session.exerciseId == "thought_record" else { return nil }
+        let key: String
+        switch session.stepIndex {
+        case 1: key = "wellness_thought_record_step_thought"
+        case 2: key = "wellness_thought_record_step_evidence"
+        case 3: key = "wellness_thought_record_step_feeling"
+        case 4: key = "wellness_thought_record_step_reframe"
+        default: key = "wellness_thought_record_step_action"
+        }
+        return localizationManager.localized(key)
     }
 
     private func start(_ item: WellnessExerciseCatalogItem) async {

@@ -44,6 +44,18 @@ struct AntifakeMediaCheckView: View {
         self.showsPanelTitle = showsPanelTitle
     }
 
+    private var showsMediaPreview: Bool {
+        viewModel.previewURL != nil
+            && (viewModel.mediaKind == .audio || viewModel.mediaKind == .video || viewModel.mediaKind == .call)
+    }
+
+    private var verdictCardVariant: AntifakeVerdictCardVariant {
+        switch viewModel.mediaKind {
+        case .document: return .document
+        case .audio, .video, .call: return .media
+        }
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             if showsPanelTitle {
@@ -97,6 +109,11 @@ struct AntifakeMediaCheckView: View {
                 .padding(Spacing.m)
                 .stormGlassCard(cornerRadius: CornerRadius.medium)
                 .accessibilityIdentifier("\(panelId)_selected_file")
+
+                if showsMediaPreview, let previewURL = viewModel.previewURL {
+                    AntifakeMediaPreviewView(previewURL: previewURL, mediaKind: viewModel.mediaKind)
+                        .environmentObject(localizationManager)
+                }
             } else {
                 SecondaryButton(
                     localizationManager.localized("antifake_pick_file_button"),
@@ -148,6 +165,7 @@ struct AntifakeMediaCheckView: View {
             if let verdict = viewModel.verdict {
                 AntifakeVerdictCard(
                     verdict: verdict,
+                    variant: verdictCardVariant,
                     reportPhone: viewModel.mediaKind == .call ? viewModel.callerId : nil
                 )
                     .environmentObject(localizationManager)

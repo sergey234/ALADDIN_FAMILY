@@ -49,3 +49,22 @@ def test_build_user_alerts_has_checkin(store):
     alerts = build_user_alerts(store, "u1", age_band="teen")
     types = {a.alert_type for a in alerts}
     assert "daily_checkin" in types or "checkin_reminder" in types
+
+
+def test_family_dashboard_includes_phq_lite_band(store):
+    uid = "teen_phq"
+    store.upsert_wellness_settings(uid, parent_share_aggregate=1)
+    store.save_wellness_assessment(
+        uid,
+        assessment_type="phq_lite",
+        answers=[1, 2, 1, 2, 1],
+        score=7,
+        severity="mild",
+        suggest_professional=False,
+    )
+    dash = build_family_dashboard(store, uid)
+    assert dash["shared"] is True
+    phq = dash["aggregate"]["phq_lite"]
+    assert phq is not None
+    assert phq["severity"] == "mild"
+    assert phq["suggest_professional"] is False

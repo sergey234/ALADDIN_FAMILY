@@ -15,18 +15,20 @@ enum CompanionHeroRiveHost {
     static let stateMachineName = "HeroSM"
     private static let mouthInputCandidates = ["mouth_open", "mouthOpen", "MouthOpen"]
 
-    /// Production `.riv` artboard names differ per hero (runtime export vs editor `Hero360`).
+    /// Variant B export: canonical artboard `Hero360` (360×480). Legacy names kept for old `.riv` until re-export.
     private static func artboardNameCandidates(for characterId: String) -> [String?] {
-        switch rivBaseName(characterId: characterId) {
-        case "unicorn":
-            return ["unicorn_master_crop_360x480", "Hero360", nil]
-        case "aladdin":
-            return ["aladdin_master_crop_360x480", "Hero360", nil]
-        case "genie":
-            return ["genie_master_crop_360x480", "Hero360", nil]
-        default:
-            return ["Hero360", nil]
+        let legacy: String? = {
+            switch rivBaseName(characterId: characterId) {
+            case "unicorn": return "unicorn_master_crop_360x480"
+            case "aladdin": return "aladdin_master_crop_360x480"
+            case "genie": return "genie_master_crop_360x480"
+            default: return nil
+            }
+        }()
+        if let legacy {
+            return ["Hero360", legacy, nil]
         }
+        return ["Hero360", nil]
     }
 
     /// Симулятор iOS 15.x: известные падения Rive/Metal (`currentDrawable`, sampler binding). QA Rive — на device.
@@ -208,7 +210,7 @@ enum CompanionHeroRiveHost {
         logRiveLoadFailure(
             characterId: characterId,
             reason: "no_artboard_or_state_machine",
-            detail: candidates.compactMap { $0 ?? "default" }.joined(separator: ",")
+            detail: "tried=\(candidates.compactMap { $0 ?? "default" }.joined(separator: ",")); need Hero360+HeroSM Variant B export"
         )
         return nil
     }

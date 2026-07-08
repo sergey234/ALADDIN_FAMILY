@@ -50,6 +50,19 @@ def test_wellness_crisis_message_and_actions():
     assert any(a["id"] == "wellness_open_referral" for a in l2)
 
 
+def test_l3_referral_filters_emergency_lines_only():
+    from security.services.ai_platform.wellness_i18n_loader import get_referral_payload_from_i18n
+
+    l3 = get_referral_payload_from_i18n(locale="ru", level="L3")
+    ids = {line["id"] for line in l3["lines"]}
+    assert ids == {"112", "child_helpline"}
+    for line in l3["lines"]:
+        assert line["phone"]
+
+    l2 = get_referral_payload_from_i18n(locale="ru", level="L2")
+    assert len(l2["lines"]) >= len(l3["lines"])
+
+
 def test_companion_crisis_response_uses_i18n():
     from security.services.ai_platform.companion_ethics import companion_crisis_response
 

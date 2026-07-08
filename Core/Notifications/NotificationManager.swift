@@ -1049,14 +1049,38 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             return
         }
 
-        if let deepLink = userInfo["deepLink"] as? String,
-           let url = URL(string: deepLink),
-           AntifakeDeepLinkRouter.isPostCallCheckDeepLink(url) {
+        if let type = userInfo["type"] as? String, type == WindDownScheduler.notificationType {
             NotificationCenter.default.post(
-                name: NSNotification.Name("NavigateToAntifakePostCallCheck"),
-                object: nil
+                name: NSNotification.Name("NavigateToWellnessWindDown"),
+                object: nil,
+                userInfo: userInfo as? [String: Any]
             )
             return
+        }
+
+        if let deepLink = userInfo["deepLink"] as? String,
+           let url = URL(string: deepLink) {
+            if AntifakeDeepLinkRouter.isPostCallCheckDeepLink(url) {
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("NavigateToAntifakePostCallCheck"),
+                    object: nil
+                )
+                return
+            }
+            if CompanionDeepLinkRouter.isCompanionTalkDeepLink(url) {
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("NavigateToCompanionTalkNow"),
+                    object: nil
+                )
+                return
+            }
+            if CompanionDeepLinkRouter.isWellnessCheckinDeepLink(url) {
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("NavigateToWellnessCheckin"),
+                    object: nil
+                )
+                return
+            }
         }
         
         // TODO: Обработка обычного нажатия

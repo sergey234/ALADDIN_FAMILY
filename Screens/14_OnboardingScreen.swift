@@ -147,7 +147,7 @@ private struct OnboardingFigmaAnchor {
                 layoutMode: .standard
             )
         case 6:
-            // OB_07: wordmark UR — 96×28 @ top/trailing (справа от головы, не на джина); Figma `168:53`
+            // OB_07: wordmark UR; title — золотой в UL (симметрия), desc поднимается на место title
             return OnboardingFigmaAnchor(
                 wordmark: CGRect(
                     x: OnboardingFigmaScreenLayout.canvasWidth - 96 - OnboardingFigmaScreenLayout.ob07WordmarkTrailing,
@@ -397,6 +397,13 @@ private struct OnboardingFigmaAnchoredContent: View {
                             .frame(maxWidth: geo.size.width, alignment: .trailing)
                             .padding(.top, OnboardingFigmaScreenLayout.ob07WordmarkTop * vScale)
                             .padding(.trailing, OnboardingFigmaScreenLayout.ob07WordmarkTrailing * scaleX)
+
+                        ob07CornerTitle(
+                            scaleX: scaleX,
+                            vScale: vScale,
+                            wordmarkHeight: logoH,
+                            maxWidth: geo.size.width - logoW - (OnboardingFigmaScreenLayout.ob07WordmarkTrailing * scaleX * 2)
+                        )
                     } else {
                         logoView
                             .offset(
@@ -406,17 +413,19 @@ private struct OnboardingFigmaAnchoredContent: View {
                     }
                 }
 
-                figmaText(
-                    title,
-                    isTitle: true,
-                    frame: anchor.title,
-                    scaleX: scaleX,
-                    textVScale: textVScale,
-                    yPos: yPos,
-                    maxLines: anchor.maxTitleLines,
-                    screenYOffset: anchor.titleScreenYOffset
-                )
-                .accessibilityAddTraits(.isHeader)
+                if !isOB07 {
+                    figmaText(
+                        title,
+                        isTitle: true,
+                        frame: anchor.title,
+                        scaleX: scaleX,
+                        textVScale: textVScale,
+                        yPos: yPos,
+                        maxLines: anchor.maxTitleLines,
+                        screenYOffset: anchor.titleScreenYOffset
+                    )
+                    .accessibilityAddTraits(.isHeader)
+                }
 
                 figmaText(
                     description,
@@ -432,6 +441,30 @@ private struct OnboardingFigmaAnchoredContent: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title). \(description)")
+    }
+
+    @ViewBuilder
+    private func ob07CornerTitle(
+        scaleX: CGFloat,
+        vScale: CGFloat,
+        wordmarkHeight: CGFloat,
+        maxWidth: CGFloat
+    ) -> some View {
+        let fontSize = max(11, wordmarkHeight * 0.46)
+        OnboardingWholeWordText(
+            text: title,
+            font: .system(size: fontSize, weight: .bold, design: .serif),
+            color: .secondaryGold,
+            lineSpacing: 2,
+            maxLines: 3,
+            minimumScaleFactor: 0.75
+        )
+        .frame(maxWidth: max(120, maxWidth), alignment: .leading)
+        .fixedSize(horizontal: false, vertical: true)
+        .padding(.top, OnboardingFigmaScreenLayout.ob07WordmarkTop * vScale)
+        .padding(.leading, OnboardingFigmaScreenLayout.ob07WordmarkTrailing * scaleX)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .topLeading)
+        .accessibilityAddTraits(.isHeader)
     }
 
     @ViewBuilder
@@ -753,7 +786,7 @@ struct OnboardingScreen: View {
         "onboarding_page5_desc": "Дети не смогут посещать опасные сайты, онлайн-казино, взрослые сайты или совершать покупки в играх и стриминговых сервисах",
         "onboarding_page6_title": "Antifake для людей 18+",
         "onboarding_page6_desc": "AI помогает проверить подозрительный звонок, новости, сообщения и видео.",
-        "onboarding_page7_title": "Присоединяйтесь к ALADDIN",
+        "onboarding_page7_title": "Присоединяйтесь к ALADDIN!",
         "onboarding_page7_desc": "Спокойствие близких - бесценно. Защита начинается сегодня!",
         "onboarding_skip": "Пропустить",
         "onboarding_continue": "ПРОДОЛЖИТЬ",

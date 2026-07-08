@@ -201,6 +201,10 @@ struct AppConfig {
         static let memberProfile = "/api/family/member"
         static let familyStats = "/api/family/stats"
         static let familyReconcile = "/api/family/reconcile"
+        static let familySafeWord = "/api/family/safe-word"
+        static let familySafeWordVerify = "/api/family/safe-word/verify"
+        static let familyHabitReminders = "/api/family/habit-reminders"
+        static let familyIncidents = "/api/family/incidents"
 
         // Family Chat
         static let familyChatMessages = "/api/family/chat/messages"
@@ -251,6 +255,7 @@ struct AppConfig {
         static func antifakeJob(id: String) -> String { "/api/antifake/jobs/\(id)" }
         static let antifakeMetrics = "/api/antifake/metrics"
         static let antifakeCallDirectory = "/api/antifake/call-directory"
+        static let antifakeSettings = "/api/antifake/settings"
         static let antifakeReport = "/api/antifake/report"
         static let antifakeAppeal = "/api/antifake/appeal"
         static let antifakeWhitelist = "/api/antifake/whitelist"
@@ -369,8 +374,11 @@ struct AppConfig {
         // Wellness (Phase 1 — emotional support hub)
         static let wellnessPillars = "/api/wellness/pillars"
         static let wellnessSessionPillar = "/api/wellness/session/pillar"
+        static let wellnessSessionEnd = "/api/wellness/session/end"
         static let wellnessEscalationLevel = "/api/wellness/escalation/level"
         static let wellnessReferral = "/api/wellness/referral"
+        static let wellnessCrisisStatus = "/api/wellness/crisis/status"
+        static let wellnessCrisisOpen = "/api/wellness/crisis/open"
         static let wellnessConsent = "/api/wellness/consent"
         static let wellnessCheckin = "/api/wellness/checkin"
         static let wellnessCheckinToday = "/api/wellness/checkin/today"
@@ -406,6 +414,16 @@ struct AppConfig {
         static let wellnessSleepStories = "/api/wellness/sleep/stories"
         static let wellnessSeasonalPlaybooks = "/api/wellness/seasonal/playbooks"
         static let wellnessFamilyTalkPrompts = "/api/wellness/family/talk-prompts"
+        static let wellnessHabits = "/api/wellness/habits"
+        static let wellnessExamPlan = "/api/wellness/exam-plan"
+        static let wellnessSocialGoalsDismiss = "/api/wellness/social-goals/dismiss"
+        static let wellnessTogetherActivity = "/api/wellness/together/activity"
+        static let familyElderlyFallAlert = "/api/family/elderly/fall-alert"
+        static let wellnessStudentMode = "/api/wellness/profile/student-mode"
+        static let wellnessDetoxChallenge = "/api/wellness/detox/challenge"
+        static let wellnessDetoxChallengeStart = "/api/wellness/detox/challenge/start"
+        static let wellnessDetoxChallengeDay = "/api/wellness/detox/challenge/day"
+        static let wellnessPsychLibraryManifest = "/api/wellness/psych-library/manifest"
         static let wellnessPillarRive = "/api/wellness/pillar/rive"
         static let wellnessErrorsCatalog = "/api/wellness/errors/catalog"
         static let wellnessSessionSuggestPillar = "/api/wellness/session/suggest-pillar"
@@ -821,6 +839,10 @@ extension AppConfig {
         static let antifakeMediaUploadConsentGiven = "antifake_media_upload_consent_given"
         /// Dream journal first-visit coachmark (ux-6-05).
         static let wellnessDreamJournalCoachmarkSeen = "wellness_dream_journal_coachmark_seen"
+        /// fws-03: opened Antifake Hub from «before transfer» CTA.
+        static let antifakeTransferCheckEntry = "antifake_transfer_check_entry_v1"
+        /// fws-06 — cached voice fraud threshold (%).
+        static let antifakeVoiceFraudThresholdPercent = "antifake_voice_fraud_threshold_percent_v1"
     }
 
     /// Opt-in: облачный AI-ассистент (текст уходит на aladdin-ai.ru после redact).

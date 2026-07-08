@@ -122,6 +122,9 @@ class NavigationManager: ObservableObject {
         case wellnessDreamJournal = "WellnessDreamJournalScreen"
         case wellnessReflective = "WellnessReflectiveModeScreen"
         case wellnessTogether = "WellnessTogetherModeScreen"
+        case wellnessExamMode = "WellnessExamModeScreen"
+        case wellnessOneThing = "WellnessOneThingSessionScreen"
+        case wellnessPsychLibrary = "DigitalPsychologyLibraryScreen"
         
         // НОВЫЕ ИГРОВЫЕ ЭКРАНЫ (геймификация)
         case youngDefender = "YoungDefenderView"           // 🛡️ Юный защитник
@@ -198,6 +201,9 @@ class NavigationManager: ObservableObject {
             case .wellnessDreamJournal: return "Сны"
             case .wellnessReflective: return "Глубокое исследование"
             case .wellnessTogether: return "Вместе"
+            case .wellnessExamMode: return "Режим экзамена"
+            case .wellnessOneThing: return "Одно дело"
+            case .wellnessPsychLibrary: return "Библиотека методик"
             case .mainWithRegistration: return "Главная с регистрацией"
             case .languageSettings: return "Настройки языка"
             case .notificationSettings: return "Настройки уведомлений"
@@ -271,6 +277,9 @@ class NavigationManager: ObservableObject {
             case .wellnessDreamJournal: return "moon.stars"
             case .wellnessReflective: return "sparkles"
             case .wellnessTogether: return "figure.2.arms.open"
+            case .wellnessExamMode: return "graduationcap.fill"
+            case .wellnessOneThing: return "target"
+            case .wellnessPsychLibrary: return "books.vertical.fill"
             case .mainWithRegistration: return "house.fill"
             case .languageSettings: return "globe"
             case .notificationSettings: return "bell.badge.fill"
@@ -406,6 +415,20 @@ class NavigationManager: ObservableObject {
     func navigateToCompanionHome(returnTo: ALADDINScreen? = nil) {
         companionReturnScreen = returnTo ?? currentScreen
         navigateTo(.companionHome)
+    }
+
+    /// fws-h06 — 1 tap → companion main tab with last routed hero.
+    func navigateToCompanionTalkNow() {
+        UserDefaults.standard.set(false, forKey: "companion_senior_entry")
+        let hero = CompanionHeroRouter.resolve(entryPoint: .conversation)
+        UserDefaults.standard.set(hero, forKey: CompanionHeroRouter.selectedCharacterKey)
+        companionHomeTargetTab = 0
+        navigateToCompanionHome(returnTo: currentScreen)
+    }
+
+    /// Widget / universal link → wellness check-in screen.
+    func navigateToWellnessCheckinFromDeepLink() {
+        navigateToWellnessScreen(.wellnessCheckin, returnTo: currentScreen == .main ? .main : currentScreen)
     }
 
     // MARK: - Wellness embedded nav (r100-2-13)
@@ -855,7 +878,8 @@ extension NavigationManager.ALADDINScreen {
              .wellnessConsent, .wellnessHub, .wellnessCheckin,
              .wellnessTrust, .wellnessPhqLite, .wellnessAssessmentsHub, .wellnessAssessmentFlow,
              .wellnessExercise,
-             .wellnessTimeline, .wellnessDreamJournal, .wellnessReflective, .wellnessTogether:
+             .wellnessTimeline, .wellnessDreamJournal, .wellnessReflective, .wellnessTogether,
+             .wellnessExamMode, .wellnessOneThing, .wellnessPsychLibrary:
             return true
         default:
             return false

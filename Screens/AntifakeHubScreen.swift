@@ -298,9 +298,13 @@ struct AntifakeTextCheckView: View {
     @Binding var sharePrefill: AntifakeSharePayload?
     @Binding var prefillTextMode: AntifakeTextInputMode?
     @StateObject private var viewModel = AntifakeTextCheckViewModel(localizationManager: .shared)
+    @State private var showTransferEntryBanner = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
+            if showTransferEntryBanner {
+                transferEntryBanner
+            }
             modePicker
 
             Text(localizationManager.localized(viewModel.inputMode.hintKey))
@@ -342,13 +346,22 @@ struct AntifakeTextCheckView: View {
             .accessibilityIdentifier("antifake_text_check_button")
 
             if let verdict = viewModel.verdict {
-                AntifakeVerdictCard(verdict: verdict)
+                AntifakeVerdictCard(
+                    verdict: verdict,
+                    variant: viewModel.inputMode == .url ? .urlDisinformation : .standard
+                )
                     .environmentObject(localizationManager)
             }
         }
         .onAppear {
             applySharePrefillIfNeeded()
             applyPrefillTextModeIfNeeded()
+            showTransferEntryBanner = UserDefaults.standard.bool(
+                forKey: AppConfig.UserDefaultsKeys.antifakeTransferCheckEntry
+            )
+            if showTransferEntryBanner {
+                UserDefaults.standard.removeObject(forKey: AppConfig.UserDefaultsKeys.antifakeTransferCheckEntry)
+            }
         }
         .onChange(of: sharePrefill) { _ in
             applySharePrefillIfNeeded()
@@ -370,6 +383,23 @@ struct AntifakeTextCheckView: View {
         guard let payload = sharePrefill else { return }
         viewModel.applySharePayload(payload)
         sharePrefill = nil
+    }
+
+    private var transferEntryBanner: some View {
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            Text(localizationManager.localized("antifake_transfer_banner_title"))
+                .font(.subheadline.weight(.bold))
+                .foregroundColor(.warningOrange)
+            Text(localizationManager.localized("antifake_transfer_banner_body"))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.85))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(Spacing.m)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.warningOrange.opacity(0.15))
+        .clipShape(RoundedRectangle(cornerRadius: CornerRadius.medium))
+        .accessibilityIdentifier("antifake_transfer_entry_banner")
     }
 
     private var modePicker: some View {

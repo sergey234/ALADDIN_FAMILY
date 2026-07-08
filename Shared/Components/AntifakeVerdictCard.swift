@@ -1,9 +1,17 @@
 import SwiftUI
 
+enum AntifakeVerdictCardVariant: Equatable {
+    case standard
+    case urlDisinformation
+    case media
+    case document
+}
+
 /// Result card for sync antifake checks (J-01…J-05, F-10, I-01…I-08).
 struct AntifakeVerdictCard: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     let verdict: SecurityVerdict
+    var variant: AntifakeVerdictCardVariant = .standard
     /// Phone from call check metadata — required for crowd reports (I-01).
     var reportPhone: String? = nil
 
@@ -14,6 +22,7 @@ struct AntifakeVerdictCard: View {
     @State private var isSubmittingReport = false
     @State private var reportFeedback: String?
     @State private var reportError: String?
+    @State private var showSafeWordVerify = false
 
     private var presentation: AntifakeVerdictPresentation {
         verdict.presentation
@@ -21,6 +30,20 @@ struct AntifakeVerdictCard: View {
 
     private var topReasons: [String] {
         Array(verdict.reasons.prefix(3))
+    }
+
+    private var reasonsSectionTitleKey: String {
+        variant == .urlDisinformation ? "antifake_url_why_title" : "antifake_verdict_reasons"
+    }
+
+    private var urlTrustCopyKey: String? {
+        guard variant == .urlDisinformation else { return nil }
+        switch verdict.verdict {
+        case .likelyFake: return "antifake_url_trust_copy_fake"
+        case .uncertain: return "antifake_url_trust_copy_uncertain"
+        case .likelyReal: return "antifake_url_trust_copy_real"
+        case .insufficientData: return nil
+        }
     }
 
     private var spoofHints: [String] {
@@ -59,6 +82,12 @@ struct AntifakeVerdictCard: View {
         return true
     }
 
+    private var showsSafeWordVerify: Bool {
+        nextStepsKey == "antifake_verdict_next_steps_family"
+            || verdict.reasons.joined(separator: " ").lowercased().contains("родствен")
+            || verdict.reasons.joined(separator: " ").lowercased().contains("family")
+    }
+
     private var normalizedReportPhone: String? {
         let raw = reportPhone?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
         return raw.isEmpty ? nil : raw
@@ -83,24 +112,48 @@ struct AntifakeVerdictCard: View {
             }
 
             if presentation.showsRiskMeter {
-                VStack(alignment: .leading, spacing: Spacing.xs) {
-                    HStack(alignment: .firstTextBaseline) {
-                        Text(localizationManager.localized("antifake_verdict_fake_risk"))
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.75))
-                        Spacer()
-                        Text(
-                            localizationManager.localized(
-                                "antifake_verdict_fake_risk_value",
-                                presentation.riskPercent,
-                                localizationManager.localized(presentation.riskLevelKey)
-                            )
+                if variant == .media {
+                    HStack(spacing: Spacing.m) {
+                        AntifakeConfidenceRingView(
+                            percent: presentation.riskPercent,
+                            accentColor: presentation.accentColor
                         )
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundColor(presentation.accentColor)
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
+                            Text(localizationManager.localized("antifake_confidence_ring_label"))
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.75))
+                            Text(
+                                localizationManager.localized(
+                                    "antifake_verdict_fake_risk_value",
+                                    presentation.riskPercent,
+                                    localizationManager.localized(presentation.riskLevelKey)
+                                )
+                            )
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(presentation.accentColor)
+                        }
+                        Spacer(minLength: 0)
                     }
-                    ProgressView(value: presentation.fakeRisk)
-                        .tint(presentation.accentColor)
+                } else {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        HStack(alignment: .firstTextBaseline) {
+                            Text(localizationManager.localized("antifake_verdict_fake_risk"))
+                                .font(.subheadline)
+                                .foregroundColor(.white.opacity(0.75))
+                            Spacer()
+                            Text(
+                                localizationManager.localized(
+                                    "antifake_verdict_fake_risk_value",
+                                    presentation.riskPercent,
+                                    localizationManager.localized(presentation.riskLevelKey)
+                                )
+                            )
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(presentation.accentColor)
+                        }
+                        ProgressView(value: presentation.fakeRisk)
+                            .tint(presentation.accentColor)
+                    }
                 }
             } else {
                 Text(localizationManager.localized("antifake_verdict_insufficient_hint"))
@@ -110,7 +163,7 @@ struct AntifakeVerdictCard: View {
             }
 
             if !topReasons.isEmpty {
-                Text(localizationManager.localized("antifake_verdict_reasons"))
+                Text(localizationManager.localized(reasonsSectionTitleKey))
                     .font(.caption.weight(.semibold))
                     .foregroundColor(.white.opacity(0.7))
 
@@ -124,6 +177,37 @@ struct AntifakeVerdictCard: View {
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }
+            }
+
+            if let urlTrustCopyKey {
+                Text(localizationManager.localized(urlTrustCopyKey))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.75))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            if !verdict.sources.isEmpty {
+                Text(localizationManager.localized("antifake_url_sources_title"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.primaryBlue.opacity(0.9))
+                ForEach(verdict.sources) { item in
+                    if let link = item.url, let url = URL(string: link) {
+                        Link(destination: url) {
+                            HStack(spacing: Spacing.xs) {
+                                Image(systemName: "link")
+                                    .font(.caption)
+                                Text(localizedSourceTitle(item))
+                                    .font(.caption)
+                                    .multilineTextAlignment(.leading)
+                            }
+                        }
+                        .foregroundColor(.secondaryGold)
+                    }
+                }
+            }
+
+            if variant == .document, let provenance = verdict.provenance {
+                provenanceSection(provenance)
             }
 
             if !spoofHints.isEmpty {
@@ -147,6 +231,23 @@ struct AntifakeVerdictCard: View {
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.9))
                         .fixedSize(horizontal: false, vertical: true)
+
+                    if showsSafeWordVerify {
+                        Button {
+                            HapticFeedback.impact(.light)
+                            showSafeWordVerify = true
+                        } label: {
+                            Label(
+                                localizationManager.localized("antifake_safe_word_verify_button"),
+                                systemImage: "key.horizontal.fill"
+                            )
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundColor(.secondaryGold)
+                        .accessibilityIdentifier("antifake_safe_word_verify_button")
+                    }
                 }
             }
 
@@ -177,6 +278,72 @@ struct AntifakeVerdictCard: View {
         }
         .sheet(isPresented: $showAppealSheet) {
             reportSheet(isAppeal: true)
+        }
+        .sheet(isPresented: $showSafeWordVerify) {
+            FamilySafeWordVerifySheet(context: "antifake")
+                .environmentObject(localizationManager)
+        }
+    }
+
+    private func localizedSourceTitle(_ item: AntifakeVerdictSource) -> String {
+        if let key = item.titleKey, !key.isEmpty {
+            let localized = localizationManager.localized(key)
+            if localized != key { return localized }
+        }
+        if let title = item.title, !title.isEmpty { return title }
+        return item.url ?? ""
+    }
+
+    @ViewBuilder
+    private func provenanceSection(_ provenance: AntifakeVerdictProvenance) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
+            Text(localizationManager.localized("antifake_provenance_title"))
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.primaryBlue.opacity(0.9))
+
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: provenanceIcon(provenance.status))
+                    .foregroundColor(provenanceColor(provenance.status))
+                Text(localizationManager.localized(provenanceStatusKey(provenance.status)))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white.opacity(0.9))
+            }
+
+            if let issuer = provenance.issuer, !issuer.isEmpty {
+                Text(
+                    localizationManager.localized(
+                        "antifake_provenance_issuer",
+                        issuer
+                    )
+                )
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.75))
+            }
+        }
+        .accessibilityIdentifier("antifake_provenance_block")
+    }
+
+    private func provenanceStatusKey(_ status: AntifakeProvenanceStatus) -> String {
+        switch status {
+        case .found: return "antifake_provenance_found"
+        case .missing: return "antifake_provenance_missing"
+        case .tampered: return "antifake_provenance_tampered"
+        }
+    }
+
+    private func provenanceIcon(_ status: AntifakeProvenanceStatus) -> String {
+        switch status {
+        case .found: return "checkmark.seal.fill"
+        case .missing: return "questionmark.circle.fill"
+        case .tampered: return "exclamationmark.triangle.fill"
+        }
+    }
+
+    private func provenanceColor(_ status: AntifakeProvenanceStatus) -> Color {
+        switch status {
+        case .found: return .successGreen
+        case .missing: return .warningOrange
+        case .tampered: return .dangerRed
         }
     }
 

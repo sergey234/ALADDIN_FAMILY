@@ -23,11 +23,48 @@ enum SecurityVerdictValidationError: Error, Equatable {
     case emptyMockEnvelope
 }
 
+/// Optional reference link in URL / disinformation verdicts (fws-04).
+struct AntifakeVerdictSource: Codable, Equatable, Sendable {
+    let sourceId: String?
+    let titleKey: String?
+    let title: String?
+    let url: String?
+
+    enum CodingKeys: String, CodingKey {
+        case sourceId = "id"
+        case titleKey = "title_key"
+        case title
+        case url
+    }
+
+    var stableId: String {
+        sourceId ?? url ?? title ?? UUID().uuidString
+    }
+}
+
+extension AntifakeVerdictSource: Identifiable {
+    var id: String { stableId }
+}
+
+/// Document provenance block (fws-07): found / missing / tampered.
+enum AntifakeProvenanceStatus: String, Codable, Sendable {
+    case found
+    case missing
+    case tampered
+}
+
+struct AntifakeVerdictProvenance: Codable, Equatable, Sendable {
+    let status: AntifakeProvenanceStatus
+    let issuer: String?
+}
+
 /// Canonical L3 response for `/api/antifake/check/*` and job poll (docs/IOS_EXPLICIT_API_MATRIX.md).
 struct SecurityVerdict: Codable, Equatable, Sendable {
     let verdict: SecurityVerdictKind
     let confidence: Double
     let reasons: [String]
+    let sources: [AntifakeVerdictSource]
+    let provenance: AntifakeVerdictProvenance?
     let source: String
     let agent: String?
     let jobId: String?
@@ -40,6 +77,8 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
         case confidence
         case fakeRisk = "fake_risk"
         case reasons
+        case sources
+        case provenance
         case source
         case agent
         case jobId = "job_id"
@@ -52,6 +91,8 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
         verdict: SecurityVerdictKind,
         confidence: Double,
         reasons: [String],
+        sources: [AntifakeVerdictSource] = [],
+        provenance: AntifakeVerdictProvenance? = nil,
         source: String,
         agent: String? = nil,
         jobId: String? = nil,
@@ -62,6 +103,8 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
         self.verdict = verdict
         self.confidence = confidence
         self.reasons = reasons
+        self.sources = sources
+        self.provenance = provenance
         self.source = source
         self.agent = agent
         self.jobId = jobId
@@ -79,6 +122,8 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
             confidence = try container.decodeIfPresent(Double.self, forKey: .confidence) ?? 0
         }
         reasons = try container.decodeIfPresent([String].self, forKey: .reasons) ?? []
+        sources = try container.decodeIfPresent([AntifakeVerdictSource].self, forKey: .sources) ?? []
+        provenance = try container.decodeIfPresent(AntifakeVerdictProvenance.self, forKey: .provenance)
         source = try container.decodeIfPresent(String.self, forKey: .source) ?? ""
         agent = try container.decodeIfPresent(String.self, forKey: .agent)
         jobId = try container.decodeIfPresent(String.self, forKey: .jobId)
@@ -98,6 +143,10 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
         // Keep `fake_risk` aligned with `confidence` for forward-compatible API logging/transport.
         try container.encode(confidence, forKey: .fakeRisk)
         try container.encode(reasons, forKey: .reasons)
+        if !sources.isEmpty {
+            try container.encode(sources, forKey: .sources)
+        }
+        try container.encodeIfPresent(provenance, forKey: .provenance)
         try container.encode(source, forKey: .source)
         try container.encodeIfPresent(agent, forKey: .agent)
         try container.encodeIfPresent(jobId, forKey: .jobId)

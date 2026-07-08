@@ -797,6 +797,15 @@ struct ElderlyInterfaceScreen: View {
                 }
             )
             
+            // fws-03: перед переводом
+            AntifakeTransferCheckCTA(style: .elderlyButton)
+                .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
+
+            WellnessCrisisOneTapCTA()
+                .environmentObject(localizationManager)
+                .padding(.horizontal, Spacing.screenPadding)
+
             // Безопасность - Защита от мошенников
             bigElderlyButton(
                 icon: "📞",
@@ -1321,6 +1330,7 @@ struct ElderlySettingsModal: View {
     @AppStorage("elderly_sound_enabled") private var soundEnabled: Bool = true
     @AppStorage("elderly_vibration_enabled") private var vibrationEnabled: Bool = true
     @AppStorage("elderly_auto_call_enabled") private var autoCallEnabled: Bool = false
+    @AppStorage(ElderlyFallDetectionService.enabledKey) private var fallDetectionEnabled: Bool = false
     @State private var showAddPhoneModal: Bool = false
     @State private var showEditContactsModal: Bool = false
     
@@ -1427,6 +1437,40 @@ struct ElderlySettingsModal: View {
                     .padding()
                     .background(Color.red.opacity(0.1))
                     .cornerRadius(CornerRadius.medium)
+
+                    // fws-10 — optional HealthKit fall → family push
+                    VStack(alignment: .leading, spacing: Spacing.m) {
+                        Text(localizationManager.localized("elderly_fall_detection_title"))
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(.primary)
+
+                        HStack {
+                            Text(localizationManager.localized("elderly_fall_detection_label"))
+                                .font(.system(size: 16))
+                                .foregroundColor(.primary)
+
+                            Spacer()
+
+                            Toggle("", isOn: $fallDetectionEnabled)
+                                .scaleEffect(1.0)
+                                .frame(maxWidth: 60)
+                                .onChange(of: fallDetectionEnabled) { enabled in
+                                    ElderlyFallDetectionService.shared.setEnabled(enabled)
+                                }
+                        }
+
+                        Text(localizationManager.localized("elderly_fall_detection_description"))
+                            .font(.system(size: 14))
+                            .foregroundColor(.secondary)
+                    }
+                    .padding()
+                    .background(Color.orange.opacity(0.1))
+                    .cornerRadius(CornerRadius.medium)
+                    .onAppear {
+                        if fallDetectionEnabled {
+                            Task { await ElderlyFallDetectionService.shared.startMonitoring() }
+                        }
+                    }
                     
                     // Управление семьей
                     VStack(alignment: .leading, spacing: Spacing.m) {

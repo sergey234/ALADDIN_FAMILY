@@ -60,7 +60,7 @@ final class WellnessAPIService {
         )
     }
 
-    func postCheckin(mood: String, sleepHours: Double?, stressLevel: Int?) async throws -> WellnessCheckinResponse {
+    func postCheckin(mood: String, sleepHours: Double?, stressLevel: Int?) async throws -> WellnessCheckinWithSocialResponse {
         try await post(
             AppConfig.Endpoint.wellnessCheckin,
             body: WellnessCheckinRequestBody(
@@ -69,6 +69,131 @@ final class WellnessAPIService {
                 stressLevel: stressLevel,
                 energyLevel: nil
             )
+        )
+    }
+
+    func fetchExamPlan() async throws -> WellnessExamPlanResponse {
+        try await get(AppConfig.Endpoint.wellnessExamPlan)
+    }
+
+    func saveExamPlan(examAt: String, title: String?, parentDigest: Bool) async throws -> WellnessExamPlanResponse {
+        try await post(
+            AppConfig.Endpoint.wellnessExamPlan,
+            body: WellnessExamPlanSaveBody(examAt: examAt, title: title, parentDigest: parentDigest)
+        )
+    }
+
+    func dismissSocialNudge(goalKey: String) async throws {
+        struct Resp: Codable { let ok: Bool }
+        let _: Resp = try await post(
+            AppConfig.Endpoint.wellnessSocialGoalsDismiss,
+            body: WellnessSocialNudgeDismissBody(goalKey: goalKey)
+        )
+    }
+
+    func fetchPsychLibraryManifest() async throws -> WellnessPsychLibraryResponse {
+        let loc = LocalizationManager.shared.aiResponseLanguageCode.prefix(2)
+        return try await get("\(AppConfig.Endpoint.wellnessPsychLibraryManifest)?locale=\(loc)")
+    }
+
+    func fetchHabits() async throws -> WellnessHabitsListResponse {
+        try await get(AppConfig.Endpoint.wellnessHabits)
+    }
+
+    func createHabit(ifThen: String) async throws {
+        struct Resp: Codable { let ok: Bool }
+        let _: Resp = try await post(
+            AppConfig.Endpoint.wellnessHabits,
+            body: WellnessHabitCreateBody(ifThen: ifThen)
+        )
+    }
+
+    func endWellnessSession() async throws {
+        struct Resp: Codable { let ok: Bool }
+        let _: Resp = try await post(AppConfig.Endpoint.wellnessSessionEnd, body: EmptyBody())
+    }
+
+    func fetchSleepStories() async throws -> WellnessSleepStoriesResponse {
+        let loc = LocalizationManager.shared.aiResponseLanguageCode.prefix(2)
+        return try await get("\(AppConfig.Endpoint.wellnessSleepStories)?locale=\(loc)")
+    }
+
+    func reportElderlyFall(source: String) async throws {
+        struct Body: Encodable { let source: String }
+        struct Resp: Codable { let ok: Bool }
+        let _: Resp = try await post(AppConfig.Endpoint.familyElderlyFallAlert, body: Body(source: source))
+    }
+
+    func setStudentMode(_ enabled: Bool) async throws -> WellnessStudentModeResponse {
+        try await post(AppConfig.Endpoint.wellnessStudentMode, body: WellnessStudentModeBody(enabled: enabled))
+    }
+
+    func fetchDetoxChallenge() async throws -> WellnessDetoxChallengeResponse {
+        try await get(AppConfig.Endpoint.wellnessDetoxChallenge)
+    }
+
+    func startDetoxChallenge() async throws -> WellnessDetoxChallengeResponse {
+        struct Resp: Codable {
+            let ok: Bool?
+            let active: Bool?
+            let daysCompleted: Int?
+            let daysTotal: Int?
+            let completedDays: [String]?
+            let finished: Bool?
+
+            enum CodingKeys: String, CodingKey {
+                case ok, active, finished
+                case daysCompleted = "days_completed"
+                case daysTotal = "days_total"
+                case completedDays = "completed_days"
+            }
+        }
+        let r: Resp = try await post(AppConfig.Endpoint.wellnessDetoxChallengeStart, body: EmptyBody())
+        return WellnessDetoxChallengeResponse(
+            ok: r.ok,
+            challenge: WellnessDetoxChallengeDTO(
+                active: r.active ?? false,
+                startedAt: nil,
+                daysCompleted: r.daysCompleted ?? 0,
+                daysTotal: r.daysTotal ?? 7,
+                completedDays: r.completedDays ?? [],
+                finished: r.finished ?? false
+            ),
+            weekly: nil
+        )
+    }
+
+    func recordDetoxDay(underLimit: Bool) async throws -> WellnessDetoxChallengeResponse {
+        struct Resp: Codable {
+            let ok: Bool?
+            let active: Bool?
+            let daysCompleted: Int?
+            let daysTotal: Int?
+            let completedDays: [String]?
+            let finished: Bool?
+
+            enum CodingKeys: String, CodingKey {
+                case ok, active, finished
+                case daysCompleted = "days_completed"
+                case daysTotal = "days_total"
+                case completedDays = "completed_days"
+            }
+        }
+        let r: Resp = try await post(
+            AppConfig.Endpoint.wellnessDetoxChallengeDay,
+            body: WellnessDetoxDayBody(underLimit: underLimit, day: nil)
+        )
+        return WellnessDetoxChallengeResponse(
+            ok: r.ok,
+            challenge: WellnessDetoxChallengeDTO(
+                active: r.active ?? false,
+                startedAt: nil,
+                daysCompleted: r.daysCompleted ?? 0,
+                daysTotal: r.daysTotal ?? 7,
+                completedDays: r.completedDays ?? [],
+                finished: r.finished ?? false
+            ),
+            weekly: nil
         )
     }
 
@@ -149,6 +274,18 @@ final class WellnessAPIService {
         return try await get(path)
     }
 
+    func fetchCrisisStatus() async throws -> WellnessCrisisStatusResponse {
+        try await get(AppConfig.Endpoint.wellnessCrisisStatus)
+    }
+
+    /// fws-13 — log L3, notify parents, return helplines payload.
+    func openCrisis(context: String = "one_tap") async throws -> WellnessCrisisOpenResponse {
+        struct Body: Encodable {
+            let context: String
+        }
+        return try await post(AppConfig.Endpoint.wellnessCrisisOpen, body: Body(context: context))
+    }
+
     func postOutcome(pillar: String, helpful: Int, note: String? = nil) async throws -> WellnessOutcomePostResponse {
         try await post(
             AppConfig.Endpoint.wellnessOutcomes,
@@ -226,6 +363,7 @@ final class WellnessAPIService {
     func fetchParentPlaybook(
         topic: String? = nil,
         teenMood: String? = nil,
+        teenUserId: String? = nil,
         useLlm: Bool = true
     ) async throws -> WellnessParentPlaybookResponse {
         let loc = LocalizationManager.shared.aiResponseLanguageCode.prefix(2).lowercased()
@@ -238,6 +376,10 @@ final class WellnessAPIService {
         if let teenMood, !teenMood.isEmpty {
             let enc = teenMood.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? teenMood
             parts.append("teen_mood=\(enc)")
+        }
+        if let teenUserId, !teenUserId.isEmpty {
+            let enc = teenUserId.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? teenUserId
+            parts.append("teen_user_id=\(enc)")
         }
         let query = parts.joined(separator: "&")
         return try await get("\(AppConfig.Endpoint.wellnessParentPlaybook)?\(query)")
