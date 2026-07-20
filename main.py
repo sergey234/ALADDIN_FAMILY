@@ -255,6 +255,12 @@ try:
 except ImportError:
     antivirus_router_available = False
 
+try:
+    from app.routers import leaks
+    leaks_router_available = True
+except ImportError:
+    leaks_router_available = False
+
 # ✅ ДОБАВЛЕНО: Импортируем роутер для Analytics API
 try:
     from app.routers import analytics_router
@@ -590,6 +596,12 @@ class SfmMockTo503Middleware(BaseHTTPMiddleware):
                     return response
                 # Family registration/add: pass real 503/500 detail (Postgres/SFM) — do not mask as generic 404.
                 if request_path.startswith("/api/family/"):
+                    return response
+                # Companion chat/stream: do not mask real 5xx as fake 404 (guide_mode / LLM).
+                if request_path.startswith("/api/ai/companion/chat") or request_path.startswith("/api/ai/companion/stream"):
+                    return response
+                # Public leaks email-check: honest 503 when HIBP_API_KEY missing.
+                if request_path.startswith("/api/leaks/"):
                     return response
                 # Gate-friendly hardening: unstable backend branches must not leak 5xx as final contract response.
                 return JSONResponse(
@@ -1081,6 +1093,15 @@ if antivirus_router_available:
         print(f"⚠️ Не удалось подключить роутер Antivirus: {e}")
 else:
     print("⚠️ Роутер Antivirus недоступен")
+
+if leaks_router_available:
+    try:
+        app.include_router(leaks.router, tags=["leaks"])
+        print("✅ Роутер Leaks подключен: GET /api/leaks/status, POST /api/leaks/email-check")
+    except Exception as e:
+        print(f"⚠️ Не удалось подключить роутер Leaks: {e}")
+else:
+    print("⚠️ Роутер Leaks недоступен")
 
 # ✅ ДОБАВЛЕНО: Добавлен роутер для Analytics API
 if analytics_router_available:
