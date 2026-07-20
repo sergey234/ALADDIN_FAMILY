@@ -2,6 +2,7 @@
 
 **Дата создания:** 4 марта 2026 года  
 **Дата обновления:** 11 июня 2026 года (v2.8.2: build 228 closeout — CI signing fix for ALADDINAntifakeShare, antifake_rate_limit deployed; all new APIs from 140+ task plan documented)  
+**Доп. обновление:** 20 июля 2026 года — **§6.10 Build 243** (Unicorn hybrid + Wellness Guide + live prod probe); см. блок «Дополнение 2026-07-20» ниже.  
 **Версия:** 2.8.2 (build 228; Antifake rate limiting + explicit B1 routers fully in §6.9; 491 paths in OpenAPI)  
 **Статус (JWT/API):** ✅ **RELEASE GATE PASS (LIVE VERIFIED)** (R75 / §6.1) + OpenAPI audit **0×5xx** (2026-06-03, §6.7)  
 **Статус (общий релиз):** ❌ **NO_GO** (блокер `rel-15` 24h soak, см. `docs/release/release-gate-report.json` / `docs/release/go-no-go.md`)
@@ -20,6 +21,12 @@
 - Номер сборки 228 во всех файлах (Info.plist, project.pbxproj ×8, AppConfig.swift ×2, тесты).
 
 **Дополнение 2026-06-03 (backend fixes + OpenAPI SSOT):** см. **§6.7** — что уже на VPS, что в git; **`GET https://aladdin-ai.ru/openapi.json`** = **491 paths**; OpenAPI audit **534 ops → 0×5xx** (после фиксов `platform/profile`, `rewards/history`, wellness export/values-card).
+
+**Дополнение 2026-07-20 (build 243 Unicorn + Wellness Guide — append-only §6.10):**
+- iOS **build 243** на `master`: Unicorn P1.7–P2 + Wellness Guide + CI fixes.
+- Новые/расширенные REST пути и live-проба `https://aladdin-ai.ru` — **§6.10** (ниже / в конце файла).
+- Тестер: `smart_api_tester.py --build243-only` (реальные HTTP); `--all` включает wellness + build243.
+- **Важно:** три family-роута (`habit-reminders`, `list`, `challenges`) есть в **git** iOS-репо (`app/routers/family.py`), но на **проде OpenAPI 548 paths (2026-07-20) их ещё нет** → live **404** до деплоя VPS. Telegram `link-code` и Antifake `feedback` на проде **живые**.
 
 ---
 
@@ -693,6 +700,76 @@ Prod smoke: `docs/server/test_antifake_prod_smoke.py` (входит в `test_sec
 | Parental monitoring | `/api/parental-control/monitoring/*` | Family modals (pending) | B6 |
 
 > **Важно:** таблица роутеров § «ДЕТАЛЬНЫЙ АНАЛИЗ ВСЕХ РОУТЕРОВ» ниже по документу **частично устарела** (pre-B1). Для security-domains после 2026-06-09 опирайтесь на **`docs/IOS_EXPLICIT_API_MATRIX.md`** и `app/routers/*.py`, а не на legacy `security/api/routers/*` пути в старых секциях.
+
+### 6.10) Build 243 — Unicorn hybrid + Wellness Guide + related REST (2026-07-20)
+
+**Append-only.** Ничего из §6.9 / исторических секций не удалять.  
+**iOS build:** 243 (`Info.plist` / `AppConfig` / `project.pbxproj`).  
+**Канон репо:** `ALADDIN_NEW/mobile_apps/ALADDIN_iOS` · `master` · `origin=git@github.com:sergey234/ALADDIN_FAMILY.git`.  
+**Тестер:** `python3 smart_api_tester.py --build243-only` (реальные HTTP на `https://aladdin-ai.ru`).
+
+#### Простым языком
+
+- Сделали **60+ клиентских тикетов** (привычки, лекарство, focus, moments, челленджи, дыхание, Wellness Guide).
+- Часть фич **вообще без сервера** (Moments, XP/streaks, due-ping scheduler, focus timer) — так задумано.
+- Часть нужна **серверу**. В **коде git** маршруты есть. На **живом** `aladdin-ai.ru` (OpenAPI **548** paths, проба 2026-07-20) **ещё не задеплоены** family-роуты Unicorn → приложение получит **404**, пока не выкатите `family.py` на VPS.
+- Telegram link-code и Antifake feedback на проде **уже отвечают**.
+
+#### Remote endpoints (iOS ↔ backend)
+
+| Method | Path | iOS | Backend (git) | LIVE prod 2026-07-20 |
+|--------|------|-----|---------------|----------------------|
+| GET/POST | `/api/family/habit-reminders` | `FamilyHabitRemindersService` / `APIService.get|setFamilyHabitReminders` · `AppConfig.Endpoint.familyHabitReminders` | `app/routers/family.py` + `family_habit_reminders_store` (`medicine`, `ping_until_done`) | ❌ **404** — нет в OpenAPI |
+| GET/POST | `/api/family/list` | `FamilyListScreen` / `get|setFamilySharedList` · `familySharedList` | `family.py` + `family_list_store` | ❌ **404** — нет в OpenAPI |
+| GET/POST | `/api/family/challenges` | `FamilyChallengesService` · `familyChallenges` · **max 5** | `family.py` + `family_challenges_store` `MAX_CHALLENGES=5` | ❌ **404** — нет в OpenAPI |
+| POST | `/api/ai/companion/chat` | `CompanionAPIService.sendChat` + body `guide_mode` | `security/api/routers/ai_companion_router.py` + `wellness_guide_role.py` | ⚠️ в OpenAPI есть; live: **504** или **404** `Endpoint unavailable without explicit real backend flow` (gateway/edge) — нестабильно для короткого smoke |
+| POST | `/api/telegram/link-code` | `TelegramLinkScreen` → `createTelegramLinkCode` | `security/api/routers/telegram_ai_bot_router.py` | ✅ **200** (код + bot_username) |
+| POST | `/api/antifake/feedback` | `antifakeVerdictFeedback` · `AntifakeVerdictCard` | `app/routers/antifake.py` `@router.post("/feedback")` | ✅ маршрут жив; без Premium → **403** `premium_required` (ожидаемо) |
+
+#### Local-only (не REST; не путать с «пропавшими API»)
+
+| Фича | Где |
+|------|-----|
+| Moments CRUD | `FamilyMomentsLocalStore` |
+| Habit streaks / medals / Unicorn XP | `HabitStreakStore` / `UnicornCareReward` |
+| Due-ping repeats / Focus 25·60 | local + flags `due_ping` / `focus_session` **default OFF** |
+| Breath 2 min + ambient WAV | local audio |
+| Voicebox Companion flags | default OFF |
+
+#### Feature flags
+
+| Flag | Default | Notes |
+|------|---------|-------|
+| `due_ping` | OFF | `FamilyHabitDuePingFeature` |
+| `focus_session` | OFF | `FamilyFocusSessionFeature` |
+| Wellness guide modes | ON | `WellnessGuideSessionStore` / `FEATURE_WELLNESS_GUIDE_MODES` |
+| Voicebox sandbox/prod | OFF | `CompanionVoiceboxFeatureFlags` |
+
+#### Live probe evidence (UTC-ish 2026-07-20)
+
+```
+OpenAPI paths: 548
+MISSING /api/family/habit-reminders
+MISSING /api/family/list
+MISSING /api/family/challenges
+OK      /api/ai/companion/chat
+OK      /api/telegram/link-code
+OK      /api/antifake/feedback
+register-device 200
+GET  /api/family/habit-reminders → 404
+GET  /api/family/list → 404
+GET  /api/family/challenges → 404
+POST /api/telegram/link-code → 200
+POST /api/antifake/feedback → 403 premium_required
+POST /api/ai/companion/chat → 504 Gateway Time-out  (повтор: 404 "Endpoint unavailable without explicit real backend flow")
+```
+
+#### Deploy backlog (сервер)
+
+1. Задеплоить на VPS актуальный `app/routers/family.py` + stores (`habit_reminders`, `list`, `challenges`) и перезагрузить FastAPI так, чтобы пути появились в `GET /openapi.json`.
+2. Проверить companion edge: стабильный `POST /api/ai/companion/chat` (не 404 gateway stub).
+3. Повторить: `python3 smart_api_tester.py --build243-only` — family GET должны стать **не-404** (200/401/403).
+4. Device `r1-smoke`: Due→Done→XP; medicine; Guide «кто ты?».
 
 ### 7) JWT TTL policy (normative)
 
@@ -4440,3 +4517,12 @@ GRANT SELECT, INSERT, UPDATE ON TABLE cleanup.cleanup_records TO aladdin_user;
   - `docs/release/go-no-go.md` — человекочитаемый вывод GO/NO_GO.
 
 Практически: если этот документ (JWT/API) + перечисленные JSON/MD‑артефакты дают зеленый статус по всем критериям, ML‑система может доверять текущему JWT/API‑контракту как “истине” и опираться на него при генерации тестов / анализе.
+
+
+---
+
+## 20. Build 243 API appendix pointer (2026-07-20)
+
+Полная таблица новых эндпоинтов Unicorn/Guide/Telegram/Antifake и live-проба продакшена: **§6.10** в этом же файле (после §6.9).
+
+Команда проверки: `python3 smart_api_tester.py --build243-only`.

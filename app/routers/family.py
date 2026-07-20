@@ -19,7 +19,7 @@ from sqlalchemy import text
 from typing import Optional, Any, Dict, List, Tuple, Annotated
 from datetime import datetime
 import uuid
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 # ✅ Импорт функции создания семьи (БЕЗ персональных данных)
 from security.family.family_registration import create_family

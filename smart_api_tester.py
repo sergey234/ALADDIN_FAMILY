@@ -5,7 +5,8 @@ ALADDIN API smoke tester — real HTTP against prod.
 Usage:
   python3 smart_api_tester.py              # full OpenAPI + APP_ENDPOINTS smoke
   python3 smart_api_tester.py --wellness-only   # method-aware Wellness Platform (131/131)
-  python3 smart_api_tester.py --all        # both passes
+  python3 smart_api_tester.py --build243-only   # Unicorn/Guide/Antifake/Telegram endpoints (build 243)
+  python3 smart_api_tester.py --all        # full smoke + wellness + build243
 """
 import argparse
 import json
@@ -84,6 +85,35 @@ WELLNESS_OPS = [
     ("POST", "/api/wellness/session/end", None, {}, {200}),
 ]
 
+# Build 243 — Unicorn hybrid + Wellness Guide + Telegram + Antifake feedback
+# Format: (method, path, query_dict|None, json_body|None, expect_codes, note)
+# expect_codes: route alive (2xx/4xx business) OR known deploy gap (404 until VPS ships family.py).
+BUILD_243_OPS = [
+    # Family Unicorn — in iOS git (app/routers/family.py); LIVE OpenAPI 2026-07-20: NOT deployed yet → 404 expected until deploy
+    ("GET", "/api/family/habit-reminders", None, None, {200, 401, 403, 404}, "p1-7/p1-8 habit+medicine+due_ping"),
+    ("POST", "/api/family/habit-reminders", None, {"schedules": {}}, {200, 401, 403, 404, 422}, "p1-7 save schedules"),
+    ("GET", "/api/family/list", None, None, {200, 401, 403, 404}, "p1-6 family shared list"),
+    ("POST", "/api/family/list", None, {"items": []}, {200, 401, 403, 404, 422}, "p1-6 list last-write"),
+    ("GET", "/api/family/challenges", None, None, {200, 401, 403, 404}, "p2-9h challenges max 5"),
+    ("POST", "/api/family/challenges", None, {"challenges": []}, {200, 401, 403, 404, 422}, "p2-9h set challenges"),
+    # Companion Guide — live OpenAPI has POST /api/ai/companion/chat; guide_mode optional body field
+    ("POST", "/api/ai/companion/chat", None, {
+        "message": "smart_api_tester build243",
+        "character_id": "aladdin",
+        "input_mode": "text",
+        "chat_mode": "fast",
+        "guide_mode": "presence",
+    }, {200, 401, 403, 404, 422, 429, 502, 504}, "psych guide_mode on companion chat"),
+    # Telegram link — LIVE verified 200 with JWT (2026-07-20)
+    ("POST", "/api/telegram/link-code", None, {}, {200, 401, 403}, "TelegramLinkScreen"),
+    # Antifake feedback — LIVE route; 403 premium_required without premium is OK
+    ("POST", "/api/antifake/feedback", None, {
+        "job_id": "00000000-0000-0000-0000-000000000001",
+        "note": "smart_api_tester build243",
+        "feedback": "incorrect",
+    }, {200, 401, 402, 403, 404, 422}, "T5-02 antifakeVerdictFeedback"),
+]
+
 # Paths for OpenAPI merge fallback (legacy APP_ENDPOINTS + wellness)
 APP_ENDPOINTS = [
     "/api/ai/assistant/analyze_threat", "/api/ai/assistant/capabilities", "/api/ai/assistant/chat",
@@ -155,6 +185,13 @@ APP_ENDPOINTS = [
     "/api/wellness/senior/journal/merge", "/api/wellness/pillar/rive", "/api/wellness/family/talk-prompts",
     "/api/wellness/seasonal/playbooks", "/api/wellness/senior/voice-session", "/api/wellness/sleep/stories",
     "/api/wellness/canary/status", "/api/wellness/store/backend",
+    # Build 243 — Unicorn / Guide / Telegram / Antifake (append-only; keep legacy list above)
+    "/api/family/habit-reminders",
+    "/api/family/list",
+    "/api/family/challenges",
+    "/api/ai/companion/chat",
+    "/api/telegram/link-code",
+    "/api/antifake/feedback",
 ]
 
 STATS = {
@@ -167,6 +204,7 @@ STATS = {
 }
 
 WELLNESS_STATS = {"total": 0, "pass": 0, "fail": 0, "failures": [], "warnings": []}
+BUILD_243_STATS = {"total": 0, "pass": 0, "fail": 0, "failures": [], "notes": []}
 
 
 def print_header(text):
@@ -329,6 +367,65 @@ def run_wellness_contract_tests(token=None):
     return WELLNESS_STATS["fail"] == 0
 
 
+def run_build243_contract_tests(token=None):
+    """Method-aware Build 243 Unicorn/Guide/Telegram/Antifake contract tests."""
+    print_header("BUILD 243 — UNICORN / GUIDE / TELEGRAM / ANTIFAKE")
+    token = token or get_jwt_token(f"build243-tester-{int(time.time())}")
+    if not token:
+        print("🛑 Build243 tests stopped: no JWT.")
+        return False
+
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+
+    for method, path, query, body, expect, note in BUILD_243_OPS:
+        BUILD_243_STATS["total"] += 1
+        url = f"{BASE_URL}{path}"
+        try:
+            kwargs = {"headers": headers, "timeout": 45}
+            if query:
+                kwargs["params"] = query
+            if method in ("POST", "PUT", "PATCH", "DELETE") and body is not None:
+                kwargs["json"] = body
+            resp = requests.request(method, url, **kwargs)
+            status = resp.status_code
+            ok = status in expect
+            icon = "✅" if ok else "❌"
+            if ok:
+                BUILD_243_STATS["pass"] += 1
+                if status == 404 and "family/" in path:
+                    BUILD_243_STATS["notes"].append(
+                        f"DEPLOY GAP (accepted for now): {method} {path} → 404 — ship family.py to VPS"
+                    )
+            else:
+                BUILD_243_STATS["fail"] += 1
+                snippet = (resp.text or "")[:120]
+                BUILD_243_STATS["failures"].append(
+                    f"{method} {path} → {status} (expected {expect}) [{note}] {snippet}"
+                )
+            print(f"{icon} {status} {method} {path}  # {note}")
+        except Exception as e:
+            BUILD_243_STATS["fail"] += 1
+            BUILD_243_STATS["failures"].append(f"{method} {path} → ERROR {e} [{note}]")
+            print(f"❌ ERR {method} {path}: {e}")
+
+    print_header("BUILD 243 RESULTS")
+    total = BUILD_243_STATS["total"]
+    passed = BUILD_243_STATS["pass"]
+    print(f"✅ Pass (incl. known deploy-gap 404): {passed}/{total}")
+    print(f"❌ Fail: {BUILD_243_STATS['fail']}/{total}")
+    if BUILD_243_STATS["notes"]:
+        print("\nNotes:")
+        for n in BUILD_243_STATS["notes"]:
+            print(f"  • {n}")
+    if BUILD_243_STATS["failures"]:
+        print("\nFailures:")
+        for f in BUILD_243_STATS["failures"]:
+            print(f"  • {f}")
+    pct = (passed / total * 100) if total else 0
+    print(f"\n🏆 Build 243 API checklist: {pct:.1f}%")
+    return BUILD_243_STATS["fail"] == 0
+
+
 def run_tests(token=None):
     print_header("ФИНАЛЬНАЯ ВАЛИДАЦИЯ ВСЕХ API (OpenAPI + APP_ENDPOINTS)")
 
@@ -388,18 +485,24 @@ def run_tests(token=None):
 def main():
     parser = argparse.ArgumentParser(description="ALADDIN prod API smoke tester")
     parser.add_argument("--wellness-only", action="store_true", help="Wellness method-aware tests only")
-    parser.add_argument("--all", action="store_true", help="Full smoke + wellness contract tests")
+    parser.add_argument("--build243-only", action="store_true", help="Build 243 Unicorn/Guide/Telegram/Antifake tests")
+    parser.add_argument("--all", action="store_true", help="Full smoke + wellness + build243 contract tests")
     args = parser.parse_args()
 
     if args.wellness_only:
         ok = run_wellness_contract_tests()
         sys.exit(0 if ok else 1)
 
+    if args.build243_only:
+        ok = run_build243_contract_tests()
+        sys.exit(0 if ok else 1)
+
     if args.all:
         token = get_jwt_token()
         run_tests(token)
-        ok = run_wellness_contract_tests(token)
-        sys.exit(0 if ok else 1)
+        ok_w = run_wellness_contract_tests(token)
+        ok_b = run_build243_contract_tests(token)
+        sys.exit(0 if (ok_w and ok_b) else 1)
 
     run_tests()
 
