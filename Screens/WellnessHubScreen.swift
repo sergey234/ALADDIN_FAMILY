@@ -25,6 +25,9 @@ struct WellnessHubScreen: View {
     @State private var showReferralSheet = false
     @State private var showPremiumPaywall = false
     @State private var showSleepStories = false
+    @State private var showGuideModeSheet = false
+    @State private var showSessionCloseSheet = false
+    @ObservedObject private var guideStore = WellnessGuideSessionStore.shared
     @State private var referralLevel = "L2"
     @State private var traumaBanner: WellnessTraumaCheckResponse?
     @State private var alliance: WellnessAllianceDTO?
@@ -48,7 +51,7 @@ struct WellnessHubScreen: View {
         ZStack {
             StormMeshBackground(variant: .warm)
 
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 16) {
                     header
                     suggestedPillarBanner
@@ -63,6 +66,9 @@ struct WellnessHubScreen: View {
                             .accessibilityIdentifier("wellness_hub_action_error")
                     }
                     primaryActionButtons
+                    if guideStore.showPresenceNudge {
+                        presenceNudgeBanner
+                    }
                     if showSecondaryContent {
                         secondaryHubSection
                     } else if showHubContent {
@@ -103,6 +109,17 @@ struct WellnessHubScreen: View {
             WellnessSleepStoriesSheet()
                 .environmentObject(localizationManager)
         }
+        .sheet(isPresented: $showGuideModeSheet) {
+            WellnessGuideModeSheet(ageBand: ageBand) {
+                Task { await openCompanionAfterLoop() }
+            }
+            .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showSessionCloseSheet) {
+            WellnessSessionCloseSheet(ageBand: ageBand)
+                .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
+        }
     }
 
     private var hubRecapMessage: String? {
@@ -113,7 +130,7 @@ struct WellnessHubScreen: View {
     private var header: some View {
         HStack {
             if !embeddedInHome {
-                Button { navigationManager.goBack() } label: {
+                Button { navigationManager.goBackToPreviousScreen(reason: "wellnessHub") } label: {
                     Image(systemName: "chevron.left")
                         .font(.body.weight(.semibold))
                 }
@@ -177,11 +194,71 @@ struct WellnessHubScreen: View {
 
     @ViewBuilder
     private var primaryActionButtons: some View {
+        if guideStore.guideModesEnabled {
+            talkGentlyButton
+        }
         checkinButton
         if WellnessSessionStore.activePillar != nil {
             exerciseButton
         }
         companionButton
+        if guideStore.guideModesEnabled {
+            endSessionButton
+        }
+    }
+
+    private var talkGentlyButton: some View {
+        Button {
+            guideStore.beginNewGuideSession(ageBand: ageBand)
+            showGuideModeSheet = true
+        } label: {
+            Label(
+                localizationManager.localized("wellness_guide_talk_gently"),
+                systemImage: "heart.text.square"
+            )
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 12)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(Color(hex: "8B5CF6"))
+        .accessibilityIdentifier("wellness_guide_talk_gently")
+    }
+
+    private var endSessionButton: some View {
+        Button {
+            showSessionCloseSheet = true
+        } label: {
+            Label(
+                localizationManager.localized("wellness_session_end_button"),
+                systemImage: "checkmark.circle"
+            )
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 10)
+        }
+        .buttonStyle(.bordered)
+        .tint(.white.opacity(0.85))
+        .accessibilityIdentifier("wellness_session_end_button")
+    }
+
+    private var presenceNudgeBanner: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("wellness_guide_presence_nudge"))
+                .font(.subheadline)
+            HStack {
+                Button(localizationManager.localized("wellness_guide_presence_nudge_yes")) {
+                    guideStore.acceptPresenceNudge(ageBand: ageBand)
+                }
+                .buttonStyle(.borderedProminent)
+                .tint(Color(hex: "8B5CF6"))
+                Button(localizationManager.localized("wellness_guide_presence_nudge_no")) {
+                    guideStore.dismissPresenceNudge()
+                }
+                .buttonStyle(.bordered)
+            }
+        }
+        .padding(12)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+        .accessibilityIdentifier("wellness_guide_presence_nudge")
     }
 
     @ViewBuilder
@@ -464,6 +541,9 @@ struct WellnessHubScreen: View {
                 Text(localizationManager.localized("wellness_family_no_transcript"))
                     .font(.caption2)
                     .foregroundColor(.white.opacity(0.7))
+                Text(localizationManager.localized("wellness_checkin_quick_parent_aggregate_hint"))
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.65))
                 if payload.themes.isEmpty {
                     Text(localizationManager.localized("wellness_family_themes_empty"))
                         .font(.caption)
@@ -1108,8 +1188,9 @@ struct WellnessHubScreen: View {
     }
 
     private func loadTraumaBannerIfNeeded() async {
-        if let settings = try? await WellnessAPIService.shared.fetchSettings(),
-           settings.settings.escalationLevel == "L2" {
+        if let settings = try? await WellnessAPIService.shared.fetchSettings() {
+            guideStore.applyPresenceNudgeIfNeeded(escalation: settings.settings.escalationLevel)
+            if settings.settings.escalationLevel == "L2" {
             traumaBanner = WellnessTraumaCheckResponse(
                 triggered: true,
                 level: "L2",
@@ -1121,6 +1202,7 @@ struct WellnessHubScreen: View {
                 specialistNote: localizationManager.localized("wellness_trauma_specialist_note"),
                 referral: nil
             )
+            }
         }
     }
 

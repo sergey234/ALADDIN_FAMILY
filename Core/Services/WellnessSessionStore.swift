@@ -88,6 +88,53 @@ enum WellnessSessionStore {
         return try? dec.decode(WellnessCheckinDraft.self, from: data)
     }
 
+    // MARK: - P0.3 check-in streak (local, for Unicorn XP)
+
+    private static let checkinDaysKey = "wellness_checkin_day_stamps_v1"
+    private static let checkinStreakKey = "wellness_checkin_streak_v1"
+
+    static func checkinStreakDays(defaults: UserDefaults = .standard) -> Int {
+        defaults.integer(forKey: checkinStreakKey)
+    }
+
+    /// Records today once; returns current consecutive-day streak.
+    @discardableResult
+    static func recordCheckinDayAndStreak(defaults: UserDefaults = .standard, now: Date = Date()) -> Int {
+        let formatter = DateFormatter()
+        formatter.calendar = Calendar.current
+        formatter.locale = Locale(identifier: "en_US_POSIX")
+        formatter.timeZone = TimeZone.current
+        formatter.dateFormat = "yyyy-MM-dd"
+        let today = formatter.string(from: now)
+
+        var days = defaults.stringArray(forKey: checkinDaysKey) ?? []
+        if days.contains(today) {
+            return defaults.integer(forKey: checkinStreakKey)
+        }
+        days.append(today)
+        if days.count > 60 {
+            days = Array(days.suffix(60))
+        }
+        defaults.set(days, forKey: checkinDaysKey)
+
+        let cal = Calendar.current
+        var streak = 1
+        var cursor = cal.date(byAdding: .day, value: -1, to: now) ?? now
+        while days.contains(formatter.string(from: cursor)) {
+            streak += 1
+            guard let prev = cal.date(byAdding: .day, value: -1, to: cursor) else { break }
+            cursor = prev
+        }
+        defaults.set(streak, forKey: checkinStreakKey)
+        return streak
+    }
+
+    /// Aggregate-only flag for parent share (teen/child privacy). Raw mood feed is never shown to parent UI.
+    static var parentShareAggregatePreferred: Bool {
+        get { UserDefaults.standard.object(forKey: "wellness_parent_share_aggregate_v1") as? Bool ?? true }
+        set { UserDefaults.standard.set(newValue, forKey: "wellness_parent_share_aggregate_v1") }
+    }
+
     static var companionEntryBanner: String? {
         let v = UserDefaults.standard.string(forKey: companionBannerKey)?
             .trimmingCharacters(in: .whitespacesAndNewlines)

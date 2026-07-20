@@ -1,6 +1,7 @@
 import SwiftUI
 
 /// p1-13 — check-in (локально; sync на сервер — p1-02).
+/// P0.3 — Daylio-lite: emoji-only path for child/senior (без слайдеров).
 struct WellnessCheckinScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -11,6 +12,7 @@ struct WellnessCheckinScreen: View {
     @State private var saved = false
     @State private var offlineQueued = false
     @State private var socialGoals: WellnessSocialGoalsBlock?
+    @State private var streakDays = 0
 
     private let moods: [(id: String, emoji: String, key: String)] = [
         ("great", "😊", "wellness_mood_great"),
@@ -24,61 +26,54 @@ struct WellnessCheckinScreen: View {
         WellnessSessionStore.cachedAgeBand ?? CompanionUserContext.companionAgeBand
     }
 
+    /// Quick emoji-only for child / senior (elderly).
+    private var isQuickEmojiOnly: Bool {
+        ageBand == "child" || ageBand == "senior" || ageBand == "elderly"
+    }
+
     var body: some View {
         ZStack {
             StormMeshBackground(variant: .warm)
 
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 20) {
                     header
 
-                    Text(WellnessAgeL10n.text(localizationManager, key: "wellness_checkin_title", ageBand: ageBand))
+                    Text(WellnessAgeL10n.text(
+                        localizationManager,
+                        key: isQuickEmojiOnly ? "wellness_checkin_quick_title" : "wellness_checkin_title",
+                        ageBand: ageBand
+                    ))
                         .font(.title3.bold())
-                    Text(WellnessAgeL10n.text(localizationManager, key: "wellness_checkin_subtitle", ageBand: ageBand))
+                    Text(WellnessAgeL10n.text(
+                        localizationManager,
+                        key: isQuickEmojiOnly ? "wellness_checkin_quick_subtitle" : "wellness_checkin_subtitle",
+                        ageBand: ageBand
+                    ))
                         .font(.subheadline)
                         .foregroundColor(.white.opacity(0.85))
 
                     moodPicker
 
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(WellnessAgeL10n.text(localizationManager, key: "wellness_sleep_label", ageBand: ageBand))
-                            .font(.subheadline.weight(.semibold))
-                        Slider(value: $sleepHours, in: 3...12, step: 0.5)
-                            .tint(Color(hex: "8B5CF6"))
-                        Text(String(format: localizationManager.localized("wellness_sleep_hours"), sleepHours))
+                    if !isQuickEmojiOnly {
+                        sleepSlider
+                        stressSlider
+                        saveButton
+                    } else if !saved {
+                        Text(localizationManager.localized("wellness_checkin_quick_tap_hint"))
                             .font(.caption)
-                            .foregroundColor(.white.opacity(0.75))
+                            .foregroundColor(.white.opacity(0.7))
                     }
-                    .padding(12)
-                    .stormGlassCard(cornerRadius: CornerRadius.medium)
-
-                    VStack(alignment: .leading, spacing: 8) {
-                        Text(WellnessAgeL10n.text(localizationManager, key: "wellness_stress_label", ageBand: ageBand))
-                            .font(.subheadline.weight(.semibold))
-                        Slider(value: $stressLevel, in: 1...5, step: 1)
-                            .tint(Color(hex: "8B5CF6"))
-                        HStack {
-                            Text(localizationManager.localized("wellness_stress_low"))
-                            Spacer()
-                            Text(localizationManager.localized("wellness_stress_high"))
-                        }
-                        .font(.caption2)
-                        .foregroundColor(.white.opacity(0.75))
-                    }
-                    .padding(12)
-                    .stormGlassCard(cornerRadius: CornerRadius.medium)
-
-                    Button {
-                        saveCheckin()
-                    } label: {
-                        Text(WellnessAgeL10n.text(localizationManager, key: "wellness_checkin_save", ageBand: ageBand))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                    }
-                    .buttonStyle(.borderedProminent)
-                    .tint(Color(hex: "8B5CF6"))
 
                     if saved {
+                        if streakDays > 0 {
+                            Text(String(
+                                format: localizationManager.localized("wellness_checkin_quick_streak"),
+                                streakDays
+                            ))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(Color(hex: "FBBF24"))
+                        }
                         if offlineQueued {
                             Text(localizationManager.localized("wellness_checkin_offline_saved"))
                                 .font(.caption)
@@ -107,6 +102,7 @@ struct WellnessCheckinScreen: View {
         .foregroundColor(.white)
         .navigationBarHidden(true)
         .onAppear { loadDraft() }
+        .accessibilityIdentifier(isQuickEmojiOnly ? "wellness_checkin_quick" : "wellness_checkin_full")
     }
 
     private var header: some View {
@@ -115,7 +111,9 @@ struct WellnessCheckinScreen: View {
                 Image(systemName: "chevron.left")
                     .font(.body.weight(.semibold))
             }
-            Text(localizationManager.localized("nav_screen_wellness_checkin"))
+            Text(localizationManager.localized(
+                isQuickEmojiOnly ? "wellness_checkin_quick_nav" : "nav_screen_wellness_checkin"
+            ))
                 .font(.headline.bold())
             Spacer()
         }
@@ -126,6 +124,9 @@ struct WellnessCheckinScreen: View {
             ForEach(moods, id: \.id) { item in
                 Button {
                     mood = item.id
+                    if isQuickEmojiOnly {
+                        saveCheckin()
+                    }
                 } label: {
                     VStack(spacing: 4) {
                         Text(item.emoji).font(.title2)
@@ -144,8 +145,53 @@ struct WellnessCheckinScreen: View {
                     .cornerRadius(12)
                 }
                 .buttonStyle(.plain)
+                .accessibilityIdentifier("wellness_checkin_mood_\(item.id)")
             }
         }
+    }
+
+    private var sleepSlider: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(WellnessAgeL10n.text(localizationManager, key: "wellness_sleep_label", ageBand: ageBand))
+                .font(.subheadline.weight(.semibold))
+            Slider(value: $sleepHours, in: 3...12, step: 0.5)
+                .tint(Color(hex: "8B5CF6"))
+            Text(String(format: localizationManager.localized("wellness_sleep_hours"), sleepHours))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.75))
+        }
+        .padding(12)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+    }
+
+    private var stressSlider: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(WellnessAgeL10n.text(localizationManager, key: "wellness_stress_label", ageBand: ageBand))
+                .font(.subheadline.weight(.semibold))
+            Slider(value: $stressLevel, in: 1...5, step: 1)
+                .tint(Color(hex: "8B5CF6"))
+            HStack {
+                Text(localizationManager.localized("wellness_stress_low"))
+                Spacer()
+                Text(localizationManager.localized("wellness_stress_high"))
+            }
+            .font(.caption2)
+            .foregroundColor(.white.opacity(0.75))
+        }
+        .padding(12)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+    }
+
+    private var saveButton: some View {
+        Button {
+            saveCheckin()
+        } label: {
+            Text(WellnessAgeL10n.text(localizationManager, key: "wellness_checkin_save", ageBand: ageBand))
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 14)
+        }
+        .buttonStyle(.borderedProminent)
+        .tint(Color(hex: "8B5CF6"))
     }
 
     private func loadDraft() {
@@ -155,18 +201,24 @@ struct WellnessCheckinScreen: View {
             stressLevel = Double(draft.stressLevel)
             WellnessWidgetBridge.syncFromCheckin(moodId: mood, localizationManager: localizationManager)
         }
+        streakDays = WellnessSessionStore.checkinStreakDays()
     }
 
     private func saveCheckin() {
         let draft = WellnessCheckinDraft(
             mood: mood,
-            sleepHours: sleepHours,
-            stressLevel: Int(stressLevel),
+            sleepHours: isQuickEmojiOnly ? 0 : sleepHours,
+            stressLevel: isQuickEmojiOnly ? 0 : Int(stressLevel),
             savedAt: Date()
         )
         WellnessSessionStore.saveCheckin(draft)
         WellnessOfflineStore.saveCheckinDraft(draft)
         WellnessWidgetBridge.syncFromCheckin(moodId: mood, localizationManager: localizationManager)
+        streakDays = WellnessSessionStore.recordCheckinDayAndStreak()
+        _ = UnicornCareReward.grant(reason: .checkin, sourceId: "daily")
+        if streakDays >= 3 {
+            _ = UnicornCareReward.grant(reason: .checkinStreak, sourceId: "streak3")
+        }
         saved = true
         offlineQueued = false
         socialGoals = nil
@@ -175,8 +227,8 @@ struct WellnessCheckinScreen: View {
             do {
                 let response = try await WellnessAPIService.shared.postCheckin(
                     mood: mood,
-                    sleepHours: sleepHours,
-                    stressLevel: Int(stressLevel)
+                    sleepHours: isQuickEmojiOnly ? nil : sleepHours,
+                    stressLevel: isQuickEmojiOnly ? nil : Int(stressLevel)
                 )
                 if response.socialGoals?.show == true {
                     socialGoals = response.socialGoals
