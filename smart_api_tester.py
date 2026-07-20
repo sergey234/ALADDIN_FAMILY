@@ -93,9 +93,9 @@ BUILD_243_OPS = [
     ("GET", "/api/family/habit-reminders", None, None, {200, 401, 403, 404}, "p1-7/p1-8 habit+medicine+due_ping"),
     ("POST", "/api/family/habit-reminders", None, {"schedules": {}}, {200, 401, 403, 404, 422}, "p1-7 save schedules"),
     ("GET", "/api/family/list", None, None, {200, 401, 403, 404}, "p1-6 family shared list"),
-    ("POST", "/api/family/list", None, {"items": []}, {200, 401, 403, 404, 422}, "p1-6 list last-write"),
+    ("POST", "/api/family/list", None, {"items": []}, {200, 400, 401, 403, 404, 422}, "p1-6 list last-write"),
     ("GET", "/api/family/challenges", None, None, {200, 401, 403, 404}, "p2-9h challenges max 5"),
-    ("POST", "/api/family/challenges", None, {"challenges": []}, {200, 401, 403, 404, 422}, "p2-9h set challenges"),
+    ("POST", "/api/family/challenges", None, {"challenges": []}, {200, 400, 401, 403, 404, 422}, "p2-9h set challenges"),
     # Companion Guide — live OpenAPI has POST /api/ai/companion/chat; guide_mode optional body field
     ("POST", "/api/ai/companion/chat", None, {
         "message": "smart_api_tester build243",

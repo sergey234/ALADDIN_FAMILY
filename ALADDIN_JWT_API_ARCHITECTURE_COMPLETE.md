@@ -26,7 +26,7 @@
 - iOS **build 243** на `master`: Unicorn P1.7–P2 + Wellness Guide + CI fixes.
 - Новые/расширенные REST пути и live-проба `https://aladdin-ai.ru` — **§6.10** (ниже / в конце файла).
 - Тестер: `smart_api_tester.py --build243-only` (реальные HTTP); `--all` включает wellness + build243.
-- **Важно:** три family-роута (`habit-reminders`, `list`, `challenges`) есть в **git** iOS-репо (`app/routers/family.py`), но на **проде OpenAPI 548 paths (2026-07-20) их ещё нет** → live **404** до деплоя VPS. Telegram `link-code` и Antifake `feedback` на проде **живые**.
+- **Важно:** три family-роута (`habit-reminders`, `list`, `challenges`) есть в **git** iOS-репо (`app/routers/family.py`), но после деплоя VPS **2026-07-21** пути LIVE (OpenAPI + GET 200). Ранее (2026-07-20) были 404. Telegram `link-code` и Antifake `feedback` на проде **живые**.
 
 ---
 
@@ -719,9 +719,9 @@ Prod smoke: `docs/server/test_antifake_prod_smoke.py` (входит в `test_sec
 
 | Method | Path | iOS | Backend (git) | LIVE prod 2026-07-20 |
 |--------|------|-----|---------------|----------------------|
-| GET/POST | `/api/family/habit-reminders` | `FamilyHabitRemindersService` / `APIService.get|setFamilyHabitReminders` · `AppConfig.Endpoint.familyHabitReminders` | `app/routers/family.py` + `family_habit_reminders_store` (`medicine`, `ping_until_done`) | ❌ **404** — нет в OpenAPI |
-| GET/POST | `/api/family/list` | `FamilyListScreen` / `get|setFamilySharedList` · `familySharedList` | `family.py` + `family_list_store` | ❌ **404** — нет в OpenAPI |
-| GET/POST | `/api/family/challenges` | `FamilyChallengesService` · `familyChallenges` · **max 5** | `family.py` + `family_challenges_store` `MAX_CHALLENGES=5` | ❌ **404** — нет в OpenAPI |
+| GET/POST | `/api/family/habit-reminders` | `FamilyHabitRemindersService` / `APIService.get|setFamilyHabitReminders` · `AppConfig.Endpoint.familyHabitReminders` | `app/routers/family.py` + `family_habit_reminders_store` (`medicine`, `ping_until_done`) | ✅ **200** LIVE (deployed 2026-07-21; OpenAPI get/post) |
+| GET/POST | `/api/family/list` | `FamilyListScreen` / `get|setFamilySharedList` · `familySharedList` | `family.py` + `family_list_store` | ✅ **200** LIVE (POST без семьи → 400 no_family) |
+| GET/POST | `/api/family/challenges` | `FamilyChallengesService` · `familyChallenges` · **max 5** | `family.py` + `family_challenges_store` `MAX_CHALLENGES=5` | ✅ **200** LIVE (POST без семьи → 400 no_family) |
 | POST | `/api/ai/companion/chat` | `CompanionAPIService.sendChat` + body `guide_mode` | `security/api/routers/ai_companion_router.py` + `wellness_guide_role.py` | ⚠️ в OpenAPI есть; live: **504** или **404** `Endpoint unavailable without explicit real backend flow` (gateway/edge) — нестабильно для короткого smoke |
 | POST | `/api/telegram/link-code` | `TelegramLinkScreen` → `createTelegramLinkCode` | `security/api/routers/telegram_ai_bot_router.py` | ✅ **200** (код + bot_username) |
 | POST | `/api/antifake/feedback` | `antifakeVerdictFeedback` · `AntifakeVerdictCard` | `app/routers/antifake.py` `@router.post("/feedback")` | ✅ маршрут жив; без Premium → **403** `premium_required` (ожидаемо) |
