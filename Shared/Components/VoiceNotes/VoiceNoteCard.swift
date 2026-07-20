@@ -5,6 +5,8 @@ struct VoiceNoteCard: View {
     @ObservedObject var playback: VoiceNotePlaybackController
     var onRegenerateSummary: (() -> Void)?
     var onSendToAI: ((String) -> Void)?
+    var onStructure: ((String) -> Void)?
+    var isStructuring: Bool = false
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var waveformSamples: [CGFloat]?
 
@@ -89,6 +91,22 @@ struct VoiceNoteCard: View {
                     .buttonStyle(.borderedProminent)
                     .controlSize(.small)
                     .tint(.blue)
+                }
+
+                if let onStructure, !exportText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                    Button {
+                        onStructure(exportText)
+                    } label: {
+                        Label(
+                            localizationManager.localized("voice_structure_button"),
+                            systemImage: isStructuring ? "hourglass" : "list.bullet.rectangle"
+                        )
+                        .font(.caption.weight(.semibold))
+                    }
+                    .buttonStyle(.bordered)
+                    .controlSize(.small)
+                    .disabled(isStructuring)
+                    .accessibilityIdentifier("voice_structure_button")
                 }
             }
 

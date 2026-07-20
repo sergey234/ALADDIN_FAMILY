@@ -103,11 +103,9 @@ struct ImplementationPlanWorkbenchCard: View {
                             Text("\(index).  \(line.context)")
                                 .font(.caption.weight(.semibold))
                                 .foregroundColor(.white.opacity(struck ? 0.45 : 0.78))
-                                .strikethrough(struck)
                             Text(line.title)
                                 .font(.body.weight(.medium))
                                 .foregroundColor(.white)
-                                .strikethrough(struck)
                                 .opacity(struck ? 0.5 : 1)
                                 .fixedSize(horizontal: false, vertical: true)
                         }

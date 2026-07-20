@@ -90,6 +90,7 @@ try:
     from security.services.ai_platform.companion_emotions import emotion_for_companion
     from security.services.ai_platform.companion_ethics import (
         companion_crisis_response,
+        companion_crisis_response_for_hero,
         evaluate_companion_ethics,
         ethics_hint_for_prompt,
     )
@@ -747,6 +748,11 @@ class CompanionChatRequest(BaseModel):
         description="hero-x-67 teen: normal|less",
         pattern="^(normal|less)$",
     )
+    guide_mode: Optional[str] = Field(
+        None,
+        description="psych A: presence|deep_explore|structured_view|blind_spots|single_question",
+        max_length=32,
+    )
 
 
 class CompanionStreamRequest(BaseModel):
@@ -766,6 +772,11 @@ class CompanionStreamRequest(BaseModel):
     wellness_pillar: Optional[str] = Field(
         None,
         description="Wellness primary_pillar: cognitive|behavioral|humanistic|jung",
+        max_length=32,
+    )
+    guide_mode: Optional[str] = Field(
+        None,
+        description="psych A: presence|deep_explore|structured_view|blind_spots|single_question",
         max_length=32,
     )
 
@@ -1469,7 +1480,7 @@ async def companion_chat(
         )
         store.append_thread_message(user_id, thread_id, "user", safe_message, body.character_id)
         crisis_loc = (body.response_language or "ru")[:2]
-        crisis_text = companion_crisis_response(crisis_loc)
+        crisis_text = companion_crisis_response_for_hero(body.character_id, crisis_loc)
         store.append_thread_message(user_id, thread_id, "assistant", crisis_text, body.character_id)
         return CompanionChatResponse(
             response=crisis_text,
@@ -1551,7 +1562,7 @@ async def companion_chat(
                 if prep.loop_phase == "crisis_l3" or (
                     prep.escalation and prep.escalation.level == "L3"
                 ):
-                    crisis_text = companion_crisis_response(loc)
+                    crisis_text = companion_crisis_response_for_hero(body.character_id, loc)
                     store.append_thread_message(
                         user_id, thread_id, "assistant", crisis_text, body.character_id
                     )
@@ -1692,6 +1703,7 @@ async def companion_chat(
 
     psych_prefix = ""
     pattern_prefix = ""
+    guide_prefix = ""
     try:
         esc_level = getattr(cintent, "escalation", "L0")
         if not ethics.crisis and esc_level in ("L0", "L1"):
@@ -1704,6 +1716,36 @@ async def companion_chat(
                 esc_level,
                 locale=chat_loc,
             )
+            try:
+                from security.services.ai_platform.feature_flags import (
+                    FEATURE_WELLNESS_GUIDE_MODES,
+                )
+
+                if FEATURE_WELLNESS_GUIDE_MODES:
+                    from security.services.ai_platform.wellness_guide_role import (
+                        build_guide_role_block,
+                    )
+
+                    guide_mode_raw = getattr(body, "guide_mode", None)
+                    guide_prefix = build_guide_role_block(
+                        locale=chat_loc,
+                        age_band=ctx["age_band"],
+                        guide_mode=guide_mode_raw,
+                        escalation=esc_level,
+                    )
+                    from security.services.ai_platform.wellness_guide_role import (
+                        merge_guide_over_psych,
+                    )
+
+                    guide_prefix, psych_prefix = merge_guide_over_psych(
+                        guide_prefix=guide_prefix,
+                        psych_prefix=psych_prefix,
+                        guide_mode=guide_mode_raw,
+                        age_band=ctx["age_band"],
+                        locale=chat_loc,
+                    )
+            except Exception:
+                guide_prefix = ""
             if esc_level == "L0":
                 from security.services.ai_platform.companion_pattern_reflect import (
                     build_pattern_reflect_hint,
@@ -1723,6 +1765,7 @@ async def companion_chat(
     except Exception:
         psych_prefix = ""
         pattern_prefix = ""
+        guide_prefix = ""
 
     try:
         from security.services.ai_platform.companion_prompt_assembler import (
@@ -1736,6 +1779,7 @@ async def companion_chat(
         layers = [
             PromptLayer("persona", persona_block, priority=10, droppable=False),
             PromptLayer("wellness", wellness_prefix, priority=20, droppable=False),
+            PromptLayer("guide", guide_prefix, priority=25, droppable=True),
             PromptLayer("psych", psych_prefix, priority=30, droppable=True),
             PromptLayer("pattern", pattern_prefix, priority=35, droppable=True),
             PromptLayer("wisdom", wisdom_prefix, priority=40, droppable=True),
@@ -1755,6 +1799,7 @@ async def companion_chat(
         prefixed = (
             _build_companion_system_prefix(body.character_id, profile, ctx["age_band"])
             + wellness_prefix
+            + guide_prefix
             + psych_prefix
             + pattern_prefix
             + wisdom_prefix

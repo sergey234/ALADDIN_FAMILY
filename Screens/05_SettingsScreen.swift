@@ -80,14 +80,8 @@ struct SettingsScreen: View {
             subtitle: viewModel.localizedStrings.settingsSubtitle,
             showBackButton: true,
             onBack: {
-                // Всегда на главную через NavigationManager (не dismiss NavigationLink — иначе MainScreen.task → онбординг).
-                if navigationManager.currentScreen == .settings {
-                    navigationManager.switchToMainScreen()
-                } else if navigationManager.canGoBack {
-                    navigationManager.goBack(reason: "settings_back")
-                } else {
-                    navigationManager.switchToMainScreen()
-                }
+                // Стек: Main → Simple → Settings → Назад = Simple (не форсировать Main).
+                navigationManager.goBackToPreviousScreen(reason: "settings_back")
             }
         )
         .accessibilityElement(children: .combine)
@@ -486,6 +480,17 @@ struct SettingsScreen: View {
 
                 Divider()
 
+                appNavigationRow(
+                    icon: "sparkles",
+                    title: localizationManager.localized("support_ask_assistant"),
+                    subtitle: localizationManager.localized("support_ask_assistant_subtitle")
+                ) {
+                    openSupportAssistantURL()
+                }
+                .accessibilityIdentifier("settings_ask_assistant_row")
+
+                Divider()
+
                 // Политика конфиденциальности
                 settingsButton(
                     "doc.text",
@@ -681,9 +686,22 @@ struct SettingsScreen: View {
                 .environmentObject(localizationManager)
                 .aladdinSheetPresentation()
         }
+        .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToVoiceDayRecap"))) { _ in
+            showVoiceNotesScreen = true
+        }
+        .onAppear {
+            if UserDefaults.standard.bool(forKey: VoiceDayRecapService.pendingOpenKey) {
+                showVoiceNotesScreen = true
+            }
+        }
     }
 
     // MARK: - Helper Functions
+
+    private func openSupportAssistantURL() {
+        guard let url = URL(string: AppConfig.supportAssistantURL) else { return }
+        UIApplication.shared.open(url)
+    }
 
     private func percentText(_ value: Int) -> String {
         "\(value)%"

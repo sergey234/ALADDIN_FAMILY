@@ -676,7 +676,7 @@ struct ChildSafetyInstructionsModal: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.l) {
                     Text(localizationManager.localized("child_interface_safety_title"))
                         .font(.system(size: 28, weight: .bold))
@@ -812,7 +812,7 @@ struct ChildSettingsModal: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.l) {
                     Text(localizationManager.localized("child_interface_my_settings"))
                         .font(.system(size: 28, weight: .bold))
@@ -1113,7 +1113,7 @@ struct ChildEditContactsModal: View {
                     )
                     .padding()
                 } else {
-                    ScrollView {
+                    ScrollView(.vertical, showsIndicators: true) {
                         LazyVStack(spacing: Spacing.s) {
                             ForEach(familyContacts.indices, id: \.self) { index in
                                 HStack {

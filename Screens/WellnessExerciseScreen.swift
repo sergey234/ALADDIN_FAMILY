@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// p2-21 — structured exercise from Knowledge Pack.
+/// p2-21 — structured exercise from Knowledge Pack (+ p2-10a local breath_2min).
 struct WellnessExerciseScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -11,6 +11,8 @@ struct WellnessExerciseScreen: View {
     @State private var isLoading = true
     @State private var errorText: String?
     @State private var showOutcomeSheet = false
+    @State private var showBreath2Min = false
+    @State private var breathRewardNote: String?
 
     private var pillar: String {
         WellnessSessionStore.exercisePillar ?? "humanistic"
@@ -20,17 +22,32 @@ struct WellnessExerciseScreen: View {
         ZStack {
             StormMeshBackground(variant: .warm)
 
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 16) {
                     header
                     if let errorText {
                         Text(errorText).foregroundStyle(.orange)
                     }
-                    if let session {
+                    if let breathRewardNote {
+                        Text(breathRewardNote)
+                            .font(.caption)
+                            .foregroundColor(.green.opacity(0.9))
+                    }
+                    if showBreath2Min {
+                        WellnessBreath2MinView(
+                            onComplete: { finishBreath2Min() },
+                            onCancel: {
+                                showBreath2Min = false
+                                Task { await loadCatalogOnly() }
+                            }
+                        )
+                        .environmentObject(localizationManager)
+                    } else if let session {
                         exerciseFlow(session)
                     } else if isLoading {
                         ProgressView().tint(.white)
                     } else {
+                        breathEntryCard
                         catalogList
                     }
                 }
@@ -47,6 +64,30 @@ struct WellnessExerciseScreen: View {
             }
             .environmentObject(localizationManager)
         }
+    }
+
+    private var breathEntryCard: some View {
+        Button {
+            showBreath2Min = true
+        } label: {
+            HStack {
+                Image(systemName: "wind")
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(localizationManager.localized("wellness_breath_2min_title"))
+                        .font(.subheadline.bold())
+                    Text(localizationManager.localized("wellness_breath_2min_subtitle"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.85))
+                }
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+            }
+            .padding(12)
+            .stormGlassCard(cornerRadius: 12)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("wellness_breath_2min_entry")
     }
 
     private var header: some View {
@@ -145,12 +186,12 @@ struct WellnessExerciseScreen: View {
         isLoading = true
         errorText = nil
         defer { isLoading = false }
-        if let active = try? await WellnessAPIService.shared.fetchActiveExercise().active,
-           active.completed == false {
-            session = active
-            return
-        }
+
         if let pendingId = WellnessSessionStore.consumePendingExerciseId() {
+            if pendingId == WellnessBreath2Min.exerciseId {
+                showBreath2Min = true
+                return
+            }
             do {
                 let resp = try await WellnessAPIService.shared.startExercise(
                     pillar: pillar,
@@ -163,12 +204,39 @@ struct WellnessExerciseScreen: View {
                 errorText = localizationManager.localized("wellness_error_pillar")
             }
         }
+
+        if let active = try? await WellnessAPIService.shared.fetchActiveExercise().active,
+           active.completed == false {
+            session = active
+            return
+        }
+
+        await loadCatalogOnly()
+    }
+
+    private func loadCatalogOnly() async {
         do {
             let resp = try await WellnessAPIService.shared.fetchExerciseCatalog(pillar: pillar)
             catalog = resp.exercises
         } catch {
             errorText = localizationManager.localized("wellness_error_offline_pillars")
         }
+    }
+
+    private func finishBreath2Min() {
+        let result = UnicornCareReward.grant(
+            reason: .breath,
+            sourceId: WellnessBreath2Min.exerciseId
+        )
+        _ = HabitStreakStore.shared.recordDone(sourceId: "breath")
+        if result.applied {
+            breathRewardNote = localizationManager.localized("wellness_breath_2min_xp")
+            HapticFeedback.notification(.success)
+        } else {
+            breathRewardNote = localizationManager.localized("wellness_breath_2min_done")
+        }
+        showBreath2Min = false
+        navigationManager.wellnessGoBack()
     }
 
     /// fws-23 — CBT thought record step labels (4 cognitive steps + action).

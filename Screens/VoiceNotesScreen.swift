@@ -13,6 +13,13 @@ struct VoiceNotesScreen: View {
     @State private var callPostText = ""
     @State private var callOutcomeText = ""
     @State private var isCallAssistantExpanded = false
+    @State private var structureResult: VoiceNotesStructureResult?
+    @State private var isStructuring = false
+    @State private var structureErrorKey: String?
+    @State private var dayRecapResult: VoiceDayRecapResult?
+    @State private var isDayRecapping = false
+    @State private var dayRecapErrorKey: String?
+    @State private var showDayRecapHint = false
 
     var body: some View {
         NavigationView {
@@ -20,7 +27,7 @@ struct VoiceNotesScreen: View {
                 StormMeshBackground(variant: .neutral)
                     .ignoresSafeArea()
 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     LazyVStack(alignment: .leading, spacing: 12) {
                         QuickRecorderBar(viewModel: viewModel)
                             .environmentObject(localizationManager)
@@ -66,6 +73,13 @@ struct VoiceNotesScreen: View {
         }
         .onAppear {
             viewModel.markVoiceSessionStable()
+            if VoiceDayRecapService.consumePendingOpen() {
+                showDayRecapHint = true
+                if let note = viewModel.groupedNotes.flatMap(\.items).first {
+                    let text = note.summary.isEmpty ? note.transcriptPreview : note.summary
+                    runDayRecap(transcript: text)
+                }
+            }
         }
         .onDisappear {
             playback.stop()
@@ -93,6 +107,91 @@ struct VoiceNotesScreen: View {
         } message: {
             Text(localizationManager.localized("voice_notes_rename_prompt"))
         }
+        .sheet(item: $structureResult) { result in
+            VoiceNotesStructureSheet(result: result)
+                .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
+        }
+        .sheet(item: $dayRecapResult) { result in
+            VoiceDayRecapSheet(result: result)
+                .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
+        }
+        .alert(
+            localizationManager.localized("voice_structure_error_title"),
+            isPresented: Binding(
+                get: { structureErrorKey != nil },
+                set: { if !$0 { structureErrorKey = nil } }
+            )
+        ) {
+            Button(localizationManager.localized("common_ok"), role: .cancel) {
+                structureErrorKey = nil
+            }
+        } message: {
+            Text(localizationManager.localized(structureErrorKey ?? "voice_structure_error"))
+        }
+        .alert(
+            localizationManager.localized("voice_day_recap_error_title"),
+            isPresented: Binding(
+                get: { dayRecapErrorKey != nil },
+                set: { if !$0 { dayRecapErrorKey = nil } }
+            )
+        ) {
+            Button(localizationManager.localized("common_ok"), role: .cancel) {
+                dayRecapErrorKey = nil
+            }
+        } message: {
+            Text(localizationManager.localized(dayRecapErrorKey ?? "voice_day_recap_error"))
+        }
+        .overlay(alignment: .top) {
+            if showDayRecapHint {
+                Text(localizationManager.localized("voice_day_recap_hint"))
+                    .font(.caption)
+                    .padding(8)
+                    .background(.ultraThinMaterial)
+                    .cornerRadius(8)
+                    .padding(.top, 8)
+                    .onAppear {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
+                            showDayRecapHint = false
+                        }
+                    }
+            }
+        }
+    }
+
+    private func runStructure(transcript: String) {
+        guard !isStructuring else { return }
+        isStructuring = true
+        structureErrorKey = nil
+        Task { @MainActor in
+            defer { isStructuring = false }
+            do {
+                structureResult = try await VoiceNotesStructureService.structure(transcript: transcript)
+            } catch {
+                structureErrorKey = "voice_structure_error"
+            }
+        }
+    }
+
+    private func runDayRecap(transcript: String) {
+        guard !isDayRecapping else { return }
+        let cleaned = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !cleaned.isEmpty,
+              !cleaned.hasPrefix("voice_notes_") else {
+            dayRecapErrorKey = "voice_day_recap_need_transcript"
+            return
+        }
+        isDayRecapping = true
+        dayRecapErrorKey = nil
+        Task { @MainActor in
+            defer { isDayRecapping = false }
+            do {
+                dayRecapResult = try await VoiceDayRecapService.recap(transcript: cleaned)
+            } catch {
+                dayRecapErrorKey = "voice_day_recap_error"
+            }
+        }
     }
 }
 
@@ -107,6 +206,9 @@ private extension VoiceNotesScreen {
                     .foregroundColor(.secondary)
             }
             Text(localizationManager.localized("voice_notes_privacy_stt_disclaimer"))
+                .font(.caption)
+                .foregroundColor(.secondary)
+            Text(localizationManager.localized("voice_structure_privacy"))
                 .font(.caption)
                 .foregroundColor(.secondary)
             if !viewModel.isSpeechTranscriptionAvailable {
@@ -185,7 +287,11 @@ private extension VoiceNotesScreen {
                 playback.stop()
                 dismiss()
                 navigationManager.navigateTo(.aiAssistant)
-            }
+            },
+            onStructure: { text in
+                runStructure(transcript: text)
+            },
+            isStructuring: isStructuring
         )
             .environmentObject(localizationManager)
             .padding(.horizontal, 12)
@@ -197,6 +303,10 @@ private extension VoiceNotesScreen {
                 }
                 Button(localizationManager.localized("voice_notes_summarize")) {
                     viewModel.generateSummary(noteId: note.id, forceRegenerate: true)
+                }
+                Button(localizationManager.localized("voice_day_recap_button")) {
+                    let text = note.summary.isEmpty ? note.transcriptPreview : "\(note.summary)\n\(note.transcriptPreview)"
+                    runDayRecap(transcript: text)
                 }
                 Button(role: .destructive) {
                     viewModel.requestDelete(note: note)

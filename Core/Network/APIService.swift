@@ -27,6 +27,26 @@ struct HealthResponse: Codable {
 // ✅ Глобальная структура для пустых запросов
 struct EmptyRequest: Codable {}
 
+/// Ответ `POST /api/telegram/link-code` (asa-4-ios-tg-link-api).
+struct TelegramLinkCodeResponse: Codable {
+    let code: String
+    let expiresInSec: Int
+    let botUsername: String
+
+    enum CodingKeys: String, CodingKey {
+        case code
+        case expiresInSec = "expires_in_sec"
+        case botUsername = "bot_username"
+    }
+
+    init(from decoder: Decoder) throws {
+        let c = try decoder.container(keyedBy: CodingKeys.self)
+        code = try c.decode(String.self, forKey: .code)
+        expiresInSec = try c.decodeIfPresent(Int.self, forKey: .expiresInSec) ?? 600
+        botUsername = try c.decodeIfPresent(String.self, forKey: .botUsername) ?? "AladdinchatAI_bot"
+    }
+}
+
 /// Запрос на добавление участника семьи (анонимный ярлык + роль)
 struct AddMemberRequest: Codable {
     let name: String
@@ -1528,6 +1548,18 @@ class APIService: ObservableObject {
     }
     
     // MARK: - AI Assistant API
+
+    /// POST `/api/telegram/link-code` — 6-символьный код для `/link` в @AladdinchatAI_bot (JWT).
+    func createTelegramLinkCode(
+        completion: @escaping (Result<TelegramLinkCodeResponse, Error>) -> Void
+    ) {
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.telegramLinkCode,
+            body: EmptyRequest(),
+            requiresAuth: true,
+            completion: completion
+        )
+    }
 
     // Основной чат с AI (legacy — полный ответ)
     func sendMessageToAI(
@@ -4179,6 +4211,10 @@ class APIService: ObservableObject {
             request.cachePolicy = .reloadIgnoringLocalCacheData
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            let preferred = Locale.preferredLanguages.first?.lowercased() ?? "ru"
+            let lang = preferred.hasPrefix("en") ? "en" : "ru"
+            request.setValue(lang, forHTTPHeaderField: "Accept-Language")
+            request.setValue(lang, forHTTPHeaderField: "X-Aladdin-Lang")
 
             var body = Data()
             body.append("--\(boundary)\r\n".data(using: .utf8)!)
@@ -4313,6 +4349,28 @@ class APIService: ObservableObject {
         )
     }
 
+    /// POST `/api/antifake/feedback` — T5-02 false-positive feedback.
+    func antifakeVerdictFeedback(
+        jobId: String,
+        note: String? = nil,
+        completion: @escaping (Result<AntifakeFeedbackResponse, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let jobId: String
+            let note: String?
+
+            enum CodingKeys: String, CodingKey {
+                case jobId = "job_id"
+                case note
+            }
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.antifakeFeedback,
+            body: Body(jobId: jobId, note: note),
+            completion: completion
+        )
+    }
+
     /// POST `/api/antifake/whitelist` — add trusted numbers (I-05).
     func antifakeAddWhitelist(
         phones: [String],
@@ -4436,6 +4494,63 @@ class APIService: ObservableObject {
         networkManager.post(endpoint: AppConfig.Endpoint.familyHabitReminders, body: body, completion: completion)
     }
 
+    // MARK: - P1.6 Family shared list
+
+    func getFamilySharedList(
+        completion: @escaping (Result<[FamilyListItem], Error>) -> Void
+    ) {
+        networkManager.get(endpoint: AppConfig.Endpoint.familySharedList) { (result: Result<FamilySharedListAPIResponse, Error>) in
+            switch result {
+            case .success(let resp):
+                completion(.success(resp.list?.items ?? []))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    func setFamilySharedList(
+        items: [FamilyListItem],
+        completion: @escaping (Result<[FamilyListItem], Error>) -> Void
+    ) {
+        struct Body: Encodable {
+            let items: [FamilyListItem]
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.familySharedList,
+            body: Body(items: items)
+        ) { (result: Result<FamilySharedListAPIResponse, Error>) in
+            switch result {
+            case .success(let resp):
+                completion(.success(resp.list?.items ?? items))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    // MARK: - P2.9h Family challenges
+
+    func getFamilyChallenges(
+        completion: @escaping (Result<FamilyChallengesAPIResponse, Error>) -> Void
+    ) {
+        networkManager.get(endpoint: AppConfig.Endpoint.familyChallenges, completion: completion)
+    }
+
+    func setFamilyChallenges(
+        challenges: [FamilyChallenge],
+        completion: @escaping (Result<FamilyChallengesAPIResponse, Error>) -> Void
+    ) {
+        struct Body: Encodable {
+            let challenges: [FamilyChallenge]
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.familyChallenges,
+            body: Body(challenges: challenges),
+            completion: completion
+        )
+    }
+
     func getFamilyIncidents(
         since: String? = nil,
         completion: @escaping (Result<FamilyIncidentFeedResponse, Error>) -> Void
@@ -4497,6 +4612,10 @@ class APIService: ObservableObject {
             request.httpMethod = "GET"
             request.cachePolicy = .reloadIgnoringLocalCacheData
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
+            let preferred = Locale.preferredLanguages.first?.lowercased() ?? "ru"
+            let lang = preferred.hasPrefix("en") ? "en" : "ru"
+            request.setValue(lang, forHTTPHeaderField: "Accept-Language")
+            request.setValue(lang, forHTTPHeaderField: "X-Aladdin-Lang")
 
             URLSession.shared.dataTask(with: request) { data, response, error in
                 DispatchQueue.main.async {

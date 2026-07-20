@@ -2539,3 +2539,265 @@ async def family_chat_send_compat(
     _ = current_user.get("id")
     return FamilyCompatBoolResponse(success=True, data=True, message="Message sent")
 
+
+# MARK: - fws-01 Family safe-word (panic phrase, ≠ recovery_code, ≠ mnemo)
+
+
+class FamilySafeWordSetRequest(BaseModel):
+    phrase: str
+
+
+class FamilySafeWordVerifyRequest(BaseModel):
+    phrase: str
+    context: Optional[str] = "antifake"
+
+
+@router.get("/safe-word")
+async def family_safe_word_status(
+    current_user: dict = Depends(get_current_user),
+):
+    """fws-01: configured flag only — never returns hash/salt/plaintext."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def load_sync():
+        from app.services.family_safe_word_store import get_status_for_user
+
+        return get_status_for_user(user_id)
+
+    return await asyncio.to_thread(load_sync)
+
+
+@router.post("/safe-word")
+@limiter.limit("10/minute")
+async def family_safe_word_set(
+    request: Request,
+    body: FamilySafeWordSetRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """fws-01: parent/elderly sets phrase; server stores hash+salt only."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def set_sync():
+        from app.services.family_safe_word_store import set_safe_word
+
+        try:
+            return set_safe_word(user_id=user_id, phrase=body.phrase)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except PermissionError as exc:
+            code = str(exc)
+            if code == "parent_only":
+                raise HTTPException(status_code=403, detail="parent_only") from exc
+            raise HTTPException(status_code=400, detail=code) from exc
+
+    return await asyncio.to_thread(set_sync)
+
+
+@router.post("/safe-word/verify")
+@limiter.limit("30/minute")
+async def family_safe_word_verify(
+    request: Request,
+    body: FamilySafeWordVerifyRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """fws-01: any family member verifies; mismatch → parent APNs (cooldown)."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def verify_sync():
+        from app.services.family_safe_word_store import verify_for_user
+
+        return verify_for_user(
+            user_id=user_id,
+            phrase=body.phrase,
+            context=body.context or "antifake",
+        )
+
+    return await asyncio.to_thread(verify_sync)
+
+
+# MARK: - fws-02 Family habit reminders (parent templates → member local push)
+
+
+class FamilyHabitRemindersConfigBody(BaseModel):
+    presets: Dict[str, Any]
+    member_ids: List[str] = []
+
+
+class FamilySharedListBody(BaseModel):
+    items: List[Dict[str, Any]] = []
+
+
+@router.get("/habit-reminders")
+async def family_habit_reminders_get(
+    current_user: dict = Depends(get_current_user),
+):
+    """fws-02: all members read family reminder templates."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def load_sync():
+        from app.services.family_habit_reminders_store import get_config_for_user
+
+        return get_config_for_user(user_id)
+
+    return await asyncio.to_thread(load_sync)
+
+
+@router.post("/habit-reminders")
+@limiter.limit("20/minute")
+async def family_habit_reminders_set(
+    request: Request,
+    body: FamilyHabitRemindersConfigBody,
+    current_user: dict = Depends(get_current_user),
+):
+    """fws-02: parent/elderly writes templates for the family."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def set_sync():
+        from app.services.family_habit_reminders_store import set_config_for_user
+
+        try:
+            return set_config_for_user(
+                user_id=user_id,
+                config={"presets": body.presets, "member_ids": body.member_ids},
+            )
+        except PermissionError as exc:
+            code = str(exc)
+            if code == "parent_only":
+                raise HTTPException(status_code=403, detail="parent_only") from exc
+            raise HTTPException(status_code=400, detail=code) from exc
+
+    return await asyncio.to_thread(set_sync)
+
+
+@router.get("/list")
+async def family_shared_list_get(
+    current_user: dict = Depends(get_current_user),
+):
+    """P1.6: shared family checklist (AnyList-lite)."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def load_sync():
+        from app.services.family_list_store import get_list_for_user
+
+        return get_list_for_user(user_id)
+
+    return await asyncio.to_thread(load_sync)
+
+
+@router.post("/list")
+@limiter.limit("30/minute")
+async def family_shared_list_set(
+    request: Request,
+    body: FamilySharedListBody,
+    current_user: dict = Depends(get_current_user),
+):
+    """P1.6: last-write wins replace of family checklist."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def set_sync():
+        from app.services.family_list_store import set_list_for_user
+
+        try:
+            return set_list_for_user(user_id=user_id, payload={"items": body.items})
+        except PermissionError as exc:
+            code = str(exc)
+            if code == "no_family":
+                raise HTTPException(status_code=400, detail="no_family") from exc
+            raise HTTPException(status_code=400, detail=code) from exc
+
+    return await asyncio.to_thread(set_sync)
+
+
+class FamilyChallengesBody(BaseModel):
+    challenges: List[Dict[str, Any]] = []
+
+
+@router.get("/challenges")
+async def family_challenges_get(
+    current_user: dict = Depends(get_current_user),
+):
+    """P2.9h: family custom challenges (max 5)."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def load_sync():
+        from app.services.family_challenges_store import get_challenges_for_user
+
+        return get_challenges_for_user(user_id)
+
+    return await asyncio.to_thread(load_sync)
+
+
+@router.post("/challenges")
+@limiter.limit("30/minute")
+async def family_challenges_set(
+    request: Request,
+    body: FamilyChallengesBody,
+    current_user: dict = Depends(get_current_user),
+):
+    """P2.9h: last-write wins replace of family challenges (max 5)."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def set_sync():
+        from app.services.family_challenges_store import set_challenges_for_user
+
+        try:
+            return set_challenges_for_user(
+                user_id=user_id,
+                payload={"challenges": body.challenges},
+            )
+        except PermissionError as exc:
+            code = str(exc)
+            if code == "no_family":
+                raise HTTPException(status_code=400, detail="no_family") from exc
+            raise HTTPException(status_code=400, detail=code) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return await asyncio.to_thread(set_sync)
+
+
+@router.get("/incidents")
+async def family_incidents_feed(
+    since: Optional[str] = Query(None, description="ISO8601 cursor"),
+    limit: int = Query(40, ge=1, le=100),
+    current_user: dict = Depends(get_current_user),
+):
+    """fws-09 — parent incident feed: antifake + crisis + bedtime (no chat text)."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def load_sync():
+        from app.services.family_incidents_store import get_incidents_feed
+
+        return get_incidents_feed(user_id, since=since, limit=limit)
+
+    return await asyncio.to_thread(load_sync)
+
+
+# MARK: - fws-10 Elderly fall alert (optional HealthKit → family push)
+
+
+class ElderlyFallAlertBody(BaseModel):
+    source: str = Field(default="healthkit_fall", max_length=32)
+
+
+@router.post("/elderly/fall-alert")
+@limiter.limit("6/hour")
+async def elderly_fall_alert(
+    request: Request,
+    body: ElderlyFallAlertBody,
+    current_user: dict = Depends(get_current_user),
+):
+    """fws-10 — senior device reports fall signal; notify family (no medical payload)."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def notify_sync():
+        from app.services.elderly_fall_family_notify import maybe_notify_family_elderly_fall
+
+        sent = maybe_notify_family_elderly_fall(
+            member_user_id=user_id,
+            source=body.source or "healthkit_fall",
+        )
+        return {"ok": True, "parents_notified": sent}
+
+    return await asyncio.to_thread(notify_sync)
+

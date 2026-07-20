@@ -42,6 +42,7 @@ final class WindDownScheduler {
             content.userInfo = [
                 "type": Self.notificationType,
                 "minutes_before": minutes,
+                "deepLink": minutes == 30 ? "aladdin://voice/day-recap" : "aladdin://wellness/wind-down",
             ]
 
             let triggerComponents = Calendar.current.dateComponents(

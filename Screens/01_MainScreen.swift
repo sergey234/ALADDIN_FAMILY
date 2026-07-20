@@ -467,9 +467,9 @@ struct MainScreen: View {
     // MARK: - Home Content
     
     private var homeContent: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: 20) {
-                        // Карточки функций - сетка 2x2
+                        // Карточки функций - сетка 2 колонки
                         LazyVGrid(columns: [
                             GridItem(.flexible()),
                             GridItem(.flexible())
@@ -534,29 +534,6 @@ struct MainScreen: View {
                             .accessibilityIdentifier("main_nav_tariffs")
                             .accessibilityLabel("Тарифы - Выбор плана")
                             .accessibilityHint("Нажмите для открытия экрана тарифов")
-                            
-                            // fws-h06 — 1-tap talk with last hero.
-                            Button(action: {
-                                navigationManager.navigateToCompanionTalkNow()
-                            }) {
-                                VStack(spacing: 8) {
-                                    Text("💬")
-                                        .font(.system(size: 20))
-                                    Text(localizationManager.localized("wellness_talk_now_title"))
-                                        .font(.system(size: 12, weight: .semibold))
-                                        .foregroundColor(.white)
-                                        .multilineTextAlignment(.center)
-                                    Text(localizationManager.localized("wellness_talk_now_subtitle"))
-                                        .font(.system(size: 10))
-                                        .foregroundColor(.white.opacity(0.8))
-                                        .multilineTextAlignment(.center)
-                                }
-                                .frame(maxWidth: .infinity)
-                                .frame(height: 80)
-                                .stormGlassCard(cornerRadius: 10)
-                            }
-                            .buttonStyle(PlainButtonStyle())
-                            .accessibilityIdentifier("main_nav_talk_now")
 
                             // P2-14 — Senior 60+: тёплый вход в Companion (Аладдин, calm).
                             Button(action: {
@@ -625,16 +602,38 @@ struct MainScreen: View {
                                 .stormGlassCard(cornerRadius: 10)
                             }
                             .buttonStyle(.plain)
+                            .accessibilityIdentifier("main_nav_settings")
+
+                            // Простая версия — стандартная плитка справа от Настроек.
+                            Button(action: {
+                                navigationManager.navigateToSimpleHome()
+                            }) {
+                                VStack(spacing: 8) {
+                                    Text("🏠")
+                                        .font(.system(size: 20))
+                                    Text(localizationManager.localized("main_simple_version_title"))
+                                        .font(.system(size: 12, weight: .semibold))
+                                        .foregroundColor(.white)
+                                        .multilineTextAlignment(.center)
+                                    Text(localizationManager.localized("main_simple_version_subtitle"))
+                                        .font(.system(size: 10))
+                                        .foregroundColor(.white.opacity(0.8))
+                                        .multilineTextAlignment(.center)
+                                }
+                                .frame(maxWidth: .infinity)
+                                .frame(height: 80)
+                                .stormGlassCard(cornerRadius: 10)
+                            }
+                            .buttonStyle(PlainButtonStyle())
+                            .accessibilityIdentifier("main_nav_simple_home")
+                            .accessibilityLabel(localizationManager.localized("main_simple_version_title"))
+                            .accessibilityHint(localizationManager.localized("main_simple_version_subtitle"))
                         }
                         .padding(.horizontal, 20)
 
                         AntifakeTransferCheckCTA()
                             .environmentObject(localizationManager)
                             .environmentObject(navigationManager)
-                            .padding(.horizontal, 20)
-
-                        WellnessCrisisOneTapCTA()
-                            .environmentObject(localizationManager)
                             .padding(.horizontal, 20)
 
                         // FAMILY статус - большая карточка

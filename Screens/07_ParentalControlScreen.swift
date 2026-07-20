@@ -455,16 +455,7 @@ struct ParentalControlScreen: View {
             showProfileButton: false,
             showListButton: false,
             onBack: {
-                // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
-                // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
-                dismiss()
-                
-                // Дополнительно синхронизируем NavigationManager для корректной работы стека
-                DispatchQueue.main.async {
-                    if navigationManager.canGoBack {
-                        navigationManager.goBack()
-                    }
-                }
+                navigationManager.goBackToPreviousScreen(reason: "ParentalControl.onBack")
             }
         )
         .accessibilityElement(children: .combine)
@@ -616,6 +607,23 @@ struct ParentalControlScreen: View {
                 .frame(maxWidth: .infinity, alignment: .leading)
             } else {
                 LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Spacing.s), count: 2), spacing: Spacing.s) {
+                    if FamilyFocusSessionFeature.isEnabled {
+                        ParentalControlCard(
+                            icon: "🎯",
+                            title: localizationManager.localized("focus_session_title"),
+                            statusBadge: localizationManager.localized("focus_session_badge"),
+                            statusText: localizationManager.localized("focus_session_card_status"),
+                            metric: localizationManager.localized("focus_session_card_metric"),
+                            cardColor: Color(hex: "8B5CF6").opacity(0.2),
+                            borderColor: Color(hex: "8B5CF6").opacity(0.45),
+                            badgeColor: .secondaryGold,
+                            isEnabled: .constant(true),
+                            action: {
+                                navigationManager.navigateTo(.focusSession)
+                            }
+                        )
+                        .accessibilityIdentifier("parental_focus_session_card")
+                    }
                     ParentalControlCard(
                         icon: "🔒",
                         title: localizationManager.localized("parental_content_block"),

@@ -136,8 +136,8 @@ struct PlanItem275CatalogWorkbenchCard: View {
                     .foregroundColor(.secondary)
                 Text(line.planTitle)
                     .font(.subheadline)
-                    .strikethrough(struck, color: .secondary)
-                    .foregroundColor(.textPrimary)
+                    .foregroundColor(struck ? .secondary : .textPrimary)
+                    .opacity(struck ? 0.55 : 1)
             }
         }
     }

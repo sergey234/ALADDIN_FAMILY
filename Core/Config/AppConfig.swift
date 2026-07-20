@@ -139,11 +139,11 @@ struct AppConfig {
     // MARK: - App Info
     
     static let appVersion = "1.0.0"
-    static let buildNumber = "242"
+    static let buildNumber = "243"
     /// Маркер совместимости с контрактом API (см. `docs/P0_API_CONTRACTS.md`). Поднимать при ломающих изменениях сервера.
     static let apiContractVersion = "2026.05.10"
     /// Минимальный CFBundleVersion клиента, ожидаемый для текущего прод-контракта (ручной bump при breaking changes).
-    static let minimumClientBuildForApiContract = "242"
+    static let minimumClientBuildForApiContract = "243"
     static let bundleIdentifier = "family.aladdin.ios"
     static let appName = "ALADDIN"
     static let appDisplayName = "ALADDIN - AI Защита Семьи"
@@ -204,6 +204,8 @@ struct AppConfig {
         static let familySafeWord = "/api/family/safe-word"
         static let familySafeWordVerify = "/api/family/safe-word/verify"
         static let familyHabitReminders = "/api/family/habit-reminders"
+        static let familySharedList = "/api/family/list"
+        static let familyChallenges = "/api/family/challenges"
         static let familyIncidents = "/api/family/incidents"
 
         // Family Chat
@@ -258,6 +260,7 @@ struct AppConfig {
         static let antifakeSettings = "/api/antifake/settings"
         static let antifakeReport = "/api/antifake/report"
         static let antifakeAppeal = "/api/antifake/appeal"
+        static let antifakeFeedback = "/api/antifake/feedback"
         static let antifakeWhitelist = "/api/antifake/whitelist"
         static let antifakeFamilyPushToken = "/api/antifake/family/push-token"
         static let antifakeFamilyReports = "/api/antifake/family/reports"
@@ -335,6 +338,9 @@ struct AppConfig {
         static let aiAssistantRecommendations = "/api/ai/assistant/recommendations"
         static let aiAssistantReportIncident = "/api/ai/assistant/report_incident"
         static let aiAssistantSecurityTips = "/api/ai/assistant/security_tips"
+
+        /// Telegram AI bot — iOS «Подключить Telegram» (JWT → 6-char `/link` code).
+        static let telegramLinkCode = "/api/telegram/link-code"
 
         // AI Family Companion (Aladdin / Unicorn) — see docs/GROK_COMPANION_ARCHITECTURE_FOR_ALADDIN.md
         static let aiCompanionCharacters = "/api/ai/companion/characters"
@@ -937,6 +943,9 @@ extension AppConfig {
         
         /// URL для Telegram бота поддержки (@AladdinchatAI_bot — см. SUPPORT_TELEGRAM_BOT_USERNAME).
         static let supportTelegramURL = "https://t.me/AladdinchatAI_bot"
+
+        /// Deep-link: сразу открыть ИИ-помощника поддержки в том же боте (`/start help_ai`).
+        static let supportAssistantURL = "https://t.me/AladdinchatAI_bot?start=help_ai"
         
         /// ✅ ИЗМЕНЕНИЕ: Email заменён на AI ассистента
         /// Вместо email пользователи могут отправлять пожелания и рекомендации через AI ассистента в приложении
@@ -952,6 +961,11 @@ extension AppConfig {
     static var supportTelegramURL: String {
         return Support.supportTelegramURL
     }
+
+    /// URL ИИ-помощника поддержки (deep-link в бота)
+    static var supportAssistantURL: String {
+        return Support.supportAssistantURL
+    }
     
     /// URL сайта для подписки
     static let subscriptionWebsiteURL = "https://aladdin-ai.ru"
@@ -961,6 +975,21 @@ extension AppConfig {
     
     /// URL FAQ поддержки
     static let supportFAQURL = "https://aladdin-ai.ru/help-faq.html"
+
+    /// Antifake на сайте (текст · голос · видео без установки app)
+    static let antifakeWebURL = "https://aladdin-ai.ru/antifake.html"
+
+    /// Ограничения iOS и золотая середина app + сайт
+    static let iosLimitsHelpURL = "https://aladdin-ai.ru/help/ios-limits.html"
+
+    /// Пошаговое включение Call Filter
+    static let callFilterHelpURL = "https://aladdin-ai.ru/help/call-filter.html"
+
+    /// Боты — пересылка на проверку
+    static let botsHelpURL = "https://aladdin-ai.ru/help/bots.html"
+
+    /// Отчёты об утечках (Aura-style)
+    static let antifakeReportsURL = "https://aladdin-ai.ru/antifake/reports.html"
     
     /// ✅ DEPRECATED: Email больше не используется
     /// Используйте AI ассистента вместо email для отправки пожеланий и рекомендаций

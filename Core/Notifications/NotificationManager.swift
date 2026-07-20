@@ -541,6 +541,11 @@ class NotificationManager: NSObject, ObservableObject {
             intentIdentifiers: [],
             options: []
         )
+
+        let habitDoneTitle = LocalizationManager.shared.localized("family_habit_done")
+        let familyHabitCategory = FamilyHabitRemindersScheduler.makeNotificationCategory(
+            doneTitle: habitDoneTitle
+        )
         
         notificationCenter.setNotificationCategories([
             generalCategory,
@@ -549,7 +554,8 @@ class NotificationManager: NSObject, ObservableObject {
             networkProtectionCategory,
             aiCategory,
             subscriptionCategory,
-            mnemoCategory
+            mnemoCategory,
+            familyHabitCategory
         ])
     }
     
@@ -999,6 +1005,8 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                 self.handleViewNetworkProtectionAction(userInfo: userInfo)
             case "reply":
                 self.handleReplyAction(userInfo: userInfo)
+            case FamilyHabitRemindersScheduler.doneActionIdentifier:
+                self.handleFamilyHabitDoneAction(userInfo: userInfo)
             default:
                 self.handleDefaultAction(userInfo: userInfo)
             }
@@ -1026,6 +1034,18 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         // TODO: Навигация к AI помощнику
         print("🤖 Reply action triggered")
     }
+
+    private func handleFamilyHabitDoneAction(userInfo: [AnyHashable: Any]) {
+        let preset = (userInfo["preset"] as? String)?
+            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+        guard !preset.isEmpty else { return }
+        Task {
+            let result = await FamilyHabitRemindersScheduler.shared.handleDone(presetRaw: preset)
+            if result.applied {
+                HapticFeedback.notification(.success)
+            }
+        }
+    }
     
     private func handleDefaultAction(userInfo: [AnyHashable: Any]) {
         // Специальная маршрутизация для семейного чата, чтобы сохранить поведение
@@ -1050,6 +1070,16 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         }
 
         if let type = userInfo["type"] as? String, type == WindDownScheduler.notificationType {
+            if let deepLink = userInfo["deepLink"] as? String,
+               let url = URL(string: deepLink),
+               CompanionDeepLinkRouter.isVoiceDayRecapDeepLink(url) {
+                VoiceDayRecapService.markPendingOpen()
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("NavigateToVoiceDayRecap"),
+                    object: nil
+                )
+                return
+            }
             NotificationCenter.default.post(
                 name: NSNotification.Name("NavigateToWellnessWindDown"),
                 object: nil,
@@ -1067,18 +1097,36 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                 )
                 return
             }
-            if CompanionDeepLinkRouter.isCompanionTalkDeepLink(url) {
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("NavigateToCompanionTalkNow"),
-                    object: nil
-                )
-                return
-            }
-            if CompanionDeepLinkRouter.isWellnessCheckinDeepLink(url) {
-                NotificationCenter.default.post(
-                    name: NSNotification.Name("NavigateToWellnessCheckin"),
-                    object: nil
-                )
+            // inf-deeplink — Unicorn habit / check-in / recap / focus
+            if let dest = UnicornDeepLinkRouter.parse(url) {
+                switch dest {
+                case .companionTalk:
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("NavigateToCompanionTalkNow"),
+                        object: nil
+                    )
+                case .wellnessCheckin:
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("NavigateToWellnessCheckin"),
+                        object: nil
+                    )
+                case .voiceDayRecap:
+                    VoiceDayRecapService.markPendingOpen()
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("NavigateToVoiceDayRecap"),
+                        object: nil
+                    )
+                case .focusSession:
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("NavigateToFocusSession"),
+                        object: nil
+                    )
+                case .familyHabits, .habitDone:
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("NavigateToFamily"),
+                        object: nil
+                    )
+                }
                 return
             }
         }
@@ -1099,6 +1147,7 @@ enum NotificationCategory: String, CaseIterable {
     case subscription = "subscription"
     case trial = "trial"
     case mnemo = "mnemo"
+    case familyHabit = "family_habit"
 }
 
 struct NotificationSettings: Codable, Equatable {

@@ -28,7 +28,7 @@ struct CompanionMineTabView: View {
     }
 
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(alignment: .leading, spacing: 20) {
                 trustCard
 

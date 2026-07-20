@@ -415,6 +415,15 @@ struct ALADDINApp: App {
                     LaunchDiagnostics.finishStartupTracePhase()
                 }
                 .onOpenURL { url in
+                    if AntifakeDeepLinkRouter.isUniversalAntifakeLink(url) {
+                        if let payload = AntifakeDeepLinkRouter.parseWebPrefill(from: url) {
+                            AntifakeSharePayloadStore.save(payload)
+                            navigationManager.navigateToAntifakeShareCheck(payload: payload)
+                            return
+                        }
+                        navigationManager.navigateTo(.antifakeHub)
+                        return
+                    }
                     if AntifakeDeepLinkRouter.isFamilyAlertDeepLink(url) {
                         navigationManager.navigateToAntifakeHub(tab: .text)
                         return
@@ -435,12 +444,7 @@ struct ALADDINApp: App {
                         return
                     }
 
-                    if CompanionDeepLinkRouter.isCompanionTalkDeepLink(url) {
-                        navigationManager.navigateToCompanionTalkNow()
-                        return
-                    }
-                    if CompanionDeepLinkRouter.isWellnessCheckinDeepLink(url) {
-                        navigationManager.navigateToWellnessCheckinFromDeepLink()
+                    if UnicornDeepLinkRouter.route(url, navigation: navigationManager) {
                         return
                     }
 
@@ -493,6 +497,20 @@ struct ALADDINApp: App {
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToWellnessCheckin"))) { _ in
                     navigationManager.navigateToWellnessCheckinFromDeepLink()
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToVoiceDayRecap"))) { _ in
+                    VoiceDayRecapService.markPendingOpen()
+                    navigationManager.navigateTo(.settings)
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToFocusSession"))) { _ in
+                    if FamilyFocusSessionFeature.isEnabled {
+                        navigationManager.navigateTo(.focusSession)
+                    } else {
+                        navigationManager.navigateTo(.family)
+                    }
+                }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToFamily"))) { _ in
+                    navigationManager.navigateTo(.family)
                 }
         }
     }
@@ -759,6 +777,14 @@ struct ALADDINApp: App {
                                 .environmentObject(localizationManager)
                                 .accessibilityIdentifier("aladdin_root_01_MainScreen")
                         )
+                    case .simpleHome:
+                        AnyView(
+                            SimpleHomeScreen()
+                                .id("simpleHome")
+                                .environmentObject(navigationManager)
+                                .environmentObject(localizationManager)
+                                .accessibilityIdentifier("aladdin_root_simple_home")
+                        )
                     case .family:
                         AnyView(
                             FamilyScreen()
@@ -952,6 +978,8 @@ struct ALADDINApp: App {
                         .id("deviceDetail")
                         .environmentObject(navigationManager)
                         .environmentObject(localizationManager))
+                    case .familyList:
+                        AnyView(FamilyListScreen().id("familyList").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .familyChat:
                         AnyView(FamilyChatScreen().id("familyChat").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .support:
@@ -1014,6 +1042,11 @@ struct ALADDINApp: App {
                     case .wellnessExercise:
                         AnyView(WellnessExerciseScreen()
                             .id("wellnessExercise")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager))
+                    case .focusSession:
+                        AnyView(FocusSessionScreen()
+                            .id("focusSession")
                             .environmentObject(navigationManager)
                             .environmentObject(localizationManager))
                     case .wellnessTimeline:
@@ -1272,6 +1305,11 @@ extension ALADDINApp {
         } else {
             print("🟢 ONBOARDING: Пройден (UserDefaults) — переходим на главный экран")
             navigationManager.navigateToRoot(.main)
+            // Simple Home Shell opt-in: только для взрослого/родителя (не child/teen/elderly).
+            if Self.shouldOpenSimpleHomeAtLaunch() {
+                navigationManager.navigateToSimpleHome()
+                print("🟢 SIMPLE_HOME: preferred — открыли SimpleHome поверх Main")
+            }
         }
 
         print("🛠️ [ALADDINApp.initializeNavigation] Текущий экран ПОСЛЕ проверки: \(navigationManager.currentScreen)")
@@ -1281,6 +1319,20 @@ extension ALADDINApp {
         let initTime = Date().timeIntervalSince(startTime)
         // ✅ BUILD 113: Убрано логирование MasterLogger для разгрузки стека
         print("🚀 App initialization completed in \(String(format: "%.2f", initTime)) seconds")
+    }
+
+    /// Opt-in Simple Home at launch — только если не child/teen/elderly роль.
+    private static func shouldOpenSimpleHomeAtLaunch() -> Bool {
+        guard UserDefaults.standard.bool(forKey: "aladdin.simpleHomePreferred") else { return false }
+        let role = (UserDefaults.standard.string(forKey: "current_user_role") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        let blocked: Set<String> = ["child", "teenager", "teen", "elderly", "senior"]
+        if blocked.contains(role) {
+            print("🟡 SIMPLE_HOME: preferred ON, но роль \(role) — пропускаем cold-start")
+            return false
+        }
+        return true
     }
 
     /// Автоматически проверяет и удаляет debug токены при запуске

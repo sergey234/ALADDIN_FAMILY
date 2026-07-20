@@ -48,6 +48,13 @@ struct CompanionConversationScreen: View {
     @State private var voiceRetryContext: VoiceTurnRetryContext?
     @State private var streamEmotionDebouncer = CompanionStreamEmotionDebouncer()
     @State private var contentEmotionAfterSpeaking: CompanionHeroEmotion = .happy
+    @State private var showWellnessSessionClose = false
+    @ObservedObject private var wellnessGuideStore = WellnessGuideSessionStore.shared
+    @State private var showBreakStepsPrompt = false
+    @State private var breakStepsGoal = ""
+    @State private var breakStepsPlan: CompanionBreakStepsPlan?
+    @State private var isBreakingSteps = false
+    @State private var breakStepsError: String?
     /// HERO-3-23: последняя emotion из SSE (fallback), на UI не вешаем до `done`.
     @State private var pendingStreamContentEmotion: CompanionHeroEmotion?
     @State private var textSpeakingDismissTask: Task<Void, Never>?
@@ -177,8 +184,17 @@ struct CompanionConversationScreen: View {
                         wellnessRecapLine: wellnessRecapLine,
                         memoryChipsEnabled: memoryChipsEnabled,
                         memoryChipCount: memoryChips.count,
-                        onMemoryChipTap: { showFullChatHistory = true }
+                        onMemoryChipTap: { showFullChatHistory = true },
+                        onCheckinTap: {
+                            navigationManager.navigateToWellnessScreen(
+                                .wellnessCheckin,
+                                returnTo: navigationManager.currentScreen
+                            )
+                        }
                     )
+                    if wellnessGuideStore.showSessionSoftNudge {
+                        wellnessSessionSoftNudgeBanner
+                    }
                     if bannerMode == .full, memoryChipsEnabled, !memoryChips.isEmpty {
                         companionMemoryChipsRow
                     }
@@ -260,7 +276,7 @@ struct CompanionConversationScreen: View {
         }
         .sheet(isPresented: $showCosmetics) {
             NavigationView {
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     CompanionCosmeticsSection(
                         characterId: characterId,
                         trustScore: trustScore,
@@ -270,11 +286,9 @@ struct CompanionConversationScreen: View {
                 }
                 .navigationTitle(localizationManager.localized("companion_conversation_cosmetics"))
                 .navigationBarTitleDisplayMode(.inline)
-                .toolbar {
-                    ToolbarItem(placement: .confirmationAction) {
-                        Button(localizationManager.localized("companion_conversation_done")) { showCosmetics = false }
-                    }
-                }
+                .navigationBarItems(trailing: Button(action: { showCosmetics = false }) {
+                    Text(localizationManager.localized("companion_conversation_done"))
+                })
             }
             .navigationViewStyle(.stack)
             .modifier(CompanionSheetDetentsModifier())
@@ -296,11 +310,9 @@ struct CompanionConversationScreen: View {
                 fullChatHistoryScroll
                     .navigationTitle(localizationManager.localized("companion_conversation_history"))
                     .navigationBarTitleDisplayMode(.inline)
-                    .toolbar {
-                        ToolbarItem(placement: .confirmationAction) {
-                            Button(localizationManager.localized("companion_conversation_done")) { showFullChatHistory = false }
-                        }
-                    }
+                    .navigationBarItems(trailing: Button(action: { showFullChatHistory = false }) {
+                        Text(localizationManager.localized("companion_conversation_done"))
+                    })
             }
             .navigationViewStyle(.stack)
         }
@@ -309,6 +321,73 @@ struct CompanionConversationScreen: View {
         }
         .sheet(isPresented: $showWellnessReferralSheet) {
             WellnessReferralSheet(level: "L2")
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showWellnessSessionClose) {
+            WellnessSessionCloseSheet()
+                .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
+        }
+        .onReceive(Timer.publish(every: 60, on: .main, in: .common).autoconnect()) { _ in
+            wellnessGuideStore.evaluateSessionSoftNudge()
+        }
+        .sheet(isPresented: $showBreakStepsPrompt) {
+            NavigationView {
+                ZStack {
+                    StormMeshBackground(variant: .neutral).ignoresSafeArea()
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text(localizationManager.localized("companion_break_steps_prompt"))
+                            .font(.subheadline)
+                        ZStack(alignment: .topLeading) {
+                            if breakStepsGoal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                                Text(localizationManager.localized("companion_break_steps_placeholder"))
+                                    .foregroundColor(.white.opacity(0.45))
+                                    .padding(.horizontal, 6)
+                                    .padding(.vertical, 10)
+                                    .allowsHitTesting(false)
+                            }
+                            TextEditor(text: $breakStepsGoal)
+                                .frame(minHeight: 88)
+                                .foregroundColor(.white)
+                                .modifier(CompanionClearTextEditorBackground())
+                        }
+                        .padding(10)
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(8)
+                        .accessibilityIdentifier("companion_break_steps_goal_field")
+                        Button {
+                            Task { await runBreakSteps() }
+                        } label: {
+                            if isBreakingSteps {
+                                ProgressView()
+                                    .frame(maxWidth: .infinity)
+                            } else {
+                                Text(localizationManager.localized("companion_break_steps_generate"))
+                                    .frame(maxWidth: .infinity)
+                            }
+                        }
+                        .buttonStyle(.borderedProminent)
+                        .tint(Color(hex: "8B5CF6"))
+                        .disabled(isBreakingSteps || breakStepsGoal.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                        if let breakStepsError {
+                            Text(breakStepsError)
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                        }
+                        Spacer()
+                    }
+                    .padding()
+                    .foregroundColor(.white)
+                }
+                .navigationTitle(localizationManager.localized("companion_break_steps_title"))
+                .navigationBarTitleDisplayMode(.inline)
+                .navigationBarItems(leading: Button(action: { showBreakStepsPrompt = false }) {
+                    Text(localizationManager.localized("wellness_guide_cancel"))
+                })
+            }
+        }
+        .sheet(item: $breakStepsPlan) { plan in
+            CompanionBreakStepsSheet(plan: plan)
                 .environmentObject(localizationManager)
         }
         .fullScreenCover(isPresented: $showL3CrisisFullScreen) {
@@ -390,6 +469,12 @@ struct CompanionConversationScreen: View {
     }
 
     private func handleConversationAppear() {
+        if let draft = CompanionBreakStepsService.consumeDraft() {
+            breakStepsGoal = draft
+            breakStepsError = nil
+            showBreakStepsPrompt = true
+        }
+        wellnessGuideStore.evaluateSessionSoftNudge()
         if !CompanionHeroRouter.userOverride {
             let allowed = availableCharacters.isEmpty
                 ? CompanionHeroRouter.allHeroIDs
@@ -625,6 +710,41 @@ struct CompanionConversationScreen: View {
         messages[index] = bubble
     }
 
+    /// psych-04b — soft wrap-up nudge (~12 min), never hard-cuts chat.
+    private var wellnessSessionSoftNudgeBanner: some View {
+        HStack(alignment: .top, spacing: 10) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(localizationManager.localized("wellness_session_soft_nudge_title"))
+                    .font(.caption.weight(.semibold))
+                Text(localizationManager.localized("wellness_session_soft_nudge_body"))
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.85))
+            }
+            Spacer(minLength: 0)
+            Button {
+                wellnessGuideStore.dismissSessionSoftNudge()
+                showWellnessSessionClose = true
+            } label: {
+                Text(localizationManager.localized("wellness_session_soft_nudge_yes"))
+                    .font(.caption.weight(.semibold))
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(Color(hex: "8B5CF6"))
+            Button {
+                wellnessGuideStore.dismissSessionSoftNudge()
+            } label: {
+                Text(localizationManager.localized("wellness_session_soft_nudge_no"))
+                    .font(.caption2)
+            }
+            .buttonStyle(.bordered)
+        }
+        .padding(10)
+        .stormGlassCard(cornerRadius: 12)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 4)
+        .accessibilityIdentifier("wellness_session_soft_nudge")
+    }
+
     private var heroStatusOverlay: some View {
         VStack(spacing: 6) {
             if embeddedInHome && availableCharacters.count > 1 {
@@ -732,7 +852,7 @@ struct CompanionConversationScreen: View {
 
     private var fullChatHistoryScroll: some View {
         ScrollViewReader { proxy in
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 LazyVStack(alignment: .leading, spacing: 12) {
                     if showResumeStream {
                         Button {
@@ -805,6 +925,24 @@ struct CompanionConversationScreen: View {
         }
         ToolbarItem(placement: .navigationBarTrailing) {
             HStack(spacing: 16) {
+                if WellnessGuideSessionStore.shared.guideModesEnabled {
+                    Button {
+                        showWellnessSessionClose = true
+                    } label: {
+                        Image(systemName: "checkmark.circle")
+                    }
+                    .accessibilityLabel(localizationManager.localized("wellness_session_end_button"))
+                    .accessibilityIdentifier("companion_end_wellness_session")
+                }
+                Button {
+                    breakStepsGoal = input.trimmingCharacters(in: .whitespacesAndNewlines)
+                    breakStepsError = nil
+                    showBreakStepsPrompt = true
+                } label: {
+                    Image(systemName: "list.number")
+                }
+                .accessibilityLabel(localizationManager.localized("companion_break_steps_button"))
+                .accessibilityIdentifier("companion_break_steps_button")
                 if !isChildProfile {
                     Menu {
                         Button { chatMode = "fast" } label: {
@@ -1124,12 +1262,10 @@ struct CompanionConversationScreen: View {
         }
         .padding()
         .background(.bar)
-        .toolbar {
-            ToolbarItemGroup(placement: .keyboard) {
-                Spacer()
-                Button(localizationManager.localized("companion_conversation_done")) { isInputFocused = false }
-            }
-        }
+        .modifier(CompanionKeyboardDoneToolbarModifier(
+            title: localizationManager.localized("companion_conversation_done"),
+            action: { isInputFocused = false }
+        ))
     }
 
     private var attachmentPickerMenu: some View {
@@ -1450,6 +1586,21 @@ struct CompanionConversationScreen: View {
             isUser: false,
             feedbackVote: prev.feedbackVote
         )
+    }
+
+    private func runBreakSteps() async {
+        let goal = breakStepsGoal.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !goal.isEmpty else { return }
+        isBreakingSteps = true
+        breakStepsError = nil
+        defer { isBreakingSteps = false }
+        do {
+            let plan = try await CompanionBreakStepsService.breakIntoSteps(goal: goal)
+            showBreakStepsPrompt = false
+            breakStepsPlan = plan
+        } catch {
+            breakStepsError = localizationManager.localized("companion_break_steps_error")
+        }
     }
 
     private func moodEmoji(_ mood: String) -> String {
@@ -2092,9 +2243,42 @@ struct CompanionConversationScreen: View {
 
 /// `presentationDetents` только iOS 16+; deployment target 15.2.
 private struct CompanionSheetDetentsModifier: ViewModifier {
+    @ViewBuilder
     func body(content: Content) -> some View {
         if #available(iOS 16.0, *) {
             content.presentationDetents([.medium, .large])
+        } else {
+            content
+        }
+    }
+}
+
+/// Isolates keyboard toolbar so `toolbar(content:)` overload resolution stays stable on iOS 15.2 + new SDK.
+private struct CompanionKeyboardDoneToolbarModifier: ViewModifier {
+    let title: String
+    let action: () -> Void
+
+    func body(content: Content) -> some View {
+        content.toolbar(content: keyboardToolbar)
+    }
+
+    @ToolbarContentBuilder
+    private func keyboardToolbar() -> some ToolbarContent {
+        ToolbarItemGroup(placement: .keyboard) {
+            Spacer()
+            Button(action: action) {
+                Text(title)
+            }
+        }
+    }
+}
+
+/// `scrollContentBackground(.hidden)` is iOS 16+; keep TextEditor transparent on 15.2.
+private struct CompanionClearTextEditorBackground: ViewModifier {
+    @ViewBuilder
+    func body(content: Content) -> some View {
+        if #available(iOS 16.0, *) {
+            content.scrollContentBackground(.hidden)
         } else {
             content
         }

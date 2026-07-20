@@ -30,7 +30,7 @@ struct CompanionHubScreen: View {
                 StormMeshBackground(variant: .warm)
             }
 
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 20) {
                     HStack {
                         Text(localizationManager.localized("companion_hub_title"))
@@ -285,7 +285,7 @@ struct CompanionHeroesOnePagerView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(alignment: .leading, spacing: 16) {
                 Text(localizationManager.localized("companion_heroes_one_pager_intro"))
                     .font(.body)

@@ -8,7 +8,7 @@ final class FamilyHabitRemindersService: ObservableObject {
     @Published private(set) var config: FamilyHabitRemindersConfig = .empty
     @Published private(set) var isConfiguredOnServer = false
 
-    private let cacheKey = "family_habit_reminders_cache_v1"
+    private let cacheKey = "family_habit_reminders_cache_v2"
 
     private init() {
         loadCache()
@@ -74,6 +74,20 @@ final class FamilyHabitRemindersService: ObservableObject {
     }
 
     private func ifThenLine(for preset: FamilyHabitPresetId, schedule: FamilyHabitPresetSchedule) -> String {
+        if preset == .water {
+            let liters = FamilyHabitWaterDailyLiters.nearest(schedule.dailyLiters)
+            let litersLabel = LocalizationManager.shared.localized(liters.labelKey)
+            let body = String(
+                format: LocalizationManager.shared.localized("family_habit_water_push_body_fmt"),
+                litersLabel
+            )
+            return String(
+                format: LocalizationManager.shared.localized("family_habit_if_then_template"),
+                schedule.hour,
+                schedule.minute,
+                body
+            )
+        }
         let tail = LocalizationManager.shared.localized(preset.bodyKey)
         return String(
             format: LocalizationManager.shared.localized("family_habit_if_then_template"),

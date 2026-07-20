@@ -204,7 +204,7 @@ struct ALADDINNavigationBar: View {
             
             // Список экранов (если показан)
             if showingScreenList {
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     LazyVStack(spacing: 8) {
                         ForEach(
                             NavigationManager.ALADDINScreen.allCases.filter { $0.isListedInProductionQuickNavigationMenu },
@@ -329,6 +329,7 @@ private extension NavigationManager.ALADDINScreen {
         case .referral: return "nav_screen_referral"
         case .deviceDetail: return "nav_screen_device_detail"
         case .familyChat: return "nav_screen_family_chat"
+        case .familyList: return "family_list_title"
         case .paymentQR: return "nav_screen_payment_qr"
         case .activationCode: return "nav_screen_activation_code"
         case .childRewards: return "nav_screen_child_rewards"
@@ -336,6 +337,7 @@ private extension NavigationManager.ALADDINScreen {
         case .securityEducation: return "nav_screen_security_education"
         case .gamesParentalControl: return "nav_screen_games_parental_control"
         case .unicornPet: return "nav_screen_unicorn_pet"
+        case .simpleHome: return "nav_screen_simple_home"
         case .companionHome: return "nav_screen_companion_home"
         case .companionHub: return "nav_screen_companion_hub"
         case .companionConversation: return "nav_screen_companion_conversation"
@@ -352,6 +354,7 @@ private extension NavigationManager.ALADDINScreen {
         case .wellnessExamMode: return "nav_screen_wellness_exam"
         case .wellnessOneThing: return "nav_screen_wellness_one_thing"
         case .wellnessPsychLibrary: return "nav_screen_wellness_psych_library"
+        case .focusSession: return "focus_session_title"
         case .wellnessAssessmentsHub: return "wellness_assessments_hub_title"
         case .wellnessAssessmentFlow: return "nav_screen_wellness_assessment"
         case .mainWithRegistration: return "nav_screen_main_registration"

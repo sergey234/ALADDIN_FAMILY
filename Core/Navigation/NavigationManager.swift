@@ -73,7 +73,10 @@ class NavigationManager: ObservableObject {
 
         // Основные экраны
         case main = "01_MainScreen"
+        /// Hybrid Simple Home Shell — лаунчер «Простая версия» (4 плитки + Ещё).
+        case simpleHome = "SimpleHomeScreen"
         case family = "02_FamilyScreen"
+        case familyList = "FamilyListScreen"
         case networkProtection = "03_NetworkProtectionScreen"
         case analytics = "04_AnalyticsScreen"
         case settings = "05_SettingsScreen"
@@ -125,6 +128,7 @@ class NavigationManager: ObservableObject {
         case wellnessExamMode = "WellnessExamModeScreen"
         case wellnessOneThing = "WellnessOneThingSessionScreen"
         case wellnessPsychLibrary = "DigitalPsychologyLibraryScreen"
+        case focusSession = "FocusSessionScreen"
         
         // НОВЫЕ ИГРОВЫЕ ЭКРАНЫ (геймификация)
         case youngDefender = "YoungDefenderView"           // 🛡️ Юный защитник
@@ -155,7 +159,9 @@ class NavigationManager: ObservableObject {
             switch self {
             case .loading: return "Загрузка"
             case .main: return "Главная"
+            case .simpleHome: return "Простая версия"
             case .family: return "Семья"
+            case .familyList: return "Список"
             case .networkProtection: return "Защита сети"
             case .analytics: return "Аналитика"
             case .settings: return "Настройки"
@@ -204,6 +210,7 @@ class NavigationManager: ObservableObject {
             case .wellnessExamMode: return "Режим экзамена"
             case .wellnessOneThing: return "Одно дело"
             case .wellnessPsychLibrary: return "Библиотека методик"
+            case .focusSession: return "Фокус"
             case .mainWithRegistration: return "Главная с регистрацией"
             case .languageSettings: return "Настройки языка"
             case .notificationSettings: return "Настройки уведомлений"
@@ -231,7 +238,9 @@ class NavigationManager: ObservableObject {
             switch self {
             case .loading: return "hourglass"
             case .main: return "house.fill"
+            case .simpleHome: return "square.grid.2x2.fill"
             case .family: return "person.3.fill"
+            case .familyList: return "checklist"
             case .networkProtection: return "shield.fill"
             case .analytics: return "chart.bar.fill"
             case .settings: return "gearshape.fill"
@@ -280,6 +289,7 @@ class NavigationManager: ObservableObject {
             case .wellnessExamMode: return "graduationcap.fill"
             case .wellnessOneThing: return "target"
             case .wellnessPsychLibrary: return "books.vertical.fill"
+            case .focusSession: return "timer"
             case .mainWithRegistration: return "house.fill"
             case .languageSettings: return "globe"
             case .notificationSettings: return "bell.badge.fill"
@@ -415,6 +425,11 @@ class NavigationManager: ObservableObject {
     func navigateToCompanionHome(returnTo: ALADDINScreen? = nil) {
         companionReturnScreen = returnTo ?? currentScreen
         navigateTo(.companionHome)
+    }
+
+    /// Simple Home Shell — лаунчер «Простая версия».
+    func navigateToSimpleHome() {
+        navigateTo(.simpleHome)
     }
 
     /// fws-h06 — 1 tap → companion main tab with last routed hero.
@@ -687,6 +702,17 @@ class NavigationManager: ObservableObject {
     func switchToMainScreen() {
         logger.ui("Switching to Main Screen", function: #function)
         navigateToRoot(.main)
+    }
+
+    /// Единый «Назад» как у карточек Main: предыдущий экран в стеке, иначе Main.
+    /// Использовать из Settings / Profile / Family / Simple destinations — не `switchToMainScreen()` вслепую.
+    func goBackToPreviousScreen(reason: String? = nil) {
+        if canGoBack {
+            goBack(reason: reason ?? "goBackToPreviousScreen")
+        } else {
+            appendLog("⬅️ goBackToPreviousScreen: стек пуст → Main")
+            switchToMainScreen()
+        }
     }
     
     func switchToFamilyScreen() {

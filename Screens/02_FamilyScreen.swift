@@ -1953,12 +1953,9 @@ struct FamilyScreen: View {
                 HStack {
                     Button(action: {
                         logger.buttonTap("Back", screen: "Family")
-                        VisualLogger.shared.log("⬅️ Back button tapped on FamilyScreen → navigating to main", level: .info, category: "NAVIGATION")
-                        print("🔙 [FamilyScreen] Back button tapped - using switchToMainScreen()")
-                        
-                        // ✅ ПРЯМОЙ И НАДЁЖНЫЙ ПЕРЕХОД НА ГЛАВНЫЙ ЭКРАН
-                        // После всех правок навигации это самый стабильный способ
-                        navigationManager.switchToMainScreen()
+                        VisualLogger.shared.log("⬅️ Back button tapped on FamilyScreen", level: .info, category: "NAVIGATION")
+                        print("🔙 [FamilyScreen] Back — goBackToPreviousScreen")
+                        navigationManager.goBackToPreviousScreen(reason: "Family.onBack")
                     }) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20, weight: .medium))
@@ -2092,7 +2089,7 @@ struct FamilyScreen: View {
                     )
                 }
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: 20) {
                         // Family Overview
                         VStack(spacing: 20) {
@@ -2446,6 +2443,24 @@ struct FamilyScreen: View {
                                 .environmentObject(localizationManager)
                             FamilyHabitRemindersSection(members: familyMembers)
                                 .environmentObject(localizationManager)
+                            FamilyChallengesSection(members: familyMembers)
+                                .environmentObject(localizationManager)
+                            Button {
+                                navigationManager.navigateTo(.familyList)
+                            } label: {
+                                HStack {
+                                    Image(systemName: "checklist")
+                                    Text(localizationManager.localized("family_list_title"))
+                                        .font(.subheadline.weight(.semibold))
+                                    Spacer()
+                                    Image(systemName: "chevron.right")
+                                        .font(.caption)
+                                }
+                                .padding()
+                                .stormGlassCard(cornerRadius: 12)
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityIdentifier("family_open_list")
                             FamilyIncidentFeedView(members: familyMembers)
                                 .environmentObject(localizationManager)
                         }
@@ -4998,7 +5013,7 @@ struct FamilyModalBaseView<Content: View>: View {
                 )
                 
                 // Content
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.m) {
                         content
                     }
@@ -9092,7 +9107,7 @@ struct FamilyRolesHelpView: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 14) {
                     Text(localizationManager.localized("family_roles_help_title"))
                         .font(.headline)
