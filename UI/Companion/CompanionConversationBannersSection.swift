@@ -19,6 +19,7 @@ struct CompanionConversationBannersSection: View {
     let memoryChipsEnabled: Bool
     let memoryChipCount: Int
     let onMemoryChipTap: () -> Void
+    var onCheckinTap: (() -> Void)? = nil
 
     private let chipMaxHeight: CGFloat = 32
 
@@ -37,6 +38,9 @@ struct CompanionConversationBannersSection: View {
         CompanionUsageBanner(usage: usage)
             .padding(.horizontal, 12)
             .padding(.vertical, 4)
+        if onCheckinTap != nil {
+            checkinFullBanner
+        }
         if let pillar = wellnessPillar {
             wellnessPillarFullBanner(pillar: pillar)
         }
@@ -53,6 +57,20 @@ struct CompanionConversationBannersSection: View {
         if hasAnyChip {
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 6) {
+                    if onCheckinTap != nil {
+                        Button {
+                            onCheckinTap?()
+                        } label: {
+                            bannerChip(
+                                icon: "face.smiling",
+                                label: localizationManager.localized("wellness_checkin_quick_chip"),
+                                tint: Color(hex: "FBBF24"),
+                                accessibilityLabel: localizationManager.localized("wellness_checkin_quick_chip"),
+                                id: "companion_banner_chip_checkin"
+                            )
+                        }
+                        .buttonStyle(.plain)
+                    }
                     if let usageChip = CompanionUsageBanner.usageChipDescriptor(
                         usage: usage,
                         localizationManager: localizationManager
@@ -113,11 +131,36 @@ struct CompanionConversationBannersSection: View {
     }
 
     private var hasAnyChip: Bool {
-        CompanionUsageBanner.usageChipDescriptor(usage: usage, localizationManager: localizationManager) != nil
+        onCheckinTap != nil
+            || CompanionUsageBanner.usageChipDescriptor(usage: usage, localizationManager: localizationManager) != nil
             || wellnessPillar != nil
             || !(companionEntryBanner ?? "").isEmpty
             || !(wellnessRecapLine ?? "").isEmpty
             || (memoryChipsEnabled && memoryChipCount > 0)
+    }
+
+    private var checkinFullBanner: some View {
+        Button {
+            onCheckinTap?()
+        } label: {
+            HStack(spacing: 8) {
+                Image(systemName: "face.smiling")
+                    .foregroundStyle(Color(hex: "FBBF24"))
+                Text(localizationManager.localized("wellness_checkin_quick_chip"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(Color.white.opacity(0.95))
+                Spacer()
+                Image(systemName: "chevron.right")
+                    .font(.caption2.weight(.semibold))
+                    .foregroundStyle(.secondary)
+            }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(Color(hex: "FBBF24").opacity(0.12))
+        }
+        .buttonStyle(.plain)
+        .padding(.horizontal, 12)
+        .accessibilityIdentifier("companion_checkin_chip")
     }
 
     private func wellnessPillarFullBanner(pillar: WellnessPillar) -> some View {

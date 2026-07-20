@@ -187,6 +187,8 @@ struct CompanionChatRequest: Codable {
     let attachments: [CompanionAttachmentPayload]
     let wellnessPillar: String?
     let humorPreference: String?
+    /// psych A — presence | deep_explore | structured_view | blind_spots | single_question
+    let guideMode: String?
 
     enum CodingKeys: String, CodingKey {
         case message
@@ -201,6 +203,7 @@ struct CompanionChatRequest: Codable {
         case attachments
         case wellnessPillar = "wellness_pillar"
         case humorPreference = "humor_preference"
+        case guideMode = "guide_mode"
     }
 }
 

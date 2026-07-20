@@ -63,6 +63,10 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
     let verdict: SecurityVerdictKind
     let confidence: Double
     let reasons: [String]
+    /// Server SSOT human-readable lines (`reasons_human`). Prefer for UI.
+    let reasonsHuman: [String]
+    /// One plain-language paragraph from server (`summary_human`). G4 parity with site.
+    let summaryHuman: String?
     let sources: [AntifakeVerdictSource]
     let provenance: AntifakeVerdictProvenance?
     let source: String
@@ -77,6 +81,8 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
         case confidence
         case fakeRisk = "fake_risk"
         case reasons
+        case reasonsHuman = "reasons_human"
+        case summaryHuman = "summary_human"
         case sources
         case provenance
         case source
@@ -91,6 +97,8 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
         verdict: SecurityVerdictKind,
         confidence: Double,
         reasons: [String],
+        reasonsHuman: [String] = [],
+        summaryHuman: String? = nil,
         sources: [AntifakeVerdictSource] = [],
         provenance: AntifakeVerdictProvenance? = nil,
         source: String,
@@ -103,6 +111,8 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
         self.verdict = verdict
         self.confidence = confidence
         self.reasons = reasons
+        self.reasonsHuman = reasonsHuman
+        self.summaryHuman = summaryHuman
         self.sources = sources
         self.provenance = provenance
         self.source = source
@@ -122,6 +132,8 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
             confidence = try container.decodeIfPresent(Double.self, forKey: .confidence) ?? 0
         }
         reasons = try container.decodeIfPresent([String].self, forKey: .reasons) ?? []
+        reasonsHuman = try container.decodeIfPresent([String].self, forKey: .reasonsHuman) ?? []
+        summaryHuman = try container.decodeIfPresent(String.self, forKey: .summaryHuman)
         sources = try container.decodeIfPresent([AntifakeVerdictSource].self, forKey: .sources) ?? []
         provenance = try container.decodeIfPresent(AntifakeVerdictProvenance.self, forKey: .provenance)
         source = try container.decodeIfPresent(String.self, forKey: .source) ?? ""
@@ -143,6 +155,10 @@ struct SecurityVerdict: Codable, Equatable, Sendable {
         // Keep `fake_risk` aligned with `confidence` for forward-compatible API logging/transport.
         try container.encode(confidence, forKey: .fakeRisk)
         try container.encode(reasons, forKey: .reasons)
+        if !reasonsHuman.isEmpty {
+            try container.encode(reasonsHuman, forKey: .reasonsHuman)
+        }
+        try container.encodeIfPresent(summaryHuman, forKey: .summaryHuman)
         if !sources.isEmpty {
             try container.encode(sources, forKey: .sources)
         }
@@ -218,6 +234,13 @@ struct AntifakeReportSubmissionResponse: Codable, Equatable, Sendable {
         case status
         case message
     }
+}
+
+/// POST `/api/antifake/feedback` (T5-02).
+struct AntifakeFeedbackResponse: Codable, Equatable, Sendable {
+    let id: String?
+    let message: String?
+    let recorded: Bool?
 }
 
 struct AntifakeWhitelistResponse: Codable, Equatable, Sendable {

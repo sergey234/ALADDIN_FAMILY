@@ -293,7 +293,8 @@ final class CompanionAPIService {
         chatMode: String = "fast",
         workspaceId: String? = nil,
         attachments: [CompanionAttachmentPayload] = [],
-        wellnessPillar: String? = WellnessSessionStore.activePillar
+        wellnessPillar: String? = WellnessSessionStore.activePillar,
+        guideMode: String? = WellnessGuideSessionStore.activeGuideModeIdForAPI
     ) async throws -> CompanionChatResponse {
         let cloudText: String
         do {
@@ -318,7 +319,8 @@ final class CompanionAPIService {
             workspaceId: workspaceId,
             attachments: attachments,
             wellnessPillar: wellnessPillar,
-            humorPreference: teenHumor
+            humorPreference: teenHumor,
+            guideMode: guideMode
         )
 
         return try await withCheckedThrowingContinuation { continuation in
