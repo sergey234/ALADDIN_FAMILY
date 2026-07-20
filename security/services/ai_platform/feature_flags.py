@@ -51,7 +51,7 @@ FEATURE_WELLNESS_ENABLED = _env_bool("FEATURE_WELLNESS_ENABLED", False)
 FEATURE_WELLNESS_ORCHESTRATOR = _env_bool("FEATURE_WELLNESS_ORCHESTRATOR", False)
 FEATURE_WELLNESS_REFLECTIVE = _env_bool("FEATURE_WELLNESS_REFLECTIVE", False)
 FEATURE_WELLNESS_JUNG = _env_bool("FEATURE_WELLNESS_JUNG", False)
-/// psych-08 — warm guide role + session modes (A+B). Disable with FEATURE_WELLNESS_GUIDE_MODES=0
+# psych-08 — warm guide role + session modes (A+B). Disable with FEATURE_WELLNESS_GUIDE_MODES=0
 FEATURE_WELLNESS_GUIDE_MODES = _env_bool("FEATURE_WELLNESS_GUIDE_MODES", True)
 # p1-7b / inf-flags — Due-ping until Done (client also gates; default OFF for fatigue risk)
 FEATURE_DUE_PING = _env_bool("FEATURE_DUE_PING", False)
