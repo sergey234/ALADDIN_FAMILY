@@ -503,7 +503,6 @@
 		FWS31922F90000100C7D34B /* WellnessIfThenPlanCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS31912F90000100C7D34B /* WellnessIfThenPlanCard.swift */; };
 		FWS31A22F90000100C7D34B /* WindDownScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS31A12F90000100C7D34B /* WindDownScheduler.swift */; };
 		FWS31B22F90000100C7D34B /* WellnessSleepStoriesSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS31B12F90000100C7D34B /* WellnessSleepStoriesSheet.swift */; };
-		FWS4W0212F90000100C7D34B /* ElderlyFallDetectionService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS4W0112F90000100C7D34B /* ElderlyFallDetectionService.swift */; };
 		FWS4W0412F90000100C7D34B /* PhoneDetoxChallengeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS4W0312F90000100C7D34B /* PhoneDetoxChallengeCard.swift */; };
 		FWS4W0612F90000100C7D34B /* WellnessStudentModeCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS4W0512F90000100C7D34B /* WellnessStudentModeCard.swift */; };
 		FWS4W0812F90000100C7D34B /* CompanionDeepLinkRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS4W0712F90000100C7D34B /* CompanionDeepLinkRouter.swift */; };
@@ -637,7 +636,6 @@
 		WELLCON22F90000100C7D34B /* WellnessConsentScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLCON12F90000100C7D34B /* WellnessConsentScreen.swift */; };
 		WELLCP22F90000100C7D34B /* WellnessSwiftUICompat.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLCP12F90000100C7D34B /* WellnessSwiftUICompat.swift */; };
 		WELLEX22F90000100C7D34B /* WellnessExerciseScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLEX12F90000100C7D34B /* WellnessExerciseScreen.swift */; };
-		WELLHK22F90000100C7D34B /* WellnessHealthSleepReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLHK12F90000100C7D34B /* WellnessHealthSleepReader.swift */; };
 		WELLHUB22F90000100C7D34B /* WellnessHubScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLHUB12F90000100C7D34B /* WellnessHubScreen.swift */; };
 		WELLMDL22F90000100C7D34B /* WellnessModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLMDL12F90000100C7D34B /* WellnessModels.swift */; };
 		WELLOC22F90000100C7D34B /* WellnessOutcomeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLOC12F90000100C7D34B /* WellnessOutcomeSheet.swift */; };
@@ -2835,7 +2833,6 @@
 				FWS31C22F90000100C7D34B /* WellnessWindDownCard.swift in Sources */,
 				FWS4W0412F90000100C7D34B /* PhoneDetoxChallengeCard.swift in Sources */,
 				FWS4W0612F90000100C7D34B /* WellnessStudentModeCard.swift in Sources */,
-				FWS4W0212F90000100C7D34B /* ElderlyFallDetectionService.swift in Sources */,
 				C0MPERR22F90000100C7D34B /* CompanionErrorMapper.swift in Sources */,
 				C0MPOFF22F90000100C7D34B /* CompanionOfflineStore.swift in Sources */,
 				C0MPTLS22F90000100C7D34B /* CompanionLastToolsStore.swift in Sources */,
@@ -2844,7 +2841,6 @@
 				C0MPLEG22F90000100C7D34B /* CompanionLegalScreen.swift in Sources */,
 				WELLAPI22F90000100C7D34B /* WellnessAPIService.swift in Sources */,
 				WELLOF22F90000100C7D34B /* WellnessOfflineStore.swift in Sources */,
-				WELLHK22F90000100C7D34B /* WellnessHealthSleepReader.swift in Sources */,
 				WELLPDF22F90000100C7D34B /* WellnessProgressPDFService.swift in Sources */,
 				WELLCP22F90000100C7D34B /* WellnessSwiftUICompat.swift in Sources */,
 				WELLPAY22F90000100C7D34B /* WellnessPremiumPaywallSheet.swift in Sources */,
@@ -3208,7 +3204,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 246;
+				CURRENT_PROJECT_VERSION = 247;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3242,7 +3238,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 246;
+				CURRENT_PROJECT_VERSION = 247;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3277,7 +3273,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 246;
+				CURRENT_PROJECT_VERSION = 247;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3311,7 +3307,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 246;
+				CURRENT_PROJECT_VERSION = 247;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3469,7 +3465,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 246;
+				CURRENT_PROJECT_VERSION = 247;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -3502,7 +3498,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 246;
+				CURRENT_PROJECT_VERSION = 247;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -3534,7 +3530,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 246;
+				CURRENT_PROJECT_VERSION = 247;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3560,7 +3556,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 246;
+				CURRENT_PROJECT_VERSION = 247;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3584,7 +3580,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 246;
+				CURRENT_PROJECT_VERSION = 247;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3609,7 +3605,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 246;
+				CURRENT_PROJECT_VERSION = 247;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3634,7 +3630,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 246;
+				CURRENT_PROJECT_VERSION = 247;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -3659,7 +3655,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 246;
+				CURRENT_PROJECT_VERSION = 247;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;

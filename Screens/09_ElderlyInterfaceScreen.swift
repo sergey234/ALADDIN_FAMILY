@@ -1330,13 +1330,12 @@ struct ElderlySettingsModal: View {
     @AppStorage("elderly_sound_enabled") private var soundEnabled: Bool = true
     @AppStorage("elderly_vibration_enabled") private var vibrationEnabled: Bool = true
     @AppStorage("elderly_auto_call_enabled") private var autoCallEnabled: Bool = false
-    @AppStorage(ElderlyFallDetectionService.enabledKey) private var fallDetectionEnabled: Bool = false
     @State private var showAddPhoneModal: Bool = false
     @State private var showEditContactsModal: Bool = false
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.l) {
                     Text(localizationManager.localized("elderly_settings_title"))
                         .font(.system(size: 28, weight: .bold))
@@ -1437,40 +1436,6 @@ struct ElderlySettingsModal: View {
                     .padding()
                     .background(Color.red.opacity(0.1))
                     .cornerRadius(CornerRadius.medium)
-
-                    // fws-10 — optional HealthKit fall → family push
-                    VStack(alignment: .leading, spacing: Spacing.m) {
-                        Text(localizationManager.localized("elderly_fall_detection_title"))
-                            .font(.system(size: 20, weight: .semibold))
-                            .foregroundColor(.primary)
-
-                        HStack {
-                            Text(localizationManager.localized("elderly_fall_detection_label"))
-                                .font(.system(size: 16))
-                                .foregroundColor(.primary)
-
-                            Spacer()
-
-                            Toggle("", isOn: $fallDetectionEnabled)
-                                .scaleEffect(1.0)
-                                .frame(maxWidth: 60)
-                                .onChange(of: fallDetectionEnabled) { enabled in
-                                    ElderlyFallDetectionService.shared.setEnabled(enabled)
-                                }
-                        }
-
-                        Text(localizationManager.localized("elderly_fall_detection_description"))
-                            .font(.system(size: 14))
-                            .foregroundColor(.secondary)
-                    }
-                    .padding()
-                    .background(Color.orange.opacity(0.1))
-                    .cornerRadius(CornerRadius.medium)
-                    .onAppear {
-                        if fallDetectionEnabled {
-                            Task { await ElderlyFallDetectionService.shared.startMonitoring() }
-                        }
-                    }
                     
                     // Управление семьей
                     VStack(alignment: .leading, spacing: Spacing.m) {
@@ -1682,7 +1647,7 @@ struct EditContactsModal: View {
                     .padding(.horizontal, Spacing.m)
                 }
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     LazyVStack(spacing: Spacing.s) {
                         ForEach(familyContacts.indices, id: \.self) { index in
                             HStack {
@@ -1960,7 +1925,7 @@ struct SecurityStatusModal: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.l) {
                     Text(localizationManager.localized("elderly_protection_status_title"))
                         .font(.system(size: 28, weight: .bold))
@@ -2333,7 +2298,7 @@ struct SafetyInstructionsModal: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.l) {
                     Text(localizationManager.localized("elderly_safety_instructions_title"))
                         .font(.system(size: 28, weight: .bold))
@@ -3257,7 +3222,7 @@ struct HealthJournalModal: View {
                 }
                 
                 // Список записей
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     LazyVStack(spacing: Spacing.s) {
                         ForEach(healthEntriesForDisplay) { entry in
                             HStack {

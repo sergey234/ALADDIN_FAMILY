@@ -1,0 +1,7 @@
+App Store Connect → TestFlight / Version → Notes for Review (build 247)
+
+RU:
+HealthKit не используется. NSHealthShareUsageDescription и NSHealthUpdateUsageDescription удалены из Info.plist. В бинарнике нет импортов HealthKit и вызовов HealthKit API. Wellness check-in: сон указывается вручную. Функция «падение через Apple Health» отключена.
+
+EN:
+HealthKit is not used. NSHealthShareUsageDescription and NSHealthUpdateUsageDescription were removed from Info.plist. The binary contains no HealthKit imports or HealthKit API calls. Wellness check-in uses manual sleep entry only. Apple Health fall detection feature is disabled.
