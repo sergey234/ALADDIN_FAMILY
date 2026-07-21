@@ -84,3 +84,30 @@ git merge-base HEAD origin/master
 - «После 225 сделай 226», если актуальный PREV уже другой.  
 - Всегда пара сверху: `PREV_BUILD → NEXT_BUILD`.  
 - Локальный Archive в Xcode ≠ появление в TestFlight: нужен **успешный CI upload** с **уникальным CFBundleVersion** выше последней загруженной.
+
+════════════════════════════════════
+TESTFLIGHT: ПОЧЕМУ «GITHUB ЗЕЛЁНЫЙ», А НА ТЕЛЕФОНЕ НЕТ (урок 243/244)
+════════════════════════════════════
+
+**Какой workflow реально грузит в ASC:**  
+`.github/workflows/check-secrets.yml`  
+имя в UI: **Build and Upload to App Store**  
+(триггер: `workflow_dispatch` **и** `push` на `master`).
+
+**Не путать** с legacy `.github/workflows/appstore.yml` (Manual Only, урезанный ExportOptions без Antifake/CallDirectory).
+
+**Сравнение с 242 (важно):**  
+У успешного 242 в `ALADDINCallDirectory/Info.plist` тоже было **239**, а main — **242**.  
+Значит «CallDirectory отстал» **не** объясняет, почему 242 попал в TestFlight, а 243/244 — нет.
+
+**Что смотреть в логах CI (по шагам):**
+1. `Build Archive with Fastlane` — зелёный  
+2. Export IPA / `xcodebuild -exportArchive` — зелёный  
+3. **Upload to App Store Connect** (`apple-actions/upload-testflight-build`) — зелёный  
+Если зелёный только archive, а upload skipped/failed → в TestFlight **не появится**.
+
+**После upload:** App Store Connect → Activity / TestFlight → Processing (часто 10–60+ мин).  
+Проверить email от Apple (ITMS rejection). Билд должен быть в нужной TestFlight группе.
+
+**Номера сейчас (канон):** `Info.plist` + `project.pbxproj` (все `CURRENT_PROJECT_VERSION`) + `AppConfig` ×2 + `ALADDINCallDirectory/Info.plist`.  
+Extensions ContentBlocker/AntifakeShare: `GENERATE_INFOPLIST_FILE=YES` → версия из `CURRENT_PROJECT_VERSION` в pbx.
