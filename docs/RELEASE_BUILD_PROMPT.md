@@ -1,10 +1,10 @@
-# Релизный промпт ALADDIN iOS (актуально после build 244)
+# Релизный промпт ALADDIN iOS (актуально после build 245)
 
 **Копировать и подставить ТОЛЬКО одно число.**
 
 ```text
-PREV_BUILD = 244
-NEXT_BUILD = 245
+PREV_BUILD = 245
+NEXT_BUILD = 246
 
 Задача:
 1) Поднять номер сборки с PREV_BUILD на NEXT_BUILD во всех нужных местах.
