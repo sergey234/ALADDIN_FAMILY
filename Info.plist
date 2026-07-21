@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>245</string>
+	<string>246</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -69,6 +69,10 @@
 	<string>ALADDIN Family needs contacts access to help manage family member information securely.</string>
 	<key>NSFaceIDUsageDescription</key>
 	<string>ALADDIN Family uses Face ID for secure authentication and family member identification.</string>
+	<key>NSHealthShareUsageDescription</key>
+	<string>ALADDIN Family reads Apple Health data (such as fall events and sleep) only when you enable optional wellness and elderly safety features, to notify caregivers and show personal wellness insights. Health data stays on device unless you choose to share a safety alert.</string>
+	<key>NSHealthUpdateUsageDescription</key>
+	<string>ALADDIN Family may write optional wellness-related data to Apple Health only when you enable those features, so your family safety and wellness tools stay in sync with Health.</string>
 	<key>NSHomeKitUsageDescription</key>
 	<string>ALADDIN Family needs HomeKit access for smart home security and family safety.</string>
 	<key>NSLocalNetworkUsageDescription</key>
