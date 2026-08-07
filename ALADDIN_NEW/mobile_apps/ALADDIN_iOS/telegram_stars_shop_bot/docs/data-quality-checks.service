@@ -1,0 +1,10 @@
+[Unit]
+Description=ALADDIN Telegram Shop Data Quality Checks (one-shot)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/aladdin-telegram-shop-bot/current_app
+EnvironmentFile=/opt/aladdin-telegram-shop-bot/shared/.env
+ExecStart=/opt/aladdin-telegram-shop-bot/venv/bin/python -m bot.services.data_quality_checks

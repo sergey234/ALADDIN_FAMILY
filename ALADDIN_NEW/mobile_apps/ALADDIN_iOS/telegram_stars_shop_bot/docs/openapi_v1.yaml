@@ -1,0 +1,479 @@
+openapi: 3.1.0
+info:
+  title: ALADDIN Shop Partner API
+  version: 1.0.0
+  description: |
+    REST API для партнёров (рефоводы / конструкторы). Аутентификация: заголовок `X-API-KEY`.
+    База URL (пример): `https://your-host/v1`
+
+    Модель v1: заказ создаётся от имени **владельца ключа** (`owner_user_id`); получатель Stars/Premium — в поле `recipient`.
+servers:
+  - url: https://api.example.com/v1
+    description: Замените на прод-хост после деплоя
+
+security:
+  - ApiKeyAuth: []
+
+paths:
+  /user/profile:
+    get:
+      summary: Профиль владельца ключа
+      operationId: getProfile
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserProfile"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /orders:
+    get:
+      summary: История заказов владельца ключа
+      operationId: listOrders
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20, maximum: 100 }
+        - name: cursor
+          in: query
+          description: Opaque курсор (v1 позже; пока offset опционально)
+          schema: { type: string }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /orders/{order_id}:
+    get:
+      summary: Заказ по id
+      operationId: getOrder
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: order_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Order"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /orders/create:
+    post:
+      summary: Создать заказ (идемпотентно)
+      operationId: createOrder
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+            format: uuid
+          description: Повтор с тем же ключом возвращает тот же заказ без дубликата.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/OrderCreateRequest"
+      responses:
+        "201":
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderCreateResponse"
+        "200":
+          description: Уже существует (идемпотентный повтор)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/OrderCreateResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "409":
+          description: Конфликт idempotency / бизнес-правила
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Error"
+
+  /topups/create:
+    post:
+      summary: Создать заявку на пополнение (как в боте)
+      operationId: createTopup
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/TopupCreateRequest"
+      responses:
+        "201":
+          description: Создано
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopupCreateResponse"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /topups:
+    get:
+      summary: История заявок на пополнение
+      operationId: listTopups
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: limit
+          in: query
+          schema: { type: integer, default: 20, maximum: 100 }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/TopupList"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+  /topups/{topup_id}:
+    get:
+      summary: Заявка на пополнение по id
+      operationId: getTopup
+      security:
+        - ApiKeyAuth: []
+      parameters:
+        - name: topup_id
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Topup"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+        "404":
+          $ref: "#/components/responses/NotFound"
+
+  /payments/provider-webhook:
+    post:
+      summary: Вебхук провайдера оплат (mark_paid)
+      operationId: paymentProviderWebhook
+      description: |
+        Аутентификация **не** через X-API-KEY. Подпись тела: HMAC-SHA256(PAYMENT_WEBHOOK_SECRET, raw_body),
+        hex в заголовке `X-Payment-Signature` (допустим префикс `sha256=`).
+      security: []
+      parameters:
+        - name: X-Payment-Signature
+          in: header
+          required: true
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentProviderWebhook"
+      responses:
+        "200":
+          description: OK (в т.ч. duplicate / already_terminal)
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          description: Неверная подпись
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Недопустимый переход статуса
+        "422":
+          description: Ошибка валидации
+        "503":
+          description: PAYMENT_WEBHOOK_SECRET не задан
+
+  /payments/wata-webhook:
+    post:
+      summary: Вебхук WATA (mark_paid)
+      operationId: wataPaymentWebhook
+      description: |
+        Аутентификация **не** через X-API-KEY. Подпись тела: HMAC-SHA256(секрет, raw_body),
+        hex в заголовке `X-Wata-Signature` (допустим префикс `sha256=`).
+        Для совместимости принимается также `X-Payment-Signature`.
+        Секрет: `WATA_WEBHOOK_SECRET`, fallback — `PAYMENT_WEBHOOK_SECRET`.
+      security: []
+      parameters:
+        - name: X-Wata-Signature
+          in: header
+          required: false
+          schema: { type: string }
+        - name: X-Payment-Signature
+          in: header
+          required: false
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentProviderWebhook"
+      responses:
+        "200":
+          description: OK (в т.ч. duplicate / already_terminal)
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          description: Неверная подпись
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Недопустимый переход статуса
+        "422":
+          description: Ошибка валидации
+        "503":
+          description: WATA_WEBHOOK_SECRET и PAYMENT_WEBHOOK_SECRET не заданы
+
+  /webhooks/subscription:
+    get:
+      summary: Текущий URL исходящего вебхука партнёра
+      operationId: getWebhookSubscription
+      security:
+        - ApiKeyAuth: []
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookSubscriptionGet"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+    put:
+      summary: Настроить URL и секрет подписи (order.status_changed)
+      operationId: putWebhookSubscription
+      security:
+        - ApiKeyAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/WebhookSubscriptionPut"
+      responses:
+        "200":
+          description: OK; signing_secret возвращается только при выдаче/ротации
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WebhookSubscriptionPutOut"
+        "401":
+          $ref: "#/components/responses/Unauthorized"
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: apiKey
+      in: header
+      name: X-API-KEY
+
+  responses:
+    Unauthorized:
+      description: Неверный или отозванный ключ
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+    NotFound:
+      description: Не найдено или чужой ресурс
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/Error"
+
+  schemas:
+    Error:
+      type: object
+      required: [code, message]
+      properties:
+        code:
+          type: string
+          examples: [unauthorized, not_found, validation_error, idempotency_conflict]
+        message: { type: string }
+        request_id: { type: string }
+
+    UserProfile:
+      type: object
+      properties:
+        owner_user_id: { type: integer, format: int64 }
+        balance_rub: { type: number }
+        ref_balance_rub: { type: number }
+        scopes:
+          type: array
+          items: { type: string }
+        referral_invited_count:
+          type: integer
+          description: Пользователи с referrer_id = владелец ключа
+        referral_buyers_completed_count:
+          type: integer
+          description: Уникальные приглашённые с хотя бы одним completed-заказом
+        referral_commission_earned_rub:
+          type: number
+          description: Сумма commission_rub по заказам с commission_paid=1
+
+    OrderCreateRequest:
+      type: object
+      required: [product_id, recipient]
+      properties:
+        product_id:
+          type: string
+          description: Идентификатор из каталога (products.yaml на сервере)
+        recipient:
+          type: string
+          description: "@username или username без @"
+        payment_method:
+          type: string
+          description: "Например mix_fiat | crypto | …; v1 может фиксировать один сценарий до автоплатежей"
+        external_ref:
+          type: string
+          description: Произвольная метка партнёра
+
+    OrderCreateResponse:
+      type: object
+      properties:
+        order_id: { type: integer }
+        status: { type: string }
+        rub_after_discounts: { type: number }
+        balance_applied_rub: { type: number }
+        amount_due_external_rub: { type: number }
+        recipient_normalized: { type: string }
+
+    Order:
+      type: object
+      properties:
+        id: { type: integer }
+        status: { type: string }
+        product_id: { type: string }
+        product_title: { type: string }
+        payment_method: { type: string }
+        rub_after_discounts: { type: number }
+        balance_applied_rub: { type: number }
+        amount_due_external_rub: { type: number }
+        user_note: { type: string, nullable: true }
+        source: { type: string, enum: [telegram, api] }
+        external_ref: { type: string, nullable: true }
+        created_at: { type: string }
+        updated_at: { type: string }
+
+    OrderList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Order"
+        next_cursor: { type: string, nullable: true }
+
+    TopupCreateRequest:
+      type: object
+      required: [amount_rub]
+      properties:
+        amount_rub:
+          type: number
+          minimum: 100
+          maximum: 500000
+
+    TopupCreateResponse:
+      type: object
+      properties:
+        topup_id: { type: integer }
+        status: { type: string }
+        amount_rub: { type: number }
+
+    Topup:
+      type: object
+      properties:
+        id: { type: integer }
+        amount_rub: { type: number }
+        status: { type: string }
+        created_at: { type: string }
+
+    TopupList:
+      type: object
+      properties:
+        items:
+          type: array
+          items:
+            $ref: "#/components/schemas/Topup"
+
+    PaymentProviderWebhook:
+      type: object
+      required: [idempotency_key, order_id]
+      properties:
+        idempotency_key:
+          type: string
+          minLength: 8
+          maxLength: 128
+        order_id: { type: integer }
+        action:
+          type: string
+          enum: [mark_paid]
+          default: mark_paid
+
+    WebhookSubscriptionGet:
+      type: object
+      properties:
+        webhook_url: { type: string, nullable: true }
+        has_signing_secret: { type: boolean }
+
+    WebhookSubscriptionPut:
+      type: object
+      properties:
+        webhook_url:
+          type: string
+          nullable: true
+          description: Пустая строка — отключить; поле опущено — не менять URL (rotate_secret)
+        rotate_secret:
+          type: boolean
+          default: false
+
+    WebhookSubscriptionPutOut:
+      type: object
+      properties:
+        webhook_url: { type: string, nullable: true }
+        has_signing_secret: { type: boolean }
+        signing_secret:
+          type: string
+          nullable: true
+          description: Только при первой настройке или rotate_secret

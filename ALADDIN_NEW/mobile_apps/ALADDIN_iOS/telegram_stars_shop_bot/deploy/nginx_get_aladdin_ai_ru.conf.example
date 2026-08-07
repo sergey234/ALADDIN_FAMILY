@@ -1,0 +1,41 @@
+# get.aladdin-ai.ru — web checkout SPA + Partner API
+# Place under /etc/nginx/sites-available/ on MAIN and enable after DNS A record.
+#
+# IMPORTANT: shop SSOT is Contabo Partner API (same as aladdin-ai.ru location /v1/).
+# Do NOT proxy to MAIN 127.0.0.1:8090 — that shop.db is not the live commerce DB.
+
+server {
+    listen 80;
+    listen [::]:80;
+    server_name get.aladdin-ai.ru;
+
+    location /.well-known/acme-challenge/ {
+        root /var/www/html;
+    }
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    listen 443 ssl;
+    http2 on;
+    server_name get.aladdin-ai.ru;
+
+    # After: certbot certonly --webroot -w /var/www/html -d get.aladdin-ai.ru
+    ssl_certificate     /etc/letsencrypt/live/get.aladdin-ai.ru/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/get.aladdin-ai.ru/privkey.pem;
+
+    location / {
+        proxy_pass http://185.225.233.150:8090;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_connect_timeout 60s;
+        proxy_send_timeout 60s;
+        proxy_read_timeout 60s;
+        client_max_body_size 8m;
+    }
+}

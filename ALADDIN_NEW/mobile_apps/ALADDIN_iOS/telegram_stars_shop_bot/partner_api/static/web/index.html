@@ -1,0 +1,1711 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AiMonkeyVPN</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;700&family=Outfit:wght@400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      /* Aladdin-like storm navy + gold (visual only) */
+      --bg-dark: #0f1b2b;
+      --bg-gradient-start: #07112a;
+      --bg-storm-mid: #0a1833;
+      --bg-gradient-end: #112345;
+      --card: rgba(28, 44, 77, 0.82);
+      --text: #f5f7fa;
+      --muted: rgba(245, 247, 250, 0.72);
+      --accent: #f5c86e;
+      --accent-blue: #4c6fff;
+      --gold: #f5c86e;
+      --gold-dark: #e8b650;
+      --gold-light: #ffe08a;
+      --gold-text: #1a1208;
+      --ok: #22c55e;
+      --warn: #fbbf24;
+      --bad: #ef4444;
+      --border: rgba(255, 255, 255, 0.12);
+      --border-gold: rgba(245, 200, 110, 0.35);
+      --font-display: "Fraunces", "Times New Roman", serif;
+      --font-body: "Outfit", system-ui, sans-serif;
+      --shadow-gold: 0 8px 28px rgba(245, 200, 110, 0.28);
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font-family: var(--font-body);
+      color: var(--text);
+      min-height: 100vh;
+      background: linear-gradient(160deg, var(--bg-gradient-start), var(--bg-storm-mid) 48%, var(--bg-gradient-end));
+      background-attachment: fixed;
+      position: relative;
+    }
+    /* Aladdin-style storm video atmosphere (same assets as aladdin-ai.ru) */
+    .storm-atmosphere {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+    }
+    .storm-atmosphere video,
+    .storm-atmosphere img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+    .storm-atmosphere .storm-poster {
+      z-index: 0;
+      opacity: 1;
+    }
+    .storm-atmosphere .storm-video {
+      z-index: 1;
+      opacity: 0.95;
+      filter: contrast(1.12) brightness(1.06) saturate(1.08);
+    }
+    .storm-veil {
+      position: absolute;
+      inset: 0;
+      z-index: 2;
+      pointer-events: none;
+      background:
+        linear-gradient(115deg, rgba(7, 17, 42, 0.55) 0%, rgba(15, 27, 43, 0.28) 45%, rgba(17, 35, 69, 0.42) 100%),
+        radial-gradient(ellipse at 72% 18%, rgba(245, 200, 110, 0.18), transparent 50%);
+    }
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 720px;
+      margin: 0 auto;
+      padding: 12px 16px calc(48px + env(safe-area-inset-bottom, 0px));
+    }
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin: 0 -16px 4px;
+      padding: calc(6px + env(safe-area-inset-top)) 12px 0;
+    }
+    .lang-switch {
+      display: inline-flex;
+      gap: 4px;
+      padding: 3px;
+      border-radius: 999px;
+      border: 1px solid var(--border-gold);
+      background: rgba(7, 17, 42, 0.75);
+    }
+    .lang-switch__btn {
+      border: 0;
+      min-width: 40px;
+      min-height: 32px;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      font-family: var(--font-body);
+      font-weight: 600;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+    .lang-switch__btn--active {
+      background: linear-gradient(135deg, #ffe08a 0%, var(--gold) 50%, var(--gold-dark) 100%);
+      color: var(--gold-text);
+      box-shadow: var(--shadow-gold);
+    }
+    h1, .brand-gold {
+      font-family: var(--font-display);
+      font-size: 1.65rem;
+      margin: 0 0 6px;
+      font-weight: 700;
+      letter-spacing: 0.01em;
+      background: linear-gradient(135deg, #fff0b0 0%, var(--gold-light) 35%, var(--gold) 70%, var(--gold-dark) 100%);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      filter: drop-shadow(0 0 18px rgba(245, 200, 110, 0.25));
+    }
+    .muted { color: var(--muted); font-size: 0.95rem; line-height: 1.45; }
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 16px;
+      margin: 14px 0;
+      backdrop-filter: blur(8px);
+      transition: border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .btn {
+      display: block; width: 100%; text-align: center; border: 0; border-radius: 999px;
+      padding: 14px 16px; font-size: 1rem; font-weight: 700; cursor: pointer;
+      font-family: var(--font-body);
+      background: linear-gradient(135deg, #ffe08a 0%, var(--gold) 45%, var(--gold-dark) 100%);
+      color: var(--gold-text);
+      text-decoration: none; margin-top: 10px;
+      box-shadow: var(--shadow-gold);
+      transition: transform 0.15s ease, filter 0.2s ease, box-shadow 0.2s ease;
+      min-height: 48px;
+    }
+    .btn:hover { filter: brightness(1.06); box-shadow: 0 10px 32px rgba(245, 200, 110, 0.38); }
+    .btn:active { transform: translateY(1px); }
+    .btn.secondary {
+      background: transparent;
+      border: 1px solid var(--border-gold);
+      color: var(--gold-light);
+      box-shadow: none;
+    }
+    .btn.secondary:hover { background: rgba(245, 200, 110, 0.08); filter: none; }
+    .btn.danger { background: transparent; border: 1px solid var(--bad); color: #fecaca; box-shadow: none; }
+    .btn.inline { display: inline-block; width: auto; padding: 10px 14px; margin: 6px 6px 0 0; font-size: 0.9rem; border-radius: 999px; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; filter: none; box-shadow: none; }
+    .btn:focus-visible,
+    .nav button:focus-visible,
+    .lang-switch__btn:focus-visible,
+    .tariff:focus-visible,
+    a:focus-visible,
+    summary:focus-visible {
+      outline: 2px solid var(--gold);
+      outline-offset: 3px;
+    }
+    .tariff {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 12px; border: 1px solid var(--border); border-radius: 14px; margin: 8px 0;
+      cursor: pointer; transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .tariff.selected {
+      border-color: var(--gold);
+      background: rgba(245, 200, 110, 0.08);
+      box-shadow: 0 0 0 1px rgba(245, 200, 110, 0.25), var(--shadow-gold);
+    }
+    .nav {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(7, 11, 20, 0.94); backdrop-filter: blur(10px);
+      border: 1px solid var(--border-gold);
+      border-radius: 16px;
+      display: flex; justify-content: space-around;
+      padding: 8px 4px;
+      margin: 0 0 14px; flex-wrap: wrap; gap: 4px;
+    }
+    .nav button {
+      background: none; border: 0; color: var(--muted); font-size: 0.78rem; cursor: pointer;
+      padding: 10px 8px; flex: 1; min-width: 64px; min-height: 44px;
+      border-radius: 999px; font-family: var(--font-body); font-weight: 500;
+      transition: background 0.2s ease, color 0.2s ease;
+    }
+    .nav button.active {
+      color: var(--gold-text);
+      font-weight: 700;
+      background: linear-gradient(135deg, #ffe08a 0%, var(--gold) 50%, var(--gold-dark) 100%);
+      box-shadow: var(--shadow-gold);
+    }
+    input[type="text"], input:not([type]) { font-size: 16px; }
+    .view { animation: aimFade 0.28s ease; }
+    @keyframes aimFade {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: none; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      .view { animation: none; }
+      .btn, .tariff, .nav button { transition: none; }
+      .storm-atmosphere video { display: none !important; }
+    }
+    .view h2, .card > strong:first-child { font-size: 1.15rem; display: block; margin-bottom: 6px; }
+    .label-tag {
+      display: inline-block; font-size: 0.75rem; font-weight: 700; letter-spacing: 0.02em;
+      text-transform: uppercase; color: var(--gold); margin: 0 0 6px;
+    }
+    .label-tag.warn { color: var(--warn); }
+    code, .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; word-break: break-all; }
+    .ok { color: var(--ok); }
+    label.check { display: flex; gap: 8px; align-items: flex-start; margin: 12px 0; font-size: 0.9rem; color: var(--muted); }
+    .qr-host img { max-width: 220px; display: block; margin: 12px auto; background: #fff; padding: 8px; border-radius: 8px; }
+    .steps { padding-left: 1.1rem; margin: 8px 0; color: var(--muted); }
+    .steps li { margin: 6px 0; }
+    .hidden { display: none !important; }
+    .progress-wrap { margin: 10px 0 4px; }
+    .progress-meta { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; }
+    .progress-bar {
+      height: 10px; border-radius: 999px; background: #1a2740; overflow: hidden; margin-top: 8px;
+    }
+    .progress-bar > span { display: block; height: 100%; border-radius: 999px; }
+    .progress-bar.ok > span { background: var(--ok); }
+    .progress-bar.warn > span { background: var(--warn); }
+    .progress-bar.bad > span { background: var(--bad); }
+    .device-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-top: 12px; }
+    @media (min-width: 560px) { .device-grid { grid-template-columns: 1fr 1fr; } }
+    @media (min-width: 860px) {
+      .wrap { max-width: 960px; }
+      .device-grid { grid-template-columns: 1fr 1fr 1fr; }
+    }
+    .device-card {
+      background: var(--card); border: 1px solid var(--border); border-radius: 16px; padding: 14px;
+    }
+    .device-card h3 { margin: 0 0 6px; font-size: 1.05rem; }
+    .device-card .status { font-size: 0.9rem; margin: 4px 0 8px; }
+    .device-card details { margin-top: 8px; }
+    .device-card summary { cursor: pointer; color: var(--muted); font-size: 0.9rem; }
+    .device-card input.rename {
+      width: 100%; margin-top: 8px; padding: 10px 12px; border-radius: 10px;
+      border: 1px solid var(--border); background: #0f1828; color: var(--text); font-size: 1rem;
+    }
+    .modal-back {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.55); z-index: 40;
+      display: flex; align-items: center; justify-content: center; padding: 16px;
+    }
+    .modal {
+      background: var(--card); border: 1px solid var(--border-gold); border-radius: 16px;
+      padding: 18px; max-width: 420px; width: 100%;
+    }
+    .site-footer {
+      margin-top: 28px;
+      padding: 20px 4px 8px;
+      border-top: 1px solid var(--border-gold);
+    }
+    .site-footer h2 {
+      font-family: var(--font-display);
+      font-size: 1.15rem;
+      margin: 0 0 12px;
+      color: var(--gold-light);
+    }
+    .site-footer__grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 14px;
+      margin-bottom: 14px;
+    }
+    .site-footer a { color: var(--gold-light); text-decoration: none; }
+    .site-footer a:hover { text-decoration: underline; }
+    .site-footer__legal { font-size: 0.9rem; color: var(--muted); line-height: 1.6; }
+    .site-footer__copy { margin-top: 14px; text-align: center; font-size: 0.85rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <div class="storm-atmosphere" aria-hidden="true">
+    <img
+      class="storm-poster"
+      src="/media/hero-storm-poster.jpg?v=20260801aim"
+      alt=""
+      decoding="async"
+    />
+    <video
+      class="storm-video"
+      id="stormVideo"
+      autoplay
+      muted
+      loop
+      playsinline
+      preload="metadata"
+      poster="/media/hero-storm-poster.jpg?v=20260801aim"
+    >
+      <source src="/media/hero-storm.webm?v=20260801aim" type="video/webm" />
+      <source src="/media/hero-storm.mp4?v=20260801aim" type="video/mp4" />
+    </video>
+    <div class="storm-veil"></div>
+  </div>
+  <div class="wrap">
+    <div class="topbar">
+      <nav class="lang-switch" id="langSwitch" aria-label="Language switcher">
+        <button type="button" class="lang-switch__btn lang-switch__btn--active" data-lang="ru" aria-pressed="true">RU</button>
+        <button type="button" class="lang-switch__btn" data-lang="en" aria-pressed="false">EN</button>
+      </nav>
+    </div>
+    <nav class="nav" id="mainNav">
+      <button type="button" data-tab="home" data-i18n="nav.home" class="active">Главная</button>
+      <button type="button" data-tab="devices" data-i18n="nav.devices">Устройства</button>
+      <button type="button" data-tab="subs" data-i18n="nav.subs">Подписки</button>
+      <button type="button" data-tab="bonus" data-i18n="nav.bonus">Бонусы</button>
+      <button type="button" data-tab="profile" data-i18n="nav.profile">Профиль</button>
+    </nav>
+
+    <h1 id="brand" class="brand-gold">AiMonkeyVPN</h1>
+    <p class="muted" id="subtitle" data-i18n="subtitle">VPN без Telegram: оплата СБП / карта / QR → ссылка Happ сразу на сайте.</p>
+
+    <section id="view-home" class="view"></section>
+    <section id="view-devices" class="view hidden"></section>
+    <section id="view-subs" class="view hidden"></section>
+    <section id="view-bonus" class="view hidden"></section>
+    <section id="view-profile" class="view hidden"></section>
+    <section id="view-order" class="view hidden"></section>
+    <div id="modalHost"></div>
+
+    <footer class="site-footer" id="siteFooter">
+      <h2 data-i18n="footer.contacts">Контакты</h2>
+      <div class="site-footer__grid">
+        <div>
+          <strong data-i18n="footer.telegram">Telegram</strong><br/>
+          <a href="https://t.me/AiMonkeyStars_bot" target="_blank" rel="noopener">@AiMonkeyStars_bot</a>
+        </div>
+        <div>
+          <strong data-i18n="footer.news">Новости</strong><br/>
+          <a href="https://t.me/+xwj4zZo4bNphZjVi" target="_blank" rel="noopener" data-i18n="footer.news_channel">Канал магазина</a><br/>
+          <a href="/news.html" data-i18n="footer.news_page">Страница новостей</a>
+        </div>
+        <div>
+          <strong data-i18n="footer.legal">Документы</strong><br/>
+          <span class="site-footer__legal">
+            <a href="/v1/legal/offer" target="_blank" rel="noopener" data-i18n="footer.offer">Оферта</a> ·
+            <a href="/v1/legal/privacy" target="_blank" rel="noopener" data-i18n="footer.privacy">Политика</a> ·
+            <a href="/v1/legal/refund" target="_blank" rel="noopener" data-i18n="footer.refund">Возвраты</a> ·
+            <a href="/refunds.html" data-i18n="footer.refunds_short">Возвраты кратко</a>
+          </span>
+        </div>
+      </div>
+      <p class="site-footer__copy" data-i18n="footer.copy">© 2026 AiMonkeyStars. AiMonkeyVPN</p>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var v = document.getElementById("stormVideo");
+      if (!v) return;
+      if (window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+        v.removeAttribute("autoplay");
+        return;
+      }
+      var p = v.play();
+      if (p && typeof p.catch === "function") {
+        p.catch(function () { /* muted autoplay may start after gesture */ });
+      }
+    })();
+
+    const AIM_I18N = {
+      ru: {
+        "page.title": "AiMonkeyVPN",
+        "nav.home": "Главная",
+        "nav.devices": "Устройства",
+        "nav.subs": "Подписки",
+        "nav.bonus": "Бонусы",
+        "nav.profile": "Профиль",
+        "subtitle": "VPN без Telegram: оплата СБП / карта / QR → ссылка Happ сразу на сайте.",
+        "footer.contacts": "Контакты",
+        "footer.telegram": "Telegram",
+        "footer.news": "Новости",
+        "footer.news_channel": "Канал магазина",
+        "footer.news_page": "Страница новостей",
+        "footer.legal": "Документы",
+        "footer.offer": "Оферта",
+        "footer.privacy": "Политика",
+        "footer.refund": "Возвраты",
+        "footer.refunds_short": "Возвраты кратко",
+        "footer.copy": "© 2026 AiMonkeyStars. AiMonkeyVPN",
+        "btn.support": "Поддержка",
+        "btn.buy_vpn": "Купить VPN",
+        "btn.to_tariffs": "К тарифам",
+        "btn.buy_renew": "Купить / Продлить",
+        "btn.my_devices": "Мои устройства",
+        "btn.invite": "Пригласить друга",
+        "btn.pay": "Оплатить (СБП / карта / QR)",
+        "btn.extend": "Продлить",
+        "btn.choose_tariff": "Выбрать тариф",
+        "home.active": "VPN активен",
+        "home.inactive": "VPN не активен",
+        "home.buy_hint": "Купите тариф, чтобы получить ссылку.",
+        "home.left": "Осталось примерно {n} дн.",
+        "home.steps_guest": "3 шага до VPN",
+        "home.steps_user": "Как подключить",
+        "home.step1": "Выберите срок на вкладке «Подписки».",
+        "home.step2": "Оплатите СБП или картой.",
+        "home.step3": "Откройте ссылку в Happ (после оплаты она появится здесь).",
+        "home.closed": "Доступ закрыт",
+        "home.closed_p": "Продлите тариф, чтобы снова пользоваться VPN.",
+        "home.ending": "Подписка заканчивается",
+        "home.ending_p": "Осталось примерно {n} дн. Продлите заранее.",
+        "home.ref": "Вас пригласил друг",
+        "home.ref_p": "Бонусы партнёру начислятся после вашей оплаты VPN.",
+        "subs.tariffs": "Тарифы",
+        "subs.your": "Ваша подписка",
+        "subs.days": "{n} дней",
+        "subs.nick": "Ваш ник (псевдоним)",
+        "subs.nick_hint": "Не ФИО и не email. Нужен, чтобы найти заказ в поддержке. После сохранения ник не меняется.",
+        "subs.legal": "Согласен с офертой и политикой конфиденциальности",
+        "subs.after_pay": "После оплаты получите ссылку для Happ.",
+        "subs.active_left": "Активна ещё примерно {n} дн.",
+        "devices.title": "Мои устройства",
+        "bonus.title": "Бонусы за друзей",
+        "profile.title": "Профиль",
+
+        "devices.pay_first": "Сначала оплатите тариф — здесь появится панель управления устройствами.",
+        "devices.need_active": "Нужна активная подписка VPN. Купите тариф — и управляйте телефонами, планшетами и компьютерами здесь.",
+        "devices.load_fail": "Не удалось загрузить список. Проверьте связь и обновите страницу.",
+        "devices.refresh": "Обновить",
+        "devices.used": "Занято",
+        "devices.of": "из",
+        "devices.limit": "лимит подписки",
+        "devices.can_add": "можно подключить",
+        "devices.add": "➕ Подключить устройство",
+        "devices.full": "Уже подключено",
+        "devices.one_hint_full": "Подписка включает одно устройство. Чтобы сменить — отвяжите текущее, затем подключите новое.",
+        "devices.one_hint": "Подписка включает одно устройство со своей ссылкой Happ.",
+        "devices.footnote": "Одно устройство — одна ссылка Happ. Имя можно менять. После отвязки ссылка перестанет работать.",
+        "devices.empty": "Пока нет устройств",
+        "bonus.lead": "Поделитесь ссылкой. Когда друг оплатит VPN — вам процент с первой покупки (как в боте).",
+        "bonus.no_vpn_needed": "VPN покупать не обязательно, чтобы получить свою ссылку.",
+        "bonus.show_link": "Показать мою ссылку",
+        "bonus.refresh_link": "Обновить ссылку",
+        "bonus.tg_hint": "Уже есть ссылка в Telegram-боте? Её тоже можно слать друзьям (там есть и сайт /r/…).",
+        "bonus.link_later": "Потом по желанию: Профиль → «Связать Telegram» (сессия уже будет).",
+        "bonus.copy": "Скопировать ссылку",
+        "bonus.same_ref": "Это та же рефка, что в Telegram-боте. Друг открывает → покупает → вам бонус.",
+        "bonus.levels": "Уровни: Старт 15% → Бронза 20% → Серебро 25% → Золото 30%.",
+        "profile.tg_linked": "Telegram привязан",
+        "profile.tg_not": "Telegram не привязан (необязательно)",
+        "profile.link_tg": "Связать Telegram",
+        "profile.devices_hint": "Устройства: вкладка Устройства — добавить, переименовать, отвязать. У каждого устройства своя ссылка Happ.",
+        "profile.open_devices": "Открыть устройства",
+        "profile.how_title": "Как войти снова",
+        "profile.how1": "Тот же браузер — сайт сам помнит сессию (cookies).",
+        "profile.how2": "Другой телефон — ник + код доступа (без пароля и без email).",
+        "profile.how3": "Telegram — кнопка «Связать Telegram», чтобы кабинет и бот были одним человеком.",
+        "profile.no_email": "Пароль от почты не нужен — мы его не выдаём и email не просим.",
+        "profile.login_other": "Войти с другого устройства",
+        "profile.login_btn": "Войти по нику и коду",
+        "profile.orders": "Мои заказы",
+        "profile.no_order": "Пока нет сохранённого заказа в этом браузере.",
+        "profile.history": "История оплат",
+        "profile.history_hint": "Показываем успешные оплаты и один незакрытый счёт. Отменённые и просроченные скрыты.",
+        "profile.empty": "Пока пусто",
+        "brand": "AiMonkeyVPN",
+        "happ.tag": "Можно открыть в Happ",
+        "happ.ready": "VPN готов — откройте ссылку в приложении Happ",
+        "happ.steps_title": "Как включить VPN за 4 шага",
+        "happ.step1": "Скачайте Happ — бесплатное приложение (кнопки ниже).",
+        "happ.step2": "Скопируйте ссылку или нажмите «Открыть в Happ» (или QR).",
+        "happ.step3": "В Happ: «+» → добавить подписку. На iPhone включите HWID в настройках Happ, если попросит.",
+        "happ.step4": "Включите VPN в Happ. Готово.",
+        "happ.personal": "Ссылка личная — не пересылайте. Открывать нужно в Happ, не просто в браузере.",
+        "happ.copy": "Скопировать ссылку",
+        "happ.open": "Открыть в Happ",
+        "happ.appstore": "App Store (iPhone)",
+        "happ.play": "Google Play (Android)",
+        "happ.geo_title": "Нет Happ в App Store? Смена региона (гео)",
+        "happ.geo1": "Настройки → ваше имя сверху → Контент и покупки (Content & Purchases) → Просмотреть (View).",
+        "happ.geo2": "Страна/регион (Country/Region) → Сменить… (Change…) → Казахстан (или США).",
+        "happ.geo3": "Способ оплаты (Payment Method) → Нет (None).",
+        "happ.geo4": "Адрес — можно пример: улица ул. Абая, д. 150, город Алматы, регион Алматинская область, индекс 050000.",
+        "happ.geo5": "Откройте App Store → найдите Happ (иконка «H» на чёрном) → Загрузить.",
+        "happ.geo6": "Готово: страну РФ можно вернуть — Happ останется на телефоне.",
+        "happ.geo_android": "На Android обычно достаточно Google Play — смена региона Apple ID не нужна.",
+        "order.completed": "Оплачен",
+        "order.processing": "В обработке",
+        "order.pending": "Ожидает оплаты",
+        "order.expired": "Не оплачен",
+        "order.refunded": "Возврат",
+        "order.unknown": "—",
+      },
+      en: {
+        "page.title": "AiMonkeyVPN",
+        "nav.home": "Home",
+        "nav.devices": "Devices",
+        "nav.subs": "Plans",
+        "nav.bonus": "Bonuses",
+        "nav.profile": "Profile",
+        "subtitle": "VPN without Telegram: SBP / card / QR payment → Happ link right on the site.",
+        "footer.contacts": "Contacts",
+        "footer.telegram": "Telegram",
+        "footer.news": "News",
+        "footer.news_channel": "Shop channel",
+        "footer.news_page": "News page",
+        "footer.legal": "Legal",
+        "footer.offer": "Offer",
+        "footer.privacy": "Privacy",
+        "footer.refund": "Refunds",
+        "footer.refunds_short": "Refunds (short)",
+        "footer.copy": "© 2026 AiMonkeyStars. AiMonkeyVPN",
+        "btn.support": "Support",
+        "btn.buy_vpn": "Buy VPN",
+        "btn.to_tariffs": "View plans",
+        "btn.buy_renew": "Buy / Renew",
+        "btn.my_devices": "My devices",
+        "btn.invite": "Invite a friend",
+        "btn.pay": "Pay (SBP / card / QR)",
+        "btn.extend": "Renew",
+        "btn.choose_tariff": "Choose a plan",
+        "home.active": "VPN active",
+        "home.inactive": "VPN inactive",
+        "home.buy_hint": "Buy a plan to get your link.",
+        "home.left": "About {n} days left.",
+        "home.steps_guest": "3 steps to VPN",
+        "home.steps_user": "How to connect",
+        "home.step1": "Pick a term on the Plans tab.",
+        "home.step2": "Pay via SBP or card.",
+        "home.step3": "Open the link in Happ (it appears here after payment).",
+        "home.closed": "Access closed",
+        "home.closed_p": "Renew your plan to use VPN again.",
+        "home.ending": "Subscription ending soon",
+        "home.ending_p": "About {n} days left. Renew in advance.",
+        "home.ref": "A friend invited you",
+        "home.ref_p": "Partner bonuses are credited after your VPN payment.",
+        "subs.tariffs": "Plans",
+        "subs.your": "Your subscription",
+        "subs.days": "{n} days",
+        "subs.nick": "Your nickname",
+        "subs.nick_hint": "Not your real name or email. Used to find your order in support. Nickname cannot be changed later.",
+        "subs.legal": "I agree to the offer and privacy policy",
+        "subs.after_pay": "After payment you get a Happ link.",
+        "subs.active_left": "Active for about {n} more days.",
+        "devices.title": "My devices",
+        "bonus.title": "Friend bonuses",
+        "profile.title": "Profile",
+
+        "devices.pay_first": "Pay for a plan first — the device panel will appear here.",
+        "devices.need_active": "An active VPN subscription is required. Buy a plan to manage phones, tablets and computers here.",
+        "devices.load_fail": "Could not load the list. Check your connection and refresh.",
+        "devices.refresh": "Refresh",
+        "devices.used": "Used",
+        "devices.of": "of",
+        "devices.limit": "plan limit",
+        "devices.can_add": "can add more",
+        "devices.add": "➕ Add device",
+        "devices.full": "Already connected",
+        "devices.one_hint_full": "The plan includes one device. Unlink the current one to connect another.",
+        "devices.one_hint": "The plan includes one device with its own Happ link.",
+        "devices.footnote": "One device — one Happ link. You can rename it. After unlinking the link stops working.",
+        "devices.empty": "No devices yet",
+        "bonus.lead": "Share your link. When a friend pays for VPN, you get a percent of the first purchase (same as in the bot).",
+        "bonus.no_vpn_needed": "You do not need to buy VPN to get your link.",
+        "bonus.show_link": "Show my link",
+        "bonus.refresh_link": "Refresh link",
+        "bonus.tg_hint": "Already have a link in the Telegram bot? You can share that too (it includes the site /r/… link).",
+        "bonus.link_later": "Later (optional): Profile → Link Telegram (session will already exist).",
+        "bonus.copy": "Copy link",
+        "bonus.same_ref": "Same referral as in the Telegram bot. Friend opens → pays → you get a bonus.",
+        "bonus.levels": "Levels: Start 15% → Bronze 20% → Silver 25% → Gold 30%.",
+        "profile.tg_linked": "Telegram linked",
+        "profile.tg_not": "Telegram not linked (optional)",
+        "profile.link_tg": "Link Telegram",
+        "profile.devices_hint": "Devices tab — add, rename, unlink. Each device has its own Happ link.",
+        "profile.open_devices": "Open devices",
+        "profile.how_title": "How to sign in again",
+        "profile.how1": "Same browser — the site remembers the session (cookies).",
+        "profile.how2": "Another phone — nickname + access code (no password, no email).",
+        "profile.how3": "Telegram — Link Telegram so the cabinet and bot are the same person.",
+        "profile.no_email": "No email password — we do not ask for email.",
+        "profile.login_other": "Sign in on another device",
+        "profile.login_btn": "Sign in with nickname and code",
+        "profile.orders": "My orders",
+        "profile.no_order": "No saved order in this browser yet.",
+        "profile.history": "Payment history",
+        "profile.history_hint": "Successful payments and one unpaid invoice. Cancelled and expired are hidden.",
+        "profile.empty": "Empty for now",
+        "brand": "AiMonkeyVPN",
+        "happ.tag": "Ready for Happ",
+        "happ.ready": "VPN is ready — open the link in the Happ app",
+        "happ.steps_title": "Turn on VPN in 4 steps",
+        "happ.step1": "Download Happ — free app (buttons below).",
+        "happ.step2": "Copy the link or tap “Open in Happ” (or use the QR).",
+        "happ.step3": "In Happ: “+” → add subscription. On iPhone enable HWID in Happ settings if asked.",
+        "happ.step4": "Enable VPN in Happ. Done.",
+        "happ.personal": "This link is personal — do not share it. Open it in Happ, not just in a browser.",
+        "happ.copy": "Copy link",
+        "happ.open": "Open in Happ",
+        "happ.appstore": "App Store (iPhone)",
+        "happ.play": "Google Play (Android)",
+        "happ.geo_title": "No Happ in App Store? Change region (geo)",
+        "happ.geo1": "Settings → your name at the top → Media & Purchases → View.",
+        "happ.geo2": "Country/Region → Change… → Kazakhstan (or USA).",
+        "happ.geo3": "Payment Method → None.",
+        "happ.geo4": "Address — example: Abay Ave 150, Almaty, Almaty Region, 050000.",
+        "happ.geo5": "Open App Store → search Happ (black “H” icon) → Get.",
+        "happ.geo6": "Done: you can switch country back to RU — Happ stays on the phone.",
+        "happ.geo_android": "On Android, Google Play is usually enough — no Apple ID region change.",
+        "order.completed": "Paid",
+        "order.processing": "Processing",
+        "order.pending": "Awaiting payment",
+        "order.expired": "Unpaid",
+        "order.refunded": "Refunded",
+        "order.unknown": "—",
+      }
+    };
+
+    const LANG_KEY = "aim_lang";
+    function detectLang() {
+      const saved = localStorage.getItem(LANG_KEY);
+      if (saved === "ru" || saved === "en") return saved;
+      const browser = (navigator.language || "ru").toLowerCase();
+      return browser.startsWith("en") ? "en" : "ru";
+    }
+    let aimLang = detectLang();
+    function t(key, vars) {
+      const dict = (AIM_I18N[aimLang] || AIM_I18N.ru);
+      let s = (dict[key] !== undefined ? dict[key] : (AIM_I18N.ru[key] || key));
+      if (vars && typeof vars === "object") {
+        Object.keys(vars).forEach(k => { s = s.replace(new RegExp("\\{" + k + "\\}", "g"), String(vars[k])); });
+      }
+      return s;
+    }
+    function applyStaticI18n() {
+      document.documentElement.lang = aimLang;
+      document.title = t("page.title");
+      document.querySelectorAll("[data-i18n]").forEach(el => {
+        const key = el.getAttribute("data-i18n");
+        if (key) el.textContent = t(key);
+      });
+      document.querySelectorAll("#langSwitch .lang-switch__btn").forEach(btn => {
+        const on = btn.getAttribute("data-lang") === aimLang;
+        btn.classList.toggle("lang-switch__btn--active", on);
+        btn.setAttribute("aria-pressed", on ? "true" : "false");
+      });
+      const b = document.getElementById("brand");
+      if (b && !/@/.test(b.textContent || "")) {
+        b.textContent = t("brand");
+        b.classList.add("brand-gold");
+      }
+    }
+    function setLang(lang) {
+      if (lang !== "ru" && lang !== "en") return;
+      aimLang = lang;
+      localStorage.setItem(LANG_KEY, lang);
+      applyStaticI18n();
+      if (typeof renderAll === "function") renderAll();
+    }
+
+
+
+    const API = "/v1";
+    const state = {
+      products: [],
+      selected: null,
+      accountId: localStorage.getItem("aim_account") || "",
+      sessionSecret: localStorage.getItem("aim_session") || "",
+      me: null,
+      devices: null,
+      orderToken: null,
+      legal: false,
+      nickname: localStorage.getItem("aim_nickname") || "",
+      ref: localStorage.getItem("aim_ref") || "",
+      supportUrl: "https://t.me/AiMonkeyStars_bot",
+      tab: "home",
+      _orderPollTimer: null,
+    };
+
+    function $(id) { return document.getElementById(id); }
+
+    function saveSession(accountId, secret) {
+      state.accountId = accountId;
+      state.sessionSecret = secret;
+      localStorage.setItem("aim_account", accountId);
+      localStorage.setItem("aim_session", secret);
+      document.cookie = `aim_account=${encodeURIComponent(accountId)}; path=/; max-age=31536000; SameSite=Lax`;
+      document.cookie = `aim_session=${encodeURIComponent(secret)}; path=/; max-age=31536000; SameSite=Lax`;
+    }
+
+    async function api(path, opts = {}) {
+      const res = await fetch(API + path, {
+        headers: { "Content-Type": "application/json", ...(opts.headers || {}) },
+        ...opts,
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        const err = new Error((data && data.detail && (data.detail.message || data.detail.code)) || ("HTTP " + res.status));
+        err.data = data;
+        throw err;
+      }
+      return data;
+    }
+
+    function daysLeft(iso) {
+      if (!iso) return null;
+      const t = Date.parse(iso);
+      if (!t) return null;
+      return Math.max(0, Math.ceil((t - Date.now()) / 86400000));
+    }
+
+    function orderPageUrl(token) {
+      const t = token || state.orderToken || localStorage.getItem("aim_last_order") || "";
+      if (!t) return "";
+      return location.origin + "/o/" + encodeURIComponent(t);
+    }
+
+    function supportBtn(extraClass) {
+      const u = state.supportUrl || "https://t.me/AiMonkeyStars_bot";
+      return `<a class="btn ${extraClass || "secondary"}" href="${u}" target="_blank" rel="noopener">${t("btn.support")}</a>`;
+    }
+
+    function drawQr(container, text, alt) {
+      if (!container || !text) return;
+      container.innerHTML = "";
+      container.classList.add("qr-host");
+      const img = document.createElement("img");
+      img.alt = alt || "QR";
+      img.width = 220;
+      img.height = 220;
+      img.src = "https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=" + encodeURIComponent(text);
+      container.appendChild(img);
+    }
+
+    function happAddDeeplink(url) {
+      const u = String(url || "").trim();
+      if (!u) return "";
+      return "happ://add/" + u;
+    }
+
+    function happLinkHtml(url, qrId) {
+      const safe = String(url || "").replace(/'/g, "\\'");
+      const deeplink = happAddDeeplink(url);
+      const deepSafe = String(deeplink || "").replace(/'/g, "\\'");
+      const ios = "https://apps.apple.com/us/app/happ-proxy-utility/id6783623643";
+      const and = "https://play.google.com/store/apps/details?id=com.happproxy";
+      return `
+        <p class="label-tag">${t("happ.tag")}</p>
+        <p class="ok"><strong>${t("happ.ready")}</strong></p>
+        <strong>${t("happ.steps_title")}</strong>
+        <ol class="steps" style="font-size:1.05rem;line-height:1.55">
+          <li><b>${t("happ.step1")}</b></li>
+          <li><b>${t("happ.step2")}</b></li>
+          <li><b>${t("happ.step3")}</b></li>
+          <li><b>${t("happ.step4")}</b></li>
+        </ol>
+        <p class="muted">${t("happ.personal")}</p>
+        <p class="mono">${url}</p>
+        <button class="btn" type="button" onclick="navigator.clipboard.writeText('${safe}')">${t("happ.copy")}</button>
+        ${deeplink ? `<a class="btn" href="${deepSafe}">${t("happ.open")}</a>` : ""}
+        <a class="btn secondary" href="${ios}" target="_blank" rel="noopener">${t("happ.appstore")}</a>
+        <a class="btn secondary" href="${and}" target="_blank" rel="noopener">${t("happ.play")}</a>
+        <div id="${qrId}" class="qr-host"></div>
+        <details class="card" style="margin-top:12px;padding:12px">
+          <summary style="cursor:pointer;font-weight:700">${t("happ.geo_title")}</summary>
+          <ol class="steps" style="font-size:1.02rem;line-height:1.55;margin-top:10px">
+            <li>${t("happ.geo1")}</li>
+            <li>${t("happ.geo2")}</li>
+            <li>${t("happ.geo3")}</li>
+            <li>${t("happ.geo4")}</li>
+            <li>${t("happ.geo5")}</li>
+            <li>${t("happ.geo6")}</li>
+          </ol>
+          <p class="muted">${t("happ.geo_android")}</p>
+        </details>`;
+    }
+
+    function showTab(name, opts) {
+      const syncUrl = !opts || opts.syncUrl !== false;
+      state.tab = name;
+      document.querySelectorAll(".view").forEach(v => v.classList.add("hidden"));
+      const el = $("view-" + name);
+      if (el) el.classList.remove("hidden");
+      document.querySelectorAll(".nav button").forEach(b => {
+        b.classList.toggle("active", b.dataset.tab === name);
+      });
+      if ($("mainNav") && name !== "order") $("mainNav").classList.remove("hidden");
+      if (syncUrl) syncTabUrl(name);
+    }
+
+    function syncTabUrl(name) {
+      try {
+        const path = location.pathname || "/";
+        const search = location.search || "";
+        // Deep link заказа: уход с вкладки order меняет URL на обычные вкладки.
+        if (/^\/o\//.test(path) || /^\/web\/o\//.test(path)) {
+          if (name === "order") {
+            if (location.hash) history.replaceState(null, "", path + search);
+            return;
+          }
+          if (name === "devices") {
+            history.replaceState(null, "", "/devices");
+            return;
+          }
+          if (name === "home") {
+            history.replaceState(null, "", "/" + search);
+            return;
+          }
+          history.replaceState(null, "", "/" + search + "#" + name);
+          return;
+        }
+        if (name === "devices") {
+          if (!/\/devices\/?$/.test(path) || location.hash) {
+            history.replaceState(null, "", "/devices");
+          }
+          return;
+        }
+        if (name === "home") {
+          history.replaceState(null, "", "/" + search);
+          return;
+        }
+        if (name === "order") return;
+        history.replaceState(null, "", "/" + search + "#" + name);
+      } catch (_) {}
+    }
+
+    function deviceIcon(kind) {
+      const k = (kind || "unknown").toLowerCase();
+      if (k === "iphone" || k === "android") return "📱";
+      if (k === "tablet") return "📲";
+      if (k === "laptop") return "💻";
+      if (k === "desktop") return "🖥️";
+      return "📟";
+    }
+
+    function deviceStatusLabel(d) {
+      const st = (d && d.status) || "awaiting";
+      if (st === "online") return "🟢 В сети сейчас";
+      if (st === "offline") {
+        const ls = d.last_seen_at ? (" · был в сети: " + d.last_seen_at) : "";
+        return "🟡 Был в сети" + ls;
+      }
+      return "⚪️ Ожидает подключения";
+    }
+
+    function humanConnectedDate(iso) {
+      if (!iso) return "";
+      try {
+        const dt = new Date(iso);
+        if (Number.isNaN(dt.getTime())) return "";
+        return "Подключен " + dt.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
+      } catch (_) { return ""; }
+    }
+
+    function progressTone(used, max) {
+      const u = Number(used) || 0;
+      const m = Math.max(1, Number(max) || 1);
+      if (u >= m) return "bad";
+      if (m - u === 1) return "warn";
+      if ((m - u) / m > 0.2) return "ok";
+      return "warn";
+    }
+
+    function authBody() {
+      return {
+        account_id: state.accountId,
+        session_secret: state.sessionSecret,
+      };
+    }
+
+    async function refreshDevices() {
+      if (!state.accountId || !state.sessionSecret) {
+        state.devices = null;
+        return;
+      }
+      try {
+        state.devices = await api(
+          `/web/devices?account_id=${encodeURIComponent(state.accountId)}&session_secret=${encodeURIComponent(state.sessionSecret)}`
+        );
+      } catch (_) {
+        state.devices = null;
+      }
+    }
+
+    function closeModal() {
+      const host = $("modalHost");
+      if (host) host.innerHTML = "";
+    }
+    window.closeModal = closeModal;
+
+    function openModal(html) {
+      const host = $("modalHost");
+      if (!host) return;
+      host.innerHTML = `<div class="modal-back" onclick="if(event.target===this)closeModal()">${html}</div>`;
+    }
+
+    function renderDevices() {
+      const me = state.me;
+      const active = me && (me.vpn_status || "").includes("active");
+      const pack = state.devices;
+      if (!state.accountId || !state.sessionSecret) {
+        $("view-devices").innerHTML = `
+          <div class="card">
+            <strong>${t("devices.title")}</strong>
+            <p class="muted">${t("devices.pay_first")}</p>
+            <button class="btn" type="button" onclick="showTab('subs')">${t("btn.buy_vpn")}</button>
+          </div>`;
+        return;
+      }
+      if (!active && !(pack && (pack.devices || []).length)) {
+        $("view-devices").innerHTML = `
+          <div class="card">
+            <strong>${t("devices.title")}</strong>
+            <p class="muted">${t("devices.need_active")}</p>
+            <button class="btn" type="button" onclick="showTab('subs')">${t("btn.to_tariffs")}</button>
+            ${supportBtn("secondary")}
+          </div>`;
+        return;
+      }
+      if (!pack) {
+        $("view-devices").innerHTML = `
+          <div class="card">
+            <strong>${t("devices.title")}</strong>
+            <p class="muted">${t("devices.load_fail")}</p>
+            <button class="btn" type="button" onclick="reloadDevices()">${t("devices.refresh")}</button>
+            ${supportBtn("secondary")}
+          </div>`;
+        return;
+      }
+      const used = pack.used || 0;
+      const max = pack.max || 1;
+      const tone = progressTone(used, max);
+      const pct = Math.min(100, Math.round(100 * used / Math.max(1, max)));
+      const devices = pack.devices || [];
+      const cards = devices.map(d => {
+        const id = d.id;
+        const name = (d.display_name || "Устройство").replace(/</g, "&lt;");
+        const url = d.subscription_url || "";
+        const safe = url.replace(/'/g, "\\'");
+        const connected = humanConnectedDate(d.first_connected_at);
+        const qrId = "devQr" + id;
+        return `
+          <article class="device-card" data-id="${id}">
+            <h3>${deviceIcon(d.device_kind)} <span id="devName${id}">${name}</span></h3>
+            <div class="status">${deviceStatusLabel(d)}</div>
+            ${connected ? `<p class="muted">${connected}</p>` : `<p class="muted">Ещё не подключалось</p>`}
+            <details>
+              <summary>Ссылка Happ, QR и действия</summary>
+              ${url ? `
+                <p class="mono" style="margin-top:8px">${url}</p>
+                <button class="btn inline" type="button" onclick="navigator.clipboard.writeText('${safe}')">Скопировать</button>
+                <div id="${qrId}" class="qr-host"></div>
+              ` : `<p class="muted">Ссылка пока недоступна</p>`}
+              <input class="rename" id="rename${id}" maxlength="64" placeholder="Новое имя (например, Телефон жены)" value="${name}" />
+              <button class="btn inline secondary" type="button" onclick="renameDevice(${id})">Сохранить имя</button>
+              <button class="btn inline danger" type="button" onclick="askRevokeDevice(${id}, '${name.replace(/'/g, "\\'")}')">Отвязать</button>
+            </details>
+          </article>`;
+      }).join("");
+      const addLabel = pack.can_add
+        ? t("devices.add")
+        : t("devices.full");
+      $("view-devices").innerHTML = `
+        <div class="card">
+          <strong>${t("devices.title")}</strong>
+          <div class="progress-wrap">
+            <div class="progress-meta">
+              <span>${t("devices.used")} <b>${used} ${t("devices.of")} ${max}</b></span>
+              <span class="muted">${tone === "bad" ? t("devices.limit") : t("devices.can_add")}</span>
+            </div>
+            <div class="progress-bar ${tone}"><span style="width:${pct}%"></span></div>
+          </div>
+          <button class="btn" type="button" id="addDeviceBtn" ${pack.can_add ? "" : "disabled"}
+            onclick="addDevice()">${addLabel}</button>
+          ${!pack.can_add ? `<p class="muted">${t("devices.one_hint_full")}</p>` : `<p class="muted">${t("devices.one_hint")}</p>`}
+          <p id="devicesMsg" class="muted"></p>
+        </div>
+        <div class="device-grid">${cards || ("<p class='muted'>" + t("devices.empty") + "</p>")}</div>
+        <div class="card">
+          <p class="muted">${t("devices.footnote")}</p>
+          ${supportBtn("secondary")}
+        </div>`;
+      devices.forEach(d => {
+        if (d.subscription_url) drawQr($("devQr" + d.id), d.subscription_url, "QR устройства");
+      });
+    }
+
+    window.reloadDevices = async function() {
+      await refreshDevices();
+      renderDevices();
+    };
+
+    window.addDevice = async function() {
+      const msg = $("devicesMsg");
+      if (msg) msg.textContent = "Создаём…";
+      try {
+        const data = await api("/web/devices/create", {
+          method: "POST",
+          body: JSON.stringify(authBody()),
+        });
+        await refreshDevices();
+        renderDevices();
+        const url = data.device && data.device.subscription_url;
+        if (url) {
+          openModal(`
+            <div class="modal" onclick="event.stopPropagation()">
+              <strong>✨ Устройство добавлено</strong>
+              <p class="muted">Статус: ⚪️ Ожидает подключения. Импортируйте ссылку в Happ.</p>
+              <p class="mono">${url}</p>
+              <button class="btn" type="button" onclick="navigator.clipboard.writeText('${url.replace(/'/g, "\\'")}')">Скопировать</button>
+              <div id="newDevQr" class="qr-host"></div>
+              <button class="btn secondary" type="button" onclick="closeModal()">Закрыть</button>
+            </div>`);
+          drawQr($("newDevQr"), url, "QR нового устройства");
+        } else if (msg) msg.textContent = "Готово.";
+      } catch (e) {
+        const code = e && e.data && e.data.detail && e.data.detail.code;
+        if (msg) {
+          msg.textContent = code === "device_limit_reached"
+            ? "Подписка включает одно устройство. Отвяжите текущее, чтобы подключить другое."
+            : ("Не удалось добавить: " + (e.message || "ошибка"));
+        }
+      }
+    };
+
+    window.renameDevice = async function(id) {
+      const input = $("rename" + id);
+      const name = (input && input.value || "").trim();
+      const msg = $("devicesMsg");
+      if (!name) { if (msg) msg.textContent = "Введите имя"; return; }
+      try {
+        await api("/web/devices/rename", {
+          method: "POST",
+          body: JSON.stringify({ ...authBody(), device_id: id, display_name: name }),
+        });
+        const label = $("devName" + id);
+        if (label) label.textContent = name;
+        if (msg) msg.textContent = "Имя сохранено.";
+      } catch (e) {
+        if (msg) msg.textContent = "Не удалось переименовать.";
+      }
+    };
+
+    window.askRevokeDevice = function(id, name) {
+      openModal(`
+        <div class="modal" onclick="event.stopPropagation()">
+          <strong>Отвязать устройство?</strong>
+          <p class="muted">Вы точно хотите отвязать «${(name || "").replace(/</g, "&lt;")}»? Ссылка станет недействительной.</p>
+          <button class="btn danger" type="button" onclick="revokeDevice(${id})">Да, отвязать</button>
+          <button class="btn secondary" type="button" onclick="closeModal()">Отмена</button>
+        </div>`);
+    };
+
+    window.revokeDevice = async function(id) {
+      closeModal();
+      const msg = $("devicesMsg");
+      try {
+        await api("/web/devices/revoke", {
+          method: "POST",
+          body: JSON.stringify({ ...authBody(), device_id: id }),
+        });
+        await refreshDevices();
+        renderDevices();
+        if ($("devicesMsg")) $("devicesMsg").textContent = "Устройство отвязано. Ссылка больше не действует.";
+      } catch (e) {
+        if (msg) msg.textContent = "Не удалось отвязать.";
+      }
+    };
+
+    function renderHome() {
+      const me = state.me;
+      const left = me ? daysLeft(me.paid_until) : null;
+      const active = me && me.subscription_url && (me.vpn_status || "").includes("active");
+      const expired = me && (me.vpn_status || "").includes("expired");
+      const guest = !me || !me.subscription_url;
+      let banner = "";
+      if (expired || (left != null && left < 0)) {
+        banner = `<div class="card" style="border-color:#c44"><strong>${t("home.closed")}</strong><p class="muted">${t("home.closed_p")}</p><button class="btn" type="button" onclick="showTab('subs')">${t("btn.choose_tariff")}</button></div>`;
+      } else if (left != null && left <= 3) {
+        banner = `<div class="card" style="border-color:#c90"><strong>${t("home.ending")}</strong><p class="muted">${t("home.ending_p", {n: left})}</p><button class="btn" type="button" onclick="showTab('subs')">${t("btn.extend")}</button></div>`;
+      }
+      if (guest && state.ref) {
+        banner += `<div class="card" style="border-color:var(--border-gold)"><strong>${t("home.ref")}</strong><p class="muted">${t("home.ref_p")}</p></div>`;
+      }
+      $("view-home").innerHTML = `
+        ${banner}
+        <div class="card">
+          <div class="${active ? "ok" : "muted"}">${active ? t("home.active") : t("home.inactive")}</div>
+          <div class="muted">${left != null ? t("home.left", {n: left}) : t("home.buy_hint")}</div>
+          ${me && me.subscription_url ? happLinkHtml(me.subscription_url, "homeQr") : ""}
+          <button class="btn" type="button" onclick="showTab('subs')">${t("btn.buy_renew")}</button>
+          <button class="btn secondary" type="button" onclick="showTab('devices'); reloadDevices();">${t("btn.my_devices")}</button>
+          <button class="btn secondary" type="button" onclick="showTab('bonus')">${t("btn.invite")}</button>
+          ${supportBtn("secondary")}
+        </div>
+        <div class="card">
+          <strong>${guest ? t("home.steps_guest") : t("home.steps_user")}</strong>
+          <ol class="steps" style="font-size:1.05rem;line-height:1.55">
+            <li>${t("home.step1")}</li>
+            <li>${t("home.step2")}</li>
+            <li>${t("home.step3")}</li>
+          </ol>
+        </div>`;
+      if (me && me.subscription_url) drawQr($("homeQr"), me.subscription_url, "QR ссылки Happ");
+    }
+
+    function renderSubs() {
+      const me = state.me;
+      const left = me ? daysLeft(me.paid_until) : null;
+      const rows = state.products.map(p => `
+        <div class="tariff ${state.selected === p.id ? "selected" : ""}" onclick="selectTariff('${p.id}')">
+          <div><strong>${p.title}</strong><div class="muted">${t("subs.days", {n: p.days})}</div></div>
+          <div><strong>${p.price_rub} ₽</strong></div>
+        </div>`).join("");
+      const activeBlock = me && me.subscription_url ? `
+        <div class="card">
+          <strong>${t("subs.your")}</strong>
+          <p class="muted">${left != null ? t("subs.active_left", {n: left}) : ("Status: " + (me.vpn_status || "—"))}${me.paid_until ? " · " + me.paid_until : ""}</p>
+          ${happLinkHtml(me.subscription_url, "subsQr")}
+        </div>` : "";
+      $("view-subs").innerHTML = `
+        ${activeBlock}
+        <div class="card">
+          <strong>${t("subs.tariffs")}</strong>
+          ${rows || "<p class='muted'>Тарифы временно недоступны</p>"}
+          <label class="muted" style="display:block;margin-top:12px">${t("subs.nick")}</label>
+          <input id="nickBox" type="text" maxlength="24" placeholder="familyHero2024"
+            value="${(state.me && state.me.nickname) || state.nickname || ""}"
+            ${(state.me && state.me.nickname) ? "readonly" : ""}
+            style="width:100%;margin-top:6px;padding:12px;border-radius:10px;border:1px solid var(--border);background:#0f1828;color:var(--text);font-size:1rem"
+            oninput="state.nickname=this.value.trim()" />
+          <p class="muted" style="margin-top:6px">${t("subs.nick_hint")}</p>
+          <label class="check">
+            <input type="checkbox" id="legalBox" ${state.legal ? "checked" : ""} onchange="state.legal=this.checked" />
+            <span>${t("subs.legal")}</span>
+          </label>
+          <p class="muted">${t("subs.after_pay")}</p>
+          <button class="btn" type="button" id="payBtn" onclick="startCheckout()">${t("btn.pay")}</button>
+          <p class="muted" id="payErr"></p>
+        </div>`;
+      if (me && me.subscription_url) drawQr($("subsQr"), me.subscription_url, "QR ссылки Happ");
+    }
+
+    function renderBonus() {
+      const me = state.me;
+      const r = (me && me.referral) || {};
+      const st = r.stats || {};
+      const lvl = r.level || {};
+      const pct = Number(lvl.vpn_first_percent || 15);
+      const bal = Number(r.ref_balance_rub || 0);
+      const need = lvl.progress_need;
+      const prog = (typeof need === "number")
+        ? `До следующего уровня: ${lvl.progress_current || 0} из ${need} друзей с VPN ≥30 дн.`
+        : (lvl.id === "gold" ? "Максимальный уровень" : "");
+      const guestHint = !me
+        ? `<p class="muted"><b>${t("bonus.no_vpn_needed")}</b></p>
+           <button class="btn" type="button" onclick="ensureBonusLink()">${t("bonus.show_link")}</button>
+           <p class="muted" style="margin-top:10px">${t("bonus.tg_hint")}</p>
+           <p class="muted">${t("bonus.link_later")}</p>`
+        : (!r.url
+          ? `<p class="muted">…</p>
+             <button class="btn" type="button" onclick="ensureBonusLink()">${t("bonus.refresh_link")}</button>`
+          : "");
+      $("view-bonus").innerHTML = `
+        <div class="card">
+          <strong>${t("bonus.title")}</strong>
+          <p class="muted">${t("bonus.lead")}</p>
+          ${me ? `<p><b>Level:</b> ${lvl.label || "Start"} · <b>${pct}%</b> VPN</p>
+          ${prog ? `<p class="muted">${prog}</p>` : ""}
+          <p><b>Balance:</b> ${bal.toFixed(2)} ₽</p>` : ""}
+          ${r.url ? `<p class="label-tag">Your site link</p><p class="mono">${r.url}</p>
+            <button class="btn" type="button" onclick="navigator.clipboard.writeText('${r.url}')">${t("bonus.copy")}</button>
+            <div id="bonusQr" class="qr-host"></div>
+            <p class="muted">${t("bonus.same_ref")}</p>`
+            : guestHint}
+          ${me ? `<p class="muted" style="margin-top:12px">Invited: <b>${st.invited || 0}</b> · With purchase: <b>${st.with_purchase || 0}</b> · Qualified ≥30d: <b>${st.qualified_vpn || lvl.qualified_vpn || 0}</b> · Bonus days: <b>${st.bonus_days || 0}</b></p>
+          <p class="muted">${t("bonus.levels")}</p>` : ""}
+          <p class="muted" id="bonusMsg"></p>
+        </div>`;
+      if (r.url) drawQr($("bonusQr"), r.url, "QR реферальной ссылки");
+    }
+
+    window.ensureBonusLink = async function() {
+      const msg = $("bonusMsg");
+      if (msg) msg.textContent = "Готовим ссылку…";
+      try {
+        const data = await api("/web/session/ensure", {
+          method: "POST",
+          body: JSON.stringify({
+            account_id: state.accountId || null,
+            session_secret: state.sessionSecret || null,
+            ref_code: state.ref || null,
+          }),
+        });
+        if (data.account_id && data.session_secret) {
+          saveSession(data.account_id, data.session_secret);
+        }
+        await refreshMe();
+        renderBonus();
+        if (msg) msg.textContent = data.created
+          ? "Готово — ваша ссылка ниже. VPN покупать не нужно."
+          : "Ссылка обновлена.";
+      } catch (e) {
+        if (msg) msg.textContent = "Не удалось выдать ссылку. Обновите страницу или напишите в поддержку.";
+      }
+    };
+
+    function orderStatusRu(st) {
+      const s = String(st || "").toLowerCase();
+      if (s === "completed") return t("order.completed");
+      if (s === "paid" || s === "processing") return t("order.processing");
+      if (s === "pending_payment") return t("order.pending");
+      if (s === "expired") return t("order.expired");
+      if (s === "refunded") return t("order.refunded");
+      return st || t("order.unknown");
+    }
+
+    function historyOrdersForDisplay(orders) {
+      const list = Array.isArray(orders) ? orders.slice() : [];
+      const paid = list.filter(o => {
+        const s = String(o.status || "").toLowerCase();
+        return s === "completed" || s === "paid" || s === "processing";
+      });
+      const pending = list.filter(o => String(o.status || "").toLowerCase() === "pending_payment");
+      // Один свежий неоплаченный счёт + успешные оплаты. expired не показываем.
+      const out = [];
+      if (pending.length) out.push(pending[0]);
+      out.push(...paid);
+      return out.slice(0, 12);
+    }
+
+    function renderProfile() {
+      const me = state.me;
+      const orders = historyOrdersForDisplay((me && me.orders) || []);
+      const lastTok = localStorage.getItem("aim_last_order") || "";
+      const lastOrderUrl = lastTok ? (location.origin + "/o/" + encodeURIComponent(lastTok)) : "";
+      $("view-profile").innerHTML = `
+        <div class="card">
+          <strong>${t("profile.title")} ${me && me.nickname ? "· @" + me.nickname : (state.nickname ? "· @" + state.nickname : "")}</strong>
+          <p class="muted">${me && me.telegram_linked ? t("profile.tg_linked") : t("profile.tg_not")}</p>
+          ${!(me && me.telegram_linked) ? `<button class="btn" type="button" onclick="startLink()">${t("profile.link_tg")}</button>` : ""}
+          <p class="muted" id="linkMsg"></p>
+          <p class="muted">${t("profile.devices_hint")}</p>
+          <button class="btn secondary" type="button" onclick="showTab('devices'); reloadDevices();">${t("profile.open_devices")}</button>
+          ${supportBtn("secondary")}
+        </div>
+        <div class="card">
+          <strong>${t("profile.how_title")}</strong>
+          <ol class="steps" style="font-size:1.02rem;line-height:1.5">
+            <li>${t("profile.how1")}</li>
+            <li>${t("profile.how2")}</li>
+            <li>${t("profile.how3")}</li>
+          </ol>
+          <p class="muted">${t("profile.no_email")}</p>
+          <label class="muted">${t("profile.login_other")}</label>
+          <input id="loginNick" type="text" placeholder="ник" maxlength="24"
+            style="width:100%;margin:6px 0;padding:12px;border-radius:10px;border:1px solid var(--border);background:#0f1828;color:var(--text)" />
+          <input id="loginCode" type="text" placeholder="код AIM-…" maxlength="48"
+            style="width:100%;margin:6px 0;padding:12px;border-radius:10px;border:1px solid var(--border);background:#0f1828;color:var(--text)" />
+          <button class="btn" type="button" onclick="loginWithCode()">${t("profile.login_btn")}</button>
+          <p class="muted" id="loginMsg"></p>
+        </div>
+        <div class="card">
+          <strong>${t("profile.orders")}</strong>
+          ${lastOrderUrl ? `
+            <p class="label-tag warn">Ссылка на страницу заказа (/o)</p>
+            <p class="muted">Не для Happ. Только чтобы снова открыть заказ на сайте:</p>
+            <p class="mono">${lastOrderUrl}</p>
+            <button class="btn" type="button" onclick="navigator.clipboard.writeText('${lastOrderUrl}')">Скопировать ссылку на заказ</button>
+            <a class="btn secondary" href="${lastOrderUrl}">Открыть заказ</a>
+          ` : `<p class="muted">${t("profile.no_order")}</p>`}
+        </div>
+        <div class="card">
+          <strong>${t("profile.history")}</strong>
+          <p class="muted">${t("profile.history_hint")}</p>
+          ${orders.length ? orders.map(o => {
+            const pending = String(o.status || "").toLowerCase() === "pending_payment";
+            const bn = o.buyer_nickname ? " · @" + o.buyer_nickname : "";
+            return `
+            <div style="margin:8px 0;padding-bottom:8px;border-bottom:1px solid var(--border)">
+              #${o.id} · ${o.product_title}${bn}<br/>
+              <span class="muted">${o.amount_rub} ₽ · ${orderStatusRu(o.status)}</span>
+              ${pending ? `<button class="btn inline secondary" type="button" onclick="cancelPendingOrder(${o.id})">Отменить счёт</button>` : ""}
+            </div>`;
+          }).join("") : ("<p class='muted'>" + t("profile.empty") + "</p>")}
+          <p id="historyMsg" class="muted"></p>
+        </div>
+        <div class="card">
+          <a class="muted" href="/v1/legal/offer" target="_blank" rel="noopener">Оферта</a> ·
+          <a class="muted" href="/v1/legal/privacy" target="_blank" rel="noopener">Политика</a>
+        </div>`;
+    }
+
+    window.loginWithCode = async function() {
+      const msg = $("loginMsg");
+      const nick = (($("loginNick") && $("loginNick").value) || "").trim();
+      const code = (($("loginCode") && $("loginCode").value) || "").trim();
+      if (!nick || !code) { if (msg) msg.textContent = "Укажите ник и код доступа"; return; }
+      if (msg) msg.textContent = "Входим…";
+      try {
+        const data = await api("/web/login", {
+          method: "POST",
+          body: JSON.stringify({ nickname: nick, access_code: code }),
+        });
+        saveSession(data.account_id, data.session_secret);
+        if (data.nickname) {
+          state.nickname = data.nickname;
+          localStorage.setItem("aim_nickname", data.nickname);
+        }
+        await refreshMe();
+        renderProfile();
+        if (msg) msg.textContent = "Готово. Вы вошли.";
+      } catch (_) {
+        if (msg) msg.textContent = "Неверный ник или код.";
+      }
+    };
+
+    window.cancelPendingOrder = async function(orderId) {
+      const msg = $("historyMsg");
+      if (!state.accountId || !state.sessionSecret) {
+        if (msg) msg.textContent = "Нужна сессия сайта (оформите заказ в этом браузере).";
+        return;
+      }
+      if (!confirm("Отменить неоплаченный счёт #" + orderId + "?")) return;
+      if (msg) msg.textContent = "Отменяем…";
+      try {
+        await api("/web/orders/cancel", {
+          method: "POST",
+          body: JSON.stringify({
+            account_id: state.accountId,
+            session_secret: state.sessionSecret,
+            order_id: orderId,
+          }),
+        });
+        await refreshMe();
+        renderProfile();
+      } catch (e) {
+        if (msg) msg.textContent = "Не удалось отменить: " + ((e && e.message) || "ошибка");
+      }
+    };
+
+    function renderOrder(data) {
+      const onOrderRoute = /^\/o\//.test(location.pathname || "") || /^\/web\/o\//.test(location.pathname || "");
+      if (state.tab === "order" || onOrderRoute) {
+        showTab("order", { syncUrl: onOrderRoute ? false : true });
+      }
+      const ready = !!(data.subscription_url) && (data.vpn_ready !== false);
+      const preparing = !ready && !!(data.vpn_preparing);
+      const locked = !!(data.subscription_locked);
+      const payUrl = data.pay_url || localStorage.getItem("aim_last_pay") || "";
+      const lavaQr = data.qr_url || localStorage.getItem("aim_last_pay_qr") || "";
+      if (data.support_url) state.supportUrl = data.support_url;
+      const tok = state.orderToken || localStorage.getItem("aim_last_order") || "";
+      const pageUrl = orderPageUrl(tok);
+      $("view-order").innerHTML = `
+        <div class="card">
+          <p class="label-tag warn">Страница заказа на сайте</p>
+          <strong>Заказ #${data.order_id}${data.buyer_nickname || data.nickname ? " · @" + (data.buyer_nickname || data.nickname) : ""}</strong>
+          <p class="muted">Это <b>не</b> ссылка для Happ. Адрес вида <code>/o/…</code> — только чтобы открыть статус оплаты и потом получить ключ.</p>
+          <p class="muted">Статус: <b>${data.status}</b>${data.vpn_status ? " · VPN: " + data.vpn_status : ""}</p>
+          ${ready ? `
+            ${happLinkHtml(data.subscription_url, "qrBox")}
+            ${pageUrl ? `
+              <hr style="border:0;border-top:1px solid var(--border);margin:16px 0"/>
+              <p class="label-tag warn">Ссылка на эту страницу заказа</p>
+              <p class="muted">Сохраните, если смените телефон. В Happ <b>не</b> вставлять.</p>
+              <p class="mono">${pageUrl}</p>
+              <button class="btn secondary" type="button" onclick="navigator.clipboard.writeText('${pageUrl}')">Скопировать ссылку на заказ (/o)</button>
+            ` : ""}
+            ${!data.telegram_linked ? `<button class="btn secondary" type="button" onclick="startLinkFromOrder()">Связать Telegram (по желанию)</button>` : ""}
+          ` : locked ? `
+            <p class="muted">Ключ VPN готов, но для показа нужна сессия этого браузера (защита от утечки ссылки заказа).</p>
+            <p class="muted">Откройте сайт в браузере, где оплачивали, или напишите в поддержку с номером <b>#${data.order_id}</b>.</p>
+            ${supportBtn("")}
+          ` : preparing ? `
+            <p class="label-tag warn">Готовим VPN…</p>
+            <p class="muted"><b>Оплата прошла.</b> Сейчас поднимаем доступ. Обычно 10–60 секунд.</p>
+            <p class="muted">Кнопка «можно в Happ» появится <b>только когда VPN реально готов</b> — не раньше.</p>
+            <button class="btn" type="button" onclick="pollOrder()">Обновить статус</button>
+            <p class="muted" style="margin-top:12px">Дольше 2–3 минут? Напишите в поддержку и укажите заказ <b>#${data.order_id}</b>.</p>
+            ${supportBtn("secondary")}
+          ` : `
+            <p class="muted"><b>Шаг 1 — оплата.</b> После оплаты здесь появится блок «Как включить VPN за 4 шага».</p>
+            <div id="payQrBox" class="qr-host"></div>
+            <ol class="steps" style="font-size:1.05rem">
+              <li><b>С компьютера:</b> отсканируйте QR камерой телефона → откроется оплата.</li>
+              <li><b>С телефона:</b> нажмите «Открыть оплату» → СБП или карта.</li>
+              <li>После оплаты вернётесь сюда — сначала «готовим…», потом ссылка для Happ.</li>
+            </ol>
+            ${payUrl ? `<a class="btn" href="${payUrl}" target="_blank" rel="noopener">Открыть оплату (СБП / карта)</a>` : ""}
+            <button class="btn secondary" type="button" onclick="pollOrder()">Обновить статус</button>
+            <p class="muted" style="margin-top:12px">Оплатили, а ключа нет через 5–10 минут? Напишите в поддержку и укажите номер заказа <b>#${data.order_id}</b>.</p>
+            ${supportBtn("")}
+          `}
+          <button class="btn secondary" type="button" onclick="goCabinet()">На главную</button>
+          ${ready ? supportBtn("secondary") : ""}
+        </div>`;
+      if (ready) {
+        drawQr($("qrBox"), data.subscription_url, "QR ссылки Happ");
+      } else if (!locked) {
+        const box = $("payQrBox");
+        if (box && lavaQr && /^https?:\/\//i.test(lavaQr)) {
+          box.innerHTML = "";
+          const img = document.createElement("img");
+          img.alt = "QR оплаты";
+          img.src = lavaQr;
+          img.width = 220;
+          box.appendChild(img);
+        } else if (box && payUrl) {
+          drawQr(box, payUrl, "QR страницы оплаты");
+        }
+        if (state._orderPollTimer) clearTimeout(state._orderPollTimer);
+        state._orderPollTimer = setTimeout(function() {
+          const stillOrder =
+            state.tab === "order" ||
+            /^\/o\//.test(location.pathname || "") ||
+            /^\/web\/o\//.test(location.pathname || "");
+          if (stillOrder) pollOrder();
+        }, preparing ? 3000 : 4000);
+      }
+    }
+
+    window.selectTariff = function(id) {
+      state.selected = id;
+      renderSubs();
+    };
+
+    window.startCheckout = async function() {
+      $("payErr").textContent = "";
+      if (!state.selected) { $("payErr").textContent = "Выберите тариф"; return; }
+      if (!state.legal) { $("payErr").textContent = "Нужно согласие с документами"; return; }
+      const nickBox = $("nickBox");
+      const nick = ((nickBox && nickBox.value) || state.nickname || (state.me && state.me.nickname) || "").trim();
+      if (!(state.me && state.me.nickname) && nick.length < 3) {
+        $("payErr").textContent = "Укажите ник (латиница, от 3 символов)";
+        return;
+      }
+      try {
+        const body = {
+          product_id: state.selected,
+          legal_accepted: true,
+          ref_code: state.ref || null,
+          account_id: state.accountId || null,
+          session_secret: state.sessionSecret || null,
+          nickname: nick || null,
+        };
+        const data = await api("/web/checkout", { method: "POST", body: JSON.stringify(body) });
+        saveSession(data.account_id, data.session_secret);
+        if (data.nickname) {
+          state.nickname = data.nickname;
+          localStorage.setItem("aim_nickname", data.nickname);
+        }
+        state.orderToken = data.access_token;
+        localStorage.setItem("aim_last_order", data.access_token);
+        if (data.pay_url) localStorage.setItem("aim_last_pay", data.pay_url);
+        if (data.qr_url) localStorage.setItem("aim_last_pay_qr", data.qr_url);
+        else localStorage.removeItem("aim_last_pay_qr");
+        if (data.access_code) {
+          showAccessCodeModal(data.access_code, data.nickname || nick, function() {
+            location.href = "/o/" + encodeURIComponent(data.access_token);
+          });
+          return;
+        }
+        location.href = "/o/" + encodeURIComponent(data.access_token);
+      } catch (e) {
+        const detail = (e && e.data && e.data.detail) || {};
+        const code = detail.code || "";
+        const msgMap = {
+          nickname_required: "Укажите ник перед оплатой",
+          nickname_taken: "Этот ник уже занят — выберите другой",
+          bad_chars: "Ник: латиница, цифры, _ ; с буквы; 3–24 символа",
+          looks_like_email: "Ник не должен быть как email",
+          looks_like_phone: "Ник не должен быть как телефон",
+          too_short: "Ник слишком короткий",
+          too_long: "Ник слишком длинный",
+        };
+        $("payErr").textContent = msgMap[code] || detail.message || code || (e && e.message) || "Ошибка оплаты";
+      }
+    };
+
+    function showAccessCodeModal(code, nick, onOk) {
+      const host = $("modalHost");
+      if (!host) { if (onOk) onOk(); return; }
+      host.innerHTML = `<div class="modal-back"><div class="modal">
+        <strong>Ваш код доступа</strong>
+        <p class="muted">Ник: <b>@${nick || ""}</b></p>
+        <p class="mono" style="font-size:1.2rem;margin:12px 0">${code}</p>
+        <p class="muted">Сохраните. По нему войдёте с другого телефона. Мы <b>не</b> отправим код на почту — почту не просим.</p>
+        <button class="btn" type="button" id="copyAccessCode">Скопировать код</button>
+        <button class="btn secondary" type="button" id="okAccessCode">Понятно — к оплате</button>
+      </div></div>`;
+      const copyBtn = $("copyAccessCode");
+      if (copyBtn) copyBtn.onclick = () => navigator.clipboard.writeText(code);
+      const ok = $("okAccessCode");
+      if (ok) ok.onclick = () => { host.innerHTML = ""; if (onOk) onOk(); };
+    }
+
+    window.pollOrder = async function() {
+      const token = state.orderToken || localStorage.getItem("aim_last_order");
+      if (!token) return;
+      try {
+        let q = "/web/order/" + encodeURIComponent(token);
+        if (state.accountId && state.sessionSecret) {
+          q += "?account_id=" + encodeURIComponent(state.accountId)
+            + "&session_secret=" + encodeURIComponent(state.sessionSecret);
+        }
+        const data = await api(q);
+        renderOrder(data);
+        if (data.status === "completed" || data.subscription_url) await refreshMe();
+      } catch (_) {}
+    };
+
+    window.startLink = async function() {
+      const box = $("linkMsg");
+      if (!state.accountId || !state.sessionSecret) {
+        // Create session without VPN purchase, then issue link token.
+        try {
+          if (box) box.textContent = "Готовим сессию сайта…";
+          const ens = await api("/web/session/ensure", {
+            method: "POST",
+            body: JSON.stringify({
+              account_id: null,
+              session_secret: null,
+              ref_code: state.ref || null,
+            }),
+          });
+          saveSession(ens.account_id, ens.session_secret);
+          await refreshMe();
+        } catch (_) {
+          if (box) {
+            box.innerHTML =
+              "<p class='warn'>Не удалось создать сессию. Обновите страницу.</p>";
+          }
+          return;
+        }
+      }
+      try {
+        const data = await api("/web/link/start", {
+          method: "POST",
+          body: JSON.stringify({ account_id: state.accountId, session_secret: state.sessionSecret }),
+        });
+        if (data.already_linked) {
+          if (box) box.textContent = "Уже привязано";
+          await refreshMe();
+          return;
+        }
+        const bot = (data.deep_link || "").match(/t\.me\/([^?]+)/);
+        const domain = bot ? bot[1] : "AiMonkeyStars_bot";
+        const code = data.code || "";
+        const startPayload = "link_" + code;
+        const tgApp = "tg://resolve?domain=" + encodeURIComponent(domain) + "&start=" + encodeURIComponent(startPayload);
+        const httpsLink = data.deep_link;
+        if (box) {
+          box.innerHTML =
+            "<div style='text-align:left'>" +
+            "<p><b>Связать через приложение Telegram</b> (не Safari).</p>" +
+            "<ol class='steps'>" +
+            "<li>Нажмите <b>Открыть в приложении Telegram</b>.</li>" +
+            "<li>В боте @" + domain + " нажмите <b>Запустить / Start</b>.</li>" +
+            "<li>Вернитесь на сайт — статус станет «Telegram привязан».</li>" +
+            "</ol>" +
+            "<p class='muted'>Если в Safari видите «Отключите VPN» — закройте вкладку. Включите VPN при необходимости, откройте <b>приложение</b> Telegram и отправьте боту:</p>" +
+            "<p><code id='linkPayloadCode'>" + startPayload + "</code> " +
+            "<button class='btn secondary' type='button' id='copyLinkCodeBtn'>Скопировать код</button></p>" +
+            "<p class='muted'>Код действует ~" + (data.expires_minutes || 30) + " мин. Сайт/ВК можно без VPN; для Telegram VPN — только на шаг привязки.</p>" +
+            `<p><a class="btn" id="openTgLink" href="${tgApp}">Открыть в приложении Telegram</a></p>` +
+            `<p class="muted"><a href="${httpsLink}" target="_blank" rel="noopener">Запасная ссылка https://t.me (если приложения нет)</a></p>` +
+            "</div>";
+          const copyBtn = document.getElementById("copyLinkCodeBtn");
+          if (copyBtn) {
+            copyBtn.onclick = async function() {
+              try {
+                await navigator.clipboard.writeText(startPayload);
+                copyBtn.textContent = "Скопировано";
+              } catch (_) {
+                copyBtn.textContent = "Выделите код вручную";
+              }
+            };
+          }
+        }
+        try { location.href = tgApp; } catch (_) {}
+      } catch (e) {
+        if (box) {
+          const code = e && e.data && e.data.detail && e.data.detail.code;
+          box.textContent = code === "unauthorized"
+            ? "Сессия сайта устарела. Нажмите «Связать Telegram» ещё раз."
+            : "Не удалось создать ссылку привязки. Обновите страницу или напишите в поддержку.";
+        }
+      }
+    };
+    window.startLinkFromOrder = window.startLink;
+
+    window.goCabinet = async function() {
+      await refreshMe();
+      showTab("home");
+      renderAll();
+    };
+
+    async function refreshMe() {
+      if (!state.accountId || !state.sessionSecret) return;
+      try {
+        state.me = await api(`/web/me?account_id=${encodeURIComponent(state.accountId)}&session_secret=${encodeURIComponent(state.sessionSecret)}`);
+        if (state.me && state.me.support_url) state.supportUrl = state.me.support_url;
+        if (state.me && state.me.nickname) {
+          state.nickname = state.me.nickname;
+          localStorage.setItem("aim_nickname", state.me.nickname);
+          const b = $("brand");
+          if (b) {
+            b.classList.add("brand-gold");
+            b.textContent = (state.me.brand || t("brand")) + " · @" + state.me.nickname;
+          }
+        }
+      } catch (_) { state.me = null; }
+    }
+
+    function renderAll() {
+      renderHome(); renderDevices(); renderSubs(); renderBonus(); renderProfile();
+    }
+
+    function tabFromLocation() {
+      const path = location.pathname || "/";
+      const hash = (location.hash || "").replace(/^#/, "");
+      if (/^\/o\//.test(path) || /^\/web\/o\//.test(path)) return "order";
+      if (/\/devices\/?$/.test(path) || hash === "devices") return "devices";
+      if (hash === "subs" || hash === "bonus" || hash === "profile" || hash === "home") return hash;
+      return "home";
+    }
+
+    document.querySelectorAll(".nav button").forEach(b => {
+      b.addEventListener("click", async () => {
+        showTab(b.dataset.tab);
+        if (b.dataset.tab === "devices") await refreshDevices();
+        renderAll();
+      });
+    });
+
+    document.querySelectorAll("#langSwitch .lang-switch__btn").forEach(btn => {
+      btn.addEventListener("click", () => setLang(btn.getAttribute("data-lang")));
+    });
+    applyStaticI18n();
+
+    function readCookie(name) {
+      try {
+        const m = document.cookie.match(
+          new RegExp("(?:^|; )" + name.replace(/([.$?*|{}()[\]\\/+^])/g, "\\$1") + "=([^;]*)")
+        );
+        return m ? decodeURIComponent(m[1]) : "";
+      } catch (_) {
+        return "";
+      }
+    }
+
+    function captureRefOnce(incoming) {
+      const v = String(incoming || "").trim();
+      if (!v) return;
+      if (!localStorage.getItem("aim_ref")) {
+        state.ref = v;
+        localStorage.setItem("aim_ref", v);
+      } else {
+        state.ref = localStorage.getItem("aim_ref") || "";
+      }
+    }
+
+    (async function init() {
+      const path = location.pathname;
+      const params = new URLSearchParams(location.search);
+      if (params.get("ref")) {
+        captureRefOnce(params.get("ref"));
+      }
+      const oMatch = path.match(/\/o\/([^/]+)/) || path.match(/\/web\/o\/([^/]+)/);
+      const rMatch = path.match(/\/r\/([^/]+)/);
+      if (rMatch) {
+        captureRefOnce(decodeURIComponent(rMatch[1]));
+      }
+      // Cookie from GET /r/{code} redirect — if SPA missed ?ref=
+      if (!localStorage.getItem("aim_ref")) {
+        captureRefOnce(readCookie("aim_ref"));
+      } else if (!state.ref) {
+        state.ref = localStorage.getItem("aim_ref") || "";
+      }
+      // Сразу нужная вкладка — до сетевых запросов (иначе 1–5с «Главная» на /devices).
+      const initialTab = tabFromLocation();
+      showTab(initialTab, { syncUrl: false });
+      try {
+        const prod = await api("/web/products");
+        state.products = prod.products || [];
+        if (prod.brand) { const bb=$("brand"); if(bb){ bb.classList.add("brand-gold"); bb.textContent = prod.brand; } document.title = prod.brand; }
+        if (prod.support_url) state.supportUrl = prod.support_url;
+        if (state.products[0]) state.selected = state.products[0].id;
+      } catch (_) {}
+      await refreshMe();
+      await refreshDevices();
+      applyStaticI18n();
+      renderAll();
+      if (oMatch) {
+        state.orderToken = decodeURIComponent(oMatch[1]);
+        localStorage.setItem("aim_last_order", state.orderToken);
+        state.tab = "order";
+        await pollOrder();
+      } else {
+        // Не сбрасывать вкладку, которую пользователь уже выбрал, пока грузились данные.
+        showTab(state.tab || initialTab, { syncUrl: true });
+      }
+    })();
+  </script>
+</body>
+</html>

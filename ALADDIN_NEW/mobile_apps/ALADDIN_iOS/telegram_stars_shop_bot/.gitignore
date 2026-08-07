@@ -1,0 +1,15 @@
+.env
+data/
+# Снимки shop.db (в т.ч. скачанные с прода) — не коммитить.
+backups/
+__pycache__/
+*.pyc
+.venv/
+docs/_local_backups/
+
+# Never commit VPN secrets handoff (even if copied into this tree)
+VPN_SPEED_DEGRADATION_HANDOFF_RU.md
+**/VPN_SPEED_DEGRADATION_HANDOFF_RU.md
+*.tar.enc
+PASSPHRASE.txt
+.DS_Store

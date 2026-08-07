@@ -1,0 +1,12 @@
+[Unit]
+Description=Update USD_RUB_RATE from CBR (+ markup)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/aladdin-telegram-shop-bot/current_app
+ExecStart=/opt/aladdin-telegram-shop-bot/venv/bin/python3 /opt/aladdin-telegram-shop-bot/current_app/scripts/update_usd_rub_rate.py --env-file /opt/aladdin-telegram-shop-bot/shared/.env --markup-rub 5 --usdt-rub-mode zero
+# Contabo SSOT only — restart shop services after rate update
+ExecStartPost=/bin/systemctl restart aladdin-telegram-bot.service aladdin-partner-api.service aladdin-webhook-worker.service
+

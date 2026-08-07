@@ -1,0 +1,13 @@
+[Unit]
+Description=Run ALADDIN Telegram Shop Ops Watchdog every 2 minutes
+
+[Timer]
+OnBootSec=2min
+OnUnitActiveSec=2min
+AccuracySec=30s
+Unit=ops-watchdog.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target
+

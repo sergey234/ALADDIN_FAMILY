@@ -1,0 +1,56 @@
+{
+  "version": 1,
+  "updated": "2026-04-19",
+  "plans": {
+    "A": {
+      "name": "Бот до A+ (качество, эксплуатация, тесты)",
+      "items": [
+        { "id": "a-plus-runbook", "title": "Runbook: бэкап shop.db, .env, smoke после деплоя", "status": "done", "note": "docs/RUNBOOK.md" },
+        { "id": "a-plus-pytest", "title": "Pytest критический путь (заказ, баланс, рефералка)", "status": "done", "note": "tests/, pytest.ini" },
+        { "id": "a-plus-ci", "title": "CI на пуш (pytest + опционально ruff/mypy)", "status": "done", "note": ".github/workflows/telegram_shop_bot_ci.yml" },
+        { "id": "a-plus-sells-pages", "title": "Пагинация «Мои заявки на выкуп»", "status": "done", "note": "sell_repo + hub" },
+        { "id": "a-plus-logs", "title": "Структурные логи и ошибки отправки админам", "status": "done", "note": "bot/logutil.slog" },
+        { "id": "a-plus-sentry", "title": "Sentry / error tracking", "status": "done", "note": "sentry-sdk; SENTRY_DSN в bot + partner_api" },
+        { "id": "a-plus-privacy", "title": "Политика данных в боте", "status": "done", "note": "nav:privacy" },
+        { "id": "a-plus-payments-epic", "title": "Автоплатежи: входящий вебхук провайдера", "status": "done", "note": "POST /v1/payments/provider-webhook; PAYMENT_WEBHOOK_SECRET" },
+        { "id": "a-plus-empty-catalog", "title": "UX пустого каталога Stars/подарков/Premium", "status": "done", "note": "hub" },
+        { "id": "a-plus-stub-cleanup", "title": "Убрать или использовать STUB_* в ui_copy.py", "status": "done", "note": "STUB_* удалены" },
+        { "id": "a-plus-acceptance", "title": "Ручной чеклист приёмки 15+ пунктов", "status": "done", "note": "docs/ACCEPTANCE_CHECKLIST.md" }
+      ]
+    },
+    "B": {
+      "name": "HTTP API v1 + ключи + конструктор партнёра",
+      "items": [
+        { "id": "api-b-openapi", "title": "OpenAPI 3.1 черновик в docs/openapi_v1.yaml", "status": "done", "note": "" },
+        { "id": "api-b-db-keys", "title": "Таблица api_clients", "status": "done", "note": "webhook_url/secret в migrate_legacy" },
+        { "id": "api-b-db-orders", "title": "Поля orders: source, api_client_id, idempotency_key, external_ref + индекс", "status": "done", "note": "" },
+        { "id": "api-b-fastapi", "title": "Сервис FastAPI /v1 за HTTPS", "status": "done", "note": "" },
+        { "id": "api-b-auth-ratelimit", "title": "X-API-KEY + rate limit + audit log", "status": "done", "note": "" },
+        { "id": "api-b-orders-create", "title": "POST /v1/orders/create + идемпотентность", "status": "done", "note": "" },
+        { "id": "api-b-orders-read", "title": "GET /v1/orders и GET /v1/orders/{id}", "status": "done", "note": "" },
+        { "id": "api-b-topups", "title": "POST/GET /v1/topups под topup_requests", "status": "done", "note": "" },
+        { "id": "api-b-commission-rule", "title": "Комиссия при completed + source=api (док+код)", "status": "done", "note": "" },
+        { "id": "api-b-bot-keys-ux", "title": "Бот: выдача/ротация API-ключа", "status": "done", "note": "" },
+        { "id": "api-b-webhooks-future", "title": "Исходящие вебхуки order.status_changed + подписка", "status": "done", "note": "partner_outbound; PUT/GET /v1/webhooks/subscription" }
+      ]
+    }
+  },
+  "execution_order": [
+    "B0 решения зафиксированы в ROADMAP_PLANS_A_B.md",
+    "B1 openapi_v1.yaml",
+    "B2 схема БД (api_clients, orders.*)",
+    "параллельно B3-B4 и часть A (pytest, логи)",
+    "B5 ключ в боте",
+    "B6 документация партнёра + золотой путь"
+  ],
+  "review_checklist": [
+    "План A и B независимы по релизам, пересекаются в shop.db",
+    "v1: orders.user_id = владелец ключа; получатель в user_note; source telegram|api",
+    "Сырой API-ключ не хранить, только hash + prefix",
+    "Ключ не в публичном frontend партнёра — server-to-server",
+    "SQLite лимит нагрузки — заложить Postgres в v2 при росте",
+    "Идемпотентность: уникальный индекс (api_client_id, idempotency_key)",
+    "Логи: никогда не писать значение X-API-KEY в лог",
+    "PAYMENT_WEBHOOK_SECRET и whsec_* не логировать; DSN Sentry не в git"
+  ]
+}

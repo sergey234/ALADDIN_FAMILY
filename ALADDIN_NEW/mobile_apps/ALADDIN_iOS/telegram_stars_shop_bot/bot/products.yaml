@@ -1,0 +1,163 @@
+# Каталог: добавляйте позиции здесь. price_usd — закуп/себестоимость-ориентир или ваша наценка.
+# kind: premium | stars
+# hide_from_menu: true — не показывать кнопку в инлайн-витрине бота (заказ по id через API всё ещё возможен).
+products:
+  - id: premium_1
+    kind: premium
+    title: "Premium 1 мес."
+    emoji: "💎"
+    duration_months: 1
+    price_usd: 4.5
+    hide_from_menu: true
+
+  - id: premium_3
+    kind: premium
+    title: "Premium 3 мес."
+    emoji: "💎"
+    duration_months: 3
+    price_usd: 12.0
+
+  - id: premium_6
+    kind: premium
+    title: "Premium 6 мес."
+    emoji: "💎"
+    duration_months: 6
+    price_usd: 22.0
+    price_rub: 1600
+
+  - id: premium_12
+    kind: premium
+    title: "Premium 12 мес."
+    emoji: "💎"
+    duration_months: 12
+    price_usd: 40.0
+    price_rub: 2800
+
+  - id: stars_100
+    kind: stars
+    title: "100 Stars"
+    emoji: "⭐"
+    stars: 100
+    price_usd: 1.8
+
+  - id: stars_300
+    kind: stars
+    title: "300 Stars"
+    emoji: "⭐"
+    stars: 300
+    price_usd: 5.2
+    hide_from_menu: true
+
+  - id: stars_500
+    kind: stars
+    title: "500 Stars"
+    emoji: "⭐"
+    stars: 500
+    price_usd: 8.5
+    featured: true
+    sort_order: 0
+
+  - id: gift_custom
+    kind: gift
+    title: "Подарок (на выбор)"
+    emoji: "🎁"
+    price_usd: 5.0
+    sort_order: 10
+
+  - id: stars_1000
+    kind: stars
+    title: "1000+ Stars"
+    emoji: "⭐"
+    stars: 1000
+    price_usd: 16.5
+
+  - id: stars_2000
+    kind: stars
+    title: "2000 Stars"
+    emoji: "⭐"
+    stars: 2000
+    price_usd: 32.0
+    hide_from_menu: true
+
+  # Крупный пакет (ТЗ «2000+»): при необходимости добавьте 10k / кастом через новую строку.
+  - id: stars_5000
+    kind: stars
+    title: "5000 Stars"
+    emoji: "⭐"
+    stars: 5000
+    price_usd: 78.0
+    sort_order: 5
+    hide_from_menu: true
+
+  # Кастомное количество: цена считается от stars_100; в меню — кнопка «Своё количество».
+  - id: stars_custom
+    kind: stars
+    title: "Своё количество"
+    emoji: "✏️"
+    stars: 0
+    price_usd: 0
+    hide_from_menu: true
+
+  # VPN: price_rub — фиксированная витрина в ₽ (не зависит от USD_RUB_RATE).
+  # Бизнес-лестница (база 200 ₽ / 30 дн.): чем дольше срок — тем ниже ₽/мес, год = лучшая цена.
+  #   30д 200 (200/мес) → 90д 500 (~167) → 180д 900 (150) → 365д 1700 (~140).
+  # price_usd в YAML не используется для ₽; USD в заказе = price_rub / USD_RUB_RATE.
+  - id: vpn_7d
+    kind: vpn
+    title: "VPN 7 дней"
+    emoji: "🌐"
+    price_rub: 50
+    price_usd: 0
+    vpn_subscription_days: 7
+    hide_from_menu: true
+    sort_order: 49
+
+  - id: vpn_30d
+    kind: vpn
+    title: "VPN 30 дней"
+    emoji: "🌐"
+    price_rub: 200
+    price_usd: 0
+    vpn_subscription_days: 30
+    hide_from_menu: true
+    sort_order: 50
+
+  - id: vpn_90d
+    kind: vpn
+    title: "VPN 3 месяца"
+    emoji: "🌐"
+    price_rub: 500
+    price_usd: 0
+    vpn_subscription_days: 90
+    hide_from_menu: true
+    sort_order: 51
+
+  - id: vpn_180d
+    kind: vpn
+    title: "VPN 6 месяцев"
+    emoji: "🌐"
+    price_rub: 900
+    price_usd: 0
+    vpn_subscription_days: 180
+    hide_from_menu: true
+    sort_order: 52
+
+  - id: vpn_270d
+    kind: vpn
+    title: "VPN 9 месяцев"
+    emoji: "🌐"
+    price_rub: 1200
+    price_usd: 0
+    vpn_subscription_days: 270
+    hide_from_menu: true
+    sort_order: 53
+
+  - id: vpn_365d
+    kind: vpn
+    title: "VPN 12 месяцев"
+    emoji: "🌐"
+    price_rub: 1700
+    price_usd: 0
+    vpn_subscription_days: 365
+    hide_from_menu: true
+    sort_order: 54
