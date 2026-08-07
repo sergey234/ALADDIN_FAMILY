@@ -1,0 +1,19 @@
+[Unit]
+Description=ALADDIN Partner Webhook Queue Worker
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=root
+# Прод-канон: см. docs/ML_SYSTEM_HANDOFF_FINAL.md и docs/SERVER_DEPLOY_SEPARATE.md
+WorkingDirectory=/opt/aladdin-telegram-shop-bot/current_app
+EnvironmentFile=/opt/aladdin-telegram-shop-bot/shared/.env
+ExecStart=/usr/bin/python3 -m partner_api.webhook_worker --forever --sleep-sec 30 --limit 200
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/aladdin-webhook-worker.log
+StandardError=append:/var/log/aladdin-webhook-worker.log
+
+[Install]
+WantedBy=multi-user.target

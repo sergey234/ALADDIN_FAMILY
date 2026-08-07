@@ -1,0 +1,16 @@
+[Unit]
+Description=ALADDIN Telegram Bot API getMe health check
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=oneshot
+Environment=TELEGRAM_BOT_API_HEALTH_DRY_RUN=false
+Environment=TELEGRAM_BOT_SMART_RESTART_ENABLED=true
+Environment=TELEGRAM_BOT_API_HEALTH_SKIP_RESTART=false
+# Install script to /opt/.../current_app/scripts/ on deploy; override ExecStart if needed:
+ExecStart=/opt/aladdin-telegram-shop-bot/current_app/scripts/telegram_bot_api_health.sh
+Nice=10
+
+[Install]
+WantedBy=multi-user.target

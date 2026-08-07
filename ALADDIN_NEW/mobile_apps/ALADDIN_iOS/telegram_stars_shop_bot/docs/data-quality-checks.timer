@@ -1,0 +1,12 @@
+[Unit]
+Description=Run ALADDIN Data Quality checks every 6 hours
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=6h
+AccuracySec=2min
+Unit=data-quality-checks.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target

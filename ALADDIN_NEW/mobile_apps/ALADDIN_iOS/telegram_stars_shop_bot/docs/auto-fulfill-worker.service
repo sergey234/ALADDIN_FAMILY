@@ -1,0 +1,16 @@
+[Unit]
+Description=ALADDIN auto-fulfillment worker (iStar)
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+WorkingDirectory=/opt/aladdin-telegram-shop-bot/current_app
+EnvironmentFile=/opt/aladdin-telegram-shop-bot/shared/.env
+ExecStart=/opt/aladdin-telegram-shop-bot/venv/bin/python3 -m partner_api.auto_fulfill_worker --forever --limit 10
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+

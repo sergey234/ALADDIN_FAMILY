@@ -1,0 +1,30 @@
+{
+  "generated_at_utc": "2026-08-02T20:31:19.430767+00:00",
+  "db": "/tmp/aladdin_triage/shop.db",
+  "hours": 2.0,
+  "stuck_stars_premium_gift_count": 1,
+  "stuck_vpn_paid_count": 0,
+  "stuck_stars_premium_gift": [
+    {
+      "id": 10,
+      "product_id": "stars_100",
+      "product_kind": "stars",
+      "status": "paid",
+      "buyer_username": "[redacted]",
+      "fulfillment_mode": "auto",
+      "fulfillment_provider_ref": null,
+      "fulfillment_attempt_count": 5,
+      "fulfillment_last_error": "istar_http_502",
+      "fulfillment_applied_at": null,
+      "created_at": "2026-06-02 06:54:15",
+      "updated_at": "2026-06-21 13:00:44",
+      "completed_at": null
+    }
+  ],
+  "stuck_vpn_paid": [],
+  "actions_read_only": [
+    "Inspect fulfillment_last_error / ApiFragment balance",
+    "Check auto_fulfill worker / vpn_payment_hook logs on Contabo",
+    "Do NOT auto-refund from this script"
+  ]
+}

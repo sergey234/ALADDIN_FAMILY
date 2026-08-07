@@ -1,0 +1,12 @@
+[Unit]
+Description=Run ALADDIN Telegram Shop Executive Report weekly
+
+[Timer]
+OnBootSec=10min
+OnUnitActiveSec=7d
+AccuracySec=5min
+Unit=exec-report.service
+Persistent=true
+
+[Install]
+WantedBy=timers.target
