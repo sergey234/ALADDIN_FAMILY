@@ -81,3 +81,11 @@ Capability matrix:
   - can work in clone on that host
   - can manage that host only
   - cannot access servers #2 and #3 until SSH from Contabo is configured
+
+## 9) Privilege model (least privilege mandatory)
+
+- Do not use broad root access for routine agent work.
+- Prefer dedicated SSH key(s) for automation and restrict scope per host.
+- Use `cursor-agent` OS user for operational actions; avoid `root` sessions for edits.
+- Grant only minimal required sudo commands (allow-list), not full sudo.
+- Treat deployment as a controlled step gated by `GO DEPLOY` and explicit human confirmation.

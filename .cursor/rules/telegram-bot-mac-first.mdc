@@ -20,6 +20,8 @@ Make code changes in git branches and PRs only.
 4. Never run deployment-impacting service commands unless user says `GO DEPLOY`.
    - Forbidden without approval: `systemctl stop`, `systemctl restart`, `docker compose down`
 5. Never use `rm -rf`.
+6. Never request or use unrestricted root access for normal workflow.
+7. Prefer dedicated SSH keys and minimal sudo allow-lists.
 
 # Required workflow
 
@@ -48,3 +50,4 @@ Capability boundaries:
 - Cloud agent must not assume direct SSH to Contabo or other servers.
 - Mac aliases such as `aladdin-contabo`/`aladdin-server` are Mac-local and not inherited by cloud agent.
 - Worker on Contabo controls only that host unless additional SSH trust is explicitly configured.
+- One host access does not imply access to all servers; verify connectivity per host.
