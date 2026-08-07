@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import asyncio
 import logging
-from typing import Annotated, Any
+from typing import Annotated, Any, Iterable
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 from pydantic import BaseModel, Field
@@ -29,6 +29,15 @@ def _parse_payment_sig_header(raw: str | None) -> str | None:
     return s
 
 
+def _pick_signature_header(request: Request, candidates: Iterable[str]) -> str | None:
+    for header in candidates:
+        value = request.headers.get(header)
+        sig = _parse_payment_sig_header(value)
+        if sig:
+            return sig
+    return None
+
+
 class PaymentProviderWebhookBody(BaseModel):
     idempotency_key: str = Field(..., min_length=8, max_length=128)
     order_id: int = Field(..., gt=0)
@@ -39,27 +48,27 @@ def _settings_dep(request: Request) -> Settings:
     return get_settings(request)
 
 
-@router.post("/payments/provider-webhook")
-async def payment_provider_webhook(
+async def _mark_paid_webhook_impl(
     request: Request,
-    settings: Annotated[Settings, Depends(_settings_dep)],
+    settings: Settings,
+    *,
+    secret: str,
+    signature_headers: tuple[str, ...],
+    misconfigured_message: str,
+    log_tag: str,
 ) -> dict[str, Any]:
-    """
-    Автоплатежи v1: свой оркестратор (не LAVA) вызывает после успешной оплаты по договорённости.
-    Подпись: hex HMAC-SHA256(PAYMENT_WEBHOOK_SECRET, raw_body) в заголовке X-Payment-Signature (опционально префикс sha256=).
-    """
-    secret = (settings.payment_webhook_secret or "").strip()
+    secret = secret.strip()
     if not secret:
         raise HTTPException(
             status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
-            detail={"code": "misconfigured", "message": "PAYMENT_WEBHOOK_SECRET is not set"},
+            detail={"code": "misconfigured", "message": misconfigured_message},
         )
     raw = await request.body()
-    sig_hdr = _parse_payment_sig_header(request.headers.get("X-Payment-Signature"))
+    sig_hdr = _pick_signature_header(request, signature_headers)
     if not sig_hdr or not verify_hmac_sha256_hex(secret, raw, sig_hdr):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail={"code": "invalid_signature", "message": "Invalid X-Payment-Signature"},
+            detail={"code": "invalid_signature", "message": f"Invalid signature in headers: {', '.join(signature_headers)}"},
         )
     try:
         body = PaymentProviderWebhookBody.model_validate_json(raw.decode("utf-8"))
@@ -137,7 +146,7 @@ async def payment_provider_webhook(
         raise
     except Exception:
         await conn.rollback()
-        _log.exception("payment_provider_webhook_failed")
+        _log.exception("%s_failed", log_tag)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail={"code": "internal", "message": "Webhook processing failed"},
@@ -159,3 +168,42 @@ async def payment_provider_webhook(
 
             schedule_post_paid_order_hooks(settings, order_id_out)
     return {"ok": True, "order_id": body.order_id, "status": "paid"}
+
+
+@router.post("/payments/provider-webhook")
+async def payment_provider_webhook(
+    request: Request,
+    settings: Annotated[Settings, Depends(_settings_dep)],
+) -> dict[str, Any]:
+    """
+    Автоплатежи v1: свой оркестратор (не LAVA) вызывает после успешной оплаты по договорённости.
+    Подпись: hex HMAC-SHA256(PAYMENT_WEBHOOK_SECRET, raw_body) в заголовке X-Payment-Signature (опционально префикс sha256=).
+    """
+    return await _mark_paid_webhook_impl(
+        request,
+        settings,
+        secret=settings.payment_webhook_secret or "",
+        signature_headers=("X-Payment-Signature",),
+        misconfigured_message="PAYMENT_WEBHOOK_SECRET is not set",
+        log_tag="payment_provider_webhook",
+    )
+
+
+@router.post("/payments/wata-webhook")
+async def wata_payment_webhook(
+    request: Request,
+    settings: Annotated[Settings, Depends(_settings_dep)],
+) -> dict[str, Any]:
+    """
+    WATA webhook для подтверждения оплаты.
+    Подпись: hex HMAC-SHA256(WATA_WEBHOOK_SECRET или PAYMENT_WEBHOOK_SECRET, raw_body)
+    в заголовке X-Wata-Signature или X-Payment-Signature (совместимость).
+    """
+    return await _mark_paid_webhook_impl(
+        request,
+        settings,
+        secret=(settings.wata_webhook_secret or settings.payment_webhook_secret or ""),
+        signature_headers=("X-Wata-Signature", "X-Payment-Signature"),
+        misconfigured_message="WATA_WEBHOOK_SECRET (or PAYMENT_WEBHOOK_SECRET fallback) is not set",
+        log_tag="wata_webhook",
+    )

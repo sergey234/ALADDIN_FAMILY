@@ -222,6 +222,49 @@ paths:
         "503":
           description: PAYMENT_WEBHOOK_SECRET не задан
 
+  /payments/wata-webhook:
+    post:
+      summary: Вебхук WATA (mark_paid)
+      operationId: wataPaymentWebhook
+      description: |
+        Аутентификация **не** через X-API-KEY. Подпись тела: HMAC-SHA256(секрет, raw_body),
+        hex в заголовке `X-Wata-Signature` (допустим префикс `sha256=`).
+        Для совместимости принимается также `X-Payment-Signature`.
+        Секрет: `WATA_WEBHOOK_SECRET`, fallback — `PAYMENT_WEBHOOK_SECRET`.
+      security: []
+      parameters:
+        - name: X-Wata-Signature
+          in: header
+          required: false
+          schema: { type: string }
+        - name: X-Payment-Signature
+          in: header
+          required: false
+          schema: { type: string }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PaymentProviderWebhook"
+      responses:
+        "200":
+          description: OK (в т.ч. duplicate / already_terminal)
+          content:
+            application/json:
+              schema:
+                type: object
+        "401":
+          description: Неверная подпись
+        "404":
+          $ref: "#/components/responses/NotFound"
+        "409":
+          description: Недопустимый переход статуса
+        "422":
+          description: Ошибка валидации
+        "503":
+          description: WATA_WEBHOOK_SECRET и PAYMENT_WEBHOOK_SECRET не заданы
+
   /webhooks/subscription:
     get:
       summary: Текущий URL исходящего вебхука партнёра

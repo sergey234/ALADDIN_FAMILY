@@ -494,6 +494,8 @@ class Settings(BaseSettings):
 
     # Входящий вебхук «платёж подтверждён» (HMAC тела, заголовок X-Payment-Signature).
     payment_webhook_secret: str = Field(default="", validation_alias="PAYMENT_WEBHOOK_SECRET")
+    # Отдельный секрет для WATA webhook (если пусто — fallback на PAYMENT_WEBHOOK_SECRET).
+    wata_webhook_secret: str = Field(default="", validation_alias="WATA_WEBHOOK_SECRET")
 
     # LAVA Business (https://dev.lava.ru/) - фиат, СБП и др. на стороне LAVA.
     lava_shop_id: str = Field(default="", validation_alias="LAVA_SHOP_ID")
