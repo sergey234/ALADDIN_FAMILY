@@ -1,0 +1,53 @@
+---
+description: Safe workflow for ALADDIN bot work
+alwaysApply: true
+---
+
+# Intent
+
+Use a safe, Mac-first development flow for bot-related work.
+Make code changes in git branches and PRs only.
+
+# Hard constraints
+
+1. Never operate on live production code directly.
+   - Read-only context path: `/opt/aladdin-telegram-shop-bot/current_app`
+2. Never read or modify production secrets.
+   - Forbidden: `/opt/aladdin-telegram-shop-bot/shared/.env`
+3. Never perform destructive DB actions.
+   - Forbidden target: `/opt/aladdin-telegram-shop-bot/data/shop.db`
+   - Forbidden operations: `DROP`, `DELETE`, destructive migrations
+4. Never run deployment-impacting service commands unless user says `GO DEPLOY`.
+   - Forbidden without approval: `systemctl stop`, `systemctl restart`, `docker compose down`
+5. Never use `rm -rf`.
+6. Never request or use unrestricted root access for normal workflow.
+7. Prefer dedicated SSH keys and minimal sudo allow-lists.
+
+# Required workflow
+
+- Work in feature branch -> commit -> push -> PR.
+- No direct merge to main by agent.
+- Keep deploy out of scope unless user explicitly authorizes with `GO DEPLOY`.
+
+# Repo mapping
+
+- Bot code is expected under:
+  - `ALADDIN_NEW/mobile_apps/ALADDIN_iOS/telegram_stars_shop_bot/`
+
+If this directory is missing in the checked-out revision, stop and report that the bot path is unavailable in current branch/revision.
+
+# Infrastructure map and connectivity constraints
+
+Known servers:
+
+1. `185.225.233.150` (Contabo): bot, partner-api, `shop.db`, vpn-api
+2. `37.46.134.98`: VPN entry (RU)
+3. `149.154.65.180`: backup/legacy entry
+
+Capability boundaries:
+
+- Cloud agent in repository context can do code/PR work only.
+- Cloud agent must not assume direct SSH to Contabo or other servers.
+- Mac aliases such as `aladdin-contabo`/`aladdin-server` are Mac-local and not inherited by cloud agent.
+- Worker on Contabo controls only that host unless additional SSH trust is explicitly configured.
+- One host access does not imply access to all servers; verify connectivity per host.
