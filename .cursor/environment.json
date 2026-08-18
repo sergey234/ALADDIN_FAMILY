@@ -1,0 +1,5 @@
+{
+  "name": "ALADDIN iOS (lint & scan)",
+  "user": "ubuntu",
+  "install": "bash .cursor/install.sh"
+}
