@@ -332,6 +332,7 @@
 		A3000045 /* Core/Store/StoreManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000044 /* Core/Store/StoreManager.swift */; };
 		A3000047 /* Core/Localization/LocalizationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000046 /* Core/Localization/LocalizationManager.swift */; };
 		A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000048 /* Core/Analytics/AnalyticsManager.swift */; };
+		AITRST22F90000100C7D34B /* AITrustAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AITRST12F90000100C7D34B /* AITrustAnalytics.swift */; };
 		A3000051 /* ViewModels/FamilyRegistrationViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */; };
 		A3000053 /* ViewModels/TariffsViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3000052 /* ViewModels/TariffsViewModel.swift */; };
 		A3C000012F740002 /* ActivityDigestService.swift in Sources */ = {isa = PBXBuildFile; fileRef = A3C000012F740001 /* ActivityDigestService.swift */; };
@@ -548,6 +549,7 @@
 		E1E2EE0C02F1E40000E2EE01 /* FamilyE2EEMediaLoader.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E2EE0B02F1E40000E2EE01 /* FamilyE2EEMediaLoader.swift */; };
 		E1E2EE0E02F1E40000E2EE01 /* FamilyE2EECryptoEngineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1E2EE0D02F1E40000E2EE01 /* FamilyE2EECryptoEngineTests.swift */; };
 		E2AIMAP0202F1E50000E2EE01 /* AIActionCardMapper.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AIMAP0102F1E50000E2EE01 /* AIActionCardMapper.swift */; };
+		E2AICOOR202F1E50000E2EE01 /* AICoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AICOOR102F1E50000E2EE01 /* AICoordinator.swift */; };
 		E2AIMIG0202F1E50000E2EE01 /* AIAssistantHistoryMigration.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2AIMIG0102F1E50000E2EE01 /* AIAssistantHistoryMigration.swift */; };
 		E2HIST0202F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2HIST0102F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift */; };
 		E2PEND0202F1E50000E2EE01 /* PendingAuthTokenStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = E2PEND0102F1E50000E2EE01 /* PendingAuthTokenStore.swift */; };
@@ -1080,6 +1082,7 @@
 		A3000044 /* Core/Store/StoreManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Store/StoreManager.swift; sourceTree = "<group>"; };
 		A3000046 /* Core/Localization/LocalizationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Localization/LocalizationManager.swift; sourceTree = "<group>"; };
 		A3000048 /* Core/Analytics/AnalyticsManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Core/Analytics/AnalyticsManager.swift; sourceTree = "<group>"; };
+		AITRST12F90000100C7D34B /* AITrustAnalytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AITrustAnalytics.swift; path = Core/Analytics/AITrustAnalytics.swift; sourceTree = "<group>"; };
 		A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/FamilyRegistrationViewModel.swift; sourceTree = "<group>"; };
 		A3000052 /* ViewModels/TariffsViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ViewModels/TariffsViewModel.swift; sourceTree = "<group>"; };
 		A3C000012F740001 /* ActivityDigestService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ActivityDigestService.swift; path = Core/Notifications/ActivityDigestService.swift; sourceTree = "<group>"; };
@@ -1295,6 +1298,7 @@
 		E1E2EE0B02F1E40000E2EE01 /* FamilyE2EEMediaLoader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyE2EEMediaLoader.swift; path = Core/E2EE/FamilyE2EEMediaLoader.swift; sourceTree = "<group>"; };
 		E1E2EE0D02F1E40000E2EE01 /* FamilyE2EECryptoEngineTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FamilyE2EECryptoEngineTests.swift; sourceTree = "<group>"; };
 		E2AIMAP0102F1E50000E2EE01 /* AIActionCardMapper.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIActionCardMapper.swift; path = Core/AI/AIActionCardMapper.swift; sourceTree = "<group>"; };
+		E2AICOOR102F1E50000E2EE01 /* AICoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AICoordinator.swift; path = Core/AI/AICoordinator.swift; sourceTree = "<group>"; };
 		E2AIMIG0102F1E50000E2EE01 /* AIAssistantHistoryMigration.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIAssistantHistoryMigration.swift; path = Core/AI/AIAssistantHistoryMigration.swift; sourceTree = "<group>"; };
 		E2HIST0102F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIAssistantLocalHistoryPolicy.swift; path = Core/Privacy/AIAssistantLocalHistoryPolicy.swift; sourceTree = "<group>"; };
 		E2PEND0102F1E50000E2EE01 /* PendingAuthTokenStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = PendingAuthTokenStore.swift; path = Core/Security/PendingAuthTokenStore.swift; sourceTree = "<group>"; };
@@ -1715,6 +1719,7 @@
 				E2PII0302F1E50000E2EE01 /* AIOutboundTextGate.swift */,
 				E2HIST0102F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift */,
 				E2AIMAP0102F1E50000E2EE01 /* AIActionCardMapper.swift */,
+				E2AICOOR102F1E50000E2EE01 /* AICoordinator.swift */,
 				E2AIMIG0102F1E50000E2EE01 /* AIAssistantHistoryMigration.swift */,
 				5E6C6B032F3D34A400F6FFEA /* RateLimiter.swift */,
 				5E6C6B012F3D349000F6FFEA /* MetricsService.swift */,
@@ -2116,6 +2121,7 @@
 				E12D4A8B90123456ABCD1020 /* ImplementationPlanDashboardMirror.generated.swift */,
 				F12D4A8B90123456ABCD1030 /* PlanItem275CatalogMirror.generated.swift */,
 				A3000048 /* Core/Analytics/AnalyticsManager.swift */,
+				AITRST12F90000100C7D34B /* AITrustAnalytics.swift */,
 				A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */,
 				A3000052 /* ViewModels/TariffsViewModel.swift */,
 				B6000100 /* IoT */,
@@ -2713,6 +2719,7 @@
 				E2PII0402F1E50000E2EE01 /* AIOutboundTextGate.swift in Sources */,
 				E2HIST0202F1E50000E2EE01 /* AIAssistantLocalHistoryPolicy.swift in Sources */,
 				E2AIMAP0202F1E50000E2EE01 /* AIActionCardMapper.swift in Sources */,
+				E2AICOOR202F1E50000E2EE01 /* AICoordinator.swift in Sources */,
 				E2AIMIG0202F1E50000E2EE01 /* AIAssistantHistoryMigration.swift in Sources */,
 				A3000033 /* ViewModels/ProfileViewModel.swift in Sources */,
 				5E7056CF2F597C960065BDC4 /* TokenHealthMonitor.swift in Sources */,
@@ -2913,6 +2920,7 @@
 				B700012C2F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceDayRecapSheet.swift in Sources */,
 				B70001122F90000100ABC001 /* Core/Storage/VoiceNotesStore.swift in Sources */,
 				A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */,
+				AITRST22F90000100C7D34B /* AITrustAnalytics.swift in Sources */,
 				5EC3090E2EA6B60F00C7D34B /* 07_ParentalControlScreen.swift in Sources */,
 				5EC3090F2EA6B60F00C7D34B /* 05_SettingsScreen.swift in Sources */,
 				5E0058032EC3C4F900024F7E /* ALADDINTextField.swift in Sources */,
@@ -3204,7 +3212,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 247;
+				CURRENT_PROJECT_VERSION = 248;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3238,7 +3246,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINContentBlocker/ALADDINContentBlocker.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 247;
+				CURRENT_PROJECT_VERSION = 248;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3273,7 +3281,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 247;
+				CURRENT_PROJECT_VERSION = 248;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3307,7 +3315,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDINAntifakeShare/ALADDINAntifakeShare.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 247;
+				CURRENT_PROJECT_VERSION = 248;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
 				GENERATE_INFOPLIST_FILE = YES;
@@ -3465,7 +3473,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 247;
+				CURRENT_PROJECT_VERSION = 248;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -3498,7 +3506,7 @@
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
 				CODE_SIGN_IDENTITY = "Apple Distribution";
 				CODE_SIGN_STYLE = Manual;
-				CURRENT_PROJECT_VERSION = 247;
+				CURRENT_PROJECT_VERSION = 248;
 				DEVELOPMENT_ASSET_PATHS = "\"Preview Content\"";
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				ENABLE_PREVIEWS = YES;
@@ -3530,7 +3538,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 247;
+				CURRENT_PROJECT_VERSION = 248;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3556,7 +3564,7 @@
 				BUNDLE_LOADER = "$(TEST_HOST)";
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 247;
+				CURRENT_PROJECT_VERSION = 248;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3580,7 +3588,7 @@
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 247;
+				CURRENT_PROJECT_VERSION = 248;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3605,7 +3613,7 @@
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 247;
+				CURRENT_PROJECT_VERSION = 248;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = YES;
 				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
@@ -3630,7 +3638,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 247;
+				CURRENT_PROJECT_VERSION = 248;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
@@ -3655,7 +3663,7 @@
 			buildSettings = {
 				CODE_SIGN_ENTITLEMENTS = ALADDINCallDirectory/ALADDINCallDirectory.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 247;
+				CURRENT_PROJECT_VERSION = 248;
 				DEVELOPMENT_TEAM = 6CJVBBUGSN;
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = ALADDINCallDirectory/Info.plist;
