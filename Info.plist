@@ -19,7 +19,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
-	<string>248</string>
+	<string>1</string>
 	<key>ITSAppUsesNonExemptEncryption</key>
 	<false/>
 	<key>LSApplicationQueriesSchemes</key>
@@ -93,9 +93,9 @@
 	<string>ALADDIN Family needs speech recognition access for AI assistant voice input and voice commands.</string>
 	<key>NSUserActivityTypes</key>
 	<array>
-		<string>family.aladdin.ios.activity.security</string>
-		<string>family.aladdin.ios.activity.family</string>
-		<string>family.aladdin.ios.activity.emergency</string>
+		<string>ai.aladdin.activity.security</string>
+		<string>ai.aladdin.activity.family</string>
+		<string>ai.aladdin.activity.emergency</string>
 	</array>
 	<key>NSUserNotificationsUsageDescription</key>
 	<string>ALADDIN Family needs notification access for family safety and security alerts.</string>
@@ -125,7 +125,7 @@
 	</array>
 	<key>BGTaskSchedulerPermittedIdentifiers</key>
 	<array>
-		<string>family.aladdin.ios.content.refresh</string>
+		<string>ai.aladdin.content.refresh</string>
 	</array>
 	<key>UIFileSharingEnabled</key>
 	<true/>

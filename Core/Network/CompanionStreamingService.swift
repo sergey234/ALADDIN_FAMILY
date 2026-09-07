@@ -7,7 +7,7 @@ final class CompanionStreamingService: ObservableObject {
     static let shared = CompanionStreamingService()
 
     private static let streamLog = OSLog(
-        subsystem: Bundle.main.bundleIdentifier ?? "family.aladdin.ios",
+        subsystem: Bundle.main.bundleIdentifier ?? "ai.aladdin",
         category: "CompanionStream"
     )
 

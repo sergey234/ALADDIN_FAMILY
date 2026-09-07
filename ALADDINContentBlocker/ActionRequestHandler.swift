@@ -11,7 +11,7 @@ class ActionRequestHandler: NSObject, NSExtensionRequestHandling {
     
     // MARK: - Constants
     
-    private let appGroupIdentifier = "group.com.aladdin.family"
+    private let appGroupIdentifier = "group.ai.aladdin"
     private let rulesKey = "contentBlockerRules"
     
     // MARK: - Extension Request Handling

@@ -512,7 +512,7 @@ class TariffsViewModel: ObservableObject {
         }
         
         // Также проверяем, может быть это уже Product ID из App Store
-        if lowercasedId.contains("family.aladdin.ios.subscription") {
+        if lowercasedId.contains("ai.aladdin.subscription") {
             // Это уже Product ID
             for productID in StoreManager.ProductID.allCases {
                 if lowercasedId == productID.rawValue.lowercased() {

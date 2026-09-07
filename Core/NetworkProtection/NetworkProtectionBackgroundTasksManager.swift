@@ -8,7 +8,7 @@ class NetworkProtectionBackgroundTasksManager: ObservableObject {
     
     static let shared = NetworkProtectionBackgroundTasksManager()
     
-    private let taskIdentifier = "family.aladdin.networkprotectioncheck"
+    private let taskIdentifier = "ai.aladdin.networkprotectioncheck"
     private var backgroundTaskScheduled = false
     
     private init() {

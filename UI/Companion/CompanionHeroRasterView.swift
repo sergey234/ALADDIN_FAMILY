@@ -59,7 +59,7 @@ struct CompanionHeroRasterView: View {
                 )
                 os_log(
                     "[CompanionHero] png_reason=%{public}@ character=%{public}@",
-                    log: OSLog(subsystem: Bundle.main.bundleIdentifier ?? "family.aladdin.ios", category: "CompanionHero"),
+                    log: OSLog(subsystem: Bundle.main.bundleIdentifier ?? "ai.aladdin", category: "CompanionHero"),
                     type: .info,
                     reason,
                     characterId

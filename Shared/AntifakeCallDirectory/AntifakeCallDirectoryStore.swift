@@ -2,10 +2,10 @@ import Foundation
 
 /// Shared App Group payload for Call Directory extension (af-4-02 / af-m2).
 enum AntifakeCallDirectoryConstants {
-    static let appGroupId = "group.com.aladdin.family"
+    static let appGroupId = "group.ai.aladdin"
     static let snapshotKey = "antifake_call_directory_v1"
     static let backupSnapshotKey = "antifake_call_directory_v1_backup"
-    static let extensionBundleId = "family.aladdin.ios.ALADDINCallDirectory"
+    static let extensionBundleId = "ai.aladdin.CallDirectory"
 }
 
 struct AntifakeCallDirectorySnapshot: Codable, Equatable {

@@ -13,7 +13,7 @@ struct AntifakeSharePayload: Codable, Equatable {
 }
 
 enum AntifakeShareConstants {
-    static let appGroupId = "group.com.aladdin.family"
+    static let appGroupId = "group.ai.aladdin"
     static let payloadKey = "antifake_share_payload_v1"
     static let scheme = "aladdin"
     static let host = "antifake"
@@ -21,6 +21,15 @@ enum AntifakeShareConstants {
 
     static var checkDeepLinkURL: URL {
         URL(string: "\(scheme)://\(host)/\(checkPath)")!
+    }
+
+    static let webBaseURL = "https://aladdin-ai.ru/antifake.html"
+
+    static func webCheckURL(for payload: AntifakeSharePayload) -> URL {
+        var components = URLComponents(string: webBaseURL)!
+        let name = payload.mode == .url ? "url" : "text"
+        components.queryItems = [URLQueryItem(name: name, value: payload.value)]
+        return components.url ?? URL(string: webBaseURL)!
     }
 }
 

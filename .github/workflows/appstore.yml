@@ -406,7 +406,7 @@ jobs:
           echo "РЕШЕНИЕ:"
           echo "1. Зайдите в Apple Developer Portal: https://developer.apple.com/account/resources/profiles/list"
           echo "2. Создайте или скачайте App Store Distribution профиль для Content Blocker Extension"
-          echo "3. Bundle ID должен быть: family.aladdin.ios.ALADDINContentBlocker"
+          echo "3. Bundle ID должен быть: ai.aladdin.ContentBlocker"
           echo "4. Профиль должен поддерживать App Groups capability"
           echo "5. Закодируйте профиль в base64: cat profile.mobileprovision | base64"
           echo "6. Добавьте в GitHub Secrets: PROVISIONING_PROFILE_EXTENSION"
@@ -968,7 +968,7 @@ jobs:
           # Метод 2: Если UUID все еще не найден, использовать bundle ID (Xcode найдет профиль автоматически)
           if [ -z "$APP_PROFILE_UUID" ]; then
             echo "⚠️  Using bundle ID fallback for app profile (Xcode will auto-detect)"
-            APP_PROFILE_UUID="family.aladdin.ios"
+            APP_PROFILE_UUID="ai.aladdin"
           fi
         fi
         
@@ -994,7 +994,7 @@ jobs:
           # Метод 2: Если UUID все еще не найден, использовать bundle ID
           if [ -z "$EXT_PROFILE_UUID" ]; then
             echo "⚠️  Using bundle ID fallback for extension profile (Xcode will auto-detect)"
-            EXT_PROFILE_UUID="family.aladdin.ios.ALADDINContentBlocker"
+            EXT_PROFILE_UUID="ai.aladdin.ContentBlocker"
           fi
         fi
         
@@ -1183,8 +1183,8 @@ jobs:
             echo "РЕШЕНИЕ:"
             echo "1. Зайдите в Apple Developer Portal: https://developer.apple.com/account/resources/profiles/list"
             echo "2. Создайте НОВЫЕ профили типа 'App Store' (не Development, не Ad Hoc)"
-            echo "3. Для App: Bundle ID 'family.aladdin.ios', тип 'App Store'"
-            echo "4. Для Extension: Bundle ID 'family.aladdin.ios.ALADDINContentBlocker', тип 'App Store'"
+            echo "3. Для App: Bundle ID 'ai.aladdin', тип 'App Store'"
+            echo "4. Для Extension: Bundle ID 'ai.aladdin.ContentBlocker', тип 'App Store'"
             echo "5. Убедитесь, что профили связаны с сертификатом 'Apple Distribution: SERGEY KHLYSTOV'"
             echo "6. Обновите GitHub Secrets: PROVISIONING_PROFILE_APP и PROVISIONING_PROFILE_EXTENSION"
             echo ""
@@ -1241,9 +1241,9 @@ jobs:
           echo "⚠️  Using full path for app profile (UUID not extracted): $APP_PROFILE_VALUE"
         else
           # Fallback на bundle ID
-          APP_PROFILE_SPECIFIER="family.aladdin.ios"
-          APP_PROFILE_VALUE="family.aladdin.ios"
-          echo "⚠️  Using bundle ID fallback for app profile: family.aladdin.ios"
+          APP_PROFILE_SPECIFIER="ai.aladdin"
+          APP_PROFILE_VALUE="ai.aladdin"
+          echo "⚠️  Using bundle ID fallback for app profile: ai.aladdin"
         fi
         
         if [ -n "$EXT_PROFILE_PATH" ] && [ -f "$EXT_PROFILE_PATH" ]; then
@@ -1270,9 +1270,9 @@ jobs:
           echo "⚠️  Using full path for extension profile (UUID not extracted): $EXT_PROFILE_VALUE"
         else
           # Fallback на bundle ID
-          EXT_PROFILE_SPECIFIER="family.aladdin.ios.ALADDINContentBlocker"
-          EXT_PROFILE_VALUE="family.aladdin.ios.ALADDINContentBlocker"
-          echo "⚠️  Using bundle ID fallback for extension profile: family.aladdin.ios.ALADDINContentBlocker"
+          EXT_PROFILE_SPECIFIER="ai.aladdin.ContentBlocker"
+          EXT_PROFILE_VALUE="ai.aladdin.ContentBlocker"
+          echo "⚠️  Using bundle ID fallback for extension profile: ai.aladdin.ContentBlocker"
         fi
         
         # Создать xcconfig файл
@@ -1286,7 +1286,7 @@ jobs:
             echo "ALADDIN_CODE_SIGN_STYLE = Manual"
             echo "ALADDIN_DEVELOPMENT_TEAM = $APPLE_TEAM_ID"
             echo "ALADDIN_CODE_SIGN_IDENTITY = $DIST_CERT_NAME"
-          echo "ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios"
+          echo "ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin"
           if [[ "$APP_PROFILE_VALUE" =~ ^/ ]]; then
             # Это полный путь - используем его напрямую
             echo "ALADDIN_PROVISIONING_PROFILE = $APP_PROFILE_VALUE"
@@ -1311,7 +1311,7 @@ jobs:
               echo "ALADDINContentBlocker_CODE_SIGN_STYLE = Manual"
               echo "ALADDINContentBlocker_DEVELOPMENT_TEAM = $APPLE_TEAM_ID"
               echo "ALADDINContentBlocker_CODE_SIGN_IDENTITY = $DIST_CERT_NAME"
-              echo "ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker"
+              echo "ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.ContentBlocker"
               if [[ "$EXT_PROFILE_VALUE" =~ ^/ ]]; then
                 # Это полный путь - используем его напрямую
                 echo "ALADDINContentBlocker_PROVISIONING_PROFILE = $EXT_PROFILE_VALUE"
@@ -1347,7 +1347,7 @@ jobs:
       run: |
         echo "Building archive with manual signing..."
         echo "Team ID: $APPLE_TEAM_ID"
-        echo "Bundle ID: family.aladdin.ios"
+        echo "Bundle ID: ai.aladdin"
         echo "App Profile UUID: $APP_PROFILE_UUID"
         echo "Extension Profile UUID: $EXT_PROFILE_UUID"
         echo "App Profile Path: $APP_PROFILE_PATH"
@@ -1543,12 +1543,12 @@ jobs:
         
         # Если UUID не извлечены, используем bundle ID (Xcode найдет профили автоматически)
         if [ -z "$APP_PROFILE_UUID" ]; then
-          APP_PROFILE_UUID="family.aladdin.ios"
+          APP_PROFILE_UUID="ai.aladdin"
         fi
         # Extension UUID только если target существует
         if [ "${{ env.EXTENSION_EXISTS }}" = "true" ]; then
           if [ -z "$EXT_PROFILE_UUID" ]; then
-            EXT_PROFILE_UUID="family.aladdin.ios.ALADDINContentBlocker"
+            EXT_PROFILE_UUID="ai.aladdin.ContentBlocker"
           fi
         else
           EXT_PROFILE_UUID=""
@@ -1578,10 +1578,10 @@ jobs:
           # Manual signing - используем установленные профили
           if [ "${{ env.EXTENSION_EXISTS }}" = "true" ] && [ -n "$EXT_PROFILE_UUID" ]; then
             # С extension
-            printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>method</key>\n  <string>app-store</string>\n  <key>teamID</key>\n  <string>%s</string>\n  <key>signingStyle</key>\n  <string>manual</string>\n  <key>signingCertificate</key>\n  <string>Apple Distribution</string>\n  <key>provisioningProfiles</key>\n  <dict>\n    <key>family.aladdin.ios</key>\n    <string>%s</string>\n    <key>family.aladdin.ios.ALADDINContentBlocker</key>\n    <string>%s</string>\n  </dict>\n  <key>uploadBitcode</key>\n  <false/>\n  <key>uploadSymbols</key>\n  <true/>\n  <key>compileBitcode</key>\n  <false/>\n</dict>\n</plist>\n' "$APPLE_TEAM_ID" "$APP_PROFILE_UUID" "$EXT_PROFILE_UUID" > ./build/ExportOptions.plist
+            printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>method</key>\n  <string>app-store</string>\n  <key>teamID</key>\n  <string>%s</string>\n  <key>signingStyle</key>\n  <string>manual</string>\n  <key>signingCertificate</key>\n  <string>Apple Distribution</string>\n  <key>provisioningProfiles</key>\n  <dict>\n    <key>ai.aladdin</key>\n    <string>%s</string>\n    <key>ai.aladdin.ContentBlocker</key>\n    <string>%s</string>\n  </dict>\n  <key>uploadBitcode</key>\n  <false/>\n  <key>uploadSymbols</key>\n  <true/>\n  <key>compileBitcode</key>\n  <false/>\n</dict>\n</plist>\n' "$APPLE_TEAM_ID" "$APP_PROFILE_UUID" "$EXT_PROFILE_UUID" > ./build/ExportOptions.plist
           else
             # Без extension
-            printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>method</key>\n  <string>app-store</string>\n  <key>teamID</key>\n  <string>%s</string>\n  <key>signingStyle</key>\n  <string>manual</string>\n  <key>signingCertificate</key>\n  <string>Apple Distribution</string>\n  <key>provisioningProfiles</key>\n  <dict>\n    <key>family.aladdin.ios</key>\n    <string>%s</string>\n  </dict>\n  <key>uploadBitcode</key>\n  <false/>\n  <key>uploadSymbols</key>\n  <true/>\n  <key>compileBitcode</key>\n  <false/>\n</dict>\n</plist>\n' "$APPLE_TEAM_ID" "$APP_PROFILE_UUID" > ./build/ExportOptions.plist
+            printf '<?xml version="1.0" encoding="UTF-8"?>\n<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">\n<plist version="1.0">\n<dict>\n  <key>method</key>\n  <string>app-store</string>\n  <key>teamID</key>\n  <string>%s</string>\n  <key>signingStyle</key>\n  <string>manual</string>\n  <key>signingCertificate</key>\n  <string>Apple Distribution</string>\n  <key>provisioningProfiles</key>\n  <dict>\n    <key>ai.aladdin</key>\n    <string>%s</string>\n  </dict>\n  <key>uploadBitcode</key>\n  <false/>\n  <key>uploadSymbols</key>\n  <true/>\n  <key>compileBitcode</key>\n  <false/>\n</dict>\n</plist>\n' "$APPLE_TEAM_ID" "$APP_PROFILE_UUID" > ./build/ExportOptions.plist
           fi
         fi
         

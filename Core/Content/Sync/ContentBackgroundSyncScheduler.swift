@@ -4,7 +4,7 @@ import BackgroundTasks
 final class ContentBackgroundSyncScheduler {
     static let shared = ContentBackgroundSyncScheduler()
 
-    private let taskIdentifier = "family.aladdin.ios.content.refresh"
+    private let taskIdentifier = "ai.aladdin.content.refresh"
     private var isRegistered = false
     private var lastForegroundRefreshAt: Date?
     private let foregroundRefreshMinInterval: TimeInterval = 25

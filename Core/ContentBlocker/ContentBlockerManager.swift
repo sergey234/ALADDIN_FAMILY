@@ -25,8 +25,8 @@ class ContentBlockerManager: ObservableObject {
     // MARK: - Constants
     
     /// Должен совпадать с `PRODUCT_BUNDLE_IDENTIFIER` таргета ALADDINContentBlocker в Xcode (см. project.pbxproj).
-    private let extensionIdentifier = "family.aladdin.ios.ALADDINContentBlocker"
-    private let appGroupIdentifier = "group.com.aladdin.family"
+    private let extensionIdentifier = "ai.aladdin.ContentBlocker"
+    private let appGroupIdentifier = "group.ai.aladdin"
     private let rulesKey = "contentBlockerRules"
     
     /// int-9: не слать аналитику «смены состояния» на первом опросе SFContentBlockerManager (холодный старт).

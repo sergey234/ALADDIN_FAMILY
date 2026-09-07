@@ -1,0 +1,114 @@
+{
+  "identifier" : "ALADDINSubscriptions",
+  "nonRenewingSubscriptions" : [
+
+  ],
+  "products" : [
+
+  ],
+  "settings" : {
+    "_applicationInternalID" : "0",
+    "_developerTeamID" : "COMPANY_TEAM_ID",
+    "_failTransactionsEnabled" : false,
+    "_lastSynchronizedDate" : 0,
+    "_locale" : "ru_RU",
+    "_storefront" : "RUS",
+    "_storeKitErrors" : [
+
+    ]
+  },
+  "subscriptionGroups" : [
+    {
+      "id" : "ALADDIN_PREMIUM",
+      "localizations" : [
+        {
+          "description" : "Подписки ALADDIN",
+          "displayName" : "ALADDIN",
+          "locale" : "ru_RU"
+        }
+      ],
+      "name" : "ALADDIN Premium",
+      "subscriptions" : [
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "299",
+          "familyShareable" : false,
+          "groupNumber" : 1,
+          "internalID" : "individual_v2",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "1 устройство, полная защита, AI помощник",
+              "displayName" : "Индивидуальный",
+              "locale" : "ru_RU"
+            }
+          ],
+          "productID" : "ai.aladdin.subscription.individual.v2",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Individual",
+          "subscriptionGroupID" : "ALADDIN_PREMIUM",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "599",
+          "familyShareable" : true,
+          "groupNumber" : 2,
+          "internalID" : "family",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "До 5 устройств, родительский контроль",
+              "displayName" : "Семейный",
+              "locale" : "ru_RU"
+            }
+          ],
+          "productID" : "ai.aladdin.subscription.family",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Family",
+          "subscriptionGroupID" : "ALADDIN_PREMIUM",
+          "type" : "RecurringSubscription"
+        },
+        {
+          "adHocOffers" : [
+
+          ],
+          "codeOffers" : [
+
+          ],
+          "displayPrice" : "999",
+          "familyShareable" : true,
+          "groupNumber" : 3,
+          "internalID" : "premium",
+          "introductoryOffer" : null,
+          "localizations" : [
+            {
+              "description" : "До 10 устройств, все функции",
+              "displayName" : "Премиум",
+              "locale" : "ru_RU"
+            }
+          ],
+          "productID" : "ai.aladdin.subscription.premium",
+          "recurringSubscriptionPeriod" : "P1M",
+          "referenceName" : "Premium",
+          "subscriptionGroupID" : "ALADDIN_PREMIUM",
+          "type" : "RecurringSubscription"
+        }
+      ]
+    }
+  ],
+  "version" : {
+    "major" : 3,
+    "minor" : 0
+  }
+}

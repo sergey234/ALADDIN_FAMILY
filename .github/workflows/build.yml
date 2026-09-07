@@ -31,7 +31,7 @@ jobs:
             -archivePath ./build/ALADDIN.xcarchive \
             archive \
             CODE_SIGN_IDENTITY="Apple Distribution" \
-            PROVISIONING_PROFILE_SPECIFIER="iOS Team Store Provisioning Profile: family.aladdin.ios"
+            PROVISIONING_PROFILE_SPECIFIER="iOS Team Store Provisioning Profile: ai.aladdin"
       
       - name: Export IPA
         run: |

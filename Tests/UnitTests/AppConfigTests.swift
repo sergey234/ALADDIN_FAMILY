@@ -47,7 +47,7 @@ class AppConfigTests: XCTestCase {
     }
     
     func testBuildNumber() throws {
-        XCTAssertEqual(AppConfig.buildNumber, "248")
+        XCTAssertEqual(AppConfig.buildNumber, "1")
     }
 
     // MARK: - Explicit Security API (B2-00 / GATE-D)
@@ -97,7 +97,7 @@ class AppConfigTests: XCTestCase {
     }
     
     func testBundleIdentifier() throws {
-        XCTAssertEqual(AppConfig.bundleIdentifier, "family.aladdin.ios")
+        XCTAssertEqual(AppConfig.bundleIdentifier, "ai.aladdin")
     }
     
     func testAppDisplayName() throws {

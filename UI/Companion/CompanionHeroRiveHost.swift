@@ -6,7 +6,7 @@ import os.log
 enum CompanionHeroRiveHost {
     private static let masterImageCache = NSCache<NSString, UIImage>()
     private static let heroLog = OSLog(
-        subsystem: Bundle.main.bundleIdentifier ?? "family.aladdin.ios",
+        subsystem: Bundle.main.bundleIdentifier ?? "ai.aladdin",
         category: "CompanionHero"
     )
     /// Placeholder `.riv` из репо ~15 KB; production export обычно &gt; 25 KB.

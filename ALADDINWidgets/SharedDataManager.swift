@@ -11,7 +11,7 @@ class SharedDataManager {
     
     // MARK: - App Group Identifier
     
-    private static let appGroupIdentifier = "group.com.aladdin.family"
+    private static let appGroupIdentifier = "group.ai.aladdin"
     private static let userDefaults = UserDefaults(suiteName: appGroupIdentifier)!
     
     // MARK: - Keys

@@ -217,7 +217,7 @@ enum WellnessSessionStore {
 
 /// r100-2-06 — App Group keys shared with `ALADDINWidgets/SharedDataManager`.
 enum WellnessWidgetBridge {
-    private static let appGroupId = "group.com.aladdin.family"
+    private static let appGroupId = "group.ai.aladdin"
     private static let titleKey = "wellness_widget_title"
     private static let tapKey = "wellness_widget_tap"
     private static let moodKey = "wellness_last_mood"

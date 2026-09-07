@@ -28,7 +28,7 @@ class ALADDINUnitTests: XCTestCase {
         // Тест основных свойств AppConfig
         XCTAssertEqual(AppConfig.appName, "ALADDIN")
         XCTAssertEqual(AppConfig.appVersion, "1.0.0")
-        XCTAssertEqual(AppConfig.bundleIdentifier, "family.aladdin.ios")
+        XCTAssertEqual(AppConfig.bundleIdentifier, "ai.aladdin")
     }
     
     func testAppConfigAPIBaseURL() throws {
