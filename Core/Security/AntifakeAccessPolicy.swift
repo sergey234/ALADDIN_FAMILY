@@ -3,8 +3,15 @@ import Foundation
 /// Central gate for Antifake Hub / deepfakes category (af-2-08, G-03).
 @MainActor
 enum AntifakeAccessPolicy {
-    /// Build 238: production premium gate enforced. UITest uses `-UITestAntifakeHubSmoke`.
-    static let bypassPremiumGate: Bool = false
+    /// Production: gate ON. DEBUG/UITest: unlock Hub for ASC screenshots & local QA.
+    /// Release App Store builds keep `bypassPremiumGate == false`.
+    static var bypassPremiumGate: Bool {
+        #if DEBUG
+        true
+        #else
+        false
+        #endif
+    }
 
     private static var uiTestHubUnlock: Bool {
         ProcessInfo.processInfo.arguments.contains("-UITestAntifakeHubSmoke")
