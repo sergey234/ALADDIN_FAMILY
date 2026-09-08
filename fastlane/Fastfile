@@ -193,7 +193,13 @@ platform :ios do
         "-destination", "generic/platform=iOS",
         "DEVELOPMENT_TEAM=#{team_id}",
         "ALADDIN_CODE_SIGN_STYLE=Manual",
+        "ALADDIN_CODE_SIGN_IDENTITY=Apple Distribution",
+        "ALADDIN_PROVISIONING_PROFILE_SPECIFIER=#{app_profile_uuid}",
+        "ALADDIN_PROVISIONING_PROFILE=#{app_profile_uuid}",
         "ALADDINContentBlocker_CODE_SIGN_STYLE=Manual",
+        "ALADDINContentBlocker_CODE_SIGN_IDENTITY=Apple Distribution",
+        "ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER=#{extension_profile_uuid}",
+        "ALADDINContentBlocker_PROVISIONING_PROFILE=#{extension_profile_uuid}",
         antifake_sign_flag,
         call_directory_sign_flag
       ]
