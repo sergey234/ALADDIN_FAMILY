@@ -257,7 +257,8 @@ struct ChildRewardsScreen: View {
             lastSampledGoalProgress = newValue
         }
         .navigationBarHidden(true)
-        .withVisualLogger()
+        // Visual logger: только root `visualLoggerOverlay()` — без `.withVisualLogger()` здесь
+        // (иначе DEBUG-карточка логов закрывает половину «Вознаграждение ребёнка»).
         .id("child_rewards_lang_\(localizationManager.currentLanguage.rawValue)")
         .sheet(isPresented: $showRequestModal) {
             AchievementRequestModal(
@@ -2169,7 +2170,7 @@ struct AchievementRequestModal: View {
             ZStack {
                 StormMeshBackground(variant: .growWarm)
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         Text(localizationManager.localized("child_rewards_achievement_request_select"))
                             .font(.body)
