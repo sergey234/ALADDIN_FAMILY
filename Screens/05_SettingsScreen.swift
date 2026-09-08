@@ -592,10 +592,6 @@ struct SettingsScreen: View {
                         // Additional Section
                         additionalSection
 
-#if DEBUG
-                        DebugSFMHealthSection()
-                            .environmentObject(localizationManager)
-#endif
 
                         // Отступ снизу
                         Spacer(minLength: 100)
