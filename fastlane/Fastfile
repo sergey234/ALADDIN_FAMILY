@@ -44,7 +44,7 @@ platform :ios do
       antifake_profile_file = antifake_profile_uuid.to_s.empty? ? nil : "#{profile_dir}/#{antifake_profile_uuid}.mobileprovision"
       call_directory_profile_file = call_directory_profile_uuid.to_s.empty? ? nil : "#{profile_dir}/#{call_directory_profile_uuid}.mobileprovision"
 
-      expected_app_group = "group.com.aladdin.family"
+      expected_app_group = "group.ai.aladdin"
       validate_profile_app_group = lambda do |profile_path, profile_label, expected_bundle_id|
         unless File.exist?(profile_path)
           UI.user_error!("❌ #{profile_label}: provisioning profile не найден по пути #{profile_path}")
@@ -72,8 +72,8 @@ platform :ios do
         profile_name
       end
 
-      app_profile_name = validate_profile_app_group.call(app_profile_file, "App", "family.aladdin.ios")
-      extension_profile_name = validate_profile_app_group.call(extension_profile_file, "Content Blocker", "family.aladdin.ios.ALADDINContentBlocker")
+      app_profile_name = validate_profile_app_group.call(app_profile_file, "App", "ai.aladdin")
+      extension_profile_name = validate_profile_app_group.call(extension_profile_file, "Content Blocker", "ai.aladdin.ContentBlocker")
 
       antifake_manual = false
       antifake_profile_name = nil
@@ -81,7 +81,7 @@ platform :ios do
         antifake_profile_name = validate_profile_app_group.call(
           antifake_profile_file,
           "Antifake Share",
-          "family.aladdin.ios.ALADDINAntifakeShare"
+          "ai.aladdin.AntifakeShare"
         )
         antifake_manual = true
       end
@@ -92,7 +92,7 @@ platform :ios do
         call_directory_profile_name = validate_profile_app_group.call(
           call_directory_profile_file,
           "Call Directory",
-          "family.aladdin.ios.ALADDINCallDirectory"
+          "ai.aladdin.CallDirectory"
         )
         call_directory_manual = true
       end
@@ -107,14 +107,14 @@ platform :ios do
           ALADDINAntifakeShare_DEVELOPMENT_TEAM = #{team_id}
           ALADDINAntifakeShare_PROVISIONING_PROFILE_SPECIFIER = #{antifake_profile_uuid}
           ALADDINAntifakeShare_PROVISIONING_PROFILE = #{antifake_profile_uuid}
-          ALADDINAntifakeShare_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINAntifakeShare
+          ALADDINAntifakeShare_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.AntifakeShare
         ANTIFAKE
       else
         <<~ANTIFAKE
           ALADDINAntifakeShare_CODE_SIGN_STYLE = Automatic
           ALADDINAntifakeShare_DEVELOPMENT_TEAM = #{team_id}
           ALADDINAntifakeShare_PROVISIONING_PROFILE_SPECIFIER =
-          ALADDINAntifakeShare_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINAntifakeShare
+          ALADDINAntifakeShare_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.AntifakeShare
         ANTIFAKE
       end
 
@@ -125,14 +125,14 @@ platform :ios do
           ALADDINCallDirectory_DEVELOPMENT_TEAM = #{team_id}
           ALADDINCallDirectory_PROVISIONING_PROFILE_SPECIFIER = #{call_directory_profile_uuid}
           ALADDINCallDirectory_PROVISIONING_PROFILE = #{call_directory_profile_uuid}
-          ALADDINCallDirectory_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINCallDirectory
+          ALADDINCallDirectory_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.CallDirectory
         CALLDIR
       else
         <<~CALLDIR
           ALADDINCallDirectory_CODE_SIGN_STYLE = Automatic
           ALADDINCallDirectory_DEVELOPMENT_TEAM = #{team_id}
           ALADDINCallDirectory_PROVISIONING_PROFILE_SPECIFIER =
-          ALADDINCallDirectory_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINCallDirectory
+          ALADDINCallDirectory_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.CallDirectory
         CALLDIR
       end
 
@@ -141,13 +141,13 @@ platform :ios do
 
         ALADDIN_CODE_SIGN_STYLE = Manual
         ALADDIN_DEVELOPMENT_TEAM = #{team_id}
-        ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios
+        ALADDIN_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin
         ALADDIN_PROVISIONING_PROFILE_SPECIFIER = #{app_profile_uuid}
         ALADDIN_PROVISIONING_PROFILE = #{app_profile_uuid}
 
         ALADDINContentBlocker_CODE_SIGN_STYLE = Manual
         ALADDINContentBlocker_DEVELOPMENT_TEAM = #{team_id}
-        ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = family.aladdin.ios.ALADDINContentBlocker
+        ALADDINContentBlocker_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.ContentBlocker
         ALADDINContentBlocker_PROVISIONING_PROFILE_SPECIFIER = #{extension_profile_uuid}
         ALADDINContentBlocker_PROVISIONING_PROFILE = #{extension_profile_uuid}
 
@@ -235,14 +235,14 @@ platform :ios do
     UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен") if extension_profile_uuid.nil? || extension_profile_uuid.empty?
 
     profiles = {
-      "family.aladdin.ios" => app_profile_uuid,
-      "family.aladdin.ios.ALADDINContentBlocker" => extension_profile_uuid
+      "ai.aladdin" => app_profile_uuid,
+      "ai.aladdin.ContentBlocker" => extension_profile_uuid
     }
     if antifake_profile_uuid && !antifake_profile_uuid.empty?
-      profiles["family.aladdin.ios.ALADDINAntifakeShare"] = antifake_profile_uuid
+      profiles["ai.aladdin.AntifakeShare"] = antifake_profile_uuid
     end
     if call_directory_profile_uuid && !call_directory_profile_uuid.empty?
-      profiles["family.aladdin.ios.ALADDINCallDirectory"] = call_directory_profile_uuid
+      profiles["ai.aladdin.CallDirectory"] = call_directory_profile_uuid
     end
 
     export_options_path = "./build/ExportOptions.plist"
