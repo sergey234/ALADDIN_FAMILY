@@ -1,6 +1,6 @@
 import SwiftUI
 
-// MARK: - fws-03 «Before transfer» social-engineering entry (Main + Elderly)
+// MARK: - fws-03 «Before transfer» social-engineering entry (Elderly; removed from Main)
 
 struct AntifakeTransferCheckCTA: View {
     @EnvironmentObject private var localizationManager: LocalizationManager

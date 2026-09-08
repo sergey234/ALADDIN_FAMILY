@@ -631,11 +631,6 @@ struct MainScreen: View {
                         }
                         .padding(.horizontal, 20)
 
-                        AntifakeTransferCheckCTA()
-                            .environmentObject(localizationManager)
-                            .environmentObject(navigationManager)
-                            .padding(.horizontal, 20)
-
                         // FAMILY статус - большая карточка
                         VStack(spacing: 12) {
                             // Заголовок с капсулой статуса
