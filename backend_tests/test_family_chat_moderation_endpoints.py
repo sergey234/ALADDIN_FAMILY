@@ -5,6 +5,10 @@ import os
 import pytest
 
 os.environ.setdefault("JWT_SECRET", "test-only-secret")
+os.environ.setdefault(
+    "DATABASE_URL",
+    "postgresql://test_user:test_password@localhost:5432/test_database",
+)
 
 from fastapi import FastAPI, HTTPException
 from fastapi.testclient import TestClient

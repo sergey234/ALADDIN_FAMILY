@@ -17,13 +17,13 @@ def apply_migration():
     """Применить миграцию к базе данных"""
     
     # Получаем параметры подключения из переменных окружения
-    database_url = os.getenv(
-        "DATABASE_URL",
-        "postgresql://aladdin_user:AladdinSecure2024!@localhost:5432/aladdin_db"
-    )
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        print("❌ DATABASE_URL environment variable is required", file=sys.stderr)
+        return False
     
     # Парсим DATABASE_URL
-    # Формат: postgresql://user:password@host:port/database
+    # Формат: postgresql://USER:PASSWORD@HOST:PORT/DATABASE
     try:
         # Убираем префикс postgresql://
         url_part = database_url.replace("postgresql://", "")
@@ -41,7 +41,7 @@ def apply_migration():
             
     except Exception as e:
         print(f"❌ Ошибка парсинга DATABASE_URL: {e}")
-        print(f"   Используйте формат: postgresql://user:password@host:port/database")
+        print(f"   Используйте формат: postgresql://USER:PASSWORD@HOST:PORT/DATABASE")
         return False
     
     # Путь к SQL файлу миграции

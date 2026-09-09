@@ -12,7 +12,7 @@ from pathlib import Path
 
 
 def _parse_database_url(database_url: str):
-    # Формат: postgresql://user:password@host:port/database
+    # Формат: postgresql://USER:PASSWORD@HOST:PORT/DATABASE
     url_part = database_url.replace("postgresql://", "")
     auth_part, host_db_part = url_part.split("@")
     user, password = auth_part.split(":")
@@ -25,10 +25,10 @@ def _parse_database_url(database_url: str):
 
 
 def apply_migration() -> bool:
-    database_url = os.getenv(
-        "DATABASE_URL",
-        "postgresql://aladdin_user:AladdinSecure2024!@localhost:5432/aladdin_db",
-    )
+    database_url = os.getenv("DATABASE_URL")
+    if not database_url:
+        print("❌ DATABASE_URL environment variable is required", file=sys.stderr)
+        return False
 
     try:
         host, port, database, user, password = _parse_database_url(database_url)

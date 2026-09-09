@@ -5,9 +5,12 @@ from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
 from typing import Generator
+import os
 
 # Параметры подключения к БД
-DATABASE_URL = "postgresql://aladdin_user:AladdinSecure2024!@localhost:5432/aladdin_db"
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL environment variable is required")
 
 # Создание движка SQLAlchemy
 engine = create_engine(

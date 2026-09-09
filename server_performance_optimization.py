@@ -268,6 +268,7 @@ upstream api_backend {
         optimizations = """
 # Performance optimizations for FastAPI
 import asyncio
+import os
 import uvicorn
 from concurrent.futures import ThreadPoolExecutor
 
@@ -282,7 +283,7 @@ max_requests = 1000
 max_requests_jitter = 50
 
 # Database connection pool optimization
-DATABASE_URL = "postgresql://aladdin:aladdin2024@localhost:5432/aladdin"
+DATABASE_URL = os.environ["DATABASE_URL"]
 db_pool_size = 20
 db_max_overflow = 30
 db_pool_recycle = 3600
