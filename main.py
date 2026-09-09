@@ -17,7 +17,8 @@ from prometheus_client import Gauge, Counter, Histogram, generate_latest, CONTEN
 import logging
 import re
 from sqlalchemy import text
-from collections import defaultdict
+from collections import defaultdict, deque
+from app.auth.auth import decode_token
 from security.api.routers.location_bubble_router import router as location_router
 from security.api.routers.identity_theft_protection_router import router as identity_router
 from security.api.routers.driving_reports_router import router as driving_router
@@ -1355,12 +1356,85 @@ async def health():
 
 @app.websocket("/ws/family/chat")
 async def family_chat_websocket(websocket: WebSocket):
-    family_id = websocket.query_params.get("family_id", "default")
+    authorization = (websocket.headers.get("authorization") or "").strip()
+    if not authorization.lower().startswith("bearer "):
+        await websocket.close(code=1008, reason="Authentication required")
+        return
+    claims = decode_token(authorization.split(" ", 1)[1].strip())
+    family_module = globals().get("family")
+    if not claims or not family_router_available or not hasattr(family_module, "_actor_belongs_to_family"):
+        await websocket.close(code=1008, reason="Invalid authentication")
+        return
+
+    family_id = (websocket.query_params.get("family_id") or "").strip()
+    if not family_id:
+        await websocket.close(code=1008, reason="family_id required")
+        return
+
+    def authorize_family_socket():
+        user_id = family_module._resolve_user_id_from_claim(claims)
+        if not family_module.get_postgres_db:
+            raise RuntimeError("Family database unavailable")
+        gen = family_module.get_postgres_db()
+        db = next(gen)
+        try:
+            if not family_module._actor_belongs_to_family(db, user_id, family_id):
+                return None
+            restricted = family_module._is_family_chat_restricted(db, user_id, family_id)
+            return user_id, restricted
+        finally:
+            gen.close()
+
+    def refresh_restriction_status(user_id: int) -> bool:
+        if not family_module.get_postgres_db:
+            raise RuntimeError("Family database unavailable")
+        gen = family_module.get_postgres_db()
+        db = next(gen)
+        try:
+            return family_module._is_family_chat_restricted(db, user_id, family_id)
+        finally:
+            gen.close()
+
+    try:
+        authorization_result = await asyncio.to_thread(authorize_family_socket)
+    except Exception:
+        await websocket.close(code=1011, reason="Family authorization unavailable")
+        return
+    if not authorization_result:
+        await websocket.close(code=1008, reason="Family access denied")
+        return
+
+    user_id, is_restricted = authorization_result
+    last_restriction_check = time.monotonic()
+    frame_times = deque()
     await family_ws_manager.connect(family_id, websocket)
     try:
         while True:
             payload = await websocket.receive_json()
+            now = time.monotonic()
+            while frame_times and now - frame_times[0] > 60:
+                frame_times.popleft()
+            if len(frame_times) >= 60:
+                await websocket.close(code=1008, reason="Rate limit exceeded")
+                break
+            frame_times.append(now)
+
             message_type = payload.get("type", "message")
+            if now - last_restriction_check >= 2:
+                try:
+                    is_restricted = await asyncio.to_thread(
+                        refresh_restriction_status,
+                        user_id,
+                    )
+                except Exception:
+                    await websocket.close(code=1011, reason="Restriction status unavailable")
+                    break
+                last_restriction_check = now
+            if is_restricted and message_type not in ("presence", "ping", "pong"):
+                await websocket.send_json(
+                    {"type": "error", "code": "chat_restricted", "family_id": family_id}
+                )
+                continue
 
             if message_type in ("message", "new_message", "chat"):
                 try:
@@ -1372,7 +1446,7 @@ async def family_chat_websocket(websocket: WebSocket):
                 outbound = {
                     "type": message_type,
                     "family_id": family_id,
-                    "user_id": payload.get("user_id"),
+                    "user_id": str(user_id),
                     "typing": bool(payload.get("typing", False)),
                     "timestamp": time.strftime("%Y-%m-%dT%H:%M:%S"),
                 }
@@ -1380,6 +1454,8 @@ async def family_chat_websocket(websocket: WebSocket):
                     outbound["status"] = payload.get("status", "online")
             await family_ws_manager.broadcast(family_id, outbound)
     except WebSocketDisconnect:
+        pass
+    finally:
         family_ws_manager.disconnect(family_id, websocket)
         await family_ws_manager.broadcast(
             family_id,

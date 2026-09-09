@@ -34,6 +34,13 @@ from app.routers.family_chat_v2_helpers import (
     row_to_api_message,
 )
 from app.routers.family_chat_v2_pure import build_ws_new_message_payload
+from app.routers.family_chat_moderation import (
+    ModerationValidationError,
+    can_report_chat_message,
+    can_restrict_chat_member,
+    normalize_report_category,
+    normalize_report_note,
+)
 from app.services.family_chat_realtime import family_ws_manager
 
 try:
@@ -76,6 +83,35 @@ _SAFE_CHAT_MEDIA_FILENAME = re.compile(r"^[a-f0-9]{32}\.(?:enc|[A-Za-z0-9]{1,12}
 def _ensure_family_chat_upload_root() -> Path:
     _FAMILY_CHAT_UPLOAD_ROOT.mkdir(parents=True, exist_ok=True)
     return _FAMILY_CHAT_UPLOAD_ROOT
+
+
+def _register_family_chat_media_file(filename: str, family_id: str, user_id: int) -> None:
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+    gen = get_postgres_db()
+    db = next(gen)
+    try:
+        _ensure_family_chat_table(db)
+        db.execute(
+            text(
+                """
+                INSERT INTO family_chat_media_files (
+                    filename, family_id, uploaded_by_user_id, created_at
+                ) VALUES (:filename, :family_id, :uploaded_by_user_id, :created_at)
+                ON CONFLICT (filename) DO NOTHING
+                """
+            ),
+            {
+                "filename": filename,
+                "family_id": family_id,
+                "uploaded_by_user_id": user_id,
+                "created_at": _iso_utc_timestamp(),
+            },
+        )
+        db.commit()
+    finally:
+        gen.close()
+
 
 def _ensure_family_indexes(db) -> None:
     global _family_indexes_initialized
@@ -834,6 +870,24 @@ class ReadRequest(BaseModel):
     messageId: str
 
 
+class ReportFamilyChatMessageRequest(BaseModel):
+    messageId: str = Field(min_length=1, max_length=128)
+    category: str = Field(min_length=1, max_length=32)
+    note: Optional[str] = Field(default=None, max_length=500)
+
+
+class RestrictFamilyChatMemberRequest(BaseModel):
+    messageId: str = Field(min_length=1, max_length=128)
+    restricted: bool = True
+    reason: Optional[str] = Field(default=None, max_length=500)
+
+
+class FamilyChatModerationResponse(BaseModel):
+    success: bool
+    actionId: str
+    message: str
+
+
 class FamilyMemberCompat(BaseModel):
     id: str
     name: str
@@ -954,6 +1008,18 @@ def _ensure_family_chat_table(db) -> None:
     )
     db.execute(
         text(
+            """
+            CREATE TABLE IF NOT EXISTS family_chat_media_files (
+                filename TEXT PRIMARY KEY,
+                family_id TEXT NOT NULL,
+                uploaded_by_user_id INTEGER NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+    )
+    db.execute(
+        text(
             "CREATE INDEX IF NOT EXISTS idx_family_chat_messages_family_time ON family_chat_messages (family_id, timestamp DESC)"
         )
     )
@@ -962,6 +1028,109 @@ def _ensure_family_chat_table(db) -> None:
             "CREATE INDEX IF NOT EXISTS idx_family_chat_reactions_message_id ON family_chat_reactions (message_id)"
         )
     )
+    db.execute(
+        text(
+            "CREATE INDEX IF NOT EXISTS idx_family_chat_media_family ON family_chat_media_files (family_id)"
+        )
+    )
+
+
+def _ensure_family_chat_moderation_tables(db) -> None:
+    """Server-side queue only; never copies plaintext or decrypted E2EE content."""
+    db.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS family_chat_reports (
+                id TEXT PRIMARY KEY,
+                family_id TEXT NOT NULL,
+                reporter_user_id INTEGER NOT NULL,
+                reported_user_id INTEGER NOT NULL,
+                message_id TEXT NOT NULL,
+                message_envelope_version INTEGER,
+                category TEXT NOT NULL,
+                status TEXT NOT NULL DEFAULT 'pending'
+                    CHECK (status IN ('pending', 'reviewed', 'actioned', 'dismissed')),
+                created_at TEXT NOT NULL,
+                reviewed_at TEXT,
+                resolution TEXT
+            )
+            """
+        )
+    )
+    db.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS family_chat_restrictions (
+                family_id TEXT NOT NULL,
+                target_user_id INTEGER NOT NULL,
+                restricted_by_user_id INTEGER NOT NULL,
+                is_active BOOLEAN NOT NULL DEFAULT TRUE,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL,
+                PRIMARY KEY (family_id, target_user_id)
+            )
+            """
+        )
+    )
+    db.execute(
+        text(
+            """
+            CREATE TABLE IF NOT EXISTS family_chat_moderation_audit (
+                id TEXT PRIMARY KEY,
+                family_id TEXT NOT NULL,
+                report_id TEXT,
+                actor_user_id INTEGER NOT NULL,
+                target_user_id INTEGER,
+                target_message_id TEXT,
+                action TEXT NOT NULL,
+                created_at TEXT NOT NULL
+            )
+            """
+        )
+    )
+    db.execute(
+        text(
+            "CREATE INDEX IF NOT EXISTS idx_family_chat_reports_status_created "
+            "ON family_chat_reports (status, created_at)"
+        )
+    )
+    db.execute(
+        text(
+            "CREATE INDEX IF NOT EXISTS idx_family_chat_reports_family "
+            "ON family_chat_reports (family_id, created_at DESC)"
+        )
+    )
+    db.execute(
+        text(
+            "CREATE INDEX IF NOT EXISTS idx_family_chat_moderation_audit_family "
+            "ON family_chat_moderation_audit (family_id, created_at DESC)"
+        )
+    )
+
+
+def _is_family_chat_restricted(db, user_id: int, family_id: str) -> bool:
+    _ensure_family_chat_moderation_tables(db)
+    row = db.execute(
+        text(
+            """
+            SELECT 1 FROM family_chat_restrictions
+            WHERE family_id = :family_id
+              AND target_user_id = :target_user_id
+              AND is_active = TRUE
+            LIMIT 1
+            """
+        ),
+        {"family_id": family_id, "target_user_id": user_id},
+    ).fetchone()
+    return bool(row)
+
+
+def _raise_if_family_chat_restricted(db, user_id: int, family_id: str) -> None:
+    if _is_family_chat_restricted(db, user_id, family_id):
+        raise HTTPException(
+            status_code=403,
+            detail="Chat access restricted by family administrator",
+        )
 
 @router.post("/create", response_model=CreateFamilyResponse)
 @limiter.limit("10/minute")  # ✅ RATE LIMITING: 10 запросов в минуту на IP
@@ -2126,6 +2295,7 @@ async def family_chat_messages_compat(
 
 
 @router.post("/chat/upload-media")
+@limiter.limit("10/minute")
 async def family_chat_upload_media(
     request: Request,
     file: UploadFile = File(...),
@@ -2172,8 +2342,8 @@ async def family_chat_upload_media(
     if suffix not in allowed_suffixes:
         suffix = ".bin"
     name = f"{uuid.uuid4().hex}{suffix}"
-    content = await file.read()
     max_bytes = int(os.environ.get("ALADDIN_FAMILY_CHAT_UPLOAD_MAX_BYTES", str(25 * 1024 * 1024)))
+    content = await file.read(max_bytes + 1)
     if len(content) > max_bytes:
         raise HTTPException(status_code=413, detail="File too large")
     base = str(request.base_url).rstrip("/")
@@ -2196,11 +2366,17 @@ async def family_chat_upload_media(
                 )
                 raise HTTPException(status_code=403, detail="Not a member of this family")
             family_id_used = effective
+            _raise_if_family_chat_restricted(db, user_id, family_id_used)
         finally:
             gen.close()
         root = _ensure_family_chat_upload_root()
         dest = root / name
         dest.write_bytes(content)
+        try:
+            _register_family_chat_media_file(name, family_id_used, user_id)
+        except Exception:
+            dest.unlink(missing_ok=True)
+            raise
         url = f"{base}/api/family/chat/media/{name}"
         logger.info(
             "family_chat_media_upload",
@@ -2215,6 +2391,7 @@ async def family_chat_upload_media(
 
 
 @router.post("/chat/upload-media-ciphertext")
+@limiter.limit("10/minute")
 async def family_chat_upload_media_ciphertext(
     request: Request,
     current_user: dict = Depends(get_current_user),
@@ -2228,12 +2405,18 @@ async def family_chat_upload_media_ciphertext(
     requested_fid = (x_family_id or "").strip()
     if not requested_fid:
         raise HTTPException(status_code=400, detail="X-Family-Id is required")
-    content = await request.body()
-    if not content:
-        raise HTTPException(status_code=400, detail="Empty body")
     max_bytes = int(os.environ.get("ALADDIN_FAMILY_CHAT_UPLOAD_MAX_BYTES", str(25 * 1024 * 1024)))
-    if len(content) > max_bytes:
+    content_length = request.headers.get("content-length")
+    if content_length and content_length.isdigit() and int(content_length) > max_bytes:
         raise HTTPException(status_code=413, detail="File too large")
+    content_buffer = bytearray()
+    async for chunk in request.stream():
+        content_buffer.extend(chunk)
+        if len(content_buffer) > max_bytes:
+            raise HTTPException(status_code=413, detail="File too large")
+    if not content_buffer:
+        raise HTTPException(status_code=400, detail="Empty body")
+    content = bytes(content_buffer)
     base = str(request.base_url).rstrip("/")
     name = f"{uuid.uuid4().hex}.enc"
 
@@ -2248,11 +2431,17 @@ async def family_chat_upload_media_ciphertext(
                 effective = _resolve_primary_family_id_for_actor(db, user_id, current_user)
             if not effective or not _actor_belongs_to_family(db, user_id, effective):
                 raise HTTPException(status_code=403, detail="Not a member of this family")
+            _raise_if_family_chat_restricted(db, user_id, effective)
         finally:
             gen.close()
         root = _ensure_family_chat_upload_root()
         dest = root / name
         dest.write_bytes(content)
+        try:
+            _register_family_chat_media_file(name, str(effective), user_id)
+        except Exception:
+            dest.unlink(missing_ok=True)
+            raise
         url = f"{base}/api/family/chat/media/{name}"
         logger.info(
             "family_chat_media_ciphertext_upload",
@@ -2274,9 +2463,46 @@ async def family_chat_upload_media_ciphertext(
 
 
 @router.get("/chat/media/{filename}")
-async def family_chat_get_media(filename: str):
+async def family_chat_get_media(
+    filename: str,
+    current_user: dict = Depends(get_current_user),
+):
     if not _SAFE_CHAT_MEDIA_FILENAME.match(filename):
         raise HTTPException(status_code=404, detail="Not found")
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+
+    def can_access_media_sync() -> bool:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            _ensure_family_chat_table(db)
+            ensure_chat_v2_columns(db)
+            row = db.execute(
+                text("SELECT family_id FROM family_chat_media_files WHERE filename = :filename LIMIT 1"),
+                {"filename": filename},
+            ).fetchone()
+            if not row:
+                row = db.execute(
+                    text(
+                        """
+                        SELECT family_id FROM family_chat_messages
+                        WHERE voice_url LIKE :url_suffix
+                           OR media_url LIKE :url_suffix
+                           OR media_ciphertext_url LIKE :url_suffix
+                        LIMIT 1
+                        """
+                    ),
+                    {"url_suffix": f"%/{filename}"},
+                ).fetchone()
+            return bool(row and _actor_belongs_to_family(db, user_id, str(row[0])))
+        finally:
+            gen.close()
+
+    if not await asyncio.to_thread(can_access_media_sync):
+        raise HTTPException(status_code=404, detail="Not found")
+
     path = _ensure_family_chat_upload_root() / filename
     if not path.is_file():
         raise HTTPException(status_code=404, detail="Not found")
@@ -2284,7 +2510,9 @@ async def family_chat_get_media(filename: str):
 
 
 @router.post("/chat/send", response_model=SendFamilyChatMessageResponse)
+@limiter.limit("60/minute")
 async def family_chat_send(
+    request: Request,
     payload: SendFamilyChatMessageRequest,
     current_user: dict = Depends(get_current_user),
 ):
@@ -2300,6 +2528,7 @@ async def family_chat_send(
             family_id = _resolve_effective_family_id_for_chat(db, user_id, current_user, payload.familyId)
             if not family_id:
                 raise HTTPException(status_code=404, detail="Family not found")
+            _raise_if_family_chat_restricted(db, user_id, family_id)
 
             ensure_chat_v2_columns(db)
             message_id = f"MSG_{uuid.uuid4().hex[:12].upper()}"
@@ -2334,7 +2563,9 @@ async def family_chat_send(
 
 
 @router.post("/chat/send/typing", response_model=FamilyCompatBoolResponse)
+@limiter.limit("30/minute")
 async def family_chat_send_typing(
+    request: Request,
     payload: TypingIndicatorRequest,
     current_user: dict = Depends(get_current_user),
 ):
@@ -2351,6 +2582,7 @@ async def family_chat_send_typing(
             family_id = _resolve_effective_family_id_for_chat(db, user_id, current_user, payload.familyId)
             if not family_id:
                 raise HTTPException(status_code=404, detail="Family not found")
+            _raise_if_family_chat_restricted(db, user_id, family_id)
         finally:
             gen.close()
 
@@ -2359,7 +2591,9 @@ async def family_chat_send_typing(
 
 
 @router.post("/chat/send/edit", response_model=FamilyCompatBoolResponse)
+@limiter.limit("20/minute")
 async def family_chat_edit_message(
+    request: Request,
     payload: EditFamilyChatMessageRequest,
     current_user: dict = Depends(get_current_user),
 ):
@@ -2373,9 +2607,15 @@ async def family_chat_edit_message(
         try:
             ensure_chat_v2_columns(db)
             env_row = db.execute(
-                text("SELECT envelope_version FROM family_chat_messages WHERE id = :mid LIMIT 1"),
+                text("SELECT envelope_version, family_id FROM family_chat_messages WHERE id = :mid LIMIT 1"),
                 {"mid": payload.messageId},
             ).fetchone()
+            if not env_row or env_row[1] is None:
+                raise HTTPException(status_code=404, detail="Message not found")
+            message_family_id = str(env_row[1])
+            if not _actor_belongs_to_family(db, user_id, message_family_id):
+                raise HTTPException(status_code=404, detail="Message not found")
+            _raise_if_family_chat_restricted(db, user_id, message_family_id)
             if env_row and int(env_row[0] or 1) == 2:
                 raise HTTPException(
                     status_code=400,
@@ -2404,7 +2644,9 @@ async def family_chat_edit_message(
 
 
 @router.post("/chat/send/reaction", response_model=FamilyCompatBoolResponse)
+@limiter.limit("30/minute")
 async def family_chat_add_reaction(
+    request: Request,
     payload: ReactionRequest,
     current_user: dict = Depends(get_current_user),
 ):
@@ -2417,6 +2659,15 @@ async def family_chat_add_reaction(
         db = next(gen)
         try:
             _ensure_family_chat_table(db)
+            message_row = db.execute(
+                text("SELECT family_id FROM family_chat_messages WHERE id = :message_id LIMIT 1"),
+                {"message_id": payload.messageId},
+            ).fetchone()
+            if not message_row or message_row[0] is None:
+                raise HTTPException(status_code=404, detail="Message not found")
+            if not _actor_belongs_to_family(db, user_id, str(message_row[0])):
+                raise HTTPException(status_code=403, detail="Not a member of this message's family")
+            _raise_if_family_chat_restricted(db, user_id, str(message_row[0]))
             reaction_id = f"REA_{uuid.uuid4().hex[:12].upper()}"
             db.execute(
                 text(
@@ -2489,6 +2740,279 @@ async def family_chat_mark_read(
     return await asyncio.to_thread(read_sync)
 
 
+@router.post("/chat/moderation/report", response_model=FamilyChatModerationResponse)
+@limiter.limit("10/minute")
+async def family_chat_report_message(
+    request: Request,
+    payload: ReportFamilyChatMessageRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Queue a metadata-only report; E2EE/plaintext message content is never copied."""
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+    try:
+        category = normalize_report_category(payload.category)
+        normalize_report_note(payload.note)
+    except ModerationValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    def report_sync() -> FamilyChatModerationResponse:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            _ensure_family_chat_table(db)
+            _ensure_family_chat_moderation_tables(db)
+            row = db.execute(
+                text(
+                    """
+                    SELECT family_id, sender_user_id, COALESCE(envelope_version, 1)
+                    FROM family_chat_messages
+                    WHERE id = :message_id
+                    LIMIT 1
+                    """
+                ),
+                {"message_id": payload.messageId},
+            ).fetchone()
+            if not row or row[0] is None or row[1] is None:
+                raise HTTPException(status_code=404, detail="Message not found")
+            family_id, reported_user_id, envelope_version = str(row[0]), int(row[1]), int(row[2])
+            reporter_belongs = _actor_belongs_to_family(db, user_id, family_id)
+            if not reporter_belongs:
+                raise HTTPException(status_code=403, detail="Not a member of this message's family")
+            if not can_report_chat_message(
+                reporter_user_id=user_id,
+                reported_user_id=reported_user_id,
+                reporter_belongs_to_family=reporter_belongs,
+            ):
+                raise HTTPException(status_code=400, detail="You cannot report your own message")
+
+            existing = db.execute(
+                text(
+                    """
+                    SELECT id FROM family_chat_reports
+                    WHERE family_id = :family_id
+                      AND reporter_user_id = :reporter_user_id
+                      AND message_id = :message_id
+                      AND status = 'pending'
+                    LIMIT 1
+                    """
+                ),
+                {
+                    "family_id": family_id,
+                    "reporter_user_id": user_id,
+                    "message_id": payload.messageId,
+                },
+            ).fetchone()
+            if existing:
+                return FamilyChatModerationResponse(
+                    success=True,
+                    actionId=str(existing[0]),
+                    message="Report already queued",
+                )
+
+            report_id = f"RPT_{uuid.uuid4().hex[:16].upper()}"
+            db.execute(
+                text(
+                    """
+                    INSERT INTO family_chat_reports (
+                        id, family_id, reporter_user_id, reported_user_id,
+                        message_id, message_envelope_version, category,
+                        status, created_at
+                    ) VALUES (
+                        :id, :family_id, :reporter_user_id, :reported_user_id,
+                        :message_id, :message_envelope_version, :category,
+                        'pending', :created_at
+                    )
+                    """
+                ),
+                {
+                    "id": report_id,
+                    "family_id": family_id,
+                    "reporter_user_id": user_id,
+                    "reported_user_id": reported_user_id,
+                    "message_id": payload.messageId,
+                    "message_envelope_version": envelope_version,
+                    "category": category,
+                    "created_at": _iso_utc_timestamp(),
+                },
+            )
+            db.execute(
+                text(
+                    """
+                    INSERT INTO family_chat_moderation_audit (
+                        id, family_id, report_id, actor_user_id,
+                        target_user_id, target_message_id, action, created_at
+                    ) VALUES (
+                        :id, :family_id, :report_id, :actor_user_id,
+                        :target_user_id, :target_message_id, 'report_created', :created_at
+                    )
+                    """
+                ),
+                {
+                    "id": f"AUD_{uuid.uuid4().hex[:16].upper()}",
+                    "family_id": family_id,
+                    "report_id": report_id,
+                    "actor_user_id": user_id,
+                    "target_user_id": reported_user_id,
+                    "target_message_id": payload.messageId,
+                    "created_at": _iso_utc_timestamp(),
+                },
+            )
+            db.commit()
+            logger.info(
+                "family_chat_report_queued",
+                report_id=report_id,
+                family_id=family_id,
+                reporter_user_id=user_id,
+                reported_user_id=reported_user_id,
+                message_id=payload.messageId,
+                category=category,
+            )
+            return FamilyChatModerationResponse(
+                success=True,
+                actionId=report_id,
+                message="Report queued for review",
+            )
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(report_sync)
+
+
+@router.post("/chat/moderation/restrict", response_model=FamilyChatModerationResponse)
+@limiter.limit("10/minute")
+async def family_chat_restrict_member(
+    request: Request,
+    payload: RestrictFamilyChatMemberRequest,
+    current_user: dict = Depends(get_current_user),
+):
+    """Allow a family owner/parent to restrict a non-parent message sender."""
+    user_id = _resolve_user_id_from_claim(current_user)
+    if not get_postgres_db:
+        raise HTTPException(status_code=503, detail="Family backend unavailable (database not configured)")
+    try:
+        normalize_report_note(payload.reason)
+    except ModerationValidationError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    def restrict_sync() -> FamilyChatModerationResponse:
+        gen = get_postgres_db()
+        db = next(gen)
+        try:
+            _ensure_family_chat_table(db)
+            _ensure_family_chat_moderation_tables(db)
+            message_row = db.execute(
+                text(
+                    """
+                    SELECT family_id, sender_user_id
+                    FROM family_chat_messages
+                    WHERE id = :message_id
+                    LIMIT 1
+                    """
+                ),
+                {"message_id": payload.messageId},
+            ).fetchone()
+            if not message_row or message_row[0] is None or message_row[1] is None:
+                raise HTTPException(status_code=404, detail="Message not found")
+            family_id, target_user_id = str(message_row[0]), int(message_row[1])
+            actor_can_manage = _actor_can_manage_family_roster(db, user_id, family_id)
+            target_role_row = db.execute(
+                text(
+                    """
+                    SELECT role FROM family_members
+                    WHERE family_id = :family_id AND user_id = :target_user_id
+                    ORDER BY CASE WHEN lower(trim(role)) = 'parent' THEN 0 ELSE 1 END
+                    LIMIT 1
+                    """
+                ),
+                {"family_id": family_id, "target_user_id": target_user_id},
+            ).fetchone()
+            owner_row = db.execute(
+                text(
+                    "SELECT 1 FROM families WHERE id = :family_id AND owner_user_id = :target_user_id LIMIT 1"
+                ),
+                {"family_id": family_id, "target_user_id": target_user_id},
+            ).fetchone()
+            if not target_role_row and not owner_row:
+                raise HTTPException(status_code=404, detail="Target is not a current family member")
+            target_role = "parent" if owner_row else str(target_role_row[0] if target_role_row else "unknown")
+            if not can_restrict_chat_member(
+                actor_user_id=user_id,
+                target_user_id=target_user_id,
+                target_role=target_role,
+                actor_can_manage=actor_can_manage,
+            ):
+                raise HTTPException(status_code=403, detail="Only a family administrator can restrict this member")
+
+            now = _iso_utc_timestamp()
+            db.execute(
+                text(
+                    """
+                    INSERT INTO family_chat_restrictions (
+                        family_id, target_user_id, restricted_by_user_id,
+                        is_active, created_at, updated_at
+                    ) VALUES (
+                        :family_id, :target_user_id, :restricted_by_user_id,
+                        :is_active, :created_at, :updated_at
+                    )
+                    ON CONFLICT (family_id, target_user_id) DO UPDATE SET
+                        restricted_by_user_id = EXCLUDED.restricted_by_user_id,
+                        is_active = EXCLUDED.is_active,
+                        updated_at = EXCLUDED.updated_at
+                    """
+                ),
+                {
+                    "family_id": family_id,
+                    "target_user_id": target_user_id,
+                    "restricted_by_user_id": user_id,
+                    "is_active": payload.restricted,
+                    "created_at": now,
+                    "updated_at": now,
+                },
+            )
+            db.execute(
+                text(
+                    """
+                    INSERT INTO family_chat_moderation_audit (
+                        id, family_id, actor_user_id, target_user_id,
+                        action, created_at
+                    ) VALUES (
+                        :id, :family_id, :actor_user_id, :target_user_id,
+                        :action, :created_at
+                    )
+                    """
+                ),
+                {
+                    "id": f"AUD_{uuid.uuid4().hex[:16].upper()}",
+                    "family_id": family_id,
+                    "actor_user_id": user_id,
+                    "target_user_id": target_user_id,
+                    "action": "member_restricted" if payload.restricted else "member_restriction_removed",
+                    "created_at": now,
+                },
+            )
+            db.commit()
+            action_id = f"RST_{uuid.uuid4().hex[:16].upper()}"
+            logger.info(
+                "family_chat_member_restriction_changed",
+                action_id=action_id,
+                family_id=family_id,
+                actor_user_id=user_id,
+                target_user_id=target_user_id,
+                restricted=payload.restricted,
+            )
+            return FamilyChatModerationResponse(
+                success=True,
+                actionId=action_id,
+                message="Member restricted" if payload.restricted else "Member restriction removed",
+            )
+        finally:
+            gen.close()
+
+    return await asyncio.to_thread(restrict_sync)
+
+
 @router.delete("/chat/send/{message_id}", response_model=FamilyCompatBoolResponse)
 async def family_chat_delete_message(
     message_id: str,
@@ -2518,13 +3042,14 @@ async def family_chat_delete_message(
                 text(sql),
                 params,
             )
+            if getattr(deleted, "rowcount", 0) == 0:
+                db.rollback()
+                raise HTTPException(status_code=404, detail="Message not found")
             db.execute(
                 text("DELETE FROM family_chat_reactions WHERE message_id = :message_id"),
                 {"message_id": message_id},
             )
             db.commit()
-            if getattr(deleted, "rowcount", 0) == 0:
-                raise HTTPException(status_code=404, detail="Message not found")
             return FamilyCompatBoolResponse(success=True, data=True, message="Message deleted")
         finally:
             gen.close()
