@@ -3,7 +3,7 @@
 **Дата среза:** 9 сентября 2026, после privacy/Family Controls hardening
 **Репозиторий:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
 **Ветка:** `master`
-**Статус:** локальная реализация в работе; изменения не закоммичены целевым App Review-коммитом и не развёрнуты на production
+**Статус:** локальная реализация и целевые CLI-тесты завершены; изменения закоммичены, но не развёрнуты на production
 **Главный принцип:** нельзя писать Apple «готово», пока проверяемая функция не находится в том же Archive/TestFlight build, который отправляется на review
 
 ## 1. Цель работы
@@ -395,39 +395,30 @@ plutil -lint \
 
 Backend moderation tests ранее проходили локально в `.venv-appreview39` на совместимой версии Python.
 
-## 6. Незавершённая проверка UI tests
+Последняя целевая проверка после hardening:
 
-Последняя команда:
+- backend moderation и HTTP rate limit: **25 PASS**, включая реальный ответ `429`;
+- App Review Unit contracts: **4 PASS**;
+- UI report/restrict/delete: **2 PASS**;
+- `xcodebuild build-for-testing`: **SUCCEEDED**;
+- static privacy/policy/UGC gates: **PASS**.
 
-```bash
-xcodebuild test-without-building \
-  -project ALADDIN.xcodeproj \
-  -scheme ALADDIN \
-  -configuration Debug \
-  -destination 'platform=iOS Simulator,id=A900C6B0-6E81-4779-9305-E32CAA039BF6' \
-  -only-testing:ALADDINUITests/ALADDINUITests/testFamilyChatModerationActionsForForeignMessage \
-  -only-testing:ALADDINUITests/ALADDINUITests/testFamilyChatOwnMessageOffersDeleteButNotReport \
-  -resultBundlePath /tmp/ALADDIN-AppReviewUITests-iOS15-2-r4.xcresult
-```
+Коммиты:
 
-Результат:
+- `17573721` — `feat(app-review): add family chat moderation`;
+- `0e2d0fbb` — `fix(app-review): align privacy and restricted capabilities`;
+- `9ec5c2f9` — `fix(cursor): return valid file-read hook response`.
 
-```text
-Resolve Package Graph
-Resolved RiveRuntime 6.20.5
-BUILD INTERRUPTED
-```
+## 6. Состояние iOS tests
 
-Это не assertion failure и не PASS. Процесс был внешне прерван. Результат не засчитывать.
+Целевые App Review Unit/UI-тесты проходят из Terminal без интерфейса Xcode. `.xcresult`:
 
-После предыдущих UI-test ошибок уже были сделаны два исправления:
+- `/tmp/ALADDIN-AppReview-Targeted-20260909-1748.xcresult` — оба UI-теста PASS;
+- `/tmp/ALADDIN-AppReview-UnitFocused-20260909-1759.xcresult` — четыре целевых Unit-теста PASS.
 
-1. `app.otherElements` заменены на `app.staticTexts(...).firstMatch`.
-2. Удалён дублирующий `.contextMenu`, оставлен единый action sheet.
+Полный класс `AppConfigTests` при unsigned CLI-сборке дал 6 старых Keychain-сбоев `-34018`. Причина — test products были собраны с `CODE_SIGNING_ALLOWED=NO`, поэтому Keychain не получил entitlements. Это не failure новых policy/API contract тестов; для полного suite нужно пересобрать test bundle с обычным simulator signing.
 
-Нужно заново собрать test products после последних Swift/privacy изменений и повторить targeted tests.
-
-## 7. Что осталось сделать — строгий порядок
+## 7. Контрольный список — статус и строгий порядок
 
 ### P0-A. Завершить локальный Swift review
 
@@ -444,7 +435,7 @@ BUILD INTERRUPTED
 3. Исправить только конкретные findings минимальным diff.
 4. Повторить static gates.
 
-### P0-B. Выполнить локальную сборку после последних изменений
+### P0-B. ✅ Локальная CLI-сборка после последних изменений
 
 Сборка, подтверждённая владельцем ранее, была до последних privacy/HealthKit/tariff правок. Поэтому требуется новая.
 
@@ -461,7 +452,7 @@ BUILD INTERRUPTED
 
 Не запускать несколько конкурирующих `xcodebuild` на одном simulator. Если CoreSimulatorService завис, сначала собрать evidence, затем выполнить один контролируемый restart simulator service.
 
-### P0-C. Закрыть iOS moderation tests
+### P0-C. ✅ Целевые iOS moderation tests
 
 Definition of Done:
 
@@ -475,7 +466,7 @@ Definition of Done:
 - нет duplicate matching UI elements;
 - `.xcresult` сохранён и содержит PASS.
 
-### P0-D. Повторить backend tests
+### P0-D. ✅ Backend tests и HTTP 429
 
 Использовать `.venv-appreview39`, а не несовместимый system Python 3.12.
 
@@ -501,7 +492,7 @@ Definition of Done:
 
 Если rate limit сейчас покрыт только статически, добавить отдельный интеграционный тест фактического `429`.
 
-### P0-E. Финальный локальный compliance/security gate
+### P0-E. ✅ Локальный compliance/security gate
 
 Запустить:
 
@@ -522,7 +513,7 @@ git diff --check
 - выполнить Swift review;
 - выполнить security review UGC/backend diff, если после предыдущего review изменялась auth/authorization/storage логика.
 
-### P0-F. Тематический commit
+### P0-F. ✅ Тематические commits
 
 Commit допустим только после зелёных P0-A…P0-E и в соответствии с текущим указанием владельца.
 
@@ -726,22 +717,22 @@ Rollback должен быть подготовлен до первого server
 - `appreview-network-tests`
 - `appreview-ugc-contract`
 - `appreview-ugc-backend`
-- `appreview-privacy-audit`
-- `appreview-security-review`
-
-### Реализовано, но требует финальной проверки/закрытия статуса
-
 - `appreview-ugc-ios-tests`
 - `appreview-ugc-backend-tests`
 - `appreview-ugc-ios`
 - `appreview-ugc-review-tools`
-- `appreview-ai-providers`
+- `appreview-privacy-audit`
 - `appreview-privacy-manifest`
 - `appreview-app-privacy`
 - `appreview-family-claims`
 - `appreview-compliance-tests`
+- `appreview-security-review`
 
-Не переводить эти задачи в completed только по наличию кода. Нужны соответствующие tests/truth checks из раздела 7.
+### Реализовано, но требует финальной проверки/закрытия статуса
+
+- `appreview-ai-providers`
+
+Не переводить `appreview-ai-providers` в completed по наличию кода: нужен production truth check из раздела 7.
 
 ### Не выполнено и требует отдельного GO
 
