@@ -3,7 +3,7 @@
 **Дата среза:** 9 сентября 2026, после privacy/Family Controls hardening
 **Репозиторий:** `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
 **Ветка:** `master`
-**Статус:** локальная реализация и целевые CLI-тесты завершены; изменения закоммичены, но не развёрнуты на production
+**Статус:** локальная реализация, CLI-тесты, ротация PostgreSQL credential, production UGC deploy и authenticated smoke завершены; остаются signed Archive, App Store Connect и device/TestFlight QA
 **Главный принцип:** нельзя писать Apple «готово», пока проверяемая функция не находится в том же Archive/TestFlight build, который отправляется на review
 
 ## 1. Цель работы
@@ -331,17 +331,17 @@ Required Reason APIs:
 
 - `scripts/check_ai_provider_flags.py`
 
-По коду выявлена ожидаемая цепочка:
+Production runtime truth check на **MAIN — Аладдин (`…180`), iOS API `:8002`** подтвердил:
 
-- AI backend: SFM/Hermes/OpenRouter;
-- default direct model: DeepSeek V4 Flash;
-- Gemini — optional fallback, default off;
+- AI backend: Hermes;
+- OpenRouter direct fallback включён, модель — DeepSeek V4 Flash;
+- Google Gemini fallback включён и credential присутствует;
 - client/system STT: Apple Speech Recognition;
-- server STT fallback: Yandex SpeechKit, затем OpenAI Whisper;
+- server STT включён; effective provider — Yandex SpeechKit, OpenAI credential также присутствует для fallback;
 - local TTS: Apple AVSpeechSynthesizer;
-- premium server TTS: ElevenLabs Flash.
+- premium server TTS: ElevenLabs Flash v2.5, feature включён, все три character voice ID присутствуют.
 
-Это ещё не доказательство production-активности. Наличие credentials и effective flags на production не проверено после этих изменений.
+Значения credentials не выводились и не сохранялись в документ.
 
 ## 5. Уже выполненные проверки
 
@@ -531,7 +531,7 @@ Commit допустим только после зелёных P0-A…P0-E и в
 
 Не переписывать историю и не смешивать unrelated work.
 
-### P0-G. Production AI/STT/TTS truth check — только после GO
+### P0-G. Production AI/STT/TTS truth check — выполнено 2026-09-09
 
 На **MAIN — Аладдин (…180), iOS API :8002**:
 
@@ -546,9 +546,9 @@ Commit допустим только после зелёных P0-A…P0-E и в
    - effective STT provider;
    - TTS feature flags/provider/model;
    - credential present true/false.
-7. Обновить письмо Apple и App Privacy recipients по факту.
+7. Письмо Apple обновлено по подтверждённой цепочке; App Privacy recipients нужно перенести в App Store Connect вручную.
 
-### P0-H. Backend deploy UGC — только после отдельного GO
+### P0-H. Backend deploy UGC — выполнено 2026-09-09
 
 Следовать серверному guide без отклонений:
 
@@ -569,7 +569,16 @@ Commit допустим только после зелёных P0-A…P0-E и в
    - operator list/decision.
 10. Проверить, что логи не содержат plaintext/ciphertext/token.
 
-Rollback должен быть подготовлен до первого server write.
+Фактический результат:
+
+- PostgreSQL password ротирован; старый credential подтверждённо недействителен;
+- `DATABASE_URL` перенесён в `/opt/aladdin-backend/.env` с правами `600` и подключён systemd drop-in;
+- server backup создан до ротации и до deploy; rollback подготовлен;
+- migration, `py_compile`, restart, внутренний и внешний health, OpenAPI — PASS;
+- production schema не содержит `report.note` и `restriction.reason`; status CHECK присутствует;
+- authenticated smoke PASS: E2EE send, report, duplicate report, operator list/decision, own delete, restrict, blocked HTTP send и blocked WebSocket send;
+- все созданные smoke records удалены;
+- после deploy свежих ошибок уровня `err` в systemd journal не обнаружено.
 
 ### P0-I. App Store Connect App Privacy
 
@@ -728,16 +737,14 @@ Rollback должен быть подготовлен до первого server
 - `appreview-compliance-tests`
 - `appreview-security-review`
 
-### Реализовано, но требует финальной проверки/закрытия статуса
+### Выполнено на production
 
 - `appreview-ai-providers`
-
-Не переводить `appreview-ai-providers` в completed по наличию кода: нужен production truth check из раздела 7.
+- `appreview-backend-deploy`
 
 ### Не выполнено и требует отдельного GO
 
 - `appreview-device-qa`
-- `appreview-backend-deploy`
 - `appreview-final-archive`
 
 ## 11. Известные риски и ловушки
@@ -799,4 +806,4 @@ Rollback должен быть подготовлен до первого server
 
 До этого момента корректная формулировка статуса:
 
-> «Локальная реализация существенно завершена; production deploy, signed Archive, TestFlight/device QA, video и App Review submission ещё не выполнены».
+> «Локальная реализация и production UGC deploy завершены; signed Archive, App Store Connect, TestFlight/device QA, video и App Review submission ещё не выполнены».

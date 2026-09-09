@@ -412,13 +412,13 @@ Antifake предоставляет информационную оценку р
 - Apple Maps — открытие выбранной пользователем геолокации;
 - RiveRuntime — локальное отображение анимаций персонажей;
 - Telegram — только добровольное обращение пользователя в поддержку;
-- AI/LLM: backend ALADDIN использует Hermes/OpenRouter; модель по умолчанию — DeepSeek V4 Flash. Google Gemini реализован только как опциональный fallback и по умолчанию выключен.
-- STT: Apple Speech Recognition на устройстве/через системный сервис Apple; серверный fallback — Yandex SpeechKit, затем OpenAI Whisper.
-- TTS: системный Apple AVSpeechSynthesizer; premium server TTS — ElevenLabs Flash.
+- AI/LLM: backend ALADDIN использует Hermes; включён fallback через OpenRouter с моделью DeepSeek V4 Flash и дополнительный fallback Google Gemini.
+- STT: Apple Speech Recognition на устройстве/через системный сервис Apple; включённый серверный provider — Yandex SpeechKit, OpenAI Whisper доступен как fallback.
+- TTS: системный Apple AVSpeechSynthesizer; включённый premium server TTS — ElevenLabs Flash v2.5.
 
 AI-запросы обрабатываются через backend ALADDIN. Передача AI-текста происходит после согласия пользователя. Приложение не содержит рекламы и рекламных SDK и не использует пользовательские данные для рекламного отслеживания.
 
-Перед отправкой письма список должен быть подтверждён runtime-проверкой production feature flags: локальный аудит доказывает исполняемый маршрут и defaults, но не наличие/активность production credentials.
+Список подтверждён secret-safe runtime-проверкой production feature flags 9 сентября 2026 года; значения credentials не выводились.
 
 ### 5. Региональные различия
 
@@ -554,7 +554,7 @@ Device/iOS/build: `[ЗАПОЛНИТЬ]`
 - [ ] Проверено отсутствие визуального или маркетингового смешения с Disney.
 - [ ] Подтверждён фактический сценарий дорожной помощи и его поставщик.
 - [x] По исполняемому коду определены AI/STT/TTS-провайдеры и fallback-цепочки.
-- [ ] Фактически активные production feature flags/providers подтверждены runtime-проверкой без раскрытия секретов.
+- [x] Фактически активные production feature flags/providers подтверждены runtime-проверкой без раскрытия секретов.
 
 ### Финальный QA
 
@@ -570,7 +570,7 @@ Device/iOS/build: `[ЗАПОЛНИТЬ]`
 2. DNS: **решено** — в первой повторной отправке только Safari Content Blocker; Smart DNS отложен.
 3. Семейный чат: реализуем report/restrict до повторной отправки или временно исключаем чат из submission build?
 4. Неиспользуемые Info.plist permissions: удаляем из App Store-конфигурации или сначала проводим полный runtime-аудит?
-5. Какие AI/STT/TTS-провайдеры фактически активны на production backend?
+5. AI/STT/TTS production chain подтверждена: Hermes + OpenRouter/DeepSeek и Gemini fallback; Yandex SpeechKit с OpenAI fallback; ElevenLabs Flash v2.5.
 6. Кто фактически оказывает помощь на автодороге и что именно происходит после нажатия кнопки?
 7. Подтверждены ли права на всех трёх персонажей и связанные ассеты?
 
@@ -674,7 +674,7 @@ Device/iOS/build: `[ЗАПОЛНИТЬ]`
 
 ### Фаза G — внешние сервисы и юридические формулировки
 
-1. Подтвердить активных production AI/STT/TTS-провайдеров.
+1. [x] Подтвердить активных production AI/STT/TTS-провайдеров.
 2. Проверить права на персонажей, музыку, иллюстрации и Rive-ассеты.
 3. Уточнить реальный сценарий и поставщика дорожной помощи.
 4. Финализировать письмо Apple без условных фраз и `[ЗАПОЛНИТЬ]`.
