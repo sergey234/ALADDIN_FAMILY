@@ -1,6 +1,7 @@
 # App Store Privacy — Antifake mapping (G-05)
 
 **Source of truth:** `PrivacyInfo.xcprivacy` (main app) + sections in `18_PrivacyPolicyScreen.swift`.
+Full-app questionnaire source: `docs/AppStore/APP_PRIVACY_ANSWERS_2026-09-09_RU.md`.
 
 Use this when filling **App Privacy** in App Store Connect for build with Antifake Hub.
 
@@ -10,11 +11,11 @@ Use this when filling **App Privacy** in App Store Connect for build with Antifa
 
 | App Store category | Collected? | Linked to user? | Tracking? | Purpose | Privacy manifest |
 |--------------------|------------|-----------------|-----------|---------|------------------|
-| User Content (other) | Yes | No | No | App Functionality | `NSPrivacyCollectedDataTypeOtherUserContent` |
-| Phone Number | Yes | No | No | App Functionality | `NSPrivacyCollectedDataTypePhoneNumber` |
-| Audio | Yes | No | No | App Functionality | `NSPrivacyCollectedDataTypeAudioData` |
-| Photos or Videos | Yes | No | No | App Functionality | `NSPrivacyCollectedDataTypePhotosorVideos` |
-| Contacts | **No** | — | — | — | Not declared (G-07) |
+| User Content (other) | Yes | Yes | No | App Functionality | `NSPrivacyCollectedDataTypeOtherUserContent` |
+| Phone Number | Yes | Yes | No | App Functionality | `NSPrivacyCollectedDataTypePhoneNumber` |
+| Audio | Yes | Yes | No | App Functionality | `NSPrivacyCollectedDataTypeAudioData` |
+| Photos or Videos | Yes | Yes | No | App Functionality | `NSPrivacyCollectedDataTypePhotosorVideos` |
+| Contacts | Yes, selected contact only | Yes | No | App Functionality | `NSPrivacyCollectedDataTypeContacts` |
 
 ---
 

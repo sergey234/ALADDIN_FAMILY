@@ -179,15 +179,16 @@ struct SettingsScreen: View {
                 .accessibilityAddTraits(.isHeader)
 
             VStack(spacing: 0) {
-                // Network Protection
-                settingRow(
-                    icon: "shield.fill",
-                    title: viewModel.localizedStrings.networkProtectionProtection,
-                    subtitle: viewModel.localizedStrings.networkProtectionProtectionSubtitle,
-                    isEnabled: $viewModel.isNetworkProtectionEnabled
-                )
+                if !AppStoreBuildPolicy.isAppStoreBuild {
+                    settingRow(
+                        icon: "shield.fill",
+                        title: viewModel.localizedStrings.networkProtectionProtection,
+                        subtitle: viewModel.localizedStrings.networkProtectionProtectionSubtitle,
+                        isEnabled: $viewModel.isNetworkProtectionEnabled
+                    )
 
-                Divider()
+                    Divider()
+                }
 
                 // Biometric Auth
                 settingRow(

@@ -31,6 +31,32 @@ class NetworkProtectionScreenUITests: XCTestCase {
         let screen = app.otherElements["NetworkProtectionScreen"]
         XCTAssertTrue(screen.exists, "Network Protection screen should be displayed")
     }
+
+    func testProtectionCenterShowsRealCapabilitiesAndNoVPNControl() throws {
+        navigateToNetworkProtection()
+
+        let screen = app.otherElements["NetworkProtectionScreen"]
+        XCTAssertTrue(
+            screen.waitForExistence(timeout: 5),
+            "Protection Center must be reachable"
+        )
+        XCTAssertFalse(
+            app.buttons["vpn_connect_control"].exists,
+            "App Store UI must not expose a VPN-like connection control"
+        )
+        XCTAssertTrue(
+            app.otherElements["protection_capability_advanced_safari_section_title"].exists,
+            "Protection Center must explain Safari Content Blocker"
+        )
+        XCTAssertTrue(
+            app.otherElements["protection_capability_protection_antifake_card_title"].exists,
+            "Protection Center must expose the real Antifake capability"
+        )
+        XCTAssertTrue(
+            app.otherElements["protection_capability_antifake_family_cd_title"].exists,
+            "Protection Center must explain Call Directory"
+        )
+    }
     
     // MARK: - Component Toggle Tests
     

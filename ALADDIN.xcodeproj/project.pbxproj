@@ -339,6 +339,7 @@
 		AFNP006F90000200C7D34B /* AntifakePhonePrivacyTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFNP005F90000200C7D34B /* AntifakePhonePrivacyTests.swift */; };
 		AFNP008F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AFNP007F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
 		AFNP010F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AFNP009F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
+		APCB0022F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = APCB0012F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
 		AFPC002F90000200C7D34B /* AntifakePostCallPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFPC001F90000200C7D34B /* AntifakePostCallPolicy.swift */; };
 		AFPC004F90000200C7D34B /* AntifakePostCallFlowTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFPC003F90000200C7D34B /* AntifakePostCallFlowTests.swift */; };
 		AFPR002F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = AFPR001F90000200C7D34B /* PrivacyInfo.xcprivacy */; };
@@ -1087,6 +1088,7 @@
 		AFNP005F90000200C7D34B /* AntifakePhonePrivacyTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakePhonePrivacyTests.swift; sourceTree = "<group>"; };
 		AFNP007F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AFNP009F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		APCB0012F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		AFPC001F90000200C7D34B /* AntifakePostCallPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakePostCallPolicy.swift; path = Core/Security/AntifakePostCallPolicy.swift; sourceTree = "<group>"; };
 		AFPC003F90000200C7D34B /* AntifakePostCallFlowTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakePostCallFlowTests.swift; sourceTree = "<group>"; };
 		AFPR001F90000200C7D34B /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
@@ -1522,6 +1524,7 @@
 				5E61A0A02EFB38ED0039093A /* blockerList.json */,
 				5E61A0AD2EFB38ED0039093A /* ActionRequestHandler.swift */,
 				5E61A0A42EFB38ED0039093A /* Info.plist */,
+				APCB0012F90000200C7D34B /* PrivacyInfo.xcprivacy */,
 			);
 			path = ALADDINContentBlocker;
 			sourceTree = "<group>";
@@ -2458,6 +2461,7 @@
 			isa = PBXResourcesBuildPhase;
 			files = (
 				5E61A0A12EFB38ED0039093A /* blockerList.json in Resources */,
+				APCB0022F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */,
 			);
 		};
 		A0FFFFFC /* Resources */ = {
@@ -3407,6 +3411,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				APS_ENVIRONMENT = development;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
@@ -3440,6 +3445,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ALWAYS_EMBED_SWIFT_STANDARD_LIBRARIES = YES;
+				APS_ENVIRONMENT = production;
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = ALADDIN.entitlements;
@@ -3463,6 +3469,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "ALADDIN AI App Store";
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited) APP_STORE_BUILD";
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = minimal;
 				SWIFT_VERSION = 5.10;

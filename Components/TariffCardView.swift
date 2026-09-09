@@ -102,13 +102,17 @@ struct TariffCardView: View {
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                         
-                        Label(
-                            String(format: localizationManager.localized("tariff_card_parental_count"),
-                                   card.parentalControlCount, card.parentalControlPercentage),
-                            systemImage: "person.2.fill"
-                        )
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
+                        if AppStoreBuildPolicy.allowsSystemFamilyControls {
+                        if AppStoreBuildPolicy.allowsSystemFamilyControls {
+                            Label(
+                                String(format: localizationManager.localized("tariff_card_parental_count"),
+                                       card.parentalControlCount, card.parentalControlPercentage),
+                                systemImage: "person.2.fill"
+                            )
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                        }
+                        }
                     }
                 }
                 
@@ -132,17 +136,23 @@ struct TariffCardView: View {
     private var expandedContent: some View {
         VStack(alignment: .leading, spacing: Spacing.l) {
             // Список недоступных функций для Free
-            if card.tariffType == .free {
+            if card.tariffType == .free && AppStoreBuildPolicy.allowsSystemFamilyControls {
                 unavailableFeaturesList
             }
             
             // Секции
-            ForEach(TariffSection.allCases, id: \.self) { section in
+            ForEach(visibleSections, id: \.self) { section in
                 sectionView(for: section)
             }
         }
         .padding(Spacing.m)
         .padding(.top, Spacing.xs)
+    }
+
+    private var visibleSections: [TariffSection] {
+        TariffSection.allCases.filter {
+            $0 != .parental || AppStoreBuildPolicy.allowsSystemFamilyControls
+        }
     }
     
     // MARK: - Список недоступных функций (для Free)

@@ -264,14 +264,8 @@ struct ParentalControlScreen: View {
                 .environmentObject(localizationManager)
         }
         .onAppear {
-            // ✅ КРИТИЧНО: Устанавливаем роль родителя при входе в экран
-            // ДОЛЖНО БЫТЬ В САМОМ НАЧАЛЕ .onAppear!
-            UserDefaults.standard.set("parent", forKey: "current_user_role")
-            UserDefaults.standard.synchronize() // Принудительная синхронизация
-            
-            print("✅ ParentalControlScreen: Роль установлена как 'parent'")
-            print("   Проверка: UserDefaults['current_user_role'] = '\(UserDefaults.standard.string(forKey: "current_user_role") ?? "НЕ УСТАНОВЛЕНА")'")
-            
+            // Роль приходит из подтверждённого server roster и не может повышаться
+            // только из-за открытия экрана родительских настроек.
             if locationStatus.isEmpty {
                 locationStatus = localizationManager.localized("parental_location_home")
             }
@@ -656,65 +650,67 @@ struct ParentalControlScreen: View {
                         }
                     )
                     
-                    ParentalControlCard(
-                        icon: "⏱️",
-                        title: localizationManager.localized("parental_time_control"),
-                        statusBadge: timeRemaining.isEmpty ? "⏳" : timeRemaining,
-                        statusText: String(format: localizationManager.localized("parental_time_remaining_status"), timeRemaining.isEmpty ? localizationManager.localized("parental_time_remaining_default") : timeRemaining),
-                        metric: String(format: localizationManager.localized("parental_time_schedules_metric"), timeSchedules),
-                        cardColor: .blue.opacity(0.2),
-                        borderColor: .blue.opacity(0.4),
-                        badgeColor: .warningOrange,
-                        isEnabled: Binding(
-                            get: { isTimeControlEnabled },
-                            set: { newValue in
-                                requestSensitiveToggleUpdate(newValue, permission: .manageFamilyLimits) { accepted in
-                                    isTimeControlEnabled = accepted
-                                    VisualLogger.shared.log("🔄 family_time_control_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                    if AppStoreBuildPolicy.allowsSystemFamilyControls {
+                        ParentalControlCard(
+                            icon: "⏱️",
+                            title: localizationManager.localized("parental_time_control"),
+                            statusBadge: timeRemaining.isEmpty ? "⏳" : timeRemaining,
+                            statusText: String(format: localizationManager.localized("parental_time_remaining_status"), timeRemaining.isEmpty ? localizationManager.localized("parental_time_remaining_default") : timeRemaining),
+                            metric: String(format: localizationManager.localized("parental_time_schedules_metric"), timeSchedules),
+                            cardColor: .blue.opacity(0.2),
+                            borderColor: .blue.opacity(0.4),
+                            badgeColor: .warningOrange,
+                            isEnabled: Binding(
+                                get: { isTimeControlEnabled },
+                                set: { newValue in
+                                    requestSensitiveToggleUpdate(newValue, permission: .manageFamilyLimits) { accepted in
+                                        isTimeControlEnabled = accepted
+                                        VisualLogger.shared.log("🔄 family_time_control_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                                    }
                                 }
-                            }
-                        ),
-                        action: {
-                            guard canManageFamilyLimits else {
-                                statsErrorMessage = localizationManager.currentLanguage == .russian
-                                    ? "Недостаточно прав для управления лимитами."
-                                    : "You don't have enough permissions to manage limits."
-                                HapticFeedback.notification(.warning)
-                                return
-                            }
-                            showUnifiedTimeLimits = true
-                        }
-                    )
-                    
-                    ParentalControlCard(
-                        icon: "👀",
-                        title: localizationManager.localized("parental_monitoring"),
-                        statusBadge: String(format: localizationManager.localized("parental_monitoring_badge"), monitoringWebsites),
-                        statusText: String(format: localizationManager.localized("parental_monitoring_sites"), monitoringWebsites),
-                        metric: String(format: localizationManager.localized("parental_monitoring_apps"), monitoringApps),
-                        cardColor: .purple.opacity(0.2),
-                        borderColor: .purple.opacity(0.4),
-                        badgeColor: .successGreen,
-                        isEnabled: Binding(
-                            get: { isMonitoringEnabled },
-                            set: { newValue in
-                                requestSensitiveToggleUpdate(newValue, permission: .manageFamilyLimits) { accepted in
-                                    isMonitoringEnabled = accepted
-                                    VisualLogger.shared.log("🔄 family_monitoring_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                            ),
+                            action: {
+                                guard canManageFamilyLimits else {
+                                    statsErrorMessage = localizationManager.currentLanguage == .russian
+                                        ? "Недостаточно прав для управления лимитами."
+                                        : "You don't have enough permissions to manage limits."
+                                    HapticFeedback.notification(.warning)
+                                    return
                                 }
+                                showUnifiedTimeLimits = true
                             }
-                        ),
-                        action: {
-                            guard canManageFamilyLimits else {
-                                statsErrorMessage = localizationManager.currentLanguage == .russian
-                                    ? "Недостаточно прав для управления лимитами."
-                                    : "You don't have enough permissions to manage limits."
-                                HapticFeedback.notification(.warning)
-                                return
+                        )
+
+                        ParentalControlCard(
+                            icon: "👀",
+                            title: localizationManager.localized("parental_monitoring"),
+                            statusBadge: String(format: localizationManager.localized("parental_monitoring_badge"), monitoringWebsites),
+                            statusText: String(format: localizationManager.localized("parental_monitoring_sites"), monitoringWebsites),
+                            metric: String(format: localizationManager.localized("parental_monitoring_apps"), monitoringApps),
+                            cardColor: .purple.opacity(0.2),
+                            borderColor: .purple.opacity(0.4),
+                            badgeColor: .successGreen,
+                            isEnabled: Binding(
+                                get: { isMonitoringEnabled },
+                                set: { newValue in
+                                    requestSensitiveToggleUpdate(newValue, permission: .manageFamilyLimits) { accepted in
+                                        isMonitoringEnabled = accepted
+                                        VisualLogger.shared.log("🔄 family_monitoring_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                                    }
+                                }
+                            ),
+                            action: {
+                                guard canManageFamilyLimits else {
+                                    statsErrorMessage = localizationManager.currentLanguage == .russian
+                                        ? "Недостаточно прав для управления лимитами."
+                                        : "You don't have enough permissions to manage limits."
+                                    HapticFeedback.notification(.warning)
+                                    return
+                                }
+                                showMonitoringModal = true
                             }
-                            showMonitoringModal = true
-                        }
-                    )
+                        )
+                    }
                     
                     ParentalControlCard(
                         icon: "📍",
@@ -796,30 +792,32 @@ struct ParentalControlScreen: View {
                         }
                     )
                     
-                    ParentalControlCard(
-                        icon: "🚨",
-                        title: localizationManager.localized("parental_bypass_protection"),
-                        statusBadge: bypassAttemptsToday > 0 ? String(format: localizationManager.localized("parental_bypass_badge"), bypassAttemptsToday) : localizationManager.localized("parental_bypass_no_attempts"),
-                        statusText: String(format: localizationManager.localized("parental_bypass_blocked_metric"), bypassAttemptsBlocked),
-                        metric: String(format: localizationManager.localized("parental_detection_active_metric"), bypassDetectionActive),
-                        cardColor: Color.blue.opacity(0.2),
-                        borderColor: Color.blue.opacity(0.4),
-                        badgeColor: bypassAttemptsToday > 0 ? .dangerRed : .successGreen,
-                        isEnabled: Binding(
-                            get: { isBypassProtectionEnabled },
-                            set: { newValue in
-                                requestSensitiveToggleUpdate(newValue, permission: .manageCriticalFamilySettings) { accepted in
-                                    isBypassProtectionEnabled = accepted
-                                    VisualLogger.shared.log("🔄 family_bypass_protection_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                    if AppStoreBuildPolicy.allowsSystemFamilyControls {
+                        ParentalControlCard(
+                            icon: "🚨",
+                            title: localizationManager.localized("parental_bypass_protection"),
+                            statusBadge: bypassAttemptsToday > 0 ? String(format: localizationManager.localized("parental_bypass_badge"), bypassAttemptsToday) : localizationManager.localized("parental_bypass_no_attempts"),
+                            statusText: String(format: localizationManager.localized("parental_bypass_blocked_metric"), bypassAttemptsBlocked),
+                            metric: String(format: localizationManager.localized("parental_detection_active_metric"), bypassDetectionActive),
+                            cardColor: Color.blue.opacity(0.2),
+                            borderColor: Color.blue.opacity(0.4),
+                            badgeColor: bypassAttemptsToday > 0 ? .dangerRed : .successGreen,
+                            isEnabled: Binding(
+                                get: { isBypassProtectionEnabled },
+                                set: { newValue in
+                                    requestSensitiveToggleUpdate(newValue, permission: .manageCriticalFamilySettings) { accepted in
+                                        isBypassProtectionEnabled = accepted
+                                        VisualLogger.shared.log("🔄 family_bypass_protection_enabled = \(accepted)", level: .info, category: "PARENTAL.UI")
+                                    }
+                                }
+                            ),
+                            action: {
+                                requireSensitiveParentSession(permission: .manageCriticalFamilySettings) {
+                                    showBypassProtectionModal = true
                                 }
                             }
-                        ),
-                        action: {
-                            requireSensitiveParentSession(permission: .manageCriticalFamilySettings) {
-                                showBypassProtectionModal = true
-                            }
-                        }
-                    )
+                        )
+                    }
                 }
             }
         }

@@ -1,4 +1,5 @@
 import SwiftUI
+import CoreImage.CIFilterBuiltins
 
 struct UnifiedFAQItem: Identifiable {
     let id: String
@@ -18,6 +19,8 @@ private struct UnifiedFAQEntry {
 enum UnifiedFAQCatalog {
     private static let entries: [UnifiedFAQEntry] = [
         UnifiedFAQEntry(id: "faq_what_protects", icon: "🛡️", questionKey: "faq_what_protects", answerKey: "faq_what_protects_answer", keywords: ["защищает", "система", "что умеет"]),
+        UnifiedFAQEntry(id: "faq_apple_website_golden", icon: "🌐", questionKey: "faq_apple_website_golden", answerKey: "faq_apple_website_golden_answer", keywords: ["apple", "ios", "iphone", "сайт", "запрещает", "antifake", "ограничения", "золотая"]),
+        UnifiedFAQEntry(id: "faq_website_antifake", icon: "🔍", questionKey: "faq_website_antifake", answerKey: "faq_website_antifake_answer", keywords: ["сайт", "antifake", "проверить", "без приложения", "aladdin-ai.ru"]),
         UnifiedFAQEntry(id: "faq_protect_children", icon: "👶", questionKey: "faq_protect_children", answerKey: "faq_protect_children_answer", keywords: ["детей", "ребенка", "родительский"]),
         UnifiedFAQEntry(id: "faq_protect_elderly", icon: "👴", questionKey: "faq_protect_elderly", answerKey: "faq_protect_elderly_answer", keywords: ["пожилых", "бабуш", "дедуш"]),
         UnifiedFAQEntry(id: "faq_data_safe", icon: "🔐", questionKey: "faq_data_safe", answerKey: "faq_data_safe_answer", keywords: ["данные", "безопасны", "шифрование"]),
@@ -61,13 +64,23 @@ enum UnifiedFAQCatalog {
         UnifiedFAQEntry(id: "faq_wellness_support", icon: "💚", questionKey: "faq_wellness_support", answerKey: "faq_wellness_support_answer", keywords: ["wellness", "настроение", "эмоциональная поддержка", "самопомощь"]),
         UnifiedFAQEntry(id: "faq_cancel_subscription", icon: "💳", questionKey: "faq_cancel_subscription", answerKey: "faq_cancel_subscription_answer", keywords: ["подписка", "отменить подписку"]),
         UnifiedFAQEntry(id: "faq_ai_how_works", icon: "🤖", questionKey: "faq_ai_how_works", answerKey: "faq_ai_how_works_answer", keywords: ["учишь", "обуча", "обучен", "как работает ai", "что умеешь", "что можешь", "кто ты", "ты кто", "нейросет", "искусственный интеллект", "ai aladdin"]),
+        UnifiedFAQEntry(id: "faq_tg_support_ai", icon: "💬", questionKey: "faq_tg_support_ai", answerKey: "faq_tg_support_ai_answer", keywords: ["telegram", "помощник", "ии поддержка", "aladdinchat", "chat бот", "спросить помощника"]),
         UnifiedFAQEntry(id: "faq_antifake_apple_limits", icon: "📱", questionKey: "faq_antifake_apple_limits", answerKey: "faq_antifake_apple_limits_answer", keywords: ["antifake", "apple", "ios", "ограничения", "звонки", "call directory"]),
         UnifiedFAQEntry(id: "faq_antifake_call_directory", icon: "☎️", questionKey: "faq_antifake_call_directory", answerKey: "faq_antifake_call_directory_answer", keywords: ["метка", "call directory", "мошенник", "синхронизация номеров"]),
         UnifiedFAQEntry(id: "faq_antifake_after_call", icon: "📞", questionKey: "faq_antifake_after_call", answerKey: "faq_antifake_after_call_answer", keywords: ["после звонка", "запись звонка", "post-call", "проверить звонок"])
     ]
 
+    private static var visibleEntries: [UnifiedFAQEntry] {
+        guard AppStoreBuildPolicy.isAppStoreBuild else { return entries }
+        let excludedIDs: Set<String> = [
+            "faq_aes256",
+            "faq_how_network_protection_works",
+        ]
+        return entries.filter { !excludedIDs.contains($0.id) }
+    }
+
     static func localizedItems(localize: (String) -> String) -> [UnifiedFAQItem] {
-        entries.map { entry in
+        visibleEntries.map { entry in
             UnifiedFAQItem(
                 id: entry.id,
                 icon: entry.icon,
@@ -84,7 +97,7 @@ enum UnifiedFAQCatalog {
         var bestScore = 0
         var bestEntry: UnifiedFAQEntry?
 
-        for entry in entries {
+        for entry in visibleEntries {
             var score = 0
             for keyword in entry.keywords where normalizedQuery.contains(keyword) {
                 score += 3
@@ -126,6 +139,8 @@ struct SupportScreen: View {
     
     // ✅ ЗАДАЧА 26: Roadside Assistance
     @State private var showRoadsideAssistance: Bool = false
+    @State private var showAntifakeQR: Bool = false
+    @State private var showTelegramLink: Bool = false
     private let apiService = APIService.shared
     
     struct FAQItem: Identifiable {
@@ -187,10 +202,12 @@ struct SupportScreen: View {
                 // Навигационная панель
                 HStack {
                     Button(action: {
-                        // ✅ ИСПРАВЛЕНИЕ: Просто dismiss() - возвращаемся к Settings
-                        // SupportScreen открывается как .sheet() из SettingsScreen,
-                        // поэтому dismiss() вернет нас обратно на Settings
-                        dismiss()
+                        // Push из Simple/стека → goBack; sheet поверх Settings → dismiss.
+                        if navigationManager.currentScreen == .support {
+                            navigationManager.goBackToPreviousScreen(reason: "Support.onBack")
+                        } else {
+                            dismiss()
+                        }
                     }) {
                         Image(systemName: "chevron.left")
                             .foregroundColor(.white)
@@ -288,6 +305,14 @@ struct SupportScreen: View {
         }
         .safeAreaInset(edge: .bottom, spacing: 0) {
             telegramStickyBar
+        }
+        .sheet(isPresented: $showAntifakeQR) {
+            AntifakeWebQRSheet(url: AppConfig.antifakeWebURL)
+                .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showTelegramLink) {
+            TelegramLinkScreen()
+                .environmentObject(localizationManager)
         }
     }
     
@@ -464,6 +489,56 @@ struct SupportScreen: View {
                     .cornerRadius(10)
                 }
                 .buttonStyle(PlainButtonStyle())
+
+                Button {
+                    openSupportURL(AppConfig.antifakeWebURL)
+                } label: {
+                    HStack {
+                        Image(systemName: "safari")
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(localizationManager.localized("support_antifake_web_button"))
+                                .font(.subheadline.bold())
+                            Text(localizationManager.localized("support_antifake_web_subtitle"))
+                                .font(.caption)
+                                .opacity(0.85)
+                        }
+                        Spacer()
+                        Image(systemName: "arrow.up.right")
+                    }
+                    .foregroundColor(Color(hex: "1a1208"))
+                    .padding(12)
+                    .background(
+                        LinearGradient(
+                            colors: [Color.secondaryGold, Color.goldWarm],
+                            startPoint: .leading,
+                            endPoint: .trailing
+                        )
+                    )
+                    .cornerRadius(10)
+                }
+                .buttonStyle(PlainButtonStyle())
+                .accessibilityIdentifier("support_antifake_web_button")
+
+                Button {
+                    showAntifakeQR = true
+                } label: {
+                    HStack {
+                        Image(systemName: "qrcode")
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(localizationManager.localized("support_antifake_qr_button"))
+                                .font(.subheadline.bold())
+                            Text(localizationManager.localized("support_antifake_qr_subtitle"))
+                                .font(.caption)
+                                .opacity(0.85)
+                        }
+                        Spacer()
+                    }
+                    .foregroundColor(.primary)
+                    .padding(12)
+                    .background(Color(.tertiarySystemBackground))
+                    .cornerRadius(10)
+                }
+                .buttonStyle(PlainButtonStyle())
             }
             .padding(14)
             .background(Color(.secondarySystemBackground).opacity(0.92))
@@ -599,38 +674,104 @@ struct SupportScreen: View {
     // MARK: - Telegram (above FAQ + sticky)
 
     private var telegramAboveFAQ: some View {
-        Button {
-            openSupportURL(AppConfig.supportTelegramURL)
-        } label: {
-            HStack(spacing: 12) {
-                Image(systemName: "paperplane.fill")
-                    .font(.title3.weight(.semibold))
-                    .foregroundColor(.white)
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(localizationManager.localized("support_telegram_write"))
-                        .font(.body.bold())
+        VStack(spacing: 10) {
+            Button {
+                openSupportURL(AppConfig.supportAssistantURL)
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "sparkles")
+                        .font(.title3.weight(.semibold))
                         .foregroundColor(.white)
-                    Text(localizationManager.localized("support_telegram_subtitle"))
-                        .font(.caption)
-                        .foregroundColor(.white.opacity(0.85))
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(localizationManager.localized("support_ask_assistant"))
+                            .font(.body.bold())
+                            .foregroundColor(.white)
+                        Text(localizationManager.localized("support_ask_assistant_subtitle"))
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.9))
+                    }
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                        .foregroundColor(.white.opacity(0.9))
                 }
-                Spacer()
-                Image(systemName: "arrow.up.right")
-                    .foregroundColor(.white.opacity(0.9))
-            }
-            .padding(14)
-            .background(
-                LinearGradient(
-                    colors: [Color.blue, Color.blue.opacity(0.75)],
-                    startPoint: .leading,
-                    endPoint: .trailing
+                .padding(14)
+                .background(
+                    LinearGradient(
+                        colors: [Color.teal, Color.blue.opacity(0.85)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
                 )
-            )
-            .cornerRadius(12)
+                .cornerRadius(12)
+            }
+            .buttonStyle(PlainButtonStyle())
+            .accessibilityLabel(localizationManager.localized("support_ask_assistant"))
+
+            Button {
+                showTelegramLink = true
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "link")
+                        .font(.title3.weight(.semibold))
+                        .foregroundColor(.white)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(localizationManager.localized("support_connect_telegram"))
+                            .font(.body.bold())
+                            .foregroundColor(.white)
+                        Text(localizationManager.localized("support_connect_telegram_subtitle"))
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.9))
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundColor(.white.opacity(0.9))
+                }
+                .padding(14)
+                .background(
+                    LinearGradient(
+                        colors: [Color.indigo, Color.blue.opacity(0.8)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .cornerRadius(12)
+            }
+            .buttonStyle(PlainButtonStyle())
+            .accessibilityLabel(localizationManager.localized("support_connect_telegram"))
+
+            Button {
+                openSupportURL(AppConfig.supportTelegramURL)
+            } label: {
+                HStack(spacing: 12) {
+                    Image(systemName: "paperplane.fill")
+                        .font(.title3.weight(.semibold))
+                        .foregroundColor(.white)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(localizationManager.localized("support_telegram_write"))
+                            .font(.body.bold())
+                            .foregroundColor(.white)
+                        Text(localizationManager.localized("support_telegram_subtitle"))
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.85))
+                    }
+                    Spacer()
+                    Image(systemName: "arrow.up.right")
+                        .foregroundColor(.white.opacity(0.9))
+                }
+                .padding(14)
+                .background(
+                    LinearGradient(
+                        colors: [Color.blue, Color.blue.opacity(0.75)],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    )
+                )
+                .cornerRadius(12)
+            }
+            .buttonStyle(PlainButtonStyle())
+            .accessibilityLabel(localizationManager.localized("support_telegram_write"))
         }
-        .buttonStyle(PlainButtonStyle())
         .padding(.horizontal, 20)
-        .accessibilityLabel(localizationManager.localized("support_telegram_write"))
     }
 
     private var telegramStickyBar: some View {
@@ -744,6 +885,70 @@ struct SupportScreen: View {
         .cornerRadius(8)
         .accessibilityElement(children: .contain)
         .accessibilityLabel(String(format: localizationManager.localized("support_faq_item"), item.wrappedValue.question))
+    }
+}
+
+// MARK: - Antifake web QR (C-07)
+
+private struct AntifakeWebQRSheet: View {
+    let url: String
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @State private var qrImage: UIImage?
+
+    var body: some View {
+        NavigationView {
+            VStack(spacing: 20) {
+                Text(localizationManager.localized("support_antifake_qr_hint"))
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+
+                if let qrImage {
+                    Image(uiImage: qrImage)
+                        .interpolation(.none)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(maxWidth: 240, maxHeight: 240)
+                        .padding()
+                        .background(Color.white)
+                        .cornerRadius(12)
+                        .accessibilityLabel(localizationManager.localized("support_antifake_qr_title"))
+                } else {
+                    ProgressView()
+                        .frame(width: 240, height: 240)
+                }
+
+                Text(url)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
+            .padding()
+            .navigationTitle(localizationManager.localized("support_antifake_qr_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(localizationManager.localized("common_close")) {
+                        dismiss()
+                    }
+                }
+            }
+            .onAppear { generateQRCode() }
+        }
+    }
+
+    private func generateQRCode() {
+        let context = CIContext()
+        let filter = CIFilter.qrCodeGenerator()
+        filter.message = Data(url.utf8)
+        guard let outputImage = filter.outputImage else { return }
+        let scaled = outputImage.transformed(by: CGAffineTransform(scaleX: 10, y: 10))
+        if let cgImage = context.createCGImage(scaled, from: scaled.extent) {
+            qrImage = UIImage(cgImage: cgImage)
+        }
     }
 }
 

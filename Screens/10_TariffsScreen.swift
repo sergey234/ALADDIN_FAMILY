@@ -148,16 +148,15 @@ struct TariffsScreen: View {
                     subtitle: localizationManager.localized("tariffs_subtitle"),
                     showBackButton: navigationManager.canGoBack,
                     onBack: {
-                        guard navigationManager.canGoBack else { return }
-                        navigationManager.goBack(reason: "Tariffs.onBack")
+                        navigationManager.goBackToPreviousScreen(reason: "Tariffs.onBack")
                     }
                 )
                 
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
-                        // ✅ Кнопка активации кода подписки (сверху) - ТОЛЬКО для России
-                        if AppConfig.isRussianRegion {
+                        // External activation is unavailable in the App Store binary.
+                        if AppStoreBuildPolicy.allowsAlternativePayments && AppConfig.isRussianRegion {
                             activationCodeButton
                         }
                         
@@ -167,6 +166,33 @@ struct TariffsScreen: View {
                         tariffCard(.personal)
                         tariffCard(.family)
                         tariffCard(.premium)
+
+                        Button {
+                            Task { @MainActor in
+                                await viewModel.restorePurchases()
+                            }
+                        } label: {
+                            HStack(spacing: Spacing.s) {
+                                if viewModel.isLoading {
+                                    ProgressView()
+                                } else {
+                                    Image(systemName: "arrow.clockwise.circle")
+                                }
+                                Text(
+                                    localizationManager.currentLanguage == .russian
+                                        ? "Восстановить покупки"
+                                        : "Restore Purchases"
+                                )
+                            }
+                            .font(.body.weight(.semibold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, Spacing.m)
+                        }
+                        .buttonStyle(.plain)
+                        .foregroundColor(.primaryBlue)
+                        .disabled(viewModel.isLoading)
+                        .accessibilityIdentifier("restore_purchases_button")
+                        .padding(.horizontal, Spacing.screenPadding)
                         
                         // ✅ СКРЫТО: Флоу активации - убрано по требованию
                         // if AppConfig.isRussianRegion {
@@ -383,17 +409,21 @@ struct TariffsScreen: View {
                     )
                 }()
                 
-                // ✅ ОТЛАДКА: Проверяем регион
-                let regionCode = Locale.current.regionCode ?? "nil"
+                #if !APP_STORE_BUILD
                 let useAltPayments = AppConfig.useAlternativePayments
+                #if DEBUG
+                let regionCode = Locale.current.regionCode ?? "nil"
                 print("🔍 DEBUG Payment: regionCode = '\(regionCode)', useAlternativePayments = \(useAltPayments)")
+                #endif
+                #endif
                 
                 // 🔥 Trial → платный: в РФ оплата идёт через сайт/QR (как и без trial). Иначе `purchaseTariff` сразу return и логирует «upgrade failed».
                 if let currentSubscription = SubscriptionManager.shared.currentSubscription,
                    currentSubscription.level == .trial {
                     print("🔥 TRIAL UPGRADE: User in trial wants to upgrade to \(tariffObj.id)")
 
-                    if AppConfig.useAlternativePayments {
+                    #if !APP_STORE_BUILD
+                    if useAltPayments {
                         print("🇷🇺 TRIAL UPGRADE (RU): открываем сайт для QR оплаты (тот же поток, что и для не-trial)")
                         guard !tariffObj.id.isEmpty,
                               !tariffObj.title.isEmpty,
@@ -410,6 +440,7 @@ struct TariffsScreen: View {
                         )
                         return
                     }
+                    #endif
 
                     Task { @MainActor in
                         await viewModel.upgradeFromTrialToPaid(tariff: tariffObj)
@@ -417,7 +448,8 @@ struct TariffsScreen: View {
                     return
                 }
 
-                if AppConfig.useAlternativePayments {
+                #if !APP_STORE_BUILD
+                if useAltPayments {
                     // Россия → QR оплата на сайте
                     print("🇷🇺 Российский регион: открываем сайт для QR оплаты")
                     guard !tariffObj.id.isEmpty,
@@ -437,25 +469,28 @@ struct TariffsScreen: View {
                         tariffId: tariffObj.id,
                         referralCode: referralCode
                     )
-                } else {
-                    // Не Россия → IAP (App Store)
-                    print("🌍 Не российский регион: открываем IAP")
-                    guard !tariffObj.id.isEmpty,
-                          !tariffObj.title.isEmpty else {
-                        viewModel.errorMessage = localizationManager.localized("tariffs_error_purchase_tariff")
-                        return
-                    }
-                    
-                    #if targetEnvironment(simulator)
-                    viewModel.errorMessage = localizationManager.localized("store_error_simulator_not_supported")
-                    #else
-                    let localTariffObj = tariffObj
-                    
-                    Task { @MainActor in
-                        await viewModel.purchaseSelectedTariff(tariff: localTariffObj)
-                    }
-                    #endif
+                    return
                 }
+                #endif
+
+                #if DEBUG
+                print("🍎 App Store purchase: opening StoreKit")
+                #endif
+                guard !tariffObj.id.isEmpty,
+                      !tariffObj.title.isEmpty else {
+                    viewModel.errorMessage = localizationManager.localized("tariffs_error_purchase_tariff")
+                    return
+                }
+
+                #if targetEnvironment(simulator)
+                viewModel.errorMessage = localizationManager.localized("store_error_simulator_not_supported")
+                #else
+                let localTariffObj = tariffObj
+
+                Task { @MainActor in
+                    await viewModel.purchaseSelectedTariff(tariff: localTariffObj)
+                }
+                #endif
             }) {
                 VStack(spacing: Spacing.xs) {
                     // ✅ Ссылки на Privacy Policy и Terms of Use (требование Apple)

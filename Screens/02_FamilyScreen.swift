@@ -3143,37 +3143,38 @@ extension FamilyScreen {
                 )
                 .environmentObject(localizationManager)
                 
-                // 7. Защита от обхода (НОВАЯ)
-                FamilyParentalControlCard(
-                    icon: "🚨",
-                    title: localizationManager.localized("parental_bypass_protection"),
-                    statusBadge: bypassAttemptsToday > 0
-                        ? "🚨 \(bypassAttemptsToday)"
-                        : (DNSProtectionManager.shared.isEnabled
-                            ? localizationManager.localized("parental_dns_secure")
-                            : localizationManager.localized("parental_dns_off")),
-                    statusText: DNSProtectionManager.shared.isEnabled
-                        ? localizationManager.localized("parental_dns_status_active")
-                        : localizationManager.localized("parental_dns_status_inactive"),
-                    metric: "\(bypassDetectionActive)/3 \(localizationManager.localized("parental_detection_active"))",
-                    cardColor: Color.warningOrange.opacity(0.2),
-                    borderColor: Color.warningOrange.opacity(0.4),
-                    badgeColor: bypassAttemptsToday > 0 ? .dangerRed : .successGreen,
-                    isEnabled: Binding(
-                        get: { isBypassProtectionEnabled },
-                        set: { newValue in
-                            if newValue {
-                                DNSProtectionManager.shared.enableProtection()
-                            } else {
-                                DNSProtectionManager.shared.disableProtection()
+                if !AppStoreBuildPolicy.isAppStoreBuild {
+                    FamilyParentalControlCard(
+                        icon: "🚨",
+                        title: localizationManager.localized("parental_bypass_protection"),
+                        statusBadge: bypassAttemptsToday > 0
+                            ? "🚨 \(bypassAttemptsToday)"
+                            : (DNSProtectionManager.shared.isEnabled
+                                ? localizationManager.localized("parental_dns_secure")
+                                : localizationManager.localized("parental_dns_off")),
+                        statusText: DNSProtectionManager.shared.isEnabled
+                            ? localizationManager.localized("parental_dns_status_active")
+                            : localizationManager.localized("parental_dns_status_inactive"),
+                        metric: "\(bypassDetectionActive)/3 \(localizationManager.localized("parental_detection_active"))",
+                        cardColor: Color.warningOrange.opacity(0.2),
+                        borderColor: Color.warningOrange.opacity(0.4),
+                        badgeColor: bypassAttemptsToday > 0 ? .dangerRed : .successGreen,
+                        isEnabled: Binding(
+                            get: { isBypassProtectionEnabled },
+                            set: { newValue in
+                                if newValue {
+                                    DNSProtectionManager.shared.enableProtection()
+                                } else {
+                                    DNSProtectionManager.shared.disableProtection()
+                                }
+                                isBypassProtectionEnabled = newValue
+                                VisualLogger.shared.log("🔄 family_bypass_protection_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
                             }
-                            isBypassProtectionEnabled = newValue
-                            VisualLogger.shared.log("🔄 family_bypass_protection_enabled = \(newValue)", level: .info, category: "PARENTAL.UI")
-                        }
-                    ),
-                    action: { showBypassProtectionModal = true }
-                )
-                .environmentObject(localizationManager)
+                        ),
+                        action: { showBypassProtectionModal = true }
+                    )
+                    .environmentObject(localizationManager)
+                }
             }
             
             // Разделитель и заголовок для геймификации
@@ -3808,9 +3809,11 @@ private struct FamilyNetworkLayersLocalStatusBlock: View {
                 .foregroundColor(.textTertiary)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text(localizationManager.localized("main_family_smart_dns_status", dnsShortLabel))
-                .font(.caption)
-                .foregroundColor(.textSecondary)
+            if AppStoreBuildPolicy.allowsSmartDNS {
+                Text(localizationManager.localized("main_family_smart_dns_status", dnsShortLabel))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+            }
 
             Text(localizationManager.localized("main_family_safari_cb_status", safariShortLabel))
                 .font(.caption)
@@ -3825,13 +3828,17 @@ private struct FamilyNetworkLayersLocalStatusBlock: View {
         .background(Color.backgroundMedium.opacity(0.3))
         .cornerRadius(CornerRadius.medium)
         .onAppear {
-            dnsManager.loadStatus()
+            if AppStoreBuildPolicy.allowsSmartDNS {
+                dnsManager.loadStatus()
+            }
             Task {
                 await contentBlockerManager.checkBlockingStatus()
             }
         }
         .onReceive(NotificationCenter.default.publisher(for: Notification.Name.networkLayerIndicatorsRefresh)) { _ in
-            dnsManager.loadStatus()
+            if AppStoreBuildPolicy.allowsSmartDNS {
+                dnsManager.loadStatus()
+            }
             Task {
                 await contentBlockerManager.checkBlockingStatus()
             }
@@ -8899,39 +8906,40 @@ struct FamilyBypassProtectionModal: View {
                     isEnabled: $isProxyDetectionEnabled
                 )
                 
-                // 4. Smart DNS enable/disable (ниже детекторов)
-                FamilyContentBlockItem(
-                    icon: "🌐",
-                    title: localizationManager.localized("bypass_smart_dns_title"),
-                    description: dnsProtectionManager.isEnabled
-                        ? localizationManager.localized("parental_dns_status_active")
-                        : localizationManager.localized("bypass_smart_dns_desc"),
-                    isEnabled: Binding(
-                        get: { dnsProtectionManager.isEnabled },
-                        set: { newValue in
-                            if newValue {
-                                dnsProtectionManager.enableProtection(childId: dnsConfigChildId)
-                            } else {
-                                dnsProtectionManager.disableProtection()
+                if AppStoreBuildPolicy.allowsSmartDNS {
+                    FamilyContentBlockItem(
+                        icon: "🌐",
+                        title: localizationManager.localized("bypass_smart_dns_title"),
+                        description: dnsProtectionManager.isEnabled
+                            ? localizationManager.localized("parental_dns_status_active")
+                            : localizationManager.localized("bypass_smart_dns_desc"),
+                        isEnabled: Binding(
+                            get: { dnsProtectionManager.isEnabled },
+                            set: { newValue in
+                                if newValue {
+                                    dnsProtectionManager.enableProtection(childId: dnsConfigChildId)
+                                } else {
+                                    dnsProtectionManager.disableProtection()
+                                }
                             }
-                        }
+                        )
                     )
-                )
-                
-                if !dnsProtectionManager.isEnabled,
-                   let errRaw = dnsProtectionManager.lastError?.trimmingCharacters(in: .whitespacesAndNewlines),
-                   !errRaw.isEmpty {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(localizationManager.localized("bypass_smart_dns_debug_label"))
-                            .font(.caption.weight(.semibold))
-                            .foregroundColor(.warningOrange)
-                        Text(localizedSmartDNSFailureMessage())
-                            .font(.caption)
-                            .foregroundColor(.warningOrange.opacity(0.95))
-                            .fixedSize(horizontal: false, vertical: true)
+
+                    if !dnsProtectionManager.isEnabled,
+                       let errRaw = dnsProtectionManager.lastError?.trimmingCharacters(in: .whitespacesAndNewlines),
+                       !errRaw.isEmpty {
+                        VStack(alignment: .leading, spacing: 4) {
+                            Text(localizationManager.localized("bypass_smart_dns_debug_label"))
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(.warningOrange)
+                            Text(localizedSmartDNSFailureMessage())
+                                .font(.caption)
+                                .foregroundColor(.warningOrange.opacity(0.95))
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .padding(.horizontal, Spacing.m)
                     }
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, Spacing.m)
                 }
 
                 Divider()
@@ -9019,11 +9027,15 @@ struct FamilyBypassProtectionModal: View {
         .id("bypass_protection_lang_\(localizationManager.currentLanguage.rawValue)")
         .onAppear {
             loadBypassStatistics()
-            dnsProtectionManager.loadStatus()
+            if AppStoreBuildPolicy.allowsSmartDNS {
+                dnsProtectionManager.loadStatus()
+            }
         }
         .onChange(of: selectedChildId) { _ in
             loadBypassStatistics()
-            dnsProtectionManager.loadStatus()
+            if AppStoreBuildPolicy.allowsSmartDNS {
+                dnsProtectionManager.loadStatus()
+            }
         }
         .onChange(of: isIncognitoDetectionEnabled) { newValue in
             VisualLogger.shared.log(

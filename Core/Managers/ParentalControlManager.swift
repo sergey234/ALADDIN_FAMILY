@@ -75,6 +75,17 @@ struct FamilyControlsReadiness: Sendable {
     }
 }
 
+enum FamilyControlsAvailabilityError: LocalizedError {
+    case unavailableInThisBuild
+
+    var errorDescription: String? {
+        switch self {
+        case .unavailableInThisBuild:
+            return "System Family Controls are not available in this build."
+        }
+    }
+}
+
 @MainActor class ParentalControlManager: ObservableObject {
     
     // MARK: - Dependencies
@@ -116,7 +127,9 @@ struct FamilyControlsReadiness: Sendable {
         self.apiService = apiService ?? APIService.shared
         
         // Проверяем текущий статус авторизации
-        self.familyAuthStatus = AuthorizationCenter.shared.authorizationStatus
+        self.familyAuthStatus = AppStoreBuildPolicy.allowsSystemFamilyControls
+            ? AuthorizationCenter.shared.authorizationStatus
+            : .notDetermined
         self.familyControlsReadinessSnapshot = assessFamilyControlsReadiness()
     }
 
@@ -138,6 +151,9 @@ struct FamilyControlsReadiness: Sendable {
      * Должно вызываться на устройстве ребенка (или родителя для управления)
      */
     func requestFamilyAuthorization() async throws {
+        guard AppStoreBuildPolicy.allowsSystemFamilyControls else {
+            throw FamilyControlsAvailabilityError.unavailableInThisBuild
+        }
         isLoading = true
         defer { isLoading = false }
         
@@ -165,6 +181,16 @@ struct FamilyControlsReadiness: Sendable {
     // MARK: - Phase 7.2.1 readiness + pipeline
 
     func assessFamilyControlsReadiness() -> FamilyControlsReadiness {
+        guard AppStoreBuildPolicy.allowsSystemFamilyControls else {
+            return FamilyControlsReadiness(
+                hasAuthorization: false,
+                authorizationStatus: .notDetermined,
+                hasDeviceActivityExtension: false,
+                managedSettingsAvailable: false,
+                deviceActivityAvailable: false,
+                fallbackReason: "system_family_controls_not_available_in_build"
+            )
+        }
         let authStatus = AuthorizationCenter.shared.authorizationStatus
         let hasAuthorization = authStatus == .approved
 

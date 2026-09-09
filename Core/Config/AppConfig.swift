@@ -1,6 +1,29 @@
 import Foundation
 import Security
 
+/// Compile-time contract for the binary submitted to App Store Review.
+///
+/// Keep non-App-Store distribution code in the repository, but make restricted
+/// features unreachable in the signed App Store binary.
+enum AppStoreBuildPolicy {
+    #if APP_STORE_BUILD
+    static let isAppStoreBuild = true
+    static let allowsAlternativePayments = false
+    static let allowsSmartDNS = false
+    /// Keep disabled until Apple approves Family Controls Distribution
+    /// and the signed archive contains the entitlement/extensions.
+    static let allowsSystemFamilyControls = false
+    /// HealthKit is excluded until the App Store target has matching capability and privacy copy.
+    static let allowsHealthKitIntegration = false
+    #else
+    static let isAppStoreBuild = false
+    static let allowsAlternativePayments = true
+    static let allowsSmartDNS = true
+    static let allowsSystemFamilyControls = true
+    static let allowsHealthKitIntegration = true
+    #endif
+}
+
 /**
  * ⚙️ App Config
  * Конфигурация приложения
@@ -755,15 +778,14 @@ struct AppConfig {
      * Для соответствия Guideline 3.1.1 IAP должен быть доступен для всех стран кроме России
      */
     static var useAlternativePayments: Bool {
-        // Использовать QR оплату ТОЛЬКО для России
-        return isRussianRegion
+        AppStoreBuildPolicy.allowsAlternativePayments && isRussianRegion
     }
     
     /**
      * Использовать IAP (In-App Purchase через App Store)
      */
     static var useIAP: Bool {
-        return !isRussianRegion
+        return !useAlternativePayments
     }
     
     /**
@@ -805,6 +827,7 @@ extension AppConfig {
     struct UserDefaultsKeys {
         static let authToken = "authToken"
         static let familyId = "family_id"
+        static let currentUserRole = "current_user_role"
         static let consentAccepted = "consent_accepted"
         static let consentDate = "consent_date"
         static let consentVersion = "consent_version"

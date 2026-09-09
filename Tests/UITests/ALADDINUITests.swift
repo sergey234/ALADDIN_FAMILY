@@ -39,6 +39,37 @@ class ALADDINUITests: XCTestCase {
         }
         XCTAssertTrue(mainScreen.exists)
     }
+
+    func testFamilyChatModerationActionsForForeignMessage() throws {
+        launchFamilyChatModerationFixture()
+
+        let message = app.staticTexts["family_chat_message_UITEST_OTHER"].firstMatch
+        XCTAssertTrue(message.waitForExistence(timeout: 8))
+        message.press(forDuration: 1.0)
+
+        XCTAssertTrue(app.buttons["family_chat_report_action"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["family_chat_restrict_action"].exists)
+        XCTAssertFalse(app.buttons["family_chat_delete_action"].exists)
+
+        app.buttons["family_chat_report_action"].tap()
+        XCTAssertTrue(app.buttons["family_chat_report_reason_spam"].waitForExistence(timeout: 3))
+        XCTAssertTrue(app.buttons["family_chat_report_reason_harassment"].exists)
+        XCTAssertTrue(app.buttons["family_chat_report_reason_inappropriate"].exists)
+        XCTAssertTrue(app.buttons["family_chat_report_reason_threat"].exists)
+        XCTAssertTrue(app.buttons["family_chat_report_reason_other"].exists)
+    }
+
+    func testFamilyChatOwnMessageOffersDeleteButNotReport() throws {
+        launchFamilyChatModerationFixture()
+
+        let message = app.staticTexts["family_chat_message_UITEST_OWN"].firstMatch
+        XCTAssertTrue(message.waitForExistence(timeout: 8))
+        message.press(forDuration: 1.0)
+
+        XCTAssertTrue(app.buttons["family_chat_delete_action"].waitForExistence(timeout: 3))
+        XCTAssertFalse(app.buttons["family_chat_report_action"].exists)
+        XCTAssertFalse(app.buttons["family_chat_restrict_action"].exists)
+    }
     
     // MARK: - Navigation Tests
     
@@ -52,6 +83,18 @@ class ALADDINUITests: XCTestCase {
             let registrationScreen = app.otherElements["FamilyRegistrationScreen"]
             XCTAssertTrue(registrationScreen.exists)
         }
+    }
+
+    private func launchFamilyChatModerationFixture() {
+        app.terminate()
+        app = XCUIApplication()
+        app.launchArguments = [
+            "-UITestSkipOnboarding",
+            "-UITestFamilyChatModeration",
+            "-AppleLanguages", "(en)",
+            "-AppleLocale", "en_US"
+        ]
+        app.launch()
     }
     
     func testNavigationToSettings() throws {

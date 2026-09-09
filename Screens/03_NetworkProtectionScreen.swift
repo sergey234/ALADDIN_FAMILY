@@ -20,7 +20,6 @@ struct NetworkProtectionScreen: View {
     @Environment(\.dismiss) private var dismiss
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
-    @ObservedObject private var networkProtectionManager = NetworkProtectionManager.shared
     @ObservedObject private var antivirusManager = AntivirusManager.shared
     @StateObject private var viewModel = NetworkProtectionViewModel()
     @ObservedObject private var syncEngine = SyncEngine.shared
@@ -103,18 +102,12 @@ struct NetworkProtectionScreen: View {
             VStack(spacing: 0) {
                 // Navigation Bar с кнопкой назад
                 ALADDINNavigationBar(
-                    title: localizationManager.localized("secure_connection_title"),
-                    subtitle: localizationManager.localized("secure_connection_subtitle"),
+                    title: localizationManager.localized("profile_security_title"),
+                    subtitle: localizationManager.localized("network_protection_security_features"),
                     showBackButton: true,
                     onBack: {
                         logger.buttonTap("Back", screen: "NetworkProtection")
-                        // ✅ ИСПРАВЛЕНО: Правильный возврат на главный экран
-                        if navigationManager.canGoBack {
-                            navigationManager.goBack(reason: "NetworkProtection.onBack")
-                        } else {
-                            // Если стек пуст, возвращаемся на главный экран
-                            navigationManager.navigateToRoot(.main)
-                        }
+                        navigationManager.goBackToPreviousScreen(reason: "NetworkProtection.onBack")
                     }
                 )
                     .accessibilityElement(children: .combine)
@@ -136,10 +129,7 @@ struct NetworkProtectionScreen: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
                         
-                        // Battery Saving Tip
-                        batterySavingTipCard
-                        
-                        // Security Features
+                        // Real capabilities available in the App Store build.
                         securityFeaturesCard
                         
                         AntifakeQuickAccessCard()
@@ -154,9 +144,6 @@ struct NetworkProtectionScreen: View {
                         // ✅ УДАЛЕНО: Quick Actions карточка
                         // quickActionsCard
                         
-                        // ✅ УДАЛЕНО: Безопасное соединение Status Card (5-я позиция - СНИЗУ)
-                        // secureConnectionStatusCard
-                        
                         Spacer(minLength: 100)
                     }
                     .padding(.top, Spacing.m)
@@ -166,6 +153,7 @@ struct NetworkProtectionScreen: View {
             }
         }
         .navigationBarHidden(true)
+        .accessibilityIdentifier("NetworkProtectionScreen")
         // ✅ Пересоздаём View при изменении языка для обновления всех текстов
         .id("network_protection_screen_lang_\(localizationManager.currentLanguage.rawValue)")
         // 🚨 Наблюдение за обнаружением аварии
@@ -608,98 +596,6 @@ struct NetworkProtectionScreen: View {
         .accessibilityHint(localizationManager.localized("protection_open_check_button"))
     }
     
-    // MARK: - Безопасное соединение Status Card (компактная версия)
-    
-    private var secureConnectionStatusCard: some View {
-        VStack(spacing: Spacing.m) {
-            // Заголовок и индикатор
-            HStack {
-                Text(localizationManager.localized("secure_connection_title"))
-                    .font(.h3)
-                    .foregroundColor(.textPrimary)
-                    .accessibilityAddTraits(.isHeader)
-                
-                Spacer()
-                
-                // Индикатор (красный/зеленый) небольшого размера
-                Circle()
-                    .fill(networkProtectionManager.isConnected ? Color.successGreen : Color.dangerRed)
-                    .frame(width: 20, height: 20)
-                    .accessibilityLabel(networkProtectionManager.isConnected ? localizationManager.localized("secure_connection_active") : localizationManager.localized("secure_connection_inactive"))
-            }
-            
-            // Connection Button
-            Button(action: {
-                if networkProtectionManager.isConnected {
-                    networkProtectionManager.disconnect()
-                } else {
-                    networkProtectionManager.connect()
-                }
-            }) {
-                HStack(spacing: Spacing.s) {
-                    Image(systemName: networkProtectionManager.isConnected ? "stop.fill" : "play.fill")
-                        .font(.title2)
-                    
-                    Text(networkProtectionManager.isConnected ? localizationManager.localized("network_protection.disconnect") : localizationManager.localized("network_protection.connect"))
-                        .font(.headline)
-                        .fontWeight(.semibold)
-                }
-                .foregroundColor(.white)
-                .frame(maxWidth: .infinity)
-                .frame(height: Size.buttonHeight)
-                .background(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .fill(networkProtectionManager.isConnected ? Color.dangerRed : Color.successGreen)
-                )
-            }
-            .accessibilityLabel(networkProtectionManager.isConnected ? localizationManager.localized("network_protection_disconnect_action") : localizationManager.localized("network_protection_connect_action"))
-            .accessibilityHint(localizationManager.localized("network_protection_toggle_hint"))
-            .accessibilityAddTraits(.isButton)
-            .buttonStyle(PlainButtonStyle())
-        }
-        .padding(Spacing.cardPadding)
-        .stormGlassCard(
-            cornerRadius: 12,
-            accentStripColor: networkProtectionManager.isConnected ? .statusProtected : .stormIndigo
-        )
-        .padding(.horizontal, Spacing.screenPadding)
-    }
-    
-    
-    // MARK: - Battery Saving Tip Card
-    
-    private var batterySavingTipCard: some View {
-        HStack(spacing: Spacing.m) {
-            Image(systemName: "battery.100.bolt")
-                .font(.system(size: 24))
-                .foregroundColor(.warningOrange)
-                .accessibilityLabel(localizationManager.localized("network_protection_battery_icon"))
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(localizationManager.localized("network_protection_battery_saving"))
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.textPrimary)
-                
-                Text(localizationManager.localized("secure_connection_battery_saving_desc"))
-                    .font(.system(size: 11))
-                    .foregroundColor(.textSecondary)
-                    .fixedSize(horizontal: false, vertical: true)
-            }
-            
-            Spacer()
-        }
-        .padding(Spacing.m)
-        .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .warningOrange)
-        .overlay(
-            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                .stroke(Color.warningOrange.opacity(0.3), lineWidth: 1)
-        )
-        .padding(.horizontal, Spacing.screenPadding)
-        .accessibilityElement(children: .combine)
-        .accessibilityLabel(localizationManager.localized("secure_connection_battery_saving_desc"))
-    }
-    
-    
     // MARK: - Security Features Card
     
     private var securityFeaturesCard: some View {
@@ -711,37 +607,53 @@ struct NetworkProtectionScreen: View {
                 
                 Spacer()
             }
-            
-            LazyVGrid(columns: [
-                GridItem(.flexible()),
-                GridItem(.flexible())
-            ], spacing: Spacing.m) {
-                
-                SecurityFeatureCard(
-                    icon: "shield.fill",
-                    title: localizationManager.localized("network_protection_ad_blocking"),
-                    isEnabled: true,
-                    color: .successGreen
-                )
-                
-                SecurityFeatureCard(
-                    icon: "eye.slash.fill",
-                    title: localizationManager.localized("network_protection_anti_tracking"),
-                    isEnabled: true,
-                    color: .successGreen
-                )
-                
-                SecurityFeatureCard(
-                    icon: "exclamationmark.triangle.fill",
-                    title: localizationManager.localized("network_protection_threat_protection"),
-                    isEnabled: true,
-                    color: .successGreen
-                )
-            }
+
+            protectionCapabilityRow(
+                icon: "safari.fill",
+                titleKey: "advanced_safari_section_title",
+                descriptionKey: "advanced_safari_sites_filter_subtitle"
+            )
+            protectionCapabilityRow(
+                icon: "checkmark.shield.fill",
+                titleKey: "protection_antifake_card_title",
+                descriptionKey: "protection_antifake_card_subtitle"
+            )
+            protectionCapabilityRow(
+                icon: "phone.badge.checkmark",
+                titleKey: "antifake_family_cd_title",
+                descriptionKey: "antifake_family_cd_subtitle"
+            )
         }
         .padding(Spacing.cardPadding)
         .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
         .padding(.horizontal, Spacing.screenPadding)
+    }
+
+    private func protectionCapabilityRow(
+        icon: String,
+        titleKey: String,
+        descriptionKey: String
+    ) -> some View {
+        HStack(alignment: .top, spacing: Spacing.m) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(.successGreen)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 3) {
+                Text(localizationManager.localized(titleKey))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.textPrimary)
+                Text(localizationManager.localized(descriptionKey))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+
+            Spacer(minLength: 0)
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .accessibilityIdentifier("protection_capability_\(titleKey)")
     }
     
     
@@ -1479,7 +1391,7 @@ struct AntivirusScanHistoryModalView: View {
                             .foregroundColor(.textSecondary)
                     }
                 } else {
-                    ScrollView {
+                    ScrollView(.vertical, showsIndicators: true) {
                         LazyVStack(spacing: Spacing.m) {
                             ForEach(scanHistory, id: \.id) { session in
                                 ScanHistoryRow(session: session)
@@ -1616,7 +1528,7 @@ struct AntivirusQuarantineModalView: View {
                             .foregroundColor(.textSecondary)
                     }
                 } else {
-                    ScrollView {
+                    ScrollView(.vertical, showsIndicators: true) {
                         LazyVStack(spacing: Spacing.m) {
                             // Статистика карантина
                             QuarantineStatsCard()
@@ -2174,7 +2086,7 @@ struct NetworkProtectionStatisticsView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: 20) {
                     // Stats Cards
                     HStack(spacing: 15) {
@@ -2274,7 +2186,7 @@ struct NetworkProtectionHelpView: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 20) {
                     Text(localizationManager.localized("network_protection_faq"))
                         .font(.title2)

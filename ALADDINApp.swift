@@ -225,6 +225,13 @@ struct ALADDINApp: App {
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
             UserDefaults.standard.synchronize()
         }
+        #if DEBUG
+        if ProcessInfo.processInfo.arguments.contains("-UITestFamilyChatModeration") {
+            UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
+            UserDefaults.standard.set("parent", forKey: AppConfig.UserDefaultsKeys.currentUserRole)
+            UserDefaults.standard.synchronize()
+        }
+        #endif
         if ProcessInfo.processInfo.arguments.contains("-UITestMnemoAcademy") {
             UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.hasCompletedOnboarding)
             UserDefaults.standard.synchronize()
@@ -403,6 +410,11 @@ struct ALADDINApp: App {
                     if ProcessInfo.processInfo.arguments.contains("-UITestAntifakeHubSmoke") {
                         navManager.currentScreen = .antifakeHub
                     }
+                    #if DEBUG
+                    if ProcessInfo.processInfo.arguments.contains("-UITestFamilyChatModeration") {
+                        navManager.currentScreen = .familyChat
+                    }
+                    #endif
                     consumePendingMagicAuthTokenIfNeeded()
                     LaunchDiagnostics.appendStartupTrace("initializeNavigation finished; currentScreen=\(navigationManager.currentScreen.rawValue)")
                 }
@@ -925,6 +937,7 @@ struct ALADDINApp: App {
                             )
                         }
 #endif
+#if !APP_STORE_BUILD
                     case .activationCode:
                         AnyView(
                             ActivationCodeScreen()
@@ -932,6 +945,7 @@ struct ALADDINApp: App {
                                 .environmentObject(navigationManager)
                                 .environmentObject(localizationManager)
                         )
+#endif
                     case .profile:
                         AnyView(
                             ProfileScreen()

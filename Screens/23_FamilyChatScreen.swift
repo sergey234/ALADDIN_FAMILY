@@ -33,6 +33,7 @@ struct FamilyChatScreen: View {
     @State private var isSending: Bool = false
     /// Текст алерта ошибки (без `alert(item:)` с `Identifiable`, чтобы снизить риск циклов AttributeGraph).
     @State private var chatErrorMessage: String? = nil
+    @State private var chatAlertTitle: String = ""
     /// После `GET /members` / заголовков сервера: нет семьи — не слать typing/send с устаревшим `family_id`.
     @State private var chatFamilyContextInvalid: Bool = false
     /// Поколение silent-запроса списка: устаревшие ответы не перезаписывают `messages` (гонки polling + после send).
@@ -70,6 +71,10 @@ struct FamilyChatScreen: View {
     @State private var showContactPicker: Bool = false
     @State private var isResolvingLocation: Bool = false
     @State private var showFeedbackSheet: Bool = false
+    @State private var moderationTargetMessage: FamilyChatMessage? = nil
+    @State private var showReportReasonDialog: Bool = false
+    @State private var showRestrictConfirm: Bool = false
+    @AppStorage(AppConfig.UserDefaultsKeys.currentUserRole) private var currentUserRole: String = ""
     @State private var typingStopWorkItem: DispatchWorkItem? = nil
     /// Debounce typing: `Task` на MainActor, чтобы не дергать сеть синхронно из `onChange` и не захватывать устаревший `struct View`.
     @State private var typingTextDebounceTask: Task<Void, Never>?
@@ -106,13 +111,7 @@ struct FamilyChatScreen: View {
                 showProfileButton: false,
                 showListButton: false,
                 onBack: {
-                    dismiss()
-
-                    DispatchQueue.main.async {
-                        if navigationManager.canGoBack {
-                            navigationManager.goBack()
-                        }
-                    }
+                    navigationManager.goBackToPreviousScreen(reason: "FamilyChat.onBack")
                 }
             )
             .accessibilityElement(children: .combine)
@@ -225,7 +224,7 @@ struct FamilyChatScreen: View {
 
     private var familyChatMessagesScrollArea: some View {
         ScrollViewReader { proxy in
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.m) {
                     if let replyTo = replyToMessage {
                         ReplyBubbleView(replyTo: replyTo) {
@@ -276,7 +275,10 @@ struct FamilyChatScreen: View {
                     onReply: { replyToMessage = message },
                     onCopy: { copyMessage(message) },
                     onForward: { forwardMessage(message) },
-                    onAddReaction: { showReactionPicker(for: message) }
+                    onAddReaction: { showReactionPicker(for: message) },
+                    onReport: { beginReport(message) },
+                    onRestrictSender: { beginRestrictSender(message) },
+                    canRestrictSender: canCurrentUserRestrictChatMembers
                 )
             }
         } else {
@@ -293,17 +295,6 @@ struct FamilyChatScreen: View {
                 }
             )
             .id(message.id)
-            .contextMenu {
-                MessageContextMenu(
-                    message: message,
-                    onDelete: { deleteMessage(message) },
-                    onEdit: { startEditing(message) },
-                    onReply: { replyToMessage = message },
-                    onCopy: { copyMessage(message) },
-                    onForward: { forwardMessage(message) },
-                    onAddReaction: { showReactionPicker(for: message) }
-                )
-            }
         }
     }
 
@@ -332,7 +323,13 @@ struct FamilyChatScreen: View {
     private var familyChatLifecycleAttached: some View {
         familyChatCoreChrome
             .task {
+                #if DEBUG
                 print("🚨 FamilyChatScreen загружен!")
+                if ProcessInfo.processInfo.arguments.contains("-UITestFamilyChatModeration") {
+                    loadModerationUITestFixture()
+                    return
+                }
+                #endif
                 markFamilyActivity()
                 await refreshFamilyContextFromMembersAPI()
                 updateOnlineMembersCount()
@@ -384,7 +381,10 @@ struct FamilyChatScreen: View {
                             onReply: { replyToMessage = message },
                             onCopy: { copyMessage(message) },
                             onForward: { forwardMessage(message) },
-                            onAddReaction: { showReactionPicker(for: message) }
+                            onAddReaction: { showReactionPicker(for: message) },
+                            onReport: { beginReport(message) },
+                            onRestrictSender: { beginRestrictSender(message) },
+                            canRestrictSender: canCurrentUserRestrictChatMembers
                         )
                     }
                 }
@@ -539,7 +539,9 @@ struct FamilyChatScreen: View {
     private var familyChatRootDecorated: some View {
         familyChatInteractionOverlays
             .alert(
-                localizationManager.localized("family_chat_error_title"),
+                chatAlertTitle.isEmpty
+                    ? localizationManager.localized("family_chat_error_title")
+                    : chatAlertTitle,
                 isPresented: Binding(
                     get: { chatErrorMessage != nil },
                     set: { if !$0 { chatErrorMessage = nil } }
@@ -553,6 +555,51 @@ struct FamilyChatScreen: View {
                     Text(chatErrorMessage ?? "")
                 }
             )
+            .confirmationDialog(
+                localizationManager.localized("family_chat_report_reason_title"),
+                isPresented: $showReportReasonDialog,
+                titleVisibility: .visible
+            ) {
+                Button(localizationManager.localized("family_chat_report_spam")) {
+                    reportMessage(category: .spam)
+                }
+                .accessibilityIdentifier("family_chat_report_reason_spam")
+                Button(localizationManager.localized("family_chat_report_harassment")) {
+                    reportMessage(category: .harassment)
+                }
+                .accessibilityIdentifier("family_chat_report_reason_harassment")
+                Button(localizationManager.localized("family_chat_report_inappropriate")) {
+                    reportMessage(category: .inappropriate)
+                }
+                .accessibilityIdentifier("family_chat_report_reason_inappropriate")
+                Button(localizationManager.localized("family_chat_report_threat")) {
+                    reportMessage(category: .threat)
+                }
+                .accessibilityIdentifier("family_chat_report_reason_threat")
+                Button(localizationManager.localized("family_chat_report_other")) {
+                    reportMessage(category: .other)
+                }
+                .accessibilityIdentifier("family_chat_report_reason_other")
+                Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {
+                    moderationTargetMessage = nil
+                }
+            } message: {
+                Text(localizationManager.localized("family_chat_report_privacy_note"))
+            }
+            .confirmationDialog(
+                localizationManager.localized("family_chat_restrict_confirm_title"),
+                isPresented: $showRestrictConfirm,
+                titleVisibility: .visible
+            ) {
+                Button(localizationManager.localized("family_chat_restrict_sender"), role: .destructive) {
+                    restrictMessageSender()
+                }
+                Button(localizationManager.localized("family_chat_voice_cancel"), role: .cancel) {
+                    moderationTargetMessage = nil
+                }
+            } message: {
+                Text(localizationManager.localized("family_chat_restrict_confirm_message"))
+            }
     }
     
     // MARK: - Helper Methods
@@ -575,6 +622,37 @@ struct FamilyChatScreen: View {
             .filter { !$0.isEmpty }
             .sorted()
     }
+
+    private var canCurrentUserRestrictChatMembers: Bool {
+        let role = currentUserRole
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        return ["parent", "owner", "родитель", "владелец"].contains(role)
+    }
+
+    #if DEBUG
+    private func loadModerationUITestFixture() {
+        messages = [
+            FamilyChatMessage(
+                id: "UITEST_OTHER",
+                sender: "Family member",
+                text: "Message available for moderation",
+                time: "12:00",
+                isCurrentUser: false
+            ),
+            FamilyChatMessage(
+                id: "UITEST_OWN",
+                sender: "You",
+                text: "Own message",
+                time: "12:01",
+                isCurrentUser: true
+            ),
+        ]
+        filteredMessages = messages
+        onlineMembersCount = 2
+        isLoading = false
+    }
+    #endif
 
     /// Единый источник с APIService: Keychain + legacy UserDefaults (`FamilyLocalStore.loadPersistedFamilyId`).
     private func getFamilyId() -> String? {
@@ -612,6 +690,14 @@ struct FamilyChatScreen: View {
         let u = underlying.map { "\(Swift.type(of: $0)): \($0.localizedDescription)" } ?? "—"
         let s = silent.map { $0 ? "да" : "нет" } ?? "—"
         print("🔎 Семейный чат [\(context)] алерт: «\(message.prefix(160))» | underlying=\(u) | silentPoll=\(s)")
+        showReportReasonDialog = false
+        showRestrictConfirm = false
+        chatAlertTitle = localizationManager.localized("family_chat_error_title")
+        chatErrorMessage = message
+    }
+
+    private func presentChatNotice(_ message: String) {
+        chatAlertTitle = localizationManager.localized("family_chat_moderation_success_title")
         chatErrorMessage = message
     }
 
@@ -1653,6 +1739,80 @@ struct FamilyChatScreen: View {
             }
         }
     }
+
+    private func beginReport(_ message: FamilyChatMessage) {
+        guard !message.isCurrentUser else { return }
+        moderationTargetMessage = message
+        let requiresSheetDismissal = showMessageActions
+        showMessageActions = false
+        presentAfterMessageActionsDismissal(requiresSheetDismissal) {
+            showReportReasonDialog = true
+        }
+    }
+
+    private func reportMessage(category: FamilyChatReportCategory) {
+        guard let message = moderationTargetMessage else { return }
+        showReportReasonDialog = false
+        apiService.reportFamilyChatMessage(messageId: message.id, category: category) { [self] result in
+            DispatchQueue.main.async {
+                moderationTargetMessage = nil
+                switch result {
+                case .success:
+                    presentChatNotice(localizationManager.localized("family_chat_report_success"))
+                case .failure(let error):
+                    presentChatError(
+                        localizedLoadFailureMessage(for: error),
+                        context: "reportMessage",
+                        underlying: error
+                    )
+                }
+            }
+        }
+    }
+
+    private func beginRestrictSender(_ message: FamilyChatMessage) {
+        guard !message.isCurrentUser, canCurrentUserRestrictChatMembers else { return }
+        moderationTargetMessage = message
+        let requiresSheetDismissal = showMessageActions
+        showMessageActions = false
+        presentAfterMessageActionsDismissal(requiresSheetDismissal) {
+            showRestrictConfirm = true
+        }
+    }
+
+    private func restrictMessageSender() {
+        guard let message = moderationTargetMessage else { return }
+        showRestrictConfirm = false
+        apiService.restrictFamilyChatMember(messageId: message.id) { [self] result in
+            DispatchQueue.main.async {
+                moderationTargetMessage = nil
+                switch result {
+                case .success:
+                    presentChatNotice(localizationManager.localized("family_chat_restrict_success"))
+                case .failure(let error):
+                    presentChatError(
+                        localizedLoadFailureMessage(for: error),
+                        context: "restrictMessageSender",
+                        underlying: error
+                    )
+                }
+            }
+        }
+    }
+
+    private func presentAfterMessageActionsDismissal(
+        _ requiresDismissal: Bool,
+        presentation: @escaping () -> Void
+    ) {
+        guard requiresDismissal else {
+            presentation()
+            return
+        }
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 300_000_000)
+            presentation()
+        }
+    }
     
     /// Начало редактирования сообщения
     private func startEditing(_ message: FamilyChatMessage) {
@@ -2370,6 +2530,7 @@ struct MessageBubbleView: View {
                 )
             }
         }
+        .accessibilityIdentifier("family_chat_message_\(message.id)")
     }
     
     @ViewBuilder
@@ -2438,12 +2599,17 @@ struct MessageContextMenu: View {
     let onCopy: () -> Void
     let onForward: () -> Void
     let onAddReaction: () -> Void
+    let onReport: () -> Void
+    let onRestrictSender: () -> Void
+    let canRestrictSender: Bool
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         Group {
-            Button(action: onReply) {
-                Label(localizationManager.localized("family_chat_message_reply"), systemImage: "arrowshape.turn.up.left")
+            if !message.isCurrentUser {
+                Button(action: onReply) {
+                    Label(localizationManager.localized("family_chat_message_reply"), systemImage: "arrowshape.turn.up.left")
+                }
             }
             
             if message.text != nil {
@@ -2454,6 +2620,26 @@ struct MessageContextMenu: View {
             
             Button(action: onAddReaction) {
                 Label(localizationManager.localized("family_chat_reaction_add"), systemImage: "face.smiling")
+            }
+
+            if !message.isCurrentUser {
+                Button(role: .destructive, action: onReport) {
+                    Label(
+                        localizationManager.localized("family_chat_report"),
+                        systemImage: "exclamationmark.bubble"
+                    )
+                }
+                .accessibilityIdentifier("family_chat_report_action")
+
+                if canRestrictSender {
+                    Button(role: .destructive, action: onRestrictSender) {
+                        Label(
+                            localizationManager.localized("family_chat_restrict_sender"),
+                            systemImage: "person.crop.circle.badge.xmark"
+                        )
+                    }
+                    .accessibilityIdentifier("family_chat_restrict_action")
+                }
             }
             
             if FamilyChatE2EULegacyPolicy.canEdit(message: message) {
@@ -2466,6 +2652,7 @@ struct MessageContextMenu: View {
                 Button(role: .destructive, action: onDelete) {
                     Label(localizationManager.localized("family_chat_message_delete"), systemImage: "trash")
                 }
+                .accessibilityIdentifier("family_chat_delete_action")
             }
         }
     }

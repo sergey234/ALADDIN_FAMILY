@@ -139,15 +139,73 @@ class AppConfigTests: XCTestCase {
     // MARK: - Payment Configuration Tests
     
     func testUseAlternativePayments() throws {
-        let useAlternative = AppConfig.useAlternativePayments
-        XCTAssertTrue(useAlternative, "Альтернативные платежи должны быть всегда активны")
+        #if APP_STORE_BUILD
+        XCTAssertFalse(AppConfig.useAlternativePayments)
+        XCTAssertTrue(AppConfig.useIAP)
+        #else
+        XCTAssertEqual(AppConfig.useAlternativePayments, AppConfig.isRussianRegion)
+        XCTAssertEqual(AppConfig.useIAP, !AppConfig.isRussianRegion)
+        #endif
     }
     
     func testAlternativePaymentForRussianRegion() throws {
-        // В России должны быть включены альтернативные способы оплаты
+        #if APP_STORE_BUILD
+        XCTAssertFalse(AppStoreBuildPolicy.allowsAlternativePayments)
+        #else
         if AppConfig.isRussianRegion {
             XCTAssertTrue(AppConfig.useAlternativePayments)
         }
+        #endif
+    }
+
+    func testAppStoreRestrictedFeaturesMatchBuildMode() throws {
+        #if APP_STORE_BUILD
+        XCTAssertTrue(AppStoreBuildPolicy.isAppStoreBuild)
+        XCTAssertFalse(AppStoreBuildPolicy.allowsAlternativePayments)
+        XCTAssertFalse(AppStoreBuildPolicy.allowsSmartDNS)
+        XCTAssertFalse(AppStoreBuildPolicy.allowsSystemFamilyControls)
+        XCTAssertFalse(AppStoreBuildPolicy.allowsHealthKitIntegration)
+        #else
+        XCTAssertFalse(AppStoreBuildPolicy.isAppStoreBuild)
+        #endif
+    }
+
+    func testFamilyChatReportRequestUsesBackendContract() throws {
+        let request = ReportFamilyChatMessageRequest(
+            messageId: "MSG_123",
+            category: .harassment,
+            note: nil
+        )
+        let object = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(request)) as? [String: Any]
+        )
+        XCTAssertEqual(object["messageId"] as? String, "MSG_123")
+        XCTAssertEqual(object["category"] as? String, "harassment")
+        XCTAssertNil(object["message_id"])
+    }
+
+    func testFamilyChatRestrictionRequestAndResponseContract() throws {
+        let request = RestrictFamilyChatMemberRequest(
+            messageId: "MSG_456",
+            restricted: true,
+            reason: nil
+        )
+        let encoded = try XCTUnwrap(
+            JSONSerialization.jsonObject(with: JSONEncoder().encode(request)) as? [String: Any]
+        )
+        XCTAssertEqual(encoded["messageId"] as? String, "MSG_456")
+        XCTAssertEqual(encoded["restricted"] as? Bool, true)
+
+        let response = try JSONDecoder().decode(
+            FamilyChatModerationResponse.self,
+            from: Data(
+                """
+                {"success":true,"actionId":"RST_ABC","message":"Member restricted"}
+                """.utf8
+            )
+        )
+        XCTAssertTrue(response.success)
+        XCTAssertEqual(response.actionId, "RST_ABC")
     }
     
     // MARK: - Debug Configuration Tests
@@ -224,6 +282,7 @@ class AppConfigTests: XCTestCase {
     func testUserDefaultsKeys() throws {
         XCTAssertEqual(AppConfig.UserDefaultsKeys.authToken, "authToken")
         XCTAssertEqual(AppConfig.UserDefaultsKeys.familyId, "family_id")
+        XCTAssertEqual(AppConfig.UserDefaultsKeys.currentUserRole, "current_user_role")
         XCTAssertEqual(AppConfig.UserDefaultsKeys.consentAccepted, "consent_accepted")
         XCTAssertEqual(AppConfig.UserDefaultsKeys.consentDate, "consent_date")
         XCTAssertEqual(AppConfig.UserDefaultsKeys.consentVersion, "consent_version")

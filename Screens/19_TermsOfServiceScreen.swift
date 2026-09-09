@@ -98,11 +98,17 @@ struct TermsOfServiceScreen: View {
     
     private var sectionsContent: some View {
         VStack(spacing: Spacing.m) {
-            ForEach(TermsSection.allCases, id: \.self) { section in
+            ForEach(visibleSections, id: \.self) { section in
                 termsSectionCard(section: section)
             }
         }
         .padding(.horizontal, Spacing.screenPadding)
+    }
+
+    private var visibleSections: [TermsSection] {
+        TermsSection.allCases.filter {
+            !AppStoreBuildPolicy.isAppStoreBuild || $0 != .networkProtection
+        }
     }
     
     // MARK: - Terms Section Card
@@ -449,6 +455,24 @@ extension TermsSection {
                 localizationManager.localized("terms_section_restrictions_content_5")
             ]
         case .payments:
+            if AppStoreBuildPolicy.isAppStoreBuild {
+                if localizationManager.currentLanguage == .russian {
+                    return [
+                        "Цифровые подписки приобретаются только через In-App Purchase Apple.",
+                        "Оплата списывается с учётной записи Apple ID после подтверждения покупки.",
+                        "Подписка продлевается автоматически, если автопродление не отключено минимум за 24 часа до окончания периода.",
+                        "Управлять подпиской и отменить её можно в настройках Apple ID.",
+                        "Ранее приобретённые подписки можно восстановить на экране тарифов."
+                    ]
+                }
+                return [
+                    "Digital subscriptions are purchased only through Apple In-App Purchase.",
+                    "Payment is charged to the Apple ID account after purchase confirmation.",
+                    "The subscription renews automatically unless auto-renew is turned off at least 24 hours before the period ends.",
+                    "Subscriptions can be managed or canceled in Apple ID settings.",
+                    "Previous purchases can be restored from the Plans screen."
+                ]
+            }
             return [
                 localizationManager.localized("terms_section_payments_content_1"),
                 localizationManager.localized("terms_section_payments_content_2"),

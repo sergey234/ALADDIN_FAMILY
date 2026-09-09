@@ -201,6 +201,12 @@ extension TariffType {
 
             features = allFeatures
         }
+
+        if AppStoreBuildPolicy.isAppStoreBuild {
+            features.removeAll {
+                $0.id.hasPrefix("network_protection_") || $0.id == "anonymity_premium"
+            }
+        }
         
         return features
     }

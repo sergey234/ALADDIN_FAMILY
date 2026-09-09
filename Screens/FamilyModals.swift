@@ -1409,7 +1409,7 @@ struct FamilyModalBaseView<Content: View>: View {
                 )
                 
                 // Content
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.m) {
                         content
                     }
@@ -4571,19 +4571,19 @@ struct FamilyBypassProtectionModal: View {
     @State private var children: [String] = []
     
     // Состояния для 3 переключателей с сохранением в UserDefaults
-    @AppStorage("bypass_incognito_enabled") private var isIncognitoDetectionEnabled: Bool = true
-    @AppStorage("bypass_tor_enabled") private var isTorDetectionEnabled: Bool = true
-    @AppStorage("bypass_proxy_enabled") private var isProxyDetectionEnabled: Bool = true
+    @AppStorage("bypass_incognito_enabled") private var isIncognitoDetectionEnabled: Bool = false
+    @AppStorage("bypass_tor_enabled") private var isTorDetectionEnabled: Bool = false
+    @AppStorage("bypass_proxy_enabled") private var isProxyDetectionEnabled: Bool = false
     
     // Статистика
     @State private var attemptsToday: Int = 0
-    @State private var attemptsWeek: Int = 47
-    @State private var attemptsBlocked: Int = 47
+    @State private var attemptsWeek: Int = 0
+    @State private var attemptsBlocked: Int = 0
     
     // Детализация по типам
-    @State private var incognitoAttempts: Int = 15
-    @State private var torAttempts: Int = 8
-    @State private var proxyAttempts: Int = 6
+    @State private var incognitoAttempts: Int = 0
+    @State private var torAttempts: Int = 0
+    @State private var proxyAttempts: Int = 0
     
     var body: some View {
         FamilyModalBaseView(
@@ -4725,7 +4725,12 @@ struct FamilyBypassProtectionModal: View {
                     self.proxyAttempts = stats.proxy
                 case .failure(let error):
                     print("⚠️ Failed to load bypass statistics: \(error.localizedDescription)")
-                    // Оставляем значения по умолчанию
+                    self.attemptsToday = 0
+                    self.attemptsWeek = 0
+                    self.attemptsBlocked = 0
+                    self.incognitoAttempts = 0
+                    self.torAttempts = 0
+                    self.proxyAttempts = 0
                 }
             }
         }

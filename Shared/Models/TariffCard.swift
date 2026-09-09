@@ -22,6 +22,7 @@ struct TariffCard: Identifiable {
     
     /// Все функции родительского контроля для этого тарифа
     var parentalControlFeatures: [ParentalControlFeature] {
+        guard AppStoreBuildPolicy.allowsSystemFamilyControls else { return [] }
         var allFeatures: [ParentalControlFeature] = []
         for module in ParentalControlModule.allCases {
             allFeatures.append(contentsOf: module.features(for: tariffType))

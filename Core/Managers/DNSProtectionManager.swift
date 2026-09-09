@@ -1,8 +1,48 @@
 import Foundation
+#if !APP_STORE_BUILD
 import NetworkExtension
+#endif
 import Combine
 import CryptoKit
 
+#if APP_STORE_BUILD
+/// App Store build intentionally excludes system Smart DNS.
+///
+/// The no-op implementation keeps shared family screens source-compatible
+/// without touching NetworkExtension or presenting a nonfunctional control.
+@MainActor
+final class DNSProtectionManager: ObservableObject {
+    static let shared = DNSProtectionManager()
+
+    @Published private(set) var isEnabled = false
+    @Published private(set) var isLoading = false
+    @Published private(set) var lastError: String?
+
+    private init() {}
+
+    static func dnsConfigQueryChildId(from raw: String) -> String? {
+        nil
+    }
+
+    func loadStatus(force: Bool = false) {
+        isEnabled = false
+        isLoading = false
+        lastError = nil
+    }
+
+    func enableProtection(childId: String? = nil) {
+        isEnabled = false
+        isLoading = false
+        lastError = nil
+    }
+
+    func disableProtection() {
+        isEnabled = false
+        isLoading = false
+        lastError = nil
+    }
+}
+#else
 /**
  * 🌐 DNS Protection Manager (План 2026)
  * Управление системным DoH (DNS-over-HTTPS) профилем
@@ -224,3 +264,4 @@ class DNSProtectionManager: ObservableObject {
         NotificationCenter.default.post(name: Notification.Name.networkLayerIndicatorsRefresh, object: nil)
     }
 }
+#endif

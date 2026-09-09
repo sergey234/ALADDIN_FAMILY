@@ -369,6 +369,16 @@ class NavigationManager: ObservableObject {
         logger.navigation(from: currentScreen.displayName, to: resolved.displayName, function: #function)
         #endif
 
+        if resolved == .paymentQR, AppStoreBuildPolicy.isAppStoreBuild {
+            selectedTariffForPayment = nil
+            appendLog("🍎 navigateTo(.paymentQR) отклонён политикой App Store")
+            return
+        }
+        if resolved == .activationCode, AppStoreBuildPolicy.isAppStoreBuild {
+            appendLog("🍎 navigateTo(.activationCode) отклонён политикой App Store")
+            return
+        }
+
         if currentScreen == resolved {
             appendLog("⚠️ navigateTo(\(resolved)) отклонён: уже на экране")
             return

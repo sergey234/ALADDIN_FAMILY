@@ -109,8 +109,8 @@ struct SimpleHomeScreen: View {
             spacing: Spacing.m
         ) {
             tile(
-                titleKey: "simple_home_tile_protection_title",
-                subtitleKey: "simple_home_tile_protection_subtitle",
+                titleKey: "profile_security_title",
+                subtitleKey: "network_protection_security_features",
                 systemImage: "shield.fill",
                 identifier: "simple_home_tile_protection"
             ) {

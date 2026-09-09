@@ -48,8 +48,10 @@ struct PrivacyPolicyScreen: View {
                         // Content based on selected tab
                         if selectedTab == .main {
                             mainSectionsContent
-                        } else {
+                        } else if !AppStoreBuildPolicy.isAppStoreBuild {
                             networkProtectionSectionsContent
+                        } else {
+                            mainSectionsContent
                         }
                         
                         // Spacer
@@ -107,7 +109,9 @@ struct PrivacyPolicyScreen: View {
     private var tabsView: some View {
         HStack(spacing: 0) {
             tabButton(title: PrivacyTab.main.localizedTitle(localizationManager), tab: .main)
-            tabButton(title: PrivacyTab.networkProtection.localizedTitle(localizationManager), tab: .networkProtection)
+            if !AppStoreBuildPolicy.isAppStoreBuild {
+                tabButton(title: PrivacyTab.networkProtection.localizedTitle(localizationManager), tab: .networkProtection)
+            }
         }
         .stormGlassCard(cornerRadius: CornerRadius.medium)
         .padding(.horizontal, Spacing.screenPadding)
@@ -140,8 +144,31 @@ struct PrivacyPolicyScreen: View {
     
     private var mainSectionsContent: some View {
         VStack(spacing: Spacing.m) {
-            ForEach(PrivacyMainSection.allCases, id: \.self) { section in
-                privacySectionCard(section: section)
+            if AppStoreBuildPolicy.isAppStoreBuild {
+                privacySection(
+                    title: localizationManager.localized("privacy_policy_section_1"),
+                    content: localizationManager.localized("privacy_policy_section_1_content")
+                )
+                privacySection(
+                    title: localizationManager.localized("privacy_policy_section_2"),
+                    content: localizationManager.localized("privacy_policy_section_2_content")
+                )
+                privacySection(
+                    title: localizationManager.localized("privacy_policy_section_3"),
+                    content: localizationManager.localized("privacy_policy_section_3_content")
+                )
+                privacySection(
+                    title: localizationManager.localized("privacy_policy_section_4"),
+                    content: localizationManager.localized("privacy_policy_section_4_content")
+                )
+                privacySection(
+                    title: localizationManager.localized("privacy_policy_section_5"),
+                    content: localizationManager.localized("privacy_policy_section_5_content")
+                )
+            } else {
+                ForEach(PrivacyMainSection.allCases, id: \.self) { section in
+                    privacySectionCard(section: section)
+                }
             }
         }
         .padding(.horizontal, Spacing.screenPadding)
@@ -303,7 +330,7 @@ struct PrivacyPolicyScreen: View {
     // MARK: - Fallback Content
     
     private var fallbackPrivacyContent: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(alignment: .leading, spacing: Spacing.m) {
                 Text(localizationManager.localized("privacy_policy_header_title"))
                     .font(.h3)

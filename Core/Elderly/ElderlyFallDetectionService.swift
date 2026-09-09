@@ -1,6 +1,6 @@
 import Foundation
 
-#if canImport(HealthKit)
+#if canImport(HealthKit) && !APP_STORE_BUILD
 import HealthKit
 #endif
 
@@ -10,7 +10,7 @@ final class ElderlyFallDetectionService {
     static let enabledKey = "elderly_fall_detection_enabled"
 
     private let defaults = UserDefaults.standard
-    #if canImport(HealthKit)
+    #if canImport(HealthKit) && !APP_STORE_BUILD
     private var healthStore: HKHealthStore?
     private var observerQuery: HKObserverQuery?
     #endif
@@ -32,7 +32,7 @@ final class ElderlyFallDetectionService {
 
     @MainActor
     func startMonitoring() async {
-        #if canImport(HealthKit)
+        #if canImport(HealthKit) && !APP_STORE_BUILD
         guard HKHealthStore.isHealthDataAvailable() else { return }
         let store = HKHealthStore()
         healthStore = store
@@ -55,7 +55,7 @@ final class ElderlyFallDetectionService {
     }
 
     func stopMonitoring() {
-        #if canImport(HealthKit)
+        #if canImport(HealthKit) && !APP_STORE_BUILD
         if let store = healthStore, let query = observerQuery {
             store.stop(query)
         }
@@ -71,7 +71,7 @@ final class ElderlyFallDetectionService {
         try? await WellnessAPIService.shared.reportElderlyFall(source: source)
     }
 
-    #if canImport(HealthKit)
+    #if canImport(HealthKit) && !APP_STORE_BUILD
     private static var fallSampleType: HKSampleType? {
         if #available(iOS 15.0, *) {
             let identifier = HKCategoryTypeIdentifier(rawValue: "HKCategoryTypeIdentifierFallDetectionEvent")

@@ -14,6 +14,9 @@ struct MessageActionsMenu: View {
     let onCopy: () -> Void
     let onForward: () -> Void
     let onAddReaction: () -> Void
+    let onReport: () -> Void
+    let onRestrictSender: () -> Void
+    let canRestrictSender: Bool
     @State private var showDeleteConfirm: Bool = false
     
     var body: some View {
@@ -58,6 +61,28 @@ struct MessageActionsMenu: View {
                 title: localizationManager.localized("family_chat_message_forward"),
                 action: onForward
             )
+
+            if !message.isCurrentUser {
+                Divider()
+
+                ActionButton(
+                    icon: "exclamationmark.bubble",
+                    title: localizationManager.localized("family_chat_report"),
+                    action: onReport,
+                    isDestructive: true
+                )
+                .accessibilityIdentifier("family_chat_report_action")
+
+                if canRestrictSender {
+                    ActionButton(
+                        icon: "person.crop.circle.badge.xmark",
+                        title: localizationManager.localized("family_chat_restrict_sender"),
+                        action: onRestrictSender,
+                        isDestructive: true
+                    )
+                    .accessibilityIdentifier("family_chat_restrict_action")
+                }
+            }
             
             // Удалить (только свои сообщения)
             if message.isCurrentUser {
@@ -71,6 +96,7 @@ struct MessageActionsMenu: View {
                     },
                     isDestructive: true
                 )
+                .accessibilityIdentifier("family_chat_delete_action")
             }
         }
         .padding(Spacing.m)

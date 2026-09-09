@@ -1,6 +1,6 @@
 import Foundation
 
-#if canImport(HealthKit)
+#if canImport(HealthKit) && !APP_STORE_BUILD
 import HealthKit
 #endif
 
@@ -14,7 +14,7 @@ enum WellnessHealthSleepReader {
     }
 
     static var isAvailable: Bool {
-        #if canImport(HealthKit)
+        #if canImport(HealthKit) && !APP_STORE_BUILD
         return HKHealthStore.isHealthDataAvailable()
         #else
         return false
@@ -23,7 +23,7 @@ enum WellnessHealthSleepReader {
 
     @MainActor
     static func requestSleepHours() async -> Result? {
-        #if canImport(HealthKit)
+        #if canImport(HealthKit) && !APP_STORE_BUILD
         guard HKHealthStore.isHealthDataAvailable() else { return nil }
         let store = HKHealthStore()
         guard let sleepType = HKObjectType.categoryType(forIdentifier: .sleepAnalysis) else {
@@ -65,7 +65,7 @@ enum WellnessHealthSleepReader {
         #endif
     }
 
-    #if canImport(HealthKit)
+    #if canImport(HealthKit) && !APP_STORE_BUILD
     /// iOS 16+ sleep stages vs legacy `.asleep` (iOS 15 deployment).
     private static func isAsleepSample(value: Int) -> Bool {
         if #available(iOS 16.0, *) {
