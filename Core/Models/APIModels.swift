@@ -1766,6 +1766,50 @@ struct SendFamilyChatMessageRequest: Codable {
     let mediaCiphertextHash: String?
 }
 
+enum FamilyChatReportCategory: String, Codable, CaseIterable {
+    case spam
+    case harassment
+    case inappropriate
+    case threat
+    case other
+}
+
+struct ReportFamilyChatMessageRequest: Codable {
+    let messageId: String
+    let category: FamilyChatReportCategory
+    let note: String?
+
+    enum CodingKeys: String, CodingKey {
+        case messageId
+        case category
+        case note
+    }
+}
+
+struct RestrictFamilyChatMemberRequest: Codable {
+    let messageId: String
+    let restricted: Bool
+    let reason: String?
+
+    enum CodingKeys: String, CodingKey {
+        case messageId
+        case restricted
+        case reason
+    }
+}
+
+struct FamilyChatModerationResponse: Codable {
+    let success: Bool
+    let actionId: String
+    let message: String
+
+    enum CodingKeys: String, CodingKey {
+        case success
+        case actionId
+        case message
+    }
+}
+
 // MARK: - Family Chat E2EE (E1.2 / E1.4)
 
 struct E2EESignedPreKeyIn: Codable {

@@ -896,6 +896,42 @@ class APIService: ObservableObject {
             }
         }
     }
+
+    func reportFamilyChatMessage(
+        messageId: String,
+        category: FamilyChatReportCategory,
+        note: String? = nil,
+        completion: @escaping (Result<FamilyChatModerationResponse, Error>) -> Void
+    ) {
+        let body = ReportFamilyChatMessageRequest(
+            messageId: messageId,
+            category: category,
+            note: note
+        )
+        networkManager.post(
+            endpoint: "/api/family/chat/moderation/report",
+            body: body,
+            completion: completion
+        )
+    }
+
+    func restrictFamilyChatMember(
+        messageId: String,
+        restricted: Bool = true,
+        reason: String? = nil,
+        completion: @escaping (Result<FamilyChatModerationResponse, Error>) -> Void
+    ) {
+        let body = RestrictFamilyChatMemberRequest(
+            messageId: messageId,
+            restricted: restricted,
+            reason: reason
+        )
+        networkManager.post(
+            endpoint: "/api/family/chat/moderation/restrict",
+            body: body,
+            completion: completion
+        )
+    }
     
     func editFamilyChatMessage(messageId: String, newText: String, completion: @escaping (Result<Bool, Error>) -> Void) {
         struct EditRequest: Codable {
