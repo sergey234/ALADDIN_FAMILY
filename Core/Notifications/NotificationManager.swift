@@ -871,207 +871,200 @@ class NotificationManager: NSObject, ObservableObject {
             .reduce(0) { $0 + $1.count }
     }
     
-    // MARK: - Subscription Renewal Notifications
-    
+    // MARK: - Subscription / Trial dojim (retention)
+
+    /// Deep link → тарифы (CTA «Продлить»). Без VPN-текстов.
+    static let tariffsDeepLink = "aladdin://tariffs"
+
     /**
-     * Планирование уведомлений о приближающемся окончании подписки
-     * Уведомления отправляются за 3 и 1 день до окончания
+     * Dojim платной подписки (по духу бота, без VPN):
+     * −3 / −1 / день 0 / +1 / +3. Одно окно = один id.
      */
     func scheduleRenewalNotifications(subscriptionEndDate: Date) {
-        // Отменяем предыдущие уведомления о подписке (если есть)
         cancelRenewalNotifications()
-        
-        // За 3 дня
-        let threeDaysBefore = subscriptionEndDate.addingTimeInterval(-3 * 24 * 60 * 60)
-        if threeDaysBefore > Date() {
-            scheduleSubscriptionNotification(
-                date: threeDaysBefore,
-                title: "Подписка заканчивается через 3 дня",
-                body: "Продлите подписку, чтобы продолжить пользоваться сервисом",
-                daysUntilExpiry: 3,
-                subscriptionEndDate: subscriptionEndDate
+
+        let endDay = Calendar.current.startOfDay(for: subscriptionEndDate)
+        let windows: [(Int, String, String, String, String)] = [
+            (-3, "before.3", "subscription_renewal",
+             "Подписка заканчивается через 3 дня",
+             "Продлите защиту семьи — тарифы в один тап. Можно пригласить друга и получить бонус."),
+            (-1, "before.1", "subscription_renewal",
+             "Подписка заканчивается завтра",
+             "Завтра доступ к полной защите может ограничиться. Откройте тарифы и продлите."),
+            (0, "expired.0", "subscription_expired",
+             "Подписка закончилась",
+             "Продлите, чтобы семья снова была под защитой. Или пригласите друга — бонус по рефке."),
+            (1, "expired.1", "subscription_expired",
+             "Семья без полной защиты",
+             "Вернитесь к подписке в один тап — или пригласите друга и получите бонус дней."),
+            (3, "expired.3", "subscription_expired",
+             "Мы рядом, когда будете готовы",
+             "Откройте тарифы или пригласите друга. Защита семьи важнее паузы."),
+        ]
+
+        for (offset, suffix, type, title, body) in windows {
+            guard let day = Calendar.current.date(byAdding: .day, value: offset, to: endDay) else { continue }
+            let fire = Self.dojimFireDate(on: day, fallbackInstant: subscriptionEndDate, offsetDays: offset)
+            scheduleDojimCalendarNotification(
+                identifier: "dojim.subscription.\(suffix)",
+                fireDate: fire,
+                title: title,
+                body: body,
+                category: .subscription,
+                type: type,
+                extra: [
+                    "days_offset": offset,
+                    "subscription_end_date": ISO8601DateFormatter().string(from: subscriptionEndDate),
+                    "source": "subscription_dojim_p1",
+                ]
             )
         }
-        
-        // За 1 день
-        let oneDayBefore = subscriptionEndDate.addingTimeInterval(-24 * 60 * 60)
-        if oneDayBefore > Date() {
-            scheduleSubscriptionNotification(
-                date: oneDayBefore,
-                title: "Подписка заканчивается завтра",
-                body: "Продлите подписку сейчас, чтобы не потерять доступ к функциям",
-                daysUntilExpiry: 1,
-                subscriptionEndDate: subscriptionEndDate
-            )
-        }
-        
-        print("✅ Уведомления о подписке запланированы: за 3 дня и за 1 день")
+
+        print("✅ Dojim подписки: −3/−1/0/+1/+3 от \(subscriptionEndDate)")
     }
 
     /**
-     * 📅 Schedule trial expiry notifications
-     * Планирует уведомления об окончании trial периода
+     * Trial dojim: −7 / −3 / −1 / день 0 / +1 / +3.
      */
     func scheduleTrialNotifications(trialEndDate: Date) {
-        // Отменяем предыдущие уведомления trial (если есть)
         cancelTrialNotifications()
 
-        // За 7 дней
-        let sevenDaysBefore = trialEndDate.addingTimeInterval(-7 * 24 * 60 * 60)
-        if sevenDaysBefore > Date() {
-            scheduleTrialNotification(
-                date: sevenDaysBefore,
-                title: "Trial заканчивается через 7 дней",
-                body: "Оформите подписку Premium, чтобы сохранить доступ ко всем функциям",
-                daysUntilExpiry: 7,
-                trialEndDate: trialEndDate
+        let endDay = Calendar.current.startOfDay(for: trialEndDate)
+        let windows: [(Int, String, String, String, String)] = [
+            (-7, "before.7", "trial",
+             "Пробный период — ещё 7 дней",
+             "Оформите подписку, чтобы сохранить полную защиту семьи после trial."),
+            (-3, "before.3", "trial",
+             "Trial заканчивается через 3 дня",
+             "Осталось 3 дня. Продлите защиту семьи — или пригласите друга за бонус."),
+            (-1, "before.1", "trial",
+             "Trial заканчивается завтра",
+             "Последний день пробного периода. Откройте тарифы и продолжите защиту."),
+            (0, "expired.0", "trial_expired",
+             "Пробный период закончился",
+             "Оформите подписку, чтобы семья снова была под защитой. Рефка — бонус за друга."),
+            (1, "expired.1", "trial_expired",
+             "Продолжим защиту семьи?",
+             "Один тап до тарифов. Или пригласите друга — бонус по семейной рефке."),
+            (3, "expired.3", "trial_expired",
+             "ALADDIN ждёт вас",
+             "Когда будете готовы — тарифы или приглашение друга. Без спешки, но с заботой о семье."),
+        ]
+
+        for (offset, suffix, type, title, body) in windows {
+            guard let day = Calendar.current.date(byAdding: .day, value: offset, to: endDay) else { continue }
+            let fire = Self.dojimFireDate(on: day, fallbackInstant: trialEndDate, offsetDays: offset)
+            scheduleDojimCalendarNotification(
+                identifier: "dojim.trial.\(suffix)",
+                fireDate: fire,
+                title: title,
+                body: body,
+                category: .trial,
+                type: type,
+                extra: [
+                    "days_offset": offset,
+                    "trial_end_date": ISO8601DateFormatter().string(from: trialEndDate),
+                    "source": "trial_dojim_p1",
+                ]
             )
         }
 
-        // За 3 дня
-        let threeDaysBefore = trialEndDate.addingTimeInterval(-3 * 24 * 60 * 60)
-        if threeDaysBefore > Date() {
-            scheduleTrialNotification(
-                date: threeDaysBefore,
-                title: "Trial заканчивается через 3 дня",
-                body: "Осталось всего 3 дня trial периода. Оформите подписку сейчас!",
-                daysUntilExpiry: 3,
-                trialEndDate: trialEndDate
-            )
-        }
-
-        // За 1 день
-        let oneDayBefore = trialEndDate.addingTimeInterval(-24 * 60 * 60)
-        if oneDayBefore > Date() {
-            scheduleTrialNotification(
-                date: oneDayBefore,
-                title: "Trial заканчивается завтра",
-                body: "Последний день trial периода. Оформите Premium подписку!",
-                daysUntilExpiry: 1,
-                trialEndDate: trialEndDate
-            )
-        }
-
-        print("✅ Уведомления trial запланированы: за 7, 3 и 1 день")
+        print("✅ Dojim trial: −7/−3/−1/0/+1/+3 от \(trialEndDate)")
     }
 
-    /**
-     * Отмена запланированных уведомлений о подписке
-     */
+    /// Немедленный баннер «уже истекла» + перепланирование хвоста +1/+3.
+    func sendSubscriptionExpiredBanner(planName: String, endDate: Date) {
+        sendLocalNotification(
+            title: "Подписка закончилась",
+            body: "«\(planName)» больше не активна. Продлите защиту семьи или пригласите друга.",
+            category: .subscription,
+            userInfo: [
+                "type": "subscription_expired",
+                "days_offset": 0,
+                "deepLink": Self.tariffsDeepLink,
+                "source": "subscription_expired_now",
+            ],
+            delay: 0.2
+        )
+        scheduleRenewalNotifications(subscriptionEndDate: endDate)
+    }
+
     func cancelRenewalNotifications() {
+        removePendingDojim(prefix: "dojim.subscription.")
         notificationCenter.getPendingNotificationRequests { requests in
-            let renewalIdentifiers = requests
-                .filter { request in
-                    let userInfo = request.content.userInfo
-                    return userInfo["type"] as? String == "subscription_renewal"
-                }
-                .map { $0.identifier }
-            
-            if !renewalIdentifiers.isEmpty {
-                self.notificationCenter.removePendingNotificationRequests(withIdentifiers: renewalIdentifiers)
-                print("✅ Отменены предыдущие уведомления о подписке: \(renewalIdentifiers.count)")
+            let legacy = requests
+                .filter { ($0.content.userInfo["type"] as? String) == "subscription_renewal" }
+                .map(\.identifier)
+            if !legacy.isEmpty {
+                self.notificationCenter.removePendingNotificationRequests(withIdentifiers: legacy)
             }
         }
     }
 
-    /**
-     * ❌ Отмена запланированных trial уведомлений
-     */
     func cancelTrialNotifications() {
+        removePendingDojim(prefix: "dojim.trial.")
         notificationCenter.getPendingNotificationRequests { requests in
-            let trialIdentifiers = requests
-                .filter { request in
-                    let userInfo = request.content.userInfo
-                    return userInfo["type"] as? String == "trial"
+            let legacy = requests
+                .filter {
+                    let t = $0.content.userInfo["type"] as? String
+                    return t == "trial" || t == "trial_expired"
                 }
-                .map { $0.identifier }
-
-            if !trialIdentifiers.isEmpty {
-                self.notificationCenter.removePendingNotificationRequests(withIdentifiers: trialIdentifiers)
-                print("✅ Отменены предыдущие trial уведомления: \(trialIdentifiers.count)")
+                .map(\.identifier)
+            if !legacy.isEmpty {
+                self.notificationCenter.removePendingNotificationRequests(withIdentifiers: legacy)
             }
         }
     }
 
-    /**
-     * Планирование уведомления о подписке на конкретную дату
-     */
-    private func scheduleSubscriptionNotification(
-        date: Date,
+    private func removePendingDojim(prefix: String) {
+        notificationCenter.getPendingNotificationRequests { requests in
+            let ids = requests.map(\.identifier).filter { $0.hasPrefix(prefix) }
+            if !ids.isEmpty {
+                self.notificationCenter.removePendingNotificationRequests(withIdentifiers: ids)
+                print("🔔 Dojim cancelled prefix=\(prefix) count=\(ids.count)")
+            }
+        }
+    }
+
+    /// 10:00 local; for day 0 if morning passed, use end instant if still future.
+    private static func dojimFireDate(on day: Date, fallbackInstant: Date, offsetDays: Int) -> Date {
+        let morning = Calendar.current.date(bySettingHour: 10, minute: 0, second: 0, of: day) ?? day
+        let now = Date()
+        if morning > now { return morning }
+        if offsetDays == 0, fallbackInstant > now { return fallbackInstant }
+        return morning
+    }
+
+    private func scheduleDojimCalendarNotification(
+        identifier: String,
+        fireDate: Date,
         title: String,
         body: String,
-        daysUntilExpiry: Int,
-        subscriptionEndDate: Date
+        category: NotificationCategory,
+        type: String,
+        extra: [String: Any]
     ) {
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = .default
-        content.categoryIdentifier = NotificationCategory.subscription.rawValue
-        content.userInfo = [
-            "type": "subscription_renewal",
-            "days": daysUntilExpiry,
-            "subscription_end_date": ISO8601DateFormatter().string(from: subscriptionEndDate)
-        ]
-        
-        let dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-        
-        let identifier = "subscription_renewal_\(Int(date.timeIntervalSince1970))"
-        let request = UNNotificationRequest(
+        guard fireDate > Date().addingTimeInterval(30) else { return }
+
+        var userInfo = extra
+        userInfo["type"] = type
+        userInfo["deepLink"] = Self.tariffsDeepLink
+
+        let comps = Calendar.current.dateComponents(
+            [.year, .month, .day, .hour, .minute],
+            from: fireDate
+        )
+        let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
+        scheduleLocalNotification(
             identifier: identifier,
-            content: content,
+            title: title,
+            body: body,
+            category: category,
+            userInfo: userInfo,
             trigger: trigger
         )
-        
-        notificationCenter.add(request) { error in
-            if let error = error {
-                print("❌ Ошибка планирования уведомления о подписке: \(error)")
-            } else {
-                print("✅ Уведомление о подписке запланировано: \(title) на \(date)")
-            }
-        }
     }
 
-    /**
-     * 📅 Schedule single trial notification
-     */
-    private func scheduleTrialNotification(
-        date: Date,
-        title: String,
-        body: String,
-        daysUntilExpiry: Int,
-        trialEndDate: Date
-    ) {
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = .default
-        content.categoryIdentifier = NotificationCategory.trial.rawValue
-        content.userInfo = [
-            "type": "trial",
-            "days": daysUntilExpiry,
-            "trial_end_date": ISO8601DateFormatter().string(from: trialEndDate)
-        ]
-
-        let dateComponents = Calendar.current.dateComponents([.year, .month, .day, .hour, .minute], from: date)
-        let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: false)
-
-        let identifier = "trial_\(Int(date.timeIntervalSince1970))"
-        let request = UNNotificationRequest(
-            identifier: identifier,
-            content: content,
-            trigger: trigger
-        )
-
-        notificationCenter.add(request) { error in
-            if let error = error {
-                print("❌ Ошибка планирования trial уведомления: \(error)")
-            } else {
-                print("✅ Trial уведомление запланировано: \(title) на \(date)")
-            }
-        }
-    }
 }
 
 // MARK: - UNUserNotificationCenterDelegate
@@ -1341,6 +1334,13 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
 
         if let deepLink = userInfo["deepLink"] as? String,
            let url = URL(string: deepLink) {
+            if url.host == "tariffs" || url.absoluteString.hasPrefix(Self.tariffsDeepLink) {
+                NotificationCenter.default.post(
+                    name: NSNotification.Name("NavigateToTariffs"),
+                    object: nil
+                )
+                return
+            }
             if AntifakeDeepLinkRouter.isPostCallCheckDeepLink(url) {
                 NotificationCenter.default.post(
                     name: NSNotification.Name("NavigateToAntifakePostCallCheck"),

@@ -192,14 +192,11 @@ private let logger = MasterLogger.shared
      * Отправить немедленное уведомление об истечении подписки
      */
     private func sendExpirationNotification(for subscription: SubscriptionStatus) {
-        logger.business("🚨 Sending immediate expiration notification")
+        logger.business("🚨 Sending immediate expiration notification + dojim tail")
 
-        // Отправляем локальное уведомление об истечении подписки
-        notificationManager.sendLocalNotification(
-            title: "Подписка истекла",
-            body: "Ваша подписка \(subscription.level.displayName) истекла",
-            category: .subscription,
-            userInfo: ["type": "subscription_expired"]
+        notificationManager.sendSubscriptionExpiredBanner(
+            planName: subscription.level.displayName,
+            endDate: subscription.expiresAt ?? Date()
         )
     }
 

@@ -14,7 +14,10 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
     case upgradeSuccess
     case subscriptionRenewal
     case trial
+    case trialExpired
     case subscriptionExpired
+    case subscriptionExpiredD1
+    case subscriptionExpiredD3
     case referralGrant
     case windDown
     case familyHabitReminder
@@ -51,19 +54,22 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
         case .upgradeSuccess: return 8
         case .subscriptionRenewal: return 9
         case .trial: return 10
-        case .subscriptionExpired: return 11
-        case .referralGrant: return 12
-        case .windDown: return 13
-        case .familyHabitReminder: return 14
-        case .familyHabitDuePing: return 15
-        case .mnemoReview: return 16
-        case .antifakePostCall: return 17
-        case .iotCompromised: return 18
-        case .antivirusScanComplete: return 19
-        case .antivirusScanFailed: return 20
-        case .downloadedFileThreat: return 21
-        case .crashDetection: return 22
-        case .softTest: return 23
+        case .trialExpired: return 11
+        case .subscriptionExpired: return 12
+        case .subscriptionExpiredD1: return 13
+        case .subscriptionExpiredD3: return 14
+        case .referralGrant: return 15
+        case .windDown: return 16
+        case .familyHabitReminder: return 17
+        case .familyHabitDuePing: return 18
+        case .mnemoReview: return 19
+        case .antifakePostCall: return 20
+        case .iotCompromised: return 21
+        case .antivirusScanComplete: return 22
+        case .antivirusScanFailed: return 23
+        case .downloadedFileThreat: return 24
+        case .crashDetection: return 25
+        case .softTest: return 26
         }
     }
 
@@ -78,9 +84,12 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
         case .familyChat: return "Семейный чат"
         case .aiMessage: return "AI сообщение"
         case .upgradeSuccess: return "Подписка активирована"
-        case .subscriptionRenewal: return "Продление подписки"
-        case .trial: return "Trial reminder"
-        case .subscriptionExpired: return "Подписка истекла"
+        case .subscriptionRenewal: return "Продление подписки (−3/−1)"
+        case .trial: return "Trial reminder (−7/−3/−1)"
+        case .trialExpired: return "Trial истёк (дожим 0/+1/+3)"
+        case .subscriptionExpired: return "Подписка истекла (день 0)"
+        case .subscriptionExpiredD1: return "Подписка — дожим D+1"
+        case .subscriptionExpiredD3: return "Подписка — дожим D+3"
         case .referralGrant: return "Рефка — дни защиты"
         case .windDown: return "Спокойный вечер"
         case .familyHabitReminder: return "Семейная привычка"
@@ -108,7 +117,10 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
         case .upgradeSuccess: return "upgrade_success"
         case .subscriptionRenewal: return "subscription_renewal"
         case .trial: return "trial"
+        case .trialExpired: return "trial_expired"
         case .subscriptionExpired: return "subscription_expired"
+        case .subscriptionExpiredD1: return "subscription_expired"
+        case .subscriptionExpiredD3: return "subscription_expired"
         case .referralGrant: return "family_referral_a_grant"
         case .windDown: return WindDownScheduler.notificationType
         case .familyHabitReminder: return "family_habit_reminder"
@@ -132,15 +144,15 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
             return .family
         case .aiMessage:
             return .ai
-        case .subscriptionRenewal:
+        case .subscriptionRenewal, .subscriptionExpired, .subscriptionExpiredD1, .subscriptionExpiredD3:
             return .subscription
-        case .trial:
+        case .trial, .trialExpired:
             return .trial
         case .mnemoReview:
             return .mnemo
         case .familyHabitReminder, .familyHabitDuePing:
             return .familyHabit
-        case .softTest, .upgradeSuccess, .subscriptionExpired, .referralGrant,
+        case .softTest, .upgradeSuccess, .referralGrant,
              .windDown, .antifakePostCall, .crashDetection:
             return .general
         }
@@ -179,6 +191,25 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
         }
         if self == .antivirusScanFailed || self == .antivirusScanComplete {
             info["threats_found"] = self == .antivirusScanComplete ? 1 : 0
+        }
+        if self == .trialExpired {
+            info["days_offset"] = 0
+            info["deepLink"] = NotificationManager.tariffsDeepLink
+        }
+        if self == .subscriptionExpired {
+            info["days_offset"] = 0
+            info["deepLink"] = NotificationManager.tariffsDeepLink
+        }
+        if self == .subscriptionExpiredD1 {
+            info["days_offset"] = 1
+            info["deepLink"] = NotificationManager.tariffsDeepLink
+        }
+        if self == .subscriptionExpiredD3 {
+            info["days_offset"] = 3
+            info["deepLink"] = NotificationManager.tariffsDeepLink
+        }
+        if self == .subscriptionRenewal || self == .trial {
+            info["deepLink"] = NotificationManager.tariffsDeepLink
         }
 
         nm.sendLocalNotification(

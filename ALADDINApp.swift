@@ -533,6 +533,9 @@ struct ALADDINApp: App {
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToFamily"))) { _ in
                     navigationManager.navigateTo(.family)
                 }
+                .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToTariffs"))) { _ in
+                    navigationManager.navigateTo(.tariffs)
+                }
         }
     }
 
