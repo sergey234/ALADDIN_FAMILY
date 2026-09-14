@@ -15,6 +15,20 @@ final class WindDownScheduler {
         "wellness.wind_down.\(minutesBefore)m"
     }
 
+    func requestAuthorizationIfNeeded() async -> Bool {
+        let settings = await center.notificationSettings()
+        switch settings.authorizationStatus {
+        case .authorized, .provisional, .ephemeral:
+            return true
+        case .denied:
+            return false
+        case .notDetermined:
+            return (try? await center.requestAuthorization(options: [.alert, .sound, .badge])) ?? false
+        @unknown default:
+            return false
+        }
+    }
+
     func reschedule() async {
         let ids = [30, 15, 5].map { identifier(minutesBefore: $0) }
         center.removePendingNotificationRequests(withIdentifiers: ids)
@@ -29,12 +43,12 @@ final class WindDownScheduler {
         }
 
         let bedtime = WellnessSessionStore.windDownBedtime
-        var components = DateComponents()
-        components.hour = bedtime.hour
-        components.minute = bedtime.minute
-
         for minutes in [30, 15, 5] {
-            guard let fireDate = nextFireDate(bedtime: components, minutesBefore: minutes) else { continue }
+            let lead = LocalDailyReminderMath.leadTime(
+                bedtimeHour: bedtime.hour,
+                bedtimeMinute: bedtime.minute,
+                minutesBefore: minutes
+            )
             let content = UNMutableNotificationContent()
             content.title = localization.localized("wind_down_push_title")
             content.body = localization.localized("wind_down_push_body_\(minutes)")
@@ -45,11 +59,10 @@ final class WindDownScheduler {
                 "deepLink": minutes == 30 ? "aladdin://voice/day-recap" : "aladdin://wellness/wind-down",
             ]
 
-            let triggerComponents = Calendar.current.dateComponents(
-                [.year, .month, .day, .hour, .minute],
-                from: fireDate
-            )
-            let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComponents, repeats: false)
+            var triggerComponents = DateComponents()
+            triggerComponents.hour = lead.hour
+            triggerComponents.minute = lead.minute
+            let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComponents, repeats: true)
             let request = UNNotificationRequest(
                 identifier: identifier(minutesBefore: minutes),
                 content: content,
@@ -59,13 +72,35 @@ final class WindDownScheduler {
         }
     }
 
-    private func nextFireDate(bedtime: DateComponents, minutesBefore: Int) -> Date? {
-        let cal = Calendar.current
-        guard let tonight = cal.nextDate(
-            after: Date(),
-            matching: bedtime,
-            matchingPolicy: .nextTime
-        ) else { return nil }
-        return cal.date(byAdding: .minute, value: -minutesBefore, to: tonight)
+    func nextVisibleFire(now: Date = Date()) -> Date? {
+        guard WellnessSessionStore.windDownEnabled else { return nil }
+        let bedtime = WellnessSessionStore.windDownBedtime
+        let lead = LocalDailyReminderMath.leadTime(
+            bedtimeHour: bedtime.hour,
+            bedtimeMinute: bedtime.minute,
+            minutesBefore: 30
+        )
+        return LocalDailyReminderMath.nextFire(hour: lead.hour, minute: lead.minute, now: now)
+    }
+
+    /// Immediate local smoke — does not change the bedtime schedule.
+    func fireTestNotification() async {
+        let content = UNMutableNotificationContent()
+        content.title = localization.localized("wind_down_push_title")
+        content.body = localization.localized("wellness_wind_down_test_push_body")
+        content.sound = .default
+        content.userInfo = [
+            "type": Self.notificationType,
+            "minutes_before": 0,
+            "deepLink": "aladdin://wellness/wind-down",
+            "source": "wind_down_test",
+        ]
+        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
+        let request = UNNotificationRequest(
+            identifier: "wellness.wind_down.test",
+            content: content,
+            trigger: trigger
+        )
+        try? await center.add(request)
     }
 }

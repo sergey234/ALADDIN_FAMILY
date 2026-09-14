@@ -426,6 +426,20 @@ class NotificationManager: NSObject, ObservableObject {
         )
     }
 
+    /// Soft smoke for parents — general category, no fake threat.
+    func sendSoftTestNotification() {
+        sendLocalNotification(
+            title: LocalizationManager.shared.localized("notification_help_test_title"),
+            body: LocalizationManager.shared.localized("notification_help_test_body"),
+            category: .general,
+            userInfo: [
+                "type": "soft_test",
+                "source": "notification_settings_help"
+            ],
+            delay: 1
+        )
+    }
+
     /// QA smoke scenario: принудительно создаёт тестовую угрозу
     /// для проверки цепочки отображения уведомлений на устройстве.
     func sendQATestThreatNotification() {

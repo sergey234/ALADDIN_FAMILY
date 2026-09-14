@@ -88,7 +88,7 @@ struct NotificationSettingsScreen: View {
                 )
                 
                 // Settings List
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: 20) {
                         // Notification Types
                         notificationTypesSection
@@ -101,6 +101,9 @@ struct NotificationSettingsScreen: View {
                         
                         // Quiet Hours
                         quietHoursSection
+
+                        // Why alerts may not arrive (production)
+                        notificationDeliveryHelpSection
 
 #if DEBUG
                         // QA тест-секция для проверки end-to-end цепочки уведомлений
@@ -432,6 +435,64 @@ struct NotificationSettingsScreen: View {
                     .padding(.top, 8)
                 }
             }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white.opacity(0.1))
+        )
+    }
+
+    // MARK: - Delivery help (why “on but silent”)
+
+    private var notificationDeliveryHelpSection: some View {
+        let checks: [(String, Bool)] = [
+            (localizationManager.localized("notification_help_check_ios"), notificationManager.isAuthorized),
+            (localizationManager.localized("notification_help_check_dnd"), !doNotDisturbMode),
+            (localizationManager.localized("notification_help_check_important"), !importantOnlyMode),
+            (localizationManager.localized("notification_help_check_quiet"), !quietHoursEnabled),
+            (localizationManager.localized("notification_help_check_quiet_mode"), !quietModeEnabled),
+        ]
+
+        return VStack(alignment: .leading, spacing: 12) {
+            Text(localizationManager.localized("notification_help_title"))
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white)
+
+            Text(localizationManager.localized("notification_help_subtitle"))
+                .font(.system(size: 13))
+                .foregroundColor(.white.opacity(0.8))
+                .fixedSize(horizontal: false, vertical: true)
+
+            ForEach(Array(checks.enumerated()), id: \.offset) { _, item in
+                HStack(spacing: 8) {
+                    Image(systemName: item.1 ? "checkmark.circle.fill" : "exclamationmark.circle.fill")
+                        .foregroundColor(item.1 ? .green : .orange)
+                    Text(item.0)
+                        .font(.system(size: 14))
+                        .foregroundColor(.white)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+
+            Button {
+                notificationManager.sendSoftTestNotification()
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "bell.badge")
+                    Text(localizationManager.localized("notification_help_test_button"))
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.blue.opacity(0.65))
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("notification_help_test_button")
         }
         .padding(20)
         .background(

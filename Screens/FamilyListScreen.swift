@@ -26,12 +26,13 @@ struct FamilyListScreen: View {
                                 localizationManager.localized("family_list_placeholder"),
                                 text: $draftText
                             )
-                            .textFieldStyle(.roundedBorder)
+                            .wellnessReadableInput()
                             Button {
                                 addItem()
                             } label: {
                                 Image(systemName: "plus.circle.fill")
                                     .font(.title2)
+                                    .foregroundColor(.white)
                             }
                             .disabled(draftText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
                             .accessibilityIdentifier("family_list_add")
@@ -58,7 +59,6 @@ struct FamilyListScreen: View {
                 }
             }
         }
-        .foregroundColor(.white)
         .navigationBarHidden(true)
         .onAppear {
             items = FamilyListStore.loadLocal()
@@ -75,17 +75,21 @@ struct FamilyListScreen: View {
             } label: {
                 Image(systemName: "chevron.left")
                     .font(.body.weight(.semibold))
+                    .foregroundColor(.white)
             }
             Text(localizationManager.localized("family_list_title"))
                 .font(.headline.bold())
+                .foregroundColor(.white)
             Spacer()
             if isSyncing {
                 ProgressView()
+                    .tint(.white)
             } else {
                 Button {
                     Task { await pushToServer() }
                 } label: {
                     Image(systemName: "arrow.triangle.2.circlepath")
+                        .foregroundColor(.white)
                 }
                 .accessibilityLabel(localizationManager.localized("family_list_sync"))
             }

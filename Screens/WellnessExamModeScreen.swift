@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// fws-14 — exam date → countdown → breathing + one-thing CTA.
 struct WellnessExamModeScreen: View {
@@ -16,7 +17,7 @@ struct WellnessExamModeScreen: View {
     var body: some View {
         ZStack {
             StormMeshBackground(variant: .warm)
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 16) {
                     header
                     Text(localizationManager.localized("wellness_exam_subtitle"))
@@ -31,19 +32,20 @@ struct WellnessExamModeScreen: View {
                     )
                     .datePickerStyle(.graphical)
                     .tint(Color(hex: "8B5CF6"))
+                    .colorScheme(.dark)
 
                     TextField(
                         localizationManager.localized("wellness_exam_title_placeholder"),
                         text: $title
                     )
-                    .padding(12)
-                    .stormGlassCard(cornerRadius: 12)
+                    .wellnessReadableInput()
 
                     Toggle(
                         localizationManager.localized("wellness_exam_parent_digest"),
                         isOn: $parentDigest
                     )
                     .toggleStyle(SwitchToggleStyle(tint: Color(hex: "8B5CF6")))
+                    .foregroundColor(.white)
 
                     Button {
                         Task { await savePlan() }
@@ -56,6 +58,12 @@ struct WellnessExamModeScreen: View {
                     .tint(Color(hex: "8B5CF6"))
                     .disabled(isSaving)
 
+                    if isLoading && plan == nil {
+                        ProgressView()
+                            .tint(.white)
+                            .frame(maxWidth: .infinity)
+                    }
+
                     if let plan {
                         countdownCard(plan)
                         actionButtons(plan)
@@ -66,8 +74,19 @@ struct WellnessExamModeScreen: View {
                 }
                 .padding()
             }
+            .aladdinChatKeyboardDismiss()
+            .aladdinKeyboardDoneToolbar(
+                title: localizationManager.localized("companion_conversation_done"),
+                action: {
+                    UIApplication.shared.sendAction(
+                        #selector(UIResponder.resignFirstResponder),
+                        to: nil,
+                        from: nil,
+                        for: nil
+                    )
+                }
+            )
         }
-        .foregroundColor(.white)
         .navigationBarHidden(true)
         .accessibilityIdentifier("wellness_exam_mode_screen")
         .task { await loadPlan() }
@@ -76,10 +95,13 @@ struct WellnessExamModeScreen: View {
     private var header: some View {
         HStack {
             Button { navigationManager.wellnessGoBack() } label: {
-                Image(systemName: "chevron.left").font(.body.weight(.semibold))
+                Image(systemName: "chevron.left")
+                    .font(.body.weight(.semibold))
+                    .foregroundColor(.white)
             }
             Text(localizationManager.localized("wellness_exam_title"))
                 .font(.headline.bold())
+                .foregroundColor(.white)
             Spacer()
         }
     }
@@ -89,9 +111,11 @@ struct WellnessExamModeScreen: View {
         VStack(alignment: .leading, spacing: 8) {
             Text(localizationManager.localized("wellness_exam_countdown_title"))
                 .font(.subheadline.bold())
+                .foregroundColor(.white)
             if let seconds = plan.secondsUntil {
                 Text(formatCountdown(seconds))
                     .font(.title2.monospacedDigit().bold())
+                    .foregroundColor(.white)
             }
             if let phase = plan.phase {
                 Text(localizationManager.localized("wellness_exam_phase_\(phase)"))
@@ -148,20 +172,22 @@ struct WellnessExamModeScreen: View {
     private func loadPlan() async {
         isLoading = true
         defer { isLoading = false }
+        if let local = WellnessExamLocalStore.load() {
+            apply(plan: local)
+        }
         do {
             let response = try await WellnessAPIService.shared.fetchExamPlan()
-            plan = response.plan
-            if let iso = response.plan?.examAt {
-                let f = ISO8601DateFormatter()
-                f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
-                if let d = f.date(from: iso) ?? ISO8601DateFormatter().date(from: iso) {
-                    examDate = d
-                }
+            if let remote = response.plan {
+                apply(plan: remote)
+                WellnessExamLocalStore.save(remote)
             }
-            title = response.plan?.title ?? ""
-            parentDigest = response.plan?.parentDigest ?? false
+            errorText = nil
         } catch {
-            errorText = localizationManager.localized("wellness_exam_load_failed")
+            if plan == nil {
+                errorText = localizationManager.localized("wellness_exam_load_failed")
+            } else {
+                errorText = localizationManager.localized("wellness_exam_offline_saved")
+            }
         }
     }
 
@@ -171,16 +197,84 @@ struct WellnessExamModeScreen: View {
         errorText = nil
         defer { isSaving = false }
         let iso = ISO8601DateFormatter().string(from: examDate)
+        let localPlan = WellnessExamLocalStore.makePlan(
+            examAt: iso,
+            title: title.isEmpty ? nil : title,
+            parentDigest: parentDigest,
+            examDate: examDate
+        )
         do {
             let response = try await WellnessAPIService.shared.saveExamPlan(
                 examAt: iso,
                 title: title.isEmpty ? nil : title,
                 parentDigest: parentDigest
             )
-            plan = response.plan
+            plan = response.plan ?? localPlan
+            WellnessExamLocalStore.save(plan ?? localPlan)
             HapticFeedback.notification(.success)
         } catch {
-            errorText = localizationManager.localized("wellness_exam_save_failed")
+            plan = localPlan
+            WellnessExamLocalStore.save(localPlan)
+            errorText = localizationManager.localized("wellness_exam_offline_saved")
+            HapticFeedback.notification(.success)
         }
+    }
+
+    private func apply(plan remote: WellnessExamPlanDTO) {
+        plan = remote
+        if let iso = remote.examAt {
+            let f = ISO8601DateFormatter()
+            f.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+            if let d = f.date(from: iso) ?? ISO8601DateFormatter().date(from: iso) {
+                examDate = d
+            }
+        }
+        title = remote.title ?? ""
+        parentDigest = remote.parentDigest ?? false
+    }
+}
+
+// MARK: - Offline exam plan (P0 E)
+
+private enum WellnessExamLocalStore {
+    private static let key = "wellness_exam_plan_offline_v1"
+
+    static func load() -> WellnessExamPlanDTO? {
+        guard let data = UserDefaults.standard.data(forKey: key) else { return nil }
+        return try? JSONDecoder().decode(WellnessExamPlanDTO.self, from: data)
+    }
+
+    static func save(_ plan: WellnessExamPlanDTO) {
+        guard let data = try? JSONEncoder().encode(plan) else { return }
+        UserDefaults.standard.set(data, forKey: key)
+    }
+
+    static func makePlan(
+        examAt: String,
+        title: String?,
+        parentDigest: Bool,
+        examDate: Date,
+        now: Date = Date()
+    ) -> WellnessExamPlanDTO {
+        let seconds = max(0, Int(examDate.timeIntervalSince(now)))
+        let phase: String
+        if seconds <= 0 {
+            phase = "past"
+        } else if seconds <= 5 * 60 {
+            phase = "final_5min"
+        } else if seconds <= 24 * 3600 {
+            phase = "day_before"
+        } else {
+            phase = "scheduled"
+        }
+        return WellnessExamPlanDTO(
+            examAt: examAt,
+            title: title,
+            parentDigest: parentDigest,
+            secondsUntil: seconds,
+            phase: phase,
+            suggestBreathing: true,
+            suggestOneThing: true
+        )
     }
 }
