@@ -29,10 +29,59 @@ final class FamilyHabitRemindersService: ObservableObject {
         }
     }
 
+    struct LocalSaveOutcome {
+        var notificationsGranted: Bool
+        var queuedForServer: Bool
+        var needsManualRetry: Bool
+        var nextFire: Date?
+    }
+
+    /// Local cache + daily push first. Server is queued if the request fails.
+    func saveLocalThenSync(
+        config newConfig: FamilyHabitRemindersConfig,
+        members: [FamilyMemberData]
+    ) async -> LocalSaveOutcome {
+        config = newConfig
+        saveCache()
+        let granted = await FamilyHabitRemindersScheduler.shared.requestAuthorizationIfNeeded()
+        await FamilyHabitRemindersScheduler.shared.reschedule(config: config, members: members)
+        let nextFire = earliestNextFire(config: config)
+        do {
+            try await pushServerOnly(config: config)
+            await syncWellnessHabitsIfOnline(config: config)
+            return LocalSaveOutcome(
+                notificationsGranted: granted,
+                queuedForServer: false,
+                needsManualRetry: false,
+                nextFire: nextFire
+            )
+        } catch {
+            if AladdinOutboundErrorPolicy.shouldEnqueue(error) {
+                await AladdinOutboundQueue.shared.enqueueHabitConfig(config)
+                return LocalSaveOutcome(
+                    notificationsGranted: granted,
+                    queuedForServer: true,
+                    needsManualRetry: false,
+                    nextFire: nextFire
+                )
+            }
+            return LocalSaveOutcome(
+                notificationsGranted: granted,
+                queuedForServer: false,
+                needsManualRetry: true,
+                nextFire: nextFire
+            )
+        }
+    }
+
     func save(
         config newConfig: FamilyHabitRemindersConfig,
         members: [FamilyMemberData]
     ) async throws {
+        _ = await saveLocalThenSync(config: newConfig, members: members)
+    }
+
+    func pushServerOnly(config newConfig: FamilyHabitRemindersConfig) async throws {
         struct Body: Codable {
             let presets: [String: FamilyHabitPresetSchedule]
             let memberIds: [String]
@@ -52,12 +101,25 @@ final class FamilyHabitRemindersService: ObservableObject {
             config = payload.config
             isConfiguredOnServer = payload.configured
             saveCache()
-            await syncWellnessHabitsIfOnline(config: config)
-            _ = await FamilyHabitRemindersScheduler.shared.requestAuthorizationIfNeeded()
-            await FamilyHabitRemindersScheduler.shared.reschedule(config: config, members: members)
         case .failure(let error):
             throw error
         }
+    }
+
+    func earliestNextFire(config: FamilyHabitRemindersConfig, now: Date = Date()) -> Date? {
+        var dates: [Date] = []
+        for preset in FamilyHabitPresetId.allCases {
+            let schedule = config.schedule(for: preset)
+            guard schedule.enabled else { continue }
+            if preset == .water {
+                for slot in schedule.waterNotificationSlots() {
+                    dates.append(LocalDailyReminderMath.nextFire(hour: slot.hour, minute: slot.minute, now: now))
+                }
+            } else {
+                dates.append(LocalDailyReminderMath.nextFire(hour: schedule.hour, minute: schedule.minute, now: now))
+            }
+        }
+        return dates.min()
     }
 
     private func syncWellnessHabitsIfOnline(config: FamilyHabitRemindersConfig) async {

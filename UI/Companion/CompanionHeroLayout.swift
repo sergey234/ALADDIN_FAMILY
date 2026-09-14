@@ -125,15 +125,19 @@ enum CompanionHeroLayout {
         max(reference / minFaceShortSidePt, 1)
     }
 
-    /// Приоритет: immersive > focused > standard
+    /// Приоритет: text focus (клавиатура) > immersive voice > focused > standard.
+    /// Пока человек печатает, герой не держим на 56–88% (ux-co-c3).
     static func resolvePresence(
         messagesEmpty: Bool,
         isVoiceActive: Bool,
         userPinnedChrome: Bool,
         immersiveEnabled: Bool,
-        pinMode: CompanionSettings.HeroPresencePinMode = .auto
+        pinMode: CompanionSettings.HeroPresencePinMode = .auto,
+        isTextInputFocused: Bool = false
     ) -> ConversationPresence {
         guard immersiveEnabled else { return .standard }
+        if isTextInputFocused { return .focused }
+        if isVoiceActive { return .immersive }
         if userPinnedChrome, !isVoiceActive {
             switch pinMode {
             case .alwaysStandard:
@@ -142,7 +146,6 @@ enum CompanionHeroLayout {
                 return messagesEmpty ? .standard : .focused
             }
         }
-        if isVoiceActive { return .immersive }
         switch pinMode {
         case .alwaysFocused:
             return .focused
