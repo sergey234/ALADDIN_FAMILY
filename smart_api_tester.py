@@ -168,8 +168,9 @@ NOTIFICATIONS_OPS = [
      {200, 401, 403, 404}, "mark-read missing id → 404 OK"),
     ("GET", "/api/notifications/categories", None, None, {200, 401, 403, 404}, "categories V2"),
     ("GET", "/api/notifications/stats", None, None, {200, 401, 403, 404}, "stats V2"),
-    ("GET", "/api/settings/notifications", None, None, {200, 401, 403, 404}, "app settings get"),
-    ("POST", "/api/settings/notifications/update", None, {},
+    ("GET", "/api/settings/notifications", {"userId": DEVICE_ID}, None,
+     {200, 401, 403, 404, 422}, "app settings get"),
+    ("POST", "/api/settings/notifications/update", None, {"userId": DEVICE_ID},
      {200, 401, 403, 404, 422}, "app settings update"),
 ]
 
