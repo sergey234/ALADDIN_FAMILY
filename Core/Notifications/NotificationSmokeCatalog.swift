@@ -1,0 +1,189 @@
+import Foundation
+import UserNotifications
+
+/// Canonical catalog of product notification kinds + one-tap smoke (same path as soft-test / QA threat).
+enum NotificationSmokeKind: String, CaseIterable, Identifiable {
+    case softTest
+    case threatBlocked
+    case threatDetected
+    case suspiciousActivity
+    case bypassAttempt
+    case networkProtectionConnected
+    case familyMemberAdded
+    case familyChat
+    case aiMessage
+    case upgradeSuccess
+    case subscriptionRenewal
+    case trial
+    case subscriptionExpired
+    case referralGrant
+    case windDown
+    case familyHabitReminder
+    case familyHabitDuePing
+    case mnemoReview
+    case antifakePostCall
+    case iotCompromised
+    case antivirusScanComplete
+    case crashDetection
+
+    var id: String { rawValue }
+
+    var number: Int {
+        switch self {
+        case .softTest: return 21
+        case .threatBlocked: return 1
+        case .threatDetected: return 2
+        case .suspiciousActivity: return 3
+        case .bypassAttempt: return 4
+        case .networkProtectionConnected: return 5
+        case .familyMemberAdded: return 6
+        case .familyChat: return 7
+        case .aiMessage: return 8
+        case .upgradeSuccess: return 9
+        case .subscriptionRenewal: return 10
+        case .trial: return 11
+        case .subscriptionExpired: return 12
+        case .referralGrant: return 13
+        case .windDown: return 14
+        case .familyHabitReminder: return 15
+        case .familyHabitDuePing: return 15
+        case .mnemoReview: return 16
+        case .antifakePostCall: return 17
+        case .iotCompromised: return 18
+        case .antivirusScanComplete: return 19
+        case .crashDetection: return 20
+        }
+    }
+
+    var titleRU: String {
+        switch self {
+        case .softTest: return "Soft-test (диагностика)"
+        case .threatBlocked: return "Угроза заблокирована"
+        case .threatDetected: return "Угроза обнаружена"
+        case .suspiciousActivity: return "Подозрительная активность"
+        case .bypassAttempt: return "Попытка обхода"
+        case .networkProtectionConnected: return "Защита сети подключена"
+        case .familyMemberAdded: return "Новый член семьи"
+        case .familyChat: return "Семейный чат"
+        case .aiMessage: return "AI сообщение"
+        case .upgradeSuccess: return "Подписка активирована"
+        case .subscriptionRenewal: return "Продление подписки"
+        case .trial: return "Trial reminder"
+        case .subscriptionExpired: return "Подписка истекла"
+        case .referralGrant: return "Рефка — дни защиты"
+        case .windDown: return "Спокойный вечер"
+        case .familyHabitReminder: return "Семейная привычка"
+        case .familyHabitDuePing: return "Привычка — due ping"
+        case .mnemoReview: return "Мнемоника SRS"
+        case .antifakePostCall: return "Antifake после звонка"
+        case .iotCompromised: return "IoT compromised"
+        case .antivirusScanComplete: return "Антивирус: скан"
+        case .crashDetection: return "Crash detection"
+        }
+    }
+
+    var typeKey: String {
+        switch self {
+        case .softTest: return "soft_test"
+        case .threatBlocked: return "threat_blocked"
+        case .threatDetected: return "threat_detected"
+        case .suspiciousActivity: return "suspicious_activity"
+        case .bypassAttempt: return "bypass_attempt"
+        case .networkProtectionConnected: return "network_protection_connected"
+        case .familyMemberAdded: return "family_member_added"
+        case .familyChat: return "family_chat"
+        case .aiMessage: return "ai_message"
+        case .upgradeSuccess: return "upgrade_success"
+        case .subscriptionRenewal: return "subscription_renewal"
+        case .trial: return "trial"
+        case .subscriptionExpired: return "subscription_expired"
+        case .referralGrant: return "family_referral_a_grant"
+        case .windDown: return WindDownScheduler.notificationType
+        case .familyHabitReminder: return "family_habit_reminder"
+        case .familyHabitDuePing: return "family_habit_due_ping"
+        case .mnemoReview: return MnemonicNotificationScheduler.userInfoType
+        case .antifakePostCall: return "antifake_post_call"
+        case .iotCompromised: return "iot_device_compromised"
+        case .antivirusScanComplete: return "antivirus_scan_complete"
+        case .crashDetection: return "crash_detection"
+        }
+    }
+
+    var category: NotificationCategory {
+        switch self {
+        case .threatBlocked, .threatDetected, .suspiciousActivity, .bypassAttempt, .iotCompromised, .antivirusScanComplete:
+            return .security
+        case .networkProtectionConnected:
+            return .networkProtection
+        case .familyMemberAdded, .familyChat:
+            return .family
+        case .aiMessage:
+            return .ai
+        case .subscriptionRenewal:
+            return .subscription
+        case .trial:
+            return .trial
+        case .mnemoReview:
+            return .mnemo
+        case .familyHabitReminder, .familyHabitDuePing:
+            return .familyHabit
+        case .softTest, .upgradeSuccess, .subscriptionExpired, .referralGrant, .windDown, .antifakePostCall, .crashDetection:
+            return .general
+        }
+    }
+
+    /// Fires through NotificationManager (safe delay) — same reliability path as soft-test.
+    @MainActor
+    func fireSmoke() {
+        let nm = NotificationManager.shared
+        let title = "🧪 \(number). \(titleRU)"
+        let body = "Smoke #\(number) type=\(typeKey) — цепочка local OK"
+        var info: [String: Any] = [
+            "type": typeKey,
+            "source": "notification_smoke_matrix",
+            "priority": "high",
+            "correlation_id": "smoke-\(rawValue)-\(UUID().uuidString)",
+        ]
+        if self == .windDown {
+            info["deepLink"] = "aladdin://wellness/wind-down"
+        }
+        if self == .antifakePostCall {
+            info["deepLink"] = "aladdin://antifake/call-check"
+        }
+        if self == .familyHabitReminder || self == .familyHabitDuePing {
+            info["preset"] = "water"
+        }
+        if self == .mnemoReview {
+            info["category"] = "games"
+            info["dueCount"] = 1
+        }
+        if self == .referralGrant {
+            info["days"] = 7
+        }
+
+        nm.sendLocalNotification(
+            title: title,
+            body: body,
+            category: category,
+            userInfo: info,
+            delay: 0.2
+        )
+    }
+
+    @MainActor
+    static func fireAllSequentially(gapSeconds: Double = 2.5) {
+        NotificationManager.shared.resetNotificationFrequencyHistory()
+        // Ensure rate-limit toggle cannot clip the run even if UI was stale.
+        var settings = NotificationManager.shared.notificationSettings
+        settings.maxNotificationsPerHour = nil
+        NotificationManager.shared.updateNotificationSettings(settings)
+
+        print("🔔 Smoke fire-all: \(allCases.count) kinds, gap=\(gapSeconds)s")
+        for (index, kind) in allCases.enumerated() {
+            let delay = gapSeconds * Double(index)
+            DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
+                kind.fireSmoke()
+            }
+        }
+    }
+}

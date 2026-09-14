@@ -278,6 +278,43 @@ struct SettingsScreen: View {
                     subtitle: viewModel.localizedStrings.soundNotificationsSubtitle,
                     isEnabled: $viewModel.soundEnabled
                 )
+
+                Divider()
+
+                appNavigationRow(
+                    icon: "bell.badge.fill",
+                    title: localizationManager.localized("settings_notification_details_title"),
+                    subtitle: localizationManager.localized("settings_notification_details_subtitle")
+                ) {
+                    logger.buttonTap("Open Notification Settings", screen: "Settings")
+                    navigationManager.navigateToNotificationSettings()
+                }
+
+                Divider()
+
+                Button {
+                    logger.buttonTap("Send soft test notification", screen: "Settings")
+                    NotificationManager.shared.sendSoftTestNotification()
+                } label: {
+                    HStack(spacing: Spacing.m) {
+                        Image(systemName: "paperplane.fill")
+                            .foregroundColor(.secondaryGold)
+                            .frame(width: 24)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(localizationManager.localized("notification_help_test_button"))
+                                .font(.body.weight(.semibold))
+                                .foregroundColor(.textPrimary)
+                            Text(localizationManager.localized("settings_notification_test_hint"))
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                        }
+                        Spacer()
+                    }
+                    .padding(.vertical, Spacing.s)
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("settings_notification_soft_test")
             }
             .stormGlassCard(cornerRadius: 12)
         }

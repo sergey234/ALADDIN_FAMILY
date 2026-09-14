@@ -46,6 +46,7 @@ struct NotificationSettingsScreen: View {
         } else {
             UserDefaults.standard.removeObject(forKey: "notification_do_not_disturb_until")
         }
+        syncToNotificationManager()
     }
     
     private func loadDoNotDisturbUntil() {
@@ -90,6 +91,9 @@ struct NotificationSettingsScreen: View {
                 // Settings List
                 ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: 20) {
+                        // First screen: why silent + test (was easy to miss at the bottom)
+                        notificationDeliveryHelpSection
+
                         // Notification Types
                         notificationTypesSection
                         
@@ -102,9 +106,6 @@ struct NotificationSettingsScreen: View {
                         // Quiet Hours
                         quietHoursSection
 
-                        // Why alerts may not arrive (production)
-                        notificationDeliveryHelpSection
-
 #if DEBUG
                         // QA тест-секция для проверки end-to-end цепочки уведомлений
                         qaSmokeSection
@@ -113,9 +114,8 @@ struct NotificationSettingsScreen: View {
                     }
                     .padding(.horizontal, 20)
                     .padding(.top, 20)
+                    .padding(.bottom, 40)
                 }
-                
-                Spacer()
             }
         }
         .onAppear {
@@ -504,13 +504,21 @@ struct NotificationSettingsScreen: View {
 #if DEBUG
     private var qaSmokeSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("QA Smoke")
+            Text("QA Smoke — матрица 22")
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
 
-            Text("Тестовая инъекция угрозы для проверки цепочки уведомлений на реальном устройстве.")
+            Text("Каждый тип идёт тем же путём, что soft-test / QA-угроза (NotificationManager + safe delay). Перед прогоном выключите DND.")
                 .font(.system(size: 13))
                 .foregroundColor(.white.opacity(0.8))
+                .fixedSize(horizontal: false, vertical: true)
+
+            if doNotDisturbMode || importantOnlyMode || highPriorityOnly {
+                Text("Сейчас фильтры ON — часть баннеров может не показаться. Для smoke выключите DND / Important / High priority.")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundColor(.orange)
+                    .fixedSize(horizontal: false, vertical: true)
+            }
 
             Button {
                 notificationManager.sendQATestThreatNotification()
@@ -529,6 +537,45 @@ struct NotificationSettingsScreen: View {
                 )
             }
             .buttonStyle(.plain)
+
+            Button {
+                NotificationSmokeKind.fireAllSequentially(gapSeconds: 2.5)
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "square.stack.3d.up.fill")
+                    Text("Прогнать все 22 типа (по 2.5 сек)")
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 12)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.purple.opacity(0.65))
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("notification_smoke_fire_all")
+
+            ForEach(NotificationSmokeKind.allCases) { kind in
+                Button {
+                    kind.fireSmoke()
+                } label: {
+                    HStack {
+                        Text("#\(kind.number) \(kind.titleRU)")
+                            .font(.system(size: 13, weight: .medium))
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.leading)
+                        Spacer()
+                        Text(kind.typeKey)
+                            .font(.system(size: 10, design: .monospaced))
+                            .foregroundColor(.white.opacity(0.55))
+                    }
+                    .padding(.vertical, 6)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("notification_smoke_\(kind.rawValue)")
+            }
         }
         .padding(20)
         .background(

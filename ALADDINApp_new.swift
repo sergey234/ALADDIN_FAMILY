@@ -435,7 +435,10 @@ struct ALADDINApp: App {
                             .environmentObject(navigationManager)
                             .environmentObject(localizationManager))
                     case .notificationSettings:
-                        AnyView(NotificationSettingsScreen().id("notificationSettings").environmentObject(navigationManager).environmentObject(localizationManager))
+                        AnyView(NotificationSettingsScreen().id("notificationSettings")
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+                            .environmentObject(NotificationManager.shared))
                     case .widgetConfiguration:
                         AnyView(WidgetConfigurationScreen().id("widgetConfiguration").environmentObject(navigationManager).environmentObject(localizationManager))
                     case .mainWithRegistration:

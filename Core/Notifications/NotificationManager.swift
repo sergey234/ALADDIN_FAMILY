@@ -208,6 +208,8 @@ class NotificationManager: NSObject, ObservableObject {
     ) {
         let notificationType = userInfo["type"] as? String ?? ""
         let notificationCenter = UNUserNotificationCenter.current()
+        // iOS requires UNTimeIntervalNotificationTrigger interval > 0 (assert / EXC_BAD_ACCESS at 0).
+        let safeDelay = max(delay, 0.15)
         
         // ✅ Проверяем настройки на main thread асинхронно
         Task { @MainActor in
@@ -215,6 +217,12 @@ class NotificationManager: NSObject, ObservableObject {
             if (notificationType == "bypass" || notificationType == "bypass_attempt")
                 && !NotificationManager.shared.notificationSettings.bypassEnabled {
                 print("🔕 Уведомление о попытке обхода пропущено (отключено в настройках)")
+                return
+            }
+
+            let settings = NotificationManager.shared.notificationSettings
+            if !Self.isCategoryEnabled(category, settings: settings) {
+                print("🔕 Уведомление категории \(category.rawValue) пропущено (выключено в настройках)")
                 return
             }
             
@@ -228,7 +236,7 @@ class NotificationManager: NSObject, ObservableObject {
             // Persist security events locally to survive temporary backend/API failures.
             self.persistSecurityEventIfNeeded(title: title, body: body, category: category, userInfo: userInfo)
             
-            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: delay, repeats: false)
+            let trigger = UNTimeIntervalNotificationTrigger(timeInterval: safeDelay, repeats: false)
             let request = UNNotificationRequest(
                 identifier: UUID().uuidString,
                 content: content,
@@ -242,6 +250,22 @@ class NotificationManager: NSObject, ObservableObject {
                     print("✅ Local notification sent: \(title)")
                 }
             }
+        }
+    }
+
+    /// Category master toggles from Notification Settings.
+    private static func isCategoryEnabled(_ category: NotificationCategory, settings: NotificationSettings) -> Bool {
+        switch category {
+        case .security:
+            return settings.securityEnabled
+        case .family:
+            return settings.familyEnabled
+        case .networkProtection:
+            return settings.networkProtectionEnabled
+        case .ai:
+            return settings.aiEnabled
+        case .general, .subscription, .trial, .mnemo, .familyHabit:
+            return true
         }
     }
 
@@ -897,22 +921,25 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         let notificationType = userInfo["type"] as? String ?? "info"
 
         // Проверяем режим "Не беспокоить"
-        if notificationSettings.doNotDisturbMode {
-            if let until = notificationSettings.doNotDisturbUntil, now < until {
-                return []
-            } else {
+        let isSmoke = Self.isSmokeOrQaUserInfo(userInfo)
+        if notificationSettings.doNotDisturbMode && !isSmoke {
+            if let until = notificationSettings.doNotDisturbUntil {
+                if now < until {
+                    return []
+                }
+                // Until elapsed — clear DND automatically.
                 notificationSettings.doNotDisturbMode = false
                 notificationSettings.doNotDisturbUntil = nil
                 saveSettings()
+            } else {
+                // DND on without until date still mutes banners (UI may omit until).
+                return []
             }
         }
 
         // Проверяем режим "Только важные"
-        if notificationSettings.importantOnlyMode {
-            let isImportant = notificationType == "threat"
-                || notificationType == "warning"
-                || notificationType == "bypass"
-                || notificationType == "bypass_attempt"
+        if notificationSettings.importantOnlyMode && !isSmoke {
+            let isImportant = Self.isImportantNotificationType(notificationType)
             if !isImportant {
                 Task { @MainActor in
                     self.onNotificationReceived?(notification)
@@ -922,7 +949,7 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         }
 
         // Проверяем приоритет
-        if notificationSettings.highPriorityOnly {
+        if notificationSettings.highPriorityOnly && !isSmoke {
             let priorityString = userInfo["priority"] as? String
             let priority = priorityString != nil ? NotificationPriority(from: priorityString!) : NotificationPriority.high
             if priority != .high {
@@ -934,20 +961,27 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         }
 
         // Проверяем частоту уведомлений
-        if let maxPerHour = notificationSettings.maxNotificationsPerHour {
+        // Exact match for “only ~10 banners”: default cap is often 10/hour — smoke must not be clipped.
+        if !isSmoke, let maxPerHour = notificationSettings.maxNotificationsPerHour {
             let notificationsInLastHour = countNotificationsInLastHour()
             if notificationsInLastHour >= maxPerHour {
+                print("🔕 Rate limit: \(notificationsInLastHour)/\(maxPerHour) — banner suppressed for type=\(notificationType)")
                 return []
             }
         }
 
-        recordNotificationSent()
+        if !isSmoke {
+            recordNotificationSent()
+        }
 
-        let isQuietMode = notificationSettings.quietModeEnabled
         let currentHour = Calendar.current.component(.hour, from: now)
         let quietStart = Int(notificationSettings.quietHoursStart.split(separator: ":").first ?? "22") ?? 22
         let quietEnd = Int(notificationSettings.quietHoursEnd.split(separator: ":").first ?? "8") ?? 8
-        let isQuietHours = isQuietMode && (currentHour >= quietStart || currentHour < quietEnd)
+        let inQuietWindow = currentHour >= quietStart || currentHour < quietEnd
+        // Quiet hours toggle OR legacy quiet mode both mute banners in the window.
+        let isQuietHours = !isSmoke
+            && (notificationSettings.quietHoursEnabled || notificationSettings.quietModeEnabled)
+            && inQuietWindow
 
         Task { @MainActor in
             self.onNotificationReceived?(notification)
@@ -957,6 +991,42 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
             return [.badge]
         } else {
             return notificationSettings.soundEnabled ? [.banner, .sound, .badge] : [.banner, .badge]
+        }
+    }
+
+    /// Soft-test / QA / smoke-matrix must always be allowed to present banners.
+    private static func isSmokeOrQaUserInfo(_ userInfo: [AnyHashable: Any]) -> Bool {
+        let source = (userInfo["source"] as? String) ?? ""
+        if source == "notification_smoke_matrix"
+            || source == "notification_settings_help"
+            || source == "qa_forced_scenario"
+            || source == "wind_down_test" {
+            return true
+        }
+        let type = (userInfo["type"] as? String) ?? ""
+        return type == "soft_test"
+    }
+
+    /// Clears hourly frequency counters (call before smoke fire-all).
+    func resetNotificationFrequencyHistory() {
+        notificationHistory.removeAll()
+        print("🔔 Notification frequency history cleared (smoke)")
+    }
+
+    /// Types that still show a banner when «Important only» is on.
+    private static func isImportantNotificationType(_ type: String) -> Bool {
+        switch type {
+        case "threat",
+             "warning",
+             "bypass",
+             "bypass_attempt",
+             "threat_detected",
+             "threat_blocked",
+             "suspicious_activity",
+             "iot_device_compromised":
+            return true
+        default:
+            return false
         }
     }
     
