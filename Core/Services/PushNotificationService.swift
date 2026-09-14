@@ -58,32 +58,11 @@ class PushNotificationService: NSObject, ObservableObject {
     
     func sendChatNotification(message: String, sender: String, familyId: String?) {
         guard isEnabled && isAuthorized else { return }
-        
-        let content = UNMutableNotificationContent()
-        content.title = String(format: LocalizationManager.shared.localized("family_chat_notification_new_message"), sender)
-        content.body = message
-        content.sound = .default
-        content.badge = 1
-        content.userInfo = [
-            "type": "family_chat",
-            "familyId": familyId ?? "",
-            "sender": sender
-        ]
-        
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 0.1, repeats: false)
-        let request = UNNotificationRequest(
-            identifier: UUID().uuidString,
-            content: content,
-            trigger: trigger
+        NotificationManager.shared.sendFamilyChatNotification(
+            message: message,
+            sender: sender,
+            familyId: familyId
         )
-        
-        notificationCenter.add(request) { error in
-            if let error = error {
-                print("❌ PushNotificationService: Ошибка отправки уведомления: \(error.localizedDescription)")
-            } else {
-                print("✅ PushNotificationService: Уведомление отправлено")
-            }
-        }
     }
     
     // MARK: - Settings

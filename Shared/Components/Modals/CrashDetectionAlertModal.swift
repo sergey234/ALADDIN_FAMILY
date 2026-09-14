@@ -217,26 +217,7 @@ struct CrashDetectionAlertModal: View {
     
     /// Отправить уведомление в систему
     private func sendEmergencyNotification() {
-        // Локальное уведомление о краше
-        let content = UNMutableNotificationContent()
-        content.title = "🚨 Авария обнаружена"
-        content.body = "Проверьте ситуацию и при необходимости вызовите экстренные службы"
-        content.sound = .defaultCritical
-        content.categoryIdentifier = "CRASH_DETECTION"
-        
-        let request = UNNotificationRequest(
-            identifier: UUID().uuidString,
-            content: content,
-            trigger: nil
-        )
-        
-        UNUserNotificationCenter.current().add(request) { error in
-            if let error = error {
-                print("❌ CrashDetectionAlertModal: Ошибка отправки уведомления: \(error.localizedDescription)")
-            } else {
-                print("✅ CrashDetectionAlertModal: Уведомление отправлено")
-            }
-        }
+        NotificationManager.shared.sendCrashDetectionNotification()
     }
     
     /// Отправить уведомление конкретному контакту

@@ -85,22 +85,20 @@ final class WindDownScheduler {
 
     /// Immediate local smoke — does not change the bedtime schedule.
     func fireTestNotification() async {
-        let content = UNMutableNotificationContent()
-        content.title = localization.localized("wind_down_push_title")
-        content.body = localization.localized("wellness_wind_down_test_push_body")
-        content.sound = .default
-        content.userInfo = [
-            "type": Self.notificationType,
-            "minutes_before": 0,
-            "deepLink": "aladdin://wellness/wind-down",
-            "source": "wind_down_test",
-        ]
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1, repeats: false)
-        let request = UNNotificationRequest(
-            identifier: "wellness.wind_down.test",
-            content: content,
-            trigger: trigger
-        )
-        try? await center.add(request)
+        await MainActor.run {
+            NotificationManager.shared.sendLocalNotification(
+                title: localization.localized("wind_down_push_title"),
+                body: localization.localized("wellness_wind_down_test_push_body"),
+                category: .general,
+                userInfo: [
+                    "type": Self.notificationType,
+                    "minutes_before": 0,
+                    "deepLink": "aladdin://wellness/wind-down",
+                    "source": "wind_down_test",
+                ],
+                delay: 1,
+                identifier: "wellness.wind_down.test"
+            )
+        }
     }
 }

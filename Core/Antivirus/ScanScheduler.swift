@@ -196,51 +196,17 @@ class ScanScheduler: NSObject, ObservableObject {
     }
 
     private func sendScanCompleteNotification(threatsFound: Int) async {
-        let content = UNMutableNotificationContent()
-        content.title = "Антивирусное сканирование завершено"
-
-        if threatsFound > 0 {
-            content.body = "Обнаружено \(threatsFound) угроз. Требуется внимание!"
-            content.sound = .defaultCritical
-        } else {
-            content.body = "Угроз не обнаружено. Система в безопасности."
-            content.sound = .default
+        await MainActor.run {
+            NotificationManager.shared.sendAntivirusScanCompleteNotification(threatsFound: threatsFound)
         }
-
-        content.badge = threatsFound > 0 ? 1 : 0
-
-        let request = UNNotificationRequest(
-            identifier: "scan_complete_\(Date().timeIntervalSince1970)",
-            content: content,
-            trigger: nil
-        )
-
-        do {
-            try await notificationCenter.add(request)
-            print("[ScanScheduler] 📢 Уведомление о завершении сканирования отправлено")
-        } catch {
-            print("[ScanScheduler] ❌ Ошибка отправки уведомления: \(error.localizedDescription)")
-        }
+        print("[ScanScheduler] 📢 Уведомление о завершении сканирования через NotificationManager")
     }
 
     private func sendScanFailedNotification() async {
-        let content = UNMutableNotificationContent()
-        content.title = "Ошибка антивирусного сканирования"
-        content.body = "Не удалось выполнить сканирование. Проверьте подключение к интернету."
-        content.sound = .default
-
-        let request = UNNotificationRequest(
-            identifier: "scan_failed_\(Date().timeIntervalSince1970)",
-            content: content,
-            trigger: nil
-        )
-
-        do {
-            try await notificationCenter.add(request)
-            print("[ScanScheduler] 📢 Уведомление об ошибке сканирования отправлено")
-        } catch {
-            print("[ScanScheduler] ❌ Ошибка отправки уведомления: \(error.localizedDescription)")
+        await MainActor.run {
+            NotificationManager.shared.sendAntivirusScanFailedNotification()
         }
+        print("[ScanScheduler] 📢 Уведомление об ошибке сканирования через NotificationManager")
     }
 
     // MARK: - File Monitoring
@@ -274,23 +240,16 @@ class ScanScheduler: NSObject, ObservableObject {
     }
 
     private func sendDownloadedFileThreatNotification(fileName: String) async {
-        let content = UNMutableNotificationContent()
-        content.title = "Подозрительный файл обнаружен"
-        content.body = "Файл '\(fileName)' может содержать угрозу. Рекомендуется проверить."
-        content.sound = .default
-
-        let request = UNNotificationRequest(
-            identifier: "downloaded_file_threat_\(Date().timeIntervalSince1970)",
-            content: content,
-            trigger: nil
-        )
-
-        do {
-            try await notificationCenter.add(request)
-            print("[ScanScheduler] 📢 Уведомление о подозрительном файле отправлено")
-        } catch {
-            print("[ScanScheduler] ❌ Ошибка отправки уведомления: \(error.localizedDescription)")
+        await MainActor.run {
+            NotificationManager.shared.sendDownloadedFileThreatNotification(fileName: fileName)
         }
+        print("[ScanScheduler] 📢 Уведомление о подозрительном файле через NotificationManager")
+    }
+
+    /// Product-path local banner without waiting for API scan (QA / real-scenario).
+    @MainActor
+    func fireLocalScanCompleteForQA(threatsFound: Int = 0) {
+        NotificationManager.shared.sendAntivirusScanCompleteNotification(threatsFound: threatsFound)
     }
 }
 

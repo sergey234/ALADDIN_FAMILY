@@ -46,18 +46,7 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
         ) else { return }
 
         UserDefaults.standard.set(true, forKey: AppConfig.UserDefaultsKeys.pendingAntifakePostCallCheck)
-        let content = UNMutableNotificationContent()
-        content.title = LocalizationManager.shared.localized("antifake_post_call_title")
-        content.body = LocalizationManager.shared.localized("antifake_post_call_body")
-        content.sound = .default
-        content.userInfo = ["deepLink": "aladdin://antifake/call-check"]
-        let trigger = UNTimeIntervalNotificationTrigger(timeInterval: 1.5, repeats: false)
-        let request = UNNotificationRequest(
-            identifier: "antifake_post_call_\(UUID().uuidString)",
-            content: content,
-            trigger: trigger
-        )
-        try? await UNUserNotificationCenter.current().add(request)
+        NotificationManager.shared.sendAntifakePostCallNotification()
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: AppConfig.UserDefaultsKeys.antifakePostCallLastPushAt)
     }
 }

@@ -109,6 +109,7 @@ struct NotificationSettingsScreen: View {
 #if DEBUG
                         // QA тест-секция для проверки end-to-end цепочки уведомлений
                         qaSmokeSection
+                        realProductScenariosSection
                         preflightChecklistSection
 #endif
                     }
@@ -576,6 +577,90 @@ struct NotificationSettingsScreen: View {
                 .buttonStyle(.plain)
                 .accessibilityIdentifier("notification_smoke_\(kind.rawValue)")
             }
+        }
+        .padding(20)
+        .background(
+            RoundedRectangle(cornerRadius: 16)
+                .fill(Color.white.opacity(0.1))
+        )
+    }
+
+    private var realProductScenariosSection: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Реальные сценарии (прод-путь)")
+                .font(.system(size: 18, weight: .semibold))
+                .foregroundColor(.white)
+
+            Text("Не smoke-матрица: вызывают те же API, что продукт (WindDown / чат / ScanScheduler → NotificationManager).")
+                .font(.system(size: 13))
+                .foregroundColor(.white.opacity(0.8))
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button {
+                Task {
+                    await WindDownScheduler.shared.fireTestNotification()
+                }
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "moon.zzz.fill")
+                    Text("1. Спокойный вечер — как «Проверить напоминание»")
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.indigo.opacity(0.65))
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("notification_real_wind_down")
+
+            Button {
+                PushNotificationService.shared.sendChatNotification(
+                    message: "Проверка прод-пути семейного чата",
+                    sender: "QA",
+                    familyId: nil
+                )
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "bubble.left.and.bubble.right.fill")
+                    Text("2. Семейный чат → PushNotificationService → NM")
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.teal.opacity(0.65))
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("notification_real_family_chat")
+
+            Button {
+                ScanScheduler.shared.fireLocalScanCompleteForQA(threatsFound: 1)
+            } label: {
+                HStack(spacing: 8) {
+                    Image(systemName: "shield.lefthalf.filled")
+                    Text("3. Антивирус скан (локальный итог) → NM")
+                        .font(.system(size: 14, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .padding(.vertical, 10)
+                .padding(.horizontal, 12)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(
+                    RoundedRectangle(cornerRadius: 10)
+                        .fill(Color.orange.opacity(0.65))
+                )
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("notification_real_scan_complete")
         }
         .padding(20)
         .background(

@@ -204,7 +204,10 @@ class NotificationManager: NSObject, ObservableObject {
         body: String,
         category: NotificationCategory = .general,
         userInfo: [String: Any] = [:],
-        delay: TimeInterval = 0
+        delay: TimeInterval = 0,
+        sound: UNNotificationSound = .default,
+        badge: NSNumber? = nil,
+        identifier: String? = nil
     ) {
         let notificationType = userInfo["type"] as? String ?? ""
         let notificationCenter = UNUserNotificationCenter.current()
@@ -229,16 +232,19 @@ class NotificationManager: NSObject, ObservableObject {
             let content = UNMutableNotificationContent()
             content.title = title
             content.body = body
-            content.sound = .default
+            content.sound = sound
             content.categoryIdentifier = category.rawValue
             content.userInfo = userInfo
+            if let badge {
+                content.badge = badge
+            }
 
             // Persist security events locally to survive temporary backend/API failures.
             self.persistSecurityEventIfNeeded(title: title, body: body, category: category, userInfo: userInfo)
             
             let trigger = UNTimeIntervalNotificationTrigger(timeInterval: safeDelay, repeats: false)
             let request = UNNotificationRequest(
-                identifier: UUID().uuidString,
+                identifier: identifier ?? UUID().uuidString,
                 content: content,
                 trigger: trigger
             )
@@ -479,6 +485,105 @@ class NotificationManager: NSObject, ObservableObject {
                 "event_id": correlationId,
                 "source": "qa_forced_scenario"
             ]
+        )
+    }
+
+    // MARK: - Product send paths (single channel)
+
+    /// Family chat local banner — same filters/delay as all other product locals.
+    func sendFamilyChatNotification(message: String, sender: String, familyId: String?) {
+        sendLocalNotification(
+            title: String(
+                format: LocalizationManager.shared.localized("family_chat_notification_new_message"),
+                sender
+            ),
+            body: message,
+            category: .family,
+            userInfo: [
+                "type": "family_chat",
+                "familyId": familyId ?? "",
+                "sender": sender
+            ],
+            delay: 0.2,
+            badge: 1
+        )
+    }
+
+    func sendAntivirusScanCompleteNotification(threatsFound: Int) {
+        let hasThreats = threatsFound > 0
+        sendLocalNotification(
+            title: "Антивирусное сканирование завершено",
+            body: hasThreats
+                ? "Обнаружено \(threatsFound) угроз. Требуется внимание!"
+                : "Угроз не обнаружено. Система в безопасности.",
+            category: .security,
+            userInfo: [
+                "type": "antivirus_scan_complete",
+                "threats_found": threatsFound,
+                "priority": hasThreats ? "high" : "normal",
+                "correlation_id": "scan-complete-\(UUID().uuidString)"
+            ],
+            delay: 0.2,
+            sound: hasThreats ? .defaultCritical : .default,
+            badge: hasThreats ? 1 : 0
+        )
+    }
+
+    func sendAntivirusScanFailedNotification() {
+        sendLocalNotification(
+            title: "Ошибка антивирусного сканирования",
+            body: "Не удалось выполнить сканирование. Проверьте подключение к интернету.",
+            category: .security,
+            userInfo: [
+                "type": "antivirus_scan_failed",
+                "correlation_id": "scan-failed-\(UUID().uuidString)"
+            ],
+            delay: 0.2
+        )
+    }
+
+    func sendDownloadedFileThreatNotification(fileName: String) {
+        sendLocalNotification(
+            title: "Подозрительный файл обнаружен",
+            body: "Файл '\(fileName)' может содержать угрозу. Рекомендуется проверить.",
+            category: .security,
+            userInfo: [
+                "type": "downloaded_file_threat",
+                "file_name": fileName,
+                "priority": "high",
+                "correlation_id": "download-threat-\(UUID().uuidString)"
+            ],
+            delay: 0.2,
+            sound: .defaultCritical
+        )
+    }
+
+    func sendCrashDetectionNotification() {
+        sendLocalNotification(
+            title: "🚨 Авария обнаружена",
+            body: "Проверьте ситуацию и при необходимости вызовите экстренные службы",
+            category: .general,
+            userInfo: [
+                "type": "crash_detection",
+                "priority": "high",
+                "correlation_id": "crash-\(UUID().uuidString)"
+            ],
+            delay: 0.2,
+            sound: .defaultCritical
+        )
+    }
+
+    func sendAntifakePostCallNotification() {
+        sendLocalNotification(
+            title: LocalizationManager.shared.localized("antifake_post_call_title"),
+            body: LocalizationManager.shared.localized("antifake_post_call_body"),
+            category: .general,
+            userInfo: [
+                "type": "antifake_post_call",
+                "deepLink": "aladdin://antifake/call-check"
+            ],
+            delay: 1.5,
+            identifier: "antifake_post_call_\(UUID().uuidString)"
         )
     }
     
@@ -1023,7 +1128,10 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
              "threat_detected",
              "threat_blocked",
              "suspicious_activity",
-             "iot_device_compromised":
+             "iot_device_compromised",
+             "antivirus_scan_complete",
+             "downloaded_file_threat",
+             "crash_detection":
             return true
         default:
             return false
