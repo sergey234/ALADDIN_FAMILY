@@ -153,6 +153,12 @@ struct CompanionConversationScreen: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: conversationToolbarContent)
+            .safeAreaInset(edge: .bottom) {
+                inputBar
+            }
+            .onChange(of: isInputFocused) { _ in
+                syncConversationPresence()
+            }
     }
 
     @ViewBuilder
@@ -209,6 +215,7 @@ struct CompanionConversationScreen: View {
                                 .frame(height: layout.chatZoneHeight)
                         }
                     }
+                        .aladdinChatKeyboardDismiss()
                         .contentShape(Rectangle())
                         .onTapGesture { isInputFocused = false }
                 }
@@ -224,7 +231,6 @@ struct CompanionConversationScreen: View {
                     .padding(.horizontal, 16)
             }
             conversationErrorBanner
-            inputBar
         }
     }
 
@@ -577,8 +583,17 @@ struct CompanionConversationScreen: View {
             isVoiceActive: false,
             userPinnedChrome: userPinnedChrome,
             immersiveEnabled: true,
-            pinMode: heroPresencePinMode
+            pinMode: heroPresencePinMode,
+            isTextInputFocused: isInputFocused
         )
+
+        // Typing must shrink hero immediately — do not wait immersive voice debounce.
+        if isInputFocused {
+            voiceIdleExitTask?.cancel()
+            voiceIdleExitTask = nil
+            applyConversationPresence(target)
+            return
+        }
 
         if conversationPresence == .immersive, target != .immersive {
             voiceIdleExitTask?.cancel()
@@ -614,7 +629,8 @@ struct CompanionConversationScreen: View {
             isVoiceActive: false,
             userPinnedChrome: true,
             immersiveEnabled: AppConfig.heroImmersiveLayoutEnabled,
-            pinMode: heroPresencePinMode
+            pinMode: heroPresencePinMode,
+            isTextInputFocused: isInputFocused
         )
         applyConversationPresence(next)
     }
@@ -1216,56 +1232,55 @@ struct CompanionConversationScreen: View {
                     .foregroundStyle(.orange)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
-            HStack(spacing: 10) {
-                if !isChildProfile {
-                    attachmentPickerMenu
-                }
-                TextField(localizationManager.localized("companion_conversation_message_placeholder"), text: $input)
-                    .textFieldStyle(.roundedBorder)
-                    .focused($isInputFocused)
-                    .submitLabel(.send)
-                    .disabled(crisisInputBlocked)
-                    .accessibilityIdentifier("companion_message_input")
-                    .onSubmit {
-                        Task { await sendText() }
+            AladdinComposerBar(
+                text: $input,
+                placeholder: localizationManager.localized("companion_conversation_message_placeholder"),
+                doneTitle: localizationManager.localized("companion_conversation_done"),
+                accessibilityLabel: localizationManager.localized("companion_conversation_message_placeholder"),
+                isSending: isSending,
+                isDisabled: crisisInputBlocked,
+                sendEnabled: !input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isSending && !crisisInputBlocked,
+                focused: $isInputFocused,
+                fieldAccessibilityIdentifier: "companion_message_input",
+                sendAccessibilityIdentifier: "companion_send_button",
+                onSend: { Task { await sendText() } },
+                leading: {
+                    if !isChildProfile {
+                        attachmentPickerMenu
                     }
-                if caps.voiceRealtimeEnabled {
-                    Image(systemName: voiceMicSymbol)
-                        .font(.title2)
-                        .foregroundStyle(voiceMicTint)
-                        .frame(width: 36, height: 36)
-                        .contentShape(Rectangle())
-                        .highPriorityGesture(companionMicDragGesture(childImmediateHold: false))
-                        .accessibilityLabel(isChildProfile
-                            ? localizationManager.localized("companion_mic_speak_button")
-                            : localizationManager.localized("companion_voice_input_label"))
-                        .accessibilityHint(isChildProfile
-                            ? localizationManager.localized("companion_mic_hold_hint_child")
-                            : localizationManager.localized("companion_voice_input_hint"))
-                        .opacity((speechManager.isPreparingRecording || voiceSession.isAwaitingReply || speechOutput.isSpeaking || crisisInputBlocked) ? 0.5 : 1.0)
-                        .allowsHitTesting(!(speechManager.isPreparingRecording || speechManager.isStoppingRecording || speechManager.isMicrophoneCoolingDown || voiceSession.isAwaitingReply || speechOutput.isSpeaking || crisisInputBlocked))
+                },
+                extraTrailing: {
+                    if caps.voiceRealtimeEnabled {
+                        Image(systemName: voiceMicSymbol)
+                            .font(.title2)
+                            .foregroundStyle(voiceMicTint)
+                            .frame(width: 36, height: 36)
+                            .contentShape(Rectangle())
+                            .highPriorityGesture(companionMicDragGesture(childImmediateHold: false))
+                            .accessibilityLabel(isChildProfile
+                                ? localizationManager.localized("companion_mic_speak_button")
+                                : localizationManager.localized("companion_voice_input_label"))
+                            .accessibilityHint(isChildProfile
+                                ? localizationManager.localized("companion_mic_hold_hint_child")
+                                : localizationManager.localized("companion_voice_input_hint"))
+                            .opacity((speechManager.isPreparingRecording || voiceSession.isAwaitingReply || speechOutput.isSpeaking || crisisInputBlocked) ? 0.5 : 1.0)
+                            .allowsHitTesting(!(speechManager.isPreparingRecording || speechManager.isStoppingRecording || speechManager.isMicrophoneCoolingDown || voiceSession.isAwaitingReply || speechOutput.isSpeaking || crisisInputBlocked))
+                    }
                 }
-                Button {
-                    Task { await sendText() }
-                } label: {
-                    Image(systemName: "paperplane.fill")
-                }
-                .disabled(input.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending || crisisInputBlocked)
-                .accessibilityIdentifier("companion_send_button")
-                .accessibilityLabel(localizationManager.localized("companion_conversation_send"))
-            }
+            )
+            .padding(.horizontal, -Spacing.screenPadding)
             if caps.voiceRealtimeEnabled {
-                Text(voiceHintText)
-                    .font(.caption2)
-                    .foregroundStyle(.secondary)
+                let hint = voiceHintText.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !hint.isEmpty {
+                    Text(hint)
+                        .font(.caption2)
+                        .foregroundStyle(.secondary)
+                }
             }
         }
-        .padding()
+        .padding(.horizontal, 8)
+        .padding(.bottom, 4)
         .background(.bar)
-        .modifier(CompanionKeyboardDoneToolbarModifier(
-            title: localizationManager.localized("companion_conversation_done"),
-            action: { isInputFocused = false }
-        ))
     }
 
     private var attachmentPickerMenu: some View {
@@ -1551,6 +1566,7 @@ struct CompanionConversationScreen: View {
                 messages[idx] = updated
             }
             trustScore = resp.trustScore
+            AITrustAnalytics.trackCompanionVote(vote, messageId: msg.id.uuidString)
             HapticFeedback.impact(.light)
         } catch {
             errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)

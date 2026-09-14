@@ -95,6 +95,7 @@ struct FamilyScreen: View {
     @State private var showAdditionalModal: Bool = false
     @State private var showBypassProtectionModal: Bool = false
     @State private var showFamilyNotificationSettings: Bool = false
+    @State private var showReferralScreen: Bool = false
     
     // Состояния для карточек (сохранение через @AppStorage)
     @AppStorage("family_content_block_enabled") private var isContentBlockEnabled: Bool = true
@@ -2519,6 +2520,11 @@ struct FamilyScreen: View {
             FamilyNotificationSettingsModal()
                 .environmentObject(localizationManager)
         }
+        .sheet(isPresented: $showReferralScreen) {
+            ReferralScreen()
+                .environmentObject(localizationManager)
+                .environmentObject(navigationManager)
+        }
         .sheet(isPresented: $showBypassProtectionModal) {
             FamilyBypassProtectionModal(
                 isPresented: $showBypassProtectionModal,
@@ -3183,6 +3189,35 @@ extension FamilyScreen {
                     .background(Color.secondaryGold.opacity(0.3))
                     .padding(.vertical, Spacing.m)
                 
+                if FamilyAccessPolicy.isCaregiver(members: familyMembers) {
+                    Button(action: {
+                        HapticFeedback.impact(.medium)
+                        FamilyReferralAnalytics.track(.inviteTap, parameters: ["source": "family"])
+                        showReferralScreen = true
+                    }) {
+                        HStack(spacing: Spacing.m) {
+                            Text("🎁")
+                                .font(.system(size: 36))
+                            VStack(alignment: .leading, spacing: Spacing.xxs) {
+                                Text(localizationManager.localized("family_invite_cta_title"))
+                                    .font(.bodyBold)
+                                    .foregroundColor(.textPrimary)
+                                Text(localizationManager.localized("family_invite_cta_subtitle"))
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .font(.system(size: 14))
+                                .foregroundColor(.textTertiary)
+                        }
+                        .padding(Spacing.m)
+                        .stormGlassCard(cornerRadius: CornerRadius.large)
+                    }
+                    .buttonStyle(PlainButtonStyle())
+                    .padding(.bottom, Spacing.s)
+                }
+
                 HStack {
                     Text(localizationManager.localized("family_gamification"))
                         .font(.h3)

@@ -34,8 +34,8 @@
   },
   "session_recap": {
     "default": {
-      "ru": "Сегодня можно начать с одного маленького шага.",
-      "en": "Today you can start with one small step."
+      "ru": "",
+      "en": ""
     },
     "active_exercise": {
       "ru": "У тебя есть незаконченное упражнение — продолжим?",

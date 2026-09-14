@@ -698,6 +698,11 @@ struct AppConfig {
         static let referralStats = "/api/referral/stats"
         static let referralHistory = "/api/referral/history"
         static let referralRewards = "/api/referral/rewards"
+        // Family Invite Pro (Вариант A)
+        static let referralAOverview = "/api/referral/a/overview"
+        static let referralALedger = "/api/referral/a/ledger"
+        static let referralAApply = "/api/referral/a/apply"
+        static let referralAAttach = "/api/referral/a/attach"
 
         // Crash Detection
         static let crashDetectionSetup = "/api/crash-detection/setup"

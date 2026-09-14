@@ -460,6 +460,14 @@ struct ALADDINApp: App {
                         return
                     }
 
+                    if let inviteCode = FamilyReferralInviteRouter.extractInviteCode(from: url) {
+                        FamilyReferralInviteRouter.savePendingCode(inviteCode)
+                        if hasCompletedOnboarding {
+                            FamilyReferralInviteRouter.attachPendingIfNeeded()
+                        }
+                        return
+                    }
+
                     if let category = MnemoDeepLinkRouter.parseReviewCategory(from: url) {
                         navigationManager.navigateToMnemoReview(category: category)
                         return
@@ -492,6 +500,7 @@ struct ALADDINApp: App {
                         }
                     }
                     consumePendingMagicAuthTokenIfNeeded()
+                    FamilyReferralInviteRouter.attachPendingIfNeeded()
                 }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToMnemoReview"))) { notification in
                     let category = notification.userInfo?["category"] as? String ?? ChildCategoryKey.games
@@ -690,6 +699,8 @@ struct ALADDINApp: App {
                     print("🔄 Возврат из фона: приложение активно, экран = \(navigationManager.currentScreen)")
                     Task { @MainActor in
                         await SubscriptionManager.shared.performThrottledTrialExpiryCheckIfNeeded()
+                        await AladdinOutboundQueue.shared.startPathMonitor()
+                        _ = await AladdinOutboundQueue.shared.flush()
                     }
                     ContentBackgroundSyncScheduler.shared.triggerForegroundRefresh()
                 } else if newPhase == .background {
@@ -703,6 +714,12 @@ struct ALADDINApp: App {
             }
             .onReceive(NotificationCenter.default.publisher(for: UIApplication.willTerminateNotification)) { _ in
                 Self.markLifecycleCheckpoint("UIApplication.willTerminate")
+            }
+            .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("UserDidLogin"))) { _ in
+                Task {
+                    await AladdinOutboundQueue.shared.startPathMonitor()
+                    _ = await AladdinOutboundQueue.shared.flush()
+                }
             }
             .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("SessionExpired"))) { notification in
                 guard !isHandlingSessionExpiredGlobal else {

@@ -11,6 +11,7 @@ struct WellnessCheckinScreen: View {
     @State private var stressLevel: Double = 3
     @State private var saved = false
     @State private var offlineQueued = false
+    @State private var syncNeedsRetry = false
     @State private var socialGoals: WellnessSocialGoalsBlock?
     @State private var streakDays = 0
 
@@ -60,9 +61,7 @@ struct WellnessCheckinScreen: View {
                         stressSlider
                         saveButton
                     } else if !saved {
-                        Text(localizationManager.localized("wellness_checkin_quick_tap_hint"))
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.7))
+                        EmptyView()
                     }
 
                     if saved {
@@ -74,10 +73,19 @@ struct WellnessCheckinScreen: View {
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(Color(hex: "FBBF24"))
                         }
-                        if offlineQueued {
-                            Text(localizationManager.localized("wellness_checkin_offline_saved"))
-                                .font(.caption)
-                                .foregroundStyle(.orange)
+                        Text(localizationManager.localized(statusKey))
+                        .font(.caption)
+                        .foregroundStyle(statusColor)
+                        if syncNeedsRetry {
+                            Button {
+                                Task { await retryServerSync() }
+                            } label: {
+                                Text(localizationManager.localized("wellness_retry"))
+                                    .frame(maxWidth: .infinity)
+                            }
+                            .buttonStyle(.bordered)
+                            .tint(.orange)
+                            .accessibilityIdentifier("wellness_checkin_sync_retry")
                         }
                         if let socialGoals, socialGoals.show {
                             WellnessSocialGoalsCard(block: socialGoals) {
@@ -182,6 +190,17 @@ struct WellnessCheckinScreen: View {
         .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
 
+    private var statusKey: String {
+        if offlineQueued { return "wellness_will_sync_when_online" }
+        if syncNeedsRetry { return "wellness_sync_need_retry" }
+        return "wellness_saved_on_device"
+    }
+
+    private var statusColor: Color {
+        if offlineQueued || syncNeedsRetry { return .orange }
+        return Color(hex: "86EFAC")
+    }
+
     private var saveButton: some View {
         Button {
             saveCheckin()
@@ -221,21 +240,45 @@ struct WellnessCheckinScreen: View {
         }
         saved = true
         offlineQueued = false
+        syncNeedsRetry = false
         socialGoals = nil
         HapticFeedback.impact(.light)
         Task {
-            do {
-                let response = try await WellnessAPIService.shared.postCheckin(
-                    mood: mood,
-                    sleepHours: isQuickEmojiOnly ? nil : sleepHours,
-                    stressLevel: isQuickEmojiOnly ? nil : Int(stressLevel)
-                )
-                if response.socialGoals?.show == true {
-                    socialGoals = response.socialGoals
-                }
-                await applyCheckinLoopForCompanion()
-            } catch {
+            await pushCheckinToServer(draft)
+        }
+    }
+
+    private func retryServerSync() async {
+        let draft = WellnessCheckinDraft(
+            mood: mood,
+            sleepHours: isQuickEmojiOnly ? 0 : sleepHours,
+            stressLevel: isQuickEmojiOnly ? 0 : Int(stressLevel),
+            savedAt: Date()
+        )
+        await pushCheckinToServer(draft)
+    }
+
+    private func pushCheckinToServer(_ draft: WellnessCheckinDraft) async {
+        do {
+            let response = try await WellnessAPIService.shared.postCheckin(
+                mood: draft.mood,
+                sleepHours: draft.sleepHours > 0 ? draft.sleepHours : nil,
+                stressLevel: draft.stressLevel > 0 ? draft.stressLevel : nil
+            )
+            offlineQueued = false
+            syncNeedsRetry = false
+            if response.socialGoals?.show == true {
+                socialGoals = response.socialGoals
+            }
+            await applyCheckinLoopForCompanion()
+        } catch {
+            if AladdinOutboundErrorPolicy.shouldEnqueue(error) {
+                await AladdinOutboundQueue.shared.enqueueCheckin(draft)
                 offlineQueued = true
+                syncNeedsRetry = false
+            } else {
+                offlineQueued = false
+                syncNeedsRetry = true
             }
         }
     }

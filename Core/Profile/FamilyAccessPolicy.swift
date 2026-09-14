@@ -125,6 +125,48 @@ enum FamilyAccessPolicy {
             return role == .parent || role == .elderly
         }
     }
+
+    // MARK: - Caregiver gate (RWD / Referral A)
+
+    /// Опекун для наград детей и семейной рефки: parent или elderly (60+).
+    static func isCaregiver(
+        members: [FamilyMemberData] = UnifiedFamilyRoster.load(),
+        defaults: UserDefaults = .standard
+    ) -> Bool {
+        hasPermission(.manageCriticalFamilySettings, members: members, defaults: defaults)
+    }
+
+    /// Канон ChildRewards / Referral: Kids/Child Interface → никогда не опекун на этом входе.
+    static func isCaregiverForRewardsUI(
+        forceChildMode: Bool,
+        members: [FamilyMemberData] = UnifiedFamilyRoster.load(),
+        defaults: UserDefaults = .standard
+    ) -> Bool {
+        if forceChildMode { return false }
+        return isCaregiver(members: members, defaults: defaults)
+    }
+
+    /// Синхронизирует `current_user_role` с resolved actor (не вызывать при forceChildMode).
+    static func syncCurrentUserRoleDefaults(
+        members: [FamilyMemberData] = UnifiedFamilyRoster.load(),
+        defaults: UserDefaults = .standard
+    ) {
+        let role = resolveActorRole(members: members, defaults: defaults)
+        let raw: String
+        switch role {
+        case .parent: raw = "parent"
+        case .elderly: raw = "elderly"
+        case .child: raw = "child"
+        case .teenager: raw = "teenager"
+        case .unknown: return
+        }
+        let prev = (defaults.string(forKey: "current_user_role") ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .lowercased()
+        guard prev != raw else { return }
+        defaults.set(raw, forKey: "current_user_role")
+        defaults.synchronize()
+    }
 }
 
 /// Phase 9.3: shared permission layer consumed by child + elderly interfaces.

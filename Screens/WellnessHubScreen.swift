@@ -54,6 +54,7 @@ struct WellnessHubScreen: View {
             ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 16) {
                     header
+                    nonMedicalBanner
                     suggestedPillarBanner
                     if showAgeBandMismatch {
                         ageBandMismatchBanner
@@ -146,6 +147,23 @@ struct WellnessHubScreen: View {
         }
         .foregroundColor(.white)
         .accessibilityIdentifier("wellness_hub_back")
+    }
+
+    /// P1 aipm-14 — persistent non-medical strip after consent (hub entry).
+    private var nonMedicalBanner: some View {
+        HStack(alignment: .top, spacing: 8) {
+            Image(systemName: "heart.text.square")
+                .foregroundColor(.yellow.opacity(0.95))
+            Text(localizationManager.localized("wellness_hub_non_medical_banner"))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white.opacity(0.92))
+                .multilineTextAlignment(.leading)
+            Spacer(minLength: 0)
+        }
+        .padding(10)
+        .stormGlassCard(cornerRadius: 12)
+        .accessibilityIdentifier("wellness_hub_non_medical_banner")
+        .accessibilityLabel(localizationManager.localized("wellness_hub_non_medical_banner"))
     }
 
     @ViewBuilder
@@ -509,15 +527,12 @@ struct WellnessHubScreen: View {
         .accessibilityIdentifier("wellness_weekly_meaning_banner")
     }
 
+    @ViewBuilder
     private func familyThemesCard(_ payload: WellnessFamilyThemesResponse) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            Text(localizationManager.localized("wellness_family_dashboard_title"))
-                .font(.subheadline.bold())
-            if !payload.shared {
-                Text(localizationManager.localized("wellness_family_themes_opt_out"))
-                    .font(.caption)
-                    .foregroundColor(.white.opacity(0.8))
-            } else {
+        if payload.shared {
+            VStack(alignment: .leading, spacing: 8) {
+                Text(localizationManager.localized("wellness_family_dashboard_title"))
+                    .font(.subheadline.bold())
                 if let agg = payload.aggregate {
                     if let msg = agg.message {
                         Text(msg).font(.caption)
@@ -541,9 +556,6 @@ struct WellnessHubScreen: View {
                 Text(localizationManager.localized("wellness_family_no_transcript"))
                     .font(.caption2)
                     .foregroundColor(.white.opacity(0.7))
-                Text(localizationManager.localized("wellness_checkin_quick_parent_aggregate_hint"))
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.65))
                 if payload.themes.isEmpty {
                     Text(localizationManager.localized("wellness_family_themes_empty"))
                         .font(.caption)
@@ -562,11 +574,11 @@ struct WellnessHubScreen: View {
                     }
                 }
             }
+            .padding(12)
+            .stormGlassCard(cornerRadius: CornerRadius.medium)
+            .cornerRadius(12)
+            .accessibilityIdentifier("wellness_family_themes_card")
         }
-        .padding(12)
-        .stormGlassCard(cornerRadius: CornerRadius.medium)
-        .cornerRadius(12)
-        .accessibilityIdentifier("wellness_family_themes_card")
     }
 
     private func parentPlaybookCard(_ payload: WellnessParentPlaybookResponse) -> some View {
@@ -833,38 +845,43 @@ struct WellnessHubScreen: View {
         .accessibilityIdentifier("wellness_hub_reflective_button")
     }
 
+    @ViewBuilder
     private func outcomeReminderBanner(_ reminder: WellnessOutcomeReminderDTO) -> some View {
-        VStack(alignment: .leading, spacing: 8) {
-            if let title = reminder.title {
-                Text(title).font(.subheadline.bold())
-            }
-            if let body = reminder.body {
-                Text(body).font(.caption)
-            }
-            HStack {
-                Button {
-                    showOutcomeSheet = true
-                } label: {
-                    Text(localizationManager.localized("wellness_outcome_recap_cta"))
-                        .font(.caption.bold())
+        let title = (reminder.title ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        let body = (reminder.body ?? "").trimmingCharacters(in: .whitespacesAndNewlines)
+        if !title.isEmpty || !body.isEmpty {
+            VStack(alignment: .leading, spacing: 8) {
+                if !title.isEmpty {
+                    Text(title).font(.subheadline.bold())
                 }
-                .buttonStyle(.borderedProminent)
-                .tint(.mint)
-                Spacer()
-                Button {
-                    Task {
-                        try? await WellnessAPIService.shared.dismissOutcomePrompt()
-                        await loadRecap()
+                if !body.isEmpty {
+                    Text(body).font(.caption)
+                }
+                HStack {
+                    Button {
+                        showOutcomeSheet = true
+                    } label: {
+                        Text(localizationManager.localized("wellness_outcome_recap_cta"))
+                            .font(.caption.bold())
                     }
-                } label: {
-                    Text(localizationManager.localized("wellness_nudge_dismiss"))
-                        .font(.caption)
+                    .buttonStyle(.borderedProminent)
+                    .tint(.mint)
+                    Spacer()
+                    Button {
+                        Task {
+                            try? await WellnessAPIService.shared.dismissOutcomePrompt()
+                            await loadRecap()
+                        }
+                    } label: {
+                        Text(localizationManager.localized("wellness_nudge_dismiss"))
+                            .font(.caption)
+                    }
                 }
             }
+            .padding(12)
+            .background(Color.mint.opacity(0.2))
+            .cornerRadius(12)
         }
-        .padding(12)
-        .background(Color.mint.opacity(0.2))
-        .cornerRadius(12)
     }
 
     private func fatigueBanner(_ fatigue: WellnessPillarFatigueDTO) -> some View {

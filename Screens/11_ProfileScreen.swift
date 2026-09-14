@@ -88,16 +88,7 @@ struct ProfileScreen: View {
                     showBackButton: true,
                     onBack: {
                         logger.buttonTap("Back", screen: "Profile")
-                        // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
-                        // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
-                        dismiss()
-                        
-                        // Дополнительно синхронизируем NavigationManager для корректной работы стека
-                        DispatchQueue.main.async {
-                            if navigationManager.canGoBack {
-                                navigationManager.goBack()
-                            }
-                        }
+                        navigationManager.goBackToPreviousScreen(reason: "Profile.onBack")
                     }
                 )
                 
@@ -629,38 +620,43 @@ struct ProfileScreen: View {
     // MARK: - Referral Section
     
     private var referralSection: some View {
-        VStack(alignment: .leading, spacing: Spacing.s) {
-            sectionTitle(localizationManager.localized("profile_referral_program"))
-            
-            VStack(spacing: Spacing.s) {
-                Button(action: {
-                    showReferralScreen = true
-                }) {
-                    HStack(spacing: Spacing.m) {
-                        Text("🎁")
-                            .font(.system(size: 24))
-                        
-                        VStack(alignment: .leading, spacing: Spacing.xxs) {
-                            Text(localizationManager.localized("profile_invite_friends"))
-                                .font(.bodyBold)
-                                .foregroundColor(.textPrimary)
-                            
-                            Text(localizationManager.localized("profile_invite_discount"))
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
+        Group {
+            if FamilyAccessPolicy.isCaregiver() {
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    sectionTitle(localizationManager.localized("profile_referral_program"))
+                    
+                    VStack(spacing: Spacing.s) {
+                        Button(action: {
+                            FamilyReferralAnalytics.track(.inviteTap, parameters: ["source": "profile"])
+                            showReferralScreen = true
+                        }) {
+                            HStack(spacing: Spacing.m) {
+                                Text("🎁")
+                                    .font(.system(size: 24))
+                                
+                                VStack(alignment: .leading, spacing: Spacing.xxs) {
+                                    Text(localizationManager.localized("profile_invite_friends"))
+                                        .font(.bodyBold)
+                                        .foregroundColor(.textPrimary)
+                                    
+                                    Text(localizationManager.localized("profile_invite_discount"))
+                                        .font(.caption)
+                                        .foregroundColor(.textSecondary)
+                                }
+                                
+                                Spacer()
+                                
+                                Image(systemName: "chevron.right")
+                                    .font(.system(size: 14))
+                                    .foregroundColor(.textSecondary)
+                            }
+                            .padding(Spacing.m)
+                            .stormGlassCard(cornerRadius: CornerRadius.medium)
                         }
-                        
-                        Spacer()
-                        
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 14))
-                            .foregroundColor(.textSecondary)
                     }
-                        .padding(Spacing.m)
-                        .stormGlassCard(cornerRadius: CornerRadius.medium)
+                    .padding(.horizontal, Spacing.screenPadding)
                 }
             }
-            .padding(.horizontal, Spacing.screenPadding)
         }
     }
     
@@ -1172,7 +1168,7 @@ struct AdultSafetyInstructionsModal: View {
     
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.l) {
                     Text(localizationManager.localized("profile_safety_reminder"))
                         .font(.system(size: 28, weight: .bold))

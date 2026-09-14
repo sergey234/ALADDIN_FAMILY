@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		B198A0122F9800100B198A0 /* FamilyReferralAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B198A0112F9800100B198A0 /* FamilyReferralAnalytics.swift */; };
+		B198A0142F9800100B198A0 /* FamilyReferralInviteRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B198A0132F9800100B198A0 /* FamilyReferralInviteRouter.swift */; };
+
 		1C7F3E6C86E9371F36A46D11 /* ContentManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C182ABADC8EA112F1D9DFCB0 /* ContentManager.swift */; };
 		22D59FAA186F6F0E18288B64 /* ContentValidator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B972EC304E172696F7BF77F3 /* ContentValidator.swift */; };
 		25089C2E54DD019C68DC0835 /* CharacterSystem.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2E4B39C1A4FFE5FE1132F2E2 /* CharacterSystem.swift */; };
@@ -367,6 +370,7 @@
 		B1000201 /* IoTSecurityScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000200 /* IoTSecurityScreen.swift */; };
 		B19800022F98000100B19800 /* AIAssistantResponseDiagnostics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19800012F98000100B19800 /* AIAssistantResponseDiagnostics.swift */; };
 		B19800042F98000200B19800 /* FamilyLocalStorePersistenceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19800032F98000200B19800 /* FamilyLocalStorePersistenceTests.swift */; };
+		B19800062F98000300B19800 /* FamilyAccessPolicyCaregiverTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B19800052F98000300B19800 /* FamilyAccessPolicyCaregiverTests.swift */; };
 		B2000100B2000100B2000100 /* ProtectionFeature.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000100B1000100B1000100 /* ProtectionFeature.swift */; };
 		B2000110B2000110B2000110 /* ProtectionLevelHistory.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000110B1000110B1000110 /* ProtectionLevelHistory.swift */; };
 		B2000120B2000120B2000120 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000120B1000120B1000120 /* Toast.swift */; };
@@ -660,6 +664,7 @@
 		W5F20010 /* Audio in Resources */ = {isa = PBXBuildFile; fileRef = W5F20000 /* Audio */; };
 		W5F20020 /* Localization in Resources */ = {isa = PBXBuildFile; fileRef = W5F20021 /* Localization */; };
 		W5F20042 /* Companion in Resources */ = {isa = PBXBuildFile; fileRef = W5F20041 /* Companion */; };
+		W5F20052 /* Wellness in Resources */ = {isa = PBXBuildFile; fileRef = W5F20051 /* Wellness */; };
 		WELDRM22F90000100C7D34B /* WellnessDreamJournalScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELDRM12F90000100C7D34B /* WellnessDreamJournalScreen.swift */; };
 		WELLAF22F90000100C7D34B /* WellnessAssessmentFlowScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLAF12F90000100C7D34B /* WellnessAssessmentFlowScreen.swift */; };
 		WELLAPI22F90000100C7D34B /* WellnessAPIService.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLAPI12F90000100C7D34B /* WellnessAPIService.swift */; };
@@ -671,6 +676,11 @@
 		WELLMDL22F90000100C7D34B /* WellnessModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLMDL12F90000100C7D34B /* WellnessModels.swift */; };
 		WELLOC22F90000100C7D34B /* WellnessOutcomeSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLOC12F90000100C7D34B /* WellnessOutcomeSheet.swift */; };
 		WELLOF22F90000100C7D34B /* WellnessOfflineStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLOF12F90000100C7D34B /* WellnessOfflineStore.swift */; };
+		UXCOBAR22F90000100C7D34B /* AladdinComposerBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOBAR12F90000100C7D34B /* AladdinComposerBar.swift */; };
+		UXCOQ1222F90000100C7D34B /* AladdinOutboundQueue.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOQ1212F90000100C7D34B /* AladdinOutboundQueue.swift */; };
+		UXCOMTH22F90000100C7D34B /* LocalDailyReminderMath.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOMTH12F90000100C7D34B /* LocalDailyReminderMath.swift */; };
+		UXCOBDL22F90000100C7D34B /* BundledSleepStories.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOBDL12F90000100C7D34B /* BundledSleepStories.swift */; };
+		UXCOTST22F90000100C7D34B /* AladdinComposerOfflineTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = UXCOTST12F90000100C7D34B /* AladdinComposerOfflineTests.swift */; };
 		WELLOOP22F90000100C7D34B /* WellnessLoopCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLOOP12F90000100C7D34B /* WellnessLoopCoordinator.swift */; };
 		WELLPAY22F90000100C7D34B /* WellnessPremiumPaywallSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLPAY12F90000100C7D34B /* WellnessPremiumPaywallSheet.swift */; };
 		WELLPDF22F90000100C7D34B /* WellnessProgressPDFService.swift in Sources */ = {isa = PBXBuildFile; fileRef = WELLPDF12F90000100C7D34B /* WellnessProgressPDFService.swift */; };
@@ -740,6 +750,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		B198A0112F9800100B198A0 /* FamilyReferralAnalytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyReferralAnalytics.swift; path = Core/Analytics/FamilyReferralAnalytics.swift; sourceTree = "<group>"; };
+		B198A0132F9800100B198A0 /* FamilyReferralInviteRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyReferralInviteRouter.swift; path = FamilyReferralInviteRouter.swift; sourceTree = "<group>"; };
+
 		02521A3B3B04A48D3E4FBF41 /* ContentSyncManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentSyncManager.swift; path = Core/Content/Sync/ContentSyncManager.swift; sourceTree = "<group>"; };
 		04BFCC641FBD9CCE8D91BA6B /* ContentDownloader.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentDownloader.swift; path = Core/Content/Sync/ContentDownloader.swift; sourceTree = "<group>"; };
 		216769616BF4C23F656C98BF /* ContentCacheManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ContentCacheManager.swift; path = Core/Content/Cache/ContentCacheManager.swift; sourceTree = "<group>"; };
@@ -1125,6 +1138,7 @@
 		B1000200 /* IoTSecurityScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = IoTSecurityScreen.swift; sourceTree = "<group>"; };
 		B19800012F98000100B19800 /* AIAssistantResponseDiagnostics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AIAssistantResponseDiagnostics.swift; path = Core/Utilities/AIAssistantResponseDiagnostics.swift; sourceTree = "<group>"; };
 		B19800032F98000200B19800 /* FamilyLocalStorePersistenceTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FamilyLocalStorePersistenceTests.swift; sourceTree = "<group>"; };
+		B19800052F98000300B19800 /* FamilyAccessPolicyCaregiverTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FamilyAccessPolicyCaregiverTests.swift; sourceTree = "<group>"; };
 		B5001010 /* ALADDINUnitTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ALADDINUnitTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B5001100 /* ALADDINUnitTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINUnitTests.swift; sourceTree = "<group>"; };
 		B5001101 /* APIServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = APIServiceTests.swift; sourceTree = "<group>"; };
@@ -1412,6 +1426,7 @@
 		W5F20021 /* Localization */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Localization; path = Resources/Localization; sourceTree = "<group>"; };
 		W5F20031 /* HeroAssets */ = {isa = PBXFileReference; lastKnownFileType = folder; name = HeroAssets; path = Resources/HeroAssets; sourceTree = "<group>"; };
 		W5F20041 /* Companion */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Companion; path = Resources/Companion; sourceTree = "<group>"; };
+		W5F20051 /* Wellness */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Wellness; path = Resources/Wellness; sourceTree = "<group>"; };
 		WELDRM12F90000100C7D34B /* WellnessDreamJournalScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessDreamJournalScreen.swift; sourceTree = "<group>"; };
 		WELLAF12F90000100C7D34B /* WellnessAssessmentFlowScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessAssessmentFlowScreen.swift; sourceTree = "<group>"; };
 		WELLAPI12F90000100C7D34B /* WellnessAPIService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessAPIService.swift; path = Core/Services/WellnessAPIService.swift; sourceTree = "<group>"; };
@@ -1424,6 +1439,11 @@
 		WELLMDL12F90000100C7D34B /* WellnessModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessModels.swift; path = Core/Models/WellnessModels.swift; sourceTree = "<group>"; };
 		WELLOC12F90000100C7D34B /* WellnessOutcomeSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessOutcomeSheet.swift; sourceTree = "<group>"; };
 		WELLOF12F90000100C7D34B /* WellnessOfflineStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessOfflineStore.swift; path = Core/Services/WellnessOfflineStore.swift; sourceTree = "<group>"; };
+		UXCOBAR12F90000100C7D34B /* AladdinComposerBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AladdinComposerBar.swift; path = Shared/Components/AladdinComposerBar.swift; sourceTree = "<group>"; };
+		UXCOQ1212F90000100C7D34B /* AladdinOutboundQueue.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AladdinOutboundQueue.swift; path = Core/Services/AladdinOutboundQueue.swift; sourceTree = "<group>"; };
+		UXCOMTH12F90000100C7D34B /* LocalDailyReminderMath.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = LocalDailyReminderMath.swift; path = Core/Wellness/LocalDailyReminderMath.swift; sourceTree = "<group>"; };
+		UXCOBDL12F90000100C7D34B /* BundledSleepStories.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = BundledSleepStories.swift; path = Core/Wellness/BundledSleepStories.swift; sourceTree = "<group>"; };
+		UXCOTST12F90000100C7D34B /* AladdinComposerOfflineTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AladdinComposerOfflineTests.swift; sourceTree = "<group>"; };
 		WELLOOP12F90000100C7D34B /* WellnessLoopCoordinator.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessLoopCoordinator.swift; path = Core/Services/WellnessLoopCoordinator.swift; sourceTree = "<group>"; };
 		WELLPAY12F90000100C7D34B /* WellnessPremiumPaywallSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessPremiumPaywallSheet.swift; sourceTree = "<group>"; };
 		WELLPDF12F90000100C7D34B /* WellnessProgressPDFService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessProgressPDFService.swift; path = Core/Services/WellnessProgressPDFService.swift; sourceTree = "<group>"; };
@@ -1475,6 +1495,16 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		B198A0152F9800100B198A0 /* Referral */ = {
+			isa = PBXGroup;
+			children = (
+				B198A0132F9800100B198A0 /* FamilyReferralInviteRouter.swift */,
+			);
+			name = Referral;
+			path = Core/Referral;
+			sourceTree = "<group>";
+		};
+
 		5E0057FF2EC3B4DC00024F7E /* Recovered References */ = {
 			isa = PBXGroup;
 			children = (
@@ -1874,6 +1904,10 @@
 				C0MPAPI12F90000100C7D34B /* CompanionAPIService.swift */,
 				WELLAPI12F90000100C7D34B /* WellnessAPIService.swift */,
 				WELLOF12F90000100C7D34B /* WellnessOfflineStore.swift */,
+				UXCOBAR12F90000100C7D34B /* AladdinComposerBar.swift */,
+				UXCOQ1212F90000100C7D34B /* AladdinOutboundQueue.swift */,
+				UXCOMTH12F90000100C7D34B /* LocalDailyReminderMath.swift */,
+				UXCOBDL12F90000100C7D34B /* BundledSleepStories.swift */,
 				WELLHK12F90000100C7D34B /* WellnessHealthSleepReader.swift */,
 				WELLPDF12F90000100C7D34B /* WellnessProgressPDFService.swift */,
 				WELLTS12F90000100C7D34B /* Core/Models/WellnessTogetherSession.swift */,
@@ -2007,6 +2041,7 @@
 				W5F20021 /* Localization */,
 				W5F20031 /* HeroAssets */,
 				W5F20041 /* Companion */,
+				W5F20051 /* Wellness */,
 				A1000006 /* Preview Content */,
 				A3000000 /* ViewModels/MainViewModel.swift */,
 				A3000004 /* Core/Models/APIModels.swift */,
@@ -2120,7 +2155,9 @@
 				E12D4A8B90123456ABCD1020 /* ImplementationPlanDashboardMirror.generated.swift */,
 				F12D4A8B90123456ABCD1030 /* PlanItem275CatalogMirror.generated.swift */,
 				A3000048 /* Core/Analytics/AnalyticsManager.swift */,
+				B198A0152F9800100B198A0 /* Referral */,
 				AITRST12F90000100C7D34B /* AITrustAnalytics.swift */,
+				B198A0112F9800100B198A0 /* FamilyReferralAnalytics.swift */,
 				A3000050 /* ViewModels/FamilyRegistrationViewModel.swift */,
 				A3000052 /* ViewModels/TariffsViewModel.swift */,
 				B6000100 /* IoT */,
@@ -2239,6 +2276,7 @@
 				CMPHDR02 /* CompanionHeroRouterTests.swift */,
 				FWSWT022F90000100C7D34B /* FamilySafeWordHasherTests.swift */,
 				FWS20T22F90000100C7D34B /* FamilyHabitRemindersPolicyTests.swift */,
+				UXCOTST12F90000100C7D34B /* AladdinComposerOfflineTests.swift */,
 				FWS20T42F90000100C7D34B /* AntifakeConfidenceRingTests.swift */,
 				CMPAIL02 /* CompanionHeroLayoutPresenceTests.swift */,
 				A11204002F900221A1120403 /* ContentManifestSigningTests.swift */,
@@ -2249,6 +2287,7 @@
 				C0VBTS012F90000100C7D34B /* CompanionVoiceboxSandboxTests.swift */,
 				E1E2EE0D02F1E40000E2EE01 /* FamilyE2EECryptoEngineTests.swift */,
 				B19800032F98000200B19800 /* FamilyLocalStorePersistenceTests.swift */,
+				B19800052F98000300B19800 /* FamilyAccessPolicyCaregiverTests.swift */,
 			);
 			path = UnitTests;
 			sourceTree = "<group>";
@@ -2475,6 +2514,7 @@
 				W5F20010 /* Audio in Resources */,
 				W5F20020 /* Localization in Resources */,
 				W5F20042 /* Companion in Resources */,
+				W5F20052 /* Wellness in Resources */,
 			);
 		};
 		AFCD0162F90000200C7D34B /* Resources */ = {
@@ -2868,6 +2908,10 @@
 				C0MPLEG22F90000100C7D34B /* CompanionLegalScreen.swift in Sources */,
 				WELLAPI22F90000100C7D34B /* WellnessAPIService.swift in Sources */,
 				WELLOF22F90000100C7D34B /* WellnessOfflineStore.swift in Sources */,
+				UXCOBAR22F90000100C7D34B /* AladdinComposerBar.swift in Sources */,
+				UXCOQ1222F90000100C7D34B /* AladdinOutboundQueue.swift in Sources */,
+				UXCOMTH22F90000100C7D34B /* LocalDailyReminderMath.swift in Sources */,
+				UXCOBDL22F90000100C7D34B /* BundledSleepStories.swift in Sources */,
 				WELLPDF22F90000100C7D34B /* WellnessProgressPDFService.swift in Sources */,
 				WELLCP22F90000100C7D34B /* WellnessSwiftUICompat.swift in Sources */,
 				WELLPAY22F90000100C7D34B /* WellnessPremiumPaywallSheet.swift in Sources */,
@@ -2940,6 +2984,8 @@
 				B700012C2F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceDayRecapSheet.swift in Sources */,
 				B70001122F90000100ABC001 /* Core/Storage/VoiceNotesStore.swift in Sources */,
 				A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */,
+				B198A0122F9800100B198A0 /* FamilyReferralAnalytics.swift in Sources */,
+				B198A0142F9800100B198A0 /* FamilyReferralInviteRouter.swift in Sources */,
 				AITRST22F90000100C7D34B /* AITrustAnalytics.swift in Sources */,
 				5EC3090E2EA6B60F00C7D34B /* 07_ParentalControlScreen.swift in Sources */,
 				5EC3090F2EA6B60F00C7D34B /* 05_SettingsScreen.swift in Sources */,
@@ -3153,6 +3199,7 @@
 				CMPHDR03 /* CompanionHeroRouterTests.swift in Sources */,
 				FWSWT032F90000100C7D34B /* FamilySafeWordHasherTests.swift in Sources */,
 				FWS20T32F90000100C7D34B /* FamilyHabitRemindersPolicyTests.swift in Sources */,
+				UXCOTST22F90000100C7D34B /* AladdinComposerOfflineTests.swift in Sources */,
 				FWS20T52F90000100C7D34B /* AntifakeConfidenceRingTests.swift in Sources */,
 				CMPAIL03 /* CompanionHeroLayoutPresenceTests.swift in Sources */,
 				A11204002F900221A1120413 /* ContentManifestSigningTests.swift in Sources */,
@@ -3164,6 +3211,7 @@
 				C0VBTS022F90000100C7D34B /* CompanionVoiceboxSandboxTests.swift in Sources */,
 				E1E2EE0E02F1E40000E2EE01 /* FamilyE2EECryptoEngineTests.swift in Sources */,
 				B19800042F98000200B19800 /* FamilyLocalStorePersistenceTests.swift in Sources */,
+				B19800062F98000300B19800 /* FamilyAccessPolicyCaregiverTests.swift in Sources */,
 			);
 		};
 		B5002002 /* Sources */ = {

@@ -2582,6 +2582,41 @@ class APIService: ObservableObject {
     func getReferralRewards(completion: @escaping (Result<ReferralRewardsResponse, Error>) -> Void) {
         networkManager.get(endpoint: AppConfig.Endpoint.referralRewards, completion: completion)
     }
+
+    /// Family Invite Pro — overview (tier + progress + ledger).
+    func getFamilyReferralAOverview(
+        familyId: String,
+        completion: @escaping (Result<FamilyReferralAOverviewResponse, Error>) -> Void
+    ) {
+        var params: [String: String] = [:]
+        let fid = familyId.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !fid.isEmpty {
+            params["family_id"] = fid
+        }
+        networkManager.get(
+            endpoint: AppConfig.Endpoint.referralAOverview,
+            queryParams: params.isEmpty ? nil : params,
+            completion: completion
+        )
+    }
+
+    func getFamilyReferralALedger(completion: @escaping (Result<[FamilyReferralALedgerItem], Error>) -> Void) {
+        networkManager.get(endpoint: AppConfig.Endpoint.referralALedger, completion: completion)
+    }
+
+    func attachFamilyReferralA(code: String, completion: @escaping (Result<FamilyReferralAAttachResponse, Error>) -> Void) {
+        struct EmptyBody: Codable {}
+        let encoded = code.addingPercentEncoding(withAllowedCharacters: .urlQueryAllowed) ?? code
+        let endpoint = "\(AppConfig.Endpoint.referralAAttach)?code=\(encoded)"
+        networkManager.post(endpoint: endpoint, body: EmptyBody(), completion: completion)
+    }
+
+    func applyFamilyReferralA(
+        _ request: FamilyReferralAApplyRequest,
+        completion: @escaping (Result<FamilyReferralAApplyResponse, Error>) -> Void
+    ) {
+        networkManager.post(endpoint: AppConfig.Endpoint.referralAApply, body: request, completion: completion)
+    }
     
     // MARK: - Protection API (Threat Protection)
     

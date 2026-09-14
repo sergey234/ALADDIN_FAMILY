@@ -227,12 +227,21 @@ def get_active_links_count(db: Session, user_id) -> int:
         return 0
 
 def get_referral_tier(converted_count: int) -> str:
-    """Определить tier на основе количества конверсий"""
-    if converted_count >= 10:
-        return "gold"
-    elif converted_count >= 5:
-        return "silver"
-    else:
+    """Tier Family Invite Pro (A): bronze/silver/gold/platinum."""
+    try:
+        from app.services.family_referral_a import tier_for_qualified_count
+
+        q = max(0, int(converted_count))
+        if q <= 0:
+            return "bronze"
+        return tier_for_qualified_count(q).tier.value
+    except Exception:
+        if converted_count >= 10:
+            return "platinum"
+        if converted_count >= 5:
+            return "gold"
+        if converted_count >= 3:
+            return "silver"
         return "bronze"
 
 # ============================================
@@ -352,101 +361,41 @@ async def get_referral_rewards(
     db: Session = Depends(get_db),
     current_user: dict = Depends(get_current_user)
 ):
-    """Получить информацию о наградах и достижениях."""
+    """Награды Family Invite Pro: другу −20%; рефереру дни защиты по уровню."""
     try:
         user_id = current_user["id"]
-        
-        # Посчитать количество оплативших
         stats = count_referrals(db, user_id)
         total_converted = stats["converted"]
-        
-        # Определить награды на основе total_converted
-        rewards = []
-        
-        # Награда 1: 1 приглашенный оплатил
-        if total_converted >= 1:
-            rewards.append(ReferralRewardItem(
-                reward_id="reward_1",
-                title_key="referral_reward_1_title",
-                subtitle_key="referral_reward_1_subtitle",
-                amount_key="referral_reward_1_amount",
-                reward_value="10%",
-                icon="percent.circle.fill",
-                required_converted=1,
-                status="unlocked",
-                remaining=0,
-                unlocked_at=datetime.now().isoformat()
-            ))
-        else:
-            rewards.append(ReferralRewardItem(
-                reward_id="reward_1",
-                title_key="referral_reward_1_title",
-                subtitle_key="referral_reward_1_subtitle",
-                amount_key="referral_reward_1_amount",
-                reward_value="10%",
-                icon="percent.circle.fill",
-                required_converted=1,
-                status="locked",
-                remaining=1 - total_converted,
-                unlocked_at=None
-            ))
-        
-        # Награда 2: 5 приглашенных оплатили
-        if total_converted >= 5:
-            rewards.append(ReferralRewardItem(
-                reward_id="reward_2",
-                title_key="referral_reward_2_title",
-                subtitle_key="referral_reward_2_subtitle",
-                amount_key="referral_reward_2_amount",
-                reward_value="20%",
-                icon="percent.circle.fill",
-                required_converted=5,
-                status="unlocked",
-                remaining=0,
-                unlocked_at=datetime.now().isoformat()
-            ))
-        else:
-            rewards.append(ReferralRewardItem(
-                reward_id="reward_2",
-                title_key="referral_reward_2_title",
-                subtitle_key="referral_reward_2_subtitle",
-                amount_key="referral_reward_2_amount",
-                reward_value="20%",
-                icon="percent.circle.fill",
-                required_converted=5,
-                status="locked",
-                remaining=5 - total_converted,
-                unlocked_at=None
-            ))
-        
-        # Награда 3: 10 приглашенных оплатили
-        if total_converted >= 10:
-            rewards.append(ReferralRewardItem(
-                reward_id="reward_3",
-                title_key="referral_reward_3_title",
-                subtitle_key="referral_reward_3_subtitle",
-                amount_key="referral_reward_3_amount",
-                reward_value="30%",
-                icon="percent.circle.fill",
-                required_converted=10,
-                status="unlocked",
-                remaining=0,
-                unlocked_at=datetime.now().isoformat()
-            ))
-        else:
-            rewards.append(ReferralRewardItem(
-                reward_id="reward_3",
-                title_key="referral_reward_3_title",
-                subtitle_key="referral_reward_3_subtitle",
-                amount_key="referral_reward_3_amount",
-                reward_value="30%",
-                icon="percent.circle.fill",
-                required_converted=10,
-                status="locked",
-                remaining=10 - total_converted,
-                unlocked_at=None
-            ))
-        
+
+        def row(reward_id, title_key, subtitle_key, amount_key, value, icon, need, unlocked_at=None):
+            unlocked = total_converted >= need if need > 0 else True
+            return ReferralRewardItem(
+                reward_id=reward_id,
+                title_key=title_key,
+                subtitle_key=subtitle_key,
+                amount_key=amount_key,
+                reward_value=value,
+                icon=icon,
+                required_converted=need,
+                status="unlocked" if unlocked else "locked",
+                remaining=0 if unlocked else max(0, need - total_converted),
+                unlocked_at=unlocked_at if unlocked else None,
+            )
+
+        now = datetime.now().isoformat()
+        rewards = [
+            row("friend", "referral_a_reward_friend_title", "referral_a_reward_friend_subtitle",
+                "referral_a_reward_friend_value", "-20%", "tag.fill", 0, now),
+            row("bronze", "referral_a_reward_bronze_title", "referral_a_reward_bronze_subtitle",
+                "referral_a_reward_bronze_value", "+7d", "shield.fill", 1, now),
+            row("silver", "referral_a_reward_silver_title", "referral_a_reward_silver_subtitle",
+                "referral_a_reward_silver_value", "+14d", "shield.lefthalf.filled", 3, now),
+            row("gold", "referral_a_reward_gold_title", "referral_a_reward_gold_subtitle",
+                "referral_a_reward_gold_value", "+30d", "crown.fill", 5, now),
+            row("platinum", "referral_a_reward_platinum_title", "referral_a_reward_platinum_subtitle",
+                "referral_a_reward_platinum_value", "+30d", "star.fill", 10, now),
+        ]
+
         return ReferralRewardsResponse(
             total_converted=total_converted,
             rewards=rewards
@@ -456,3 +405,193 @@ async def get_referral_rewards(
     except Exception as e:
         logger.error(f"Ошибка в get_referral_rewards: {str(e)}", exc_info=True)
         raise HTTPException(status_code=500, detail=f"Ошибка сервера: {str(e)}")
+
+
+# ============================================
+# FAMILY INVITE PRO (Вариант A) — ledger / apply / attach
+# ============================================
+
+class FamilyReferralApplyRequest(BaseModel):
+    referrer_family_id: str
+    friend_family_id: str
+    friend_user_id: int
+    referral_code: Optional[str] = None
+    referrer_has_active_tariff: bool = True
+    friend_has_paid: bool = False
+    friend_active_protection_days: int = 0
+    device_soft: Optional[str] = None
+
+
+class FamilyReferralApplyResponse(BaseModel):
+    ok: bool
+    reason: str
+    friend_discount_percent: int = 0
+    referrer_protection_days: int = 0
+    tier: Optional[str] = None
+    qualified_count: Optional[int] = None
+
+
+class FamilyReferralLedgerItem(BaseModel):
+    id: str
+    status: str
+    reason: str
+    friend_discount_percent: int
+    referrer_protection_days: int
+    tier: Optional[str] = None
+    created_at: Optional[str] = None
+    referrer_family_id: str
+    friend_family_id: str
+
+
+class FamilyReferralAOverviewResponse(BaseModel):
+    qualified_families: int
+    tier: str
+    referrer_protection_days_current_tier: int
+    friend_discount_percent: int
+    progress: dict
+    ledger: List[FamilyReferralLedgerItem]
+    program: str = "family_invite_pro_a"
+
+
+@router.get("/a/overview", response_model=FamilyReferralAOverviewResponse)
+async def family_referral_a_overview(
+    family_id: str = "",
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Обзор Family Invite Pro: уровень, прогресс, ledger."""
+    from app.services import family_referral_ledger as frl
+
+    user_id = current_user["id"]
+    fid = (family_id or "").strip()
+    data = frl.overview_for_referrer(db, user_id=int(user_id), family_id=fid)
+    ledger_items = [
+        FamilyReferralLedgerItem(
+            id=x["id"],
+            status=x["status"],
+            reason=x["reason"],
+            friend_discount_percent=x["friend_discount_percent"],
+            referrer_protection_days=x["referrer_protection_days"],
+            tier=x.get("tier"),
+            created_at=x.get("created_at"),
+            referrer_family_id=x["referrer_family_id"],
+            friend_family_id=x["friend_family_id"],
+        )
+        for x in data.get("ledger", [])
+    ]
+    return FamilyReferralAOverviewResponse(
+        qualified_families=data["qualified_families"],
+        tier=data["tier"],
+        referrer_protection_days_current_tier=data["referrer_protection_days_current_tier"],
+        friend_discount_percent=data["friend_discount_percent"],
+        progress=data["progress"],
+        ledger=ledger_items,
+    )
+
+
+@router.get("/a/ledger", response_model=List[FamilyReferralLedgerItem])
+async def family_referral_a_ledger(
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    from app.services import family_referral_ledger as frl
+
+    rows = frl.list_ledger_for_user(db, int(current_user["id"]), limit=50)
+    return [
+        FamilyReferralLedgerItem(
+            id=x["id"],
+            status=x["status"],
+            reason=x["reason"],
+            friend_discount_percent=x["friend_discount_percent"],
+            referrer_protection_days=x["referrer_protection_days"],
+            tier=x.get("tier"),
+            created_at=x.get("created_at"),
+            referrer_family_id=x["referrer_family_id"],
+            friend_family_id=x["friend_family_id"],
+        )
+        for x in rows
+    ]
+
+
+@router.post("/a/apply", response_model=FamilyReferralApplyResponse)
+async def family_referral_a_apply(
+    body: FamilyReferralApplyRequest,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Начисление по qualify (оплата или 14+ дней защиты)."""
+    from app.services import family_referral_ledger as frl
+
+    referrer_uid = int(current_user["id"])
+    out = frl.apply_family_referral_a(
+        db,
+        referrer_user_id=referrer_uid,
+        friend_user_id=int(body.friend_user_id),
+        referrer_family_id=body.referrer_family_id.strip(),
+        friend_family_id=body.friend_family_id.strip(),
+        referral_code=body.referral_code,
+        referrer_has_active_tariff=bool(body.referrer_has_active_tariff),
+        friend_has_paid=bool(body.friend_has_paid),
+        friend_active_protection_days=int(body.friend_active_protection_days or 0),
+        device_raw=body.device_soft,
+    )
+    return FamilyReferralApplyResponse(
+        ok=bool(out.get("ok")),
+        reason=str(out.get("reason") or ""),
+        friend_discount_percent=int(out.get("friend_discount_percent") or 0),
+        referrer_protection_days=int(out.get("referrer_protection_days") or 0),
+        tier=out.get("tier"),
+        qualified_count=out.get("qualified_count"),
+    )
+
+
+@router.post("/a/attach")
+async def family_referral_a_attach_code(
+    code: str,
+    db: Session = Depends(get_db),
+    current_user: dict = Depends(get_current_user),
+):
+    """Привязка invite-кода к текущему пользователю (pending)."""
+    user_id = int(current_user["id"])
+    c = (code or "").strip().upper()
+    if len(c) < 4 or len(c) > 20:
+        raise HTTPException(status_code=400, detail="invalid_code")
+    try:
+        owner = db.execute(
+            text("SELECT user_id FROM referral_codes WHERE UPPER(code) = :c"),
+            {"c": c},
+        ).fetchone()
+        if not owner:
+            raise HTTPException(status_code=404, detail="code_not_found")
+        referrer_id = int(owner[0])
+        if referrer_id == user_id:
+            raise HTTPException(status_code=400, detail="anti_self")
+        existing = db.execute(
+            text(
+                """
+                SELECT id FROM referrals
+                WHERE referrer_id = :r AND invited_user_id = :u
+                LIMIT 1
+                """
+            ),
+            {"r": referrer_id, "u": user_id},
+        ).fetchone()
+        if existing:
+            return {"ok": True, "status": "already_attached", "referral_code": c}
+        db.execute(
+            text(
+                """
+                INSERT INTO referrals (referrer_id, invited_user_id, referral_code, status, discount_applied)
+                VALUES (:r, :u, :c, 'pending', 0)
+                """
+            ),
+            {"r": referrer_id, "u": user_id, "c": c},
+        )
+        db.commit()
+        return {"ok": True, "status": "attached", "referral_code": c}
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error("family_referral_a_attach: %s", e, exc_info=True)
+        raise HTTPException(status_code=500, detail="attach_failed")

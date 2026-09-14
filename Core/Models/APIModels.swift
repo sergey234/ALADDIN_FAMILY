@@ -2067,6 +2067,110 @@ struct ReferralRewardItem: Codable, Identifiable {
     }
 }
 
+// MARK: - Family Invite Pro (Вариант A)
+
+struct FamilyReferralAProgress: Codable {
+    let current: Int
+    let nextTierAt: Int?
+    let remaining: Int
+
+    enum CodingKeys: String, CodingKey {
+        case current
+        case nextTierAt = "next_tier_at"
+        case remaining
+    }
+}
+
+struct FamilyReferralALedgerItem: Codable, Identifiable {
+    let id: String
+    let status: String
+    let reason: String
+    let friendDiscountPercent: Int
+    let referrerProtectionDays: Int
+    let tier: String?
+    let createdAt: String?
+    let referrerFamilyId: String
+    let friendFamilyId: String
+
+    enum CodingKeys: String, CodingKey {
+        case id, status, reason, tier
+        case friendDiscountPercent = "friend_discount_percent"
+        case referrerProtectionDays = "referrer_protection_days"
+        case createdAt = "created_at"
+        case referrerFamilyId = "referrer_family_id"
+        case friendFamilyId = "friend_family_id"
+    }
+}
+
+struct FamilyReferralAOverviewResponse: Codable {
+    let qualifiedFamilies: Int
+    let tier: String
+    let referrerProtectionDaysCurrentTier: Int
+    let friendDiscountPercent: Int
+    let progress: FamilyReferralAProgress
+    let ledger: [FamilyReferralALedgerItem]
+    let program: String?
+
+    enum CodingKeys: String, CodingKey {
+        case qualifiedFamilies = "qualified_families"
+        case tier
+        case referrerProtectionDaysCurrentTier = "referrer_protection_days_current_tier"
+        case friendDiscountPercent = "friend_discount_percent"
+        case progress
+        case ledger
+        case program
+    }
+}
+
+struct FamilyReferralAAttachResponse: Codable {
+    let ok: Bool
+    let status: String?
+    let referralCode: String?
+
+    enum CodingKeys: String, CodingKey {
+        case ok, status
+        case referralCode = "referral_code"
+    }
+}
+
+struct FamilyReferralAApplyRequest: Codable {
+    let friendUserId: Int
+    let referrerFamilyId: String
+    let friendFamilyId: String
+    let referralCode: String?
+    let referrerHasActiveTariff: Bool
+    let friendHasPaid: Bool
+    let friendActiveProtectionDays: Int
+    let deviceSoft: String?
+
+    enum CodingKeys: String, CodingKey {
+        case friendUserId = "friend_user_id"
+        case referrerFamilyId = "referrer_family_id"
+        case friendFamilyId = "friend_family_id"
+        case referralCode = "referral_code"
+        case referrerHasActiveTariff = "referrer_has_active_tariff"
+        case friendHasPaid = "friend_has_paid"
+        case friendActiveProtectionDays = "friend_active_protection_days"
+        case deviceSoft = "device_soft"
+    }
+}
+
+struct FamilyReferralAApplyResponse: Codable {
+    let ok: Bool
+    let reason: String
+    let friendDiscountPercent: Int
+    let referrerProtectionDays: Int
+    let tier: String?
+    let qualifiedCount: Int?
+
+    enum CodingKeys: String, CodingKey {
+        case ok, reason, tier
+        case friendDiscountPercent = "friend_discount_percent"
+        case referrerProtectionDays = "referrer_protection_days"
+        case qualifiedCount = "qualified_count"
+    }
+}
+
 // MARK: - IoT Models
 
 struct IoTDevice: Codable, Identifiable {

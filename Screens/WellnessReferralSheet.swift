@@ -80,7 +80,7 @@ struct WellnessReferralSheet: View {
     }
 
     private func payloadView(_ payload: WellnessReferralResponse) -> some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(alignment: .leading, spacing: isL3 ? 20 : 16) {
                 if isL3 {
                     l3Header
@@ -105,9 +105,7 @@ struct WellnessReferralSheet: View {
                 .font(.title3.weight(.semibold))
                 .foregroundColor(.white)
                 .fixedSize(horizontal: false, vertical: true)
-            Text(localizationManager.localized("wellness_crisis_parent_ping_hint"))
-                .font(.caption)
-                .foregroundColor(.white.opacity(0.75))
+            // Parent ping is silent backend — no on-screen confirmation copy.
         }
     }
 

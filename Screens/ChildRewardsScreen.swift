@@ -209,17 +209,17 @@ struct ChildRewardsScreen: View {
                         // Детям показываем ТОЛЬКО историю (без заголовка "Воспитание ребенка")
                         
                         Group {
-                            if isCurrentUserParent() {
-                                // ТОЛЬКО ДЛЯ РОДИТЕЛЕЙ
+                            if isCurrentUserCaregiver() {
+                                // Опекун: parent или elderly (60+)
                                 parentQuickActions
                                     .onAppear {
-                                        print("✅ Родительский интерфейс: показана секция 'Воспитание ребенка'")
+                                        print("✅ Опекун: показана секция 'Воспитание ребенка'")
                                     }
                             } else {
-                                // ТОЛЬКО ДЛЯ ДЕТЕЙ - показываем историю
+                                // Ребёнок / подросток / вход из Kids — только история
                                 childRewardsHistoryView
                                     .onAppear {
-                                        print("✅ Детский интерфейс: показана история наград/наказаний (без 'Воспитание ребенка')")
+                                        print("✅ Детский интерфейс: история без 'Воспитание ребенка'")
                                     }
                             }
                         }
@@ -311,56 +311,22 @@ struct ChildRewardsScreen: View {
             didStartInitialLoading = true
             VisualLogger.shared.log("👀 ChildRewardsScreen onAppear", level: .info, category: "CHILD_REWARDS.UI")
 
-            // ✅ КРИТИЧНО: Принудительная установка роли при открытии экрана
-            // Это гарантирует, что роль будет установлена даже если пользователь открыл экран напрямую
-            var currentRole = UserDefaults.standard.string(forKey: "current_user_role")
-            print("🔍 ChildRewardsScreen.onAppear: Текущая роль: '\(currentRole ?? "НЕ УСТАНОВЛЕНА")'")
-
-            // Вход из детского интерфейса → всегда режим ребёнка (роль parent из Семьи иначе ломала детский UI).
-            let fromChildInterface = navigationManager.currentScreen == .childInterface
-                || navigationManager.navigationStack.contains(.childInterface)
+            // RWD: роль из roster семьи (FamilyAccessPolicy), не из «последнего экрана».
+            // Kids / Child Interface → force child (кнопки опекуна скрыты).
+            let fromChildInterface = isEnteredFromChildInterface()
             if fromChildInterface {
                 UserDefaults.standard.set("child", forKey: "current_user_role")
                 UserDefaults.standard.synchronize()
-                currentRole = "child"
-                print("   ✅ Роль принудительно 'child' (вход с Child Interface)")
+                print("   ✅ RWD: force child (вход с Child Interface / Kids)")
+            } else {
+                let roster = UnifiedFamilyRoster.load()
+                FamilyLocalStore.alignCurrentUserRoleFromPersistedRoster(roster)
+                FamilyAccessPolicy.syncCurrentUserRoleDefaults(members: roster)
+                print("   ✅ RWD: роль синхронизирована с roster / FamilyAccessPolicy")
             }
-            
-            // Если роль не установлена, пытаемся определить по текущему экрану
-            if currentRole == nil {
-                let currentScreen = navigationManager.currentScreen
-                print("   🔍 Роль не установлена, проверяем текущий экран: \(currentScreen)")
-                
-                if currentScreen == .parentalControl {
-                    UserDefaults.standard.set("parent", forKey: "current_user_role")
-                    UserDefaults.standard.synchronize()
-                    print("   ✅ Роль установлена как 'parent' (по текущему экрану)")
-                } else if currentScreen == .childInterface {
-                    UserDefaults.standard.set("child", forKey: "current_user_role")
-                    UserDefaults.standard.synchronize()
-                    print("   ✅ Роль установлена как 'child' (по текущему экрану)")
-                } else {
-                    // Проверяем стек навигации
-                    if !navigationManager.navigationStack.isEmpty {
-                        let previousScreen = navigationManager.navigationStack.last
-                        print("   🔍 Проверяем предыдущий экран в стеке: \(previousScreen?.rawValue ?? "нет")")
-                        
-                        if previousScreen == .parentalControl {
-                            UserDefaults.standard.set("parent", forKey: "current_user_role")
-                            UserDefaults.standard.synchronize()
-                            print("   ✅ Роль установлена как 'parent' (по предыдущему экрану)")
-                        } else if previousScreen == .childInterface {
-                            UserDefaults.standard.set("child", forKey: "current_user_role")
-                            UserDefaults.standard.synchronize()
-                            print("   ✅ Роль установлена как 'child' (по предыдущему экрану)")
-                        }
-                    }
-                }
-            }
-            
-            // Повторная проверка после установки
+
             let finalRole = UserDefaults.standard.string(forKey: "current_user_role") ?? "НЕ УСТАНОВЛЕНА"
-            print("   📋 Финальная роль: '\(finalRole)'")
+            print("   📋 Финальная роль UD: '\(finalRole)' caregiver=\(isCurrentUserCaregiver())")
 
             // Hard-fallback: never keep the screen in endless initial loading.
             if !isInitialLoadCompleted && !initialLoadingFallbackScheduled {
@@ -396,7 +362,11 @@ struct ChildRewardsScreen: View {
             // Загружаем награды магазина
             loadShopRewards()
             
-            VisualLogger.shared.log("👤 role_is_parent = \(isCurrentUserParent())", level: .info, category: "CHILD_REWARDS.UI")
+            VisualLogger.shared.log(
+                "👤 role_is_caregiver = \(isCurrentUserCaregiver()) forceChild=\(isEnteredFromChildInterface())",
+                level: .info,
+                category: "CHILD_REWARDS.UI"
+            )
         }
         .onChange(of: storedUnicornBalance) { newValue in
             // Автообновление баланса при изменении в UserDefaults (например, из RewardsModalView)
@@ -1181,66 +1151,24 @@ struct ChildRewardsScreen: View {
         await viewModel.load(childId: effectiveChildId)
     }
     
-    /// Проверка: является ли текущий пользователь родителем
-    /// ✅ КРИТИЧНО ДЛЯ БЕЗОПАСНОСТИ: Дети НЕ должны видеть родительские функции
+    /// Вход из детского контура (Kids / Child Interface).
+    private func isEnteredFromChildInterface() -> Bool {
+        navigationManager.currentScreen == .childInterface
+            || navigationManager.navigationStack.contains(.childInterface)
+    }
+
+    /// Опекун (parent / elderly): кнопки Вознаградить / Наказать.
+    /// SSOT: `FamilyAccessPolicy` + roster, не «последний экран».
+    private func isCurrentUserCaregiver() -> Bool {
+        let forceChild = isEnteredFromChildInterface()
+        let ok = FamilyAccessPolicy.isCaregiverForRewardsUI(forceChildMode: forceChild)
+        print("🔍 ChildRewardsScreen.isCurrentUserCaregiver: forceChild=\(forceChild) -> \(ok)")
+        return ok
+    }
+
+    /// Совместимость со старыми вызовами в этом файле.
     private func isCurrentUserParent() -> Bool {
-        // 1. Проверка через UserDefaults (основной способ)
-        if let roleString = UserDefaults.standard.string(forKey: "current_user_role") {
-            print("🔍 ChildRewardsScreen.isCurrentUserParent: Найдена роль в UserDefaults: '\(roleString)'")
-            
-            // Пробуем распознать роль через FamilyRole
-            if let role = FamilyRole(storageValue: roleString) {
-                let isParent = role == .parent
-                print("   - FamilyRole распознан: \(role.rawValue)")
-                print("   - Результат: \(isParent ? "РОДИТЕЛЬ" : "РЕБЁНОК")")
-                
-                if isParent {
-                    print("   ✅ Разрешён доступ к родительским функциям")
-                } else {
-                    print("   🔒 Доступ к родительским функциям ЗАБЛОКИРОВАН (ребёнок)")
-                }
-                
-                return isParent
-            } else {
-                // Роль не распознана, пробуем прямую проверку строки
-                print("   ⚠️ FamilyRole не распознан, пробуем прямую проверку строки")
-                let lowercased = roleString.lowercased()
-                if lowercased == "parent" || lowercased.contains("parent") {
-                    print("   ✅ Прямая проверка: 'parent' найдено в строке")
-                    return true
-                }
-            }
-        } else {
-            print("🔍 ChildRewardsScreen.isCurrentUserParent: Роль НЕ найдена в UserDefaults")
-        }
-        
-        // 2. Fallback: проверка текущего экрана
-        let currentScreen = navigationManager.currentScreen
-        print("   🔍 Fallback: проверяем текущий экран: \(currentScreen)")
-        
-        if currentScreen == .parentalControl {
-            print("   ✅ Fallback: текущий экран ParentalControl -> устанавливаем роль 'parent'")
-            UserDefaults.standard.set("parent", forKey: "current_user_role")
-            UserDefaults.standard.synchronize()
-            return true
-        }
-        
-        // 3. Fallback: проверка предыдущего экрана в стеке навигации
-        if !navigationManager.navigationStack.isEmpty {
-            let previousScreen = navigationManager.navigationStack.last
-            print("   🔍 Fallback: проверяем предыдущий экран в стеке: \(previousScreen?.rawValue ?? "нет")")
-            
-            if previousScreen == .parentalControl {
-                print("   ✅ Fallback: предыдущий экран ParentalControl -> устанавливаем роль 'parent'")
-                UserDefaults.standard.set("parent", forKey: "current_user_role")
-                UserDefaults.standard.synchronize()
-                return true
-            }
-        }
-        
-        // 4. По умолчанию - ребёнок (безопаснее)
-        print("   🚨 Fallback: роль не найдена -> false (безопасность, считаем ребёнком)")
-        return false
+        isCurrentUserCaregiver()
     }
     
     private func getCompletedLessons() -> Int {
@@ -1287,6 +1215,17 @@ struct ChildRewardsScreen: View {
                 Button(action: {
                     print("🔍 DEBUG: Нажата кнопка 'Вознаградить' в ChildRewardsScreen")
                     HapticFeedback.impact(.medium)
+                    guard isCurrentUserCaregiver() else {
+                        HapticFeedback.notification(.error)
+                        return
+                    }
+                    guard FamilyAccessPolicy.hasPermission(
+                        .manageCriticalFamilySettings,
+                        members: UnifiedFamilyRoster.load()
+                    ) else {
+                        HapticFeedback.notification(.warning)
+                        return
+                    }
                     showRewardInput = true
                 }) {
                     VStack(spacing: Spacing.xs) {
@@ -1313,6 +1252,17 @@ struct ChildRewardsScreen: View {
                 Button(action: {
                     print("🔍 DEBUG: Нажата кнопка 'Наказать' в ChildRewardsScreen")
                     HapticFeedback.impact(.medium)
+                    guard isCurrentUserCaregiver() else {
+                        HapticFeedback.notification(.error)
+                        return
+                    }
+                    guard FamilyAccessPolicy.hasPermission(
+                        .manageCriticalFamilySettings,
+                        members: UnifiedFamilyRoster.load()
+                    ) else {
+                        HapticFeedback.notification(.warning)
+                        return
+                    }
                     showPunishInput = true
                 }) {
                     VStack(spacing: Spacing.xs) {

@@ -26,6 +26,16 @@ struct ReferralScreen: View {
     @State private var referralHistoryItems: [ReferralHistory] = []
     @State private var isLoading: Bool = false
     @State private var errorMessage: String?
+    @State private var isCaregiverAccess: Bool = true
+    @State private var aTier: String = "none"
+    @State private var aQualified: Int = 0
+    @State private var aProtectionDays: Int = 0
+    @State private var aProgressCurrent: Int = 0
+    @State private var aProgressNext: Int? = 1
+    @State private var aProgressRemaining: Int = 1
+    @State private var aLedger: [FamilyReferralALedgerItem] = []
+    @State private var showLevelUp: Bool = false
+    @State private var lastSeenTier: String = UserDefaults.standard.string(forKey: "referral_a_last_tier") ?? "none"
     
     // MARK: - Body
     
@@ -43,6 +53,9 @@ struct ReferralScreen: View {
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
+                        if !isCaregiverAccess {
+                            caregiverOnlyCard
+                        } else {
                         if let errorMessage = errorMessage {
                             Text(errorMessage)
                                 .font(.caption)
@@ -56,6 +69,8 @@ struct ReferralScreen: View {
                         
                         // Главный баннер
                         mainBanner
+
+                        familyInviteTierCard
                         
                         // Ваша статистика
                         yourStats
@@ -65,15 +80,20 @@ struct ReferralScreen: View {
                         
                         // Как это работает
                         howItWorksCard
+
+                        referralFAQCard
                         
                         // Способы приглашения
                         invitationMethods
                         
                         // Награды
                         rewardsSection
+
+                        familyInviteLedgerCard
                         
                         // История рефералов
                         referralsHistory
+                        }
                     }
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.top, Spacing.m)
@@ -101,11 +121,20 @@ struct ReferralScreen: View {
                 .environmentObject(localizationManager)
         }
         .sheet(isPresented: $showRewards) {
-            RewardsView(rewardItems: rewardItems, totalConverted: rewardTotalConverted)
+            RewardsView(rewardItems: rewardItems, totalConverted: max(rewardTotalConverted, paidReferralsCount, aQualified))
                 .environmentObject(localizationManager)
         }
+        .overlay {
+            if showLevelUp {
+                levelUpOverlay
+            }
+        }
         .task {
-            loadReferralData()
+            resolveCaregiverAccess()
+            FamilyReferralAnalytics.track(.screenOpen)
+            if isCaregiverAccess {
+                loadReferralData()
+            }
         }
     }
     
@@ -113,8 +142,8 @@ struct ReferralScreen: View {
     
     private var navigationHeader: some View {
         ALADDINNavigationBar(
-            title: localizationManager.localized("referral_title"),
-            subtitle: localizationManager.localized("referral_subtitle"),
+            title: localizationManager.localized("referral_a_title"),
+            subtitle: localizationManager.localized("referral_a_subtitle"),
             showBackButton: true,
             showProfileButton: false,
             showListButton: false,
@@ -144,19 +173,21 @@ struct ReferralScreen: View {
                 .font(.system(size: Size.iconXLarge * 1.5))
                 .accessibilityLabel(localizationManager.localized("referral_gift_icon"))
             
-            Text(localizationManager.localized("referral_invite_friends_title"))
+            Text(localizationManager.localized("referral_a_invite_title"))
                 .font(.h1)
                 .foregroundColor(.textPrimary)
                 .accessibilityAddTraits(.isHeader)
             
-            Text(localizationManager.localized("referral_invite_friends_desc"))
+            Text(localizationManager.localized("referral_a_invite_desc"))
                 .font(.body)
                 .foregroundColor(.textSecondary)
                 .multilineTextAlignment(.center)
-                .accessibilityLabel(localizationManager.localized("referral_invite_friends_desc"))
+                .accessibilityLabel(localizationManager.localized("referral_a_invite_desc"))
             
             // Кнопка пригласить
             Button(action: {
+                FamilyReferralAnalytics.track(.inviteTap, parameters: ["method": "banner"])
+                AnalyticsManager.shared.trackReferralShare(method: "banner")
                 showShareSheet = true
             }) {
                 HStack(spacing: Spacing.s) {
@@ -185,6 +216,224 @@ struct ReferralScreen: View {
         .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
+    // MARK: - Family Invite Pro (A)
+    
+    private var caregiverOnlyCard: some View {
+        VStack(spacing: Spacing.m) {
+            Text("👨‍👩‍👧")
+                .font(.system(size: 40))
+            Text(localizationManager.localized("referral_a_caregiver_only_title"))
+                .font(.h3)
+                .foregroundColor(.textPrimary)
+                .multilineTextAlignment(.center)
+            Text(localizationManager.localized("referral_a_caregiver_only_desc"))
+                .font(.body)
+                .foregroundColor(.textSecondary)
+                .multilineTextAlignment(.center)
+        }
+        .padding(Spacing.cardPadding)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+        .onAppear {
+            FamilyReferralAnalytics.track(.caregiverBlocked)
+        }
+    }
+
+    private var familyInviteTierCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("referral_a_tier_title"))
+                .font(.h3)
+                .foregroundColor(.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+
+            HStack {
+                Text(tierDisplayName(aTier))
+                    .font(.bodyBold)
+                    .foregroundColor(.primaryBlue)
+                Spacer()
+                if aProtectionDays > 0 {
+                    Text(String(format: localizationManager.localized("referral_a_tier_days"), aProtectionDays))
+                        .font(.caption)
+                        .foregroundColor(.successGreen)
+                }
+            }
+
+            Text(String(format: localizationManager.localized("referral_a_qualified_count"), aQualified))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+
+            if let next = aProgressNext {
+                ProgressView(value: Double(aProgressCurrent), total: Double(max(next, 1)))
+                    .tint(.primaryBlue)
+                Text(String(format: localizationManager.localized("referral_a_progress_remaining"), aProgressRemaining))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+            } else {
+                Text(localizationManager.localized("referral_a_progress_max"))
+                    .font(.caption)
+                    .foregroundColor(.successGreen)
+            }
+        }
+        .padding(Spacing.cardPadding)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+    }
+
+    private var familyInviteLedgerCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("referral_a_ledger_title"))
+                .font(.h3)
+                .foregroundColor(.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+
+            if aLedger.isEmpty {
+                Text(localizationManager.localized("referral_a_ledger_empty"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+            } else {
+                ForEach(aLedger.prefix(8)) { item in
+                    HStack(alignment: .top, spacing: Spacing.s) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(ledgerReasonLabel(item.reason))
+                                .font(.bodyBold)
+                                .foregroundColor(.textPrimary)
+                            Text(item.createdAt ?? "")
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                        }
+                        Spacer()
+                        VStack(alignment: .trailing, spacing: 2) {
+                            if item.referrerProtectionDays > 0 {
+                                Text("+\(item.referrerProtectionDays) \(localizationManager.localized("referral_a_days_short"))")
+                                    .font(.caption)
+                                    .foregroundColor(.successGreen)
+                            }
+                            Text("−\(item.friendDiscountPercent)%")
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                        }
+                    }
+                    .padding(.vertical, Spacing.xxs)
+                }
+            }
+        }
+        .padding(Spacing.cardPadding)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+    }
+
+    private var referralFAQCard: some View {
+        VStack(alignment: .leading, spacing: Spacing.m) {
+            Text(localizationManager.localized("referral_a_faq_title"))
+                .font(.h3)
+                .foregroundColor(.textPrimary)
+                .accessibilityAddTraits(.isHeader)
+
+            faqRow(q: "referral_a_faq_q1", a: "referral_a_faq_a1")
+            faqRow(q: "referral_a_faq_q2", a: "referral_a_faq_a2")
+            faqRow(q: "referral_a_faq_q3", a: "referral_a_faq_a3")
+        }
+        .padding(Spacing.cardPadding)
+        .stormGlassCard(cornerRadius: CornerRadius.large)
+    }
+
+    private func faqRow(q: String, a: String) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.xxs) {
+            Text(localizationManager.localized(q))
+                .font(.bodyBold)
+                .foregroundColor(.textPrimary)
+            Text(localizationManager.localized(a))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+        }
+    }
+
+    private var levelUpOverlay: some View {
+        ZStack {
+            Color.black.opacity(0.35).ignoresSafeArea()
+            VStack(spacing: Spacing.m) {
+                Text("✨")
+                    .font(.system(size: 56))
+                    .scaleEffect(showLevelUp ? 1.15 : 0.8)
+                    .animation(.spring(response: 0.45, dampingFraction: 0.55), value: showLevelUp)
+                Text(localizationManager.localized("referral_a_level_up_title"))
+                    .font(.h2)
+                    .foregroundColor(.white)
+                Text(tierDisplayName(aTier))
+                    .font(.bodyBold)
+                    .foregroundColor(.secondaryGold)
+                Button(localizationManager.localized("referral_qr_done")) {
+                    showLevelUp = false
+                }
+                .foregroundColor(.white)
+                .padding(.top, Spacing.s)
+            }
+            .padding(Spacing.xl)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.large)
+                    .fill(Color.primaryBlue.opacity(0.95))
+            )
+        }
+        .onTapGesture { showLevelUp = false }
+    }
+
+    private func resolveCaregiverAccess() {
+        let roster = UnifiedFamilyRoster.load()
+        FamilyLocalStore.alignCurrentUserRoleFromPersistedRoster(roster)
+        FamilyAccessPolicy.syncCurrentUserRoleDefaults(members: roster)
+        let ok = FamilyAccessPolicy.isCaregiver(members: roster)
+        isCaregiverAccess = ok
+        if !ok {
+            FamilyReferralAnalytics.track(.caregiverBlocked)
+        }
+    }
+
+    private func tierDisplayName(_ raw: String) -> String {
+        switch raw.lowercased() {
+        case "bronze": return localizationManager.localized("referral_a_tier_bronze")
+        case "silver": return localizationManager.localized("referral_a_tier_silver")
+        case "gold": return localizationManager.localized("referral_a_tier_gold")
+        case "platinum": return localizationManager.localized("referral_a_tier_platinum")
+        default: return localizationManager.localized("referral_a_tier_none")
+        }
+    }
+
+    private func ledgerReasonLabel(_ reason: String) -> String {
+        switch reason {
+        case "qualify_paid": return localizationManager.localized("referral_a_reason_paid")
+        case "qualify_active_days": return localizationManager.localized("referral_a_reason_active")
+        default: return reason
+        }
+    }
+
+    private func applyAOverview(_ overview: FamilyReferralAOverviewResponse) {
+        aQualified = overview.qualifiedFamilies
+        aTier = overview.tier
+        aProtectionDays = overview.referrerProtectionDaysCurrentTier
+        aProgressCurrent = overview.progress.current
+        aProgressNext = overview.progress.nextTierAt
+        aProgressRemaining = overview.progress.remaining
+        aLedger = overview.ledger
+        paidReferralsCount = max(paidReferralsCount, overview.qualifiedFamilies)
+
+        let prev = lastSeenTier
+        if overview.tier != "none", overview.tier != prev,
+           ["bronze", "silver", "gold", "platinum"].contains(overview.tier.lowercased()) {
+            let order = ["none", "bronze", "silver", "gold", "platinum"]
+            let pi = order.firstIndex(of: prev.lowercased()) ?? 0
+            let ni = order.firstIndex(of: overview.tier.lowercased()) ?? 0
+            if ni > pi {
+                showLevelUp = true
+                FamilyReferralAnalytics.track(.levelUp, parameters: ["tier": overview.tier])
+                if overview.referrerProtectionDaysCurrentTier > 0 {
+                    FamilyReferralInviteRouter.notifyGrantIfNeeded(
+                        days: overview.referrerProtectionDaysCurrentTier,
+                        tier: overview.tier
+                    )
+                }
+            }
+        }
+        lastSeenTier = overview.tier
+        UserDefaults.standard.set(overview.tier, forKey: "referral_a_last_tier")
+    }
+    
     // MARK: - Your Stats
     
     private var yourStats: some View {
@@ -206,82 +455,16 @@ struct ReferralScreen: View {
                 statCard(
                     icon: "checkmark.circle.fill",
                     title: localizationManager.localized("referral_stats_paid"),
-                    value: "\(paidReferralsCount)",
+                    value: "\(max(paidReferralsCount, aQualified))",
                     color: .successGreen
                 )
                 
                 statCard(
-                    icon: "percent",
-                    title: localizationManager.localized("referral_stats_discount"),
-                    value: String(format: "%.0f%%", conversionRate),
+                    icon: "tag.fill",
+                    title: localizationManager.localized("referral_stats_friend_discount"),
+                    value: "−20%",
                     color: .warningOrange
                 )
-            }
-            
-            // Прогресс до 30% скидки
-            if paidReferralsCount < 3 {
-                VStack(spacing: Spacing.xs) {
-                    Text(localizationManager.localized("referral_progress_30_title"))
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    ProgressView(value: Double(paidReferralsCount), total: 3.0)
-                        .progressViewStyle(LinearProgressViewStyle(tint: .secondaryGold))
-                    
-                    Text(String(format: localizationManager.localized("referral_progress_30_remaining"), max(3 - paidReferralsCount, 0)))
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                }
-                .padding(.top, Spacing.s)
-            } else {
-                HStack {
-                    Image(systemName: "crown.fill")
-                        .foregroundColor(.secondaryGold)
-                    Text(localizationManager.localized("referral_progress_30_achieved"))
-                        .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
-                }
-                .padding(Spacing.s)
-                .background(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .fill(Color.secondaryGold.opacity(0.2))
-                )
-                .padding(.top, Spacing.s)
-            }
-            
-            // Прогресс до 10 рефералов (1 месяц бесплатно)
-            if paidReferralsCount < 10 {
-                VStack(spacing: Spacing.xs) {
-                    Text(localizationManager.localized("referral_progress_month_title"))
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                    
-                    ProgressView(value: Double(paidReferralsCount), total: 10.0)
-                        .progressViewStyle(LinearProgressViewStyle(tint: .primaryBlue))
-                    
-                    Text(String(format: localizationManager.localized("referral_progress_month_remaining"), 10 - paidReferralsCount))
-                        .font(.caption)
-                        .foregroundColor(.textSecondary)
-                        .frame(maxWidth: .infinity, alignment: .trailing)
-                }
-                .padding(.top, Spacing.s)
-            } else {
-                HStack {
-                    Image(systemName: "sparkles")
-                        .foregroundColor(.primaryBlue)
-                    Text(localizationManager.localized("referral_progress_month_achieved"))
-                        .font(.bodyBold)
-                        .foregroundColor(.textPrimary)
-                }
-                .padding(Spacing.s)
-                .background(
-                    RoundedRectangle(cornerRadius: CornerRadius.medium)
-                        .fill(Color.primaryBlue.opacity(0.2))
-                )
-                .padding(.top, Spacing.s)
             }
         }
         .padding(Spacing.cardPadding)
@@ -530,12 +713,12 @@ struct ReferralScreen: View {
         .stormGlassCard(cornerRadius: CornerRadius.large)
     }
     
-    // MARK: - Rewards Section
+    // MARK: - Rewards Section (Family Invite Pro A — days, not escalating %)
     
     private var rewardsSection: some View {
         VStack(spacing: Spacing.m) {
             HStack {
-                Text(localizationManager.localized("referral_rewards_title"))
+                Text(localizationManager.localized("referral_a_rewards_title"))
                     .font(.h3)
                     .foregroundColor(.textPrimary)
                     .accessibilityAddTraits(.isHeader)
@@ -551,49 +734,95 @@ struct ReferralScreen: View {
                 }
                 .accessibilityLabel(localizationManager.localized("referral_rewards_all_accessibility"))
             }
+
+            Text(localizationManager.localized("referral_a_rewards_caption"))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
             
-            if rewardItems.isEmpty {
-                HStack(spacing: Spacing.m) {
-                    rewardCard(
-                        title: localizationManager.localized("referral_reward_1_title"),
-                        reward: localizationManager.localized("referral_reward_1_amount"),
-                        icon: "percent.circle.fill",
-                        isUnlocked: paidReferralsCount >= 1,
-                        subtitle: localizationManager.localized("referral_reward_1_subtitle")
-                    )
-                    
-                    rewardCard(
-                        title: localizationManager.localized("referral_reward_3_title"),
-                        reward: localizationManager.localized("referral_reward_3_amount"),
-                        icon: "crown.fill",
-                        isUnlocked: paidReferralsCount >= 3,
-                        subtitle: localizationManager.localized("referral_reward_3_subtitle")
-                    )
-                    
-                    rewardCard(
-                        title: localizationManager.localized("referral_reward_10_title"),
-                        reward: localizationManager.localized("referral_reward_10_amount"),
-                        icon: "star.fill",
-                        isUnlocked: paidReferralsCount >= 10,
-                        subtitle: localizationManager.localized("referral_reward_10_subtitle")
-                    )
-                }
-            } else {
-                HStack(spacing: Spacing.m) {
-                    ForEach(rewardItems) { item in
-                        rewardCard(
-                            title: localizationManager.localized(item.titleKey),
-                            reward: localizationManager.localized(item.amountKey),
-                            icon: item.icon,
-                            isUnlocked: item.status.lowercased() == "unlocked",
-                            subtitle: localizationManager.localized(item.subtitleKey)
-                        )
-                    }
-                }
+            VStack(spacing: Spacing.s) {
+                familyARewardRow(
+                    title: localizationManager.localized("referral_a_reward_friend_title"),
+                    value: localizationManager.localized("referral_a_reward_friend_value"),
+                    subtitle: localizationManager.localized("referral_a_reward_friend_subtitle"),
+                    icon: "tag.fill",
+                    unlocked: true
+                )
+                familyARewardRow(
+                    title: localizationManager.localized("referral_a_reward_bronze_title"),
+                    value: localizationManager.localized("referral_a_reward_bronze_value"),
+                    subtitle: localizationManager.localized("referral_a_reward_bronze_subtitle"),
+                    icon: "shield.fill",
+                    unlocked: familyInviteQualifiedCount >= 1
+                )
+                familyARewardRow(
+                    title: localizationManager.localized("referral_a_reward_silver_title"),
+                    value: localizationManager.localized("referral_a_reward_silver_value"),
+                    subtitle: localizationManager.localized("referral_a_reward_silver_subtitle"),
+                    icon: "shield.lefthalf.filled",
+                    unlocked: familyInviteQualifiedCount >= 3
+                )
+                familyARewardRow(
+                    title: localizationManager.localized("referral_a_reward_gold_title"),
+                    value: localizationManager.localized("referral_a_reward_gold_value"),
+                    subtitle: localizationManager.localized("referral_a_reward_gold_subtitle"),
+                    icon: "crown.fill",
+                    unlocked: familyInviteQualifiedCount >= 5
+                )
+                familyARewardRow(
+                    title: localizationManager.localized("referral_a_reward_platinum_title"),
+                    value: localizationManager.localized("referral_a_reward_platinum_value"),
+                    subtitle: localizationManager.localized("referral_a_reward_platinum_subtitle"),
+                    icon: "star.fill",
+                    unlocked: familyInviteQualifiedCount >= 10
+                )
             }
         }
         .padding(Spacing.cardPadding)
         .stormGlassCard(cornerRadius: CornerRadius.large)
+    }
+
+    private func familyARewardRow(
+        title: String,
+        value: String,
+        subtitle: String,
+        icon: String,
+        unlocked: Bool
+    ) -> some View {
+        HStack(spacing: Spacing.m) {
+            Image(systemName: icon)
+                .font(.system(size: 20))
+                .foregroundColor(unlocked ? .successGreen : .textTertiary)
+                .frame(width: 28)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.bodyBold)
+                    .foregroundColor(.textPrimary)
+                Text(subtitle)
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+            }
+
+            Spacer()
+
+            Text(value)
+                .font(.bodyBold)
+                .foregroundColor(unlocked ? .successGreen : .textSecondary)
+
+            Text(unlocked
+                 ? localizationManager.localized("referral_unlocked")
+                 : localizationManager.localized("referral_locked"))
+                .font(.caption2)
+                .foregroundColor(unlocked ? .successGreen : .textTertiary)
+        }
+        .padding(Spacing.m)
+        .background(
+            RoundedRectangle(cornerRadius: CornerRadius.medium)
+                .fill(unlocked ? Color.successGreen.opacity(0.08) : Color.backgroundMedium.opacity(0.25))
+        )
+        .accessibilityElement(children: .combine)
+        .accessibilityLabel("\(title): \(value), \(unlocked ? localizationManager.localized("referral_unlocked") : localizationManager.localized("referral_locked"))")
     }
     
     // MARK: - Referrals History
@@ -775,6 +1004,10 @@ struct ReferralScreen: View {
         let code = referralCode.isEmpty ? "ALADDIN" : referralCode
         return "https://aladdin-ai.ru/invite/\(code)"
     }
+
+    private var familyInviteQualifiedCount: Int {
+        max(paidReferralsCount, aQualified)
+    }
     
     // MARK: - Helper Functions
     
@@ -852,9 +1085,26 @@ struct ReferralScreen: View {
                 group.leave()
             }
         }
+
+        group.enter()
+        let familyId = (UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        service.getFamilyReferralAOverview(familyId: familyId) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let overview):
+                    applyAOverview(overview)
+                case .failure:
+                    // A API may not be deployed yet — keep legacy stats.
+                    break
+                }
+                group.leave()
+            }
+        }
         
         group.notify(queue: .main) {
             isLoading = false
+            FamilyReferralInviteRouter.attachPendingIfNeeded()
         }
     }
     
@@ -1141,79 +1391,90 @@ struct RewardsView: View {
     let rewardItems: [ReferralRewardItem]
     let totalConverted: Int
     @EnvironmentObject private var localizationManager: LocalizationManager
+
+    private var qualified: Int { max(0, totalConverted) }
+
+    private var rows: [(title: String, value: String, subtitle: String, unlocked: Bool)] {
+        [
+            (
+                localizationManager.localized("referral_a_reward_friend_title"),
+                localizationManager.localized("referral_a_reward_friend_value"),
+                localizationManager.localized("referral_a_reward_friend_subtitle"),
+                true
+            ),
+            (
+                localizationManager.localized("referral_a_reward_bronze_title"),
+                localizationManager.localized("referral_a_reward_bronze_value"),
+                localizationManager.localized("referral_a_reward_bronze_subtitle"),
+                qualified >= 1
+            ),
+            (
+                localizationManager.localized("referral_a_reward_silver_title"),
+                localizationManager.localized("referral_a_reward_silver_value"),
+                localizationManager.localized("referral_a_reward_silver_subtitle"),
+                qualified >= 3
+            ),
+            (
+                localizationManager.localized("referral_a_reward_gold_title"),
+                localizationManager.localized("referral_a_reward_gold_value"),
+                localizationManager.localized("referral_a_reward_gold_subtitle"),
+                qualified >= 5
+            ),
+            (
+                localizationManager.localized("referral_a_reward_platinum_title"),
+                localizationManager.localized("referral_a_reward_platinum_value"),
+                localizationManager.localized("referral_a_reward_platinum_subtitle"),
+                qualified >= 10
+            ),
+        ]
+    }
     
     var body: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(alignment: .leading, spacing: Spacing.m) {
-                Text(localizationManager.localized("referral_rewards_view_title"))
+                Text(localizationManager.localized("referral_a_rewards_title"))
                     .font(.h2)
                     .frame(maxWidth: .infinity, alignment: .leading)
                 
-                Text(String(format: localizationManager.localized("referral_rewards_view_subtitle"), totalConverted))
+                Text(String(format: localizationManager.localized("referral_a_rewards_view_subtitle"), qualified))
                     .font(.body)
                     .foregroundColor(.textSecondary)
-                
-                if rewardItems.isEmpty {
-                    Text(localizationManager.localized("referral_invite_friends_desc"))
-                        .font(.body)
-                        .foregroundColor(.textSecondary)
-                        .padding()
-                        .frame(maxWidth: .infinity, alignment: .leading)
-                        .background(
-                            RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                .fill(Color.backgroundMedium.opacity(0.3))
-                        )
-                } else {
-                    VStack(spacing: Spacing.s) {
-                        ForEach(rewardItems) { item in
-                            HStack(spacing: Spacing.m) {
-                                Image(systemName: item.icon)
-                                    .foregroundColor(item.status.lowercased() == "unlocked" ? .successGreen : .textSecondary)
-                                    .font(.system(size: 22))
-                                
-                                VStack(alignment: .leading, spacing: Spacing.xxs) {
-                                    Text(localizationManager.localized(item.titleKey))
-                                        .font(.bodyBold)
-                                        .foregroundColor(.textPrimary)
-                                    
-                                    Text(localizationManager.localized(item.amountKey))
-                                        .font(.caption)
-                                        .foregroundColor(.textSecondary)
-                                    
-                                    Text(localizationManager.localized(item.subtitleKey))
-                                        .font(.caption2)
-                                        .foregroundColor(.textSecondary)
-                                }
-                                
-                                Spacer()
-                                
-                                VStack(alignment: .trailing, spacing: Spacing.xxs) {
-                                    Text(item.status.lowercased() == "unlocked" ? localizationManager.localized("referral_unlocked") : localizationManager.localized("referral_locked"))
-                                        .font(.caption)
-                                        .foregroundColor(item.status.lowercased() == "unlocked" ? .successGreen : .textSecondary)
-                                    
-                                    if item.status.lowercased() != "unlocked" {
-                                        Text(String(format: localizationManager.localized("referral_progress_30_remaining"), item.remaining))
-                                            .font(.caption2)
-                                            .foregroundColor(.textSecondary)
-                                    }
-                                }
-                            }
-                            .padding(Spacing.m)
-                            .background(
-                                RoundedRectangle(cornerRadius: CornerRadius.medium)
-                                    .fill(Color.backgroundMedium.opacity(0.3))
-                            )
+
+                Text(localizationManager.localized("referral_a_rewards_caption"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+
+                ForEach(Array(rows.enumerated()), id: \.offset) { _, row in
+                    HStack(spacing: Spacing.m) {
+                        VStack(alignment: .leading, spacing: Spacing.xxs) {
+                            Text(row.title)
+                                .font(.bodyBold)
+                                .foregroundColor(.textPrimary)
+                            Text(row.subtitle)
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
                         }
+                        Spacer()
+                        Text(row.value)
+                            .font(.bodyBold)
+                            .foregroundColor(row.unlocked ? .successGreen : .textSecondary)
+                        Text(row.unlocked
+                             ? localizationManager.localized("referral_unlocked")
+                             : localizationManager.localized("referral_locked"))
+                            .font(.caption2)
+                            .foregroundColor(row.unlocked ? .successGreen : .textTertiary)
                     }
+                    .padding(Spacing.m)
+                    .background(
+                        RoundedRectangle(cornerRadius: CornerRadius.medium)
+                            .fill(row.unlocked ? Color.successGreen.opacity(0.08) : Color.backgroundMedium.opacity(0.25))
+                    )
                 }
             }
-            .padding(Spacing.cardPadding)
+            .padding(Spacing.screenPadding)
         }
     }
 }
-
-// MARK: - Preview
 
 struct ReferralScreen_Previews: PreviewProvider {
     static var previews: some View {

@@ -1,0 +1,17 @@
+---
+description: iOS Family rewards UX + Referral Variant A — Cursor TODO SSOT
+alwaysApply: false
+---
+
+# iOS Family Rewards + Referral A — TODO SSOT
+
+**Plan:** `docs/PLAN_IOS_FAMILY_REFERRAL_A_AND_REWARDS_UX_2026-09-13.md`  
+**Registry:** `.cursor/IOS_FAMILY_REF_REWARDS_TASK_REGISTRY.md`
+
+## TodoWrite
+
+1. Только **`merge: true`**. Не затирать `af-*` / `crm-*` / `web-*` / log-analysis ids.
+2. Ids: `rwd-*` (награды детей), `ref-a-*` (рефералка Вариант A).
+3. Закрывать по одному id после REGISTRY ✅.
+4. **Не** делать Вариант B (мост VPN-бот), MLM L2/L3, вывод ₽ — без явного GO владельца.
+5. Деплой `:8002` — только после **GO DEPLOY**.
