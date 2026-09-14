@@ -259,6 +259,62 @@ class NotificationManager: NSObject, ObservableObject {
         }
     }
 
+    /**
+     * Schedule a local notification (calendar / interval trigger) through the same
+     * category + bypass gates as immediate sends. Presentation filters still apply
+     * in willPresent when the app is foreground.
+     */
+    nonisolated func scheduleLocalNotification(
+        identifier: String,
+        title: String,
+        body: String,
+        category: NotificationCategory = .general,
+        userInfo: [String: Any] = [:],
+        trigger: UNNotificationTrigger,
+        sound: UNNotificationSound = .default,
+        badge: NSNumber? = nil
+    ) {
+        let notificationType = userInfo["type"] as? String ?? ""
+        let notificationCenter = UNUserNotificationCenter.current()
+
+        Task { @MainActor in
+            if (notificationType == "bypass" || notificationType == "bypass_attempt")
+                && !NotificationManager.shared.notificationSettings.bypassEnabled {
+                print("🔕 Scheduled bypass notification skipped (disabled)")
+                return
+            }
+
+            let settings = NotificationManager.shared.notificationSettings
+            if !Self.isCategoryEnabled(category, settings: settings) {
+                print("🔕 Scheduled \(category.rawValue) skipped (category off)")
+                return
+            }
+
+            let content = UNMutableNotificationContent()
+            content.title = title
+            content.body = body
+            content.sound = sound
+            content.categoryIdentifier = category.rawValue
+            content.userInfo = userInfo
+            if let badge {
+                content.badge = badge
+            }
+
+            let request = UNNotificationRequest(
+                identifier: identifier,
+                content: content,
+                trigger: trigger
+            )
+            notificationCenter.add(request) { error in
+                if let error = error {
+                    print("❌ Failed to schedule local notification: \(error)")
+                } else {
+                    print("✅ Local notification scheduled: \(identifier)")
+                }
+            }
+        }
+    }
+
     /// Category master toggles from Notification Settings.
     private static func isCategoryEnabled(_ category: NotificationCategory, settings: NotificationSettings) -> Bool {
         switch category {
@@ -383,6 +439,8 @@ class NotificationManager: NSObject, ObservableObject {
     
     /**
      * Уведомление о подключении Network Protection
+     * Deprecated for user notifications matrix — ALADDIN product push set does not include VPN/NP.
+     * Kept for legacy call sites only; do not add to smoke/QA.
      */
     func sendNetworkProtectionConnectedNotification(server: String) {
         sendLocalNotification(
@@ -1130,6 +1188,7 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
              "suspicious_activity",
              "iot_device_compromised",
              "antivirus_scan_complete",
+             "antivirus_scan_failed",
              "downloaded_file_threat",
              "crash_detection":
             return true

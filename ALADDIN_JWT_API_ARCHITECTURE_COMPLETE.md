@@ -32,16 +32,23 @@
 
 ## 🤖 Для ML-систем и автоматизации (актуально 2026-06-03)
 
+> **Дополнение 2026-08-02 (path inventory + уровень B на VPS):** live OpenAPI → **555** paths / **619** ops.  
+> Conformant audit на MAIN `127.0.0.1:8002`: **255×2xx**, **197×422**, **75×404**, **70×401/403**, **3×5xx** (family modules missing on deploy).  
+> Артефакты: `docs/OPENAPI_CONFORMANT_AUDIT_20260802T210544.*`, `OPENAPI_CONFORMANT_AUDIT_LATEST.*`, triage `docs/OPENAPI_CONFORMANT_AUDIT_TRIAGE_20260802.md`.  
+> Snapshot: `docs/openapi-snapshots/openapi-20260802.json`. Brief: `docs/briefs/JWT_API_ML_BRIEF.md`.
+
 ### Где «все эндпоинты» (machine-readable)
 
 - **Полный перечень маршрутов и HTTP-методов** поставляется **сервером** в OpenAPI 3:  
-  **`GET https://aladdin-ai.ru/openapi.json`** (nginx → FastAPI `:8002`, **491+ paths**, 2026-06-02)  
+  **`GET https://aladdin-ai.ru/openapi.json`** (nginx → FastAPI `:8002`, **555 paths** на 2026-08-02; ранее **491** на 2026-06-02)  
   - **Не путать** с **`GET /api/openapi.json`** — это **SFM mock-envelope** (`version: 3.0.0-mock-real-protection`, `paths` пустой), **не** схема API.  
   - **`GET /openapi.json` без `/api/`** — единственный SSOT для автоматизации с публичного домена.  
   - Порт **`:8002` снаружи закрыт** — audit с локальной машины: `ssh` на VPS + `ALADDIN_BASE_URL=http://127.0.0.1:8002 python3 scripts/openapi_conformant_audit.py`.
-- **Факты по последнему снятию (UTC 2026-06-02, прогон `scripts/openapi_conformant_audit.py` на VPS `:8002`):**
-  - **491** path templates,
-  - **534** **операций** (суммарно все методы: GET, POST, …).
+- **Факты по снятию 2026-08-02 (snapshot, не полный conformant audit):**
+  - **555** path templates,
+  - **619** **операций** (суммарно все методы: GET, POST, …).
+- **Архив прогона уровня B (UTC 2026-06-02, `scripts/openapi_conformant_audit.py` на VPS `:8002`):**
+  - **491** path templates, **534** ops, **0×5xx** — см. `docs/OPENAPI_CONFORMANT_AUDIT_20260602T212620.json`.
 - Детализация: **`docs/OPENAPI_CONFORMANT_AUDIT_20260602T212620.json`** (и копия `docs/OPENAPI_CONFORMANT_AUDIT_LATEST.json` при следующем прогоне).
 - Архив 2026-04-25: **368** paths, **395** ops, **1×5xx** — устарело.
 
@@ -102,9 +109,9 @@
 ### Чеклист повторной проверки
 
 1. `curl -sS https://aladdin-ai.ru/api/health` → `{"status":"ok"}`.
-2. `curl -sS https://aladdin-ai.ru/openapi.json | jq '.paths | length'` → **491**.
+2. `curl -sS https://aladdin-ai.ru/openapi.json | jq '.paths | length'` → **555** (2026-08-02; было 491 на 2026-06-02).
 3. `ALADDIN_BASE_URL=https://aladdin-ai.ru python3 scripts/openapi_conformant_audit.py` — обновить `docs/OPENAPI_CONFORMANT_AUDIT_LATEST.*`.
-4. `python3 smart_api_tester.py --wellness-only` → **57/57**.
+4. `python3 smart_api_tester.py --wellness-only` → **57/57**; также `--antifake-only` / `--subscription-only`.
 5. (Опционально) `ALADDIN_AUTH_TOKEN=… python3 docs/server/full_system_endpoint_audit.py` — уровень A, см. §6.1.
 
 ---
@@ -892,6 +899,15 @@ Implementation note:
   - Результат:
     - список уведомлений → 200, корректный DTO;
     - mark‑as‑read для неизвестного ID → ожидаемый 404, без mock.
+
+- **smart_api_tester.py — Notifications + Referral A (добавлено 2026-09-14)**  
+  - `python3 smart_api_tester.py --notifications-only` → method-aware:
+    - `GET /api/notifications`, `POST /api/notifications/read`,
+    - `GET /api/notifications/categories|stats`,
+    - `GET /api/settings/notifications`, `POST /api/settings/notifications/update`.  
+  - `python3 smart_api_tester.py --referral-a-only` → `GET/POST /api/referral/a/overview|ledger|apply|attach`.  
+  - Входят в `--all`. Канон inbox: JWT §8.3; Invite Pro A: `AppConfig.Endpoint.referralA*`.  
+  - **Не путать** с локальными UN-баннерами iOS (NotificationManager) и не включать VPN/network_protection в user notification matrix.
 
 - **Payments QR (`docs/server/test_payments_qr_live.py`)**  
   - Покрытие:

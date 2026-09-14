@@ -197,13 +197,6 @@ struct NotificationSettingsScreen: View {
                 )
                 
                 NotificationToggle(
-                    title: localizationManager.localized("notification_type_network_title"),
-                    subtitle: localizationManager.localized("notification_type_network_subtitle"),
-                    icon: "🔒",
-                    isOn: $networkProtectionEnabled
-                )
-                
-                NotificationToggle(
                     title: localizationManager.localized("notification_type_ai_title"),
                     subtitle: localizationManager.localized("notification_type_ai_subtitle"),
                     icon: "🤖",
@@ -505,14 +498,16 @@ struct NotificationSettingsScreen: View {
 #if DEBUG
     private var qaSmokeSection: some View {
         VStack(alignment: .leading, spacing: 12) {
-            Text("QA Smoke — матрица 22")
+            Text("QA Smoke — user kinds (без VPN)")
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundColor(.white)
 
-            Text("Каждый тип идёт тем же путём, что soft-test / QA-угроза (NotificationManager + safe delay). Перед прогоном выключите DND.")
+            Text("Только typeKey для семьи. VPN/«защита сети» в матрице нет. Каждый баннер → NotificationManager.")
                 .font(.system(size: 13))
                 .foregroundColor(.white.opacity(0.8))
                 .fixedSize(horizontal: false, vertical: true)
+
+            userNeededNotNeededLists
 
             if doNotDisturbMode || importantOnlyMode || highPriorityOnly {
                 Text("Сейчас фильтры ON — часть баннеров может не показаться. Для smoke выключите DND / Important / High priority.")
@@ -544,7 +539,7 @@ struct NotificationSettingsScreen: View {
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "square.stack.3d.up.fill")
-                    Text("Прогнать все 22 типа (по 2.5 сек)")
+                    Text("Прогнать все \(NotificationSmokeKind.allCases.count) типов (по 2.5 сек)")
                         .font(.system(size: 14, weight: .semibold))
                 }
                 .foregroundColor(.white)
@@ -563,7 +558,7 @@ struct NotificationSettingsScreen: View {
                     kind.fireSmoke()
                 } label: {
                     HStack {
-                        Text("#\(kind.number) \(kind.titleRU)")
+                        Text("#\(kind.number) \(kind.titleRU)\(kind.isUserFacing ? "" : " · DEBUG")")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(.white)
                             .multilineTextAlignment(.leading)
@@ -582,6 +577,31 @@ struct NotificationSettingsScreen: View {
         .background(
             RoundedRectangle(cornerRadius: 16)
                 .fill(Color.white.opacity(0.1))
+        )
+    }
+
+    private var userNeededNotNeededLists: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("Нужно пользователям (\(NotificationSmokeKind.userFacingKinds.count))")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.green.opacity(0.95))
+            Text(NotificationSmokeKind.userFacingKinds.map { "\($0.number).\($0.typeKey)" }.joined(separator: " · "))
+                .font(.system(size: 11, design: .monospaced))
+                .foregroundColor(.white.opacity(0.75))
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text("Не в user matrix")
+                .font(.system(size: 14, weight: .semibold))
+                .foregroundColor(.orange.opacity(0.95))
+            Text("soft_test (только диагностика) · VPN/network_protection — убраны · APNs remote — отдельный этап · biometric toggle — не семейное событие")
+                .font(.system(size: 11))
+                .foregroundColor(.white.opacity(0.7))
+                .fixedSize(horizontal: false, vertical: true)
+        }
+        .padding(12)
+        .background(
+            RoundedRectangle(cornerRadius: 10)
+                .fill(Color.black.opacity(0.25))
         )
     }
 
@@ -643,11 +663,12 @@ struct NotificationSettingsScreen: View {
             .accessibilityIdentifier("notification_real_family_chat")
 
             Button {
-                ScanScheduler.shared.fireLocalScanCompleteForQA(threatsFound: 1)
+                // Same product API ScanScheduler uses after unify (avoid target/scope coupling).
+                notificationManager.sendAntivirusScanCompleteNotification(threatsFound: 1)
             } label: {
                 HStack(spacing: 8) {
                     Image(systemName: "shield.lefthalf.filled")
-                    Text("3. Антивирус скан (локальный итог) → NM")
+                    Text("3. Антивирус скан (итог) → NM")
                         .font(.system(size: 14, weight: .semibold))
                 }
                 .foregroundColor(.white)

@@ -1,14 +1,13 @@
 import Foundation
 import UserNotifications
 
-/// Canonical catalog of product notification kinds + one-tap smoke (same path as soft-test / QA threat).
+/// Canonical catalog of **user-facing** notification kinds + DEBUG soft-test.
+/// No VPN / network_protection — not part of ALADDIN user notifications.
 enum NotificationSmokeKind: String, CaseIterable, Identifiable {
-    case softTest
     case threatBlocked
     case threatDetected
     case suspiciousActivity
     case bypassAttempt
-    case networkProtectionConnected
     case familyMemberAdded
     case familyChat
     case aiMessage
@@ -24,34 +23,47 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
     case antifakePostCall
     case iotCompromised
     case antivirusScanComplete
+    case antivirusScanFailed
+    case downloadedFileThreat
     case crashDetection
+    /// DEBUG only — last in fire-all so product kinds run first.
+    case softTest
 
     var id: String { rawValue }
 
+    /// Whether this kind is a product event parents/kids should see (soft-test = diagnostics).
+    var isUserFacing: Bool {
+        switch self {
+        case .softTest: return false
+        default: return true
+        }
+    }
+
     var number: Int {
         switch self {
-        case .softTest: return 21
         case .threatBlocked: return 1
         case .threatDetected: return 2
         case .suspiciousActivity: return 3
         case .bypassAttempt: return 4
-        case .networkProtectionConnected: return 5
-        case .familyMemberAdded: return 6
-        case .familyChat: return 7
-        case .aiMessage: return 8
-        case .upgradeSuccess: return 9
-        case .subscriptionRenewal: return 10
-        case .trial: return 11
-        case .subscriptionExpired: return 12
-        case .referralGrant: return 13
-        case .windDown: return 14
-        case .familyHabitReminder: return 15
+        case .familyMemberAdded: return 5
+        case .familyChat: return 6
+        case .aiMessage: return 7
+        case .upgradeSuccess: return 8
+        case .subscriptionRenewal: return 9
+        case .trial: return 10
+        case .subscriptionExpired: return 11
+        case .referralGrant: return 12
+        case .windDown: return 13
+        case .familyHabitReminder: return 14
         case .familyHabitDuePing: return 15
         case .mnemoReview: return 16
         case .antifakePostCall: return 17
         case .iotCompromised: return 18
         case .antivirusScanComplete: return 19
-        case .crashDetection: return 20
+        case .antivirusScanFailed: return 20
+        case .downloadedFileThreat: return 21
+        case .crashDetection: return 22
+        case .softTest: return 23
         }
     }
 
@@ -62,7 +74,6 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
         case .threatDetected: return "Угроза обнаружена"
         case .suspiciousActivity: return "Подозрительная активность"
         case .bypassAttempt: return "Попытка обхода"
-        case .networkProtectionConnected: return "Защита сети подключена"
         case .familyMemberAdded: return "Новый член семьи"
         case .familyChat: return "Семейный чат"
         case .aiMessage: return "AI сообщение"
@@ -77,7 +88,9 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
         case .mnemoReview: return "Мнемоника SRS"
         case .antifakePostCall: return "Antifake после звонка"
         case .iotCompromised: return "IoT compromised"
-        case .antivirusScanComplete: return "Антивирус: скан"
+        case .antivirusScanComplete: return "Антивирус: скан OK/угрозы"
+        case .antivirusScanFailed: return "Антивирус: ошибка скана"
+        case .downloadedFileThreat: return "Подозрительный файл"
         case .crashDetection: return "Crash detection"
         }
     }
@@ -89,7 +102,6 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
         case .threatDetected: return "threat_detected"
         case .suspiciousActivity: return "suspicious_activity"
         case .bypassAttempt: return "bypass_attempt"
-        case .networkProtectionConnected: return "network_protection_connected"
         case .familyMemberAdded: return "family_member_added"
         case .familyChat: return "family_chat"
         case .aiMessage: return "ai_message"
@@ -105,16 +117,17 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
         case .antifakePostCall: return "antifake_post_call"
         case .iotCompromised: return "iot_device_compromised"
         case .antivirusScanComplete: return "antivirus_scan_complete"
+        case .antivirusScanFailed: return "antivirus_scan_failed"
+        case .downloadedFileThreat: return "downloaded_file_threat"
         case .crashDetection: return "crash_detection"
         }
     }
 
     var category: NotificationCategory {
         switch self {
-        case .threatBlocked, .threatDetected, .suspiciousActivity, .bypassAttempt, .iotCompromised, .antivirusScanComplete:
+        case .threatBlocked, .threatDetected, .suspiciousActivity, .bypassAttempt,
+             .iotCompromised, .antivirusScanComplete, .antivirusScanFailed, .downloadedFileThreat:
             return .security
-        case .networkProtectionConnected:
-            return .networkProtection
         case .familyMemberAdded, .familyChat:
             return .family
         case .aiMessage:
@@ -127,7 +140,8 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
             return .mnemo
         case .familyHabitReminder, .familyHabitDuePing:
             return .familyHabit
-        case .softTest, .upgradeSuccess, .subscriptionExpired, .referralGrant, .windDown, .antifakePostCall, .crashDetection:
+        case .softTest, .upgradeSuccess, .subscriptionExpired, .referralGrant,
+             .windDown, .antifakePostCall, .crashDetection:
             return .general
         }
     }
@@ -160,6 +174,12 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
         if self == .referralGrant {
             info["days"] = 7
         }
+        if self == .downloadedFileThreat {
+            info["file_name"] = "smoke-sample.pdf"
+        }
+        if self == .antivirusScanFailed || self == .antivirusScanComplete {
+            info["threats_found"] = self == .antivirusScanComplete ? 1 : 0
+        }
 
         nm.sendLocalNotification(
             title: title,
@@ -173,17 +193,20 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
     @MainActor
     static func fireAllSequentially(gapSeconds: Double = 2.5) {
         NotificationManager.shared.resetNotificationFrequencyHistory()
-        // Ensure rate-limit toggle cannot clip the run even if UI was stale.
         var settings = NotificationManager.shared.notificationSettings
         settings.maxNotificationsPerHour = nil
         NotificationManager.shared.updateNotificationSettings(settings)
 
-        print("🔔 Smoke fire-all: \(allCases.count) kinds, gap=\(gapSeconds)s")
+        print("🔔 Smoke fire-all: \(allCases.count) kinds (no VPN), gap=\(gapSeconds)s")
         for (index, kind) in allCases.enumerated() {
             let delay = gapSeconds * Double(index)
             DispatchQueue.main.asyncAfter(deadline: .now() + delay) {
                 kind.fireSmoke()
             }
         }
+    }
+
+    static var userFacingKinds: [NotificationSmokeKind] {
+        allCases.filter(\.isUserFacing)
     }
 }

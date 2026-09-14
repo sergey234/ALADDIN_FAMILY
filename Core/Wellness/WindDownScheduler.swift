@@ -49,26 +49,22 @@ final class WindDownScheduler {
                 bedtimeMinute: bedtime.minute,
                 minutesBefore: minutes
             )
-            let content = UNMutableNotificationContent()
-            content.title = localization.localized("wind_down_push_title")
-            content.body = localization.localized("wind_down_push_body_\(minutes)")
-            content.sound = .default
-            content.userInfo = [
-                "type": Self.notificationType,
-                "minutes_before": minutes,
-                "deepLink": minutes == 30 ? "aladdin://voice/day-recap" : "aladdin://wellness/wind-down",
-            ]
-
             var triggerComponents = DateComponents()
             triggerComponents.hour = lead.hour
             triggerComponents.minute = lead.minute
             let trigger = UNCalendarNotificationTrigger(dateMatching: triggerComponents, repeats: true)
-            let request = UNNotificationRequest(
+            NotificationManager.shared.scheduleLocalNotification(
                 identifier: identifier(minutesBefore: minutes),
-                content: content,
+                title: localization.localized("wind_down_push_title"),
+                body: localization.localized("wind_down_push_body_\(minutes)"),
+                category: .general,
+                userInfo: [
+                    "type": Self.notificationType,
+                    "minutes_before": minutes,
+                    "deepLink": minutes == 30 ? "aladdin://voice/day-recap" : "aladdin://wellness/wind-down",
+                ],
                 trigger: trigger
             )
-            try? await center.add(request)
         }
     }
 

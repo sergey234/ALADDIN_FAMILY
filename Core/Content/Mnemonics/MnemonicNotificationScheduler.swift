@@ -53,17 +53,6 @@ final class MnemonicNotificationScheduler {
         let title = localization.localized("child_mnemo_push_review_title")
         let body = String(format: localization.localized("child_mnemo_srs_due_today"), dueCount)
 
-        let content = UNMutableNotificationContent()
-        content.title = title
-        content.body = body
-        content.sound = .default
-        content.categoryIdentifier = NotificationCategory.mnemo.rawValue
-        content.userInfo = [
-            "type": Self.userInfoType,
-            "category": category,
-            "dueCount": dueCount
-        ]
-
         var dateComponents = Calendar.current.dateComponents([.year, .month, .day], from: now)
         dateComponents.hour = 18
         dateComponents.minute = 0
@@ -81,11 +70,17 @@ final class MnemonicNotificationScheduler {
             trigger = UNCalendarNotificationTrigger(dateMatching: tomorrow, repeats: false)
         }
 
-        let request = UNNotificationRequest(
+        NotificationManager.shared.scheduleLocalNotification(
             identifier: Self.notificationIdentifier,
-            content: content,
+            title: title,
+            body: body,
+            category: .mnemo,
+            userInfo: [
+                "type": Self.userInfoType,
+                "category": category,
+                "dueCount": dueCount
+            ],
             trigger: trigger
         )
-        try? await center.add(request)
     }
 }

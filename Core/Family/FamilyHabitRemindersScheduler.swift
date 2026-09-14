@@ -143,26 +143,21 @@ final class FamilyHabitRemindersScheduler {
             let hours = fire.timeIntervalSince(base) / 3600
             if hours > 18 { break }
 
-            let content = UNMutableNotificationContent()
-            content.title = title
-            content.body = body
-            content.sound = .default
-            content.userInfo = [
-                "type": "family_habit_due_ping",
-                "preset": preset.rawValue,
-                "due_index": i,
-                "deepLink": UnicornDeepLinkRouter.habitReminderDeepLink(preset: preset.rawValue),
-            ]
-            content.categoryIdentifier = Self.categoryIdentifier
-
             let comps = cal.dateComponents([.year, .month, .day, .hour, .minute], from: fire)
             let trigger = UNCalendarNotificationTrigger(dateMatching: comps, repeats: false)
-            let request = UNNotificationRequest(
+            NotificationManager.shared.scheduleLocalNotification(
                 identifier: "family.habit.\(preset.rawValue).due.\(i)",
-                content: content,
+                title: title,
+                body: body,
+                category: .familyHabit,
+                userInfo: [
+                    "type": "family_habit_due_ping",
+                    "preset": preset.rawValue,
+                    "due_index": i,
+                    "deepLink": UnicornDeepLinkRouter.habitReminderDeepLink(preset: preset.rawValue),
+                ],
                 trigger: trigger
             )
-            try? await center.add(request)
         }
     }
 
@@ -204,29 +199,24 @@ final class FamilyHabitRemindersScheduler {
         )
 
         for (index, slot) in slots.enumerated() {
-            let content = UNMutableNotificationContent()
-            content.title = title
-            content.body = body
-            content.sound = .default
-            content.userInfo = [
-                "type": "family_habit_reminder",
-                "preset": FamilyHabitPresetId.water.rawValue,
-                "slot": index,
-                "daily_liters": schedule.dailyLiters,
-                "deepLink": UnicornDeepLinkRouter.habitReminderDeepLink(preset: FamilyHabitPresetId.water.rawValue),
-            ]
-            content.categoryIdentifier = Self.categoryIdentifier
-
             var components = DateComponents()
             components.hour = slot.hour
             components.minute = slot.minute
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-            let request = UNNotificationRequest(
+            NotificationManager.shared.scheduleLocalNotification(
                 identifier: "\(waterIdPrefix)\(index)",
-                content: content,
+                title: title,
+                body: body,
+                category: .familyHabit,
+                userInfo: [
+                    "type": "family_habit_reminder",
+                    "preset": FamilyHabitPresetId.water.rawValue,
+                    "slot": index,
+                    "daily_liters": schedule.dailyLiters,
+                    "deepLink": UnicornDeepLinkRouter.habitReminderDeepLink(preset: FamilyHabitPresetId.water.rawValue),
+                ],
                 trigger: trigger
             )
-            try? await center.add(request)
         }
     }
 
@@ -236,26 +226,21 @@ final class FamilyHabitRemindersScheduler {
         minute: Int,
         identifier: String
     ) async {
-        let content = UNMutableNotificationContent()
-        content.title = localization.localized(preset.titleKey)
-        content.body = localization.localized(preset.bodyKey)
-        content.sound = .default
-        content.userInfo = [
-            "type": "family_habit_reminder",
-            "preset": preset.rawValue,
-            "deepLink": UnicornDeepLinkRouter.habitReminderDeepLink(preset: preset.rawValue),
-        ]
-        content.categoryIdentifier = Self.categoryIdentifier
-
         var components = DateComponents()
         components.hour = max(0, min(23, hour))
         components.minute = max(0, min(59, minute))
         let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-        let request = UNNotificationRequest(
+        NotificationManager.shared.scheduleLocalNotification(
             identifier: identifier,
-            content: content,
+            title: localization.localized(preset.titleKey),
+            body: localization.localized(preset.bodyKey),
+            category: .familyHabit,
+            userInfo: [
+                "type": "family_habit_reminder",
+                "preset": preset.rawValue,
+                "deepLink": UnicornDeepLinkRouter.habitReminderDeepLink(preset: preset.rawValue),
+            ],
             trigger: trigger
         )
-        try? await center.add(request)
     }
 }

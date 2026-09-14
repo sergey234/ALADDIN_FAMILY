@@ -245,12 +245,6 @@ class ScanScheduler: NSObject, ObservableObject {
         }
         print("[ScanScheduler] 📢 Уведомление о подозрительном файле через NotificationManager")
     }
-
-    /// Product-path local banner without waiting for API scan (QA / real-scenario).
-    @MainActor
-    func fireLocalScanCompleteForQA(threatsFound: Int = 0) {
-        NotificationManager.shared.sendAntivirusScanCompleteNotification(threatsFound: threatsFound)
-    }
 }
 
 

@@ -4,9 +4,13 @@ ALADDIN API smoke tester — real HTTP against prod.
 
 Usage:
   python3 smart_api_tester.py              # full OpenAPI + APP_ENDPOINTS smoke
-  python3 smart_api_tester.py --wellness-only   # method-aware Wellness Platform (131/131)
-  python3 smart_api_tester.py --build243-only   # Unicorn/Guide/Antifake/Telegram endpoints (build 243)
-  python3 smart_api_tester.py --all        # full smoke + wellness + build243
+  python3 smart_api_tester.py --wellness-only   # method-aware Wellness Platform
+  python3 smart_api_tester.py --build243-only   # Unicorn/Guide/Telegram/Antifake feedback
+  python3 smart_api_tester.py --antifake-only   # Antifake contract smoke
+  python3 smart_api_tester.py --subscription-only  # Subscription + wellness premium eligibility
+  python3 smart_api_tester.py --notifications-only  # Inbox + settings/notifications (JWT §8.3)
+  python3 smart_api_tester.py --referral-a-only     # Family Invite Pro A /api/referral/a/*
+  python3 smart_api_tester.py --all        # full smoke + wellness + build243 + antifake + subscription + notifications + referral-a
 """
 import argparse
 import json
@@ -114,6 +118,71 @@ BUILD_243_OPS = [
     }, {200, 401, 402, 403, 404, 422}, "T5-02 antifakeVerdictFeedback"),
 ]
 
+# Antifake Hub — method-aware (route alive; 402/403 premium OK)
+# Format: (method, path, query_dict|None, json_body|None, expect_codes, note)
+ANTIFAKE_OPS = [
+    ("GET", "/api/antifake/capabilities", None, None, {200, 401, 403}, "public capabilities/model card"),
+    ("GET", "/api/antifake/public/transparency", None, None, {200, 401, 403, 404}, "transparency"),
+    ("GET", "/api/antifake/settings", None, None, {200, 401, 403}, "settings"),
+    ("GET", "/api/antifake/metrics", None, None, {200, 401, 403}, "metrics"),
+    ("POST", "/api/antifake/check/text", None, {
+        "text": "smart_api_tester antifake check https://example.com",
+        "locale": "ru",
+    }, {200, 401, 402, 403, 422, 429}, "check text"),
+    ("POST", "/api/antifake/check/url", None, {
+        "url": "https://example.com",
+        "locale": "ru",
+    }, {200, 401, 402, 403, 422, 429}, "check url"),
+    ("POST", "/api/antifake/feedback", None, {
+        "job_id": "00000000-0000-0000-0000-000000000001",
+        "note": "smart_api_tester antifake-only",
+        "feedback": "incorrect",
+    }, {200, 401, 402, 403, 404, 422}, "feedback"),
+    ("GET", "/api/antifake/jobs/00000000-0000-0000-0000-000000000001", None, None,
+     {200, 401, 403, 404}, "job status"),
+    ("GET", "/api/antifake/family/reports", None, None, {200, 401, 403, 404}, "family reports"),
+    ("GET", "/api/wellness/premium/eligibility", {"locale": "ru"}, None, {200, 401, 403},
+     "cross: wellness premium gate"),
+]
+
+# Subscription / tariffs — method-aware
+# Format: (method, path, query_dict|None, json_body|None, expect_codes, note)
+SUBSCRIPTION_OPS = [
+    # Live handlers require query userId (OpenAPI may still list other names — trust 422).
+    ("GET", "/api/subscription/status", {"userId": DEVICE_ID}, None, {200, 401, 403, 404}, "status"),
+    ("GET", "/api/subscription/tariffs", None, None, {200, 401, 403}, "tariffs"),
+    ("GET", "/api/subscription/purchase-history", {"userId": DEVICE_ID, "limit": "10"}, None,
+     {200, 401, 403, 404}, "history"),
+    ("POST", "/api/subscription/sync", None, {}, {200, 401, 403, 422}, "sync"),
+    ("GET", "/api/subscription/auto-renewal", {"userId": DEVICE_ID}, None, {200, 401, 403, 404},
+     "auto-renewal"),
+    ("GET", "/api/wellness/premium/eligibility", {"locale": "ru"}, None, {200, 401, 403},
+     "wellness premium eligibility"),
+]
+
+# Notifications inbox + settings — JWT §8.3 + AppConfig (method-aware)
+# Format: (method, path, query_dict|None, json_body|None, expect_codes, note)
+NOTIFICATIONS_OPS = [
+    ("GET", "/api/notifications", None, None, {200, 401, 403}, "list inbox (JWT §8.3)"),
+    ("POST", "/api/notifications/read", None, {"notificationId": "non_existing_id"},
+     {200, 401, 403, 404}, "mark-read missing id → 404 OK"),
+    ("GET", "/api/notifications/categories", None, None, {200, 401, 403, 404}, "categories V2"),
+    ("GET", "/api/notifications/stats", None, None, {200, 401, 403, 404}, "stats V2"),
+    ("GET", "/api/settings/notifications", None, None, {200, 401, 403, 404}, "app settings get"),
+    ("POST", "/api/settings/notifications/update", None, {},
+     {200, 401, 403, 404, 422}, "app settings update"),
+]
+
+# Family Invite Pro A — AppConfig referralA* (prod :8002)
+REFERRAL_A_OPS = [
+    ("GET", "/api/referral/a/overview", None, None, {200, 401, 403, 404}, "overview"),
+    ("GET", "/api/referral/a/ledger", None, None, {200, 401, 403, 404}, "ledger"),
+    ("POST", "/api/referral/a/apply", None, {"code": "SMARTTEST"},
+     {200, 400, 401, 403, 404, 422}, "apply code"),
+    ("GET", "/api/referral/a/attach", {"code": "SMARTTEST"}, None,
+     {200, 400, 401, 403, 404, 422}, "attach code"),
+]
+
 # Paths for OpenAPI merge fallback (legacy APP_ENDPOINTS + wellness)
 APP_ENDPOINTS = [
     "/api/ai/assistant/analyze_threat", "/api/ai/assistant/capabilities", "/api/ai/assistant/chat",
@@ -137,7 +206,7 @@ APP_ENDPOINTS = [
     "/api/gamification/tournaments/join", "/api/gamification/tournaments/leaderboard", "/api/gamification/tournaments/leave",
     "/api/location/geofences", "/api/location/geofences/sync", "/api/location/geofences/update",
     "/api/location/movement-history", "/api/location/movement-history/update", "/api/location/status",
-    "/api/location/status/update", "/api/metrics/upload", "/api/notifications/archive",
+    "/api/metrics/upload", "/api/notifications", "/api/notifications/read", "/api/notifications/archive",
     "/api/notifications/bulk-mark-read", "/api/notifications/categories", "/api/notifications/stats",
     "/api/offline-storage/data", "/api/offline-storage/data/update", "/api/offline-storage/resolve-conflicts",
     "/api/offline-storage/sync", "/api/parental-control/app-blocks", "/api/parental-control/app-blocks/sync",
@@ -148,7 +217,8 @@ APP_ENDPOINTS = [
     "/api/parental-control/settings/update", "/api/parental-control/time-limits", "/api/parental-control/time-limits/history",
     "/api/parental-control/time-limits/reset", "/api/parental-control/time-limits/update", "/api/roadside-assistance/call",
     "/api/roadside-assistance/cancel/{request_id}", "/api/roadside-assistance/history",
-    "/api/roadside-assistance/status/{request_id}", "/api/settings/biometry", "/api/settings/biometry/update",
+    "/api/roadside-assistance/status/{request_id}", "/api/referral/a/overview", "/api/referral/a/ledger",
+    "/api/referral/a/apply", "/api/referral/a/attach", "/api/settings/biometry", "/api/settings/biometry/update",
     "/api/settings/language", "/api/settings/language/update", "/api/settings/notifications",
     "/api/settings/notifications/update", "/api/settings/sync", "/api/settings/theme", "/api/settings/theme/update",
     "/api/settings/update", "/api/subscription/auto-renewal", "/api/subscription/auto-renewal/update",
@@ -426,6 +496,62 @@ def run_build243_contract_tests(token=None):
     return BUILD_243_STATS["fail"] == 0
 
 
+def _run_named_contract_tests(title: str, ops, token=None):
+    """Generic method-aware contract runner (antifake / subscription)."""
+    print_header(title)
+    token = token or get_jwt_token()
+    if not token:
+        print("🛑 Нет JWT")
+        return False
+    headers = {"Authorization": f"Bearer {token}", "Content-Type": "application/json"}
+    stats = {"total": 0, "pass": 0, "fail": 0, "failures": []}
+    for method, path, query, body, expect, note in ops:
+        stats["total"] += 1
+        url = f"{BASE_URL}{path}"
+        try:
+            resp = requests.request(
+                method, url, headers=headers, params=query, json=body, timeout=45
+            )
+            status = resp.status_code
+            if status in expect:
+                stats["pass"] += 1
+                icon = "✅"
+            else:
+                stats["fail"] += 1
+                snippet = (resp.text or "")[:120]
+                stats["failures"].append(
+                    f"{method} {path} → {status} (expected {expect}) [{note}] {snippet}"
+                )
+                icon = "❌"
+            print(f"{icon} {status} {method} {path}  # {note}")
+        except Exception as e:
+            stats["fail"] += 1
+            stats["failures"].append(f"{method} {path} → ERROR {e} [{note}]")
+            print(f"❌ ERR {method} {path}: {e}")
+    print_header(f"{title} RESULTS")
+    print(f"✅ Pass: {stats['pass']}/{stats['total']}")
+    print(f"❌ Fail: {stats['fail']}/{stats['total']}")
+    for f in stats["failures"]:
+        print(f"  • {f}")
+    return stats["fail"] == 0
+
+
+def run_antifake_contract_tests(token=None):
+    return _run_named_contract_tests("ANTIFAKE CONTRACT", ANTIFAKE_OPS, token)
+
+
+def run_subscription_contract_tests(token=None):
+    return _run_named_contract_tests("SUBSCRIPTION CONTRACT", SUBSCRIPTION_OPS, token)
+
+
+def run_notifications_contract_tests(token=None):
+    return _run_named_contract_tests("NOTIFICATIONS CONTRACT (JWT §8.3)", NOTIFICATIONS_OPS, token)
+
+
+def run_referral_a_contract_tests(token=None):
+    return _run_named_contract_tests("REFERRAL A CONTRACT", REFERRAL_A_OPS, token)
+
+
 def run_tests(token=None):
     print_header("ФИНАЛЬНАЯ ВАЛИДАЦИЯ ВСЕХ API (OpenAPI + APP_ENDPOINTS)")
 
@@ -486,7 +612,23 @@ def main():
     parser = argparse.ArgumentParser(description="ALADDIN prod API smoke tester")
     parser.add_argument("--wellness-only", action="store_true", help="Wellness method-aware tests only")
     parser.add_argument("--build243-only", action="store_true", help="Build 243 Unicorn/Guide/Telegram/Antifake tests")
-    parser.add_argument("--all", action="store_true", help="Full smoke + wellness + build243 contract tests")
+    parser.add_argument("--antifake-only", action="store_true", help="Antifake Hub contract tests")
+    parser.add_argument("--subscription-only", action="store_true", help="Subscription/tariffs contract tests")
+    parser.add_argument(
+        "--notifications-only",
+        action="store_true",
+        help="Notifications inbox + settings/notifications (JWT §8.3)",
+    )
+    parser.add_argument(
+        "--referral-a-only",
+        action="store_true",
+        help="Family Invite Pro A /api/referral/a/*",
+    )
+    parser.add_argument(
+        "--all",
+        action="store_true",
+        help="Full smoke + wellness + build243 + antifake + subscription + notifications + referral-a",
+    )
     args = parser.parse_args()
 
     if args.wellness_only:
@@ -497,12 +639,32 @@ def main():
         ok = run_build243_contract_tests()
         sys.exit(0 if ok else 1)
 
+    if args.antifake_only:
+        ok = run_antifake_contract_tests()
+        sys.exit(0 if ok else 1)
+
+    if args.subscription_only:
+        ok = run_subscription_contract_tests()
+        sys.exit(0 if ok else 1)
+
+    if args.notifications_only:
+        ok = run_notifications_contract_tests()
+        sys.exit(0 if ok else 1)
+
+    if args.referral_a_only:
+        ok = run_referral_a_contract_tests()
+        sys.exit(0 if ok else 1)
+
     if args.all:
         token = get_jwt_token()
         run_tests(token)
         ok_w = run_wellness_contract_tests(token)
         ok_b = run_build243_contract_tests(token)
-        sys.exit(0 if (ok_w and ok_b) else 1)
+        ok_a = run_antifake_contract_tests(token)
+        ok_s = run_subscription_contract_tests(token)
+        ok_n = run_notifications_contract_tests(token)
+        ok_r = run_referral_a_contract_tests(token)
+        sys.exit(0 if (ok_w and ok_b and ok_a and ok_s and ok_n and ok_r) else 1)
 
     run_tests()
 
