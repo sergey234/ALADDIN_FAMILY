@@ -2,6 +2,8 @@ import SwiftUI
 
 /// P1-04: свои инструкции и тон личности героя (семейный scope, только родитель).
 struct CompanionPersonalitySection: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
     @State private var customInstructions = ""
     @State private var personalityPreset = "friendly"
     @State private var securityExpertMode = false
@@ -16,12 +18,12 @@ struct CompanionPersonalitySection: View {
             HStack(spacing: 8) {
                 Text("✨")
                     .font(.title2)
-                Text("Тон и инструкции героя")
+                Text(localizationManager.localized("companion_personality_title"))
                     .font(.bodyBold)
                     .foregroundColor(.textPrimary)
             }
 
-            Text("Как Grok Custom Instructions: родитель задаёт стиль общения для всей семьи. Без телефонов, адресов и паролей.")
+            Text(localizationManager.localized("companion_personality_grok_hint"))
                 .font(.caption)
                 .foregroundColor(.textSecondary)
 
@@ -30,9 +32,9 @@ struct CompanionPersonalitySection: View {
                     .frame(maxWidth: .infinity)
             } else {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Стиль")
+                    Text(localizationManager.localized("companion_personality_style"))
                         .font(.subheadline.weight(.semibold))
-                    Picker("Стиль", selection: $personalityPreset) {
+                    Picker(localizationManager.localized("companion_personality_style"), selection: $personalityPreset) {
                         ForEach(availablePresets, id: \.self) { preset in
                             Text(CompanionProfileSettings.presetLabels[preset] ?? preset)
                                 .tag(preset)
@@ -42,12 +44,12 @@ struct CompanionPersonalitySection: View {
                 }
 
                 Toggle(isOn: $securityExpertMode) {
-                    Text("Режим «эксперт безопасности» по умолчанию")
+                    Text(localizationManager.localized("companion_personality_security_expert"))
                         .font(.subheadline)
                 }
 
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Свои инструкции (до 500 символов)")
+                    Text(localizationManager.localized("companion_personality_custom_instructions"))
                         .font(.subheadline.weight(.semibold))
                     TextEditor(text: $customInstructions)
                         .frame(minHeight: 88, maxHeight: 120)
@@ -69,7 +71,11 @@ struct CompanionPersonalitySection: View {
                 } label: {
                     HStack {
                         if isSaving { ProgressView().tint(.white) }
-                        Text(isSaving ? "Сохраняем…" : "Сохранить тон и инструкции")
+                        Text(
+                            isSaving
+                                ? localizationManager.localized("companion_saving")
+                                : localizationManager.localized("companion_personality_save")
+                        )
                     }
                     .font(.bodyBold)
                     .foregroundColor(.white)
@@ -130,7 +136,7 @@ struct CompanionPersonalitySection: View {
                 personalityPreset: personalityPreset,
                 securityExpertMode: securityExpertMode
             )
-            statusMessage = "Герой будет говорить в выбранном стиле."
+            statusMessage = localizationManager.localized("companion_personality_saved")
             HapticFeedback.impact(.light)
         } catch {
             errorText = error.localizedDescription

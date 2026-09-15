@@ -53,7 +53,7 @@ struct MemberSettingsModalView: View {
                 LinearGradient.backgroundGradient
                     .ignoresSafeArea()
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.m) {
                         // Заголовок
                         VStack(spacing: Spacing.xs) {
@@ -94,7 +94,7 @@ struct MemberSettingsModalView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("companion_conversation_done")) {
                         dismiss()
                     }
                 }
@@ -108,8 +108,8 @@ struct MemberSettingsModalView: View {
             .alert(localizationManager.localized("member_settings_change_password_title"), isPresented: $showPasswordChange) {
                 TextField("Новый пароль", text: .constant(""))
                 TextField("Подтверждение", text: .constant(""))
-                Button("Отмена", role: .cancel) {}
-                Button("Изменить") {
+                Button(localizationManager.localized("language_settings_cancel"), role: .cancel) {}
+                Button(localizationManager.localized("rewards_modal_edit")) {
                     // TODO: Реализовать смену пароля
                 }
             } message: {
@@ -124,7 +124,7 @@ struct MemberSettingsModalView: View {
     private var administratorSettings: some View {
         VStack(spacing: Spacing.m) {
             SettingsSection(title: "Роль и права") {
-                SettingsRow(icon: "👑", title: "Администратор семьи", value: nil)
+                SettingsRow(icon: "👑", title: localizationManager.localized("member_settings_family_admin"), value: nil)
                 Button(action: {
                     dismiss()
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -140,18 +140,18 @@ struct MemberSettingsModalView: View {
                         navigationManager.navigateTo(.settings)
                     }
                 }) {
-                    SettingsRow(icon: "🛡️", title: "Настройки защиты", value: nil)
+                    SettingsRow(icon: "🛡️", title: localizationManager.localized("nav_screen_threat_settings"), value: nil)
                 }
                 .buttonStyle(PlainButtonStyle())
             }
             
-            SettingsSection(title: "Уведомления") {
+            SettingsSection(title: localizationManager.localized("nav_screen_notifications")) {
                 ToggleRow(icon: "🔴", title: "Критические угрозы", isOn: $criticalThreatsEnabled)
                 ToggleRow(icon: "👨‍👩‍👧‍👦", title: "Действия детей", isOn: $childrenActionsEnabled)
                 ToggleRow(icon: "🔔", title: "Оповещения семьи", isOn: $familyAlertsEnabled)
             }
             
-            SettingsSection(title: "Безопасность") {
+            SettingsSection(title: localizationManager.localized("profile_security_title")) {
                 Button(action: {
                     showTwoFactorSettings = true
                 }) {
@@ -165,7 +165,7 @@ struct MemberSettingsModalView: View {
                 Button(action: {
                     showPasswordChange = true
                 }) {
-                    SettingsRow(icon: "🔑", title: "Пароль учётной записи", value: "Изменить")
+                    SettingsRow(icon: "🔑", title: "Пароль учётной записи", value: localizationManager.localized("rewards_modal_edit"))
                 }
                 .buttonStyle(PlainButtonStyle())
                 Button(action: {
@@ -182,7 +182,7 @@ struct MemberSettingsModalView: View {
     
     private var parentSettings: some View {
         VStack(spacing: Spacing.m) {
-            SettingsSection(title: "Родительский контроль") {
+            SettingsSection(title: localizationManager.localized("nav_screen_parental_control")) {
                 Button(action: {
                     dismiss()
                     DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
@@ -193,16 +193,16 @@ struct MemberSettingsModalView: View {
                 }
                 .buttonStyle(PlainButtonStyle())
                 SettingsRow(icon: "📱", title: "Разрешения для приложений", value: nil)
-                SettingsRow(icon: "⏰", title: "Время экрана", value: nil)
+                SettingsRow(icon: "⏰", title: localizationManager.localized("family_screen_time"), value: nil)
             }
             
             SettingsSection(title: "Уведомления о детях") {
-                ToggleRow(icon: "🚫", title: "Блокировки контента", isOn: $contentBlockingEnabled)
+                ToggleRow(icon: "🚫", title: localizationManager.localized("member_settings_content_blocking"), isOn: $contentBlockingEnabled)
                 ToggleRow(icon: "⏱️", title: "Превышение времени", isOn: $timeExceededEnabled)
                 ToggleRow(icon: "✋", title: "Запросы доступа", isOn: $accessRequestsEnabled)
             }
             
-            SettingsSection(title: "Уведомления") {
+            SettingsSection(title: localizationManager.localized("nav_screen_notifications")) {
                 ToggleRow(icon: "⚠️", title: "Угрозы безопасности", isOn: $securityThreatsEnabled)
                 ToggleRow(icon: "🔄", title: "Обновления защиты", isOn: $protectionUpdatesEnabled)
             }
@@ -219,8 +219,8 @@ struct MemberSettingsModalView: View {
                 SettingsRow(icon: "📊", title: "Данные для аналитики", value: nil)
             }
             
-            SettingsSection(title: "Уведомления") {
-                ToggleRow(icon: "🚨", title: "Опасные сайты", isOn: $dangerousSitesEnabled)
+            SettingsSection(title: localizationManager.localized("nav_screen_notifications")) {
+                ToggleRow(icon: "🚨", title: localizationManager.localized("tariffs_threat_internet_1"), isOn: $dangerousSitesEnabled)
                 ToggleRow(icon: "⏰", title: "Превышение времени", isOn: $timeLimitEnabled)
                 ToggleRow(icon: "🆕", title: "Новые функции защиты", isOn: $newFeaturesEnabled)
             }
@@ -231,7 +231,7 @@ struct MemberSettingsModalView: View {
     
     private var childSettings: some View {
         VStack(spacing: Spacing.m) {
-            SettingsSection(title: "Внешний вид") {
+            SettingsSection(title: localizationManager.localized("member_settings_appearance")) {
                 SettingsRow(icon: "🎨", title: "Цвет темы", value: "Синий")
                 SettingsRow(icon: "😊", title: "Иконка аватара", value: "👧")
                 ToggleRow(icon: "🔔", title: "Звуки уведомлений", isOn: $soundsEnabled)
@@ -240,7 +240,7 @@ struct MemberSettingsModalView: View {
             SettingsSection(title: "Игровые настройки") {
                 SettingsRow(icon: "🦄", title: "Выбор единорога", value: nil)
                 SettingsRow(icon: "⭐", title: "Уровень в игре", value: "5")
-                SettingsRow(icon: "🏆", title: "Достижения", value: nil)
+                SettingsRow(icon: "🏆", title: localizationManager.localized("child_rewards_tab_achievements"), value: nil)
             }
         }
     }
@@ -252,16 +252,20 @@ struct MemberSettingsModalView: View {
             SettingsSection(title: "Интерфейс") {
                 ToggleRow(icon: "🔤", title: "Крупный шрифт", isOn: $largeFontEnabled)
                 ToggleRow(icon: "🔘", title: "Яркие кнопки", isOn: $brightButtonsEnabled)
-                ToggleRow(icon: "🔊", title: "Автовоспроизведение уведомлений", isOn: $autoPlayEnabled)
+                ToggleRow(icon: "🔊", title: localizationManager.localized("member_settings_autoplay_notifications"), isOn: $autoPlayEnabled)
             }
             
-            SettingsSection(title: "Безопасность") {
+            SettingsSection(title: localizationManager.localized("profile_security_title")) {
                 ToggleRow(icon: "🔐", title: "Простая авторизация", isOn: $simpleAuthEnabled)
-                ToggleRow(icon: "🤖", title: "Автоматическая защита", isOn: $autoProtectionEnabled)
-                SettingsRow(icon: "🆘", title: "SOS-кнопка", value: "Настроить")
+                ToggleRow(icon: "🤖", title: localizationManager.localized("member_settings_auto_protection"), isOn: $autoProtectionEnabled)
+                SettingsRow(
+                    icon: "🆘",
+                    title: localizationManager.localized("tariff_parental_location_sos_family"),
+                    value: localizationManager.localized("family_configure")
+                )
             }
             
-            SettingsSection(title: "Уведомления") {
+            SettingsSection(title: localizationManager.localized("nav_screen_notifications")) {
                 ToggleRow(icon: "🚨", title: "Только критичные угрозы", isOn: $criticalOnlyEnabled)
                 ToggleRow(icon: "🔤", title: "Крупный текст", isOn: $largeTextEnabled)
                 ToggleRow(icon: "🔊", title: "Звуковые оповещения", isOn: $soundAlertsEnabled)
@@ -305,7 +309,7 @@ struct TwoFactorSettingsView: View {
                             TextField("Код подтверждения", text: $code)
                                 .textFieldStyle(RoundedBorderTextFieldStyle())
                             
-                            Button("Сохранить") {
+                            Button(localizationManager.localized("profile_edit_save")) {
                                 dismiss()
                             }
                             .buttonStyle(.borderedProminent)
@@ -321,7 +325,7 @@ struct TwoFactorSettingsView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("companion_conversation_done")) {
                         dismiss()
                     }
                 }
@@ -350,7 +354,7 @@ struct LoginHistoryView: View {
                 LinearGradient.backgroundGradient
                     .ignoresSafeArea()
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.m) {
                         ForEach(history, id: \.0) { date, device, status in
                             HStack {
@@ -386,7 +390,7 @@ struct LoginHistoryView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("companion_conversation_done")) {
                         dismiss()
                     }
                 }

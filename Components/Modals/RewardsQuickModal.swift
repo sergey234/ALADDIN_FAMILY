@@ -7,6 +7,7 @@ import SwiftUI
 struct RewardsQuickModal: View {
     
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
     @Binding var unicornBalance: Int
     
     // Проверка роли пользователя
@@ -42,7 +43,7 @@ struct RewardsQuickModal: View {
                                 .font(.system(size: 36, weight: .bold))
                                 .foregroundColor(Color(hex: "C084FC"))
                             
-                            Text("Единорогов на счету")
+                            Text(localizationManager.localized("rewards_quick_balance_label"))
                                 .font(.caption)
                                 .foregroundColor(.textSecondary)
                         }
@@ -56,11 +57,19 @@ struct RewardsQuickModal: View {
                         
                         // Быстрые действия
                         HStack(spacing: Spacing.m) {
-                            quickActionButton(icon: "✅", title: "Вознаградить", color: .successGreen) {
+                            quickActionButton(
+                                icon: "✅",
+                                title: localizationManager.localized("child_rewards_reward_button"),
+                                color: .successGreen
+                            ) {
                                 rewardChild()
                             }
                             
-                            quickActionButton(icon: "❌", title: "Наказать", color: .dangerRed) {
+                            quickActionButton(
+                                icon: "❌",
+                                title: localizationManager.localized("child_rewards_punish_button"),
+                                color: .dangerRed
+                            ) {
                                 punishChild()
                             }
                         }
@@ -74,10 +83,10 @@ struct RewardsQuickModal: View {
                     VStack(spacing: Spacing.l) {
                         Text("🔒")
                             .font(.system(size: 64))
-                        Text("Доступ ограничен")
+                        Text(localizationManager.localized("games_access_denied"))
                             .font(.h2)
                             .foregroundColor(.textPrimary)
-                        Text("Этот функционал доступен только родителям.")
+                        Text(localizationManager.localized("rewards_quick_access_limited_message"))
                             .font(.body)
                             .foregroundColor(.textSecondary)
                             .multilineTextAlignment(.center)
@@ -87,7 +96,7 @@ struct RewardsQuickModal: View {
                             HapticFeedback.impact(.medium)
                             dismiss()
                         }) {
-                            Text("Понятно")
+                            Text(localizationManager.localized("profile_edit_ok"))
                                 .font(.bodyBold)
                                 .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
@@ -106,7 +115,7 @@ struct RewardsQuickModal: View {
                     HStack(spacing: Spacing.xs) {
                         Text("🦄")
                             .font(.system(size: 20))
-                        Text("Вознаграждение ребёнка")
+                        Text(localizationManager.localized("child_rewards_title"))
                             .font(.h3)
                             .foregroundColor(Color(hex: "C084FC"))
                     }
@@ -189,6 +198,7 @@ struct RewardsQuickModal: View {
 struct RewardsQuickModal_Previews: PreviewProvider {
     static var previews: some View {
         RewardsQuickModal(unicornBalance: .constant(245))
+            .environmentObject(LocalizationManager.shared)
     }
 }
 #endif

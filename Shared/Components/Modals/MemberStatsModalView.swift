@@ -16,7 +16,7 @@ struct MemberStatsModalView: View {
                 LinearGradient.backgroundGradient
                     .ignoresSafeArea()
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.m) {
                         // Заголовок
                         VStack(spacing: Spacing.xs) {
@@ -57,7 +57,7 @@ struct MemberStatsModalView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button("Готово") {
+                    Button(localizationManager.localized("companion_conversation_done")) {
                         dismiss()
                     }
                 }

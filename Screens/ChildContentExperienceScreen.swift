@@ -47,7 +47,7 @@ struct ChildContentExperienceScreen: View {
         NavigationView {
             ZStack {
                 StormMeshBackground(variant: .growWarm)
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 16) {
                     headerCard
 
@@ -4056,7 +4056,7 @@ private struct StoryExperienceHostView: View {
                 resetForStory()
             }
 
-            Text(story.title)
+            Text(localizationManager.localized(story.title))
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundColor(.secondary)
 
@@ -4130,7 +4130,7 @@ private struct StoryExperienceHostView: View {
                     Button {
                         handleChoice(choice)
                     } label: {
-                        Text(choice.title)
+                        Text(localizationManager.localized(choice.title))
                             .font(.system(size: 15, weight: .semibold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 10)
@@ -4142,7 +4142,7 @@ private struct StoryExperienceHostView: View {
             if page.isEnding {
                 storyQuizCard
                 if MnemoFeatureFlags.storiesRecallHook {
-                    MnemoStoriesRecallHookBanner(storyTitle: story.title) {
+                    MnemoStoriesRecallHookBanner(storyTitle: localizationManager.localized(story.title)) {
                         MasterLogger.shared.business("MNEMO-B14-T13 stories recall hook story=\(story.id)")
                     }
                 }
@@ -4264,14 +4264,14 @@ private struct StoryExperienceHostView: View {
 private func makeForestStory() -> InteractiveStory {
     InteractiveStory(
         id: "forest",
-        title: "Лесные приключения",
+        title: "child_loc_b_047",
         pages: [
             StoryPage(
                 id: "start",
                 narration: "Маша идёт по лесной тропинке и слышит тихий шорох у дерева.",
                 choices: [
-                    StoryChoice(title: "Подойти и посмотреть", nextPageId: "tree", checkpointId: "c1"),
-                    StoryChoice(title: "Позвать друзей", nextPageId: "friends", checkpointId: "c1")
+                    StoryChoice(title: "child_loc_b_059", nextPageId: "tree", checkpointId: "c1"),
+                    StoryChoice(title: "child_loc_b_061", nextPageId: "friends", checkpointId: "c1")
                 ],
                 checkpointId: "c0",
                 isEnding: false
@@ -4280,8 +4280,8 @@ private func makeForestStory() -> InteractiveStory {
                 id: "tree",
                 narration: "Под деревом сидит маленький ёжик, который потерял дорогу домой.",
                 choices: [
-                    StoryChoice(title: "Помочь ёжику", nextPageId: "home", checkpointId: "c2"),
-                    StoryChoice(title: "Искать карту", nextPageId: "map", checkpointId: "c2")
+                    StoryChoice(title: "child_loc_b_066", nextPageId: "home", checkpointId: "c2"),
+                    StoryChoice(title: "child_loc_b_043", nextPageId: "map", checkpointId: "c2")
                 ],
                 checkpointId: "c1",
                 isEnding: false
@@ -4290,8 +4290,8 @@ private func makeForestStory() -> InteractiveStory {
                 id: "friends",
                 narration: "Друзья быстро пришли и вместе придумали, как найти дом ёжика.",
                 choices: [
-                    StoryChoice(title: "Пойти по следам", nextPageId: "home", checkpointId: "c2"),
-                    StoryChoice(title: "Спросить у совы", nextPageId: "map", checkpointId: "c2")
+                    StoryChoice(title: "child_loc_b_063", nextPageId: "home", checkpointId: "c2"),
+                    StoryChoice(title: "child_loc_b_086", nextPageId: "map", checkpointId: "c2")
                 ],
                 checkpointId: "c1",
                 isEnding: false
@@ -4300,7 +4300,7 @@ private func makeForestStory() -> InteractiveStory {
                 id: "map",
                 narration: "Сова дала подсказку: нужно идти к большой поляне с ромашками.",
                 choices: [
-                    StoryChoice(title: "Бежать на поляну", nextPageId: "ending", checkpointId: "c3")
+                    StoryChoice(title: "child_loc_b_027", nextPageId: "ending", checkpointId: "c3")
                 ],
                 checkpointId: "c3",
                 isEnding: false
@@ -4309,7 +4309,7 @@ private func makeForestStory() -> InteractiveStory {
                 id: "home",
                 narration: "Ёжик радостно нашёл дом и поблагодарил Машу и её друзей.",
                 choices: [
-                    StoryChoice(title: "Слушать финал", nextPageId: "ending", checkpointId: "c3")
+                    StoryChoice(title: "child_loc_b_080", nextPageId: "ending", checkpointId: "c3")
                 ],
                 checkpointId: "c3",
                 isEnding: false
@@ -4329,14 +4329,14 @@ private func makeForestStory() -> InteractiveStory {
 private func makeRobotStory() -> InteractiveStory {
     InteractiveStory(
         id: "robot",
-        title: "Робот в мастерской",
+        title: "child_loc_b_076",
         pages: [
             StoryPage(
                 id: "start",
                 narration: "Вика собирает робота и выбирает для него первый модуль.",
                 choices: [
-                    StoryChoice(title: "Модуль света", nextPageId: "light", checkpointId: "c1"),
-                    StoryChoice(title: "Модуль движения", nextPageId: "move", checkpointId: "c1")
+                    StoryChoice(title: "child_loc_b_051", nextPageId: "light", checkpointId: "c1"),
+                    StoryChoice(title: "child_loc_b_050", nextPageId: "move", checkpointId: "c1")
                 ],
                 checkpointId: "c0",
                 isEnding: false
@@ -4345,7 +4345,7 @@ private func makeRobotStory() -> InteractiveStory {
                 id: "light",
                 narration: "Робот начал мигать лампочками и показывать сигналы.",
                 choices: [
-                    StoryChoice(title: "Добавить музыку", nextPageId: "music", checkpointId: "c2")
+                    StoryChoice(title: "child_loc_b_035", nextPageId: "music", checkpointId: "c2")
                 ],
                 checkpointId: "c1",
                 isEnding: false
@@ -4354,7 +4354,7 @@ private func makeRobotStory() -> InteractiveStory {
                 id: "move",
                 narration: "Робот уверенно едет вперёд и объезжает препятствия.",
                 choices: [
-                    StoryChoice(title: "Добавить датчик", nextPageId: "music", checkpointId: "c2")
+                    StoryChoice(title: "child_loc_b_034", nextPageId: "music", checkpointId: "c2")
                 ],
                 checkpointId: "c1",
                 isEnding: false
@@ -4363,7 +4363,7 @@ private func makeRobotStory() -> InteractiveStory {
                 id: "music",
                 narration: "Теперь робот поёт, танцует и дружелюбно приветствует детей.",
                 choices: [
-                    StoryChoice(title: "Показать проект", nextPageId: "ending", checkpointId: "c3")
+                    StoryChoice(title: "child_loc_b_064", nextPageId: "ending", checkpointId: "c3")
                 ],
                 checkpointId: "c2",
                 isEnding: false
@@ -4383,14 +4383,14 @@ private func makeRobotStory() -> InteractiveStory {
 private func makeKindnessStory() -> InteractiveStory {
     InteractiveStory(
         id: "kindness",
-        title: "Добрые дела",
+        title: "child_loc_b_036",
         pages: [
             StoryPage(
                 id: "start",
                 narration: "Артём замечает, что одноклассник расстроен перед контрольной.",
                 choices: [
-                    StoryChoice(title: "Поддержать словом", nextPageId: "talk", checkpointId: "c1"),
-                    StoryChoice(title: "Помочь повторить", nextPageId: "study", checkpointId: "c1")
+                    StoryChoice(title: "child_loc_b_058", nextPageId: "talk", checkpointId: "c1"),
+                    StoryChoice(title: "child_loc_b_065", nextPageId: "study", checkpointId: "c1")
                 ],
                 checkpointId: "c0",
                 isEnding: false
@@ -4398,14 +4398,14 @@ private func makeKindnessStory() -> InteractiveStory {
             StoryPage(
                 id: "talk",
                 narration: "Тёплые слова помогли успокоиться и поверить в свои силы.",
-                choices: [StoryChoice(title: "Продолжить", nextPageId: "ending", checkpointId: "c2")],
+                choices: [StoryChoice(title: "wellness_reflective_confirm_continue", nextPageId: "ending", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
             StoryPage(
                 id: "study",
                 narration: "Вместе ребята быстро разобрали сложные задания и нашли решение.",
-                choices: [StoryChoice(title: "Продолжить", nextPageId: "ending", checkpointId: "c2")],
+                choices: [StoryChoice(title: "wellness_reflective_confirm_continue", nextPageId: "ending", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
@@ -4424,14 +4424,14 @@ private func makeKindnessStory() -> InteractiveStory {
 private func makeStarStory() -> InteractiveStory {
     InteractiveStory(
         id: "stars",
-        title: "Звёздная команда",
+        title: "child_loc_b_040",
         pages: [
             StoryPage(
                 id: "start",
                 narration: "Команда юных исследователей получает карту космической станции.",
                 choices: [
-                    StoryChoice(title: "Проверить двигатель", nextPageId: "engine", checkpointId: "c1"),
-                    StoryChoice(title: "Проверить связь", nextPageId: "radio", checkpointId: "c1")
+                    StoryChoice(title: "child_loc_b_068", nextPageId: "engine", checkpointId: "c1"),
+                    StoryChoice(title: "child_loc_b_070", nextPageId: "radio", checkpointId: "c1")
                 ],
                 checkpointId: "c0",
                 isEnding: false
@@ -4439,14 +4439,14 @@ private func makeStarStory() -> InteractiveStory {
             StoryPage(
                 id: "engine",
                 narration: "Двигатель готов, но нужно рассчитать безопасный маршрут полёта.",
-                choices: [StoryChoice(title: "Проложить маршрут", nextPageId: "route", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_074", nextPageId: "route", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
             StoryPage(
                 id: "radio",
                 narration: "Связь устойчивая, команда принимает сигнал от соседнего модуля.",
-                choices: [StoryChoice(title: "Проложить маршрут", nextPageId: "route", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_074", nextPageId: "route", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
@@ -4465,14 +4465,14 @@ private func makeStarStory() -> InteractiveStory {
 private func makeLibraryStory() -> InteractiveStory {
     InteractiveStory(
         id: "library",
-        title: "Тайна библиотеки",
+        title: "child_loc_b_089",
         pages: [
             StoryPage(
                 id: "start",
                 narration: "В старой библиотеке Лена находит загадочную записку между страницами книги.",
                 choices: [
-                    StoryChoice(title: "Искать подсказку в каталоге", nextPageId: "catalog", checkpointId: "c1"),
-                    StoryChoice(title: "Спросить библиотекаря", nextPageId: "librarian", checkpointId: "c1")
+                    StoryChoice(title: "child_loc_b_044", nextPageId: "catalog", checkpointId: "c1"),
+                    StoryChoice(title: "child_loc_b_085", nextPageId: "librarian", checkpointId: "c1")
                 ],
                 checkpointId: "c0",
                 isEnding: false
@@ -4480,14 +4480,14 @@ private func makeLibraryStory() -> InteractiveStory {
             StoryPage(
                 id: "catalog",
                 narration: "Каталог приводит к полке, где спрятана карта с маршрутом к тайной комнате.",
-                choices: [StoryChoice(title: "Открыть тайную комнату", nextPageId: "ending", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_053", nextPageId: "ending", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
             StoryPage(
                 id: "librarian",
                 narration: "Библиотекарь подсказывает шифр и Лена разгадывает послание.",
-                choices: [StoryChoice(title: "Открыть тайную комнату", nextPageId: "ending", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_053", nextPageId: "ending", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
@@ -4506,14 +4506,14 @@ private func makeLibraryStory() -> InteractiveStory {
 private func makeKolobokStory() -> InteractiveStory {
     InteractiveStory(
         id: "kolobok",
-        title: "Колобок",
+        title: "child_loc_b_046",
         pages: [
             StoryPage(
                 id: "start",
                 narration: "Колобок покатился по дорожке и встретил зайца.",
                 choices: [
-                    StoryChoice(title: "Спеть песенку", nextPageId: "song", checkpointId: "c1"),
-                    StoryChoice(title: "Убежать быстрее", nextPageId: "road", checkpointId: "c1")
+                    StoryChoice(title: "child_loc_b_084", nextPageId: "song", checkpointId: "c1"),
+                    StoryChoice(title: "child_loc_b_090", nextPageId: "road", checkpointId: "c1")
                 ],
                 checkpointId: "c0",
                 isEnding: false
@@ -4521,21 +4521,21 @@ private func makeKolobokStory() -> InteractiveStory {
             StoryPage(
                 id: "song",
                 narration: "Колобок спел весёлую песенку и покатился дальше.",
-                choices: [StoryChoice(title: "К медведю", nextPageId: "bear", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_045", nextPageId: "bear", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
             StoryPage(
                 id: "road",
                 narration: "На дорожке Колобок встретил медведя, который хотел дружить.",
-                choices: [StoryChoice(title: "Поговорить с медведем", nextPageId: "bear", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_057", nextPageId: "bear", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
             StoryPage(
                 id: "bear",
                 narration: "Медведь показал короткую тропинку к дому бабушки и дедушки.",
-                choices: [StoryChoice(title: "Вернуться домой", nextPageId: "ending", checkpointId: "c3")],
+                choices: [StoryChoice(title: "child_loc_b_030", nextPageId: "ending", checkpointId: "c3")],
                 checkpointId: "c2",
                 isEnding: false
             ),
@@ -4554,14 +4554,14 @@ private func makeKolobokStory() -> InteractiveStory {
 private func makeAnimalTalesStory() -> InteractiveStory {
     InteractiveStory(
         id: "animal_tales",
-        title: "Сказки про животных",
+        title: "child_loc_b_078",
         pages: [
             StoryPage(
                 id: "start",
                 narration: "Лисёнок и бельчонок решили помочь птицам найти зёрнышки.",
                 choices: [
-                    StoryChoice(title: "Идти к поляне", nextPageId: "field", checkpointId: "c1"),
-                    StoryChoice(title: "Проверить у реки", nextPageId: "river", checkpointId: "c1")
+                    StoryChoice(title: "child_loc_b_042", nextPageId: "field", checkpointId: "c1"),
+                    StoryChoice(title: "child_loc_b_071", nextPageId: "river", checkpointId: "c1")
                 ],
                 checkpointId: "c0",
                 isEnding: false
@@ -4569,14 +4569,14 @@ private func makeAnimalTalesStory() -> InteractiveStory {
             StoryPage(
                 id: "field",
                 narration: "На поляне друзья нашли мешочек с зёрнами.",
-                choices: [StoryChoice(title: "Позвать птиц", nextPageId: "ending", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_062", nextPageId: "ending", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
             StoryPage(
                 id: "river",
                 narration: "У реки бобр подсказал, где лежит мешочек с едой.",
-                choices: [StoryChoice(title: "Позвать птиц", nextPageId: "ending", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_062", nextPageId: "ending", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
@@ -4595,14 +4595,14 @@ private func makeAnimalTalesStory() -> InteractiveStory {
 private func makeMagicStory() -> InteractiveStory {
     InteractiveStory(
         id: "magic_story",
-        title: "Волшебные истории",
+        title: "child_loc_b_031",
         pages: [
             StoryPage(
                 id: "start",
                 narration: "Ночью в саду зажглись светлячки и открыли путь к волшебному дереву.",
                 choices: [
-                    StoryChoice(title: "Подойти к дереву", nextPageId: "tree", checkpointId: "c1"),
-                    StoryChoice(title: "Попросить совета у феи", nextPageId: "fairy", checkpointId: "c1")
+                    StoryChoice(title: "child_loc_b_060", nextPageId: "tree", checkpointId: "c1"),
+                    StoryChoice(title: "child_loc_b_067", nextPageId: "fairy", checkpointId: "c1")
                 ],
                 checkpointId: "c0",
                 isEnding: false
@@ -4610,14 +4610,14 @@ private func makeMagicStory() -> InteractiveStory {
             StoryPage(
                 id: "tree",
                 narration: "На дереве висел фонарик желаний. Нужно назвать доброе дело.",
-                choices: [StoryChoice(title: "Загадать доброе желание", nextPageId: "ending", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_038", nextPageId: "ending", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
             StoryPage(
                 id: "fairy",
                 narration: "Фея подсказала: волшебство работает, когда мы помогаем другим.",
-                choices: [StoryChoice(title: "Сделать доброе дело", nextPageId: "ending", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_077", nextPageId: "ending", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
@@ -4636,14 +4636,14 @@ private func makeMagicStory() -> InteractiveStory {
 private func makeWorldTalesStory() -> InteractiveStory {
     InteractiveStory(
         id: "world_tales",
-        title: "Сказки разных народов",
+        title: "child_loc_b_079",
         pages: [
             StoryPage(
                 id: "start",
                 narration: "Дети нашли карту мира, где каждая страна прятала сказочную историю.",
                 choices: [
-                    StoryChoice(title: "Выбрать северную страну", nextPageId: "north", checkpointId: "c1"),
-                    StoryChoice(title: "Выбрать южную страну", nextPageId: "south", checkpointId: "c1")
+                    StoryChoice(title: "child_loc_b_032", nextPageId: "north", checkpointId: "c1"),
+                    StoryChoice(title: "child_loc_b_033", nextPageId: "south", checkpointId: "c1")
                 ],
                 checkpointId: "c0",
                 isEnding: false
@@ -4651,14 +4651,14 @@ private func makeWorldTalesStory() -> InteractiveStory {
             StoryPage(
                 id: "north",
                 narration: "На севере их встретил олень и рассказал легенду о храбром путешественнике.",
-                choices: [StoryChoice(title: "Продолжить путь", nextPageId: "ending", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_073", nextPageId: "ending", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
             StoryPage(
                 id: "south",
                 narration: "На юге мудрая черепаха поделилась историей о дружбе и терпении.",
-                choices: [StoryChoice(title: "Продолжить путь", nextPageId: "ending", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_073", nextPageId: "ending", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
@@ -4677,14 +4677,14 @@ private func makeWorldTalesStory() -> InteractiveStory {
 private func makeModernStory() -> InteractiveStory {
     InteractiveStory(
         id: "modern_story",
-        title: "Современные сказки",
+        title: "child_loc_b_082",
         pages: [
             StoryPage(
                 id: "start",
                 narration: "Робот Ри помогал ребятам в умном городе и искал потерянный дрон.",
                 choices: [
-                    StoryChoice(title: "Проверить парк", nextPageId: "park", checkpointId: "c1"),
-                    StoryChoice(title: "Проверить школьный двор", nextPageId: "school", checkpointId: "c1")
+                    StoryChoice(title: "child_loc_b_069", nextPageId: "park", checkpointId: "c1"),
+                    StoryChoice(title: "child_loc_b_072", nextPageId: "school", checkpointId: "c1")
                 ],
                 checkpointId: "c0",
                 isEnding: false
@@ -4692,14 +4692,14 @@ private func makeModernStory() -> InteractiveStory {
             StoryPage(
                 id: "park",
                 narration: "В парке дрон запутался в ветках, и друзья аккуратно его освободили.",
-                choices: [StoryChoice(title: "Вернуть дрон владельцу", nextPageId: "ending", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_029", nextPageId: "ending", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
             StoryPage(
                 id: "school",
                 narration: "Во дворе дрон подал сигнал, и ребята нашли его по карте.",
-                choices: [StoryChoice(title: "Вернуть дрон владельцу", nextPageId: "ending", checkpointId: "c2")],
+                choices: [StoryChoice(title: "child_loc_b_029", nextPageId: "ending", checkpointId: "c2")],
                 checkpointId: "c1",
                 isEnding: false
             ),
@@ -4809,7 +4809,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Солнечный день",
+                title: localizationManager.localized("child_loc_b_083"),
                 artist: "ALADDIN Kids",
                 category: "play",
                 topics: ["seasons"],
@@ -4821,7 +4821,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Буквы поют",
+                title: localizationManager.localized("child_loc_b_028"),
                 artist: "ALADDIN Kids",
                 category: "learning",
                 topics: ["letters"],
@@ -4833,7 +4833,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Считалочка друзей",
+                title: localizationManager.localized("child_loc_b_087"),
                 artist: "ALADDIN Kids",
                 category: "learning",
                 topics: ["numbers"],
@@ -4845,7 +4845,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Добрые слова",
+                title: localizationManager.localized("child_loc_b_037"),
                 artist: "ALADDIN Kids",
                 category: "lullaby",
                 topics: ["friendship"],
@@ -4857,7 +4857,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Звёздный ритм",
+                title: localizationManager.localized("child_loc_b_041"),
                 artist: "ALADDIN Kids",
                 category: "play",
                 topics: ["space"],
@@ -4869,7 +4869,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Цветные краски",
+                title: localizationManager.localized("child_loc_b_091"),
                 artist: "ALADDIN Kids",
                 category: "learning",
                 topics: ["colors"],
@@ -4881,7 +4881,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Зверята поют",
+                title: localizationManager.localized("child_loc_b_039"),
                 artist: "ALADDIN Kids",
                 category: "play",
                 topics: ["animals"],
@@ -4893,7 +4893,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Четыре времени года",
+                title: localizationManager.localized("child_loc_b_092"),
                 artist: "ALADDIN Kids",
                 category: "learning",
                 topics: ["seasons"],
@@ -4905,7 +4905,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Песня про дружбу",
+                title: localizationManager.localized("child_loc_b_055"),
                 artist: "ALADDIN Kids",
                 category: "play",
                 topics: ["friendship"],
@@ -4917,7 +4917,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Песня про здоровье",
+                title: localizationManager.localized("child_loc_b_056"),
                 artist: "ALADDIN Kids",
                 category: "learning",
                 topics: ["health"],
@@ -4929,7 +4929,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Народные песенки",
+                title: localizationManager.localized("child_loc_b_052"),
                 artist: "ALADDIN Folk",
                 category: "lullaby",
                 topics: ["folk"],
@@ -4941,7 +4941,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Современные детские песни",
+                title: localizationManager.localized("child_loc_b_081"),
                 artist: "ALADDIN Pop Kids",
                 category: "play",
                 topics: ["modern"],
@@ -4953,7 +4953,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Песни разных стран",
+                title: localizationManager.localized("child_loc_b_054"),
                 artist: "ALADDIN World Kids",
                 category: "learning",
                 topics: ["countries"],
@@ -4965,7 +4965,7 @@ private struct KaraokeExperienceHostView: View {
                 ]
             ),
             KaraokeTrack(
-                title: "Ритмичные стишки",
+                title: localizationManager.localized("child_loc_b_075"),
                 artist: "ALADDIN Rhythm Kids",
                 category: "play",
                 topics: ["rhythm"],
@@ -5139,7 +5139,7 @@ private struct KaraokeExperienceHostView: View {
             ProgressView(value: min(1.0, selectedTrack.duration == 0 ? 0 : currentTime / selectedTrack.duration))
                 .tint(.pink)
 
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 8) {
                     ForEach(selectedTrack.lines) { line in
                         Text(line.text)

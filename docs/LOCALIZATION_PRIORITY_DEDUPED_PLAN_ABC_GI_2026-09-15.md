@@ -1,0 +1,526 @@
+# План локализации A/B/C/G/I — без дублей (2026-09-15)
+
+Правило: **один уникальный русский текст = один ключ = один пункт плана**.
+Несколько файлов/строк с тем же текстом → один ключ, много call-sites.
+
+| Зона | Уникальных фраз | NO_KEY | WIRE |
+|------|----------------:|-------:|-----:|
+| A | 25 | 22 | 3 |
+| B | 86 | 85 | 1 |
+| C | 78 | 57 | 21 |
+| G | 26 | 25 | 1 |
+| I | 12 | 8 | 4 |
+
+## Зона A — 25 уникальных фраз
+
+- [ ] **A-001** `WIRE` «Аладдин (13+)»
+  - Ключ: `companion_hero_aladdin`
+  - Действие: подключить localized
+  - Места (1): `Screens/CompanionParentConsentSection.swift:67`
+- [ ] **A-002** `WIRE` «Герой настороже»
+  - Ключ: `companion_a11y_hero_alert`
+  - Действие: подключить localized
+  - Места (1): `UI/Companion/CompanionHeroAvatarView.swift:208`
+- [ ] **A-003** `WIRE` «Единорог»
+  - Ключ: `companion_hero_unicorn`
+  - Действие: подключить localized
+  - Места (1): `Screens/CompanionParentConsentSection.swift:66`
+- [ ] **A-004** `NO_KEY` «AI-компаньон для детей»
+  - Ключ: `TBD_A_004`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionParentConsentSection.swift:22`
+- [ ] **A-005** `NO_KEY` «Как Grok Custom Instructions: родитель задаёт стиль общения для всей семьи. Без телефонов, адресов и паролей.»
+  - Ключ: `TBD_A_005`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionPersonalitySection.swift:24`
+- [ ] **A-006** `NO_KEY` «Краткие безопасные заметки для персонализации (экспорт и удаление ниже)»
+  - Ключ: `TBD_A_006`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionParentConsentSection.swift:43`
+- [ ] **A-007** `NO_KEY` «Краткие заметки без PII после разговоров. Родитель может выгрузить или удалить всё (152-ФЗ).»
+  - Ключ: `TBD_A_007`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionMemoryManagementSection.swift:25`
+- [ ] **A-008** `NO_KEY` «Память выключена. Включите переключатель «Память компаньона» выше и сохраните настройки.»
+  - Ключ: `TBD_A_008`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionMemoryManagementSection.swift:33`
+- [ ] **A-009** `NO_KEY` «Память компаньона»
+  - Ключ: `TBD_A_009`
+  - Действие: создать RU+EN ключ + localized
+  - Места (2): `Screens/CompanionParentConsentSection.swift:42`; `Screens/CompanionMemoryManagementSection.swift:20`
+- [ ] **A-010** `NO_KEY` «Пока нет сохранённых заметок. Они появятся после диалогов ребёнка с героем.»
+  - Ключ: `TBD_A_010`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionMemoryManagementSection.swift:38`
+- [ ] **A-011** `NO_KEY` «Разрешить «Разговор с героем»»
+  - Ключ: `TBD_A_011`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionParentConsentSection.swift:36`
+- [ ] **A-012** `NO_KEY` «Разрешённые герои»
+  - Ключ: `TBD_A_012`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionParentConsentSection.swift:63`
+- [ ] **A-013** `NO_KEY` «Ребёнок видит кнопку в Играх и может писать герою»
+  - Ключ: `TBD_A_013`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionParentConsentSection.swift:37`
+- [ ] **A-014** `NO_KEY` «Режим «эксперт безопасности» по умолчанию»
+  - Ключ: `TBD_A_014`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionPersonalitySection.swift:45`
+- [ ] **A-015** `NO_KEY` «Родитель решает, может ли ребёнок общаться с героями и сохранять ли память разговоров (152-ФЗ / COPPA).»
+  - Ключ: `TBD_A_015`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionParentConsentSection.swift:27`
+- [ ] **A-016** `NO_KEY` «Свои инструкции (до 500 символов)»
+  - Ключ: `TBD_A_016`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionPersonalitySection.swift:50`
+- [ ] **A-017** `NO_KEY` «Сохранить настройки компаньона»
+  - Ключ: `TBD_A_017`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionParentConsentSection.swift:77`
+- [ ] **A-018** `NO_KEY` «Сохранить тон и инструкции»
+  - Ключ: `TBD_A_018`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionPersonalitySection.swift:72`
+- [ ] **A-019** `NO_KEY` «Сохраняем…»
+  - Ключ: `TBD_A_019`
+  - Действие: создать RU+EN ключ + localized
+  - Места (2): `Screens/CompanionPersonalitySection.swift:72`; `Screens/CompanionParentConsentSection.swift:77`
+- [ ] **A-020** `NO_KEY` «Стиль»
+  - Ключ: `TBD_A_020`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionPersonalitySection.swift:33`
+- [ ] **A-021** `NO_KEY` «Тон и инструкции героя»
+  - Ключ: `TBD_A_021`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionPersonalitySection.swift:19`
+- [ ] **A-022** `NO_KEY` «Удаление…»
+  - Ключ: `TBD_A_022`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionMemoryManagementSection.swift:80`
+- [ ] **A-023** `NO_KEY` «Удалить всё»
+  - Ключ: `TBD_A_023`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionMemoryManagementSection.swift:80`
+- [ ] **A-024** `NO_KEY` «Экспорт JSON»
+  - Ключ: `TBD_A_024`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionMemoryManagementSection.swift:72`
+- [ ] **A-025** `NO_KEY` «Экспорт…»
+  - Ключ: `TBD_A_025`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/CompanionMemoryManagementSection.swift:72`
+
+## Зона B — 86 уникальных фраз
+
+**Аудит 2026-09-15 (режим A):** каркас ключей оставлен; все 86 пунктов проверены вручную по чеклисту.
+
+| Проверка | Результат |
+|----------|-----------|
+| Ключ RU+EN в `LocalizationManager` | ✅ 85 `child_loc_b_*` + WIRE `wellness_reflective_confirm_continue` |
+| Call-site в Swift | ✅ все 86 подключены |
+| Хардкод RU из списка B в Experience/Screen | ✅ 0 осталось |
+| Отображение story title/choice через `localized` | ✅ |
+| ChildContentScreen кнопки через `localized` | ✅ |
+| Karaoke **названия** треков | ✅ |
+| EN-тон (детский UI) | ✅ подправлены слабые формулировки (045, 055–056, 058, 060–061, 065, 070–071, 079, 081, 087, 104–105, 110) |
+
+**Не входит в зону B (ещё RU на English UI):** тексты `page.narration` в сказках и **строки куплетов** karaoke — отдельный backlog, не эти 86 пунктов.
+
+- [x] **B-026** `WIRE` «Продолжить» → `wellness_reflective_confirm_continue`
+- [x] **B-027…B-111** `NO_KEY` → `child_loc_b_027`…`child_loc_b_111` (см. `scripts/_loc_b_keys.json` + словарь)
+
+## Зона C — 78 уникальных фраз
+
+**Пачка 1 (WIRE C-112…C-132) — ✅ 2026-09-15, вручную:**
+- Подключены существующие ключи в MemberSettings / RewardsQuick / FamilyCreated / MemberStats / FamilyScreen.
+- «Безопасность» → `profile_security_title` (EN: Security), не `nav_screen_security_education` (там «Security education»).
+- Добавлены недостающие EN: `profile_edit_save` = Save, `profile_edit_ok` = Got it.
+
+**Пачка 2 (NO_KEY C-133…C-137) — ✅ 2026-09-15, вручную:**
+- [x] C-133 `member_settings_autoplay_notifications` — Auto-play notifications
+- [x] C-134 `member_settings_auto_protection` — Automatic protection
+- [x] C-135 `member_settings_family_admin` — Family administrator
+- [x] C-136 `member_settings_content_blocking` — Content blocks
+- [x] C-137 `member_settings_appearance` — Appearance
+
+- [x] **C-112…C-132** WIRE (см. пачку 1)
+- [ ] **C-138…** дальше по GO
+
+## Зона G — (см. ниже; C NO_KEY остаток в полном чеклисте ниже)
+
+<details><summary>Полный чеклист C (исторический)</summary>
+
+- [x] **C-112** `WIRE` «SOS-кнопка» → `tariff_parental_location_sos_family`
+- [x] **C-113** `WIRE` «Безопасность» → `profile_security_title`
+- [x] **C-114…C-132** WIRE подключены
+- [x] **C-133…C-137** NO_KEY пачка 2
+- [ ] **C-138** `NO_KEY` «Выбор единорога»
+  - Ключ: `TBD_C_138`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:241`
+- [ ] **C-139** `NO_KEY` «Данные для аналитики»
+  - Ключ: `TBD_C_139`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:219`
+- [ ] **C-140** `NO_KEY` «Действия детей»
+  - Ключ: `TBD_C_140`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:150`
+- [ ] **C-141** `NO_KEY` «Запросы доступа»
+  - Ключ: `TBD_C_141`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:202`
+- [ ] **C-142** `NO_KEY` «Звуки уведомлений»
+  - Ключ: `TBD_C_142`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:237`
+- [ ] **C-143** `NO_KEY` «Звуковые оповещения»
+  - Ключ: `TBD_C_143`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:267`
+- [ ] **C-144** `NO_KEY` «Игровые настройки»
+  - Ключ: `TBD_C_144`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:240`
+- [ ] **C-145** `NO_KEY` «Иконка аватара»
+  - Ключ: `TBD_C_145`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:236`
+- [ ] **C-146** `NO_KEY` «Интерфейс»
+  - Ключ: `TBD_C_146`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:252`
+- [ ] **C-147** `NO_KEY` «История просмотров»
+  - Ключ: `TBD_C_147`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:218`
+- [ ] **C-148** `NO_KEY` «Конфликт синхронизации профилей»
+  - Ключ: `TBD_C_148`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/02_FamilyScreen.swift:1715`
+- [ ] **C-149** `NO_KEY` «Критические угрозы»
+  - Ключ: `TBD_C_149`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:149`
+- [ ] **C-150** `NO_KEY` «Крупный текст»
+  - Ключ: `TBD_C_150`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:266`
+- [ ] **C-151** `NO_KEY` «Крупный шрифт»
+  - Ключ: `TBD_C_151`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:253`
+- [ ] **C-152** `NO_KEY` «Мягкий сброс локального списка»
+  - Ключ: `TBD_C_152`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/02_FamilyScreen.swift:2358`
+- [ ] **C-153** `NO_KEY` «Новые функции защиты»
+  - Ключ: `TBD_C_153`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:225`
+- [ ] **C-154** `NO_KEY` «Обновления защиты»
+  - Ключ: `TBD_C_154`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:207`
+- [ ] **C-155** `NO_KEY` «Оповещения семьи»
+  - Ключ: `TBD_C_155`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:151`
+- [ ] **C-156** `NO_KEY` «Оставить локальное»
+  - Ключ: `TBD_C_156`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/02_FamilyScreen.swift:1740`
+- [ ] **C-157** `NO_KEY` «Пароль учётной записи»
+  - Ключ: `TBD_C_157`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:168`
+- [ ] **C-158** `NO_KEY` «Полный локальный сброс семьи (на этом устройстве)»
+  - Ключ: `TBD_C_158`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/02_FamilyScreen.swift:2361`
+- [ ] **C-159** `NO_KEY` «Превышение времени»
+  - Ключ: `TBD_C_159`
+  - Действие: создать RU+EN ключ + localized
+  - Места (2): `Shared/Components/Modals/MemberSettingsModalView.swift:201`; `Shared/Components/Modals/MemberSettingsModalView.swift:224`
+- [ ] **C-160** `NO_KEY` «Приватность»
+  - Ключ: `TBD_C_160`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:216`
+- [ ] **C-161** `NO_KEY` «Принять сервер»
+  - Ключ: `TBD_C_161`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/02_FamilyScreen.swift:1725`
+- [ ] **C-162** `NO_KEY` «Проверьте поля»
+  - Ключ: `TBD_C_162`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/02_FamilyScreen.swift:7046`
+- [ ] **C-163** `NO_KEY` «Простая авторизация»
+  - Ключ: `TBD_C_163`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:259`
+- [ ] **C-164** `NO_KEY` «Разрешения для приложений»
+  - Ключ: `TBD_C_164`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:195`
+- [ ] **C-165** `NO_KEY` «Роли и профили»
+  - Ключ: `TBD_C_165`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/02_FamilyScreen.swift:9172`
+- [ ] **C-166** `NO_KEY` «Роль и права»
+  - Ключ: `TBD_C_166`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:126`
+- [ ] **C-167** `NO_KEY` «Сейчас выключена»
+  - Ключ: `TBD_C_167`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:296`
+- [ ] **C-168** `NO_KEY` «Семейная группа успешно создана»
+  - Ключ: `TBD_C_168`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Components/Modals/FamilyCreatedModal.swift:12`
+- [ ] **C-169** `NO_KEY` «Синий»
+  - Ключ: `TBD_C_169`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:235`
+- [ ] **C-170** `NO_KEY` «Только критичные угрозы»
+  - Ключ: `TBD_C_170`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:265`
+- [ ] **C-171** `NO_KEY` «Уведомления о детях»
+  - Ключ: `TBD_C_171`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:199`
+- [ ] **C-172** `NO_KEY` «Угрозы безопасности»
+  - Ключ: `TBD_C_172`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:206`
+- [ ] **C-173** `NO_KEY` «Уже включена»
+  - Ключ: `TBD_C_173`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:296`
+- [ ] **C-174** `NO_KEY` «Управление детьми»
+  - Ключ: `TBD_C_174`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:192`
+- [ ] **C-175** `NO_KEY` «Управление участниками»
+  - Ключ: `TBD_C_175`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:134`
+- [ ] **C-176** `NO_KEY` «Уровень в игре»
+  - Ключ: `TBD_C_176`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:242`
+- [ ] **C-177** `NO_KEY` «Цвет темы»
+  - Ключ: `TBD_C_177`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:235`
+- [ ] **C-178** `NO_KEY` «Что могут видеть родители»
+  - Ключ: `TBD_C_178`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:217`
+- [ ] **C-179** `NO_KEY` «Яркие кнопки»
+  - Ключ: `TBD_C_179`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberSettingsModalView.swift:254`
+- [ ] **C-180** `NO_KEY` «🎉 Семья создана!»
+  - Ключ: `TBD_C_180`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Components/Modals/FamilyCreatedModal.swift:8`
+- [ ] **C-181** `NO_KEY` «🎮 Активность»
+  - Ключ: `TBD_C_181`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberStatsModalView.swift:140`
+- [ ] **C-182** `NO_KEY` «👤 Моя активность»
+  - Ключ: `TBD_C_182`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberStatsModalView.swift:100`
+- [ ] **C-183** `NO_KEY` «👨‍👩‍👧‍👦 Мои дети»
+  - Ключ: `TBD_C_183`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberStatsModalView.swift:93`
+- [ ] **C-184** `NO_KEY` «📈 Активность»
+  - Ключ: `TBD_C_184`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberStatsModalView.swift:80`
+- [ ] **C-185** `NO_KEY` «📊 Активность»
+  - Ключ: `TBD_C_185`
+  - Действие: создать RU+EN ключ + localized
+  - Места (2): `Shared/Components/Modals/MemberStatsModalView.swift:120`; `Shared/Components/Modals/MemberStatsModalView.swift:160`
+- [ ] **C-186** `NO_KEY` «🛡️ Защита»
+  - Ключ: `TBD_C_186`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberStatsModalView.swift:153`
+- [ ] **C-187** `NO_KEY` «🛡️ Моя защита»
+  - Ключ: `TBD_C_187`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberStatsModalView.swift:113`
+- [ ] **C-188** `NO_KEY` «🛡️ Общая защита семьи»
+  - Ключ: `TBD_C_188`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberStatsModalView.swift:73`
+- [ ] **C-189** `NO_KEY` «🦄 Награды»
+  - Ключ: `TBD_C_189`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Shared/Components/Modals/MemberStatsModalView.swift:133`
+
+## Зона G — 26 уникальных фраз
+
+- [ ] **G-190** `WIRE` «Неограниченно»
+  - Ключ: `tariff_devices_unlimited`
+  - Действие: подключить localized
+  - Места (1): `Components/TariffCardView.swift:88`
+- [ ] **G-191** `NO_KEY` «Авторизация истекла. Восстановление доступа...»
+  - Ключ: `TBD_G_191`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Managers/SubscriptionManager.swift:2504`
+- [ ] **G-192** `NO_KEY` «Базовые оповещения об угрозах»
+  - Ключ: `TBD_G_192`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1139`
+- [ ] **G-193** `NO_KEY` «Здравоохранные предупреждения»
+  - Ключ: `TBD_G_193`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1253`
+- [ ] **G-194** `NO_KEY` «Информация о местных событиях»
+  - Ключ: `TBD_G_194`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1255`
+- [ ] **G-195** `NO_KEY` «Медицинские оповещения»
+  - Ключ: `TBD_G_195`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1253`
+- [ ] **G-196** `NO_KEY` «Мониторинг опасных тем»
+  - Ключ: `TBD_G_196`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1211`
+- [ ] **G-197** `NO_KEY` «Настраиваемые уведомления безопасности»
+  - Ключ: `TBD_G_197`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1179`
+- [ ] **G-198** `NO_KEY` «Не удалось восстановить авторизацию. Проверьте интернет-соединение или перезапустите приложение.»
+  - Ключ: `TBD_G_198`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Managers/SubscriptionManager.swift:2520`
+- [ ] **G-199** `NO_KEY` «Общественные предупреждения»
+  - Ключ: `TBD_G_199`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1255`
+- [ ] **G-200** `NO_KEY` «Оповещения о компрометации паролей»
+  - Ключ: `TBD_G_200`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1160`
+- [ ] **G-201** `NO_KEY` «Оповещения о неблагоприятных погодных условиях»
+  - Ключ: `TBD_G_201`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1254`
+- [ ] **G-202** `NO_KEY` «Оповещения о подозрительной активности»
+  - Ключ: `TBD_G_202`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1167`
+- [ ] **G-203** `NO_KEY` «Оповещения о подозрительных ресурсах»
+  - Ключ: `TBD_G_203`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1149`
+- [ ] **G-204** `NO_KEY` «Оповещения о травле»
+  - Ключ: `TBD_G_204`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1204`
+- [ ] **G-205** `NO_KEY` «Погодные предупреждения»
+  - Ключ: `TBD_G_205`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1254`
+- [ ] **G-206** `NO_KEY` «Пользовательские оповещения»
+  - Ключ: `TBD_G_206`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1179`
+- [ ] **G-207** `NO_KEY` «Предупреждения безопасности»
+  - Ключ: `TBD_G_207`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1139`
+- [ ] **G-208** `NO_KEY` «Предупреждения о breach паролей»
+  - Ключ: `TBD_G_208`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1160`
+- [ ] **G-209** `NO_KEY` «Предупреждения о кибербуллинге»
+  - Ключ: `TBD_G_209`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1204`
+- [ ] **G-210** `NO_KEY` «Предупреждения о краже личности»
+  - Ключ: `TBD_G_210`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1167`
+- [ ] **G-211** `NO_KEY` «Предупреждения о суициде»
+  - Ключ: `TBD_G_211`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1211`
+- [ ] **G-212** `NO_KEY` «Предупреждения о фальшивых сайтах»
+  - Ключ: `TBD_G_212`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1149`
+- [ ] **G-213** `NO_KEY` «Семейный»
+  - Ключ: `TBD_G_213`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Screens/25_PaymentQRScreen.swift:923`
+- [ ] **G-214** `NO_KEY` «Срочные уведомления для семьи»
+  - Ключ: `TBD_G_214`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1252`
+- [ ] **G-215** `NO_KEY` «Экстренные оповещения»
+  - Ключ: `TBD_G_215`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `Core/Models/SubscriptionModels.swift:1252`
+
+## Зона I — 12 уникальных фраз
+
+- [ ] **I-216** `WIRE` «Аналитика»
+  - Ключ: `nav_screen_analytics`
+  - Действие: подключить localized
+  - Места (1): `ALADDINWidgets/ALADDINWidgets.swift:408`
+- [ ] **I-217** `WIRE` «Время:»
+  - Ключ: `elderly_appointments_time_label`
+  - Действие: подключить localized
+  - Места (1): `ALADDINWidgets/ALADDINWidgets.swift:371`
+- [ ] **I-218** `WIRE` «Защита семьи»
+  - Ключ: `family_protection_accessibility`
+  - Действие: подключить localized
+  - Места (1): `ALADDINWidgets/ALADDINWidgets.swift:275`
+- [ ] **I-219** `WIRE` «Защита сети»
+  - Ключ: `nav_screen_network_protection`
+  - Действие: подключить localized
+  - Места (1): `ALADDINWidgets/ALADDINWidgets.swift:339`
+- [ ] **I-220** `NO_KEY` «Блокировок:»
+  - Ключ: `TBD_I_220`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `ALADDINWidgets/ALADDINWidgets.swift:297`
+- [ ] **I-221** `NO_KEY` «Данные:»
+  - Ключ: `TBD_I_221`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `ALADDINWidgets/ALADDINWidgets.swift:454`
+- [ ] **I-222** `NO_KEY` «Детей онлайн:»
+  - Ключ: `TBD_I_222`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `ALADDINWidgets/ALADDINWidgets.swift:287`
+- [ ] **I-223** `NO_KEY` «Приложения:»
+  - Ключ: `TBD_I_223`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `ALADDINWidgets/ALADDINWidgets.swift:444`
+- [ ] **I-224** `NO_KEY` «Сайты:»
+  - Ключ: `TBD_I_224`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `ALADDINWidgets/ALADDINWidgets.swift:434`
+- [ ] **I-225** `NO_KEY` «Сервер:»
+  - Ключ: `TBD_I_225`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `ALADDINWidgets/ALADDINWidgets.swift:351`
+- [ ] **I-226** `NO_KEY` «Скорость:»
+  - Ключ: `TBD_I_226`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `ALADDINWidgets/ALADDINWidgets.swift:361`
+- [ ] **I-227** `NO_KEY` «Угроз:»
+  - Ключ: `TBD_I_227`
+  - Действие: создать RU+EN ключ + localized
+  - Места (1): `ALADDINWidgets/ALADDINWidgets.swift:424`

@@ -201,18 +201,19 @@ enum CompanionHeroRiveMapping {
     }
 
     static func accessibilityLabel(emotion: CompanionHeroEmotion) -> String {
+        let loc = LocalizationManager.shared
         switch emotion {
-        case .listening: return "Герой слушает"
-        case .speaking: return "Герой говорит"
-        case .thinking: return "Герой думает"
-        case .alert: return "Герой настороже"
-        case .playful: return "Герой веселится"
-        case .sad: return "Герой сочувствует"
-        case .comfort: return "Герой поддерживает"
-        case .nostalgic: return "Герой вспоминает с теплом"
-        case .curious: return "Герой заинтересован"
-        case .excited, .celebrate, .happy: return "Герой радуется"
-        case .idle: return "Герой ждёт"
+        case .listening: return loc.localized("companion_a11y_hero_listening")
+        case .speaking: return loc.localized("companion_a11y_hero_speaking")
+        case .thinking: return loc.localized("companion_a11y_hero_thinking")
+        case .alert: return loc.localized("companion_a11y_hero_alert")
+        case .playful: return loc.localized("companion_a11y_hero_playful")
+        case .sad: return loc.localized("companion_a11y_hero_sad")
+        case .comfort: return loc.localized("companion_a11y_hero_comfort")
+        case .nostalgic: return loc.localized("companion_a11y_hero_nostalgic")
+        case .curious: return loc.localized("companion_a11y_hero_curious")
+        case .excited, .celebrate, .happy: return loc.localized("companion_a11y_hero_happy")
+        case .idle: return loc.localized("companion_a11y_hero_idle")
         }
     }
 

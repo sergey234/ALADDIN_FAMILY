@@ -9172,7 +9172,7 @@ struct FamilyRolesHelpView: View {
             .navigationTitle(localizationManager.currentLanguage == .russian ? "Роли и профили" : "Roles & Profiles")
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    Button(localizationManager.currentLanguage == .russian ? "Готово" : "Done") { dismiss() }
+                    Button(localizationManager.localized("companion_conversation_done")) { dismiss() }
                 }
             }
         }

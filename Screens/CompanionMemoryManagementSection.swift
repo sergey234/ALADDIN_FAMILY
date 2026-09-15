@@ -2,6 +2,8 @@ import SwiftUI
 
 /// P1-03: просмотр, экспорт и удаление памяти компаньона (семейный scope).
 struct CompanionMemoryManagementSection: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+
     @State private var memoryEnabled = false
     @State private var items: [CompanionMemoryItemDTO] = []
     @State private var isLoading = true
@@ -17,12 +19,12 @@ struct CompanionMemoryManagementSection: View {
             HStack(spacing: 8) {
                 Text("🧠")
                     .font(.title2)
-                Text("Память компаньона")
+                Text(localizationManager.localized("companion_consent_memory_title"))
                     .font(.bodyBold)
                     .foregroundColor(.textPrimary)
             }
 
-            Text("Краткие заметки без PII после разговоров. Родитель может выгрузить или удалить всё (152-ФЗ).")
+            Text(localizationManager.localized("companion_memory_section_desc"))
                 .font(.caption)
                 .foregroundColor(.textSecondary)
 
@@ -30,16 +32,16 @@ struct CompanionMemoryManagementSection: View {
                 ProgressView()
                     .frame(maxWidth: .infinity)
             } else if !memoryEnabled {
-                Text("Память выключена. Включите переключатель «Память компаньона» выше и сохраните настройки.")
+                Text(localizationManager.localized("companion_memory_disabled_hint"))
                     .font(.caption)
                     .foregroundColor(.textSecondary)
             } else {
                 if items.isEmpty {
-                    Text("Пока нет сохранённых заметок. Они появятся после диалогов ребёнка с героем.")
+                    Text(localizationManager.localized("companion_memory_empty_hint"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                 } else {
-                    Text("Записей: \(items.count)")
+                    Text(localizationManager.localized("companion_memory_records_count", items.count))
                         .font(.caption.weight(.semibold))
                         .foregroundColor(.textSecondary)
 
@@ -59,7 +61,7 @@ struct CompanionMemoryManagementSection: View {
                         .cornerRadius(8)
                     }
                     if items.count > 8 {
-                        Text("… и ещё \(items.count - 8)")
+                        Text(localizationManager.localized("companion_memory_and_more", items.count - 8))
                             .font(.caption2)
                             .foregroundColor(.textSecondary)
                     }
@@ -69,16 +71,26 @@ struct CompanionMemoryManagementSection: View {
                     Button {
                         Task { await exportMemory() }
                     } label: {
-                        Label(isExporting ? "Экспорт…" : "Экспорт JSON", systemImage: "square.and.arrow.up")
-                            .font(.caption.weight(.semibold))
+                        Label(
+                            isExporting
+                                ? localizationManager.localized("companion_memory_exporting")
+                                : localizationManager.localized("companion_memory_export_json"),
+                            systemImage: "square.and.arrow.up"
+                        )
+                        .font(.caption.weight(.semibold))
                     }
                     .disabled(isExporting || isDeleting)
 
                     Button(role: .destructive) {
                         Task { await deleteAll() }
                     } label: {
-                        Label(isDeleting ? "Удаление…" : "Удалить всё", systemImage: "trash")
-                            .font(.caption.weight(.semibold))
+                        Label(
+                            isDeleting
+                                ? localizationManager.localized("companion_memory_deleting")
+                                : localizationManager.localized("companion_memory_delete_all"),
+                            systemImage: "trash"
+                        )
+                        .font(.caption.weight(.semibold))
                     }
                     .disabled(isDeleting || isExporting)
                 }
@@ -132,7 +144,10 @@ struct CompanionMemoryManagementSection: View {
             let resp = try await CompanionAPIService.shared.deleteAllMemory()
             items = []
             memoryEnabled = resp.memoryEnabled
-            statusMessage = "Удалено записей: \(resp.itemsRemoved). Память выключена."
+            statusMessage = localizationManager.localized(
+                "companion_memory_deleted_fmt",
+                resp.itemsRemoved
+            )
             HapticFeedback.impact(.medium)
         } catch {
             errorText = error.localizedDescription
@@ -153,7 +168,10 @@ struct CompanionMemoryManagementSection: View {
             try data.write(to: url, options: .atomic)
             shareURL = url
             showShareSheet = true
-            statusMessage = "Готово к отправке (\(payload.itemCount) записей)."
+            statusMessage = localizationManager.localized(
+                "companion_memory_export_ready_fmt",
+                payload.itemCount
+            )
         } catch {
             errorText = error.localizedDescription
         }

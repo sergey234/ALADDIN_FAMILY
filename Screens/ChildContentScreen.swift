@@ -1923,10 +1923,10 @@ struct ChildContentScreen: View {
             
             // Кнопки игр
             LazyVGrid(columns: Array(repeating: GridItem(.flexible()), count: 2), spacing: 12) {
-                toyButton(icon: "🧸", title: "Медвежонок")
-                toyButton(icon: "🚗", title: "Машинка")
-                toyButton(icon: "🎈", title: "Шарик")
-                toyButton(icon: "🎁", title: "Сюрприз")
+                toyButton(icon: "🧸", title: localizationManager.localized("child_loc_b_049"))
+                toyButton(icon: "🚗", title: localizationManager.localized("child_loc_b_048"))
+                toyButton(icon: "🎈", title: localizationManager.localized("child_loc_b_093"))
+                toyButton(icon: "🎁", title: localizationManager.localized("child_loc_b_088"))
             }
         }
     }
@@ -2006,9 +2006,9 @@ struct ChildContentScreen: View {
             
             // Список песен
             VStack(spacing: 12) {
-                songItem(title: "🐻 Песенка медведя")
-                songItem(title: "🐰 Песенка зайки")
-                songItem(title: "🐸 Песенка лягушки")
+                songItem(title: localizationManager.localized("child_loc_b_101"))
+                songItem(title: localizationManager.localized("child_loc_b_098"))
+                songItem(title: localizationManager.localized("child_loc_b_100"))
             }
         }
     }
@@ -2048,9 +2048,9 @@ struct ChildContentScreen: View {
             
             // Список сказок
             VStack(spacing: 12) {
-                taleItem(title: "🧙‍♀️ Колобок")
-                taleItem(title: "👑 Репка")
-                taleItem(title: "🐷 Три поросёнка")
+                taleItem(title: localizationManager.localized("child_loc_b_111"))
+                taleItem(title: localizationManager.localized("child_loc_b_102"))
+                taleItem(title: localizationManager.localized("child_loc_b_099"))
             }
         }
     }
@@ -2340,9 +2340,9 @@ struct ChildContentScreen: View {
                 .foregroundColor(.white)
             
             VStack(spacing: 12) {
-                socialButton(title: "💬 Чат с друзьями")
-                socialButton(title: "📷 Фото и видео")
-                socialButton(title: "🎮 Игры вместе")
+                socialButton(title: localizationManager.localized("child_loc_b_103"))
+                socialButton(title: localizationManager.localized("child_loc_b_108"))
+                socialButton(title: localizationManager.localized("child_loc_b_096"))
             }
         }
     }
@@ -2482,9 +2482,9 @@ struct ChildContentScreen: View {
                 .foregroundColor(.white)
             
             VStack(spacing: 12) {
-                courseItem(title: "🎓 Онлайн-курсы")
-                courseItem(title: "📚 Книги")
-                courseItem(title: "🎯 Навыки")
+                courseItem(title: localizationManager.localized("child_loc_b_095"))
+                courseItem(title: localizationManager.localized("child_loc_b_106"))
+                courseItem(title: localizationManager.localized("child_loc_b_097"))
             }
         }
     }
@@ -2523,9 +2523,9 @@ struct ChildContentScreen: View {
                 .foregroundColor(.white)
             
             VStack(spacing: 12) {
-                careerOption(title: "💼 Вакансии")
-                careerOption(title: "📈 Развитие")
-                careerOption(title: "🤝 Сеть контактов")
+                careerOption(title: localizationManager.localized("child_loc_b_104"))
+                careerOption(title: localizationManager.localized("child_loc_b_105"))
+                careerOption(title: localizationManager.localized("child_loc_b_110"))
             }
         }
     }
@@ -2564,9 +2564,9 @@ struct ChildContentScreen: View {
                 .foregroundColor(.white)
             
             VStack(spacing: 12) {
-                webResource(title: "🌐 Полезные сайты")
-                webResource(title: "📰 Новости")
-                webResource(title: "🔍 Поиск информации")
+                webResource(title: localizationManager.localized("child_loc_b_094"))
+                webResource(title: localizationManager.localized("child_loc_b_107"))
+                webResource(title: localizationManager.localized("child_loc_b_109"))
             }
         }
     }

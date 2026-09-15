@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FamilyCreatedModal: View {
     @Binding var isPresented: Bool
+    @EnvironmentObject private var localizationManager: LocalizationManager
     
     var body: some View {
         VStack(spacing: 20) {
@@ -12,7 +13,7 @@ struct FamilyCreatedModal: View {
             Text("Семейная группа успешно создана")
                 .foregroundColor(.gray)
             
-            Button("Отлично") {
+            Button(localizationManager.localized("ai_assistant_feedback_rating_excellent")) {
                 isPresented = false
             }
             .padding()
@@ -29,5 +30,6 @@ struct FamilyCreatedModal: View {
 struct FamilyCreatedModal_Previews: PreviewProvider {
     static var previews: some View {
         FamilyCreatedModal(isPresented: .constant(true))
+            .environmentObject(LocalizationManager.shared)
     }
 }

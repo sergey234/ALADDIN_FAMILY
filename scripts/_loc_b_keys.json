@@ -1,0 +1,604 @@
+[
+  {
+    "num": 26,
+    "kind": "WIRE",
+    "ru": "Продолжить",
+    "key": "wellness_reflective_confirm_continue",
+    "en": "Continue"
+  },
+  {
+    "num": 27,
+    "kind": "NO_KEY",
+    "ru": "Бежать на поляну",
+    "key": "child_loc_b_027",
+    "en": "Run to the meadow"
+  },
+  {
+    "num": 28,
+    "kind": "NO_KEY",
+    "ru": "Буквы поют",
+    "key": "child_loc_b_028",
+    "en": "Letters sing"
+  },
+  {
+    "num": 29,
+    "kind": "NO_KEY",
+    "ru": "Вернуть дрон владельцу",
+    "key": "child_loc_b_029",
+    "en": "Return the drone to its owner"
+  },
+  {
+    "num": 30,
+    "kind": "NO_KEY",
+    "ru": "Вернуться домой",
+    "key": "child_loc_b_030",
+    "en": "Go back home"
+  },
+  {
+    "num": 31,
+    "kind": "NO_KEY",
+    "ru": "Волшебные истории",
+    "key": "child_loc_b_031",
+    "en": "Magic stories"
+  },
+  {
+    "num": 32,
+    "kind": "NO_KEY",
+    "ru": "Выбрать северную страну",
+    "key": "child_loc_b_032",
+    "en": "Choose the northern land"
+  },
+  {
+    "num": 33,
+    "kind": "NO_KEY",
+    "ru": "Выбрать южную страну",
+    "key": "child_loc_b_033",
+    "en": "Choose the southern land"
+  },
+  {
+    "num": 34,
+    "kind": "NO_KEY",
+    "ru": "Добавить датчик",
+    "key": "child_loc_b_034",
+    "en": "Add a sensor"
+  },
+  {
+    "num": 35,
+    "kind": "NO_KEY",
+    "ru": "Добавить музыку",
+    "key": "child_loc_b_035",
+    "en": "Add music"
+  },
+  {
+    "num": 36,
+    "kind": "NO_KEY",
+    "ru": "Добрые дела",
+    "key": "child_loc_b_036",
+    "en": "Kind deeds"
+  },
+  {
+    "num": 37,
+    "kind": "NO_KEY",
+    "ru": "Добрые слова",
+    "key": "child_loc_b_037",
+    "en": "Kind words"
+  },
+  {
+    "num": 38,
+    "kind": "NO_KEY",
+    "ru": "Загадать доброе желание",
+    "key": "child_loc_b_038",
+    "en": "Make a kind wish"
+  },
+  {
+    "num": 39,
+    "kind": "NO_KEY",
+    "ru": "Зверята поют",
+    "key": "child_loc_b_039",
+    "en": "Little animals sing"
+  },
+  {
+    "num": 40,
+    "kind": "NO_KEY",
+    "ru": "Звёздная команда",
+    "key": "child_loc_b_040",
+    "en": "Star team"
+  },
+  {
+    "num": 41,
+    "kind": "NO_KEY",
+    "ru": "Звёздный ритм",
+    "key": "child_loc_b_041",
+    "en": "Star rhythm"
+  },
+  {
+    "num": 42,
+    "kind": "NO_KEY",
+    "ru": "Идти к поляне",
+    "key": "child_loc_b_042",
+    "en": "Go to the meadow"
+  },
+  {
+    "num": 43,
+    "kind": "NO_KEY",
+    "ru": "Искать карту",
+    "key": "child_loc_b_043",
+    "en": "Look for a map"
+  },
+  {
+    "num": 44,
+    "kind": "NO_KEY",
+    "ru": "Искать подсказку в каталоге",
+    "key": "child_loc_b_044",
+    "en": "Look for a clue in the catalog"
+  },
+  {
+    "num": 45,
+    "kind": "NO_KEY",
+    "ru": "К медведю",
+    "key": "child_loc_b_045",
+    "en": "To the bear"
+  },
+  {
+    "num": 46,
+    "kind": "NO_KEY",
+    "ru": "Колобок",
+    "key": "child_loc_b_046",
+    "en": "Kolobok"
+  },
+  {
+    "num": 47,
+    "kind": "NO_KEY",
+    "ru": "Лесные приключения",
+    "key": "child_loc_b_047",
+    "en": "Forest adventures"
+  },
+  {
+    "num": 48,
+    "kind": "NO_KEY",
+    "ru": "Машинка",
+    "key": "child_loc_b_048",
+    "en": "Toy car"
+  },
+  {
+    "num": 49,
+    "kind": "NO_KEY",
+    "ru": "Медвежонок",
+    "key": "child_loc_b_049",
+    "en": "Little bear"
+  },
+  {
+    "num": 50,
+    "kind": "NO_KEY",
+    "ru": "Модуль движения",
+    "key": "child_loc_b_050",
+    "en": "Motion module"
+  },
+  {
+    "num": 51,
+    "kind": "NO_KEY",
+    "ru": "Модуль света",
+    "key": "child_loc_b_051",
+    "en": "Light module"
+  },
+  {
+    "num": 52,
+    "kind": "NO_KEY",
+    "ru": "Народные песенки",
+    "key": "child_loc_b_052",
+    "en": "Folk songs"
+  },
+  {
+    "num": 53,
+    "kind": "NO_KEY",
+    "ru": "Открыть тайную комнату",
+    "key": "child_loc_b_053",
+    "en": "Open the secret room"
+  },
+  {
+    "num": 54,
+    "kind": "NO_KEY",
+    "ru": "Песни разных стран",
+    "key": "child_loc_b_054",
+    "en": "Songs from around the world"
+  },
+  {
+    "num": 55,
+    "kind": "NO_KEY",
+    "ru": "Песня про дружбу",
+    "key": "child_loc_b_055",
+    "en": "Song about friendship"
+  },
+  {
+    "num": 56,
+    "kind": "NO_KEY",
+    "ru": "Песня про здоровье",
+    "key": "child_loc_b_056",
+    "en": "Song about health"
+  },
+  {
+    "num": 57,
+    "kind": "NO_KEY",
+    "ru": "Поговорить с медведем",
+    "key": "child_loc_b_057",
+    "en": "Talk to the bear"
+  },
+  {
+    "num": 58,
+    "kind": "NO_KEY",
+    "ru": "Поддержать словом",
+    "key": "child_loc_b_058",
+    "en": "Support with kind words"
+  },
+  {
+    "num": 59,
+    "kind": "NO_KEY",
+    "ru": "Подойти и посмотреть",
+    "key": "child_loc_b_059",
+    "en": "Come closer and look"
+  },
+  {
+    "num": 60,
+    "kind": "NO_KEY",
+    "ru": "Подойти к дереву",
+    "key": "child_loc_b_060",
+    "en": "Come to the tree"
+  },
+  {
+    "num": 61,
+    "kind": "NO_KEY",
+    "ru": "Позвать друзей",
+    "key": "child_loc_b_061",
+    "en": "Call friends"
+  },
+  {
+    "num": 62,
+    "kind": "NO_KEY",
+    "ru": "Позвать птиц",
+    "key": "child_loc_b_062",
+    "en": "Call the birds"
+  },
+  {
+    "num": 63,
+    "kind": "NO_KEY",
+    "ru": "Пойти по следам",
+    "key": "child_loc_b_063",
+    "en": "Follow the tracks"
+  },
+  {
+    "num": 64,
+    "kind": "NO_KEY",
+    "ru": "Показать проект",
+    "key": "child_loc_b_064",
+    "en": "Show the project"
+  },
+  {
+    "num": 65,
+    "kind": "NO_KEY",
+    "ru": "Помочь повторить",
+    "key": "child_loc_b_065",
+    "en": "Help practice again"
+  },
+  {
+    "num": 66,
+    "kind": "NO_KEY",
+    "ru": "Помочь ёжику",
+    "key": "child_loc_b_066",
+    "en": "Help the hedgehog"
+  },
+  {
+    "num": 67,
+    "kind": "NO_KEY",
+    "ru": "Попросить совета у феи",
+    "key": "child_loc_b_067",
+    "en": "Ask the fairy for advice"
+  },
+  {
+    "num": 68,
+    "kind": "NO_KEY",
+    "ru": "Проверить двигатель",
+    "key": "child_loc_b_068",
+    "en": "Check the engine"
+  },
+  {
+    "num": 69,
+    "kind": "NO_KEY",
+    "ru": "Проверить парк",
+    "key": "child_loc_b_069",
+    "en": "Check the park"
+  },
+  {
+    "num": 70,
+    "kind": "NO_KEY",
+    "ru": "Проверить связь",
+    "key": "child_loc_b_070",
+    "en": "Check the radio link"
+  },
+  {
+    "num": 71,
+    "kind": "NO_KEY",
+    "ru": "Проверить у реки",
+    "key": "child_loc_b_071",
+    "en": "Check by the river"
+  },
+  {
+    "num": 72,
+    "kind": "NO_KEY",
+    "ru": "Проверить школьный двор",
+    "key": "child_loc_b_072",
+    "en": "Check the schoolyard"
+  },
+  {
+    "num": 73,
+    "kind": "NO_KEY",
+    "ru": "Продолжить путь",
+    "key": "child_loc_b_073",
+    "en": "Continue the journey"
+  },
+  {
+    "num": 74,
+    "kind": "NO_KEY",
+    "ru": "Проложить маршрут",
+    "key": "child_loc_b_074",
+    "en": "Plot the route"
+  },
+  {
+    "num": 75,
+    "kind": "NO_KEY",
+    "ru": "Ритмичные стишки",
+    "key": "child_loc_b_075",
+    "en": "Rhythmic rhymes"
+  },
+  {
+    "num": 76,
+    "kind": "NO_KEY",
+    "ru": "Робот в мастерской",
+    "key": "child_loc_b_076",
+    "en": "Robot in the workshop"
+  },
+  {
+    "num": 77,
+    "kind": "NO_KEY",
+    "ru": "Сделать доброе дело",
+    "key": "child_loc_b_077",
+    "en": "Do a kind deed"
+  },
+  {
+    "num": 78,
+    "kind": "NO_KEY",
+    "ru": "Сказки про животных",
+    "key": "child_loc_b_078",
+    "en": "Animal tales"
+  },
+  {
+    "num": 79,
+    "kind": "NO_KEY",
+    "ru": "Сказки разных народов",
+    "key": "child_loc_b_079",
+    "en": "Tales of many peoples"
+  },
+  {
+    "num": 80,
+    "kind": "NO_KEY",
+    "ru": "Слушать финал",
+    "key": "child_loc_b_080",
+    "en": "Listen to the ending"
+  },
+  {
+    "num": 81,
+    "kind": "NO_KEY",
+    "ru": "Современные детские песни",
+    "key": "child_loc_b_081",
+    "en": "Modern kids songs"
+  },
+  {
+    "num": 82,
+    "kind": "NO_KEY",
+    "ru": "Современные сказки",
+    "key": "child_loc_b_082",
+    "en": "Modern tales"
+  },
+  {
+    "num": 83,
+    "kind": "NO_KEY",
+    "ru": "Солнечный день",
+    "key": "child_loc_b_083",
+    "en": "Sunny day"
+  },
+  {
+    "num": 84,
+    "kind": "NO_KEY",
+    "ru": "Спеть песенку",
+    "key": "child_loc_b_084",
+    "en": "Sing a little song"
+  },
+  {
+    "num": 85,
+    "kind": "NO_KEY",
+    "ru": "Спросить библиотекаря",
+    "key": "child_loc_b_085",
+    "en": "Ask the librarian"
+  },
+  {
+    "num": 86,
+    "kind": "NO_KEY",
+    "ru": "Спросить у совы",
+    "key": "child_loc_b_086",
+    "en": "Ask the owl"
+  },
+  {
+    "num": 87,
+    "kind": "NO_KEY",
+    "ru": "Считалочка друзей",
+    "key": "child_loc_b_087",
+    "en": "Friends counting rhyme"
+  },
+  {
+    "num": 88,
+    "kind": "NO_KEY",
+    "ru": "Сюрприз",
+    "key": "child_loc_b_088",
+    "en": "Surprise"
+  },
+  {
+    "num": 89,
+    "kind": "NO_KEY",
+    "ru": "Тайна библиотеки",
+    "key": "child_loc_b_089",
+    "en": "Library mystery"
+  },
+  {
+    "num": 90,
+    "kind": "NO_KEY",
+    "ru": "Убежать быстрее",
+    "key": "child_loc_b_090",
+    "en": "Run away faster"
+  },
+  {
+    "num": 91,
+    "kind": "NO_KEY",
+    "ru": "Цветные краски",
+    "key": "child_loc_b_091",
+    "en": "Colorful paints"
+  },
+  {
+    "num": 92,
+    "kind": "NO_KEY",
+    "ru": "Четыре времени года",
+    "key": "child_loc_b_092",
+    "en": "Four seasons"
+  },
+  {
+    "num": 93,
+    "kind": "NO_KEY",
+    "ru": "Шарик",
+    "key": "child_loc_b_093",
+    "en": "Balloon"
+  },
+  {
+    "num": 94,
+    "kind": "NO_KEY",
+    "ru": "🌐 Полезные сайты",
+    "key": "child_loc_b_094",
+    "en": "🌐 Useful sites"
+  },
+  {
+    "num": 95,
+    "kind": "NO_KEY",
+    "ru": "🎓 Онлайн-курсы",
+    "key": "child_loc_b_095",
+    "en": "🎓 Online courses"
+  },
+  {
+    "num": 96,
+    "kind": "NO_KEY",
+    "ru": "🎮 Игры вместе",
+    "key": "child_loc_b_096",
+    "en": "🎮 Play together"
+  },
+  {
+    "num": 97,
+    "kind": "NO_KEY",
+    "ru": "🎯 Навыки",
+    "key": "child_loc_b_097",
+    "en": "🎯 Skills"
+  },
+  {
+    "num": 98,
+    "kind": "NO_KEY",
+    "ru": "🐰 Песенка зайки",
+    "key": "child_loc_b_098",
+    "en": "🐰 Bunny song"
+  },
+  {
+    "num": 99,
+    "kind": "NO_KEY",
+    "ru": "🐷 Три поросёнка",
+    "key": "child_loc_b_099",
+    "en": "🐷 Three little pigs"
+  },
+  {
+    "num": 100,
+    "kind": "NO_KEY",
+    "ru": "🐸 Песенка лягушки",
+    "key": "child_loc_b_100",
+    "en": "🐸 Frog song"
+  },
+  {
+    "num": 101,
+    "kind": "NO_KEY",
+    "ru": "🐻 Песенка медведя",
+    "key": "child_loc_b_101",
+    "en": "🐻 Bear song"
+  },
+  {
+    "num": 102,
+    "kind": "NO_KEY",
+    "ru": "👑 Репка",
+    "key": "child_loc_b_102",
+    "en": "👑 The turnip"
+  },
+  {
+    "num": 103,
+    "kind": "NO_KEY",
+    "ru": "💬 Чат с друзьями",
+    "key": "child_loc_b_103",
+    "en": "💬 Chat with friends"
+  },
+  {
+    "num": 104,
+    "kind": "NO_KEY",
+    "ru": "💼 Вакансии",
+    "key": "child_loc_b_104",
+    "en": "💼 Jobs"
+  },
+  {
+    "num": 105,
+    "kind": "NO_KEY",
+    "ru": "📈 Развитие",
+    "key": "child_loc_b_105",
+    "en": "📈 Growth"
+  },
+  {
+    "num": 106,
+    "kind": "NO_KEY",
+    "ru": "📚 Книги",
+    "key": "child_loc_b_106",
+    "en": "📚 Books"
+  },
+  {
+    "num": 107,
+    "kind": "NO_KEY",
+    "ru": "📰 Новости",
+    "key": "child_loc_b_107",
+    "en": "📰 News"
+  },
+  {
+    "num": 108,
+    "kind": "NO_KEY",
+    "ru": "📷 Фото и видео",
+    "key": "child_loc_b_108",
+    "en": "📷 Photos and video"
+  },
+  {
+    "num": 109,
+    "kind": "NO_KEY",
+    "ru": "🔍 Поиск информации",
+    "key": "child_loc_b_109",
+    "en": "🔍 Search for information"
+  },
+  {
+    "num": 110,
+    "kind": "NO_KEY",
+    "ru": "🤝 Сеть контактов",
+    "key": "child_loc_b_110",
+    "en": "🤝 Networking"
+  },
+  {
+    "num": 111,
+    "kind": "NO_KEY",
+    "ru": "🧙‍♀️ Колобок",
+    "key": "child_loc_b_111",
+    "en": "🧙‍♀️ Kolobok"
+  }
+]

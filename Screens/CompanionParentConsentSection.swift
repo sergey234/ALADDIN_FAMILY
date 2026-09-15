@@ -19,12 +19,12 @@ struct CompanionParentConsentSection: View {
             HStack(spacing: 8) {
                 Text("🦄")
                     .font(.title2)
-                Text("AI-компаньон для детей")
+                Text(localizationManager.localized("companion_consent_title_children"))
                     .font(.bodyBold)
                     .foregroundColor(.textPrimary)
             }
 
-            Text("Родитель решает, может ли ребёнок общаться с героями и сохранять ли память разговоров (152-ФЗ / COPPA).")
+            Text(localizationManager.localized("companion_consent_parent_decides"))
                 .font(.caption)
                 .foregroundColor(.textSecondary)
 
@@ -33,14 +33,14 @@ struct CompanionParentConsentSection: View {
                     .frame(maxWidth: .infinity)
             } else {
                 consentToggle(
-                    title: "Разрешить «Разговор с героем»",
-                    subtitle: "Ребёнок видит кнопку в Играх и может писать герою",
+                    title: localizationManager.localized("companion_consent_allow_hero_chat"),
+                    subtitle: localizationManager.localized("companion_consent_allow_hero_subtitle"),
                     isOn: $childCanUseCompanion
                 )
 
                 consentToggle(
-                    title: "Память компаньона",
-                    subtitle: "Краткие безопасные заметки для персонализации (экспорт и удаление ниже)",
+                    title: localizationManager.localized("companion_consent_memory_title"),
+                    subtitle: localizationManager.localized("companion_consent_memory_subtitle"),
                     isOn: $memoryEnabled
                 )
                 .disabled(!childCanUseCompanion)
@@ -60,11 +60,21 @@ struct CompanionParentConsentSection: View {
                     .foregroundColor(.textSecondary)
 
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Разрешённые герои")
+                    Text(localizationManager.localized("companion_consent_allowed_heroes"))
                         .font(.subheadline.weight(.semibold))
                         .foregroundColor(.textPrimary)
-                    heroChip(id: "unicorn", emoji: "🦄", title: "Единорог", isOn: $allowUnicorn)
-                    heroChip(id: "aladdin", emoji: "🧞", title: "Аладдин (13+)", isOn: $allowAladdin)
+                    heroChip(
+                        id: "unicorn",
+                        emoji: "🦄",
+                        title: localizationManager.localized("companion_hero_unicorn"),
+                        isOn: $allowUnicorn
+                    )
+                    heroChip(
+                        id: "aladdin",
+                        emoji: "🧞",
+                        title: localizationManager.localized("companion_hero_aladdin"),
+                        isOn: $allowAladdin
+                    )
                 }
                 .disabled(!childCanUseCompanion)
                 .opacity(childCanUseCompanion ? 1 : 0.45)
@@ -74,7 +84,11 @@ struct CompanionParentConsentSection: View {
                 } label: {
                     HStack {
                         if isSaving { ProgressView().tint(.white) }
-                        Text(isSaving ? "Сохраняем…" : "Сохранить настройки компаньона")
+                        Text(
+                            isSaving
+                                ? localizationManager.localized("companion_saving")
+                                : localizationManager.localized("companion_consent_save")
+                        )
                     }
                     .font(.bodyBold)
                     .foregroundColor(.white)
@@ -162,7 +176,10 @@ struct CompanionParentConsentSection: View {
                 ageBand: CompanionUserContext.companionAgeBand
             )
         } catch {
-            errorText = "Не удалось загрузить настройки: \(error.localizedDescription)"
+            errorText = localizationManager.localized(
+                "companion_consent_load_failed",
+                error.localizedDescription
+            )
             vedicWisdomEnabled = CompanionSettings.cachedVedicWisdomEnabled(
                 ageBand: CompanionUserContext.companionAgeBand
             )
@@ -179,7 +196,7 @@ struct CompanionParentConsentSection: View {
         if allowUnicorn { chars.append("unicorn") }
         if allowAladdin { chars.append("aladdin") }
         guard !chars.isEmpty else {
-            errorText = "Выберите хотя бы одного героя."
+            errorText = localizationManager.localized("companion_consent_pick_hero")
             return
         }
 
@@ -196,7 +213,7 @@ struct CompanionParentConsentSection: View {
                 payload.vedicWisdomEnabled,
                 ageBand: CompanionUserContext.companionAgeBand
             )
-            statusMessage = "Сохранено для всей семьи."
+            statusMessage = localizationManager.localized("companion_consent_saved")
             NotificationCenter.default.post(name: .companionConsentDidSave, object: nil)
             HapticFeedback.impact(.light)
         } catch {
