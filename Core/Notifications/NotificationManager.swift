@@ -425,9 +425,10 @@ class NotificationManager: NSObject, ObservableObject {
      * Уведомление о блокировке угрозы
      */
     func sendThreatBlockedNotification(threatType: String, url: String) {
+        let L = LocalizationManager.shared
         sendLocalNotification(
-            title: "🛡️ Угроза заблокирована",
-            body: "Заблокирован \(threatType) на \(url)",
+            title: L.localized("push_threat_blocked_title"),
+            body: String(format: L.localized("push_threat_blocked_body"), threatType, url),
             category: .security,
             userInfo: [
                 "type": "threat_blocked",
@@ -443,9 +444,10 @@ class NotificationManager: NSObject, ObservableObject {
      * Kept for legacy call sites only; do not add to smoke/QA.
      */
     func sendNetworkProtectionConnectedNotification(server: String) {
+        let L = LocalizationManager.shared
         sendLocalNotification(
-            title: "🔒 Защита сети подключена",
-            body: "Ваше соединение защищено через \(server)",
+            title: L.localized("push_network_protection_connected_title"),
+            body: String(format: L.localized("push_network_protection_connected_body"), server),
             category: .networkProtection,
             userInfo: [
                 "type": "network_protection_connected",
@@ -458,9 +460,10 @@ class NotificationManager: NSObject, ObservableObject {
      * Уведомление о добавлении члена семьи
      */
     func sendFamilyMemberAddedNotification(memberName: String) {
+        let L = LocalizationManager.shared
         sendLocalNotification(
-            title: "👨‍👩‍👧‍👦 Новый член семьи",
-            body: "\(memberName) присоединился к вашей семье",
+            title: L.localized("push_family_member_added_title"),
+            body: String(format: L.localized("push_family_member_added_body"), memberName),
             category: .family,
             userInfo: [
                 "type": "family_member_added",
@@ -473,9 +476,10 @@ class NotificationManager: NSObject, ObservableObject {
      * Уведомление о подозрительной активности
      */
     func sendSuspiciousActivityNotification(activity: String) {
+        let L = LocalizationManager.shared
         sendLocalNotification(
-            title: "⚠️ Подозрительная активность",
-            body: "Обнаружена \(activity) на одном из устройств",
+            title: L.localized("push_suspicious_activity_title"),
+            body: String(format: L.localized("push_suspicious_activity_body"), activity),
             category: .security,
             userInfo: [
                 "type": "suspicious_activity",
@@ -489,7 +493,7 @@ class NotificationManager: NSObject, ObservableObject {
      */
     func sendAIMessageNotification(message: String) {
         sendLocalNotification(
-            title: "🤖 AI Помощник",
+            title: LocalizationManager.shared.localized("push_ai_assistant_title"),
             body: message,
             category: .ai,
             userInfo: [
@@ -503,9 +507,10 @@ class NotificationManager: NSObject, ObservableObject {
      * 🔥 Уведомление об успешном upgrade из trial в платную подписку
      */
     func showUpgradeSuccessNotification() {
+        let L = LocalizationManager.shared
         sendLocalNotification(
-            title: "🎉 Поздравляем!",
-            body: "Ваша подписка успешно активирована! Теперь доступны все функции защиты.",
+            title: L.localized("push_upgrade_success_title"),
+            body: L.localized("push_upgrade_success_body"),
             category: .general,
             userInfo: [
                 "type": "upgrade_success",
@@ -531,10 +536,11 @@ class NotificationManager: NSObject, ObservableObject {
     /// QA smoke scenario: принудительно создаёт тестовую угрозу
     /// для проверки цепочки отображения уведомлений на устройстве.
     func sendQATestThreatNotification() {
+        let L = LocalizationManager.shared
         let correlationId = "qa-threat-\(UUID().uuidString)"
         sendLocalNotification(
-            title: "🧪 Тестовая угроза (QA)",
-            body: "Сценарий smoke-test: проверка цепочки detect -> notifications UI",
+            title: L.localized("push_qa_threat_title"),
+            body: L.localized("push_qa_threat_body"),
             category: .security,
             userInfo: [
                 "type": "threat_detected",
@@ -568,12 +574,13 @@ class NotificationManager: NSObject, ObservableObject {
     }
 
     func sendAntivirusScanCompleteNotification(threatsFound: Int) {
+        let L = LocalizationManager.shared
         let hasThreats = threatsFound > 0
         sendLocalNotification(
-            title: "Антивирусное сканирование завершено",
+            title: L.localized("push_antivirus_complete_title"),
             body: hasThreats
-                ? "Обнаружено \(threatsFound) угроз. Требуется внимание!"
-                : "Угроз не обнаружено. Система в безопасности.",
+                ? String(format: L.localized("push_antivirus_complete_body_threats"), threatsFound)
+                : L.localized("push_antivirus_complete_body_clean"),
             category: .security,
             userInfo: [
                 "type": "antivirus_scan_complete",
@@ -588,9 +595,10 @@ class NotificationManager: NSObject, ObservableObject {
     }
 
     func sendAntivirusScanFailedNotification() {
+        let L = LocalizationManager.shared
         sendLocalNotification(
-            title: "Ошибка антивирусного сканирования",
-            body: "Не удалось выполнить сканирование. Проверьте подключение к интернету.",
+            title: L.localized("push_antivirus_failed_title"),
+            body: L.localized("push_antivirus_failed_body"),
             category: .security,
             userInfo: [
                 "type": "antivirus_scan_failed",
@@ -601,9 +609,10 @@ class NotificationManager: NSObject, ObservableObject {
     }
 
     func sendDownloadedFileThreatNotification(fileName: String) {
+        let L = LocalizationManager.shared
         sendLocalNotification(
-            title: "Подозрительный файл обнаружен",
-            body: "Файл '\(fileName)' может содержать угрозу. Рекомендуется проверить.",
+            title: L.localized("push_downloaded_file_threat_title"),
+            body: String(format: L.localized("push_downloaded_file_threat_body"), fileName),
             category: .security,
             userInfo: [
                 "type": "downloaded_file_threat",
@@ -617,9 +626,10 @@ class NotificationManager: NSObject, ObservableObject {
     }
 
     func sendCrashDetectionNotification() {
+        let L = LocalizationManager.shared
         sendLocalNotification(
-            title: "🚨 Авария обнаружена",
-            body: "Проверьте ситуацию и при необходимости вызовите экстренные службы",
+            title: L.localized("push_crash_detection_title"),
+            body: L.localized("push_crash_detection_body"),
             category: .general,
             userInfo: [
                 "type": "crash_detection",
@@ -648,6 +658,7 @@ class NotificationManager: NSObject, ObservableObject {
     // MARK: - Notification Categories
     
     func setupNotificationCategories() {
+        let L = LocalizationManager.shared
         let generalCategory = UNNotificationCategory(
             identifier: NotificationCategory.general.rawValue,
             actions: [],
@@ -660,12 +671,12 @@ class NotificationManager: NSObject, ObservableObject {
             actions: [
                 UNNotificationAction(
                     identifier: "view_details",
-                    title: "Подробнее",
+                    title: L.localized("notif_action_view_details"),
                     options: [.foreground]
                 ),
                 UNNotificationAction(
                     identifier: "dismiss",
-                    title: "Закрыть",
+                    title: L.localized("notif_action_dismiss"),
                     options: []
                 )
             ],
@@ -678,7 +689,7 @@ class NotificationManager: NSObject, ObservableObject {
             actions: [
                 UNNotificationAction(
                     identifier: "view_family",
-                    title: "Открыть семью",
+                    title: L.localized("notif_action_open_family"),
                     options: [.foreground]
                 )
             ],
@@ -691,7 +702,7 @@ class NotificationManager: NSObject, ObservableObject {
             actions: [
                 UNNotificationAction(
                     identifier: "view_network_protection",
-                    title: "Открыть защиту сети",
+                    title: L.localized("notif_action_open_network_protection"),
                     options: [.foreground]
                 )
             ],
@@ -704,7 +715,7 @@ class NotificationManager: NSObject, ObservableObject {
             actions: [
                 UNNotificationAction(
                     identifier: "reply",
-                    title: "Ответить",
+                    title: L.localized("notif_action_reply"),
                     options: [.foreground]
                 )
             ],
@@ -717,12 +728,12 @@ class NotificationManager: NSObject, ObservableObject {
             actions: [
                 UNNotificationAction(
                     identifier: "view_tariffs",
-                    title: "Продлить подписку",
+                    title: L.localized("notif_action_renew"),
                     options: [.foreground]
                 ),
                 UNNotificationAction(
                     identifier: "dismiss",
-                    title: "Закрыть",
+                    title: L.localized("notif_action_dismiss"),
                     options: []
                 )
             ],
@@ -735,7 +746,7 @@ class NotificationManager: NSObject, ObservableObject {
             actions: [
                 UNNotificationAction(
                     identifier: "open_mnemo_review",
-                    title: "Повторить",
+                    title: L.localized("notif_action_retry"),
                     options: [.foreground]
                 )
             ],
@@ -743,7 +754,7 @@ class NotificationManager: NSObject, ObservableObject {
             options: []
         )
 
-        let habitDoneTitle = LocalizationManager.shared.localized("family_habit_done")
+        let habitDoneTitle = L.localized("family_habit_done")
         let familyHabitCategory = FamilyHabitRemindersScheduler.makeNotificationCategory(
             doneTitle: habitDoneTitle
         )
@@ -883,23 +894,24 @@ class NotificationManager: NSObject, ObservableObject {
     func scheduleRenewalNotifications(subscriptionEndDate: Date) {
         cancelRenewalNotifications()
 
+        let L = LocalizationManager.shared
         let endDay = Calendar.current.startOfDay(for: subscriptionEndDate)
         let windows: [(Int, String, String, String, String)] = [
             (-3, "before.3", "subscription_renewal",
-             "Подписка заканчивается через 3 дня",
-             "Продлите защиту семьи — тарифы в один тап. Можно пригласить друга и получить бонус."),
+             L.localized("dojim_sub_before_3_title"),
+             L.localized("dojim_sub_before_3_body")),
             (-1, "before.1", "subscription_renewal",
-             "Подписка заканчивается завтра",
-             "Завтра доступ к полной защите может ограничиться. Откройте тарифы и продлите."),
+             L.localized("dojim_sub_before_1_title"),
+             L.localized("dojim_sub_before_1_body")),
             (0, "expired.0", "subscription_expired",
-             "Подписка закончилась",
-             "Продлите, чтобы семья снова была под защитой. Или пригласите друга — бонус по рефке."),
+             L.localized("dojim_sub_expired_0_title"),
+             L.localized("dojim_sub_expired_0_body")),
             (1, "expired.1", "subscription_expired",
-             "Семья без полной защиты",
-             "Вернитесь к подписке в один тап — или пригласите друга и получите бонус дней."),
+             L.localized("dojim_sub_expired_1_title"),
+             L.localized("dojim_sub_expired_1_body")),
             (3, "expired.3", "subscription_expired",
-             "Мы рядом, когда будете готовы",
-             "Откройте тарифы или пригласите друга. Защита семьи важнее паузы."),
+             L.localized("dojim_sub_expired_3_title"),
+             L.localized("dojim_sub_expired_3_body")),
         ]
 
         for (offset, suffix, type, title, body) in windows {
@@ -929,26 +941,27 @@ class NotificationManager: NSObject, ObservableObject {
     func scheduleTrialNotifications(trialEndDate: Date) {
         cancelTrialNotifications()
 
+        let L = LocalizationManager.shared
         let endDay = Calendar.current.startOfDay(for: trialEndDate)
         let windows: [(Int, String, String, String, String)] = [
             (-7, "before.7", "trial",
-             "Пробный период — ещё 7 дней",
-             "Оформите подписку, чтобы сохранить полную защиту семьи после trial."),
+             L.localized("dojim_trial_before_7_title"),
+             L.localized("dojim_trial_before_7_body")),
             (-3, "before.3", "trial",
-             "Trial заканчивается через 3 дня",
-             "Осталось 3 дня. Продлите защиту семьи — или пригласите друга за бонус."),
+             L.localized("dojim_trial_before_3_title"),
+             L.localized("dojim_trial_before_3_body")),
             (-1, "before.1", "trial",
-             "Trial заканчивается завтра",
-             "Последний день пробного периода. Откройте тарифы и продолжите защиту."),
+             L.localized("dojim_trial_before_1_title"),
+             L.localized("dojim_trial_before_1_body")),
             (0, "expired.0", "trial_expired",
-             "Пробный период закончился",
-             "Оформите подписку, чтобы семья снова была под защитой. Рефка — бонус за друга."),
+             L.localized("dojim_trial_expired_0_title"),
+             L.localized("dojim_trial_expired_0_body")),
             (1, "expired.1", "trial_expired",
-             "Продолжим защиту семьи?",
-             "Один тап до тарифов. Или пригласите друга — бонус по семейной рефке."),
+             L.localized("dojim_trial_expired_1_title"),
+             L.localized("dojim_trial_expired_1_body")),
             (3, "expired.3", "trial_expired",
-             "ALADDIN ждёт вас",
-             "Когда будете готовы — тарифы или приглашение друга. Без спешки, но с заботой о семье."),
+             L.localized("dojim_trial_expired_3_title"),
+             L.localized("dojim_trial_expired_3_body")),
         ]
 
         for (offset, suffix, type, title, body) in windows {
@@ -974,9 +987,10 @@ class NotificationManager: NSObject, ObservableObject {
 
     /// Немедленный баннер «уже истекла» + перепланирование хвоста +1/+3.
     func sendSubscriptionExpiredBanner(planName: String, endDate: Date) {
+        let L = LocalizationManager.shared
         sendLocalNotification(
-            title: "Подписка закончилась",
-            body: "«\(planName)» больше не активна. Продлите защиту семьи или пригласите друга.",
+            title: L.localized("push_subscription_expired_now_title"),
+            body: String(format: L.localized("push_subscription_expired_now_body"), planName),
             category: .subscription,
             userInfo: [
                 "type": "subscription_expired",

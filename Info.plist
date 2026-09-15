@@ -4,6 +4,11 @@
 <dict>
 	<key>CFBundleDevelopmentRegion</key>
 	<string>$(DEVELOPMENT_LANGUAGE)</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>ru</string>
+	</array>
 	<key>CFBundleDisplayName</key>
 	<string>ALADDIN X AI</string>
 	<key>CFBundleExecutable</key>
@@ -78,7 +83,7 @@
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>ALADDIN Family needs location access for family safety and emergency features.</string>
 	<key>NSMicrophoneUsageDescription</key>
-	<string>ALADDIN Family needs microphone access for voice analysis and security features.</string>
+	<string>ALADDIN needs microphone access for voice messages and voice analysis.</string>
 	<key>NSMotionUsageDescription</key>
 	<string>ALADDIN Family uses motion data for security analysis and family safety monitoring.</string>
 	<key>NSPhotoLibraryAddUsageDescription</key>
@@ -90,7 +95,7 @@
 	<key>NSSiriUsageDescription</key>
 	<string>ALADDIN Family uses Siri for voice-activated family safety and security features.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
-	<string>ALADDIN Family needs speech recognition access for AI assistant voice input and voice commands.</string>
+	<string>ALADDIN needs speech recognition for AI voice input and commands.</string>
 	<key>NSUserActivityTypes</key>
 	<array>
 		<string>ai.aladdin.activity.security</string>
@@ -98,7 +103,7 @@
 		<string>ai.aladdin.activity.emergency</string>
 	</array>
 	<key>NSUserNotificationsUsageDescription</key>
-	<string>ALADDIN Family needs notification access for family safety and security alerts.</string>
+	<string>ALADDIN needs notification access for family safety and security alerts.</string>
 	<key>UIApplicationSceneManifest</key>
 	<dict>
 		<key>UIApplicationSupportsMultipleScenes</key>

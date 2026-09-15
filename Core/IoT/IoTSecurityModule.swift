@@ -83,9 +83,10 @@ class IoTSecurityModule: ObservableObject {
     func alertCompromised(_ device: IoTDevice) {
         // Показываем уведомление
         // ✅ sendLocalNotification безопасен для вызова из любого потока
+        let L = LocalizationManager.shared
         NotificationManager.shared.sendLocalNotification(
-            title: "⚠️ Устройство скомпрометировано",
-            body: "\(device.name) требует внимания",
+            title: L.localized("push_iot_compromised_title"),
+            body: String(format: L.localized("push_iot_compromised_body"), device.name),
             category: .security,
             userInfo: [
                 "type": "iot_device_compromised",

@@ -1,0 +1,21 @@
+/* Permission usage strings — follow iPhone language (not in-app language). */
+"NSUserNotificationsUsageDescription" = "ALADDIN needs notification access for family safety and security alerts.";
+"NSMicrophoneUsageDescription" = "ALADDIN needs microphone access for voice messages and voice analysis.";
+"NSCameraUsageDescription" = "ALADDIN needs camera access for security features and face recognition.";
+"NSPhotoLibraryUsageDescription" = "ALADDIN needs photo library access for secure family photo management.";
+"NSPhotoLibraryAddUsageDescription" = "ALADDIN needs photo library access to save family security photos.";
+"NSContactsUsageDescription" = "ALADDIN needs contacts access to help manage family member information securely.";
+"NSLocationWhenInUseUsageDescription" = "ALADDIN needs location access for family safety and emergency features.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "ALADDIN needs location access for family safety and emergency features.";
+"NSLocalNetworkUsageDescription" = "ALADDIN needs local network access for family device communication and security.";
+"NSFaceIDUsageDescription" = "ALADDIN uses Face ID for secure authentication.";
+"NSSpeechRecognitionUsageDescription" = "ALADDIN needs speech recognition for AI voice input and commands.";
+"NSBluetoothAlwaysUsageDescription" = "ALADDIN uses Bluetooth for device security and family proximity.";
+"NSBluetoothPeripheralUsageDescription" = "ALADDIN uses Bluetooth for device security and family proximity.";
+"NSCalendarsUsageDescription" = "ALADDIN needs calendar access for family safety scheduling.";
+"NSRemindersUsageDescription" = "ALADDIN needs reminders access for family safety alerts.";
+"NSMotionUsageDescription" = "ALADDIN uses motion data for security analysis and family safety.";
+"NSHomeKitUsageDescription" = "ALADDIN needs HomeKit access for smart home security.";
+"NSAppleMusicUsageDescription" = "ALADDIN needs music access for family entertainment features.";
+"NSSiriUsageDescription" = "ALADDIN uses Siri for voice-activated family safety features.";
+"CFBundleDisplayName" = "ALADDIN X AI";

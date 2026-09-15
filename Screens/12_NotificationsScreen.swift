@@ -82,14 +82,7 @@ struct NotificationsScreen: View {
                 }
             ],
             onBack: {
-                // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
-                // Это гарантирует правильную навигацию на реальном устройстве
-                if navigationManager.canGoBack {
-                    navigationManager.goBack()
-                } else {
-                    // Если стек пуст, возвращаемся на главную
-                    navigationManager.currentScreen = .main
-                }
+                navigationManager.goBackToPreviousScreen(reason: "Notifications.onBack")
             }
         )
         .accessibilityElement(children: .combine)
@@ -326,25 +319,25 @@ struct NotificationsScreen: View {
             }
             
             if let lastSync = viewModel.lastSuccessfulSyncAt {
-                Text("Последняя синхронизация: \(NotificationsViewModel.relativeTime(for: lastSync))")
+                Text(String(format: localizationManager.localized("notifications_last_sync_fmt"), NotificationsViewModel.relativeTime(for: lastSync)))
                     .font(.caption2)
                     .foregroundColor(.textSecondary)
                     .frame(maxWidth: .infinity, alignment: .leading)
             }
             
             if viewModel.isLoading {
-                ProgressView("Загружаем уведомления...")
+                ProgressView(localizationManager.localized("notifications_loading"))
                     .frame(maxWidth: .infinity, alignment: .center)
                     .padding(.vertical, 12)
             } else if let error = viewModel.errorMessage {
                 VStack(alignment: .leading, spacing: 8) {
-                    Text("Не удалось загрузить уведомления")
+                    Text(localizationManager.localized("notifications_load_failed"))
                         .font(.bodyBold)
                         .foregroundColor(.dangerRed)
                     Text(error)
                         .font(.caption)
                         .foregroundColor(.textSecondary)
-                    Button("Повторить") {
+                    Button(localizationManager.localized("notifications_retry")) {
                         Task { await viewModel.loadNotifications() }
                     }
                     .font(.caption)
@@ -358,10 +351,10 @@ struct NotificationsScreen: View {
                 )
             } else if viewModel.filteredNotifications(for: selectedFilter).isEmpty {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("Пока пусто")
+                    Text(localizationManager.localized("notifications_empty_title"))
                         .font(.bodyBold)
                         .foregroundColor(.textPrimary)
-                    Text("Событий не найдено для выбранного фильтра. Проверьте настройки уведомлений и попробуйте позже.")
+                    Text(localizationManager.localized("notifications_empty_filter_body"))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                 }

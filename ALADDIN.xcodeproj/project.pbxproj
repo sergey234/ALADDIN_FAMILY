@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		IPLS001F90000300C7D34B /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = IPLS000F90000300C7D34B /* InfoPlist.strings */; };
 		B198A0122F9800100B198A0 /* FamilyReferralAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = B198A0112F9800100B198A0 /* FamilyReferralAnalytics.swift */; };
 		B198A0142F9800100B198A0 /* FamilyReferralInviteRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B198A0132F9800100B198A0 /* FamilyReferralInviteRouter.swift */; };
 
@@ -1114,6 +1115,8 @@
 		AFSh0042F90000100C7D34B /* AntifakeDeepLinkRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeDeepLinkRouter.swift; path = Core/Security/AntifakeDeepLinkRouter.swift; sourceTree = "<group>"; };
 		AFSh0062F90000100C7D34B /* ShareViewController.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ShareViewController.swift; sourceTree = "<group>"; };
 		AFSh0082F90000100C7D34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		IPLS010F90000300C7D34B /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		IPLS020F90000300C7D34B /* ru */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = ru; path = ru.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		AFSh0092F90000100C7D34B /* ALADDINAntifakeShare.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINAntifakeShare.entitlements; sourceTree = "<group>"; };
 		AFSh0102F90000100C7D34B /* ALADDINAntifakeShare.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINAntifakeShare.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFSh0232F90000100C7D34B /* AntifakeDeepLinkRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeDeepLinkRouterTests.swift; sourceTree = "<group>"; };
@@ -2038,6 +2041,7 @@
 				B6000200 /* ALADDINWidgets/SharedDataManager.swift */,
 				A1000002 /* ContentView.swift */,
 				A1000004 /* Assets.xcassets */,
+				IPLS000F90000300C7D34B /* InfoPlist.strings */,
 				AFPR001F90000200C7D34B /* PrivacyInfo.xcprivacy */,
 				W5F20000 /* Audio */,
 				W5F20021 /* Localization */,
@@ -2478,6 +2482,7 @@
 			knownRegions = (
 				en,
 				Base,
+				ru,
 			);
 			mainGroup = A0FFFFF5;
 			packageReferences = (
@@ -2518,6 +2523,7 @@
 				W5F20020 /* Localization in Resources */,
 				W5F20042 /* Companion in Resources */,
 				W5F20052 /* Wellness in Resources */,
+				IPLS001F90000300C7D34B /* InfoPlist.strings in Resources */,
 			);
 		};
 		AFCD0162F90000200C7D34B /* Resources */ = {
@@ -3265,6 +3271,18 @@
 			targetProxy = B5002008 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
+
+/* Begin PBXVariantGroup section */
+		IPLS000F90000300C7D34B /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				IPLS010F90000300C7D34B /* en */,
+				IPLS020F90000300C7D34B /* ru */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
 		5E61A0A92EFB38ED0039093A /* Debug configuration for PBXNativeTarget "ALADDINContentBlocker" */ = {

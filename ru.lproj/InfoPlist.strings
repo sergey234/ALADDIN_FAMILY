@@ -1,0 +1,21 @@
+/* Тексты системных разрешений — язык iPhone (не язык внутри приложения). */
+"NSUserNotificationsUsageDescription" = "ALADDIN нужен доступ к уведомлениям для безопасности семьи и важных оповещений.";
+"NSMicrophoneUsageDescription" = "ALADDIN нужен микрофон для голосовых сообщений и анализа голоса.";
+"NSCameraUsageDescription" = "ALADDIN нужна камера для функций безопасности и распознавания.";
+"NSPhotoLibraryUsageDescription" = "ALADDIN нужен доступ к фото для безопасной работы с семейными снимками.";
+"NSPhotoLibraryAddUsageDescription" = "ALADDIN нужен доступ к фото, чтобы сохранять снимки безопасности.";
+"NSContactsUsageDescription" = "ALADDIN нужен доступ к контактам для безопасного управления членами семьи.";
+"NSLocationWhenInUseUsageDescription" = "ALADDIN нужна геолокация для безопасности семьи и экстренных ситуаций.";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "ALADDIN нужна геолокация для безопасности семьи и экстренных ситуаций.";
+"NSLocalNetworkUsageDescription" = "ALADDIN нужен доступ к локальной сети для связи устройств семьи.";
+"NSFaceIDUsageDescription" = "ALADDIN использует Face ID для безопасного входа.";
+"NSSpeechRecognitionUsageDescription" = "ALADDIN нужно распознавание речи для голосового ввода AI.";
+"NSBluetoothAlwaysUsageDescription" = "ALADDIN использует Bluetooth для безопасности устройств и близости семьи.";
+"NSBluetoothPeripheralUsageDescription" = "ALADDIN использует Bluetooth для безопасности устройств и близости семьи.";
+"NSCalendarsUsageDescription" = "ALADDIN нужен календарь для напоминаний безопасности семьи.";
+"NSRemindersUsageDescription" = "ALADDIN нужны напоминания для оповещений безопасности семьи.";
+"NSMotionUsageDescription" = "ALADDIN использует данные движения для анализа безопасности.";
+"NSHomeKitUsageDescription" = "ALADDIN нужен HomeKit для безопасности умного дома.";
+"NSAppleMusicUsageDescription" = "ALADDIN нужен доступ к музыке для семейных функций.";
+"NSSiriUsageDescription" = "ALADDIN использует Siri для голосовых команд безопасности.";
+"CFBundleDisplayName" = "ALADDIN X AI";

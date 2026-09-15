@@ -949,8 +949,8 @@ enum FamilyControlsAvailabilityError: LocalizedError {
         // Создаем уведомление для экрана уведомлений (через NotificationManager)
         // ✅ sendLocalNotification безопасен для вызова из любого потока
         NotificationManager.shared.sendLocalNotification(
-            title: "🚨 Попытка обхода",
-            body: "\(type.displayName) заблокирован",
+            title: LocalizationManager.shared.localized("push_bypass_attempt_title"),
+            body: String(format: LocalizationManager.shared.localized("push_bypass_attempt_body"), type.displayName),
             category: .security,
             userInfo: [
                 "type": "bypass_attempt",

@@ -383,9 +383,10 @@ class AntivirusManager: ObservableObject {
         filePath: String
     ) {
         let correlationId = "malware-\(UUID().uuidString)"
+        let L = LocalizationManager.shared
         NotificationManager.shared.sendLocalNotification(
-            title: "🛡️ Обнаружена угроза",
-            body: "\(threatName) заблокирован(а)",
+            title: L.localized("push_threat_detected_title"),
+            body: String(format: L.localized("push_threat_detected_body"), threatName),
             category: .security,
             userInfo: [
                 "type": "threat_detected",
