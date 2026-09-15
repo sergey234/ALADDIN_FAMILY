@@ -41,8 +41,10 @@ final class FamilyE2EEManager: ObservableObject {
         bootstrappingFamilyId = fid
         defer { bootstrappingFamilyId = nil }
 
+        print("🔐 FamilyE2EE.bootstrap START family=\(fid.prefix(8))… device=\(deviceId.prefix(8))…")
         do {
             try await registerDeviceIfNeeded(familyId: fid)
+            print("🔐 FamilyE2EE.register OK")
             try await ingestRemoteDistributions(familyId: fid)
             try await ensureLocalFamilyKey(familyId: fid)
             isReady = FamilyE2EECryptoEngine.loadFamilyKey(familyId: fid) != nil
@@ -51,8 +53,10 @@ final class FamilyE2EEManager: ObservableObject {
                 lastSuccessfulBootstrapFamilyId = fid
                 lastSuccessfulBootstrapAt = Date()
             }
+            print("🔐 FamilyE2EE.bootstrap END ready=\(isReady) lastError=\(lastError ?? "nil")")
         } catch {
             if let ne = error as? NetworkError, case .internalServerError = ne {
+                print("🔐 FamilyE2EE.bootstrap 5xx → resetLocalIdentity + retry")
                 FamilyE2EEDeviceIdentity.resetLocalIdentity()
                 do {
                     try await registerDeviceIfNeeded(familyId: fid)
@@ -63,6 +67,7 @@ final class FamilyE2EEManager: ObservableObject {
                     if isReady {
                         lastSuccessfulBootstrapFamilyId = fid
                         lastSuccessfulBootstrapAt = Date()
+                        print("🔐 FamilyE2EE.bootstrap RETRY OK")
                         return
                     }
                 } catch {
@@ -229,13 +234,27 @@ final class FamilyE2EEManager: ObservableObject {
             return
         }
 
+        invalidateKeysCache(familyId: familyId)
         let devices = try await fetchDevices(familyId: familyId)
         let others = devices.filter { $0.deviceId != deviceId }
+        print("🔐 FamilyE2EE.ensureKey devices=\(devices.count) others=\(others.count)")
 
         if !others.isEmpty {
             try await Task.sleep(nanoseconds: 400_000_000)
+            invalidateKeysCache(familyId: familyId)
             try await ingestRemoteDistributions(familyId: familyId)
             if FamilyE2EECryptoEngine.loadFamilyKey(familyId: familyId) != nil {
+                isReady = true
+                return
+            }
+            // Orphan device records (reinstall / TF) with no published family key yet:
+            // this phone becomes key authority and distributes to registered peers.
+            let published = try await fetchSenderKeys(familyId: familyId)
+            if published.isEmpty {
+                print("🔐 FamilyE2EE.ensureKey orphan recovery: empty sender keys → create+distribute")
+                let sym = FamilyE2EECryptoEngine.generateFamilyKey()
+                FamilyE2EECryptoEngine.saveFamilyKey(sym, familyId: familyId)
+                try await distributeKeyToMissingDevices(familyId: familyId, familyKey: sym)
                 isReady = true
                 return
             }
@@ -248,6 +267,40 @@ final class FamilyE2EEManager: ObservableObject {
         FamilyE2EECryptoEngine.saveFamilyKey(sym, familyId: familyId)
         try await distributeKeyToMissingDevices(familyId: familyId, familyKey: sym)
         isReady = true
+    }
+
+    /// CHAT-4: local reset + become key authority (TF orphan / stuck bootstrap).
+    /// Old ciphertext may not decrypt on this phone until peers re-open chat.
+    func recreateChatProtection(familyId: String) async {
+        let fid = familyId.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !fid.isEmpty else { return }
+        print("🔐 FamilyE2EE.recreateChatProtection family=\(fid.prefix(8))…")
+        lastSuccessfulBootstrapFamilyId = nil
+        lastSuccessfulBootstrapAt = nil
+        isReady = false
+        lastError = nil
+        FamilyE2EECryptoEngine.clearFamilyKey(familyId: fid)
+        FamilyE2EEDeviceIdentity.resetLocalIdentity()
+        invalidateKeysCache(familyId: fid)
+        await bootstrap(familyId: fid)
+        if !isReady {
+            // Force authority even if remote sender keys exist but are unreachable.
+            do {
+                try await registerDeviceIfNeeded(familyId: fid)
+                let sym = FamilyE2EECryptoEngine.generateFamilyKey()
+                FamilyE2EECryptoEngine.saveFamilyKey(sym, familyId: fid)
+                try await distributeKeyToMissingDevices(familyId: fid, familyKey: sym)
+                isReady = true
+                lastError = nil
+                lastSuccessfulBootstrapFamilyId = fid
+                lastSuccessfulBootstrapAt = Date()
+                print("🔐 FamilyE2EE.recreateChatProtection force-create OK")
+            } catch {
+                isReady = false
+                lastError = error.localizedDescription
+                print("❌ FamilyE2EE.recreateChatProtection: \(error)")
+            }
+        }
     }
 
     /// Re-share family key with devices that joined after initial bootstrap.

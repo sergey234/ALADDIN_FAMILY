@@ -2501,7 +2501,7 @@ extension SubscriptionManager {
         await clearToken()
 
         // Показываем сообщение пользователю
-        showUserError(message: "Авторизация истекла. Восстановление доступа...")
+        showUserError(message: LocalizationManager.shared.localized("subscription_auth_expired_restoring"))
 
         // Запускаем retry-механизм
         let success = await retryDeviceRegistration(maxAttempts: 3)
@@ -2517,7 +2517,7 @@ extension SubscriptionManager {
             logger.error("❌ Все попытки восстановления авторизации провалились")
 
             // Показываем критическую ошибку
-            showUserError(message: "Не удалось восстановить авторизацию. Проверьте интернет-соединение или перезапустите приложение.")
+            showUserError(message: LocalizationManager.shared.localized("subscription_auth_restore_failed"))
 
             // Переходим в оффлайн режим
             isOfflineMode = true

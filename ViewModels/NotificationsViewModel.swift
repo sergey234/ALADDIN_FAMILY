@@ -42,7 +42,8 @@ class NotificationsViewModel: ObservableObject {
     }()
 
     static func relativeTime(for date: Date, reference: Date = Date()) -> String {
-        relativeFormatter.localizedString(for: date, relativeTo: reference)
+        relativeFormatter.locale = LocalizationManager.shared.locale
+        return relativeFormatter.localizedString(for: date, relativeTo: reference)
     }
 
     struct AppNotification: Identifiable {
@@ -57,6 +58,8 @@ class NotificationsViewModel: ObservableObject {
         let actionRequired: Bool
         let actionURL: String?
         let metadata: [String: String]
+        /// Original API / local event type (`antivirus_scan_complete`, `threat_blocked`, …).
+        let rawType: String
 
         init(from response: NotificationResponse) {
             var metadata = response.metadata ?? [:]
@@ -74,6 +77,7 @@ class NotificationsViewModel: ObservableObject {
             self.actionRequired = response.actionRequired ?? false
             self.actionURL = response.actionUrl
             self.metadata = metadata
+            self.rawType = response.type
         }
 
         init(id: String,
@@ -86,7 +90,8 @@ class NotificationsViewModel: ObservableObject {
              priority: NotificationPriority = .low,
              actionRequired: Bool = false,
              actionURL: String? = nil,
-             metadata: [String: String] = [:]) {
+             metadata: [String: String] = [:],
+             rawType: String = "") {
             self.id = id
             self.icon = icon
             self.title = title
@@ -98,20 +103,7 @@ class NotificationsViewModel: ObservableObject {
             self.actionRequired = actionRequired
             self.actionURL = actionURL
             self.metadata = metadata
-        }
-
-        var isImportant: Bool {
-            kind == .threat || kind == .warning || kind == .bypassAttempt
-        }
-
-        var correlationId: String {
-            if let metadataValue = metadata["correlation_id"], !metadataValue.isEmpty {
-                return metadataValue
-            }
-            if let metadataValue = metadata["event_id"], !metadataValue.isEmpty {
-                return metadataValue
-            }
-            return id
+            self.rawType = rawType.isEmpty ? Self.inferredRawType(kind: kind, title: title) : rawType
         }
 
         init(from persisted: NotificationManager.PersistedSecurityEvent) {
@@ -130,6 +122,49 @@ class NotificationsViewModel: ObservableObject {
                 metadata["correlation_id"] = persisted.correlationId
             }
             self.metadata = metadata
+            self.rawType = persisted.type
+        }
+
+        func localizedTitle(_ localizationManager: LocalizationManager) -> String {
+            NotificationCopyLocalizer.localizedTitle(
+                rawType: rawType,
+                bakedTitle: title,
+                metadata: metadata,
+                localizationManager: localizationManager
+            )
+        }
+
+        func localizedMessage(_ localizationManager: LocalizationManager) -> String {
+            NotificationCopyLocalizer.localizedMessage(
+                rawType: rawType,
+                bakedMessage: message,
+                metadata: metadata,
+                localizationManager: localizationManager
+            )
+        }
+
+        private static func inferredRawType(kind: NotificationKind, title: String) -> String {
+            switch kind {
+            case .threat: return "threat"
+            case .warning: return "warning"
+            case .bypassAttempt: return "bypass_attempt"
+            case .success: return "success"
+            case .info: return "info"
+            }
+        }
+
+        var isImportant: Bool {
+            kind == .threat || kind == .warning || kind == .bypassAttempt
+        }
+
+        var correlationId: String {
+            if let metadataValue = metadata["correlation_id"], !metadataValue.isEmpty {
+                return metadataValue
+            }
+            if let metadataValue = metadata["event_id"], !metadataValue.isEmpty {
+                return metadataValue
+            }
+            return id
         }
     }
 
@@ -143,13 +178,15 @@ class NotificationsViewModel: ObservableObject {
         init(from raw: String) {
             let value = raw.lowercased()
             switch value {
-            case "threat", "security_alert", "threat_detected", "emergency":
+            case "threat", "security_alert", "threat_detected", "threat_blocked",
+                 "emergency", "antivirus_scan_complete", "antivirus_scan_failed",
+                 "downloaded_file_threat", "suspicious_activity", "qa_threat":
                 self = .threat
             case "warning", "system_update", "subscription_expiring", "subscription_expired":
                 self = .warning
             case "bypass", "bypass_attempt", "bypassattempt", "attempt_bypass":
                 self = .bypassAttempt
-            case "success", "payment_success", "subscription_activated", "referral_reward":
+            case "success", "payment_success", "subscription_activated", "referral_reward", "upgrade_success":
                 self = .success
             default:
                 self = .info
@@ -501,18 +538,14 @@ extension NotificationFilter {
 // MARK: - AppNotification Conversion
 
 extension NotificationsViewModel.AppNotification {
-    func toNotification() -> NotificationItem {
+    func toNotification(localizationManager: LocalizationManager = .shared) -> NotificationItem {
         NotificationItem(
-            id: id,
             icon: icon,
-            title: title,
-            message: message,
+            title: localizedTitle(localizationManager),
+            message: localizedMessage(localizationManager),
             time: NotificationsViewModel.relativeTime(for: timestamp),
             isRead: isRead,
             type: kind.toNotificationType(),
-            timestamp: timestamp,
-            actionRequired: actionRequired,
-            actionURL: actionURL,
             correlationId: correlationId
         )
     }

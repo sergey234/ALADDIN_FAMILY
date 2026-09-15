@@ -558,7 +558,7 @@ struct NotificationSettingsScreen: View {
                     kind.fireSmoke()
                 } label: {
                     HStack {
-                        Text("#\(kind.number) \(kind.titleRU)\(kind.isUserFacing ? "" : " · DEBUG")")
+                        Text("#\(kind.number) \(kind.localizedTitle(localizationManager))\(kind.isUserFacing ? "" : " · DEBUG")")
                             .font(.system(size: 13, weight: .medium))
                             .foregroundColor(.white)
                             .multilineTextAlignment(.leading)

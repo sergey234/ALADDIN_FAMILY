@@ -200,7 +200,7 @@ struct PaymentQRScreen: View {
             // Фон — Storm Mesh premium light (Batch 4)
             StormMeshBackground(variant: .premium)
             
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(spacing: Spacing.l) {
                     // Navigation Bar с кнопкой назад
                     ALADDINNavigationBar(
@@ -890,7 +890,7 @@ struct NavigationDebugOverlay: View {
             
             Divider().blendMode(.overlay)
             
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 4) {
                     ForEach(Array(logEntries.suffix(24).enumerated()), id: \.offset) { _, entry in
                         Text(entry)
@@ -918,9 +918,10 @@ struct NavigationDebugOverlay: View {
 // MARK: - Preview
 struct PaymentQRScreen_Previews: PreviewProvider {
     static var previews: some View {
+        let lm = LocalizationManager.shared
         let testTariff = Tariff(
                 id: "test",
-                title: "Семейный",
+                title: lm.localized("tariff_plan_family_title"),
                 price: "590 ₽",
                 period: "в месяц",
                 features: ["До 5 устройств", "Полная защита"],

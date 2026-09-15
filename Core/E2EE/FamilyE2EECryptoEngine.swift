@@ -36,6 +36,12 @@ enum FamilyE2EECryptoEngine {
         KeychainManager.shared.save(raw, scopedKey: scoped)
     }
 
+    static func clearFamilyKey(familyId: String) {
+        let scoped = KeychainManager.e2eeFamilySymmetricKey(familyId: familyId)
+        KeychainManager.shared.delete(scopedKey: scoped)
+        UserDefaults.standard.removeObject(forKey: distributionPrefix + familyId)
+    }
+
     static func generateFamilyKey() -> SymmetricKey {
         SymmetricKey(size: .bits256)
     }

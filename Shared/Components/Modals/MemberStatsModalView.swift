@@ -70,14 +70,14 @@ struct MemberStatsModalView: View {
     private var administratorStats: some View {
         VStack(spacing: Spacing.m) {
             // Общая защита семьи
-            StatsSection(title: "🛡️ Общая защита семьи") {
+            StatsSection(title: localizationManager.localized("member_stats_family_protection")) {
                 StatCard(icon: "🚫", label: "Всего угроз заблокировано", value: "47")
                 StatCard(icon: "📱", label: "Активные устройства", value: "8")
                 StatCard(icon: "⭐", label: "Рейтинг безопасности", value: "95%")
             }
             
             // Активность
-            StatsSection(title: "📈 Активность") {
+            StatsSection(title: localizationManager.localized("member_stats_activity_trend")) {
                 StatCard(icon: "⏰", label: "Часы использования", value: "24/7")
                 StatCard(icon: "🔐", label: "Защищённые действия", value: "1,245")
                 StatCard(icon: "🌐", label: "Безопасные сайты", value: "342")
@@ -90,14 +90,14 @@ struct MemberStatsModalView: View {
     private var parentStats: some View {
         VStack(spacing: Spacing.m) {
             // Мои дети
-            StatsSection(title: "👨‍👩‍👧‍👦 Мои дети") {
+            StatsSection(title: localizationManager.localized("member_stats_my_children")) {
                 StatCard(icon: "📊", label: "Активность детей", value: "Онлайн")
                 StatCard(icon: "🚫", label: "Заблокированные угрозы", value: "23")
                 StatCard(icon: "⏰", label: "Время использования", value: "2ч 30м")
             }
             
             // Моя активность
-            StatsSection(title: "👤 Моя активность") {
+            StatsSection(title: localizationManager.localized("member_stats_my_activity")) {
                 StatCard(icon: "🛡️", label: "Защищённые действия", value: "32")
                 StatCard(icon: "🚫", label: "Заблокированные угрозы", value: "32")
                 StatCard(icon: "⏰", label: "Часы использования", value: "1ч 15м")
@@ -110,14 +110,14 @@ struct MemberStatsModalView: View {
     private var teenagerStats: some View {
         VStack(spacing: Spacing.m) {
             // Моя защита
-            StatsSection(title: "🛡️ Моя защита") {
+            StatsSection(title: localizationManager.localized("member_stats_my_protection")) {
                 StatCard(icon: "🚫", label: "Заблокированные угрозы", value: "23")
                 StatCard(icon: "🔐", label: "Защищённые данные", value: "156")
                 StatCard(icon: "📧", label: "Спам заблокирован", value: "89")
             }
             
             // Активность
-            StatsSection(title: "📊 Активность") {
+            StatsSection(title: localizationManager.localized("member_stats_activity_chart")) {
                 StatCard(icon: "⏰", label: "Часы использования", value: "3ч 45м")
                 StatCard(icon: "📱", label: "Популярные приложения", value: "12")
                 StatCard(icon: "🌐", label: "Безопасные сайты", value: "234")
@@ -130,14 +130,14 @@ struct MemberStatsModalView: View {
     private var childStats: some View {
         VStack(spacing: Spacing.m) {
             // Награды
-            StatsSection(title: "🦄 Награды") {
+            StatsSection(title: localizationManager.localized("member_stats_rewards")) {
                 StatCard(icon: "🦄", label: "Количество единорогов", value: "24")
                 StatCard(icon: "✅", label: "Задания выполнено", value: "15")
                 StatCard(icon: "⭐", label: "Уровни пройдено", value: "5")
             }
             
             // Активность
-            StatsSection(title: "🎮 Активность") {
+            StatsSection(title: localizationManager.localized("member_stats_activity_game")) {
                 StatCard(icon: "🛡️", label: "Часы защиты", value: "2ч")
                 StatCard(icon: "✅", label: "Правильных действий", value: "42")
                 StatCard(icon: "🔓", label: "Открытых функций", value: "8")
@@ -150,14 +150,14 @@ struct MemberStatsModalView: View {
     private var elderlyStats: some View {
         VStack(spacing: Spacing.m) {
             // Защита
-            StatsSection(title: "🛡️ Защита") {
+            StatsSection(title: localizationManager.localized("member_stats_protection")) {
                 StatCard(icon: "🚫", label: "Заблокированные мошенники", value: "8")
                 StatCard(icon: "🛒", label: "Защищённые покупки", value: "12")
                 StatCard(icon: "📞", label: "Безопасные звонки", value: "34")
             }
             
             // Активность
-            StatsSection(title: "📊 Активность") {
+            StatsSection(title: localizationManager.localized("member_stats_activity_chart")) {
                 StatCard(icon: "🔧", label: "Использованные функции", value: "6")
                 StatCard(icon: "📞", label: "Вызовы родных", value: "15")
                 StatCard(icon: "🔗", label: "Открытые ссылки", value: "23")

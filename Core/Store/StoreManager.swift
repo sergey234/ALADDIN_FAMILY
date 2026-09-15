@@ -57,7 +57,7 @@ class StoreManager: ObservableObject {
             switch self {
             case .basic: return "Базовый"
             case .individual: return "Индивидуальный"
-            case .family: return "Семейный"
+            case .family: return LocalizationManager.shared.localized("tariff_plan_family_title")
             case .premium: return "Премиум"
             }
         }

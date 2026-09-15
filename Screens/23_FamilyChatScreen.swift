@@ -28,6 +28,7 @@ struct FamilyChatScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
     @State private var messageText: String = ""
+    @FocusState private var isComposerFocused: Bool
     @State private var messages: [FamilyChatMessage] = []
     @State private var isLoading: Bool = false
     @State private var isSending: Bool = false
@@ -172,17 +173,41 @@ struct FamilyChatScreen: View {
     }
 
     private var familyChatE2EEBanner: some View {
-        HStack(spacing: Spacing.s) {
+        HStack(alignment: .top, spacing: Spacing.s) {
             Image(systemName: "lock.fill")
                 .foregroundColor(.secondaryGold)
-            Text(localizationManager.localized("family_chat_e2ee_setup"))
-                .font(.caption)
-                .foregroundColor(.textSecondary)
-                .fixedSize(horizontal: false, vertical: true)
+                .padding(.top, 2)
+            VStack(alignment: .leading, spacing: 6) {
+                Text(localizationManager.localized("family_chat_e2ee_setup"))
+                    .font(.caption)
+                    .foregroundColor(.textSecondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                if let err = e2eeManager.lastError?.trimmingCharacters(in: .whitespacesAndNewlines), !err.isEmpty {
+                    Text(localizationManager.localized("family_chat_e2ee_not_ready"))
+                        .font(.caption2)
+                        .foregroundColor(.orange)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button(localizationManager.localized("family_chat_e2ee_recreate")) {
+                        guard let fid = getFamilyId(), !fid.isEmpty else { return }
+                        Task { await e2eeManager.recreateChatProtection(familyId: fid) }
+                    }
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.secondaryGold)
+                    .accessibilityIdentifier("family_chat_e2ee_recreate")
+                }
+            }
             Spacer(minLength: 0)
         }
         .padding(.horizontal, Spacing.screenPadding)
         .padding(.vertical, Spacing.s)
+        .background(Color.secondaryGold.opacity(0.10))
+    }
+
+    /// Composer locked until family context + E2EE (when flag on) are ready.
+    private var isFamilyChatComposerLocked: Bool {
+        if chatFamilyContextInvalid { return true }
+        if AppConfig.isFamilyChatE2EEEnabled && !e2eeManager.isReady { return true }
+        return false
     }
 
     private var familyChatWebSocketBanner: some View {
@@ -239,6 +264,7 @@ struct FamilyChatScreen: View {
                 }
                 .padding(Spacing.screenPadding)
             }
+            .aladdinChatKeyboardDismiss()
             .onAppear {
                 DispatchQueue.main.async {
                     if let lastMessage = messages.last {
@@ -252,6 +278,16 @@ struct FamilyChatScreen: View {
                 DispatchQueue.main.async {
                     scrollToMessage(messageId, proxy: proxy)
                 }
+            }
+            .onChange(of: isComposerFocused) { focused in
+                guard focused, let lastMessage = messages.last else { return }
+                DispatchQueue.main.async {
+                    scrollToMessage(lastMessage.id, proxy: proxy)
+                }
+            }
+            .aladdinScrollOnKeyboardShow {
+                guard let lastMessage = messages.last else { return }
+                scrollToMessage(lastMessage.id, proxy: proxy)
             }
             .accessibilityElement(children: .contain)
             .accessibilityLabel(localizationManager.localized("family_chat_messages_list"))
@@ -1293,82 +1329,35 @@ struct FamilyChatScreen: View {
                     .background(Color.orange.opacity(0.15))
                     .cornerRadius(10)
             }
-            HStack(alignment: .bottom, spacing: 10) {
-                Button(action: {
-                    showComposerActions = true
-                }) {
-                    Image(systemName: isRecordingVoice ? "stop.circle.fill" : "plus.circle.fill")
-                        .font(.system(size: 20, weight: .semibold))
-                        .foregroundColor(isRecordingVoice ? .red : .textPrimary)
-                        .frame(width: 42, height: 42)
-                        .background(Color.surfaceDark.opacity(0.55))
-                        .cornerRadius(12)
-                }
-                .disabled(chatFamilyContextInvalid)
-                .accessibilityLabel(localizationManager.localized("family_chat_voice_button"))
-                .accessibilityHint(localizationManager.localized("family_chat_action_open_menu"))
-
-                ZStack(alignment: .topLeading) {
-                    if messageText.isEmpty {
-                        Text(localizationManager.localized("family_chat_input_placeholder"))
-                            .foregroundColor(Color(UIColor.secondaryLabel))
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 12)
-                            .allowsHitTesting(false)
-                    }
-
-                    TextEditor(text: $messageText)
-                        .font(.system(size: 16))
-                        .foregroundColor(Color(UIColor.label))
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .frame(minHeight: 44, maxHeight: composerHeight(for: messageText))
-                        .background(Color.clear)
-                        .disabled(isSending || chatFamilyContextInvalid)
-                        .accessibilityLabel(localizationManager.localized("family_chat_input_accessibility"))
-                        .accessibilityHint(localizationManager.localized("family_chat_input_hint"))
-                }
-                .background(Color(UIColor.secondarySystemGroupedBackground))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color(UIColor.separator), lineWidth: 1)
-                )
-                .cornerRadius(14)
-
-                Button(action: {
-                    sendMessage()
-                }) {
-                    if isSending {
-                        ProgressView()
-                            .scaleEffect(0.85)
+            AladdinComposerBar(
+                text: $messageText,
+                placeholder: localizationManager.localized("family_chat_input_placeholder"),
+                doneTitle: localizationManager.localized("companion_conversation_done"),
+                accessibilityLabel: localizationManager.localized("family_chat_input_accessibility"),
+                isSending: isSending,
+                isDisabled: isFamilyChatComposerLocked,
+                sendEnabled: !isFamilyChatComposerLocked && !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isSending,
+                focused: $isComposerFocused,
+                sendAccessibilityIdentifier: "family_chat_send",
+                onSend: { sendMessage() },
+                leading: {
+                    Button(action: {
+                        showComposerActions = true
+                    }) {
+                        Image(systemName: isRecordingVoice ? "stop.circle.fill" : "plus.circle.fill")
+                            .font(.system(size: 20, weight: .semibold))
+                            .foregroundColor(isRecordingVoice ? .red : .textPrimary)
                             .frame(width: 42, height: 42)
-                    } else {
-                        Image(systemName: "paperplane.fill")
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(.backgroundDark)
-                            .frame(width: 42, height: 42)
-                            .background(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? Color.surfaceDark.opacity(0.5) : Color.secondaryGold)
+                            .background(Color.surfaceDark.opacity(0.55))
                             .cornerRadius(12)
                     }
-                }
-                .disabled(chatFamilyContextInvalid || messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isSending)
-                .accessibilityLabel(localizationManager.localized("family_chat_send_button"))
-                .accessibilityHint(localizationManager.localized("family_chat_send_hint"))
-            }
-            .padding(Spacing.m)
-            .stormGlassCard(cornerRadius: 16)
-            .padding(.horizontal, Spacing.screenPadding)
-            .padding(.top, 8)
-            .padding(.bottom, 8)
+                    .disabled(isFamilyChatComposerLocked)
+                    .accessibilityLabel(localizationManager.localized("family_chat_voice_button"))
+                    .accessibilityHint(localizationManager.localized("family_chat_action_open_menu"))
+                },
+                extraTrailing: { EmptyView() }
+            )
         }
-    }
-
-    private func composerHeight(for text: String) -> CGFloat {
-        let lineBreakCount = text.components(separatedBy: .newlines).count
-        let estimatedWrappedLines = max(1, Int(ceil(Double(text.count) / 34.0)))
-        let lineCount = max(lineBreakCount, estimatedWrappedLines)
-        let clampedLines = min(max(lineCount, 1), 5)
-        return CGFloat(clampedLines * 24 + 20)
     }
     
     /// Фильтрация сообщений по поисковому запросу

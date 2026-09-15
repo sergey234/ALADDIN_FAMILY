@@ -237,11 +237,11 @@ struct NotificationsScreen: View {
                                         .font(.system(size: 20))
                                     
                                     VStack(alignment: .leading, spacing: 2) {
-                                        Text(appNotification.title)
+                                        Text(appNotification.localizedTitle(localizationManager))
                                             .font(.body)
                                             .foregroundColor(.textPrimary)
                                         
-                                        Text(appNotification.message)
+                                        Text(appNotification.localizedMessage(localizationManager))
                                             .font(.caption)
                                             .foregroundColor(.textSecondary)
                                             .lineLimit(1)
@@ -369,7 +369,7 @@ struct NotificationsScreen: View {
             LazyVStack(spacing: 8) {
                 ForEach(viewModel.filteredNotifications(for: selectedFilter)) { appNotification in
                     NotificationCard(
-                        notification: appNotification.toNotification(),
+                        notification: appNotification.toNotification(localizationManager: localizationManager),
                         onTap: {
                             viewModel.markAsRead(appNotification)
                             // ✅ ДОБАВЛЕНО: Навигация в зависимости от типа уведомления

@@ -74,33 +74,37 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
     }
 
     var titleRU: String {
+        localizedTitle(LocalizationManager.shared)
+    }
+
+    func localizedTitle(_ localizationManager: LocalizationManager) -> String {
         switch self {
-        case .softTest: return "Soft-test (диагностика)"
-        case .threatBlocked: return "Угроза заблокирована"
-        case .threatDetected: return "Угроза обнаружена"
-        case .suspiciousActivity: return "Подозрительная активность"
-        case .bypassAttempt: return "Попытка обхода"
-        case .familyMemberAdded: return "Новый член семьи"
-        case .familyChat: return "Семейный чат"
-        case .aiMessage: return "AI сообщение"
-        case .upgradeSuccess: return "Подписка активирована"
-        case .subscriptionRenewal: return "Продление подписки (−3/−1)"
-        case .trial: return "Trial reminder (−7/−3/−1)"
-        case .trialExpired: return "Trial истёк (дожим 0/+1/+3)"
-        case .subscriptionExpired: return "Подписка истекла (день 0)"
-        case .subscriptionExpiredD1: return "Подписка — дожим D+1"
-        case .subscriptionExpiredD3: return "Подписка — дожим D+3"
-        case .referralGrant: return "Рефка — дни защиты"
-        case .windDown: return "Спокойный вечер"
-        case .familyHabitReminder: return "Семейная привычка"
-        case .familyHabitDuePing: return "Привычка — due ping"
-        case .mnemoReview: return "Мнемоника SRS"
-        case .antifakePostCall: return "Antifake после звонка"
-        case .iotCompromised: return "IoT compromised"
-        case .antivirusScanComplete: return "Антивирус: скан OK/угрозы"
-        case .antivirusScanFailed: return "Антивирус: ошибка скана"
-        case .downloadedFileThreat: return "Подозрительный файл"
-        case .crashDetection: return "Crash detection"
+        case .softTest: return localizationManager.localized("notification_smoke_soft_test")
+        case .threatBlocked: return localizationManager.localized("push_threat_blocked_title")
+        case .threatDetected: return localizationManager.localized("push_threat_detected_title")
+        case .suspiciousActivity: return localizationManager.localized("push_suspicious_activity_title")
+        case .bypassAttempt: return localizationManager.localized("push_bypass_attempt_title")
+        case .familyMemberAdded: return localizationManager.localized("push_family_member_added_title")
+        case .familyChat: return localizationManager.localized("nav_screen_family_chat")
+        case .aiMessage: return localizationManager.localized("push_ai_assistant_title")
+        case .upgradeSuccess: return localizationManager.localized("push_upgrade_success_title")
+        case .subscriptionRenewal: return localizationManager.localized("notification_smoke_subscription_renewal")
+        case .trial: return localizationManager.localized("notification_smoke_trial")
+        case .trialExpired: return localizationManager.localized("notification_smoke_trial_expired")
+        case .subscriptionExpired: return localizationManager.localized("push_subscription_expired_now_title")
+        case .subscriptionExpiredD1: return localizationManager.localized("notification_smoke_subscription_d1")
+        case .subscriptionExpiredD3: return localizationManager.localized("notification_smoke_subscription_d3")
+        case .referralGrant: return localizationManager.localized("notification_smoke_referral_grant")
+        case .windDown: return localizationManager.localized("wind_down_push_title")
+        case .familyHabitReminder: return localizationManager.localized("notification_smoke_family_habit")
+        case .familyHabitDuePing: return localizationManager.localized("notification_smoke_family_habit_due")
+        case .mnemoReview: return localizationManager.localized("notification_smoke_mnemo_review")
+        case .antifakePostCall: return localizationManager.localized("antifake_post_call_title")
+        case .iotCompromised: return localizationManager.localized("push_iot_compromised_title")
+        case .antivirusScanComplete: return localizationManager.localized("push_antivirus_complete_title")
+        case .antivirusScanFailed: return localizationManager.localized("push_antivirus_failed_title")
+        case .downloadedFileThreat: return localizationManager.localized("push_downloaded_file_threat_title")
+        case .crashDetection: return localizationManager.localized("push_crash_detection_title")
         }
     }
 
@@ -162,8 +166,12 @@ enum NotificationSmokeKind: String, CaseIterable, Identifiable {
     @MainActor
     func fireSmoke() {
         let nm = NotificationManager.shared
-        let title = "🧪 \(number). \(titleRU)"
-        let body = "Smoke #\(number) type=\(typeKey) — цепочка local OK"
+        let title = "🧪 \(number). \(localizedTitle(LocalizationManager.shared))"
+        let body = String(
+            format: LocalizationManager.shared.localized("notification_smoke_body_fmt"),
+            number,
+            typeKey
+        )
         var info: [String: Any] = [
             "type": typeKey,
             "source": "notification_smoke_matrix",

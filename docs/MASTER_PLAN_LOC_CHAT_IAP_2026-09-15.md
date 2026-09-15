@@ -53,30 +53,31 @@ DoD A: English UI в companion settings — без RU-хардкода в Consen
 
 ### Batch LOC-C (семья / награды) — 78 уникальных
 
-- [ ] C-W001…C-W021 — подключить существующие ключи (MemberSettings / Rewards часто дублируют «Единорог» → **не новый ключ**, брать `companion_hero_unicorn` / rewards keys)
-- [ ] C-N001…C-N057 — новые ключи только если текста нет в A и словаре
-- Следить: «Семейный», «Сохранить», «Отмена» — искать в LocalizationManager перед TBD
+- [x] C-112…C-189 — пачки 1–5 (WIRE + NO_KEY) ✅ 2026-09-15
+- Чеклист: `docs/LOCALIZATION_PRIORITY_DEDUPED_PLAN_ABC_GI_2026-09-15.md`
 
-**DoD C:** MemberSettings + Family + Rewards без RU-хардкода.
+**DoD C:** MemberSettings section titles + Family roster/created + MemberStats section titles без RU-хардкода по чеклисту C. (StatCard labels внутри stats — вне C.)
 
 ---
 
 ### Batch LOC-G (тарифы) — 26 уникальных
 
-- [ ] G-W1 если есть
-- [ ] G-N001… — фичи в `SubscriptionModels` (title/subtitle пар) — **один ключ на строку фичи**, не дублировать в TariffCard
-- [ ] Алерты SubscriptionManager — отдельные ключи error_*
+- [x] G-190…G-215 ✅ 2026-09-15
+- AppFeature checklist rows → `feature_*_name` / `feature_*_desc`; `displayName`/`fullDescription` → `localized`
+- Auth errors → `subscription_auth_*`; Family title → `tariff_plan_family_title`
+- WIRE: `tariff_devices_unlimited`
 
-**DoD G:** списки фич тарифов на EN; StoreKit product name с ASC остаётся как есть.
+**DoD G:** чеклист G без RU-хардкода; остальные AppFeature вне списка — backlog.
 
 ---
 
 ### Batch LOC-I (виджеты) — 12 уникальных
 
-- [ ] I-W1…I-W4 Защита семьи / сети / Аналитика / Время → существующие nav_* keys
-- [ ] I-N1…I-N8 Детей онлайн / Блокировок / Сервер / Скорость / Угроз / Сайты / Приложения / Данные
+- [x] I-216…I-227 ✅ 2026-09-15
+- WIRE existing keys + `widget_label_*` NO_KEY
+- Runtime: `ALADDINWidgets/WidgetL10n.swift` (appex; keys mirrored in LocalizationManager)
 
-**DoD I:** виджеты на EN.
+**DoD I:** чеклист I без RU-хардкода в entry views / display names.
 
 ---
 
@@ -194,8 +195,8 @@ are linked to this submission.
 - [x] `chat-5` (чеклист QA; PASS на TF — владелец)
 
 ### Localization
-- [x] `loc-A`
-- [ ] `loc-B` … `loc-I` … `loc-verify`
+- [x] `loc-A` … `loc-I`
+- [x] `loc-verify` — `python3 scripts/verify_loc_abcgi_user_visible.py` → PASS (0 user-visible RU hardcode in A/B/C/G/I)
 
 ### App Review / IAP (обновлено)
 

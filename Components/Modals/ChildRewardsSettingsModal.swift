@@ -18,7 +18,7 @@ struct ChildRewardsSettingsModal: View {
             ZStack {
                 StormMeshBackground(variant: .growWarm)
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Заголовок
                         VStack(spacing: Spacing.xs) {

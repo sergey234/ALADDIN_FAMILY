@@ -18,7 +18,7 @@ struct CompanionLegalScreen: View {
     var body: some View {
         ZStack {
             StormMeshBackground(variant: .legal)
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: 16) {
                     Text(localizationManager.localized("companion_legal_title"))
                         .font(.title2.bold())

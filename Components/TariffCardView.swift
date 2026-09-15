@@ -26,6 +26,12 @@ struct TariffCardView: View {
             }
         }
     }
+
+    /// Device-count sentinel from models (never a localized UI string).
+    private static func isUnlimitedDeviceCount(_ raw: String) -> Bool {
+        let t = raw.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return t == "unlimited" || t == "∞"
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: 0) {
@@ -85,7 +91,7 @@ struct TariffCardView: View {
                         Text("•")
                             .foregroundColor(.textSecondary)
                         
-                        Text(card.devices == "Неограниченно" ? 
+                        Text(Self.isUnlimitedDeviceCount(card.devices) ?
                              localizationManager.localized("tariff_devices_unlimited") :
                              String(format: localizationManager.localized("tariff_card_devices"), card.devices))
                             .font(.caption)

@@ -28,7 +28,7 @@ struct FamilyProtectionWidget: Widget {
         StaticConfiguration(kind: kind, provider: FamilyProtectionProvider()) { entry in
             FamilyProtectionWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("Защита семьи")
+        .configurationDisplayName(WidgetL10n.localized("family_protection_accessibility"))
         .description("Статус защиты семьи и количество детей онлайн")
         .supportedFamilies([.systemSmall, .systemMedium])
     }
@@ -58,7 +58,7 @@ struct AnalyticsWidget: Widget {
         StaticConfiguration(kind: kind, provider: AnalyticsProvider()) { entry in
             AnalyticsWidgetEntryView(entry: entry)
         }
-        .configurationDisplayName("Аналитика")
+        .configurationDisplayName(WidgetL10n.localized("nav_screen_analytics"))
         .description("Статистика блокировок и угроз за день")
         .supportedFamilies([.systemSmall, .systemMedium, .systemLarge])
     }
@@ -272,7 +272,7 @@ struct FamilyProtectionWidgetEntryView: View {
                 HStack {
                     Text("🛡️")
                         .font(.title2)
-                    Text("Защита семьи")
+                    Text(WidgetL10n.localized("family_protection_accessibility"))
                         .font(.headline)
                         .foregroundColor(.white)
                     Spacer()
@@ -284,7 +284,7 @@ struct FamilyProtectionWidgetEntryView: View {
                 // Status
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text("Детей онлайн:")
+                        Text(WidgetL10n.localized("widget_label_children_online"))
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
                         Text("\(entry.childrenOnline)")
@@ -294,7 +294,7 @@ struct FamilyProtectionWidgetEntryView: View {
                     }
                     
                     HStack {
-                        Text("Блокировок:")
+                        Text(WidgetL10n.localized("widget_label_blocks"))
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
                         Text("\(entry.threatsBlocked)")
@@ -336,7 +336,7 @@ struct NetworkProtectionStatusWidgetEntryView: View {
                 HStack {
                     Text("🔒")
                         .font(.title2)
-                    Text("Защита сети")
+                    Text(WidgetL10n.localized("nav_screen_network_protection"))
                         .font(.headline)
                         .foregroundColor(.white)
                     Spacer()
@@ -348,7 +348,7 @@ struct NetworkProtectionStatusWidgetEntryView: View {
                 // Status
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text("Сервер:")
+                        Text(WidgetL10n.localized("widget_label_server"))
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
                         Text(entry.server)
@@ -358,7 +358,7 @@ struct NetworkProtectionStatusWidgetEntryView: View {
                     }
                     
                     HStack {
-                        Text("Скорость:")
+                        Text(WidgetL10n.localized("widget_label_speed"))
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
                         Text(entry.speed)
@@ -368,7 +368,7 @@ struct NetworkProtectionStatusWidgetEntryView: View {
                     }
                     
                     HStack {
-                        Text("Время:")
+                        Text(WidgetL10n.localized("elderly_appointments_time_label"))
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
                         Text(entry.uptime)
@@ -405,7 +405,7 @@ struct AnalyticsWidgetEntryView: View {
                 HStack {
                     Text("📊")
                         .font(.title2)
-                    Text("Аналитика")
+                    Text(WidgetL10n.localized("nav_screen_analytics"))
                         .font(.headline)
                         .foregroundColor(.white)
                     Spacer()
@@ -421,7 +421,7 @@ struct AnalyticsWidgetEntryView: View {
                 // Stats
                 VStack(alignment: .leading, spacing: 4) {
                     HStack {
-                        Text("Угроз:")
+                        Text(WidgetL10n.localized("widget_label_threats"))
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
                         Text("\(entry.threatsBlocked)")
@@ -431,7 +431,7 @@ struct AnalyticsWidgetEntryView: View {
                     }
                     
                     HStack {
-                        Text("Сайты:")
+                        Text(WidgetL10n.localized("widget_label_sites"))
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
                         Text("\(entry.websitesBlocked)")
@@ -441,7 +441,7 @@ struct AnalyticsWidgetEntryView: View {
                     }
                     
                     HStack {
-                        Text("Приложения:")
+                        Text(WidgetL10n.localized("widget_label_apps"))
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
                         Text("\(entry.appsBlocked)")
@@ -451,7 +451,7 @@ struct AnalyticsWidgetEntryView: View {
                     }
                     
                     HStack {
-                        Text("Данные:")
+                        Text(WidgetL10n.localized("widget_label_data"))
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.8))
                         Text(entry.dataSaved)

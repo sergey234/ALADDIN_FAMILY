@@ -777,7 +777,7 @@ struct CompanionConversationScreen: View {
                                 onSelectCharacter?(hero.id)
                                 Task { await loadState() }
                             } label: {
-                                Text("\(CompanionHeroRiveMapping.heroBaseEmoji(characterId: hero.id)) \(hero.displayName)")
+                                Text("\(CompanionHeroRiveMapping.heroBaseEmoji(characterId: hero.id)) \(hero.localizedDisplayName(localizationManager))")
                                     .font(.caption.weight(.semibold))
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 6)

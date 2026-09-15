@@ -66,7 +66,7 @@ struct FamilyContentBlockModal: View {
                 LinearGradient.backgroundGradient
                     .ignoresSafeArea()
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Заголовок
                         headerSection

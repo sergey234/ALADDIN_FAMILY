@@ -232,6 +232,7 @@
 		5EC309372EA6CCBD00C7D34B /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309332EA6CCBD00C7D34B /* Colors.swift */; };
 		5EC309392EA6CF0600C7D34B /* ALADDINNavigationBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */; };
 		5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */; };
+		A1B2C3D4E5F60718293A0012 /* NotificationCopyLocalizer.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A0011 /* NotificationCopyLocalizer.swift */; };
 		A1B2C3D4E5F60718293A0002 /* NotificationSmokeCatalog.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718293A0001 /* NotificationSmokeCatalog.swift */; };
 		5EC309432EA793A000C7D34B /* HapticFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309422EA793A000C7D34B /* HapticFeedback.swift */; };
 		5EC309472EA793D900C7D34B /* CornerRadius.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5EC309462EA793D900C7D34B /* CornerRadius.swift */; };
@@ -986,6 +987,7 @@
 		5EC309332EA6CCBD00C7D34B /* Colors.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINNavigationBar.swift; path = Shared/Components/Navigation/ALADDINNavigationBar.swift; sourceTree = "<group>"; };
 		5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationManager.swift; path = Core/Notifications/NotificationManager.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718293A0011 /* NotificationCopyLocalizer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationCopyLocalizer.swift; path = Core/Notifications/NotificationCopyLocalizer.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718293A0001 /* NotificationSmokeCatalog.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = NotificationSmokeCatalog.swift; path = Core/Notifications/NotificationSmokeCatalog.swift; sourceTree = "<group>"; };
 		5EC309422EA793A000C7D34B /* HapticFeedback.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = HapticFeedback.swift; path = Shared/Components/HapticFeedback.swift; sourceTree = "<group>"; };
 		5EC309442EA793AE00C7D34B /* ALADDINToggle.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ALADDINToggle.swift; path = Shared/Components/ALADDINToggle.swift; sourceTree = "<group>"; };
@@ -2169,6 +2171,7 @@
 				B6000100 /* IoT */,
 				5EC309382EA6CF0600C7D34B /* ALADDINNavigationBar.swift */,
 				5EC3093C2EA6D0F100C7D34B /* NotificationManager.swift */,
+				A1B2C3D4E5F60718293A0011 /* NotificationCopyLocalizer.swift */,
 				A1B2C3D4E5F60718293A0001 /* NotificationSmokeCatalog.swift */,
 				A3C000012F740041 /* NotificationNames.swift */,
 				A3C000012F740001 /* ActivityDigestService.swift */,
@@ -3047,6 +3050,7 @@
 				5E6F39342F15AF9100CEC103 /* ComponentToggleCard.swift in Sources */,
 				A3000053 /* ViewModels/TariffsViewModel.swift in Sources */,
 				5EC3093D2EA6D0F100C7D34B /* NotificationManager.swift in Sources */,
+				A1B2C3D4E5F60718293A0012 /* NotificationCopyLocalizer.swift in Sources */,
 				A1B2C3D4E5F60718293A0002 /* NotificationSmokeCatalog.swift in Sources */,
 				A3C000012F740042 /* NotificationNames.swift in Sources */,
 				A3C000012F740002 /* ActivityDigestService.swift in Sources */,

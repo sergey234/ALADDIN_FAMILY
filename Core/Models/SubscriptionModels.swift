@@ -1035,8 +1035,12 @@ struct AppFeature: Identifiable, Codable {
     let module: FeatureModule
     let isEnabled: Bool
 
-    var displayName: String { name }
-    var fullDescription: String { "\(category.emoji) \(name): \(description)" }
+    /// `name` / `description` may be localization keys (LOC-G+) or legacy RU fallback text.
+    var displayName: String { LocalizationManager.shared.localized(name) }
+    var fullDescription: String {
+        let lm = LocalizationManager.shared
+        return "\(category.emoji) \(lm.localized(name)): \(lm.localized(description))"
+    }
 }
 
 enum FeatureCategory: String, Codable, CaseIterable {
@@ -1136,7 +1140,7 @@ struct FeatureRegistry {
         AppFeature(id: "basic_ai_queries", name: "Базовые AI запросы", description: "Простые вопросы безопасности", requiredLevel: .free, category: .additionalFeatures, module: .aiAssistant, isEnabled: true),
         AppFeature(id: "security_tips", name: "Советы по безопасности", description: "Рекомендации по защите", requiredLevel: .free, category: .additionalFeatures, module: .aiAssistant, isEnabled: true),
         AppFeature(id: "basic_device_monitoring", name: "Базовый мониторинг устройства", description: "Основной контроль безопасности", requiredLevel: .free, category: .additionalFeatures, module: .analytics, isEnabled: true),
-        AppFeature(id: "security_alerts", name: "Предупреждения безопасности", description: "Базовые оповещения об угрозах", requiredLevel: .free, category: .additionalFeatures, module: .analytics, isEnabled: true)
+        AppFeature(id: "security_alerts", name: "feature_security_alerts_name", description: "feature_security_alerts_desc", requiredLevel: .free, category: .additionalFeatures, module: .analytics, isEnabled: true)
     ]
 
     // MARK: - PERSONAL Level (69 functions - 49%)
@@ -1146,7 +1150,7 @@ struct FeatureRegistry {
         AppFeature(id: "credit_card_fraud_protection", name: "Защита кредитных карт", description: "Предотвращение несанкционированного использования карт", requiredLevel: .personal, category: .threatProtection, module: .fraud, isEnabled: true),
         AppFeature(id: "identity_theft_prevention", name: "Предотвращение кражи личности", description: "Защита персональных данных", requiredLevel: .personal, category: .threatProtection, module: .fraud, isEnabled: true),
         AppFeature(id: "online_shopping_protection", name: "Защита онлайн-покупок", description: "Безопасность интернет-платежей", requiredLevel: .personal, category: .threatProtection, module: .fraud, isEnabled: true),
-        AppFeature(id: "fake_website_alerts", name: "Предупреждения о фальшивых сайтах", description: "Оповещения о подозрительных ресурсах", requiredLevel: .personal, category: .threatProtection, module: .fraud, isEnabled: true),
+        AppFeature(id: "fake_website_alerts", name: "feature_fake_website_alerts_name", description: "feature_fake_website_alerts_desc", requiredLevel: .personal, category: .threatProtection, module: .fraud, isEnabled: true),
         AppFeature(id: "transaction_monitoring", name: "Мониторинг транзакций", description: "Отслеживание финансовых операций", requiredLevel: .personal, category: .threatProtection, module: .fraud, isEnabled: true),
         AppFeature(id: "password_theft_detection", name: "Обнаружение кражи паролей", description: "Предупреждение о компрометации учетных данных", requiredLevel: .personal, category: .threatProtection, module: .fraud, isEnabled: true),
         AppFeature(id: "social_engineering_protection", name: "Защита от social engineering", description: "Предотвращение манипуляций", requiredLevel: .personal, category: .threatProtection, module: .fraud, isEnabled: true),
@@ -1157,14 +1161,14 @@ struct FeatureRegistry {
 
         // Data Leaks Protection (12)
         AppFeature(id: "personal_data_monitoring", name: "Мониторинг персональных данных", description: "Отслеживание утечек личной информации", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
-        AppFeature(id: "password_breach_alerts", name: "Предупреждения о breach паролей", description: "Оповещения о компрометации паролей", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
+        AppFeature(id: "password_breach_alerts", name: "feature_password_breach_alerts_name", description: "feature_password_breach_alerts_desc", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "email_address_leaks", name: "Утечки email адресов", description: "Мониторинг компрометации email", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "phone_number_exposure", name: "Разглашение номеров телефона", description: "Защита телефонных номеров", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "social_security_monitoring", name: "Мониторинг соцсетей", description: "Защита аккаунтов в соцсетях", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "database_breach_scanning", name: "Сканирование breach баз", description: "Проверка утечек в базах данных", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "dark_web_monitoring", name: "Мониторинг dark web", description: "Поиск данных в даркнете", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "data_broker_protection", name: "Защита от data brokers", description: "Предотвращение продажи данных", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
-        AppFeature(id: "identity_theft_alerts", name: "Предупреждения о краже личности", description: "Оповещения о подозрительной активности", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
+        AppFeature(id: "identity_theft_alerts", name: "feature_identity_theft_alerts_name", description: "feature_identity_theft_alerts_desc", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "credit_report_monitoring", name: "Мониторинг кредитных отчетов", description: "Защита кредитной истории", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "address_exposure_protection", name: "Защита адреса проживания", description: "Предотвращение разглашения адреса", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
         AppFeature(id: "birth_date_protection", name: "Защита даты рождения", description: "Контроль разглашения персональных дат", requiredLevel: .personal, category: .threatProtection, module: .dataLeaks, isEnabled: true),
@@ -1176,7 +1180,7 @@ struct FeatureRegistry {
         AppFeature(id: "threat_analysis_ai", name: "AI анализ угроз", description: "ИИ-powered анализ угроз", requiredLevel: .personal, category: .additionalFeatures, module: .aiAssistant, isEnabled: true),
         AppFeature(id: "security_recommendations", name: "Рекомендации по безопасности", description: "Персонализированные советы", requiredLevel: .personal, category: .additionalFeatures, module: .aiAssistant, isEnabled: true),
         AppFeature(id: "advanced_device_monitoring", name: "Расширенный мониторинг устройства", description: "Детальный контроль безопасности", requiredLevel: .personal, category: .additionalFeatures, module: .analytics, isEnabled: true),
-        AppFeature(id: "custom_security_alerts", name: "Пользовательские оповещения", description: "Настраиваемые уведомления безопасности", requiredLevel: .personal, category: .additionalFeatures, module: .analytics, isEnabled: true),
+        AppFeature(id: "custom_security_alerts", name: "feature_custom_security_alerts_name", description: "feature_custom_security_alerts_desc", requiredLevel: .personal, category: .additionalFeatures, module: .analytics, isEnabled: true),
 
         // Additional PERSONAL functions (to reach 43 total additional)
         AppFeature(id: "personal_device_backup", name: "Резервное копирование", description: "Автоматическое резервное копирование данных", requiredLevel: .personal, category: .additionalFeatures, module: .backup, isEnabled: true),
@@ -1201,14 +1205,14 @@ struct FeatureRegistry {
         AppFeature(id: "predator_detection", name: "Обнаружение хищников", description: "Защита от опасных контактов", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
         AppFeature(id: "grooming_prevention", name: "Предотвращение grooming", description: "Защита от онлайн-груминга", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
         AppFeature(id: "sexting_detection", name: "Обнаружение sexting", description: "Мониторинг опасных сообщений", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
-        AppFeature(id: "cyberbullying_alerts", name: "Предупреждения о кибербуллинге", description: "Оповещения о травле", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
+        AppFeature(id: "cyberbullying_alerts", name: "feature_cyberbullying_alerts_name", description: "feature_cyberbullying_alerts_desc", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
         AppFeature(id: "inappropriate_apps_blocking", name: "Блокировка неподходящих приложений", description: "Контроль установленных приложений", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
         AppFeature(id: "gambling_sites_blocking", name: "Блокировка сайтов азартных игр", description: "Защита от игровых сайтов", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
         AppFeature(id: "adult_content_filtering", name: "Фильтрация взрослого контента", description: "Блокировка 18+ материалов", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
         AppFeature(id: "violence_content_blocking", name: "Блокировка контента с насилием", description: "Защита от агрессивного контента", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
         AppFeature(id: "hate_speech_detection", name: "Обнаружение hate speech", description: "Фильтрация разжигающего ненависть контента", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
         AppFeature(id: "self_harm_content_filtering", name: "Фильтрация контента о self-harm", description: "Защита от опасного контента", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
-        AppFeature(id: "suicide_prevention_alerts", name: "Предупреждения о суициде", description: "Мониторинг опасных тем", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
+        AppFeature(id: "suicide_prevention_alerts", name: "feature_suicide_prevention_alerts_name", description: "feature_suicide_prevention_alerts_desc", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
         AppFeature(id: "eating_disorders_monitoring", name: "Мониторинг расстройств пищевого поведения", description: "Защита от опасного контента", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
         AppFeature(id: "drug_abuse_detection", name: "Обнаружение drug abuse", description: "Мониторинг наркотической тематики", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
         AppFeature(id: "alcohol_abuse_monitoring", name: "Мониторинг alcohol abuse", description: "Защита от алкогольной тематики", requiredLevel: .family, category: .threatProtection, module: .childThreats, isEnabled: true),
@@ -1249,10 +1253,10 @@ struct FeatureRegistry {
         AppFeature(id: "family_educational_reports", name: "Образовательные отчеты", description: "Подробные отчеты об обучении", requiredLevel: .family, category: .parentalControl, module: .educationalTools, isEnabled: true),
         AppFeature(id: "family_emergency_protocols", name: "Протоколы ЧС", description: "Планы действий при чрезвычайных ситуациях", requiredLevel: .family, category: .parentalControl, module: .emergencyFeatures, isEnabled: true),
         AppFeature(id: "family_safety_drills", name: "Тренировки безопасности", description: "Регулярные учения по безопасности", requiredLevel: .family, category: .parentalControl, module: .emergencyFeatures, isEnabled: true),
-        AppFeature(id: "family_emergency_alerts", name: "Экстренные оповещения", description: "Срочные уведомления для семьи", requiredLevel: .family, category: .parentalControl, module: .emergencyFeatures, isEnabled: true),
-        AppFeature(id: "family_medical_alerts", name: "Медицинские оповещения", description: "Здравоохранные предупреждения", requiredLevel: .family, category: .parentalControl, module: .emergencyFeatures, isEnabled: true),
-        AppFeature(id: "family_weather_alerts", name: "Погодные предупреждения", description: "Оповещения о неблагоприятных погодных условиях", requiredLevel: .family, category: .parentalControl, module: .emergencyFeatures, isEnabled: true),
-        AppFeature(id: "family_community_alerts", name: "Общественные предупреждения", description: "Информация о местных событиях", requiredLevel: .family, category: .parentalControl, module: .emergencyFeatures, isEnabled: true),
+        AppFeature(id: "family_emergency_alerts", name: "feature_family_emergency_alerts_name", description: "feature_family_emergency_alerts_desc", requiredLevel: .family, category: .parentalControl, module: .emergencyFeatures, isEnabled: true),
+        AppFeature(id: "family_medical_alerts", name: "feature_family_medical_alerts_name", description: "feature_family_medical_alerts_desc", requiredLevel: .family, category: .parentalControl, module: .emergencyFeatures, isEnabled: true),
+        AppFeature(id: "family_weather_alerts", name: "feature_family_weather_alerts_name", description: "feature_family_weather_alerts_desc", requiredLevel: .family, category: .parentalControl, module: .emergencyFeatures, isEnabled: true),
+        AppFeature(id: "family_community_alerts", name: "feature_family_community_alerts_name", description: "feature_family_community_alerts_desc", requiredLevel: .family, category: .parentalControl, module: .emergencyFeatures, isEnabled: true),
         AppFeature(id: "family_backup_communication", name: "Резервная связь", description: "Альтернативные способы коммуникации", requiredLevel: .family, category: .parentalControl, module: .emergencyFeatures, isEnabled: true),
         AppFeature(id: "family_emergency_kit_tracking", name: "Отслеживание аварийного набора", description: "Контроль наличия необходимых вещей", requiredLevel: .family, category: .parentalControl, module: .emergencyFeatures, isEnabled: true),
         AppFeature(id: "family_meeting_scheduler", name: "Планировщик встреч", description: "Организация семейных собраний", requiredLevel: .family, category: .parentalControl, module: .familySharing, isEnabled: true),

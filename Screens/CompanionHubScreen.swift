@@ -147,8 +147,8 @@ struct CompanionHubScreen: View {
                                 HStack(spacing: 16) {
                                     CompanionHubHeroPreview(characterId: hero.id, diameter: 88)
                                     VStack(alignment: .leading, spacing: 4) {
-                                        Text(hero.displayName).font(.headline)
-                                        Text(hero.tagline).font(.subheadline).opacity(0.85)
+                                        Text(hero.localizedDisplayName(localizationManager)).font(.headline)
+                                        Text(hero.localizedTagline(localizationManager)).font(.subheadline).opacity(0.85)
                                         Text(heroStyleCaption(for: hero.id))
                                             .font(.caption)
                                             .foregroundStyle(.white.opacity(0.75))
@@ -167,7 +167,7 @@ struct CompanionHubScreen: View {
                             }
                             .buttonStyle(.plain)
                             .accessibilityLabel(
-                                "\(hero.displayName). \(hero.tagline). \(heroStyleCaption(for: hero.id))"
+                                "\(hero.localizedDisplayName(localizationManager)). \(hero.localizedTagline(localizationManager)). \(heroStyleCaption(for: hero.id))"
                             )
                         }
                     }

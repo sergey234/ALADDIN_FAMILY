@@ -16,6 +16,19 @@ struct CompanionCharacterDTO: Codable, Identifiable, Equatable {
         case available
         case minSubscription = "min_subscription"
     }
+
+    /// API may return RU names; UI always resolves via LocalizationManager.
+    func localizedDisplayName(_ localizationManager: LocalizationManager) -> String {
+        let key = "companion_hero_\(id)"
+        let localized = localizationManager.localized(key)
+        return localized == key ? displayName : localized
+    }
+
+    func localizedTagline(_ localizationManager: LocalizationManager) -> String {
+        let key = "companion_hero_tagline_\(id)"
+        let localized = localizationManager.localized(key)
+        return localized == key ? tagline : localized
+    }
 }
 
 struct CompanionCharactersResponse: Codable {
