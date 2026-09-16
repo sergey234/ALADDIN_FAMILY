@@ -1,0 +1,12 @@
+[Unit]
+Description=ALADDIN OPS Command Center ×3 (09:00 / 14:00 / 21:00 Europe/Moscow)
+
+[Timer]
+OnCalendar=*-*-* 09:00:00 Europe/Moscow
+OnCalendar=*-*-* 14:00:00 Europe/Moscow
+OnCalendar=*-*-* 21:00:00 Europe/Moscow
+Persistent=true
+Unit=aladdin-vpn-ops-command-center.service
+
+[Install]
+WantedBy=timers.target
