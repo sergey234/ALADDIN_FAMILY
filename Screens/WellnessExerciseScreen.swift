@@ -114,7 +114,7 @@ struct WellnessExerciseScreen: View {
                     VStack(alignment: .leading, spacing: 6) {
                         Text(item.exerciseId.replacingOccurrences(of: "_", with: " "))
                             .font(.subheadline.bold())
-                        if let hint = item.introHint, !hint.isEmpty {
+                        if let hint = localizedExerciseIntroHint(item), !hint.isEmpty {
                             Text(hint).font(.caption).foregroundColor(.white.opacity(0.85))
                         }
                     }
@@ -212,6 +212,25 @@ struct WellnessExerciseScreen: View {
         }
 
         await loadCatalogOnly()
+    }
+
+    private func localizedExerciseIntroHint(_ item: WellnessExerciseCatalogItem) -> String? {
+        if item.exerciseId == "dream_note_lite" {
+            if localizationManager.currentLanguage == .english {
+                return localizationManager.localized("wellness_exercise_dream_note_lite_intro")
+            }
+            if let hint = item.introHint, !hint.isEmpty { return hint }
+            return localizationManager.localized("wellness_exercise_dream_note_lite_intro")
+        }
+        if localizationManager.currentLanguage == .english,
+           let hint = item.introHint,
+           hint.unicodeScalars.contains(where: { $0.value >= 0x0400 && $0.value <= 0x04FF }) {
+            // Prefer local key if we have one; otherwise hide Cyrillic leak.
+            let key = "wellness_exercise_\(item.exerciseId)_intro"
+            let localized = localizationManager.localized(key)
+            return localized == key ? nil : localized
+        }
+        return item.introHint
     }
 
     private func loadCatalogOnly() async {

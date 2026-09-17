@@ -98,6 +98,18 @@ def wellness_crisis_message(locale: str = "ru") -> str:
         return ""
 
 
+def wellness_crisis_hero_phrase(character_id: str, locale: str = "ru") -> str:
+    """fws-h03 — per-hero L3 opener from crisis_hero_phrases_v1.json."""
+    try:
+        data = _load_json("crisis_hero_phrases_v1.json")
+        hero = (character_id or "unicorn").strip().lower()
+        block = (data.get("phrases") or {}).get(hero) or {}
+        loc = normalize_wellness_locale(locale)
+        return str(block.get(loc) or block.get("ru") or "")
+    except (OSError, json.JSONDecodeError, KeyError):
+        return ""
+
+
 def wellness_crisis_deep_blocked(locale: str = "ru") -> str:
     try:
         data = _load_json("crisis_v1.json")
@@ -208,6 +220,8 @@ def exercise_title_i18n(exercise_id: str, locale: str = "ru") -> str:
         return exercise_id
     title = meta.get("title") or {}
     loc = normalize_wellness_locale(locale)
+    if loc == "en":
+        return str(title.get("en") or exercise_id)
     return str(title.get(loc) or title.get("ru") or exercise_id)
 
 
@@ -223,6 +237,9 @@ def i18n_block_text(block: Optional[Dict[str, Any]], locale: str, *, default: st
     if not block:
         return default
     loc = normalize_wellness_locale(locale)
+    # EN: never silently fall back to Russian (leaks RU onto English clients).
+    if loc == "en":
+        return str(block.get("en") or default)
     return str(block.get(loc) or block.get("ru") or default)
 
 
@@ -266,6 +283,8 @@ def get_referral_payload_from_i18n(*, locale: str = "ru", level: str = "L2") -> 
                 "phone": str(row.get("phone") or ""),
             }
         )
+    if str(level or "").upper() == "L3":
+        lines = [line for line in lines if line.get("id") in ("112", "child_helpline")]
     return {
         "level": level,
         "locale": loc,

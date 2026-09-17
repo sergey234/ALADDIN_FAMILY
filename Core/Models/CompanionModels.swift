@@ -141,19 +141,39 @@ struct CompanionLegalSection: Codable, Identifiable, Equatable {
                 body: localizationManager.localized("companion_legal_offline_ai_body")
             ),
             CompanionLegalSection(
+                id: "parental_control",
+                title: localizationManager.localized("companion_legal_offline_parental_title"),
+                body: localizationManager.localized("companion_legal_offline_parental_body")
+            ),
+            CompanionLegalSection(
                 id: "coppa_152fz",
-                title: localizationManager.localized("companion_legal_offline_parent_title"),
-                body: localizationManager.localized("companion_legal_offline_parent_body")
+                title: localizationManager.localized("companion_legal_offline_coppa_title"),
+                body: localizationManager.localized("companion_legal_offline_coppa_body")
+            ),
+            CompanionLegalSection(
+                id: "data_retention",
+                title: localizationManager.localized("companion_legal_offline_storage_title"),
+                body: localizationManager.localized("companion_legal_offline_storage_body")
             ),
             CompanionLegalSection(
                 id: "voice_recognition_primary",
-                title: localizationManager.localized("companion_legal_offline_voice_title"),
-                body: localizationManager.localized("companion_legal_offline_voice_body")
+                title: localizationManager.localized("companion_legal_offline_voice_primary_title"),
+                body: localizationManager.localized("companion_legal_offline_voice_primary_body")
             ),
             CompanionLegalSection(
-                id: "wellness_disclaimer",
-                title: localizationManager.localized("companion_legal_offline_wellness_title"),
-                body: localizationManager.localized("companion_legal_offline_wellness_body")
+                id: "voice_stt_fallback",
+                title: localizationManager.localized("companion_legal_offline_voice_fallback_title"),
+                body: localizationManager.localized("companion_legal_offline_voice_fallback_body")
+            ),
+            CompanionLegalSection(
+                id: "voice_privacy_summary",
+                title: localizationManager.localized("companion_legal_offline_voice_brief_title"),
+                body: localizationManager.localized("companion_legal_offline_voice_brief_body")
+            ),
+            CompanionLegalSection(
+                id: "store_disclosure",
+                title: localizationManager.localized("companion_legal_offline_store_title"),
+                body: localizationManager.localized("companion_legal_offline_store_body")
             ),
         ]
     }
@@ -799,7 +819,7 @@ struct CompanionProfileSettings: Codable, Equatable {
     ]
 
     var personalityDisplayName: String {
-        Self.presetLabels[personalityPreset] ?? personalityPreset
+        LocalizationManager.shared.localized("companion_preset_\(personalityPreset)")
     }
 }
 

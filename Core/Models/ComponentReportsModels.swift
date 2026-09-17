@@ -550,11 +550,8 @@ enum LocationAccuracy: String, Codable {
     case low = "low" // 500м
     
     var displayName: String {
-        switch self {
-        case .high: return "Высокая (100м)"
-        case .medium: return "Средняя (300м)"
-        case .low: return "Низкая (500м)"
-        }
+        // Prefer app language — hardcoded RU leaked onto EN Location tab.
+        localizedDisplayName(LocalizationManager.shared)
     }
     
     var meters: Int {

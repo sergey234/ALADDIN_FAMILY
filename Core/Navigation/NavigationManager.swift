@@ -73,7 +73,7 @@ class NavigationManager: ObservableObject {
 
         // Основные экраны
         case main = "01_MainScreen"
-        /// Hybrid Simple Home Shell — лаунчер «Простая версия» (4 плитки + Ещё).
+        /// Hybrid Simple Home Shell — лаунчер «Удобный режим» (4 плитки + Ещё).
         case simpleHome = "SimpleHomeScreen"
         case family = "02_FamilyScreen"
         case familyList = "FamilyListScreen"
@@ -159,7 +159,7 @@ class NavigationManager: ObservableObject {
             switch self {
             case .loading: return "Загрузка"
             case .main: return "Главная"
-            case .simpleHome: return "Простая версия"
+            case .simpleHome: return "Удобный режим"
             case .family: return "Семья"
             case .familyList: return "Список"
             case .networkProtection: return "Защита сети"
@@ -172,7 +172,7 @@ class NavigationManager: ObservableObject {
             case .parentalControl: return "Родительский контроль"
             case .childInterface: return "Детский интерфейс"
             case .childContent: return "Контент для детей"
-            case .elderlyInterface: return "Пожилой интерфейс"
+            case .elderlyInterface: return LocalizationManager.shared.localized("nav_screen_elderly_interface")
             case .tariffs: return "Тарифы"
             case .profile: return "Профиль"
             case .notifications: return "Уведомления"
@@ -437,7 +437,7 @@ class NavigationManager: ObservableObject {
         navigateTo(.companionHome)
     }
 
-    /// Simple Home Shell — лаунчер «Простая версия».
+    /// Simple Home Shell — лаунчер «Удобный режим».
     func navigateToSimpleHome() {
         navigateTo(.simpleHome)
     }

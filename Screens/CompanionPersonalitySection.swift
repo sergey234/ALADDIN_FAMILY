@@ -34,13 +34,31 @@ struct CompanionPersonalitySection: View {
                 VStack(alignment: .leading, spacing: 6) {
                     Text(localizationManager.localized("companion_personality_style"))
                         .font(.subheadline.weight(.semibold))
-                    Picker(localizationManager.localized("companion_personality_style"), selection: $personalityPreset) {
+                    // Wrapping chips — avoids 5-segment overlap/truncation on narrow widths.
+                    LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 8) {
                         ForEach(availablePresets, id: \.self) { preset in
-                            Text(CompanionProfileSettings.presetLabels[preset] ?? preset)
-                                .tag(preset)
+                            let selected = personalityPreset == preset
+                            Button {
+                                personalityPreset = preset
+                            } label: {
+                                Text(localizationManager.localized("companion_preset_\(preset)"))
+                                    .font(.subheadline.weight(.semibold))
+                                    .lineLimit(1)
+                                    .minimumScaleFactor(0.85)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 10)
+                                    .padding(.horizontal, 8)
+                                    .foregroundColor(selected ? .white : .textPrimary)
+                                    .background(
+                                        RoundedRectangle(cornerRadius: 10)
+                                            .fill(selected ? Color.secondaryGold.opacity(0.95) : Color.backgroundMedium.opacity(0.35))
+                                    )
+                            }
+                            .buttonStyle(.plain)
+                            .accessibilityLabel(localizationManager.localized("companion_preset_\(preset)"))
+                            .accessibilityAddTraits(selected ? .isSelected : [])
                         }
                     }
-                    .pickerStyle(.segmented)
                 }
 
                 Toggle(isOn: $securityExpertMode) {

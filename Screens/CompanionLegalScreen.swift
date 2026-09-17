@@ -127,12 +127,25 @@ struct CompanionLegalScreen: View {
         isLoading = true
         errorText = nil
         defer { isLoading = false }
+        let locale = localizationManager.aiResponseLanguageCode
         do {
-            let resp = try await CompanionAPIService.shared.fetchLegal()
-            sections = resp.sections
+            let resp = try await CompanionAPIService.shared.fetchLegal(locale: locale)
+            let apiSections = resp.sections
+            // If app is EN but API still returns Cyrillic (server ignores locale), use offline EN copy.
+            if locale.lowercased().hasPrefix("en"),
+               apiSections.contains(where: { sectionLooksCyrillic($0) }) {
+                sections = CompanionLegalSection.offlineFallback(localizationManager: localizationManager)
+            } else {
+                sections = apiSections
+            }
         } catch {
             sections = CompanionLegalSection.offlineFallback(localizationManager: localizationManager)
             errorText = nil
         }
+    }
+
+    private func sectionLooksCyrillic(_ section: CompanionLegalSection) -> Bool {
+        let sample = section.title + " " + section.body
+        return sample.unicodeScalars.contains { $0.value >= 0x0400 && $0.value <= 0x04FF }
     }
 }

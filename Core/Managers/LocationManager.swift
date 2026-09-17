@@ -31,21 +31,22 @@ enum LocationManagerError: LocalizedError {
     case regionMonitoringFailed(identifier: String)
     
     var errorDescription: String? {
+        let loc = LocalizationManager.shared
         switch self {
         case .authorizationDenied:
-            return "Доступ к геолокации запрещен. Разрешите доступ в настройках."
+            return loc.localized("location_error_denied")
         case .authorizationRestricted:
-            return "Доступ к геолокации ограничен."
+            return loc.localized("location_error_restricted")
         case .locationUnavailable:
-            return "Геолокация недоступна на этом устройстве."
+            return loc.localized("location_error_unavailable")
         case .significantChangeUnavailable:
-            return "Significant-Change Location Service недоступен."
+            return loc.localized("location_error_significant_change_unavailable")
         case .tooManyRegions(let maxAllowed):
-            return "Превышен лимит геозон. Максимум: \(maxAllowed)."
+            return loc.localized("location_error_too_many_regions", maxAllowed)
         case .invalidRegion(let radius):
-            return "Недопустимый радиус геозоны: \(radius) метров. Минимум: 100 метров."
+            return loc.localized("location_error_invalid_region", radius)
         case .regionMonitoringFailed(let identifier):
-            return "Не удалось начать мониторинг геозоны: \(identifier)."
+            return loc.localized("location_error_region_monitoring_failed", identifier)
         }
     }
 }

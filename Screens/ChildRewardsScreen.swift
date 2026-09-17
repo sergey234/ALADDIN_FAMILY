@@ -1541,8 +1541,17 @@ struct ChildRewardsScreen: View {
             }
         }) {
             HStack(spacing: Spacing.m) {
-                Text(reward.icon)
-                    .font(.system(size: 32))
+                Group {
+                    if reward.icon.contains(".") {
+                        Image(systemName: reward.icon)
+                            .font(.system(size: 28))
+                            .foregroundColor(.textPrimary)
+                            .frame(width: 36, height: 36)
+                    } else {
+                        Text(reward.icon)
+                            .font(.system(size: 32))
+                    }
+                }
                 
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text(title)

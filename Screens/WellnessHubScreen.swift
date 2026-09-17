@@ -284,7 +284,10 @@ struct WellnessHubScreen: View {
         if idleNudge?.showIdleNudge == true,
            let title = idleNudge?.nudgeTitle,
            let body = idleNudge?.nudgeBody {
-            idleNudgeBanner(title: title, body: body)
+            idleNudgeBanner(
+                title: localizedIdleNudgeTitle(title),
+                body: localizedIdleNudgeBody(body)
+            )
         }
         if let recapMessage = hubRecapMessage, !recapMessage.isEmpty {
             Text(recapMessage)
@@ -1122,6 +1125,26 @@ struct WellnessHubScreen: View {
             suggestPhq = t.suggestPhqLite
             idleNudge = t
         }
+    }
+
+    /// Prefer app-language copy when API still returns Russian nudge (locale ignored on server).
+    private func localizedIdleNudgeTitle(_ apiTitle: String) -> String {
+        if localizationManager.currentLanguage == .english {
+            let ruKnown = ["Давно не виделись", "Давно не виделись!"]
+            if ruKnown.contains(apiTitle) || apiTitle.unicodeScalars.contains(where: { $0.value >= 0x0400 && $0.value <= 0x04FF }) {
+                return localizationManager.localized("wellness_nudge_idle_title")
+            }
+        }
+        return apiTitle.isEmpty ? localizationManager.localized("wellness_nudge_idle_title") : apiTitle
+    }
+
+    private func localizedIdleNudgeBody(_ apiBody: String) -> String {
+        if localizationManager.currentLanguage == .english {
+            if apiBody.contains("Давно не") || apiBody.unicodeScalars.contains(where: { $0.value >= 0x0400 && $0.value <= 0x04FF }) {
+                return localizationManager.localized("wellness_nudge_idle_body")
+            }
+        }
+        return apiBody.isEmpty ? localizationManager.localized("wellness_nudge_idle_body") : apiBody
     }
 
     private func idleNudgeBanner(title: String, body: String) -> some View {

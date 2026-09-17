@@ -44,11 +44,12 @@ struct FamilyMemberCard: View {
         case elderly     // Пожилой
         
         var label: String {
+            let loc = LocalizationManager.shared
             switch self {
-            case .parent: return "Родитель"
-            case .child: return "Ребёнок"
-            case .teenager: return "Подросток"
-            case .elderly: return "Пожилой"
+            case .parent: return loc.localized("family_role_parent_label")
+            case .child: return loc.localized("family_role_child_label")
+            case .teenager: return loc.localized("family_role_teen_label")
+            case .elderly: return loc.localized("family_role_elderly_label")
             }
         }
         

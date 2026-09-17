@@ -1,5 +1,19 @@
 import SwiftUI
 
+/// SF Symbol name (contains ".") → Image; otherwise emoji/text.
+/// File-level so `RewardsModalView` and `ShopManagementModal` both compile.
+@ViewBuilder
+fileprivate func rewardShopIconView(_ icon: String, size: CGFloat) -> some View {
+    if icon.contains(".") {
+        Image(systemName: icon)
+            .font(.system(size: size * 0.85))
+            .foregroundColor(.textPrimary)
+    } else {
+        Text(icon)
+            .font(.system(size: size))
+    }
+}
+
 /// 🦄 Rewards Modal View
 /// Модальное окно управления вознаграждениями ребёнка (ТОЛЬКО ДЛЯ РОДИТЕЛЕЙ!)
 /// Источник дизайна: GAMIFICATION_NAVIGATION_ARCHITECTURE.md
@@ -121,7 +135,7 @@ struct RewardsModalView: View {
                     .accessibilityElement(children: .ignore)
                     .accessibilityLabel("Фон модального окна вознаграждений")
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Баланс единорогов
                         balanceCard
@@ -538,8 +552,7 @@ struct RewardsModalView: View {
         let localizedDesc = reward.wrappedValue.localizedDescription(localizationManager)
         return VStack(alignment: .leading, spacing: Spacing.s) {
             HStack(spacing: Spacing.m) {
-                Text(reward.icon.wrappedValue)
-                    .font(.system(size: 24))
+                rewardShopIconView(reward.icon.wrappedValue, size: 24)
                 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
                     Text(localizedTitle)
@@ -793,8 +806,7 @@ struct RewardsModalView: View {
     private func rewardPreviewCard(reward: ShopReward) -> some View {
         let title = reward.localizedTitle(localizationManager)
         return VStack(spacing: Spacing.xs) {
-            Text(reward.icon)
-                .font(.system(size: 32))
+            rewardShopIconView(reward.icon, size: 32)
             
             Text(title)
                 .font(.caption)
@@ -1949,7 +1961,7 @@ struct RewardInputModal: View {
             ZStack {
                 StormMeshBackground(variant: .growWarm)
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         Text(localizationManager.localized("rewards_modal_reward_child_title"))
                             .font(.h2)
@@ -2143,7 +2155,7 @@ struct PunishInputModal: View {
             ZStack {
                 StormMeshBackground(variant: .growWarm)
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         Text(localizationManager.localized("rewards_modal_punish_child_title"))
                             .font(.h2)
@@ -2311,7 +2323,7 @@ struct ShopManagementModal: View {
             ZStack {
                 StormMeshBackground(variant: .growWarm)
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Инструкция
                         VStack(alignment: .leading, spacing: Spacing.s) {
@@ -2424,8 +2436,7 @@ struct ShopManagementModal: View {
         
         return VStack(spacing: Spacing.m) {
             HStack(spacing: Spacing.m) {
-                Text(reward.icon.wrappedValue)
-                    .font(.system(size: 40))
+                rewardShopIconView(reward.icon.wrappedValue, size: 40)
                     .frame(width: 50)
                 
                 VStack(alignment: .leading, spacing: Spacing.xs) {
@@ -2533,7 +2544,7 @@ struct AddRewardModal: View {
             ZStack {
                 StormMeshBackground(variant: .growWarm)
 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         VStack(alignment: .leading, spacing: Spacing.m) {
                             Text(localizationManager.localized("child_rewards_shop_field_icon"))
@@ -2659,7 +2670,7 @@ struct EditRewardModal: View {
             ZStack {
                 StormMeshBackground(variant: .growWarm)
 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         VStack(alignment: .leading, spacing: Spacing.m) {
                             Text(localizationManager.localized("child_rewards_shop_field_icon"))

@@ -1381,7 +1381,6 @@ struct CompanionConversationScreen: View {
 
     private func loadState() async {
         isLoadingState = true
-        defer { isLoadingState = false }
         if !activeThreadId.isEmpty {
             sessionId = activeThreadId
             await loadThreadHistory(threadId: activeThreadId)
@@ -1413,6 +1412,8 @@ struct CompanionConversationScreen: View {
         } catch {
             errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)
         }
+        // Unlock UI after core state; secondary network must not keep the loading overlay.
+        isLoadingState = false
         await loadWellnessRecapIfNeeded()
         await loadCompanionMemoryChipsIfNeeded()
         await refreshCrisisCooldownStatus()

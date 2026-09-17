@@ -935,8 +935,23 @@ struct DeleteAccountView: View {
     @State private var isDeleting: Bool = false
     @State private var errorMessage: String? = nil
     @State private var showSuccessAlert: Bool = false
-    
-    private var confirmTextRequired: String {
+    @State private var showFinalConfirm: Bool = false
+    @FocusState private var isConfirmFieldFocused: Bool
+
+    /// Accept both RU and EN keywords so App Review / language mismatch never blocks delete.
+    private static let acceptedKeywords: Set<String> = ["УДАЛИТЬ", "DELETE"]
+
+    private var normalizedConfirmText: String {
+        confirmText
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+            .uppercased()
+    }
+
+    private var isConfirmationValid: Bool {
+        Self.acceptedKeywords.contains(normalizedConfirmText)
+    }
+
+    private var preferredConfirmKeyword: String {
         localizationManager.currentLanguage == .russian ? "УДАЛИТЬ" : "DELETE"
     }
     
@@ -949,10 +964,30 @@ struct DeleteAccountView: View {
                 }
                 Section(header: Text(localizationManager.localized("profile_delete_confirm"))) {
                     TextField(localizationManager.localized("delete_account_confirm_placeholder"), text: $confirmText)
+                        .textInputAutocapitalization(.characters)
+                        .autocorrectionDisabled(true)
+                        .textContentType(.none)
                         .disabled(isDeleting)
+                        .focused($isConfirmFieldFocused)
+                        .submitLabel(.done)
+                        .onSubmit {
+                            if isConfirmationValid { deleteAccount() }
+                        }
                     Text(localizationManager.localized("profile_delete_confirm_text"))
                         .font(.caption)
-                        .foregroundColor(.gray)
+                        .foregroundColor(.secondary)
+                    HStack(spacing: 6) {
+                        Image(systemName: isConfirmationValid ? "checkmark.circle.fill" : "circle")
+                            .foregroundColor(isConfirmationValid ? .green : .secondary)
+                        Text(
+                            isConfirmationValid
+                                ? localizationManager.localized("delete_account_confirm_ready")
+                                : localizationManager.localized("delete_account_confirm_hint", preferredConfirmKeyword)
+                        )
+                        .font(.caption)
+                        .foregroundColor(isConfirmationValid ? .green : .secondary)
+                    }
+                    .accessibilityElement(children: .combine)
                 }
                 
                 if let errorMessage = errorMessage {
@@ -962,22 +997,32 @@ struct DeleteAccountView: View {
                             .font(.caption)
                     }
                 }
-                
-                Button(localizationManager.localized("delete_account_button")) {
-                    deleteAccount()
-                }
-                .buttonStyle(.borderedProminent)
-                .foregroundColor(.red)
-                .disabled(confirmText.uppercased() != confirmTextRequired || isDeleting)
-                .overlay {
-                    if isDeleting {
-                        ProgressView()
-                            .progressViewStyle(CircularProgressViewStyle(tint: .white))
+
+                Section {
+                    Button(role: .destructive) {
+                        isConfirmFieldFocused = false
+                        showFinalConfirm = true
+                    } label: {
+                        HStack {
+                            Spacer()
+                            if isDeleting {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle())
+                            } else {
+                                Text(localizationManager.localized("delete_account_button"))
+                                    .fontWeight(.semibold)
+                            }
+                            Spacer()
+                        }
                     }
+                    .disabled(!isConfirmationValid || isDeleting)
+                    .opacity(isConfirmationValid && !isDeleting ? 1.0 : 0.45)
+                    .accessibilityIdentifier("delete_account_confirm_button")
+                    .id("deleteAccountCTA")
                 }
             }
-            .padding()
             .navigationTitle(localizationManager.localized("delete_account_title"))
+            .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .navigationBarLeading) {
                     Button(localizationManager.localized("delete_account_cancel")) {
@@ -985,8 +1030,34 @@ struct DeleteAccountView: View {
                     }
                     .disabled(isDeleting)
                 }
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button(localizationManager.localized("delete_account_keyboard_done")) {
+                        isConfirmFieldFocused = false
+                    }
+                }
             }
             .id("delete_account_lang_\(localizationManager.currentLanguage.rawValue)")
+            .onAppear {
+                isConfirmFieldFocused = true
+            }
+            .onChange(of: isConfirmationValid) { valid in
+                if valid {
+                    isConfirmFieldFocused = false
+                }
+            }
+            .confirmationDialog(
+                localizationManager.localized("delete_account_final_title"),
+                isPresented: $showFinalConfirm,
+                titleVisibility: .visible
+            ) {
+                Button(localizationManager.localized("delete_account_final_confirm"), role: .destructive) {
+                    deleteAccount()
+                }
+                Button(localizationManager.localized("delete_account_cancel"), role: .cancel) {}
+            } message: {
+                Text(localizationManager.localized("delete_account_final_message"))
+            }
             .alert(localizationManager.localized("delete_account_success_title"), isPresented: $showSuccessAlert) {
                 Button("OK") {
                     handleAccountDeleted()
@@ -1000,15 +1071,21 @@ struct DeleteAccountView: View {
     // MARK: - Delete Account Logic
     
     private func deleteAccount() {
-        guard confirmText.uppercased() == confirmTextRequired else {
+        guard isConfirmationValid else {
+            errorMessage = localizationManager.localized("delete_account_confirm_hint", preferredConfirmKeyword)
             return
         }
         
         isDeleting = true
         errorMessage = nil
+        isConfirmFieldFocused = false
         
         let apiService = APIService.shared
-        apiService.deleteAccount(confirmationCode: confirmText.uppercased()) { [self] result in
+        // Prefer language keyword for logs/server body; both are accepted client-side.
+        let code = Self.acceptedKeywords.contains(normalizedConfirmText)
+            ? normalizedConfirmText
+            : preferredConfirmKeyword
+        apiService.deleteAccount(confirmationCode: code) { [self] result in
             DispatchQueue.main.async {
                 isDeleting = false
                 

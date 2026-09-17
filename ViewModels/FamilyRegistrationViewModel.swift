@@ -289,10 +289,10 @@ class FamilyRegistrationViewModel: ObservableObject {
         if let role = selectedRole {
             let roleName: String
             switch role {
-            case .parent: roleName = "Родитель"
-            case .child: roleName = "Ребенок"
-            case .teenager: roleName = "Подросток"
-            case .elderly: roleName = "Пожилой"
+            case .parent: roleName = LocalizationManager.shared.localized("family_role_parent_label")
+            case .child: roleName = LocalizationManager.shared.localized("family_role_child_label")
+            case .teenager: roleName = LocalizationManager.shared.localized("family_role_teen_label")
+            case .elderly: roleName = LocalizationManager.shared.localized("family_role_elderly_label")
             }
             let userName = "\(roleName) \(letter)"
             if !UserDefaults.standard.bool(forKey: "admin_add_mode") {
@@ -383,10 +383,10 @@ class FamilyRegistrationViewModel: ObservableObject {
         let userName: String
         let roleName: String
         switch role {
-        case .parent: roleName = "Родитель"
-        case .child: roleName = "Ребенок"
-        case .teenager: roleName = "Подросток"
-        case .elderly: roleName = "Пожилой"
+        case .parent: roleName = LocalizationManager.shared.localized("family_role_parent_label")
+        case .child: roleName = LocalizationManager.shared.localized("family_role_child_label")
+        case .teenager: roleName = LocalizationManager.shared.localized("family_role_teen_label")
+        case .elderly: roleName = LocalizationManager.shared.localized("family_role_elderly_label")
         }
         userName = "\(roleName) \(letter)"
 

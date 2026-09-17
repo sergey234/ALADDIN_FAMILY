@@ -187,7 +187,9 @@ enum NetworkError: Error, LocalizedError {
         case .invalidData:
             return "Неверный формат данных"
         case .decodingError(let error):
-            return "Ошибка обработки данных: \(error.localizedDescription)"
+            // Use app language — do not append system DecodingError text (often device-locale RU).
+            _ = error
+            return LocalizationManager.shared.localized("network_error_decoding")
         case .encodingError(let error):
             return "Ошибка подготовки данных: \(error.localizedDescription)"
         case .emptyResponse:

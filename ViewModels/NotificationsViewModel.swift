@@ -705,6 +705,9 @@ enum NotificationCopyLocalizer {
             "Антивирус: скан OK/угрозы": "push_antivirus_complete_title",
             "Антивирус: ошибка скана": "push_antivirus_failed_title",
             "Подозрительный файл": "push_downloaded_file_threat_title",
+            "Давно не виделись": "wellness_nudge_idle_title",
+            "Давно не виделись!": "wellness_nudge_idle_title",
+            "We miss you": "wellness_nudge_idle_title",
         ]
         return map[t]
     }
@@ -719,8 +722,14 @@ enum NotificationCopyLocalizer {
             "Проверьте ситуацию и при необходимости вызовите экстренные службы": "push_crash_detection_body",
             "Ваша подписка успешно активирована! Теперь доступны все функции защиты.": "push_upgrade_success_body",
             "Сценарий smoke-test: проверка цепочки detect -> notifications UI": "push_qa_threat_body",
+            "Давно не заходил(а) — всё ок? Хватит одной минуты check-in.": "wellness_nudge_idle_body",
+            "Давно не заходил(а) — всё ок? Хватит одной минуты check-in": "wellness_nudge_idle_body",
+            "Haven't checked in — all OK? One minute is enough.": "wellness_nudge_idle_body",
         ]
         if let key = exact[m] { return key }
+        if m.contains("Давно не заходил") {
+            return "wellness_nudge_idle_body"
+        }
         if m.hasPrefix("Обнаружено ") && m.contains("угроз") {
             return "push_antivirus_complete_body_threats"
         }
