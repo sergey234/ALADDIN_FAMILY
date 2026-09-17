@@ -220,7 +220,10 @@ def public_capabilities_payload() -> Dict[str, Any]:
             "verdict_feedback": {
                 "endpoint": "POST /api/antifake/feedback",
                 "metrics": "GET /api/antifake/feedback/metrics",
+                "lexicon_queue": "GET /api/antifake/feedback/lexicon-queue",
                 "rule_tweaks": "data/antifake/rule_tweaks.json",
+                "lexicon_review_queue": "data/antifake/lexicon_review_queue.jsonl",
+                "note": "was_scam → review queue only; never auto-writes live lexicon",
             },
         },
         # RH-AG01: honest agent inventory (wire / secondary / off)

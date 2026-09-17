@@ -236,11 +236,25 @@ struct AntifakeReportSubmissionResponse: Codable, Equatable, Sendable {
     }
 }
 
-/// POST `/api/antifake/feedback` (T5-02).
+/// POST `/api/antifake/feedback` (T5-02 / afhub-p3-01).
 struct AntifakeFeedbackResponse: Codable, Equatable, Sendable {
     let id: String?
     let message: String?
     let recorded: Bool?
+    let lexiconReview: AntifakeLexiconReviewInfo?
+
+    enum CodingKeys: String, CodingKey {
+        case id
+        case message
+        case recorded
+        case lexiconReview = "lexicon_review"
+    }
+}
+
+struct AntifakeLexiconReviewInfo: Codable, Equatable, Sendable {
+    let queued: Bool?
+    let count: Int?
+    let phrases: [String]?
 }
 
 struct AntifakeWhitelistResponse: Codable, Equatable, Sendable {

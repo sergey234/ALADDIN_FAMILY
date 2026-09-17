@@ -992,10 +992,30 @@ async def antifake_verdict_feedback(
         note=body.note,
         feedback=(body.feedback or "incorrect").strip().lower() or "incorrect",
     )
+    queued = bool((feedback.get("lexicon_review") or {}).get("queued"))
     return {
         **feedback,
-        "message": "Feedback recorded — thank you for improving ALADDIN",
+        "message": (
+            "Thanks — scam phrases queued for lexicon review"
+            if queued
+            else "Feedback recorded — thank you for improving ALADDIN"
+        ),
     }
+
+
+@router.get("/feedback/lexicon-queue")
+async def antifake_lexicon_review_queue(
+    request: Request,
+    limit: int = Query(50, ge=1, le=200),
+    current_user: dict = Depends(get_current_user),
+):
+    """afhub-p3-01: pending lexicon candidates (ops / internal smoke)."""
+    _require_premium(current_user, request)
+    _require_internal_smoke(request)
+    from app.services.antifake_lexicon_review_queue import list_pending
+
+    rows = list_pending(limit=limit)
+    return {"pending": len(rows), "rows": rows}
 
 
 @router.get("/feedback/metrics")

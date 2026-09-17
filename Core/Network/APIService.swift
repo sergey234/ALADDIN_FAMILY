@@ -4420,24 +4420,27 @@ class APIService: ObservableObject {
         )
     }
 
-    /// POST `/api/antifake/feedback` — T5-02 false-positive feedback.
+    /// POST `/api/antifake/feedback` — T5-02 / afhub-p3-01.
     func antifakeVerdictFeedback(
         jobId: String,
         note: String? = nil,
+        feedback: String = "incorrect",
         completion: @escaping (Result<AntifakeFeedbackResponse, Error>) -> Void
     ) {
         struct Body: Codable {
             let jobId: String
             let note: String?
+            let feedback: String
 
             enum CodingKeys: String, CodingKey {
                 case jobId = "job_id"
                 case note
+                case feedback
             }
         }
         networkManager.post(
             endpoint: AppConfig.Endpoint.antifakeFeedback,
-            body: Body(jobId: jobId, note: note),
+            body: Body(jobId: jobId, note: note, feedback: feedback),
             completion: completion
         )
     }

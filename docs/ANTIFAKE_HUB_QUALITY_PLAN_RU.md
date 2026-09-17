@@ -198,6 +198,8 @@ Norton / Kaspersky / Truecaller / Hive / Reality Defender тоже ошибаю�
 **Зачем:** живой язык меняется.  
 **Без дубля:** не авто-retrain ML вслепую; только pack updates + review.
 
+**Статус:** ✅ `feedback=was_scam` → `lexicon_review_queue.jsonl` + ops CLI; iOS кнопка «Это был скам»; live lexicon **не** трогаем автоматом.
+
 ### 16. Полный l10n-аудит хаба · `afhub-p3-02-hub-l10n-audit`
 **Что:** все табы, errors, empty, premium, history — 0 сырых ключей, 0 RU на EN.  
 **Зачем:** весь антихаб на 2 языках end-to-end.
@@ -240,7 +242,7 @@ Norton / Kaspersky / Truecaller / Hive / Reality Defender тоже ошибаю�
 | 12 | `afhub-p2-02-video` | ✅ ONNX default + face gates + AV1/decode no-green |
 | 13 | `afhub-p2-03-threat-intel` | ✅ код freshness gate; cron MAIN — ждать GO |
 | 14 | `afhub-p2-04-share-family` | ✅ ShareSheet + family/share-verdict API |
-| 15 | `afhub-p3-01-feedback` | pending |
+| 15 | `afhub-p3-01-feedback` | ✅ was_scam → lexicon review queue (no auto-lexicon) |
 | 16 | `afhub-p3-02-hub-l10n-audit` | pending |
 | 17 | `afhub-p3-03-redteam` | pending |
 | 18 | `afhub-p3-04-locale-kz` | pending |

@@ -26,6 +26,9 @@ struct AntifakeVerdictCard: View {
     @State private var showFamilyShareSheet = false
     @State private var familyShareText = ""
     @State private var isSharingWithFamily = false
+    @State private var showWasScamSheet = false
+    @State private var wasScamNote = ""
+    @State private var isSubmittingWasScam = false
 
     private var presentation: AntifakeVerdictPresentation {
         verdict.presentation
@@ -124,6 +127,17 @@ struct AntifakeVerdictCard: View {
     private var canSubmitVerdictFeedback: Bool {
         guard let jobId = verdict.jobId, !jobId.isEmpty else { return false }
         return true
+    }
+
+    /// afhub-p3-01 — false-negative path: green/uncertain missed a scam.
+    private var showsWasScamFeedback: Bool {
+        guard canSubmitVerdictFeedback else { return false }
+        switch verdict.verdict {
+        case .likelyReal, .uncertain, .insufficientData:
+            return true
+        case .likelyFake:
+            return false
+        }
     }
 
     private var showsSafeWordVerify: Bool {
@@ -330,6 +344,9 @@ struct AntifakeVerdictCard: View {
             if canSubmitVerdictFeedback && !canShowReportActions {
                 verdictFeedbackSection
             }
+            if showsWasScamFeedback && !canShowReportActions {
+                wasScamFeedbackSection
+            }
 
             if let reportFeedback {
                 Text(reportFeedback)
@@ -361,6 +378,40 @@ struct AntifakeVerdictCard: View {
         }
         .sheet(isPresented: $showFamilyShareSheet) {
             ShareSheet(activityItems: [familyShareText])
+        }
+        .sheet(isPresented: $showWasScamSheet) {
+            wasScamSheet
+        }
+    }
+
+    @ViewBuilder
+    private var wasScamSheet: some View {
+        WellnessNavigationStack {
+            Form {
+                Section(localizationManager.localized("antifake_feedback_was_scam_note_section")) {
+                    WellnessMultilineField(
+                        title: localizationManager.localized("antifake_feedback_was_scam_note_placeholder"),
+                        text: $wasScamNote
+                    )
+                }
+                Text(localizationManager.localized("antifake_feedback_was_scam_hint"))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            .navigationTitle(localizationManager.localized("antifake_feedback_was_scam_button"))
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(localizationManager.localized("common_cancel")) {
+                        showWasScamSheet = false
+                    }
+                }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(localizationManager.localized("antifake_feedback_was_scam_submit")) {
+                        submitWasScamFeedback()
+                    }
+                    .disabled(isSubmittingWasScam)
+                }
+            }
         }
     }
 
@@ -518,6 +569,9 @@ struct AntifakeVerdictCard: View {
             if canSubmitVerdictFeedback {
                 verdictFeedbackSection
             }
+            if showsWasScamFeedback {
+                wasScamFeedbackSection
+            }
         }
         .padding(.top, Spacing.xs)
     }
@@ -539,9 +593,28 @@ struct AntifakeVerdictCard: View {
         .accessibilityIdentifier("antifake_feedback_button")
     }
 
+    @ViewBuilder
+    private var wasScamFeedbackSection: some View {
+        Button {
+            wasScamNote = ""
+            showWasScamSheet = true
+        } label: {
+            Label(
+                localizationManager.localized("antifake_feedback_was_scam_button"),
+                systemImage: "exclamationmark.bubble.fill"
+            )
+            .font(.caption.weight(.semibold))
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .foregroundColor(.warningOrange)
+        .disabled(isSubmittingWasScam)
+        .accessibilityIdentifier("antifake_feedback_was_scam_button")
+    }
+
     private func submitVerdictFeedback() {
         guard let jobId = verdict.jobId else { return }
-        APIService.shared.antifakeVerdictFeedback(jobId: jobId, note: nil) { result in
+        APIService.shared.antifakeVerdictFeedback(jobId: jobId, note: nil, feedback: "incorrect") { result in
             switch result {
             case .success:
                 AITrustAnalytics.trackAntifakeFalsePositive(jobId: jobId)
@@ -550,6 +623,34 @@ struct AntifakeVerdictCard: View {
             case .failure(let error):
                 reportError = localizedReportError(error)
                 HapticFeedback.notification(.error)
+            }
+        }
+    }
+
+    private func submitWasScamFeedback() {
+        guard let jobId = verdict.jobId else { return }
+        let note = wasScamNote.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard note.count >= 4 else {
+            reportError = localizationManager.localized("antifake_feedback_was_scam_note_required")
+            return
+        }
+        isSubmittingWasScam = true
+        APIService.shared.antifakeVerdictFeedback(jobId: jobId, note: note, feedback: "was_scam") { result in
+            DispatchQueue.main.async {
+                isSubmittingWasScam = false
+                showWasScamSheet = false
+                switch result {
+                case .success(let payload):
+                    if payload.lexiconReview?.queued == true {
+                        reportFeedback = localizationManager.localized("antifake_feedback_was_scam_queued")
+                    } else {
+                        reportFeedback = localizationManager.localized("antifake_feedback_was_scam_success")
+                    }
+                    HapticFeedback.notification(.success)
+                case .failure(let error):
+                    reportError = localizedReportError(error)
+                    HapticFeedback.notification(.error)
+                }
             }
         }
     }
