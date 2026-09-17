@@ -173,10 +173,14 @@ Norton / Kaspersky / Truecaller / Hive / Reality Defender тоже ошибаю�
 **Зачем:** не green при decode fail.  
 **Без дубля:** один video ensemble path.
 
+**Статус:** ✅ `antifake_video_v2` — ONNX/frame **ON by default** (`ANTIFAKE_VIDEO_ONNX=0` выкл.); face-gates блокируют hard fake на blur/no-face; AV1/decode → `insufficient_data` + RU/EN UX; iOS hint обновлён.
+
 ### 13. Threat intel freshness · `afhub-p2-03-threat-intel`
 **Что:** мониторинг cron URLHaus/OpenPhish freshness + alert.  
 **Зачем:** ссылки не на протухшем feed.  
 **Без дубля:** health поверх существующих import-скриптов.
+
+**Статус:** ✅ код — `antifake_threat_intel_freshness.py` + gate `scripts/antifake_phishing_feed_gate.py` + `capabilities.threat_intel.freshness`. Cron на MAIN `…180` — только после **GO**.
 
 ### 14. Share with family · `afhub-p2-04-share-family`
 **Что:** one-tap «поделиться с семьёй» после вердикта (RU+EN).  
@@ -231,8 +235,8 @@ Norton / Kaspersky / Truecaller / Hive / Reality Defender тоже ошибаю�
 | 9 | `afhub-p1-03-call-spoof` | ✅ spoof hints UI + authority labels + tests |
 | 10 | `afhub-p1-04-calib-prod` | ✅ calib 100% + GO deploy MAIN `…180` (tar scoring pack) |
 | 11 | `afhub-p2-01-voice` | ✅ audio_v2 STT→SMS scam RU+EN + deepfake strengthen |
-| 12 | `afhub-p2-02-video` | pending |
-| 13 | `afhub-p2-03-threat-intel` | pending |
+| 12 | `afhub-p2-02-video` | ✅ ONNX default + face gates + AV1/decode no-green |
+| 13 | `afhub-p2-03-threat-intel` | ✅ код freshness gate; cron MAIN — ждать GO |
 | 14 | `afhub-p2-04-share-family` | pending |
 | 15 | `afhub-p3-01-feedback` | pending |
 | 16 | `afhub-p3-02-hub-l10n-audit` | pending |

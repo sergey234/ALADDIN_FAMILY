@@ -334,6 +334,26 @@ REASON_I18N: Dict[str, Dict[str, str]] = {
         "ru": "Из файла не удалось взять кадры. Часто помогает пересохранение в MP4 (H.264).",
         "en": "Could not read frames from the file. Re-saving as MP4 (H.264) usually helps.",
     },
+    "face_quality_blurry": {
+        "ru": "Кадры слишком размытые — нельзя уверенно сказать про подмену лица.",
+        "en": "Frames are too blurry — we cannot confidently judge face-swap.",
+    },
+    "face_not_detected": {
+        "ru": "Лицо на кадрах не видно — вердикт «подмена» не ставим.",
+        "en": "No face visible in the frames — we will not claim a face-swap.",
+    },
+    "face_quality_insufficient": {
+        "ru": "Качество кадра недостаточное для жёсткого вердикта.",
+        "en": "Frame quality is too low for a hard verdict.",
+    },
+    "face_quality_no_frames": {
+        "ru": "Нет кадров для проверки лица.",
+        "en": "No frames available for a face check.",
+    },
+    "face_quality_gate_blocked": {
+        "ru": "Жёсткий вердикт «фейк» не ставим: лицо не видно или картинка мутная.",
+        "en": "Hard «fake» verdict withheld: face not visible or picture is muddy.",
+    },
     "deepfake_signal": {
         "ru": "Голос или лицо могут быть синтезированы — будьте осторожны.",
         "en": "Voice or face may be synthetic — be careful.",
@@ -626,6 +646,8 @@ def humanize_reasons(reasons: List[str], *, lang: str = "ru") -> List[str]:
             continue
         if tail.startswith("frames_sampled_") or tail.startswith("video_onnx_frames_"):
             continue
+        if tail.startswith("faces_detected_"):
+            continue
         if tail.startswith("frame_decoded_") or tail.startswith("transcript_len=") or tail.startswith("doc_level_"):
             continue
         text = _lookup_entry(raw, lang_key)
@@ -687,6 +709,31 @@ def build_summary_human(payload: Dict[str, Any], *, lang: str = "ru") -> str:
             else "The server could not read this clip (common with AV1 from Telegram). "
             "Open the file → export as MP4 (H.264) → upload again. "
             "Antifake is fine — the format needs changing."
+        )
+
+    if kind == "video" and (
+        "video_decode_failed" in joined or "video_no_frames" in joined
+    ):
+        return (
+            "Не удалось разобрать это видео. Сохраните как обычный MP4 (H.264) "
+            "и загрузите снова — так бывает с редкими кодеками из мессенджеров. "
+            "Мы не ставим «всё ок», пока файл не читается."
+            if lang_key == "ru"
+            else "Could not decode this video. Save as a normal MP4 (H.264) and upload again — "
+            "common with rare messenger codecs. We will not show «all clear» until the file is readable."
+        )
+
+    if "face_quality_gate_blocked" in joined or (
+        kind == "video"
+        and verdict == "uncertain"
+        and ("face_quality_blurry" in joined or "face_not_detected" in joined)
+    ):
+        return (
+            "Кадры мутные или лицо не видно — жёсткий вердикт «подмена» не ставим. "
+            "Попробуйте более чёткий ролик или уточните у взрослых, кто прислал файл."
+            if lang_key == "ru"
+            else "Frames are muddy or no face is visible — we will not claim a hard face-swap. "
+            "Try a clearer clip or ask an adult who sent the file."
         )
 
     if "video_no_face_swap_signs" in joined or (
@@ -770,8 +817,8 @@ def build_summary_human(payload: Dict[str, Any], *, lang: str = "ru") -> str:
                 "en": "We cannot judge this video for sure. Do not rush — ask an adult who sent the clip.",
             },
             "insufficient_data": {
-                "ru": "Мало данных по видео. Загрузите другой ролик или более длинный фрагмент.",
-                "en": "Not enough video data. Upload another clip or a longer fragment.",
+                "ru": "Мало данных по видео или файл не прочитался. Сохраните как MP4 (H.264) и загрузите снова.",
+                "en": "Not enough video data or the file could not be read. Save as MP4 (H.264) and upload again.",
             },
         },
         "document": {
