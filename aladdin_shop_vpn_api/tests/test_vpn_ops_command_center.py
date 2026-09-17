@@ -196,12 +196,34 @@ def test_default_doors_europe_asia_russia_order():
     assert labels[1].startswith("🇫🇷 Mouth · Contabo / рот")
     assert "…12" in labels[1]
     assert labels[2].startswith("🇷🇺 NEW EU · FirstVDS")
-    assert "REG.RU" in labels[6] and "…63" in labels[6]
-    assert "Contabo" not in labels[2]
+    assert any("Аладдин · запас" in x for x in labels)
+    assert any("REG.RU / ночь" in x for x in labels)
+    assert not any("REG.RU / запас" in x for x in labels)
     assert any("SG · Contabo / двор" in v for v in cc.WG_PEER_LABELS.values())
     door_hosts = {row[1] for row in cc.DEFAULT_DOORS}
-    assert "169.58.242.12" in door_hosts  # Mouth in doors
-    assert "217.15.166.78" not in door_hosts  # SG = WG only
+    assert "169.58.242.12" in door_hosts
+    assert "217.15.166.78" not in door_hosts
+    assert cc.SERVERS_COST_RUB_MONTH == 10_000
+
+
+def test_render_includes_servers_cost():
+    cc = _load()
+    snap = cc.Snapshot(
+        slot="evening",
+        when_msk="17.09.2026 · 00:00 МСК",
+        doors=[],
+        wg=[],
+        guard=cc.GuardLine("green", 0, 0, 0, "fresh", paid=28, trial=24),
+        speed=cc.SpeedLine("green", "ok", ""),
+        services=[cc.ServiceLine("bot", "green")],
+        attention=[],
+    )
+    text = cc.render_report(snap)
+    assert "🗺 Флот 7 · Contabo×3 · FirstVDS×2 · REG.RU · Яндекс" in text
+    assert "💰 Серверы ≈ 10 000 ₽/мес" in text
+    # fleet + cost near top (before doors)
+    assert text.index("Флот 7") < text.index("🚪 Двери")
+    assert text.index("Серверы ≈") < text.index("🚪 Двери")
 
 
 def test_render_incident_lists_attention():

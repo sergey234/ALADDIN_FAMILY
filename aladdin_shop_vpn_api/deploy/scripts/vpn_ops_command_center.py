@@ -43,19 +43,27 @@ DEFAULT_DOORS: list[tuple[str, str, int, bool]] = [
     ("🇷🇺 NEW EU · FirstVDS / мост · …98 :8444", "37.46.134.98", 8444, False),
     ("🇷🇺 NEW Asia · FirstVDS / мост · …98 :8445", "37.46.134.98", 8445, False),
     ("🇷🇺 NEW lab · FirstVDS / мост · …98 :5443", "37.46.134.98", 5443, False),
-    ("🇷🇺 MAIN warm · FirstVDS / Аладдин · …180 :8444", "149.154.65.180", 8444, False),
-    ("🇷🇺 REG · REG.RU / запас · …63 :443", "92.242.61.63", 443, False),
-    ("🇷🇺 REG · REG.RU / запас · …63 :8443", "92.242.61.63", 8443, False),
+    # MAIN = Аладдин + запасная дверь (warm); REG = ночная дверь (не пустой)
+    ("🇷🇺 MAIN · FirstVDS / Аладдин · запас · …180 :8444", "149.154.65.180", 8444, False),
+    ("🇷🇺 REG · REG.RU / ночь · …63 :443", "92.242.61.63", 443, False),
+    ("🇷🇺 REG · REG.RU / ночь · …63 :8443", "92.242.61.63", 8443, False),
     ("🇷🇺 Яндекс Обход-ночь · Яндекс / ночь · …20 :443", "84.201.151.20", 443, True),
 ]
 
 WG_PEER_LABELS = {
     "37.46.134.98": "🇷🇺 NEW · FirstVDS / мост · …98",
-    "149.154.65.180": "🇷🇺 MAIN · FirstVDS / Аладдин · …180",
-    "92.242.61.63": "🇷🇺 REG · REG.RU / запас · …63",
+    "149.154.65.180": "🇷🇺 MAIN · FirstVDS / Аладдин · запас · …180",
+    "92.242.61.63": "🇷🇺 REG · REG.RU / ночь · …63",
     "217.15.166.78": "🇸🇬 SG · Contabo / двор · …78",
     "158.160.24.238": "🇷🇺 Яндекс · Яндекс / ночь · …238",
 }
+
+# Ops fleet cost (Contabo×3 + NEW FirstVDS + REG + Yandex; ≈ без детализации Аладдина)
+SERVERS_COST_RUB_MONTH = 10_000
+SERVERS_FLEET_COUNT = 7
+SERVERS_FLEET_LINE = (
+    "🗺 Флот 7 · Contabo×3 · FirstVDS×2 · REG.RU · Яндекс"
+)
 
 
 @dataclass(frozen=True)
@@ -375,10 +383,12 @@ def collect_wg_bridge(
     # Stable order: NEW (мост) → MAIN → REG → SG (Asia Contabo) → Yandex
     order = {
         "🇷🇺 NEW · FirstVDS / мост · …98": 0,
-        "🇷🇺 MAIN · FirstVDS / Аладдин · …180": 1,
-        "🇷🇺 REG · REG.RU / запас · …63": 2,
+        "🇷🇺 MAIN · FirstVDS / Аладдин · запас · …180": 1,
+        "🇷🇺 REG · REG.RU / ночь · …63": 2,
         "🇸🇬 SG · Contabo / двор · …78": 3,
         "🇷🇺 Яндекс · Яндекс / ночь · …238": 4,
+        "🇷🇺 MAIN · FirstVDS / Аладдин · …180": 1,
+        "🇷🇺 REG · REG.RU / запас · …63": 2,
         "🇷🇺 NEW": 0,
         "🇷🇺 MAIN": 1,
         "🇷🇺 REG": 2,
@@ -671,6 +681,9 @@ def render_report(snap: Snapshot) -> str:
         f"🛡 AiMonkey OPS — {slot_title(snap.slot)}",
         snap.when_msk,
         f"Итог: {overall_label(outcome)}",
+        "",
+        SERVERS_FLEET_LINE,
+        f"💰 Серверы ≈ {SERVERS_COST_RUB_MONTH:,} ₽/мес".replace(",", " "),
         "",
         "🚪 Двери",
     ]
