@@ -363,7 +363,9 @@
 		AFTIC42F90000100C7D34B /* AntifakeTextInputClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFTIC32F90000100C7D34B /* AntifakeTextInputClassifierTests.swift */; };
 		AFVMC22F90000100C7D34B /* AntifakeTextCheckViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVMC12F90000100C7D34B /* AntifakeTextCheckViewModel.swift */; };
 		AFVPRES22F90000100C7D34B /* AntifakeVerdictPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVPRES12F90000100C7D34B /* AntifakeVerdictPresentation.swift */; };
+		AFFAMSH22F90000100C7D34B /* AntifakeFamilyShareText.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFAMSH12F90000100C7D34B /* AntifakeFamilyShareText.swift */; };
 		AFVPREST22F90000100C7D34B /* AntifakeVerdictPresentationTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVPREST12F90000100C7D34B /* AntifakeVerdictPresentationTests.swift */; };
+		AFFAMSHT22F90000100C7D34B /* AntifakeFamilyShareTextTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFFAMSHT12F90000100C7D34B /* AntifakeFamilyShareTextTests.swift */; };
 		AFVRD22F90000100C7D34B /* AntifakeVerdictCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVRD12F90000100C7D34B /* AntifakeVerdictCard.swift */; };
 		AITRST22F90000100C7D34B /* AITrustAnalytics.swift in Sources */ = {isa = PBXBuildFile; fileRef = AITRST12F90000100C7D34B /* AITrustAnalytics.swift */; };
 		B1000001 /* AddMemberOptionsModal.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000 /* AddMemberOptionsModal.swift */; };
@@ -1127,7 +1129,9 @@
 		AFTIC32F90000100C7D34B /* AntifakeTextInputClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeTextInputClassifierTests.swift; sourceTree = "<group>"; };
 		AFVMC12F90000100C7D34B /* AntifakeTextCheckViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTextCheckViewModel.swift; path = ViewModels/AntifakeTextCheckViewModel.swift; sourceTree = "<group>"; };
 		AFVPRES12F90000100C7D34B /* AntifakeVerdictPresentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeVerdictPresentation.swift; path = Core/Models/AntifakeVerdictPresentation.swift; sourceTree = "<group>"; };
+		AFFAMSH12F90000100C7D34B /* AntifakeFamilyShareText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeFamilyShareText.swift; path = Core/Models/AntifakeFamilyShareText.swift; sourceTree = "<group>"; };
 		AFVPREST12F90000100C7D34B /* AntifakeVerdictPresentationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeVerdictPresentationTests.swift; sourceTree = "<group>"; };
+		AFFAMSHT12F90000100C7D34B /* AntifakeFamilyShareTextTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeFamilyShareTextTests.swift; sourceTree = "<group>"; };
 		AFVRD12F90000100C7D34B /* AntifakeVerdictCard.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeVerdictCard.swift; path = Shared/Components/AntifakeVerdictCard.swift; sourceTree = "<group>"; };
 		AITRST12F90000100C7D34B /* AITrustAnalytics.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AITrustAnalytics.swift; path = Core/Analytics/AITrustAnalytics.swift; sourceTree = "<group>"; };
 		B1000000 /* AddMemberOptionsModal.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AddMemberOptionsModal.swift; path = Shared/Components/Modals/AddMemberOptionsModal.swift; sourceTree = "<group>"; };
@@ -1932,6 +1936,7 @@
 				FWS31712F90000100C7D34B /* WellnessW3Models.swift */,
 				SECVRD12F90000100C7D34B /* SecurityVerdictModels.swift */,
 				AFVPRES12F90000100C7D34B /* AntifakeVerdictPresentation.swift */,
+				AFFAMSH12F90000100C7D34B /* AntifakeFamilyShareText.swift */,
 				B700011D2F90000100ABC001 /* Core/Audio/SpeechRecognitionErrorClassifier.swift */,
 				B700011F2F90000100ABC001 /* Core/Audio/VoiceNotePlaybackController.swift */,
 				B70001212F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceLevelBarsView.swift */,
@@ -2262,6 +2267,7 @@
 				B5001117 /* SpeechPathTests.swift */,
 				B5001118 /* WellnessModelsTests.swift */,
 				AFVPREST12F90000100C7D34B /* AntifakeVerdictPresentationTests.swift */,
+				AFFAMSHT12F90000100C7D34B /* AntifakeFamilyShareTextTests.swift */,
 				IDDETT12F90000100C7D34B /* IdentityDetectViewModelTests.swift */,
 				IDMONT12F90000100C7D34B /* IdentityMonitorViewModelTests.swift */,
 				IDFRDT12F90000100C7D34B /* IdentityFraudThreatCatalogTests.swift */,
@@ -2937,6 +2943,7 @@
 				WELLMDL22F90000100C7D34B /* WellnessModels.swift in Sources */,
 				SECVRD22F90000100C7D34B /* SecurityVerdictModels.swift in Sources */,
 				AFVPRES22F90000100C7D34B /* AntifakeVerdictPresentation.swift in Sources */,
+				AFFAMSH22F90000100C7D34B /* AntifakeFamilyShareText.swift in Sources */,
 				PRMGATE22F90000100C7D34B /* PremiumGateHandler.swift in Sources */,
 				AFCD0042F90000200C7D34B /* AntifakeCallDirectoryStore.swift in Sources */,
 				AFCD0312F90000200C7D34B /* AntifakeAccessPolicy.swift in Sources */,
@@ -3189,6 +3196,7 @@
 				B5001218 /* WellnessModelsTests.swift in Sources */,
 				SECVRDT22F90000100C7D34B /* (null) in Sources */,
 				AFVPREST22F90000100C7D34B /* AntifakeVerdictPresentationTests.swift in Sources */,
+				AFFAMSHT22F90000100C7D34B /* AntifakeFamilyShareTextTests.swift in Sources */,
 				IDDETT22F90000100C7D34B /* IdentityDetectViewModelTests.swift in Sources */,
 				IDMONT22F90000100C7D34B /* IdentityMonitorViewModelTests.swift in Sources */,
 				IDFRDT22F90000100C7D34B /* IdentityFraudThreatCatalogTests.swift in Sources */,

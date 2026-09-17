@@ -23,6 +23,9 @@ struct AntifakeVerdictCard: View {
     @State private var reportFeedback: String?
     @State private var reportError: String?
     @State private var showSafeWordVerify = false
+    @State private var showFamilyShareSheet = false
+    @State private var familyShareText = ""
+    @State private var isSharingWithFamily = false
 
     private var presentation: AntifakeVerdictPresentation {
         verdict.presentation
@@ -304,6 +307,23 @@ struct AntifakeVerdictCard: View {
                 }
             }
 
+            // afhub-p2-04 — one-tap share with family (Share sheet + optional family notify)
+            Button {
+                HapticFeedback.impact(.light)
+                shareWithFamilyTapped()
+            } label: {
+                Label(
+                    localizationManager.localized("antifake_share_family_button"),
+                    systemImage: "person.3.fill"
+                )
+                .font(.subheadline.weight(.semibold))
+                .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            .buttonStyle(.plain)
+            .foregroundColor(.secondaryGold)
+            .disabled(isSharingWithFamily)
+            .accessibilityIdentifier("antifake_share_family_button")
+
             if canShowReportActions {
                 reportActionsSection
             }
@@ -338,6 +358,38 @@ struct AntifakeVerdictCard: View {
         .sheet(isPresented: $showSafeWordVerify) {
             FamilySafeWordVerifySheet(context: "antifake")
                 .environmentObject(localizationManager)
+        }
+        .sheet(isPresented: $showFamilyShareSheet) {
+            ShareSheet(activityItems: [familyShareText])
+        }
+    }
+
+    private func shareWithFamilyTapped() {
+        familyShareText = AntifakeFamilyShareText.build(
+            verdict: verdict,
+            localizationManager: localizationManager
+        )
+        showFamilyShareSheet = true
+        isSharingWithFamily = true
+        let lang = localizationManager.currentLanguage == .english ? "en" : "ru"
+        APIService.shared.antifakeShareVerdictWithFamily(
+            verdict: verdict.verdict.rawValue,
+            confidence: verdict.confidence,
+            jobId: verdict.jobId,
+            summary: verdict.summaryHuman,
+            lang: lang
+        ) { result in
+            DispatchQueue.main.async {
+                isSharingWithFamily = false
+                switch result {
+                case .success:
+                    reportFeedback = localizationManager.localized("antifake_share_family_done")
+                case .failure(let error):
+                    if let networkError = error as? NetworkError, case .notFound = networkError {
+                        reportError = localizationManager.localized("antifake_share_family_no_family")
+                    }
+                }
+            }
         }
     }
 

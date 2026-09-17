@@ -287,6 +287,7 @@ struct AppConfig {
         static let antifakeWhitelist = "/api/antifake/whitelist"
         static let antifakeFamilyPushToken = "/api/antifake/family/push-token"
         static let antifakeFamilyReports = "/api/antifake/family/reports"
+        static let antifakeFamilyShareVerdict = "/api/antifake/family/share-verdict"
         static let antifakeFamilyCDStatus = "/api/antifake/family/cd-status"
 
         // Dark Web Monitoring (explicit B1-02)

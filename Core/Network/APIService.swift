@@ -4483,6 +4483,40 @@ class APIService: ObservableObject {
         networkManager.get(endpoint: AppConfig.Endpoint.antifakeFamilyReports, completion: completion)
     }
 
+    /// POST `/api/antifake/family/share-verdict` — afhub-p2-04 one-tap family share.
+    func antifakeShareVerdictWithFamily(
+        verdict: String,
+        confidence: Double,
+        jobId: String?,
+        summary: String?,
+        lang: String,
+        completion: @escaping (Result<AntifakeFamilyShareResponse, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let verdict: String
+            let confidence: Double
+            let jobId: String?
+            let summary: String?
+            let lang: String
+
+            enum CodingKeys: String, CodingKey {
+                case verdict, confidence, summary, lang
+                case jobId = "job_id"
+            }
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.antifakeFamilyShareVerdict,
+            body: Body(
+                verdict: verdict,
+                confidence: confidence,
+                jobId: jobId,
+                summary: summary,
+                lang: lang
+            ),
+            completion: completion
+        )
+    }
+
     /// POST `/api/antifake/family/cd-status` — L-05 member CD heartbeat.
     func reportAntifakeFamilyCDStatus(
         extensionEnabled: Bool,

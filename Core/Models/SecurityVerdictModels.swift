@@ -282,6 +282,20 @@ struct AntifakeFamilyReportsResponse: Codable, Equatable, Sendable {
     }
 }
 
+struct AntifakeFamilyShareResponse: Codable, Equatable, Sendable {
+    let ok: Bool
+    let familyId: String?
+    let notified: Int?
+    let reason: String?
+
+    enum CodingKeys: String, CodingKey {
+        case ok
+        case familyId = "family_id"
+        case notified
+        case reason
+    }
+}
+
 struct AntifakeFamilyCDMemberStatus: Codable, Equatable, Sendable {
     let userId: Int
     let displayName: String?

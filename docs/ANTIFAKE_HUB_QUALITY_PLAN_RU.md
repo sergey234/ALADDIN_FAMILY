@@ -187,6 +187,8 @@ Norton / Kaspersky / Truecaller / Hive / Reality Defender тоже ошибаю�
 **Зачем:** roadmap UX; дополняет п.5, не дублирует action tips.  
 **Без дубля:** reuse family reports / share payload если уже есть.
 
+**Статус:** ✅ кнопка на `AntifakeVerdictCard` → ShareSheet + `POST /api/antifake/family/share-verdict` (инцидент + push родителям).
+
 ---
 
 ## P3 — зрелость
@@ -237,7 +239,7 @@ Norton / Kaspersky / Truecaller / Hive / Reality Defender тоже ошибаю�
 | 11 | `afhub-p2-01-voice` | ✅ audio_v2 STT→SMS scam RU+EN + deepfake strengthen |
 | 12 | `afhub-p2-02-video` | ✅ ONNX default + face gates + AV1/decode no-green |
 | 13 | `afhub-p2-03-threat-intel` | ✅ код freshness gate; cron MAIN — ждать GO |
-| 14 | `afhub-p2-04-share-family` | pending |
+| 14 | `afhub-p2-04-share-family` | ✅ ShareSheet + family/share-verdict API |
 | 15 | `afhub-p3-01-feedback` | pending |
 | 16 | `afhub-p3-02-hub-l10n-audit` | pending |
 | 17 | `afhub-p3-03-redteam` | pending |
