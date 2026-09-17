@@ -322,6 +322,7 @@
 		AFCD0052F90000200C7D34B /* AntifakeCallDirectoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0032F90000200C7D34B /* AntifakeCallDirectoryStore.swift */; };
 		AFCD0112F90000200C7D34B /* ALADDINCallDirectory.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = AFCD0102F90000200C7D34B /* ALADDINCallDirectory.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		AFCD0312F90000200C7D34B /* AntifakeAccessPolicy.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0302F90000200C7D34B /* AntifakeAccessPolicy.swift */; };
+		AFMODE22F90000100C7D34B /* AntifakeTextCheckModeResolver.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFMODE12F90000100C7D34B /* AntifakeTextCheckModeResolver.swift */; };
 		AFCD0332F90000200C7D34B /* AntifakeCheckHistoryStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0322F90000200C7D34B /* AntifakeCheckHistoryStore.swift */; };
 		AFCD0352F90000200C7D34B /* AntifakeCallDirectorySyncService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0342F90000200C7D34B /* AntifakeCallDirectorySyncService.swift */; };
 		AFCD0372F90000200C7D34B /* AntifakeCallObserverService.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFCD0362F90000200C7D34B /* AntifakeCallObserverService.swift */; };
@@ -1082,6 +1083,7 @@
 		AFCD0092F90000200C7D34B /* ALADDINCallDirectory.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINCallDirectory.entitlements; sourceTree = "<group>"; };
 		AFCD0102F90000200C7D34B /* ALADDINCallDirectory.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINCallDirectory.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		AFCD0302F90000200C7D34B /* AntifakeAccessPolicy.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeAccessPolicy.swift; path = Core/Security/AntifakeAccessPolicy.swift; sourceTree = "<group>"; };
+		AFMODE12F90000100C7D34B /* AntifakeTextCheckModeResolver.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTextCheckModeResolver.swift; path = Core/Security/AntifakeTextCheckModeResolver.swift; sourceTree = "<group>"; };
 		AFCD0322F90000200C7D34B /* AntifakeCheckHistoryStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCheckHistoryStore.swift; path = Core/Security/AntifakeCheckHistoryStore.swift; sourceTree = "<group>"; };
 		AFCD0342F90000200C7D34B /* AntifakeCallDirectorySyncService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallDirectorySyncService.swift; path = Core/Security/AntifakeCallDirectorySyncService.swift; sourceTree = "<group>"; };
 		AFCD0362F90000200C7D34B /* AntifakeCallObserverService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeCallObserverService.swift; path = Core/Security/AntifakeCallObserverService.swift; sourceTree = "<group>"; };
@@ -1535,6 +1537,7 @@
 				B70001232F90000100ABC001 /* Core/Audio/VoiceNoteWaveformSampler.swift */,
 				AFCD0032F90000200C7D34B /* AntifakeCallDirectoryStore.swift */,
 				AFCD0302F90000200C7D34B /* AntifakeAccessPolicy.swift */,
+				AFMODE12F90000100C7D34B /* AntifakeTextCheckModeResolver.swift */,
 				AFCD0322F90000200C7D34B /* AntifakeCheckHistoryStore.swift */,
 				AFCD0342F90000200C7D34B /* AntifakeCallDirectorySyncService.swift */,
 				AFCD0362F90000200C7D34B /* AntifakeCallObserverService.swift */,
@@ -2937,6 +2940,7 @@
 				PRMGATE22F90000100C7D34B /* PremiumGateHandler.swift in Sources */,
 				AFCD0042F90000200C7D34B /* AntifakeCallDirectoryStore.swift in Sources */,
 				AFCD0312F90000200C7D34B /* AntifakeAccessPolicy.swift in Sources */,
+				AFMODE22F90000100C7D34B /* AntifakeTextCheckModeResolver.swift in Sources */,
 				AFCD0332F90000200C7D34B /* AntifakeCheckHistoryStore.swift in Sources */,
 				AFCD0352F90000200C7D34B /* AntifakeCallDirectorySyncService.swift in Sources */,
 				AFCD0372F90000200C7D34B /* AntifakeCallObserverService.swift in Sources */,

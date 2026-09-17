@@ -29,7 +29,14 @@ struct AntifakeVerdictCard: View {
     }
 
     private var topReasons: [String] {
-        Array(verdict.reasons.prefix(3))
+        if !verdict.reasonsHuman.isEmpty {
+            return Array(verdict.reasonsHuman.prefix(3))
+        }
+        return Array(verdict.reasons.prefix(3))
+    }
+
+    private var usesServerHumanReasons: Bool {
+        !verdict.reasonsHuman.isEmpty
     }
 
     private var reasonsSectionTitleKey: String {
@@ -52,16 +59,32 @@ struct AntifakeVerdictCard: View {
         if tags.contains("display_number_mismatch") {
             hints.append(localizationManager.localized("antifake_spoof_hint_display_mismatch"))
         }
-        if tags.contains(where: { $0.contains("authority") || $0.contains("spoof") }) {
+        if tags.contains(where: { $0.contains("authority_label_short_code") || $0.contains("short_code") }) {
+            hints.append(localizationManager.localized("antifake_spoof_hint_short_code"))
+        }
+        if tags.contains(where: {
+            $0.contains("authority_label_personal_number")
+                || $0.contains("authority_name_non_service")
+                || $0.contains("personal_number")
+        }) {
+            hints.append(localizationManager.localized("antifake_spoof_hint_authority"))
+        } else if tags.contains(where: { $0.contains("authority") || $0.contains("spoof") }) {
             hints.append(localizationManager.localized("antifake_spoof_hint_authority"))
         }
-        return hints
+        if tags.contains(where: { $0.contains("scam_directory") || $0.contains("ktozvonil") }) {
+            hints.append(localizationManager.localized("antifake_spoof_hint_directory"))
+        }
+        // Deduplicate while preserving order
+        var seen = Set<String>()
+        return hints.filter { seen.insert($0).inserted }
     }
 
     private var nextStepsKey: String {
-        let joined = verdict.reasons.joined(separator: " ").lowercased()
-        if joined.contains("перевед") || joined.contains("send money") || joined.contains("scam")
-            || joined.contains("счёт") || joined.contains("bank") {
+        let joined = (verdict.reasons + verdict.reasonsHuman).joined(separator: " ").lowercased()
+        if joined.contains("urgency") || joined.contains("срочн")
+            || joined.contains("перевед") || joined.contains("send money") || joined.contains("scam")
+            || joined.contains("financial") || joined.contains("счёт") || joined.contains("bank")
+            || joined.contains("на карту") || joined.contains("card") {
             return "antifake_verdict_next_steps_bank"
         }
         if joined.contains("родствен") || joined.contains("family") {
@@ -73,12 +96,30 @@ struct AntifakeVerdictCard: View {
         if verdict.verdict == .likelyFake {
             return "antifake_verdict_next_steps_fake"
         }
+        if verdict.verdict == .uncertain {
+            return "antifake_verdict_next_steps_uncertain"
+        }
         return "antifake_verdict_next_steps_uncertain"
+    }
+
+    /// Show action tips for fake / uncertain (afhub-p0-05) — not for green authentic.
+    private var showsNextSteps: Bool {
+        switch verdict.verdict {
+        case .likelyFake, .uncertain:
+            return true
+        case .likelyReal, .insufficientData:
+            return false
+        }
     }
 
     private var canShowReportActions: Bool {
         guard let jobId = verdict.jobId, !jobId.isEmpty else { return false }
         guard let phone = normalizedReportPhone, !phone.isEmpty else { return false }
+        return true
+    }
+
+    private var canSubmitVerdictFeedback: Bool {
+        guard let jobId = verdict.jobId, !jobId.isEmpty else { return false }
         return true
     }
 
@@ -162,6 +203,14 @@ struct AntifakeVerdictCard: View {
                     .fixedSize(horizontal: false, vertical: true)
             }
 
+            if let summary = verdict.summaryHuman, !summary.isEmpty {
+                Text(summary)
+                    .font(.subheadline)
+                    .foregroundColor(.white.opacity(0.95))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("antifake_verdict_summary_human")
+            }
+
             if !topReasons.isEmpty {
                 Text(localizationManager.localized(reasonsSectionTitleKey))
                     .font(.caption.weight(.semibold))
@@ -171,7 +220,11 @@ struct AntifakeVerdictCard: View {
                     HStack(alignment: .top, spacing: Spacing.xs) {
                         Text("•")
                             .foregroundColor(presentation.accentColor)
-                        Text(presentation.localizedReason(reason, localizationManager: localizationManager))
+                        Text(
+                            usesServerHumanReasons
+                                ? reason
+                                : presentation.localizedReason(reason, localizationManager: localizationManager)
+                        )
                             .font(.subheadline)
                             .foregroundColor(.white.opacity(0.9))
                             .fixedSize(horizontal: false, vertical: true)
@@ -222,7 +275,7 @@ struct AntifakeVerdictCard: View {
                 }
             }
 
-            if verdict.verdict != .likelyReal {
+            if showsNextSteps {
                 VStack(alignment: .leading, spacing: Spacing.xxs) {
                     Text(localizationManager.localized("antifake_verdict_next_steps_title"))
                         .font(.caption.weight(.semibold))
@@ -253,6 +306,9 @@ struct AntifakeVerdictCard: View {
 
             if canShowReportActions {
                 reportActionsSection
+            }
+            if canSubmitVerdictFeedback && !canShowReportActions {
+                verdictFeedbackSection
             }
 
             if let reportFeedback {
@@ -406,8 +462,44 @@ struct AntifakeVerdictCard: View {
                 .foregroundColor(.white.opacity(0.85))
                 .accessibilityIdentifier("antifake_whitelist_add_button")
             }
+
+            if canSubmitVerdictFeedback {
+                verdictFeedbackSection
+            }
         }
         .padding(.top, Spacing.xs)
+    }
+
+    @ViewBuilder
+    private var verdictFeedbackSection: some View {
+        Button {
+            submitVerdictFeedback()
+        } label: {
+            Label(
+                localizationManager.localized("antifake_feedback_button"),
+                systemImage: "hand.thumbsdown"
+            )
+            .font(.caption.weight(.semibold))
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        .buttonStyle(.plain)
+        .foregroundColor(.white.opacity(0.75))
+        .accessibilityIdentifier("antifake_feedback_button")
+    }
+
+    private func submitVerdictFeedback() {
+        guard let jobId = verdict.jobId else { return }
+        APIService.shared.antifakeVerdictFeedback(jobId: jobId, note: nil) { result in
+            switch result {
+            case .success:
+                AITrustAnalytics.trackAntifakeFalsePositive(jobId: jobId)
+                reportFeedback = localizationManager.localized("antifake_feedback_success")
+                HapticFeedback.notification(.success)
+            case .failure(let error):
+                reportError = localizedReportError(error)
+                HapticFeedback.notification(.error)
+            }
+        }
     }
 
     @ViewBuilder
@@ -468,6 +560,7 @@ struct AntifakeVerdictCard: View {
             isSubmittingReport = false
             switch result {
             case .success(let response):
+                AITrustAnalytics.trackAntifakeComplaint(isAppeal: isAppeal, jobId: jobId)
                 reportFeedback = response.message
                     ?? localizationManager.localized("antifake_report_success")
                 if isAppeal { showAppealSheet = false } else { showReportSheet = false }

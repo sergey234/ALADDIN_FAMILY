@@ -69,9 +69,30 @@ struct AntifakeVerdictPresentation: Equatable, Sendable {
     func localizedReason(_ reason: String, localizationManager: LocalizationManager) -> String {
         let trimmed = reason.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return reason }
-        let key = "antifake_reason_\(trimmed)"
-        let localized = localizationManager.localized(key)
-        return localized == key ? trimmed : localized
+
+        // afhub-p0-04: strip channel prefixes rules: / sfm: / url: / local:
+        var tail = trimmed
+        if let idx = tail.firstIndex(of: ":") {
+            tail = String(tail[tail.index(after: idx)...]).trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        if tail.isEmpty { tail = trimmed }
+
+        let aliases: [String: String] = [
+            "urgency_manipulation": "urgency",
+            "financial_scam": "scam",
+            "too_short": "text_too_short",
+            "text_too_short": "text_too_short",
+        ]
+        let mapped = aliases[tail] ?? tail
+
+        for candidate in [mapped, tail, trimmed] {
+            let key = "antifake_reason_\(candidate)"
+            let localized = localizationManager.localized(key)
+            if localized != key {
+                return localized
+            }
+        }
+        return mapped
     }
 }
 

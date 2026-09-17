@@ -19,9 +19,26 @@ from typing import Dict, List, Optional, Sequence, Tuple
 from app.security.core.security_base import SecurityBase
 
 from app.security.ml_lazy_loader import get_torch, get_transformers
+from app.services.antifake_scam_lexicon import agent_pattern_dict_overlay
 
 
 DEFAULT_MODEL_NAME = "unitary/toxic-bert"
+
+
+def _merge_scam_lexicon(patterns: Dict[str, Tuple[str, ...]]) -> Dict[str, Tuple[str, ...]]:
+    """afhub-p0-02 — urgency/financial from shared lexicon (no 3-file copy)."""
+    merged = dict(patterns)
+    for key, phrases in agent_pattern_dict_overlay().items():
+        existing = merged.get(key, ())
+        seen = set()
+        out: List[str] = []
+        for p in tuple(phrases) + tuple(existing):
+            low = p.lower()
+            if low not in seen:
+                seen.add(low)
+                out.append(p)
+        merged[key] = tuple(out)
+    return merged
 
 
 class FakeNewsDetectionAgent(SecurityBase):
@@ -34,8 +51,8 @@ class FakeNewsDetectionAgent(SecurityBase):
     - Оценка достоверности с объяснениями
     """
 
-    # Паттерны фейковых новостей для эвристической проверки
-    FAKE_NEWS_PATTERNS: Dict[str, Tuple[str, ...]] = {
+    # Паттерны: news-style keys local; urgency/financial ← antifake_scam_lexicon
+    FAKE_NEWS_PATTERNS: Dict[str, Tuple[str, ...]] = _merge_scam_lexicon({
         "sensationalism": (
             "shocking truth",
             "they don't want you to know",
@@ -54,24 +71,8 @@ class FakeNewsDetectionAgent(SecurityBase):
             "инсайдеры сообщают",
             "слухи говорят",
         ),
-        "urgency_manipulation": (
-            "act now",
-            "limited time",
-            "don't wait",
-            "urgent",
-            "действуй сейчас",
-            "ограниченное время",
-            "не жди",
-            "срочно",
-        ),
-        "financial_scam": (
-            "переведите деньги",
-            "send money immediately",
-            "send money",
-            "ваш счёт заблокирован",
-            "your account is blocked",
-            "verify your account",
-        ),
+        "urgency_manipulation": (),
+        "financial_scam": (),
         "conspiracy": (
             "government cover-up",
             "big pharma",
@@ -90,7 +91,7 @@ class FakeNewsDetectionAgent(SecurityBase):
             "это шокирует",
             "приготовься удивиться",
         ),
-    }
+    })
 
     # Регулярные выражения для проверки структуры новости
     URL_PATTERN = re.compile(r"https?://\S+|www\.\S+")

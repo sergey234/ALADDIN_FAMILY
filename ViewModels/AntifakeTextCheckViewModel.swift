@@ -151,11 +151,12 @@ final class AntifakeTextCheckViewModel: ObservableObject {
             let result: SecurityVerdict
             switch inputMode {
             case .text:
-                result = try await performTextCheck(payload, mode: "news")
+                let mode = AntifakeTextCheckModeResolver.apiMode(forText: payload, inputMode: .text)
+                result = try await performTextCheck(payload, mode: mode)
             case .url:
                 result = try await performUrlCheck(payload)
             case .contact:
-                result = try await performTextCheck(payload, mode: "message")
+                result = try await performTextCheck(payload, mode: "sms")
             }
             verdict = result
             AntifakeAnalytics.trackCheckComplete(

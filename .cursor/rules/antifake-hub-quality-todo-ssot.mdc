@@ -1,0 +1,17 @@
+---
+description: Antifake Hub Quality Plan (afhub-*) — Cursor TODO SSOT; merge-only
+alwaysApply: false
+---
+
+# Antifake Hub Quality — TODO SSOT
+
+**Plan:** `docs/ANTIFAKE_HUB_QUALITY_PLAN_RU.md` (пункты 1–18)  
+**Todo ids:** `afhub-p0-01`…`06`, `afhub-p1-01`…`04`, `afhub-p2-01`…`04`, `afhub-p3-01`…`04`
+
+## Rules
+
+1. Update only via `TodoWrite` **`merge: true`**.
+2. Do **not** replace / collapse Antifake **v4** REGISTRY (`af-A-01`…) with afhub list.
+3. On close: checklist in the plan ✅ → then mark matching `afhub-*` completed.
+4. Whole hub must ship **RU + EN** (see plan §0).
+5. MAIN deploy (`…180`) only after owner **GO**; no bot / VPN secrets / dirty tree.
