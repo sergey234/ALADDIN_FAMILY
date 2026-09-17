@@ -505,6 +505,11 @@ def _normalize_local_ml_text_result(
     if has_urgency_and_money(agent_tags):
         fake_score = max(fake_score, 0.85)
         verdict = "likely_fake"
+    # SMS: financial_scam alone is actionable — never leave uncertain due to too_short
+    if mode == "sms" and "scam" in agent_tags:
+        fake_score = max(fake_score, 0.72)
+        verdict = "likely_fake"
+        reasons = [r for r in reasons if r != "too_short"] or reasons
 
     confidence = max(fake_score, 0.35 if verdict == "likely_fake" else fake_score)
     verdict, confidence = anti_green_verdict(verdict, reasons, confidence)

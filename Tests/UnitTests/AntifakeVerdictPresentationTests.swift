@@ -42,16 +42,21 @@ final class AntifakeVerdictPresentationTests: XCTestCase {
         XCTAssertEqual(presentation.riskLevelKey, "antifake_risk_high")
     }
 
-    func testLocalizedReasonKnownKey() {
+    func testLocalizedReasonStripsRulesPrefix() {
         let verdict = SecurityVerdict(
-            verdict: .insufficientData,
-            confidence: 0,
-            reasons: ["text_too_short"],
-            source: "rule_engine"
+            verdict: .uncertain,
+            confidence: 0.4,
+            reasons: ["rules:urgency_manipulation"],
+            source: "ensemble_text"
         )
         let l10n = LocalizationManager()
-        let text = verdict.presentation.localizedReason("text_too_short", localizationManager: l10n)
-        XCTAssertFalse(text.isEmpty)
-        XCTAssertNotEqual(text, "text_too_short")
+        l10n.currentLanguage = .english
+        let text = verdict.presentation.localizedReason(
+            "rules:urgency_manipulation",
+            localizationManager: l10n
+        )
+        XCTAssertFalse(text.contains("rules:"))
+        XCTAssertNotEqual(text, "rules:urgency_manipulation")
+        XCTAssertNotEqual(text, "urgency_manipulation")
     }
 }

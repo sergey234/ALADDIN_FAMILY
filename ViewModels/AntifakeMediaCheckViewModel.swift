@@ -22,7 +22,6 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
     private let localizationManager: LocalizationManager
 
     private static let pollIntervalNanoseconds: UInt64 = 1_000_000_000
-    private static let maxPollAttempts = 30
 
     private static let slaSeconds: [AntifakeMediaKind: Int] = [
         .audio: 120,
@@ -30,6 +29,11 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
         .call: 180,
         .document: 120
     ]
+
+    /// AG07-A4-3: poll until SLA (not a fixed 30s) so ONNX CPU jobs can finish.
+    private var maxPollAttempts: Int {
+        Self.slaSeconds[mediaKind] ?? 120
+    }
 
     init(
         mediaKind: AntifakeMediaKind,
@@ -134,7 +138,7 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
     }
 
     private func pollUntilComplete(jobId: String) async throws -> SecurityVerdict {
-        for _ in 0..<Self.maxPollAttempts {
+        for _ in 0..<maxPollAttempts {
             let outcome = try await pollJob(jobId: jobId)
             switch outcome {
             case .completed(let verdict):
@@ -143,6 +147,7 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
                 if pending.status == .failed {
                     throw NetworkError.serviceUnavailable("job_failed")
                 }
+                statusMessage = slaStatusMessage()
                 try await Task.sleep(nanoseconds: Self.pollIntervalNanoseconds)
             }
         }

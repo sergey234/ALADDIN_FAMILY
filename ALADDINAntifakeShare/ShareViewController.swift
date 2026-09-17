@@ -26,11 +26,18 @@ final class ShareViewController: UIViewController {
             }
 
             AntifakeSharePayloadStore.save(payload)
-            let url = AntifakeShareConstants.checkDeepLinkURL
+            let appURL = AntifakeShareConstants.checkDeepLinkURL
+            let webURL = AntifakeShareConstants.webCheckURL(for: payload)
 
             await MainActor.run {
-                extensionContext?.open(url, completionHandler: { _ in
-                    self.finish()
+                self.extensionContext?.open(appURL, completionHandler: { opened in
+                    if !opened {
+                        self.extensionContext?.open(webURL, completionHandler: { _ in
+                            self.finish()
+                        })
+                    } else {
+                        self.finish()
+                    }
                 })
             }
         }

@@ -15,12 +15,18 @@ struct AntifakeCheckHistorySection: View {
                     .foregroundColor(.white)
                 Spacer()
                 if !entries.isEmpty {
-                    Button(localizationManager.localized("antifake_history_export_pdf")) {
-                        exportPDF()
+                    VStack(alignment: .trailing, spacing: 4) {
+                        Button(localizationManager.localized("antifake_history_export_pdf")) {
+                            exportPDF()
+                        }
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.primaryBlue)
+                        .accessibilityIdentifier("antifake_history_export_pdf")
+                        Text(localizationManager.localized("antifake_history_share_hint"))
+                            .font(.caption2)
+                            .foregroundColor(.white.opacity(0.55))
+                            .multilineTextAlignment(.trailing)
                     }
-                    .font(.caption.weight(.semibold))
-                    .foregroundColor(.primaryBlue)
-                    .accessibilityIdentifier("antifake_history_export_pdf")
                     Button(localizationManager.localized("antifake_history_clear")) {
                         AntifakeCheckHistoryStore.clear()
                         entries = []
@@ -53,12 +59,19 @@ struct AntifakeCheckHistorySection: View {
         .padding(Spacing.m)
         .stormGlassCard(cornerRadius: CornerRadius.large)
         .accessibilityIdentifier("antifake_history_section")
-        .onAppear { entries = AntifakeCheckHistoryStore.load() }
+        .onAppear { reloadEntries() }
+        .onReceive(NotificationCenter.default.publisher(for: AntifakeCheckHistoryStore.didChangeNotification)) { _ in
+            reloadEntries()
+        }
         .sheet(isPresented: $showShareSheet, onDismiss: { sharePDFURL = nil }) {
             if let sharePDFURL {
                 ShareSheet(activityItems: [sharePDFURL])
             }
         }
+    }
+
+    private func reloadEntries() {
+        entries = AntifakeCheckHistoryStore.load()
     }
 
     private func exportPDF() {

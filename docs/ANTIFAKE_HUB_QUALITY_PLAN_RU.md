@@ -204,13 +204,19 @@ Norton / Kaspersky / Truecaller / Hive / Reality Defender тоже ошибаю�
 **Что:** все табы, errors, empty, premium, history — 0 сырых ключей, 0 RU на EN.  
 **Зачем:** весь антихаб на 2 языках end-to-end.
 
+**Статус:** ✅ `scripts/verify_antifake_hub_l10n.py` (parity RU↔EN + no Cyrillic in EN + used keys); добавлен `antifake_media_consent_decline` RU.
+
 ### 17. Red-team monthly · `afhub-p3-03-redteam`
 **Что:** корпус социнженерии RU+EN ежемесячно + регресс golden.  
 **Зачем:** ловить регресс 27%-класса.
 
+**Статус:** ✅ `golden_redteam_monthly_ru/en` + `backend_tests/test_antifake_redteam_monthly.py` + `scripts/antifake_redteam_monthly.py` (mode=sms, no green).
+
 ### 18. Locale packs RU/EN/**KZ** · `afhub-p3-04-locale-kz`
 **Что:** per-locale packs (сначала RU/EN стабильны, затем KZ).  
 **Зачем:** roadmap зрелости; не блокирует P0.
+
+**Что значит KZ:** отдельный языковой пакет **казахский** (kk) для Antifake UI/reasons — как третий язык после стабильных RU+EN. Сейчас **не делаем**: нужны переводы + ключи в `LocalizationManager` / reason i18n; это зрелость продукта, не блокер хаба.
 
 ---
 
@@ -243,9 +249,9 @@ Norton / Kaspersky / Truecaller / Hive / Reality Defender тоже ошибаю�
 | 13 | `afhub-p2-03-threat-intel` | ✅ код freshness gate; cron MAIN — ждать GO |
 | 14 | `afhub-p2-04-share-family` | ✅ ShareSheet + family/share-verdict API |
 | 15 | `afhub-p3-01-feedback` | ✅ was_scam → lexicon review queue (no auto-lexicon) |
-| 16 | `afhub-p3-02-hub-l10n-audit` | pending |
-| 17 | `afhub-p3-03-redteam` | pending |
-| 18 | `afhub-p3-04-locale-kz` | pending |
+| 16 | `afhub-p3-02-hub-l10n-audit` | ✅ verify_antifake_hub_l10n.py PASS |
+| 17 | `afhub-p3-03-redteam` | ✅ monthly RU+EN corpus + regression |
+| 18 | `afhub-p3-04-locale-kz` | pending (KZ = казахский pack; не блокер) |
 
 **Убраны дубли:** Call не в P2 повторно; threat intel не только в P3; «What to do» = п.5, share = п.14; calib alert = п.10 (не второй golden).
 

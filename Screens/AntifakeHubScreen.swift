@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 /// B2-02 / af-6-01 — Antifake Hub: 4 pipelines (text · audio · video · call).
 struct AntifakeHubScreen: View {
@@ -26,6 +27,9 @@ struct AntifakeHubScreen: View {
 
             VStack(spacing: 0) {
                 header
+                trustBanner
+                    .padding(.horizontal, Spacing.screenPadding)
+                    .padding(.bottom, Spacing.s)
                 tabPicker
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.bottom, Spacing.s)
@@ -33,6 +37,7 @@ struct AntifakeHubScreen: View {
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
                         tabContent
+                        askAssistantHelpCard
                         if hasPremiumAccess {
                             AntifakeFamilyReportsSection()
                                 .environmentObject(localizationManager)
@@ -43,6 +48,18 @@ struct AntifakeHubScreen: View {
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.bottom, Spacing.xxl)
                 }
+                .aladdinChatKeyboardDismiss()
+                .aladdinKeyboardDoneToolbar(
+                    title: localizationManager.localized("companion_conversation_done"),
+                    action: {
+                        UIApplication.shared.sendAction(
+                            #selector(UIResponder.resignFirstResponder),
+                            to: nil,
+                            from: nil,
+                            for: nil
+                        )
+                    }
+                )
             }
         }
         .navigationBarHidden(true)
@@ -89,6 +106,27 @@ struct AntifakeHubScreen: View {
         }
     }
 
+    private var trustBanner: some View {
+        Button {
+            showAppleLimits = true
+        } label: {
+            HStack(alignment: .top, spacing: Spacing.s) {
+                Image(systemName: "exclamationmark.shield")
+                    .foregroundColor(.yellow)
+                Text(localizationManager.localized("antifake_trust_banner"))
+                    .font(.system(size: 12, weight: .medium))
+                    .foregroundColor(.white.opacity(0.92))
+                    .multilineTextAlignment(.leading)
+                Spacer(minLength: 0)
+            }
+            .padding(Spacing.s)
+            .stormGlassCard(cornerRadius: 12)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("antifake_trust_banner")
+        .accessibilityLabel(localizationManager.localized("antifake_trust_banner"))
+    }
+
     private var header: some View {
         ALADDINNavigationBar(
             title: localizationManager.localized("antifake_hub_title"),
@@ -104,7 +142,9 @@ struct AntifakeHubScreen: View {
                     showAppleLimits = true
                 }
             ],
-            onBack: { navigationManager.goBack() }
+            onBack: {
+                navigationManager.goBackToPreviousScreen(reason: "AntifakeHub.onBack")
+            }
         )
     }
 
@@ -139,6 +179,39 @@ struct AntifakeHubScreen: View {
                 .accessibilityAddTraits(selectedTab == tab ? .isSelected : [])
             }
         }
+    }
+
+    private var askAssistantHelpCard: some View {
+        Button {
+            guard let url = URL(string: AppConfig.supportAssistantURL) else { return }
+            UIApplication.shared.open(url)
+        } label: {
+            HStack(spacing: Spacing.m) {
+                Image(systemName: "sparkles")
+                    .font(.title3.weight(.semibold))
+                    .foregroundColor(.secondaryGold)
+                    .accessibilityHidden(true)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(localizationManager.localized("support_ask_assistant"))
+                        .font(.subheadline.bold())
+                        .foregroundColor(.white)
+                    Text(localizationManager.localized("support_ask_assistant_antifake_subtitle"))
+                        .font(.caption)
+                        .foregroundColor(.white.opacity(0.8))
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "arrow.up.right")
+                    .foregroundColor(.white.opacity(0.7))
+                    .accessibilityHidden(true)
+            }
+            .padding(Spacing.m)
+            .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .secondaryGold)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("antifake_ask_assistant_cta")
+        .accessibilityLabel(localizationManager.localized("support_ask_assistant"))
+        .accessibilityHint(localizationManager.localized("support_ask_assistant_antifake_subtitle"))
     }
 
     @ViewBuilder
@@ -459,6 +532,8 @@ struct AntifakeTextCheckView: View {
             TextEditor(text: $viewModel.inputText)
                 .frame(minHeight: 120)
                 .padding(Spacing.s)
+                .modifier(AladdinHideTextEditorBackground())
+                .wellnessReadableInput()
                 .stormGlassCard(cornerRadius: CornerRadius.medium)
                 .accessibilityIdentifier("antifake_text_input")
                 .accessibilityLabel(localizationManager.localized("antifake_mode_text"))

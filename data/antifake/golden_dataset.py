@@ -167,6 +167,60 @@ def golden_sms_en() -> List[Case]:
     return [(t, "likely_fake") for t in cores]
 
 
+def golden_redteam_monthly_ru() -> List[Case]:
+    """afhub-p3-03 — monthly social-engineering red-team RU (mode=sms)."""
+    cores = (
+        # OTP / bank
+        "Служба безопасности: продиктуйте код из SMS чтобы отменить перевод",
+        "Ваш СберID: для разблокировки счёта пришлите одноразовый код",
+        # SBP / card
+        "Срочно подтвердите СБП-перевод на карту 4276 иначе арест счёта",
+        "Переведите остаток на «безопасный» счёт через СБП прямо сейчас",
+        # relative / vishing-style SMS
+        "Мам это я, телефон разрядился, срочно переведи на карту друга",
+        "Я в ДТП, нужна оплата эвакуатора — скинь на карту в течение часа",
+        # tax / gov
+        "ФНС: долг по налогам, оплатите по ссылке иначе блокировка карт сегодня",
+        "Госуслуги: штраф просрочен — внесите оплату кодом из SMS",
+        # crypto / prize
+        "Вы выиграли USDT — для вывода оплатите комиссию на криптокошелёк",
+        "Инвестиции удвоим за сутки: переведите на наш кошелёк сейчас",
+        # delivery / customs
+        "Посылка на таможне: оплатите пошлину по реквизитам иначе возврат",
+        "СДЭК: доставка задержана, подтвердите оплату картой и кодом",
+        # support spoof
+        "Тинькофф поддержка: назовите CVV и код из SMS для проверки",
+        "МТС: ваш номер будет заблокирован — переведите код подтверждения",
+        # pressure
+        "Не говорите никому — только нам из службы безопасности банка код",
+        "Действуйте немедленно: счёт заблокируют через 10 минут без перевода",
+    )
+    return [(t, "likely_fake") for t in cores]
+
+
+def golden_redteam_monthly_en() -> List[Case]:
+    """afhub-p3-03 — monthly social-engineering red-team EN (mode=sms)."""
+    cores = (
+        "Bank security: read me the SMS code to cancel the transfer now",
+        "Your account is locked — send the one-time code to unlock",
+        "Confirm the instant payment to my card urgently or funds freeze",
+        "Mom it's me, phone died — transfer money to my friend's card now",
+        "I had a car accident — pay the tow truck fee to this card ASAP",
+        "Tax office: overdue fine — pay via this link or cards blocked today",
+        "You won USDT — pay the withdrawal fee to our crypto wallet",
+        "Customs: parcel held — pay the duty using the card details below",
+        "Support: tell us your CVV and SMS code to verify the account",
+        "Do not tell anyone — only bank security — send the OTP urgently",
+        "Act within 10 minutes: transfer remaining balance to the safe account",
+        "Prize claim: wire the processing fee to release your winnings now",
+        "Delivery delayed: confirm payment with card and SMS code immediately",
+        "Fraud desk: share the verification code to stop the unauthorized charge",
+        "Limited window — send money to unlock your account before midnight",
+        "Family emergency: transfer cash to this card, I'll explain later",
+    )
+    return [(t, "likely_fake") for t in cores]
+
+
 def golden_audio_probe_sizes() -> List[int]:
     """Byte lengths for minimal WAV probe regression (≥10)."""
     return [44, 64, 128, 256, 512, 768, 1024, 1536, 2048, 4096, 8192, 12000]
@@ -178,6 +232,8 @@ def dataset_counts() -> dict[str, int]:
         "text_en": len(golden_text_en()),
         "text_sms_ru": len(golden_sms_ru()),
         "text_sms_en": len(golden_sms_en()),
+        "redteam_monthly_ru": len(golden_redteam_monthly_ru()),
+        "redteam_monthly_en": len(golden_redteam_monthly_en()),
         "url": len(golden_urls()),
         "url_fuzzy": len(golden_urls_fuzzy()),
         "rkn_edge": len(golden_rkn_edge()),

@@ -6691,6 +6691,7 @@ class LocalizationManager: ObservableObject {
             "antifake_media_consent_title": "Загрузка на сервер",
             "antifake_media_consent_body": "Файл будет отправлен на сервер ALADDIN для анализа и удалён через ~15 минут. Продолжить?",
             "antifake_media_consent_accept": "Согласен, проверить",
+            "antifake_media_consent_decline": "Отмена",
             "antifake_premium_gate_honest_body": "Проверка подлинности доступна в тарифах Family и Premium. Мы не показываем демо-вердикты без реального анализа.",
             "antifake_premium_gate_bullet_1": "Текст, ссылки, аудио и видео — по вашему запросу",
             "antifake_premium_gate_bullet_2": "Запись звонка после разговора + подпись на входящих",

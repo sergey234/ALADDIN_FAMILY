@@ -206,7 +206,7 @@ private struct AntifakeCallDirectorySetupSheet: View {
 
     var body: some View {
         NavigationView {
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Text(localizationManager.localized("antifake_call_directory_setup_intro"))
                         .font(.body)

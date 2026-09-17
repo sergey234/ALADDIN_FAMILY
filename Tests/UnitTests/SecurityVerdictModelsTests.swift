@@ -9,6 +9,7 @@ final class SecurityVerdictModelsTests: XCTestCase {
           "verdict": "likely_fake",
           "confidence": 0.91,
           "reasons": ["url_phishing_path"],
+          "reasons_human": ["Путь в ссылке типичен для фишинга (login, verify, secure)."],
           "sources": [
             {"id": "phishing_awareness", "title_key": "antifake_source_phishing_awareness", "url": "https://example.com"}
           ],
@@ -24,6 +25,8 @@ final class SecurityVerdictModelsTests: XCTestCase {
         XCTAssertEqual(verdict.confidence, 0.91, accuracy: 0.001)
         XCTAssertEqual(verdict.sources.count, 1)
         XCTAssertEqual(verdict.sources.first?.id, "phishing_awareness")
+        XCTAssertEqual(verdict.reasonsHuman.count, 1)
+        XCTAssertTrue(verdict.reasonsHuman[0].contains("фишинг"))
         XCTAssertTrue(verdict.isLikelyThreat)
     }
 

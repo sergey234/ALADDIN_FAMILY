@@ -18,6 +18,7 @@ struct AntifakeCheckHistoryEntry: Codable, Identifiable, Equatable {
 }
 
 enum AntifakeCheckHistoryStore {
+    static let didChangeNotification = Notification.Name("antifakeCheckHistoryDidChange")
     private static let storageKey = "antifake_check_history_v1"
     private static let maxEntries = 50
 
@@ -46,10 +47,12 @@ enum AntifakeCheckHistoryStore {
 
     static func clear() {
         UserDefaults.standard.removeObject(forKey: storageKey)
+        NotificationCenter.default.post(name: didChangeNotification, object: nil)
     }
 
     private static func persist(_ entries: [AntifakeCheckHistoryEntry]) {
         guard let data = try? JSONEncoder().encode(entries) else { return }
         UserDefaults.standard.set(data, forKey: storageKey)
+        NotificationCenter.default.post(name: didChangeNotification, object: nil)
     }
 }
