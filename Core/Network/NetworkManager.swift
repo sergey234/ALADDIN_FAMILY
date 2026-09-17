@@ -72,6 +72,19 @@ private let logger = MasterLogger.shared
         return nil
     }
 
+    /// afl10n-p0-01 — Antifake/API UI language from in-app setting (en|ru), never device preferredLanguages.
+    private static func applyAladdinLangHeaders(to request: inout URLRequest) {
+        let lang: String
+        switch LocalizationManager.shared.currentLanguage {
+        case .english:
+            lang = "en"
+        default:
+            lang = "ru"
+        }
+        request.setValue(lang, forHTTPHeaderField: "X-Aladdin-Lang")
+        request.setValue(lang, forHTTPHeaderField: "Accept-Language")
+    }
+
     private static func isContract401(detail: String?) -> Bool {
         guard let detail = detail?.lowercased() else { return false }
         return detail.contains("numeric user id") ||
@@ -905,6 +918,10 @@ private let logger = MasterLogger.shared
         onHeaders: (([AnyHashable: Any]) -> Void)? = nil,
         completion: @escaping (Result<T, Error>) -> Void
     ) {
+        // afl10n-p0-01: in-app language → server reasons_human / summary_human (not device locale)
+        var request = request
+        Self.applyAladdinLangHeaders(to: &request)
+
         // ✅ ЗАЩИТА ОТ РЕКУРСИИ: Ограничиваем длину URL для логирования
         let urlString = request.url?.absoluteString ?? "unknown"
         let safeURLString = urlString.count > 200 ? String(urlString.prefix(200)) + "..." : urlString
