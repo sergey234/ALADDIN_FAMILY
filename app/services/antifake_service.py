@@ -255,12 +255,8 @@ def _build_response(
         payload["sources"] = sources[:6]
     if provenance:
         payload["provenance"] = provenance
-    try:
-        from app.services.antifake_reason_i18n import humanize_reasons
-
-        payload["reasons_human"] = humanize_reasons(payload["reasons"], lang="ru")
-    except Exception:
-        payload["reasons_human"] = list(payload["reasons"])
+    # afl10n-p0-05: do not bake RU reasons_human here.
+    # SSOT human copy = router `_client_verdict` / `attach_human_reasons` with request lang.
     return payload
 
 

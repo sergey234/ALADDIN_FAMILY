@@ -559,7 +559,7 @@ async def _enqueue_media_job(
                     user_settings["voice_fraud_threshold_percent"]
                 ),
             )
-        return {"job_id": job_id, "status": "completed", **verdict}
+        return _client_verdict({"job_id": job_id, "status": "completed", **verdict}, request)
     except HTTPException:
         fail_job(job_id, "analysis_failed")
         raise

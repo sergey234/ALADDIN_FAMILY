@@ -356,6 +356,10 @@ struct TariffsScreen: View {
                 // Trial выдаётся через наш backend (/api/auth/register-device-trial) и обновляет JWT/лимиты.
                 if tariff == .trial {
                     Task { @MainActor in
+                        // trial-ux-a: уже активный trial → не registration (пустой локальный кэш после RESET не повод).
+                        let wasAlreadyActive = SubscriptionManager.shared.trialStatus?.isActive == true
+                        let alreadyActiveUntil = SubscriptionManager.shared.trialStatus?.endDate
+
                         await SubscriptionManager.shared.activateTrialIfNeeded()
                         // Подтянуть `/api/subscription/status` и разослать обновление — иначе главная может остаться на «Базовый», пока пользователь не перезапустит приложение.
                         await SubscriptionManager.shared.forceSync()
@@ -365,6 +369,27 @@ struct TariffsScreen: View {
                             object: nil,
                             userInfo: ["level": level, "source": "tariffs_trial_selected"]
                         )
+
+                        if wasAlreadyActive {
+                            let dateText: String = {
+                                guard let until = alreadyActiveUntil ?? SubscriptionManager.shared.trialStatus?.endDate else {
+                                    return "—"
+                                }
+                                let formatter = DateFormatter()
+                                formatter.locale = localizationManager.currentLanguage == .english
+                                    ? Locale(identifier: "en_US")
+                                    : Locale(identifier: "ru_RU")
+                                formatter.dateStyle = .medium
+                                formatter.timeStyle = .none
+                                return formatter.string(from: until)
+                            }()
+                            ToastManager.shared.showInfo(
+                                localizationManager.localized("tariffs_trial_already_active_until", dateText)
+                            )
+                            return
+                        }
+
+                        // Registration только после свеже выданного trial, если на сервере реально нет семьи.
                         if FamilyLocalStore.needsServerFamilyCreation() {
                             FamilyLocalStore.prepareCreateFamilyFlow()
                             navigationManager.navigateTo(.mainWithRegistration)

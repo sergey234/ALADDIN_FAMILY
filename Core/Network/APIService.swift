@@ -4282,8 +4282,8 @@ class APIService: ObservableObject {
             request.cachePolicy = .reloadIgnoringLocalCacheData
             request.setValue("multipart/form-data; boundary=\(boundary)", forHTTPHeaderField: "Content-Type")
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-            let preferred = Locale.preferredLanguages.first?.lowercased() ?? "ru"
-            let lang = preferred.hasPrefix("en") ? "en" : "ru"
+            // afl10n-p0-02: in-app language (same as NetworkManager), not device preferredLanguages
+            let lang = Self.aladdinUILangCode()
             request.setValue(lang, forHTTPHeaderField: "Accept-Language")
             request.setValue(lang, forHTTPHeaderField: "X-Aladdin-Lang")
 
@@ -4698,6 +4698,16 @@ class APIService: ObservableObject {
         body.append("\(value)\r\n".data(using: .utf8)!)
     }
 
+    /// afl10n-p0-02 — Antifake media/poll UI language from in-app setting (en|ru).
+    private static func aladdinUILangCode() -> String {
+        switch LocalizationManager.shared.currentLanguage {
+        case .english:
+            return "en"
+        default:
+            return "ru"
+        }
+    }
+
     /// GET `/api/antifake/jobs/{id}` — poll async job until completed (B2-05).
     func antifakePollJob(
         jobId: String,
@@ -4720,8 +4730,8 @@ class APIService: ObservableObject {
             request.httpMethod = "GET"
             request.cachePolicy = .reloadIgnoringLocalCacheData
             request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-            let preferred = Locale.preferredLanguages.first?.lowercased() ?? "ru"
-            let lang = preferred.hasPrefix("en") ? "en" : "ru"
+            // afl10n-p0-02: in-app language (same as NetworkManager), not device preferredLanguages
+            let lang = Self.aladdinUILangCode()
             request.setValue(lang, forHTTPHeaderField: "Accept-Language")
             request.setValue(lang, forHTTPHeaderField: "X-Aladdin-Lang")
 

@@ -610,19 +610,30 @@ def resolve_ui_lang_from_headers(
     return best_lang if best_q >= 0 else "ru"
 
 
+def _text_for_lang(entry: Dict[str, str], lang_key: str) -> Optional[str]:
+    """Return copy for lang; never fall back to RU when client asked for EN (afl10n-p0-06)."""
+    text = (entry.get(lang_key) or "").strip()
+    if text:
+        return text
+    if lang_key == "en":
+        return None
+    ru = (entry.get("ru") or "").strip()
+    return ru or None
+
+
 def _lookup_entry(code: str, lang_key: str) -> Optional[str]:
     entry = REASON_I18N.get(code)
     if entry:
-        return entry.get(lang_key) or entry.get("ru")
+        return _text_for_lang(entry, lang_key)
     if ":" in code:
         tail = code.split(":", 1)[1].strip()
         entry = REASON_I18N.get(tail)
         if entry:
-            return entry.get(lang_key) or entry.get("ru")
+            return _text_for_lang(entry, lang_key)
         underscored = code.replace(":", "_")
         entry = REASON_I18N.get(underscored)
         if entry:
-            return entry.get(lang_key) or entry.get("ru")
+            return _text_for_lang(entry, lang_key)
     return None
 
 

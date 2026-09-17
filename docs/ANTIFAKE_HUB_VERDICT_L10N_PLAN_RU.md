@@ -74,4 +74,11 @@
 |------|--------|
 | `afl10n-meta` | ✅ документ сохранён |
 | `afl10n-p0-01-nm-headers` | ✅ `NetworkManager.performRequest` → `X-Aladdin-Lang` + `Accept-Language` из `LocalizationManager` |
-| остальные | pending (по одной) |
+| `afl10n-p0-02-api-headers` | ✅ `APIService` multipart upload + job poll → `aladdinUILangCode()` из in-app language |
+| `afl10n-p0-03-smoke-en` | ✅ Text EN human (device) |
+| `afl10n-p0-04-sync-media` | ✅ sync media `completed` → `_client_verdict(request)` (локально; MAIN — после GO) |
+| `afl10n-p0-05-build-response` | ✅ `_build_response` без hardcode `lang="ru"` (локально; MAIN — после GO) |
+| `afl10n-p0-06-reason-i18n` | ✅ 128/128 EN+RU; lookup без silent RU→EN (локально; MAIN — после GO) |
+| `afl10n-p1-07`…`p2-12`, deploy | pending (по одной) |
+
+**Смежная тема (не afl10n):** Trial UX на тарифах — `docs/TRIAL_TARIFFS_UX_PLAN_RU.md` (`trial-ux-*`).
