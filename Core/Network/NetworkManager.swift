@@ -1354,7 +1354,21 @@ private let logger = MasterLogger.shared
                     case 400:
                         networkError = .badRequest(errorMessage)
                     case 403:
-                        networkError = .forbidden(errorMessage)
+                        // Nested FastAPI detail `{error:premium_required,...}` is not `[String:String]` —
+                        // keep premium gate signal for Antifake Hub (B2-07).
+                        switch PremiumGateHandler.outcome(
+                            httpStatus: httpResponse.statusCode,
+                            data: data
+                        ) {
+                        case .premiumRequired(let premiumMessage):
+                            networkError = .forbidden(premiumMessage ?? "premium_required")
+                        case .forbidden(let forbiddenMessage):
+                            networkError = .forbidden(forbiddenMessage ?? errorMessage)
+                        case .other(let otherError):
+                            networkError = otherError
+                        case .allowed:
+                            networkError = .forbidden(errorMessage)
+                        }
                     case 404:
                         networkError = .notFound(errorMessage)
                     case 409:

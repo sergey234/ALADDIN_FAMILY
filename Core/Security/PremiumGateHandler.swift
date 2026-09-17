@@ -194,6 +194,13 @@ enum AntifakeCheckFailureHandler {
             message = localizationManager.localized("antifake_error_rate_limit")
         case .serviceUnavailable, .badGateway, .internalServerError:
             message = localizationManager.localized("antifake_error_service_unavailable")
+        case .forbidden(let detail) where networkError.isPremiumRequired:
+            // Defense in depth if outcome(from:) missed nested detail
+            return AntifakeCheckFailurePresentation(
+                requiresPremiumUpgrade: true,
+                errorMessage: detail
+                    ?? localizationManager.localized("antifake_premium_required_body")
+            )
         default:
             message = localizationManager.localized("antifake_error_try_later")
         }
