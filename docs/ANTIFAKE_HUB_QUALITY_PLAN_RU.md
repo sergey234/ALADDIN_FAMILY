@@ -166,6 +166,8 @@ Norton / Kaspersky / Truecaller / Hive / Reality Defender тоже ошибаю�
 **Зачем:** vishing. Copy RU+EN.  
 **Без дубля:** STT результат → тот же text pipeline, не второй lexicon.
 
+**Статус:** ✅ `antifake_audio_v2` — канал `stt_text` (RU+EN) → `check_text(mode=sms)` + veto; deepfake + clipping/narrowband; i18n + iOS hint.
+
 ### 12. Video · `afhub-p2-02-video`
 **Что:** ONNX on + face quality gates + AV1 fallback UX RU+EN.  
 **Зачем:** не green при decode fail.  
@@ -227,8 +229,8 @@ Norton / Kaspersky / Truecaller / Hive / Reality Defender тоже ошибаю�
 | 7 | `afhub-p1-01-intent` | ✅ `antifake_scam_intent.py` + floors + i18n |
 | 8 | `afhub-p1-02-url` | ✅ redirect + lookalike + SSRF + i18n |
 | 9 | `afhub-p1-03-call-spoof` | ✅ spoof hints UI + authority labels + tests |
-| 10 | `afhub-p1-04-calib-prod` | pending — **нужен GO** на MAIN `…180` |
-| 11 | `afhub-p2-01-voice` | pending |
+| 10 | `afhub-p1-04-calib-prod` | ✅ calib 100% + GO deploy MAIN `…180` (tar scoring pack) |
+| 11 | `afhub-p2-01-voice` | ✅ audio_v2 STT→SMS scam RU+EN + deepfake strengthen |
 | 12 | `afhub-p2-02-video` | pending |
 | 13 | `afhub-p2-03-threat-intel` | pending |
 | 14 | `afhub-p2-04-share-family` | pending |

@@ -342,6 +342,30 @@ REASON_I18N: Dict[str, Dict[str, str]] = {
         "ru": "Голос звучит неестественно — похоже на компьютерную речь.",
         "en": "The voice sounds unnatural — like computer speech.",
     },
+    "stt_unavailable": {
+        "ru": "Не удалось распознать речь в записи. Проверьте текст сообщения отдельно или загрузите более чёткий файл.",
+        "en": "Could not transcribe speech from this recording. Check the text separately or upload a clearer file.",
+    },
+    "stt_transcript_scam_check": {
+        "ru": "Распознанный текст проверен как SMS/скам-сообщение.",
+        "en": "Recognized speech was checked like an SMS/scam message.",
+    },
+    "stt_transcript_too_short": {
+        "ru": "Распознанный текст слишком короткий для уверенного вывода.",
+        "en": "Recognized speech is too short for a confident result.",
+    },
+    "clipping_artifacts": {
+        "ru": "В записи сильные искажения громкости (клиппинг) — частый признак синтетики.",
+        "en": "Loudness clipping in the recording — often seen with synthetic audio.",
+    },
+    "narrowband_synthetic_profile": {
+        "ru": "Спектр узкий, как у телефонной/синтетической речи.",
+        "en": "Narrow spectrum profile typical of phone/synthetic speech.",
+    },
+    "overly_steady_energy": {
+        "ru": "Громкость слишком ровная — у живой речи обычно больше перепадов.",
+        "en": "Energy is too steady — natural speech usually varies more.",
+    },
     "natural_voice": {
         "ru": "Голос звучит как обычный человеческий.",
         "en": "The voice sounds like a normal human.",
