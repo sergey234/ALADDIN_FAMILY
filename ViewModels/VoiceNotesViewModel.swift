@@ -1,5 +1,6 @@
 import Foundation
 import SwiftUI
+import UIKit
 import AVFoundation
 import Speech
 
@@ -35,13 +36,17 @@ final class VoiceNotesViewModel: ObservableObject {
         case today
         case yesterday
         case projects
-        
+        case ideas
+        case reminds
+
         var titleKey: String {
             switch self {
             case .all: return "voice_notes_filter_all"
             case .today: return "voice_notes_section_today"
             case .yesterday: return "voice_notes_section_yesterday"
             case .projects: return "voice_notes_section_projects"
+            case .ideas: return "voice_notes_section_ideas"
+            case .reminds: return "voice_notes_section_reminds"
             }
         }
     }
@@ -59,6 +64,12 @@ final class VoiceNotesViewModel: ObservableObject {
     @Published var showSpeechPermissionAlert = false
     @Published var isSpeechTranscriptionAvailable = true
     @Published var showNearLimitWarning = false
+    /// VSL-C: after leading intent parse, host should dismiss sheet then open Antifake.
+    @Published var pendingAntifakeFromVoice: AntifakeSharePayload?
+    /// VSL-C: optional status navigation after «статус».
+    @Published var pendingStatusNavigation = false
+
+    private static let routerEnabledKey = "voiceIntentRouterEnabled"
 
     private let recorderService = VoiceNotesRecorderService()
     private let transcriptionService = VoiceNotesTranscriptionService()
@@ -126,6 +137,12 @@ final class VoiceNotesViewModel: ObservableObject {
             if !yesterday.isEmpty { result.append(("voice_notes_section_yesterday", yesterday)) }
         case .projects:
             if !older.isEmpty { result.append(("voice_notes_section_projects", older)) }
+        case .ideas:
+            let ideas = filteredBase.filter { $0.tags.contains("intent_idea") }
+            if !ideas.isEmpty { result.append(("voice_notes_section_ideas", ideas)) }
+        case .reminds:
+            let reminds = filteredBase.filter { $0.tags.contains("intent_remind") }
+            if !reminds.isEmpty { result.append(("voice_notes_section_reminds", reminds)) }
         }
         return result
     }
@@ -318,10 +335,102 @@ final class VoiceNotesViewModel: ObservableObject {
         notes[idx].summaryConfidence = result.confidence
         notes[idx].summaryVersion = result.version
         if !result.suggestedTags.isEmpty {
-            notes[idx].tags = Array(Set(notes[idx].tags + result.suggestedTags)).sorted()
+            let intentTags = notes[idx].tags.filter { $0.hasPrefix("intent_") }
+            let merged = Array(Set(notes[idx].tags + result.suggestedTags)).sorted()
+            // A12: never drop intent_* tags when summary suggests others.
+            notes[idx].tags = Array(Set(merged + intentTags)).sorted()
         }
         persistNotes()
         markSummaryGeneration(success: true)
+    }
+
+    /// VSL-C: leading-word router after STT. Keeps full transcript; merges intent tag.
+    private func applyVoiceIntentRouting(noteIndex idx: Int, transcript: String) {
+        let enabled = UserDefaults.standard.object(forKey: Self.routerEnabledKey) as? Bool ?? true
+        guard enabled else { return }
+
+        let parsed = VoiceIntentRouter.parse(transcript)
+        notes[idx].tags = Array(Set(notes[idx].tags + [parsed.intentTag])).sorted()
+        VoiceSafetyNowStore.save(
+            intentTag: parsed.intentTag,
+            detail: parsed.remainder.isEmpty ? parsed.fullTranscript : parsed.remainder
+        )
+
+        switch parsed.intent {
+        case .antifakeURL, .securityCheck:
+            pendingAntifakeFromVoice = Self.makeAntifakePayload(from: parsed)
+        case .status:
+            pendingStatusNavigation = true
+        case .remind:
+            VoiceRemindScheduler.schedule(
+                fromRemainder: parsed.remainder.isEmpty ? parsed.fullTranscript : parsed.remainder,
+                noteId: notes[idx].id
+            )
+        case .incident, .idea, .breakSegment, .note:
+            break
+        }
+    }
+
+    /// VSL-C P2 — weekly digest from local notes (last 7 days).
+    func makeWeeklyDigest() -> VoiceWeeklyDigestResult {
+        let stored = notes.map {
+            VoiceNotesStore.StoredVoiceNote(
+                id: $0.id,
+                title: $0.title,
+                createdAt: $0.createdAt,
+                durationSec: $0.durationSec,
+                transcriptPreview: $0.transcriptPreview,
+                summary: $0.summary,
+                summaryConfidence: $0.summaryConfidence,
+                summaryVersion: $0.summaryVersion,
+                tags: $0.tags,
+                audioPath: $0.audioPath
+            )
+        }
+        return VoiceWeeklyDigestService.build(notes: stored)
+    }
+
+    /// Real users say «ссылка» / «проверка», not «https://…».
+    /// Prefer spoken URL/text; if none — take **copied** link/text from clipboard (on-demand).
+    private static func makeAntifakePayload(from parsed: VoiceIntentRouter.Result) -> AntifakeSharePayload {
+        let spoken = parsed.antifakePrefill
+        if let url = AntifakeTextInputClassifier.extractURL(from: spoken) {
+            return AntifakeSharePayload(mode: .url, value: url, createdAt: Date())
+        }
+        if !spoken.isEmpty, parsed.intent == .securityCheck {
+            return AntifakeSharePayload(mode: .text, value: spoken, createdAt: Date())
+        }
+
+        // Clipboard fallback (user already copied a suspicious link)
+        if let clip = UIPasteboard.general.string?
+            .trimmingCharacters(in: .whitespacesAndNewlines),
+           !clip.isEmpty {
+            switch ClipboardSafetyService.process(clip) {
+            case .ok(let cleaned) where !cleaned.isEmpty:
+                if AntifakeTextInputClassifier.extractURL(from: cleaned) != nil
+                    || AntifakeTextInputClassifier.looksLikeURL(cleaned) {
+                    return AntifakeSharePayload(mode: .url, value: cleaned, createdAt: Date())
+                }
+                return AntifakeSharePayload(mode: .text, value: cleaned, createdAt: Date())
+            case .blockedSecret, .ok:
+                break
+            }
+        }
+
+        // Open Antifake empty — user can paste manually
+        return AntifakeSharePayload(mode: .url, value: "", createdAt: Date())
+    }
+
+    func consumePendingAntifakeFromVoice() -> AntifakeSharePayload? {
+        let payload = pendingAntifakeFromVoice
+        pendingAntifakeFromVoice = nil
+        return payload
+    }
+
+    func consumePendingStatusNavigation() -> Bool {
+        let flag = pendingStatusNavigation
+        pendingStatusNavigation = false
+        return flag
     }
 
     func updateSummary(noteId: UUID, summary: String, confidence: Double?) {
@@ -471,6 +580,9 @@ final class VoiceNotesViewModel: ObservableObject {
                         self.notes[idx].transcriptPreview = text.isEmpty
                             ? "ai_assistant_voice_empty_result"
                             : text
+                        if !text.isEmpty {
+                            self.applyVoiceIntentRouting(noteIndex: idx, transcript: text)
+                        }
                         self.persistNotes()
                         self.markTranscriptionResult(success: !text.isEmpty, empty: text.isEmpty)
                     }

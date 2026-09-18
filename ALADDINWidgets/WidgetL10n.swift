@@ -22,6 +22,10 @@ enum WidgetL10n {
         "widget_label_server": "Сервер:",
         "widget_label_speed": "Скорость:",
         "widget_label_threats": "Угроз:",
+        "voice_safety_widget_name": "Голосовой лог",
+        "voice_safety_widget_desc": "Что сейчас в Voice Safety Log",
+        "voice_safety_now_caption": "Сейчас",
+        "voice_safety_now_checking": "Проверка",
     ]
 
     private static let en: [String: String] = [
@@ -37,5 +41,9 @@ enum WidgetL10n {
         "widget_label_server": "Server:",
         "widget_label_speed": "Speed:",
         "widget_label_threats": "Threats:",
+        "voice_safety_widget_name": "Voice Safety Log",
+        "voice_safety_widget_desc": "What’s current in Voice Safety Log",
+        "voice_safety_now_caption": "Now",
+        "voice_safety_now_checking": "Checking",
     ]
 }

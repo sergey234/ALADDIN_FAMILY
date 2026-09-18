@@ -6,6 +6,8 @@ enum UnicornDeepLinkRouter {
         case companionTalk
         case wellnessCheckin
         case voiceDayRecap
+        case voiceLog
+        case voiceWeekly
         case focusSession
         case familyHabits
         case habitDone(preset: String)
@@ -24,8 +26,14 @@ enum UnicornDeepLinkRouter {
         if CompanionDeepLinkRouter.isWellnessCheckinDeepLink(url) {
             return .wellnessCheckin
         }
+        if CompanionDeepLinkRouter.isVoiceWeeklyDeepLink(url) {
+            return .voiceWeekly
+        }
         if CompanionDeepLinkRouter.isVoiceDayRecapDeepLink(url) {
             return .voiceDayRecap
+        }
+        if CompanionDeepLinkRouter.isVoiceLogDeepLink(url) {
+            return .voiceLog
         }
 
         // aladdin://focus  | aladdin://focus/session
@@ -77,6 +85,15 @@ enum UnicornDeepLinkRouter {
                 name: NSNotification.Name("NavigateToVoiceDayRecap"),
                 object: nil
             )
+        case .voiceLog:
+            VoiceSafetyNowStore.markPendingOpen()
+            navigation.navigateTo(.settings)
+            NotificationCenter.default.post(name: .navigateToVoiceNotes, object: nil)
+        case .voiceWeekly:
+            VoiceWeeklyDigestService.markPendingOpen()
+            VoiceSafetyNowStore.markPendingOpen()
+            navigation.navigateTo(.settings)
+            NotificationCenter.default.post(name: .navigateToVoiceNotes, object: nil)
         case .focusSession:
             if FamilyFocusSessionFeature.isEnabled {
                 navigation.navigateTo(.focusSession)

@@ -360,6 +360,27 @@
 		AFSh0222F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFSh0252F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift */; };
 		AFSh0242F90000100C7D34B /* AntifakeDeepLinkRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFSh0232F90000100C7D34B /* AntifakeDeepLinkRouterTests.swift */; };
 		AFTIC22F90000100C7D34B /* AntifakeTextInputClassifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFTIC12F90000100C7D34B /* AntifakeTextInputClassifier.swift */; };
+		VSLS0412F90000100C7D34B /* ClipboardSafetyServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLS0312F90000100C7D34B /* ClipboardSafetyServiceTests.swift */; };
+		VSLR0412F90000100C7D34B /* VoiceIntentRouterTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLR0312F90000100C7D34B /* VoiceIntentRouterTests.swift */; };
+		VSLS0212F90000100C7D34B /* ClipboardSafetyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLS0112F90000100C7D34B /* ClipboardSafetyService.swift */; };
+		VSLR0212F90000100C7D34B /* VoiceIntentRouter.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLR0112F90000100C7D34B /* VoiceIntentRouter.swift */; };
+		VSLN0A12F90000100C7D34B /* VoiceDayIntentStatsTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0912F90000100C7D34B /* VoiceDayIntentStatsTests.swift */; };
+		VSLN0812F90000100C7D34B /* OpenVoiceSafetyLogIntent.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0712F90000100C7D34B /* OpenVoiceSafetyLogIntent.swift */; };
+		VSLN0612F90000100C7D34B /* VoiceDayIntentStats.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0512F90000100C7D34B /* VoiceDayIntentStats.swift */; };
+		VSLN0412F90000100C7D34B /* VoiceSafetyNowChip.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0312F90000100C7D34B /* VoiceSafetyNowChip.swift */; };
+		VSLN0212F90000100C7D34B /* VoiceSafetyNowStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLN0112F90000100C7D34B /* VoiceSafetyNowStore.swift */; };
+		VSLW0212F90000100C7D34B /* VoiceWeeklyDigestService.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0112F90000100C7D34B /* VoiceWeeklyDigestService.swift */; };
+		VSLW0412F90000100C7D34B /* VoiceWeeklyDigestSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0312F90000100C7D34B /* VoiceWeeklyDigestSheet.swift */; };
+		VSLW0612F90000100C7D34B /* VoiceRemindScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0512F90000100C7D34B /* VoiceRemindScheduler.swift */; };
+		VSLW0812F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = VSLW0712F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift */; };
+
+		WDGT0112F90000100C7D34B /* ALADDINWidgets.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = WDGT0102F90000100C7D34B /* ALADDINWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		WDGT0302F90000100C7D34B /* ALADDINWidgets.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0400F90000100C7D34B /* ALADDINWidgets.swift */; };
+		WDGT0312F90000100C7D34B /* SharedDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000200 /* SharedDataManager.swift */; };
+		WDGT0322F90000100C7D34B /* WellnessCheckinWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0401F90000100C7D34B /* WellnessCheckinWidget.swift */; };
+		WDGT0332F90000100C7D34B /* VoiceSafetyNowWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0402F90000100C7D34B /* VoiceSafetyNowWidget.swift */; };
+		WDGT0342F90000100C7D34B /* WidgetL10n.swift in Sources */ = {isa = PBXBuildFile; fileRef = WDGT0403F90000100C7D34B /* WidgetL10n.swift */; };
+
 		AFTIC42F90000100C7D34B /* AntifakeTextInputClassifierTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFTIC32F90000100C7D34B /* AntifakeTextInputClassifierTests.swift */; };
 		AFVMC22F90000100C7D34B /* AntifakeTextCheckViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVMC12F90000100C7D34B /* AntifakeTextCheckViewModel.swift */; };
 		AFVPRES22F90000100C7D34B /* AntifakeVerdictPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AFVPRES12F90000100C7D34B /* AntifakeVerdictPresentation.swift */; };
@@ -409,7 +430,7 @@
 		B5002204 /* WidgetConfigurationUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = B5002104 /* WidgetConfigurationUITests.swift */; };
 		B6000001 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000000 /* AppDelegate.swift */; };
 		B6000003 /* IoTSecurityModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000002 /* IoTSecurityModule.swift */; };
-		B6000201 /* ALADDINWidgets/SharedDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000200 /* ALADDINWidgets/SharedDataManager.swift */; };
+		B6000201 /* ALADDINWidgets/SharedDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6000200 /* SharedDataManager.swift */; };
 		B70001022F90000100ABC001 /* Screens/VoiceNotesScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001012F90000100ABC001 /* Screens/VoiceNotesScreen.swift */; };
 		B70001042F90000100ABC001 /* ViewModels/VoiceNotesViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001032F90000100ABC001 /* ViewModels/VoiceNotesViewModel.swift */; };
 		B70001062F90000100ABC001 /* Shared/Components/VoiceNotes/QuickRecorderBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70001052F90000100ABC001 /* Shared/Components/VoiceNotes/QuickRecorderBar.swift */; };
@@ -703,6 +724,13 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		WDGT0122F90000100C7D34B /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = A0FFFFF6 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = WDGT0172F90000100C7D34B;
+			remoteInfo = ALADDINWidgets;
+		};
 		5E61A0A52EFB38ED0039093A /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = A0FFFFF6 /* Project object */;
@@ -1126,7 +1154,16 @@
 		AFSh0232F90000100C7D34B /* AntifakeDeepLinkRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeDeepLinkRouterTests.swift; sourceTree = "<group>"; };
 		AFSh0252F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeSharePayloadStoreTests.swift; sourceTree = "<group>"; };
 		AFTIC12F90000100C7D34B /* AntifakeTextInputClassifier.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTextInputClassifier.swift; path = Core/Security/AntifakeTextInputClassifier.swift; sourceTree = "<group>"; };
+		VSLS0112F90000100C7D34B /* ClipboardSafetyService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = ClipboardSafetyService.swift; path = Core/Security/ClipboardSafetyService.swift; sourceTree = "<group>"; };
+		VSLR0112F90000100C7D34B /* VoiceIntentRouter.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceIntentRouter.swift; path = Core/Voice/VoiceIntentRouter.swift; sourceTree = "<group>"; };
+		VSLN0712F90000100C7D34B /* OpenVoiceSafetyLogIntent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = OpenVoiceSafetyLogIntent.swift; path = Core/Voice/OpenVoiceSafetyLogIntent.swift; sourceTree = "<group>"; };
+		VSLN0512F90000100C7D34B /* VoiceDayIntentStats.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceDayIntentStats.swift; path = Core/Audio/VoiceDayIntentStats.swift; sourceTree = "<group>"; };
+		VSLN0312F90000100C7D34B /* VoiceSafetyNowChip.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceSafetyNowChip.swift; path = Shared/Components/VoiceNotes/VoiceSafetyNowChip.swift; sourceTree = "<group>"; };
+		VSLN0112F90000100C7D34B /* VoiceSafetyNowStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceSafetyNowStore.swift; path = Core/Voice/VoiceSafetyNowStore.swift; sourceTree = "<group>"; };
 		AFTIC32F90000100C7D34B /* AntifakeTextInputClassifierTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AntifakeTextInputClassifierTests.swift; sourceTree = "<group>"; };
+		VSLS0312F90000100C7D34B /* ClipboardSafetyServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ClipboardSafetyServiceTests.swift; sourceTree = "<group>"; };
+		VSLR0312F90000100C7D34B /* VoiceIntentRouterTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceIntentRouterTests.swift; sourceTree = "<group>"; };
+		VSLN0912F90000100C7D34B /* VoiceDayIntentStatsTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceDayIntentStatsTests.swift; sourceTree = "<group>"; };
 		AFVMC12F90000100C7D34B /* AntifakeTextCheckViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTextCheckViewModel.swift; path = ViewModels/AntifakeTextCheckViewModel.swift; sourceTree = "<group>"; };
 		AFVPRES12F90000100C7D34B /* AntifakeVerdictPresentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeVerdictPresentation.swift; path = Core/Models/AntifakeVerdictPresentation.swift; sourceTree = "<group>"; };
 		AFFAMSH12F90000100C7D34B /* AntifakeFamilyShareText.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeFamilyShareText.swift; path = Core/Models/AntifakeFamilyShareText.swift; sourceTree = "<group>"; };
@@ -1178,7 +1215,7 @@
 		B5002104 /* WidgetConfigurationUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetConfigurationUITests.swift; sourceTree = "<group>"; };
 		B6000000 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		B6000002 /* IoTSecurityModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IoTSecurityModule.swift; sourceTree = "<group>"; };
-		B6000200 /* ALADDINWidgets/SharedDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINWidgets/SharedDataManager.swift; sourceTree = "<group>"; };
+		B6000200 /* SharedDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SharedDataManager.swift; sourceTree = "<group>"; };
 		B70001012F90000100ABC001 /* Screens/VoiceNotesScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Screens/VoiceNotesScreen.swift; sourceTree = "<group>"; };
 		B70001032F90000100ABC001 /* ViewModels/VoiceNotesViewModel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ViewModels/VoiceNotesViewModel.swift; sourceTree = "<group>"; };
 		B70001052F90000100ABC001 /* Shared/Components/VoiceNotes/QuickRecorderBar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Shared/Components/VoiceNotes/QuickRecorderBar.swift; sourceTree = "<group>"; };
@@ -1469,6 +1506,18 @@
 		WELLTS12F90000100C7D34B /* Core/Models/WellnessTogetherSession.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Core/Models/WellnessTogetherSession.swift; sourceTree = "<group>"; };
 		WELLVAL12F90000100C7D34B /* WellnessValuesCardSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = WellnessValuesCardSheet.swift; sourceTree = "<group>"; };
 		WELPRM12F90000100C7D34B /* WellnessPremiumFunnel.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = WellnessPremiumFunnel.swift; path = Core/Services/WellnessPremiumFunnel.swift; sourceTree = "<group>"; };
+
+		VSLW0112F90000100C7D34B /* VoiceWeeklyDigestService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceWeeklyDigestService.swift; path = Core/Audio/VoiceWeeklyDigestService.swift; sourceTree = "<group>"; };
+		VSLW0312F90000100C7D34B /* VoiceWeeklyDigestSheet.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceWeeklyDigestSheet.swift; path = Shared/Components/VoiceNotes/VoiceWeeklyDigestSheet.swift; sourceTree = "<group>"; };
+		VSLW0512F90000100C7D34B /* VoiceRemindScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = VoiceRemindScheduler.swift; path = Core/Voice/VoiceRemindScheduler.swift; sourceTree = "<group>"; };
+		VSLW0712F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceWeeklyDigestServiceTests.swift; sourceTree = "<group>"; };
+		WDGT0092F90000100C7D34B /* ALADDINWidgets.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = ALADDINWidgets.entitlements; sourceTree = "<group>"; };
+		WDGT0102F90000100C7D34B /* ALADDINWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ALADDINWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		WDGT0400F90000100C7D34B /* ALADDINWidgets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ALADDINWidgets.swift; sourceTree = "<group>"; };
+		WDGT0401F90000100C7D34B /* WellnessCheckinWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WellnessCheckinWidget.swift; sourceTree = "<group>"; };
+		WDGT0402F90000100C7D34B /* VoiceSafetyNowWidget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VoiceSafetyNowWidget.swift; sourceTree = "<group>"; };
+		WDGT0403F90000100C7D34B /* WidgetL10n.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WidgetL10n.swift; sourceTree = "<group>"; };
+		WDGT0404F90000100C7D34B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -1499,6 +1548,11 @@
 			);
 		};
 		B5002003 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			files = (
+			);
+		};
+		WDGT0152F90000100C7D34B /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
 			);
@@ -1847,15 +1901,23 @@
 				B70001072F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceNoteCard.swift */,
 				B70001272F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceNotesStructureSheet.swift */,
 				B700012B2F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceDayRecapSheet.swift */,
+				VSLN0312F90000100C7D34B /* VoiceSafetyNowChip.swift */,
+				VSLW0312F90000100C7D34B /* VoiceWeeklyDigestSheet.swift */,
 				B700010F2F90000100ABC001 /* Core/Audio/VoiceNotesRecorderService.swift */,
 				B70001132F90000100ABC001 /* Core/Audio/VoiceNotesTranscriptionService.swift */,
 				B70001252F90000100ABC001 /* Core/Audio/VoiceNotesStructureService.swift */,
 				B70001292F90000100ABC001 /* Core/Audio/VoiceDayRecapService.swift */,
+				VSLN0512F90000100C7D34B /* VoiceDayIntentStats.swift */,
+				VSLW0112F90000100C7D34B /* VoiceWeeklyDigestService.swift */,
 				B70001152F90000100ABC001 /* Core/Audio/SpeechRecognizerFactory.swift */,
 				B70001172F90000100ABC001 /* Core/Audio/SpeechManager.swift */,
 				B70001192F90000100ABC001 /* Core/Audio/AudioLevelMeter.swift */,
 				B700011B2F90000100ABC001 /* Core/Audio/VoiceAudioSessionCoordinator.swift */,
 				C0MPVOI12F90000100C7D34B /* CompanionVoiceSession.swift */,
+				VSLR0112F90000100C7D34B /* VoiceIntentRouter.swift */,
+				VSLN0712F90000100C7D34B /* OpenVoiceSafetyLogIntent.swift */,
+				VSLW0512F90000100C7D34B /* VoiceRemindScheduler.swift */,
+				VSLN0112F90000100C7D34B /* VoiceSafetyNowStore.swift */,
 				C0MPSPK12F90000100C7D34B /* CompanionSpeechOutput.swift */,
 				C0MPNTS12F90000100C7D34B /* CompanionNeuroTTSPlayer.swift */,
 				C0MPPST12F90000100C7D34B /* CompanionPersonalityPresets.swift */,
@@ -2008,6 +2070,7 @@
 				PRMGATE12F90000100C7D34B /* PremiumGateHandler.swift */,
 				AFSh0042F90000100C7D34B /* AntifakeDeepLinkRouter.swift */,
 				AFTIC12F90000100C7D34B /* AntifakeTextInputClassifier.swift */,
+				VSLS0112F90000100C7D34B /* ClipboardSafetyService.swift */,
 				AFSh0012F90000100C7D34B /* AntifakeSharePayloadStore.swift */,
 				AFPRM12F90000100C7D34B /* AntifakeHubPremiumCoordinator.swift */,
 				B1000100B1000100B1000100 /* ProtectionFeature.swift */,
@@ -2046,7 +2109,7 @@
 			children = (
 				A1000000 /* ALADDINApp.swift */,
 				B6000000 /* AppDelegate.swift */,
-				B6000200 /* ALADDINWidgets/SharedDataManager.swift */,
+				WDGT0212F90000100C7D34B /* ALADDINWidgets */,
 				A1000002 /* ContentView.swift */,
 				A1000004 /* Assets.xcassets */,
 				IPLS000F90000300C7D34B /* InfoPlist.strings */,
@@ -2282,6 +2345,10 @@
 				AFCD0542F90000200C7D34B /* AntifakeCallDirectoryStoreTests.swift */,
 				AFNP005F90000200C7D34B /* AntifakePhonePrivacyTests.swift */,
 				AFTIC32F90000100C7D34B /* AntifakeTextInputClassifierTests.swift */,
+				VSLS0312F90000100C7D34B /* ClipboardSafetyServiceTests.swift */,
+				VSLR0312F90000100C7D34B /* VoiceIntentRouterTests.swift */,
+				VSLN0912F90000100C7D34B /* VoiceDayIntentStatsTests.swift */,
+				VSLW0712F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift */,
 				AFSh0252F90000100C7D34B /* AntifakeSharePayloadStoreTests.swift */,
 				E7B800012F730011 /* ParentDashboardReportExporterTests.swift */,
 				A3C000012F740021 /* W3W4DigestAndLimitsTests.swift */,
@@ -2348,6 +2415,20 @@
 			path = Core/IoT;
 			sourceTree = "<group>";
 		};
+		WDGT0212F90000100C7D34B /* ALADDINWidgets */ = {
+			isa = PBXGroup;
+			children = (
+				WDGT0400F90000100C7D34B /* ALADDINWidgets.swift */,
+				B6000200 /* SharedDataManager.swift */,
+				WDGT0401F90000100C7D34B /* WellnessCheckinWidget.swift */,
+				WDGT0402F90000100C7D34B /* VoiceSafetyNowWidget.swift */,
+				WDGT0403F90000100C7D34B /* WidgetL10n.swift */,
+				WDGT0404F90000100C7D34B /* Info.plist */,
+				WDGT0092F90000100C7D34B /* ALADDINWidgets.entitlements */,
+			);
+			path = ALADDINWidgets;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -2381,6 +2462,7 @@
 				5E61A0A62EFB38ED0039093A /* PBXTargetDependency */,
 				AFSh0132F90000100C7D34B /* PBXTargetDependency */,
 				AFCD0132F90000200C7D34B /* PBXTargetDependency */,
+				WDGT0132F90000100C7D34B /* PBXTargetDependency */,
 			);
 			name = ALADDIN;
 			packageProductDependencies = (
@@ -2454,6 +2536,21 @@
 			productReference = B5002010 /* ALADDINUITests.xctest */;
 			productType = "com.apple.product-type.bundle.ui-testing";
 		};
+		WDGT0172F90000100C7D34B /* ALADDINWidgets */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = WDGT0182F90000100C7D34B /* Build configuration list for PBXNativeTarget "ALADDINWidgets" */;
+			buildPhases = (
+				WDGT0142F90000100C7D34B /* Sources */,
+				WDGT0152F90000100C7D34B /* Frameworks */,
+				WDGT0162F90000100C7D34B /* Resources */,
+			);
+			buildRules = (
+			);
+			name = ALADDINWidgets;
+			productName = ALADDINWidgets;
+			productReference = WDGT0102F90000100C7D34B /* ALADDINWidgets.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -2470,6 +2567,9 @@
 						CreatedOnToolsVersion = 16.0;
 					};
 					AFCD0172F90000200C7D34B = {
+						CreatedOnToolsVersion = 16.0;
+					};
+					WDGT0172F90000100C7D34B = {
 						CreatedOnToolsVersion = 16.0;
 					};
 					AFSh0172F90000100C7D34B = {
@@ -2508,6 +2608,7 @@
 				5E61A09D2EFB38ED0039093A /* ALADDINContentBlocker */,
 				AFSh0172F90000100C7D34B /* ALADDINAntifakeShare */,
 				AFCD0172F90000200C7D34B /* ALADDINCallDirectory */,
+				WDGT0172F90000100C7D34B /* ALADDINWidgets */,
 			);
 		};
 /* End PBXProject section */
@@ -2545,6 +2646,11 @@
 			isa = PBXResourcesBuildPhase;
 			files = (
 				AFNP010F90000200C7D34B /* PrivacyInfo.xcprivacy in Resources */,
+			);
+		};
+		WDGT0162F90000100C7D34B /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			files = (
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -2861,6 +2967,11 @@
 				C0MPCAP22F90000100C7D34B /* CompanionCapabilitiesService.swift in Sources */,
 				C0MPAPI22F90000100C7D34B /* CompanionAPIService.swift in Sources */,
 				C0MPVOI22F90000100C7D34B /* CompanionVoiceSession.swift in Sources */,
+				VSLR0212F90000100C7D34B /* VoiceIntentRouter.swift in Sources */,
+				VSLN0812F90000100C7D34B /* OpenVoiceSafetyLogIntent.swift in Sources */,
+				VSLN0212F90000100C7D34B /* VoiceSafetyNowStore.swift in Sources */,
+				VSLW0612F90000100C7D34B /* VoiceRemindScheduler.swift in Sources */,
+				VSLW0212F90000100C7D34B /* VoiceWeeklyDigestService.swift in Sources */,
 				C0MPSPK22F90000100C7D34B /* CompanionSpeechOutput.swift in Sources */,
 				C0MPNTS22F90000100C7D34B /* CompanionNeuroTTSPlayer.swift in Sources */,
 				C0MPPST22F90000100C7D34B /* CompanionPersonalityPresets.swift in Sources */,
@@ -2953,6 +3064,7 @@
 				AFCD0372F90000200C7D34B /* AntifakeCallObserverService.swift in Sources */,
 				AFLC002F90000200C7D34B /* AntifakeLastCallContext.swift in Sources */,
 				AFTIC22F90000100C7D34B /* AntifakeTextInputClassifier.swift in Sources */,
+				VSLS0212F90000100C7D34B /* ClipboardSafetyService.swift in Sources */,
 				AFAN002F90000200C7D34B /* AntifakeAnalytics.swift in Sources */,
 				AFCD0512F90000200C7D34B /* AntifakeCallDirectoryLabelPolicy.swift in Sources */,
 				FWS0622F90000100C7D34B /* AntifakeSettingsModels.swift in Sources */,
@@ -3001,7 +3113,10 @@
 				B70001262F90000100ABC001 /* Core/Audio/VoiceNotesStructureService.swift in Sources */,
 				B70001282F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceNotesStructureSheet.swift in Sources */,
 				B700012A2F90000100ABC001 /* Core/Audio/VoiceDayRecapService.swift in Sources */,
+				VSLN0612F90000100C7D34B /* VoiceDayIntentStats.swift in Sources */,
 				B700012C2F90000100ABC001 /* Shared/Components/VoiceNotes/VoiceDayRecapSheet.swift in Sources */,
+				VSLN0412F90000100C7D34B /* VoiceSafetyNowChip.swift in Sources */,
+				VSLW0412F90000100C7D34B /* VoiceWeeklyDigestSheet.swift in Sources */,
 				B70001122F90000100ABC001 /* Core/Storage/VoiceNotesStore.swift in Sources */,
 				A3000049 /* Core/Analytics/AnalyticsManager.swift in Sources */,
 				B198A0122F9800100B198A0 /* FamilyReferralAnalytics.swift in Sources */,
@@ -3212,6 +3327,10 @@
 				AFCD0552F90000200C7D34B /* AntifakeCallDirectoryStoreTests.swift in Sources */,
 				AFNP006F90000200C7D34B /* AntifakePhonePrivacyTests.swift in Sources */,
 				AFTIC42F90000100C7D34B /* AntifakeTextInputClassifierTests.swift in Sources */,
+				VSLS0412F90000100C7D34B /* ClipboardSafetyServiceTests.swift in Sources */,
+				VSLR0412F90000100C7D34B /* VoiceIntentRouterTests.swift in Sources */,
+				VSLN0A12F90000100C7D34B /* VoiceDayIntentStatsTests.swift in Sources */,
+				VSLW0812F90000100C7D34B /* VoiceWeeklyDigestServiceTests.swift in Sources */,
 				E7B800012F730012 /* ParentDashboardReportExporterTests.swift in Sources */,
 				A3C000012F740022 /* W3W4DigestAndLimitsTests.swift in Sources */,
 				PBUD0004 /* PerformanceBudgetTests.swift in Sources */,
@@ -3254,6 +3373,16 @@
 				AFQT012F90000100C7D34B /* AntifakeHubTabsUITests.swift in Sources */,
 			);
 		};
+		WDGT0142F90000100C7D34B /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				WDGT0302F90000100C7D34B /* ALADDINWidgets.swift in Sources */,
+				WDGT0312F90000100C7D34B /* SharedDataManager.swift in Sources */,
+				WDGT0322F90000100C7D34B /* WellnessCheckinWidget.swift in Sources */,
+				WDGT0332F90000100C7D34B /* VoiceSafetyNowWidget.swift in Sources */,
+				WDGT0342F90000100C7D34B /* WidgetL10n.swift in Sources */,
+			);
+		};
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
@@ -3281,6 +3410,11 @@
 			isa = PBXTargetDependency;
 			target = A0FFFFFD /* ALADDIN */;
 			targetProxy = B5002008 /* PBXContainerItemProxy */;
+		};
+		WDGT0132F90000100C7D34B /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = WDGT0172F90000100C7D34B /* ALADDINWidgets */;
+			targetProxy = WDGT0122F90000100C7D34B /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -3781,6 +3915,73 @@
 			};
 			name = Release;
 		};
+		WDGT0192F90000100C7D34B /* Debug configuration for PBXNativeTarget "ALADDINWidgets" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_ENTITLEMENTS = ALADDINWidgets/ALADDINWidgets.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Development";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = B3WGHSWL79;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ALADDINWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "ALADDIN Widgets";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		WDGT0202F90000100C7D34B /* Release configuration for PBXNativeTarget "ALADDINWidgets" */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_64_BIT)";
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++17";
+				CLANG_CXX_LIBRARY = "libc++";
+				CODE_SIGN_ENTITLEMENTS = ALADDINWidgets/ALADDINWidgets.entitlements;
+				CODE_SIGN_IDENTITY = "Apple Distribution";
+				CODE_SIGN_STYLE = Manual;
+				CURRENT_PROJECT_VERSION = 4;
+				DEVELOPMENT_TEAM = B3WGHSWL79;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ALADDINWidgets/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = "ALADDIN Widgets";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				IPHONEOS_DEPLOYMENT_TARGET = 15.2;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0.0;
+				PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.widgets;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_STRICT_CONCURRENCY = minimal;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -3838,6 +4039,15 @@
 				B5002005 /* Debug configuration for PBXNativeTarget "ALADDINUITests" */,
 				B5002006 /* Release configuration for PBXNativeTarget "ALADDINUITests" */,
 			);
+			defaultConfigurationName = Release;
+		};
+		WDGT0182F90000100C7D34B /* Build configuration list for PBXNativeTarget "ALADDINWidgets" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				WDGT0192F90000100C7D34B /* Debug configuration for PBXNativeTarget "ALADDINWidgets" */,
+				WDGT0202F90000100C7D34B /* Release configuration for PBXNativeTarget "ALADDINWidgets" */,
+			);
+			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */

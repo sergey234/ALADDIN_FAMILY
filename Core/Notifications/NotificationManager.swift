@@ -1381,6 +1381,11 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                         name: NSNotification.Name("NavigateToVoiceDayRecap"),
                         object: nil
                     )
+                case .voiceLog:
+                    NotificationCenter.default.post(name: .navigateToVoiceNotes, object: nil)
+                case .voiceWeekly:
+                    VoiceWeeklyDigestService.markPendingOpen()
+                    NotificationCenter.default.post(name: .navigateToVoiceNotes, object: nil)
                 case .focusSession:
                     NotificationCenter.default.post(
                         name: NSNotification.Name("NavigateToFocusSession"),

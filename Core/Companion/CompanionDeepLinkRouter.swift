@@ -32,4 +32,26 @@ enum CompanionDeepLinkRouter {
         }
         return false
     }
+
+    /// VSL-C P1 — open Voice Notes log (`aladdin://voice/log`).
+    static func isVoiceLogDeepLink(_ url: URL) -> Bool {
+        guard url.scheme?.lowercased() == "aladdin" else { return false }
+        let host = (url.host ?? "").lowercased()
+        let path = url.path.lowercased()
+        if host == "voice" {
+            return path == "/log" || path == "log" || path == "/notes" || path == "notes"
+        }
+        return false
+    }
+
+    /// VSL-C P2 — open weekly Voice Safety digest (`aladdin://voice/weekly`).
+    static func isVoiceWeeklyDeepLink(_ url: URL) -> Bool {
+        guard url.scheme?.lowercased() == "aladdin" else { return false }
+        let host = (url.host ?? "").lowercased()
+        let path = url.path.lowercased()
+        if host == "voice" {
+            return path == "/weekly" || path == "weekly" || path == "/week" || path == "week"
+        }
+        return false
+    }
 }

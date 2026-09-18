@@ -20,6 +20,8 @@ struct VoiceNotesScreen: View {
     @State private var isDayRecapping = false
     @State private var dayRecapErrorKey: String?
     @State private var showDayRecapHint = false
+    @State private var weeklyDigestResult: VoiceWeeklyDigestResult?
+    @AppStorage("voice_safety_log_coach_tip_dismissed") private var coachTipDismissed = false
 
     var body: some View {
         NavigationView {
@@ -32,6 +34,10 @@ struct VoiceNotesScreen: View {
                         QuickRecorderBar(viewModel: viewModel)
                             .environmentObject(localizationManager)
                             .padding(.horizontal)
+
+                        if !coachTipDismissed {
+                            coachTipBanner
+                        }
 
                         privacyBanner
 
@@ -67,12 +73,19 @@ struct VoiceNotesScreen: View {
                     }
                 }
                 ToolbarItem(placement: .navigationBarTrailing) {
-                    EmptyView()
+                    Button(localizationManager.localized("voice_weekly_digest_button")) {
+                        weeklyDigestResult = viewModel.makeWeeklyDigest()
+                    }
+                    .accessibilityIdentifier("voice_weekly_digest_button")
                 }
             }
         }
         .onAppear {
             viewModel.markVoiceSessionStable()
+            VoiceWeeklyDigestService.ensureSundaySchedule()
+            if VoiceWeeklyDigestService.consumePendingOpen() {
+                weeklyDigestResult = viewModel.makeWeeklyDigest()
+            }
             if VoiceDayRecapService.consumePendingOpen() {
                 showDayRecapHint = true
                 if let note = viewModel.groupedNotes.flatMap(\.items).first {
@@ -83,6 +96,14 @@ struct VoiceNotesScreen: View {
         }
         .onDisappear {
             playback.stop()
+        }
+        .onChange(of: viewModel.pendingAntifakeFromVoice) { payload in
+            guard payload != nil else { return }
+            routePendingAntifakeAfterDismiss()
+        }
+        .onChange(of: viewModel.pendingStatusNavigation) { pending in
+            guard pending else { return }
+            routePendingStatusAfterDismiss()
         }
         .alert(localizationManager.localized("voice_notes_mic_permission_title"), isPresented: $viewModel.showMicPermissionAlert) {
             Button(localizationManager.localized("common_cancel"), role: .cancel) {}
@@ -116,6 +137,10 @@ struct VoiceNotesScreen: View {
             VoiceDayRecapSheet(result: result)
                 .environmentObject(localizationManager)
                 .environmentObject(navigationManager)
+        }
+        .sheet(item: $weeklyDigestResult) { result in
+            VoiceWeeklyDigestSheet(result: result)
+                .environmentObject(localizationManager)
         }
         .alert(
             localizationManager.localized("voice_structure_error_title"),
@@ -208,6 +233,9 @@ private extension VoiceNotesScreen {
             Text(localizationManager.localized("voice_notes_privacy_stt_disclaimer"))
                 .font(.caption)
                 .foregroundColor(.secondary)
+            Text(localizationManager.localized("voice_safety_local_vs_antifake"))
+                .font(.caption)
+                .foregroundColor(.secondary)
             Text(localizationManager.localized("voice_structure_privacy"))
                 .font(.caption)
                 .foregroundColor(.secondary)
@@ -220,13 +248,50 @@ private extension VoiceNotesScreen {
         .padding(.horizontal)
     }
 
+    private var coachTipBanner: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(localizationManager.localized("voice_safety_coach_tip"))
+                .font(.footnote)
+                .foregroundColor(.white.opacity(0.9))
+            Button(localizationManager.localized("voice_safety_coach_tip_dismiss")) {
+                coachTipDismissed = true
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundColor(Color(hex: "F5C542"))
+        }
+        .padding(12)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.white.opacity(0.08))
+        .cornerRadius(12)
+        .padding(.horizontal)
+        .accessibilityIdentifier("voice_safety_coach_tip")
+    }
+
+    /// A9: dismiss VoiceNotes sheet first, then open Antifake (not under the modal).
+    private func routePendingAntifakeAfterDismiss() {
+        guard let payload = viewModel.consumePendingAntifakeFromVoice() else { return }
+        ToastManager.shared.showInfo(localizationManager.localized("voice_safety_opening_antifake"))
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            navigationManager.navigateToAntifakeShareCheck(payload: payload)
+        }
+    }
+
+    private func routePendingStatusAfterDismiss() {
+        guard viewModel.consumePendingStatusNavigation() else { return }
+        dismiss()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
+            navigationManager.navigateTo(.networkProtection)
+        }
+    }
+
     var notesFilterPicker: some View {
         Picker(localizationManager.localized("voice_notes_filter_title"), selection: $viewModel.activeFilter) {
             ForEach(VoiceNotesViewModel.NotesFilter.allCases, id: \.rawValue) { filter in
                 Text(localizationManager.localized(filter.titleKey)).tag(filter)
             }
         }
-        .pickerStyle(.segmented)
+        .pickerStyle(.menu)
         .padding(.horizontal)
     }
 

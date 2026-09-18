@@ -14,6 +14,37 @@ struct VoiceDayRecapSheet: View {
                 StormMeshBackground(variant: .warm).ignoresSafeArea()
                 ScrollView(.vertical, showsIndicators: true) {
                     VStack(alignment: .leading, spacing: 14) {
+                        if let stats = result.intentStats, stats.hasAny {
+                            VStack(alignment: .leading, spacing: 6) {
+                                Text(localizationManager.localized("voice_day_recap_stats_title"))
+                                    .font(.subheadline.weight(.semibold))
+                                if stats.securityChecks > 0 {
+                                    Text(localizationManager.localized("voice_day_recap_stats_security", stats.securityChecks))
+                                        .font(.subheadline)
+                                }
+                                if stats.incidents > 0 {
+                                    Text(localizationManager.localized("voice_day_recap_stats_incidents", stats.incidents))
+                                        .font(.subheadline)
+                                }
+                                if stats.ideas > 0 {
+                                    Text(localizationManager.localized("voice_day_recap_stats_ideas", stats.ideas))
+                                        .font(.subheadline)
+                                }
+                                if stats.reminds > 0 {
+                                    Text(localizationManager.localized("voice_day_recap_stats_reminds", stats.reminds))
+                                        .font(.subheadline)
+                                }
+                                if stats.notes > 0 {
+                                    Text(localizationManager.localized("voice_day_recap_stats_notes", stats.notes))
+                                        .font(.subheadline)
+                                }
+                            }
+                            .padding(10)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.white.opacity(0.08))
+                            .cornerRadius(10)
+                        }
+
                         Text(localizationManager.localized("voice_day_recap_bullets"))
                             .font(.subheadline.weight(.semibold))
                         if result.bullets.isEmpty {

@@ -699,8 +699,14 @@ struct SettingsScreen: View {
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToVoiceDayRecap"))) { _ in
             showVoiceNotesScreen = true
         }
+        .onReceive(NotificationCenter.default.publisher(for: .navigateToVoiceNotes)) { _ in
+            showVoiceNotesScreen = true
+        }
         .onAppear {
             if UserDefaults.standard.bool(forKey: VoiceDayRecapService.pendingOpenKey) {
+                showVoiceNotesScreen = true
+            }
+            if VoiceSafetyNowStore.consumePendingOpen() {
                 showVoiceNotesScreen = true
             }
         }

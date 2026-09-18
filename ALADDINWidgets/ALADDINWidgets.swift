@@ -16,6 +16,7 @@ struct ALADDINWidgets: WidgetBundle {
         NetworkProtectionStatusWidget()
         AnalyticsWidget()
         WellnessCheckinWidget()
+        VoiceSafetyNowWidget()
     }
 }
 
@@ -212,7 +213,7 @@ struct AnalyticsProvider: TimelineProvider {
                 threatsBlocked: Int.random(in: 10...30),
                 websitesBlocked: Int.random(in: 5...15),
                 appsBlocked: Int.random(in: 1...8),
-                dataSaved: "\(Double.random(in: 1.0...5.0), specifier: "%.1f") ГБ",
+                dataSaved: String(format: "%.1f ГБ", Double.random(in: 1.0...5.0)),
                 protectionLevel: ["Высокий", "Средний", "Максимальный"].randomElement() ?? "Высокий"
             )
             entries.append(entry)

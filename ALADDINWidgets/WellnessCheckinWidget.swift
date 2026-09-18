@@ -1,4 +1,5 @@
 import SwiftUI
+import WidgetKit
 
 /// p3-18 — 1-tap mood widget (lock screen / home).
 struct WellnessCheckinWidget: Widget {
@@ -10,7 +11,7 @@ struct WellnessCheckinWidget: Widget {
         }
         .configurationDisplayName("Wellness")
         .description("Quick mood check-in")
-        .supportedFamilies([.systemSmall, .accessoryCircular, .accessoryRectangular])
+        .supportedFamilies([.systemSmall, .systemMedium])
     }
 }
 

@@ -32,6 +32,8 @@ class SharedDataManager {
         static let wellnessWidgetTitle = "wellness_widget_title"
         static let wellnessWidgetTap = "wellness_widget_tap"
         static let wellnessLastMood = "wellness_last_mood"
+        static let voiceSafetyLine = "voice_safety_widget_line"
+        static let voiceSafetyDetail = "voice_safety_widget_detail"
     }
     
     // MARK: - Family Protection Data
@@ -137,6 +139,29 @@ class SharedDataManager {
             userDefaults.string(forKey: Keys.wellnessWidgetTap) ?? "Tap to log",
             userDefaults.string(forKey: Keys.wellnessLastMood) ?? "🙂"
         )
+    }
+
+    // MARK: - Voice Safety Widget (VSL-C P2)
+
+    static func updateVoiceSafetyWidgetData(line: String, detail: String) {
+        userDefaults.set(line, forKey: Keys.voiceSafetyLine)
+        userDefaults.set(detail, forKey: Keys.voiceSafetyDetail)
+        userDefaults.set(Date(), forKey: Keys.lastUpdate)
+        WidgetCenter.shared.reloadTimelines(ofKind: "VoiceSafetyNowWidget")
+    }
+
+    static func getVoiceSafetyWidgetData() -> (line: String, detail: String) {
+        (
+            userDefaults.string(forKey: Keys.voiceSafetyLine)
+                ?? "ALADDIN",
+            userDefaults.string(forKey: Keys.voiceSafetyDetail) ?? ""
+        )
+    }
+
+    static func clearVoiceSafetyWidgetData() {
+        userDefaults.removeObject(forKey: Keys.voiceSafetyLine)
+        userDefaults.removeObject(forKey: Keys.voiceSafetyDetail)
+        WidgetCenter.shared.reloadTimelines(ofKind: "VoiceSafetyNowWidget")
     }
 
     // MARK: - Clear Data

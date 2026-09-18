@@ -523,6 +523,10 @@ struct ALADDINApp: App {
                     VoiceDayRecapService.markPendingOpen()
                     navigationManager.navigateTo(.settings)
                 }
+                .onReceive(NotificationCenter.default.publisher(for: .navigateToVoiceNotes)) { _ in
+                    VoiceSafetyNowStore.markPendingOpen()
+                    navigationManager.navigateTo(.settings)
+                }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToFocusSession"))) { _ in
                     if FamilyFocusSessionFeature.isEnabled {
                         navigationManager.navigateTo(.focusSession)

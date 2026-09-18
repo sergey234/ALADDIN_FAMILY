@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Hybrid Simple Home Shell — «Простая версия».
+/// Hybrid Simple Home Shell — «Удобный режим».
 /// Лаунчер: 4 крупные плитки + «Ещё…» → существующие экраны через NavigationManager.
 /// Канон: `docs/PLAN_SIMPLE_HOME_SHELL_20260720.md`
 struct SimpleHomeScreen: View {
@@ -23,6 +23,10 @@ struct SimpleHomeScreen: View {
                 ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         subtitleLabel
+                        VoiceSafetyNowChip {
+                            showVoiceNotes = true
+                        }
+                        .environmentObject(localizationManager)
                         tilesGrid
                         moreButton
                         openFullMainButton
@@ -41,6 +45,9 @@ struct SimpleHomeScreen: View {
                 .environmentObject(navigationManager)
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToVoiceDayRecap"))) { _ in
+            showVoiceNotes = true
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .navigateToVoiceNotes)) { _ in
             showVoiceNotes = true
         }
         .sheet(isPresented: $showMoreSheet, onDismiss: {

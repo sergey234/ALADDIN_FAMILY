@@ -6,12 +6,21 @@ struct VoiceDayRecapResult: Equatable, Identifiable {
     var bullets: [String]
     var tellFamily: String
     var rawFallback: String?
+    /// Local today counts (security / idea / remind) — P1 enrichment.
+    var intentStats: VoiceDayIntentStats?
 
-    init(id: UUID = UUID(), bullets: [String], tellFamily: String, rawFallback: String? = nil) {
+    init(
+        id: UUID = UUID(),
+        bullets: [String],
+        tellFamily: String,
+        rawFallback: String? = nil,
+        intentStats: VoiceDayIntentStats? = nil
+    ) {
         self.id = id
         self.bullets = bullets
         self.tellFamily = tellFamily
         self.rawFallback = rawFallback
+        self.intentStats = intentStats
     }
 }
 
@@ -32,20 +41,22 @@ enum VoiceDayRecapService {
 
     static func recap(transcript: String) async throws -> VoiceDayRecapResult {
         let text = transcript.trimmingCharacters(in: .whitespacesAndNewlines)
+        let stats = VoiceDayIntentStats.fromTodayNotes(VoiceNotesStore().load())
         guard !text.isEmpty else {
-            return VoiceDayRecapResult(bullets: [], tellFamily: "", rawFallback: nil)
+            return VoiceDayRecapResult(bullets: [], tellFamily: "", rawFallback: nil, intentStats: stats)
         }
         let prompt = """
         DAY_RECAP_JSON_ONLY. Respond with one JSON object, no markdown:
         {"bullets":["..."],"tell_family":"..."}
         Exactly up to 5 short bullets summarizing the day note.
+        Prefer highlighting security checks, alerts, ideas, and reminders when present.
         tell_family = one short sentence the user could say to family.
         Language = language of input.
         Input:
         \(text)
         """
         let characterId = UserDefaults.standard.string(forKey: "companion_selected_character_id") ?? "aladdin"
-        let response = try await CompanionAPIService.shared.sendChat(
+        let response = try await AICoordinator.sendCompanionChat(
             message: prompt,
             characterId: characterId,
             sessionId: nil,
@@ -54,7 +65,8 @@ enum VoiceDayRecapService {
             wellnessPillar: nil,
             guideMode: nil
         )
-        if let parsed = parse(response.response) {
+        if var parsed = parse(response.response) {
+            parsed.intentStats = stats
             _ = UnicornCareReward.grant(reason: .dayRecap, sourceId: "daily")
             saveLast(parsed)
             return parsed
@@ -62,7 +74,8 @@ enum VoiceDayRecapService {
         return VoiceDayRecapResult(
             bullets: [],
             tellFamily: "",
-            rawFallback: response.response.trimmingCharacters(in: .whitespacesAndNewlines)
+            rawFallback: response.response.trimmingCharacters(in: .whitespacesAndNewlines),
+            intentStats: stats
         )
     }
 

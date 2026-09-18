@@ -604,7 +604,7 @@ struct MainScreen: View {
                             .buttonStyle(.plain)
                             .accessibilityIdentifier("main_nav_settings")
 
-                            // Простая версия — стандартная плитка справа от Настроек.
+                            // Удобный режим — стандартная плитка справа от Настроек.
                             Button(action: {
                                 navigationManager.navigateToSimpleHome()
                             }) {
@@ -777,6 +777,12 @@ struct MainScreen: View {
                                         .foregroundColor(.black)
                                 }
                             }
+
+                            VoiceSafetyNowChip {
+                                VoiceSafetyNowStore.markPendingOpen()
+                                NotificationCenter.default.post(name: .navigateToVoiceNotes, object: nil)
+                            }
+                            .environmentObject(localizationManager)
                             
                             // Кнопки действий
                             HStack(spacing: 8) {

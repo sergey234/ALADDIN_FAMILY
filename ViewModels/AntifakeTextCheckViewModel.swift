@@ -76,16 +76,8 @@ final class AntifakeTextCheckViewModel: ObservableObject {
     }
 
     func applySharePayload(_ payload: AntifakeSharePayload) {
-        switch payload.mode {
-        case .text:
-            applyPastedContent(payload.value)
-        case .url:
-            inputMode = .url
-            inputUrl = AntifakeTextInputClassifier.normalizeURL(payload.value)
-        }
-        verdict = nil
-        errorMessage = nil
-        requiresPremiumUpgrade = false
+        // VSL-C: always through ClipboardSafety choke point (Share / deep link too).
+        applyPastedContent(payload.value)
     }
 
     func pasteFromClipboard() {
@@ -93,31 +85,40 @@ final class AntifakeTextCheckViewModel: ObservableObject {
         applyPastedContent(string)
     }
 
+    /// Single choke point for Paste + Share + deep-link prefill (ClipboardSafety).
     func applyPastedContent(_ raw: String) {
-        switch AntifakeTextInputClassifier.classify(raw) {
-        case .url(let url):
-            inputMode = .url
-            inputUrl = url
-            inputText = ""
-            callerId = ""
-            displayName = ""
-        case .phone(let phone):
-            inputMode = .contact
-            callerId = phone
-            inputText = ""
-            inputUrl = ""
-        case .text(let text):
-            if AntifakeTextInputClassifier.extractURL(from: text) != nil {
+        switch ClipboardSafetyService.process(raw) {
+        case .blockedSecret:
+            errorMessage = localizationManager.localized("clipboard_safety_secret_blocked")
+            verdict = nil
+            requiresPremiumUpgrade = false
+            return
+        case .ok(let cleaned):
+            switch AntifakeTextInputClassifier.classify(cleaned) {
+            case .url(let url):
                 inputMode = .url
-                inputUrl = AntifakeTextInputClassifier.extractURL(from: text) ?? text
-            } else {
-                inputMode = .text
-                inputText = text
+                inputUrl = url
+                inputText = ""
+                callerId = ""
+                displayName = ""
+            case .phone(let phone):
+                inputMode = .contact
+                callerId = phone
+                inputText = ""
+                inputUrl = ""
+            case .text(let text):
+                if AntifakeTextInputClassifier.extractURL(from: text) != nil {
+                    inputMode = .url
+                    inputUrl = AntifakeTextInputClassifier.extractURL(from: text) ?? text
+                } else {
+                    inputMode = .text
+                    inputText = text
+                }
             }
+            verdict = nil
+            errorMessage = nil
+            requiresPremiumUpgrade = false
         }
-        verdict = nil
-        errorMessage = nil
-        requiresPremiumUpgrade = false
     }
 
     func submitCheck() async -> Bool {
