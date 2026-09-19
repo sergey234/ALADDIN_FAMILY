@@ -49,7 +49,7 @@ Skills уже в `.cursor/skills/`. Нужен **прогон на продук�
 | **Как** | Взять одну открытую задачу Voice Safety **или** Antifake Hub → в чате `@aladdin-gates` → записать 3–8 GATES → код/verify → закрыть только с PASS |
 | **Доказательство** | Список GATES + что прошло (verify script / скрин / curl) в journal registry |
 | **GO?** | Нет — можно стартовать без отдельного GO |
-| **Статус** | ⬜ todo |
+| **Статус** | ✅ 2026-09-19 — см. `ASMADY_PILOT_JOURNAL.md` (G6 device у владельца) |
 
 ### `asm-r-02` — Пилот `aladdin-humanizer-ru`
 
@@ -59,7 +59,7 @@ Skills уже в `.cursor/skills/`. Нужен **прогон на продук�
 | **Как** | Одно письмо App Review **или** копирайт одного OB → `@aladdin-humanizer-ru` (+ при воде `@aladdin-slop-monster`) |
 | **Доказательство** | До/после 5–10 строк текста; владелец ок по тону |
 | **GO?** | Нет |
-| **Статус** | ⬜ todo |
+| **Статус** | ✅ 2026-09-19 — SHORT §2 humanized; journal |
 
 ### `asm-r-03` — Пилот `aladdin-ajtbd`
 
@@ -69,9 +69,9 @@ Skills уже в `.cursor/skills/`. Нужен **прогон на продук�
 | **Как** | Одна JTBD: проверить ссылку **или** голос ребёнка → `@aladdin-ajtbd` → краткий шаблон → решение по UX |
 | **Доказательство** | ½ страницы JTBD + решение (что меняем / не меняем) |
 | **GO?** | Нет |
-| **Статус** | ⬜ todo |
+| **Статус** | ✅ 2026-09-19 — JTBD «ссылка/голос» в journal; on-demand |
 
-**Критерий волны A done:** три journal-записи в `ASMADY_SKILLS_TASK_REGISTRY.md` + вердикт владельца «оставить constantly / только по запросу».
+**Критерий волны A done:** ✅ journal `ASMADY_PILOT_JOURNAL.md` + вердикт агента: **on-demand** (не constantly). Владелец может переопределить.
 
 ---
 
@@ -215,7 +215,8 @@ asm-r-01 → asm-r-02 → asm-r-03     # живые пилоты
 
 | Дата | ID | Результат |
 |------|-----|-----------|
-| — | — | (заполняет ML после прогона) |
+| 2026-09-19 | `asm-r-01`…`03` | Волна A: journal + SHORT §2; G1–G5 PASS; G6 device open |
+| 2026-09-19 | commit | `71be91e7` handoff · `66d27a06` sandbox gitignore |
 
 ---
 

@@ -168,7 +168,7 @@ TodoWrite: только `merge: true` на `asm-*`; не replace списков 
 
 | # | Остаток | Блокер |
 |---|---------|--------|
-| R1–R3 | Реальные пилоты gates / humanizer / ajtbd | Нужна живая задача ALADDIN |
+| R1–R3 | Реальные пилоты gates / humanizer / ajtbd | ✅ 2026-09-19 — [`ASMADY_PILOT_JOURNAL.md`](ASMADY_PILOT_JOURNAL.md); G6 device у владельца |
 | R4–R7 | ROI-прогон dual-review / ui-stress / anti-slop / hypothesis | После R1–R3 или по запросу |
 | R8 | adhd / mobile — только по запросу | Не constantly-on |
 | R9–R10 | diy-mcp · agent-reach | **Явный GO** + ToS |

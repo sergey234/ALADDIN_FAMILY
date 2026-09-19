@@ -92,3 +92,5 @@ Dark Factory · RN/shadcn/MagicUI/GSAP · WhatsApp · watermarks · supabase/ver
 |------|---------|
 | 2026-09-19 | Registry + phase 0–6 артефакты (thin skills, audit rule, orch GATES note) |
 | 2026-09-19 | ML handoff + remaining plan (`ASMADY_SKILLS_ML_HANDOFF.md`, `ASMADY_SKILLS_REMAINING_PLAN.md`) |
+| 2026-09-19 | Commit handoff `71be91e7` + sandbox `.gitignore` `66d27a06` |
+| 2026-09-19 | Волна A pilots `asm-r-01`…`03` → `ASMADY_PILOT_JOURNAL.md` (on-demand) |

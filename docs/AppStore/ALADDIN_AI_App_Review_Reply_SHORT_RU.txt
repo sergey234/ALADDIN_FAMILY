@@ -1,0 +1,39 @@
+Здравствуйте, команда App Review!
+
+Спасибо за запрос. Ниже краткие ответы по Guideline 2.1. Полный текст во вложении .txt. Видео с физического iPhone приложено.
+
+1) Запись экрана
+Непрерывная запись: запуск, язык и onboarding, Privacy/Terms, JWT-сессия без email/пароля, семья, родительский контроль, Antifake (тестовый текст), семейный чат (отправка, Report, Restrict, Delete own), детский раздел и AI-герои, Тарифы (IAP и Restore), Удалить аккаунт.
+Устройство: iPhone SE. iOS 26.1. Version 1.0.0. Build 4. Видео: Aladdin.mp4
+
+2) Цель и аудитория
+ALADDIN AI — для семей: родители, дети, подростки и пожилые.
+Родителям нужна защита от мошенничества и понятные правила в семье.
+В приложении: Antifake, родительский контроль, закрытый семейный чат, обучение и AI-герои (Единорог, Аладдин, Джин); подписка только через Apple IAP.
+
+3) Как зайти
+Email, пароль и demo-логин не требуются. Onboarding, Privacy/Terms, «Начать», JWT-сессия устройства.
+Путь: Семья, чат Report/Restrict, Тарифы IAP, Профиль, Удалить аккаунт (код УДАЛИТЬ или DELETE).
+Antifake тест: «Срочно сообщите пароль и код из SMS, иначе ваш аккаунт будет заблокирован.»
+
+4) Внешние сервисы
+Backend https://aladdin-ai.ru, StoreKit 2, APNs, Content Blocker, Call Directory, Speech, Maps, AI (Hermes/OpenRouter/DeepSeek/Gemini), STT/TTS (Apple/Yandex/OpenAI/ElevenLabs).
+Рекламных SDK нет. Цифровые подписки только через Apple IAP.
+
+5) Регионы
+Функции одинаковы. Цена и валюта: App Store storefront. UI: RU/EN.
+
+6) Регулируемые отрасли
+ALADDIN AI не оказывает лицензируемых медицинских, банковских или государственных услуг. Antifake дает пользователю справочную оценку риска по контенту. Разработчики ALADDIN создали персонажей-помощников Единорог, Аладдин и Джин, чтобы понятно объяснять семьям, как не попасться мошенникам.
+
+Подписки (3.1.1). Product ID:
+ai.aladdin.subscription.individual.v2 (Individual)
+ai.aladdin.subscription.family (Family)
+ai.aladdin.subscription.premium (Premium)
+Оплата только StoreKit 2. Restore есть. Продукты в ASC с этим билдом. Цена с витрины Apple.
+
+Семейный чат (1.2): закрытый UGC; Report; Restrict (родитель); Delete own; E2EE; metadata-only жалоб. Показано в видео.
+
+Готовы предоставить доп. информацию.
+С уважением, команда ALADDIN AI
+Контакт: aladdin.ai@tuta.io
