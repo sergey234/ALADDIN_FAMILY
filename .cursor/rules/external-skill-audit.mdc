@@ -1,0 +1,25 @@
+---
+description: External Cursor skills — sandbox → audit → owner GO before install
+alwaysApply: true
+---
+
+# External skill audit (Asmadey and others)
+
+Перед установкой **любого** внешнего skill (Asmadey, ECC extras, чужие SKILL.md):
+
+1. **Не** копировать сразу в `.cursor/skills/` продакшен-набор.
+2. Положить в песочницу: `.cursor/skills_sandbox/` (см. README там) или `BACKUPS/skills_sandbox/` (gitignored).
+3. Пройти чеклист: `.cursor/skills/aladdin-skillspector/SKILL.md` (или `docs` checklist).
+4. Дождаться **явного GO владельца**.
+5. Только потом — thin wrapper `aladdin-*` своими словами (не слепой dump репо).
+
+## Запрещено без GO
+
+- Auto-merge / Dark Factory patterns
+- Обход ALADDIN rules (no-mock, secrets, bot≠iOS, ask-before-ops)
+- React Native / shadcn / MagicUI как стек приложения
+- diy-mcp-connector / agent-reach (ToS) — ids `asm-50` / `asm-51`
+
+## SSOT задач
+
+`.cursor/ASMADY_SKILLS_TASK_REGISTRY.md` · ids `asm-*`

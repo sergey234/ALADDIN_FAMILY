@@ -1,0 +1,25 @@
+---
+description: Asmadey / external skills — Cursor TODO SSOT (asm-*)
+alwaysApply: false
+---
+
+# Asmadey skills — TODO SSOT (`asm-*`)
+
+**Registry:** `.cursor/ASMADY_SKILLS_TASK_REGISTRY.md`  
+**Ids:** `asm-*`
+
+## TodoWrite
+
+1. Только **`merge: true`** — не затирать `orch-*` / `af-*` / `jam-*` / `fro-*` / другие списки.
+2. Закрыл задачу → ✅ в registry → `completed` в Cursor TODO.
+3. **Не** `merge: false`, кроме явной фразы владельца: «восстанови TODO asmadey из REGISTRY».
+4. Порядок: аудит (`asm-01..03`) → пилоты (`asm-10..12`) → брать (`asm-20..24`) → ROI (`asm-30..`) → later/GO.
+5. `asm-50` / `asm-51` — **не внедрять** без явного GO владельца (ToS/security).
+6. Секреты / `.env` / VPN handoff §32 — никогда в skill и в чат.
+7. Не vendorить весь github.com/Asmadey/skills в `ALADDIN_iOS` или `coding_orchestrator/`.
+
+## Куда
+
+- Cursor thin skills → `.cursor/skills/aladdin-*`
+- Orch → только короткие GATES в firstmate (не каталог Asmadey)
+- Business → вне iOS release commits
