@@ -55,9 +55,10 @@ final class AntifakeTextCheckViewModel: ObservableObject {
         !trimmedInput.isEmpty && !isChecking
     }
 
+    /// Gate only — do **not** read `.string` here (iOS 16+ pasteboard privacy banner on re-render).
     var hasClipboardContent: Bool {
-        guard let string = UIPasteboard.general.string else { return false }
-        return !string.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
+        let pb = UIPasteboard.general
+        return pb.hasStrings || pb.hasURLs
     }
 
     private var trimmedInput: String {

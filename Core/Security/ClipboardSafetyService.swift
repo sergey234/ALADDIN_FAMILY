@@ -29,11 +29,10 @@ enum ClipboardSafetyService {
             return .blockedSecret(secret)
         }
 
-        if AntifakeTextInputClassifier.looksLikeURL(trimmed)
-            || AntifakeTextInputClassifier.extractURL(from: trimmed) != nil {
-            let normalized = AntifakeTextInputClassifier.normalizeURL(
-                AntifakeTextInputClassifier.extractURL(from: trimmed) ?? trimmed
-            )
+        // C-2: never pass raw `trimmed` into normalizeURL when extractURL fails
+        // (looksLikeURL alone is not enough — that path leaked unsanitized text).
+        if let extracted = AntifakeTextInputClassifier.extractURL(from: trimmed) {
+            let normalized = AntifakeTextInputClassifier.normalizeURL(extracted)
             return .ok(stripTrackingParams(from: normalized))
         }
 

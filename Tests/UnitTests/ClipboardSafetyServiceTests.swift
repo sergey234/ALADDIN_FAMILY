@@ -71,4 +71,24 @@ final class ClipboardSafetyServiceTests: XCTestCase {
         }
         XCTAssertEqual(kind, .paymentCard)
     }
+
+    /// C-2: looksLikeURL true but no single extractable URL → keep plain text (no force-normalize).
+    func testLooksLikeURLWithoutSingleExtractLeavesPlainText() {
+        let raw = "Line one\nSee youtube.com and also vk.com together"
+        guard case .ok(let cleaned) = ClipboardSafetyService.process(raw) else {
+            return XCTFail("expected ok")
+        }
+        XCTAssertEqual(cleaned, raw)
+        XCTAssertFalse(cleaned.lowercased().hasPrefix("https://"))
+    }
+
+    func testBareHostStillNormalizedWhenExtractable() {
+        let raw = "youtube.com/watch?v=1&utm_source=x"
+        guard case .ok(let cleaned) = ClipboardSafetyService.process(raw) else {
+            return XCTFail("expected ok")
+        }
+        XCTAssertTrue(cleaned.lowercased().hasPrefix("https://"))
+        XCTAssertTrue(cleaned.contains("v=1") || cleaned.contains("watch"))
+        XCTAssertFalse(cleaned.lowercased().contains("utm_"))
+    }
 }
