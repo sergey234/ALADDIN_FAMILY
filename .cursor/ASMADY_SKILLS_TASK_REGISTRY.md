@@ -3,6 +3,7 @@
 **SSOT** · rule: `.cursor/rules/asmadey-skills-todo-ssot.mdc`  
 **ML handoff:** [`ASMADY_SKILLS_ML_HANDOFF.md`](ASMADY_SKILLS_ML_HANDOFF.md)  
 **План остатков:** [`ASMADY_SKILLS_REMAINING_PLAN.md`](ASMADY_SKILLS_REMAINING_PLAN.md) (`asm-r-*`)  
+**Как делать B·C·E наилучшим образом:** [`ASMADY_WAVES_BCE_PLAN.md`](ASMADY_WAVES_BCE_PLAN.md)  
 **Источник вердиктов:** canvas `asmadey-decisions-per-skill` · `asmadey-skills-aladdin-analysis`  
 **Каталог:** https://github.com/Asmadey/skills  
 
@@ -94,3 +95,4 @@ Dark Factory · RN/shadcn/MagicUI/GSAP · WhatsApp · watermarks · supabase/ver
 | 2026-09-19 | ML handoff + remaining plan (`ASMADY_SKILLS_ML_HANDOFF.md`, `ASMADY_SKILLS_REMAINING_PLAN.md`) |
 | 2026-09-19 | Commit handoff `71be91e7` + sandbox `.gitignore` `66d27a06` |
 | 2026-09-19 | Волна A pilots `asm-r-01`…`03` → `ASMADY_PILOT_JOURNAL.md` (on-demand) |
+| 2026-09-21 | Волна B1 `asm-r-04` dual-review Voice/Antifake → journal Keep on-demand; C-1/C-2 ждут GO |

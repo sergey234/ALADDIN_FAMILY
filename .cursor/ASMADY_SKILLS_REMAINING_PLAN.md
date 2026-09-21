@@ -10,6 +10,7 @@
 | **SSOT статусов** | [`ASMADY_SKILLS_TASK_REGISTRY.md`](ASMADY_SKILLS_TASK_REGISTRY.md) |
 | **Правило** | Не внедрять `asm-50` / `asm-51` без явного GO |
 | **TodoWrite** | Новые ids `asm-r-*` только `merge: true`; не затирать `orch-*` / `af-*` |
+| **Как делать B·C·E** | [`ASMADY_WAVES_BCE_PLAN.md`](ASMADY_WAVES_BCE_PLAN.md) |
 
 ---
 
@@ -86,7 +87,7 @@ Skills уже в `.cursor/skills/`. Нужен **прогон на продук�
 | **Как** | После `swift-reviewer` / matt — один проход dual-review |
 | **Метрика** | Нашёл ли ≥1 полезный дефект, который иначе упустили |
 | **Решение** | constantly / on-demand / archive |
-| **Статус** | ⬜ todo |
+| **Статус** | ✅ 2026-09-21 — journal `asm-r-04`; **Keep on-demand**; **C-1/C-2 fixed (GO 2026-09-21)** |
 
 ### `asm-r-05` — `aladdin-ui-stress` на Antifake или Voice UI
 
@@ -217,6 +218,8 @@ asm-r-01 → asm-r-02 → asm-r-03     # живые пилоты
 |------|-----|-----------|
 | 2026-09-19 | `asm-r-01`…`03` | Волна A: journal + SHORT §2; G1–G5 PASS; G6 device open |
 | 2026-09-19 | commit | `71be91e7` handoff · `66d27a06` sandbox gitignore |
+| 2026-09-21 | `asm-r-04` | Dual-review Voice/Antifake: C-1/C-2 Critical + High; Keep on-demand |
+| 2026-09-21 | `asm-r-04` fix | GO: C-1 hasStrings/hasURLs · C-2 extractURL-only URL path · tests added |
 
 ---
 
