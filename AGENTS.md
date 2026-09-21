@@ -1,5 +1,8 @@
 # ALADDIN iOS — руководство для AI/ML агентов
 
+**Единая точка входа для другой ML-системы (роутер + дорожная карта):**  
+[`docs/ML_SYSTEM_START_HERE.md`](docs/ML_SYSTEM_START_HERE.md) — открыть **первым**, дальше по таблице маршрутов.
+
 Рабочий корень (единственный):
 
 `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
@@ -12,6 +15,21 @@
 
 ---
 
+## CRITICAL — VPN secrets handoff (never push)
+
+**Файл:** `aladdin_shop_vpn_api/deploy/VPN_SPEED_DEGRADATION_HANDOFF_RU.md`  
+В нём **§32 FULL SECRETS VAULT** (ключи WG, токены бота, env, Xray, vpn.db).
+
+| Запрещено | Разрешено |
+|-----------|-----------|
+| `git add` / `commit` / `push` этого файла | Хранить только локально |
+| Вставлять §32 / секреты в GitHub, чат, PR | Пользоваться `~/ALADDIN_VPN_SAFE/*.tar.enc` |
+| Ослаблять `.gitignore` на этот файл | Читать handoff локально для restore |
+
+Cursor rule (alwaysApply): `.cursor/rules/vpn-handoff-secrets-never-push.mdc`
+
+---
+
 ## Как пользоваться (авто vs вручную)
 
 ### Работает автоматически (ничего не нажимать)
@@ -20,8 +38,11 @@
 |-----|-------------------|
 | **`aladdin-principal-ios-architect.mdc`** | Каждый чат в этом репо — роль principal iOS + UX/архитектура |
 | **`ios-working-root.mdc`** | Напоминает правильный корень репозитория |
+| **`vpn-handoff-secrets-never-push.mdc`** | **Всегда:** не пушить/не вставлять `VPN_SPEED_DEGRADATION_HANDOFF_RU.md` (§32 secrets) |
+| **`common-security.mdc`** | Security checks + запрет push VPN secrets handoff |
 | **Hooks** (`hooks.json`) | Старт чата → ветка и прошлый summary; конец → сохранение в `.cursor/session/`; предупреждения при `.env` и секретах в промпте |
 | **`.cursorignore`** | Cursor не индексирует 35k backup-файлов — быстрый поиск |
+| **Repowise MCP** (self-host, free) | Два slim-индекса: **`repowise-bot`** → `../aladdin_repowise_index` (Stars/VPN/Premium); **`repowise-ios`** → `../aladdin_repowise_ios` (Core/Screens/…). CLI: `.venv-repowise/bin/repowise`. Rule: `repowise-first.mdc`. После commit — фоновый `update` обоих. |
 | **Skills с хорошим `description`** | Cursor может сам подключить skill по смыслу задачи (bypass, Figma, бот) |
 
 ### Подключать явно (когда нужно усилить)
@@ -48,6 +69,8 @@ Rules с `alwaysApply: false` (Figma, bypass, bot, companion) — Cursor под�
 
 | Задача | Что использовать |
 |--------|------------------|
+| Навигация бот Stars/Premium/VPN | MCP **`repowise-bot`**: `get_overview`/`get_context`/`get_risk` |
+| Навигация iOS (Core/Screens/VPN UI) | MCP **`repowise-ios`**: то же для Swift-слоёв (без полного 25GB дерева) |
 | Любая iOS-работа | Rules `aladdin-principal-ios-architect.mdc` + `ios-working-root.mdc` |
 | Parental bypass, anti-mock API | Rule `prod-no-mock-bypass.mdc` + skill `security-review` + agent `security-reviewer` |
 | Изменения `.swift` | Rules `swift-*.mdc` + agent `swift-reviewer` |
@@ -55,12 +78,23 @@ Rules с `alwaysApply: false` (Figma, bypass, bot, companion) — Cursor под�
 | Деплой backend `149.154.65.180` | Rule `aladdin-server-connection.mdc` + `ALADDIN_SERVER_CONNECTION_GUIDE_FOR_ML_SYSTEMS.md` |
 | **SFM статус (перед любым отчётом о SFM)** | **`docs/SFM_ML_QUICKSTART.md`** → `docs/server/sfm_truth_check.sh` · спека: `docs/SFM_SINGLE_SOURCE_OF_TRUTH.md` |
 | Security 100% / 138 / antifake | **`ML_SYSTEM_HANDOFF_SECURITY_100_PERCENT.md`** + `.cursor/IMPLEMENTATION_BATCHES_TODO.md` |
-| Деплой Telegram-бота | Rule `telegram-shop-bot-deploy.mdc` — **не** в iOS-коммиты (`no-telegram-bot-in-ios-release.mdc`) |
+| Деплой Telegram-бота | **`telegram-shop-bot-deploy-safe.mdc`** (канон) · `telegram-shop-bot-deploy.mdc` = redirect · Contabo: `shop-ops deploy verify\|payment-patch\|full` · **не** FINAL §2 Variant A (DEPRECATED) · Mac: `aladdin-contabo` · **не** в iOS-коммиты |
+| **Бот молчит на `/start` (Telegram soft-block)** | **`telegram_stars_shop_bot/docs/ML_SYSTEM_HANDOFF_TELEGRAM_BOTAPI_SOFTBLOCK.md`** · VPN playbook **§15.8** · rule `telegram-bot-api-softblock.mdc` · на Contabo `shared/ml/` |
+| **Оплата LAVA СБП/карта (H2H ↔ classic)** | **`telegram_stars_shop_bot/docs/ML_SYSTEM_HANDOFF_PAYMENTS_LAVA_H2H_CLASSIC_2026-08-17.md`** · VPN playbook **§17** · rule `lava-h2h-classic-switch.mdc` |
+| **VPN — архитектура + карта всех MD (канон #1)** | **`aladdin_shop_vpn_api/deploy/VPN_RU_ENTRY_CLONE_AND_SCALE_PLAYBOOK_RU.md` §0.3** · сейф `~/ALADDIN_VPN_SAFE/ENTRY_CLONE_KIT/README.md` · SSH **#3** `…/SERVERS_ACCESS_CANON.md` · глушилки **#2** Dendi + three-way |
+| **Глушилки — Dendi + Frosty + Aim (three-way, серверы, rollout)** | **`aladdin_shop_vpn_api/deploy/VPN_JAMMING_THREE_WAY_DENDI_FROSTY_AIMONKEY_2026-08-26.md`** · Dendi: `…/VPN_JAMMING_DENDI_VS_AIMONKEY_…2026-08-20.md` · registry `.cursor/VPN_JAMMING_TASK_REGISTRY.md` · **P9 REG:** `…/ML_SYSTEM_HANDOFF_P9_REG_RU_LTE_NIGHT_2026-08-29.md` · rule `vpn-jamming-dendi-todo-ssot.mdc` |
+| **Инцидент deploy 2026-08-19 (LAVA + restore витрины)** | **`telegram_stars_shop_bot/docs/ML_SYSTEM_HANDOFF_INCIDENT_2026-08-19_LAVA_DEPLOY_RESTORE.md`** · rule `telegram-shop-bot-deploy-safe.mdc` |
 | Figma ↔ iOS онбординг | Rules `figma-mcp-onboarding-main.mdc`, `onboarding-figma-ios-sync-mandatory.mdc` + skill `figma-use` (prerequisite) |
 | Перед релизом / merge | Skill `verification-loop` + smoke на сервере |
 | Security audit `.cursor/` | `npx ecc-agentshield scan -p .cursor --supply-chain` |
 | Чистый бэкап iOS | `./scripts/create_clean_mobile_backup.sh` + rule `aladdin-clean-backup.mdc` |
 | Бэкап бота (отдельно) | `./scripts/create_telegram_bot_backup.sh` |
+| **DeepSeek Flash / Codex `/goal`** (API drift, contract tests, bot triage) | **`docs/PLAN_DEEPSEEK_FLASH_GOAL_PIPELINE_2026-08-02.md`** · JWT SSOT · `smart_api_tester.py` · Cursor TODO `ds-p0-*` / `ds-p1-*` |
+| **`/goal` guardrails (конец задачи)** | **`docs/GOAL_GUARDRAILS_CHECKLIST.md`** — VPN§32 · bot∉iOS · no mock bypass |
+| **Deer / docs-only `/goal` sink** | **`tools/deer-flow-sandbox/`** + `DENY.yaml` · `assert_deer_safe.py` |
+| **Assistant write-tools** | Design only: `telegram_stars_shop_bot/docs/DESIGN_ASSISTANT_WRITE_TOOLS_2026-08-02.md` — **не ship** |
+| **Weekly web hygiene (Nuclei + ZAP)** | `docs/security/web/ZAP_NUCLEI_RUNBOOK_RU.md` · `./scripts/security/web/run_weekly_web_hygiene.sh` · reports in `docs/security/web/reports/` |
+| **OpenAPI snapshot / drift** | `python3 scripts/openapi_snapshot_diff.py` → `docs/openapi-snapshots/` |
 
 **Отложено (не вызывать по умолчанию):** `council`, `santa-method`, `mcp-server-patterns`.
 

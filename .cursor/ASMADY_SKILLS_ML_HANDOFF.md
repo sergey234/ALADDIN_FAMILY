@@ -1,5 +1,7 @@
 # Asmadey skills × ALADDIN × Coding Orchestrator — ML Handoff
 
+**Сначала глобальный вход:** [`docs/ML_SYSTEM_START_HERE.md`](../docs/ML_SYSTEM_START_HERE.md) → затем этот файл (домен Asmadey).
+
 **Для другой ML-системы / агента.** Это канонический снимок: что сделано, зачем, куда смотреть, что **не** делать, что осталось.
 
 | Поле | Значение |
