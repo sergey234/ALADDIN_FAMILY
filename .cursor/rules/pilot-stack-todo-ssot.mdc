@@ -1,0 +1,19 @@
+---
+description: Pilot Stack 2026 (ps-*) — Cursor TODO SSOT; merge-only
+globs:
+alwaysApply: false
+---
+
+# Pilot Stack 2026 — Cursor TODO SSOT
+
+**SSOT:** `.cursor/PILOT_STACK_2026_TASK_REGISTRY.md`  
+**Вход:** `docs/ML_SYSTEM_START_HERE.md` §0B  
+**Ids:** `ps-*` (docs `ps-0*` · context `ps-c-*` · disk `ps-d-*` · ollama-mid `ps-o-*` · bonsai `ps-b-*` · admin `ps-a-*` · constitution `ps-x-*`)
+
+## TodoWrite
+
+1. Только `merge: true` — не затирать `orch-*` / `asm-*` / `af-*` / `jam-*`.  
+2. Закрытие: registry ✅ → Cursor `completed` на том же id.  
+3. Железо / SSH / Tailscale / веса / `sudo` на `/Volumes/Disk` — ждать явный GO владельца.  
+4. Не внедрять constantly-on Graft / Aperture-vault / «закрой все порты».  
+5. Веса LLM — только `/Volumes/Disk/ALADDIN_LOCAL_LLM/` (канон: `docs/PILOT_STACK_LOCAL_LLM_DISK_PLAN_2026-09-21.md`), не системный SSD при ~5 ГБ free.

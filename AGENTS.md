@@ -1,7 +1,11 @@
 # ALADDIN iOS — руководство для AI/ML агентов
 
 **Единая точка входа для другой ML-системы (роутер + дорожная карта):**  
-[`docs/ML_SYSTEM_START_HERE.md`](docs/ML_SYSTEM_START_HERE.md) — открыть **первым**, дальше по таблице маршрутов.
+[`docs/ML_SYSTEM_START_HERE.md`](docs/ML_SYSTEM_START_HERE.md) — открыть **первым** (§0A **Mech Pilot**), дальше по таблице маршрутов.  
+**Business / метрики / рост:** [`docs/business/ML_SYSTEM_BUSINESS_START_HERE.md`](docs/business/ML_SYSTEM_BUSINESS_START_HERE.md).  
+**Mech Pilot:** rule `.cursor/rules/mech-pilot.mdc` · skill `@aladdin-mech-pilot` · GATES `@aladdin-gates`.  
+**Pilot stack / Bonsai draft:** [`docs/ML_SYSTEM_LOCAL_LLM_BONSAI_PILOT.md`](docs/ML_SYSTEM_LOCAL_LLM_BONSAI_PILOT.md) · `@aladdin-local-llm` · START_HERE §0B.  
+**Tailscale admin (не продукт):** [`docs/ADMIN_MESH_TAILSCALE_HYBRID_PLAN_2026-07-27.md`](docs/ADMIN_MESH_TAILSCALE_HYBRID_PLAN_2026-07-27.md).
 
 Рабочий корень (единственный):
 
@@ -37,6 +41,7 @@ Cursor rule (alwaysApply): `.cursor/rules/vpn-handoff-secrets-never-push.mdc`
 | Что | Когда срабатывает |
 |-----|-------------------|
 | **`aladdin-principal-ios-architect.mdc`** | Каждый чат в этом репо — роль principal iOS + UX/архитектура |
+| **`mech-pilot.mdc`** | Пилот (владелец) vs меха (агент): GATES → evidence → human Approve |
 | **`ios-working-root.mdc`** | Напоминает правильный корень репозитория |
 | **`vpn-handoff-secrets-never-push.mdc`** | **Всегда:** не пушить/не вставлять `VPN_SPEED_DEGRADATION_HANDOFF_RU.md` (§32 secrets) |
 | **`common-security.mdc`** | Security checks + запрет push VPN secrets handoff |
@@ -71,7 +76,11 @@ Rules с `alwaysApply: false` (Figma, bypass, bot, companion) — Cursor под�
 |--------|------------------|
 | Навигация бот Stars/Premium/VPN | MCP **`repowise-bot`**: `get_overview`/`get_context`/`get_risk` |
 | Навигация iOS (Core/Screens/VPN UI) | MCP **`repowise-ios`**: то же для Swift-слоёв (без полного 25GB дерева) |
-| Любая iOS-работа | Rules `aladdin-principal-ios-architect.mdc` + `ios-working-root.mdc` |
+| Любая iOS-работа | Rules `aladdin-principal-ios-architect.mdc` + `ios-working-root.mdc` + **`mech-pilot.mdc`** |
+| Постановка задачи агенту / «пилот» | Skill **`aladdin-mech-pilot`** + `aladdin-gates` + START_HERE §0A |
+| Local LLM / Bonsai (draft only) | Skill **`aladdin-local-llm`** + `docs/ML_SYSTEM_LOCAL_LLM_BONSAI_PILOT.md` · START_HERE §0B |
+| Карта кода (граф) | **Repowise** MCP · не orch GraftQueue · не trailhq Graft без ROI-GO |
+| Tailscale admin mesh | `docs/ADMIN_MESH_TAILSCALE_HYBRID_PLAN_2026-07-27.md` · не закрывать VPN/HTTPS порты |
 | Parental bypass, anti-mock API | Rule `prod-no-mock-bypass.mdc` + skill `security-review` + agent `security-reviewer` |
 | Изменения `.swift` | Rules `swift-*.mdc` + agent `swift-reviewer` |
 | Ошибки сборки Xcode | Agent `swift-build-resolver` или `build-error-resolver` |

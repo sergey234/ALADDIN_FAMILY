@@ -1,0 +1,28 @@
+---
+description: Mech Pilot — human owns outcome; agent executes under GATES (not dump-code)
+alwaysApply: true
+---
+
+# Mech Pilot (гибрид человек + агент)
+
+**Владелец / пилот** задаёт цель, границы, GO и отвечает за результат.  
+**Агент / меха** пишет код и черновики **внутри** ограничений — не «наваливает репо».
+
+## Обязательный порядок
+
+1. **Маршрут** — `docs/ML_SYSTEM_START_HERE.md` (или явный доменный MASTER).  
+2. **GATES** — 3–8 критериев + доказательства **до** большого кода (skill `@aladdin-gates`). Hotfix: явно написать «без GATES, потому что…».  
+3. **Минимальный diff** — одна цель; не тащить bot/VPN/iOS «заодно».  
+4. **Доказательства** — тест / verify / smoke / journal — до слова «готово» (`@aladdin-quality-check`).  
+5. **Человек закрывает контур** — DEVICE QA · commit (если просили) · orch **Approve** · prod GO.
+
+## Красные флаги (стоп / спросить пилота)
+
+- Auto-merge / Dark Factory в protected  
+- `sfm_mock` / mock на parental·family·antifake  
+- Секреты в чат/коммит · bot в iOS-релиз  
+- «Готово» без evidence · уверенный бред вместо «не уверен»
+
+## Связка
+
+Skill: `.cursor/skills/aladdin-mech-pilot/SKILL.md` · GATES: `aladdin-gates` · Orch: `orch-basics` Approve.
