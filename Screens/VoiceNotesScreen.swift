@@ -221,6 +221,11 @@ struct VoiceNotesScreen: View {
 }
 
 private extension VoiceNotesScreen {
+    /// VN-UI-01: readable on StormMesh — avoid `.secondary` (too dim on dark).
+    private var privacyReadableForeground: Color {
+        Color.white.opacity(0.78)
+    }
+
     var privacyBanner: some View {
         VStack(alignment: .leading, spacing: 6) {
             HStack(spacing: 8) {
@@ -228,17 +233,17 @@ private extension VoiceNotesScreen {
                     .foregroundColor(.green)
                 Text(localizationManager.localized("voice_notes_local_only_disclaimer"))
                     .font(.footnote)
-                    .foregroundColor(.secondary)
+                    .foregroundColor(privacyReadableForeground)
             }
             Text(localizationManager.localized("voice_notes_privacy_stt_disclaimer"))
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(privacyReadableForeground)
             Text(localizationManager.localized("voice_safety_local_vs_antifake"))
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(privacyReadableForeground)
             Text(localizationManager.localized("voice_structure_privacy"))
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(privacyReadableForeground)
             if !viewModel.isSpeechTranscriptionAvailable {
                 Text(localizationManager.localized("voice_notes_speech_unavailable_hint"))
                     .font(.caption)

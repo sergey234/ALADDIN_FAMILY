@@ -505,24 +505,31 @@ struct AntifakeTextCheckView: View {
     }
 
     private var pasteFromClipboardRow: some View {
-        HStack {
-            Spacer()
-            Button {
-                viewModel.pasteFromClipboard()
-                HapticFeedback.selection()
-            } label: {
-                Label(
-                    localizationManager.localized("antifake_paste_button"),
-                    systemImage: "doc.on.clipboard"
-                )
-                .font(.caption.weight(.semibold))
-                .foregroundColor(viewModel.hasClipboardContent ? .secondaryGold : .white.opacity(0.45))
-            }
-            .buttonStyle(.plain)
-            .disabled(!viewModel.hasClipboardContent)
-            .accessibilityIdentifier("antifake_paste_button")
-            .accessibilityHint(localizationManager.localized("antifake_paste_button_hint"))
+        Button {
+            viewModel.pasteFromClipboard()
+            HapticFeedback.selection()
+        } label: {
+            Label(
+                localizationManager.localized("antifake_paste_button"),
+                systemImage: "doc.on.clipboard"
+            )
+            .font(.subheadline.weight(.semibold))
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .foregroundColor(viewModel.hasClipboardContent ? .secondaryGold : .white.opacity(0.45))
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .strokeBorder(
+                        viewModel.hasClipboardContent
+                            ? Color.secondaryGold.opacity(0.55)
+                            : Color.white.opacity(0.2),
+                        lineWidth: 1
+                    )
+            )
         }
+        .buttonStyle(.plain)
+        .disabled(!viewModel.hasClipboardContent)
+        .accessibilityIdentifier("antifake_paste_button")
+        .accessibilityHint(localizationManager.localized("antifake_paste_button_hint"))
     }
 
     @ViewBuilder

@@ -1806,6 +1806,8 @@
 "voice_notes_settings_entry_subtitle" = "Запись, транскрипция и AI-резюме заметок";
 "voice_notes_record" = "Запись";
 "voice_notes_pause" = "Пауза";
+"voice_notes_play" = "Воспроизвести";
+"voice_notes_play" = "Воспроизвести";
 "voice_notes_resume" = "Продолжить";
 "voice_notes_stop" = "Стоп";
 "voice_notes_summarize" = "Сделать краткое содержание";

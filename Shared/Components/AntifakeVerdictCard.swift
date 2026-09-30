@@ -158,11 +158,12 @@ struct AntifakeVerdictCard: View {
                     localizationManager.localized(presentation.verdictTitleKey),
                     systemImage: presentation.iconName
                 )
-                    .font(.headline)
+                    .font(.title3.weight(.bold))
                     .foregroundColor(.white)
-                Spacer()
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: Spacing.s)
                 Text(localizationManager.localized(presentation.sourceBadgeKey))
-                    .font(.caption2.weight(.semibold))
+                    .font(.caption.weight(.semibold))
                     .padding(.horizontal, Spacing.s)
                     .padding(.vertical, 4)
                     .background(Color.white.opacity(0.15))
@@ -222,7 +223,7 @@ struct AntifakeVerdictCard: View {
 
             if let summary = verdict.summaryHuman, !summary.isEmpty {
                 Text(summary)
-                    .font(.subheadline)
+                    .font(.body)
                     .foregroundColor(.white.opacity(0.95))
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("antifake_verdict_summary_human")
@@ -230,8 +231,8 @@ struct AntifakeVerdictCard: View {
 
             if !topReasons.isEmpty {
                 Text(localizationManager.localized(reasonsSectionTitleKey))
-                    .font(.caption.weight(.semibold))
-                    .foregroundColor(.white.opacity(0.7))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white.opacity(0.85))
 
                 ForEach(Array(topReasons.enumerated()), id: \.offset) { _, reason in
                     HStack(alignment: .top, spacing: Spacing.xs) {
@@ -242,8 +243,8 @@ struct AntifakeVerdictCard: View {
                                 ? reason
                                 : presentation.localizedReason(reason, localizationManager: localizationManager)
                         )
-                            .font(.subheadline)
-                            .foregroundColor(.white.opacity(0.9))
+                            .font(.body)
+                            .foregroundColor(.white.opacity(0.95))
                             .fixedSize(horizontal: false, vertical: true)
                     }
                 }

@@ -1921,6 +1921,8 @@
 "voice_notes_settings_entry_subtitle" = "Record, transcribe, and summarize notes with AI";
 "voice_notes_record" = "Record";
 "voice_notes_pause" = "Pause";
+"voice_notes_play" = "Play";
+"voice_notes_play" = "Play";
 "voice_notes_resume" = "Resume";
 "voice_notes_stop" = "Stop";
 "voice_notes_summarize" = "Generate summary";

@@ -28,7 +28,14 @@ struct VoiceNoteCard: View {
                         Image(systemName: playback.playingNoteId == note.id ? "pause.circle.fill" : "play.circle.fill")
                             .font(.title2)
                             .foregroundColor(.orange)
+                            .frame(minWidth: 44, minHeight: 44)
+                            .contentShape(Rectangle())
                     }
+                    .accessibilityLabel(
+                        playback.playingNoteId == note.id
+                            ? localizationManager.localized("voice_notes_pause")
+                            : localizationManager.localized("voice_notes_play")
+                    )
                     if playback.playingNoteId == note.id {
                         ProgressView(value: min(max(playback.progress, 0), 1))
                             .frame(maxWidth: .infinity)
@@ -60,14 +67,19 @@ struct VoiceNoteCard: View {
                     .foregroundColor(.secondary)
             }
 
-            HStack(spacing: 8) {
+            // VN-UI-03: wrap + min 44pt (avoid cramped `.small` HStack).
+            LazyVGrid(
+                columns: [GridItem(.adaptive(minimum: 140), spacing: 8)],
+                alignment: .leading,
+                spacing: 8
+            ) {
                 if let onRegenerateSummary {
                     Button(action: onRegenerateSummary) {
                         Label(localizationManager.localized("voice_notes_summary_retry"), systemImage: "arrow.clockwise")
-                            .font(.caption.weight(.semibold))
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity, minHeight: 44)
                     }
                     .buttonStyle(.bordered)
-                    .controlSize(.small)
                 }
 
                 if !note.audioPath.isEmpty, FileManager.default.fileExists(atPath: note.audioPath) {
@@ -75,10 +87,10 @@ struct VoiceNoteCard: View {
                         shareAudioFile(path: note.audioPath)
                     } label: {
                         Label(localizationManager.localized("voice_notes_share"), systemImage: "square.and.arrow.up")
-                            .font(.caption.weight(.semibold))
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity, minHeight: 44)
                     }
                     .buttonStyle(.bordered)
-                    .controlSize(.small)
                 }
 
                 if let onSendToAI {
@@ -86,10 +98,10 @@ struct VoiceNoteCard: View {
                         onSendToAI(exportText)
                     } label: {
                         Label(localizationManager.localized("voice_notes_send_to_ai"), systemImage: "brain.head.profile")
-                            .font(.caption.weight(.semibold))
+                            .font(.subheadline.weight(.semibold))
+                            .frame(maxWidth: .infinity, minHeight: 44)
                     }
                     .buttonStyle(.borderedProminent)
-                    .controlSize(.small)
                     .tint(.blue)
                 }
 
@@ -101,10 +113,10 @@ struct VoiceNoteCard: View {
                             localizationManager.localized("voice_structure_button"),
                             systemImage: isStructuring ? "hourglass" : "list.bullet.rectangle"
                         )
-                        .font(.caption.weight(.semibold))
+                        .font(.subheadline.weight(.semibold))
+                        .frame(maxWidth: .infinity, minHeight: 44)
                     }
                     .buttonStyle(.bordered)
-                    .controlSize(.small)
                     .disabled(isStructuring)
                     .accessibilityIdentifier("voice_structure_button")
                 }
