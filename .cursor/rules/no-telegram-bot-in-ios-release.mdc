@@ -11,6 +11,7 @@ alwaysApply: true
 
 При сборках iOS, bump build number, `git commit` / `git push origin master` в каноническом репо:
 
+- Коммит iOS только на ветке **`master`**. Другая ветка — стоп. Rule: `ios-commit-on-master.mdc`.
 - **Не добавлять** в staging (`git add`) пути `telegram_stars_shop_bot/**`
 - **Не включать** изменения бота в коммиты вида `feat(build N)`, Wellness, iOS fixes, backend для приложения
 - **Не коммитить** `.env` (секреты)

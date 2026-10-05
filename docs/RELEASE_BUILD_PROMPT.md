@@ -50,8 +50,10 @@ NEXT_BUILD = 5
 КАНОН (не менять)
 ════════════════════════════════════
 Путь: `/Users/sergejhlystov/ALADDIN_NEW/ALADDIN_NEW/mobile_apps/ALADDIN_iOS`
-Ветка: `master`
+Ветка: **только `master`**
 Remote: `origin = git@github.com:sergey234/ALADDIN_FAMILY.git`
+
+Если `git branch --show-current` не `master` — СТОП. Не коммитить на `hide-stars-public-2026-09` и на любой другой ветке. Сначала перейти на `master`, не удаляя чужие коммиты и незакоммиченные правки. Правило для всех следующих ML: `.cursor/rules/ios-commit-on-master.mdc`.
 
 ════════════════════════════════════
 ДО ЛЮБОЙ РАБОТЫ (показать вывод)

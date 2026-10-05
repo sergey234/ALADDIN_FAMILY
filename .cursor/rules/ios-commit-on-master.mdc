@@ -1,0 +1,17 @@
+---
+description: iOS commits and releases go only on master. Stop if the current branch is anything else.
+alwaysApply: true
+---
+
+# iOS коммиты только на master
+
+Канон релиза: `docs/RELEASE_BUILD_PROMPT.md`.
+
+Перед любым `git commit` мобильного приложения:
+
+1. `git branch --show-current` должен напечатать **`master`**.
+2. Если ветка другая (`hide-stars-public-2026-09` и любая ещё) — **стоп**. Не коммитить на ней.
+3. Перейти на `master`. Чужие незакоммиченные правки не выбрасывать. Коммиты не удалять.
+4. `origin` только `git@github.com:sergey234/ALADDIN_FAMILY.git`.
+5. `git push origin master` — только после явной фразы владельца **GO на push**.
+6. Номер сборки не брать из старого личного TestFlight (247/248, команда `6CJVBBUGSN`). Текущее приложение: `ai.aladdin`, команда `B3WGHSWL79`. Номер поднимать только после **GO на bump**, строго +1 от фактического `CFBundleVersion`.
