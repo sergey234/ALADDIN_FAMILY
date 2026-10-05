@@ -1,4 +1,4 @@
-"""Button on the 60+ phone → parent push. Not an antifake verdict."""
+"""Button after a call → parent push. Any family role. Not an antifake verdict."""
 from __future__ import annotations
 
 import asyncio
@@ -19,6 +19,7 @@ logger = logging.getLogger(__name__)
 _lock = Lock()
 _last_push_by_member: Dict[int, float] = {}
 DEBOUNCE_SEC = 8
+FAMILY_ROLES = frozenset({"parent", "child", "teenager", "elderly"})
 
 
 def push_copy(display_name: Optional[str]) -> Tuple[str, str]:
@@ -56,26 +57,31 @@ def member_display_name(member_user_id: int) -> Optional[str]:
     return name or None
 
 
-def caller_is_elderly(member_user_id: int) -> bool:
+def caller_has_family_role(member_user_id: int) -> bool:
+    """Parent, child, teenager, or elderly. Unknown roles do not send."""
     family_id = resolve_primary_family_id(int(member_user_id))
     if not family_id:
         return False
     role = get_member_role(int(member_user_id), family_id)
-    return role == "elderly"
+    return (role or "") in FAMILY_ROLES
 
 
-def maybe_notify_parents_money_or_code(*, member_user_id: int) -> Tuple[int, bool]:
-    """Returns (pushes_sent, deduped). Does not call the antifake 15-minute path."""
+def maybe_notify_parents_money_or_code(*, member_user_id: int) -> Tuple[int, bool, str]:
+    """Returns (pushes_sent, deduped, reason). Does not call the antifake 15-minute path.
+
+    Recipients are other parents in the family. The person who pressed is excluded
+    inside get_parent_user_ids, so a parent does not get their own push.
+    """
     now = time.time()
     member_id = int(member_user_id)
     with _lock:
         last = _last_push_by_member.get(member_id, 0.0)
         if now - last < DEBOUNCE_SEC:
-            return 0, True
+            return 0, True, "deduped"
 
     parent_ids = get_parent_user_ids(member_id)
     if not parent_ids:
-        return 0, False
+        return 0, False, "no_other_parent"
 
     title, body = push_copy(member_display_name(member_id))
     extra = {
@@ -98,7 +104,8 @@ def maybe_notify_parents_money_or_code(*, member_user_id: int) -> Tuple[int, boo
             len(parent_ids),
             sent,
         )
-    return sent, False
+        return sent, False, "sent"
+    return 0, False, "push_failed"
 
 
 def _send_apns_sync(token: str, title: str, body: str, extra: Dict[str, str]) -> bool:

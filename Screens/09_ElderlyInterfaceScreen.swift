@@ -3653,15 +3653,25 @@ struct DangerousContactsModal: View {
     }
 }
 
-struct ElderlyScamCallAlertResponse: Codable {
+struct ElderlyScamCallAlertResponse: Decodable {
     let ok: Bool
     let parentsNotified: Int
     let deduped: Bool
+    let reason: String?
 
     enum CodingKeys: String, CodingKey {
         case ok
         case parentsNotified = "parents_notified"
         case deduped
+        case reason
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        ok = try container.decode(Bool.self, forKey: .ok)
+        parentsNotified = try container.decode(Int.self, forKey: .parentsNotified)
+        deduped = try container.decode(Bool.self, forKey: .deduped)
+        reason = try container.decodeIfPresent(String.self, forKey: .reason)
     }
 }
 
@@ -3745,6 +3755,8 @@ struct ElderlyScamCallScreen: View {
                     if response.ok && (response.parentsNotified > 0 || response.deduped) {
                         lastSentAt = Date().timeIntervalSince1970
                         gate.isPresented = false
+                    } else if response.reason == "no_other_parent" {
+                        errorText = localizationManager.localized("elderly_scam_call_no_parent")
                     } else {
                         errorText = localizationManager.localized("elderly_scam_call_failed")
                     }

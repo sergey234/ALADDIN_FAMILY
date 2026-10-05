@@ -16,10 +16,10 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
     }
 
     func startIfNeeded() {
-        let elderly = ElderlyScamCallPolicy.showsFullScreen(
+        let familyRole = ElderlyScamCallPolicy.showsFullScreen(
             role: UserDefaults.standard.string(forKey: "current_user_role")
         )
-        guard elderly || AntifakeAccessPolicy.isHubAvailable() else { return }
+        guard familyRole || AntifakeAccessPolicy.isHubAvailable() else { return }
         observer.setDelegate(self, queue: nil)
         requestNotificationAuthorizationIfNeeded()
     }
@@ -41,10 +41,10 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
     }
 
     private func schedulePostCallCheckNotification() async {
-        let elderly = ElderlyScamCallPolicy.showsFullScreen(
+        let familyRole = ElderlyScamCallPolicy.showsFullScreen(
             role: UserDefaults.standard.string(forKey: "current_user_role")
         )
-        if elderly {
+        if familyRole {
             ElderlyScamCallGate.shared.isPresented = true
             return
         }
@@ -65,9 +65,12 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
 
 enum ElderlyScamCallPolicy {
     static let repeatGuardSeconds: TimeInterval = 8
+    /// Same raw values as `FamilyRole`: parent, child, teenager, elderly.
+    static let familyRoles: Set<String> = ["parent", "child", "teenager", "elderly"]
 
     static func showsFullScreen(role: String?) -> Bool {
-        role == FamilyRole.elderly.rawValue
+        guard let role else { return false }
+        return familyRoles.contains(role)
     }
 
     static func sendsFamilyAlert(pressedMoneyOrCode: Bool) -> Bool {

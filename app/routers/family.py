@@ -3338,22 +3338,28 @@ async def elderly_scam_call_alert(
     body: ElderlyScamCallAlertBody,
     current_user: dict = Depends(get_current_user),
 ):
-    """60+ pressed «asked for money or a code». Separate from antifake verdicts."""
+    """Family member pressed «asked for money or a code». Separate from antifake verdicts."""
     user_id = _resolve_user_id_from_claim(current_user)
 
     def notify_sync():
         from app.services.elderly_scam_call_notify import (
-            caller_is_elderly,
+            caller_has_family_role,
             maybe_notify_parents_money_or_code,
         )
 
-        if not caller_is_elderly(user_id):
+        if not caller_has_family_role(user_id):
             return {"ok": False, "error": "role", "parents_notified": 0, "deduped": False}
-        sent, deduped = maybe_notify_parents_money_or_code(member_user_id=user_id)
-        return {"ok": True, "parents_notified": sent, "deduped": deduped, "source": (body.source or "button")[:32]}
+        sent, deduped, reason = maybe_notify_parents_money_or_code(member_user_id=user_id)
+        return {
+            "ok": True,
+            "parents_notified": sent,
+            "deduped": deduped,
+            "reason": reason,
+            "source": (body.source or "button")[:32],
+        }
 
     result = await asyncio.to_thread(notify_sync)
     if result.get("error") == "role":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="elderly_role_required")
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="family_role_required")
     return result
 

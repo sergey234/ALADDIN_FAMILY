@@ -2,10 +2,13 @@ import XCTest
 @testable import ALADDIN
 
 final class ElderlyScamCallPolicyTests: XCTestCase {
-    func testFullScreenOnlyForElderly() {
+    func testFullScreenForEveryFamilyRole() {
         XCTAssertTrue(ElderlyScamCallPolicy.showsFullScreen(role: "elderly"))
-        XCTAssertFalse(ElderlyScamCallPolicy.showsFullScreen(role: "parent"))
+        XCTAssertTrue(ElderlyScamCallPolicy.showsFullScreen(role: "parent"))
+        XCTAssertTrue(ElderlyScamCallPolicy.showsFullScreen(role: "child"))
+        XCTAssertTrue(ElderlyScamCallPolicy.showsFullScreen(role: "teenager"))
         XCTAssertFalse(ElderlyScamCallPolicy.showsFullScreen(role: nil))
+        XCTAssertFalse(ElderlyScamCallPolicy.showsFullScreen(role: "guest"))
     }
 
     func testCalmDoesNotSend() {
