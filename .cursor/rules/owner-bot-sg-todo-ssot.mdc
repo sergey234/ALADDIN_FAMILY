@@ -1,0 +1,17 @@
+---
+description: Owner personal bot on SG Asia (ob-*) — Cursor TODO SSOT; merge-only. Append article decisions here.
+globs:
+alwaysApply: false
+---
+
+# Owner bot SG TODO — SSOT (`ob-*`)
+
+**Документы:** `.cursor/OWNER_BOT_SG_TASK_REGISTRY.md` · `docs/PLAN_OWNER_BOT_SG_2026-10-05.md`
+
+## Правила
+
+1. Cursor TODO только через **`merge: true`**. Не затирать `ori-*` / `eld-*` / `af-*` / `sap-*`.
+2. После согласованной статьи: строка в план §2. Новая работа — новый `ob-*`, не переписывание всего списка.
+3. Установка на **🇸🇬 SG (`…78`)** только после **GO BOT SG**. `xray` не останавливать.
+4. Пост в канал только после одобрения владельца. Канал магазина не использовать.
+5. Twitter, браузер и обход закрытых сайтов не добавлять.

@@ -268,6 +268,7 @@ struct ALADDINApp: App {
     @StateObject private var localizationManager = LocalizationManager.shared
     /// Единый источник статистики главной / профиля (семья, устройства, угрозы).
     @StateObject private var mainViewModel = MainViewModel()
+    @StateObject private var elderlyScamCallGate = ElderlyScamCallGate.shared
     @AppStorage("selected_theme") private var selectedTheme: String = "light"
     /// VisualLogger overlay (симулятор/устройство). По умолчанию выкл — логи в Xcode Console.
     @AppStorage("enable_visual_logging") private var enableVisualLogging: Bool = false
@@ -425,6 +426,11 @@ struct ALADDINApp: App {
                     LaunchDiagnostics.appendStartupTrace("WindowGroup.task END deferred bootstrap")
                     LaunchDiagnostics.appendLifecycleTrace("WindowGroup.task END deferred bootstrap")
                     LaunchDiagnostics.finishStartupTracePhase()
+                }
+                .fullScreenCover(isPresented: $elderlyScamCallGate.isPresented) {
+                    ElderlyScamCallScreen()
+                        .environmentObject(localizationManager)
+                        .environmentObject(navigationManager)
                 }
                 .onOpenURL { url in
                     if AntifakeDeepLinkRouter.isUniversalAntifakeLink(url) {

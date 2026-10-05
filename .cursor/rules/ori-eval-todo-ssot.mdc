@@ -1,0 +1,17 @@
+---
+description: Ori Eval / OpenRouter model selection (ori-*) — Cursor TODO SSOT; merge-only
+globs:
+alwaysApply: false
+---
+
+# Ori Eval TODO — SSOT (`ori-*`)
+
+**Документы:** `.cursor/ORI_EVAL_TASK_REGISTRY.md` · `docs/PLAN_ORI_EVAL_OPENROUTER_2026-10-05.md`
+
+## Обязательные правила
+
+1. Обновлять Cursor TODO только через **`merge: true`** — не затирать `af-*` / `ps-*` / `asm-*` / bot ids.
+2. Выполненные `ori-*` → `completed`, **оставлять в списке**.
+3. Live Ori / pin prod model / CI secret — только после **явного GO** пилота.
+4. Нет family/child PII и VPN §32 в fixtures.
+5. Eval бота — в `telegram_stars_shop_bot/`; не в iOS release commit.

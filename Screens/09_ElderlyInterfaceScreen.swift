@@ -106,6 +106,15 @@ struct ElderlyInterfaceScreen: View {
                             // Семейная панель
                             familySection
                             
+                            VStack(alignment: .leading, spacing: Spacing.s) {
+                                AntifakeCallDirectorySettingsCard()
+                                    .environmentObject(localizationManager)
+                                Text(localizationManager.localized("elderly_scam_call_directory_note"))
+                                    .font(.system(size: 16))
+                                    .foregroundColor(.white.opacity(0.85))
+                            }
+                            .padding(.horizontal, Spacing.screenPadding)
+
                             // Очень большие кнопки
                             bigButtonsList
                             
@@ -3640,6 +3649,118 @@ struct DangerousContactsModal: View {
                     }
                 }
             }
+        }
+    }
+}
+
+struct ElderlyScamCallAlertResponse: Codable {
+    let ok: Bool
+    let parentsNotified: Int
+    let deduped: Bool
+
+    enum CodingKeys: String, CodingKey {
+        case ok
+        case parentsNotified = "parents_notified"
+        case deduped
+    }
+}
+
+struct ElderlyScamCallScreen: View {
+    @EnvironmentObject private var navigationManager: NavigationManager
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @ObservedObject private var gate = ElderlyScamCallGate.shared
+    @State private var isSending = false
+    @State private var errorText: String?
+    @State private var lastSentAt: TimeInterval = 0
+
+    var body: some View {
+        ZStack {
+            Color.black.ignoresSafeArea()
+            VStack(spacing: 24) {
+                Text(localizationManager.localized("elderly_scam_call_title"))
+                    .font(.system(size: 40, weight: .bold))
+                    .foregroundColor(.white)
+                    .multilineTextAlignment(.center)
+                Text(localizationManager.localized("elderly_scam_call_hint"))
+                    .font(.system(size: 22))
+                    .foregroundColor(.white.opacity(0.9))
+                    .multilineTextAlignment(.center)
+                Button(action: sendAlert) {
+                    Text(localizationManager.localized("elderly_scam_call_money"))
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 28)
+                        .background(Color.red)
+                        .cornerRadius(16)
+                }
+                .disabled(isSending)
+                .accessibilityIdentifier("elderly_scam_call_money")
+                Button(action: calm) {
+                    Text(localizationManager.localized("elderly_scam_call_calm"))
+                        .font(.system(size: 28, weight: .bold))
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 28)
+                        .background(Color.green)
+                        .cornerRadius(16)
+                }
+                .accessibilityIdentifier("elderly_scam_call_calm")
+                if let errorText {
+                    Text(errorText)
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(.orange)
+                        .multilineTextAlignment(.center)
+                }
+                Spacer()
+                Button(action: openRecording) {
+                    Text(localizationManager.localized("elderly_scam_call_recording"))
+                        .font(.system(size: 16))
+                        .foregroundColor(.white.opacity(0.75))
+                }
+                .accessibilityIdentifier("elderly_scam_call_recording")
+            }
+            .padding(24)
+        }
+    }
+
+    private func calm() {
+        errorText = nil
+        gate.isPresented = false
+    }
+
+    private func sendAlert() {
+        let now = Date().timeIntervalSince1970
+        guard ElderlyScamCallPolicy.allowsAnotherSend(lastSentAt: lastSentAt, now: now) else {
+            gate.isPresented = false
+            return
+        }
+        isSending = true
+        errorText = nil
+        APIService.shared.reportElderlyScamCall { result in
+            DispatchQueue.main.async {
+                isSending = false
+                switch result {
+                case .success(let response):
+                    if response.ok && (response.parentsNotified > 0 || response.deduped) {
+                        lastSentAt = Date().timeIntervalSince1970
+                        gate.isPresented = false
+                    } else {
+                        errorText = localizationManager.localized("elderly_scam_call_failed")
+                    }
+                case .failure:
+                    errorText = localizationManager.localized("elderly_scam_call_failed")
+                }
+            }
+        }
+    }
+
+    private func openRecording() {
+        gate.isPresented = false
+        if AntifakeAccessPolicy.isHubAvailable() {
+            navigationManager.navigateToAntifakeHub(tab: .call, postCallPrompt: true)
+        } else {
+            navigationManager.navigateTo(.tariffs)
         }
     }
 }

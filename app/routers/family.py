@@ -3326,3 +3326,34 @@ async def elderly_fall_alert(
 
     return await asyncio.to_thread(notify_sync)
 
+
+class ElderlyScamCallAlertBody(BaseModel):
+    source: str = Field(default="button", max_length=32)
+
+
+@router.post("/elderly/scam-call-alert")
+@limiter.limit("20/hour")
+async def elderly_scam_call_alert(
+    request: Request,
+    body: ElderlyScamCallAlertBody,
+    current_user: dict = Depends(get_current_user),
+):
+    """60+ pressed «asked for money or a code». Separate from antifake verdicts."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def notify_sync():
+        from app.services.elderly_scam_call_notify import (
+            caller_is_elderly,
+            maybe_notify_parents_money_or_code,
+        )
+
+        if not caller_is_elderly(user_id):
+            return {"ok": False, "error": "role", "parents_notified": 0, "deduped": False}
+        sent, deduped = maybe_notify_parents_money_or_code(member_user_id=user_id)
+        return {"ok": True, "parents_notified": sent, "deduped": deduped, "source": (body.source or "button")[:32]}
+
+    result = await asyncio.to_thread(notify_sync)
+    if result.get("error") == "role":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="elderly_role_required")
+    return result
+

@@ -915,6 +915,17 @@ class APIService: ObservableObject {
         )
     }
 
+    func reportElderlyScamCall(completion: @escaping (Result<ElderlyScamCallAlertResponse, Error>) -> Void) {
+        struct Body: Codable {
+            let source: String
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.familyElderlyScamCallAlert,
+            body: Body(source: "button"),
+            completion: completion
+        )
+    }
+
     func restrictFamilyChatMember(
         messageId: String,
         restricted: Bool = true,

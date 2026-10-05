@@ -449,6 +449,7 @@ struct AppConfig {
         static let wellnessSocialGoalsDismiss = "/api/wellness/social-goals/dismiss"
         static let wellnessTogetherActivity = "/api/wellness/together/activity"
         static let familyElderlyFallAlert = "/api/family/elderly/fall-alert"
+        static let familyElderlyScamCallAlert = "/api/family/elderly/scam-call-alert"
         static let wellnessStudentMode = "/api/wellness/profile/student-mode"
         static let wellnessDetoxChallenge = "/api/wellness/detox/challenge"
         static let wellnessDetoxChallengeStart = "/api/wellness/detox/challenge/start"

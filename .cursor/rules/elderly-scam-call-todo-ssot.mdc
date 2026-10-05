@@ -1,0 +1,17 @@
+---
+description: Elderly scam-call family alert (eld-*) — Cursor TODO SSOT; merge-only
+globs:
+alwaysApply: false
+---
+
+# Elderly scam call TODO — SSOT (`eld-*`)
+
+**Документы:** `.cursor/ELDERLY_SCAM_CALL_TASK_REGISTRY.md` · `docs/PLAN_ELDERLY_SCAM_CALL_2026-10-05.md`
+
+## Правила
+
+1. Cursor TODO только через **`merge: true`**. Не затирать `ori-*` / `af-*` / `ps-*`.
+2. Закрытые `eld-*` оставлять в списке со статусом `completed`.
+3. Код — после **GO ELD BUILD**. Пуш на MAIN — после **GO ELD PUSH**.
+4. Не обещать распознавание мошенника в момент звонка. Не слушать звонок в фоне.
+5. Live Caller ID (`af-H-03` / `eld-h03-live-id`) в эту работу не входит.

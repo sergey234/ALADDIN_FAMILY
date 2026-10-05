@@ -1,4 +1,5 @@
 import CallKit
+import Combine
 import Foundation
 import UserNotifications
 
@@ -15,7 +16,10 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
     }
 
     func startIfNeeded() {
-        guard AntifakeAccessPolicy.isHubAvailable() else { return }
+        let elderly = ElderlyScamCallPolicy.showsFullScreen(
+            role: UserDefaults.standard.string(forKey: "current_user_role")
+        )
+        guard elderly || AntifakeAccessPolicy.isHubAvailable() else { return }
         observer.setDelegate(self, queue: nil)
         requestNotificationAuthorizationIfNeeded()
     }
@@ -37,6 +41,14 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
     }
 
     private func schedulePostCallCheckNotification() async {
+        let elderly = ElderlyScamCallPolicy.showsFullScreen(
+            role: UserDefaults.standard.string(forKey: "current_user_role")
+        )
+        if elderly {
+            ElderlyScamCallGate.shared.isPresented = true
+            return
+        }
+
         let lastPush = UserDefaults.standard.double(forKey: AppConfig.UserDefaultsKeys.antifakePostCallLastPushAt)
         let now = Date().timeIntervalSince1970
         guard AntifakePostCallPolicy.shouldScheduleNotification(
@@ -49,4 +61,27 @@ final class AntifakeCallObserverService: NSObject, CXCallObserverDelegate {
         NotificationManager.shared.sendAntifakePostCallNotification()
         UserDefaults.standard.set(Date().timeIntervalSince1970, forKey: AppConfig.UserDefaultsKeys.antifakePostCallLastPushAt)
     }
+}
+
+enum ElderlyScamCallPolicy {
+    static let repeatGuardSeconds: TimeInterval = 8
+
+    static func showsFullScreen(role: String?) -> Bool {
+        role == FamilyRole.elderly.rawValue
+    }
+
+    static func sendsFamilyAlert(pressedMoneyOrCode: Bool) -> Bool {
+        pressedMoneyOrCode
+    }
+
+    static func allowsAnotherSend(lastSentAt: TimeInterval, now: TimeInterval) -> Bool {
+        now - lastSentAt >= repeatGuardSeconds
+    }
+}
+
+@MainActor
+final class ElderlyScamCallGate: ObservableObject {
+    static let shared = ElderlyScamCallGate()
+    @Published var isPresented = false
+    private init() {}
 }
