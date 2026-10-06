@@ -1,12 +1,15 @@
 import SwiftUI
 import UniformTypeIdentifiers
+import UIKit
 
 struct AntifakeMediaCheckView: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @Binding var showPremiumPaywall: Bool
     @Binding var showPostCallUploadPrompt: Bool
+    @Binding var documentSharePrefill: AntifakeSharePayload?
     @StateObject private var viewModel: AntifakeMediaCheckViewModel
     @State private var showFileImporter = false
+    @State private var showCameraPicker = false
     @State private var showMediaUploadConsent = false
     @State private var pendingSubmitAfterConsent = false
 
@@ -32,11 +35,13 @@ struct AntifakeMediaCheckView: View {
         panelId: String,
         showPremiumPaywall: Binding<Bool>,
         showPostCallUploadPrompt: Binding<Bool> = .constant(false),
+        documentSharePrefill: Binding<AntifakeSharePayload?> = .constant(nil),
         showsPanelTitle: Bool = true
     ) {
         _viewModel = StateObject(wrappedValue: AntifakeMediaCheckViewModel(mediaKind: mediaKind))
         _showPremiumPaywall = showPremiumPaywall
         _showPostCallUploadPrompt = showPostCallUploadPrompt
+        _documentSharePrefill = documentSharePrefill
         self.titleKey = titleKey
         self.hintKey = hintKey
         self.systemImage = systemImage
@@ -45,8 +50,13 @@ struct AntifakeMediaCheckView: View {
     }
 
     private var showsMediaPreview: Bool {
-        viewModel.previewURL != nil
-            && (viewModel.mediaKind == .audio || viewModel.mediaKind == .video || viewModel.mediaKind == .call)
+        guard viewModel.previewURL != nil else { return false }
+        switch viewModel.mediaKind {
+        case .audio, .video, .call:
+            return true
+        case .document:
+            return true
+        }
     }
 
     private var verdictCardVariant: AntifakeVerdictCardVariant {
@@ -115,13 +125,31 @@ struct AntifakeMediaCheckView: View {
                         .environmentObject(localizationManager)
                 }
             } else {
-                SecondaryButton(
-                    localizationManager.localized("antifake_pick_file_button"),
-                    icon: "folder.badge.plus"
-                ) {
-                    showFileImporter = true
+                VStack(spacing: Spacing.s) {
+                    SecondaryButton(
+                        localizationManager.localized(
+                            viewModel.mediaKind == .document
+                                ? "antifake_pick_document_button"
+                                : "antifake_pick_file_button"
+                        ),
+                        icon: viewModel.mediaKind == .document ? "photo.on.rectangle.angled" : "folder.badge.plus"
+                    ) {
+                        showFileImporter = true
+                    }
+                    .accessibilityIdentifier("\(panelId)_pick_button")
+
+                    // gai-03 — камера «что это?» на той же вкладке Документ (не второй пикер/чат).
+                    if viewModel.mediaKind == .document,
+                       UIImagePickerController.isSourceTypeAvailable(.camera) {
+                        SecondaryButton(
+                            localizationManager.localized("antifake_camera_ask_button"),
+                            icon: "camera.viewfinder"
+                        ) {
+                            showCameraPicker = true
+                        }
+                        .accessibilityIdentifier("\(panelId)_camera_ask_button")
+                    }
                 }
-                .accessibilityIdentifier("\(panelId)_pick_button")
             }
 
             if let statusMessage = viewModel.statusMessage {
@@ -181,10 +209,20 @@ struct AntifakeMediaCheckView: View {
         ) { result in
             Task { await ingestFileImport(result) }
         }
+        .sheet(isPresented: $showCameraPicker) {
+            ImagePickerView(sourceType: .camera) { image in
+                ingestCameraImage(image)
+            }
+            .aladdinSheetPresentation()
+        }
         .onAppear {
             if viewModel.mediaKind == .call {
                 AntifakeLastCallContext.applyPrefillIfNeeded(to: viewModel)
             }
+            applyDocumentSharePrefillIfNeeded()
+        }
+        .onChange(of: documentSharePrefill) { _ in
+            applyDocumentSharePrefillIfNeeded()
         }
         .alert(localizationManager.localized("antifake_media_consent_title"), isPresented: $showMediaUploadConsent) {
             Button(localizationManager.localized("antifake_media_consent_decline"), role: .cancel) {
@@ -216,6 +254,26 @@ struct AntifakeMediaCheckView: View {
         } else if viewModel.errorMessage != nil {
             HapticFeedback.notification(.error)
         }
+    }
+
+    private func applyDocumentSharePrefillIfNeeded() {
+        guard viewModel.mediaKind == .document,
+              let payload = documentSharePrefill,
+              payload.mode == .document else { return }
+        documentSharePrefill = nil
+        guard let loaded = AntifakeSharePayloadStore.consumeDocumentFile(relativeName: payload.value) else {
+            viewModel.errorMessage = localizationManager.localized("antifake_share_document_missing")
+            return
+        }
+        viewModel.setSelectedFile(data: loaded.data, filename: loaded.filename)
+    }
+
+    private func ingestCameraImage(_ image: UIImage) {
+        guard let data = image.jpegData(compressionQuality: 0.85) else {
+            viewModel.errorMessage = localizationManager.localized("antifake_error_try_later")
+            return
+        }
+        viewModel.setSelectedFile(data: data, filename: "camera_ask.jpg")
     }
 
     private var postCallUploadBanner: some View {

@@ -35,6 +35,7 @@ struct ElderlyInterfaceScreen: View {
     
     // Состояния для экстренной помощи
     @State private var showEmergencyAlert: Bool = false
+    @StateObject private var sosSpeechOutput = CompanionSpeechOutput()
     @State private var showInstructions: Bool = false
     @State private var showCallChildrenAlert: Bool = false
     @State private var showSecurityStatus: Bool = false
@@ -805,6 +806,13 @@ struct ElderlyInterfaceScreen: View {
                     startQuickFamilyCall()
                 }
             )
+
+            // fsl-13 — «Я в порядке» (не GPS)
+            FamilyImOkButton(
+                displayName: localizationManager.localized("family_role_elderly_label"),
+                style: .elderly
+            )
+            .environmentObject(localizationManager)
             
             // fws-03: перед переводом
             AntifakeTransferCheckCTA(style: .elderlyButton)
@@ -916,46 +924,79 @@ struct ElderlyInterfaceScreen: View {
     // MARK: - SOS Button
     
     private var sosButton: some View {
-        Button(action: {
-            let generator = UINotificationFeedbackGenerator()
-            generator.notificationOccurred(.warning)
-            showEmergencyAlert = true
-        }) {
-            VStack(spacing: Spacing.m) {
-                Text("🚨")
-                    .font(.system(size: 64))
-                
-                Text(localizationManager.localized("elderly_interface_sos_button"))
-                    .font(.system(size: 28, weight: .heavy))
-                    .foregroundColor(.white)
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                
-                Text(localizationManager.localized("elderly_interface_emergency_help_text"))
-                    .font(.system(size: 18))
-                    .foregroundColor(.white.opacity(0.9))
-                    .lineLimit(1)
-                    .minimumScaleFactor(0.8)
+        VStack(spacing: Spacing.m) {
+            Button(action: {
+                let generator = UINotificationFeedbackGenerator()
+                generator.notificationOccurred(.warning)
+                showEmergencyAlert = true
+            }) {
+                VStack(spacing: Spacing.m) {
+                    Text("🚨")
+                        .font(.system(size: 64))
+                    
+                    Text(localizationManager.localized("elderly_interface_sos_button"))
+                        .font(.system(size: 28, weight: .heavy))
+                        .foregroundColor(.white)
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                    
+                    Text(localizationManager.localized("elderly_interface_emergency_help_text"))
+                        .font(.system(size: 18))
+                        .foregroundColor(.white.opacity(0.9))
+                        .lineLimit(1)
+                        .minimumScaleFactor(0.8)
+                }
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Spacing.xl)
+                .background(
+                    RoundedRectangle(cornerRadius: CornerRadius.xl)
+                        .fill(
+                            LinearGradient(
+                                colors: [Color.dangerRed, Color(hex: "#DC2626")],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                )
+                .shadow(color: Color.dangerRed.opacity(0.5), radius: 20, x: 0, y: 8)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, Spacing.xl)
-            .background(
-                RoundedRectangle(cornerRadius: CornerRadius.xl)
-                    .fill(
-                        LinearGradient(
-                            colors: [Color.dangerRed, Color(hex: "#DC2626")],
-                            startPoint: .topLeading,
-                            endPoint: .bottomTrailing
+            .buttonStyle(PlainButtonStyle())
+            .accessibilityElement(children: .ignore)
+            .accessibilityLabel(localizationManager.localized("elderly_interface_sos_button"))
+            .accessibilityHint(localizationManager.localized("elderly_a11y_sos_hint"))
+
+            // fsl-06 — прослушать инструкцию SOS
+            Button {
+                if sosSpeechOutput.isSpeaking {
+                    sosSpeechOutput.stop()
+                } else {
+                    let text = [
+                        localizationManager.localized("elderly_interface_sos_button"),
+                        localizationManager.localized("elderly_interface_choose_service"),
+                        localizationManager.localized("sos_speak_hint"),
+                    ].joined(separator: ". ")
+                    sosSpeechOutput.speak(text, personalityPreset: "calm", characterId: "aladdin")
+                }
+            } label: {
+                HStack {
+                    Image(systemName: sosSpeechOutput.isSpeaking ? "stop.fill" : "speaker.wave.2.fill")
+                    Text(
+                        localizationManager.localized(
+                            sosSpeechOutput.isSpeaking ? "verdict_speak_stop" : "sos_speak_listen"
                         )
                     )
-            )
-            .shadow(color: Color.dangerRed.opacity(0.5), radius: 20, x: 0, y: 8)
+                    .font(.system(size: 18, weight: .semibold))
+                }
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, Spacing.m)
+                .background(Color.white.opacity(0.15))
+                .cornerRadius(CornerRadius.large)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("elderly_sos_speak_button")
         }
-        .buttonStyle(PlainButtonStyle())
         .padding(.horizontal, Spacing.screenPadding)
-        .accessibilityElement(children: .ignore)
-        .accessibilityLabel(localizationManager.localized("elderly_interface_sos_button"))
-        .accessibilityHint(localizationManager.localized("elderly_a11y_sos_hint"))
         .alert(localizationManager.localized("elderly_emergency_services_title"), isPresented: $showEmergencyAlert) {
             Button(localizationManager.localized("elderly_interface_ambulance")) {
                 callEmergencyService("103")

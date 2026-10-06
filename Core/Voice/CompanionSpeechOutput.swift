@@ -28,6 +28,7 @@ final class CompanionSpeechOutput: NSObject, ObservableObject {
     func speak(_ text: String, personalityPreset: String, characterId: String = "unicorn") {
         let trimmed = text.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !trimmed.isEmpty else { return }
+        guard CompanionVoiceboxSandbox.allowBrandSpeech() else { return }
         stop()
 
         Task {

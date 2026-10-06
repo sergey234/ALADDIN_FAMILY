@@ -251,7 +251,7 @@ def _build_response(
         "premium_required": premium_required,
         "model_version": MODEL_VERSION,
     }
-    if sources:
+    if sources is not None:
         payload["sources"] = sources[:6]
     if provenance:
         payload["provenance"] = provenance
@@ -736,17 +736,32 @@ def check_url(url: str) -> Dict[str, Any]:
             )
         if redirect_reasons:
             reasons = list(redirect_reasons) + list(phishing.get("reasons") or [])
-            return _build_response(
-                verdict=str(phishing.get("verdict") or "uncertain"),
-                confidence=float(phishing.get("confidence") or 0),
-                reasons=reasons[:8],
-                sources=phishing.get("sources"),
-                source=str(phishing.get("source") or "agent"),
-                agent=str(phishing.get("agent") or "phishing"),
+            return _with_malware_url_secondary(
+                _build_response(
+                    verdict=str(phishing.get("verdict") or "uncertain"),
+                    confidence=float(phishing.get("confidence") or 0),
+                    reasons=reasons[:8],
+                    sources=phishing.get("sources"),
+                    source=str(phishing.get("source") or "agent"),
+                    agent=str(phishing.get("agent") or "phishing"),
+                ),
+                analyze_url,
             )
-        return phishing
+        return _with_malware_url_secondary(phishing, analyze_url)
 
-    return fallback()
+    return _with_malware_url_secondary(fallback(), analyze_url)
+
+
+def _with_malware_url_secondary(result: Dict[str, Any], url: str) -> Dict[str, Any]:
+    """ams-70 — optional Atomdrift secondary on URL scam path (PC/site)."""
+    try:
+        from app.services.antifake_malware_atomscan import (
+            attach_malware_secondary_to_url_verdict,
+        )
+
+        return attach_malware_secondary_to_url_verdict(result, url)
+    except Exception:
+        return result
 
 
 def _try_phishing_protection_secondary(url: str) -> Optional[Dict[str, Any]]:

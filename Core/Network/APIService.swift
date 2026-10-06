@@ -3219,6 +3219,24 @@ class APIService: ObservableObject {
         }
     }
 
+    /// fsl-04 — снять паузу с IoT после таймера (зеркало block).
+    func unblockIoTDevice(deviceId: String) async throws -> APIResponse<Bool> {
+        return try await withCheckedThrowingContinuation { continuation in
+            var hasResumed = false
+
+            struct EmptyBody: Codable {}
+            let endpoint = AppConfig.Endpoint.iotDeviceUnblock.replacingOccurrences(of: "{deviceId}", with: deviceId)
+            networkManager.post(endpoint: endpoint, body: EmptyBody()) { (result: Result<APIResponse<Bool>, Error>) in
+                guard !hasResumed else {
+                    logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in unblockIoTDevice()!")
+                    return
+                }
+                hasResumed = true
+                continuation.resume(with: result)
+            }
+        }
+    }
+
     // MARK: - Device Management API
 
     /// Заблокировать устройство
@@ -4682,6 +4700,56 @@ class APIService: ObservableObject {
             endpoint: AppConfig.Endpoint.familyIncidents,
             queryParams: query.isEmpty ? nil : query,
             completion: completion
+        )
+    }
+
+    /// fsl-13 — «Я в порядке» → пуш семье + presence.
+    func postFamilyImOk(
+        batteryPercent: Int?,
+        completion: @escaping (Result<Bool, Error>) -> Void
+    ) {
+        struct Body: Codable {
+            let batteryPercent: Int?
+            enum CodingKeys: String, CodingKey {
+                case batteryPercent = "battery_percent"
+            }
+        }
+        networkManager.post(
+            endpoint: AppConfig.Endpoint.familyImOk,
+            body: Body(batteryPercent: batteryPercent)
+        ) { (result: Result<APIResponse<Bool>, Error>) in
+            switch result {
+            case .success(let response):
+                completion(.success(response.data ?? response.success))
+            case .failure(let error):
+                completion(.failure(error))
+            }
+        }
+    }
+
+    /// fsl-15 — мягкий статус семьи (заряд / «я ок»).
+    func getFamilyPresence(
+        completion: @escaping (Result<[FamilyPresenceSnapshot], Error>) -> Void
+    ) {
+        networkManager.get(
+            endpoint: AppConfig.Endpoint.familyPresence,
+            completion: { (result: Result<FamilyPresenceAPIResponse, Error>) in
+                switch result {
+                case .success(let response):
+                    let snaps = response.members.map { row in
+                        FamilyPresenceSnapshot(
+                            memberId: row.memberId,
+                            displayName: row.displayName,
+                            batteryPercent: row.batteryPercent,
+                            lastImOkAt: row.parsedImOkAt ?? Date(),
+                            lastOnlineAt: row.parsedOnlineAt ?? Date()
+                        )
+                    }
+                    completion(.success(snaps))
+                case .failure(let error):
+                    completion(.failure(error))
+                }
+            }
         )
     }
 

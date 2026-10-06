@@ -17,6 +17,7 @@ struct ALADDINWidgets: WidgetBundle {
         AnalyticsWidget()
         WellnessCheckinWidget()
         VoiceSafetyNowWidget()
+        CheckLinkWidget()
     }
 }
 

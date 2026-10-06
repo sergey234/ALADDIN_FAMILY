@@ -215,8 +215,12 @@ final class AntifakeMediaCheckViewModel: ObservableObject {
     }
 
     private func writePreviewFile(data: Data, filename: String) -> URL? {
-        guard mediaKind == .audio || mediaKind == .video || mediaKind == .call else { return nil }
-        let ext = (filename as NSString).pathExtension
+        let ext = (filename as NSString).pathExtension.lowercased()
+        let isDocumentImage = mediaKind == .document
+            && ["jpg", "jpeg", "png", "heic", "webp"].contains(ext)
+        guard mediaKind == .audio || mediaKind == .video || mediaKind == .call || isDocumentImage else {
+            return nil
+        }
         let safeExt = ext.isEmpty ? "bin" : ext
         let url = FileManager.default.temporaryDirectory
             .appendingPathComponent("antifake_preview_\(UUID().uuidString).\(safeExt)")

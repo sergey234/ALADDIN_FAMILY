@@ -65,6 +65,45 @@ struct ChildInterfaceScreen: View {
                     VStack(spacing: 16) {
                         // Приветствие
                         greetingCard
+
+                        // fsl-13 — «Я в порядке»
+                        FamilyImOkButton(
+                            displayName: localizationManager.localized("family_role_child_label"),
+                            style: .child
+                        )
+                        .environmentObject(localizationManager)
+                        .padding(.horizontal, 16)
+
+                        // fsl-09 — фокус 25 мин для подростка (флаг входа ON)
+                        if FamilyFocusSessionFeature.isEnabled,
+                           selectedAge == .teen || selectedAge == .youngAdult {
+                            Button {
+                                navigationManager.navigateTo(.focusSession)
+                            } label: {
+                                HStack(spacing: 12) {
+                                    Image(systemName: "timer")
+                                        .font(.title3.weight(.semibold))
+                                        .foregroundColor(.secondaryGold)
+                                    VStack(alignment: .leading, spacing: 2) {
+                                        Text(localizationManager.localized("focus_session_title"))
+                                            .font(.headline)
+                                            .foregroundColor(.white)
+                                        Text(localizationManager.localized("focus_teen_entry_subtitle"))
+                                            .font(.caption)
+                                            .foregroundColor(.white.opacity(0.8))
+                                            .fixedSize(horizontal: false, vertical: true)
+                                    }
+                                    Spacer(minLength: 0)
+                                    Image(systemName: "chevron.right")
+                                        .foregroundColor(.white.opacity(0.6))
+                                }
+                                .padding(16)
+                                .stormGlassCard(cornerRadius: 16, accentStripColor: Color(hex: "8B5CF6"))
+                            }
+                            .buttonStyle(.plain)
+                            .padding(.horizontal, 16)
+                            .accessibilityIdentifier("child_teen_focus_entry")
+                        }
                         
                         // НОВОЕ: Возрастные табы
                         ageTabs

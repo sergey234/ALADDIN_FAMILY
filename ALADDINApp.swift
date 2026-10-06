@@ -533,6 +533,13 @@ struct ALADDINApp: App {
                     VoiceSafetyNowStore.markPendingOpen()
                     navigationManager.navigateTo(.settings)
                 }
+                .onReceive(NotificationCenter.default.publisher(for: .navigateToAntifakeCheck)) { _ in
+                    if let payload = AntifakeSharePayloadStore.consume() {
+                        navigationManager.navigateToAntifakeShareCheck(payload: payload)
+                    } else {
+                        navigationManager.navigateToAntifakeHub(tab: .text, textMode: .url)
+                    }
+                }
                 .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("NavigateToFocusSession"))) { _ in
                     if FamilyFocusSessionFeature.isEnabled {
                         navigationManager.navigateTo(.focusSession)
@@ -715,6 +722,7 @@ struct ALADDINApp: App {
                         await SubscriptionManager.shared.performThrottledTrialExpiryCheckIfNeeded()
                         await AladdinOutboundQueue.shared.startPathMonitor()
                         _ = await AladdinOutboundQueue.shared.flush()
+                        await DevicePauseAutoUnblock.processExpiredIfNeeded()
                     }
                     ContentBackgroundSyncScheduler.shared.triggerForegroundRefresh()
                 } else if newPhase == .background {

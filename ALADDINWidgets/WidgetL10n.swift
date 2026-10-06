@@ -26,6 +26,10 @@ enum WidgetL10n {
         "voice_safety_widget_desc": "Что сейчас в Voice Safety Log",
         "voice_safety_now_caption": "Сейчас",
         "voice_safety_now_checking": "Проверка",
+        "check_link_widget_name": "Проверить ссылку",
+        "check_link_widget_desc": "Открывает проверку ссылки в ALADDIN",
+        "check_link_widget_title": "Проверить ссылку",
+        "check_link_widget_subtitle": "Подозрительная ссылка → Antifake Hub",
     ]
 
     private static let en: [String: String] = [
@@ -45,5 +49,9 @@ enum WidgetL10n {
         "voice_safety_widget_desc": "What’s current in Voice Safety Log",
         "voice_safety_now_caption": "Now",
         "voice_safety_now_checking": "Checking",
+        "check_link_widget_name": "Check a link",
+        "check_link_widget_desc": "Opens link check in ALADDIN",
+        "check_link_widget_title": "Check a link",
+        "check_link_widget_subtitle": "Suspicious link → Antifake Hub",
     ]
 }

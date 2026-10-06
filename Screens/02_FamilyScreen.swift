@@ -31,6 +31,8 @@ struct FamilyScreen: View {
     @State private var familySyncContextBanner: String? = nil
     @State private var pendingRemovalMember: FamilyMemberData? = nil
     @State private var deletingMemberIds: Set<String> = []
+    /// fsl-15 — перерисовка карточек после «я в порядке»
+    @State private var presenceRefreshTick: Int = 0
     // Quick-add sheet was removed; we use navigation to AddMemberOptionsScreen
     
     // UserDefaults ключи для участников семьи
@@ -1712,7 +1714,7 @@ struct FamilyScreen: View {
         if shouldShowRosterConflictBanner {
             let ru = localizationManager.currentLanguage == .russian
             VStack(alignment: .leading, spacing: 8) {
-                Text(ru ? "Конфликт синхронизации профилей" : "Profile sync conflict")
+                Text(localizationManager.localized("family_roster_sync_conflict_title"))
                     .font(.caption.weight(.semibold))
                     .foregroundColor(.white)
                 Text(ProfileManager.shared.lastChildRosterReconcileSummary ?? (ru
@@ -1722,7 +1724,7 @@ struct FamilyScreen: View {
                     .foregroundColor(.white.opacity(0.92))
                     .fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 8) {
-                    Button(ru ? "Принять сервер" : "Use server") {
+                    Button(localizationManager.localized("family_roster_use_server")) {
                         _ = ProfileManager.shared.resolveChildRosterConflicts(
                             members: familyMembersAsResponse,
                             familyId: FamilyLocalStore.loadPersistedFamilyId(),
@@ -1737,7 +1739,7 @@ struct FamilyScreen: View {
                     .background(Color.orange.opacity(0.35))
                     .cornerRadius(8)
 
-                    Button(ru ? "Оставить локальное" : "Keep local") {
+                    Button(localizationManager.localized("family_roster_keep_local")) {
                         _ = ProfileManager.shared.resolveChildRosterConflicts(
                             members: familyMembersAsResponse,
                             familyId: FamilyLocalStore.loadPersistedFamilyId(),
@@ -2267,7 +2269,14 @@ struct FamilyScreen: View {
                                             }(),
                                             originBadge: ((member.localOnly ?? false) || (member.serverMemberId == nil && !member.id.hasPrefix("MEM_"))) ? "local" : "server",
                                             // ✅ FINAL v3: Use canonical ID for uniqueness to prevent duplicate renders
-                                            memberId: member.serverMemberId ?? member.id
+                                            memberId: member.serverMemberId ?? member.id,
+                                            softPresenceLine: {
+                                                _ = presenceRefreshTick
+                                                return FamilyPresenceStore.softLine(
+                                                    for: member.serverMemberId ?? member.id,
+                                                    localization: localizationManager
+                                                )
+                                            }()
                                         )
                                         .environmentObject(localizationManager)
                                         // Гарантируем, что при видимой кнопке удаления хиты проходят
@@ -2355,10 +2364,10 @@ struct FamilyScreen: View {
                                         isPresented: $showClearLocalFamilyCacheConfirmation,
                                         titleVisibility: .visible
                                     ) {
-                                        Button(localizationManager.currentLanguage == .russian ? "Мягкий сброс локального списка" : "Soft reset local list", role: .destructive) {
+                                        Button(localizationManager.localized("family_soft_reset_local_list"), role: .destructive) {
                                             performClearLocalFamilyRosterCacheAndReload()
                                         }
-                                        Button(localizationManager.currentLanguage == .russian ? "Полный локальный сброс семьи (на этом устройстве)" : "Full local family reset (this device)", role: .destructive) {
+                                        Button(localizationManager.localized("family_full_local_family_reset"), role: .destructive) {
                                             performFullLocalFamilyContextResetAndReload()
                                         }
                                         Button(localizationManager.localized("common_cancel"), role: .cancel) {}
@@ -2440,6 +2449,10 @@ struct FamilyScreen: View {
                         
                         // fws-01: семейное кодовое слово — видят все участники; настраивают parent/elderly
                         if !familyMembers.isEmpty {
+                            FamilyDayStripView()
+                                .environmentObject(localizationManager)
+                            FamilyShieldWeekDigestCard()
+                                .environmentObject(localizationManager)
                             FamilySafeWordCard(members: familyMembers)
                                 .environmentObject(localizationManager)
                             FamilyHabitRemindersSection(members: familyMembers)
@@ -2713,6 +2726,8 @@ struct FamilyScreen: View {
         .onAppear {
             logger.screenLoad("FamilyScreen")
             hydrateFamilyMembersFromStorageImmediate()
+            Task { await FamilyImOkService.refreshPresenceFromServer() }
+            presenceRefreshTick += 1
             // Не сбрасываем admin_add_mode сразу: ждём подтверждения сервера или таймаут
             let addTs = UserDefaults.standard.double(forKey: "admin_add_recent_ts")
             let nowTs = Date().timeIntervalSince1970
@@ -2743,6 +2758,9 @@ struct FamilyScreen: View {
             evaluatePostAdminAddDeviceOffer()
             refreshBypassCardFromServer()
             refreshBypassDetectorsActiveCount()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .familyPresenceDidChange)) { _ in
+            presenceRefreshTick += 1
         }
         .onChange(of: familyBypassSelectedChildId) { _ in
             refreshBypassCardFromServer()
@@ -4265,15 +4283,22 @@ struct FamilyLocationModal: View {
                     Text(localizationManager.localized("family_statistics_today_detailed"))
                         .font(.bodyBold)
                         .foregroundColor(.secondaryGold)
-                    
-                    ForEach(todayEvents) { event in
-                        HStack {
-                            Text("• \(event.time) - \(event.action)")
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
-                            Spacer()
-                            Text(event.status.icon)
-                                .font(.caption)
+
+                    if todayEvents.isEmpty {
+                        Text(localizationManager.localized("location_events_empty_live"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    } else {
+                        ForEach(todayEvents) { event in
+                            HStack {
+                                Text("• \(event.time) - \(event.action)")
+                                    .font(.caption)
+                                    .foregroundColor(.textSecondary)
+                                Spacer()
+                                Text(event.status.icon)
+                                    .font(.caption)
+                            }
                         }
                     }
                 }
@@ -4295,6 +4320,9 @@ struct FamilyLocationModal: View {
             refreshLocationPermissionUX()
             setupLocationServices()
             loadLocationStatistics()
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .geofenceDayEventsDidChange)) { _ in
+            todayEvents = GeofenceEventStore.asLocationEvents()
         }
         .onChange(of: locationManager.authorizationStatus) { _ in
             refreshLocationPermissionUX()
@@ -4474,12 +4502,8 @@ struct FamilyLocationModal: View {
             print("⚠️ FamilyLocationModal: Используются значения по умолчанию")
         }
         
-        // Загружаем события сегодня (по умолчанию примерные)
-        todayEvents = [
-            LocationEvent(time: "08:30", action: localizationManager.localized("location_left_home"), status: .departure),
-            LocationEvent(time: "09:15", action: localizationManager.localized("location_arrived_school"), status: .arrival),
-            LocationEvent(time: "15:45", action: localizationManager.localized("location_returned_home"), status: .arrival)
-        ]
+        // Загружаем события сегодня — только живые (fsl-05), без демо 09:15
+        todayEvents = GeofenceEventStore.asLocationEvents()
     }
     
     /// Загрузка данных геолокации из API
@@ -7043,7 +7067,7 @@ struct GeofencesSettingsModal: View {
         .onAppear {
             loadGeofences()
         }
-        .alert(localizationManager.currentLanguage == .russian ? "Проверьте поля" : "Check fields", isPresented: $showValidationAlert) {
+        .alert(localizationManager.localized("family_validation_check_fields"), isPresented: $showValidationAlert) {
             Button(localizationManager.currentLanguage == .russian ? "OK" : "OK", role: .cancel) {}
         } message: {
             Text(validationAlertMessage)
@@ -7068,62 +7092,75 @@ struct LocationHistoryDetailModal: View {
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.l) {
-                // Частые места
-                VStack(alignment: .leading, spacing: Spacing.m) {
-                    Text(localizationManager.localized("location_frequent_places"))
-                        .font(.bodyBold)
-                        .foregroundColor(.secondaryGold)
-                    
-                    ForEach(frequentPlaces) { place in
-                        HStack {
-                            Text(place.name)
-                                .font(.bodyBold)
-                                .foregroundColor(.textPrimary)
-                            
-                            Spacer()
-                            
-                            Text("\(place.visits) \(localizationManager.localized("location_visits"))")
-                                .font(.body)
-                                .foregroundColor(.textSecondary)
+                // Частые места — только при реальной статистике (не фейковые «32 визита»)
+                if !frequentPlaces.isEmpty {
+                    VStack(alignment: .leading, spacing: Spacing.m) {
+                        Text(localizationManager.localized("location_frequent_places"))
+                            .font(.bodyBold)
+                            .foregroundColor(.secondaryGold)
+                        
+                        ForEach(frequentPlaces) { place in
+                            HStack {
+                                Text(place.name)
+                                    .font(.bodyBold)
+                                    .foregroundColor(.textPrimary)
+                                
+                                Spacer()
+                                
+                                Text("\(place.visits) \(localizationManager.localized("location_visits"))")
+                                    .font(.body)
+                                    .foregroundColor(.textSecondary)
+                            }
+                            .padding(Spacing.m)
+                            .background(Color.backgroundMedium.opacity(0.3))
+                            .cornerRadius(CornerRadius.medium)
                         }
-                        .padding(Spacing.m)
-                        .background(Color.backgroundMedium.opacity(0.3))
-                        .cornerRadius(CornerRadius.medium)
                     }
+                    
+                    Divider()
                 }
-                
-                Divider()
                 
                 // История событий
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Text(localizationManager.localized("location_events_today"))
                         .font(.bodyBold)
                         .foregroundColor(.secondaryGold)
-                    
-                    ForEach(locationHistory) { item in
-                        HStack(spacing: Spacing.m) {
-                            Text(item.icon)
-                                .font(.system(size: 32))
-                            
-                            VStack(alignment: .leading, spacing: 4) {
-                                Text(item.action)
-                                    .font(.bodyBold)
-                                    .foregroundColor(.textPrimary)
+
+                    if locationHistory.isEmpty {
+                        Text(localizationManager.localized("location_events_empty_live"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(Spacing.m)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .background(Color.backgroundMedium.opacity(0.3))
+                            .cornerRadius(CornerRadius.medium)
+                    } else {
+                        ForEach(locationHistory) { item in
+                            HStack(spacing: Spacing.m) {
+                                Text(item.icon)
+                                    .font(.system(size: 32))
                                 
-                                Text(item.location)
+                                VStack(alignment: .leading, spacing: 4) {
+                                    Text(item.action)
+                                        .font(.bodyBold)
+                                        .foregroundColor(.textPrimary)
+                                    
+                                    Text(item.location)
+                                        .font(.caption)
+                                        .foregroundColor(.textSecondary)
+                                }
+                                
+                                Spacer()
+                                
+                                Text(item.time)
                                     .font(.caption)
                                     .foregroundColor(.textSecondary)
                             }
-                            
-                            Spacer()
-                            
-                            Text(item.time)
-                                .font(.caption)
-                                .foregroundColor(.textSecondary)
+                            .padding(Spacing.m)
+                            .background(Color.backgroundMedium.opacity(0.3))
+                            .cornerRadius(CornerRadius.medium)
                         }
-                        .padding(Spacing.m)
-                        .background(Color.backgroundMedium.opacity(0.3))
-                        .cornerRadius(CornerRadius.medium)
                     }
                 }
             }
@@ -7135,19 +7172,18 @@ struct LocationHistoryDetailModal: View {
     }
     
     private func loadLocationData() {
-        // Загружаем локализованные данные
-        locationHistory = [
-            LocationHistoryItem(time: "08:30", location: localizationManager.localized("geofences_street_lenin"), action: localizationManager.localized("location_left_home"), icon: "🚶"),
-            LocationHistoryItem(time: "09:15", location: localizationManager.localized("geofences_street_pushkin"), action: localizationManager.localized("location_arrived_school"), icon: "✅"),
-            LocationHistoryItem(time: "15:45", location: localizationManager.localized("geofences_street_lenin"), action: localizationManager.localized("location_returned_home"), icon: "🏠"),
-            LocationHistoryItem(time: "17:30", location: localizationManager.localized("location_mall"), action: localizationManager.localized("location_visited_mall"), icon: "🛒")
-        ]
-        
-        frequentPlaces = [
-            FrequentPlace(name: localizationManager.localized("geofences_home"), visits: 45, color: .successGreen),
-            FrequentPlace(name: localizationManager.localized("geofences_school"), visits: 32, color: .blue),
-            FrequentPlace(name: localizationManager.localized("location_mall"), visits: 8, color: .warningOrange)
-        ]
+        // fsl-05 — только живые события геозон; без демо-ленты 09:15
+        let live = GeofenceEventStore.todayEvents()
+        locationHistory = live.map { event in
+            LocationHistoryItem(
+                time: event.time,
+                location: event.regionName,
+                action: event.action,
+                icon: event.isArrival ? "✅" : "🚶"
+            )
+        }
+        // Frequent places stay empty until we have real visit stats — no fake mall/school counts.
+        frequentPlaces = []
     }
 }
 
@@ -9169,7 +9205,7 @@ struct FamilyRolesHelpView: View {
                 .padding(Spacing.m)
             }
             .background(StormMeshBackground(variant: .family))
-            .navigationTitle(localizationManager.currentLanguage == .russian ? "Роли и профили" : "Roles & Profiles")
+            .navigationTitle(localizationManager.localized("family_roles_profiles_title"))
             .toolbar {
                 ToolbarItem(placement: .navigationBarTrailing) {
                     Button(localizationManager.localized("companion_conversation_done")) { dismiss() }

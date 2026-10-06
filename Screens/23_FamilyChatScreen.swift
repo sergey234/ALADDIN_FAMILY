@@ -314,7 +314,8 @@ struct FamilyChatScreen: View {
                     onAddReaction: { showReactionPicker(for: message) },
                     onReport: { beginReport(message) },
                     onRestrictSender: { beginRestrictSender(message) },
-                    canRestrictSender: canCurrentUserRestrictChatMembers
+                    canRestrictSender: canCurrentUserRestrictChatMembers,
+                    onCheckSafety: { checkMessageSafety(message) }
                 )
             }
         } else {
@@ -420,7 +421,8 @@ struct FamilyChatScreen: View {
                             onAddReaction: { showReactionPicker(for: message) },
                             onReport: { beginReport(message) },
                             onRestrictSender: { beginRestrictSender(message) },
-                            canRestrictSender: canCurrentUserRestrictChatMembers
+                            canRestrictSender: canCurrentUserRestrictChatMembers,
+                            onCheckSafety: { checkMessageSafety(message) }
                         )
                     }
                 }
@@ -1847,6 +1849,46 @@ struct FamilyChatScreen: View {
             UIPasteboard.general.string = text
         }
     }
+
+    /// gai-05 — «это безопасно?» → Antifake Hub (ссылка/текст/фото-вкладка Документ).
+    private func checkMessageSafety(_ message: FamilyChatMessage) {
+        showMessageActions = false
+        selectedMessage = nil
+        if let text = message.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty {
+            if let url = Self.firstHTTPURL(in: text) {
+                navigationManager.navigateToAntifakeShareCheck(
+                    payload: AntifakeSharePayload(mode: .url, value: url, createdAt: Date())
+                )
+            } else {
+                navigationManager.navigateToAntifakeShareCheck(
+                    payload: AntifakeSharePayload(mode: .text, value: text, createdAt: Date())
+                )
+            }
+            return
+        }
+        if message.messageType == .image || message.mediaType == .image {
+            navigationManager.navigateToAntifakeHub(tab: .document)
+            return
+        }
+        navigationManager.navigateToAntifakeHub(tab: .text)
+    }
+
+    private static func firstHTTPURL(in text: String) -> String? {
+        guard let detector = try? NSDataDetector(types: NSTextCheckingResult.CheckingType.link.rawValue) else {
+            return nil
+        }
+        let nsRange = NSRange(text.startIndex..<text.endIndex, in: text)
+        guard let match = detector.firstMatch(in: text, options: [], range: nsRange),
+              let range = Range(match.range, in: text) else {
+            return nil
+        }
+        let raw = String(text[range]).trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !raw.isEmpty else { return nil }
+        if raw.lowercased().hasPrefix("http://") || raw.lowercased().hasPrefix("https://") {
+            return raw
+        }
+        return "https://\(raw)"
+    }
     
     /// Пересылка сообщения
     private func forwardMessage(_ message: FamilyChatMessage) {
@@ -2591,7 +2633,15 @@ struct MessageContextMenu: View {
     let onReport: () -> Void
     let onRestrictSender: () -> Void
     let canRestrictSender: Bool
+    let onCheckSafety: () -> Void
     @EnvironmentObject private var localizationManager: LocalizationManager
+
+    private var canCheckSafety: Bool {
+        if let text = message.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty {
+            return true
+        }
+        return message.messageType == .image || message.mediaType == .image
+    }
     
     var body: some View {
         Group {
@@ -2605,6 +2655,16 @@ struct MessageContextMenu: View {
                 Button(action: onCopy) {
                     Label(localizationManager.localized("family_chat_message_copy"), systemImage: "doc.on.doc")
                 }
+            }
+
+            if canCheckSafety {
+                Button(action: onCheckSafety) {
+                    Label(
+                        localizationManager.localized("family_chat_check_safety"),
+                        systemImage: "shield.lefthalf.filled"
+                    )
+                }
+                .accessibilityIdentifier("family_chat_check_safety_action")
             }
             
             Button(action: onAddReaction) {

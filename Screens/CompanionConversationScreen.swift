@@ -91,6 +91,8 @@ struct CompanionConversationScreen: View {
     @State private var chatMode: String = "fast"
     @State private var pendingAttachments: [CompanionAttachmentPayload] = []
     @AppStorage("companion_active_workspace_id") private var activeWorkspaceId: String = ""
+    /// gai-02 — герой отвечает только по прикреплённому PDF семьи (parental gate при включении).
+    @AppStorage("companion_family_pdf_only_v1") private var familyPdfOnly = false
     @State private var trustStreakDays: Int = 0
     @State private var lastTrustDelta: Int?
     @State private var showPhotoPicker = false
@@ -1301,6 +1303,18 @@ struct CompanionConversationScreen: View {
                     systemImage: "doc"
                 )
             }
+            Button {
+                Task { await toggleFamilyPdfOnly() }
+            } label: {
+                Label(
+                    localizationManager.localized(
+                        familyPdfOnly
+                            ? "companion_family_pdf_only_on"
+                            : "companion_family_pdf_only_off"
+                    ),
+                    systemImage: familyPdfOnly ? "lock.doc.fill" : "lock.doc"
+                )
+            }
             if !pendingAttachments.isEmpty {
                 Button(role: .destructive) {
                     pendingAttachments = []
@@ -1315,6 +1329,19 @@ struct CompanionConversationScreen: View {
             Image(systemName: "paperclip")
         }
         .accessibilityLabel(localizationManager.localized("companion_attach_menu"))
+    }
+
+    private func toggleFamilyPdfOnly() async {
+        if familyPdfOnly {
+            familyPdfOnly = false
+            return
+        }
+        let ok = await ParentSessionGate.confirmSensitiveAction()
+        if ok {
+            familyPdfOnly = true
+        } else {
+            errorText = localizationManager.localized("companion_family_pdf_gate_failed")
+        }
     }
 
     private static let attachmentMaxBytes = 300_000
@@ -1718,6 +1745,15 @@ struct CompanionConversationScreen: View {
             errorText = AIOutboundTextGate.GateError.optInRequired.errorDescription
             heroEmotion = .alert
             return
+        }
+        if familyPdfOnly {
+            let hasFamilyPdf = pendingAttachments.contains {
+                $0.kind.lowercased() == "pdf"
+            }
+            guard hasFamilyPdf else {
+                errorText = localizationManager.localized("companion_family_pdf_required")
+                return
+            }
         }
         input = ""
         errorText = nil

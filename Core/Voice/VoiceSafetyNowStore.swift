@@ -78,4 +78,6 @@ enum VoiceSafetyNowStore {
 extension Notification.Name {
     static let voiceSafetyNowDidChange = Notification.Name("VoiceSafetyNowDidChange")
     static let navigateToVoiceNotes = Notification.Name("NavigateToVoiceNotes")
+    /// gai-06 — Siri / Shortcuts «проверь ссылку» → Antifake Hub.
+    static let navigateToAntifakeCheck = Notification.Name("NavigateToAntifakeCheck")
 }

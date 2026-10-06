@@ -51,6 +51,7 @@ class IoTSecurityModule: ObservableObject {
         // Фильтрация угроз по камерам
         await MainActor.run {
             threatsDetected = response.threats?.filter { $0.threatType == .camera || $0.threatType == .cameraIntrusion } ?? []
+            Self.notifyCameraThreatsIfNeeded(threatsDetected)
         }
     }
     
@@ -74,6 +75,14 @@ class IoTSecurityModule: ObservableObject {
         
         // Обновляем список устройств
         // Получаем homeId из текущего контекста
+        if let homeId = currentHomeId {
+            try await scanDevices(homeId: homeId)
+        }
+    }
+
+    /// fsl-04 — снять блок/паузу IoT.
+    func unblockDevice(_ deviceId: String) async throws {
+        _ = try await apiService.unblockIoTDevice(deviceId: deviceId)
         if let homeId = currentHomeId {
             try await scanDevices(homeId: homeId)
         }
@@ -116,7 +125,36 @@ class IoTSecurityModule: ObservableObject {
             // Пока сервер не отдаёт рекомендации по IoT — оставляем пустой список
             recommendations = []
             protectionLevel = protectionPercent
+            Self.notifyCameraThreatsIfNeeded(threatsDetected)
         }
+    }
+
+    /// fsl-12 — пуш, если камера «торчит» / intrusion (не хаб лампочек).
+    private static func notifyCameraThreatsIfNeeded(_ threats: [IoTThreat]) {
+        let cameraThreats = threats.filter {
+            $0.threatType == .camera || $0.threatType == .cameraIntrusion
+        }
+        guard let first = cameraThreats.first else { return }
+        let dedupeKey = "iot_camera_threat_push_\(first.id)"
+        let last = UserDefaults.standard.double(forKey: dedupeKey)
+        let now = Date().timeIntervalSince1970
+        // Не чаще раза в 30 минут на ту же угрозу
+        if last > 0, now - last < 30 * 60 { return }
+        UserDefaults.standard.set(now, forKey: dedupeKey)
+        let L = LocalizationManager.shared
+        let name = first.description.trimmingCharacters(in: .whitespacesAndNewlines)
+        let deviceLabel = name.isEmpty ? L.localized("iot_threat_camera_fallback_name") : name
+        NotificationManager.shared.sendLocalNotification(
+            title: L.localized("iot_threat_camera_push_title"),
+            body: String(format: L.localized("iot_threat_camera_push_body"), deviceLabel),
+            category: .security,
+            userInfo: [
+                "type": "iot_camera_threat",
+                "threat_id": first.id,
+                "deepLink": "aladdin://devices/hub?tab=iot",
+            ],
+            delay: 0.15
+        )
     }
     
     /// Обновление статуса

@@ -55,6 +55,19 @@ struct DevicesScreen: View {
                 ZStack {
                     ScrollView(.vertical, showsIndicators: false) {
                         VStack(spacing: Spacing.l) {
+                            // fsl-03 / fsl-04 — карта дома + пауза
+                            HomeMapSection(
+                                familyDevices: devices,
+                                onPauseFamilyDevice: { device in
+                                    pauseFamilyDevice(device)
+                                },
+                                onResumeFamilyDevice: { device in
+                                    resumeFamilyDevice(device)
+                                }
+                            )
+                            .environmentObject(navigationManager)
+                            .environmentObject(localizationManager)
+
                             // Статистика устройств
                             deviceStats
                             
@@ -93,6 +106,7 @@ struct DevicesScreen: View {
         }
         .onAppear {
             scheduleLoadDevices()
+            Task { await DevicePauseAutoUnblock.processExpiredIfNeeded() }
         }
         .onReceive(NotificationCenter.default.publisher(for: NSNotification.Name("FamilyDevicesDidChange"))) { _ in
             scheduleLoadDevices()
@@ -119,8 +133,7 @@ struct DevicesScreen: View {
             showProfileButton: false,
             showListButton: false,
             onBack: {
-                // ✅ ИСПРАВЛЕНИЕ: Используем NavigationManager для возврата
-                navigationManager.goBack(reason: "DevicesScreen back button")
+                navigationManager.goBackToPreviousScreen(reason: "DevicesScreen back button")
             },
             onAdd: { 
                 showAddDevice = true 
@@ -490,6 +503,42 @@ struct DevicesScreen: View {
             lastActive: response.lastActive
         )
     }
+
+    // MARK: - fsl-04 Pause (family phone)
+
+    private func pauseFamilyDevice(_ device: Device) {
+        apiService.blockDevice(deviceId: device.id) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    DevicePauseScheduler.schedulePause(deviceId: device.id, kind: .familyPhone)
+                    NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
+                    loadDevicesImmediate()
+                    HapticFeedback.notification(.success)
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
+                    HapticFeedback.notification(.error)
+                }
+            }
+        }
+    }
+
+    private func resumeFamilyDevice(_ device: Device) {
+        apiService.unblockDevice(deviceId: device.id) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    DevicePauseScheduler.cancel(deviceId: device.id)
+                    NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
+                    loadDevicesImmediate()
+                    HapticFeedback.notification(.success)
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
+                    HapticFeedback.notification(.error)
+                }
+            }
+        }
+    }
     
     // MARK: - Computed Properties
     
@@ -706,7 +755,7 @@ struct AddDeviceView: View {
             ZStack {
                 StormMeshBackground(variant: .shield)
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Заголовок
                         Text(localizationManager.localized("devices_add_device"))

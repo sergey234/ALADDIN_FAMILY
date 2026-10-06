@@ -1,0 +1,15 @@
+---
+description: Unified ALADDIN store+GenAI lift (fsl-* gai-*) — Cursor TODO SSOT; merge-only
+globs:
+alwaysApply: false
+---
+
+# ALADDIN store lift — единый TODO SSOT
+
+**Канон:** `docs/PLAN_ALADDIN_STORE_LIFT_MASTER_2026-10-06.md`  
+**Реестр:** `.cursor/ALADDIN_STORE_LIFT_TASK_REGISTRY.md`
+
+1. Cursor TODO только **`merge: true`**. Не затирать `af-*` / `eld-*` / `ep*` / `fws-*`.
+2. Ids этого контура: `fsl-*` и `gai-*` (плюс `lift-00-master`). Не плодить третий префикс в коде.
+3. Код после **GO LIFT BUILD**. DEVICE = `fsl-qa-device` в конце.
+4. Не клонировать чат, CapCut, селфи, браузер, клавиатуру, Photomath, шпионский GPS.

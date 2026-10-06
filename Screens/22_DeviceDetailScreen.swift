@@ -68,7 +68,7 @@ struct DeviceDetailScreen: View {
     var body: some View {
         ZStack {
             StormMeshBackground(variant: .shield)
-            ScrollView {
+            ScrollView(.vertical, showsIndicators: true) {
             VStack(spacing: Spacing.l) {
                 ALADDINNavigationBar(
                     title: "",
@@ -169,6 +169,20 @@ struct DeviceDetailScreen: View {
                         }
                         .accessibilityLabel(localizationManager.localized("device_detail_block_device"))
                         .accessibilityHint(localizationManager.localized("device_detail_block_device_hint"))
+
+                        // fsl-04 — пауза 1 час (не «навсегда»)
+                        SecondaryButton(
+                            DevicePauseScheduler.isPaused(device.id)
+                                ? localizationManager.localized("home_map_resume")
+                                : localizationManager.localized("home_map_pause_1h")
+                        ) {
+                            if DevicePauseScheduler.isPaused(device.id) {
+                                confirmUnblockDeviceAfterPause()
+                            } else {
+                                confirmPauseOneHour()
+                            }
+                        }
+                        .accessibilityIdentifier("device_detail_pause_1h")
                     }
 
                     SecondaryButton(localizationManager.localized("device_detail_remove_device")) {
@@ -271,6 +285,45 @@ struct DeviceDetailScreen: View {
                 case .failure(let error):
                     let networkError = NetworkError.from(error)
                     self.actionErrorMessage = networkError.localizedDescription
+                }
+            }
+        }
+    }
+
+    /// fsl-04 — блок с авто-снятием через 1 час.
+    private func confirmPauseOneHour() {
+        isLoadingAction = true
+        actionErrorMessage = nil
+        apiService.blockDevice(deviceId: device.id) { result in
+            DispatchQueue.main.async {
+                self.isLoadingAction = false
+                switch result {
+                case .success:
+                    DevicePauseScheduler.schedulePause(deviceId: device.id, kind: .familyPhone)
+                    NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
+                    HapticFeedback.notification(.success)
+                    self.dismiss()
+                case .failure(let error):
+                    self.actionErrorMessage = NetworkError.from(error).localizedDescription
+                }
+            }
+        }
+    }
+
+    private func confirmUnblockDeviceAfterPause() {
+        isLoadingAction = true
+        actionErrorMessage = nil
+        apiService.unblockDevice(deviceId: device.id) { result in
+            DispatchQueue.main.async {
+                self.isLoadingAction = false
+                switch result {
+                case .success:
+                    DevicePauseScheduler.cancel(deviceId: device.id)
+                    NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
+                    HapticFeedback.notification(.success)
+                    self.dismiss()
+                case .failure(let error):
+                    self.actionErrorMessage = NetworkError.from(error).localizedDescription
                 }
             }
         }

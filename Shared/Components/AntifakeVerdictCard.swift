@@ -29,6 +29,7 @@ struct AntifakeVerdictCard: View {
     @State private var showWasScamSheet = false
     @State private var wasScamNote = ""
     @State private var isSubmittingWasScam = false
+    @StateObject private var speechOutput = CompanionSpeechOutput()
 
     private var presentation: AntifakeVerdictPresentation {
         verdict.presentation
@@ -108,6 +109,18 @@ struct AntifakeVerdictCard: View {
         return "antifake_verdict_next_steps_uncertain"
     }
 
+    /// Short plain-language story under the title (wave 2026-10-01).
+    private var storySummaryKey: String {
+        switch verdict.verdict {
+        case .likelyFake:
+            return "antifake_verdict_story_fake"
+        case .uncertain, .insufficientData:
+            return "antifake_verdict_story_uncertain"
+        case .likelyReal:
+            return "antifake_verdict_story_real"
+        }
+    }
+
     /// Show action tips for fake / uncertain (afhub-p0-05) — not for green authentic.
     private var showsNextSteps: Bool {
         switch verdict.verdict {
@@ -151,6 +164,60 @@ struct AntifakeVerdictCard: View {
         return raw.isEmpty ? nil : raw
     }
 
+    /// fsl-08 — после проверки звонка (есть номер в карточке).
+    private var showsCallPlainPhrases: Bool {
+        normalizedReportPhone != nil
+    }
+
+    private var callPlainLines: [String] {
+        let line1Key: String
+        switch verdict.verdict {
+        case .likelyFake:
+            line1Key = "call_plain_line_fake"
+        case .likelyReal:
+            line1Key = "call_plain_line_real"
+        case .uncertain, .insufficientData:
+            line1Key = "call_plain_line_uncertain"
+        }
+        return [
+            localizationManager.localized(line1Key),
+            localizationManager.localized("call_plain_line_money"),
+            localizationManager.localized("call_plain_line_family"),
+        ]
+    }
+
+    private var speakableVerdictText: String {
+        var parts: [String] = [
+            localizationManager.localized(presentation.verdictTitleKey),
+            localizationManager.localized(storySummaryKey),
+        ]
+        if let summary = verdict.summaryHuman, !summary.isEmpty {
+            parts.append(summary)
+        }
+        for reason in topReasons.prefix(3) {
+            let line = usesServerHumanReasons
+                ? reason
+                : presentation.localizedReason(reason, localizationManager: localizationManager)
+            parts.append(line)
+        }
+        if showsCallPlainPhrases {
+            parts.append(contentsOf: callPlainLines)
+        }
+        return parts
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .filter { !$0.isEmpty }
+            .joined(separator: ". ")
+    }
+
+    private func toggleSpeakVerdict() {
+        if speechOutput.isSpeaking {
+            speechOutput.stop()
+            return
+        }
+        speechOutput.speak(speakableVerdictText, personalityPreset: "calm", characterId: "aladdin")
+        HapticFeedback.selection()
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
             HStack {
@@ -169,6 +236,18 @@ struct AntifakeVerdictCard: View {
                     .background(Color.white.opacity(0.15))
                     .clipShape(Capsule())
             }
+
+            Text(localizationManager.localized("antifake_verdict_story_lead"))
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.8))
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("antifake_verdict_story_lead")
+
+            Text(localizationManager.localized(storySummaryKey))
+                .font(.body.weight(.semibold))
+                .foregroundColor(.white.opacity(0.95))
+                .fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("antifake_verdict_story_summary")
 
             if presentation.showsRiskMeter {
                 if variant == .media {
@@ -229,6 +308,50 @@ struct AntifakeVerdictCard: View {
                     .accessibilityIdentifier("antifake_verdict_summary_human")
             }
 
+            // fsl-06 — прослушать вердикт голосом героя
+            Button {
+                toggleSpeakVerdict()
+            } label: {
+                HStack(spacing: Spacing.s) {
+                    Image(systemName: speechOutput.isSpeaking ? "stop.fill" : "speaker.wave.2.fill")
+                    Text(
+                        localizationManager.localized(
+                            speechOutput.isSpeaking ? "verdict_speak_stop" : "verdict_speak_listen"
+                        )
+                    )
+                    .font(.subheadline.weight(.semibold))
+                }
+                .foregroundColor(.secondaryGold)
+                .padding(.vertical, Spacing.s)
+                .padding(.horizontal, Spacing.m)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white.opacity(0.08))
+                .cornerRadius(CornerRadius.medium)
+            }
+            .buttonStyle(.plain)
+            .accessibilityIdentifier("antifake_verdict_speak_button")
+            .accessibilityLabel(localizationManager.localized("verdict_speak_listen"))
+
+            // fsl-08 — 2–3 простые фразы после проверки звонка (для 60+)
+            if showsCallPlainPhrases {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(localizationManager.localized("call_plain_title"))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white.opacity(0.9))
+                    ForEach(callPlainLines, id: \.self) { line in
+                        Text("• \(line)")
+                            .font(.body)
+                            .foregroundColor(.white.opacity(0.95))
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+                .padding(Spacing.m)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white.opacity(0.06))
+                .cornerRadius(CornerRadius.medium)
+                .accessibilityIdentifier("antifake_call_plain_block")
+            }
+
             if !topReasons.isEmpty {
                 Text(localizationManager.localized(reasonsSectionTitleKey))
                     .font(.subheadline.weight(.semibold))
@@ -275,6 +398,15 @@ struct AntifakeVerdictCard: View {
                         .foregroundColor(.secondaryGold)
                     }
                 }
+            } else if variant == .urlDisinformation {
+                Text(localizationManager.localized("antifake_url_sources_title"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.primaryBlue.opacity(0.9))
+                Text(localizationManager.localized("antifake_url_sources_empty"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.7))
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("antifake_url_sources_empty")
             }
 
             if variant == .document, let provenance = verdict.provenance {

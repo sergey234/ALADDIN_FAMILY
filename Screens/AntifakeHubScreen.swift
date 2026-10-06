@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// B2-02 / af-6-01 — Antifake Hub: 4 pipelines (text · audio · video · call).
+/// B2-02 / af-6-01 — Antifake Hub: text · document · audio · video · call (fsl-01 document tab).
 struct AntifakeHubScreen: View {
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
@@ -13,8 +13,10 @@ struct AntifakeHubScreen: View {
     @State private var showPremiumPaywall = false
     @State private var showAppleLimits = false
     @State private var sharePrefill: AntifakeSharePayload?
+    @State private var documentSharePrefill: AntifakeSharePayload?
     @State private var pendingTextMode: AntifakeTextInputMode?
     @State private var showPostCallUploadPrompt = false
+    @AppStorage("antifake_share_tip_dismissed") private var shareTipDismissed = false
 
     private var hasPremiumAccess: Bool {
         _ = protectionSettingsManager.settings
@@ -30,6 +32,11 @@ struct AntifakeHubScreen: View {
                 trustBanner
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.bottom, Spacing.s)
+                if !shareTipDismissed {
+                    shareOnboardTip
+                        .padding(.horizontal, Spacing.screenPadding)
+                        .padding(.bottom, Spacing.s)
+                }
                 tabPicker
                     .padding(.horizontal, Spacing.screenPadding)
                     .padding(.bottom, Spacing.s)
@@ -84,6 +91,9 @@ struct AntifakeHubScreen: View {
         .onChange(of: navigationManager.pendingAntifakeTextMode) { _ in
             applyPendingHubNavigationIfNeeded()
         }
+        .onChange(of: navigationManager.pendingAntifakeSharePayload) { _ in
+            applyPendingHubNavigationIfNeeded()
+        }
         .sheet(isPresented: $showAppleLimits) {
             AntifakeAppleLimitsSheet()
                 .environmentObject(localizationManager)
@@ -104,6 +114,49 @@ struct AntifakeHubScreen: View {
             pendingTextMode = mode
             selectedTab = .text
         }
+        if let payload = navigationManager.pendingAntifakeSharePayload {
+            navigationManager.pendingAntifakeSharePayload = nil
+            switch payload.mode {
+            case .document:
+                selectedTab = .document
+                documentSharePrefill = payload
+            case .text, .url:
+                selectedTab = .text
+                sharePrefill = payload
+            }
+        }
+    }
+
+    /// fsl-11 — коротко научить «Поделиться → ALADDIN» (не новый OB).
+    private var shareOnboardTip: some View {
+        HStack(alignment: .top, spacing: Spacing.s) {
+            Image(systemName: "square.and.arrow.up")
+                .foregroundColor(.secondaryGold)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(localizationManager.localized("share_onboard_title"))
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundColor(.white)
+                Text(localizationManager.localized("share_onboard_body"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.8))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            Spacer(minLength: 0)
+            Button {
+                shareTipDismissed = true
+                HapticFeedback.selection()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption.weight(.bold))
+                    .foregroundColor(.white.opacity(0.7))
+                    .padding(6)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(localizationManager.localized("share_onboard_dismiss"))
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .secondaryGold)
+        .accessibilityIdentifier("antifake_share_onboard_tip")
     }
 
     private var trustBanner: some View {
@@ -227,6 +280,12 @@ struct AntifakeHubScreen: View {
                     sharePrefill: $sharePrefill,
                     prefillTextMode: $pendingTextMode
                 )
+            case .document:
+                AntifakeDocumentCheckView(
+                    showPremiumPaywall: $showPremiumPaywall,
+                    documentSharePrefill: $documentSharePrefill
+                )
+                .environmentObject(localizationManager)
             case .audio:
                 AntifakeQuickVoiceCaptureView(showPremiumPaywall: $showPremiumPaywall)
                     .environmentObject(localizationManager)
@@ -336,6 +395,7 @@ struct AntifakeHubScreen: View {
 
 enum AntifakeHubTab: String, CaseIterable, Identifiable {
     case text
+    case document
     case audio
     case video
     case call
@@ -345,6 +405,7 @@ enum AntifakeHubTab: String, CaseIterable, Identifiable {
     var titleKey: String {
         switch self {
         case .text: return "antifake_tab_text"
+        case .document: return "antifake_tab_document"
         case .audio: return "antifake_tab_audio"
         case .video: return "antifake_tab_video"
         case .call: return "antifake_tab_call"
@@ -354,6 +415,7 @@ enum AntifakeHubTab: String, CaseIterable, Identifiable {
     var iconName: String {
         switch self {
         case .text: return "text.quote"
+        case .document: return "doc.text.viewfinder"
         case .audio: return "waveform"
         case .video: return "video.fill"
         case .call: return "phone.fill"
@@ -372,6 +434,7 @@ struct AntifakeTextCheckView: View {
     @Binding var prefillTextMode: AntifakeTextInputMode?
     @StateObject private var viewModel = AntifakeTextCheckViewModel(localizationManager: .shared)
     @State private var showTransferEntryBanner = false
+    @State private var showTranslateThenCheckTip = false
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.m) {
@@ -385,6 +448,9 @@ struct AntifakeTextCheckView: View {
                 .foregroundColor(.white.opacity(0.85))
 
             pasteFromClipboardRow
+
+            // gai-04 — SMS на другом языке: системный Translate → вставить → наш вердикт.
+            translateThenCheckRow
 
             inputField
 
@@ -441,6 +507,14 @@ struct AntifakeTextCheckView: View {
         }
         .onChange(of: prefillTextMode) { _ in
             applyPrefillTextModeIfNeeded()
+        }
+        .alert(
+            localizationManager.localized("antifake_translate_then_check_title"),
+            isPresented: $showTranslateThenCheckTip
+        ) {
+            Button(localizationManager.localized("common_ok"), role: .cancel) {}
+        } message: {
+            Text(localizationManager.localized("antifake_translate_then_check_body"))
         }
     }
 
@@ -532,6 +606,44 @@ struct AntifakeTextCheckView: View {
         .accessibilityHint(localizationManager.localized("antifake_paste_button_hint"))
     }
 
+    private var translateThenCheckRow: some View {
+        Button {
+            let snapshot: String
+            switch viewModel.inputMode {
+            case .url:
+                snapshot = viewModel.inputUrl
+            case .text:
+                snapshot = viewModel.inputText
+            case .contact:
+                snapshot = [viewModel.callerId, viewModel.displayName]
+                    .map { $0.trimmingCharacters(in: .whitespacesAndNewlines) }
+                    .filter { !$0.isEmpty }
+                    .joined(separator: " ")
+            }
+            let trimmed = snapshot.trimmingCharacters(in: .whitespacesAndNewlines)
+            if !trimmed.isEmpty {
+                UIPasteboard.general.string = trimmed
+            }
+            showTranslateThenCheckTip = true
+            HapticFeedback.selection()
+        } label: {
+            Label(
+                localizationManager.localized("antifake_translate_then_check_button"),
+                systemImage: "character.book.closed"
+            )
+            .font(.subheadline.weight(.semibold))
+            .frame(maxWidth: .infinity, minHeight: 44)
+            .foregroundColor(.secondaryGold)
+            .background(
+                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                    .strokeBorder(Color.secondaryGold.opacity(0.55), lineWidth: 1)
+            )
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("antifake_translate_then_check_button")
+        .accessibilityHint(localizationManager.localized("antifake_translate_then_check_hint"))
+    }
+
     @ViewBuilder
     private var inputField: some View {
         switch viewModel.inputMode {
@@ -609,6 +721,26 @@ struct AntifakeAudioCheckView: View {
             systemImage: "mic.fill",
             panelId: "antifake_audio_panel",
             showPremiumPaywall: $showPremiumPaywall
+        )
+        .environmentObject(localizationManager)
+    }
+}
+
+/// fsl-01 — Документ: фото/PDF через уже существующий antifake document API.
+struct AntifakeDocumentCheckView: View {
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Binding var showPremiumPaywall: Bool
+    @Binding var documentSharePrefill: AntifakeSharePayload?
+
+    var body: some View {
+        AntifakeMediaCheckView(
+            mediaKind: .document,
+            titleKey: "antifake_document_title",
+            hintKey: "antifake_document_hint",
+            systemImage: "doc.text.viewfinder",
+            panelId: "antifake_document_panel",
+            showPremiumPaywall: $showPremiumPaywall,
+            documentSharePrefill: $documentSharePrefill
         )
         .environmentObject(localizationManager)
     }

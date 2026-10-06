@@ -676,6 +676,8 @@ extension LocationManager: CLLocationManagerDelegate {
                     "center": circularRegion.center
                 ]
             )
+            // fsl-05 — живая лента + пуш «школа»
+            GeofenceEventStore.record(regionIdentifier: region.identifier, isArrival: true)
         }
     }
     
@@ -694,6 +696,7 @@ extension LocationManager: CLLocationManagerDelegate {
                     "center": circularRegion.center
                 ]
             )
+            GeofenceEventStore.record(regionIdentifier: region.identifier, isArrival: false)
         }
     }
     

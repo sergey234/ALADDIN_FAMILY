@@ -1,13 +1,13 @@
 import Foundation
 
-/// p2-8 / inf-flags — Focus sessions. Default OFF (notification/focus fatigue risk).
+/// p2-8 / fsl-09 — Focus sessions. Default ON so teen can start 25 min without hunting a flag.
 enum FamilyFocusSessionFeature {
     static let flagKey = "feature_focus_session"
 
     static var isEnabled: Bool {
         get {
             if UserDefaults.standard.object(forKey: flagKey) == nil {
-                return false
+                return true
             }
             return UserDefaults.standard.bool(forKey: flagKey)
         }

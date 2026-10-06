@@ -318,6 +318,52 @@ struct YoungDefenderView: View {
                     correctAnswer: 1
                 )
             ]
+        ),
+        // gai-07 — лицо на фото могут подделать (угроза, не генератор).
+        Lesson(
+            id: 7,
+            icon: "🎭",
+            titleKey: "young_defender_lesson_7_title",
+            descriptionKey: "young_defender_lesson_7_desc",
+            contentKeys: [
+                "young_defender_lesson_7_content_1",
+                "young_defender_lesson_7_content_2",
+                "young_defender_lesson_7_content_3",
+                "young_defender_lesson_7_content_4",
+                "young_defender_lesson_7_content_5"
+            ],
+            quizQuestions: [
+                QuizQuestion(
+                    questionKey: "young_defender_lesson_7_quiz_1_q",
+                    optionKeys: [
+                        "young_defender_lesson_7_quiz_1_a1",
+                        "young_defender_lesson_7_quiz_1_a2",
+                        "young_defender_lesson_7_quiz_1_a3",
+                        "young_defender_lesson_7_quiz_1_a4"
+                    ],
+                    correctAnswer: 1
+                ),
+                QuizQuestion(
+                    questionKey: "young_defender_lesson_7_quiz_2_q",
+                    optionKeys: [
+                        "young_defender_lesson_7_quiz_2_a1",
+                        "young_defender_lesson_7_quiz_2_a2",
+                        "young_defender_lesson_7_quiz_2_a3",
+                        "young_defender_lesson_7_quiz_2_a4"
+                    ],
+                    correctAnswer: 1
+                ),
+                QuizQuestion(
+                    questionKey: "young_defender_lesson_7_quiz_3_q",
+                    optionKeys: [
+                        "young_defender_lesson_7_quiz_3_a1",
+                        "young_defender_lesson_7_quiz_3_a2",
+                        "young_defender_lesson_7_quiz_3_a3",
+                        "young_defender_lesson_7_quiz_3_a4"
+                    ],
+                    correctAnswer: 1
+                )
+            ]
         )
         ]
     }
@@ -332,7 +378,7 @@ struct YoungDefenderView: View {
                 // Header с кнопкой "← Назад"
                 navigationHeader
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Прогресс-бар
                         progressCard

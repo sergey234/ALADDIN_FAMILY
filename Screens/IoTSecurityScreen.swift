@@ -18,7 +18,7 @@ struct IoTSecurityScreen: View {
                 navigationHeader
                 
                 // Основной контент
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: 20) {
                         // Карточка статуса безопасности
                         SecurityStatusCard(
@@ -230,7 +230,7 @@ struct DeviceRow: View {
         switch device.status {
         case .online, .safe:
             return .green
-        case .compromised:
+        case .compromised, .blocked:
             return .red
         case .offline:
             return .gray
@@ -243,6 +243,8 @@ struct DeviceRow: View {
             return "checkmark.circle.fill"
         case .compromised:
             return "exclamationmark.triangle.fill"
+        case .blocked:
+            return "hand.raised.fill"
         case .offline:
             return "xmark.circle.fill"
         }

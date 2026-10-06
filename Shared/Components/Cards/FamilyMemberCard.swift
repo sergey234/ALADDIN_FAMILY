@@ -23,6 +23,8 @@ struct FamilyMemberCard: View {
     var originBadge: String? = nil
     // ✅ PHASE 4: Member ID for yellow rectangle (restored from backup behavior)
     var memberId: String? = nil
+    /// fsl-15 — «я ок» / заряд (без GPS)
+    var softPresenceLine: String? = nil
     
     // MARK: - Localized Role Label
     
@@ -113,7 +115,8 @@ struct FamilyMemberCard: View {
         showDeleteButton: Bool = false,
         isDeleteDisabled: Bool = false,
         originBadge: String? = nil,
-        memberId: String? = nil  // ✅ PHASE 4: ID parameter
+        memberId: String? = nil,
+        softPresenceLine: String? = nil
     ) {
         self.name = name
         self.role = role
@@ -127,6 +130,7 @@ struct FamilyMemberCard: View {
         self.isDeleteDisabled = isDeleteDisabled
         self.originBadge = originBadge
         self.memberId = memberId
+        self.softPresenceLine = softPresenceLine
     }
     
     // MARK: - Body
@@ -192,6 +196,20 @@ struct FamilyMemberCard: View {
                     .font(.system(size: 11))
                     .foregroundColor(.white.opacity(0.9))
                     .lineLimit(1)
+
+                if let softPresenceLine, !softPresenceLine.isEmpty {
+                    Text(softPresenceLine)
+                        .font(.system(size: 10, weight: .medium))
+                        .foregroundColor(.secondaryGold)
+                        .lineLimit(2)
+                        .minimumScaleFactor(0.85)
+                        .accessibilityIdentifier("family_member_soft_presence")
+                } else if !lastActive.isEmpty {
+                    Text(lastActive)
+                        .font(.system(size: 10))
+                        .foregroundColor(.white.opacity(0.65))
+                        .lineLimit(1)
+                }
                 
                 Spacer()
                 
@@ -200,7 +218,7 @@ struct FamilyMemberCard: View {
                     .font(.system(size: 28))
                     .animation(.easeInOut(duration: 2).repeatForever(autoreverses: true), value: status)
             }
-            .frame(height: 90)
+            .frame(height: softPresenceLine == nil ? 90 : 108)
             .frame(maxWidth: .infinity)
             .padding(8)
             .stormGlassCard(cornerRadius: 10)

@@ -13,7 +13,9 @@ struct FamilyHabitRemindersSection: View {
     @State private var isSaving = false
     @State private var errorMessage: String?
     @State private var savedMessage: String?
-    @State private var isSectionExpanded = false
+    @State private var queueMessage: String?
+    @State private var notificationDenied = false
+    @State private var isSectionExpanded = true // fsl-10 — привычки на виду
     @State private var waterDetailsExpanded = true
     @State private var showMomentsSheet = false
     @State private var medalsMaster = HabitMedalSourcesSettings.masterEnabled
@@ -157,6 +159,13 @@ struct FamilyHabitRemindersSection: View {
             }
         }
 
+        if notificationDenied {
+            AladdinNotificationDeniedBanner(
+                message: localizationManager.localized("notification_denied_open_settings"),
+                buttonTitle: localizationManager.localized("notification_open_settings"),
+                onOpenSettings: { AladdinNotificationDeniedBanner.openSystemSettings() }
+            )
+        }
         if let errorMessage {
             Text(errorMessage)
                 .font(.caption)
@@ -166,6 +175,11 @@ struct FamilyHabitRemindersSection: View {
             Text(savedMessage)
                 .font(.caption)
                 .foregroundColor(.successGreen)
+        }
+        if let queueMessage {
+            Text(queueMessage)
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.75))
         }
 
         Button {
@@ -551,20 +565,27 @@ struct FamilyHabitRemindersSection: View {
         isSaving = true
         errorMessage = nil
         savedMessage = nil
+        queueMessage = nil
         defer { isSaving = false }
 
         if allMinorsSelected {
             draft.memberIds = []
         }
 
-        do {
-            _ = await FamilyHabitRemindersScheduler.shared.requestAuthorizationIfNeeded()
-            try await service.save(config: draft, members: members)
-            savedMessage = localizationManager.localized("family_habit_saved")
-            HapticFeedback.notification(.success)
-        } catch {
-            errorMessage = localizationManager.localized("family_habit_save_failed")
-            HapticFeedback.notification(.error)
+        let outcome = await service.saveLocalThenSync(config: draft, members: members)
+        notificationDenied = !outcome.notificationsGranted
+        savedMessage = localizationManager.localized("habit_local_enabled")
+        if let next = outcome.nextFire {
+            savedMessage = [
+                localizationManager.localized("habit_local_enabled"),
+                LocalDailyReminderMath.nextFireLine(date: next, localization: localizationManager)
+            ].joined(separator: "\n")
         }
+        if outcome.queuedForServer {
+            queueMessage = localizationManager.localized("habit_queue_will_sync")
+        } else if outcome.needsManualRetry {
+            queueMessage = localizationManager.localized("wellness_sync_need_retry")
+        }
+        HapticFeedback.notification(.success)
     }
 }

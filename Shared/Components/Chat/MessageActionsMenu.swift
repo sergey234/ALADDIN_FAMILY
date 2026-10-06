@@ -17,7 +17,15 @@ struct MessageActionsMenu: View {
     let onReport: () -> Void
     let onRestrictSender: () -> Void
     let canRestrictSender: Bool
+    let onCheckSafety: () -> Void
     @State private var showDeleteConfirm: Bool = false
+
+    private var canCheckSafety: Bool {
+        if let text = message.text?.trimmingCharacters(in: .whitespacesAndNewlines), !text.isEmpty {
+            return true
+        }
+        return message.messageType == .image || message.mediaType == .image
+    }
     
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
@@ -37,6 +45,16 @@ struct MessageActionsMenu: View {
                     title: localizationManager.localized("family_chat_message_copy"),
                     action: onCopy
                 )
+            }
+
+            // gai-05 — «это безопасно?» → Antifake Hub (не WhatsApp)
+            if canCheckSafety {
+                ActionButton(
+                    icon: "shield.lefthalf.filled",
+                    title: localizationManager.localized("family_chat_check_safety"),
+                    action: onCheckSafety
+                )
+                .accessibilityIdentifier("family_chat_check_safety_action")
             }
             
             // Добавить реакцию
