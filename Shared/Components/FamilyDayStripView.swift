@@ -11,14 +11,25 @@ struct FamilyDayStripView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: Spacing.s) {
-            Text(localizationManager.localized("day_strip_title"))
-                .font(.headline)
-                .foregroundColor(.white)
-                .accessibilityAddTraits(.isHeader)
+            // ux-01 — полоска дня на виду (крупный заголовок + подпись)
+            HStack {
+                Text(localizationManager.localized("day_strip_title"))
+                    .font(.title3.weight(.bold))
+                    .foregroundColor(.white)
+                    .accessibilityAddTraits(.isHeader)
+                Spacer(minLength: 0)
+                Text(localizationManager.localized("day_strip_on_view_badge"))
+                    .font(.caption2.weight(.semibold))
+                    .foregroundColor(.secondaryGold)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.secondaryGold.opacity(0.15))
+                    .cornerRadius(8)
+            }
 
             Text(localizationManager.localized("day_strip_subtitle"))
-                .font(.caption)
-                .foregroundColor(.white.opacity(0.75))
+                .font(.subheadline)
+                .foregroundColor(.white.opacity(0.85))
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: Spacing.s) {

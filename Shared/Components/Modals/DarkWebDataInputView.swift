@@ -16,8 +16,6 @@ struct DarkWebDataInputView: View {
     @State private var email: String = ""
     @State private var password: String = ""
     @State private var phone: String = ""
-    @State private var passport: String = ""
-    @State private var snils: String = ""
     @State private var isScanning: Bool = false
     @State private var showResults: Bool = false
     
@@ -27,7 +25,7 @@ struct DarkWebDataInputView: View {
                 LinearGradient.backgroundGradient
                     .ignoresSafeArea()
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: Spacing.l) {
                         // Выбор метода
                         DarkWebScanMethodSelector(selectedMethod: $selectedMethod)
@@ -64,7 +62,7 @@ struct DarkWebDataInputView: View {
                                 explanation: localizationManager.localized("dark_web_scan_data_password_explanation")
                             )
                             
-                            // Phone (только для быстрого сканирования)
+                            // Телефон (опционально) — без паспорта и страхового номера (не собираем досье)
                             if selectedMethod == .fast {
                                 dataInputField(
                                     title: localizationManager.localized("dark_web_scan_data_phone"),
@@ -74,32 +72,6 @@ struct DarkWebDataInputView: View {
                                     isSecure: false,
                                     keyboardType: .phonePad,
                                     explanation: localizationManager.localized("dark_web_scan_data_phone_explanation")
-                                )
-                            }
-                            
-                            // Passport (только для быстрого сканирования)
-                            if selectedMethod == .fast {
-                                dataInputField(
-                                    title: localizationManager.localized("dark_web_scan_data_passport"),
-                                    value: $passport,
-                                    placeholder: "1234 567890",
-                                    icon: "person.text.rectangle.fill",
-                                    isSecure: false,
-                                    keyboardType: .default,
-                                    explanation: localizationManager.localized("dark_web_scan_data_passport_explanation")
-                                )
-                            }
-                            
-                            // SNILS (только для быстрого сканирования)
-                            if selectedMethod == .fast {
-                                dataInputField(
-                                    title: localizationManager.localized("dark_web_scan_data_snils"),
-                                    value: $snils,
-                                    placeholder: "123-456-789 01",
-                                    icon: "doc.text.fill",
-                                    isSecure: false,
-                                    keyboardType: .default,
-                                    explanation: localizationManager.localized("dark_web_scan_data_snils_explanation")
                                 )
                             }
                         }
@@ -206,7 +178,7 @@ struct DarkWebDataInputView: View {
     }
     
     private var hasAnyData: Bool {
-        !email.isEmpty || !password.isEmpty || !phone.isEmpty || !passport.isEmpty || !snils.isEmpty
+        !email.isEmpty || !password.isEmpty || !phone.isEmpty
     }
     
     private func startScan() async {
@@ -223,11 +195,8 @@ struct DarkWebDataInputView: View {
         let scanEmail = email.isEmpty ? nil : email
         let scanPassword = password.isEmpty ? nil : password
         let scanPhone = phone.isEmpty ? nil : phone
-        let scanPassport = passport.isEmpty ? nil : passport
-        let scanSnils = snils.isEmpty ? nil : snils
         
-        // ✅ ИСПРАВЛЕНИЕ: Проверяем наличие данных перед сканированием
-        let hasData = scanEmail != nil || scanPassword != nil || scanPhone != nil || scanPassport != nil || scanSnils != nil
+        let hasData = scanEmail != nil || scanPassword != nil || scanPhone != nil
         guard hasData else {
             print("❌ DarkWebDataInputView: Нет данных для сканирования")
             MasterLogger.shared.log(.error, category: .business, message: "❌ DarkWebDataInputView: Нет данных для сканирования")
@@ -239,7 +208,6 @@ struct DarkWebDataInputView: View {
         
         do {
             if selectedMethod == .secure {
-                // Безопасное сканирование (хеши)
                 print("🔐 DarkWebDataInputView: Запуск безопасного сканирования")
                 MasterLogger.shared.log(.info, category: .business, message: "🔐 DarkWebDataInputView: Запуск безопасного сканирования")
                 await viewModel.scanSecure(
@@ -247,28 +215,23 @@ struct DarkWebDataInputView: View {
                     password: scanPassword
                 )
             } else {
-                // Быстрое сканирование (plaintext)
                 print("⚡ DarkWebDataInputView: Запуск быстрого сканирования")
                 MasterLogger.shared.log(.info, category: .business, message: "⚡ DarkWebDataInputView: Запуск быстрого сканирования")
                 await viewModel.scanFast(
                     email: scanEmail,
                     phone: scanPhone,
-                    passport: scanPassport,
-                    snils: scanSnils
+                    passport: nil,
+                    snils: nil
                 )
             }
             
-            // ✅ ИСПРАВЛЕНИЕ: Проверяем наличие ошибок перед закрытием модального окна
             if viewModel.errorMessage == nil {
                 print("✅ DarkWebDataInputView: Сканирование успешно завершено")
                 MasterLogger.shared.log(.info, category: .business, message: "✅ DarkWebDataInputView: Сканирование успешно завершено")
                 
-                // Очистка данных после успешного сканирования
                 email = ""
                 password = ""
                 phone = ""
-                passport = ""
-                snils = ""
                 
                 // Обновляем данные в ViewModel
                 await viewModel.loadData()

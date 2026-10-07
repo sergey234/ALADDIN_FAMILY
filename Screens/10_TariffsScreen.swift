@@ -155,6 +155,23 @@ struct TariffsScreen: View {
                 // Основной контент
                 ScrollView(.vertical, showsIndicators: false) {
                     VStack(spacing: Spacing.l) {
+                        // pay-01 — три ясных уровня без страховки
+                        VStack(alignment: .leading, spacing: Spacing.xs) {
+                            Text(localizationManager.localized("pay_tiers_plain_title"))
+                                .font(.headline)
+                                .foregroundColor(.textPrimary)
+                            Text(localizationManager.localized("pay_tiers_plain_body"))
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                        .padding(Spacing.m)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                        .background(Color.backgroundMedium.opacity(0.35))
+                        .cornerRadius(CornerRadius.medium)
+                        .padding(.horizontal, Spacing.screenPadding)
+                        .accessibilityIdentifier("pay_tiers_plain_blurb")
+
                         // External activation is unavailable in the App Store binary.
                         if AppStoreBuildPolicy.allowsAlternativePayments && AppConfig.isRussianRegion {
                             activationCodeButton

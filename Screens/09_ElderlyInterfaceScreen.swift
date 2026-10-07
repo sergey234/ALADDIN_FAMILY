@@ -998,6 +998,10 @@ struct ElderlyInterfaceScreen: View {
         }
         .padding(.horizontal, Spacing.screenPadding)
         .alert(localizationManager.localized("elderly_emergency_services_title"), isPresented: $showEmergencyAlert) {
+            // sos-01 — крупная тревога семье (без silent GPS)
+            Button(localizationManager.localized("sos_alarm_family_cta")) {
+                sendLargeFamilySOSAlarm()
+            }
             Button(localizationManager.localized("elderly_interface_ambulance")) {
                 callEmergencyService("103")
             }
@@ -1009,7 +1013,47 @@ struct ElderlyInterfaceScreen: View {
             }
             Button(localizationManager.localized("elderly_interface_cancel"), role: .cancel) { }
         } message: {
-            Text(localizationManager.localized("elderly_interface_choose_service"))
+            Text(localizationManager.localized("sos_alarm_choose_hint"))
+        }
+    }
+
+    private func sendLargeFamilySOSAlarm() {
+        let generator = UINotificationFeedbackGenerator()
+        generator.notificationOccurred(.error)
+        let name = UserDefaults.standard.string(forKey: "user_display_name")
+            ?? UserDefaults.standard.string(forKey: "user_name")
+            ?? localizationManager.localized("sos_alarm_member_fallback")
+        let message = String(
+            format: localizationManager.localized("sos_alarm_family_chat_message"),
+            name
+        )
+        NotificationManager.shared.sendLocalNotification(
+            title: localizationManager.localized("sos_alarm_push_title"),
+            body: localizationManager.localized("sos_alarm_push_body"),
+            category: .family,
+            userInfo: ["type": "sos_family_alarm"],
+            delay: 0.1
+        )
+        let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
+            ?? UserDefaults.standard.string(forKey: "family_id")
+        APIService.shared.sendFamilyChatMessage(
+            message: message,
+            familyId: familyId,
+            messageType: "text",
+            voiceUrl: nil,
+            voiceDuration: nil,
+            mediaUrl: nil,
+            mediaType: nil,
+            replyToMessageId: nil
+        ) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    criticalActionStatusMessage = localizationManager.localized("sos_alarm_sent_confirm")
+                case .failure:
+                    criticalActionStatusMessage = localizationManager.localized("sos_alarm_sent_local_only")
+                }
+            }
         }
     }
     
@@ -3727,36 +3771,58 @@ struct ElderlyScamCallScreen: View {
     var body: some View {
         ZStack {
             Color.black.ignoresSafeArea()
-            VStack(spacing: 24) {
+            VStack(spacing: 20) {
                 Text(localizationManager.localized("elderly_scam_call_title"))
-                    .font(.system(size: 40, weight: .bold))
+                    .font(.system(size: 36, weight: .bold))
                     .foregroundColor(.white)
                     .multilineTextAlignment(.center)
+
+                // call-01 — три крупных шага для 60+
+                VStack(alignment: .leading, spacing: 10) {
+                    Text(localizationManager.localized("elderly_scam_call_step1"))
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(.white)
+                    Text(localizationManager.localized("elderly_scam_call_step2"))
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(.white)
+                    Text(localizationManager.localized("elderly_scam_call_step3"))
+                        .font(.system(size: 22, weight: .semibold))
+                        .foregroundColor(.white)
+                }
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(16)
+                .background(Color.white.opacity(0.12))
+                .cornerRadius(16)
+                .accessibilityIdentifier("elderly_scam_call_steps")
+
                 Text(localizationManager.localized("elderly_scam_call_hint"))
-                    .font(.system(size: 22))
+                    .font(.system(size: 20))
                     .foregroundColor(.white.opacity(0.9))
                     .multilineTextAlignment(.center)
+
                 Button(action: sendAlert) {
                     Text(localizationManager.localized("elderly_scam_call_money"))
-                        .font(.system(size: 28, weight: .bold))
+                        .font(.system(size: 26, weight: .bold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 28)
+                        .padding(.vertical, 26)
                         .background(Color.red)
                         .cornerRadius(16)
                 }
                 .disabled(isSending)
                 .accessibilityIdentifier("elderly_scam_call_money")
+
                 Button(action: calm) {
                     Text(localizationManager.localized("elderly_scam_call_calm"))
-                        .font(.system(size: 28, weight: .bold))
+                        .font(.system(size: 26, weight: .bold))
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 28)
+                        .padding(.vertical, 26)
                         .background(Color.green)
                         .cornerRadius(16)
                 }
                 .accessibilityIdentifier("elderly_scam_call_calm")
+
                 if let errorText {
                     Text(errorText)
                         .font(.system(size: 20, weight: .semibold))

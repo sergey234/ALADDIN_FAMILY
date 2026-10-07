@@ -44,6 +44,22 @@ struct PasswordGeneratorModal: View {
             }
         ) {
             VStack(spacing: Spacing.l) {
+                // pwd-01 — честно: генератор и проверка, не сейф паролей
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(localizationManager.localized("password_honest_scope_title"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                    Text(localizationManager.localized("password_honest_scope_body"))
+                        .font(.caption2)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                .padding(Spacing.m)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.secondaryGold.opacity(0.12))
+                .cornerRadius(CornerRadius.medium)
+                .accessibilityIdentifier("password_honest_scope")
+
                 // Настройки генератора
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Text(localizationManager.localized("password_generator.settings"))

@@ -723,6 +723,10 @@ struct ALADDINApp: App {
                         await AladdinOutboundQueue.shared.startPathMonitor()
                         _ = await AladdinOutboundQueue.shared.flush()
                         await DevicePauseAutoUnblock.processExpiredIfNeeded()
+                        FamilyBatteryCriticalMonitor.checkAndNotifyIfNeeded(
+                            localization: localizationManager
+                        )
+                        GeofenceNoShowMonitor.checkDue(localization: localizationManager)
                     }
                     ContentBackgroundSyncScheduler.shared.triggerForegroundRefresh()
                 } else if newPhase == .background {

@@ -3871,6 +3871,16 @@ private struct FamilyNetworkLayersLocalStatusBlock: View {
             Text(localizationManager.localized("main_family_safari_cb_status", safariShortLabel))
                 .font(.caption)
                 .foregroundColor(.textSecondary)
+                .accessibilityIdentifier("browse_safari_blocker_status")
+
+            // browse-02 — если выкл., короткая подсказка как включить
+            if !contentBlockerManager.isEnabled {
+                Text(localizationManager.localized("browse_safari_how_to_enable"))
+                    .font(.captionSmall)
+                    .foregroundColor(.secondaryGold)
+                    .fixedSize(horizontal: false, vertical: true)
+                    .accessibilityIdentifier("browse_safari_how_to_enable")
+            }
 
             Text(localizationManager.localized("main_family_network_layers_hint"))
                 .font(.captionSmall)
@@ -6852,9 +6862,13 @@ struct GeofencesSettingsModal: View {
     @State private var newGeofenceRadius: Double = 100
     @State private var showValidationAlert = false
     @State private var validationAlertMessage = ""
+    @State private var placesConsentAccepted = GeofencePlacesConsentStore.hasAccepted
+    @State private var noShowSchedules: [GeofenceNoShowSchedule] = []
     
     // Загрузка геозон из UserDefaults
     private func loadGeofences() {
+        placesConsentAccepted = GeofencePlacesConsentStore.hasAccepted
+        noShowSchedules = GeofenceNoShowMonitor.loadSchedules()
         if let data = UserDefaults.standard.data(forKey: geofencesKey),
            let decoded = try? JSONDecoder().decode([GeofenceItemCodable].self, from: data) {
             geofences = decoded.map {
@@ -6871,6 +6885,7 @@ struct GeofencesSettingsModal: View {
     
     // Сохранение геозон в UserDefaults
     private func saveGeofences() {
+        guard GeofencePlacesConsentStore.hasAccepted else { return }
         let codable = geofences.map {
             GeofenceItemCodable(id: $0.id, name: $0.name, address: $0.address, radius: $0.radius, isActive: $0.isActive)
         }
@@ -6881,6 +6896,13 @@ struct GeofencesSettingsModal: View {
             _ = await GeofenceGeocodingService.shared.syncCoordinates(for: geofences)
         }
     }
+
+    private func acceptPlacesConsent() {
+        GeofencePlacesConsentStore.accept()
+        placesConsentAccepted = true
+        HapticFeedback.notification(.success)
+        saveGeofences()
+    }
     
     var body: some View {
         FamilyModalBaseView(
@@ -6888,6 +6910,32 @@ struct GeofencesSettingsModal: View {
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.m) {
+                // geo-04 — согласие: уведомления о местах, не слежка
+                if !placesConsentAccepted {
+                    VStack(alignment: .leading, spacing: Spacing.s) {
+                        Text(localizationManager.localized("geofence_consent_title"))
+                            .font(.bodyBold)
+                            .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("geofence_consent_body"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button(action: acceptPlacesConsent) {
+                            Text(localizationManager.localized("geofence_consent_accept"))
+                                .font(.bodyBold)
+                                .foregroundColor(.white)
+                                .frame(maxWidth: .infinity)
+                                .padding(.vertical, Spacing.s)
+                                .background(Color.primaryBlue)
+                                .cornerRadius(CornerRadius.medium)
+                        }
+                        .accessibilityIdentifier("geofence_places_consent_accept")
+                    }
+                    .padding(Spacing.m)
+                    .background(Color.backgroundMedium.opacity(0.35))
+                    .cornerRadius(CornerRadius.medium)
+                }
+
                 // Существующие геозоны
                 ForEach($geofences) { $geofence in
                     VStack(alignment: .leading, spacing: Spacing.s) {
@@ -7037,7 +7085,7 @@ struct GeofencesSettingsModal: View {
                     .padding(Spacing.m)
                     .background(Color.secondaryGold.opacity(0.1))
                     .cornerRadius(CornerRadius.medium)
-                } else {
+                } else if placesConsentAccepted {
                     Button(action: {
                         HapticFeedback.impact(.medium)
                         showAddForm = true
@@ -7061,11 +7109,78 @@ struct GeofencesSettingsModal: View {
                         )
                     }
                 }
+
+                // geo-02 — No Show: дом/школа к времени
+                if placesConsentAccepted {
+                    VStack(alignment: .leading, spacing: Spacing.s) {
+                        Text(localizationManager.localized("geofence_noshow_section_title"))
+                            .font(.bodyBold)
+                            .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("geofence_noshow_section_hint"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        ForEach(noShowSchedules) { schedule in
+                            HStack {
+                                VStack(alignment: .leading, spacing: 2) {
+                                    Text(schedule.placeName)
+                                        .font(.subheadline.weight(.semibold))
+                                        .foregroundColor(.textPrimary)
+                                    Text(String(format: "%02d:%02d", schedule.hour, schedule.minute))
+                                        .font(.caption)
+                                        .foregroundColor(.textSecondary)
+                                }
+                                Spacer()
+                                Toggle("", isOn: Binding(
+                                    get: { schedule.enabled },
+                                    set: { newValue in
+                                        if let idx = noShowSchedules.firstIndex(where: { $0.id == schedule.id }) {
+                                            noShowSchedules[idx].enabled = newValue
+                                            GeofenceNoShowMonitor.saveSchedules(noShowSchedules)
+                                        }
+                                    }
+                                ))
+                                .labelsHidden()
+                            }
+                            .padding(Spacing.s)
+                            .background(Color.backgroundMedium.opacity(0.3))
+                            .cornerRadius(CornerRadius.medium)
+                        }
+
+                        Button {
+                            HapticFeedback.impact(.light)
+                            let school = localizationManager.localized("geofences_school")
+                            let home = localizationManager.localized("geofences_home")
+                            let place = geofences.first(where: { $0.name.localizedCaseInsensitiveContains(school) })?.name
+                                ?? geofences.first(where: { $0.name.localizedCaseInsensitiveContains(home) })?.name
+                                ?? school
+                            let item = GeofenceNoShowSchedule(
+                                id: UUID(),
+                                placeName: place,
+                                hour: 8,
+                                minute: 30,
+                                enabled: true
+                            )
+                            noShowSchedules.append(item)
+                            GeofenceNoShowMonitor.saveSchedules(noShowSchedules)
+                        } label: {
+                            Label(localizationManager.localized("geofence_noshow_add"), systemImage: "clock.badge.exclamationmark")
+                                .font(.subheadline.weight(.semibold))
+                                .foregroundColor(.secondaryGold)
+                        }
+                        .accessibilityIdentifier("geofence_noshow_add")
+                    }
+                    .padding(Spacing.m)
+                    .background(Color.backgroundMedium.opacity(0.25))
+                    .cornerRadius(CornerRadius.medium)
+                }
             }
         }
         .id("geofences_lang_\(localizationManager.currentLanguage.rawValue)")
         .onAppear {
             loadGeofences()
+            GeofenceNoShowMonitor.checkDue(localization: localizationManager)
         }
         .alert(localizationManager.localized("family_validation_check_fields"), isPresented: $showValidationAlert) {
             Button(localizationManager.currentLanguage == .russian ? "OK" : "OK", role: .cancel) {}
@@ -7120,9 +7235,9 @@ struct LocationHistoryDetailModal: View {
                     Divider()
                 }
                 
-                // История событий
+                // geo-03 — события мест за 7 дней (не GPS-трек)
                 VStack(alignment: .leading, spacing: Spacing.m) {
-                    Text(localizationManager.localized("location_events_today"))
+                    Text(localizationManager.localized("location_events_7d"))
                         .font(.bodyBold)
                         .foregroundColor(.secondaryGold)
 
@@ -7153,9 +7268,14 @@ struct LocationHistoryDetailModal: View {
                                 
                                 Spacer()
                                 
-                                Text(item.time)
-                                    .font(.caption)
-                                    .foregroundColor(.textSecondary)
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    Text(item.dayLabel)
+                                        .font(.caption2)
+                                        .foregroundColor(.textSecondary)
+                                    Text(item.time)
+                                        .font(.caption)
+                                        .foregroundColor(.textSecondary)
+                                }
                             }
                             .padding(Spacing.m)
                             .background(Color.backgroundMedium.opacity(0.3))
@@ -7172,17 +7292,22 @@ struct LocationHistoryDetailModal: View {
     }
     
     private func loadLocationData() {
-        // fsl-05 — только живые события геозон; без демо-ленты 09:15
-        let live = GeofenceEventStore.todayEvents()
+        // geo-03 — enter/exit до 7 дней; без демо-ленты
+        let dayFmt = DateFormatter()
+        dayFmt.locale = localizationManager.locale
+        dayFmt.dateStyle = .short
+        dayFmt.timeStyle = .none
+
+        let live = GeofenceEventStore.events(lastDays: 7)
         locationHistory = live.map { event in
             LocationHistoryItem(
                 time: event.time,
+                dayLabel: dayFmt.string(from: event.createdAt),
                 location: event.regionName,
                 action: event.action,
                 icon: event.isArrival ? "✅" : "🚶"
             )
         }
-        // Frequent places stay empty until we have real visit stats — no fake mall/school counts.
         frequentPlaces = []
     }
 }
@@ -7190,6 +7315,7 @@ struct LocationHistoryDetailModal: View {
 struct LocationHistoryItem: Identifiable {
     let id = UUID()
     let time: String
+    let dayLabel: String
     let location: String
     let action: String
     let icon: String

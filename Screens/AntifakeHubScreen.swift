@@ -127,12 +127,12 @@ struct AntifakeHubScreen: View {
         }
     }
 
-    /// fsl-11 — коротко научить «Поделиться → ALADDIN» (не новый OB).
+    /// browse-01 — Share + виджет + Siri (усиление fsl-11).
     private var shareOnboardTip: some View {
         HStack(alignment: .top, spacing: Spacing.s) {
             Image(systemName: "square.and.arrow.up")
                 .foregroundColor(.secondaryGold)
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 6) {
                 Text(localizationManager.localized("share_onboard_title"))
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(.white)
@@ -140,6 +140,13 @@ struct AntifakeHubScreen: View {
                     .font(.caption)
                     .foregroundColor(.white.opacity(0.8))
                     .fixedSize(horizontal: false, vertical: true)
+                VStack(alignment: .leading, spacing: 4) {
+                    Label(localizationManager.localized("share_onboard_path_share"), systemImage: "square.and.arrow.up")
+                    Label(localizationManager.localized("share_onboard_path_widget"), systemImage: "rectangle.on.rectangle")
+                    Label(localizationManager.localized("share_onboard_path_siri"), systemImage: "mic.fill")
+                }
+                .font(.caption2.weight(.medium))
+                .foregroundColor(.secondaryGold)
             }
             Spacer(minLength: 0)
             Button {

@@ -48,8 +48,23 @@ struct CrashDetectionAlertModal: View {
                     .padding(.top, 4)
 
                 VStack(spacing: 12) {
+                    // crash-02 — «я ок» снимает тревогу без диспетчера
+                    Button(action: {
+                        isPresented = false
+                        HapticFeedback.notification(.success)
+                    }) {
+                        Text(localizationManager.localized("crash_alert_im_ok"))
+                            .font(.headline.weight(.bold))
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 54)
+                            .background(Color.green.opacity(0.55))
+                            .cornerRadius(10)
+                    }
+                    .accessibilityIdentifier("crash_alert_im_ok")
+
                     HStack(spacing: 20) {
-                        Button("Отмена") {
+                        Button(localizationManager.localized("crash_alert_cancel")) {
                             isPresented = false
                         }
                         .foregroundColor(.white)
@@ -58,7 +73,7 @@ struct CrashDetectionAlertModal: View {
                         .background(Color.gray.opacity(0.3))
                         .cornerRadius(10)
 
-                        Button("🚨 112") {
+                        Button(localizationManager.localized("crash_alert_call_112")) {
                             callEmergencyServices()
                         }
                         .foregroundColor(.white)
@@ -68,7 +83,7 @@ struct CrashDetectionAlertModal: View {
                         .cornerRadius(10)
                     }
                     
-                    Button("📱 Уведомить контакты") {
+                    Button(localizationManager.localized("crash_alert_notify_family")) {
                         notifyEmergencyContacts()
                     }
                     .foregroundColor(.white)

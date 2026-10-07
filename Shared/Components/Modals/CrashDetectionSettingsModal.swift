@@ -17,6 +17,7 @@ struct CrashDetectionSettingsModal: View {
 
     @State private var sensitivity: CrashDetectionSensitivity = .medium
     @State private var isLoading: Bool = false
+    @AppStorage("aladdin_crash_detection_consent_v1") private var crashConsentAccepted = false
 
     var body: some View {
         ComponentSettingsModal(
@@ -28,6 +29,27 @@ struct CrashDetectionSettingsModal: View {
             }
         ) {
             VStack(spacing: Spacing.l) {
+                // consent-01 — короткое согласие при включении
+                VStack(alignment: .leading, spacing: Spacing.s) {
+                    Text(localizationManager.localized("crash_consent_title"))
+                        .font(.h4)
+                        .foregroundColor(.textPrimary)
+                    Text(localizationManager.localized("crash_consent_body"))
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Toggle(isOn: $crashConsentAccepted) {
+                        Text(localizationManager.localized("crash_consent_accept"))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.textPrimary)
+                    }
+                    .tint(.primaryBlue)
+                    .accessibilityIdentifier("crash_detection_consent_toggle")
+                }
+                .padding()
+                .background(Color.primaryBlue.opacity(0.08))
+                .cornerRadius(CornerRadius.medium)
+
                 VStack(alignment: .leading, spacing: Spacing.s) {
                     HStack {
                         Image(systemName: "exclamationmark.triangle.fill")
@@ -49,6 +71,8 @@ struct CrashDetectionSettingsModal: View {
                     RoundedRectangle(cornerRadius: CornerRadius.medium)
                         .stroke(Color.orange.opacity(0.3), lineWidth: 1)
                 )
+                .opacity(crashConsentAccepted ? 1 : 0.45)
+                .disabled(!crashConsentAccepted)
 
                 VStack(alignment: .leading, spacing: Spacing.m) {
                     Text(localizationManager.localized("crash_settings_detection_title"))
@@ -111,6 +135,10 @@ struct CrashDetectionSettingsModal: View {
     }
 
     private func saveSettings() {
+        guard crashConsentAccepted else {
+            toastManager.showError(localizationManager.localized("crash_consent_required"))
+            return
+        }
         guard let userId = resolvedUserId() else {
             toastManager.showError(localizationManager.localized("crash_settings_save_error"))
             return

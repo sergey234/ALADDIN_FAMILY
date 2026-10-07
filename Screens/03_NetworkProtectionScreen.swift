@@ -29,6 +29,8 @@ struct NetworkProtectionScreen: View {
     @State private var showQuarantineDetails = false
     @State private var showScanHistory = false
     @State private var showAntivirusFileImporter = false
+    /// av-01 — последний ясный итог проверки файла
+    @State private var lastFileScanSummary: String = ""
     
     // Данные для антивируса (локальное состояние)
     @State private var scanHistory: [ScanHistoryItem] = []
@@ -790,6 +792,36 @@ struct NetworkProtectionScreen: View {
             .fixedSize(horizontal: false, vertical: true)
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(.top, Spacing.xs)
+
+            if !lastFileScanSummary.isEmpty {
+                VStack(alignment: .leading, spacing: Spacing.xs) {
+                    Text(lastFileScanSummary)
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.textPrimary)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .accessibilityIdentifier("antivirus_file_result_summary")
+                    Text(localizationManager.localized("antivirus_file_hub_hint"))
+                        .font(.caption2)
+                        .foregroundColor(.textSecondary)
+                        .fixedSize(horizontal: false, vertical: true)
+                    Button {
+                        navigationManager.navigateToPrivacyHub(tab: .darkWeb)
+                    } label: {
+                        Label(
+                            localizationManager.localized("antivirus_file_hub_cta"),
+                            systemImage: "lock.shield"
+                        )
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("antivirus_file_hub_link")
+                }
+                .padding(Spacing.s)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.backgroundMedium.opacity(0.35))
+                .cornerRadius(CornerRadius.medium)
+            }
         }
         .padding(.top, Spacing.m)
     }
@@ -1317,6 +1349,23 @@ struct NetworkProtectionScreen: View {
                         AntivirusManager.maxServerScanUploadMegabytes
                     )
                 )
+            } else if threatsFound > 0 {
+                ToastManager.shared.showError(
+                    localizationManager.localized("antivirus_file_result_threats_fmt", threatsFound)
+                )
+            } else if scanResult.threatLevel == .safe || scanResult.threatLevel == .clean {
+                ToastManager.shared.showSuccess(
+                    localizationManager.localized("antivirus_file_result_clean")
+                )
+            }
+            // av-01 — ясный итог + связь с Privacy Hub (утечки ≠ антивирус файла)
+            if threatsFound > 0 {
+                lastFileScanSummary = localizationManager.localized(
+                    "antivirus_file_result_threats_fmt",
+                    threatsFound
+                )
+            } else {
+                lastFileScanSummary = localizationManager.localized("antivirus_file_result_clean")
             }
         }
 

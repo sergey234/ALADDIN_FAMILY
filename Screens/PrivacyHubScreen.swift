@@ -136,6 +136,28 @@ struct PrivacyHubDarkWebPanel: View {
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.85))
 
+            // pwd-02 — честный статус покрытия (без аббревиатур)
+            Text(localizationManager.localized("dark_web_coverage_note"))
+                .font(.caption)
+                .foregroundColor(.secondaryGold)
+                .padding(Spacing.s)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(Color.white.opacity(0.08))
+                .cornerRadius(CornerRadius.medium)
+                .accessibilityIdentifier("privacy_hub_darkweb_coverage")
+
+            // foot-02 — цепочка: проверка → результат → смени пароль
+            VStack(alignment: .leading, spacing: Spacing.xs) {
+                Text(localizationManager.localized("dark_web_flow_title"))
+                    .font(.caption.weight(.semibold))
+                    .foregroundColor(.white.opacity(0.9))
+                Text(localizationManager.localized("dark_web_flow_steps"))
+                    .font(.caption2)
+                    .foregroundColor(.white.opacity(0.7))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+            .accessibilityIdentifier("privacy_hub_darkweb_flow")
+
             if let stats = viewModel.stats {
                 HStack(spacing: Spacing.s) {
                     metricChip(title: localizationManager.localized("dark_web_total_leaks"), value: "\(stats.totalLeaks)")
@@ -179,6 +201,11 @@ struct PrivacyHubDarkWebPanel: View {
                         Text(leak.source)
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.7))
+                        if !viewModel.leaks.isEmpty {
+                            Text(localizationManager.localized("dark_web_action_change_password"))
+                                .font(.caption2.weight(.semibold))
+                                .foregroundColor(.secondaryGold)
+                        }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(Spacing.m)

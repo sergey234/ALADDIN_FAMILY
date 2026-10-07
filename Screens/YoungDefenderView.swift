@@ -364,6 +364,144 @@ struct YoungDefenderView: View {
                     correctAnswer: 1
                 )
             ]
+        ),
+        // priv-01 — убери себя из витрин (чеклист, без авто-ops)
+        Lesson(
+            id: 8,
+            icon: "🧹",
+            titleKey: "young_defender_lesson_8_title",
+            descriptionKey: "young_defender_lesson_8_desc",
+            contentKeys: [
+                "young_defender_lesson_8_content_1",
+                "young_defender_lesson_8_content_2",
+                "young_defender_lesson_8_content_3",
+                "young_defender_lesson_8_content_4",
+                "young_defender_lesson_8_content_5"
+            ],
+            quizQuestions: [
+                QuizQuestion(
+                    questionKey: "young_defender_lesson_8_quiz_1_q",
+                    optionKeys: [
+                        "young_defender_lesson_8_quiz_1_a1",
+                        "young_defender_lesson_8_quiz_1_a2",
+                        "young_defender_lesson_8_quiz_1_a3",
+                        "young_defender_lesson_8_quiz_1_a4"
+                    ],
+                    correctAnswer: 1
+                ),
+                QuizQuestion(
+                    questionKey: "young_defender_lesson_8_quiz_2_q",
+                    optionKeys: [
+                        "young_defender_lesson_8_quiz_2_a1",
+                        "young_defender_lesson_8_quiz_2_a2",
+                        "young_defender_lesson_8_quiz_2_a3",
+                        "young_defender_lesson_8_quiz_2_a4"
+                    ],
+                    correctAnswer: 1
+                ),
+                QuizQuestion(
+                    questionKey: "young_defender_lesson_8_quiz_3_q",
+                    optionKeys: [
+                        "young_defender_lesson_8_quiz_3_a1",
+                        "young_defender_lesson_8_quiz_3_a2",
+                        "young_defender_lesson_8_quiz_3_a3",
+                        "young_defender_lesson_8_quiz_3_a4"
+                    ],
+                    correctAnswer: 1
+                )
+            ]
+        ),
+        // gai-08 — опасные ИИ-чаты для детей
+        Lesson(
+            id: 9,
+            icon: "🤖",
+            titleKey: "young_defender_lesson_9_title",
+            descriptionKey: "young_defender_lesson_9_desc",
+            contentKeys: [
+                "young_defender_lesson_9_content_1",
+                "young_defender_lesson_9_content_2",
+                "young_defender_lesson_9_content_3",
+                "young_defender_lesson_9_content_4",
+                "young_defender_lesson_9_content_5"
+            ],
+            quizQuestions: [
+                QuizQuestion(
+                    questionKey: "young_defender_lesson_9_quiz_1_q",
+                    optionKeys: [
+                        "young_defender_lesson_9_quiz_1_a1",
+                        "young_defender_lesson_9_quiz_1_a2",
+                        "young_defender_lesson_9_quiz_1_a3",
+                        "young_defender_lesson_9_quiz_1_a4"
+                    ],
+                    correctAnswer: 1
+                ),
+                QuizQuestion(
+                    questionKey: "young_defender_lesson_9_quiz_2_q",
+                    optionKeys: [
+                        "young_defender_lesson_9_quiz_2_a1",
+                        "young_defender_lesson_9_quiz_2_a2",
+                        "young_defender_lesson_9_quiz_2_a3",
+                        "young_defender_lesson_9_quiz_2_a4"
+                    ],
+                    correctAnswer: 1
+                ),
+                QuizQuestion(
+                    questionKey: "young_defender_lesson_9_quiz_3_q",
+                    optionKeys: [
+                        "young_defender_lesson_9_quiz_3_a1",
+                        "young_defender_lesson_9_quiz_3_a2",
+                        "young_defender_lesson_9_quiz_3_a3",
+                        "young_defender_lesson_9_quiz_3_a4"
+                    ],
+                    correctAnswer: 1
+                )
+            ]
+        ),
+        // id-01 — что делать при большой утечке / краже данных
+        Lesson(
+            id: 10,
+            icon: "🪪",
+            titleKey: "young_defender_lesson_10_title",
+            descriptionKey: "young_defender_lesson_10_desc",
+            contentKeys: [
+                "young_defender_lesson_10_content_1",
+                "young_defender_lesson_10_content_2",
+                "young_defender_lesson_10_content_3",
+                "young_defender_lesson_10_content_4",
+                "young_defender_lesson_10_content_5"
+            ],
+            quizQuestions: [
+                QuizQuestion(
+                    questionKey: "young_defender_lesson_10_quiz_1_q",
+                    optionKeys: [
+                        "young_defender_lesson_10_quiz_1_a1",
+                        "young_defender_lesson_10_quiz_1_a2",
+                        "young_defender_lesson_10_quiz_1_a3",
+                        "young_defender_lesson_10_quiz_1_a4"
+                    ],
+                    correctAnswer: 1
+                ),
+                QuizQuestion(
+                    questionKey: "young_defender_lesson_10_quiz_2_q",
+                    optionKeys: [
+                        "young_defender_lesson_10_quiz_2_a1",
+                        "young_defender_lesson_10_quiz_2_a2",
+                        "young_defender_lesson_10_quiz_2_a3",
+                        "young_defender_lesson_10_quiz_2_a4"
+                    ],
+                    correctAnswer: 1
+                ),
+                QuizQuestion(
+                    questionKey: "young_defender_lesson_10_quiz_3_q",
+                    optionKeys: [
+                        "young_defender_lesson_10_quiz_3_a1",
+                        "young_defender_lesson_10_quiz_3_a2",
+                        "young_defender_lesson_10_quiz_3_a3",
+                        "young_defender_lesson_10_quiz_3_a4"
+                    ],
+                    correctAnswer: 1
+                )
+            ]
         )
         ]
     }

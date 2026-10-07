@@ -577,6 +577,9 @@
 		FWS20A22F90000100C7D34B /* FamilyIncidentFeedModels.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20A12F90000100C7D34B /* FamilyIncidentFeedModels.swift */; };
 		FWS20B22F90000100C7D34B /* FamilyIncidentFeedService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20B12F90000100C7D34B /* FamilyIncidentFeedService.swift */; };
 		FSL05122F90000100C7D34B /* GeofenceEventStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL05112F90000100C7D34B /* GeofenceEventStore.swift */; };
+		FSLGEO522F90000100C7D34B /* GeofenceNoShowMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO512F90000100C7D34B /* GeofenceNoShowMonitor.swift */; };
+		FSLGEO422F90000100C7D34B /* GeofencePlacesConsentStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLGEO412F90000100C7D34B /* GeofencePlacesConsentStore.swift */; };
+		FSLBAT022F90000100C7D34B /* FamilyBatteryCriticalMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSLBAT012F90000100C7D34B /* FamilyBatteryCriticalMonitor.swift */; };
 		FSL13122F90000100C7D34B /* FamilyImOkService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL13112F90000100C7D34B /* FamilyImOkService.swift */; };
 		FSL13222F90000100C7D34B /* FamilyImOkButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL13212F90000100C7D34B /* FamilyImOkButton.swift */; };
 		FSL07122F90000100C7D34B /* FamilyDayStripView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FSL07112F90000100C7D34B /* FamilyDayStripView.swift */; };
@@ -1372,6 +1375,9 @@
 		FWS20A12F90000100C7D34B /* FamilyIncidentFeedModels.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyIncidentFeedModels.swift; path = Core/Family/FamilyIncidentFeedModels.swift; sourceTree = "<group>"; };
 		FWS20B12F90000100C7D34B /* FamilyIncidentFeedService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyIncidentFeedService.swift; path = Core/Family/FamilyIncidentFeedService.swift; sourceTree = "<group>"; };
 		FSL05112F90000100C7D34B /* GeofenceEventStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceEventStore.swift; path = Core/Family/GeofenceEventStore.swift; sourceTree = "<group>"; };
+		FSLGEO512F90000100C7D34B /* GeofenceNoShowMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofenceNoShowMonitor.swift; path = Core/Family/GeofenceNoShowMonitor.swift; sourceTree = "<group>"; };
+		FSLGEO412F90000100C7D34B /* GeofencePlacesConsentStore.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = GeofencePlacesConsentStore.swift; path = Core/Family/GeofencePlacesConsentStore.swift; sourceTree = "<group>"; };
+		FSLBAT012F90000100C7D34B /* FamilyBatteryCriticalMonitor.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyBatteryCriticalMonitor.swift; path = Core/Family/FamilyBatteryCriticalMonitor.swift; sourceTree = "<group>"; };
 		FSL13112F90000100C7D34B /* FamilyImOkService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkService.swift; path = Core/Family/FamilyImOkService.swift; sourceTree = "<group>"; };
 		FSL13212F90000100C7D34B /* FamilyImOkButton.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyImOkButton.swift; path = Shared/Components/FamilyImOkButton.swift; sourceTree = "<group>"; };
 		FSL07112F90000100C7D34B /* FamilyDayStripView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyDayStripView.swift; path = Shared/Components/FamilyDayStripView.swift; sourceTree = "<group>"; };
@@ -1978,6 +1984,9 @@
 				FWS20A12F90000100C7D34B /* FamilyIncidentFeedModels.swift */,
 				FWS20B12F90000100C7D34B /* FamilyIncidentFeedService.swift */,
 				FSL05112F90000100C7D34B /* GeofenceEventStore.swift */,
+				FSLGEO512F90000100C7D34B /* GeofenceNoShowMonitor.swift */,
+				FSLGEO412F90000100C7D34B /* GeofencePlacesConsentStore.swift */,
+				FSLBAT012F90000100C7D34B /* FamilyBatteryCriticalMonitor.swift */,
 				FSL13112F90000100C7D34B /* FamilyImOkService.swift */,
 				FSL14112F90000100C7D34B /* FamilyShieldWeekDigestStore.swift */,
 				FWS20C12F90000100C7D34B /* FamilyIncidentFeedView.swift */,
@@ -3042,6 +3051,9 @@
 				FWS20A22F90000100C7D34B /* FamilyIncidentFeedModels.swift in Sources */,
 				FWS20B22F90000100C7D34B /* FamilyIncidentFeedService.swift in Sources */,
 				FSL05122F90000100C7D34B /* GeofenceEventStore.swift in Sources */,
+				FSLGEO522F90000100C7D34B /* GeofenceNoShowMonitor.swift in Sources */,
+				FSLGEO422F90000100C7D34B /* GeofencePlacesConsentStore.swift in Sources */,
+				FSLBAT022F90000100C7D34B /* FamilyBatteryCriticalMonitor.swift in Sources */,
 				FSL13122F90000100C7D34B /* FamilyImOkService.swift in Sources */,
 				FSL13222F90000100C7D34B /* FamilyImOkButton.swift in Sources */,
 				FSL07122F90000100C7D34B /* FamilyDayStripView.swift in Sources */,
