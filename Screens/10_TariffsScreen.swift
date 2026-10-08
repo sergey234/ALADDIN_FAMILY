@@ -43,16 +43,6 @@ struct TariffsScreen: View {
             }
         }
         
-        var price: String {
-            switch self {
-            case .trial: return "0 ₽"
-            case .free: return "0 ₽"
-            case .personal: return "100 ₽"
-            case .family: return "290 ₽"
-            case .premium: return "490 ₽"
-            }
-        }
-        
         func period(localizationManager: LocalizationManager) -> String {
             switch self {
             case .trial: return localizationManager.localized("tariffs_trial_period")
@@ -218,7 +208,9 @@ struct TariffsScreen: View {
                         // }
                         
                         // Уровень защиты по тарифам
-                        TariffFeaturesGallery()
+                        TariffFeaturesGallery { tariff in
+                            viewModel.displayedPrice(for: tariff, localizationManager: localizationManager)
+                        }
                             .padding(.top, Spacing.s)
                         
                         // Spacer
@@ -237,9 +229,6 @@ struct TariffsScreen: View {
         .id("tariffs_lang_\(localizationManager.currentLanguage.rawValue)")
         // ✅ КРИТИЧНО: Загружаем продукты при открытии экрана тарифов
         .task {
-            #if targetEnvironment(simulator)
-            print("🔄 [TariffsScreen] Симулятор — без повторной проверки IAP (StoreManager не дергает StoreKit)")
-            #else
             print("🔄 [TariffsScreen] Экран открыт, проверяем продукты...")
             let productsCount = await viewModel.getProductsCount()
             print("🔄 [TariffsScreen] Продуктов загружено: \(productsCount)")
@@ -249,7 +238,6 @@ struct TariffsScreen: View {
             } else {
                 print("✅ [TariffsScreen] Продукты уже загружены")
             }
-            #endif
         }
         // ✅ УДАЛЕНО: Визуальные логи с экрана (оставляем только в консоли)
         // ✅ КРИТИЧЕСКОЕ ИСПРАВЛЕНИЕ: УДАЛЕН .sheet модификатор
@@ -324,9 +312,10 @@ struct TariffsScreen: View {
                         .foregroundColor(tariff.color)
                     
                     HStack(alignment: .firstTextBaseline, spacing: Spacing.xs) {
-                        Text(tariff.price)
+                        Text(viewModel.displayedPrice(for: tariff, localizationManager: localizationManager))
                             .font(.system(size: 36, weight: .bold))
                             .foregroundColor(.white)
+                            .accessibilityIdentifier("tariff_price_\(tariff.rawValue)")
                         
                         Text(tariff.period(localizationManager: localizationManager))
                             .font(.caption)
@@ -426,7 +415,15 @@ struct TariffsScreen: View {
                 }()
                 
                 let tariffObj: Tariff = {
-                    if let existingTariff = viewModel.tariffs.first(where: { $0.id == tariffId }),
+                    // Предпочитаем живой StoreKit-тариф (id = Product ID + displayPrice).
+                    if let existingTariff = viewModel.tariffs.first(where: {
+                        switch tariff {
+                        case .personal: return $0.id == StoreManager.ProductID.individual.rawValue
+                        case .family: return $0.id == StoreManager.ProductID.family.rawValue
+                        case .premium: return $0.id == StoreManager.ProductID.premium.rawValue
+                        default: return $0.id == tariffId
+                        }
+                    }),
                        !existingTariff.id.isEmpty,
                        !existingTariff.title.isEmpty {
                         return existingTariff
@@ -434,7 +431,7 @@ struct TariffsScreen: View {
                     
                     let safeTitle = tariff.title(localizationManager: localizationManager).isEmpty
                         ? "Тариф \(tariffId)" : tariff.title(localizationManager: localizationManager)
-                    let safePrice = tariff.price.isEmpty ? "0 ₽" : tariff.price
+                    let safePrice = viewModel.displayedPrice(for: tariff, localizationManager: localizationManager)
                     let safePeriod = tariff.period(localizationManager: localizationManager).isEmpty
                         ? localizationManager.localized("tariffs_period_month") : tariff.period(localizationManager: localizationManager)
                     let safeFeatures = tariff.features(localizationManager: localizationManager).isEmpty

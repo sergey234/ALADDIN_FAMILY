@@ -29,6 +29,9 @@ class TariffsViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
     @Published var isPurchaseSuccessful: Bool = false
+    /// Живые StoreKit-продукты (для UI цены через `displayPrice`, без хардкода ₽/$).
+    @Published private(set) var storeProducts: [Product] = []
+    @Published private(set) var isStoreLoading: Bool = false
     
     // MARK: - Store Manager
     
@@ -44,7 +47,15 @@ class TariffsViewModel: ObservableObject {
         // Подписка на изменения продуктов
         self.storeManager.$products
             .sink { [weak self] products in
-                self?.updateTariffs(from: products)
+                guard let self else { return }
+                self.storeProducts = products
+                self.updateTariffs(from: products)
+            }
+            .store(in: &cancellables)
+        
+        self.storeManager.$isLoading
+            .sink { [weak self] loading in
+                self?.isStoreLoading = loading
             }
             .store(in: &cancellables)
         
@@ -61,6 +72,47 @@ class TariffsViewModel: ObservableObject {
         }
         
         print("✅ TariffsViewModel.init: Инициализация завершена")
+    }
+    
+    /// Временный курс для подписи «₽ / $» на карточке (пока не только StoreKit).
+    /// 85 ₽ = 1 $.
+    private static let rubPerUsd: Double = 85
+    
+    /// Канон цен в ₽ (как было на UI до StoreKit-only).
+    private static func rubAmount(for tariff: TariffsScreen.TariffType) -> Int? {
+        switch tariff {
+        case .personal: return 100
+        case .family: return 290
+        case .premium: return 490
+        case .trial, .free: return nil
+        }
+    }
+    
+    /// Цена для карточки: «100 ₽ / $1.18» (курс 85). StoreKit `displayPrice` пока не подменяем UI.
+    func displayedPrice(
+        for tariff: TariffsScreen.TariffType,
+        localizationManager: LocalizationManager
+    ) -> String {
+        switch tariff {
+        case .trial, .free:
+            return localizationManager.localized("tariffs_price_free")
+        case .personal, .family, .premium:
+            guard let rub = Self.rubAmount(for: tariff) else {
+                return localizationManager.localized("tariffs_price_unavailable")
+            }
+            let usd = Double(rub) / Self.rubPerUsd
+            let usdText = String(format: "$%.2f", usd)
+            return "\(rub) ₽ / \(usdText)"
+        }
+    }
+    
+    private func storeProductID(for tariff: TariffsScreen.TariffType) -> StoreManager.ProductID? {
+        switch tariff {
+        case .personal: return .individual
+        case .family: return .family
+        case .premium: return .premium
+        case .trial, .free: return nil
+        }
     }
     
     // MARK: - Load Products

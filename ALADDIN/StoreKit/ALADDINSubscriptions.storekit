@@ -36,7 +36,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "299",
+          "displayPrice" : "100",
           "familyShareable" : false,
           "groupNumber" : 1,
           "internalID" : "individual_v2",
@@ -61,7 +61,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "599",
+          "displayPrice" : "290",
           "familyShareable" : true,
           "groupNumber" : 2,
           "internalID" : "family",
@@ -86,7 +86,7 @@
           "codeOffers" : [
 
           ],
-          "displayPrice" : "999",
+          "displayPrice" : "490",
           "familyShareable" : true,
           "groupNumber" : 3,
           "internalID" : "premium",

@@ -87,8 +87,9 @@ struct TariffCard: Identifiable {
 // MARK: - Конфигурация карточек тарифов
 
 extension TariffType {
-    /// Создать карточку тарифа
-    func createCard(localizationManager: LocalizationManager) -> TariffCard {
+    /// Создать карточку тарифа.
+    /// - Parameter price: живая цена StoreKit (`displayPrice`). Если nil — Free/Trial = «Бесплатно», платные = «—».
+    func createCard(localizationManager: LocalizationManager, price: String? = nil) -> TariffCard {
         let devices: String = {
             switch self {
             case .trial: return "10"
@@ -99,10 +100,20 @@ extension TariffType {
             }
         }()
 
+        let resolvedPrice: String = {
+            if let price, !price.isEmpty { return price }
+            switch self {
+            case .trial, .free:
+                return localizationManager.localized("tariffs_price_free")
+            case .personal, .family, .premium:
+                return localizationManager.localized("tariffs_price_unavailable")
+            }
+        }()
+
         return TariffCard(
             id: rawValue,
             tariffType: self,
-            price: self.price,
+            price: resolvedPrice,
             devices: devices,
             icon: {
                 switch self {

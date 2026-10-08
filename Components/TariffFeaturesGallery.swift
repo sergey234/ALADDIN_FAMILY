@@ -7,14 +7,16 @@ import SwiftUI
 struct TariffFeaturesGallery: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     @EnvironmentObject private var navigationManager: NavigationManager
+    /// Живые цены StoreKit (`displayPrice`). Если nil — Free = «Бесплатно», платные = «—».
+    var priceFor: ((TariffType) -> String)? = nil
     
     // Карточки тарифов
     private var tariffCards: [TariffCard] {
         [
-            TariffType.free.createCard(localizationManager: localizationManager),
-            TariffType.personal.createCard(localizationManager: localizationManager),
-            TariffType.family.createCard(localizationManager: localizationManager),
-            TariffType.premium.createCard(localizationManager: localizationManager)
+            TariffType.free.createCard(localizationManager: localizationManager, price: priceFor?(.free)),
+            TariffType.personal.createCard(localizationManager: localizationManager, price: priceFor?(.personal)),
+            TariffType.family.createCard(localizationManager: localizationManager, price: priceFor?(.family)),
+            TariffType.premium.createCard(localizationManager: localizationManager, price: priceFor?(.premium))
         ]
     }
     
@@ -49,7 +51,7 @@ struct TariffFeaturesGallery: View {
 #if DEBUG
 struct TariffFeaturesGallery_Previews: PreviewProvider {
     static var previews: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             TariffFeaturesGallery()
                 .environmentObject(LocalizationManager())
                 .environmentObject(NavigationManager())

@@ -230,6 +230,8 @@ struct AppConfig {
         static let familySharedList = "/api/family/list"
         static let familyChallenges = "/api/family/challenges"
         static let familyIncidents = "/api/family/incidents"
+        static let familyImOk = "/api/family/im-ok"
+        static let familyPresence = "/api/family/presence"
 
         // Family Chat
         static let familyChatMessages = "/api/family/chat/messages"
@@ -748,6 +750,7 @@ struct AppConfig {
         static let iotDevices = "/api/iot/devices/{homeId}"
         static let iotThreats = "/api/iot/threats/{homeId}"
         static let iotDeviceBlock = "/api/iot/device/{deviceId}/block"
+        static let iotDeviceUnblock = "/api/iot/device/{deviceId}/unblock"
         static let iotScan = "/api/iot/scan/{homeId}"
         static let iotFix = "/api/iot/fix/{threatId}"
         
