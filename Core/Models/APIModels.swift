@@ -2243,6 +2243,7 @@ enum IoTDeviceStatus: String, Codable {
     case offline = "offline"
     case compromised = "compromised"
     case safe = "safe"
+    case blocked = "blocked"
 }
 
 struct IoTThreat: Codable, Identifiable {
