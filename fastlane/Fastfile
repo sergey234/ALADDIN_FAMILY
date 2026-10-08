@@ -18,6 +18,7 @@ platform :ios do
       extension_profile_uuid = ENV["PROVISIONING_PROFILE_EXTENSION_UUID"]
       antifake_profile_uuid = ENV["PROVISIONING_PROFILE_ANTIFAKE_SHARE_UUID"]
       call_directory_profile_uuid = ENV["PROVISIONING_PROFILE_CALL_DIRECTORY_UUID"]
+      widgets_profile_uuid = ENV["PROVISIONING_PROFILE_WIDGETS_UUID"]
       dist_cert_name = ENV["DIST_CERT_NAME"] || "Apple Distribution"
 
       if call_directory_profile_uuid.to_s.empty?
@@ -26,12 +27,19 @@ platform :ios do
         sh("bash scripts/ci_disable_call_directory_embed.sh")
       end
 
+      if widgets_profile_uuid.to_s.empty?
+        puts "⚠️  PROVISIONING_PROFILE_WIDGETS_UUID not set — skipping ALADDINWidgets for this archive"
+        puts "    Add GitHub secret PROVISIONING_PROFILE_WIDGETS for App Store builds with Widgets"
+        sh("bash scripts/ci_disable_widgets_embed.sh")
+      end
+
       puts "🔐 Team ID: #{team_id}"
       puts "🔐 Certificate: #{dist_cert_name}"
       puts "📋 App Profile UUID: #{app_profile_uuid}"
       puts "📋 Content Blocker Profile UUID: #{extension_profile_uuid}"
       puts "📋 Antifake Share Profile UUID: #{antifake_profile_uuid || '(automatic via -allowProvisioningUpdates)'}"
       puts "📋 Call Directory Profile UUID: #{call_directory_profile_uuid || '(automatic via -allowProvisioningUpdates)'}"
+      puts "📋 Widgets Profile UUID: #{widgets_profile_uuid || '(disabled / add PROVISIONING_PROFILE_WIDGETS)'}"
 
       UI.user_error!("❌ APP_PROFILE_UUID не установлен в окружении") if app_profile_uuid.nil? || app_profile_uuid.empty?
       if extension_profile_uuid.nil? || extension_profile_uuid.empty?
@@ -43,6 +51,7 @@ platform :ios do
       extension_profile_file = "#{profile_dir}/#{extension_profile_uuid}.mobileprovision"
       antifake_profile_file = antifake_profile_uuid.to_s.empty? ? nil : "#{profile_dir}/#{antifake_profile_uuid}.mobileprovision"
       call_directory_profile_file = call_directory_profile_uuid.to_s.empty? ? nil : "#{profile_dir}/#{call_directory_profile_uuid}.mobileprovision"
+      widgets_profile_file = widgets_profile_uuid.to_s.empty? ? nil : "#{profile_dir}/#{widgets_profile_uuid}.mobileprovision"
 
       expected_app_group = "group.ai.aladdin"
       validate_profile_app_group = lambda do |profile_path, profile_label, expected_bundle_id|
@@ -97,6 +106,17 @@ platform :ios do
         call_directory_manual = true
       end
 
+      widgets_manual = false
+      widgets_profile_name = nil
+      if widgets_profile_uuid && !widgets_profile_uuid.empty?
+        widgets_profile_name = validate_profile_app_group.call(
+          widgets_profile_file,
+          "Widgets",
+          "ai.aladdin.widgets"
+        )
+        widgets_manual = true
+      end
+
       xcconfig_path = "./build/Release.xcconfig"
       sh("mkdir -p ./build")
 
@@ -136,6 +156,21 @@ platform :ios do
         CALLDIR
       end
 
+      widgets_xcconfig = if widgets_manual
+        <<~WIDGETS
+          ALADDINWidgets_CODE_SIGN_IDENTITY = Apple Distribution
+          ALADDINWidgets_CODE_SIGN_STYLE = Manual
+          ALADDINWidgets_DEVELOPMENT_TEAM = #{team_id}
+          ALADDINWidgets_PROVISIONING_PROFILE_SPECIFIER = #{widgets_profile_uuid}
+          ALADDINWidgets_PROVISIONING_PROFILE = #{widgets_profile_uuid}
+          ALADDINWidgets_PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.widgets
+        WIDGETS
+      else
+        <<~WIDGETS
+          // ALADDINWidgets skipped (no PROVISIONING_PROFILE_WIDGETS)
+        WIDGETS
+      end
+
       xcconfig_content = <<~XCCONFIG
         DEVELOPMENT_TEAM = #{team_id}
 
@@ -153,6 +188,7 @@ platform :ios do
 
         #{antifake_xcconfig}
         #{call_directory_xcconfig}
+        #{widgets_xcconfig}
       XCCONFIG
 
       File.write(xcconfig_path, xcconfig_content)
@@ -217,6 +253,12 @@ platform :ios do
       else
         xcodebuild_args << call_directory_profile_clear unless call_directory_profile_clear.empty?
       end
+      if widgets_manual
+        xcodebuild_args << "ALADDINWidgets_CODE_SIGN_STYLE=Manual"
+        xcodebuild_args << "ALADDINWidgets_CODE_SIGN_IDENTITY=Apple Distribution"
+        xcodebuild_args << "ALADDINWidgets_PROVISIONING_PROFILE_SPECIFIER=#{widgets_profile_uuid}"
+        xcodebuild_args << "ALADDINWidgets_PROVISIONING_PROFILE=#{widgets_profile_uuid}"
+      end
       if needs_provisioning_updates
         xcodebuild_args << "-allowProvisioningUpdates"
       end
@@ -236,6 +278,7 @@ platform :ios do
     extension_profile_uuid = ENV["PROVISIONING_PROFILE_EXTENSION_UUID"]
     antifake_profile_uuid = ENV["PROVISIONING_PROFILE_ANTIFAKE_SHARE_UUID"]
     call_directory_profile_uuid = ENV["PROVISIONING_PROFILE_CALL_DIRECTORY_UUID"]
+    widgets_profile_uuid = ENV["PROVISIONING_PROFILE_WIDGETS_UUID"]
 
     UI.user_error!("❌ APP_PROFILE_UUID не установлен") if app_profile_uuid.nil? || app_profile_uuid.empty?
     UI.user_error!("❌ PROVISIONING_PROFILE_EXTENSION_UUID не установлен") if extension_profile_uuid.nil? || extension_profile_uuid.empty?
@@ -249,6 +292,9 @@ platform :ios do
     end
     if call_directory_profile_uuid && !call_directory_profile_uuid.empty?
       profiles["ai.aladdin.CallDirectory"] = call_directory_profile_uuid
+    end
+    if widgets_profile_uuid && !widgets_profile_uuid.empty?
+      profiles["ai.aladdin.widgets"] = widgets_profile_uuid
     end
 
     export_options_path = "./build/ExportOptions.plist"

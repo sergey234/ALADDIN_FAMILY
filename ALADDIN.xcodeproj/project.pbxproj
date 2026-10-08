@@ -791,6 +791,7 @@
 				5E61A0A72EFB38ED0039093A /* ALADDINContentBlocker.appex in Embed App Extensions */,
 				AFSh0112F90000100C7D34B /* ALADDINAntifakeShare.appex in Embed App Extensions */,
 				AFCD0112F90000200C7D34B /* ALADDINCallDirectory.appex in Embed App Extensions */,
+				WDGT0112F90000100C7D34B /* ALADDINWidgets.appex in Embed App Extensions */,
 			);
 			name = "Embed App Extensions";
 		};
@@ -4030,6 +4031,7 @@
 				MARKETING_VERSION = 1.0.0;
 				PRODUCT_BUNDLE_IDENTIFIER = ai.aladdin.widgets;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE_SPECIFIER = "ALADDIN AI Widgets App Store";
 				SKIP_INSTALL = YES;
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_STRICT_CONCURRENCY = minimal;

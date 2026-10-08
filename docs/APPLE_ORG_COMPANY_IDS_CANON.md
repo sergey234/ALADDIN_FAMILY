@@ -14,6 +14,7 @@
 | Content Blocker | `ai.aladdin.ContentBlocker` |
 | Antifake Share | `ai.aladdin.AntifakeShare` |
 | Call Directory | `ai.aladdin.CallDirectory` |
+| Widgets | `ai.aladdin.widgets` |
 | App Group | `group.ai.aladdin` |
 | Unit tests | `ai.aladdin.unitTests` |
 | UI tests | `ai.aladdin.uitests` |

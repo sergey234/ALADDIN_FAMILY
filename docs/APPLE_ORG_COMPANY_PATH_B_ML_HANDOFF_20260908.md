@@ -64,7 +64,7 @@
 | B7 | 4× App Store provisioning profiles | Manual signing всех targets в CI |
 | B8 | iPhone зарегистрирован в Team компании; Xcode Signing = SAUDAPAYDI | Локальная подпись без «no devices» |
 
-### C. Код / репозиторий (локально, **ещё не обязательно закоммичено** на момент handoff — проверить `git status`)
+### C. Код / репозиторий
 | # | Сделано | Зачем |
 |---|---------|--------|
 | C1 | `DEVELOPMENT_TEAM` → `B3WGHSWL79` (12 мест) | Сборки от компании |
@@ -72,9 +72,11 @@
 | C3 | Entitlements / код → `group.ai.aladdin` | App Group |
 | C4 | StoreKit / `StoreManager` Product IDs → `ai.aladdin.subscription.*` | IAP под новым Bundle |
 | C5 | Обновлены CI workflows (`check-secrets.yml`, `appstore.yml`, …) | CI знает новые Bundle/group |
-| C6 | `scripts/ios_verify_signing_targets.sh` обновлён | Автопроверка канона |
+| C6 | `scripts/ios_verify_signing_targets.sh` + `ios_set_development_team.sh` | Автопроверка / смена Team |
 | C7 | Личный TF 248 ранее: Team временно личный → push → TF | Рабочий билд на телефоне с личного |
-| C8 | Потом снова код под компанию (C1–C5) | Готовность к TF компании |
+| C8 | Company path B: build **`1`** (канон RELEASE_BUILD_PROMPT) | Первый билд нового ASC app |
+| C9 | Коммит **`9bfbf52c`** (локально) — **push ждёт GO** | Код готов к CI |
+| C10 | Xcode ⌘B + симулятор под SAUDAPAYDI — **OK** (владелец) | Локальная сборка зелёная |
 
 ### D. GitHub Secrets (личный repo `sergey234/ALADDIN_FAMILY`)
 | Secret | Назначение | Статус (по сессии) |
@@ -89,6 +91,7 @@
 | `PROVISIONING_PROFILE_EXTENSION` | Content Blocker | ✅ |
 | `PROVISIONING_PROFILE_ANTIFAKE_SHARE` | Antifake Share | ✅ |
 | `PROVISIONING_PROFILE_CALL_DIRECTORY` | Call Directory (новый secret; раньше мог отсутствовать) | ✅ создать/вставить |
+| `PROVISIONING_PROFILE_WIDGETS` | Widgets `ai.aladdin.widgets` + App Group | ⬜ создать профиль + base64 (см. `docs/AppStore/WIDGETS_CI_PROFILE_OWNER_STEPS_RU.md`) |
 
 **Не трогали (legacy, CI не использует):** `APPLE_ID`, `APPLE_APP_SPECIFIC_PASSWORD` — старый altool; можно оставить.
 
@@ -139,19 +142,32 @@
 
 ---
 
+## 2.1) Статус на 2026-09-08 утро (обновление)
+
+| Факт | Значение |
+|------|----------|
+| Локальный коммит | **`9bfbf52c`** `feat(ios): company path B — ai.aladdin + Team SAUDAPAYDI, build 1` |
+| vs `origin/master` | **ahead 1** — **ещё не push** |
+| Build number | **`1`** (канон файлов RELEASE_BUILD_PROMPT; новый ASC app) |
+| Xcode | Владелец: **⌘B / симулятор OK**, Team SAUDAPAYDI, не падает |
+| Следующая команда владельца | **`GO push build 1`** |
+
+Канон bump: те же файлы, что в `docs/RELEASE_BUILD_PROMPT.md` (Info.plist, pbx ×12, AppConfig ×2, CallDirectory Info.plist, AppConfigTests; Widgets = `$(CURRENT_PROJECT_VERSION)`).  
+Для компании линейка **с 1** (личный TF до 248 — другое приложение).
+
 ## 3) Что осталось (следующая ML / владелец)
 
 | # | Задача | Кто | Блокер? |
 |---|--------|-----|---------|
-| 1 | Подтвердить все 10 company secrets в GitHub Actions | владелец | да для CI |
-| 2 | **`GO коммит+push ai.aladdin`** — закоммитить смену Bundle/Team/CI и запушить | владелец → агент | да для TF компании |
-| 3 | Дождаться CI: Archive + Export + **Upload** зелёные | авто | |
+| 1 | ~~Коммит company code~~ → **сделан** `9bfbf52c` | — | — |
+| 2 | **`GO push build 1`** → `git push origin master` | владелец → агент | **да** для TF |
+| 3 | CI: Archive + Export + **Upload** зелёные (secrets компании) | авто | |
 | 4 | ASC компании → ALADDIN AI → TestFlight → Processing → Install | владелец | |
-| 5 | Smoke на iPhone (это **другое** app, рядом с личным TF) | владелец | |
-| 6 | Paid Apps Active (отложено владельцем) | владелец | для IAP продаж |
-| 7 | Создать Subscriptions в ASC с ID `ai.aladdin.subscription.*` | владелец | для покупок |
-| 8 | Карточка Store + Submit (позже) | владелец | |
-| 9 | Не путать: push с **личными** ASC secrets снова сломает company TF | все | |
+| 5 | Smoke на iPhone (**другое** app рядом с личным TF 248) | владелец | |
+| 6 | Paid Apps Active (отложено) | владелец | для IAP продаж |
+| 7 | Subscriptions ASC: `ai.aladdin.subscription.*` | владелец | позже |
+| 8 | Store карточка + Submit | владелец | позже |
+| 9 | Не пушить с личными ASC secrets | все | |
 
 ### Важно для следующей ML
 - После path B **master** ориентирован на **компанию** (`ai.aladdin` / `B3WGHSWL79`). Личный `family.aladdin.ios` в коде больше не канон.
