@@ -30,9 +30,13 @@ final class FamilyHabitRemindersScheduler {
         )
     }
 
-    /// P0.1 — mark habit done: Unicorn XP + clear today's pending for preset.
+    /// P0.1 — mark habit done: Unicorn XP + clear today's pending, then reschedule so tomorrow (and remaining) slots return.
     @discardableResult
-    func handleDone(presetRaw: String) async -> UnicornCareReward.GrantResult {
+    func handleDone(
+        presetRaw: String,
+        config: FamilyHabitRemindersConfig? = nil,
+        members: [FamilyMemberData] = []
+    ) async -> UnicornCareReward.GrantResult {
         let result = UnicornCareReward.grant(
             reason: .habitDone,
             sourceId: presetRaw,
@@ -40,6 +44,9 @@ final class FamilyHabitRemindersScheduler {
         )
         _ = HabitStreakStore.shared.recordDone(sourceId: presetRaw)
         await clearPending(forPreset: presetRaw)
+        if let config {
+            await reschedule(config: config, members: members)
+        }
         return result
     }
 

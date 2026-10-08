@@ -74,6 +74,14 @@ struct ChildInterfaceScreen: View {
                         .environmentObject(localizationManager)
                         .padding(.horizontal, 16)
 
+                        // sos — «Нужна помощь» (зеркало Im OK, с confirm)
+                        FamilyNeedHelpButton(
+                            displayName: localizationManager.localized("family_role_child_label"),
+                            style: .child
+                        )
+                        .environmentObject(localizationManager)
+                        .padding(.horizontal, 16)
+
                         // fsl-09 — фокус 25 мин для подростка (флаг входа ON)
                         if FamilyFocusSessionFeature.isEnabled,
                            selectedAge == .teen || selectedAge == .youngAdult {

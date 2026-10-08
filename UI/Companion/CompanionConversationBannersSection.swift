@@ -1,6 +1,7 @@
 import SwiftUI
 
-/// AIL P1 — баннеры под сценой героя: полные полосы или chip rail в immersive (max 32 pt).
+/// AIL P1 — баннеры под сценой героя.
+/// Essential mode (Мир героев / Главное): только «Как день?» + «Ещё» → вкладка AI поддержка.
 struct CompanionConversationBannersSection: View {
     enum DisplayMode {
         case full
@@ -20,17 +21,63 @@ struct CompanionConversationBannersSection: View {
     let memoryChipCount: Int
     let onMemoryChipTap: () -> Void
     var onCheckinTap: (() -> Void)? = nil
+    /// When true — only check-in + «Ещё» (declutter main conversation).
+    var essentialOnly: Bool = false
+    var onOpenMore: (() -> Void)? = nil
 
     private let chipMaxHeight: CGFloat = 32
 
     var body: some View {
         Group {
-            if mode == .full {
+            if essentialOnly {
+                essentialChipRail
+            } else if mode == .full {
                 fullBanners
             } else {
                 immersiveChipRail
             }
         }
+    }
+
+    @ViewBuilder
+    private var essentialChipRail: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 6) {
+                if onCheckinTap != nil {
+                    Button {
+                        onCheckinTap?()
+                    } label: {
+                        bannerChip(
+                            icon: "face.smiling",
+                            label: localizationManager.localized("wellness_checkin_quick_chip"),
+                            tint: Color(hex: "FBBF24"),
+                            accessibilityLabel: localizationManager.localized("wellness_checkin_quick_chip"),
+                            id: "companion_banner_chip_checkin"
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+                if onOpenMore != nil {
+                    Button {
+                        onOpenMore?()
+                    } label: {
+                        bannerChip(
+                            icon: "ellipsis.circle.fill",
+                            label: localizationManager.localized("companion_banner_more_chip"),
+                            tint: Color(hex: "A78BFA"),
+                            accessibilityLabel: localizationManager.localized("companion_banner_more_chip"),
+                            id: "companion_banner_chip_more"
+                        )
+                    }
+                    .buttonStyle(.plain)
+                }
+            }
+            .padding(.horizontal, 12)
+        }
+        .frame(maxWidth: .infinity)
+        .frame(height: chipMaxHeight)
+        .padding(.vertical, 4)
+        .accessibilityIdentifier("companion_banner_chip_rail_essential")
     }
 
     @ViewBuilder

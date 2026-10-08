@@ -1,0 +1,23 @@
+---
+description: Family habits + places addendum (hab-*) — Cursor TODO SSOT; merge-only
+globs:
+alwaysApply: false
+---
+
+# Family Habits + Places Addendum — TODO SSOT
+
+**Registry:** `.cursor/FAMILY_HABITS_PLACES_ADDENDUM_TASK_REGISTRY.md`  
+**Ids:** `hab-*`
+
+## Canon
+
+- Each adult configures **for self** on their phone (`remindOnThisDevice`).
+- Parent may configure **for kids** (empty `member_ids` / minors) — pushes on kids’ devices.
+- Medicine = same local calendar path as water/phone.
+- No-show grace **15 or 30** min; no spouse mutual tracking; no continuous GPS.
+- Simulator build only after explicit **GO на сборку**.
+
+## TodoWrite
+
+1. Only `merge: true`. Never wipe `af-*` / `geo-rel-*` / `ep*`.
+2. Close: REGISTRY ✅ → Cursor `completed`.

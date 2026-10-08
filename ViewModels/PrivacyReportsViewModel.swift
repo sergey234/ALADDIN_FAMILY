@@ -27,6 +27,8 @@ class PrivacyReportsViewModel: ObservableObject {
     
     @Published var isLoading: Bool = false
     @Published var errorMessage: String?
+    /// B — Premium upsell (not a network failure).
+    @Published var isPremiumRequired: Bool = false
     
     // MARK: - Private Properties
     
@@ -53,7 +55,16 @@ class PrivacyReportsViewModel: ObservableObject {
         
         isLoading = true
         errorMessage = nil
+        isPremiumRequired = false
         defer { isLoading = false }
+
+        if !SubscriptionManager.shared.canAccessFeature("location_bubble_agent") {
+            isPremiumRequired = true
+            errorMessage = PrivacyPremiumErrorMapper.paywallMessage(localization: localizationManager)
+            locationStats = nil
+            locationRequests = []
+            return
+        }
         
         do {
             // Загружаем статистику и запросы параллельно
@@ -79,47 +90,34 @@ class PrivacyReportsViewModel: ObservableObject {
             // Очищаем ошибку при успешной загрузке
             errorMessage = nil
         } catch {
-            // Проверяем тип ошибки - показываем только реальные проблемы
             let networkError = NetworkError.from(error)
-            // Толерантный парсинг: при decodingError показываем «Нет данных», без красного баннера
+            self.locationStats = nil
+            self.locationRequests = []
+
+            if PrivacyPremiumErrorMapper.isPremiumRequired(error) {
+                isPremiumRequired = true
+                errorMessage = PrivacyPremiumErrorMapper.paywallMessage(localization: localizationManager)
+                return
+            }
             if case .decodingError = networkError {
-                self.locationStats = nil
-                self.locationRequests = []
                 errorMessage = nil
                 VisualLogger.shared.log("ℹ️ PRIVACY(location) parse=fallback reason=decoding_error → showing empty data", level: .info, category: "ANALYTICS.COMPONENT.location")
                 return
             }
-            
-            // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
             if case .unauthorized = networkError {
-                errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
-                self.locationStats = nil
-                self.locationRequests = []
+                errorMessage = localizationManager.localized("dark_web_error_unauthorized")
                 return
             }
-            
-            // Не показываем ошибку для 404 (нет данных - это нормально)
             if case .notFound = networkError {
-                // Просто используем пустые данные, не показываем ошибку
-                self.locationStats = nil
-                self.locationRequests = []
                 errorMessage = nil
                 return
             }
-            
-            // Показываем ошибку только для реальных проблем
             if networkError.isCritical || !networkError.isRetryable {
-                let errorKey = "privacy_error_load_failed"
-                let errorFormat = localizationManager.localized(errorKey)
+                let errorFormat = localizationManager.localized("privacy_error_load_failed")
                 errorMessage = String(format: errorFormat, networkError.localizedDescription)
             } else {
-                // Для временных ошибок тоже не показываем, просто используем пустые данные
                 errorMessage = nil
             }
-            
-            // В случае ошибки используем пустые данные
-            self.locationStats = nil
-            self.locationRequests = []
         }
     }
     

@@ -90,9 +90,8 @@ struct CompanionHomeScreen: View {
         }
     }
 
-    private var hidesMainTabBar: Bool {
-        tab == .main && mainConversationPresence == .immersive
-    }
+    /// Always keep home tabs (and back) reachable — immersive chrome must not trap navigation on iOS 15.
+    private var hidesMainTabBar: Bool { false }
 
     private var headerCompact: Bool {
         tab == .main && mainConversationPresence == .immersive
@@ -136,6 +135,7 @@ struct CompanionHomeScreen: View {
                     activeThreadId = ""
                 },
                 onOpenMineTab: { tab = .mine },
+                onOpenWellnessTab: { tab = .wellness },
                 onPresenceChange: { presence in
                     withAnimation(.easeInOut(duration: 0.25)) {
                         mainConversationPresence = presence

@@ -71,11 +71,8 @@ struct CompanionDialogueStrip: View {
                 if let actions = assistant.suggestedActions, !actions.isEmpty {
                     wellnessActionRow(actions)
                 }
-            } else if messages.isEmpty {
-                Text(localizationManager.localized("companion_dialogue_empty"))
-                    .font(.title3.weight(.medium))
-                    .foregroundStyle(.secondary)
             }
+            // Empty chat: no center placeholder («Скажи или напиши…») — composer is enough.
 
             if messages.count > 2 {
                 Button(action: onShowHistory) {

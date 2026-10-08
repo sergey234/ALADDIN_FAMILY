@@ -18,6 +18,7 @@ class DarkWebMonitoringViewModel: ObservableObject {
     @Published var isLoading: Bool = false
     @Published var isScanning: Bool = false
     @Published var errorMessage: String?
+    @Published var isPremiumRequired: Bool = false
     
     // MARK: - Private Properties
     
@@ -43,7 +44,17 @@ class DarkWebMonitoringViewModel: ObservableObject {
         
         isLoading = true
         errorMessage = nil
+        isPremiumRequired = false
         defer { isLoading = false }
+
+        if !SubscriptionManager.shared.canAccessFeature("dark_web_monitoring_agent") {
+            isPremiumRequired = true
+            errorMessage = PrivacyPremiumErrorMapper.paywallMessage(localization: localizationManager)
+            stats = nil
+            leaks = []
+            scans = []
+            return
+        }
         
         do {
             // Загружаем статистику, утечки и сканирования параллельно
@@ -78,49 +89,32 @@ class DarkWebMonitoringViewModel: ObservableObject {
             // Очищаем ошибку при успешной загрузке
             errorMessage = nil
         } catch {
-            // Проверяем тип ошибки - показываем только реальные проблемы
             let networkError = NetworkError.from(error)
-            
-            // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
-            if case .unauthorized = networkError {
-                errorMessage = localizationManager.localized("dark_web_error_unauthorized")
-                self.stats = nil
-                self.leaks = []
-                self.scans = []
-                return
-            }
-            
-            // Не показываем ошибку для 404 (нет данных - это нормально)
-            if case .notFound = networkError {
-                // Просто используем пустые данные, не показываем ошибку
-                self.stats = nil
-                self.leaks = []
-                self.scans = []
-                errorMessage = nil
-                return
-            }
-            
-            // Показываем понятные сообщения об ошибках
-            if networkError.isCritical {
-                let errorKey = "dark_web_error_critical"
-                let errorFormat = localizationManager.localized(errorKey)
-                errorMessage = String(format: errorFormat, networkError.localizedDescription)
-            } else if case .notFound = networkError {
-                // Для 404 показываем специальное сообщение
-                errorMessage = localizationManager.localized("dark_web_error_service_unavailable")
-            } else if !networkError.isRetryable {
-                let errorKey = "dark_web_error_temporary"
-                let errorFormat = localizationManager.localized(errorKey)
-                errorMessage = String(format: errorFormat, networkError.localizedDescription)
-            } else {
-                // Для других ошибок показываем обобщенное сообщение
-                errorMessage = localizationManager.localized("dark_web_error_try_later")
-            }
-            
-            // В случае ошибки используем пустые данные
             self.stats = nil
             self.leaks = []
             self.scans = []
+
+            if PrivacyPremiumErrorMapper.isPremiumRequired(error) {
+                isPremiumRequired = true
+                errorMessage = PrivacyPremiumErrorMapper.paywallMessage(localization: localizationManager)
+                return
+            }
+            if case .unauthorized = networkError {
+                errorMessage = localizationManager.localized("dark_web_error_unauthorized")
+                return
+            }
+            if case .notFound = networkError {
+                errorMessage = nil
+                return
+            }
+            if networkError.isCritical {
+                let errorFormat = localizationManager.localized("dark_web_error_critical")
+                errorMessage = String(format: errorFormat, networkError.localizedDescription)
+            } else if !networkError.isRetryable {
+                errorMessage = localizationManager.localized("dark_web_error_try_later")
+            } else {
+                errorMessage = localizationManager.localized("dark_web_error_try_later")
+            }
         }
     }
 

@@ -127,6 +127,7 @@ enum PrivacyHubTab: String, CaseIterable, Identifiable {
 
 struct PrivacyHubDarkWebPanel: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
     @StateObject private var viewModel = DarkWebMonitoringViewModel()
     @State private var showDataInput = false
 
@@ -135,6 +136,13 @@ struct PrivacyHubDarkWebPanel: View {
             Text(localizationManager.localized("privacy_hub_darkweb_hint"))
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.85))
+
+            if viewModel.isPremiumRequired {
+                privacyPremiumUpsellCard(
+                    localizationManager: localizationManager,
+                    onOpen: { navigationManager.navigateTo(.tariffs) }
+                )
+            }
 
             // pwd-02 — честный статус покрытия (без аббревиатур)
             Text(localizationManager.localized("dark_web_coverage_note"))
@@ -213,7 +221,7 @@ struct PrivacyHubDarkWebPanel: View {
                 }
             }
 
-            if let error = viewModel.errorMessage {
+            if let error = viewModel.errorMessage, !viewModel.isPremiumRequired {
                 Text(error)
                     .font(.caption)
                     .foregroundColor(.dangerRed)
@@ -332,6 +340,7 @@ struct PrivacyHubCleanupPanel: View {
 
 struct PrivacyHubLocationPanel: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
+    @EnvironmentObject private var navigationManager: NavigationManager
     @StateObject private var viewModel = PrivacyReportsViewModel()
 
     var body: some View {
@@ -339,6 +348,13 @@ struct PrivacyHubLocationPanel: View {
             Text(localizationManager.localized("privacy_hub_location_hint"))
                 .font(.subheadline)
                 .foregroundColor(.white.opacity(0.85))
+
+            if viewModel.isPremiumRequired {
+                privacyPremiumUpsellCard(
+                    localizationManager: localizationManager,
+                    onOpen: { navigationManager.navigateTo(.tariffs) }
+                )
+            }
 
             if let stats = viewModel.locationStats {
                 HStack(spacing: Spacing.s) {
@@ -385,7 +401,7 @@ struct PrivacyHubLocationPanel: View {
                 .stormGlassCard(cornerRadius: CornerRadius.medium)
             }
 
-            if let error = viewModel.errorMessage {
+            if let error = viewModel.errorMessage, !viewModel.isPremiumRequired {
                 Text(error)
                     .font(.caption)
                     .foregroundColor(.dangerRed)
@@ -410,6 +426,35 @@ struct PrivacyHubLocationPanel: View {
         .padding(Spacing.s)
         .stormGlassCard(cornerRadius: CornerRadius.medium)
     }
+}
+
+@ViewBuilder
+private func privacyPremiumUpsellCard(
+    localizationManager: LocalizationManager,
+    onOpen: @escaping () -> Void
+) -> some View {
+    VStack(alignment: .leading, spacing: Spacing.s) {
+        Text(localizationManager.localized("privacy_premium_required_title"))
+            .font(.subheadline.weight(.bold))
+            .foregroundColor(.white)
+        Text(localizationManager.localized("privacy_premium_required_body"))
+            .font(.caption)
+            .foregroundColor(.white.opacity(0.85))
+            .fixedSize(horizontal: false, vertical: true)
+        Button(action: onOpen) {
+            Text(localizationManager.localized("privacy_premium_required_cta"))
+                .font(.subheadline.weight(.semibold))
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding(.vertical, 12)
+                .background(Color.primaryBlue)
+                .cornerRadius(CornerRadius.medium)
+        }
+        .buttonStyle(.plain)
+        .accessibilityIdentifier("privacy_premium_upsell_cta")
+    }
+    .padding(Spacing.m)
+    .stormGlassCard(cornerRadius: CornerRadius.medium, accentStripColor: .secondaryGold)
 }
 
 #if DEBUG

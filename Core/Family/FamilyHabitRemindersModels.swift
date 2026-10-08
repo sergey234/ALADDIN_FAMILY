@@ -269,7 +269,23 @@ struct FamilyHabitRemindersSaveResponse: Codable, Equatable {
 }
 
 enum FamilyHabitRemindersPolicy {
-    /// Empty `member_ids` → all minors + elderly in roster.
+    /// Local: this phone wants habit pushes for the signed-in member (parents default ON).
+    static let remindOnThisDeviceKey = "family_habit_remind_on_this_device_v1"
+
+    /// Empty `member_ids` → minors + elderly on their devices.
+    /// Parent / unknown on this phone → only if `remindOnThisDevice` (each adult configures for self).
+    /// Non-empty `member_ids` → only listed members (may include parents).
+    static func remindOnThisDevice(defaults: UserDefaults = .standard) -> Bool {
+        if defaults.object(forKey: remindOnThisDeviceKey) == nil {
+            return true
+        }
+        return defaults.bool(forKey: remindOnThisDeviceKey)
+    }
+
+    static func setRemindOnThisDevice(_ enabled: Bool, defaults: UserDefaults = .standard) {
+        defaults.set(enabled, forKey: remindOnThisDeviceKey)
+    }
+
     static func shouldReceiveReminders(
         config: FamilyHabitRemindersConfig,
         members: [FamilyMemberData],
@@ -290,7 +306,7 @@ enum FamilyHabitRemindersPolicy {
         case .child, .teenager, .elderly:
             return true
         case .parent, .unknown:
-            return false
+            return remindOnThisDevice(defaults: defaults)
         }
     }
 

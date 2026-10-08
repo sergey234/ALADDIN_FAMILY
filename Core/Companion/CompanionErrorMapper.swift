@@ -1,6 +1,6 @@
 import Foundation
 
-/// P1-18 — понятные сообщения об ошибках companion (429 usage / rate limit).
+/// P1-18 — понятные сообщения об ошибках companion (429 usage / rate limit / 409).
 enum CompanionErrorMapper {
     static func message(for error: Error, localizationManager: LocalizationManager) -> String {
         if let gate = error as? AIOutboundTextGate.GateError {
@@ -18,6 +18,16 @@ enum CompanionErrorMapper {
         }
         if case .httpError(429) = networkError {
             return localizationManager.localized("companion_error_rate_limit")
+        }
+        if case .conflict = networkError {
+            return localizationManager.localized("companion_error_conflict")
+        }
+        if case .httpError(409) = networkError {
+            return localizationManager.localized("companion_error_conflict")
+        }
+        let raw = (networkError.localizedDescription ?? error.localizedDescription).lowercased()
+        if raw.contains("409") || raw.contains("conflict") {
+            return localizationManager.localized("companion_error_conflict")
         }
 
         return networkError.localizedDescription ?? error.localizedDescription

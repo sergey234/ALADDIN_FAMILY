@@ -21,6 +21,7 @@ struct FamilyHabitRemindersSection: View {
     @State private var medalsMaster = HabitMedalSourcesSettings.masterEnabled
     @State private var medalWater = HabitMedalSourcesSettings.isSourceEnabled("water")
     @State private var medalMedicine = HabitMedalSourcesSettings.isSourceEnabled("medicine")
+    @State private var remindOnThisDevice = FamilyHabitRemindersPolicy.remindOnThisDevice()
 
     private var canConfigure: Bool {
         FamilyAccessPolicy.hasPermission(.manageCriticalFamilySettings, members: members)
@@ -32,6 +33,31 @@ struct FamilyHabitRemindersSection: View {
 
     private var minorMembers: [FamilyMemberData] {
         members.filter { $0.role == .child || $0.role == .teenager || $0.role == .elderly }
+    }
+
+    private var deliveryAudienceLine: String {
+        var parts: [String] = []
+        if remindOnThisDevice {
+            parts.append(localizationManager.localized("family_habit_delivery_this_phone"))
+        }
+        if allMinorsSelected {
+            parts.append(localizationManager.localized("family_habit_delivery_minors"))
+        } else if !draft.memberIds.isEmpty {
+            let names = members
+                .filter { m in
+                    draft.memberIds.contains { id in
+                        id == m.canonicalId || id == m.id || id == (m.serverMemberId ?? "")
+                    }
+                }
+                .map(\.name)
+            if !names.isEmpty {
+                parts.append(names.joined(separator: ", "))
+            }
+        }
+        let joined = parts.isEmpty
+            ? localizationManager.localized("family_habit_delivery_none")
+            : parts.joined(separator: " · ")
+        return String(format: localizationManager.localized("family_habit_delivery_line_fmt"), joined)
     }
 
     var body: some View {
@@ -147,6 +173,16 @@ struct FamilyHabitRemindersSection: View {
         }
 
         Toggle(
+            localizationManager.localized("family_habit_remind_this_device"),
+            isOn: $remindOnThisDevice
+        )
+        .toggleStyle(SwitchToggleStyle(tint: .secondaryGold))
+        .onChange(of: remindOnThisDevice) { enabled in
+            FamilyHabitRemindersPolicy.setRemindOnThisDevice(enabled)
+        }
+        .accessibilityIdentifier("family_habit_remind_this_device")
+
+        Toggle(
             localizationManager.localized("family_habit_all_minors_toggle"),
             isOn: $allMinorsSelected
         )
@@ -156,6 +192,35 @@ struct FamilyHabitRemindersSection: View {
                 draft.memberIds = []
             } else {
                 draft.memberIds = minorMembers.map(\.canonicalId)
+            }
+        }
+
+        Text(deliveryAudienceLine)
+            .font(.caption2)
+            .foregroundColor(.white.opacity(0.7))
+            .fixedSize(horizontal: false, vertical: true)
+            .accessibilityIdentifier("family_habit_delivery_line")
+
+        if receivesReminders {
+            ForEach(FamilyHabitPresetId.allCases) { preset in
+                if service.config.schedule(for: preset).enabled || draft.schedule(for: preset).enabled {
+                    HStack {
+                        Text(preset.emoji)
+                        Text(localizationManager.localized(preset.titleKey))
+                            .font(.caption)
+                            .foregroundColor(.white.opacity(0.85))
+                        Spacer()
+                        Button {
+                            Task { await markDone(preset: preset) }
+                        } label: {
+                            Text(localizationManager.localized("family_habit_done"))
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(.secondaryGold)
+                        }
+                        .buttonStyle(.plain)
+                        .accessibilityIdentifier("family_habit_done_parent_\(preset.rawValue)")
+                    }
+                }
             }
         }
 
@@ -239,7 +304,11 @@ struct FamilyHabitRemindersSection: View {
 
     @MainActor
     private func markDone(preset: FamilyHabitPresetId) async {
-        let result = await FamilyHabitRemindersScheduler.shared.handleDone(presetRaw: preset.rawValue)
+        let result = await FamilyHabitRemindersScheduler.shared.handleDone(
+            presetRaw: preset.rawValue,
+            config: service.config,
+            members: members
+        )
         if result.applied {
             savedMessage = localizationManager.localized("family_habit_done_rewarded")
             HapticFeedback.notification(.success)
@@ -571,6 +640,7 @@ struct FamilyHabitRemindersSection: View {
         if allMinorsSelected {
             draft.memberIds = []
         }
+        FamilyHabitRemindersPolicy.setRemindOnThisDevice(remindOnThisDevice)
 
         let outcome = await service.saveLocalThenSync(config: draft, members: members)
         notificationDenied = !outcome.notificationsGranted

@@ -25,6 +25,8 @@ struct FamilyMemberCard: View {
     var memberId: String? = nil
     /// fsl-15 — «я ок» / заряд (без GPS)
     var softPresenceLine: String? = nil
+    /// sos — красный акцент при «Нужна помощь»
+    var softPresenceUrgent: Bool = false
     
     // MARK: - Localized Role Label
     
@@ -116,7 +118,8 @@ struct FamilyMemberCard: View {
         isDeleteDisabled: Bool = false,
         originBadge: String? = nil,
         memberId: String? = nil,
-        softPresenceLine: String? = nil
+        softPresenceLine: String? = nil,
+        softPresenceUrgent: Bool = false
     ) {
         self.name = name
         self.role = role
@@ -131,6 +134,7 @@ struct FamilyMemberCard: View {
         self.originBadge = originBadge
         self.memberId = memberId
         self.softPresenceLine = softPresenceLine
+        self.softPresenceUrgent = softPresenceUrgent
     }
     
     // MARK: - Body
@@ -200,10 +204,14 @@ struct FamilyMemberCard: View {
                 if let softPresenceLine, !softPresenceLine.isEmpty {
                     Text(softPresenceLine)
                         .font(.system(size: 10, weight: .medium))
-                        .foregroundColor(.secondaryGold)
+                        .foregroundColor(softPresenceUrgent ? Color.dangerRed : .secondaryGold)
                         .lineLimit(2)
                         .minimumScaleFactor(0.85)
-                        .accessibilityIdentifier("family_member_soft_presence")
+                        .accessibilityIdentifier(
+                            softPresenceUrgent
+                                ? "family_member_soft_presence_urgent"
+                                : "family_member_soft_presence"
+                        )
                 } else if !lastActive.isEmpty {
                     Text(lastActive)
                         .font(.system(size: 10))

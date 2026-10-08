@@ -727,6 +727,8 @@ struct ALADDINApp: App {
                             localization: localizationManager
                         )
                         GeofenceNoShowMonitor.checkDue(localization: localizationManager)
+                        await GeofenceMonitoringBootstrap.reloadIfNeeded(requestAlwaysUpgrade: true)
+                        await FamilyHabitRemindersBootstrap.reloadIfNeeded()
                     }
                     ContentBackgroundSyncScheduler.shared.triggerForegroundRefresh()
                 } else if newPhase == .background {

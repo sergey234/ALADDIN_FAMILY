@@ -29,6 +29,11 @@ final class FamilyHabitRemindersService: ObservableObject {
         }
     }
 
+    /// hab-03 — reschedule from local cache without network (scene active / Done).
+    func rescheduleFromCache(members: [FamilyMemberData]) async {
+        await FamilyHabitRemindersScheduler.shared.reschedule(config: config, members: members)
+    }
+
     struct LocalSaveOutcome {
         var notificationsGranted: Bool
         var queuedForServer: Bool

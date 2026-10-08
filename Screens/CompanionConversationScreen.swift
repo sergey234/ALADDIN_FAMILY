@@ -101,6 +101,8 @@ struct CompanionConversationScreen: View {
     var availableCharacters: [CompanionCharacterDTO] = []
     var onSelectCharacter: ((String) -> Void)? = nil
     var onOpenMineTab: (() -> Void)? = nil
+    /// Open «AI поддержка» tab — wellness chips live there (declutter main).
+    var onOpenWellnessTab: (() -> Void)? = nil
     /// AIL §6.2b: уведомляет `CompanionHomeScreen` о смене chrome (tab bar / header).
     var onPresenceChange: ((CompanionHeroLayout.ConversationPresence) -> Void)? = nil
 
@@ -131,8 +133,9 @@ struct CompanionConversationScreen: View {
         ZStack {
             conversationBodyCore
             if isLoadingState {
+                // Dim only the conversation stage — do not eat home tab bar / back hits.
                 Color.black.opacity(0.25)
-                    .ignoresSafeArea()
+                    .accessibilityIdentifier("companion_loading_dim")
                 VStack(spacing: 12) {
                     ProgressView()
                         .scaleEffect(1.2)
@@ -156,7 +159,13 @@ struct CompanionConversationScreen: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar(content: conversationToolbarContent)
             .safeAreaInset(edge: .bottom) {
-                inputBar
+                VStack(spacing: 0) {
+                    composerStatusShelf
+                    if wellnessGuideStore.showSessionSoftNudge {
+                        wellnessSessionSoftNudgeBanner
+                    }
+                    inputBar
+                }
             }
             .onChange(of: isInputFocused) { _ in
                 syncConversationPresence()
@@ -182,15 +191,15 @@ struct CompanionConversationScreen: View {
                     CompanionConversationBannersSection(
                         mode: bannerMode,
                         usage: usageSnapshot,
-                        wellnessPillar: activeWellnessPillar,
-                        wellnessMoodEmoji: wellnessMoodEmoji,
-                        companionEntryBanner: companionEntryBanner,
+                        wellnessPillar: embeddedInHome ? nil : activeWellnessPillar,
+                        wellnessMoodEmoji: embeddedInHome ? nil : wellnessMoodEmoji,
+                        companionEntryBanner: embeddedInHome ? nil : companionEntryBanner,
                         onDismissEntryBanner: {
                             WellnessSessionStore.setCompanionEntryBanner(nil)
                             companionEntryBanner = nil
                         },
-                        wellnessRecapLine: wellnessRecapLine,
-                        memoryChipsEnabled: memoryChipsEnabled,
+                        wellnessRecapLine: embeddedInHome ? nil : wellnessRecapLine,
+                        memoryChipsEnabled: !embeddedInHome && memoryChipsEnabled,
                         memoryChipCount: memoryChips.count,
                         onMemoryChipTap: { showFullChatHistory = true },
                         onCheckinTap: {
@@ -198,12 +207,17 @@ struct CompanionConversationScreen: View {
                                 .wellnessCheckin,
                                 returnTo: navigationManager.currentScreen
                             )
+                        },
+                        essentialOnly: embeddedInHome,
+                        onOpenMore: {
+                            if let onOpenWellnessTab {
+                                onOpenWellnessTab()
+                            } else {
+                                navigationManager.navigateToCompanionHome(returnTo: navigationManager.currentScreen)
+                            }
                         }
                     )
-                    if wellnessGuideStore.showSessionSoftNudge {
-                        wellnessSessionSoftNudgeBanner
-                    }
-                    if bannerMode == .full, memoryChipsEnabled, !memoryChips.isEmpty {
+                    if !embeddedInHome, bannerMode == .full, memoryChipsEnabled, !memoryChips.isEmpty {
                         companionMemoryChipsRow
                     }
                     Divider().opacity(layout.presence == .immersive ? 0.05 : 0.15)
@@ -232,36 +246,72 @@ struct CompanionConversationScreen: View {
                     .frame(maxWidth: .infinity, alignment: .leading)
                     .padding(.horizontal, 16)
             }
-            conversationErrorBanner
         }
     }
 
+    /// Single shelf above composer: errors + mic tips (never overlays chips/hero).
     @ViewBuilder
-    private var conversationErrorBanner: some View {
+    private var composerStatusShelf: some View {
         if let errorText, !errorText.isEmpty {
-            if showAssistantBusyHint {
-                VStack(alignment: .leading, spacing: 6) {
-                    Text(localizationManager.localized("companion_mic_assistant_busy"))
-                        .font(.caption)
-                        .foregroundStyle(.orange)
-                    Button(localizationManager.localized("companion_mic_assistant_busy_action")) {
-                        navigationManager.navigateTo(.aiAssistant)
+            HStack(alignment: .top, spacing: 8) {
+                VStack(alignment: .leading, spacing: 4) {
+                    if showAssistantBusyHint {
+                        Text(localizationManager.localized("companion_mic_assistant_busy"))
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                        Button(localizationManager.localized("companion_mic_assistant_busy_action")) {
+                            navigationManager.navigateTo(.aiAssistant)
+                        }
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(.purple)
+                    } else {
+                        Text(errorText)
+                            .font(.caption)
+                            .foregroundStyle(.orange)
+                            .fixedSize(horizontal: false, vertical: true)
                     }
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(.purple)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .padding(.horizontal, 16)
-                .padding(.vertical, 6)
-            } else {
-                Text(errorText)
-                    .font(.caption)
-                    .foregroundStyle(.orange)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-                    .padding(.horizontal, 16)
-                    .padding(.vertical, 6)
+                Spacer(minLength: 0)
+                Button {
+                    self.errorText = nil
+                    showAssistantBusyHint = false
+                } label: {
+                    Image(systemName: "xmark.circle.fill")
+                        .foregroundStyle(.white.opacity(0.7))
+                }
+                .accessibilityLabel(localizationManager.localized("companion_social_bridge_dismiss"))
             }
+            .padding(.horizontal, 14)
+            .padding(.vertical, 8)
+            .background(Color.black.opacity(0.55))
+            .accessibilityIdentifier("companion_composer_error_shelf")
+        } else if let phase = siriLikeMicPhaseLabel {
+            Text(phase)
+                .font(.caption.weight(.semibold))
+                .foregroundStyle(Color(hex: "F9A8D4"))
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 14)
+                .padding(.vertical, 6)
+                .background(Color.black.opacity(0.4))
+                .accessibilityIdentifier("companion_composer_mic_phase")
         }
+    }
+
+    /// Mic phases like a voice assistant (not SiriKit).
+    private var siriLikeMicPhaseLabel: String? {
+        if speechManager.isPreparingRecording {
+            return localizationManager.localized("companion_mic_phase_preparing")
+        }
+        if speechManager.isRecording {
+            return localizationManager.localized("companion_mic_phase_listening")
+        }
+        if speechManager.isStoppingRecording || isSending || voiceSession.isAwaitingReply {
+            return localizationManager.localized("companion_mic_phase_thinking")
+        }
+        if speechOutput.isSpeaking {
+            return localizationManager.localized("companion_mic_phase_speaking")
+        }
+        return nil
     }
 
     @ViewBuilder
@@ -399,7 +449,7 @@ struct CompanionConversationScreen: View {
                 .environmentObject(localizationManager)
         }
         .fullScreenCover(isPresented: $showL3CrisisFullScreen) {
-            WellnessReferralSheet(level: "L3", notifyParentsOnLoad: false)
+            WellnessReferralSheet(level: "L3", notifyParentsOnLoad: false, allowDismiss: true)
                 .environmentObject(localizationManager)
         }
     }
@@ -407,7 +457,7 @@ struct CompanionConversationScreen: View {
     @ViewBuilder
     private func conversationWithLifecycle<Content: View>(_ content: Content) -> some View {
         content
-        .task { await loadState() }
+        .task(id: characterId) { await loadState() }
         .onAppear(perform: handleConversationAppear)
         .onReceive(NotificationCenter.default.publisher(for: .microphonePermissionDenied)) { _ in
             showMicrophonePermissionAlert = true
@@ -1271,7 +1321,9 @@ struct CompanionConversationScreen: View {
                 }
             )
             .padding(.horizontal, -Spacing.screenPadding)
-            if caps.voiceRealtimeEnabled {
+            if caps.voiceRealtimeEnabled,
+               siriLikeMicPhaseLabel == nil,
+               (errorText ?? "").isEmpty {
                 let hint = voiceHintText.trimmingCharacters(in: .whitespacesAndNewlines)
                 if !hint.isEmpty {
                     Text(hint)
@@ -1408,44 +1460,73 @@ struct CompanionConversationScreen: View {
 
     private func loadState() async {
         isLoadingState = true
+
         if !activeThreadId.isEmpty {
             sessionId = activeThreadId
             await loadThreadHistory(threadId: activeThreadId)
         }
+        if Task.isCancelled {
+            isLoadingState = false
+            return
+        }
+
+        let characterIdForFetch = characterId
+        let localeCode = LocalizationManager.shared.aiResponseLanguageCode
+        let expertMode = securityExpertMode
+
+        // iOS 15.2: no TaskGroup / no async let here — child-task cancel during view refresh
+        // was aborting in swift::AsyncTask::flagAsRunning (SIGABRT on main).
         do {
-            async let stateTask = CompanionAPIService.shared.fetchState(characterId: characterId)
-            async let profileTask = CompanionAPIService.shared.fetchProfile()
-            async let domainsTask = CompanionAPIService.shared.fetchLifeDomains(
-                locale: LocalizationManager.shared.aiResponseLanguageCode,
-                securityExpertMode: securityExpertMode
-            )
-            let state = try await stateTask
-            lifeDomains = (try? await domainsTask) ?? []
+            let state = try await CompanionAPIService.shared.fetchState(characterId: characterIdForFetch)
+            if Task.isCancelled {
+                isLoadingState = false
+                return
+            }
             trustScore = state.trustScore
             usageSnapshot = state.usage
             heroEmotion = CompanionHeroEmotion(rawValue: state.emotionDefault) ?? .idle
-            if let profile = try? await profileTask {
-                let ageBand = CompanionUserContext.companionAgeBand
-                personalityPreset = CompanionPersonalityPresets.effective(
-                    stored: profile.personalityPreset,
-                    characterId: characterId,
-                    ageBand: ageBand
-                )
-                if let remoteEquipped = profile.equippedCosmeticId,
-                   profile.equippedCosmeticCharacterId == characterId {
-                    equippedCosmeticId = remoteEquipped
-                }
-            }
+        } catch is CancellationError {
+            isLoadingState = false
+            return
         } catch {
             errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)
         }
-        // Unlock UI after core state; secondary network must not keep the loading overlay.
+
         isLoadingState = false
+        restorePendingStreamIfNeeded()
+        await MainActor.run { syncConversationPresence() }
+
+        // Secondary network must NOT run inside the cancellable `.task` body: if SwiftUI
+        // cancels/restarts `.task` while a continuation is in flight, iOS 15.2 aborts.
+        let cid = characterIdForFetch
+        let locale = localeCode
+        let expert = expertMode
+        Task { @MainActor in
+            await loadCompanionSecondaryState(characterId: cid, locale: locale, expertMode: expert)
+        }
+    }
+
+    /// Profile / domains / wellness / crisis — unstructured task (survives `.task` cancel).
+    private func loadCompanionSecondaryState(characterId: String, locale: String, expertMode: Bool) async {
+        if let profile = try? await CompanionAPIService.shared.fetchProfile() {
+            let ageBand = CompanionUserContext.companionAgeBand
+            personalityPreset = CompanionPersonalityPresets.effective(
+                stored: profile.personalityPreset,
+                characterId: characterId,
+                ageBand: ageBand
+            )
+            if let remoteEquipped = profile.equippedCosmeticId,
+               profile.equippedCosmeticCharacterId == characterId {
+                equippedCosmeticId = remoteEquipped
+            }
+        }
+        lifeDomains = (try? await CompanionAPIService.shared.fetchLifeDomains(
+            locale: locale,
+            securityExpertMode: expertMode
+        )) ?? []
         await loadWellnessRecapIfNeeded()
         await loadCompanionMemoryChipsIfNeeded()
         await refreshCrisisCooldownStatus()
-        restorePendingStreamIfNeeded()
-        await MainActor.run { syncConversationPresence() }
     }
 
     private var companionMemoryChipsRow: some View {

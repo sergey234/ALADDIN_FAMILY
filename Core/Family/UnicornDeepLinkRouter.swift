@@ -103,8 +103,13 @@ enum UnicornDeepLinkRouter {
         case .familyHabits:
             navigation.navigateTo(.family)
         case .habitDone(let preset):
-            Task {
-                _ = await FamilyHabitRemindersScheduler.shared.handleDone(presetRaw: preset)
+            Task { @MainActor in
+                let members = FamilyLocalStore.loadPersistedMembers()
+                _ = await FamilyHabitRemindersScheduler.shared.handleDone(
+                    presetRaw: preset,
+                    config: FamilyHabitRemindersService.shared.config,
+                    members: members
+                )
             }
             navigation.navigateTo(.family)
         }

@@ -1,7 +1,7 @@
 import Foundation
 import UIKit
 
-/// fsl-13 / fsl-15 — «Я в порядке» + мягкий статус (заряд / время нажатия). Без GPS-трека.
+/// fsl-13 / fsl-15 / sos — «Я в порядке» / «Нужна помощь» + мягкий статус. Без GPS-трека.
 struct FamilyPresenceSnapshot: Codable, Equatable, Identifiable {
     var id: String { memberId }
     let memberId: String
@@ -9,6 +9,29 @@ struct FamilyPresenceSnapshot: Codable, Equatable, Identifiable {
     let batteryPercent: Int?
     let lastImOkAt: Date
     let lastOnlineAt: Date
+    /// sos — last urgent «need help» tap (nil = never / legacy cache).
+    let lastNeedHelpAt: Date?
+
+    init(
+        memberId: String,
+        displayName: String,
+        batteryPercent: Int?,
+        lastImOkAt: Date,
+        lastOnlineAt: Date,
+        lastNeedHelpAt: Date? = nil
+    ) {
+        self.memberId = memberId
+        self.displayName = displayName
+        self.batteryPercent = batteryPercent
+        self.lastImOkAt = lastImOkAt
+        self.lastOnlineAt = lastOnlineAt
+        self.lastNeedHelpAt = lastNeedHelpAt
+    }
+
+    var isNeedHelpUrgent: Bool {
+        guard let helpAt = lastNeedHelpAt else { return false }
+        return helpAt >= lastImOkAt
+    }
 }
 
 enum FamilyPresenceStore {
@@ -19,12 +42,32 @@ enum FamilyPresenceStore {
     }
 
     static func all() -> [FamilyPresenceSnapshot] {
-        load().sorted { $0.lastImOkAt > $1.lastImOkAt }
+        load().sorted { lhs, rhs in
+            let l = max(lhs.lastImOkAt, lhs.lastNeedHelpAt ?? .distantPast)
+            let r = max(rhs.lastImOkAt, rhs.lastNeedHelpAt ?? .distantPast)
+            return l > r
+        }
     }
 
     static func upsert(_ snap: FamilyPresenceSnapshot) {
         var items = load().filter { $0.memberId != snap.memberId }
-        items.append(snap)
+        if let existing = load().first(where: { $0.memberId == snap.memberId }),
+           snap.lastNeedHelpAt == nil,
+           let kept = existing.lastNeedHelpAt {
+            // Preserve local urgent flag when server presence has no need-help field.
+            items.append(
+                FamilyPresenceSnapshot(
+                    memberId: snap.memberId,
+                    displayName: snap.displayName,
+                    batteryPercent: snap.batteryPercent ?? existing.batteryPercent,
+                    lastImOkAt: snap.lastImOkAt,
+                    lastOnlineAt: snap.lastOnlineAt,
+                    lastNeedHelpAt: kept
+                )
+            )
+        } else {
+            items.append(snap)
+        }
         save(items)
         NotificationCenter.default.post(name: .familyPresenceDidChange, object: nil)
     }
@@ -37,6 +80,19 @@ enum FamilyPresenceStore {
         let formatter = DateFormatter()
         formatter.locale = localization.locale
         formatter.dateFormat = "HH:mm"
+
+        if snap.isNeedHelpUrgent, let helpAt = snap.lastNeedHelpAt {
+            let time = formatter.string(from: helpAt)
+            if let battery = snap.batteryPercent {
+                return String(
+                    format: localization.localized("family_presence_need_help_line_battery"),
+                    time,
+                    battery
+                )
+            }
+            return String(format: localization.localized("family_presence_need_help_line"), time)
+        }
+
         let time = formatter.string(from: snap.lastImOkAt)
         if let battery = snap.batteryPercent {
             return String(
@@ -46,6 +102,10 @@ enum FamilyPresenceStore {
             )
         }
         return String(format: localization.localized("family_presence_soft_line"), time)
+    }
+
+    static func isNeedHelpUrgent(for memberId: String) -> Bool {
+        snapshot(for: memberId)?.isNeedHelpUrgent ?? false
     }
 
     private static func load() -> [FamilyPresenceSnapshot] {
@@ -110,13 +170,13 @@ enum FamilyImOkService {
         localization: LocalizationManager = .shared,
         apiService: APIService? = nil
     ) async -> Result<Void, Error> {
-        // Default arg cannot touch MainActor `APIService.shared` (nonisolated eval).
         let api = apiService ?? APIService.shared
         let memberId = (UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey) ?? "")
             .trimmingCharacters(in: .whitespacesAndNewlines)
         let battery = currentBatteryPercent()
         let now = Date()
         let resolvedId = memberId.isEmpty ? "local_self" : memberId
+        let previousHelp = FamilyPresenceStore.snapshot(for: resolvedId)?.lastNeedHelpAt
 
         FamilyPresenceStore.upsert(
             FamilyPresenceSnapshot(
@@ -124,7 +184,8 @@ enum FamilyImOkService {
                 displayName: displayName,
                 batteryPercent: battery,
                 lastImOkAt: now,
-                lastOnlineAt: now
+                lastOnlineAt: now,
+                lastNeedHelpAt: previousHelp
             )
         )
 
@@ -140,10 +201,101 @@ enum FamilyImOkService {
             batteryPart
         ).trimmingCharacters(in: .whitespacesAndNewlines)
 
+        let chatResult = await sendFamilyChat(message: message, api: api)
+
+        _ = await postImOkPresence(battery: battery, apiService: api)
+
+        NotificationManager.shared.sendLocalNotification(
+            title: localization.localized("im_ok_confirm_title"),
+            body: localization.localized("im_ok_confirm_body"),
+            category: .family,
+            userInfo: ["type": "im_ok_sent"],
+            delay: 0.15
+        )
+
+        switch chatResult {
+        case .success:
+            return .success(())
+        case .failure(let error):
+            return .failure(error)
+        }
+    }
+
+    /// sos — зеркало Im OK: срочное «нужна помощь» (чат семьи + локальный urgent статус). Без GPS.
+    static func sendNeedHelp(
+        displayName: String,
+        localization: LocalizationManager = .shared,
+        apiService: APIService? = nil
+    ) async -> Result<Void, Error> {
+        let api = apiService ?? APIService.shared
+        let memberId = (UserDefaults.standard.string(forKey: FamilyLocalStore.yourMemberIdUserDefaultsKey) ?? "")
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let battery = currentBatteryPercent()
+        let now = Date()
+        let resolvedId = memberId.isEmpty ? "local_self" : memberId
+        let previousImOk = FamilyPresenceStore.snapshot(for: resolvedId)?.lastImOkAt ?? now
+
+        FamilyPresenceStore.upsert(
+            FamilyPresenceSnapshot(
+                memberId: resolvedId,
+                displayName: displayName,
+                batteryPercent: battery,
+                lastImOkAt: previousImOk,
+                lastOnlineAt: now,
+                lastNeedHelpAt: now
+            )
+        )
+
+        let batteryPart: String
+        if let battery {
+            batteryPart = String(format: localization.localized("im_ok_message_battery"), battery)
+        } else {
+            batteryPart = ""
+        }
+        let message = String(
+            format: localization.localized("need_help_family_chat_message"),
+            displayName,
+            batteryPart
+        ).trimmingCharacters(in: .whitespacesAndNewlines)
+
+        let chatResult = await sendFamilyChat(message: message, api: api)
+
+        // Critical local alert (same device ack). Parent channel = family chat message.
+        NotificationManager.shared.sendLocalNotification(
+            title: localization.localized("need_help_push_title"),
+            body: String(
+                format: localization.localized("need_help_push_body"),
+                displayName
+            ),
+            category: .family,
+            userInfo: [
+                "type": "need_help",
+                "deepLink": "aladdin://family"
+            ],
+            delay: 0.15,
+            sound: .default
+        )
+
+        NotificationManager.shared.sendLocalNotification(
+            title: localization.localized("need_help_confirm_sent_title"),
+            body: localization.localized("need_help_confirm_sent_body"),
+            category: .family,
+            userInfo: ["type": "need_help_sent"],
+            delay: 0.35
+        )
+
+        switch chatResult {
+        case .success:
+            return .success(())
+        case .failure(let error):
+            return .failure(error)
+        }
+    }
+
+    private static func sendFamilyChat(message: String, api: APIService) async -> Result<Void, Error> {
         let familyId = UserDefaults.standard.string(forKey: FamilyLocalStore.familyIdKey)
             ?? UserDefaults.standard.string(forKey: "family_id")
-
-        let chatResult: Result<Void, Error> = await withCheckedContinuation { continuation in
+        return await withCheckedContinuation { continuation in
             api.sendFamilyChatMessage(
                 message: message,
                 familyId: familyId,
@@ -161,25 +313,6 @@ enum FamilyImOkService {
                     continuation.resume(returning: .failure(error))
                 }
             }
-        }
-
-        // Best-effort server presence (deploy separately); chat is primary signal.
-        _ = await postImOkPresence(battery: battery, apiService: api)
-
-        NotificationManager.shared.sendLocalNotification(
-            title: localization.localized("im_ok_confirm_title"),
-            body: localization.localized("im_ok_confirm_body"),
-            category: .family,
-            userInfo: ["type": "im_ok_sent"],
-            delay: 0.15
-        )
-
-        switch chatResult {
-        case .success:
-            return .success(())
-        case .failure(let error):
-            // Presence already local — still useful on this device.
-            return .failure(error)
         }
     }
 

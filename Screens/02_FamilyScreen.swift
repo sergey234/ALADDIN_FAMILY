@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import CoreLocation
 
 // Master Logger for UI logging
@@ -2276,6 +2277,12 @@ struct FamilyScreen: View {
                                                     for: member.serverMemberId ?? member.id,
                                                     localization: localizationManager
                                                 )
+                                            }(),
+                                            softPresenceUrgent: {
+                                                _ = presenceRefreshTick
+                                                return FamilyPresenceStore.isNeedHelpUrgent(
+                                                    for: member.serverMemberId ?? member.id
+                                                )
                                             }()
                                         )
                                         .environmentObject(localizationManager)
@@ -4422,21 +4429,12 @@ struct FamilyLocationModal: View {
     
     // ✅ ИНТЕГРАЦИЯ: Загрузка и мониторинг геозон
     private func loadAndMonitorGeofences() {
-        let geofencesKey = "geofences_settings"
-        guard let data = UserDefaults.standard.data(forKey: geofencesKey),
-              let decoded = try? JSONDecoder().decode([GeofenceItemCodable].self, from: data) else {
-            print("⚠️ FamilyLocationModal: Геозоны не найдены")
-            return
-        }
-
-        let geofences = decoded.map {
-            GeofenceItem(id: $0.id, name: $0.name, address: $0.address, radius: $0.radius, isActive: $0.isActive)
-        }
-
         Task { @MainActor in
-            let coordinates = await GeofenceGeocodingService.shared.syncCoordinates(for: geofences)
-            locationManager.loadAndMonitorGeofences(geofences, coordinates: coordinates)
-            print("✅ FamilyLocationModal: Геозоны с геокодировкой — \(coordinates.count)/\(geofences.count)")
+            await GeofenceMonitoringBootstrap.reloadIfNeeded(
+                locationManager: locationManager,
+                requestAlwaysUpgrade: true
+            )
+            print("✅ FamilyLocationModal: bootstrap monitoring done")
         }
     }
     
@@ -6863,8 +6861,33 @@ struct GeofencesSettingsModal: View {
     @State private var showValidationAlert = false
     @State private var validationAlertMessage = ""
     @State private var placesConsentAccepted = GeofencePlacesConsentStore.hasAccepted
+    @ObservedObject private var locationManager = LocationManager.shared
     @State private var noShowSchedules: [GeofenceNoShowSchedule] = []
-    
+    @State private var showNoShowEditor = false
+    @State private var noShowPlaceName = ""
+    @State private var noShowTime = Calendar.current.date(
+        bySettingHour: 8, minute: 30, second: 0, of: Date()
+    ) ?? Date()
+    /// Calendar weekday ints; default Mon–Fri (2…6)
+    @State private var noShowWeekdays: Set<Int> = [2, 3, 4, 5, 6]
+    /// Grace after expected time before soft push (15 or 30).
+    @State private var noShowGraceMinutes: Int = 15
+    @State private var editingNoShowId: UUID?
+
+    private var noShowPlacePresets: [String] {
+        let fromGeofences = geofences.map(\.name)
+        let presets = [
+            localizationManager.localized("geofences_home"),
+            localizationManager.localized("geofences_school"),
+            localizationManager.localized("geofence_noshow_place_friends"),
+            localizationManager.localized("geofence_noshow_place_club"),
+            localizationManager.localized("geofence_noshow_place_disco"),
+            localizationManager.localized("geofence_noshow_place_custom")
+        ]
+        var seen = Set<String>()
+        return (fromGeofences + presets).filter { seen.insert($0).inserted }
+    }
+
     // Загрузка геозон из UserDefaults
     private func loadGeofences() {
         placesConsentAccepted = GeofencePlacesConsentStore.hasAccepted
@@ -6893,7 +6916,10 @@ struct GeofencesSettingsModal: View {
             UserDefaults.standard.set(encoded, forKey: geofencesKey)
         }
         Task { @MainActor in
-            _ = await GeofenceGeocodingService.shared.syncCoordinates(for: geofences)
+            await GeofenceMonitoringBootstrap.reloadIfNeeded(
+                locationManager: locationManager,
+                requestAlwaysUpgrade: true
+            )
         }
     }
 
@@ -6901,7 +6927,27 @@ struct GeofencesSettingsModal: View {
         GeofencePlacesConsentStore.accept()
         placesConsentAccepted = true
         HapticFeedback.notification(.success)
+        // Always needed for arrive/leave when app is closed
+        switch locationManager.authorizationStatus {
+        case .notDetermined:
+            locationManager.requestAuthorization(always: false)
+        case .authorizedWhenInUse:
+            locationManager.requestAlwaysUpgradeIfEligible()
+        case .denied, .restricted:
+            break
+        default:
+            break
+        }
         saveGeofences()
+        GeofenceNoShowMonitor.resyncCalendarTriggers()
+    }
+
+    private func placeStatusText(for item: GeofenceItem) -> String {
+        let key = GeofenceMonitoringBootstrap.placeStatusKey(
+            for: item,
+            locationManager: locationManager
+        )
+        return localizationManager.localized(key)
     }
     
     var body: some View {
@@ -6963,8 +7009,17 @@ struct GeofencesSettingsModal: View {
                         }
                         
                         Text(geofence.address)
-                            .font(.body)
-                            .foregroundColor(.textSecondary)
+                            .font(.subheadline.weight(.medium))
+                            .foregroundColor(.textPrimary)
+                            .lineLimit(3)
+                            .minimumScaleFactor(0.85)
+                            .fixedSize(horizontal: false, vertical: true)
+
+                        Text(placeStatusText(for: geofence))
+                            .font(.caption.weight(.semibold))
+                            .foregroundColor(.secondaryGold)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .accessibilityIdentifier("geofence_place_status")
                         
                         HStack {
                             Text(localizationManager.localized("geofences_radius"))
@@ -6978,7 +7033,35 @@ struct GeofencesSettingsModal: View {
                         }
                     }
                     .padding(Spacing.m)
-                    .background(Color.backgroundMedium.opacity(0.3))
+                    .background(Color.white.opacity(0.12))
+                    .cornerRadius(CornerRadius.medium)
+                }
+
+                if placesConsentAccepted,
+                   locationManager.authorizationStatus != .authorizedAlways {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(localizationManager.localized("geofence_always_title"))
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("geofence_always_body"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        Button {
+                            if locationManager.authorizationStatus == .authorizedWhenInUse {
+                                locationManager.requestAlwaysUpgradeIfEligible()
+                            } else if let url = URL(string: UIApplication.openSettingsURLString) {
+                                UIApplication.shared.open(url)
+                            }
+                        } label: {
+                            Text(localizationManager.localized("geofence_always_button"))
+                                .font(.caption.weight(.bold))
+                                .foregroundColor(.secondaryGold)
+                        }
+                        .accessibilityIdentifier("geofence_always_prompt")
+                    }
+                    .padding(Spacing.m)
+                    .background(Color.secondaryGold.opacity(0.12))
                     .cornerRadius(CornerRadius.medium)
                 }
                 
@@ -7048,9 +7131,7 @@ struct GeofencesSettingsModal: View {
                                 let trimmedAddress = newGeofenceAddress.trimmingCharacters(in: .whitespacesAndNewlines)
                                 
                                 guard !trimmedName.isEmpty, !trimmedAddress.isEmpty else {
-                                    validationAlertMessage = localizationManager.currentLanguage == .russian
-                                        ? "Введите название и адрес геозоны"
-                                        : "Enter geofence name and address"
+                                    validationAlertMessage = localizationManager.localized("geofences_name_address_required")
                                     showValidationAlert = true
                                     VisualLogger.shared.log(
                                         "⚠️ geofence_add_validation_failed nameEmpty=\(trimmedName.isEmpty) addressEmpty=\(trimmedAddress.isEmpty)",
@@ -7110,70 +7191,9 @@ struct GeofencesSettingsModal: View {
                     }
                 }
 
-                // geo-02 — No Show: дом/школа к времени
+                // geo-02 — No Show: место + время + дни
                 if placesConsentAccepted {
-                    VStack(alignment: .leading, spacing: Spacing.s) {
-                        Text(localizationManager.localized("geofence_noshow_section_title"))
-                            .font(.bodyBold)
-                            .foregroundColor(.textPrimary)
-                        Text(localizationManager.localized("geofence_noshow_section_hint"))
-                            .font(.caption)
-                            .foregroundColor(.textSecondary)
-                            .fixedSize(horizontal: false, vertical: true)
-
-                        ForEach(noShowSchedules) { schedule in
-                            HStack {
-                                VStack(alignment: .leading, spacing: 2) {
-                                    Text(schedule.placeName)
-                                        .font(.subheadline.weight(.semibold))
-                                        .foregroundColor(.textPrimary)
-                                    Text(String(format: "%02d:%02d", schedule.hour, schedule.minute))
-                                        .font(.caption)
-                                        .foregroundColor(.textSecondary)
-                                }
-                                Spacer()
-                                Toggle("", isOn: Binding(
-                                    get: { schedule.enabled },
-                                    set: { newValue in
-                                        if let idx = noShowSchedules.firstIndex(where: { $0.id == schedule.id }) {
-                                            noShowSchedules[idx].enabled = newValue
-                                            GeofenceNoShowMonitor.saveSchedules(noShowSchedules)
-                                        }
-                                    }
-                                ))
-                                .labelsHidden()
-                            }
-                            .padding(Spacing.s)
-                            .background(Color.backgroundMedium.opacity(0.3))
-                            .cornerRadius(CornerRadius.medium)
-                        }
-
-                        Button {
-                            HapticFeedback.impact(.light)
-                            let school = localizationManager.localized("geofences_school")
-                            let home = localizationManager.localized("geofences_home")
-                            let place = geofences.first(where: { $0.name.localizedCaseInsensitiveContains(school) })?.name
-                                ?? geofences.first(where: { $0.name.localizedCaseInsensitiveContains(home) })?.name
-                                ?? school
-                            let item = GeofenceNoShowSchedule(
-                                id: UUID(),
-                                placeName: place,
-                                hour: 8,
-                                minute: 30,
-                                enabled: true
-                            )
-                            noShowSchedules.append(item)
-                            GeofenceNoShowMonitor.saveSchedules(noShowSchedules)
-                        } label: {
-                            Label(localizationManager.localized("geofence_noshow_add"), systemImage: "clock.badge.exclamationmark")
-                                .font(.subheadline.weight(.semibold))
-                                .foregroundColor(.secondaryGold)
-                        }
-                        .accessibilityIdentifier("geofence_noshow_add")
-                    }
-                    .padding(Spacing.m)
-                    .background(Color.backgroundMedium.opacity(0.25))
-                    .cornerRadius(CornerRadius.medium)
+                    noShowSection
                 }
             }
         }
@@ -7181,6 +7201,13 @@ struct GeofencesSettingsModal: View {
         .onAppear {
             loadGeofences()
             GeofenceNoShowMonitor.checkDue(localization: localizationManager)
+            GeofenceNoShowMonitor.resyncCalendarTriggers()
+            Task {
+                await GeofenceMonitoringBootstrap.reloadIfNeeded(
+                    locationManager: locationManager,
+                    requestAlwaysUpgrade: true
+                )
+            }
         }
         .alert(localizationManager.localized("family_validation_check_fields"), isPresented: $showValidationAlert) {
             Button(localizationManager.currentLanguage == .russian ? "OK" : "OK", role: .cancel) {}
@@ -7188,6 +7215,284 @@ struct GeofencesSettingsModal: View {
             Text(validationAlertMessage)
         }
         .withVisualLogger()
+    }
+
+    @ViewBuilder
+    private var noShowSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized("geofence_noshow_section_title"))
+                .font(.bodyBold)
+                .foregroundColor(.textPrimary)
+            Text(localizationManager.localized("geofence_noshow_section_hint"))
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+                .fixedSize(horizontal: false, vertical: true)
+            Text(localizationManager.localized("geofence_noshow_roles_hint"))
+                .font(.caption2)
+                .foregroundColor(.textSecondary.opacity(0.9))
+                .fixedSize(horizontal: false, vertical: true)
+
+            ForEach(noShowSchedules) { schedule in
+                HStack {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(schedule.placeName)
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.textPrimary)
+                        Text(
+                            String(
+                                format: "%02d:%02d · +%d %@",
+                                schedule.hour,
+                                schedule.minute,
+                                schedule.graceMinutes,
+                                localizationManager.currentLanguage == .russian ? "мин" : "min"
+                            )
+                        )
+                            .font(.caption)
+                            .foregroundColor(.textPrimary.opacity(0.85))
+                    }
+                    Spacer()
+                    Toggle("", isOn: Binding(
+                        get: { schedule.enabled },
+                        set: { newValue in
+                            if let idx = noShowSchedules.firstIndex(where: { $0.id == schedule.id }) {
+                                noShowSchedules[idx].enabled = newValue
+                                GeofenceNoShowMonitor.saveSchedules(noShowSchedules)
+                            }
+                        }
+                    ))
+                    .labelsHidden()
+                }
+                .padding(Spacing.s)
+                .background(Color.white.opacity(0.12))
+                .cornerRadius(CornerRadius.medium)
+                .contentShape(Rectangle())
+                .onTapGesture {
+                    beginEditNoShow(schedule)
+                }
+                .contextMenu {
+                    Button(role: .destructive) {
+                        noShowSchedules.removeAll { $0.id == schedule.id }
+                        GeofenceNoShowMonitor.saveSchedules(noShowSchedules)
+                    } label: {
+                        Label(localizationManager.localized("common_delete"), systemImage: "trash")
+                    }
+                }
+            }
+
+            if showNoShowEditor {
+                noShowEditorForm
+            } else {
+                Button {
+                    HapticFeedback.impact(.light)
+                    beginAddNoShow()
+                } label: {
+                    Label(localizationManager.localized("geofence_noshow_add"), systemImage: "clock.badge.exclamationmark")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                }
+                .accessibilityIdentifier("geofence_noshow_add")
+            }
+        }
+        .padding(Spacing.m)
+        .background(Color.white.opacity(0.08))
+        .cornerRadius(CornerRadius.medium)
+    }
+
+    @ViewBuilder
+    private var noShowEditorForm: some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized("geofence_noshow_pick_place"))
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.textPrimary)
+
+            ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: Spacing.xs) {
+                    ForEach(noShowPlacePresets, id: \.self) { place in
+                        let isCustomChip = place == localizationManager.localized("geofence_noshow_place_custom")
+                        let selected = isCustomChip
+                            ? !noShowPlacePresets.filter { $0 != place }.contains(noShowPlaceName)
+                            : noShowPlaceName == place
+                        Button {
+                            if isCustomChip {
+                                if noShowPlacePresets.filter({ $0 != place }).contains(noShowPlaceName) {
+                                    noShowPlaceName = ""
+                                }
+                            } else {
+                                noShowPlaceName = place
+                            }
+                        } label: {
+                            Text(place)
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(selected ? .backgroundDark : .secondaryGold)
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(selected ? Color.secondaryGold : Color.secondaryGold.opacity(0.18))
+                                .cornerRadius(8)
+                        }
+                    }
+                }
+            }
+
+            TextField(localizationManager.localized("geofences_name_placeholder"), text: $noShowPlaceName)
+                .font(.body)
+                .foregroundColor(.textPrimary)
+                .padding(Spacing.s)
+                .background(Color.white.opacity(0.12))
+                .cornerRadius(CornerRadius.medium)
+
+            Text(localizationManager.localized("geofence_noshow_pick_time"))
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.textPrimary)
+            DatePicker("", selection: $noShowTime, displayedComponents: .hourAndMinute)
+                .labelsHidden()
+                .tint(.secondaryGold)
+
+            Text(localizationManager.localized("geofence_noshow_grace_label"))
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.textPrimary)
+            HStack(spacing: Spacing.xs) {
+                ForEach([15, 30], id: \.self) { mins in
+                    Button {
+                        noShowGraceMinutes = mins
+                    } label: {
+                        Text(
+                            localizationManager.localized(
+                                mins == 15 ? "geofence_noshow_grace_15" : "geofence_noshow_grace_30"
+                            )
+                        )
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(noShowGraceMinutes == mins ? .backgroundDark : .secondaryGold)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 8)
+                        .background(noShowGraceMinutes == mins ? Color.secondaryGold : Color.secondaryGold.opacity(0.18))
+                        .cornerRadius(8)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityIdentifier("geofence_noshow_grace_\(mins)")
+                }
+            }
+
+            Text(localizationManager.localized("geofence_noshow_weekdays"))
+                .font(.caption.weight(.semibold))
+                .foregroundColor(.textPrimary)
+            HStack(spacing: 6) {
+                ForEach(Array(weekdaySymbols.enumerated()), id: \.offset) { index, symbol in
+                    let weekday = index + 1 // Calendar: 1=Sun
+                    Button {
+                        if noShowWeekdays.contains(weekday) {
+                            noShowWeekdays.remove(weekday)
+                        } else {
+                            noShowWeekdays.insert(weekday)
+                        }
+                    } label: {
+                        Text(symbol)
+                            .font(.caption2.weight(.bold))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 8)
+                            .foregroundColor(noShowWeekdays.contains(weekday) ? .backgroundDark : .textPrimary)
+                            .background(noShowWeekdays.contains(weekday) ? Color.secondaryGold : Color.white.opacity(0.12))
+                            .cornerRadius(8)
+                    }
+                }
+            }
+
+            HStack(spacing: Spacing.m) {
+                Button {
+                    showNoShowEditor = false
+                    editingNoShowId = nil
+                } label: {
+                    Text(localizationManager.localized("geofence_noshow_cancel"))
+                        .font(.body)
+                        .foregroundColor(.textSecondary)
+                        .frame(maxWidth: .infinity)
+                        .padding(Spacing.s)
+                        .background(Color.white.opacity(0.1))
+                        .cornerRadius(CornerRadius.medium)
+                }
+                Button {
+                    saveNoShowEditor()
+                } label: {
+                    Text(localizationManager.localized("geofence_noshow_save"))
+                        .font(.bodyBold)
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(Spacing.s)
+                        .background(Color.secondaryGold)
+                        .cornerRadius(CornerRadius.medium)
+                }
+            }
+        }
+        .padding(Spacing.s)
+        .background(Color.secondaryGold.opacity(0.1))
+        .cornerRadius(CornerRadius.medium)
+    }
+
+    private var weekdaySymbols: [String] {
+        let symbols = Calendar.current.veryShortWeekdaySymbols
+        return symbols.isEmpty ? ["S", "M", "T", "W", "T", "F", "S"] : symbols
+    }
+
+    private func beginAddNoShow() {
+        editingNoShowId = nil
+        noShowPlaceName = geofences.first(where: {
+            $0.name.localizedCaseInsensitiveContains(localizationManager.localized("geofences_school"))
+        })?.name ?? localizationManager.localized("geofences_school")
+        noShowTime = Calendar.current.date(bySettingHour: 8, minute: 30, second: 0, of: Date()) ?? Date()
+        noShowWeekdays = [2, 3, 4, 5, 6]
+        noShowGraceMinutes = 15
+        showNoShowEditor = true
+    }
+
+    private func beginEditNoShow(_ schedule: GeofenceNoShowSchedule) {
+        editingNoShowId = schedule.id
+        noShowPlaceName = schedule.placeName
+        noShowTime = Calendar.current.date(
+            bySettingHour: schedule.hour, minute: schedule.minute, second: 0, of: Date()
+        ) ?? Date()
+        if let days = schedule.weekdays, !days.isEmpty {
+            noShowWeekdays = Set(days)
+        } else {
+            noShowWeekdays = [1, 2, 3, 4, 5, 6, 7]
+        }
+        noShowGraceMinutes = GeofenceNoShowSchedule.clampGrace(schedule.graceMinutes)
+        showNoShowEditor = true
+    }
+
+    private func saveNoShowEditor() {
+        let trimmed = noShowPlaceName.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return }
+        let cal = Calendar.current
+        let hour = cal.component(.hour, from: noShowTime)
+        let minute = cal.component(.minute, from: noShowTime)
+        let days = noShowWeekdays.isEmpty ? nil : Array(noShowWeekdays).sorted()
+        let grace = GeofenceNoShowSchedule.clampGrace(noShowGraceMinutes)
+        if let id = editingNoShowId, let idx = noShowSchedules.firstIndex(where: { $0.id == id }) {
+            noShowSchedules[idx].placeName = trimmed
+            noShowSchedules[idx].hour = hour
+            noShowSchedules[idx].minute = minute
+            noShowSchedules[idx].weekdays = days
+            noShowSchedules[idx].graceMinutes = grace
+        } else {
+            noShowSchedules.append(
+                GeofenceNoShowSchedule(
+                    placeName: trimmed,
+                    hour: hour,
+                    minute: minute,
+                    enabled: true,
+                    weekdays: days,
+                    graceMinutes: grace
+                )
+            )
+        }
+        // Ensure place exists in geofences list when custom name chosen
+        if !geofences.contains(where: { $0.name.caseInsensitiveCompare(trimmed) == .orderedSame }) {
+            showAddForm = true
+            newGeofenceName = trimmed
+        }
+        GeofenceNoShowMonitor.saveSchedules(noShowSchedules)
+        showNoShowEditor = false
+        editingNoShowId = nil
+        HapticFeedback.notification(.success)
     }
 }
 
