@@ -95,6 +95,33 @@ extension Color {
 
     /// Child growWarm base (~8% светлее stormBase)
     static let stormGrowWarmBase = Color(hex: "#0C1220")
+
+    // MARK: - Shyam canon (site + tariff cards)
+    // SSOT: docs/ALADDIN_SHYAM_COLOR_CANON.md
+
+    /// Ночь Шьям — база фона (= сайт `--shyam-night`)
+    static let shyamNight = Color(hex: "#07112A")
+
+    /// Тушь / глубокая тень
+    static let shyamInk = Color(hex: "#07080D")
+
+    /// Грозовые облака — акцент **free**
+    static let shyamStorm = Color(hex: "#5B8DEF")
+
+    /// Сапфиры — акцент **personal** (= сайт `--sapphire`)
+    static let shyamSapphire = Color(hex: "#4C6FFF")
+
+    /// Павлин — акцент **trial** (= сайт `--peacock`)
+    static let shyamPeacock = Color(hex: "#36D6AE")
+
+    /// Золото — акцент **family only** (= `secondaryGold`)
+    static let shyamGold = Color(hex: "#F59E0B")
+
+    /// Лотос violet-blue — акцент **premium**
+    static let shyamLotus = Color(hex: "#8B5CF6")
+
+    /// Лунный блик
+    static let shyamMoon = Color(hex: "#F3F3F3")
     
     // MARK: - Text Colors
     

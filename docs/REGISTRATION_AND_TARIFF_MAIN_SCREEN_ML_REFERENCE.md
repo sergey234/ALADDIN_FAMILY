@@ -228,13 +228,13 @@
 
 Вычисляемое свойство **`currentTariffColor`**:
 
-| `getCurrentLevel()` | Цвет |
+| `getCurrentLevel()` | Цвет (канон [`ALADDIN_SHYAM_COLOR_CANON.md`](./ALADDIN_SHYAM_COLOR_CANON.md)) |
 |---------------------|------|
-| `free`              | `Color.secondaryGold` (золотой / «жёлтый» акцент бренда) |
-| `trial`             | Явный RGB: **бирюзовый** `Color(red: 0.22, green: 0.78, blue: 0.72)` (в коде задуман как отличие от бесплатного) |
-| `personal`          | Синий |
-| `family`            | Фиолетовый |
-| `premium`           | Оранжевый |
+| `free`              | `shyamStorm` `#5B8DEF` |
+| `trial`             | `shyamPeacock` `#36D6AE` |
+| `personal`          | `shyamSapphire` `#4C6FFF` |
+| `family`            | `shyamGold` `#F59E0B` (**золото только здесь**) |
+| `premium`           | `shyamLotus` `#8B5CF6` |
 
 Карточка рисуется как **`LinearGradient`** от `currentTariffColor` к чуть более прозрачному, обводка и тень тоже от этого цвета.
 

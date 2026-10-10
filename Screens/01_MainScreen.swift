@@ -999,19 +999,9 @@ struct MainScreen: View {
         return level.displayName
     }
 
-    // Helper to get tariff color for UI accent
+    // Helper to get tariff color for UI accent — SSOT: TariffAccentPalette / ALADDIN_SHYAM_COLOR_CANON
     private var currentTariffColor: Color {
-        let level = subscriptionManager.getCurrentLevel()
-        switch level {
-        case .free:
-            return .secondaryGold
-        case .trial:
-            // Отличие от бесплатного: пробный период — бирюзово-золотой акцент.
-            return Color(red: 0.22, green: 0.78, blue: 0.72)
-        case .personal: return .blue
-        case .family: return .purple
-        case .premium: return .orange
-        }
+        TariffAccentPalette.color(for: subscriptionManager.getCurrentLevel())
     }
 
     // Helper for SF Symbols icon based on current tariff level

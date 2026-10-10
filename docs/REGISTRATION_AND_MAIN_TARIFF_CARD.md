@@ -157,15 +157,17 @@ DEBUG-only: опциональная панель Apple / magic link (флаг `
 
 ### 6.2. Соответствие тарифа и цвета (`currentTariffColor`)
 
+**Канон Шьям (SSOT):** [`ALADDIN_SHYAM_COLOR_CANON.md`](./ALADDIN_SHYAM_COLOR_CANON.md) · helper `TariffAccentPalette.color(for:)`.
+
 Логика привязана к **`subscriptionManager.getCurrentLevel()`**:
 
 | Уровень   | Цвет |
 |----------|------|
-| `free`   | `Color.secondaryGold` (жёлто-золотой акцент) |
-| `trial`  | `Color(red: 0.22, green: 0.78, blue: 0.72)` — **бирюзовый / teal**, отличимый от free |
-| `personal` | синий |
-| `family`   | фиолетовый |
-| `premium`  | оранжевый |
+| `free`   | `shyamStorm` `#5B8DEF` (грозовые облака) |
+| `trial`  | `shyamPeacock` `#36D6AE` (павлин) |
+| `personal` | `shyamSapphire` `#4C6FFF` (сапфир) |
+| `family`   | `shyamGold` `#F59E0B` (**золото — только семья**) |
+| `premium`  | `shyamLotus` `#8B5CF6` (лотос) |
 
 Название тарифа в тексте: `currentTariffDisplayName` через ключи локализации `tariffs_*` и fallback `level.displayName`.
 

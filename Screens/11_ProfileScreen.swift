@@ -1,5 +1,6 @@
 import SwiftUI
 import Foundation
+import UIKit
 
 // Master Logger for UI logging
 private let logger = MasterLogger.shared
@@ -56,6 +57,11 @@ struct ProfileScreen: View {
         case .premium:
             return localizationManager.localized("tariffs_premium")
         }
+    }
+
+    /// Цвет капсулы тарифа — тот же канон Шьям, что на главной.
+    private var profileTariffAccent: Color {
+        TariffAccentPalette.color(for: subscriptionManager.getCurrentLevel())
     }
 
     private var cachedFamilyMembersForRepair: [FamilyMemberData] {
@@ -265,7 +271,7 @@ struct ProfileScreen: View {
                         .font(.system(size: 20))
                     Text(currentTariffDisplayName)
                         .font(.body.bold())
-                        .foregroundColor(.yellow)
+                        .foregroundColor(profileTariffAccent)
                 }
                 Text(
                     "\(localizationManager.localized("profile_capsule_registration_label")) \(registrationDate.isEmpty ? localizationManager.localized("profile_not_set") : registrationDate)"
@@ -295,10 +301,10 @@ struct ProfileScreen: View {
             .padding(.vertical, Spacing.s)
             .background(
                 RoundedRectangle(cornerRadius: 20)
-                    .fill(Color.yellow.opacity(0.2))
+                    .fill(profileTariffAccent.opacity(0.22))
                     .overlay(
                         RoundedRectangle(cornerRadius: 20)
-                            .stroke(Color.yellow.opacity(0.5), lineWidth: 1)
+                            .stroke(profileTariffAccent.opacity(0.55), lineWidth: 1)
                     )
             )
             .id("profile_tariff_capsule_\(subscriptionManager.subscriptionDisplayEpoch)_\(tariffManager.currentTariff.rawValue)")
@@ -892,28 +898,96 @@ struct ActiveSessionsView: View {
     @Binding var isPresented: Bool
     @EnvironmentObject private var navigationManager: NavigationManager
     @EnvironmentObject private var localizationManager: LocalizationManager
+
+    @State private var familyDevices: [DeviceResponse] = []
+    @State private var isLoading = false
+    @State private var softError: String?
+    @State private var devicePendingRemove: DeviceResponse?
+    @State private var isRemoving = false
+
+    /// Real device marketing name when available; never a hardcoded “iPhone 13”.
+    private var thisDeviceLabel: String {
+        let model = UIDevice.current.model // e.g. "iPhone"
+        let name = UIDevice.current.name.trimmingCharacters(in: .whitespacesAndNewlines)
+        if !name.isEmpty, name.count <= 40 {
+            return name
+        }
+        return model.isEmpty
+            ? localizationManager.localized("active_sessions_this_device")
+            : model
+    }
+
+    /// Other family protection devices (no GPS). Current phone is shown separately.
+    private var otherFamilyDevices: [DeviceResponse] {
+        let localName = UIDevice.current.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        return familyDevices.filter { device in
+            let n = device.name.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+            if !localName.isEmpty, n == localName { return false }
+            return true
+        }
+    }
     
     var body: some View {
         NavigationView {
             List {
-                ForEach(0..<3, id: \.self) { index in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(localizationManager.localized("active_sessions_device_name_default"))
-                                .font(.headline)
-                            HStack {
-                                Text(localizationManager.localized("active_sessions_location"))
-                                    .font(.caption)
-                                    .foregroundColor(.gray)
-                                Text("•")
-                                Text(localizationManager.localized("active_sessions_now"))
-                                    .font(.caption)
-                                    .foregroundColor(.green)
+                if let softError, !softError.isEmpty {
+                    Section {
+                        VStack(alignment: .leading, spacing: 8) {
+                            Text(softError)
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                            Button(localizationManager.localized("active_sessions_retry")) {
+                                loadFamilyDevices()
                             }
-                            Spacer()
-                            Button(localizationManager.localized("active_sessions_logout")) { }
+                            .font(.caption.weight(.semibold))
+                            .accessibilityIdentifier("active_sessions_retry")
                         }
                     }
+                }
+
+                Section {
+                    VStack(alignment: .leading, spacing: 6) {
+                        HStack {
+                            Text(thisDeviceLabel)
+                                .font(.headline)
+                            Spacer()
+                            Text(localizationManager.localized("active_sessions_current_badge"))
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(.green)
+                        }
+                        Text(localizationManager.localized("active_sessions_this_device_hint"))
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.vertical, 4)
+                    .accessibilityIdentifier("active_sessions_current_device")
+                } header: {
+                    Text(localizationManager.localized("active_sessions_section_this_device"))
+                }
+
+                Section {
+                    if isLoading && familyDevices.isEmpty {
+                        HStack {
+                            ProgressView()
+                            Text(localizationManager.localized("active_sessions_loading"))
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                        }
+                    } else if otherFamilyDevices.isEmpty {
+                        Text(localizationManager.localized("active_sessions_family_empty"))
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                            .padding(.vertical, 4)
+                    } else {
+                        ForEach(otherFamilyDevices) { device in
+                            familyDeviceRow(device)
+                        }
+                    }
+                } header: {
+                    Text(localizationManager.localized("active_sessions_section_family"))
+                } footer: {
+                    Text(localizationManager.localized("active_sessions_apple_privacy_note"))
+                        .font(.caption2)
                 }
             }
             .navigationTitle(localizationManager.localized("active_sessions_title"))
@@ -923,6 +997,142 @@ struct ActiveSessionsView: View {
                 }
             }
             .id("active_sessions_lang_\(localizationManager.currentLanguage.rawValue)")
+            .onAppear { loadFamilyDevices() }
+            .refreshable { loadFamilyDevices() }
+            .alert(
+                localizationManager.localized("active_sessions_sign_out_title"),
+                isPresented: Binding(
+                    get: { devicePendingRemove != nil },
+                    set: { if !$0 { devicePendingRemove = nil } }
+                )
+            ) {
+                Button(localizationManager.localized("active_sessions_logout"), role: .destructive) {
+                    if let device = devicePendingRemove {
+                        confirmSignOut(device)
+                    }
+                }
+                Button(localizationManager.localized("active_sessions_done"), role: .cancel) {
+                    devicePendingRemove = nil
+                }
+            } message: {
+                Text(localizationManager.localized("active_sessions_sign_out_message"))
+            }
+            .disabled(isRemoving)
+        }
+    }
+
+    @ViewBuilder
+    private func familyDeviceRow(_ device: DeviceResponse) -> some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: deviceTypeSymbol(device.type))
+                .foregroundColor(.secondary)
+                .frame(width: 28)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(device.name.isEmpty
+                     ? localizationManager.localized("active_sessions_device_name_default")
+                     : device.name)
+                    .font(.headline)
+                Text(familyDeviceSubtitle(device))
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            Spacer()
+            Button(localizationManager.localized("active_sessions_logout")) {
+                devicePendingRemove = device
+            }
+            .font(.caption.weight(.semibold))
+            .foregroundColor(.red)
+            .accessibilityIdentifier("active_sessions_sign_out_\(device.id)")
+        }
+        .padding(.vertical, 4)
+    }
+
+    private func familyDeviceSubtitle(_ device: DeviceResponse) -> String {
+        let typeLabel = humanDeviceType(device.type)
+        let last = formattedLastActive(device.lastActive)
+        let owner = device.owner.trimmingCharacters(in: .whitespacesAndNewlines)
+        if owner.isEmpty {
+            return "\(typeLabel) · \(last)"
+        }
+        return "\(typeLabel) · \(owner) · \(last)"
+    }
+
+    private func humanDeviceType(_ raw: String) -> String {
+        switch raw.lowercased() {
+        case "iphone": return "iPhone"
+        case "ipad": return "iPad"
+        case "mac", "macos": return "Mac"
+        case "android": return "Android"
+        default:
+            return localizationManager.localized("active_sessions_device_type_generic")
+        }
+    }
+
+    private func deviceTypeSymbol(_ raw: String) -> String {
+        switch raw.lowercased() {
+        case "iphone": return "iphone"
+        case "ipad": return "ipad"
+        case "mac", "macos": return "laptopcomputer"
+        case "android": return "smartphone"
+        default: return "desktopcomputer"
+        }
+    }
+
+    private func formattedLastActive(_ raw: String) -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else {
+            return localizationManager.localized("active_sessions_last_active_unknown")
+        }
+        let isoFrac = ISO8601DateFormatter()
+        isoFrac.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime]
+        if let date = isoFrac.date(from: trimmed) ?? iso.date(from: trimmed) {
+            return DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .short)
+        }
+        return trimmed
+    }
+
+    private func loadFamilyDevices() {
+        isLoading = true
+        softError = nil
+        APIService.shared.getDevices { result in
+            DispatchQueue.main.async {
+                isLoading = false
+                switch result {
+                case .success(let list):
+                    // Real family devices only — never invent “iPhone 13” rows. No GPS fields shown.
+                    familyDevices = list
+                case .failure:
+                    familyDevices = []
+                    softError = localizationManager.localized("active_sessions_load_failed")
+                }
+            }
+        }
+    }
+
+    private func confirmSignOut(_ device: DeviceResponse) {
+        devicePendingRemove = nil
+        isRemoving = true
+        Task { @MainActor in
+            let allowed = await ParentSessionGate.confirmSensitiveAction()
+            guard allowed else {
+                isRemoving = false
+                softError = localizationManager.localized("active_sessions_gate_denied")
+                return
+            }
+            APIService.shared.removeDevice(deviceId: device.id) { result in
+                DispatchQueue.main.async {
+                    isRemoving = false
+                    switch result {
+                    case .success:
+                        familyDevices.removeAll { $0.id == device.id }
+                        NotificationCenter.default.post(name: NSNotification.Name("FamilyDevicesDidChange"), object: nil)
+                    case .failure:
+                        softError = localizationManager.localized("active_sessions_sign_out_failed")
+                    }
+                }
+            }
         }
     }
 }
