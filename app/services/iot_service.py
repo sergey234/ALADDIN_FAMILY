@@ -117,7 +117,8 @@ def bootstrap_home(home_id: str) -> None:
         {
             "home_id": home_id,
             "device_id": f"{home_id}_cam_1",
-            "name": "Умная камера",
+            # Canonical EN seed; iOS maps via iot_seed_* → «Пример: камера» / «Example: camera».
+            "name": "Example: camera",
             "type": "camera",
             "status": "online",
             "threat_level": 0,
@@ -125,7 +126,7 @@ def bootstrap_home(home_id: str) -> None:
         {
             "home_id": home_id,
             "device_id": f"{home_id}_thermo_1",
-            "name": "Умный термостат",
+            "name": "Example: climate",
             "type": "thermostat",
             "status": "online",
             "threat_level": 1,

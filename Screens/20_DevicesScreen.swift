@@ -435,12 +435,8 @@ struct DevicesScreen: View {
                     errorMessage = nil
                 case .failure(let error):
                     devices = []
-                    errorMessage = String(
-                        format: "%@ %@",
-                        localizationManager.localized("devices_load_failed"),
-                        error.localizedDescription
-                    )
-                    print("❌ Ошибка загрузки устройств: \(error.localizedDescription)")
+                    errorMessage = devicesLoadUserMessage(error)
+                    print("❌ Devices load failed: \(error.localizedDescription)")
                 }
             }
         }
@@ -459,17 +455,24 @@ struct DevicesScreen: View {
                         errorMessage = nil
                     case .failure(let error):
                         devices = []
-                        errorMessage = String(
-                            format: "%@ %@",
-                            localizationManager.localized("devices_load_failed"),
-                            error.localizedDescription
-                        )
-                        print("❌ Ошибка обновления устройств: \(error.localizedDescription)")
+                        errorMessage = devicesLoadUserMessage(error)
+                        print("❌ Devices refresh failed: \(error.localizedDescription)")
                     }
                     continuation.resume()
                 }
             }
         }
+    }
+
+    /// One localized sentence — never concatenate RU «HTTP ошибка» fragments.
+    private func devicesLoadUserMessage(_ error: Error) -> String {
+        if let networkError = error as? NetworkError {
+            if case .httpError(504) = networkError {
+                return localizationManager.localized("network_error_http_504")
+            }
+            return networkError.localizedDescription
+        }
+        return localizationManager.localized("devices_load_failed")
     }
     
     private func convertToDevice(_ response: DeviceResponse) -> Device {

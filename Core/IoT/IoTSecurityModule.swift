@@ -109,20 +109,23 @@ class IoTSecurityModule: ObservableObject {
     /// Загрузка статуса безопасности
     func loadStatus(homeId: String) async throws {
         currentHomeId = homeId
-        
-        // Параллельно запрашиваем статус, список устройств и угроз
-        async let statusTask = apiService.getIoTStatus(homeId: homeId)
-        async let devicesTask = apiService.getIoTDevices(homeId: homeId)
-        async let threatsTask = apiService.getIoTThreats(homeId: homeId)
-        
-        let (status, devicesResponse, threatsResponse) = try await (statusTask, devicesTask, threatsTask)
-        
-        let protectionPercent = IoTSecurityModule.mapProtectionLevelToPercent(status.protectionLevel)
-        
+
+        // Devices list is required for Home map; status/threats soft-fail so one 504
+        // does not blank the whole Smart home block.
+        let devicesResponse = try await apiService.getIoTDevices(homeId: homeId)
+        let status = try? await apiService.getIoTStatus(homeId: homeId)
+        let threatsResponse = try? await apiService.getIoTThreats(homeId: homeId)
+
+        let protectionPercent: Int
+        if let status {
+            protectionPercent = IoTSecurityModule.mapProtectionLevelToPercent(status.protectionLevel)
+        } else {
+            protectionPercent = protectionLevel
+        }
+
         await MainActor.run {
             iotDevices = devicesResponse.devices
-            threatsDetected = threatsResponse.threats ?? []
-            // Пока сервер не отдаёт рекомендации по IoT — оставляем пустой список
+            threatsDetected = threatsResponse?.threats ?? []
             recommendations = []
             protectionLevel = protectionPercent
             Self.notifyCameraThreatsIfNeeded(threatsDetected)

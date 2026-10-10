@@ -211,7 +211,7 @@ struct HomeMapSection: View {
                 .frame(width: 28)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(device.name)
+                Text(device.localizedDisplayName(localizationManager))
                     .font(.subheadline.weight(.semibold))
                     .foregroundColor(.textPrimary)
                     .lineLimit(1)
@@ -281,7 +281,7 @@ struct HomeMapSection: View {
             HapticFeedback.notification(.success)
             await refreshIoT()
         } catch {
-            iotError = error.localizedDescription
+            iotError = userFacingIoTError(error)
             HapticFeedback.notification(.error)
         }
     }
@@ -295,9 +295,28 @@ struct HomeMapSection: View {
             HapticFeedback.notification(.success)
             await refreshIoT()
         } catch {
-            iotError = error.localizedDescription
+            // Prod OpenAPI (MAIN) still missing POST /unblock — show honest localized copy.
+            if isIoTUnblockMissing(error) {
+                iotError = localizationManager.localized("home_map_iot_resume_unavailable")
+            } else {
+                iotError = userFacingIoTError(error)
+            }
             HapticFeedback.notification(.error)
         }
+    }
+
+    private func userFacingIoTError(_ error: Error) -> String {
+        if let networkError = error as? NetworkError {
+            return networkError.localizedDescription
+        }
+        return localizationManager.localized("home_map_iot_load_failed")
+    }
+
+    private func isIoTUnblockMissing(_ error: Error) -> Bool {
+        guard let networkError = error as? NetworkError else { return false }
+        if case .notFound = networkError { return true }
+        if case .httpError(404) = networkError { return true }
+        return false
     }
 
     private func iotIcon(for type: IoTDeviceType) -> String {

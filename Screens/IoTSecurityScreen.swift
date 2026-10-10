@@ -259,12 +259,12 @@ struct DeviceRow: View {
                 .frame(width: 40)
             
             VStack(alignment: .leading, spacing: 4) {
-                Text(device.name)
+                Text(device.localizedDisplayName())
                     .font(.body)
                     .foregroundColor(.textPrimary)
                 
                 HStack {
-                    Text(device.type.rawValue.capitalized)
+                    Text(device.type.displayName)
                         .font(.caption)
                         .foregroundColor(.textSecondary)
                     

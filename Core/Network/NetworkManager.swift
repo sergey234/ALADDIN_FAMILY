@@ -1331,12 +1331,15 @@ private let logger = MasterLogger.shared
                 guard (200...299).contains(httpResponse.statusCode) else {
                     // Пытаемся декодировать ошибку от сервера
                     let serverDetail = Self.extractServerDetail(from: data)
-                    let errorMessage: String
+                    let rawServerMessage: String?
                     if let data = data, let errorData = try? JSONDecoder().decode([String: String].self, from: data) {
-                        errorMessage = errorData["detail"] ?? errorData["message"] ?? "HTTP ошибка \(httpResponse.statusCode)"
+                        rawServerMessage = errorData["detail"] ?? errorData["message"] ?? serverDetail
                     } else {
-                        errorMessage = "HTTP ошибка \(httpResponse.statusCode)"
+                        rawServerMessage = serverDetail
                     }
+                    // Never hard-code RU «HTTP ошибка» — NetworkError localizes by status.
+                    let errorMessage = NetworkError.userFacingDetail(rawServerMessage)
+                    let logMessage = rawServerMessage ?? "HTTP \(httpResponse.statusCode)"
 
                     if Self.isGatewayFeatureDisabledDetail(serverDetail) {
                         let networkError = NetworkError.endpointFeatureUnavailable
@@ -1358,11 +1361,11 @@ private let logger = MasterLogger.shared
                            type: .error,
                            httpResponse.statusCode,
                            request.url?.absoluteString ?? "unknown",
-                           errorMessage)
+                           logMessage)
                     
                     #if DEBUG
-                    print("❌ NetworkManager.performRequest: HTTP ошибка \(httpResponse.statusCode)")
-                    print("   - Сообщение от сервера: \(errorMessage)")
+                    print("❌ NetworkManager.performRequest: HTTP \(httpResponse.statusCode)")
+                    print("   - Server message: \(logMessage)")
                     #endif
                     
                     // Создаем более информативную ошибку
@@ -1380,7 +1383,7 @@ private let logger = MasterLogger.shared
                         case .premiumRequired(let premiumMessage):
                             networkError = .forbidden(premiumMessage ?? "premium_required")
                         case .forbidden(let forbiddenMessage):
-                            networkError = .forbidden(forbiddenMessage ?? errorMessage)
+                            networkError = .forbidden(NetworkError.userFacingDetail(forbiddenMessage) ?? errorMessage)
                         case .other(let otherError):
                             networkError = otherError
                         case .allowed:
@@ -1398,6 +1401,8 @@ private let logger = MasterLogger.shared
                         networkError = .badGateway(errorMessage)
                     case 503:
                         networkError = .serviceUnavailable(errorMessage)
+                    case 504:
+                        networkError = .httpError(504)
                     default:
                         networkError = .httpError(httpResponse.statusCode)
                     }

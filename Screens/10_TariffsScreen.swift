@@ -101,14 +101,17 @@ struct TariffsScreen: View {
             }
         }
         
+        /// Accent for picker cards — same Shyam canon as main family card (`TariffAccentPalette`).
         var color: Color {
+            let level: SubscriptionLevel
             switch self {
-            case .trial: return Color(hex: "#10B981")  // Зеленый для trial
-            case .free: return .textSecondary
-            case .personal: return .primaryBlue
-            case .family: return .secondaryGold
-            case .premium: return Color(hex: "#A855F7")
+            case .trial: level = .trial
+            case .free: level = .free
+            case .personal: level = .personal
+            case .family: level = .family
+            case .premium: level = .premium
             }
+            return TariffAccentPalette.color(for: level)
         }
         
         var recommended: Bool {

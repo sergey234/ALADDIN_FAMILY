@@ -2217,24 +2217,46 @@ enum IoTDeviceType: String, Codable {
     case smartSpeaker = "smart_speaker"
     case unknown = "unknown"
     
+    /// UI type label — always via LocalizationManager (RU/EN app language).
     var displayName: String {
+        let L = LocalizationManager.shared
         switch self {
-        case .camera: return "Камера"
-        case .speaker: return "Колонка"
-        case .sensor: return "Датчик"
-        case .thermostat: return "Термостат"
-        case .light: return "Лампа"
-        case .door: return "Замок"
-        case .other: return "Другое"
-        case .smartLight: return "Умная лампа"
-        case .smartOutlet: return "Умная розетка"
-        case .smartCamera: return "Умная камера"
-        case .smartLock: return "Умный замок"
-        case .smartThermostat: return "Умный термостат"
-        case .smartTV: return "Умный телевизор"
-        case .smartSpeaker: return "Умная колонка"
-        case .unknown: return "Неизвестно"
+        case .camera: return L.localized("iot_type_camera")
+        case .speaker: return L.localized("iot_type_speaker")
+        case .sensor: return L.localized("iot_type_sensor")
+        case .thermostat: return L.localized("iot_type_thermostat")
+        case .light: return L.localized("iot_type_light")
+        case .door: return L.localized("iot_type_door")
+        case .other: return L.localized("iot_type_other")
+        case .smartLight: return L.localized("iot_type_smart_light")
+        case .smartOutlet: return L.localized("iot_type_smart_outlet")
+        case .smartCamera: return L.localized("iot_type_smart_camera")
+        case .smartLock: return L.localized("iot_type_smart_lock")
+        case .smartThermostat: return L.localized("iot_type_smart_thermostat")
+        case .smartTV: return L.localized("iot_type_smart_tv")
+        case .smartSpeaker: return L.localized("iot_type_smart_speaker")
+        case .unknown: return L.localized("iot_type_unknown")
         }
+    }
+}
+
+extension IoTDevice {
+    /// Demo/bootstrap seed names arrive from API in Russian; map to app language for UI.
+    func localizedDisplayName(_ localizationManager: LocalizationManager = .shared) -> String {
+        let L = localizationManager
+        let trimmed = name.trimmingCharacters(in: .whitespacesAndNewlines)
+        switch trimmed {
+        case "Умная камера", "Smart camera", "Пример: камера", "Example: camera":
+            return L.localized("iot_seed_smart_camera")
+        case "Умный термостат", "Smart thermostat", "Пример: климат", "Example: climate":
+            return L.localized("iot_seed_smart_thermostat")
+        default:
+            break
+        }
+        // Bootstrap IDs: `{homeId}_cam_1` / `{homeId}_thermo_1`
+        if id.contains("_cam_") { return L.localized("iot_seed_smart_camera") }
+        if id.contains("_thermo_") { return L.localized("iot_seed_smart_thermostat") }
+        return trimmed.isEmpty ? type.displayName : trimmed
     }
 }
 

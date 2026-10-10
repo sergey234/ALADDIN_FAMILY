@@ -169,23 +169,36 @@ enum NetworkError: Error, LocalizedError {
         case .invalidStatusCode(let code):
             return String(format: L.localized("network_error_invalid_status"), code)
         case .badRequest(let message):
-            return String(format: L.localized("network_error_bad_request"), message ?? L.localized("network_error_generic_unknown"))
+            if let safe = Self.userFacingDetail(message) {
+                return String(format: L.localized("network_error_bad_request"), safe)
+            }
+            return L.localized("network_error_generic_unknown")
         case .unauthorized(let message):
-            return String(format: L.localized("network_error_unauthorized"), message ?? L.localized("network_error_check_credentials"))
+            if let safe = Self.userFacingDetail(message) {
+                return String(format: L.localized("network_error_unauthorized"), safe)
+            }
+            return L.localized("network_error_check_credentials")
         case .forbidden(let message):
-            return String(format: L.localized("network_error_forbidden"), message ?? L.localized("network_error_insufficient_rights"))
+            if let safe = Self.userFacingDetail(message) {
+                return String(format: L.localized("network_error_forbidden"), safe)
+            }
+            return L.localized("network_error_insufficient_rights")
         case .notFound(let message):
-            return String(format: L.localized("network_error_not_found"), message ?? L.localized("network_error_check_url"))
+            // Never surface hard-coded RU "HTTP ошибка …" or gateway technical detail.
+            if let safe = Self.userFacingDetail(message) {
+                return String(format: L.localized("network_error_not_found"), safe)
+            }
+            return L.localized("network_error_not_found_plain")
         case .conflict(let message):
-            return message ?? L.localized("network_error_conflict_default")
+            return Self.userFacingDetail(message) ?? L.localized("network_error_conflict_default")
         case .tooManyRequests(let message):
-            return message ?? L.localized("network_error_too_many")
+            return Self.userFacingDetail(message) ?? L.localized("network_error_too_many")
         case .internalServerError(let message):
-            return message ?? L.localized("network_error_internal")
+            return Self.userFacingDetail(message) ?? L.localized("network_error_internal")
         case .badGateway(let message):
-            return message ?? L.localized("network_error_bad_gateway")
+            return Self.userFacingDetail(message) ?? L.localized("network_error_bad_gateway")
         case .serviceUnavailable(let message):
-            return message ?? L.localized("network_error_service_unavailable")
+            return Self.userFacingDetail(message) ?? L.localized("network_error_service_unavailable")
             
         // Data Errors
         case .invalidData:
@@ -233,6 +246,17 @@ enum NetworkError: Error, LocalizedError {
         case .unknown(let error):
             return String(format: L.localized("network_error_unknown"), error?.localizedDescription ?? L.localized("network_error_try_later"))
         }
+    }
+
+    /// Drop Cyrillic / technical gateway fragments so EN UI never shows «HTTP ошибка …».
+    static func userFacingDetail(_ raw: String?) -> String? {
+        guard let raw = raw?.trimmingCharacters(in: .whitespacesAndNewlines), !raw.isEmpty else { return nil }
+        if raw.range(of: #"\p{Script=Cyrillic}"#, options: .regularExpression) != nil { return nil }
+        let lower = raw.lowercased()
+        if lower.contains("http ошибка") || lower.hasPrefix("http error") { return nil }
+        if lower.contains("critical endpoint") { return nil }
+        if lower.contains("use explicit router") { return nil }
+        return raw
     }
     
     var failureReason: String? {
