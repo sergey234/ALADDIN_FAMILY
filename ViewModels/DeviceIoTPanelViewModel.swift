@@ -22,7 +22,7 @@ final class DeviceIoTPanelViewModel: ObservableObject {
 
     init(
         apiService: APIService? = nil,
-        localizationManager: LocalizationManager = LocalizationManager(),
+        localizationManager: LocalizationManager = .shared,
         protectionSettingsManager: ProtectionSettingsManager? = nil,
         tariffManager: TariffManager? = nil,
         module: IoTSecurityModule? = nil
@@ -72,8 +72,21 @@ final class DeviceIoTPanelViewModel: ObservableObject {
         defer { isScanning = false }
 
         do {
-            _ = try await apiService.startIoTScan(homeId: homeId)
+            let started = try await withAsyncTimeout(seconds: 45) {
+                try await self.apiService.startIoTScan(homeId: self.homeId)
+            }
+            guard started.success else {
+                errorMessage = started.message
+                    ?? localizationManager.localized("device_hub_iot_enable_failed")
+                return
+            }
             await refresh()
+            if threats.isEmpty, started.threatsFound == 0 {
+                // Explicit success path so the tap never feels like a no-op.
+                errorMessage = nil
+            }
+        } catch is AsyncTimeoutError {
+            errorMessage = localizationManager.localized("device_hub_scan_timeout")
         } catch {
             errorMessage = error.localizedDescription
         }

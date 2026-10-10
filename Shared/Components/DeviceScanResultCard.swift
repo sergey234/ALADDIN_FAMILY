@@ -55,12 +55,6 @@ struct DeviceScanResultCard: View {
                     }
                 }
             }
-
-            if let agent = result.agent, !agent.isEmpty {
-                Text("\(localizationManager.localized("device_hub_agent")): \(agent)")
-                    .font(.caption2)
-                    .foregroundColor(.white.opacity(0.55))
-            }
         }
         .padding(Spacing.m)
         .stormGlassCard(cornerRadius: CornerRadius.medium)

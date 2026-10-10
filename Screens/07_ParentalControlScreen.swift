@@ -365,40 +365,47 @@ struct ParentalControlScreen: View {
                 
                 Spacer()
                 
-                Button("Dashboard") {
+                Button(localizationManager.localized("parental_dashboard_button")) {
                     requireSensitiveParentSession(permission: .viewParentalDashboard) {
                         showParentDashboardModal = true
                     }
                 }
                 .font(.captionBold)
-                .foregroundColor(.textTertiary)
+                .foregroundColor(.textSecondary)
             }
             
             VStack(alignment: .leading, spacing: Spacing.s) {
-                if let report = viewModel.weeklyReports.first {
-                    if let list = report.content["achievements"]?.value as? [[String: Any]] {
-                        ForEach(0..<min(list.count, 3), id: \.self) { index in
-                            let item = list[index]
-                            HStack(spacing: Spacing.m) {
-                                Text(item["icon"] as? String ?? "✅")
-                                    .font(.title3)
-                                
-                                Text(item["text"] as? String ?? "")
-                                    .font(.body)
-                                    .foregroundColor(.textPrimary)
-                                
-                                Spacer()
-                            }
-                            .padding(.vertical, 4)
-                        }
-                    }
-                } else {
-                    // Placeholder если данных нет
+                if viewModel.isLoadingWeeklyAchievements {
                     HStack(spacing: Spacing.m) {
-                        Text("⏳")
-                            .font(.title3)
+                        ProgressView()
                         Text(localizationManager.localized("parental_achievements_weekly_loading"))
                             .font(.body)
+                            .foregroundColor(.textSecondary)
+                    }
+                } else if let report = viewModel.weeklyReports.first,
+                          let list = report.content["achievements"]?.value as? [[String: Any]],
+                          !list.isEmpty {
+                    ForEach(0..<min(list.count, 3), id: \.self) { index in
+                        let item = list[index]
+                        HStack(spacing: Spacing.m) {
+                            Text(item["icon"] as? String ?? "✅")
+                                .font(.title3)
+                            
+                            Text(item["text"] as? String ?? "")
+                                .font(.body)
+                                .foregroundColor(.textPrimary)
+                            
+                            Spacer()
+                        }
+                        .padding(.vertical, 4)
+                    }
+                } else {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(localizationManager.localized("parental_achievements_weekly_empty"))
+                            .font(.bodyBold)
+                            .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("parental_achievements_weekly_empty_hint"))
+                            .font(.caption)
                             .foregroundColor(.textSecondary)
                     }
                 }

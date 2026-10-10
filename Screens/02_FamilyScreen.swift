@@ -3674,8 +3674,9 @@ struct FamilyActionButtonItem: View {
                     .fontWeight(.semibold)
                     .foregroundColor(.dangerRed)
                     .lineLimit(1)
-                    .minimumScaleFactor(0.8)
-                    .padding(.horizontal, Spacing.m)
+                    .minimumScaleFactor(0.7)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .padding(.horizontal, Spacing.s)
                     .padding(.vertical, Spacing.xs)
                     .background(Color.dangerRed.opacity(0.2))
                     .overlay(
@@ -3860,39 +3861,24 @@ private struct FamilyNetworkLayersLocalStatusBlock: View {
                 .foregroundColor(.secondaryGold)
 
             Text(localizationManager.localized("family_modal_network_layers_scope"))
-                .font(.captionSmall)
-                .foregroundColor(.textTertiary)
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+                .lineLimit(2)
                 .fixedSize(horizontal: false, vertical: true)
-
-            Text(localizationManager.localized("family_modal_network_layers_p2_note"))
-                .font(.captionSmall)
-                .foregroundColor(.textTertiary)
-                .fixedSize(horizontal: false, vertical: true)
-
-            if AppStoreBuildPolicy.allowsSmartDNS {
-                Text(localizationManager.localized("main_family_smart_dns_status", dnsShortLabel))
-                    .font(.caption)
-                    .foregroundColor(.textSecondary)
-            }
 
             Text(localizationManager.localized("main_family_safari_cb_status", safariShortLabel))
                 .font(.caption)
-                .foregroundColor(.textSecondary)
+                .foregroundColor(.textPrimary)
                 .accessibilityIdentifier("browse_safari_blocker_status")
 
-            // browse-02 — если выкл., короткая подсказка как включить
             if !contentBlockerManager.isEnabled {
                 Text(localizationManager.localized("browse_safari_how_to_enable"))
-                    .font(.captionSmall)
+                    .font(.caption)
                     .foregroundColor(.secondaryGold)
+                    .lineLimit(2)
                     .fixedSize(horizontal: false, vertical: true)
                     .accessibilityIdentifier("browse_safari_how_to_enable")
             }
-
-            Text(localizationManager.localized("main_family_network_layers_hint"))
-                .font(.captionSmall)
-                .foregroundColor(.textTertiary)
-                .fixedSize(horizontal: false, vertical: true)
         }
         .padding(Spacing.m)
         .background(Color.backgroundMedium.opacity(0.3))
@@ -4441,18 +4427,45 @@ struct FamilyLocationModal: View {
     // Загрузка статистики геолокации из UserDefaults и API
     private func loadLocationStatistics() {
         print("🔍 FamilyLocationModal: Загрузка статистики геолокации...")
-        
-        // ✅ ИНТЕГРАЦИЯ: Получение текущего местоположения
+
+        locationStatus = localizationManager.localized("family_location_waiting_gps")
+        locationLastUpdate = "—"
+        refreshGeofencesSummaryFromStore()
+
+        // Живой GPS + город (reverse geocode) + «рядом с Домом» при совпадении зоны
         Task {
             refreshLocationPermissionUX()
             guard !locationPermissionBlocked else { return }
             do {
                 let currentLocation = try await locationManager.getCurrentLocation()
-                print("✅ FamilyLocationModal: Текущее местоположение: \(currentLocation.coordinate.latitude), \(currentLocation.coordinate.longitude)")
-                
+                let lat = currentLocation.coordinate.latitude
+                let lon = currentLocation.coordinate.longitude
+                print("✅ FamilyLocationModal: Текущее местоположение: \(lat), \(lon)")
+
+                let city = await GeofenceGeocodingService.shared.reverseGeocodeLocality(for: currentLocation)
+                let nearName = GeofenceGeocodingService.shared.nearestConfiguredPlaceName(to: currentLocation)
+
+                var parts: [String] = [String(format: "📍 %.4f, %.4f", lat, lon)]
+                if let city, !city.isEmpty {
+                    parts.append(city)
+                }
+                if let nearName, !nearName.isEmpty {
+                    parts.append(
+                        String(format: localizationManager.localized("family_location_near_fmt"), nearName)
+                    )
+                }
+                let line = parts.joined(separator: " · ")
+
                 await MainActor.run {
-                    self.locationStatus = String(format: "📍 %.4f, %.4f", currentLocation.coordinate.latitude, currentLocation.coordinate.longitude)
-                    self.locationLastUpdate = String(format: localizationManager.localized("family_min_ago_format"), 0)
+                    self.locationStatus = line
+                    self.locationLastUpdate = String(
+                        format: localizationManager.localized("family_min_ago_format"),
+                        0
+                    )
+                    var stats = UserDefaults.standard.dictionary(forKey: self.statsKey) ?? [:]
+                    stats["locationStatus"] = line
+                    stats["locationLastUpdate"] = self.locationLastUpdate
+                    UserDefaults.standard.set(stats, forKey: self.statsKey)
                 }
             } catch let error as LocationManagerError {
                 await MainActor.run {
@@ -4480,38 +4493,29 @@ struct FamilyLocationModal: View {
                 print("⚠️ FamilyLocationModal: Ошибка получения местоположения: \(error.localizedDescription)")
             }
         }
-        
-        // Пробуем загрузить из API
+
         loadLocationDataFromAPI()
-        
-        // Fallback на UserDefaults и значения по умолчанию
-        let home = localizationManager.localized("geofences_home")
-        let street = localizationManager.localized("geofences_street_lenin")
-        let school = localizationManager.localized("geofences_school")
-        let defaultStatus = "🏠 \(home) (\(street))"
-        let defaultLastUpdate = String(format: localizationManager.localized("family_min_ago_format"), 2)
-        let defaultGeofences = [home, school]
-        let defaultGeofenceList = defaultGeofences.joined(separator: ", ")
-        
-        // Устанавливаем значения по умолчанию
-        locationStatus = defaultStatus
-        locationLastUpdate = defaultLastUpdate
-        geofencesCount = defaultGeofences.count
-        geofencesList = defaultGeofenceList
-        
-        // Загружаем статус и данные (если есть сохранённые значения)
-        if let stats = UserDefaults.standard.dictionary(forKey: statsKey) {
-            locationStatus = stats["locationStatus"] as? String ?? defaultStatus
-            locationLastUpdate = stats["locationLastUpdate"] as? String ?? defaultLastUpdate
-            geofencesCount = stats["geofencesCount"] as? Int ?? defaultGeofences.count
-            geofencesList = stats["geofencesList"] as? String ?? defaultGeofenceList
-            print("✅ FamilyLocationModal: Загружено из UserDefaults")
-        } else {
-            print("⚠️ FamilyLocationModal: Используются значения по умолчанию")
-        }
-        
-        // Загружаем события сегодня — только живые (fsl-05), без демо 09:15
         todayEvents = GeofenceEventStore.asLocationEvents()
+    }
+
+    /// Real saved places only — no Lenin/Pushkin demo names.
+    private func refreshGeofencesSummaryFromStore() {
+        let key = "geofences_settings"
+        guard let data = UserDefaults.standard.data(forKey: key),
+              let decoded = try? JSONDecoder().decode([GeofenceItemCodable].self, from: data) else {
+            geofencesCount = 0
+            geofencesList = localizationManager.localized("geofences_empty_list_hint")
+            return
+        }
+        let real = decoded.filter {
+            !GeofenceGeocodingService.isDemoPlaceholderAddress($0.address, localization: localizationManager)
+        }
+        geofencesCount = real.count
+        if real.isEmpty {
+            geofencesList = localizationManager.localized("geofences_empty_list_hint")
+        } else {
+            geofencesList = real.map(\.name).joined(separator: ", ")
+        }
     }
     
     /// Загрузка данных геолокации из API
@@ -4891,17 +4895,24 @@ struct FamilyAdditionalModal: View {
     @State private var showAccessRequests = false
     @State private var showYouTubeSettings = false
     
-    // Mock-данные (загружаются из UserDefaults)
-    @State private var accessRequestsCount: Int = 2
-    @State private var deviceName: String = "iPhone 12 (Alexey)"
+    @State private var accessRequestsCount: Int = 0
+    @State private var deviceName: String = ""
     @State private var deviceStatus: String = ""
-    @State private var deviceBattery: String = "67%"
-    
-    // Статистика запросов (загружается из UserDefaults)
+    @State private var deviceBattery: String = ""
     @State private var requests: [AccessRequest] = []
+    @AppStorage("parental_selected_child_id") private var selectedChildId: String = ""
     
-    // Ключ для статистики дополнительных настроек
     private let statsKey = "parental_additional_stats"
+    
+    private var effectiveFamilyId: String {
+        let fid = FamilyLocalStore.loadPersistedFamilyId().trimmingCharacters(in: .whitespacesAndNewlines)
+        return fid.isEmpty ? "" : fid
+    }
+    
+    private var effectiveChildId: String? {
+        let id = selectedChildId.trimmingCharacters(in: .whitespacesAndNewlines)
+        return id.isEmpty ? nil : id
+    }
     
     var body: some View {
         FamilyModalBaseView(
@@ -5008,29 +5019,87 @@ struct FamilyAdditionalModal: View {
                 level: .info,
                 category: "PARENTAL.UI"
             )
-            print("✅ Homework mode: \(newValue ? "ON" : "OFF")")
+            syncHomeworkModeToServer(enabled: newValue)
         }
         .withVisualLogger()
     }
     
-    // Загрузка статистики дополнительных настроек из UserDefaults
+    private func syncHomeworkModeToServer(enabled: Bool) {
+        let familyId = effectiveFamilyId
+        guard !familyId.isEmpty else { return }
+        // Homework mode → app blocking + content filter for selected child (server sync).
+        ParentalControlManager.shared.saveSettingsToServer(
+            familyId: familyId,
+            childId: effectiveChildId,
+            isContentFilterEnabled: enabled ? true : nil,
+            isAppBlockingEnabled: enabled,
+            allowedApps: enabled ? ["Books", "Schoolwork", "Classroom", "Safari"] : nil
+        ) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    VisualLogger.shared.log("✅ homework synced to server", level: .success, category: "PARENTAL.API")
+                case .failure(let error):
+                    VisualLogger.shared.log(
+                        "⚠️ homework sync failed: \(error.localizedDescription)",
+                        level: .warning,
+                        category: "PARENTAL.API"
+                    )
+                }
+            }
+        }
+    }
+    
     private func loadAdditionalStatistics() {
-        let defaultDeviceStatus = localizationManager.localized("remote_lock_status_online")
-        deviceStatus = defaultDeviceStatus
+        deviceName = localizationManager.localized("remote_lock_device_unknown")
+        deviceStatus = localizationManager.localized("remote_lock_status_unknown")
+        deviceBattery = localizationManager.localized("remote_lock_battery_unknown")
+        accessRequestsCount = 0
+        requests = []
         
-        if let stats = UserDefaults.standard.dictionary(forKey: statsKey) {
-            accessRequestsCount = stats["accessRequestsCount"] as? Int ?? 2
-            deviceName = stats["deviceName"] as? String ?? "iPhone 12 (Alexey)"
-            deviceStatus = stats["deviceStatus"] as? String ?? defaultDeviceStatus
-            deviceBattery = stats["deviceBattery"] as? String ?? "67%"
+        // Prefer real selected-child label from roster (no Alexey mock).
+        if let childId = effectiveChildId {
+            let members = FamilyLocalStore.loadPersistedMembers()
+            if let member = members.first(where: {
+                $0.id == childId || $0.canonicalId == childId || $0.serverMemberId == childId
+            }) {
+                let name = member.name.trimmingCharacters(in: .whitespacesAndNewlines)
+                if !name.isEmpty {
+                    deviceName = name
+                }
+                // status/lastActive — лучший локальный сигнал без mock батареи.
+                deviceStatus = member.lastActive.isEmpty
+                    ? localizationManager.localized("remote_lock_status_unknown")
+                    : member.lastActive
+            }
         }
         
-        // Загружаем запросы доступа (по умолчанию примерные)
-        if requests.isEmpty {
-            requests = [
-                AccessRequest(app: "Instagram", time: String(format: localizationManager.localized("family_min_ago_format"), 10), reason: localizationManager.localized("family_request_check_messages"), limit: "30 \(localizationManager.localized("family_limit_minutes"))/\(localizationManager.localized("family_per_day")) (\(localizationManager.localized("family_limit_used")))"),
-                AccessRequest(app: "YouTube", time: String(format: localizationManager.localized("family_min_ago_format"), 5), reason: localizationManager.localized("family_request_review_lesson"), limit: "45 \(localizationManager.localized("family_limit_minutes"))/\(localizationManager.localized("family_per_day")) (\(String(format: localizationManager.localized("family_limit_remaining"), 12)))")
-            ]
+        if let stats = UserDefaults.standard.dictionary(forKey: statsKey) {
+            if let name = stats["deviceName"] as? String, !name.isEmpty,
+               !name.localizedCaseInsensitiveContains("Alexey") {
+                deviceName = name
+            }
+            if let status = stats["deviceStatus"] as? String, !status.isEmpty {
+                deviceStatus = status
+            }
+            if let battery = stats["deviceBattery"] as? String, !battery.isEmpty, battery != "67%" {
+                deviceBattery = battery
+            }
+        }
+        
+        ParentalControlManager.shared.getAccessRequests(childId: effectiveChildId) { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let apiRequests):
+                    requests = apiRequests.map {
+                        AccessRequest(app: $0.app, time: $0.time, reason: $0.reason, limit: $0.limit)
+                    }
+                    accessRequestsCount = requests.count
+                case .failure:
+                    requests = []
+                    accessRequestsCount = 0
+                }
+            }
         }
     }
 }
@@ -5216,6 +5285,8 @@ struct RemoteLockConfirmationModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     @State private var showSuccess = false
+    @State private var isLocking = false
+    @State private var lockError: String?
     
     var body: some View {
         FamilyModalBaseView(
@@ -5226,15 +5297,17 @@ struct RemoteLockConfirmationModal: View {
                 // Предупреждение
                 VStack(spacing: Spacing.m) {
                     Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 64))
+                        .font(.system(size: 48))
                         .foregroundColor(.warningOrange)
                     
                     Text(localizationManager.localized("remote_lock_warning"))
-                        .font(.h2)
+                        .font(.bodyBold)
                         .foregroundColor(.textPrimary)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                     
                     Text(localizationManager.localized("remote_lock_desc"))
-                        .font(.body)
+                        .font(.caption)
                         .foregroundColor(.textSecondary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
@@ -5297,23 +5370,32 @@ struct RemoteLockConfirmationModal: View {
                     .padding(Spacing.l)
                 } else {
                     VStack(spacing: Spacing.m) {
+                        if let lockError {
+                            Text(lockError)
+                                .font(.caption)
+                                .foregroundColor(.dangerRed)
+                                .multilineTextAlignment(.center)
+                        }
+                        
                         Button(action: {
                             HapticFeedback.impact(.heavy)
-                            withAnimation {
-                                showSuccess = true
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                isPresented = false
-                            }
+                            attemptRemoteLock()
                         }) {
-                            Text(localizationManager.localized("remote_lock_confirm"))
-                                .font(.bodyBold)
-                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(Spacing.m)
-                                .background(Color.dangerRed)
-                                .cornerRadius(CornerRadius.medium)
+                            if isLocking {
+                                ProgressView()
+                                    .frame(maxWidth: .infinity)
+                                    .padding(Spacing.m)
+                            } else {
+                                Text(localizationManager.localized("remote_lock_confirm"))
+                                    .font(.bodyBold)
+                                    .foregroundColor(.white)
+                                    .frame(maxWidth: .infinity)
+                                    .padding(Spacing.m)
+                                    .background(Color.dangerRed)
+                                    .cornerRadius(CornerRadius.medium)
+                            }
                         }
+                        .disabled(isLocking)
                         
                         Button(action: {
                             HapticFeedback.impact(.light)
@@ -5332,6 +5414,43 @@ struct RemoteLockConfirmationModal: View {
             }
         }
         .id("remote_lock_lang_\(localizationManager.currentLanguage.rawValue)")
+    }
+    
+    private func attemptRemoteLock() {
+        isLocking = true
+        lockError = nil
+        // Best path without APNs lock: push parental settings (app blocking) for selected child.
+        // True full-screen lock still needs child device + FamilyControls / push command (prod-ux-20).
+        let familyId = FamilyLocalStore.loadPersistedFamilyId().trimmingCharacters(in: .whitespacesAndNewlines)
+        let childId = UserDefaults.standard.string(forKey: "parental_selected_child_id")?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let childOrNil = (childId?.isEmpty == false) ? childId : nil
+        
+        guard !familyId.isEmpty else {
+            isLocking = false
+            lockError = localizationManager.localized("remote_lock_failed")
+            return
+        }
+        
+        ParentalControlManager.shared.saveSettingsToServer(
+            familyId: familyId,
+            childId: childOrNil,
+            isContentFilterEnabled: true,
+            isAppBlockingEnabled: true
+        ) { result in
+            DispatchQueue.main.async {
+                isLocking = false
+                switch result {
+                case .success:
+                    withAnimation { showSuccess = true }
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
+                        isPresented = false
+                    }
+                case .failure:
+                    lockError = localizationManager.localized("remote_lock_failed")
+                }
+            }
+        }
     }
 }
 
@@ -5410,22 +5529,17 @@ struct RemoteWipeConfirmationModal: View {
                     VStack(spacing: Spacing.m) {
                         Button(action: {
                             HapticFeedback.impact(.heavy)
-                            withAnimation {
-                                showSuccess = true
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                isPresented = false
-            }
+                            performLocalDataWipe()
                         }) {
                             Text(localizationManager.localized("data_deletion_button"))
                                 .font(.bodyBold)
-            .foregroundColor(.white)
+                                .foregroundColor(.white)
                                 .frame(maxWidth: .infinity)
                                 .padding(Spacing.m)
                                 .background(isConfirmationValid ? Color.dangerRed : Color.dangerRed.opacity(0.5))
                                 .cornerRadius(CornerRadius.medium)
                         }
-                        .disabled(!isConfirmationValid)
+                        .disabled(!isConfirmationValid || showSuccess)
                         
                         Button(action: {
                             HapticFeedback.impact(.light)
@@ -5444,6 +5558,19 @@ struct RemoteWipeConfirmationModal: View {
             }
         }
         .id("data_deletion_lang_\(localizationManager.currentLanguage.rawValue)")
+    }
+    
+    private func performLocalDataWipe() {
+        withAnimation { showSuccess = true }
+        // Same local wipe path as Profile → delete account (UserDefaults + Keychain.clearAll).
+        // Does NOT wipe the whole iPhone and does NOT remote-wipe the child's phone.
+        StorageManager.shared.clearAllData()
+        AntifakePrivacyWipe.wipeAllLocalData()
+        AppConfig.authToken = nil
+        NotificationCenter.default.post(name: NSNotification.Name("UserAccountDeleted"), object: nil)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+            isPresented = false
+        }
     }
 }
 
@@ -5563,7 +5690,7 @@ struct AccessRequestsModal: View {
                 print("✅ Loaded \(requests.count) access requests")
             case .failure(let error):
                 print("❌ Failed to load access requests: \(error.localizedDescription)")
-                // Оставляем существующие mock-данные при ошибке
+                DispatchQueue.main.async { requests = [] }
             }
         }
     }
@@ -6888,21 +7015,25 @@ struct GeofencesSettingsModal: View {
         return (fromGeofences + presets).filter { seen.insert($0).inserted }
     }
 
-    // Загрузка геозон из UserDefaults
+    // Загрузка геозон из UserDefaults — без демо «ул. Ленина / Пушкина»
     private func loadGeofences() {
         placesConsentAccepted = GeofencePlacesConsentStore.hasAccepted
         noShowSchedules = GeofenceNoShowMonitor.loadSchedules()
         if let data = UserDefaults.standard.data(forKey: geofencesKey),
            let decoded = try? JSONDecoder().decode([GeofenceItemCodable].self, from: data) {
-            geofences = decoded.map {
+            let mapped = decoded.map {
                 GeofenceItem(id: $0.id, name: $0.name, address: $0.address, radius: $0.radius, isActive: $0.isActive)
             }
+            let real = mapped.filter {
+                !GeofenceGeocodingService.isDemoPlaceholderAddress($0.address, localization: localizationManager)
+            }
+            geofences = real
+            // Persist cleanup if we stripped demo seeds
+            if real.count != mapped.count {
+                saveGeofences()
+            }
         } else {
-            // Значения по умолчанию - используем локализованные строки
-            geofences = [
-                GeofenceItem(name: localizationManager.localized("geofences_home"), address: localizationManager.localized("geofences_street_lenin"), radius: 100),
-                GeofenceItem(name: localizationManager.localized("geofences_school"), address: localizationManager.localized("geofences_street_pushkin"), radius: 200)
-            ]
+            geofences = []
         }
     }
     
@@ -6956,6 +7087,23 @@ struct GeofencesSettingsModal: View {
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.m) {
+                if placesConsentAccepted && geofences.isEmpty && !showAddForm {
+                    VStack(alignment: .leading, spacing: Spacing.xs) {
+                        Text(localizationManager.localized("geofences_empty_title"))
+                            .font(.bodyBold)
+                            .foregroundColor(.textPrimary)
+                        Text(localizationManager.localized("geofences_empty_body"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                    .padding(Spacing.m)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .background(Color.white.opacity(0.10))
+                    .cornerRadius(CornerRadius.medium)
+                    .accessibilityIdentifier("geofences_empty_state")
+                }
+
                 // geo-04 — согласие: уведомления о местах, не слежка
                 if !placesConsentAccepted {
                     VStack(alignment: .leading, spacing: Spacing.s) {
@@ -7637,7 +7785,7 @@ struct FrequentPlace: Identifiable {
 
 struct WeeklyReportDetailModal: View {
     @Binding var isPresented: Bool
-    /// Идентификатор ребёнка для query `childId` на `GET /api/parental-control/reports/weekly`; `nil` — отчёты целевого пользователя токена.
+    /// Child id for weekly reports query; `nil` uses the token account.
     var childId: String? = nil
     @EnvironmentObject private var localizationManager: LocalizationManager
     
@@ -7965,6 +8113,7 @@ struct TopSitesDetailModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     @State private var topSites: [TopSiteItem] = []
+    @State private var isLoading = true
     
     var body: some View {
         FamilyModalBaseView(
@@ -7972,48 +8121,65 @@ struct TopSitesDetailModal: View {
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.m) {
-                ForEach(Array(topSites.enumerated()), id: \.element.id) { index, site in
-                    HStack(spacing: Spacing.m) {
-                        Text("\(index + 1)")
+                if isLoading {
+                    ProgressView()
+                        .padding(Spacing.l)
+                } else if topSites.isEmpty {
+                    VStack(spacing: Spacing.s) {
+                        Text(localizationManager.localized("top_sites_empty_title"))
                             .font(.bodyBold)
-                            .foregroundColor(.secondaryGold)
-                            .frame(width: 32, height: 32)
-                            .background(Color.secondaryGold.opacity(0.2))
-                            .cornerRadius(16)
-                        
-                        VStack(alignment: .leading, spacing: 4) {
-                            Text(site.site)
-                                .font(.bodyBold)
-                                .foregroundColor(.textPrimary)
-                            
-                            HStack(spacing: Spacing.s) {
-                                    Text("\(site.visits) \(localizationManager.localized("top_sites_visits"))")
-                                    .font(.caption)
-                                    .foregroundColor(.textSecondary)
-                                
-                                Text("•")
-                                    .font(.caption)
-                                    .foregroundColor(.textSecondary)
-                                
-                                    Text(formatDuration(hours: site.hours, minutes: site.minutes))
-                                    .font(.caption)
-                                    .foregroundColor(.textSecondary)
-                            }
-                            
-                                Text(localizationManager.localized(site.categoryKey))
-                                .font(.captionSmall)
-                                    .foregroundColor(site.color)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 4)
-                                .background(site.color.opacity(0.2))
-                                .cornerRadius(8)
-                        }
-                        
-                        Spacer()
+                            .foregroundColor(.textPrimary)
+                            .multilineTextAlignment(.center)
+                        Text(localizationManager.localized("top_sites_empty_hint"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .multilineTextAlignment(.center)
                     }
                     .padding(Spacing.m)
-                    .background(Color.backgroundMedium.opacity(0.3))
-                    .cornerRadius(CornerRadius.medium)
+                } else {
+                    ForEach(Array(topSites.enumerated()), id: \.element.id) { index, site in
+                        HStack(spacing: Spacing.m) {
+                            Text("\(index + 1)")
+                                .font(.bodyBold)
+                                .foregroundColor(.secondaryGold)
+                                .frame(width: 32, height: 32)
+                                .background(Color.secondaryGold.opacity(0.2))
+                                .cornerRadius(16)
+                            
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(site.site)
+                                    .font(.bodyBold)
+                                    .foregroundColor(.textPrimary)
+                                
+                                HStack(spacing: Spacing.s) {
+                                        Text("\(site.visits) \(localizationManager.localized("top_sites_visits"))")
+                                        .font(.caption)
+                                        .foregroundColor(.textSecondary)
+                                    
+                                    Text("•")
+                                        .font(.caption)
+                                        .foregroundColor(.textSecondary)
+                                    
+                                        Text(formatDuration(hours: site.hours, minutes: site.minutes))
+                                        .font(.caption)
+                                        .foregroundColor(.textSecondary)
+                                }
+                                
+                                    Text(localizationManager.localized(site.categoryKey))
+                                    .font(.captionSmall)
+                                        .foregroundColor(site.color)
+                                    .padding(.horizontal, 8)
+                                    .padding(.vertical, 4)
+                                    .background(site.color.opacity(0.2))
+                                    .cornerRadius(8)
+                            }
+                            
+                            Spacer()
+                        }
+                        .padding(Spacing.m)
+                        .background(Color.backgroundMedium.opacity(0.3))
+                        .cornerRadius(CornerRadius.medium)
+                    }
                 }
             }
         }
@@ -8042,8 +8208,10 @@ struct TopSitesDetailModal: View {
     }
     
     private func loadTopSites() {
+        isLoading = true
         ParentalControlManager.shared.getMonitoringDetail(childId: childId) { result in
             DispatchQueue.main.async {
+                isLoading = false
                 switch result {
                 case .success(let detail):
                     topSites = detail.topSites.map { row in
@@ -8253,6 +8421,7 @@ struct UsageHoursDetailModal: View {
     @EnvironmentObject private var localizationManager: LocalizationManager
     
     @State private var usageHours: [UsageHourItem] = []
+    @State private var isLoading = true
     
     var body: some View {
         FamilyModalBaseView(
@@ -8260,36 +8429,53 @@ struct UsageHoursDetailModal: View {
             isPresented: $isPresented
         ) {
             VStack(spacing: Spacing.m) {
-                ForEach(usageHours) { item in
-                    VStack(alignment: .leading, spacing: Spacing.s) {
-                        HStack {
-                            Text(item.hour)
-                                .font(.bodyBold)
-                                .foregroundColor(.textPrimary)
-                            
-                            Spacer()
-                            
-                            Text("\(item.usage)%")
-                                .font(.bodyBold)
-                                .foregroundColor(item.color)
-                        }
-                        
-                        GeometryReader { geometry in
-                            ZStack(alignment: .leading) {
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(Color.backgroundMedium.opacity(0.3))
-                                    .frame(height: 20)
-                                
-                                RoundedRectangle(cornerRadius: 8)
-                                    .fill(item.color)
-                                    .frame(width: geometry.size.width * CGFloat(item.usage) / 100, height: 20)
-                            }
-                        }
-                        .frame(height: 20)
+                if isLoading {
+                    ProgressView()
+                        .padding(Spacing.l)
+                } else if usageHours.isEmpty {
+                    VStack(spacing: Spacing.s) {
+                        Text(localizationManager.localized("peak_hours_empty_title"))
+                            .font(.bodyBold)
+                            .foregroundColor(.textPrimary)
+                            .multilineTextAlignment(.center)
+                        Text(localizationManager.localized("peak_hours_empty_hint"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .multilineTextAlignment(.center)
                     }
                     .padding(Spacing.m)
-                    .background(Color.backgroundMedium.opacity(0.3))
-                    .cornerRadius(CornerRadius.medium)
+                } else {
+                    ForEach(usageHours) { item in
+                        VStack(alignment: .leading, spacing: Spacing.s) {
+                            HStack {
+                                Text(item.hour)
+                                    .font(.bodyBold)
+                                    .foregroundColor(.textPrimary)
+                                
+                                Spacer()
+                                
+                                Text("\(item.usage)%")
+                                    .font(.bodyBold)
+                                    .foregroundColor(item.color)
+                            }
+                            
+                            GeometryReader { geometry in
+                                ZStack(alignment: .leading) {
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(Color.backgroundMedium.opacity(0.3))
+                                        .frame(height: 20)
+                                    
+                                    RoundedRectangle(cornerRadius: 8)
+                                        .fill(item.color)
+                                        .frame(width: geometry.size.width * CGFloat(item.usage) / 100, height: 20)
+                                }
+                            }
+                            .frame(height: 20)
+                        }
+                        .padding(Spacing.m)
+                        .background(Color.backgroundMedium.opacity(0.3))
+                        .cornerRadius(CornerRadius.medium)
+                    }
                 }
             }
         }
@@ -8300,8 +8486,10 @@ struct UsageHoursDetailModal: View {
     }
     
     private func loadPeakHoursFromServer() {
+        isLoading = true
         ParentalControlManager.shared.getMonitoringDetail(childId: childId) { result in
             DispatchQueue.main.async {
+                isLoading = false
                 switch result {
                 case .success(let detail):
                     usageHours = detail.peakHours.map { row in
@@ -8386,6 +8574,18 @@ struct BypassAttemptsDetailModal: View {
                 if isLoading {
                     ProgressView()
                         .padding(Spacing.l)
+                } else if today == 0 && week == 0 && blocked == 0 && incognitoCount == 0 && torCount == 0 && proxyCount == 0 {
+                    VStack(spacing: Spacing.s) {
+                        Text(localizationManager.localized("bypass_empty_title"))
+                            .font(.bodyBold)
+                            .foregroundColor(.textPrimary)
+                            .multilineTextAlignment(.center)
+                        Text(localizationManager.localized("bypass_empty_hint"))
+                            .font(.caption)
+                            .foregroundColor(.textSecondary)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(Spacing.m)
                 } else {
                     // Общая статистика
                     VStack(alignment: .leading, spacing: Spacing.s) {
@@ -8641,6 +8841,7 @@ struct YouTubeSettingsModal: View {
                 
                 Button(action: {
                     HapticFeedback.impact(.medium)
+                    syncYouTubeSettingsToServer()
                     VisualLogger.shared.log(
                         "💾 youtube_settings_save safeMode=\(isSafeModeEnabled) ageEnabled=\(isAgeRestrictionEnabled) age=\(ageRestriction) limit=\(Int(timeLimit))",
                         level: .success,
@@ -8665,7 +8866,7 @@ struct YouTubeSettingsModal: View {
                 level: .info,
                 category: "PARENTAL.UI"
             )
-            print("✅ YouTube Safe Mode: \(newValue ? "ON" : "OFF")")
+            syncYouTubeSettingsToServer()
         }
         .onChange(of: isAgeRestrictionEnabled) { newValue in
             VisualLogger.shared.log(
@@ -8673,7 +8874,6 @@ struct YouTubeSettingsModal: View {
                 level: .info,
                 category: "PARENTAL.UI"
             )
-            print("✅ YouTube Age Restriction: \(newValue ? "ON" : "OFF")")
         }
         .onChange(of: ageRestriction) { newValue in
             VisualLogger.shared.log(
@@ -8689,9 +8889,42 @@ struct YouTubeSettingsModal: View {
                 level: .info,
                 category: "PARENTAL.UI"
             )
-            print("✅ YouTube Time Limit: \(Int(newValue)) min/day")
+            if Int(newValue) % 15 == 0 {
+                syncYouTubeSettingsToServer()
+            }
         }
         .withVisualLogger()
+    }
+    
+    private func syncYouTubeSettingsToServer() {
+        let familyId = FamilyLocalStore.loadPersistedFamilyId().trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !familyId.isEmpty else { return }
+        let childId = UserDefaults.standard.string(forKey: "parental_selected_child_id")?
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        let childOrNil = (childId?.isEmpty == false) ? childId : nil
+        let blocked: [String]? = isSafeModeEnabled
+            ? ["youtube.com", "m.youtube.com", "youtu.be", "www.youtube.com"]
+            : []
+        ParentalControlManager.shared.saveSettingsToServer(
+            familyId: familyId,
+            childId: childOrNil,
+            isContentFilterEnabled: isSafeModeEnabled || isAgeRestrictionEnabled,
+            blockedWebsites: blocked
+        ) { result in
+            if case .failure(let error) = result {
+                VisualLogger.shared.log(
+                    "⚠️ youtube sync failed: \(error.localizedDescription)",
+                    level: .warning,
+                    category: "PARENTAL.API"
+                )
+            }
+        }
+        if let child = childOrNil, isSafeModeEnabled || isAgeRestrictionEnabled {
+            ParentalControlManager.shared.saveTimeLimitsToServer(
+                childId: child,
+                dailyLimitMinutes: Int(timeLimit)
+            ) { _ in }
+        }
     }
 }
 

@@ -16,7 +16,7 @@ final class DeviceComponentsScanViewModel: ObservableObject {
 
     init(
         apiService: APIService? = nil,
-        localizationManager: LocalizationManager = LocalizationManager()
+        localizationManager: LocalizationManager = .shared
     ) {
         self.apiService = apiService ?? APIService.shared
         self.localizationManager = localizationManager
@@ -36,14 +36,24 @@ final class DeviceComponentsScanViewModel: ObservableObject {
         do {
             switch kind {
             case .phishing:
-                phishingVerdict = try await performPhishingCheck()
+                phishingVerdict = try await withAsyncTimeout(seconds: 45) {
+                    try await self.performPhishingCheck()
+                }
             case .network:
-                networkResult = try await performNetworkScan()
+                networkResult = try await withAsyncTimeout(seconds: 45) {
+                    try await self.performNetworkScan()
+                }
             case .mobile:
-                mobileResult = try await performMobileCheck()
+                mobileResult = try await withAsyncTimeout(seconds: 45) {
+                    try await self.performMobileCheck()
+                }
             case .incident:
-                incidentResult = try await performIncidentDrill()
+                incidentResult = try await withAsyncTimeout(seconds: 45) {
+                    try await self.performIncidentDrill()
+                }
             }
+        } catch is AsyncTimeoutError {
+            errorMessage = localizationManager.localized("device_hub_scan_timeout")
         } catch {
             handleError(error)
         }
@@ -59,19 +69,8 @@ final class DeviceComponentsScanViewModel: ObservableObject {
 
     private func performNetworkScan() async throws -> DeviceAgentScanResult {
         let homeId = IoTHomeIdResolver.current
-        _ = try await apiService.startIoTScan(homeId: homeId)
-        return DeviceAgentScanResult(
-            scanId: homeId,
-            status: "started",
-            scope: "iot_home",
-            securityScore: nil,
-            threatsFound: 0,
-            threats: [],
-            source: "real_agent",
-            agent: "iot_security_agent",
-            checkedAt: nil,
-            clean: true
-        )
+        let started = try await apiService.startIoTScan(homeId: homeId)
+        return started.asDeviceAgentScanResult()
     }
 
     private func performMobileCheck() async throws -> DeviceAgentScanResult {

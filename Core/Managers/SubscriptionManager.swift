@@ -1558,7 +1558,8 @@ final class SubscriptionManager: ObservableObject {
         bumpSubscriptionDisplayEpoch()
     }
 
-    private func bumpSubscriptionDisplayEpoch() {
+    /// Публичный bump после выбора тарифа/trial — иначе главная может оставить старый цвет карточки.
+    func bumpSubscriptionDisplayEpoch() {
         subscriptionDisplayEpoch &+= 1
         // На части устройств/версий SwiftUI цепочка @Published для UInt64 + градиент по derived Color
         // иногда не перерисовывает карточку; явный ping гарантирует инвалидацию дерева.

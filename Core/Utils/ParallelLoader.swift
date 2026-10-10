@@ -138,3 +138,26 @@ actor AsyncSemaphore {
     }
 }
 
+enum AsyncTimeoutError: Error {
+    case timedOut
+}
+
+/// Caps hanging network continuations (Device Hub buttons must not spin forever).
+func withAsyncTimeout<T>(
+    seconds: TimeInterval,
+    operation: @escaping () async throws -> T
+) async throws -> T {
+    try await withThrowingTaskGroup(of: T.self) { group in
+        group.addTask {
+            try await operation()
+        }
+        group.addTask {
+            try await Task.sleep(nanoseconds: UInt64(seconds * 1_000_000_000))
+            throw AsyncTimeoutError.timedOut
+        }
+        let result = try await group.next()!
+        group.cancelAll()
+        return result
+    }
+}
+

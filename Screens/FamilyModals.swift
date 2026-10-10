@@ -1223,9 +1223,9 @@ struct FamilyAdditionalModal: View {
     
     // Mock-данные (загружаются из UserDefaults)
     @State private var accessRequestsCount: Int = 2
-    @State private var deviceName: String = "iPhone 12 (Alexey)"
+    @State private var deviceName: String = ""
     @State private var deviceStatus: String = ""
-    @State private var deviceBattery: String = "67%"
+    @State private var deviceBattery: String = ""
     
     // Статистика запросов (загружается из UserDefaults)
     @State private var requests: [AccessRequest] = []
@@ -1334,24 +1334,42 @@ struct FamilyAdditionalModal: View {
         }
     }
     
-    // Загрузка статистики дополнительных настроек из UserDefaults
     private func loadAdditionalStatistics() {
-        let defaultDeviceStatus = localizationManager.localized("remote_lock_status_online")
-        deviceStatus = defaultDeviceStatus
+        deviceName = localizationManager.localized("remote_lock_device_unknown")
+        deviceStatus = localizationManager.localized("remote_lock_status_unknown")
+        deviceBattery = localizationManager.localized("remote_lock_battery_unknown")
+        accessRequestsCount = 0
+        requests = []
         
         if let stats = UserDefaults.standard.dictionary(forKey: statsKey) {
-            accessRequestsCount = stats["accessRequestsCount"] as? Int ?? 2
-            deviceName = stats["deviceName"] as? String ?? "iPhone 12 (Alexey)"
-            deviceStatus = stats["deviceStatus"] as? String ?? defaultDeviceStatus
-            deviceBattery = stats["deviceBattery"] as? String ?? "67%"
+            if let name = stats["deviceName"] as? String, !name.isEmpty,
+               !name.localizedCaseInsensitiveContains("Alexey") {
+                deviceName = name
+            }
+            if let status = stats["deviceStatus"] as? String, !status.isEmpty {
+                deviceStatus = status
+            }
+            if let battery = stats["deviceBattery"] as? String, !battery.isEmpty, battery != "67%" {
+                deviceBattery = battery
+            }
+            if let count = stats["accessRequestsCount"] as? Int {
+                accessRequestsCount = max(0, count)
+            }
         }
         
-        // Загружаем запросы доступа (по умолчанию примерные)
-        if requests.isEmpty {
-            requests = [
-                AccessRequest(app: "Instagram", time: String(format: localizationManager.localized("family_min_ago_format"), 10), reason: localizationManager.localized("family_request_check_messages"), limit: "30 \(localizationManager.localized("family_limit_minutes"))/\(localizationManager.localized("family_per_day")) (\(localizationManager.localized("family_limit_used")))"),
-                AccessRequest(app: "YouTube", time: String(format: localizationManager.localized("family_min_ago_format"), 5), reason: localizationManager.localized("family_request_review_lesson"), limit: "45 \(localizationManager.localized("family_limit_minutes"))/\(localizationManager.localized("family_per_day")) (\(String(format: localizationManager.localized("family_limit_remaining"), 12)))")
-            ]
+        ParentalControlManager.shared.getAccessRequests { result in
+            DispatchQueue.main.async {
+                switch result {
+                case .success(let apiRequests):
+                    requests = apiRequests.map {
+                        AccessRequest(app: $0.app, time: $0.time, reason: $0.reason, limit: $0.limit)
+                    }
+                    accessRequestsCount = requests.count
+                case .failure:
+                    requests = []
+                    accessRequestsCount = 0
+                }
+            }
         }
     }
 }
@@ -1530,132 +1548,8 @@ struct RewardsModal: View {
 
 // MARK: 1. Подтверждения (приоритетные)
 
-struct RemoteLockConfirmationModal: View {
-    @Binding var isPresented: Bool
-    let deviceName: String
-    let deviceStatus: String
-    let deviceBattery: String
-    @EnvironmentObject private var localizationManager: LocalizationManager
-    
-    @State private var showSuccess = false
-    
-    var body: some View {
-        FamilyModalBaseView(
-            title: localizationManager.localized("remote_lock_title"),
-            isPresented: $isPresented
-        ) {
-            VStack(spacing: Spacing.l) {
-                // Предупреждение
-                VStack(spacing: Spacing.m) {
-                    Image(systemName: "exclamationmark.triangle.fill")
-                        .font(.system(size: 64))
-                        .foregroundColor(.warningOrange)
-                    
-                    Text(localizationManager.localized("remote_lock_warning"))
-                        .font(.h2)
-                        .foregroundColor(.textPrimary)
-                    
-                    Text(localizationManager.localized("remote_lock_desc"))
-                        .font(.body)
-                        .foregroundColor(.textSecondary)
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                }
-                .padding(Spacing.l)
-                .background(Color.warningOrange.opacity(0.1))
-                .cornerRadius(CornerRadius.large)
-                
-                // Информация об устройстве
-                VStack(alignment: .leading, spacing: Spacing.m) {
-                    Text(localizationManager.localized("remote_lock_device_info"))
-                        .font(.bodyBold)
-                        .foregroundColor(.secondaryGold)
-                    
-                    HStack {
-                        Text(localizationManager.localized("remote_lock_device"))
-                            .font(.body)
-                            .foregroundColor(.textSecondary)
-                        Spacer()
-                        Text(deviceName)
-                            .font(.bodyBold)
-                            .foregroundColor(.textPrimary)
-                    }
-                    
-                    HStack {
-                        Text(localizationManager.localized("remote_lock_status"))
-                            .font(.body)
-                            .foregroundColor(.textSecondary)
-                        Spacer()
-                        Text(deviceStatus)
-                            .font(.bodyBold)
-                            .foregroundColor(.successGreen)
-                    }
-                    
-                    HStack {
-                        Text(localizationManager.localized("remote_lock_battery"))
-                            .font(.body)
-                            .foregroundColor(.textSecondary)
-                        Spacer()
-                        Text(deviceBattery)
-                            .font(.bodyBold)
-                            .foregroundColor(.textPrimary)
-                    }
-                }
-                .padding(Spacing.m)
-                .background(Color.backgroundMedium.opacity(0.3))
-                .cornerRadius(CornerRadius.medium)
-                
-                // Действия
-                if showSuccess {
-                    VStack(spacing: Spacing.m) {
-                        Image(systemName: "checkmark.circle.fill")
-                            .font(.system(size: 64))
-                            .foregroundColor(.successGreen)
-                        
-                        Text(localizationManager.localized("remote_lock_success"))
-                            .font(.bodyBold)
-                            .foregroundColor(.successGreen)
-                    }
-                    .padding(Spacing.l)
-                } else {
-                    VStack(spacing: Spacing.m) {
-                        Button(action: {
-                            HapticFeedback.impact(.heavy)
-                            withAnimation {
-                                showSuccess = true
-                            }
-                            DispatchQueue.main.asyncAfter(deadline: .now() + 2) {
-                                isPresented = false
-                            }
-                        }) {
-                            Text(localizationManager.localized("remote_lock_confirm"))
-                                .font(.bodyBold)
-                .foregroundColor(.white)
-                                .frame(maxWidth: .infinity)
-                                .padding(Spacing.m)
-                                .background(Color.dangerRed)
-                                .cornerRadius(CornerRadius.medium)
-                        }
-                        
-                        Button(action: {
-                            HapticFeedback.impact(.light)
-                            isPresented = false
-                        }) {
-                            Text(localizationManager.localized("edit_profile_cancel"))
-                                .font(.body)
-                                .foregroundColor(.textSecondary)
-                                .frame(maxWidth: .infinity)
-                                .padding(Spacing.m)
-                                .background(Color.backgroundMedium.opacity(0.5))
-                                .cornerRadius(CornerRadius.medium)
-                        }
-                    }
-                }
-            }
-        }
-        .id("remote_lock_lang_\(localizationManager.currentLanguage.rawValue)")
-    }
-}
+// RemoteLockConfirmationModal / RemoteWipeConfirmationModal — канон в Screens/02_FamilyScreen.swift
+
 
 struct RemoteWipeConfirmationModal: View {
     @Binding var isPresented: Bool
@@ -1885,7 +1779,7 @@ struct AccessRequestsModal: View {
                 print("✅ Loaded \(requests.count) access requests")
             case .failure(let error):
                 print("❌ Failed to load access requests: \(error.localizedDescription)")
-                // Оставляем существующие mock-данные при ошибке
+                requests = []
             }
         }
     }
@@ -2955,11 +2849,10 @@ struct GeofencesSettingsModal: View {
            let decoded = try? JSONDecoder().decode([GeofenceItemCodable].self, from: data) {
             geofences = decoded.map { GeofenceItem(name: $0.name, address: $0.address, radius: $0.radius) }
         } else {
-            // Значения по умолчанию - используем локализованные строки
-            geofences = [
-                GeofenceItem(name: localizationManager.localized("geofences_home"), address: localizationManager.localized("geofences_street_lenin"), radius: 100),
-                GeofenceItem(name: localizationManager.localized("geofences_school"), address: localizationManager.localized("geofences_street_pushkin"), radius: 200)
-            ]
+            geofences = []
+        }
+        geofences = geofences.filter {
+            !GeofenceGeocodingService.isDemoPlaceholderAddress($0.address, localization: localizationManager)
         }
     }
     

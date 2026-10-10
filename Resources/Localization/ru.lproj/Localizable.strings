@@ -1982,7 +1982,7 @@
 "family_monitoring_browser_category_search" = "Поиск";
 
 /* Пустое состояние недельных отчётов (pc-16) */
-"family_reports_empty_title" = "Пока нет сохранённых недельных отчётов";
-"family_reports_empty_hint_jwt" = "Отчёты привязаны к числовому аккаунту ребёнка. Привяжите ребёнка в семье и проверьте ответ GET /api/parental-control/reports/weekly, либо заполните parental_reports / события мониторинга на сервере.";
+"family_reports_empty_title" = "Пока нет недельных отчётов";
+"family_reports_empty_hint_jwt" = "Отчёт появится после недели с защитой ребёнка в семье.";
 
 

@@ -17,7 +17,7 @@ final class DeviceMobilePanelViewModel: ObservableObject {
 
     init(
         apiService: APIService? = nil,
-        localizationManager: LocalizationManager = LocalizationManager(),
+        localizationManager: LocalizationManager = .shared,
         protectionSettingsManager: ProtectionSettingsManager? = nil,
         tariffManager: TariffManager? = nil
     ) {
@@ -80,11 +80,15 @@ final class DeviceMobilePanelViewModel: ObservableObject {
         defer { isRunningScan = false }
 
         do {
-            lastScan = try await withCheckedThrowingContinuation { continuation in
-                apiService.runMobileSecurityCheck(deviceId: nil) { result in
-                    continuation.resume(with: result)
+            lastScan = try await withAsyncTimeout(seconds: 45) {
+                try await withCheckedThrowingContinuation { continuation in
+                    self.apiService.runMobileSecurityCheck(deviceId: nil) { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
+        } catch is AsyncTimeoutError {
+            errorMessage = localizationManager.localized("device_hub_scan_timeout")
         } catch {
             handleError(error)
         }
@@ -101,11 +105,15 @@ final class DeviceMobilePanelViewModel: ObservableObject {
         defer { isRunningScan = false }
 
         do {
-            lastScan = try await withCheckedThrowingContinuation { continuation in
-                apiService.runMobileDeviceScan(deviceId: nil) { result in
-                    continuation.resume(with: result)
+            lastScan = try await withAsyncTimeout(seconds: 45) {
+                try await withCheckedThrowingContinuation { continuation in
+                    self.apiService.runMobileDeviceScan(deviceId: nil) { result in
+                        continuation.resume(with: result)
+                    }
                 }
             }
+        } catch is AsyncTimeoutError {
+            errorMessage = localizationManager.localized("device_hub_scan_timeout")
         } catch {
             handleError(error)
         }

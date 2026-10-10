@@ -310,6 +310,94 @@ enum FamilyControlsAvailabilityError: LocalizedError {
         managedSettingsStore.shield.webDomains = nil
         print("🛡️ ParentalControlManager: All shields cleared")
     }
+
+    // MARK: - Child device: pull + apply parental settings (Apple-compliant)
+
+    private static let childSettingsLastSyncAtKey = "parental_child_settings_last_sync_at"
+    private static let childSettingsMinInterval: TimeInterval = 60
+
+    /// On the child's iPhone only: GET parental settings from `:8002` and apply locally
+    /// (FamilyControls / Safari Content Blocker). Parent cannot apply ManagedSettings to another device.
+    @discardableResult
+    func syncAndApplyParentalSettingsFromServerIfChildDevice(force: Bool = false) async -> Bool {
+        guard isChildRoleDeviceForFamilyControls() else { return false }
+
+        let now = Date().timeIntervalSince1970
+        let last = UserDefaults.standard.double(forKey: Self.childSettingsLastSyncAtKey)
+        if !force, last > 0, now - last < Self.childSettingsMinInterval {
+            return false
+        }
+
+        let familyId = FamilyLocalStore.loadPersistedFamilyId()
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !familyId.isEmpty else {
+            print("ℹ️ Child parental sync skipped: empty family_id")
+            return false
+        }
+
+        let childIdCandidates = [
+            UserDefaults.standard.string(forKey: "your_member_id"),
+            UserDefaults.standard.string(forKey: "active_child_profile_server_id"),
+            UserDefaults.standard.string(forKey: "user_id")
+        ]
+        let childId = childIdCandidates
+            .compactMap { $0?.trimmingCharacters(in: .whitespacesAndNewlines) }
+            .first { !$0.isEmpty }
+
+        let result: Result<ParentalControlSettingsResponse, Error> = await withCheckedContinuation { continuation in
+            loadSettingsFromServer(familyId: familyId, childId: childId) { apiResult in
+                continuation.resume(returning: apiResult)
+            }
+        }
+
+        switch result {
+        case .success(let response):
+            UserDefaults.standard.set(now, forKey: Self.childSettingsLastSyncAtKey)
+            await applyPulledParentalSettingsLocally(response)
+            print("✅ Child parental settings applied (version=\(response.version), sites=\(response.blockedWebsites.count))")
+            return true
+        case .failure(let error):
+            print("⚠️ Child parental settings pull failed: \(error.localizedDescription)")
+            return false
+        }
+    }
+
+    /// Persist server settings into local flags and apply on-device controls Apple allows.
+    func applyPulledParentalSettingsLocally(_ response: ParentalControlSettingsResponse) async {
+        let defaults = UserDefaults.standard
+        defaults.set(response.isContentFilterEnabled, forKey: "parental_content_filter_enabled")
+        defaults.set(response.isAppBlockingEnabled, forKey: "parental_app_blocking")
+        defaults.set(response.isAppBlockingEnabled, forKey: "parental_homework_mode")
+        defaults.set(response.screenTimeLimitHours, forKey: "parental_screen_time_limit_hours")
+        defaults.set(response.allowedApps, forKey: "parental_allowed_apps")
+        defaults.set(response.blockedWebsites, forKey: "parental_blocked_websites")
+        if response.screenTimeLimitHours > 0 {
+            defaults.set("\(response.screenTimeLimitHours)h/day", forKey: "parental_screen_time_limit")
+        }
+        if let bedtime = response.bedtime {
+            defaults.set(bedtime, forKey: "parental_bedtime")
+        }
+
+        let blockedLower = response.blockedWebsites.map { $0.lowercased() }
+        let youtubeBlocked = blockedLower.contains { site in
+            site.contains("youtube") || site.contains("youtu.be")
+        }
+        defaults.set(youtubeBlocked, forKey: "youtube_safe_mode")
+        defaults.set(youtubeBlocked, forKey: "parental_youtube_filtering")
+
+        if response.isAppBlockingEnabled || response.isContentFilterEnabled {
+            _ = await applyFamilyControlsPipelineIfPossible()
+            setAppRemovalDenied(response.isAppBlockingEnabled)
+        } else {
+            clearAllShields()
+            setAppRemovalDenied(false)
+        }
+
+        await ContentBlockerManager.shared.applyParentalBlockedWebsites(
+            response.blockedWebsites,
+            contentFilterEnabled: response.isContentFilterEnabled || youtubeBlocked
+        )
+    }
     
     // MARK: - Screen Time Statistics (Real Data)
     

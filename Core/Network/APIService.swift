@@ -3257,20 +3257,31 @@ class APIService: ObservableObject {
         networkManager.delete(endpoint: "\(AppConfig.Endpoint.devices)/\(deviceId)", body: EmptyBody(), completion: completion)
     }
     
-    /// Запустить сканирование IoT устройств
-    func startIoTScan(homeId: String) async throws -> APIResponse<String> {
+    /// Запустить сканирование IoT устройств — POST `/api/iot/scan/{homeId}` (реальный JSON, не envelope data:String).
+    func startIoTScan(homeId: String) async throws -> IoTScanStartResult {
         return try await withCheckedThrowingContinuation { continuation in
             var hasResumed = false
 
             struct EmptyBody: Codable {}
             let endpoint = AppConfig.Endpoint.iotScan.replacingOccurrences(of: "{homeId}", with: homeId)
-            networkManager.post(endpoint: endpoint, body: EmptyBody()) { (result: Result<APIResponse<String>, Error>) in
+            networkManager.post(endpoint: endpoint, body: EmptyBody()) { (result: Result<IoTScanStartResult, Error>) in
                 guard !hasResumed else {
                     logger.error("⚠️ CRITICAL: Attempted to resume continuation twice in startIoTScan()!")
                     return
                 }
                 hasResumed = true
-                continuation.resume(with: result)
+                switch result {
+                case .success(let payload):
+                    if DeviceScanSourceValidator.mockSources.contains(payload.source.lowercased()) {
+                        continuation.resume(
+                            throwing: SecurityVerdictValidationError.mockSourceRejected(payload.source)
+                        )
+                    } else {
+                        continuation.resume(returning: payload)
+                    }
+                case .failure(let error):
+                    continuation.resume(throwing: error)
+                }
             }
         }
     }

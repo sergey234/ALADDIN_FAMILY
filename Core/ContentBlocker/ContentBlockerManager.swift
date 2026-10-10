@@ -180,6 +180,58 @@ class ContentBlockerManager: ObservableObject {
     func updateRules(categories: [ContentBlockerCategory]) async throws {
         try await enableContentBlocker(categories: categories)
     }
+
+    /// Apply parental blocked websites from server settings on the child device (Safari Content Blocker).
+    /// Replaces App Group rules with the parental domain list when filter is on; does not claim system-wide MDM lock.
+    func applyParentalBlockedWebsites(_ websites: [String], contentFilterEnabled: Bool) async {
+        let normalized = websites
+            .map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+            .filter { !$0.isEmpty }
+            .map { site -> String in
+                var s = site
+                if s.hasPrefix("https://") { s = String(s.dropFirst(8)) }
+                if s.hasPrefix("http://") { s = String(s.dropFirst(7)) }
+                if s.hasPrefix("www.") { s = String(s.dropFirst(4)) }
+                return s
+            }
+
+        UserDefaults.standard.set(normalized, forKey: "parental_blocked_websites")
+
+        guard contentFilterEnabled, !normalized.isEmpty else {
+            return
+        }
+
+        var rules: [ContentBlockerRule] = []
+        for domain in normalized {
+            let pattern: String
+            if domain.contains(".*") {
+                pattern = domain
+            } else {
+                let escaped = NSRegularExpression.escapedPattern(for: domain)
+                pattern = ".*\(escaped).*"
+            }
+            let trigger = Trigger(
+                urlFilter: pattern,
+                ifDomain: nil,
+                unlessDomain: nil,
+                resourceType: nil,
+                loadType: nil,
+                ifTopUrl: nil
+            )
+            rules.append(ContentBlockerRule(trigger: trigger, action: Action(type: "block", selector: nil)))
+        }
+
+        saveRules(rules)
+        blockedSitesCount = rules.count
+        do {
+            try await reloadContentBlocker()
+            await checkBlockingStatus()
+            print("✅ ContentBlockerManager: parental domains applied (\(rules.count))")
+        } catch {
+            print("⚠️ ContentBlockerManager: parental reload failed: \(error.localizedDescription)")
+            status = .error(error.localizedDescription)
+        }
+    }
     
     /**
      * Создать правила из категорий

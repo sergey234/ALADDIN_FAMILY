@@ -328,7 +328,7 @@ private struct DeviceHubMobilePanel: View {
                 icon: "checkmark.shield",
                 isLoading: viewModel.isRunningScan
             ) {
-                Task { await viewModel.runDeviceScan() }
+                Task { await viewModel.runSecurityCheck() }
             }
 
             if let scan = viewModel.lastScan {
@@ -402,10 +402,10 @@ private struct DeviceHubIoTPanel: View {
             ForEach(viewModel.threats) { threat in
                 HStack {
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(threat.description)
+                        Text(iotThreatTitle(threat, localizationManager: localizationManager))
                             .font(.subheadline.weight(.semibold))
                             .foregroundColor(.white)
-                        Text(threat.severity.rawValue.capitalized)
+                        Text(iotSeverityLabel(threat.severity, localizationManager: localizationManager))
                             .font(.caption)
                             .foregroundColor(.white.opacity(0.7))
                     }
@@ -463,5 +463,26 @@ private struct DeviceHubIoTPanel: View {
                 .foregroundColor(.white.opacity(0.7))
         }
         .frame(maxWidth: .infinity)
+    }
+}
+
+private func iotThreatTitle(_ threat: IoTThreat, localizationManager: LocalizationManager) -> String {
+    let raw = threat.description.trimmingCharacters(in: .whitespacesAndNewlines)
+    let lower = raw.lowercased()
+    if lower.contains("thermostat") || lower.contains("термостат") {
+        return localizationManager.localized("iot_device_thermostat")
+    }
+    if raw.isEmpty {
+        return localizationManager.localized("iot_device_thermostat")
+    }
+    return raw
+}
+
+private func iotSeverityLabel(_ severity: ThreatSeverity, localizationManager: LocalizationManager) -> String {
+    switch severity {
+    case .low: return localizationManager.localized("iot_severity_low")
+    case .medium: return localizationManager.localized("iot_severity_medium")
+    case .high: return localizationManager.localized("iot_severity_high")
+    case .critical: return localizationManager.localized("iot_severity_critical")
     }
 }

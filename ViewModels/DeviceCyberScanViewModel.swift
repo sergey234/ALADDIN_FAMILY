@@ -19,7 +19,7 @@ final class DeviceCyberScanViewModel: ObservableObject {
 
     init(
         apiService: APIService? = nil,
-        localizationManager: LocalizationManager = LocalizationManager(),
+        localizationManager: LocalizationManager = .shared,
         tariffManager: TariffManager? = nil
     ) {
         self.apiService = apiService ?? APIService.shared
@@ -53,7 +53,11 @@ final class DeviceCyberScanViewModel: ObservableObject {
         defer { isRunningQuickScan = false }
 
         do {
-            lastScan = try await performQuickScan()
+            lastScan = try await withAsyncTimeout(seconds: 45) {
+                try await self.performQuickScan()
+            }
+        } catch is AsyncTimeoutError {
+            errorMessage = localizationManager.localized("device_hub_scan_timeout")
         } catch {
             handleError(error)
         }
@@ -71,7 +75,9 @@ final class DeviceCyberScanViewModel: ObservableObject {
         defer { isRunningEicarTest = false }
 
         do {
-            let response = try await apiService.runEicarTestScan()
+            let response = try await withAsyncTimeout(seconds: 45) {
+                try await self.apiService.runEicarTestScan()
+            }
             eicarDetected = response.clean == false
             if let threats = response.threatsFound, !threats.isEmpty {
                 lastScan = DeviceAgentScanResult(
@@ -96,7 +102,22 @@ final class DeviceCyberScanViewModel: ObservableObject {
                     checkedAt: nil,
                     clean: response.clean
                 )
+            } else if response.clean == true {
+                lastScan = DeviceAgentScanResult(
+                    scanId: nil,
+                    status: "clean",
+                    scope: "eicar",
+                    securityScore: 100,
+                    threatsFound: 0,
+                    threats: [],
+                    source: "real_agent",
+                    agent: "malware_detection_agent",
+                    checkedAt: nil,
+                    clean: true
+                )
             }
+        } catch is AsyncTimeoutError {
+            errorMessage = localizationManager.localized("device_hub_scan_timeout")
         } catch {
             handleError(error)
         }

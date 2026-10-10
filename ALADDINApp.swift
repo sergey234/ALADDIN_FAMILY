@@ -729,6 +729,8 @@ struct ALADDINApp: App {
                         GeofenceNoShowMonitor.checkDue(localization: localizationManager)
                         await GeofenceMonitoringBootstrap.reloadIfNeeded(requestAlwaysUpgrade: true)
                         await FamilyHabitRemindersBootstrap.reloadIfNeeded()
+                        // Child device: pull parental Homework/YouTube/lock settings and apply locally (Apple FC).
+                        _ = await ParentalControlManager.shared.syncAndApplyParentalSettingsFromServerIfChildDevice()
                     }
                     ContentBackgroundSyncScheduler.shared.triggerForegroundRefresh()
                 } else if newPhase == .background {

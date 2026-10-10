@@ -31,6 +31,7 @@ class ParentalControlViewModel: ObservableObject {
     @Published var isDNSLoading: Bool = false
     @Published var dailyReports: [ParentalReportItem] = []
     @Published var weeklyReports: [ParentalReportItem] = []
+    @Published var isLoadingWeeklyAchievements: Bool = false
     
     // MARK: - Published Properties - Component Statuses (5 компонентов)
     
@@ -177,6 +178,7 @@ class ParentalControlViewModel: ObservableObject {
     
     func loadReports() {
         let childIdStr = selectedChild?.id
+        isLoadingWeeklyAchievements = true
         
         APIService.shared.getDailyReports(childId: childIdStr) { [weak self] result in
             if case .success(let reports) = result {
@@ -187,9 +189,13 @@ class ParentalControlViewModel: ObservableObject {
         }
         
         APIService.shared.getWeeklyReports(childId: childIdStr) { [weak self] result in
-            if case .success(let reports) = result {
-                Task { @MainActor [weak self] in
+            Task { @MainActor [weak self] in
+                self?.isLoadingWeeklyAchievements = false
+                switch result {
+                case .success(let reports):
                     self?.weeklyReports = reports
+                case .failure:
+                    self?.weeklyReports = []
                 }
             }
         }

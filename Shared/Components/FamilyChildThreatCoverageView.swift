@@ -33,15 +33,10 @@ struct FamilyChildThreatCoverageView: View {
                     .frame(width: 24)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: Spacing.xs) {
-                        Text(threat.rawValue.uppercased())
-                            .font(.caption2.weight(.bold))
-                            .foregroundColor(.white.opacity(0.55))
-                        Text(localizationManager.localized(threat.titleKey))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.leading)
-                    }
+                    Text(localizationManager.localized(threat.titleKey))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
                     Text(localizationManager.localized(threat.pipelineKey))
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.7))
@@ -64,7 +59,8 @@ struct FamilyChildThreatCoverageView: View {
     private func navigate(for route: FamilyChildThreatRoute) {
         switch route {
         case .familyRoot:
-            navigationManager.navigateToRoot(.family)
+            // Already inside Family monitoring — open parental control for actionable checks.
+            navigationManager.navigateTo(.parentalControl)
         case .parentalControl:
             navigationManager.navigateTo(.parentalControl)
         case .networkProtection:

@@ -1242,6 +1242,9 @@ struct ChildEditContactsModal: View {
             let directPermission = FamilyAccessPolicy.hasPermission(.editFamilyContacts, members: members)
             canEditContacts = permissionSnapshot.canEditContacts && directPermission
             loadContacts()
+            Task { @MainActor in
+                _ = await ParentalControlManager.shared.syncAndApplyParentalSettingsFromServerIfChildDevice(force: true)
+            }
         }
         .onReceive(NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)) { _ in
             loadContacts() // Синхронизируем при изменении family_members_list

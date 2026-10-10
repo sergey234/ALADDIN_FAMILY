@@ -95,13 +95,13 @@ struct NotificationsScreen: View {
         VStack(spacing: 12) {
             Text(localizationManager.localized("notifications_statistics"))
                 .font(.title2)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary)
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .accessibilityAddTraits(.isHeader)
 
             Text(localizationManager.localized("notifications_statistics_online_hint"))
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
 
             if let syncAt = viewModel.lastSuccessfulSyncAt {
@@ -110,7 +110,7 @@ struct NotificationsScreen: View {
                     NotificationsViewModel.relativeTime(for: syncAt)
                 ))
                 .font(.caption2)
-                .foregroundColor(.secondary.opacity(0.92))
+                .foregroundColor(.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
             }
             
@@ -185,11 +185,14 @@ struct NotificationsScreen: View {
                             .font(.bodyBold)
                             .foregroundColor(.textPrimary)
                             .multilineTextAlignment(.leading)
+                            .lineLimit(2)
+                            .minimumScaleFactor(0.85)
                         
                         Text(filter.localizedSubtitle(localizationManager))
                             .font(.caption)
                             .foregroundColor(.textSecondary)
                             .multilineTextAlignment(.leading)
+                            .lineLimit(2)
                     }
                     
                     Spacer()
@@ -394,18 +397,20 @@ struct NotificationsScreen: View {
             
             Text(value)
                 .font(.title)
-                .foregroundColor(.primary)
+                .foregroundColor(.textPrimary)
             
             Text(title)
                 .font(.caption)
-                .foregroundColor(.secondary)
+                .foregroundColor(.textSecondary)
                 .multilineTextAlignment(.center)
+                .lineLimit(2)
+                .minimumScaleFactor(0.85)
         }
         .frame(maxWidth: .infinity)
         .padding(12)
         .background(
             RoundedRectangle(cornerRadius: 8)
-                .fill(color.opacity(0.1))
+                .fill(color.opacity(0.18))
         )
         .accessibilityElement(children: .combine)
         .accessibilityLabel("\(title): \(value)")
