@@ -1,0 +1,23 @@
+---
+description: Family habit custom hybrid (fhc-*) — Cursor TODO SSOT; merge-only
+globs:
+alwaysApply: false
+---
+
+# Family Habit Custom Hybrid — TODO SSOT
+
+**Registry:** `.cursor/FAMILY_HABIT_CUSTOM_HYBRID_TASK_REGISTRY.md`  
+**Ids:** `fhc-*` (Variant 2 — свои напоминания под Medicine)
+
+## Canon
+
+- 4 системных пресета не ломать.
+- Custom: max **5**, window + once_daily, same `family_habit` Done category.
+- Notifications parity with water/medicine/wind_down calendar path.
+- Sim / Archive / API deploy — only after explicit owner GO.
+
+## TodoWrite
+
+1. Only `merge: true`. Never wipe `hab-*` / `af-*` / `sqa-*`.
+2. Close task: REGISTRY ✅ → checklist in registry → Cursor `completed`.
+3. After each `fhc-*`: tick checklist bullets in REGISTRY before marking done.

@@ -380,10 +380,16 @@ enum FamilyLocalStore {
         return u
     }
 
-    private static func persistedFamilyMembersDecoded() -> [FamilyMemberData] {
-        guard let data = UserDefaults.standard.data(forKey: familyMembersKey),
+    /// Public roster snapshot for habit bootstrap / offline policy (same decode as internal).
+    static func loadPersistedMembers(defaults: UserDefaults = .standard) -> [FamilyMemberData] {
+        validatePersistedRosterAgainstCurrentFamily(defaults: defaults)
+        guard let data = defaults.data(forKey: familyMembersKey),
               let list = try? JSONDecoder().decode([FamilyMemberData].self, from: data) else { return [] }
         return list
+    }
+
+    private static func persistedFamilyMembersDecoded() -> [FamilyMemberData] {
+        loadPersistedMembers()
     }
 
     /// После `GET /api/family/members`: union id + выравнивание `your_member_id`.

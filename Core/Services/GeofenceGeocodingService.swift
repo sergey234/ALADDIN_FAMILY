@@ -7,6 +7,8 @@ final class GeofenceGeocodingService {
     static let shared = GeofenceGeocodingService()
 
     private let geocoder = CLGeocoder()
+    /// Separate instance — Apple allows one in-flight request per CLGeocoder.
+    private let reverseGeocoder = CLGeocoder()
     private let storageKey = "geofences_with_coordinates_v1"
 
     private init() {}
@@ -85,6 +87,57 @@ final class GeofenceGeocodingService {
                 continuation.resume(returning: location.coordinate)
             }
         }
+    }
+
+    /// Reverse geocode: city / locality for human-readable status (keeps raw coords in UI separately).
+    func reverseGeocodeLocality(for location: CLLocation) async -> String? {
+        await withCheckedContinuation { continuation in
+            reverseGeocoder.reverseGeocodeLocation(location) { placemarks, _ in
+                let mark = placemarks?.first
+                let city = mark?.locality?.trimmingCharacters(in: .whitespacesAndNewlines)
+                let area = mark?.administrativeArea?.trimmingCharacters(in: .whitespacesAndNewlines)
+                if let city, !city.isEmpty {
+                    continuation.resume(returning: city)
+                } else if let area, !area.isEmpty {
+                    continuation.resume(returning: area)
+                } else {
+                    continuation.resume(returning: nil)
+                }
+            }
+        }
+    }
+
+    /// If current GPS is inside (or near) a saved place radius — return that place name.
+    func nearestConfiguredPlaceName(to location: CLLocation) -> String? {
+        let stored = loadStoredCoordinates()
+        guard !stored.isEmpty else { return nil }
+        guard let data = UserDefaults.standard.data(forKey: "geofences_settings"),
+              let items = try? JSONDecoder().decode([GeofenceItemCodable].self, from: data) else {
+            return nil
+        }
+        var best: (name: String, distance: CLLocationDistance)?
+        for item in items {
+            guard item.isActive else { continue }
+            guard let center = stored[item.id] else { continue }
+            let placeLoc = CLLocation(latitude: center.latitude, longitude: center.longitude)
+            let distance = location.distance(from: placeLoc)
+            let threshold = max(item.radius, 80)
+            guard distance <= threshold * 1.25 else { continue }
+            if best == nil || distance < best!.distance {
+                best = (item.name, distance)
+            }
+        }
+        return best?.name
+    }
+
+    /// Demo seed addresses (Lenin / Pushkin) — not real family places.
+    static func isDemoPlaceholderAddress(_ address: String, localization: LocalizationManager) -> Bool {
+        let normalized = address.trimmingCharacters(in: .whitespacesAndNewlines).lowercased()
+        let demos = [
+            localization.localized("geofences_street_lenin"),
+            localization.localized("geofences_street_pushkin"),
+        ].map { $0.trimmingCharacters(in: .whitespacesAndNewlines).lowercased() }
+        return demos.contains(normalized)
     }
 
     private func normalizeAddress(_ address: String) -> String {
