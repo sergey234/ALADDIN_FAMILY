@@ -63,19 +63,48 @@ enum AIAssistantResponseSanitizer {
         "http 429",
     ]
 
+    /// Markdown headings that are raw localization keys (e.g. `### family_chat_e2ee_decrypt_failed`).
+    private static let markdownKeyHeading = try! NSRegularExpression(
+        pattern: #"^#{1,6}\s*([a-z][a-z0-9_]{2,80})\s*$"#,
+        options: [.anchorsMatchLines]
+    )
+
     static func sanitize(_ raw: String) -> Result {
         var droppedNoise = false
-        let lines = raw.components(separatedBy: .newlines).filter { line in
+        let L = LocalizationManager.shared
+        let lines = raw.components(separatedBy: .newlines).compactMap { line -> String? in
             let t = line.trimmingCharacters(in: .whitespacesAndNewlines)
-            if t.isEmpty { return false }
-            if t.hasPrefix("session_id:") { droppedNoise = true; return false }
-            if t.hasPrefix("⚠") || t.hasPrefix("Warning:") { droppedNoise = true; return false }
+            if t.isEmpty { return nil }
+            if t.hasPrefix("session_id:") { droppedNoise = true; return nil }
+            if t.hasPrefix("⚠") || t.hasPrefix("Warning:") { droppedNoise = true; return nil }
             let low = t.lowercased()
             if dropSubstrings.contains(where: { low.contains($0) }) {
                 droppedNoise = true
-                return false
+                return nil
             }
-            return true
+            // Resolve `### some_loc_key` → human localized string (never show raw keys).
+            let ns = t as NSString
+            let full = NSRange(location: 0, length: ns.length)
+            if let m = markdownKeyHeading.firstMatch(in: t, options: [], range: full),
+               m.numberOfRanges >= 2 {
+                let key = ns.substring(with: m.range(at: 1))
+                let localized = L.localized(key)
+                if localized != key {
+                    droppedNoise = true
+                    return localized
+                }
+                droppedNoise = true
+                return nil
+            }
+            // Bare localization-key line without markdown.
+            if t.range(of: #"^[a-z][a-z0-9_]{2,80}$"#, options: .regularExpression) != nil {
+                let localized = L.localized(t)
+                if localized != t {
+                    droppedNoise = true
+                    return localized
+                }
+            }
+            return t
         }
         let cleaned = lines.joined(separator: "\n").trimmingCharacters(in: .whitespacesAndNewlines)
         if !cleaned.isEmpty {

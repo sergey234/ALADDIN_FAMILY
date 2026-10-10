@@ -210,7 +210,7 @@ class NetworkProtectionViewModel: ObservableObject {
                     NotificationCenter.default.post(
                         name: NSNotification.Name("SessionExpired"),
                         object: nil,
-                        userInfo: ["message": "Сессия истекла. Пожалуйста, войдите снова."]
+                        userInfo: ["message": LocalizationManager.shared.localized("auth_session_expired_sign_in")]
                     )
                     // Прерываем загрузку остальных статусов
                     break
@@ -311,7 +311,7 @@ class NetworkProtectionViewModel: ObservableObject {
                 errorMessage = error.localizedDescription
                 let networkError = NetworkError.from(error)
                 if case .unauthorized(let message) = networkError {
-                    let errorText = message ?? "Сессия истекла. Пожалуйста, войдите снова."
+                    let errorText = message ?? LocalizationManager.shared.localized("auth_session_expired_sign_in")
                     toastManager.showError(errorText)
                     NotificationCenter.default.post(
                         name: NSNotification.Name("SessionExpired"),
@@ -320,16 +320,16 @@ class NetworkProtectionViewModel: ObservableObject {
                     )
                 } else {
                     componentAnalytics.trackComponentError(componentId: componentId, error: error)
-                    toastManager.showError("Ошибка: \(error.localizedDescription)")
+                    toastManager.showError(String(format: LocalizationManager.shared.localized("component_toast_error_format"), error.localizedDescription))
                 }
                 return
             }
             componentAnalytics.trackComponentToggle(componentId: componentId, enabled: true)
-            toastManager.showSuccess("Компонент обновлен")
+            toastManager.showSuccess(LocalizationManager.shared.localized("component_toast_updated"))
         } else {
             AppConfig.NetworkProtectionComponentToggleStorage.writeBool(true, componentId: componentId)
             componentAnalytics.trackComponentToggle(componentId: componentId, enabled: true)
-            toastManager.showSuccess("Компонент обновлён локально")
+            toastManager.showSuccess(LocalizationManager.shared.localized("component_toast_updated_local"))
         }
     }
 
@@ -530,12 +530,12 @@ class NetworkProtectionViewModel: ObservableObject {
             guard AppConfig.authToken != nil else {
                 DispatchQueue.main.async { [weak self] in
                     updateClosure(!newValue)
-                    self?.toastManager.showError("Требуется авторизация. Войдите в аккаунт.")
+                    self?.toastManager.showError(LocalizationManager.shared.localized("auth_required_sign_in"))
                     // Отправляем уведомление о необходимости логина
                     NotificationCenter.default.post(
                         name: NSNotification.Name("SessionExpired"),
                         object: nil,
-                        userInfo: ["message": "Требуется авторизация. Войдите в аккаунт."]
+                        userInfo: ["message": LocalizationManager.shared.localized("auth_required_sign_in")]
                     )
                 }
                 return
@@ -547,7 +547,7 @@ class NetworkProtectionViewModel: ObservableObject {
                 // Успешная аналитика (асинхронно)
                 DispatchQueue.main.async { [weak self] in
                     self?.componentAnalytics.trackComponentToggle(componentId: componentId, enabled: newValue)
-                    self?.toastManager.showSuccess("Компонент обновлен")
+                    self?.toastManager.showSuccess(LocalizationManager.shared.localized("component_toast_updated"))
                 }
             } catch {
                 // ✅ ЭТАП 3: Обработка unauthorized
@@ -556,7 +556,7 @@ class NetworkProtectionViewModel: ObservableObject {
                     // Откат изменений (асинхронно)
                     DispatchQueue.main.async { [weak self] in
                         updateClosure(!newValue)
-                        let errorMessage = message ?? "Сессия истекла. Пожалуйста, войдите снова."
+                        let errorMessage = message ?? LocalizationManager.shared.localized("auth_session_expired_sign_in")
                         self?.toastManager.showError(errorMessage)
                         // Отправляем уведомление о необходимости логина
                         NotificationCenter.default.post(
@@ -570,7 +570,7 @@ class NetworkProtectionViewModel: ObservableObject {
                     DispatchQueue.main.async { [weak self] in
                         updateClosure(!newValue)
                         self?.componentAnalytics.trackComponentError(componentId: componentId, error: error)
-                        self?.toastManager.showError("Ошибка: \(error.localizedDescription)")
+                        self?.toastManager.showError(String(format: LocalizationManager.shared.localized("component_toast_error_format"), error.localizedDescription))
                     }
                 }
             }
@@ -579,7 +579,7 @@ class NetworkProtectionViewModel: ObservableObject {
             DispatchQueue.main.async { [weak self] in
                 AppConfig.NetworkProtectionComponentToggleStorage.writeBool(newValue, componentId: componentId)
                 self?.componentAnalytics.trackComponentToggle(componentId: componentId, enabled: newValue)
-                self?.toastManager.showSuccess("Компонент обновлён локально")
+                self?.toastManager.showSuccess(LocalizationManager.shared.localized("component_toast_updated_local"))
             }
         }
     }

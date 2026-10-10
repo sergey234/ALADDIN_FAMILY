@@ -134,143 +134,150 @@ enum NetworkError: Error, LocalizedError {
     // MARK: - LocalizedError Implementation
     
     var errorDescription: String? {
+        let L = LocalizationManager.shared
         switch self {
-        // Connection Errors
+        // Connection Errors — always via LocalizationManager (respects RU/EN app language).
         case .noConnection:
-            return "Нет подключения к интернету"
+            return L.localized("network_error_no_connection")
         case .noData:
-            return "Нет данных в ответе сервера"
+            return L.localized("network_error_no_data")
         case .invalidURL:
-            return "Неверный URL-адрес"
+            return L.localized("network_error_invalid_url")
         case .invalidResponse:
-            return "Неверный ответ сервера"
+            return L.localized("network_error_invalid_response")
         case .httpError(let code):
-            return "HTTP ошибка: \(code)"
+            if code == 504 {
+                return L.localized("network_error_http_504")
+            }
+            return String(format: L.localized("network_error_http"), code)
         case .timeout:
-            return "Превышено время ожидания запроса"
+            return L.localized("network_error_timeout")
         case .serverUnavailable:
-            return "Сервер временно недоступен"
+            return L.localized("network_error_server_unavailable")
         case .dnsResolutionFailed:
-            return "Не удалось найти сервер"
+            return L.localized("network_error_dns")
             
         // SSL/Security Errors
         case .sslPinningFailed:
-            return "Ошибка проверки SSL сертификата"
+            return L.localized("network_error_ssl_pinning")
         case .invalidCertificate:
-            return "Недействительный сертификат сервера"
+            return L.localized("network_error_invalid_certificate")
         case .encryptionError:
-            return "Ошибка шифрования данных"
+            return L.localized("network_error_encryption")
             
         // HTTP Errors
         case .invalidStatusCode(let code):
-            return "Неверный статус код: \(code)"
+            return String(format: L.localized("network_error_invalid_status"), code)
         case .badRequest(let message):
-            return "Неверный запрос: \(message ?? "Неизвестная ошибка")"
+            return String(format: L.localized("network_error_bad_request"), message ?? L.localized("network_error_generic_unknown"))
         case .unauthorized(let message):
-            return "Не авторизован: \(message ?? "Проверьте учетные данные")"
+            return String(format: L.localized("network_error_unauthorized"), message ?? L.localized("network_error_check_credentials"))
         case .forbidden(let message):
-            return "Доступ запрещен: \(message ?? "Недостаточно прав")"
+            return String(format: L.localized("network_error_forbidden"), message ?? L.localized("network_error_insufficient_rights"))
         case .notFound(let message):
-            return "Ресурс не найден: \(message ?? "Проверьте URL")"
+            return String(format: L.localized("network_error_not_found"), message ?? L.localized("network_error_check_url"))
         case .conflict(let message):
-            return message ?? "Данные не совпадают. Обновите список семьи или войдите снова."
+            return message ?? L.localized("network_error_conflict_default")
         case .tooManyRequests(let message):
-            return "Слишком много запросов: \(message ?? "Попробуйте позже")"
+            return message ?? L.localized("network_error_too_many")
         case .internalServerError(let message):
-            return "Ошибка сервера: \(message ?? "Попробуйте позже")"
+            return message ?? L.localized("network_error_internal")
         case .badGateway(let message):
-            return "Ошибка шлюза: \(message ?? "Сервер временно недоступен")"
+            return message ?? L.localized("network_error_bad_gateway")
         case .serviceUnavailable(let message):
-            return "Сервис недоступен: \(message ?? "Попробуйте позже")"
+            return message ?? L.localized("network_error_service_unavailable")
             
         // Data Errors
         case .invalidData:
-            return "Неверный формат данных"
+            return L.localized("network_error_invalid_data")
         case .decodingError(let error):
             // Use app language — do not append system DecodingError text (often device-locale RU).
             _ = error
             return LocalizationManager.shared.localized("network_error_decoding")
         case .encodingError(let error):
-            return "Ошибка подготовки данных: \(error.localizedDescription)"
+            return String(format: L.localized("network_error_encoding"), error.localizedDescription)
         case .emptyResponse:
-            return "Пустой ответ от сервера"
+            return L.localized("network_error_empty_response")
             
         // Authentication Errors
         case .tokenExpired:
-            return "Сессия истекла. Войдите заново"
+            return L.localized("network_error_token_expired")
         case .invalidToken:
-            return "Неверный токен авторизации"
+            return L.localized("network_error_invalid_token")
         case .reauthenticationRequired:
-            return "Требуется повторная авторизация"
+            return L.localized("network_error_reauth")
             
         // API Errors
         case .apiError(let message, let code):
-            return "Ошибка API: \(message)\(code != nil ? " (код: \(code!))" : "")"
+            _ = code
+            return String(format: L.localized("network_error_api"), message)
         case .validationError(let errors):
             let errorMessages = errors.values.joined(separator: ", ")
-            return "Ошибка валидации: \(errorMessages)"
+            return String(format: L.localized("network_error_validation"), errorMessages)
         case .businessLogicError(let message):
-            return "Ошибка логики: \(message)"
+            return String(format: L.localized("network_error_business"), message)
             
         // System Errors
         case .outOfMemory:
-            return "Недостаточно памяти"
+            return L.localized("network_error_oom")
         case .fileSystemError(let error):
-            return "Ошибка файловой системы: \(error.localizedDescription)"
+            return String(format: L.localized("network_error_filesystem"), error.localizedDescription)
         case .circuitBreakerActive(let message):
-            return message ?? "Сервер временно недоступен. Повторите попытку позже."
+            return message ?? L.localized("network_error_circuit")
         case .endpointFeatureUnavailable:
             return LocalizationManager.shared.localized("api_error_endpoint_feature_unavailable")
 
         case .contentSyncGatewayEnvelope:
-            return "Контент-синхронизация временно недоступна (ответ шлюза). Используется локальный кэш."
+            return L.localized("network_error_content_sync")
 
         case .unknown(let error):
-            return "Неизвестная ошибка: \(error?.localizedDescription ?? "Попробуйте позже")"
+            return String(format: L.localized("network_error_unknown"), error?.localizedDescription ?? L.localized("network_error_try_later"))
         }
     }
     
     var failureReason: String? {
+        let L = LocalizationManager.shared
         switch self {
         case .noConnection:
-            return "Проверьте подключение к интернету"
+            return L.localized("network_error_failure_no_connection")
         case .timeout:
-            return "Попробуйте повторить запрос"
+            return L.localized("network_error_failure_timeout")
         case .sslPinningFailed:
-            return "Проблема с безопасностью соединения"
+            return L.localized("network_error_failure_ssl")
         case .tokenExpired:
-            return "Необходимо войти в систему заново"
+            return L.localized("network_error_failure_reauth")
         case .tooManyRequests:
-            return "Подождите несколько минут"
+            return L.localized("network_error_failure_rate_limit")
         case .endpointFeatureUnavailable:
-            return LocalizationManager.shared.localized("api_error_endpoint_feature_unavailable_reason")
+            return L.localized("api_error_endpoint_feature_unavailable_reason")
         case .contentSyncGatewayEnvelope:
-            return "Ожидается JSON манифеста или дельты; получена служебная обёртка шлюза."
+            return L.localized("network_error_failure_content_sync")
         default:
-            return "Обратитесь в поддержку"
+            return L.localized("network_error_failure_support")
         }
     }
     
     var recoverySuggestion: String? {
+        let L = LocalizationManager.shared
         switch self {
         case .noConnection:
-            return "Проверьте Wi-Fi или мобильный интернет"
+            return L.localized("network_error_recovery_no_connection")
         case .timeout:
-            return "Попробуйте еще раз через несколько секунд"
+            return L.localized("network_error_recovery_timeout")
         case .serverUnavailable:
-            return "Попробуйте позже"
+            return L.localized("network_error_recovery_later")
         case .sslPinningFailed:
-            return "Обновите приложение"
+            return L.localized("network_error_recovery_update_app")
         case .tokenExpired:
-            return "Войдите в систему заново"
+            return L.localized("network_error_recovery_sign_in")
         case .tooManyRequests:
-            return "Подождите 5-10 минут"
+            return L.localized("network_error_recovery_rate_limit")
         case .endpointFeatureUnavailable:
-            return LocalizationManager.shared.localized("api_error_endpoint_feature_unavailable_recovery")
+            return L.localized("api_error_endpoint_feature_unavailable_recovery")
         case .contentSyncGatewayEnvelope:
-            return "Работа продолжается с сохранённым контентом."
+            return L.localized("network_error_recovery_content_sync")
         default:
-            return "Перезапустите приложение"
+            return L.localized("network_error_recovery_restart")
         }
     }
     

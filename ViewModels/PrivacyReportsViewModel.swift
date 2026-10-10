@@ -49,7 +49,7 @@ class PrivacyReportsViewModel: ObservableObject {
     func loadLocationData() async {
         // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед загрузкой
         guard AppConfig.authToken != nil else {
-            errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+            errorMessage = localizationManager.localized("privacy_error_auth_required")
             return
         }
         
@@ -124,7 +124,7 @@ class PrivacyReportsViewModel: ObservableObject {
     func loadCleanupData() async {
         // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед загрузкой
         guard AppConfig.authToken != nil else {
-            errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+            errorMessage = localizationManager.localized("privacy_error_auth_required")
             return
         }
         
@@ -169,7 +169,7 @@ class PrivacyReportsViewModel: ObservableObject {
             
             // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
             if case .unauthorized = networkError {
-                errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+                errorMessage = localizationManager.localized("privacy_error_auth_required")
                 self.cleanupStats = nil
                 self.cleanupRecords = []
                 return
@@ -203,7 +203,7 @@ class PrivacyReportsViewModel: ObservableObject {
     func loadTrackerData() async {
         // ✅ ИСПРАВЛЕНИЕ: Проверяем токен перед загрузкой
         guard AppConfig.authToken != nil else {
-            errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+            errorMessage = localizationManager.localized("privacy_error_auth_required")
             return
         }
         
@@ -248,7 +248,7 @@ class PrivacyReportsViewModel: ObservableObject {
             
             // ✅ ИСПРАВЛЕНИЕ: Обрабатываем ошибку авторизации отдельно
             if case .unauthorized = networkError {
-                errorMessage = "Требуется авторизация. Войдите в аккаунт для просмотра данных."
+                errorMessage = localizationManager.localized("privacy_error_auth_required")
                 self.trackerStats = nil
                 self.topTrackers = []
                 return

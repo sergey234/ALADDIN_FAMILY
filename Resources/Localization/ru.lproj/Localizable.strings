@@ -1986,3 +1986,249 @@
 "family_reports_empty_hint_jwt" = "Отчёт появится после недели с защитой ребёнка в семье.";
 
 
+
+"profile_edit_cancel" = "Отмена";
+
+"profile_edit_save" = "Сохранить";
+
+"profile_edit_title" = "Редактирование профиля";
+
+"profile_edit_photo_title" = "Фотография профиля";
+
+"profile_edit_photo_hint" = "Нажмите, чтобы изменить фото";
+
+"profile_edit_info_title" = "Информация";
+
+"profile_edit_name_label" = "Имя";
+
+"profile_edit_name_placeholder" = "Введите ваше имя";
+
+"profile_edit_email_label" = "Email";
+
+"profile_edit_email_placeholder" = "Введите email";
+
+"profile_edit_phone_label" = "Телефон";
+
+"profile_edit_phone_placeholder" = "Введите номер телефона";
+
+"profile_edit_save_changes" = "Сохранить изменения";
+
+"profile_edit_reset_password" = "Сбросить пароль";
+
+"profile_edit_background_accessibility" = "Фон редактирования профиля";
+
+"profile_edit_form_accessibility" = "Форма редактирования профиля";
+
+"profile_edit_change_photo_accessibility" = "Изменить фотографию профиля";
+
+"profile_edit_save_changes_accessibility" = "Кнопка «Сохранить изменения»";
+
+"profile_edit_reset_password_accessibility" = "Кнопка «Сбросить пароль»";
+
+"profile_edit_initial_placeholder" = "•";
+
+"profile_edit_reset_password_title" = "Сброс пароля";
+
+"profile_edit_reset_password_message" = "Мы отправим инструкции по сбросу пароля на вашу почту.";
+
+"profile_edit_ok" = "Понятно";
+
+"profile_edit_default_name" = "Имя пользователя";
+
+"profile_edit_default_email" = "user@example.com";
+
+"profile_edit_default_phone" = "+7 (999) 123-45-67";
+
+"privacy_error_load_failed" = "Не удалось загрузить данные: %@";
+
+"privacy_error_auth_required" = "Нужен вход в аккаунт, чтобы смотреть эти данные.";
+
+"roadside_assistance_call" = "Вызвать помощь";
+
+"roadside_assistance_title" = "Помощь на дороге";
+
+"roadside_assistance_subtitle" = "Вызвать помощь при поломке или аварии";
+
+"device_detail_threats_empty" = "Нет угроз для этого устройства";
+
+"component_toast_updated" = "Компонент обновлён";
+
+"component_toast_updated_local" = "Компонент обновлён локально";
+
+"component_toast_error_format" = "Ошибка: %@";
+
+"network_error_http" = "Ошибка соединения: %d";
+
+"network_error_http_504" = "Сервер сейчас занят. Попробуйте чуть позже.";
+
+"network_error_no_data" = "Нет данных в ответе сервера";
+
+"network_error_invalid_url" = "Неверный адрес";
+
+"network_error_invalid_response" = "Неверный ответ сервера";
+
+"network_error_server_unavailable" = "Сервер временно недоступен";
+
+"network_error_dns" = "Не удалось найти сервер";
+
+"network_error_no_connection" = "Нет подключения к интернету";
+
+"network_error_timeout" = "Превышено время ожидания. Попробуйте ещё раз.";
+
+"device_hub_iot_toggle_hint" = "Защита умных устройств дома";
+
+"device_hub_coverage_cyber" = "Киберугрозы";
+
+"device_hub_coverage_mobile" = "Мобильные угрозы";
+
+"device_hub_coverage_iot" = "Умный дом";
+
+"wellness_recap_prefix" = "В прошлый раз: %@";
+
+"ai_assistant_faq_footer" = "%@\n\n📚 Источник: FAQ (%@)";
+
+"network_error_encoding" = "Ошибка подготовки данных: %@";
+
+"network_error_filesystem" = "Ошибка файловой системы: %@";
+
+"network_error_unknown" = "Неизвестная ошибка: %@";
+
+"network_error_try_later" = "Попробуйте позже";
+
+"network_error_decoding" = "Не удалось прочитать ответ сервера";
+
+"device_detail_status_pending" = "Ожидает привязки";
+
+"network_error_ssl_pinning" = "Не удалось проверить защищённое соединение";
+
+"network_error_invalid_certificate" = "Недействительный сертификат сервера";
+
+"network_error_encryption" = "Ошибка шифрования данных";
+
+"network_error_invalid_status" = "Неверный ответ сервера: %d";
+
+"network_error_bad_request" = "Неверный запрос: %@";
+
+"network_error_unauthorized" = "Нужен вход: %@";
+
+"network_error_forbidden" = "Доступ запрещён: %@";
+
+"network_error_not_found" = "Не найдено: %@";
+
+"network_error_conflict_default" = "Данные не совпадают. Обновите список семьи или войдите снова.";
+
+"network_error_too_many" = "Слишком много запросов. Попробуйте позже.";
+
+"network_error_internal" = "Ошибка сервера. Попробуйте позже.";
+
+"network_error_bad_gateway" = "Сервер временно недоступен. Попробуйте позже.";
+
+"network_error_service_unavailable" = "Сервис недоступен. Попробуйте позже.";
+
+"network_error_invalid_data" = "Неверный формат данных";
+
+"network_error_empty_response" = "Пустой ответ от сервера";
+
+"network_error_token_expired" = "Сессия истекла. Войдите заново";
+
+"network_error_invalid_token" = "Неверный токен авторизации";
+
+"network_error_reauth" = "Требуется повторный вход";
+
+"network_error_api" = "Ошибка сервера: %@";
+
+"network_error_validation" = "Проверьте введённые данные: %@";
+
+"network_error_business" = "%@";
+
+"network_error_oom" = "Недостаточно памяти";
+
+"network_error_circuit" = "Сервер временно недоступен. Повторите попытку позже.";
+
+"network_error_generic_unknown" = "Неизвестная ошибка";
+
+"network_error_check_credentials" = "Проверьте учётные данные";
+
+"network_error_insufficient_rights" = "Недостаточно прав";
+
+"network_error_check_url" = "Проверьте адрес";
+
+"auth_required_sign_in" = "Нужен вход в аккаунт.";
+
+"auth_session_expired_sign_in" = "Сессия истекла. Войдите снова.";
+
+"network_error_content_sync" = "Синхронизация временно недоступна. Используются сохранённые данные.";
+
+"network_error_failure_no_connection" = "Проверьте подключение к интернету";
+
+"network_error_failure_timeout" = "Попробуйте повторить запрос";
+
+"network_error_failure_ssl" = "Проблема с безопасностью соединения";
+
+"network_error_failure_reauth" = "Необходимо войти в систему заново";
+
+"network_error_failure_rate_limit" = "Подождите несколько минут";
+
+"network_error_failure_content_sync" = "Синхронизация временно недоступна. Показаны сохранённые данные.";
+
+"network_error_failure_support" = "Обратитесь в поддержку";
+
+"network_error_recovery_no_connection" = "Проверьте Wi‑Fi или мобильный интернет";
+
+"network_error_recovery_timeout" = "Попробуйте ещё раз через несколько секунд";
+
+"network_error_recovery_later" = "Попробуйте позже";
+
+"network_error_recovery_update_app" = "Обновите приложение";
+
+"network_error_recovery_sign_in" = "Войдите в аккаунт заново";
+
+"network_error_recovery_rate_limit" = "Подождите 5–10 минут";
+
+"network_error_recovery_content_sync" = "Работа продолжается с сохранёнными данными.";
+
+"network_error_recovery_restart" = "Перезапустите приложение";
+
+"active_sessions_this_device" = "Это устройство";
+
+"active_sessions_current_badge" = "Сейчас";
+
+"active_sessions_this_device_hint" = "Сессия на этом телефоне. Название берётся из настроек iPhone.";
+
+"active_sessions_section_this_device" = "Это устройство";
+
+"active_sessions_section_family" = "Устройства семьи";
+
+"active_sessions_family_placeholder" = "Другие устройства семьи появятся здесь, когда сервер их вернёт.";
+
+"active_sessions_family_empty" = "Пока нет других устройств семьи. Пригласите участника или откройте приложение на другом телефоне.";
+
+"active_sessions_apple_privacy_note" = "Показываем устройства семейной защиты (имя, тип, последняя активность) — без точного GPS. «Выйти» снимает устройство с семьи после Parent Gate.";
+
+"active_sessions_device_name_default" = "Это устройство";
+
+"active_sessions_loading" = "Загружаем устройства семьи…";
+
+"active_sessions_retry" = "Повторить";
+
+"active_sessions_load_failed" = "Не удалось загрузить устройства семьи. Проверьте связь и попробуйте снова.";
+
+"active_sessions_sign_out_title" = "Убрать это устройство?";
+
+"active_sessions_sign_out_message" = "Устройство выйдет из семейной защиты. Нужно подтверждение Parent Gate.";
+
+"active_sessions_sign_out_failed" = "Не удалось убрать устройство. Попробуйте снова.";
+
+"active_sessions_gate_denied" = "Нужно подтверждение родителя, чтобы убрать устройство.";
+
+"active_sessions_last_active_unknown" = "Активность неизвестна";
+
+"active_sessions_device_type_generic" = "Устройство";
+
+"referral_soft_stats_unavailable" = "Награды и статистика временно недоступны. Приглашать семью всё равно можно — повторите чуть позже.";
+
+"referral_soft_retry" = "Обновить статистику";
+
+"voice_notes_summary_need_transcript" = "Сначала завершите распознавание речи, затем можно продолжить.";
+
+"ai_consent_turn_on_settings" = "Включите умный помощник в Настройках, чтобы задавать вопросы.";

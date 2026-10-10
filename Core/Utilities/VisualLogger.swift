@@ -31,7 +31,8 @@ class VisualLogger: ObservableObject {
     static let shared = VisualLogger()
     
     @Published var logs: [LogEntry] = []
-    @Published var isVisible: Bool = true
+    /// Default OFF — overlay must not cover Family Places / QA screens.
+    @Published var isVisible: Bool = false
 
     /// Совпадает с `UserDefaults` key `enable_visual_logging` / MasterLogger.
     static var isOverlayEnabled: Bool {
@@ -656,7 +657,7 @@ struct VisualLogView: View {
     
     // ✅ Extracted ScrollView to fix remaining type-check timeout error
     private var logContentView: some View {
-        ScrollView {
+        ScrollView(.vertical, showsIndicators: true) {
             VStack(alignment: .leading, spacing: 2) {
                 ForEach(logger.logs.reversed().filter { entry in
                     logger.selectedLogLevelFilter == nil || entry.level == logger.selectedLogLevelFilter
@@ -716,20 +717,30 @@ struct VisualLogView: View {
 // MARK: - View Modifier для добавления VisualLogView на любой экран
 
 extension View {
-    /// ✅ ИСПРАВЛЕНИЕ: Модификатор для добавления VisualLogView на любой экран
-    /// Используется для отображения логов на всех страницах приложения, включая модальные окна и подстраницы
+    /// DEBUG-only overlay. Gated by `enable_visual_logging` — never cover Family Places / QA by default.
     func withVisualLogger() -> some View {
         #if DEBUG
-        // Без Spacer на весь экран: иначе оверлей занимает весь bounds и перехватывает касания (онбординг, модалки).
-        return self.overlay(alignment: .bottomTrailing) {
-            VisualLogView()
-                .environmentObject(LocalizationManager.shared)
-                .frame(maxWidth: 280)
-                .padding(.trailing, 16)
-                .padding(.bottom, 120)
-        }
+        return self.modifier(VisualLoggerOverlayGate())
         #else
         return self
         #endif
     }
 }
+
+#if DEBUG
+private struct VisualLoggerOverlayGate: ViewModifier {
+    @AppStorage("enable_visual_logging") private var enableVisualLogging = false
+
+    func body(content: Content) -> some View {
+        content.overlay(alignment: .bottomTrailing) {
+            if enableVisualLogging {
+                VisualLogView()
+                    .environmentObject(LocalizationManager.shared)
+                    .frame(maxWidth: 280)
+                    .padding(.trailing, 16)
+                    .padding(.bottom, 120)
+            }
+        }
+    }
+}
+#endif

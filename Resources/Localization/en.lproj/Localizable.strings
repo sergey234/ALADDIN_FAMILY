@@ -2076,3 +2076,249 @@
 /* Family weekly reports empty state (pc-16) */
 "family_reports_empty_title" = "No weekly reports yet";
 "family_reports_empty_hint_jwt" = "A report appears after a week of child protection in the family.";
+
+"profile_edit_cancel" = "Cancel";
+
+"profile_edit_save" = "Save";
+
+"profile_edit_title" = "Edit profile";
+
+"profile_edit_photo_title" = "Profile photo";
+
+"profile_edit_photo_hint" = "Tap to change photo";
+
+"profile_edit_info_title" = "Information";
+
+"profile_edit_name_label" = "Name";
+
+"profile_edit_name_placeholder" = "Enter your name";
+
+"profile_edit_email_label" = "Email";
+
+"profile_edit_email_placeholder" = "Enter email";
+
+"profile_edit_phone_label" = "Phone";
+
+"profile_edit_phone_placeholder" = "Enter phone number";
+
+"profile_edit_save_changes" = "Save changes";
+
+"profile_edit_reset_password" = "Reset password";
+
+"profile_edit_background_accessibility" = "Profile edit background";
+
+"profile_edit_form_accessibility" = "Profile edit form";
+
+"profile_edit_change_photo_accessibility" = "Change profile photo";
+
+"profile_edit_save_changes_accessibility" = "Save changes button";
+
+"profile_edit_reset_password_accessibility" = "Reset password button";
+
+"profile_edit_initial_placeholder" = "•";
+
+"profile_edit_reset_password_title" = "Reset password";
+
+"profile_edit_reset_password_message" = "We’ll send password reset instructions to your email.";
+
+"profile_edit_ok" = "Got it";
+
+"profile_edit_default_name" = "User name";
+
+"profile_edit_default_email" = "user@example.com";
+
+"profile_edit_default_phone" = "+1 (555) 123-4567";
+
+"privacy_error_load_failed" = "Couldn’t load data: %@";
+
+"privacy_error_auth_required" = "Sign in to view this data.";
+
+"roadside_assistance_call" = "Call for help";
+
+"roadside_assistance_title" = "Roadside Assistance";
+
+"roadside_assistance_subtitle" = "Call for help in case of breakdown or accident";
+
+"device_detail_threats_empty" = "No threats for this device";
+
+"component_toast_updated" = "Component updated";
+
+"component_toast_updated_local" = "Component updated locally";
+
+"component_toast_error_format" = "Error: %@";
+
+"network_error_http" = "Connection error: %d";
+
+"network_error_http_504" = "Server is busy. Please try again in a moment.";
+
+"network_error_no_data" = "No data in server response";
+
+"network_error_invalid_url" = "Invalid address";
+
+"network_error_invalid_response" = "Invalid server response";
+
+"network_error_server_unavailable" = "Server temporarily unavailable";
+
+"network_error_dns" = "Could not find the server";
+
+"network_error_no_connection" = "No internet connection";
+
+"network_error_timeout" = "Request timed out. Please try again.";
+
+"device_hub_iot_toggle_hint" = "Protect smart devices at home";
+
+"device_hub_coverage_cyber" = "Cyber threats";
+
+"device_hub_coverage_mobile" = "Mobile threats";
+
+"device_hub_coverage_iot" = "Smart home";
+
+"wellness_recap_prefix" = "Last time: %@";
+
+"ai_assistant_faq_footer" = "%@\\\n\\\n📚 Source: FAQ (%@)";
+
+"network_error_encoding" = "Couldn’t prepare the request: %@";
+
+"network_error_filesystem" = "File system error: %@";
+
+"network_error_unknown" = "Something went wrong: %@";
+
+"network_error_try_later" = "Please try again later";
+
+"network_error_decoding" = "Couldn’t read the server response";
+
+"device_detail_status_pending" = "Waiting to link";
+
+"network_error_ssl_pinning" = "Couldn’t verify the secure connection";
+
+"network_error_invalid_certificate" = "Invalid server certificate";
+
+"network_error_encryption" = "Data encryption error";
+
+"network_error_invalid_status" = "Unexpected server response: %d";
+
+"network_error_bad_request" = "Invalid request: %@";
+
+"network_error_unauthorized" = "Sign in required: %@";
+
+"network_error_forbidden" = "Access denied: %@";
+
+"network_error_not_found" = "Not found: %@";
+
+"network_error_conflict_default" = "Data doesn’t match. Refresh the family list or sign in again.";
+
+"network_error_too_many" = "Too many requests. Please try again later.";
+
+"network_error_internal" = "Server error. Please try again later.";
+
+"network_error_bad_gateway" = "Server temporarily unavailable. Please try again later.";
+
+"network_error_service_unavailable" = "Service unavailable. Please try again later.";
+
+"network_error_invalid_data" = "Invalid data format";
+
+"network_error_empty_response" = "Empty server response";
+
+"network_error_token_expired" = "Session expired. Please sign in again";
+
+"network_error_invalid_token" = "Invalid sign-in token";
+
+"network_error_reauth" = "Please sign in again";
+
+"network_error_api" = "Server error: %@";
+
+"network_error_validation" = "Please check your input: %@";
+
+"network_error_business" = "%@";
+
+"network_error_oom" = "Not enough memory";
+
+"network_error_circuit" = "Server temporarily unavailable. Please try again later.";
+
+"network_error_generic_unknown" = "Unknown error";
+
+"network_error_check_credentials" = "Check your credentials";
+
+"network_error_insufficient_rights" = "Not enough permissions";
+
+"network_error_check_url" = "Check the address";
+
+"auth_required_sign_in" = "Sign in to continue.";
+
+"auth_session_expired_sign_in" = "Session expired. Please sign in again.";
+
+"network_error_content_sync" = "Sync is temporarily unavailable. Showing saved data.";
+
+"network_error_failure_no_connection" = "Check your internet connection";
+
+"network_error_failure_timeout" = "Please try the request again";
+
+"network_error_failure_ssl" = "Secure connection problem";
+
+"network_error_failure_reauth" = "Please sign in again";
+
+"network_error_failure_rate_limit" = "Please wait a few minutes";
+
+"network_error_failure_content_sync" = "Sync is temporarily unavailable. Showing saved data.";
+
+"network_error_failure_support" = "Please contact support";
+
+"network_error_recovery_no_connection" = "Check Wi‑Fi or mobile data";
+
+"network_error_recovery_timeout" = "Try again in a few seconds";
+
+"network_error_recovery_later" = "Please try again later";
+
+"network_error_recovery_update_app" = "Update the app";
+
+"network_error_recovery_sign_in" = "Sign in again";
+
+"network_error_recovery_rate_limit" = "Please wait 5–10 minutes";
+
+"network_error_recovery_content_sync" = "Continuing with saved content.";
+
+"network_error_recovery_restart" = "Restart the app";
+
+"active_sessions_this_device" = "This device";
+
+"active_sessions_current_badge" = "Now";
+
+"active_sessions_this_device_hint" = "Session on this phone. The name comes from your iPhone settings.";
+
+"active_sessions_section_this_device" = "This device";
+
+"active_sessions_section_family" = "Family devices";
+
+"active_sessions_family_placeholder" = "Other family devices will appear here when the server returns them.";
+
+"active_sessions_family_empty" = "No other family devices yet. Invite a family member or open the app on another phone.";
+
+"active_sessions_apple_privacy_note" = "We show family protection devices (name, type, last activity) — not precise GPS. Signing out removes a device from your family after Parent Gate.";
+
+"active_sessions_device_name_default" = "This device";
+
+"active_sessions_loading" = "Loading family devices…";
+
+"active_sessions_retry" = "Try again";
+
+"active_sessions_load_failed" = "Couldn’t load family devices. Check the connection and try again.";
+
+"active_sessions_sign_out_title" = "Remove this device?";
+
+"active_sessions_sign_out_message" = "The device will leave family protection. This needs Parent Gate confirmation.";
+
+"active_sessions_sign_out_failed" = "Couldn’t remove the device. Try again.";
+
+"active_sessions_gate_denied" = "Parent confirmation is required to remove a device.";
+
+"active_sessions_last_active_unknown" = "Last activity unknown";
+
+"active_sessions_device_type_generic" = "Device";
+
+"referral_soft_stats_unavailable" = "Rewards and stats are temporarily unavailable. You can still invite family — try again in a moment.";
+
+"referral_soft_retry" = "Retry stats";
+
+"voice_notes_summary_need_transcript" = "Finish speech recognition first, then you can continue.";
+
+"ai_consent_turn_on_settings" = "Turn on the smart assistant in Settings to send questions.";

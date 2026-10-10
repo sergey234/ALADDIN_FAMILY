@@ -30,7 +30,7 @@ struct RoadsideAssistanceView: View {
                 LinearGradient.backgroundGradient
                     .ignoresSafeArea()
                 
-                ScrollView {
+                ScrollView(.vertical, showsIndicators: true) {
                     VStack(spacing: 20) {
                         // Кнопка вызова помощи
                         if activeRequest == nil {

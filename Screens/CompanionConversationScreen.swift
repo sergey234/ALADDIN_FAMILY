@@ -518,7 +518,10 @@ struct CompanionConversationScreen: View {
             syncConversationPresence()
         }
         .onChange(of: characterId) { newId in
-            input = CompanionOfflineStore.loadDraft(characterId: newId)
+            input = companionDraftMatchingLocale(CompanionOfflineStore.loadDraft(characterId: newId))
+        }
+        .onChange(of: localizationManager.currentLanguage) { _ in
+            input = companionDraftMatchingLocale(input)
         }
         .onChange(of: speechManager.isRecording) { _ in syncConversationPresence() }
         .onChange(of: speechManager.isPreparingRecording) { _ in syncConversationPresence() }
@@ -568,7 +571,7 @@ struct CompanionConversationScreen: View {
             heroEmotion = .alert
         }
         if input.isEmpty {
-            input = CompanionOfflineStore.loadDraft(characterId: characterId)
+            input = companionDraftMatchingLocale(CompanionOfflineStore.loadDraft(characterId: characterId))
         }
         if legalAckVersion.isEmpty {
             showLegal = true
@@ -829,12 +832,25 @@ struct CompanionConversationScreen: View {
                                 onSelectCharacter?(hero.id)
                                 Task { await loadState() }
                             } label: {
-                                Text("\(CompanionHeroRiveMapping.heroBaseEmoji(characterId: hero.id)) \(hero.localizedDisplayName(localizationManager))")
-                                    .font(.caption.weight(.semibold))
-                                    .padding(.horizontal, 10)
-                                    .padding(.vertical, 6)
-                                    .background(isSelected ? Color.purple.opacity(0.22) : Color.clear)
-                                    .clipShape(Capsule())
+                                HStack(spacing: 6) {
+                                    // Full PNG thumb — emoji 🦄 clips in Capsule (App Review).
+                                    if let ui = CompanionHeroRiveHost.bundledMasterUIImage(characterId: hero.id) {
+                                        Image(uiImage: ui)
+                                            .resizable()
+                                            .scaledToFill()
+                                            .frame(width: 22, height: 22)
+                                            .clipShape(Circle())
+                                    } else {
+                                        Text(CompanionHeroRiveMapping.heroBaseEmoji(characterId: hero.id))
+                                            .font(.caption)
+                                    }
+                                    Text(hero.localizedDisplayName(localizationManager))
+                                        .font(.caption.weight(.semibold))
+                                }
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(isSelected ? Color.purple.opacity(0.22) : Color.clear)
+                                .clipShape(Capsule())
                             }
                             .buttonStyle(.plain)
                         }
@@ -1461,11 +1477,24 @@ struct CompanionConversationScreen: View {
     private func loadState() async {
         isLoadingState = true
 
+        // Soft timeout: don’t leave “Loading your hero chat…” forever on nginx 504 / slow upstream.
+        let loadTimeoutTask = Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 8_000_000_000)
+            guard !Task.isCancelled else { return }
+            if isLoadingState {
+                isLoadingState = false
+                if (errorText ?? "").isEmpty {
+                    errorText = localizationManager.localized("companion_error_load_timeout")
+                }
+            }
+        }
+
         if !activeThreadId.isEmpty {
             sessionId = activeThreadId
             await loadThreadHistory(threadId: activeThreadId)
         }
         if Task.isCancelled {
+            loadTimeoutTask.cancel()
             isLoadingState = false
             return
         }
@@ -1479,6 +1508,7 @@ struct CompanionConversationScreen: View {
         do {
             let state = try await CompanionAPIService.shared.fetchState(characterId: characterIdForFetch)
             if Task.isCancelled {
+                loadTimeoutTask.cancel()
                 isLoadingState = false
                 return
             }
@@ -1486,12 +1516,14 @@ struct CompanionConversationScreen: View {
             usageSnapshot = state.usage
             heroEmotion = CompanionHeroEmotion(rawValue: state.emotionDefault) ?? .idle
         } catch is CancellationError {
+            loadTimeoutTask.cancel()
             isLoadingState = false
             return
         } catch {
             errorText = CompanionErrorMapper.message(for: error, localizationManager: localizationManager)
         }
 
+        loadTimeoutTask.cancel()
         isLoadingState = false
         restorePendingStreamIfNeeded()
         await MainActor.run { syncConversationPresence() }
@@ -1615,7 +1647,40 @@ struct CompanionConversationScreen: View {
             return nil
         }
         guard let raw else { return nil }
-        return String(format: localizationManager.localized("wellness_recap_prefix"), raw)
+        // EN UI must not show RU server copy (and vice versa). Prefer locale-matched text; else default.
+        let body = companionRecapBodyMatchingLocale(raw)
+        return String(format: localizationManager.localized("wellness_recap_prefix"), body)
+    }
+
+    /// If server recap language ≠ app language, use a short localized default (no mixed UI).
+    private func companionRecapBodyMatchingLocale(_ raw: String) -> String {
+        let hasCyrillic = raw.range(of: #"\p{Cyrillic}"#, options: .regularExpression) != nil
+        switch localizationManager.currentLanguage {
+        case .english where hasCyrillic:
+            return localizationManager.localized("wellness_recap_default")
+        case .russian where !hasCyrillic && raw.range(of: #"[A-Za-z]{4,}"#, options: .regularExpression) != nil:
+            // English-looking recap while app is RU → default RU line
+            return localizationManager.localized("wellness_recap_default")
+        default:
+            return raw
+        }
+    }
+
+    /// Drop drafts that don’t match app language (e.g. RU draft while EN layout).
+    private func companionDraftMatchingLocale(_ draft: String) -> String {
+        let trimmed = draft.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return "" }
+        let hasCyrillic = trimmed.range(of: #"\p{Cyrillic}"#, options: .regularExpression) != nil
+        switch localizationManager.currentLanguage {
+        case .english where hasCyrillic:
+            CompanionOfflineStore.saveDraft(characterId: characterId, text: "")
+            return ""
+        case .russian where !hasCyrillic && trimmed.range(of: #"[A-Za-z]{8,}"#, options: .regularExpression) != nil:
+            CompanionOfflineStore.saveDraft(characterId: characterId, text: "")
+            return ""
+        default:
+            return draft
+        }
     }
 
     private func loadThreadHistory(threadId: String) async {

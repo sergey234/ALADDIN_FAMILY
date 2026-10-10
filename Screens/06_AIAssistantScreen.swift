@@ -36,6 +36,7 @@ struct AIAssistantScreen: View {
 
     // Сервисы
     @StateObject private var speechManager = SpeechManager()
+    @FocusState private var isComposerFocused: Bool
 
     private let hasReceivedWelcomeKey = "ai_assistant_welcome_sent"
     
@@ -121,16 +122,7 @@ struct AIAssistantScreen: View {
                 // Заголовок с кнопкой назад
                 HStack(spacing: 16) {
                     Button(action: {
-                        // ✅ ГИБРИДНЫЙ ПОДХОД: dismiss() как основной механизм + синхронизация NavigationManager
-                        // dismiss() - использует встроенный механизм SwiftUI, работает надёжно
-                        dismiss()
-                        
-                        // Дополнительно синхронизируем NavigationManager для корректной работы стека
-                        DispatchQueue.main.async {
-                            if navigationManager.canGoBack {
-                                navigationManager.goBack()
-                            }
-                        }
+                        navigationManager.goBackToPreviousScreen(reason: "AIAssistant.onBack")
                     }) {
                         Image(systemName: "chevron.left")
                             .font(.system(size: 20, weight: .semibold))
@@ -172,6 +164,10 @@ struct AIAssistantScreen: View {
                         .padding(.bottom, 8)
                 }
 
+                aiTrustDisclaimerBanner
+                    .padding(.horizontal, 20)
+                    .padding(.bottom, 8)
+
                 if showDemoServerBanner {
                     aiDemoServerBanner
                         .padding(.horizontal, 20)
@@ -179,64 +175,86 @@ struct AIAssistantScreen: View {
                 }
 
                 // Чат
-                ScrollView(.vertical, showsIndicators: false) {
-                    VStack(spacing: 12) {
-                        if messages.isEmpty {
-                            // Пустое состояние с приветственным сообщением
-                            VStack(spacing: Spacing.m) {
-                                EmptyStateView(
-                                    icon: "🤖",
-                                    title: localizationManager.localized("ai_assistant_empty_title"),
-                                    description: localizationManager.localized("ai_assistant_empty_description"),
-                                    actionTitle: nil,
-                                    action: nil
-                                )
-                                
-                                if !UserDefaults.standard.bool(forKey: hasReceivedWelcomeKey) {
-                                    chatBubble(message: ChatMessage(
-                                        text: localizationManager.localized("ai_assistant_welcome"),
-                                        isUser: false,
-                                        time: currentTime()
-                                    ))
+                ScrollViewReader { proxy in
+                    ScrollView(.vertical, showsIndicators: false) {
+                        VStack(spacing: 12) {
+                            if messages.isEmpty {
+                                VStack(spacing: Spacing.m) {
+                                    EmptyStateView(
+                                        icon: "🤖",
+                                        title: localizationManager.localized("ai_assistant_empty_title"),
+                                        description: localizationManager.localized("ai_assistant_empty_description"),
+                                        actionTitle: nil,
+                                        action: nil
+                                    )
+
+                                    if !UserDefaults.standard.bool(forKey: hasReceivedWelcomeKey) {
+                                        chatBubble(message: ChatMessage(
+                                            text: localizationManager.localized("ai_assistant_welcome"),
+                                            isUser: false,
+                                            time: currentTime()
+                                        ))
+                                    }
+                                }
+                                .padding(.top, 40)
+                            } else {
+                                ForEach(messages) { message in
+                                    chatBubble(message: message)
+                                        .id(message.id)
                                 }
                             }
-                            .padding(.top, 40)
-                        } else {
-                            ForEach(messages) { message in
-                                chatBubble(message: message)
-                            }
-                        }
 
-                        // Индикатор загрузки
-                        if isLoading {
-                    TypingIndicatorView(typingUsers: [localizationManager.localized("ai_assistant_title")])
-                            if showSlowAIHint {
-                                Text(localizationManager.localized("ai_assistant_slow_hint"))
-                                    .font(.caption)
-                                    .foregroundColor(.textSecondary)
-                                    .padding(.top, 4)
+                            if isLoading {
+                                TypingIndicatorView(typingUsers: [localizationManager.localized("ai_assistant_title")])
+                                if showSlowAIHint {
+                                    Text(localizationManager.localized("ai_assistant_slow_hint"))
+                                        .font(.caption)
+                                        .foregroundColor(.textSecondary)
+                                        .padding(.top, 4)
+                                }
                             }
-                        }
 
-                        // Spacer для клавиатуры
-                        Spacer()
-                            .frame(height: 16)
+                            Color.clear.frame(height: 8).id("ai_composer_anchor")
+                        }
+                        .padding(.top, 12)
+                        .padding(.horizontal, 20)
                     }
-                    .padding(.top, 12)
-                    .padding(.horizontal, 20)
+                    .aladdinChatKeyboardDismiss()
+                    .onChange(of: messages.count) { _ in
+                        if let last = messages.last {
+                            proxy.scrollTo(last.id, anchor: .bottom)
+                        }
+                    }
+                    .onChange(of: isComposerFocused) { focused in
+                        guard focused else { return }
+                        DispatchQueue.main.async {
+                            if let last = messages.last {
+                                proxy.scrollTo(last.id, anchor: .bottom)
+                            } else {
+                                proxy.scrollTo("ai_composer_anchor", anchor: .bottom)
+                            }
+                        }
+                    }
+                    .aladdinScrollOnKeyboardShow {
+                        if let last = messages.last {
+                            proxy.scrollTo(last.id, anchor: .bottom)
+                        } else {
+                            proxy.scrollTo("ai_composer_anchor", anchor: .bottom)
+                        }
+                    }
                 }
                 .accessibilityElement(children: .contain)
                 .accessibilityLabel(localizationManager.localized("ai_assistant_chat"))
-                
-                // Быстрые действия
-                if !isLoading {
-                    QuickActionsView(onActionSelected: handleQuickAction)
-                        .padding(.horizontal, 20)
-                        .padding(.bottom, 10)
+            }
+            .safeAreaInset(edge: .bottom) {
+                VStack(spacing: 0) {
+                    if !isLoading && !isComposerFocused {
+                        QuickActionsView(onActionSelected: handleQuickAction)
+                            .padding(.horizontal, 20)
+                            .padding(.bottom, 10)
+                    }
+                    messageInputBar
                 }
-
-                // Поле ввода
-                messageInputBar
             }
         }
         .task {
@@ -349,6 +367,22 @@ struct AIAssistantScreen: View {
             RoundedRectangle(cornerRadius: 12)
                 .fill(Color.red.opacity(0.22))
         )
+    }
+
+    private var aiTrustDisclaimerBanner: some View {
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "info.circle")
+                .foregroundColor(.yellow.opacity(0.95))
+            Text(localizationManager.localized("ai_trust_disclaimer"))
+                .font(.system(size: 12, weight: .medium))
+                .foregroundColor(.white.opacity(0.9))
+                .multilineTextAlignment(.leading)
+            Spacer(minLength: 0)
+        }
+        .padding(12)
+        .stormGlassCard(cornerRadius: 12)
+        .accessibilityIdentifier("ai_trust_disclaimer")
+        .accessibilityLabel(localizationManager.localized("ai_trust_disclaimer"))
     }
 
     private var aiConsentBanner: some View {
@@ -478,110 +512,69 @@ struct AIAssistantScreen: View {
 
     private var messageInputBar: some View {
         VStack(spacing: 6) {
-            HStack(alignment: .bottom, spacing: 10) {
-                Image(systemName: speechManager.isRecording || isHoldRecording ? "mic.fill" : "mic")
-                    .font(.system(size: 20, weight: .semibold))
-                    .foregroundColor(speechManager.isRecording || isHoldRecording ? .red : (speechManager.isSpeechInputAvailable ? .white : .gray))
-                    .frame(width: 42, height: 42)
-                    .background(Color.white.opacity(speechManager.isSpeechInputAvailable ? 0.18 : 0.08))
-                    .cornerRadius(12)
-                    .contentShape(Rectangle())
-                    .onTapGesture {
-                        guard !isHoldRecording else { return }
-                        toggleVoiceRecording()
-                    }
-                    .highPriorityGesture(
-                        DragGesture(minimumDistance: 0)
-                            .onChanged { value in
-                                holdDragTranslation = value.translation.width
-                                holdWillCancel = value.translation.width < -72
-                                guard speechManager.isSpeechInputAvailable, !holdRecordingDidStart else { return }
-                                holdRecordingDidStart = true
-                                isHoldRecording = true
-                                startHoldVoiceRecording()
-                            }
-                            .onEnded { value in
-                                let cancel = holdWillCancel || value.translation.width < -80
-                                holdRecordingDidStart = false
-                                isHoldRecording = false
-                                holdDragTranslation = 0
-                                holdWillCancel = false
-                                if speechManager.isRecording {
-                                    if cancel {
-                                        speechManager.cancelRecording()
-                                    } else {
-                                        speechManager.stopRecording()
+            AladdinComposerBar(
+                text: $messageText,
+                placeholder: localizationManager.localized("ai_assistant_placeholder"),
+                doneTitle: localizationManager.localized("companion_conversation_done"),
+                accessibilityLabel: localizationManager.localized("ai_assistant_placeholder"),
+                isSending: isLoading,
+                isDisabled: speechManager.isRecording,
+                sendEnabled: !messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty && !isLoading,
+                focused: $isComposerFocused,
+                onSend: sendMessage,
+                leading: {
+                    Image(systemName: speechManager.isRecording || isHoldRecording ? "mic.fill" : "mic")
+                        .font(.system(size: 20, weight: .semibold))
+                        .foregroundColor(speechManager.isRecording || isHoldRecording ? .red : (speechManager.isSpeechInputAvailable ? .white : .gray))
+                        .frame(width: 42, height: 42)
+                        .background(Color.white.opacity(speechManager.isSpeechInputAvailable ? 0.18 : 0.08))
+                        .cornerRadius(12)
+                        .contentShape(Rectangle())
+                        .onTapGesture {
+                            guard !isHoldRecording else { return }
+                            toggleVoiceRecording()
+                        }
+                        .highPriorityGesture(
+                            DragGesture(minimumDistance: 0)
+                                .onChanged { value in
+                                    holdDragTranslation = value.translation.width
+                                    holdWillCancel = value.translation.width < -72
+                                    guard speechManager.isSpeechInputAvailable, !holdRecordingDidStart else { return }
+                                    holdRecordingDidStart = true
+                                    isHoldRecording = true
+                                    startHoldVoiceRecording()
+                                }
+                                .onEnded { value in
+                                    let cancel = holdWillCancel || value.translation.width < -80
+                                    holdRecordingDidStart = false
+                                    isHoldRecording = false
+                                    holdDragTranslation = 0
+                                    holdWillCancel = false
+                                    if speechManager.isRecording {
+                                        if cancel {
+                                            speechManager.cancelRecording()
+                                        } else {
+                                            speechManager.stopRecording()
+                                        }
                                     }
                                 }
-                            }
-                    )
-                    .disabled(!speechManager.isSpeechInputAvailable && !speechManager.isRecording)
-                    .accessibilityLabel(localizationManager.localized("ai_assistant_voice_input_label"))
-                    .accessibilityHint(localizationManager.localized("ai_assistant_voice_hold_hint"))
-
-                ZStack(alignment: .topLeading) {
-                    if messageText.isEmpty {
-                        Text(localizationManager.localized("ai_assistant_placeholder"))
-                            .foregroundColor(Color(UIColor.secondaryLabel))
-                            .padding(.horizontal, 14)
-                            .padding(.vertical, 12)
-                            .allowsHitTesting(false)
-                    }
-
-                    TextEditor(text: $messageText)
-                        .font(.system(size: 16))
-                        .foregroundColor(Color(UIColor.label))
-                        .modifier(AIComposerHideScrollBackground())
-                        .padding(.horizontal, 10)
-                        .padding(.vertical, 8)
-                        .frame(minHeight: 44, maxHeight: aiComposerHeight(for: messageText))
-                        .background(Color.clear)
-                        .disabled(isLoading || speechManager.isRecording)
-                        .accessibilityLabel(localizationManager.localized("ai_assistant_placeholder"))
-                }
-                .background(Color(UIColor.secondarySystemGroupedBackground))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 14)
-                        .stroke(Color(UIColor.separator), lineWidth: 1)
-                )
-                .cornerRadius(14)
-
-                Button(action: sendMessage) {
-                    if isLoading {
-                        ProgressView()
-                            .tint(.backgroundDark)
-                            .scaleEffect(0.85)
-                            .frame(width: 42, height: 42)
-                    } else {
-                        Image(systemName: "paperplane.fill")
+                        )
+                        .disabled(!speechManager.isSpeechInputAvailable && !speechManager.isRecording)
+                        .accessibilityLabel(localizationManager.localized("ai_assistant_voice_input_label"))
+                        .accessibilityHint(localizationManager.localized("ai_assistant_voice_hold_hint"))
+                },
+                extraTrailing: {
+                    Button(action: { showFeedbackSheet = true }) {
+                        Image(systemName: "star.fill")
                             .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(.backgroundDark)
+                            .foregroundColor(.orange)
                             .frame(width: 42, height: 42)
-                            .background(
-                                messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty
-                                    ? Color.surfaceDark.opacity(0.5)
-                                    : Color.secondaryGold
-                            )
+                            .background(Color.white.opacity(0.18))
                             .cornerRadius(12)
                     }
+                    .accessibilityLabel(localizationManager.localized("app_feedback_star_accessibility"))
                 }
-                .disabled(messageText.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty || isLoading)
-
-                Button(action: { showFeedbackSheet = true }) {
-                    Image(systemName: "star.fill")
-                        .font(.system(size: 17, weight: .semibold))
-                        .foregroundColor(.orange)
-                        .frame(width: 42, height: 42)
-                        .background(Color.white.opacity(0.18))
-                        .cornerRadius(12)
-                }
-                .accessibilityLabel(localizationManager.localized("app_feedback_star_accessibility"))
-            }
-            .padding(Spacing.m)
-            .stormGlassCard(cornerRadius: 16)
-            .padding(.horizontal, Spacing.screenPadding)
-            .padding(.top, 8)
-            .padding(.bottom, 8)
+            )
 
             VStack(alignment: .leading, spacing: 4) {
                 HStack(spacing: 6) {
@@ -617,14 +610,6 @@ struct AIAssistantScreen: View {
             .padding(.bottom, 4)
         }
         .background(LinearGradient.cardGradient.appGlassmorphism())
-    }
-
-    private func aiComposerHeight(for text: String) -> CGFloat {
-        let lineBreakCount = text.components(separatedBy: .newlines).count
-        let estimatedWrappedLines = max(1, Int(ceil(Double(text.count) / 34.0)))
-        let lineCount = max(lineBreakCount, estimatedWrappedLines)
-        let clampedLines = min(max(lineCount, 1), 5)
-        return CGFloat(clampedLines * 24 + 20)
     }
     
     private func beginAILoading() {

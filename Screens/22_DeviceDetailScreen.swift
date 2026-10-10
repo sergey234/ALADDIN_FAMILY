@@ -107,10 +107,10 @@ struct DeviceDetailScreen: View {
                     .accessibilityElement(children: .combine)
                     .accessibilityLabel(String(format: localizationManager.localized("device_detail_status"), statusText(device.status)))
                     
-                    Text(String(format: localizationManager.localized("device_detail_last_activity"), device.lastActive))
+                    Text(String(format: localizationManager.localized("device_detail_last_activity"), formattedLastActive(device.lastActive)))
                         .font(.caption)
                         .foregroundColor(.textSecondary)
-                        .accessibilityLabel(String(format: localizationManager.localized("device_detail_last_activity"), device.lastActive))
+                        .accessibilityLabel(String(format: localizationManager.localized("device_detail_last_activity"), formattedLastActive(device.lastActive)))
                 }
                 .padding(Spacing.cardPadding)
                 .stormGlassCard(cornerRadius: CornerRadius.large, accentStripColor: .stormIndigo)
@@ -258,8 +258,22 @@ struct DeviceDetailScreen: View {
         case .danger: return localizationManager.localized("device_detail_status_danger")
         case .inactive: return localizationManager.localized("device_detail_status_inactive")
         case .blocked: return localizationManager.localized("devices_status_blocked")
-        case .pending: return "Ожидает привязки"
+        case .pending: return localizationManager.localized("device_detail_status_pending")
         }
+    }
+
+    /// ISO-8601 / raw timestamps → short local date-time (no raw `2026-09-14T21:33:47Z` on UI).
+    private func formattedLastActive(_ raw: String) -> String {
+        let trimmed = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        guard !trimmed.isEmpty else { return "—" }
+        let isoFrac = ISO8601DateFormatter()
+        isoFrac.formatOptions = [.withInternetDateTime, .withFractionalSeconds]
+        let iso = ISO8601DateFormatter()
+        iso.formatOptions = [.withInternetDateTime]
+        if let date = isoFrac.date(from: trimmed) ?? iso.date(from: trimmed) {
+            return DateFormatter.localizedString(from: date, dateStyle: .medium, timeStyle: .short)
+        }
+        return trimmed
     }
 
     // MARK: - Device Actions
@@ -589,7 +603,7 @@ struct DeviceThreatsView: View {
                 ProgressView()
                     .padding()
             } else if threats.isEmpty && threatsError == nil {
-                Text(localizationManager.localized("device_detail_threats_empty") ?? "Нет угроз")
+                Text(localizationManager.localized("device_detail_threats_empty"))
                     .font(.body)
                     .foregroundColor(.textSecondary)
                     .padding()

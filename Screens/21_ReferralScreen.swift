@@ -1,5 +1,6 @@
 import SwiftUI
 import Foundation
+import UIKit
 import CoreImage.CIFilterBuiltins
 
 /// 🎁 Referral Screen - НОВАЯ ВЕРСИЯ БЕЗ ОШИБОК
@@ -25,8 +26,10 @@ struct ReferralScreen: View {
     @State private var showHowItWorks: Bool = false
     @State private var referralHistoryItems: [ReferralHistory] = []
     @State private var isLoading: Bool = false
-    @State private var errorMessage: String?
+    /// Soft warning only (stats/rewards) — Invite stays usable.
+    @State private var softWarningMessage: String?
     @State private var isCaregiverAccess: Bool = true
+    @State private var rewardsSyncFailed: Bool = false
     @State private var aTier: String = "none"
     @State private var aQualified: Int = 0
     @State private var aProtectionDays: Int = 0
@@ -56,18 +59,27 @@ struct ReferralScreen: View {
                         if !isCaregiverAccess {
                             caregiverOnlyCard
                         } else {
-                        if let errorMessage = errorMessage {
-                            Text(errorMessage)
-                                .font(.caption)
-                                .foregroundColor(.red)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, Spacing.m)
-                                .padding(.vertical, Spacing.xs)
-                                .background(Color.red.opacity(0.1))
-                                .cornerRadius(CornerRadius.medium)
+                        if let softWarningMessage = softWarningMessage {
+                            VStack(spacing: Spacing.xs) {
+                                Text(softWarningMessage)
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                                    .multilineTextAlignment(.center)
+                                Button(localizationManager.localized("referral_soft_retry")) {
+                                    loadReferralData(isRetry: true)
+                                }
+                                .font(.caption.weight(.semibold))
+                                .foregroundColor(.secondaryGold)
+                                .accessibilityIdentifier("referral_soft_retry")
+                            }
+                            .padding(.horizontal, Spacing.m)
+                            .padding(.vertical, Spacing.s)
+                            .frame(maxWidth: .infinity)
+                            .background(Color.orange.opacity(0.12))
+                            .cornerRadius(CornerRadius.medium)
                         }
                         
-                        // Главный баннер
+                        // Главный баннер — Invite всегда доступен (Hybrid)
                         mainBanner
 
                         familyInviteTierCard
@@ -994,7 +1006,20 @@ struct ReferralScreen: View {
     
     private var referralText: String {
         let code = referralCode.isEmpty ? "ALADDIN" : referralCode
-        return String(format: localizationManager.localized("referral_text_template"), code, code)
+        // Do NOT use String(format:) here: templates contain "−20%" which crashes as invalid %.
+        let template = localizationManager.localized("referral_text_template")
+        if template.contains("{CODE}") {
+            return template.replacingOccurrences(of: "{CODE}", with: code)
+        }
+        // Legacy templates with %@ %@ — replace sequentially without format parsing.
+        var out = template
+        if let range = out.range(of: "%@") {
+            out.replaceSubrange(range, with: code)
+        }
+        if let range = out.range(of: "%@") {
+            out.replaceSubrange(range, with: code)
+        }
+        return out
     }
     
     private var referralLink: String {
@@ -1011,11 +1036,16 @@ struct ReferralScreen: View {
     
     // MARK: - Helper Functions
     
-    private func loadReferralData() {
+    /// Hybrid: Invite always works; Tier/Rewards soft-fail with retry (no red hard-block).
+    private func loadReferralData(isRetry: Bool = false) {
         isLoading = true
-        errorMessage = nil
+        softWarningMessage = nil
+        rewardsSyncFailed = false
+        ensureLocalInviteCodeFallback()
         let service = APIService.shared
         let group = DispatchGroup()
+        // All increments hop to main before leave(); notify is also on main.
+        var softFailCount = 0
         
         group.enter()
         service.getReferralOverview { result in
@@ -1027,13 +1057,13 @@ struct ReferralScreen: View {
                     if referralsCount == 0 {
                         referralsCount = overview.invitationsCount
                     }
-                    // ✅ Сохранить referralCode в UserDefaults для использования при оплате
                     if !overview.referralCode.isEmpty {
                         UserDefaults.standard.set(overview.referralCode, forKey: "referral_code")
-                        print("✅ ReferralScreen: Сохранен referralCode: \(overview.referralCode)")
                     }
-                case .failure(let error):
-                    errorMessage = error.localizedDescription
+                case .failure:
+                    // Keep local/fallback code — Invite button still works.
+                    softFailCount += 1
+                    ensureLocalInviteCodeFallback()
                 }
                 group.leave()
             }
@@ -1047,8 +1077,8 @@ struct ReferralScreen: View {
                     referralsCount = stats.totalReferrals
                     paidReferralsCount = stats.convertedReferrals
                     conversionRate = stats.conversionRate
-                case .failure(let error):
-                    errorMessage = error.localizedDescription
+                case .failure:
+                    softFailCount += 1
                 }
                 group.leave()
             }
@@ -1060,8 +1090,8 @@ struct ReferralScreen: View {
                 switch result {
                 case .success(let historyItems):
                     updateReferralHistory(with: historyItems)
-                case .failure(let error):
-                    errorMessage = error.localizedDescription
+                case .failure:
+                    softFailCount += 1
                     referralHistoryItems = []
                 }
                 group.leave()
@@ -1078,8 +1108,9 @@ struct ReferralScreen: View {
                     if rewardsResponse.totalConverted > paidReferralsCount {
                         paidReferralsCount = rewardsResponse.totalConverted
                     }
-                case .failure(let error):
-                    errorMessage = error.localizedDescription
+                case .failure:
+                    softFailCount += 1
+                    rewardsSyncFailed = true
                     rewardItems = []
                 }
                 group.leave()
@@ -1095,8 +1126,7 @@ struct ReferralScreen: View {
                 case .success(let overview):
                     applyAOverview(overview)
                 case .failure:
-                    // A API may not be deployed yet — keep legacy stats.
-                    break
+                    softFailCount += 1
                 }
                 group.leave()
             }
@@ -1104,8 +1134,29 @@ struct ReferralScreen: View {
         
         group.notify(queue: .main) {
             isLoading = false
+            if softFailCount > 0 {
+                softWarningMessage = localizationManager.localized("referral_soft_stats_unavailable")
+            }
             FamilyReferralInviteRouter.attachPendingIfNeeded()
+            if isRetry {
+                FamilyReferralAnalytics.track(.inviteTap, parameters: ["method": "soft_retry"])
+            }
         }
+    }
+
+    /// Prefer server code; else cached; else generate stable local invite code so Share never blocks.
+    private func ensureLocalInviteCodeFallback() {
+        if !referralCode.isEmpty { return }
+        if let cached = UserDefaults.standard.string(forKey: "referral_code")?
+            .trimmingCharacters(in: .whitespacesAndNewlines), !cached.isEmpty {
+            referralCode = cached
+            return
+        }
+        let device = (UIDevice.current.identifierForVendor?.uuidString ?? "LOCAL")
+            .replacingOccurrences(of: "-", with: "")
+        let suffix = String(device.suffix(6)).uppercased()
+        referralCode = "ALADDIN\(suffix)"
+        UserDefaults.standard.set(referralCode, forKey: "referral_code")
     }
     
     private func updateReferralHistory(with items: [ReferralHistoryItem]) {
@@ -1115,7 +1166,9 @@ struct ReferralScreen: View {
         }
         let sorted = items.sorted { $0.createdAt > $1.createdAt }
         referralHistoryItems = sorted.enumerated().map { index, item in
-            let friendLabel = String(format: localizationManager.localized("referral_history_item_name"), index + 1)
+            let friendLabel = localizationManager.localized("referral_history_item_name")
+                .replacingOccurrences(of: "%@", with: "\(index + 1)")
+                .replacingOccurrences(of: "%d", with: "\(index + 1)")
             let displayDate = formattedDate(from: item.createdAt)
             let reward = rewardLabel(for: item)
             return ReferralHistory(id: item.id, name: friendLabel, date: displayDate, reward: reward, status: ReferralStatus.from(item.status))

@@ -7218,16 +7218,26 @@ struct GeofencesSettingsModal: View {
                     VStack(spacing: Spacing.m) {
                         TextField(localizationManager.localized("geofences_name_placeholder"), text: $newGeofenceName)
                             .font(.body)
-                            .foregroundColor(.textPrimary)
+                            .foregroundColor(.white)
+                            .accentColor(.secondaryGold)
                             .padding(Spacing.m)
-                            .background(Color.backgroundMedium.opacity(0.5))
+                            .background(Color.white.opacity(0.12))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                    .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                            )
                             .cornerRadius(CornerRadius.medium)
                         
                         TextField(localizationManager.localized("geofences_address_placeholder"), text: $newGeofenceAddress)
                             .font(.body)
-                            .foregroundColor(.textPrimary)
+                            .foregroundColor(.white)
+                            .accentColor(.secondaryGold)
                             .padding(Spacing.m)
-                            .background(Color.backgroundMedium.opacity(0.5))
+                            .background(Color.white.opacity(0.12))
+                            .overlay(
+                                RoundedRectangle(cornerRadius: CornerRadius.medium)
+                                    .stroke(Color.white.opacity(0.35), lineWidth: 1)
+                            )
                             .cornerRadius(CornerRadius.medium)
                         
                         VStack(alignment: .leading, spacing: Spacing.s) {

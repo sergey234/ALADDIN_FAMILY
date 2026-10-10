@@ -33,15 +33,11 @@ struct IdentityHubThreatCoverageView: View {
                     .frame(width: 24)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: Spacing.xs) {
-                        Text(threat.rawValue.uppercased())
-                            .font(.caption2.weight(.bold))
-                            .foregroundColor(.white.opacity(0.55))
-                        Text(localizationManager.localized(threat.titleKey))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.leading)
-                    }
+                    // Human title only — no FRD-01 style codes on UI.
+                    Text(localizationManager.localized(threat.titleKey))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
                     Text(localizationManager.localized(threat.pipelineKey))
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.7))

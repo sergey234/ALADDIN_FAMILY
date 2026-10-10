@@ -86,15 +86,11 @@ struct DeviceHubThreatCoverageView: View {
                     .frame(width: 24)
 
                 VStack(alignment: .leading, spacing: 4) {
-                    HStack(spacing: Spacing.xs) {
-                        Text(id.uppercased())
-                            .font(.caption2.weight(.bold))
-                            .foregroundColor(.white.opacity(0.55))
-                        Text(localizationManager.localized(titleKey))
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundColor(.white)
-                            .multilineTextAlignment(.leading)
-                    }
+                    // Human title only — no CYB-07 / MOB-01 codes on UI (a11y id keeps internal code).
+                    Text(localizationManager.localized(titleKey))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundColor(.white)
+                        .multilineTextAlignment(.leading)
                     Text(localizationManager.localized(pipelineKey))
                         .font(.caption)
                         .foregroundColor(.white.opacity(0.7))

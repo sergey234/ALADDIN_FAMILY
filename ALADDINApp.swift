@@ -792,8 +792,14 @@ struct ALADDINApp: App {
                 }
             }
             .preferredColorScheme(preferredColorScheme)
+            .onAppear {
+                // Keep overlay flag in sync; stuck `true` in UserDefaults covers Family Places.
+                MasterLogger.shared.updateSettings(enableVisual: enableVisualLogging)
+                VisualLogger.shared.isVisible = enableVisualLogging
+            }
             .onChange(of: enableVisualLogging) { enabled in
                 MasterLogger.shared.updateSettings(enableVisual: enabled)
+                VisualLogger.shared.isVisible = enabled
             }
             .overlay(alignment: .bottomTrailing) {
                 if enableVisualLogging {

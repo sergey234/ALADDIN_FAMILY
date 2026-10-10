@@ -39,8 +39,12 @@ struct SettingsScreen: View {
 
     // ✅ BUILD 95: Встроенный просмотр логов крашей/диагностики прямо на устройстве
     @State private var showCrashLogsView: Bool = false
+    @State private var showConsentManageSheet: Bool = false
     @AppStorage("home_chat_default_mode") private var homeChatDefaultModeRaw: String = HomeChatDefaultMode.last.rawValue
     @AppStorage(AppConfig.UserDefaultsKeys.aiDataSharingEnabled) private var aiDataSharingEnabled: Bool = false
+    @AppStorage("personal_data_consent_accepted") private var consentAcceptedStorage: Bool = false
+    @AppStorage("personal_data_consent_date") private var consentDateStorage: String = ""
+    @State private var showConsentRevokeAlert: Bool = false
 
     // ✅ BUILD 100: Убран testLogger из struct - логирование перемещено в .onAppear
     // Это предотвращает избыточное логирование при пересоздании View
@@ -507,7 +511,7 @@ struct SettingsScreen: View {
 
                 // Политика конфиденциальности
                 settingsButton(
-                    "doc.text",
+                    "lock.doc",
                     viewModel.localizedStrings.privacyPolicy,
                     viewModel.localizedStrings.privacyPolicySubtitle
                 ) {
@@ -523,13 +527,13 @@ struct SettingsScreen: View {
                     viewModel.showTermsOfService = true
                 }
 
-                // Согласие на обработку персональных данных
+                // Согласие на обработку персональных данных (отдельный sheet, не PrivacyPolicy)
                 settingsButton(
-                    "checkmark.shield",
+                    "hand.raised.fill",
                     viewModel.localizedStrings.settingsConsentPersonalData,
                     viewModel.consentAccepted ? viewModel.localizedStrings.settingsConsentGranted : viewModel.localizedStrings.settingsConsentManage
                 ) {
-                    viewModel.showPrivacyPolicy = true
+                    showConsentManageSheet = true
                 }
 
                 // Поделиться приложением
@@ -624,6 +628,7 @@ struct SettingsScreen: View {
         }
         .sheet(isPresented: $viewModel.showProfileEdit) {
             ProfileEditView()
+                .environmentObject(localizationManager)
                 .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showLanguageSettings) {
@@ -637,6 +642,17 @@ struct SettingsScreen: View {
         .sheet(isPresented: $viewModel.showPrivacyPolicy) {
             PrivacyPolicyScreen()
                 .aladdinSheetPresentation()
+        }
+        .sheet(isPresented: $showConsentManageSheet, onDismiss: {
+            viewModel.consentAccepted = consentAcceptedStorage
+        }) {
+            SettingsConsentManageSheet(
+                consentAccepted: $consentAcceptedStorage,
+                consentDate: $consentDateStorage,
+                showRevokeAlert: $showConsentRevokeAlert
+            )
+            .environmentObject(localizationManager)
+            .aladdinSheetPresentation()
         }
         .sheet(isPresented: $viewModel.showTermsOfService) {
             TermsOfServiceScreen()
@@ -896,6 +912,124 @@ struct SettingsScreen: View {
         }
     }
 }
+/// Отдельный sheet согласия ПД (не PrivacyPolicyScreen).
+private struct SettingsConsentManageSheet: View {
+    @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject private var localizationManager: LocalizationManager
+    @Binding var consentAccepted: Bool
+    @Binding var consentDate: String
+    @Binding var showRevokeAlert: Bool
+
+    var body: some View {
+        NavigationView {
+            ZStack {
+                StormMeshBackground(variant: .legal)
+                    .ignoresSafeArea()
+                ScrollView {
+                    VStack(alignment: .leading, spacing: Spacing.m) {
+                        HStack(spacing: Spacing.m) {
+                            Image(systemName: consentAccepted ? "checkmark.circle.fill" : "xmark.circle.fill")
+                                .font(.system(size: 28))
+                                .foregroundColor(consentAccepted ? .green : .red)
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(
+                                    consentAccepted
+                                    ? localizationManager.localized("profile_consent_provided")
+                                    : localizationManager.localized("profile_consent_not_provided")
+                                )
+                                .font(.bodyBold)
+                                .foregroundColor(.textPrimary)
+                                if consentAccepted, !consentDate.isEmpty {
+                                    Text("\(localizationManager.localized("profile_consent_date")) \(consentDate)")
+                                        .font(.caption)
+                                        .foregroundColor(.textSecondary)
+                                }
+                            }
+                            Spacer()
+                        }
+                        .padding(Spacing.m)
+                        .stormGlassCard(cornerRadius: CornerRadius.medium)
+
+                        Button {
+                            URLHelper.openWebsite(urlString: "https://aladdin-ai.ru/consent.html", tariffId: nil)
+                        } label: {
+                            settingsConsentRow(
+                                icon: "doc.text",
+                                title: localizationManager.localized("profile_consent_view")
+                            )
+                        }
+
+                        Button {
+                            URLHelper.openWebsite(urlString: "https://aladdin-ai.ru/privacy.html", tariffId: nil)
+                        } label: {
+                            settingsConsentRow(
+                                icon: "lock.shield",
+                                title: localizationManager.localized("profile_consent_privacy_policy")
+                            )
+                        }
+
+                        if consentAccepted {
+                            Button {
+                                showRevokeAlert = true
+                            } label: {
+                                HStack {
+                                    Image(systemName: "xmark.circle")
+                                        .foregroundColor(.red)
+                                    Text(localizationManager.localized("profile_consent_revoke"))
+                                        .foregroundColor(.red)
+                                    Spacer()
+                                }
+                                .padding(Spacing.m)
+                                .background(Color.red.opacity(0.12))
+                                .cornerRadius(CornerRadius.medium)
+                            }
+                        } else {
+                            Text(localizationManager.localized("profile_consent_required_description"))
+                                .font(.caption)
+                                .foregroundColor(.textSecondary)
+                                .padding(Spacing.m)
+                                .stormGlassCard(cornerRadius: CornerRadius.medium)
+                        }
+                    }
+                    .padding(Spacing.screenPadding)
+                }
+            }
+            .navigationTitle(localizationManager.localized("settings_consent_sheet_title"))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) {
+                    Button(localizationManager.localized("edit_profile_cancel")) { dismiss() }
+                }
+            }
+            .alert(localizationManager.localized("profile_consent_revoke_title"), isPresented: $showRevokeAlert) {
+                Button(localizationManager.localized("profile_consent_revoke_cancel"), role: .cancel) {}
+                Button(localizationManager.localized("profile_consent_revoke_confirm"), role: .destructive) {
+                    consentAccepted = false
+                    consentDate = ""
+                }
+            } message: {
+                Text(localizationManager.localized("profile_consent_revoke_message"))
+            }
+        }
+    }
+
+    private func settingsConsentRow(icon: String, title: String) -> some View {
+        HStack(spacing: Spacing.m) {
+            Image(systemName: icon)
+                .foregroundColor(.primaryBlue)
+            Text(title)
+                .font(.body)
+                .foregroundColor(.textPrimary)
+            Spacer()
+            Image(systemName: "chevron.right")
+                .font(.caption)
+                .foregroundColor(.textSecondary)
+        }
+        .padding(Spacing.m)
+        .stormGlassCard(cornerRadius: CornerRadius.medium)
+    }
+}
+
 // MARK: - Preview
 struct SettingsScreen_Previews: PreviewProvider {
     static var previews: some View {
