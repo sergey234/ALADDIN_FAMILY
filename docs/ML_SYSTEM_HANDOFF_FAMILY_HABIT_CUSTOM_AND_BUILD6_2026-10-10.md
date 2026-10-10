@@ -79,17 +79,23 @@ GeofenceGeocodingService has no member 'isDemoPlaceholderAddress'
 
 ### 2.3 План Custom Habits (ещё не реализован в коде)
 
-SSOT: `.cursor/FAMILY_HABIT_CUSTOM_HYBRID_TASK_REGISTRY.md`  
-Ids: `fhc-00` ✅ … `fhc-01`…`fhc-14` ⏳  
-GATES G1–G8 в registry.
+SSOT: `.cursor/FAMILY_HABIT_CUSTOM_HYBRID_TASK_REGISTRY.md` (**обновлён 2026-10-10**)  
+Ids: `fhc-00` ✅ · `fhc-01`…`fhc-17` ⏳ · `fhc-18` ⛔ Widget/Intent  
+GATES G1–G9 · Ship rules **S1–S5** · stop-list в REGISTRY.
+
+**Обязательные ship rules:** soft-fail no-wipe · test-push must · loc∥UI · G4 old↔new · device-local time.  
+**Делаем после G1–G7 / до маркетинга:** `fhc-15` once_at · `fhc-16` reorder · `fhc-17` analytics (без title).  
+**Не делаем:** календарь/RRULE, новая category, XP, offline CRDT, гео, AI, cloud push, medicine dosing, mock API, Widget/Intent.
 
 Порядок кода:
 ```
 fhc-01 model → fhc-02 intervals → fhc-03 scheduler → fhc-04 deeplink
-→ fhc-05 UI → fhc-06 quick templates → fhc-07 server → fhc-08 sync
-→ fhc-09 loc → fhc-10 tests → fhc-11 static verify
-→ [GO deploy] fhc-12 → [GO build] fhc-13 → fhc-14
-→ [optional] fhc-15 once_at date
+→ fhc-05 UI+loc+test-push → fhc-06 templates → fhc-07 server → fhc-08 sync no-wipe
+→ fhc-10 tests → fhc-11 static verify          ⟵ G1–G7
+→ fhc-17 analytics (можно раньше с 04/08)
+→ [GO deploy] fhc-12 → fhc-15 once_at → fhc-16 reorder
+→ [GO build] fhc-13 → fhc-14
+→ fhc-18 Widget/Intent ⛔ deferred
 ```
 
 ---
@@ -188,11 +194,12 @@ git status --short
 | G1 UI под Medicine + max 5 | screenshot / a11y |
 | G2 pending `family.habit.custom.*` | log |
 | G3 Done clears due | unit/manual |
-| G4 API custom[] compatible | curl |
-| G5 RU+EN | keys |
+| G4 API custom[] **old↔new** dual | curl оба направления + no wipe |
+| G5 RU+EN (с UI) | keys |
 | G6 no mock | review |
 | G7 static verify | script |
-| G8 Device QA | GO build |
+| G8 Device QA | GO build **после** GO deploy |
+| G9 device-local time; TZ out of scope | REGISTRY |
 
 ---
 

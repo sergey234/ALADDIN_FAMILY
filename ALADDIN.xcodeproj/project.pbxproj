@@ -571,6 +571,7 @@
 		FWS20322F90000100C7D34B /* FamilyHabitRemindersScheduler.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20212F90000100C7D34B /* FamilyHabitRemindersScheduler.swift */; };
 		FWS20422F90000100C7D34B /* FamilyHabitRemindersService.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20312F90000100C7D34B /* FamilyHabitRemindersService.swift */; };
 		FWS20522F90000100C7D34B /* FamilyHabitRemindersSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20412F90000100C7D34B /* FamilyHabitRemindersSection.swift */; };
+		FHC05122F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift in Sources */ = {isa = PBXBuildFile; fileRef = FHC05112F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift */; };
 		FWS20622F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20512F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift */; };
 		FWS20722F90000100C7D34B /* AntifakeTransferCheckCTA.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20612F90000100C7D34B /* AntifakeTransferCheckCTA.swift */; };
 		FWS20822F90000100C7D34B /* AntifakeConfidenceRingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = FWS20812F90000100C7D34B /* AntifakeConfidenceRingView.swift */; };
@@ -1374,6 +1375,7 @@
 		FWS20212F90000100C7D34B /* FamilyHabitRemindersScheduler.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersScheduler.swift; path = Core/Family/FamilyHabitRemindersScheduler.swift; sourceTree = "<group>"; };
 		FWS20312F90000100C7D34B /* FamilyHabitRemindersService.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersService.swift; path = Core/Family/FamilyHabitRemindersService.swift; sourceTree = "<group>"; };
 		FWS20412F90000100C7D34B /* FamilyHabitRemindersSection.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitRemindersSection.swift; path = Shared/Components/FamilyHabitRemindersSection.swift; sourceTree = "<group>"; };
+		FHC05112F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitCustomRemindersBlock.swift; path = Shared/Components/FamilyHabitCustomRemindersBlock.swift; sourceTree = "<group>"; };
 		FWS20512F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeFamilyPushRegistrar.swift; path = Core/Family/AntifakeFamilyPushRegistrar.swift; sourceTree = "<group>"; };
 		FWS20612F90000100C7D34B /* AntifakeTransferCheckCTA.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = AntifakeTransferCheckCTA.swift; path = Shared/Components/AntifakeTransferCheckCTA.swift; sourceTree = "<group>"; };
 		FWS20712F90000100C7D34B /* FamilyHabitDuePingFeature.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; name = FamilyHabitDuePingFeature.swift; path = Core/Family/FamilyHabitDuePingFeature.swift; sourceTree = "<group>"; };
@@ -1987,6 +1989,7 @@
 				FWS20F12F90000100C7D34B /* HabitMedalSourcesSettings.swift */,
 				FWS20312F90000100C7D34B /* FamilyHabitRemindersService.swift */,
 				FWS20412F90000100C7D34B /* FamilyHabitRemindersSection.swift */,
+				FHC05112F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift */,
 				FWS20512F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift */,
 				FWS0612F90000100C7D34B /* AntifakeSettingsModels.swift */,
 				FWS062A2F90000100C7D34B /* AntifakeSettingsService.swift */,
@@ -3061,6 +3064,7 @@
 				BRATH042F90000100C7D34B /* BreathAmbientAudioControls.swift in Sources */,
 				FWS20422F90000100C7D34B /* FamilyHabitRemindersService.swift in Sources */,
 				FWS20522F90000100C7D34B /* FamilyHabitRemindersSection.swift in Sources */,
+				FHC05122F90000100C7D34B /* FamilyHabitCustomRemindersBlock.swift in Sources */,
 				FWS20622F90000100C7D34B /* AntifakeFamilyPushRegistrar.swift in Sources */,
 				FWS20722F90000100C7D34B /* AntifakeTransferCheckCTA.swift in Sources */,
 				FWS20822F90000100C7D34B /* AntifakeConfidenceRingView.swift in Sources */,

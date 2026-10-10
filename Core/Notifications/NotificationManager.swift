@@ -1090,6 +1090,12 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         let userInfo = notification.request.content.userInfo
         let notificationType = userInfo["type"] as? String ?? "info"
 
+        // geo-rel-02 — silent calendar wake for No-show; run check, never show banner
+        if notificationType == GeofenceNoShowMonitor.checkNotificationType {
+            GeofenceNoShowMonitor.checkDue()
+            return []
+        }
+
         // Проверяем режим "Не беспокоить"
         let isSmoke = Self.isSmokeOrQaUserInfo(userInfo)
         if notificationSettings.doNotDisturbMode && !isSmoke {
@@ -1197,7 +1203,10 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
              "antivirus_scan_complete",
              "antivirus_scan_failed",
              "downloaded_file_threat",
-             "crash_detection":
+             "crash_detection",
+             "geofence_noshow",
+             "geofence_school_arrival",
+             "geofence_home_arrival":
             return true
         default:
             return false
@@ -1253,6 +1262,11 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
         
         // ✅ Обработка действий на main thread
         Task { @MainActor in
+            if let type = userInfo["type"] as? String,
+               type == GeofenceNoShowMonitor.checkNotificationType {
+                GeofenceNoShowMonitor.checkDue()
+                return
+            }
             // Обработка действий
             switch response.actionIdentifier {
             case "view_details":
@@ -1294,14 +1308,12 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
     }
 
     private func handleFamilyHabitDoneAction(userInfo: [AnyHashable: Any]) {
-        let preset = (userInfo["preset"] as? String)?
-            .trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
-        guard !preset.isEmpty else { return }
-        Task {
-            let result = await FamilyHabitRemindersScheduler.shared.handleDone(presetRaw: preset)
-            if result.applied {
-                HapticFeedback.notification(.success)
-            }
+        // fhc-04 — preset from userInfo or deepLink; reuse family_habit category only.
+        guard let preset = UnicornDeepLinkRouter.habitPreset(fromUserInfo: userInfo) else { return }
+        Task { @MainActor in
+            await UnicornDeepLinkRouter.performHabitDone(presetRaw: preset)
+            // Custom Done skips XP (`applied == false`) but still clears pending — haptic OK.
+            HapticFeedback.notification(.success)
         }
     }
     
@@ -1391,7 +1403,16 @@ extension NotificationManager: UNUserNotificationCenterDelegate {
                         name: NSNotification.Name("NavigateToFocusSession"),
                         object: nil
                     )
-                case .familyHabits, .habitDone:
+                case .familyHabits:
+                    NotificationCenter.default.post(
+                        name: NSNotification.Name("NavigateToFamily"),
+                        object: nil
+                    )
+                case .habitDone(let preset):
+                    // fhc-04 — tap on custom/done deepLink clears pending (same as Done action).
+                    Task { @MainActor in
+                        await UnicornDeepLinkRouter.performHabitDone(presetRaw: preset)
+                    }
                     NotificationCenter.default.post(
                         name: NSNotification.Name("NavigateToFamily"),
                         object: nil

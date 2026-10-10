@@ -3146,6 +3146,9 @@ async def family_safe_word_verify(
 class FamilyHabitRemindersConfigBody(BaseModel):
     presets: Dict[str, Any]
     member_ids: List[str] = []
+    # fhc-07 — None = field omitted by old client (preserve server custom);
+    # [] = explicit clear; non-empty = replace.
+    custom: Optional[List[Dict[str, Any]]] = None
 
 
 class FamilySharedListBody(BaseModel):
@@ -3174,17 +3177,20 @@ async def family_habit_reminders_set(
     body: FamilyHabitRemindersConfigBody,
     current_user: dict = Depends(get_current_user),
 ):
-    """fws-02: parent/elderly writes templates for the family."""
+    """fws-02: parent/elderly writes templates for the family (+ fhc-07 custom[])."""
     user_id = _resolve_user_id_from_claim(current_user)
 
     def set_sync():
         from app.services.family_habit_reminders_store import set_config_for_user
 
         try:
-            return set_config_for_user(
-                user_id=user_id,
-                config={"presets": body.presets, "member_ids": body.member_ids},
-            )
+            payload: Dict[str, Any] = {
+                "presets": body.presets,
+                "member_ids": body.member_ids,
+            }
+            if body.custom is not None:
+                payload["custom"] = body.custom
+            return set_config_for_user(user_id=user_id, config=payload)
         except PermissionError as exc:
             code = str(exc)
             if code == "parent_only":
@@ -3362,4 +3368,64 @@ async def elderly_scam_call_alert(
     if result.get("error") == "role":
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="family_role_required")
     return result
+
+
+# MARK: - fsl-13 / fsl-15 soft presence («я в порядке»)
+
+
+class FamilyImOkBody(BaseModel):
+    battery_percent: Optional[int] = Field(default=None, ge=0, le=100)
+
+
+@router.post("/im-ok")
+@limiter.limit("30/hour")
+async def family_im_ok(
+    request: Request,
+    body: FamilyImOkBody,
+    current_user: dict = Depends(get_current_user),
+):
+    """fsl-13 — member pressed «I'm OK». Soft presence + parent push. No GPS."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def run_sync():
+        from app.services.family_presence_store import upsert_im_ok
+
+        return upsert_im_ok(
+            user_id=user_id,
+            battery_percent=body.battery_percent,
+        )
+
+    result = await asyncio.to_thread(run_sync)
+    if not result.get("ok"):
+        err = result.get("error")
+        if err in ("no_family", "no_member"):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="family_membership_required",
+            )
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(err or "im_ok_failed"))
+    return {
+        "success": True,
+        "data": True,
+        "message": "im_ok",
+        "parents_notified": result.get("parents_notified", 0),
+        "member_id": result.get("member_id"),
+    }
+
+
+@router.get("/presence")
+@limiter.limit("60/minute")
+async def family_presence(
+    request: Request,
+    current_user: dict = Depends(get_current_user),
+):
+    """fsl-15 — soft presence list (battery / last I'm OK). No GPS coordinates."""
+    user_id = _resolve_user_id_from_claim(current_user)
+
+    def load_sync():
+        from app.services.family_presence_store import list_family_presence
+
+        return list_family_presence(user_id=user_id)
+
+    return await asyncio.to_thread(load_sync)
 

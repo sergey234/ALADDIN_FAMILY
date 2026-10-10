@@ -22,6 +22,8 @@ struct FamilyHabitRemindersSection: View {
     @State private var medalWater = HabitMedalSourcesSettings.isSourceEnabled("water")
     @State private var medalMedicine = HabitMedalSourcesSettings.isSourceEnabled("medicine")
     @State private var remindOnThisDevice = FamilyHabitRemindersPolicy.remindOnThisDevice()
+    @State private var persistGeneration = 0
+    @State private var isHydrating = true
 
     private var canConfigure: Bool {
         FamilyAccessPolicy.hasPermission(.manageCriticalFamilySettings, members: members)
@@ -92,13 +94,39 @@ struct FamilyHabitRemindersSection: View {
                 .environmentObject(localizationManager)
         }
         .task {
+            isHydrating = true
             draft = service.config
             allMinorsSelected = service.config.memberIds.isEmpty
             waterDetailsExpanded = draft.schedule(for: .water).enabled
+            remindOnThisDevice = FamilyHabitRemindersPolicy.remindOnThisDevice()
             await service.refreshFromServer(members: members)
+            // After refresh: service keeps local times if server had no row / defaults.
             draft = service.config
             allMinorsSelected = service.config.memberIds.isEmpty
+            isHydrating = false
         }
+        .onChange(of: draft) { newDraft in
+            // Persist time changes without requiring «Сохранить» — leaving the screen
+            // used to discard 16:30 back to factory 09:00.
+            guard !isHydrating else { return }
+            Task { await persistDraftDebounced(newDraft) }
+        }
+    }
+
+    @MainActor
+    private func persistDraftDebounced(_ newDraft: FamilyHabitRemindersConfig) async {
+        guard !isHydrating else { return }
+        persistGeneration += 1
+        let generation = persistGeneration
+        try? await Task.sleep(nanoseconds: 450_000_000)
+        guard generation == persistGeneration, !isSaving, !isHydrating else { return }
+        guard newDraft == draft else { return }
+        var toSave = draft
+        if allMinorsSelected {
+            toSave.memberIds = []
+        }
+        FamilyHabitRemindersPolicy.setRemindOnThisDevice(remindOnThisDevice)
+        _ = await service.saveLocalThenSync(config: toSave, members: members)
     }
 
     private var sectionHeader: some View {
@@ -137,6 +165,15 @@ struct FamilyHabitRemindersSection: View {
         ForEach(FamilyHabitPresetId.allCases) { preset in
             presetRow(preset)
         }
+
+        // fhc-05 — Hybrid: custom reminders directly under Medicine (last preset).
+        FamilyHabitCustomRemindersBlock(
+            custom: $draft.custom,
+            onChanged: {
+                guard !isHydrating else { return }
+                Task { await persistDraftDebounced(draft) }
+            }
+        )
 
         Button {
             showMomentsSheet = true
@@ -277,6 +314,10 @@ struct FamilyHabitRemindersSection: View {
                             Text(schedule.waterSummaryLine(localization: localizationManager))
                                 .font(.caption2)
                                 .foregroundColor(.white.opacity(0.7))
+                        } else if preset == .medicine {
+                            Text(schedule.windowSummaryLine(localization: localizationManager))
+                                .font(.caption2)
+                                .foregroundColor(.white.opacity(0.7))
                         }
                     }
                     Spacer()
@@ -289,12 +330,41 @@ struct FamilyHabitRemindersSection: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityIdentifier("family_habit_done_\(preset.rawValue)")
-                    if preset != .water {
+                    if preset != .water && preset != .medicine {
                         Text(timeLabel(hour: schedule.hour, minute: schedule.minute))
                             .font(.caption.weight(.semibold))
                             .foregroundColor(.secondaryGold)
                     }
                 }
+            }
+        }
+        ForEach(service.config.custom.filter(\.enabled)) { item in
+            HStack(alignment: .top) {
+                Text(item.emoji)
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(item.title)
+                        .font(.subheadline)
+                        .foregroundColor(.white)
+                    Text(item.scheduleSummaryLine(localization: localizationManager))
+                        .font(.caption2)
+                        .foregroundColor(.white.opacity(0.7))
+                }
+                Spacer()
+                Button {
+                    Task {
+                        await UnicornDeepLinkRouter.performHabitDone(
+                            presetRaw: FamilyHabitRemindersScheduler.customPresetRaw(id: item.id)
+                        )
+                        savedMessage = localizationManager.localized("family_habit_done")
+                        HapticFeedback.notification(.success)
+                    }
+                } label: {
+                    Text(localizationManager.localized("family_habit_done"))
+                        .font(.caption.weight(.semibold))
+                        .foregroundColor(.secondaryGold)
+                }
+                .buttonStyle(.plain)
+                .accessibilityIdentifier("family_habit_custom_done_\(item.id)")
             }
         }
         Text(localizationManager.localized("family_habit_member_status_hint"))
@@ -356,14 +426,14 @@ struct FamilyHabitRemindersSection: View {
             if binding.wrappedValue.enabled {
                 if preset == .water {
                     waterExpandedEditor(binding: binding)
-                } else {
-                    simpleTimeRow(binding: binding)
-                }
-                if preset == .medicine {
+                } else if preset == .medicine {
+                    medicineWindowEditor(binding: binding)
                     Text(localizationManager.localized("family_habit_medicine_disclaimer"))
                         .font(.caption2)
                         .foregroundColor(.white.opacity(0.65))
                         .accessibilityIdentifier("family_habit_medicine_disclaimer")
+                } else {
+                    simpleTimeRow(binding: binding)
                 }
                 duePingEditor(binding: binding)
             }
@@ -476,6 +546,89 @@ struct FamilyHabitRemindersSection: View {
             .background(Color.white.opacity(0.06))
             .cornerRadius(CornerRadius.medium)
         }
+    }
+
+    /// Medicine: same from→until + interval as water (no liters). Matches WindDown-style multi calendar slots.
+    @ViewBuilder
+    private func medicineWindowEditor(binding: Binding<FamilyHabitPresetSchedule>) -> some View {
+        VStack(alignment: .leading, spacing: Spacing.s) {
+            Text(localizationManager.localized("family_habit_water_interval_label"))
+                .font(.caption)
+                .foregroundColor(.white.opacity(0.7))
+            intervalPicker(binding: binding)
+
+            timeWindowRow(
+                labelKey: "family_habit_water_from_label",
+                hour: Binding(
+                    get: { binding.wrappedValue.hour },
+                    set: { h in
+                        var v = binding.wrappedValue
+                        v.hour = h
+                        binding.wrappedValue = v
+                    }
+                ),
+                minute: Binding(
+                    get: { binding.wrappedValue.minute },
+                    set: { m in
+                        var v = binding.wrappedValue
+                        v.minute = m
+                        binding.wrappedValue = v
+                    }
+                ),
+                binding: binding
+            )
+
+            timeWindowRow(
+                labelKey: "family_habit_water_until_label",
+                hour: Binding(
+                    get: { binding.wrappedValue.endHour },
+                    set: { h in
+                        var v = binding.wrappedValue
+                        v.endHour = h
+                        binding.wrappedValue = v
+                    }
+                ),
+                minute: Binding(
+                    get: { binding.wrappedValue.endMinute },
+                    set: { m in
+                        var v = binding.wrappedValue
+                        v.endMinute = m
+                        binding.wrappedValue = v
+                    }
+                ),
+                binding: binding,
+                endWindow: true
+            )
+
+            let slots = binding.wrappedValue.windowNotificationSlots()
+            if !slots.isEmpty {
+                Text(localizationManager.localized("family_habit_water_slots_label"))
+                    .font(.caption)
+                    .foregroundColor(.white.opacity(0.7))
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(Array(slots.enumerated()), id: \.offset) { _, slot in
+                            Text(timeLabel(hour: slot.hour, minute: slot.minute))
+                                .font(.caption2.monospacedDigit().weight(.semibold))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 6)
+                                .background(Color.secondaryGold.opacity(0.22))
+                                .overlay(
+                                    Capsule()
+                                        .stroke(Color.secondaryGold.opacity(0.45), lineWidth: 1)
+                                )
+                                .clipShape(Capsule())
+                                .foregroundColor(.white)
+                        }
+                    }
+                }
+                .accessibilityIdentifier("family_habit_medicine_slot_chips")
+            }
+        }
+        .padding(Spacing.s)
+        .background(Color.white.opacity(0.06))
+        .cornerRadius(CornerRadius.medium)
+        .accessibilityIdentifier("family_habit_medicine_window_editor")
     }
 
     private func litersPicker(binding: Binding<FamilyHabitPresetSchedule>) -> some View {
@@ -653,9 +806,17 @@ struct FamilyHabitRemindersSection: View {
         }
         if outcome.queuedForServer {
             queueMessage = localizationManager.localized("habit_queue_will_sync")
+        } else if let syncKey = outcome.syncErrorKey {
+            // fhc-08 — honest sync error; local schedule kept (no wipe).
+            errorMessage = localizationManager.localized(syncKey)
+            queueMessage = localizationManager.localized("wellness_sync_need_retry")
         } else if outcome.needsManualRetry {
             queueMessage = localizationManager.localized("wellness_sync_need_retry")
         }
-        HapticFeedback.notification(.success)
+        if outcome.needsManualRetry {
+            HapticFeedback.notification(.warning)
+        } else {
+            HapticFeedback.notification(.success)
+        }
     }
 }

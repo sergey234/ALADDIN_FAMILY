@@ -12,12 +12,15 @@ alwaysApply: false
 ## Canon
 
 - 4 системных пресета не ломать.
-- Custom: max **5**, window + once_daily, same `family_habit` Done category.
+- Custom: max **5**, window + once_daily (+ `once_at` = `fhc-15` after G1–G7), same `family_habit` Done category.
 - Notifications parity with water/medicine/wind_down calendar path.
 - Sim / Archive / API deploy — only after explicit owner GO.
+- Ship rules S1–S5 in REGISTRY (no-wipe · test-push must · loc∥UI · G4 dual · device-local time).
+- Stop-list in REGISTRY: no calendar/RRULE, no new category, no XP, no mock, no Widget/Intent (`fhc-18` ⛔).
 
 ## TodoWrite
 
 1. Only `merge: true`. Never wipe `hab-*` / `af-*` / `sqa-*`.
 2. Close task: REGISTRY ✅ → checklist in registry → Cursor `completed`.
 3. After each `fhc-*`: tick checklist bullets in REGISTRY before marking done.
+4. Ids include `fhc-15` once_at · `fhc-16` reorder · `fhc-17` analytics · `fhc-18` deferred.

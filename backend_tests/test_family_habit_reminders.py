@@ -98,6 +98,97 @@ class FamilyHabitRemindersStoreTests(unittest.TestCase):
         self.assertEqual(len(lines), 1)
         self.assertIn("10:30", lines[0])
 
+    # --- fhc-07 custom[] ---
+
+    def test_legacy_without_custom_is_empty_list(self):
+        cfg = habits.normalize_config(
+            {"presets": {"water": {"enabled": True, "hour": 10, "minute": 0}}}
+        )
+        self.assertEqual(cfg["custom"], [])
+        self.assertIn("water", cfg["presets"])
+        self.assertTrue(cfg["presets"]["water"]["enabled"])
+
+    def test_custom_normalize_max_five_and_clamp(self):
+        items = []
+        for i in range(8):
+            items.append(
+                {
+                    "id": f"c{i}",
+                    "title": f"Item {i}",
+                    "emoji": "📞",
+                    "enabled": True,
+                    "mode": "once_daily",
+                    "hour": 99,
+                    "minute": -1,
+                    "interval_minutes": 5,
+                    "sort_order": i,
+                }
+            )
+        cfg = habits.normalize_config({"presets": {}, "custom": items})
+        self.assertEqual(len(cfg["custom"]), 5)
+        self.assertEqual(cfg["custom"][0]["hour"], 23)
+        self.assertEqual(cfg["custom"][0]["minute"], 0)
+        self.assertEqual(cfg["custom"][0]["interval_minutes"], 15)
+
+    def test_custom_empty_title_dropped(self):
+        cfg = habits.normalize_config(
+            {
+                "custom": [
+                    {"id": "a", "title": "   ", "mode": "window"},
+                    {"id": "b", "title": "Call mom", "mode": "once_daily", "hour": 20},
+                ]
+            }
+        )
+        self.assertEqual(len(cfg["custom"]), 1)
+        self.assertEqual(cfg["custom"][0]["id"], "b")
+        self.assertEqual(cfg["custom"][0]["title"], "Call mom")
+
+    def test_custom_unknown_mode_kept_disabled(self):
+        cfg = habits.normalize_config(
+            {
+                "custom": [
+                    {
+                        "id": "x",
+                        "title": "Weird",
+                        "mode": "weekly_rrule",
+                        "enabled": True,
+                        "hour": 10,
+                        "minute": 0,
+                    }
+                ]
+            }
+        )
+        self.assertEqual(len(cfg["custom"]), 1)
+        self.assertEqual(cfg["custom"][0]["mode"], "weekly_rrule")
+        self.assertFalse(cfg["custom"][0]["enabled"])
+
+    def test_custom_once_at_and_fire_at(self):
+        cfg = habits.normalize_config(
+            {
+                "custom": [
+                    {
+                        "id": "d1",
+                        "title": "Tuesday",
+                        "mode": "once_at",
+                        "enabled": True,
+                        "fire_at": "2026-10-14T18:00:00Z",
+                        "hour": 18,
+                        "minute": 0,
+                    }
+                ]
+            }
+        )
+        self.assertEqual(cfg["custom"][0]["mode"], "once_at")
+        self.assertTrue(cfg["custom"][0]["enabled"])
+        self.assertEqual(cfg["custom"][0]["fire_at"], "2026-10-14T18:00:00Z")
+
+    def test_custom_title_length_clamp(self):
+        long_title = "a" * 80
+        cfg = habits.normalize_config(
+            {"custom": [{"title": long_title, "mode": "window", "interval_minutes": 60}]}
+        )
+        self.assertEqual(len(cfg["custom"][0]["title"]), 40)
+
 
 if __name__ == "__main__":
     unittest.main()
